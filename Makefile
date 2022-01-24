@@ -13,14 +13,14 @@
 ######################################
 # target
 ######################################
-TARGET = hel_test
+TARGET = H7FC
 
 
 ######################################
 # building variables
 ######################################
 # debug build?
-DEBUG = 1
+DEBUG = 0
 # optimization
 OPT = -Og
 
@@ -190,4 +190,16 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
-# *** EOF ***
+OPENOCD := openocd -f interface/cmsis-dap.cfg \
+        -f target/stm32h7x.cfg \
+
+# download your program
+flash: all
+	$(OPENOCD) -c init \
+        -c 'reset halt' \
+        -c 'flash write_image erase $(BUILD_DIR)/$(TARGET).elf' \
+        -c 'reset run' \
+        -c exit
+debug:
+	$(OPENOCD)
+
