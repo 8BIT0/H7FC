@@ -5,11 +5,13 @@
  *
  */
 #include "runtime.h"
+#include "stm32h7xx_hal.h"
 #include "stm32h743xx.h"
+#include "stm32h7xx_hal_rcc.h"
 #include <string.h>
 
 /* internal variable */
-static RCC_ClocksTypeDef SysFrq;
+static uint32_t sysclock = 0;
 static runtime_stop_p Runtime_Stop_FuncPtr = NULL;
 static Runtime_DataObj_TypeDef RunTime = {
     .tick_callback = NULL,
@@ -53,16 +55,43 @@ Tick_Base Runtime_GetTickBase(void)
     return RunTime.base;
 }
 
+/**
+ \param [in] : tick frequence
+                RUNTIME_TICK_FRQ_20K (default)
+                RUNTIME_TICK_FRQ_10K
+                RUNTIME_TICK_FRQ_5K
+                RUNTIME_TICK_FRQ_2K
+                RUNTIME_TICK_FRQ_1K
+**/
 bool Runtime_Config(uint32_t tick_frq)
 {
+    uint32_t frq = RUNTIME_TICK_FRQ_20K;
+
+    if (tick_frq == RUNTIME_TICK_FRQ_10K)
+    {
+        frq = RUNTIME_TICK_FRQ_10K;
+    }
+    else if (tick_frq == RUNTIME_TICK_FRQ_5K)
+    {
+        frq = RUNTIME_TICK_FRQ_5K;
+    }
+    else if (tick_frq == RUNTIME_TICK_FRQ_2K)
+    {
+        frq = RUNTIME_TICK_FRQ_2K;
+    }
+    else if (tick_frq == RUNTIME_TICK_FRQ_1K)
+    {
+        frq = RUNTIME_TICK_FRQ_1K;
+    }
+
     RunTime.module_state = Runtime_Module_Init;
-    RunTime.base = RUNTIEM_MAX_TICK_FRQ / tick_frq;
+    RunTime.base = RUNTIEM_MAX_TICK_FRQ / frq;
     RunTime.frq = tick_frq;
 
-    SysTick_Config(SystemCoreClock / (RUNTIEM_MAX_TICK_FRQ / RunTime.base)); // 1us system running step
-    SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
+    SystemCoreClockUpdate();
+    SysTick_Config(SystemCoreClock / (RUNTIEM_MAX_TICK_FRQ / RunTime.base));
 
-    RCC_GetClocksFreq(&SysFrq);
+    sysclock = HAL_RCC_GetSysClockFreq();
 
     return true;
 }
