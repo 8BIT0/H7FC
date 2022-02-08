@@ -1,0 +1,372 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"system_stm32h7xx.c"
+  13              		.text
+  14              		.section	.text.SystemInit,"ax",%progbits
+  15              		.align	1
+  16              		.global	SystemInit
+  17              		.arch armv7e-m
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu fpv5-d16
+  23              	SystemInit:
+  24              		@ args = 0, pretend = 0, frame = 0
+  25              		@ frame_needed = 0, uses_anonymous_args = 0
+  26              		@ link register save eliminated.
+  27 0000 274A     		ldr	r2, .L5
+  28 0002 D2F88830 		ldr	r3, [r2, #136]
+  29 0006 43F47003 		orr	r3, r3, #15728640
+  30 000a C2F88830 		str	r3, [r2, #136]
+  31 000e 254B     		ldr	r3, .L5+4
+  32 0010 1B68     		ldr	r3, [r3]
+  33 0012 03F00F03 		and	r3, r3, #15
+  34 0016 062B     		cmp	r3, #6
+  35 0018 06D8     		bhi	.L2
+  36 001a 224A     		ldr	r2, .L5+4
+  37 001c 1368     		ldr	r3, [r2]
+  38 001e 23F00F03 		bic	r3, r3, #15
+  39 0022 43F00703 		orr	r3, r3, #7
+  40 0026 1360     		str	r3, [r2]
+  41              	.L2:
+  42 0028 1F4B     		ldr	r3, .L5+8
+  43 002a 1A68     		ldr	r2, [r3]
+  44 002c 42F00102 		orr	r2, r2, #1
+  45 0030 1A60     		str	r2, [r3]
+  46 0032 0022     		movs	r2, #0
+  47 0034 1A61     		str	r2, [r3, #16]
+  48 0036 1968     		ldr	r1, [r3]
+  49 0038 1C4A     		ldr	r2, .L5+12
+  50 003a 0A40     		ands	r2, r2, r1
+  51 003c 1A60     		str	r2, [r3]
+  52 003e 194B     		ldr	r3, .L5+4
+  53 0040 1B68     		ldr	r3, [r3]
+  54 0042 13F0080F 		tst	r3, #8
+  55 0046 06D0     		beq	.L3
+  56 0048 164A     		ldr	r2, .L5+4
+  57 004a 1368     		ldr	r3, [r2]
+  58 004c 23F00F03 		bic	r3, r3, #15
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s 			page 2
+
+
+  59 0050 43F00703 		orr	r3, r3, #7
+  60 0054 1360     		str	r3, [r2]
+  61              	.L3:
+  62 0056 144B     		ldr	r3, .L5+8
+  63 0058 0022     		movs	r2, #0
+  64 005a 9A61     		str	r2, [r3, #24]
+  65 005c DA61     		str	r2, [r3, #28]
+  66 005e 1A62     		str	r2, [r3, #32]
+  67 0060 1349     		ldr	r1, .L5+16
+  68 0062 9962     		str	r1, [r3, #40]
+  69 0064 1349     		ldr	r1, .L5+20
+  70 0066 D962     		str	r1, [r3, #44]
+  71 0068 1349     		ldr	r1, .L5+24
+  72 006a 1963     		str	r1, [r3, #48]
+  73 006c 5A63     		str	r2, [r3, #52]
+  74 006e 9963     		str	r1, [r3, #56]
+  75 0070 DA63     		str	r2, [r3, #60]
+  76 0072 1964     		str	r1, [r3, #64]
+  77 0074 5A64     		str	r2, [r3, #68]
+  78 0076 1968     		ldr	r1, [r3]
+  79 0078 21F48021 		bic	r1, r1, #262144
+  80 007c 1960     		str	r1, [r3]
+  81 007e 1A66     		str	r2, [r3, #96]
+  82 0080 0E4B     		ldr	r3, .L5+28
+  83 0082 1A68     		ldr	r2, [r3]
+  84 0084 0E4B     		ldr	r3, .L5+32
+  85 0086 1340     		ands	r3, r3, r2
+  86 0088 B3F1005F 		cmp	r3, #536870912
+  87 008c 03D2     		bcs	.L4
+  88 008e 0D4B     		ldr	r3, .L5+36
+  89 0090 0122     		movs	r2, #1
+  90 0092 C3F80821 		str	r2, [r3, #264]
+  91              	.L4:
+  92 0096 0C4B     		ldr	r3, .L5+40
+  93 0098 43F2D202 		movw	r2, #12498
+  94 009c 1A60     		str	r2, [r3]
+  95 009e 7047     		bx	lr
+  96              	.L6:
+  97              		.align	2
+  98              	.L5:
+  99 00a0 00ED00E0 		.word	-536810240
+ 100 00a4 00200052 		.word	1375739904
+ 101 00a8 00440258 		.word	1476543488
+ 102 00ac 7FEDF6EA 		.word	-352916097
+ 103 00b0 00020202 		.word	33686016
+ 104 00b4 0000FF01 		.word	33488896
+ 105 00b8 80020101 		.word	16843392
+ 106 00bc 0010005C 		.word	1543507968
+ 107 00c0 0000FFFF 		.word	-65536
+ 108 00c4 00800051 		.word	1358987264
+ 109 00c8 00400052 		.word	1375748096
+ 111              		.section	.text.SystemCoreClockUpdate,"ax",%progbits
+ 112              		.align	1
+ 113              		.global	SystemCoreClockUpdate
+ 114              		.syntax unified
+ 115              		.thumb
+ 116              		.thumb_func
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s 			page 3
+
+
+ 117              		.fpu fpv5-d16
+ 119              	SystemCoreClockUpdate:
+ 120              		@ args = 0, pretend = 0, frame = 0
+ 121              		@ frame_needed = 0, uses_anonymous_args = 0
+ 122              		@ link register save eliminated.
+ 123 0000 10B4     		push	{r4}
+ 124 0002 7A4B     		ldr	r3, .L21
+ 125 0004 1B69     		ldr	r3, [r3, #16]
+ 126 0006 03F03803 		and	r3, r3, #56
+ 127 000a 182B     		cmp	r3, #24
+ 128 000c 00F2E580 		bhi	.L8
+ 129 0010 DFE813F0 		tbh	[pc, r3, lsl #1]
+ 130              	.L10:
+ 131 0014 1B00     		.2byte	(.L13-.L10)/2
+ 132 0016 E300     		.2byte	(.L8-.L10)/2
+ 133 0018 E300     		.2byte	(.L8-.L10)/2
+ 134 001a E300     		.2byte	(.L8-.L10)/2
+ 135 001c E300     		.2byte	(.L8-.L10)/2
+ 136 001e E300     		.2byte	(.L8-.L10)/2
+ 137 0020 E300     		.2byte	(.L8-.L10)/2
+ 138 0022 E300     		.2byte	(.L8-.L10)/2
+ 139 0024 1900     		.2byte	(.L12-.L10)/2
+ 140 0026 E300     		.2byte	(.L8-.L10)/2
+ 141 0028 E300     		.2byte	(.L8-.L10)/2
+ 142 002a E300     		.2byte	(.L8-.L10)/2
+ 143 002c E300     		.2byte	(.L8-.L10)/2
+ 144 002e E300     		.2byte	(.L8-.L10)/2
+ 145 0030 E300     		.2byte	(.L8-.L10)/2
+ 146 0032 E300     		.2byte	(.L8-.L10)/2
+ 147 0034 EA00     		.2byte	(.L18-.L10)/2
+ 148 0036 E300     		.2byte	(.L8-.L10)/2
+ 149 0038 E300     		.2byte	(.L8-.L10)/2
+ 150 003a E300     		.2byte	(.L8-.L10)/2
+ 151 003c E300     		.2byte	(.L8-.L10)/2
+ 152 003e E300     		.2byte	(.L8-.L10)/2
+ 153 0040 E300     		.2byte	(.L8-.L10)/2
+ 154 0042 E300     		.2byte	(.L8-.L10)/2
+ 155 0044 3700     		.2byte	(.L9-.L10)/2
+ 156              		.p2align 1
+ 157              	.L12:
+ 158 0046 6A4A     		ldr	r2, .L21+4
+ 159 0048 05E0     		b	.L11
+ 160              	.L13:
+ 161 004a 684B     		ldr	r3, .L21
+ 162 004c 1B68     		ldr	r3, [r3]
+ 163 004e C3F3C103 		ubfx	r3, r3, #3, #2
+ 164 0052 684A     		ldr	r2, .L21+8
+ 165 0054 DA40     		lsrs	r2, r2, r3
+ 166              	.L11:
+ 167 0056 6548     		ldr	r0, .L21
+ 168 0058 8369     		ldr	r3, [r0, #24]
+ 169 005a C3F30323 		ubfx	r3, r3, #8, #4
+ 170 005e 6649     		ldr	r1, .L21+12
+ 171 0060 CB5C     		ldrb	r3, [r1, r3]	@ zero_extendqisi2
+ 172 0062 DA40     		lsrs	r2, r2, r3
+ 173 0064 8369     		ldr	r3, [r0, #24]
+ 174 0066 03F00F03 		and	r3, r3, #15
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s 			page 4
+
+
+ 175 006a CB5C     		ldrb	r3, [r1, r3]	@ zero_extendqisi2
+ 176 006c 03F01F03 		and	r3, r3, #31
+ 177 0070 22FA03F3 		lsr	r3, r2, r3
+ 178 0074 6149     		ldr	r1, .L21+16
+ 179 0076 0B60     		str	r3, [r1]
+ 180 0078 614B     		ldr	r3, .L21+20
+ 181 007a 1A60     		str	r2, [r3]
+ 182 007c 5DF8044B 		ldr	r4, [sp], #4
+ 183 0080 7047     		bx	lr
+ 184              	.L9:
+ 185 0082 5A49     		ldr	r1, .L21
+ 186 0084 886A     		ldr	r0, [r1, #40]
+ 187 0086 00F00300 		and	r0, r0, #3
+ 188 008a 8C6A     		ldr	r4, [r1, #40]
+ 189 008c C4F30512 		ubfx	r2, r4, #4, #6
+ 190 0090 CB6A     		ldr	r3, [r1, #44]
+ 191 0092 03F0010C 		and	ip, r3, #1
+ 192 0096 4B6B     		ldr	r3, [r1, #52]
+ 193 0098 C3F3CC03 		ubfx	r3, r3, #3, #13
+ 194 009c 0CFB03F3 		mul	r3, ip, r3
+ 195 00a0 07EE903A 		vmov	s15, r3	@ int
+ 196 00a4 F8EE677A 		vcvt.f32.u32	s15, s15
+ 197 00a8 14F47C7F 		tst	r4, #1008
+ 198 00ac D3D0     		beq	.L11
+ 199 00ae 0128     		cmp	r0, #1
+ 200 00b0 59D0     		beq	.L14
+ 201 00b2 0228     		cmp	r0, #2
+ 202 00b4 74D0     		beq	.L15
+ 203 00b6 18B3     		cbz	r0, .L20
+ 204 00b8 4C48     		ldr	r0, .L21
+ 205 00ba 0168     		ldr	r1, [r0]
+ 206 00bc C1F3C101 		ubfx	r1, r1, #3, #2
+ 207 00c0 4C4B     		ldr	r3, .L21+8
+ 208 00c2 CB40     		lsrs	r3, r3, r1
+ 209 00c4 07EE103A 		vmov	s14, r3	@ int
+ 210 00c8 F8EE476A 		vcvt.f32.u32	s13, s14
+ 211 00cc 07EE102A 		vmov	s14, r2	@ int
+ 212 00d0 B8EE476A 		vcvt.f32.u32	s12, s14
+ 213 00d4 86EE867A 		vdiv.f32	s14, s13, s12
+ 214 00d8 036B     		ldr	r3, [r0, #48]
+ 215 00da C3F30803 		ubfx	r3, r3, #0, #9
+ 216 00de 06EE903A 		vmov	s13, r3	@ int
+ 217 00e2 F8EE666A 		vcvt.f32.u32	s13, s13
+ 218 00e6 9FED476A 		vldr.32	s12, .L21+24
+ 219 00ea 67EE867A 		vmul.f32	s15, s15, s12
+ 220 00ee 76EEA77A 		vadd.f32	s15, s13, s15
+ 221 00f2 F7EE006A 		vmov.f32	s13, #1.0e+0
+ 222 00f6 77EEA67A 		vadd.f32	s15, s15, s13
+ 223 00fa 27EE277A 		vmul.f32	s14, s14, s15
+ 224 00fe 22E0     		b	.L17
+ 225              	.L20:
+ 226 0100 0846     		mov	r0, r1
+ 227 0102 0968     		ldr	r1, [r1]
+ 228 0104 C1F3C101 		ubfx	r1, r1, #3, #2
+ 229 0108 3A4B     		ldr	r3, .L21+8
+ 230 010a CB40     		lsrs	r3, r3, r1
+ 231 010c 07EE103A 		vmov	s14, r3	@ int
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s 			page 5
+
+
+ 232 0110 F8EE476A 		vcvt.f32.u32	s13, s14
+ 233 0114 07EE102A 		vmov	s14, r2	@ int
+ 234 0118 B8EE476A 		vcvt.f32.u32	s12, s14
+ 235 011c 86EE867A 		vdiv.f32	s14, s13, s12
+ 236 0120 036B     		ldr	r3, [r0, #48]
+ 237 0122 C3F30803 		ubfx	r3, r3, #0, #9
+ 238 0126 06EE903A 		vmov	s13, r3	@ int
+ 239 012a F8EE666A 		vcvt.f32.u32	s13, s13
+ 240 012e 9FED356A 		vldr.32	s12, .L21+24
+ 241 0132 67EE867A 		vmul.f32	s15, s15, s12
+ 242 0136 76EEA77A 		vadd.f32	s15, s13, s15
+ 243 013a F7EE006A 		vmov.f32	s13, #1.0e+0
+ 244 013e 77EEA67A 		vadd.f32	s15, s15, s13
+ 245 0142 27EE277A 		vmul.f32	s14, s14, s15
+ 246              	.L17:
+ 247 0146 294B     		ldr	r3, .L21
+ 248 0148 1B6B     		ldr	r3, [r3, #48]
+ 249 014a C3F34623 		ubfx	r3, r3, #9, #7
+ 250 014e 0133     		adds	r3, r3, #1
+ 251 0150 07EE903A 		vmov	s15, r3	@ int
+ 252 0154 F8EE677A 		vcvt.f32.u32	s15, s15
+ 253 0158 C7EE276A 		vdiv.f32	s13, s14, s15
+ 254 015c FCEEE67A 		vcvt.u32.f32	s15, s13
+ 255 0160 17EE902A 		vmov	r2, s15	@ int
+ 256 0164 77E7     		b	.L11
+ 257              	.L14:
+ 258 0166 07EE102A 		vmov	s14, r2	@ int
+ 259 016a F8EE476A 		vcvt.f32.u32	s13, s14
+ 260 016e 9FED266A 		vldr.32	s12, .L21+28
+ 261 0172 86EE267A 		vdiv.f32	s14, s12, s13
+ 262 0176 1D4B     		ldr	r3, .L21
+ 263 0178 1B6B     		ldr	r3, [r3, #48]
+ 264 017a C3F30803 		ubfx	r3, r3, #0, #9
+ 265 017e 06EE903A 		vmov	s13, r3	@ int
+ 266 0182 F8EE666A 		vcvt.f32.u32	s13, s13
+ 267 0186 9FED1F6A 		vldr.32	s12, .L21+24
+ 268 018a 67EE867A 		vmul.f32	s15, s15, s12
+ 269 018e 76EEA77A 		vadd.f32	s15, s13, s15
+ 270 0192 F7EE006A 		vmov.f32	s13, #1.0e+0
+ 271 0196 77EEA67A 		vadd.f32	s15, s15, s13
+ 272 019a 27EE277A 		vmul.f32	s14, s14, s15
+ 273 019e D2E7     		b	.L17
+ 274              	.L15:
+ 275 01a0 07EE102A 		vmov	s14, r2	@ int
+ 276 01a4 F8EE476A 		vcvt.f32.u32	s13, s14
+ 277 01a8 9FED186A 		vldr.32	s12, .L21+32
+ 278 01ac 86EE267A 		vdiv.f32	s14, s12, s13
+ 279 01b0 0E4B     		ldr	r3, .L21
+ 280 01b2 1B6B     		ldr	r3, [r3, #48]
+ 281 01b4 C3F30803 		ubfx	r3, r3, #0, #9
+ 282 01b8 06EE903A 		vmov	s13, r3	@ int
+ 283 01bc F8EE666A 		vcvt.f32.u32	s13, s13
+ 284 01c0 9FED106A 		vldr.32	s12, .L21+24
+ 285 01c4 67EE867A 		vmul.f32	s15, s15, s12
+ 286 01c8 76EEA77A 		vadd.f32	s15, s13, s15
+ 287 01cc F7EE006A 		vmov.f32	s13, #1.0e+0
+ 288 01d0 77EEA67A 		vadd.f32	s15, s15, s13
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s 			page 6
+
+
+ 289 01d4 27EE277A 		vmul.f32	s14, s14, s15
+ 290 01d8 B5E7     		b	.L17
+ 291              	.L8:
+ 292 01da 044B     		ldr	r3, .L21
+ 293 01dc 1B68     		ldr	r3, [r3]
+ 294 01de C3F3C103 		ubfx	r3, r3, #3, #2
+ 295 01e2 044A     		ldr	r2, .L21+8
+ 296 01e4 DA40     		lsrs	r2, r2, r3
+ 297 01e6 36E7     		b	.L11
+ 298              	.L18:
+ 299 01e8 094A     		ldr	r2, .L21+36
+ 300 01ea 34E7     		b	.L11
+ 301              	.L22:
+ 302              		.align	2
+ 303              	.L21:
+ 304 01ec 00440258 		.word	1476543488
+ 305 01f0 00093D00 		.word	4000000
+ 306 01f4 0090D003 		.word	64000000
+ 307 01f8 00000000 		.word	.LANCHOR0
+ 308 01fc 00000000 		.word	.LANCHOR1
+ 309 0200 00000000 		.word	.LANCHOR2
+ 310 0204 00000039 		.word	956301312
+ 311 0208 0024744A 		.word	1249125376
+ 312 020c 20BCBE4B 		.word	1270791200
+ 313 0210 40787D01 		.word	25000000
+ 315              		.global	D1CorePrescTable
+ 316              		.global	SystemD2Clock
+ 317              		.global	SystemCoreClock
+ 318              		.section	.data.SystemCoreClock,"aw"
+ 319              		.align	2
+ 320              		.set	.LANCHOR2,. + 0
+ 323              	SystemCoreClock:
+ 324 0000 0090D003 		.word	64000000
+ 325              		.section	.data.SystemD2Clock,"aw"
+ 326              		.align	2
+ 327              		.set	.LANCHOR1,. + 0
+ 330              	SystemD2Clock:
+ 331 0000 0090D003 		.word	64000000
+ 332              		.section	.rodata.D1CorePrescTable,"a"
+ 333              		.align	2
+ 334              		.set	.LANCHOR0,. + 0
+ 337              	D1CorePrescTable:
+ 338 0000 00000000 		.ascii	"\000\000\000\000\001\002\003\004\001\002\003\004\006"
+ 338      01020304 
+ 338      01020304 
+ 338      06
+ 339 000d 070809   		.ascii	"\007\010\011"
+ 340              		.ident	"GCC: (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 system_stm32h7xx.c
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:15     .text.SystemInit:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:23     .text.SystemInit:00000000 SystemInit
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:99     .text.SystemInit:000000a0 $d
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:112    .text.SystemCoreClockUpdate:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:119    .text.SystemCoreClockUpdate:00000000 SystemCoreClockUpdate
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:131    .text.SystemCoreClockUpdate:00000014 $d
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:156    .text.SystemCoreClockUpdate:00000046 $t
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:304    .text.SystemCoreClockUpdate:000001ec $d
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:337    .rodata.D1CorePrescTable:00000000 D1CorePrescTable
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:330    .data.SystemD2Clock:00000000 SystemD2Clock
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:323    .data.SystemCoreClock:00000000 SystemCoreClock
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:319    .data.SystemCoreClock:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:326    .data.SystemD2Clock:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cc1n6KLa.s:333    .rodata.D1CorePrescTable:00000000 $d
+
+NO UNDEFINED SYMBOLS
