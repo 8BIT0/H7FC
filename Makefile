@@ -37,6 +37,7 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 main.c \
+System/runtime/runtime.c \
 HAL_Lib/Core/Src/stm32h7xx_it.c \
 HAL_Lib/Core/Src/system_stm32h7xx.c  
 # Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
@@ -113,6 +114,7 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
+-ISystem/runtime \
 -IHAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHAL_Lib/Core/Inc \
 -IHAL_Lib/CMSIS/Device/ST/STM32H7xx/Include \

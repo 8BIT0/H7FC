@@ -1,13 +1,11 @@
 /*
-* Coder : 8_B!T0
-*
-* BitRTOS Core Ticker Code Module
-*
-*/
+ * Coder : 8_B!T0
+ *
+ * BitRTOS Core Ticker Code Module
+ *
+ */
 #include "runtime.h"
-#include "stm32f4xx.h"
-#include "stm32f4xx_rcc.h"
-#include "misc.h"
+#include "stm32h743xx.h"
 #include <string.h>
 
 /* internal variable */
@@ -19,19 +17,25 @@ static Runtime_DataObj_TypeDef RunTime = {
     .stop_callback = NULL,
 };
 
-void Runtime_Set_start_Callback(runtime_start_callback_p start_cb)
+bool Runtime_SetCallback(Runtime_BaseCallback_TypeList type, runtime_callback_p tick_cb)
 {
-    RunTime.start_callback = start_cb;
-}
+    switch (type)
+    {
+    case RtCallback_Type_Start:
+        RunTime.start_callback = tick_cb;
+        return true;
 
-void Runtime_Set_stop_Callback(runtime_stop_callback_p stop_cb)
-{
-    RunTime.stop_callback = stop_cb;
-}
+    case RtCallback_Type_Stop:
+        RunTime.stop_callback = tick_cb;
+        return true;
 
-void Runtime_Set_tick_Callback(runtime_tick_callback_p tick_cb)
-{
-    RunTime.tick_callback = tick_cb;
+    case RtCallback_Type_Tick:
+        RunTime.tick_callback = tick_cb;
+        return true;
+
+    default:
+        return false;
+    }
 }
 
 Runtime_ModuleState_List Get_RuntimeState(void)
@@ -55,7 +59,7 @@ bool Runtime_Config(uint32_t tick_frq)
     RunTime.base = RUNTIEM_MAX_TICK_FRQ / tick_frq;
     RunTime.frq = tick_frq;
 
-    SysTick_Config(SystemCoreClock / (RUNTIEM_MAX_TICK_FRQ / RunTime.base)); //1us system running step
+    SysTick_Config(SystemCoreClock / (RUNTIEM_MAX_TICK_FRQ / RunTime.base)); // 1us system running step
     SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
 
     RCC_GetClocksFreq(&SysFrq);
@@ -124,12 +128,12 @@ bool Runtime_Tick(void)
     return false;
 }
 
-SYSTEM_RunTime Get_CurrentRunningUs(void)
+inline SYSTEM_RunTime Get_CurrentRunningUs(void)
 {
     return RunTime.Use_Us;
 }
 
-SYSTEM_RunTime Get_CurrentRunningMs(void)
+inline SYSTEM_RunTime Get_CurrentRunningMs(void)
 {
     return (RunTime.Use_Us / REAL_MS);
 }
@@ -139,12 +143,12 @@ SYSTEM_RunTime Get_CurrentRunningS(void)
     return (Get_CurrentRunningMs() / REAL_MS);
 }
 
-SYSTEM_RunTime Get_TimeDifference(uint64_t time_in)
+inline SYSTEM_RunTime Get_TimeDifference(uint64_t time_in)
 {
     return (RunTime.Use_Us - time_in);
 }
 
-SYSTEM_RunTime Get_TargetRunTime(uint16_t duration)
+inline SYSTEM_RunTime Get_TargetRunTime(uint16_t duration)
 {
     return (RunTime.Use_Us + duration);
 }
@@ -167,7 +171,7 @@ uint32_t RuntimeObj_Compare(const uint64_t *EQ_L, const uint64_t *EQ_R)
 
 /* input time object compare with current runtime */
 /* if input time object >= current runtime return true */
-bool RuntimeObj_CompareWithCurrent(const uint64_t time_in)
+inline bool RuntimeObj_CompareWithCurrent(const uint64_t time_in)
 {
     if (time_in >= RunTime.Use_Us)
     {
