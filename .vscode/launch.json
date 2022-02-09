@@ -7,6 +7,7 @@
         {
             "cwd": "${workspaceRoot}",
             "executable": "./build/H7FC.elf",
+            "interface": "swd",
             "name": "OCD debug",
             "request": "launch",
             "type": "cortex-debug",
@@ -16,34 +17,6 @@
                 "target/stm32h7x.cfg"
             ],
             //"svdFile": "/Users/mac/Desktop/Stm32/tool/cmsis-svd/data/STMicro/STM32F405.svd"
-        },
-        {
-            "name": "ARM Debug",
-            "type": "cppdbg",
-            "request": "launch",
-            "miDebuggerPath": "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/bin/arm-none-eabi-gdb",
-            "targetArchitecture": "arm",
-            "program": "C:/Users/huav/Desktop/BitOS/H7FC/build/H7FC.elf",
-            "setupCommands": [
-                {
-                    "text": "file '/c/Users/huav/Desktop/BitOS/H7FC/build/H7FC.elf'"
-                },
-                {
-                    "text": "target remote localhost:3333"
-                },
-                {
-                    "text": "monitor reset"
-                },
-                {
-                    "text": "monitor halt"
-                },
-                {
-                    "text": "load"
-                }
-            ],
-            "launchCompleteCommand": "None",
-            "externalConsole": false,
-            "cwd": "${workspaceRoot}"
         }
     ]
 }

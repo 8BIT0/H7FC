@@ -6,6 +6,7 @@
         "stm32h7xx_hal_rcc.h": "c",
         "stm32h7xx_hal.h": "c",
         "stm32h7xx_it.h": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "stdio.h": "c"
     }
 }
