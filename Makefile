@@ -37,6 +37,7 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 main.c \
+debug/debug_util.c \
 System/runtime/runtime.c \
 HAL_Lib/Core/Src/stm32h7xx_it.c \
 HAL_Lib/Core/Src/system_stm32h7xx.c  \
@@ -115,6 +116,7 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
+-Idebug/ \
 -ISystem/runtime \
 -IHAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHAL_Lib/Core/Inc \
@@ -202,7 +204,7 @@ OPENOCD := openocd -f interface/cmsis-dap.cfg \
 #     -c 'reset run' \
 #     -c exit
 flash: all
-	$(OPENOCD) -c 'program build/H7FC.elf verify reset exit'
+	$(OPENOCD) -c 'program $(BUILD_DIR)/$(TARGET).elf verify reset exit'
 
 debug:
 	$(OPENOCD)

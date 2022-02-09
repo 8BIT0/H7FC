@@ -1,4 +1,4 @@
-build/runtime.o: System/runtime/runtime.c System/runtime/runtime.h \
+build/debug_util.o: debug/debug_util.c debug/debug_util.h \
  HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h \
  HAL_Lib/CMSIS/Core/Include/core_cm7.h \
  HAL_Lib/CMSIS/Core/Include/cmsis_version.h \
@@ -28,7 +28,7 @@ build/runtime.o: System/runtime/runtime.c System/runtime/runtime.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h
-System/runtime/runtime.h:
+debug/debug_util.h:
 HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h:
 HAL_Lib/CMSIS/Core/Include/core_cm7.h:
 HAL_Lib/CMSIS/Core/Include/cmsis_version.h:
