@@ -4,6 +4,8 @@
         "stm32h743xx.h": "c",
         "string.h": "c",
         "stm32h7xx_hal_rcc.h": "c",
-        "stm32h7xx_hal.h": "c"
+        "stm32h7xx_hal.h": "c",
+        "stm32h7xx_it.h": "c",
+        "cstdint": "c"
     }
 }

@@ -41,8 +41,8 @@ System/runtime/runtime.c \
 HAL_Lib/Core/Src/stm32h7xx_it.c \
 HAL_Lib/Core/Src/system_stm32h7xx.c  \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
 # Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
 # Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
 # Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \

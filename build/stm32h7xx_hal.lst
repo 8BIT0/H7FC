@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -58,7 +58,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
   60 000c 184A     		ldr	r2, .L5+8
   61 000e C3F88020 		str	r2, [r3, #128]
   62 0012 C3F88040 		str	r4, [r3, #128]
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 2
 
 
   63 0016 40F27122 		movw	r2, #625
@@ -118,7 +118,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  119 0016 0C4A     		ldr	r2, .L18+4
  120 0018 1068     		ldr	r0, [r2]
  121 001a B0FBF3F0 		udiv	r0, r0, r3
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 3
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 3
 
 
  122 001e FFF7FEFF 		bl	HAL_SYSTICK_Config
@@ -178,7 +178,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  178 0034 1860     		str	r0, [r3]
  179 0036 0020     		movs	r0, #0
  180 0038 FFF7FEFF 		bl	HAL_InitTick
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 4
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 4
 
 
  181 003c 10B1     		cbz	r0, .L24
@@ -238,7 +238,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  239 0006 00BF     		.align	2
  240              	.L31:
  241 0008 00000000 		.word	.LANCHOR2
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 5
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 5
 
 
  243              		.section	.text.HAL_GetTickPrio,"ax",%progbits
@@ -298,7 +298,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  301              		.syntax unified
  302              		.thumb
  303              		.thumb_func
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 6
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 6
 
 
  304              		.fpu fpv5-d16
@@ -358,7 +358,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  363 0006 23F00203 		bic	r3, r3, #2
  364 000a 1361     		str	r3, [r2, #16]
  365 000c 7047     		bx	lr
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 7
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 7
 
 
  367              		.section	.text.HAL_ResumeTick,"ax",%progbits
@@ -418,7 +418,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  427              		.global	HAL_GetDEVID
  428              		.syntax unified
  429              		.thumb
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 8
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 8
 
 
  430              		.thumb_func
@@ -478,7 +478,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  490              		.thumb
  491              		.thumb_func
  492              		.fpu fpv5-d16
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 9
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 9
 
 
  494              	HAL_GetUIDw2:
@@ -538,7 +538,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  553              		.align	1
  554              		.global	HAL_SYSCFG_VREFBUF_TrimmingConfig
  555              		.syntax unified
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 10
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 10
 
 
  556              		.thumb
@@ -598,7 +598,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  614              		.align	1
  615              		.global	HAL_SYSCFG_DisableVREFBUF
  616              		.syntax unified
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 11
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 11
 
 
  617              		.thumb
@@ -658,7 +658,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  676              	.L98:
  677 000e 00BF     		.align	2
  678              	.L97:
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 12
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 12
 
 
  679 0010 00040058 		.word	1476396032
@@ -718,7 +718,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  739 0004 D0F80833 		ldr	r3, [r0, #776]
  740 0008 9BB2     		uxth	r3, r3
  741 000a 094A     		ldr	r2, .L108+4
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 13
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 13
 
 
  742 000c 0A40     		ands	r2, r2, r1
@@ -778,7 +778,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  800              		.align	2
  801              	.L114:
  802 000c 00040058 		.word	1476396032
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 14
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 14
 
 
  804              		.section	.text.HAL_SYSCFG_EnableIOSpeedOptimize,"ax",%progbits
@@ -838,7 +838,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  863 0008 0343     		orrs	r3, r3, r0
  864 000a 1362     		str	r3, [r2, #32]
  865 000c 7047     		bx	lr
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 15
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 15
 
 
  866              	.L124:
@@ -898,7 +898,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  926              		@ args = 0, pretend = 0, frame = 0
  927              		@ frame_needed = 0, uses_anonymous_args = 0
  928              		@ link register save eliminated.
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 16
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 16
 
 
  929 0000 024A     		ldr	r2, .L132
@@ -958,7 +958,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  988              		.thumb_func
  989              		.fpu fpv5-d16
  991              	HAL_DBGMCU_EnableDBGStandbyMode:
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 17
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 17
 
 
  992              		@ args = 0, pretend = 0, frame = 0
@@ -1018,7 +1018,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  1051              		.align	1
  1052              		.global	HAL_GetFMCMemorySwappingConfig
  1053              		.syntax unified
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 18
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 18
 
 
  1054              		.thumb
@@ -1078,7 +1078,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  1111 004c 7047     		bx	lr
  1112              	.L157:
  1113 004e 00BF     		.align	2
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 19
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 19
 
 
  1114              	.L156:
@@ -1138,7 +1138,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  1173              		.thumb_func
  1174              		.fpu fpv5-d16
  1176              	HAL_EXTI_D1_EventInputConfig:
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 20
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 20
 
 
  1177              		@ args = 0, pretend = 0, frame = 0
@@ -1198,7 +1198,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  1231              	.L170:
  1232 007c 08008005 		.word	92274696
  1233 0080 84000058 		.word	1476395140
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 21
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 21
 
 
  1235              		.section	.text.HAL_EXTI_D3_EventInputConfig,"ax",%progbits
@@ -1258,7 +1258,7 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  1290              	.L178:
  1291 0070 0C000058 		.word	1476395020
  1292 0074 10000058 		.word	1476395024
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 22
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 22
 
 
  1293 0078 14000058 		.word	1476395028
@@ -1280,162 +1280,162 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 1
  1316              	uwTickPrio:
  1317 0000 10000000 		.word	16
  1318              		.ident	"GCC: (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 23
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 23
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 stm32h7xx_hal.c
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:15     .text.HAL_MspInit:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:23     .text.HAL_MspInit:00000000 HAL_MspInit
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:30     .text.HAL_MspDeInit:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:37     .text.HAL_MspDeInit:00000000 HAL_MspDeInit
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:44     .text.HAL_DeInit:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:51     .text.HAL_DeInit:00000000 HAL_DeInit
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:90     .text.HAL_DeInit:00000068 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:99     .text.HAL_InitTick:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:106    .text.HAL_InitTick:00000000 HAL_InitTick
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:144    .text.HAL_InitTick:00000044 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:149    .text.HAL_Init:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:156    .text.HAL_Init:00000000 HAL_Init
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:193    .text.HAL_Init:0000004c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:199    .text.HAL_IncTick:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:206    .text.HAL_IncTick:00000000 HAL_IncTick
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:220    .text.HAL_IncTick:00000010 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:224    .text.HAL_GetTick:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:231    .text.HAL_GetTick:00000000 HAL_GetTick
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:241    .text.HAL_GetTick:00000008 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:244    .text.HAL_GetTickPrio:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:251    .text.HAL_GetTickPrio:00000000 HAL_GetTickPrio
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:261    .text.HAL_GetTickPrio:00000008 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:264    .text.HAL_SetTickFreq:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:271    .text.HAL_SetTickFreq:00000000 HAL_SetTickFreq
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:295    .text.HAL_SetTickFreq:00000024 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:299    .text.HAL_GetTickFreq:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:306    .text.HAL_GetTickFreq:00000000 HAL_GetTickFreq
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:316    .text.HAL_GetTickFreq:00000008 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:319    .text.HAL_Delay:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:326    .text.HAL_Delay:00000000 HAL_Delay
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:347    .text.HAL_Delay:00000024 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:350    .text.HAL_SuspendTick:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:357    .text.HAL_SuspendTick:00000000 HAL_SuspendTick
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:368    .text.HAL_ResumeTick:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:375    .text.HAL_ResumeTick:00000000 HAL_ResumeTick
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:386    .text.HAL_GetHalVersion:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:393    .text.HAL_GetHalVersion:00000000 HAL_GetHalVersion
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:402    .text.HAL_GetHalVersion:00000004 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:405    .text.HAL_GetREVID:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:412    .text.HAL_GetREVID:00000000 HAL_GetREVID
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:423    .text.HAL_GetREVID:00000008 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:426    .text.HAL_GetDEVID:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:433    .text.HAL_GetDEVID:00000000 HAL_GetDEVID
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:444    .text.HAL_GetDEVID:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:447    .text.HAL_GetUIDw0:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:454    .text.HAL_GetUIDw0:00000000 HAL_GetUIDw0
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:464    .text.HAL_GetUIDw0:00000008 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:467    .text.HAL_GetUIDw1:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:474    .text.HAL_GetUIDw1:00000000 HAL_GetUIDw1
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:484    .text.HAL_GetUIDw1:00000008 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:487    .text.HAL_GetUIDw2:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:494    .text.HAL_GetUIDw2:00000000 HAL_GetUIDw2
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:504    .text.HAL_GetUIDw2:00000008 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:507    .text.HAL_SYSCFG_VREFBUF_VoltageScalingConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:514    .text.HAL_SYSCFG_VREFBUF_VoltageScalingConfig:00000000 HAL_SYSCFG_VREFBUF_VoltageScalingConfig
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 24
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:15     .text.HAL_MspInit:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:23     .text.HAL_MspInit:00000000 HAL_MspInit
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:30     .text.HAL_MspDeInit:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:37     .text.HAL_MspDeInit:00000000 HAL_MspDeInit
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:44     .text.HAL_DeInit:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:51     .text.HAL_DeInit:00000000 HAL_DeInit
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:90     .text.HAL_DeInit:00000068 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:99     .text.HAL_InitTick:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:106    .text.HAL_InitTick:00000000 HAL_InitTick
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:144    .text.HAL_InitTick:00000044 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:149    .text.HAL_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:156    .text.HAL_Init:00000000 HAL_Init
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:193    .text.HAL_Init:0000004c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:199    .text.HAL_IncTick:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:206    .text.HAL_IncTick:00000000 HAL_IncTick
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:220    .text.HAL_IncTick:00000010 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:224    .text.HAL_GetTick:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:231    .text.HAL_GetTick:00000000 HAL_GetTick
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:241    .text.HAL_GetTick:00000008 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:244    .text.HAL_GetTickPrio:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:251    .text.HAL_GetTickPrio:00000000 HAL_GetTickPrio
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:261    .text.HAL_GetTickPrio:00000008 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:264    .text.HAL_SetTickFreq:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:271    .text.HAL_SetTickFreq:00000000 HAL_SetTickFreq
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:295    .text.HAL_SetTickFreq:00000024 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:299    .text.HAL_GetTickFreq:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:306    .text.HAL_GetTickFreq:00000000 HAL_GetTickFreq
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:316    .text.HAL_GetTickFreq:00000008 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:319    .text.HAL_Delay:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:326    .text.HAL_Delay:00000000 HAL_Delay
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:347    .text.HAL_Delay:00000024 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:350    .text.HAL_SuspendTick:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:357    .text.HAL_SuspendTick:00000000 HAL_SuspendTick
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:368    .text.HAL_ResumeTick:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:375    .text.HAL_ResumeTick:00000000 HAL_ResumeTick
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:386    .text.HAL_GetHalVersion:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:393    .text.HAL_GetHalVersion:00000000 HAL_GetHalVersion
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:402    .text.HAL_GetHalVersion:00000004 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:405    .text.HAL_GetREVID:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:412    .text.HAL_GetREVID:00000000 HAL_GetREVID
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:423    .text.HAL_GetREVID:00000008 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:426    .text.HAL_GetDEVID:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:433    .text.HAL_GetDEVID:00000000 HAL_GetDEVID
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:444    .text.HAL_GetDEVID:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:447    .text.HAL_GetUIDw0:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:454    .text.HAL_GetUIDw0:00000000 HAL_GetUIDw0
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:464    .text.HAL_GetUIDw0:00000008 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:467    .text.HAL_GetUIDw1:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:474    .text.HAL_GetUIDw1:00000000 HAL_GetUIDw1
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:484    .text.HAL_GetUIDw1:00000008 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:487    .text.HAL_GetUIDw2:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:494    .text.HAL_GetUIDw2:00000000 HAL_GetUIDw2
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:504    .text.HAL_GetUIDw2:00000008 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:507    .text.HAL_SYSCFG_VREFBUF_VoltageScalingConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:514    .text.HAL_SYSCFG_VREFBUF_VoltageScalingConfig:00000000 HAL_SYSCFG_VREFBUF_VoltageScalingConfig
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 24
 
 
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:527    .text.HAL_SYSCFG_VREFBUF_VoltageScalingConfig:00000010 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:530    .text.HAL_SYSCFG_VREFBUF_HighImpedanceConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:537    .text.HAL_SYSCFG_VREFBUF_HighImpedanceConfig:00000000 HAL_SYSCFG_VREFBUF_HighImpedanceConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:550    .text.HAL_SYSCFG_VREFBUF_HighImpedanceConfig:00000010 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:553    .text.HAL_SYSCFG_VREFBUF_TrimmingConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:560    .text.HAL_SYSCFG_VREFBUF_TrimmingConfig:00000000 HAL_SYSCFG_VREFBUF_TrimmingConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:573    .text.HAL_SYSCFG_VREFBUF_TrimmingConfig:00000010 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:576    .text.HAL_SYSCFG_EnableVREFBUF:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:583    .text.HAL_SYSCFG_EnableVREFBUF:00000000 HAL_SYSCFG_EnableVREFBUF
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:611    .text.HAL_SYSCFG_EnableVREFBUF:00000030 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:614    .text.HAL_SYSCFG_DisableVREFBUF:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:621    .text.HAL_SYSCFG_DisableVREFBUF:00000000 HAL_SYSCFG_DisableVREFBUF
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:633    .text.HAL_SYSCFG_DisableVREFBUF:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:636    .text.HAL_SYSCFG_ETHInterfaceSelect:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:643    .text.HAL_SYSCFG_ETHInterfaceSelect:00000000 HAL_SYSCFG_ETHInterfaceSelect
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:656    .text.HAL_SYSCFG_ETHInterfaceSelect:00000010 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:659    .text.HAL_SYSCFG_AnalogSwitchConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:666    .text.HAL_SYSCFG_AnalogSwitchConfig:00000000 HAL_SYSCFG_AnalogSwitchConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:679    .text.HAL_SYSCFG_AnalogSwitchConfig:00000010 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:682    .text.HAL_SYSCFG_EnableBOOST:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:689    .text.HAL_SYSCFG_EnableBOOST:00000000 HAL_SYSCFG_EnableBOOST
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:701    .text.HAL_SYSCFG_EnableBOOST:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:704    .text.HAL_SYSCFG_DisableBOOST:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:711    .text.HAL_SYSCFG_DisableBOOST:00000000 HAL_SYSCFG_DisableBOOST
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:723    .text.HAL_SYSCFG_DisableBOOST:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:726    .text.HAL_SYSCFG_CM7BootAddConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:733    .text.HAL_SYSCFG_CM7BootAddConfig:00000000 HAL_SYSCFG_CM7BootAddConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:757    .text.HAL_SYSCFG_CM7BootAddConfig:0000002c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:761    .text.HAL_EnableCompensationCell:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:768    .text.HAL_EnableCompensationCell:00000000 HAL_EnableCompensationCell
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:780    .text.HAL_EnableCompensationCell:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:783    .text.HAL_DisableCompensationCell:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:790    .text.HAL_DisableCompensationCell:00000000 HAL_DisableCompensationCell
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:802    .text.HAL_DisableCompensationCell:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:805    .text.HAL_SYSCFG_EnableIOSpeedOptimize:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:812    .text.HAL_SYSCFG_EnableIOSpeedOptimize:00000000 HAL_SYSCFG_EnableIOSpeedOptimize
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:824    .text.HAL_SYSCFG_EnableIOSpeedOptimize:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:827    .text.HAL_SYSCFG_DisableIOSpeedOptimize:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:834    .text.HAL_SYSCFG_DisableIOSpeedOptimize:00000000 HAL_SYSCFG_DisableIOSpeedOptimize
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:846    .text.HAL_SYSCFG_DisableIOSpeedOptimize:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:849    .text.HAL_SYSCFG_CompensationCodeSelect:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:856    .text.HAL_SYSCFG_CompensationCodeSelect:00000000 HAL_SYSCFG_CompensationCodeSelect
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:869    .text.HAL_SYSCFG_CompensationCodeSelect:00000010 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:872    .text.HAL_SYSCFG_CompensationCodeConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:879    .text.HAL_SYSCFG_CompensationCodeConfig:00000000 HAL_SYSCFG_CompensationCodeConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:893    .text.HAL_SYSCFG_CompensationCodeConfig:00000014 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:896    .text.HAL_DBGMCU_EnableDBGSleepMode:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:903    .text.HAL_DBGMCU_EnableDBGSleepMode:00000000 HAL_DBGMCU_EnableDBGSleepMode
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:915    .text.HAL_DBGMCU_EnableDBGSleepMode:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:918    .text.HAL_DBGMCU_DisableDBGSleepMode:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:925    .text.HAL_DBGMCU_DisableDBGSleepMode:00000000 HAL_DBGMCU_DisableDBGSleepMode
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:937    .text.HAL_DBGMCU_DisableDBGSleepMode:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:940    .text.HAL_DBGMCU_EnableDBGStopMode:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:947    .text.HAL_DBGMCU_EnableDBGStopMode:00000000 HAL_DBGMCU_EnableDBGStopMode
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:959    .text.HAL_DBGMCU_EnableDBGStopMode:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:962    .text.HAL_DBGMCU_DisableDBGStopMode:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:969    .text.HAL_DBGMCU_DisableDBGStopMode:00000000 HAL_DBGMCU_DisableDBGStopMode
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s 			page 25
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:527    .text.HAL_SYSCFG_VREFBUF_VoltageScalingConfig:00000010 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:530    .text.HAL_SYSCFG_VREFBUF_HighImpedanceConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:537    .text.HAL_SYSCFG_VREFBUF_HighImpedanceConfig:00000000 HAL_SYSCFG_VREFBUF_HighImpedanceConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:550    .text.HAL_SYSCFG_VREFBUF_HighImpedanceConfig:00000010 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:553    .text.HAL_SYSCFG_VREFBUF_TrimmingConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:560    .text.HAL_SYSCFG_VREFBUF_TrimmingConfig:00000000 HAL_SYSCFG_VREFBUF_TrimmingConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:573    .text.HAL_SYSCFG_VREFBUF_TrimmingConfig:00000010 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:576    .text.HAL_SYSCFG_EnableVREFBUF:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:583    .text.HAL_SYSCFG_EnableVREFBUF:00000000 HAL_SYSCFG_EnableVREFBUF
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:611    .text.HAL_SYSCFG_EnableVREFBUF:00000030 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:614    .text.HAL_SYSCFG_DisableVREFBUF:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:621    .text.HAL_SYSCFG_DisableVREFBUF:00000000 HAL_SYSCFG_DisableVREFBUF
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:633    .text.HAL_SYSCFG_DisableVREFBUF:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:636    .text.HAL_SYSCFG_ETHInterfaceSelect:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:643    .text.HAL_SYSCFG_ETHInterfaceSelect:00000000 HAL_SYSCFG_ETHInterfaceSelect
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:656    .text.HAL_SYSCFG_ETHInterfaceSelect:00000010 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:659    .text.HAL_SYSCFG_AnalogSwitchConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:666    .text.HAL_SYSCFG_AnalogSwitchConfig:00000000 HAL_SYSCFG_AnalogSwitchConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:679    .text.HAL_SYSCFG_AnalogSwitchConfig:00000010 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:682    .text.HAL_SYSCFG_EnableBOOST:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:689    .text.HAL_SYSCFG_EnableBOOST:00000000 HAL_SYSCFG_EnableBOOST
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:701    .text.HAL_SYSCFG_EnableBOOST:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:704    .text.HAL_SYSCFG_DisableBOOST:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:711    .text.HAL_SYSCFG_DisableBOOST:00000000 HAL_SYSCFG_DisableBOOST
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:723    .text.HAL_SYSCFG_DisableBOOST:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:726    .text.HAL_SYSCFG_CM7BootAddConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:733    .text.HAL_SYSCFG_CM7BootAddConfig:00000000 HAL_SYSCFG_CM7BootAddConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:757    .text.HAL_SYSCFG_CM7BootAddConfig:0000002c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:761    .text.HAL_EnableCompensationCell:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:768    .text.HAL_EnableCompensationCell:00000000 HAL_EnableCompensationCell
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:780    .text.HAL_EnableCompensationCell:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:783    .text.HAL_DisableCompensationCell:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:790    .text.HAL_DisableCompensationCell:00000000 HAL_DisableCompensationCell
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:802    .text.HAL_DisableCompensationCell:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:805    .text.HAL_SYSCFG_EnableIOSpeedOptimize:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:812    .text.HAL_SYSCFG_EnableIOSpeedOptimize:00000000 HAL_SYSCFG_EnableIOSpeedOptimize
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:824    .text.HAL_SYSCFG_EnableIOSpeedOptimize:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:827    .text.HAL_SYSCFG_DisableIOSpeedOptimize:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:834    .text.HAL_SYSCFG_DisableIOSpeedOptimize:00000000 HAL_SYSCFG_DisableIOSpeedOptimize
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:846    .text.HAL_SYSCFG_DisableIOSpeedOptimize:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:849    .text.HAL_SYSCFG_CompensationCodeSelect:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:856    .text.HAL_SYSCFG_CompensationCodeSelect:00000000 HAL_SYSCFG_CompensationCodeSelect
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:869    .text.HAL_SYSCFG_CompensationCodeSelect:00000010 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:872    .text.HAL_SYSCFG_CompensationCodeConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:879    .text.HAL_SYSCFG_CompensationCodeConfig:00000000 HAL_SYSCFG_CompensationCodeConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:893    .text.HAL_SYSCFG_CompensationCodeConfig:00000014 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:896    .text.HAL_DBGMCU_EnableDBGSleepMode:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:903    .text.HAL_DBGMCU_EnableDBGSleepMode:00000000 HAL_DBGMCU_EnableDBGSleepMode
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:915    .text.HAL_DBGMCU_EnableDBGSleepMode:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:918    .text.HAL_DBGMCU_DisableDBGSleepMode:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:925    .text.HAL_DBGMCU_DisableDBGSleepMode:00000000 HAL_DBGMCU_DisableDBGSleepMode
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:937    .text.HAL_DBGMCU_DisableDBGSleepMode:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:940    .text.HAL_DBGMCU_EnableDBGStopMode:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:947    .text.HAL_DBGMCU_EnableDBGStopMode:00000000 HAL_DBGMCU_EnableDBGStopMode
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:959    .text.HAL_DBGMCU_EnableDBGStopMode:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:962    .text.HAL_DBGMCU_DisableDBGStopMode:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:969    .text.HAL_DBGMCU_DisableDBGStopMode:00000000 HAL_DBGMCU_DisableDBGStopMode
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s 			page 25
 
 
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:981    .text.HAL_DBGMCU_DisableDBGStopMode:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:984    .text.HAL_DBGMCU_EnableDBGStandbyMode:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:991    .text.HAL_DBGMCU_EnableDBGStandbyMode:00000000 HAL_DBGMCU_EnableDBGStandbyMode
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1003   .text.HAL_DBGMCU_EnableDBGStandbyMode:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1006   .text.HAL_DBGMCU_DisableDBGStandbyMode:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1013   .text.HAL_DBGMCU_DisableDBGStandbyMode:00000000 HAL_DBGMCU_DisableDBGStandbyMode
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1025   .text.HAL_DBGMCU_DisableDBGStandbyMode:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1028   .text.HAL_SetFMCMemorySwappingConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1035   .text.HAL_SetFMCMemorySwappingConfig:00000000 HAL_SetFMCMemorySwappingConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1048   .text.HAL_SetFMCMemorySwappingConfig:00000010 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1051   .text.HAL_GetFMCMemorySwappingConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1058   .text.HAL_GetFMCMemorySwappingConfig:00000000 HAL_GetFMCMemorySwappingConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1069   .text.HAL_GetFMCMemorySwappingConfig:0000000c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1072   .text.HAL_EXTI_EdgeConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1079   .text.HAL_EXTI_EdgeConfig:00000000 HAL_EXTI_EdgeConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1115   .text.HAL_EXTI_EdgeConfig:00000050 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1118   .text.HAL_EXTI_GenerateSWInterrupt:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1125   .text.HAL_EXTI_GenerateSWInterrupt:00000000 HAL_EXTI_GenerateSWInterrupt
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1141   .text.HAL_EXTI_GenerateSWInterrupt:0000001c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1144   .text.HAL_EXTI_D1_ClearFlag:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1151   .text.HAL_EXTI_D1_ClearFlag:00000000 HAL_EXTI_D1_ClearFlag
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1166   .text.HAL_EXTI_D1_ClearFlag:00000014 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1169   .text.HAL_EXTI_D1_EventInputConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1176   .text.HAL_EXTI_D1_EventInputConfig:00000000 HAL_EXTI_D1_EventInputConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1232   .text.HAL_EXTI_D1_EventInputConfig:0000007c $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1236   .text.HAL_EXTI_D3_EventInputConfig:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1243   .text.HAL_EXTI_D3_EventInputConfig:00000000 HAL_EXTI_D3_EventInputConfig
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1291   .text.HAL_EXTI_D3_EventInputConfig:00000070 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1309   .data.uwTickFreq:00000000 uwTickFreq
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1316   .data.uwTickPrio:00000000 uwTickPrio
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1303   .bss.uwTick:00000000 uwTick
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1299   .bss.uwTick:00000000 $d
-C:\Users\huav\AppData\Local\Temp\ccBp9Gdi.s:1312   .data.uwTickPrio:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:981    .text.HAL_DBGMCU_DisableDBGStopMode:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:984    .text.HAL_DBGMCU_EnableDBGStandbyMode:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:991    .text.HAL_DBGMCU_EnableDBGStandbyMode:00000000 HAL_DBGMCU_EnableDBGStandbyMode
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1003   .text.HAL_DBGMCU_EnableDBGStandbyMode:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1006   .text.HAL_DBGMCU_DisableDBGStandbyMode:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1013   .text.HAL_DBGMCU_DisableDBGStandbyMode:00000000 HAL_DBGMCU_DisableDBGStandbyMode
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1025   .text.HAL_DBGMCU_DisableDBGStandbyMode:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1028   .text.HAL_SetFMCMemorySwappingConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1035   .text.HAL_SetFMCMemorySwappingConfig:00000000 HAL_SetFMCMemorySwappingConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1048   .text.HAL_SetFMCMemorySwappingConfig:00000010 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1051   .text.HAL_GetFMCMemorySwappingConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1058   .text.HAL_GetFMCMemorySwappingConfig:00000000 HAL_GetFMCMemorySwappingConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1069   .text.HAL_GetFMCMemorySwappingConfig:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1072   .text.HAL_EXTI_EdgeConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1079   .text.HAL_EXTI_EdgeConfig:00000000 HAL_EXTI_EdgeConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1115   .text.HAL_EXTI_EdgeConfig:00000050 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1118   .text.HAL_EXTI_GenerateSWInterrupt:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1125   .text.HAL_EXTI_GenerateSWInterrupt:00000000 HAL_EXTI_GenerateSWInterrupt
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1141   .text.HAL_EXTI_GenerateSWInterrupt:0000001c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1144   .text.HAL_EXTI_D1_ClearFlag:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1151   .text.HAL_EXTI_D1_ClearFlag:00000000 HAL_EXTI_D1_ClearFlag
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1166   .text.HAL_EXTI_D1_ClearFlag:00000014 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1169   .text.HAL_EXTI_D1_EventInputConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1176   .text.HAL_EXTI_D1_EventInputConfig:00000000 HAL_EXTI_D1_EventInputConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1232   .text.HAL_EXTI_D1_EventInputConfig:0000007c $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1236   .text.HAL_EXTI_D3_EventInputConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1243   .text.HAL_EXTI_D3_EventInputConfig:00000000 HAL_EXTI_D3_EventInputConfig
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1291   .text.HAL_EXTI_D3_EventInputConfig:00000070 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1309   .data.uwTickFreq:00000000 uwTickFreq
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1316   .data.uwTickPrio:00000000 uwTickPrio
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1303   .bss.uwTick:00000000 uwTick
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1299   .bss.uwTick:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cc5hYyoZ.s:1312   .data.uwTickPrio:00000000 $d
 
 UNDEFINED SYMBOLS
 HAL_SYSTICK_Config
