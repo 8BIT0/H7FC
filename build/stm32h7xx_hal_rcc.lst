@@ -1,0 +1,2081 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"stm32h7xx_hal_rcc.c"
+  13              		.text
+  14              		.section	.text.HAL_RCC_DeInit,"ax",%progbits
+  15              		.align	1
+  16              		.global	HAL_RCC_DeInit
+  17              		.arch armv7e-m
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu fpv5-d16
+  23              	HAL_RCC_DeInit:
+  24              		@ args = 0, pretend = 0, frame = 0
+  25              		@ frame_needed = 0, uses_anonymous_args = 0
+  26 0000 38B5     		push	{r3, r4, r5, lr}
+  27 0002 684B     		ldr	r3, .L33
+  28 0004 1B68     		ldr	r3, [r3]
+  29 0006 03F00F03 		and	r3, r3, #15
+  30 000a 062B     		cmp	r3, #6
+  31 000c 0CD8     		bhi	.L2
+  32 000e 654A     		ldr	r2, .L33
+  33 0010 1368     		ldr	r3, [r2]
+  34 0012 23F00F03 		bic	r3, r3, #15
+  35 0016 43F00703 		orr	r3, r3, #7
+  36 001a 1360     		str	r3, [r2]
+  37 001c 1368     		ldr	r3, [r2]
+  38 001e 03F00F03 		and	r3, r3, #15
+  39 0022 072B     		cmp	r3, #7
+  40 0024 40F0BA80 		bne	.L16
+  41              	.L2:
+  42 0028 FFF7FEFF 		bl	HAL_GetTick
+  43 002c 0446     		mov	r4, r0
+  44 002e 5E4A     		ldr	r2, .L33+4
+  45 0030 1368     		ldr	r3, [r2]
+  46 0032 43F00103 		orr	r3, r3, #1
+  47 0036 1360     		str	r3, [r2]
+  48              	.L4:
+  49 0038 5B4B     		ldr	r3, .L33+4
+  50 003a 1B68     		ldr	r3, [r3]
+  51 003c 13F0040F 		tst	r3, #4
+  52 0040 06D1     		bne	.L26
+  53 0042 FFF7FEFF 		bl	HAL_GetTick
+  54 0046 001B     		subs	r0, r0, r4
+  55 0048 0228     		cmp	r0, #2
+  56 004a F5D9     		bls	.L4
+  57 004c 0324     		movs	r4, #3
+  58 004e A6E0     		b	.L3
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 2
+
+
+  59              	.L26:
+  60 0050 554B     		ldr	r3, .L33+4
+  61 0052 5A68     		ldr	r2, [r3, #4]
+  62 0054 42F08042 		orr	r2, r2, #1073741824
+  63 0058 5A60     		str	r2, [r3, #4]
+  64 005a 0022     		movs	r2, #0
+  65 005c 1A61     		str	r2, [r3, #16]
+  66 005e 534B     		ldr	r3, .L33+8
+  67 0060 534A     		ldr	r2, .L33+12
+  68 0062 1360     		str	r3, [r2]
+  69 0064 534A     		ldr	r2, .L33+16
+  70 0066 1360     		str	r3, [r2]
+  71 0068 534B     		ldr	r3, .L33+20
+  72 006a 1868     		ldr	r0, [r3]
+  73 006c FFF7FEFF 		bl	HAL_InitTick
+  74 0070 0446     		mov	r4, r0
+  75 0072 08B1     		cbz	r0, .L27
+  76 0074 0124     		movs	r4, #1
+  77 0076 92E0     		b	.L3
+  78              	.L27:
+  79 0078 FFF7FEFF 		bl	HAL_GetTick
+  80 007c 0546     		mov	r5, r0
+  81              	.L6:
+  82 007e 4A4B     		ldr	r3, .L33+4
+  83 0080 1B69     		ldr	r3, [r3, #16]
+  84 0082 13F0380F 		tst	r3, #56
+  85 0086 08D0     		beq	.L28
+  86 0088 FFF7FEFF 		bl	HAL_GetTick
+  87 008c 401B     		subs	r0, r0, r5
+  88 008e 41F28833 		movw	r3, #5000
+  89 0092 9842     		cmp	r0, r3
+  90 0094 F3D9     		bls	.L6
+  91 0096 0324     		movs	r4, #3
+  92 0098 81E0     		b	.L3
+  93              	.L28:
+  94 009a FFF7FEFF 		bl	HAL_GetTick
+  95 009e 0546     		mov	r5, r0
+  96 00a0 414A     		ldr	r2, .L33+4
+  97 00a2 1168     		ldr	r1, [r2]
+  98 00a4 454B     		ldr	r3, .L33+24
+  99 00a6 0B40     		ands	r3, r3, r1
+ 100 00a8 1360     		str	r3, [r2]
+ 101              	.L8:
+ 102 00aa 3F4B     		ldr	r3, .L33+4
+ 103 00ac 1B68     		ldr	r3, [r3]
+ 104 00ae 13F4003F 		tst	r3, #131072
+ 105 00b2 06D0     		beq	.L29
+ 106 00b4 FFF7FEFF 		bl	HAL_GetTick
+ 107 00b8 401B     		subs	r0, r0, r5
+ 108 00ba 6428     		cmp	r0, #100
+ 109 00bc F5D9     		bls	.L8
+ 110 00be 0324     		movs	r4, #3
+ 111 00c0 6DE0     		b	.L3
+ 112              	.L29:
+ 113 00c2 FFF7FEFF 		bl	HAL_GetTick
+ 114 00c6 0546     		mov	r5, r0
+ 115 00c8 374A     		ldr	r2, .L33+4
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 3
+
+
+ 116 00ca 1368     		ldr	r3, [r2]
+ 117 00cc 23F08073 		bic	r3, r3, #16777216
+ 118 00d0 1360     		str	r3, [r2]
+ 119              	.L10:
+ 120 00d2 354B     		ldr	r3, .L33+4
+ 121 00d4 1B68     		ldr	r3, [r3]
+ 122 00d6 13F0007F 		tst	r3, #33554432
+ 123 00da 06D0     		beq	.L30
+ 124 00dc FFF7FEFF 		bl	HAL_GetTick
+ 125 00e0 401B     		subs	r0, r0, r5
+ 126 00e2 0228     		cmp	r0, #2
+ 127 00e4 F5D9     		bls	.L10
+ 128 00e6 0324     		movs	r4, #3
+ 129 00e8 59E0     		b	.L3
+ 130              	.L30:
+ 131 00ea FFF7FEFF 		bl	HAL_GetTick
+ 132 00ee 0546     		mov	r5, r0
+ 133 00f0 2D4A     		ldr	r2, .L33+4
+ 134 00f2 1368     		ldr	r3, [r2]
+ 135 00f4 23F08063 		bic	r3, r3, #67108864
+ 136 00f8 1360     		str	r3, [r2]
+ 137              	.L12:
+ 138 00fa 2B4B     		ldr	r3, .L33+4
+ 139 00fc 1B68     		ldr	r3, [r3]
+ 140 00fe 13F0006F 		tst	r3, #134217728
+ 141 0102 06D0     		beq	.L31
+ 142 0104 FFF7FEFF 		bl	HAL_GetTick
+ 143 0108 401B     		subs	r0, r0, r5
+ 144 010a 0228     		cmp	r0, #2
+ 145 010c F5D9     		bls	.L12
+ 146 010e 0324     		movs	r4, #3
+ 147 0110 45E0     		b	.L3
+ 148              	.L31:
+ 149 0112 FFF7FEFF 		bl	HAL_GetTick
+ 150 0116 0546     		mov	r5, r0
+ 151 0118 234A     		ldr	r2, .L33+4
+ 152 011a 1368     		ldr	r3, [r2]
+ 153 011c 23F08053 		bic	r3, r3, #268435456
+ 154 0120 1360     		str	r3, [r2]
+ 155              	.L14:
+ 156 0122 214B     		ldr	r3, .L33+4
+ 157 0124 1B68     		ldr	r3, [r3]
+ 158 0126 13F0005F 		tst	r3, #536870912
+ 159 012a 06D0     		beq	.L32
+ 160 012c FFF7FEFF 		bl	HAL_GetTick
+ 161 0130 401B     		subs	r0, r0, r5
+ 162 0132 0228     		cmp	r0, #2
+ 163 0134 F5D9     		bls	.L14
+ 164 0136 0324     		movs	r4, #3
+ 165 0138 31E0     		b	.L3
+ 166              	.L32:
+ 167 013a 1B4B     		ldr	r3, .L33+4
+ 168 013c 0022     		movs	r2, #0
+ 169 013e 9A61     		str	r2, [r3, #24]
+ 170 0140 DA61     		str	r2, [r3, #28]
+ 171 0142 1A62     		str	r2, [r3, #32]
+ 172 0144 1E49     		ldr	r1, .L33+28
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 4
+
+
+ 173 0146 9962     		str	r1, [r3, #40]
+ 174 0148 1E49     		ldr	r1, .L33+32
+ 175 014a D962     		str	r1, [r3, #44]
+ 176 014c 1E49     		ldr	r1, .L33+36
+ 177 014e 1963     		str	r1, [r3, #48]
+ 178 0150 5A63     		str	r2, [r3, #52]
+ 179 0152 9963     		str	r1, [r3, #56]
+ 180 0154 DA63     		str	r2, [r3, #60]
+ 181 0156 1964     		str	r1, [r3, #64]
+ 182 0158 5A64     		str	r2, [r3, #68]
+ 183 015a 1968     		ldr	r1, [r3]
+ 184 015c 21F48021 		bic	r1, r1, #262144
+ 185 0160 1960     		str	r1, [r3]
+ 186 0162 1A66     		str	r2, [r3, #96]
+ 187 0164 4FF0FF32 		mov	r2, #-1
+ 188 0168 9A66     		str	r2, [r3, #104]
+ 189 016a D3F8D020 		ldr	r2, [r3, #208]
+ 190 016e 42F48032 		orr	r2, r2, #65536
+ 191 0172 C3F8D020 		str	r2, [r3, #208]
+ 192 0176 0B4B     		ldr	r3, .L33
+ 193 0178 1B68     		ldr	r3, [r3]
+ 194 017a 13F0080F 		tst	r3, #8
+ 195 017e 0ED0     		beq	.L3
+ 196 0180 084A     		ldr	r2, .L33
+ 197 0182 1368     		ldr	r3, [r2]
+ 198 0184 23F00F03 		bic	r3, r3, #15
+ 199 0188 43F00703 		orr	r3, r3, #7
+ 200 018c 1360     		str	r3, [r2]
+ 201 018e 1368     		ldr	r3, [r2]
+ 202 0190 03F00F03 		and	r3, r3, #15
+ 203 0194 072B     		cmp	r3, #7
+ 204 0196 02D0     		beq	.L3
+ 205 0198 0124     		movs	r4, #1
+ 206 019a 00E0     		b	.L3
+ 207              	.L16:
+ 208 019c 0124     		movs	r4, #1
+ 209              	.L3:
+ 210 019e 2046     		mov	r0, r4
+ 211 01a0 38BD     		pop	{r3, r4, r5, pc}
+ 212              	.L34:
+ 213 01a2 00BF     		.align	2
+ 214              	.L33:
+ 215 01a4 00200052 		.word	1375739904
+ 216 01a8 00440258 		.word	1476543488
+ 217 01ac 0090D003 		.word	64000000
+ 218 01b0 00000000 		.word	SystemCoreClock
+ 219 01b4 00000000 		.word	SystemD2Clock
+ 220 01b8 00000000 		.word	uwTickPrio
+ 221 01bc 45EDF6FF 		.word	-594619
+ 222 01c0 00020202 		.word	33686016
+ 223 01c4 0000FF01 		.word	33488896
+ 224 01c8 80020101 		.word	16843392
+ 226              		.section	.text.HAL_RCC_OscConfig,"ax",%progbits
+ 227              		.align	1
+ 228              		.weak	HAL_RCC_OscConfig
+ 229              		.syntax unified
+ 230              		.thumb
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 5
+
+
+ 231              		.thumb_func
+ 232              		.fpu fpv5-d16
+ 234              	HAL_RCC_OscConfig:
+ 235              		@ args = 0, pretend = 0, frame = 0
+ 236              		@ frame_needed = 0, uses_anonymous_args = 0
+ 237 0000 0028     		cmp	r0, #0
+ 238 0002 00F01883 		beq	.L109
+ 239 0006 38B5     		push	{r3, r4, r5, lr}
+ 240 0008 0446     		mov	r4, r0
+ 241 000a 0368     		ldr	r3, [r0]
+ 242 000c 13F0010F 		tst	r3, #1
+ 243 0010 25D0     		beq	.L37
+ 244 0012 944A     		ldr	r2, .L163
+ 245 0014 1369     		ldr	r3, [r2, #16]
+ 246 0016 03F03803 		and	r3, r3, #56
+ 247 001a 926A     		ldr	r2, [r2, #40]
+ 248 001c 102B     		cmp	r3, #16
+ 249 001e 15D0     		beq	.L38
+ 250 0020 182B     		cmp	r3, #24
+ 251 0022 0FD0     		beq	.L142
+ 252              	.L39:
+ 253 0024 6368     		ldr	r3, [r4, #4]
+ 254 0026 B3F5803F 		cmp	r3, #65536
+ 255 002a 3FD0     		beq	.L143
+ 256 002c 002B     		cmp	r3, #0
+ 257 002e 53D1     		bne	.L42
+ 258 0030 8C4B     		ldr	r3, .L163
+ 259 0032 1A68     		ldr	r2, [r3]
+ 260 0034 22F48032 		bic	r2, r2, #65536
+ 261 0038 1A60     		str	r2, [r3]
+ 262 003a 1A68     		ldr	r2, [r3]
+ 263 003c 22F48022 		bic	r2, r2, #262144
+ 264 0040 1A60     		str	r2, [r3]
+ 265 0042 38E0     		b	.L41
+ 266              	.L142:
+ 267 0044 02F00302 		and	r2, r2, #3
+ 268 0048 022A     		cmp	r2, #2
+ 269 004a EBD1     		bne	.L39
+ 270              	.L38:
+ 271 004c 854B     		ldr	r3, .L163
+ 272 004e 1B68     		ldr	r3, [r3]
+ 273 0050 13F4003F 		tst	r3, #131072
+ 274 0054 03D0     		beq	.L37
+ 275 0056 6368     		ldr	r3, [r4, #4]
+ 276 0058 002B     		cmp	r3, #0
+ 277 005a 00F0EE82 		beq	.L144
+ 278              	.L37:
+ 279 005e 2368     		ldr	r3, [r4]
+ 280 0060 13F0020F 		tst	r3, #2
+ 281 0064 00F0A180 		beq	.L49
+ 282 0068 7E4A     		ldr	r2, .L163
+ 283 006a 1369     		ldr	r3, [r2, #16]
+ 284 006c 926A     		ldr	r2, [r2, #40]
+ 285 006e 13F03803 		ands	r3, r3, #56
+ 286 0072 5AD0     		beq	.L50
+ 287 0074 182B     		cmp	r3, #24
+ 288 0076 55D0     		beq	.L145
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 6
+
+
+ 289              	.L51:
+ 290 0078 E368     		ldr	r3, [r4, #12]
+ 291 007a 002B     		cmp	r3, #0
+ 292 007c 00F0DE80 		beq	.L57
+ 293 0080 7849     		ldr	r1, .L163
+ 294 0082 0A68     		ldr	r2, [r1]
+ 295 0084 22F01902 		bic	r2, r2, #25
+ 296 0088 1343     		orrs	r3, r3, r2
+ 297 008a 0B60     		str	r3, [r1]
+ 298 008c FFF7FEFF 		bl	HAL_GetTick
+ 299 0090 0546     		mov	r5, r0
+ 300              	.L58:
+ 301 0092 744B     		ldr	r3, .L163
+ 302 0094 1B68     		ldr	r3, [r3]
+ 303 0096 13F0040F 		tst	r3, #4
+ 304 009a 40F0AD80 		bne	.L146
+ 305 009e FFF7FEFF 		bl	HAL_GetTick
+ 306 00a2 401B     		subs	r0, r0, r5
+ 307 00a4 0228     		cmp	r0, #2
+ 308 00a6 F4D9     		bls	.L58
+ 309 00a8 0320     		movs	r0, #3
+ 310 00aa CDE2     		b	.L36
+ 311              	.L143:
+ 312 00ac 6D4A     		ldr	r2, .L163
+ 313 00ae 1368     		ldr	r3, [r2]
+ 314 00b0 43F48033 		orr	r3, r3, #65536
+ 315 00b4 1360     		str	r3, [r2]
+ 316              	.L41:
+ 317 00b6 6368     		ldr	r3, [r4, #4]
+ 318 00b8 2BB3     		cbz	r3, .L44
+ 319 00ba FFF7FEFF 		bl	HAL_GetTick
+ 320 00be 0546     		mov	r5, r0
+ 321              	.L45:
+ 322 00c0 684B     		ldr	r3, .L163
+ 323 00c2 1B68     		ldr	r3, [r3]
+ 324 00c4 13F4003F 		tst	r3, #131072
+ 325 00c8 C9D1     		bne	.L37
+ 326 00ca FFF7FEFF 		bl	HAL_GetTick
+ 327 00ce 401B     		subs	r0, r0, r5
+ 328 00d0 6428     		cmp	r0, #100
+ 329 00d2 F5D9     		bls	.L45
+ 330 00d4 0320     		movs	r0, #3
+ 331 00d6 B7E2     		b	.L36
+ 332              	.L42:
+ 333 00d8 B3F5A02F 		cmp	r3, #327680
+ 334 00dc 09D0     		beq	.L147
+ 335 00de 614B     		ldr	r3, .L163
+ 336 00e0 1A68     		ldr	r2, [r3]
+ 337 00e2 22F48032 		bic	r2, r2, #65536
+ 338 00e6 1A60     		str	r2, [r3]
+ 339 00e8 1A68     		ldr	r2, [r3]
+ 340 00ea 22F48022 		bic	r2, r2, #262144
+ 341 00ee 1A60     		str	r2, [r3]
+ 342 00f0 E1E7     		b	.L41
+ 343              	.L147:
+ 344 00f2 5C4B     		ldr	r3, .L163
+ 345 00f4 1A68     		ldr	r2, [r3]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 7
+
+
+ 346 00f6 42F48022 		orr	r2, r2, #262144
+ 347 00fa 1A60     		str	r2, [r3]
+ 348 00fc 1A68     		ldr	r2, [r3]
+ 349 00fe 42F48032 		orr	r2, r2, #65536
+ 350 0102 1A60     		str	r2, [r3]
+ 351 0104 D7E7     		b	.L41
+ 352              	.L44:
+ 353 0106 FFF7FEFF 		bl	HAL_GetTick
+ 354 010a 0546     		mov	r5, r0
+ 355              	.L47:
+ 356 010c 554B     		ldr	r3, .L163
+ 357 010e 1B68     		ldr	r3, [r3]
+ 358 0110 13F4003F 		tst	r3, #131072
+ 359 0114 A3D0     		beq	.L37
+ 360 0116 FFF7FEFF 		bl	HAL_GetTick
+ 361 011a 401B     		subs	r0, r0, r5
+ 362 011c 6428     		cmp	r0, #100
+ 363 011e F5D9     		bls	.L47
+ 364 0120 0320     		movs	r0, #3
+ 365 0122 91E2     		b	.L36
+ 366              	.L145:
+ 367 0124 12F0030F 		tst	r2, #3
+ 368 0128 A6D1     		bne	.L51
+ 369              	.L50:
+ 370 012a 4E4B     		ldr	r3, .L163
+ 371 012c 1B68     		ldr	r3, [r3]
+ 372 012e 13F0040F 		tst	r3, #4
+ 373 0132 03D0     		beq	.L52
+ 374 0134 E368     		ldr	r3, [r4, #12]
+ 375 0136 002B     		cmp	r3, #0
+ 376 0138 00F08182 		beq	.L113
+ 377              	.L52:
+ 378 013c 494A     		ldr	r2, .L163
+ 379 013e 1368     		ldr	r3, [r2]
+ 380 0140 23F01903 		bic	r3, r3, #25
+ 381 0144 E168     		ldr	r1, [r4, #12]
+ 382 0146 0B43     		orrs	r3, r3, r1
+ 383 0148 1360     		str	r3, [r2]
+ 384 014a FFF7FEFF 		bl	HAL_GetTick
+ 385 014e 0546     		mov	r5, r0
+ 386              	.L53:
+ 387 0150 444B     		ldr	r3, .L163
+ 388 0152 1B68     		ldr	r3, [r3]
+ 389 0154 13F0040F 		tst	r3, #4
+ 390 0158 06D1     		bne	.L148
+ 391 015a FFF7FEFF 		bl	HAL_GetTick
+ 392 015e 401B     		subs	r0, r0, r5
+ 393 0160 0228     		cmp	r0, #2
+ 394 0162 F5D9     		bls	.L53
+ 395 0164 0320     		movs	r0, #3
+ 396 0166 6FE2     		b	.L36
+ 397              	.L148:
+ 398 0168 FFF7FEFF 		bl	HAL_GetREVID
+ 399 016c 41F20303 		movw	r3, #4099
+ 400 0170 9842     		cmp	r0, r3
+ 401 0172 12D8     		bhi	.L55
+ 402 0174 2269     		ldr	r2, [r4, #16]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 8
+
+
+ 403 0176 402A     		cmp	r2, #64
+ 404 0178 07D0     		beq	.L149
+ 405 017a 3A49     		ldr	r1, .L163
+ 406 017c 4B68     		ldr	r3, [r1, #4]
+ 407 017e 23F47C33 		bic	r3, r3, #258048
+ 408 0182 43EA0233 		orr	r3, r3, r2, lsl #12
+ 409 0186 4B60     		str	r3, [r1, #4]
+ 410 0188 0FE0     		b	.L49
+ 411              	.L149:
+ 412 018a 364A     		ldr	r2, .L163
+ 413 018c 5368     		ldr	r3, [r2, #4]
+ 414 018e 23F47C33 		bic	r3, r3, #258048
+ 415 0192 43F40033 		orr	r3, r3, #131072
+ 416 0196 5360     		str	r3, [r2, #4]
+ 417 0198 07E0     		b	.L49
+ 418              	.L55:
+ 419 019a 324A     		ldr	r2, .L163
+ 420 019c 5368     		ldr	r3, [r2, #4]
+ 421 019e 23F0FE43 		bic	r3, r3, #2130706432
+ 422 01a2 2169     		ldr	r1, [r4, #16]
+ 423 01a4 43EA0163 		orr	r3, r3, r1, lsl #24
+ 424 01a8 5360     		str	r3, [r2, #4]
+ 425              	.L49:
+ 426 01aa 2368     		ldr	r3, [r4]
+ 427 01ac 13F0100F 		tst	r3, #16
+ 428 01b0 00F08880 		beq	.L64
+ 429 01b4 2B4A     		ldr	r2, .L163
+ 430 01b6 1369     		ldr	r3, [r2, #16]
+ 431 01b8 03F03803 		and	r3, r3, #56
+ 432 01bc 926A     		ldr	r2, [r2, #40]
+ 433 01be 082B     		cmp	r3, #8
+ 434 01c0 56D0     		beq	.L65
+ 435 01c2 182B     		cmp	r3, #24
+ 436 01c4 50D0     		beq	.L150
+ 437              	.L66:
+ 438 01c6 E369     		ldr	r3, [r4, #28]
+ 439 01c8 002B     		cmp	r3, #0
+ 440 01ca 00F0B880 		beq	.L70
+ 441 01ce 254A     		ldr	r2, .L163
+ 442 01d0 1368     		ldr	r3, [r2]
+ 443 01d2 43F08003 		orr	r3, r3, #128
+ 444 01d6 1360     		str	r3, [r2]
+ 445 01d8 FFF7FEFF 		bl	HAL_GetTick
+ 446 01dc 0546     		mov	r5, r0
+ 447              	.L71:
+ 448 01de 214B     		ldr	r3, .L163
+ 449 01e0 1B68     		ldr	r3, [r3]
+ 450 01e2 13F4807F 		tst	r3, #256
+ 451 01e6 40F08880 		bne	.L151
+ 452 01ea FFF7FEFF 		bl	HAL_GetTick
+ 453 01ee 401B     		subs	r0, r0, r5
+ 454 01f0 0228     		cmp	r0, #2
+ 455 01f2 F4D9     		bls	.L71
+ 456 01f4 0320     		movs	r0, #3
+ 457 01f6 27E2     		b	.L36
+ 458              	.L146:
+ 459 01f8 FFF7FEFF 		bl	HAL_GetREVID
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 9
+
+
+ 460 01fc 41F20303 		movw	r3, #4099
+ 461 0200 9842     		cmp	r0, r3
+ 462 0202 12D8     		bhi	.L60
+ 463 0204 2269     		ldr	r2, [r4, #16]
+ 464 0206 402A     		cmp	r2, #64
+ 465 0208 07D0     		beq	.L152
+ 466 020a 1649     		ldr	r1, .L163
+ 467 020c 4B68     		ldr	r3, [r1, #4]
+ 468 020e 23F47C33 		bic	r3, r3, #258048
+ 469 0212 43EA0233 		orr	r3, r3, r2, lsl #12
+ 470 0216 4B60     		str	r3, [r1, #4]
+ 471 0218 C7E7     		b	.L49
+ 472              	.L152:
+ 473 021a 124A     		ldr	r2, .L163
+ 474 021c 5368     		ldr	r3, [r2, #4]
+ 475 021e 23F47C33 		bic	r3, r3, #258048
+ 476 0222 43F40033 		orr	r3, r3, #131072
+ 477 0226 5360     		str	r3, [r2, #4]
+ 478 0228 BFE7     		b	.L49
+ 479              	.L60:
+ 480 022a 0E4A     		ldr	r2, .L163
+ 481 022c 5368     		ldr	r3, [r2, #4]
+ 482 022e 23F0FE43 		bic	r3, r3, #2130706432
+ 483 0232 2169     		ldr	r1, [r4, #16]
+ 484 0234 43EA0163 		orr	r3, r3, r1, lsl #24
+ 485 0238 5360     		str	r3, [r2, #4]
+ 486 023a B6E7     		b	.L49
+ 487              	.L57:
+ 488 023c 094A     		ldr	r2, .L163
+ 489 023e 1368     		ldr	r3, [r2]
+ 490 0240 23F00103 		bic	r3, r3, #1
+ 491 0244 1360     		str	r3, [r2]
+ 492 0246 FFF7FEFF 		bl	HAL_GetTick
+ 493 024a 0546     		mov	r5, r0
+ 494              	.L62:
+ 495 024c 054B     		ldr	r3, .L163
+ 496 024e 1B68     		ldr	r3, [r3]
+ 497 0250 13F0040F 		tst	r3, #4
+ 498 0254 A9D0     		beq	.L49
+ 499 0256 FFF7FEFF 		bl	HAL_GetTick
+ 500 025a 401B     		subs	r0, r0, r5
+ 501 025c 0228     		cmp	r0, #2
+ 502 025e F5D9     		bls	.L62
+ 503 0260 0320     		movs	r0, #3
+ 504 0262 F1E1     		b	.L36
+ 505              	.L164:
+ 506              		.align	2
+ 507              	.L163:
+ 508 0264 00440258 		.word	1476543488
+ 509              	.L150:
+ 510 0268 02F00302 		and	r2, r2, #3
+ 511 026c 012A     		cmp	r2, #1
+ 512 026e AAD1     		bne	.L66
+ 513              	.L65:
+ 514 0270 A14B     		ldr	r3, .L165
+ 515 0272 1B68     		ldr	r3, [r3]
+ 516 0274 13F4807F 		tst	r3, #256
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 10
+
+
+ 517 0278 03D0     		beq	.L67
+ 518 027a E369     		ldr	r3, [r4, #28]
+ 519 027c 802B     		cmp	r3, #128
+ 520 027e 40F0E081 		bne	.L117
+ 521              	.L67:
+ 522 0282 FFF7FEFF 		bl	HAL_GetREVID
+ 523 0286 41F20303 		movw	r3, #4099
+ 524 028a 9842     		cmp	r0, r3
+ 525 028c 12D8     		bhi	.L68
+ 526 028e 226A     		ldr	r2, [r4, #32]
+ 527 0290 202A     		cmp	r2, #32
+ 528 0292 07D0     		beq	.L153
+ 529 0294 9849     		ldr	r1, .L165
+ 530 0296 4B68     		ldr	r3, [r1, #4]
+ 531 0298 23F0F843 		bic	r3, r3, #2080374784
+ 532 029c 43EA8263 		orr	r3, r3, r2, lsl #26
+ 533 02a0 4B60     		str	r3, [r1, #4]
+ 534 02a2 0FE0     		b	.L64
+ 535              	.L153:
+ 536 02a4 944A     		ldr	r2, .L165
+ 537 02a6 5368     		ldr	r3, [r2, #4]
+ 538 02a8 23F0F843 		bic	r3, r3, #2080374784
+ 539 02ac 43F08043 		orr	r3, r3, #1073741824
+ 540 02b0 5360     		str	r3, [r2, #4]
+ 541 02b2 07E0     		b	.L64
+ 542              	.L68:
+ 543 02b4 904A     		ldr	r2, .L165
+ 544 02b6 D368     		ldr	r3, [r2, #12]
+ 545 02b8 23F07C53 		bic	r3, r3, #1056964608
+ 546 02bc 216A     		ldr	r1, [r4, #32]
+ 547 02be 43EA0163 		orr	r3, r3, r1, lsl #24
+ 548 02c2 D360     		str	r3, [r2, #12]
+ 549              	.L64:
+ 550 02c4 2368     		ldr	r3, [r4]
+ 551 02c6 13F0080F 		tst	r3, #8
+ 552 02ca 60D0     		beq	.L77
+ 553 02cc 6369     		ldr	r3, [r4, #20]
+ 554 02ce 002B     		cmp	r3, #0
+ 555 02d0 49D0     		beq	.L78
+ 556 02d2 894A     		ldr	r2, .L165
+ 557 02d4 536F     		ldr	r3, [r2, #116]
+ 558 02d6 43F00103 		orr	r3, r3, #1
+ 559 02da 5367     		str	r3, [r2, #116]
+ 560 02dc FFF7FEFF 		bl	HAL_GetTick
+ 561 02e0 0546     		mov	r5, r0
+ 562              	.L79:
+ 563 02e2 854B     		ldr	r3, .L165
+ 564 02e4 5B6F     		ldr	r3, [r3, #116]
+ 565 02e6 13F0020F 		tst	r3, #2
+ 566 02ea 50D1     		bne	.L77
+ 567 02ec FFF7FEFF 		bl	HAL_GetTick
+ 568 02f0 401B     		subs	r0, r0, r5
+ 569 02f2 0228     		cmp	r0, #2
+ 570 02f4 F5D9     		bls	.L79
+ 571 02f6 0320     		movs	r0, #3
+ 572 02f8 A6E1     		b	.L36
+ 573              	.L151:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 11
+
+
+ 574 02fa FFF7FEFF 		bl	HAL_GetREVID
+ 575 02fe 41F20303 		movw	r3, #4099
+ 576 0302 9842     		cmp	r0, r3
+ 577 0304 12D8     		bhi	.L73
+ 578 0306 226A     		ldr	r2, [r4, #32]
+ 579 0308 202A     		cmp	r2, #32
+ 580 030a 07D0     		beq	.L154
+ 581 030c 7A49     		ldr	r1, .L165
+ 582 030e 4B68     		ldr	r3, [r1, #4]
+ 583 0310 23F0F843 		bic	r3, r3, #2080374784
+ 584 0314 43EA8263 		orr	r3, r3, r2, lsl #26
+ 585 0318 4B60     		str	r3, [r1, #4]
+ 586 031a D3E7     		b	.L64
+ 587              	.L154:
+ 588 031c 764A     		ldr	r2, .L165
+ 589 031e 5368     		ldr	r3, [r2, #4]
+ 590 0320 23F0F843 		bic	r3, r3, #2080374784
+ 591 0324 43F08043 		orr	r3, r3, #1073741824
+ 592 0328 5360     		str	r3, [r2, #4]
+ 593 032a CBE7     		b	.L64
+ 594              	.L73:
+ 595 032c 724A     		ldr	r2, .L165
+ 596 032e D368     		ldr	r3, [r2, #12]
+ 597 0330 23F07C53 		bic	r3, r3, #1056964608
+ 598 0334 216A     		ldr	r1, [r4, #32]
+ 599 0336 43EA0163 		orr	r3, r3, r1, lsl #24
+ 600 033a D360     		str	r3, [r2, #12]
+ 601 033c C2E7     		b	.L64
+ 602              	.L70:
+ 603 033e 6E4A     		ldr	r2, .L165
+ 604 0340 1368     		ldr	r3, [r2]
+ 605 0342 23F08003 		bic	r3, r3, #128
+ 606 0346 1360     		str	r3, [r2]
+ 607 0348 FFF7FEFF 		bl	HAL_GetTick
+ 608 034c 0546     		mov	r5, r0
+ 609              	.L75:
+ 610 034e 6A4B     		ldr	r3, .L165
+ 611 0350 1B68     		ldr	r3, [r3]
+ 612 0352 13F4807F 		tst	r3, #256
+ 613 0356 B5D0     		beq	.L64
+ 614 0358 FFF7FEFF 		bl	HAL_GetTick
+ 615 035c 401B     		subs	r0, r0, r5
+ 616 035e 0228     		cmp	r0, #2
+ 617 0360 F5D9     		bls	.L75
+ 618 0362 0320     		movs	r0, #3
+ 619 0364 70E1     		b	.L36
+ 620              	.L78:
+ 621 0366 644A     		ldr	r2, .L165
+ 622 0368 536F     		ldr	r3, [r2, #116]
+ 623 036a 23F00103 		bic	r3, r3, #1
+ 624 036e 5367     		str	r3, [r2, #116]
+ 625 0370 FFF7FEFF 		bl	HAL_GetTick
+ 626 0374 0546     		mov	r5, r0
+ 627              	.L81:
+ 628 0376 604B     		ldr	r3, .L165
+ 629 0378 5B6F     		ldr	r3, [r3, #116]
+ 630 037a 13F0020F 		tst	r3, #2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 12
+
+
+ 631 037e 06D0     		beq	.L77
+ 632 0380 FFF7FEFF 		bl	HAL_GetTick
+ 633 0384 401B     		subs	r0, r0, r5
+ 634 0386 0228     		cmp	r0, #2
+ 635 0388 F5D9     		bls	.L81
+ 636 038a 0320     		movs	r0, #3
+ 637 038c 5CE1     		b	.L36
+ 638              	.L77:
+ 639 038e 2368     		ldr	r3, [r4]
+ 640 0390 13F0200F 		tst	r3, #32
+ 641 0394 29D0     		beq	.L83
+ 642 0396 A369     		ldr	r3, [r4, #24]
+ 643 0398 9BB1     		cbz	r3, .L84
+ 644 039a 574A     		ldr	r2, .L165
+ 645 039c 1368     		ldr	r3, [r2]
+ 646 039e 43F48053 		orr	r3, r3, #4096
+ 647 03a2 1360     		str	r3, [r2]
+ 648 03a4 FFF7FEFF 		bl	HAL_GetTick
+ 649 03a8 0546     		mov	r5, r0
+ 650              	.L85:
+ 651 03aa 534B     		ldr	r3, .L165
+ 652 03ac 1B68     		ldr	r3, [r3]
+ 653 03ae 13F4005F 		tst	r3, #8192
+ 654 03b2 1AD1     		bne	.L83
+ 655 03b4 FFF7FEFF 		bl	HAL_GetTick
+ 656 03b8 401B     		subs	r0, r0, r5
+ 657 03ba 0228     		cmp	r0, #2
+ 658 03bc F5D9     		bls	.L85
+ 659 03be 0320     		movs	r0, #3
+ 660 03c0 42E1     		b	.L36
+ 661              	.L84:
+ 662 03c2 4D4A     		ldr	r2, .L165
+ 663 03c4 1368     		ldr	r3, [r2]
+ 664 03c6 23F48053 		bic	r3, r3, #4096
+ 665 03ca 1360     		str	r3, [r2]
+ 666 03cc FFF7FEFF 		bl	HAL_GetTick
+ 667 03d0 0546     		mov	r5, r0
+ 668              	.L87:
+ 669 03d2 494B     		ldr	r3, .L165
+ 670 03d4 1B68     		ldr	r3, [r3]
+ 671 03d6 13F4005F 		tst	r3, #8192
+ 672 03da 06D0     		beq	.L83
+ 673 03dc FFF7FEFF 		bl	HAL_GetTick
+ 674 03e0 401B     		subs	r0, r0, r5
+ 675 03e2 0228     		cmp	r0, #2
+ 676 03e4 F5D9     		bls	.L87
+ 677 03e6 0320     		movs	r0, #3
+ 678 03e8 2EE1     		b	.L36
+ 679              	.L83:
+ 680 03ea 2368     		ldr	r3, [r4]
+ 681 03ec 13F0040F 		tst	r3, #4
+ 682 03f0 21D1     		bne	.L155
+ 683              	.L89:
+ 684 03f2 636A     		ldr	r3, [r4, #36]
+ 685 03f4 002B     		cmp	r3, #0
+ 686 03f6 00F02681 		beq	.L127
+ 687 03fa 3F4A     		ldr	r2, .L165
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 13
+
+
+ 688 03fc 1269     		ldr	r2, [r2, #16]
+ 689 03fe 02F03802 		and	r2, r2, #56
+ 690 0402 182A     		cmp	r2, #24
+ 691 0404 00F0EE80 		beq	.L101
+ 692 0408 022B     		cmp	r3, #2
+ 693 040a 79D0     		beq	.L156
+ 694 040c 3A4A     		ldr	r2, .L165
+ 695 040e 1368     		ldr	r3, [r2]
+ 696 0410 23F08073 		bic	r3, r3, #16777216
+ 697 0414 1360     		str	r3, [r2]
+ 698 0416 FFF7FEFF 		bl	HAL_GetTick
+ 699 041a 0446     		mov	r4, r0
+ 700              	.L107:
+ 701 041c 364B     		ldr	r3, .L165
+ 702 041e 1B68     		ldr	r3, [r3]
+ 703 0420 13F0007F 		tst	r3, #33554432
+ 704 0424 00F0DC80 		beq	.L157
+ 705 0428 FFF7FEFF 		bl	HAL_GetTick
+ 706 042c 001B     		subs	r0, r0, r4
+ 707 042e 0228     		cmp	r0, #2
+ 708 0430 F4D9     		bls	.L107
+ 709 0432 0320     		movs	r0, #3
+ 710 0434 08E1     		b	.L36
+ 711              	.L155:
+ 712 0436 314A     		ldr	r2, .L165+4
+ 713 0438 1368     		ldr	r3, [r2]
+ 714 043a 43F48073 		orr	r3, r3, #256
+ 715 043e 1360     		str	r3, [r2]
+ 716 0440 FFF7FEFF 		bl	HAL_GetTick
+ 717 0444 0546     		mov	r5, r0
+ 718              	.L90:
+ 719 0446 2D4B     		ldr	r3, .L165+4
+ 720 0448 1B68     		ldr	r3, [r3]
+ 721 044a 13F4807F 		tst	r3, #256
+ 722 044e 06D1     		bne	.L158
+ 723 0450 FFF7FEFF 		bl	HAL_GetTick
+ 724 0454 401B     		subs	r0, r0, r5
+ 725 0456 6428     		cmp	r0, #100
+ 726 0458 F5D9     		bls	.L90
+ 727 045a 0320     		movs	r0, #3
+ 728 045c F4E0     		b	.L36
+ 729              	.L158:
+ 730 045e A368     		ldr	r3, [r4, #8]
+ 731 0460 012B     		cmp	r3, #1
+ 732 0462 0AD0     		beq	.L159
+ 733 0464 0BBB     		cbnz	r3, .L94
+ 734 0466 244B     		ldr	r3, .L165
+ 735 0468 1A6F     		ldr	r2, [r3, #112]
+ 736 046a 22F00102 		bic	r2, r2, #1
+ 737 046e 1A67     		str	r2, [r3, #112]
+ 738 0470 1A6F     		ldr	r2, [r3, #112]
+ 739 0472 22F00402 		bic	r2, r2, #4
+ 740 0476 1A67     		str	r2, [r3, #112]
+ 741 0478 04E0     		b	.L93
+ 742              	.L159:
+ 743 047a 1F4A     		ldr	r2, .L165
+ 744 047c 136F     		ldr	r3, [r2, #112]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 14
+
+
+ 745 047e 43F00103 		orr	r3, r3, #1
+ 746 0482 1367     		str	r3, [r2, #112]
+ 747              	.L93:
+ 748 0484 A368     		ldr	r3, [r4, #8]
+ 749 0486 33B3     		cbz	r3, .L96
+ 750 0488 FFF7FEFF 		bl	HAL_GetTick
+ 751 048c 0546     		mov	r5, r0
+ 752              	.L97:
+ 753 048e 1A4B     		ldr	r3, .L165
+ 754 0490 1B6F     		ldr	r3, [r3, #112]
+ 755 0492 13F0020F 		tst	r3, #2
+ 756 0496 ACD1     		bne	.L89
+ 757 0498 FFF7FEFF 		bl	HAL_GetTick
+ 758 049c 401B     		subs	r0, r0, r5
+ 759 049e 41F28833 		movw	r3, #5000
+ 760 04a2 9842     		cmp	r0, r3
+ 761 04a4 F3D9     		bls	.L97
+ 762 04a6 0320     		movs	r0, #3
+ 763 04a8 CEE0     		b	.L36
+ 764              	.L94:
+ 765 04aa 052B     		cmp	r3, #5
+ 766 04ac 09D0     		beq	.L160
+ 767 04ae 124B     		ldr	r3, .L165
+ 768 04b0 1A6F     		ldr	r2, [r3, #112]
+ 769 04b2 22F00102 		bic	r2, r2, #1
+ 770 04b6 1A67     		str	r2, [r3, #112]
+ 771 04b8 1A6F     		ldr	r2, [r3, #112]
+ 772 04ba 22F00402 		bic	r2, r2, #4
+ 773 04be 1A67     		str	r2, [r3, #112]
+ 774 04c0 E0E7     		b	.L93
+ 775              	.L160:
+ 776 04c2 0D4B     		ldr	r3, .L165
+ 777 04c4 1A6F     		ldr	r2, [r3, #112]
+ 778 04c6 42F00402 		orr	r2, r2, #4
+ 779 04ca 1A67     		str	r2, [r3, #112]
+ 780 04cc 1A6F     		ldr	r2, [r3, #112]
+ 781 04ce 42F00102 		orr	r2, r2, #1
+ 782 04d2 1A67     		str	r2, [r3, #112]
+ 783 04d4 D6E7     		b	.L93
+ 784              	.L96:
+ 785 04d6 FFF7FEFF 		bl	HAL_GetTick
+ 786 04da 0546     		mov	r5, r0
+ 787              	.L99:
+ 788 04dc 064B     		ldr	r3, .L165
+ 789 04de 1B6F     		ldr	r3, [r3, #112]
+ 790 04e0 13F0020F 		tst	r3, #2
+ 791 04e4 85D0     		beq	.L89
+ 792 04e6 FFF7FEFF 		bl	HAL_GetTick
+ 793 04ea 401B     		subs	r0, r0, r5
+ 794 04ec 41F28833 		movw	r3, #5000
+ 795 04f0 9842     		cmp	r0, r3
+ 796 04f2 F3D9     		bls	.L99
+ 797 04f4 0320     		movs	r0, #3
+ 798 04f6 A7E0     		b	.L36
+ 799              	.L166:
+ 800              		.align	2
+ 801              	.L165:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 15
+
+
+ 802 04f8 00440258 		.word	1476543488
+ 803 04fc 00480258 		.word	1476544512
+ 804              	.L156:
+ 805 0500 594A     		ldr	r2, .L167
+ 806 0502 1368     		ldr	r3, [r2]
+ 807 0504 23F08073 		bic	r3, r3, #16777216
+ 808 0508 1360     		str	r3, [r2]
+ 809 050a FFF7FEFF 		bl	HAL_GetTick
+ 810 050e 0546     		mov	r5, r0
+ 811              	.L103:
+ 812 0510 554B     		ldr	r3, .L167
+ 813 0512 1B68     		ldr	r3, [r3]
+ 814 0514 13F0007F 		tst	r3, #33554432
+ 815 0518 06D0     		beq	.L161
+ 816 051a FFF7FEFF 		bl	HAL_GetTick
+ 817 051e 401B     		subs	r0, r0, r5
+ 818 0520 0228     		cmp	r0, #2
+ 819 0522 F5D9     		bls	.L103
+ 820 0524 0320     		movs	r0, #3
+ 821 0526 8FE0     		b	.L36
+ 822              	.L161:
+ 823 0528 4F4B     		ldr	r3, .L167
+ 824 052a 996A     		ldr	r1, [r3, #40]
+ 825 052c 4F4A     		ldr	r2, .L167+4
+ 826 052e 0A40     		ands	r2, r2, r1
+ 827 0530 A16A     		ldr	r1, [r4, #40]
+ 828 0532 E06A     		ldr	r0, [r4, #44]
+ 829 0534 41EA0011 		orr	r1, r1, r0, lsl #4
+ 830 0538 0A43     		orrs	r2, r2, r1
+ 831 053a 9A62     		str	r2, [r3, #40]
+ 832 053c 226B     		ldr	r2, [r4, #48]
+ 833 053e 013A     		subs	r2, r2, #1
+ 834 0540 C2F30802 		ubfx	r2, r2, #0, #9
+ 835 0544 616B     		ldr	r1, [r4, #52]
+ 836 0546 0139     		subs	r1, r1, #1
+ 837 0548 4902     		lsls	r1, r1, #9
+ 838 054a 89B2     		uxth	r1, r1
+ 839 054c 0A43     		orrs	r2, r2, r1
+ 840 054e A16B     		ldr	r1, [r4, #56]
+ 841 0550 0139     		subs	r1, r1, #1
+ 842 0552 0904     		lsls	r1, r1, #16
+ 843 0554 01F4FE01 		and	r1, r1, #8323072
+ 844 0558 0A43     		orrs	r2, r2, r1
+ 845 055a E16B     		ldr	r1, [r4, #60]
+ 846 055c 0139     		subs	r1, r1, #1
+ 847 055e 0906     		lsls	r1, r1, #24
+ 848 0560 01F0FE41 		and	r1, r1, #2130706432
+ 849 0564 0A43     		orrs	r2, r2, r1
+ 850 0566 1A63     		str	r2, [r3, #48]
+ 851 0568 DA6A     		ldr	r2, [r3, #44]
+ 852 056a 22F00102 		bic	r2, r2, #1
+ 853 056e DA62     		str	r2, [r3, #44]
+ 854 0570 596B     		ldr	r1, [r3, #52]
+ 855 0572 3F4A     		ldr	r2, .L167+8
+ 856 0574 0A40     		ands	r2, r2, r1
+ 857 0576 A16C     		ldr	r1, [r4, #72]
+ 858 0578 42EAC102 		orr	r2, r2, r1, lsl #3
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 16
+
+
+ 859 057c 5A63     		str	r2, [r3, #52]
+ 860 057e DA6A     		ldr	r2, [r3, #44]
+ 861 0580 22F00C02 		bic	r2, r2, #12
+ 862 0584 216C     		ldr	r1, [r4, #64]
+ 863 0586 0A43     		orrs	r2, r2, r1
+ 864 0588 DA62     		str	r2, [r3, #44]
+ 865 058a DA6A     		ldr	r2, [r3, #44]
+ 866 058c 22F00202 		bic	r2, r2, #2
+ 867 0590 616C     		ldr	r1, [r4, #68]
+ 868 0592 0A43     		orrs	r2, r2, r1
+ 869 0594 DA62     		str	r2, [r3, #44]
+ 870 0596 DA6A     		ldr	r2, [r3, #44]
+ 871 0598 42F48032 		orr	r2, r2, #65536
+ 872 059c DA62     		str	r2, [r3, #44]
+ 873 059e DA6A     		ldr	r2, [r3, #44]
+ 874 05a0 42F40032 		orr	r2, r2, #131072
+ 875 05a4 DA62     		str	r2, [r3, #44]
+ 876 05a6 DA6A     		ldr	r2, [r3, #44]
+ 877 05a8 42F48022 		orr	r2, r2, #262144
+ 878 05ac DA62     		str	r2, [r3, #44]
+ 879 05ae DA6A     		ldr	r2, [r3, #44]
+ 880 05b0 42F00102 		orr	r2, r2, #1
+ 881 05b4 DA62     		str	r2, [r3, #44]
+ 882 05b6 1A68     		ldr	r2, [r3]
+ 883 05b8 42F08072 		orr	r2, r2, #16777216
+ 884 05bc 1A60     		str	r2, [r3]
+ 885 05be FFF7FEFF 		bl	HAL_GetTick
+ 886 05c2 0446     		mov	r4, r0
+ 887              	.L105:
+ 888 05c4 284B     		ldr	r3, .L167
+ 889 05c6 1B68     		ldr	r3, [r3]
+ 890 05c8 13F0007F 		tst	r3, #33554432
+ 891 05cc 06D1     		bne	.L162
+ 892 05ce FFF7FEFF 		bl	HAL_GetTick
+ 893 05d2 001B     		subs	r0, r0, r4
+ 894 05d4 0228     		cmp	r0, #2
+ 895 05d6 F5D9     		bls	.L105
+ 896 05d8 0320     		movs	r0, #3
+ 897 05da 35E0     		b	.L36
+ 898              	.L162:
+ 899 05dc 0020     		movs	r0, #0
+ 900 05de 33E0     		b	.L36
+ 901              	.L157:
+ 902 05e0 0020     		movs	r0, #0
+ 903 05e2 31E0     		b	.L36
+ 904              	.L101:
+ 905 05e4 204A     		ldr	r2, .L167
+ 906 05e6 916A     		ldr	r1, [r2, #40]
+ 907 05e8 106B     		ldr	r0, [r2, #48]
+ 908 05ea 012B     		cmp	r3, #1
+ 909 05ec 2DD0     		beq	.L131
+ 910 05ee 01F00303 		and	r3, r1, #3
+ 911 05f2 A26A     		ldr	r2, [r4, #40]
+ 912 05f4 9342     		cmp	r3, r2
+ 913 05f6 2AD1     		bne	.L132
+ 914 05f8 C1F30511 		ubfx	r1, r1, #4, #6
+ 915 05fc E36A     		ldr	r3, [r4, #44]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 17
+
+
+ 916 05fe 9942     		cmp	r1, r3
+ 917 0600 27D1     		bne	.L133
+ 918 0602 C0F30802 		ubfx	r2, r0, #0, #9
+ 919 0606 236B     		ldr	r3, [r4, #48]
+ 920 0608 013B     		subs	r3, r3, #1
+ 921 060a 9A42     		cmp	r2, r3
+ 922 060c 23D1     		bne	.L134
+ 923 060e C0F34622 		ubfx	r2, r0, #9, #7
+ 924 0612 636B     		ldr	r3, [r4, #52]
+ 925 0614 013B     		subs	r3, r3, #1
+ 926 0616 9A42     		cmp	r2, r3
+ 927 0618 1FD1     		bne	.L135
+ 928 061a C0F30642 		ubfx	r2, r0, #16, #7
+ 929 061e A36B     		ldr	r3, [r4, #56]
+ 930 0620 013B     		subs	r3, r3, #1
+ 931 0622 9A42     		cmp	r2, r3
+ 932 0624 1BD1     		bne	.L136
+ 933 0626 C0F30660 		ubfx	r0, r0, #24, #7
+ 934 062a E36B     		ldr	r3, [r4, #60]
+ 935 062c 013B     		subs	r3, r3, #1
+ 936 062e 9842     		cmp	r0, r3
+ 937 0630 17D1     		bne	.L137
+ 938 0632 0020     		movs	r0, #0
+ 939 0634 08E0     		b	.L36
+ 940              	.L109:
+ 941 0636 0120     		movs	r0, #1
+ 942 0638 7047     		bx	lr
+ 943              	.L144:
+ 944 063a 0120     		movs	r0, #1
+ 945 063c 04E0     		b	.L36
+ 946              	.L113:
+ 947 063e 0120     		movs	r0, #1
+ 948 0640 02E0     		b	.L36
+ 949              	.L117:
+ 950 0642 0120     		movs	r0, #1
+ 951 0644 00E0     		b	.L36
+ 952              	.L127:
+ 953 0646 0020     		movs	r0, #0
+ 954              	.L36:
+ 955 0648 38BD     		pop	{r3, r4, r5, pc}
+ 956              	.L131:
+ 957 064a 0120     		movs	r0, #1
+ 958 064c FCE7     		b	.L36
+ 959              	.L132:
+ 960 064e 0120     		movs	r0, #1
+ 961 0650 FAE7     		b	.L36
+ 962              	.L133:
+ 963 0652 0120     		movs	r0, #1
+ 964 0654 F8E7     		b	.L36
+ 965              	.L134:
+ 966 0656 0120     		movs	r0, #1
+ 967 0658 F6E7     		b	.L36
+ 968              	.L135:
+ 969 065a 0120     		movs	r0, #1
+ 970 065c F4E7     		b	.L36
+ 971              	.L136:
+ 972 065e 0120     		movs	r0, #1
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 18
+
+
+ 973 0660 F2E7     		b	.L36
+ 974              	.L137:
+ 975 0662 0120     		movs	r0, #1
+ 976 0664 F0E7     		b	.L36
+ 977              	.L168:
+ 978 0666 00BF     		.align	2
+ 979              	.L167:
+ 980 0668 00440258 		.word	1476543488
+ 981 066c 0CFCFFFF 		.word	-1012
+ 982 0670 0700FFFF 		.word	-65529
+ 984              		.section	.text.HAL_RCC_MCOConfig,"ax",%progbits
+ 985              		.align	1
+ 986              		.global	HAL_RCC_MCOConfig
+ 987              		.syntax unified
+ 988              		.thumb
+ 989              		.thumb_func
+ 990              		.fpu fpv5-d16
+ 992              	HAL_RCC_MCOConfig:
+ 993              		@ args = 0, pretend = 0, frame = 32
+ 994              		@ frame_needed = 0, uses_anonymous_args = 0
+ 995 0000 70B5     		push	{r4, r5, r6, lr}
+ 996 0002 88B0     		sub	sp, sp, #32
+ 997 0004 0C46     		mov	r4, r1
+ 998 0006 1546     		mov	r5, r2
+ 999 0008 10BB     		cbnz	r0, .L170
+ 1000 000a 234E     		ldr	r6, .L173
+ 1001 000c D6F8E030 		ldr	r3, [r6, #224]
+ 1002 0010 43F00103 		orr	r3, r3, #1
+ 1003 0014 C6F8E030 		str	r3, [r6, #224]
+ 1004 0018 D6F8E030 		ldr	r3, [r6, #224]
+ 1005 001c 03F00103 		and	r3, r3, #1
+ 1006 0020 0193     		str	r3, [sp, #4]
+ 1007 0022 019B     		ldr	r3, [sp, #4]
+ 1008 0024 4FF48073 		mov	r3, #256
+ 1009 0028 0393     		str	r3, [sp, #12]
+ 1010 002a 0223     		movs	r3, #2
+ 1011 002c 0493     		str	r3, [sp, #16]
+ 1012 002e 0323     		movs	r3, #3
+ 1013 0030 0693     		str	r3, [sp, #24]
+ 1014 0032 0023     		movs	r3, #0
+ 1015 0034 0593     		str	r3, [sp, #20]
+ 1016 0036 0793     		str	r3, [sp, #28]
+ 1017 0038 03A9     		add	r1, sp, #12
+ 1018 003a 1848     		ldr	r0, .L173+4
+ 1019 003c FFF7FEFF 		bl	HAL_GPIO_Init
+ 1020 0040 3369     		ldr	r3, [r6, #16]
+ 1021 0042 23F0FE73 		bic	r3, r3, #33292288
+ 1022 0046 2543     		orrs	r5, r5, r4
+ 1023 0048 1D43     		orrs	r5, r5, r3
+ 1024 004a 3561     		str	r5, [r6, #16]
+ 1025              	.L169:
+ 1026 004c 08B0     		add	sp, sp, #32
+ 1027              		@ sp needed
+ 1028 004e 70BD     		pop	{r4, r5, r6, pc}
+ 1029              	.L170:
+ 1030 0050 114E     		ldr	r6, .L173
+ 1031 0052 D6F8E030 		ldr	r3, [r6, #224]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 19
+
+
+ 1032 0056 43F00403 		orr	r3, r3, #4
+ 1033 005a C6F8E030 		str	r3, [r6, #224]
+ 1034 005e D6F8E030 		ldr	r3, [r6, #224]
+ 1035 0062 03F00403 		and	r3, r3, #4
+ 1036 0066 0293     		str	r3, [sp, #8]
+ 1037 0068 029B     		ldr	r3, [sp, #8]
+ 1038 006a 4FF40073 		mov	r3, #512
+ 1039 006e 0393     		str	r3, [sp, #12]
+ 1040 0070 0223     		movs	r3, #2
+ 1041 0072 0493     		str	r3, [sp, #16]
+ 1042 0074 0323     		movs	r3, #3
+ 1043 0076 0693     		str	r3, [sp, #24]
+ 1044 0078 0023     		movs	r3, #0
+ 1045 007a 0593     		str	r3, [sp, #20]
+ 1046 007c 0793     		str	r3, [sp, #28]
+ 1047 007e 03A9     		add	r1, sp, #12
+ 1048 0080 0748     		ldr	r0, .L173+8
+ 1049 0082 FFF7FEFF 		bl	HAL_GPIO_Init
+ 1050 0086 3369     		ldr	r3, [r6, #16]
+ 1051 0088 23F07E43 		bic	r3, r3, #-33554432
+ 1052 008c 44EAC514 		orr	r4, r4, r5, lsl #7
+ 1053 0090 1C43     		orrs	r4, r4, r3
+ 1054 0092 3461     		str	r4, [r6, #16]
+ 1055 0094 DAE7     		b	.L169
+ 1056              	.L174:
+ 1057 0096 00BF     		.align	2
+ 1058              	.L173:
+ 1059 0098 00440258 		.word	1476543488
+ 1060 009c 00000258 		.word	1476526080
+ 1061 00a0 00080258 		.word	1476528128
+ 1063              		.section	.text.HAL_RCC_EnableCSS,"ax",%progbits
+ 1064              		.align	1
+ 1065              		.global	HAL_RCC_EnableCSS
+ 1066              		.syntax unified
+ 1067              		.thumb
+ 1068              		.thumb_func
+ 1069              		.fpu fpv5-d16
+ 1071              	HAL_RCC_EnableCSS:
+ 1072              		@ args = 0, pretend = 0, frame = 0
+ 1073              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1074              		@ link register save eliminated.
+ 1075 0000 024A     		ldr	r2, .L176
+ 1076 0002 1368     		ldr	r3, [r2]
+ 1077 0004 43F40023 		orr	r3, r3, #524288
+ 1078 0008 1360     		str	r3, [r2]
+ 1079 000a 7047     		bx	lr
+ 1080              	.L177:
+ 1081              		.align	2
+ 1082              	.L176:
+ 1083 000c 00440258 		.word	1476543488
+ 1085              		.section	.text.HAL_RCC_DisableCSS,"ax",%progbits
+ 1086              		.align	1
+ 1087              		.global	HAL_RCC_DisableCSS
+ 1088              		.syntax unified
+ 1089              		.thumb
+ 1090              		.thumb_func
+ 1091              		.fpu fpv5-d16
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 20
+
+
+ 1093              	HAL_RCC_DisableCSS:
+ 1094              		@ args = 0, pretend = 0, frame = 0
+ 1095              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1096              		@ link register save eliminated.
+ 1097 0000 024A     		ldr	r2, .L179
+ 1098 0002 1368     		ldr	r3, [r2]
+ 1099 0004 23F40023 		bic	r3, r3, #524288
+ 1100 0008 1360     		str	r3, [r2]
+ 1101 000a 7047     		bx	lr
+ 1102              	.L180:
+ 1103              		.align	2
+ 1104              	.L179:
+ 1105 000c 00440258 		.word	1476543488
+ 1107              		.section	.text.HAL_RCC_GetSysClockFreq,"ax",%progbits
+ 1108              		.align	1
+ 1109              		.global	HAL_RCC_GetSysClockFreq
+ 1110              		.syntax unified
+ 1111              		.thumb
+ 1112              		.thumb_func
+ 1113              		.fpu fpv5-d16
+ 1115              	HAL_RCC_GetSysClockFreq:
+ 1116              		@ args = 0, pretend = 0, frame = 0
+ 1117              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1118              		@ link register save eliminated.
+ 1119 0000 744B     		ldr	r3, .L197
+ 1120 0002 1B69     		ldr	r3, [r3, #16]
+ 1121 0004 03F03803 		and	r3, r3, #56
+ 1122 0008 102B     		cmp	r3, #16
+ 1123 000a 00F0DE80 		beq	.L189
+ 1124 000e 182B     		cmp	r3, #24
+ 1125 0010 10D0     		beq	.L183
+ 1126 0012 0BB1     		cbz	r3, .L195
+ 1127 0014 7048     		ldr	r0, .L197+4
+ 1128 0016 7047     		bx	lr
+ 1129              	.L195:
+ 1130 0018 6E4B     		ldr	r3, .L197
+ 1131 001a 1B68     		ldr	r3, [r3]
+ 1132 001c 13F0200F 		tst	r3, #32
+ 1133 0020 00F0D580 		beq	.L191
+ 1134 0024 6B4B     		ldr	r3, .L197
+ 1135 0026 1868     		ldr	r0, [r3]
+ 1136 0028 C0F3C100 		ubfx	r0, r0, #3, #2
+ 1137 002c 6B4B     		ldr	r3, .L197+8
+ 1138 002e 23FA00F0 		lsr	r0, r3, r0
+ 1139 0032 7047     		bx	lr
+ 1140              	.L183:
+ 1141 0034 10B4     		push	{r4}
+ 1142 0036 674A     		ldr	r2, .L197
+ 1143 0038 916A     		ldr	r1, [r2, #40]
+ 1144 003a 01F00301 		and	r1, r1, #3
+ 1145 003e 946A     		ldr	r4, [r2, #40]
+ 1146 0040 C4F30510 		ubfx	r0, r4, #4, #6
+ 1147 0044 D36A     		ldr	r3, [r2, #44]
+ 1148 0046 03F0010C 		and	ip, r3, #1
+ 1149 004a 536B     		ldr	r3, [r2, #52]
+ 1150 004c C3F3CC03 		ubfx	r3, r3, #3, #13
+ 1151 0050 0CFB03F3 		mul	r3, ip, r3
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 21
+
+
+ 1152 0054 07EE903A 		vmov	s15, r3	@ int
+ 1153 0058 F8EE677A 		vcvt.f32.u32	s15, s15
+ 1154 005c 14F47C7F 		tst	r4, #1008
+ 1155 0060 00F09380 		beq	.L181
+ 1156 0064 0129     		cmp	r1, #1
+ 1157 0066 65D0     		beq	.L184
+ 1158 0068 0229     		cmp	r1, #2
+ 1159 006a 00F09180 		beq	.L185
+ 1160 006e E1B1     		cbz	r1, .L196
+ 1161 0070 07EE100A 		vmov	s14, r0	@ int
+ 1162 0074 F8EE476A 		vcvt.f32.u32	s13, s14
+ 1163 0078 9FED596A 		vldr.32	s12, .L197+12
+ 1164 007c 86EE267A 		vdiv.f32	s14, s12, s13
+ 1165 0080 544B     		ldr	r3, .L197
+ 1166 0082 1B6B     		ldr	r3, [r3, #48]
+ 1167 0084 C3F30803 		ubfx	r3, r3, #0, #9
+ 1168 0088 06EE903A 		vmov	s13, r3	@ int
+ 1169 008c F8EE666A 		vcvt.f32.u32	s13, s13
+ 1170 0090 9FED546A 		vldr.32	s12, .L197+16
+ 1171 0094 67EE867A 		vmul.f32	s15, s15, s12
+ 1172 0098 76EEA77A 		vadd.f32	s15, s13, s15
+ 1173 009c F7EE006A 		vmov.f32	s13, #1.0e+0
+ 1174 00a0 77EEA67A 		vadd.f32	s15, s15, s13
+ 1175 00a4 27EE277A 		vmul.f32	s14, s14, s15
+ 1176 00a8 60E0     		b	.L188
+ 1177              	.L196:
+ 1178 00aa 1368     		ldr	r3, [r2]
+ 1179 00ac 13F0200F 		tst	r3, #32
+ 1180 00b0 23D0     		beq	.L187
+ 1181 00b2 1146     		mov	r1, r2
+ 1182 00b4 1268     		ldr	r2, [r2]
+ 1183 00b6 C2F3C102 		ubfx	r2, r2, #3, #2
+ 1184 00ba 484B     		ldr	r3, .L197+8
+ 1185 00bc D340     		lsrs	r3, r3, r2
+ 1186 00be 07EE103A 		vmov	s14, r3	@ int
+ 1187 00c2 F8EE476A 		vcvt.f32.u32	s13, s14
+ 1188 00c6 07EE100A 		vmov	s14, r0	@ int
+ 1189 00ca B8EE476A 		vcvt.f32.u32	s12, s14
+ 1190 00ce 86EE867A 		vdiv.f32	s14, s13, s12
+ 1191 00d2 0B6B     		ldr	r3, [r1, #48]
+ 1192 00d4 C3F30803 		ubfx	r3, r3, #0, #9
+ 1193 00d8 06EE903A 		vmov	s13, r3	@ int
+ 1194 00dc F8EE666A 		vcvt.f32.u32	s13, s13
+ 1195 00e0 9FED406A 		vldr.32	s12, .L197+16
+ 1196 00e4 67EE867A 		vmul.f32	s15, s15, s12
+ 1197 00e8 76EEA77A 		vadd.f32	s15, s13, s15
+ 1198 00ec F7EE006A 		vmov.f32	s13, #1.0e+0
+ 1199 00f0 77EEA67A 		vadd.f32	s15, s15, s13
+ 1200 00f4 27EE277A 		vmul.f32	s14, s14, s15
+ 1201 00f8 38E0     		b	.L188
+ 1202              	.L187:
+ 1203 00fa 07EE100A 		vmov	s14, r0	@ int
+ 1204 00fe F8EE476A 		vcvt.f32.u32	s13, s14
+ 1205 0102 9FED396A 		vldr.32	s12, .L197+20
+ 1206 0106 86EE267A 		vdiv.f32	s14, s12, s13
+ 1207 010a 324B     		ldr	r3, .L197
+ 1208 010c 1B6B     		ldr	r3, [r3, #48]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 22
+
+
+ 1209 010e C3F30803 		ubfx	r3, r3, #0, #9
+ 1210 0112 06EE903A 		vmov	s13, r3	@ int
+ 1211 0116 F8EE666A 		vcvt.f32.u32	s13, s13
+ 1212 011a 9FED326A 		vldr.32	s12, .L197+16
+ 1213 011e 67EE867A 		vmul.f32	s15, s15, s12
+ 1214 0122 76EEA77A 		vadd.f32	s15, s13, s15
+ 1215 0126 F7EE006A 		vmov.f32	s13, #1.0e+0
+ 1216 012a 77EEA67A 		vadd.f32	s15, s15, s13
+ 1217 012e 27EE277A 		vmul.f32	s14, s14, s15
+ 1218 0132 1BE0     		b	.L188
+ 1219              	.L184:
+ 1220 0134 07EE100A 		vmov	s14, r0	@ int
+ 1221 0138 F8EE476A 		vcvt.f32.u32	s13, s14
+ 1222 013c 9FED286A 		vldr.32	s12, .L197+12
+ 1223 0140 86EE267A 		vdiv.f32	s14, s12, s13
+ 1224 0144 234B     		ldr	r3, .L197
+ 1225 0146 1B6B     		ldr	r3, [r3, #48]
+ 1226 0148 C3F30803 		ubfx	r3, r3, #0, #9
+ 1227 014c 06EE903A 		vmov	s13, r3	@ int
+ 1228 0150 F8EE666A 		vcvt.f32.u32	s13, s13
+ 1229 0154 9FED236A 		vldr.32	s12, .L197+16
+ 1230 0158 67EE867A 		vmul.f32	s15, s15, s12
+ 1231 015c 76EEA77A 		vadd.f32	s15, s13, s15
+ 1232 0160 F7EE006A 		vmov.f32	s13, #1.0e+0
+ 1233 0164 77EEA67A 		vadd.f32	s15, s15, s13
+ 1234 0168 27EE277A 		vmul.f32	s14, s14, s15
+ 1235              	.L188:
+ 1236 016c 194B     		ldr	r3, .L197
+ 1237 016e 1B6B     		ldr	r3, [r3, #48]
+ 1238 0170 C3F34623 		ubfx	r3, r3, #9, #7
+ 1239 0174 0133     		adds	r3, r3, #1
+ 1240 0176 07EE903A 		vmov	s15, r3	@ int
+ 1241 017a F8EE677A 		vcvt.f32.u32	s15, s15
+ 1242 017e C7EE276A 		vdiv.f32	s13, s14, s15
+ 1243 0182 FCEEE67A 		vcvt.u32.f32	s15, s13
+ 1244 0186 17EE900A 		vmov	r0, s15	@ int
+ 1245              	.L181:
+ 1246 018a 5DF8044B 		ldr	r4, [sp], #4
+ 1247 018e 7047     		bx	lr
+ 1248              	.L185:
+ 1249 0190 07EE100A 		vmov	s14, r0	@ int
+ 1250 0194 F8EE476A 		vcvt.f32.u32	s13, s14
+ 1251 0198 9FED146A 		vldr.32	s12, .L197+24
+ 1252 019c 86EE267A 		vdiv.f32	s14, s12, s13
+ 1253 01a0 0C4B     		ldr	r3, .L197
+ 1254 01a2 1B6B     		ldr	r3, [r3, #48]
+ 1255 01a4 C3F30803 		ubfx	r3, r3, #0, #9
+ 1256 01a8 06EE903A 		vmov	s13, r3	@ int
+ 1257 01ac F8EE666A 		vcvt.f32.u32	s13, s13
+ 1258 01b0 9FED0C6A 		vldr.32	s12, .L197+16
+ 1259 01b4 67EE867A 		vmul.f32	s15, s15, s12
+ 1260 01b8 76EEA77A 		vadd.f32	s15, s13, s15
+ 1261 01bc F7EE006A 		vmov.f32	s13, #1.0e+0
+ 1262 01c0 77EEA67A 		vadd.f32	s15, s15, s13
+ 1263 01c4 27EE277A 		vmul.f32	s14, s14, s15
+ 1264 01c8 D0E7     		b	.L188
+ 1265              	.L189:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 23
+
+
+ 1266 01ca 0948     		ldr	r0, .L197+28
+ 1267 01cc 7047     		bx	lr
+ 1268              	.L191:
+ 1269 01ce 0348     		ldr	r0, .L197+8
+ 1270 01d0 7047     		bx	lr
+ 1271              	.L198:
+ 1272 01d2 00BF     		.align	2
+ 1273              	.L197:
+ 1274 01d4 00440258 		.word	1476543488
+ 1275 01d8 00093D00 		.word	4000000
+ 1276 01dc 0090D003 		.word	64000000
+ 1277 01e0 0024744A 		.word	1249125376
+ 1278 01e4 00000039 		.word	956301312
+ 1279 01e8 0024744C 		.word	1282679808
+ 1280 01ec 20BCBE4B 		.word	1270791200
+ 1281 01f0 40787D01 		.word	25000000
+ 1283              		.section	.text.HAL_RCC_ClockConfig,"ax",%progbits
+ 1284              		.align	1
+ 1285              		.global	HAL_RCC_ClockConfig
+ 1286              		.syntax unified
+ 1287              		.thumb
+ 1288              		.thumb_func
+ 1289              		.fpu fpv5-d16
+ 1291              	HAL_RCC_ClockConfig:
+ 1292              		@ args = 0, pretend = 0, frame = 0
+ 1293              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1294 0000 0028     		cmp	r0, #0
+ 1295 0002 00F03281 		beq	.L220
+ 1296 0006 70B5     		push	{r4, r5, r6, lr}
+ 1297 0008 0D46     		mov	r5, r1
+ 1298 000a 0446     		mov	r4, r0
+ 1299 000c 9B4B     		ldr	r3, .L236
+ 1300 000e 1B68     		ldr	r3, [r3]
+ 1301 0010 03F00F03 		and	r3, r3, #15
+ 1302 0014 8B42     		cmp	r3, r1
+ 1303 0016 0BD2     		bcs	.L201
+ 1304 0018 984A     		ldr	r2, .L236
+ 1305 001a 1368     		ldr	r3, [r2]
+ 1306 001c 23F00F03 		bic	r3, r3, #15
+ 1307 0020 0B43     		orrs	r3, r3, r1
+ 1308 0022 1360     		str	r3, [r2]
+ 1309 0024 1368     		ldr	r3, [r2]
+ 1310 0026 03F00F03 		and	r3, r3, #15
+ 1311 002a 8B42     		cmp	r3, r1
+ 1312 002c 40F01F81 		bne	.L221
+ 1313              	.L201:
+ 1314 0030 2368     		ldr	r3, [r4]
+ 1315 0032 13F0040F 		tst	r3, #4
+ 1316 0036 0CD0     		beq	.L202
+ 1317 0038 2269     		ldr	r2, [r4, #16]
+ 1318 003a 914B     		ldr	r3, .L236+4
+ 1319 003c 9B69     		ldr	r3, [r3, #24]
+ 1320 003e 03F07003 		and	r3, r3, #112
+ 1321 0042 9A42     		cmp	r2, r3
+ 1322 0044 05D9     		bls	.L202
+ 1323 0046 8E49     		ldr	r1, .L236+4
+ 1324 0048 8B69     		ldr	r3, [r1, #24]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 24
+
+
+ 1325 004a 23F07003 		bic	r3, r3, #112
+ 1326 004e 1A43     		orrs	r2, r2, r3
+ 1327 0050 8A61     		str	r2, [r1, #24]
+ 1328              	.L202:
+ 1329 0052 2368     		ldr	r3, [r4]
+ 1330 0054 13F0080F 		tst	r3, #8
+ 1331 0058 0CD0     		beq	.L203
+ 1332 005a 6269     		ldr	r2, [r4, #20]
+ 1333 005c 884B     		ldr	r3, .L236+4
+ 1334 005e DB69     		ldr	r3, [r3, #28]
+ 1335 0060 03F07003 		and	r3, r3, #112
+ 1336 0064 9A42     		cmp	r2, r3
+ 1337 0066 05D9     		bls	.L203
+ 1338 0068 8549     		ldr	r1, .L236+4
+ 1339 006a CB69     		ldr	r3, [r1, #28]
+ 1340 006c 23F07003 		bic	r3, r3, #112
+ 1341 0070 1A43     		orrs	r2, r2, r3
+ 1342 0072 CA61     		str	r2, [r1, #28]
+ 1343              	.L203:
+ 1344 0074 2368     		ldr	r3, [r4]
+ 1345 0076 13F0100F 		tst	r3, #16
+ 1346 007a 0CD0     		beq	.L204
+ 1347 007c A269     		ldr	r2, [r4, #24]
+ 1348 007e 804B     		ldr	r3, .L236+4
+ 1349 0080 DB69     		ldr	r3, [r3, #28]
+ 1350 0082 03F4E063 		and	r3, r3, #1792
+ 1351 0086 9A42     		cmp	r2, r3
+ 1352 0088 05D9     		bls	.L204
+ 1353 008a 7D49     		ldr	r1, .L236+4
+ 1354 008c CB69     		ldr	r3, [r1, #28]
+ 1355 008e 23F4E063 		bic	r3, r3, #1792
+ 1356 0092 1A43     		orrs	r2, r2, r3
+ 1357 0094 CA61     		str	r2, [r1, #28]
+ 1358              	.L204:
+ 1359 0096 2368     		ldr	r3, [r4]
+ 1360 0098 13F0200F 		tst	r3, #32
+ 1361 009c 0CD0     		beq	.L205
+ 1362 009e E269     		ldr	r2, [r4, #28]
+ 1363 00a0 774B     		ldr	r3, .L236+4
+ 1364 00a2 1B6A     		ldr	r3, [r3, #32]
+ 1365 00a4 03F07003 		and	r3, r3, #112
+ 1366 00a8 9A42     		cmp	r2, r3
+ 1367 00aa 05D9     		bls	.L205
+ 1368 00ac 7449     		ldr	r1, .L236+4
+ 1369 00ae 0B6A     		ldr	r3, [r1, #32]
+ 1370 00b0 23F07003 		bic	r3, r3, #112
+ 1371 00b4 1A43     		orrs	r2, r2, r3
+ 1372 00b6 0A62     		str	r2, [r1, #32]
+ 1373              	.L205:
+ 1374 00b8 2368     		ldr	r3, [r4]
+ 1375 00ba 13F0020F 		tst	r3, #2
+ 1376 00be 0CD0     		beq	.L206
+ 1377 00c0 E268     		ldr	r2, [r4, #12]
+ 1378 00c2 6F4B     		ldr	r3, .L236+4
+ 1379 00c4 9B69     		ldr	r3, [r3, #24]
+ 1380 00c6 03F00F03 		and	r3, r3, #15
+ 1381 00ca 9A42     		cmp	r2, r3
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 25
+
+
+ 1382 00cc 05D9     		bls	.L206
+ 1383 00ce 6C49     		ldr	r1, .L236+4
+ 1384 00d0 8B69     		ldr	r3, [r1, #24]
+ 1385 00d2 23F00F03 		bic	r3, r3, #15
+ 1386 00d6 1A43     		orrs	r2, r2, r3
+ 1387 00d8 8A61     		str	r2, [r1, #24]
+ 1388              	.L206:
+ 1389 00da 2368     		ldr	r3, [r4]
+ 1390 00dc 13F0010F 		tst	r3, #1
+ 1391 00e0 41D0     		beq	.L207
+ 1392 00e2 674A     		ldr	r2, .L236+4
+ 1393 00e4 9369     		ldr	r3, [r2, #24]
+ 1394 00e6 23F47063 		bic	r3, r3, #3840
+ 1395 00ea A168     		ldr	r1, [r4, #8]
+ 1396 00ec 0B43     		orrs	r3, r3, r1
+ 1397 00ee 9361     		str	r3, [r2, #24]
+ 1398 00f0 6368     		ldr	r3, [r4, #4]
+ 1399 00f2 022B     		cmp	r3, #2
+ 1400 00f4 0AD0     		beq	.L232
+ 1401 00f6 032B     		cmp	r3, #3
+ 1402 00f8 27D0     		beq	.L233
+ 1403 00fa 012B     		cmp	r3, #1
+ 1404 00fc 2CD0     		beq	.L234
+ 1405 00fe 604A     		ldr	r2, .L236+4
+ 1406 0100 1268     		ldr	r2, [r2]
+ 1407 0102 12F0040F 		tst	r2, #4
+ 1408 0106 06D1     		bne	.L209
+ 1409 0108 0120     		movs	r0, #1
+ 1410 010a ADE0     		b	.L200
+ 1411              	.L232:
+ 1412 010c 1268     		ldr	r2, [r2]
+ 1413 010e 12F4003F 		tst	r2, #131072
+ 1414 0112 00F0AE80 		beq	.L235
+ 1415              	.L209:
+ 1416 0116 5A49     		ldr	r1, .L236+4
+ 1417 0118 0A69     		ldr	r2, [r1, #16]
+ 1418 011a 22F00702 		bic	r2, r2, #7
+ 1419 011e 1343     		orrs	r3, r3, r2
+ 1420 0120 0B61     		str	r3, [r1, #16]
+ 1421 0122 FFF7FEFF 		bl	HAL_GetTick
+ 1422 0126 0646     		mov	r6, r0
+ 1423              	.L212:
+ 1424 0128 554B     		ldr	r3, .L236+4
+ 1425 012a 1B69     		ldr	r3, [r3, #16]
+ 1426 012c 03F03803 		and	r3, r3, #56
+ 1427 0130 6268     		ldr	r2, [r4, #4]
+ 1428 0132 B3EBC20F 		cmp	r3, r2, lsl #3
+ 1429 0136 16D0     		beq	.L207
+ 1430 0138 FFF7FEFF 		bl	HAL_GetTick
+ 1431 013c 801B     		subs	r0, r0, r6
+ 1432 013e 41F28833 		movw	r3, #5000
+ 1433 0142 9842     		cmp	r0, r3
+ 1434 0144 F0D9     		bls	.L212
+ 1435 0146 0320     		movs	r0, #3
+ 1436 0148 8EE0     		b	.L200
+ 1437              	.L233:
+ 1438 014a 4D4A     		ldr	r2, .L236+4
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 26
+
+
+ 1439 014c 1268     		ldr	r2, [r2]
+ 1440 014e 12F0007F 		tst	r2, #33554432
+ 1441 0152 E0D1     		bne	.L209
+ 1442 0154 0120     		movs	r0, #1
+ 1443 0156 87E0     		b	.L200
+ 1444              	.L234:
+ 1445 0158 494A     		ldr	r2, .L236+4
+ 1446 015a 1268     		ldr	r2, [r2]
+ 1447 015c 12F4807F 		tst	r2, #256
+ 1448 0160 D9D1     		bne	.L209
+ 1449 0162 0120     		movs	r0, #1
+ 1450 0164 80E0     		b	.L200
+ 1451              	.L207:
+ 1452 0166 2368     		ldr	r3, [r4]
+ 1453 0168 13F0020F 		tst	r3, #2
+ 1454 016c 0CD0     		beq	.L214
+ 1455 016e E268     		ldr	r2, [r4, #12]
+ 1456 0170 434B     		ldr	r3, .L236+4
+ 1457 0172 9B69     		ldr	r3, [r3, #24]
+ 1458 0174 03F00F03 		and	r3, r3, #15
+ 1459 0178 9A42     		cmp	r2, r3
+ 1460 017a 05D2     		bcs	.L214
+ 1461 017c 4049     		ldr	r1, .L236+4
+ 1462 017e 8B69     		ldr	r3, [r1, #24]
+ 1463 0180 23F00F03 		bic	r3, r3, #15
+ 1464 0184 1A43     		orrs	r2, r2, r3
+ 1465 0186 8A61     		str	r2, [r1, #24]
+ 1466              	.L214:
+ 1467 0188 3C4B     		ldr	r3, .L236
+ 1468 018a 1B68     		ldr	r3, [r3]
+ 1469 018c 03F00F03 		and	r3, r3, #15
+ 1470 0190 AB42     		cmp	r3, r5
+ 1471 0192 0AD9     		bls	.L215
+ 1472 0194 394A     		ldr	r2, .L236
+ 1473 0196 1368     		ldr	r3, [r2]
+ 1474 0198 23F00F03 		bic	r3, r3, #15
+ 1475 019c 2B43     		orrs	r3, r3, r5
+ 1476 019e 1360     		str	r3, [r2]
+ 1477 01a0 1368     		ldr	r3, [r2]
+ 1478 01a2 03F00F03 		and	r3, r3, #15
+ 1479 01a6 AB42     		cmp	r3, r5
+ 1480 01a8 65D1     		bne	.L227
+ 1481              	.L215:
+ 1482 01aa 2368     		ldr	r3, [r4]
+ 1483 01ac 13F0040F 		tst	r3, #4
+ 1484 01b0 0CD0     		beq	.L216
+ 1485 01b2 2269     		ldr	r2, [r4, #16]
+ 1486 01b4 324B     		ldr	r3, .L236+4
+ 1487 01b6 9B69     		ldr	r3, [r3, #24]
+ 1488 01b8 03F07003 		and	r3, r3, #112
+ 1489 01bc 9A42     		cmp	r2, r3
+ 1490 01be 05D2     		bcs	.L216
+ 1491 01c0 2F49     		ldr	r1, .L236+4
+ 1492 01c2 8B69     		ldr	r3, [r1, #24]
+ 1493 01c4 23F07003 		bic	r3, r3, #112
+ 1494 01c8 1A43     		orrs	r2, r2, r3
+ 1495 01ca 8A61     		str	r2, [r1, #24]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 27
+
+
+ 1496              	.L216:
+ 1497 01cc 2368     		ldr	r3, [r4]
+ 1498 01ce 13F0080F 		tst	r3, #8
+ 1499 01d2 0CD0     		beq	.L217
+ 1500 01d4 6269     		ldr	r2, [r4, #20]
+ 1501 01d6 2A4B     		ldr	r3, .L236+4
+ 1502 01d8 DB69     		ldr	r3, [r3, #28]
+ 1503 01da 03F07003 		and	r3, r3, #112
+ 1504 01de 9A42     		cmp	r2, r3
+ 1505 01e0 05D2     		bcs	.L217
+ 1506 01e2 2749     		ldr	r1, .L236+4
+ 1507 01e4 CB69     		ldr	r3, [r1, #28]
+ 1508 01e6 23F07003 		bic	r3, r3, #112
+ 1509 01ea 1A43     		orrs	r2, r2, r3
+ 1510 01ec CA61     		str	r2, [r1, #28]
+ 1511              	.L217:
+ 1512 01ee 2368     		ldr	r3, [r4]
+ 1513 01f0 13F0100F 		tst	r3, #16
+ 1514 01f4 0CD0     		beq	.L218
+ 1515 01f6 A269     		ldr	r2, [r4, #24]
+ 1516 01f8 214B     		ldr	r3, .L236+4
+ 1517 01fa DB69     		ldr	r3, [r3, #28]
+ 1518 01fc 03F4E063 		and	r3, r3, #1792
+ 1519 0200 9A42     		cmp	r2, r3
+ 1520 0202 05D2     		bcs	.L218
+ 1521 0204 1E49     		ldr	r1, .L236+4
+ 1522 0206 CB69     		ldr	r3, [r1, #28]
+ 1523 0208 23F4E063 		bic	r3, r3, #1792
+ 1524 020c 1A43     		orrs	r2, r2, r3
+ 1525 020e CA61     		str	r2, [r1, #28]
+ 1526              	.L218:
+ 1527 0210 2368     		ldr	r3, [r4]
+ 1528 0212 13F0200F 		tst	r3, #32
+ 1529 0216 0CD0     		beq	.L219
+ 1530 0218 E269     		ldr	r2, [r4, #28]
+ 1531 021a 194B     		ldr	r3, .L236+4
+ 1532 021c 1B6A     		ldr	r3, [r3, #32]
+ 1533 021e 03F07003 		and	r3, r3, #112
+ 1534 0222 9A42     		cmp	r2, r3
+ 1535 0224 05D2     		bcs	.L219
+ 1536 0226 1649     		ldr	r1, .L236+4
+ 1537 0228 0B6A     		ldr	r3, [r1, #32]
+ 1538 022a 23F07003 		bic	r3, r3, #112
+ 1539 022e 1A43     		orrs	r2, r2, r3
+ 1540 0230 0A62     		str	r2, [r1, #32]
+ 1541              	.L219:
+ 1542 0232 FFF7FEFF 		bl	HAL_RCC_GetSysClockFreq
+ 1543 0236 1249     		ldr	r1, .L236+4
+ 1544 0238 8B69     		ldr	r3, [r1, #24]
+ 1545 023a C3F30323 		ubfx	r3, r3, #8, #4
+ 1546 023e 114A     		ldr	r2, .L236+8
+ 1547 0240 D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 1548 0242 03F01F03 		and	r3, r3, #31
+ 1549 0246 D840     		lsrs	r0, r0, r3
+ 1550 0248 8B69     		ldr	r3, [r1, #24]
+ 1551 024a 03F00F03 		and	r3, r3, #15
+ 1552 024e D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 28
+
+
+ 1553 0250 03F01F03 		and	r3, r3, #31
+ 1554 0254 20FA03F3 		lsr	r3, r0, r3
+ 1555 0258 0B4A     		ldr	r2, .L236+12
+ 1556 025a 1360     		str	r3, [r2]
+ 1557 025c 0B4B     		ldr	r3, .L236+16
+ 1558 025e 1860     		str	r0, [r3]
+ 1559 0260 0B4B     		ldr	r3, .L236+20
+ 1560 0262 1868     		ldr	r0, [r3]
+ 1561 0264 FFF7FEFF 		bl	HAL_InitTick
+ 1562              	.L200:
+ 1563 0268 70BD     		pop	{r4, r5, r6, pc}
+ 1564              	.L220:
+ 1565 026a 0120     		movs	r0, #1
+ 1566 026c 7047     		bx	lr
+ 1567              	.L221:
+ 1568 026e 0120     		movs	r0, #1
+ 1569 0270 FAE7     		b	.L200
+ 1570              	.L235:
+ 1571 0272 0120     		movs	r0, #1
+ 1572 0274 F8E7     		b	.L200
+ 1573              	.L227:
+ 1574 0276 0120     		movs	r0, #1
+ 1575 0278 F6E7     		b	.L200
+ 1576              	.L237:
+ 1577 027a 00BF     		.align	2
+ 1578              	.L236:
+ 1579 027c 00200052 		.word	1375739904
+ 1580 0280 00440258 		.word	1476543488
+ 1581 0284 00000000 		.word	D1CorePrescTable
+ 1582 0288 00000000 		.word	SystemD2Clock
+ 1583 028c 00000000 		.word	SystemCoreClock
+ 1584 0290 00000000 		.word	uwTickPrio
+ 1586              		.section	.text.HAL_RCC_GetHCLKFreq,"ax",%progbits
+ 1587              		.align	1
+ 1588              		.global	HAL_RCC_GetHCLKFreq
+ 1589              		.syntax unified
+ 1590              		.thumb
+ 1591              		.thumb_func
+ 1592              		.fpu fpv5-d16
+ 1594              	HAL_RCC_GetHCLKFreq:
+ 1595              		@ args = 0, pretend = 0, frame = 0
+ 1596              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1597 0000 08B5     		push	{r3, lr}
+ 1598 0002 FFF7FEFF 		bl	HAL_RCC_GetSysClockFreq
+ 1599 0006 0B4A     		ldr	r2, .L240
+ 1600 0008 9369     		ldr	r3, [r2, #24]
+ 1601 000a C3F30323 		ubfx	r3, r3, #8, #4
+ 1602 000e 0A49     		ldr	r1, .L240+4
+ 1603 0010 CB5C     		ldrb	r3, [r1, r3]	@ zero_extendqisi2
+ 1604 0012 03F01F03 		and	r3, r3, #31
+ 1605 0016 20FA03F3 		lsr	r3, r0, r3
+ 1606 001a 9269     		ldr	r2, [r2, #24]
+ 1607 001c 02F00F02 		and	r2, r2, #15
+ 1608 0020 885C     		ldrb	r0, [r1, r2]	@ zero_extendqisi2
+ 1609 0022 00F01F00 		and	r0, r0, #31
+ 1610 0026 23FA00F0 		lsr	r0, r3, r0
+ 1611 002a 044A     		ldr	r2, .L240+8
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 29
+
+
+ 1612 002c 1060     		str	r0, [r2]
+ 1613 002e 044A     		ldr	r2, .L240+12
+ 1614 0030 1360     		str	r3, [r2]
+ 1615 0032 08BD     		pop	{r3, pc}
+ 1616              	.L241:
+ 1617              		.align	2
+ 1618              	.L240:
+ 1619 0034 00440258 		.word	1476543488
+ 1620 0038 00000000 		.word	D1CorePrescTable
+ 1621 003c 00000000 		.word	SystemD2Clock
+ 1622 0040 00000000 		.word	SystemCoreClock
+ 1624              		.section	.text.HAL_RCC_GetPCLK1Freq,"ax",%progbits
+ 1625              		.align	1
+ 1626              		.global	HAL_RCC_GetPCLK1Freq
+ 1627              		.syntax unified
+ 1628              		.thumb
+ 1629              		.thumb_func
+ 1630              		.fpu fpv5-d16
+ 1632              	HAL_RCC_GetPCLK1Freq:
+ 1633              		@ args = 0, pretend = 0, frame = 0
+ 1634              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1635 0000 08B5     		push	{r3, lr}
+ 1636 0002 FFF7FEFF 		bl	HAL_RCC_GetHCLKFreq
+ 1637 0006 054B     		ldr	r3, .L244
+ 1638 0008 DB69     		ldr	r3, [r3, #28]
+ 1639 000a C3F30213 		ubfx	r3, r3, #4, #3
+ 1640 000e 044A     		ldr	r2, .L244+4
+ 1641 0010 D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 1642 0012 03F01F03 		and	r3, r3, #31
+ 1643 0016 D840     		lsrs	r0, r0, r3
+ 1644 0018 08BD     		pop	{r3, pc}
+ 1645              	.L245:
+ 1646 001a 00BF     		.align	2
+ 1647              	.L244:
+ 1648 001c 00440258 		.word	1476543488
+ 1649 0020 00000000 		.word	D1CorePrescTable
+ 1651              		.section	.text.HAL_RCC_GetPCLK2Freq,"ax",%progbits
+ 1652              		.align	1
+ 1653              		.global	HAL_RCC_GetPCLK2Freq
+ 1654              		.syntax unified
+ 1655              		.thumb
+ 1656              		.thumb_func
+ 1657              		.fpu fpv5-d16
+ 1659              	HAL_RCC_GetPCLK2Freq:
+ 1660              		@ args = 0, pretend = 0, frame = 0
+ 1661              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1662 0000 08B5     		push	{r3, lr}
+ 1663 0002 FFF7FEFF 		bl	HAL_RCC_GetHCLKFreq
+ 1664 0006 054B     		ldr	r3, .L248
+ 1665 0008 DB69     		ldr	r3, [r3, #28]
+ 1666 000a C3F30223 		ubfx	r3, r3, #8, #3
+ 1667 000e 044A     		ldr	r2, .L248+4
+ 1668 0010 D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 1669 0012 03F01F03 		and	r3, r3, #31
+ 1670 0016 D840     		lsrs	r0, r0, r3
+ 1671 0018 08BD     		pop	{r3, pc}
+ 1672              	.L249:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 30
+
+
+ 1673 001a 00BF     		.align	2
+ 1674              	.L248:
+ 1675 001c 00440258 		.word	1476543488
+ 1676 0020 00000000 		.word	D1CorePrescTable
+ 1678              		.section	.text.HAL_RCC_GetOscConfig,"ax",%progbits
+ 1679              		.align	1
+ 1680              		.global	HAL_RCC_GetOscConfig
+ 1681              		.syntax unified
+ 1682              		.thumb
+ 1683              		.thumb_func
+ 1684              		.fpu fpv5-d16
+ 1686              	HAL_RCC_GetOscConfig:
+ 1687              		@ args = 0, pretend = 0, frame = 0
+ 1688              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1689 0000 10B5     		push	{r4, lr}
+ 1690 0002 0446     		mov	r4, r0
+ 1691 0004 3F23     		movs	r3, #63
+ 1692 0006 0360     		str	r3, [r0]
+ 1693 0008 514B     		ldr	r3, .L272
+ 1694 000a 1B68     		ldr	r3, [r3]
+ 1695 000c 13F4802F 		tst	r3, #262144
+ 1696 0010 6CD0     		beq	.L251
+ 1697 0012 4FF4A023 		mov	r3, #327680
+ 1698 0016 4360     		str	r3, [r0, #4]
+ 1699              	.L252:
+ 1700 0018 4D4B     		ldr	r3, .L272
+ 1701 001a 1B68     		ldr	r3, [r3]
+ 1702 001c 13F0800F 		tst	r3, #128
+ 1703 0020 70D0     		beq	.L254
+ 1704 0022 8023     		movs	r3, #128
+ 1705 0024 E361     		str	r3, [r4, #28]
+ 1706              	.L255:
+ 1707 0026 FFF7FEFF 		bl	HAL_GetREVID
+ 1708 002a 41F20303 		movw	r3, #4099
+ 1709 002e 9842     		cmp	r0, r3
+ 1710 0030 6BD8     		bhi	.L256
+ 1711 0032 474B     		ldr	r3, .L272
+ 1712 0034 5B68     		ldr	r3, [r3, #4]
+ 1713 0036 C3F38463 		ubfx	r3, r3, #26, #5
+ 1714 003a 2362     		str	r3, [r4, #32]
+ 1715              	.L257:
+ 1716 003c 444B     		ldr	r3, .L272
+ 1717 003e 1B68     		ldr	r3, [r3]
+ 1718 0040 13F0010F 		tst	r3, #1
+ 1719 0044 67D0     		beq	.L258
+ 1720 0046 0123     		movs	r3, #1
+ 1721 0048 E360     		str	r3, [r4, #12]
+ 1722              	.L259:
+ 1723 004a FFF7FEFF 		bl	HAL_GetREVID
+ 1724 004e 41F20303 		movw	r3, #4099
+ 1725 0052 9842     		cmp	r0, r3
+ 1726 0054 62D8     		bhi	.L260
+ 1727 0056 3E4B     		ldr	r3, .L272
+ 1728 0058 5B68     		ldr	r3, [r3, #4]
+ 1729 005a C3F30533 		ubfx	r3, r3, #12, #6
+ 1730 005e 2361     		str	r3, [r4, #16]
+ 1731              	.L261:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 31
+
+
+ 1732 0060 3B4B     		ldr	r3, .L272
+ 1733 0062 1B6F     		ldr	r3, [r3, #112]
+ 1734 0064 13F0040F 		tst	r3, #4
+ 1735 0068 5ED0     		beq	.L262
+ 1736 006a 0523     		movs	r3, #5
+ 1737 006c A360     		str	r3, [r4, #8]
+ 1738              	.L263:
+ 1739 006e 384B     		ldr	r3, .L272
+ 1740 0070 5B6F     		ldr	r3, [r3, #116]
+ 1741 0072 13F0010F 		tst	r3, #1
+ 1742 0076 62D0     		beq	.L265
+ 1743 0078 0123     		movs	r3, #1
+ 1744 007a 6361     		str	r3, [r4, #20]
+ 1745              	.L266:
+ 1746 007c 344B     		ldr	r3, .L272
+ 1747 007e 1B68     		ldr	r3, [r3]
+ 1748 0080 13F4805F 		tst	r3, #4096
+ 1749 0084 5ED0     		beq	.L267
+ 1750 0086 0123     		movs	r3, #1
+ 1751 0088 A361     		str	r3, [r4, #24]
+ 1752              	.L268:
+ 1753 008a 314B     		ldr	r3, .L272
+ 1754 008c 1B68     		ldr	r3, [r3]
+ 1755 008e 13F0807F 		tst	r3, #16777216
+ 1756 0092 5AD0     		beq	.L269
+ 1757 0094 0223     		movs	r3, #2
+ 1758 0096 6362     		str	r3, [r4, #36]
+ 1759              	.L270:
+ 1760 0098 2D4B     		ldr	r3, .L272
+ 1761 009a 9A6A     		ldr	r2, [r3, #40]
+ 1762 009c 02F00302 		and	r2, r2, #3
+ 1763 00a0 A262     		str	r2, [r4, #40]
+ 1764 00a2 9A6A     		ldr	r2, [r3, #40]
+ 1765 00a4 C2F30512 		ubfx	r2, r2, #4, #6
+ 1766 00a8 E262     		str	r2, [r4, #44]
+ 1767 00aa 1A6B     		ldr	r2, [r3, #48]
+ 1768 00ac C2F30802 		ubfx	r2, r2, #0, #9
+ 1769 00b0 0132     		adds	r2, r2, #1
+ 1770 00b2 2263     		str	r2, [r4, #48]
+ 1771 00b4 1A6B     		ldr	r2, [r3, #48]
+ 1772 00b6 C2F30662 		ubfx	r2, r2, #24, #7
+ 1773 00ba 0132     		adds	r2, r2, #1
+ 1774 00bc E263     		str	r2, [r4, #60]
+ 1775 00be 1A6B     		ldr	r2, [r3, #48]
+ 1776 00c0 C2F34622 		ubfx	r2, r2, #9, #7
+ 1777 00c4 0132     		adds	r2, r2, #1
+ 1778 00c6 6263     		str	r2, [r4, #52]
+ 1779 00c8 1A6B     		ldr	r2, [r3, #48]
+ 1780 00ca C2F30642 		ubfx	r2, r2, #16, #7
+ 1781 00ce 0132     		adds	r2, r2, #1
+ 1782 00d0 A263     		str	r2, [r4, #56]
+ 1783 00d2 DA6A     		ldr	r2, [r3, #44]
+ 1784 00d4 02F00C02 		and	r2, r2, #12
+ 1785 00d8 2264     		str	r2, [r4, #64]
+ 1786 00da DA6A     		ldr	r2, [r3, #44]
+ 1787 00dc C2F34002 		ubfx	r2, r2, #1, #1
+ 1788 00e0 6264     		str	r2, [r4, #68]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 32
+
+
+ 1789 00e2 5B6B     		ldr	r3, [r3, #52]
+ 1790 00e4 C3F3CC03 		ubfx	r3, r3, #3, #13
+ 1791 00e8 A364     		str	r3, [r4, #72]
+ 1792 00ea 10BD     		pop	{r4, pc}
+ 1793              	.L251:
+ 1794 00ec 184B     		ldr	r3, .L272
+ 1795 00ee 1B68     		ldr	r3, [r3]
+ 1796 00f0 13F4803F 		tst	r3, #65536
+ 1797 00f4 03D0     		beq	.L253
+ 1798 00f6 4FF48033 		mov	r3, #65536
+ 1799 00fa 4360     		str	r3, [r0, #4]
+ 1800 00fc 8CE7     		b	.L252
+ 1801              	.L253:
+ 1802 00fe 0023     		movs	r3, #0
+ 1803 0100 4360     		str	r3, [r0, #4]
+ 1804 0102 89E7     		b	.L252
+ 1805              	.L254:
+ 1806 0104 0023     		movs	r3, #0
+ 1807 0106 E361     		str	r3, [r4, #28]
+ 1808 0108 8DE7     		b	.L255
+ 1809              	.L256:
+ 1810 010a 114B     		ldr	r3, .L272
+ 1811 010c DB68     		ldr	r3, [r3, #12]
+ 1812 010e C3F30563 		ubfx	r3, r3, #24, #6
+ 1813 0112 2362     		str	r3, [r4, #32]
+ 1814 0114 92E7     		b	.L257
+ 1815              	.L258:
+ 1816 0116 0023     		movs	r3, #0
+ 1817 0118 E360     		str	r3, [r4, #12]
+ 1818 011a 96E7     		b	.L259
+ 1819              	.L260:
+ 1820 011c 0C4B     		ldr	r3, .L272
+ 1821 011e 5B68     		ldr	r3, [r3, #4]
+ 1822 0120 C3F30663 		ubfx	r3, r3, #24, #7
+ 1823 0124 2361     		str	r3, [r4, #16]
+ 1824 0126 9BE7     		b	.L261
+ 1825              	.L262:
+ 1826 0128 094B     		ldr	r3, .L272
+ 1827 012a 1B6F     		ldr	r3, [r3, #112]
+ 1828 012c 13F0010F 		tst	r3, #1
+ 1829 0130 02D0     		beq	.L264
+ 1830 0132 0123     		movs	r3, #1
+ 1831 0134 A360     		str	r3, [r4, #8]
+ 1832 0136 9AE7     		b	.L263
+ 1833              	.L264:
+ 1834 0138 0023     		movs	r3, #0
+ 1835 013a A360     		str	r3, [r4, #8]
+ 1836 013c 97E7     		b	.L263
+ 1837              	.L265:
+ 1838 013e 0023     		movs	r3, #0
+ 1839 0140 6361     		str	r3, [r4, #20]
+ 1840 0142 9BE7     		b	.L266
+ 1841              	.L267:
+ 1842 0144 0023     		movs	r3, #0
+ 1843 0146 A361     		str	r3, [r4, #24]
+ 1844 0148 9FE7     		b	.L268
+ 1845              	.L269:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 33
+
+
+ 1846 014a 0123     		movs	r3, #1
+ 1847 014c 6362     		str	r3, [r4, #36]
+ 1848 014e A3E7     		b	.L270
+ 1849              	.L273:
+ 1850              		.align	2
+ 1851              	.L272:
+ 1852 0150 00440258 		.word	1476543488
+ 1854              		.section	.text.HAL_RCC_GetClockConfig,"ax",%progbits
+ 1855              		.align	1
+ 1856              		.global	HAL_RCC_GetClockConfig
+ 1857              		.syntax unified
+ 1858              		.thumb
+ 1859              		.thumb_func
+ 1860              		.fpu fpv5-d16
+ 1862              	HAL_RCC_GetClockConfig:
+ 1863              		@ args = 0, pretend = 0, frame = 0
+ 1864              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1865              		@ link register save eliminated.
+ 1866 0000 3F23     		movs	r3, #63
+ 1867 0002 0360     		str	r3, [r0]
+ 1868 0004 114B     		ldr	r3, .L275
+ 1869 0006 1A69     		ldr	r2, [r3, #16]
+ 1870 0008 02F00702 		and	r2, r2, #7
+ 1871 000c 4260     		str	r2, [r0, #4]
+ 1872 000e 9A69     		ldr	r2, [r3, #24]
+ 1873 0010 02F47062 		and	r2, r2, #3840
+ 1874 0014 8260     		str	r2, [r0, #8]
+ 1875 0016 9A69     		ldr	r2, [r3, #24]
+ 1876 0018 02F00F02 		and	r2, r2, #15
+ 1877 001c C260     		str	r2, [r0, #12]
+ 1878 001e 9A69     		ldr	r2, [r3, #24]
+ 1879 0020 02F07002 		and	r2, r2, #112
+ 1880 0024 0261     		str	r2, [r0, #16]
+ 1881 0026 DA69     		ldr	r2, [r3, #28]
+ 1882 0028 02F07002 		and	r2, r2, #112
+ 1883 002c 4261     		str	r2, [r0, #20]
+ 1884 002e DA69     		ldr	r2, [r3, #28]
+ 1885 0030 02F4E062 		and	r2, r2, #1792
+ 1886 0034 8261     		str	r2, [r0, #24]
+ 1887 0036 1B6A     		ldr	r3, [r3, #32]
+ 1888 0038 03F07003 		and	r3, r3, #112
+ 1889 003c C361     		str	r3, [r0, #28]
+ 1890 003e 044B     		ldr	r3, .L275+4
+ 1891 0040 1B68     		ldr	r3, [r3]
+ 1892 0042 03F00F03 		and	r3, r3, #15
+ 1893 0046 0B60     		str	r3, [r1]
+ 1894 0048 7047     		bx	lr
+ 1895              	.L276:
+ 1896 004a 00BF     		.align	2
+ 1897              	.L275:
+ 1898 004c 00440258 		.word	1476543488
+ 1899 0050 00200052 		.word	1375739904
+ 1901              		.section	.text.HAL_RCC_CSSCallback,"ax",%progbits
+ 1902              		.align	1
+ 1903              		.weak	HAL_RCC_CSSCallback
+ 1904              		.syntax unified
+ 1905              		.thumb
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 34
+
+
+ 1906              		.thumb_func
+ 1907              		.fpu fpv5-d16
+ 1909              	HAL_RCC_CSSCallback:
+ 1910              		@ args = 0, pretend = 0, frame = 0
+ 1911              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1912              		@ link register save eliminated.
+ 1913 0000 7047     		bx	lr
+ 1915              		.section	.text.HAL_RCC_NMI_IRQHandler,"ax",%progbits
+ 1916              		.align	1
+ 1917              		.global	HAL_RCC_NMI_IRQHandler
+ 1918              		.syntax unified
+ 1919              		.thumb
+ 1920              		.thumb_func
+ 1921              		.fpu fpv5-d16
+ 1923              	HAL_RCC_NMI_IRQHandler:
+ 1924              		@ args = 0, pretend = 0, frame = 0
+ 1925              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1926 0000 08B5     		push	{r3, lr}
+ 1927 0002 064B     		ldr	r3, .L282
+ 1928 0004 5B6E     		ldr	r3, [r3, #100]
+ 1929 0006 13F4806F 		tst	r3, #1024
+ 1930 000a 00D1     		bne	.L281
+ 1931              	.L278:
+ 1932 000c 08BD     		pop	{r3, pc}
+ 1933              	.L281:
+ 1934 000e FFF7FEFF 		bl	HAL_RCC_CSSCallback
+ 1935 0012 024B     		ldr	r3, .L282
+ 1936 0014 4FF48062 		mov	r2, #1024
+ 1937 0018 9A66     		str	r2, [r3, #104]
+ 1938 001a F7E7     		b	.L278
+ 1939              	.L283:
+ 1940              		.align	2
+ 1941              	.L282:
+ 1942 001c 00440258 		.word	1476543488
+ 1944              		.ident	"GCC: (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 35
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 stm32h7xx_hal_rcc.c
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:15     .text.HAL_RCC_DeInit:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:23     .text.HAL_RCC_DeInit:00000000 HAL_RCC_DeInit
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:215    .text.HAL_RCC_DeInit:000001a4 $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:227    .text.HAL_RCC_OscConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:234    .text.HAL_RCC_OscConfig:00000000 HAL_RCC_OscConfig
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:508    .text.HAL_RCC_OscConfig:00000264 $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:510    .text.HAL_RCC_OscConfig:00000268 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:802    .text.HAL_RCC_OscConfig:000004f8 $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:805    .text.HAL_RCC_OscConfig:00000500 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:980    .text.HAL_RCC_OscConfig:00000668 $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:985    .text.HAL_RCC_MCOConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:992    .text.HAL_RCC_MCOConfig:00000000 HAL_RCC_MCOConfig
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1059   .text.HAL_RCC_MCOConfig:00000098 $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1064   .text.HAL_RCC_EnableCSS:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1071   .text.HAL_RCC_EnableCSS:00000000 HAL_RCC_EnableCSS
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1083   .text.HAL_RCC_EnableCSS:0000000c $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1086   .text.HAL_RCC_DisableCSS:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1093   .text.HAL_RCC_DisableCSS:00000000 HAL_RCC_DisableCSS
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1105   .text.HAL_RCC_DisableCSS:0000000c $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1108   .text.HAL_RCC_GetSysClockFreq:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1115   .text.HAL_RCC_GetSysClockFreq:00000000 HAL_RCC_GetSysClockFreq
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1274   .text.HAL_RCC_GetSysClockFreq:000001d4 $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1284   .text.HAL_RCC_ClockConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1291   .text.HAL_RCC_ClockConfig:00000000 HAL_RCC_ClockConfig
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1579   .text.HAL_RCC_ClockConfig:0000027c $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1587   .text.HAL_RCC_GetHCLKFreq:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1594   .text.HAL_RCC_GetHCLKFreq:00000000 HAL_RCC_GetHCLKFreq
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1619   .text.HAL_RCC_GetHCLKFreq:00000034 $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1625   .text.HAL_RCC_GetPCLK1Freq:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1632   .text.HAL_RCC_GetPCLK1Freq:00000000 HAL_RCC_GetPCLK1Freq
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1648   .text.HAL_RCC_GetPCLK1Freq:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1652   .text.HAL_RCC_GetPCLK2Freq:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1659   .text.HAL_RCC_GetPCLK2Freq:00000000 HAL_RCC_GetPCLK2Freq
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1675   .text.HAL_RCC_GetPCLK2Freq:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1679   .text.HAL_RCC_GetOscConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1686   .text.HAL_RCC_GetOscConfig:00000000 HAL_RCC_GetOscConfig
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1852   .text.HAL_RCC_GetOscConfig:00000150 $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1855   .text.HAL_RCC_GetClockConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1862   .text.HAL_RCC_GetClockConfig:00000000 HAL_RCC_GetClockConfig
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1898   .text.HAL_RCC_GetClockConfig:0000004c $d
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1902   .text.HAL_RCC_CSSCallback:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1909   .text.HAL_RCC_CSSCallback:00000000 HAL_RCC_CSSCallback
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1916   .text.HAL_RCC_NMI_IRQHandler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1923   .text.HAL_RCC_NMI_IRQHandler:00000000 HAL_RCC_NMI_IRQHandler
+C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s:1942   .text.HAL_RCC_NMI_IRQHandler:0000001c $d
+
+UNDEFINED SYMBOLS
+HAL_GetTick
+HAL_InitTick
+SystemCoreClock
+SystemD2Clock
+uwTickPrio
+HAL_GetREVID
+HAL_GPIO_Init
+D1CorePrescTable
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMfSNc2.s 			page 36
+
+
