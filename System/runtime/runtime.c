@@ -8,11 +8,9 @@
 #include "stm32h7xx_hal.h"
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal_rcc.h"
-#include <string.h>
 
 /* internal variable */
 static uint32_t sysclock = 0;
-static runtime_stop_p Runtime_Stop_FuncPtr = NULL;
 static Runtime_DataObj_TypeDef RunTime = {
     .tick_callback = NULL,
     .start_callback = NULL,
@@ -126,14 +124,11 @@ bool Runtime_Stop(void)
         RunTime.module_state = Runtime_Module_Stop;
 
         if (RunTime.stop_callback != NULL)
-        {
             RunTime.stop_callback();
-        }
 
         return true;
     }
 
-    Runtime_Stop_FuncPtr = Runtime_Stop;
     return false;
 }
 
@@ -144,9 +139,6 @@ bool Runtime_Tick(void)
         RunTime.tick_state = Runtime_Run_Tick;
         RunTime.Use_Us += RunTime.base;
         RunTime.tick_state = Runtime_Run_Wait;
-
-        if (Runtime_Stop_FuncPtr != NULL)
-            Runtime_Stop_FuncPtr();
 
         if (RunTime.tick_callback != NULL)
             RunTime.tick_callback();

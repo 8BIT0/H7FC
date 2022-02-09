@@ -1,19 +1,23 @@
+
 #ifndef __RUNTIME_H
 #define __RUNTIME_H
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #define REAL_MS 1000 /* 1ms == 1000us */
 #define REAL_S REAL_MS * 1000
 
 #define RUNTIEM_MAX_TICK_FRQ RUNTIME_TICK_FRQ_20K
 
-#define RUNTIME_TICK_FRQ_20K 2e4 /* 50us base time */
-#define RUNTIME_TICK_FRQ_10K 1e4 /* 100us base time */
-#define RUNTIME_TICK_FRQ_5K 5e3  /* 200us base time */
-#define RUNTIME_TICK_FRQ_2K 2e3  /* 500us base time */
-#define RUNTIME_TICK_FRQ_1K 1e3  /* 1ms base time */
+#define RUNTIME_TICK_FRQ_20K 20000 /* 50us base time */
+#define RUNTIME_TICK_FRQ_10K 10000 /* 100us base time */
+#define RUNTIME_TICK_FRQ_5K 5000   /* 200us base time */
+#define RUNTIME_TICK_FRQ_2K 2000   /* 500us base time */
+#define RUNTIME_TICK_FRQ_1K 1000   /* 1ms base time */
 
 typedef enum
 {
@@ -22,7 +26,6 @@ typedef enum
     RtCallback_Type_Tick,
 } Runtime_BaseCallback_TypeList;
 
-typedef bool (*runtime_stop_p)(void);
 typedef uint32_t (*runtime_callback_p)(void);
 
 typedef uint64_t SYSTEM_RunTime;

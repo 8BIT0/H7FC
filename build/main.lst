@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccP1Ejsh.s 			page 1
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cco3PwMa.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -26,18 +26,20 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccP1Ejsh.s 			page 1
   24              		@ args = 0, pretend = 0, frame = 0
   25              		@ frame_needed = 0, uses_anonymous_args = 0
   26 0000 08B5     		push	{r3, lr}
-  27 0002 44F62060 		movw	r0, #20000
-  28 0006 FFF7FEFF 		bl	Runtime_Config
-  29              	.L2:
-  30 000a FEE7     		b	.L2
-  32              		.ident	"GCC: (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccP1Ejsh.s 			page 2
+  27 0002 FFF7FEFF 		bl	HAL_Init
+  28 0006 44F62060 		movw	r0, #20000
+  29 000a FFF7FEFF 		bl	Runtime_Config
+  30              	.L2:
+  31 000e FEE7     		b	.L2
+  33              		.ident	"GCC: (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cco3PwMa.s 			page 2
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 main.c
-C:\Users\huav\AppData\Local\Temp\ccP1Ejsh.s:15     .text.main:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccP1Ejsh.s:23     .text.main:00000000 main
+C:\Users\huav\AppData\Local\Temp\cco3PwMa.s:15     .text.main:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cco3PwMa.s:23     .text.main:00000000 main
 
 UNDEFINED SYMBOLS
+HAL_Init
 Runtime_Config

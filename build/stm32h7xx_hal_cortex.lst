@@ -1,0 +1,674 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"stm32h7xx_hal_cortex.c"
+  13              		.text
+  14              		.section	.text.HAL_NVIC_SetPriorityGrouping,"ax",%progbits
+  15              		.align	1
+  16              		.global	HAL_NVIC_SetPriorityGrouping
+  17              		.arch armv7e-m
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu fpv5-d16
+  23              	HAL_NVIC_SetPriorityGrouping:
+  24              		@ args = 0, pretend = 0, frame = 0
+  25              		@ frame_needed = 0, uses_anonymous_args = 0
+  26              		@ link register save eliminated.
+  27 0000 0649     		ldr	r1, .L2
+  28 0002 CB68     		ldr	r3, [r1, #12]
+  29 0004 23F4E063 		bic	r3, r3, #1792
+  30 0008 1B04     		lsls	r3, r3, #16
+  31 000a 1B0C     		lsrs	r3, r3, #16
+  32 000c 0002     		lsls	r0, r0, #8
+  33 000e 00F4E060 		and	r0, r0, #1792
+  34 0012 0343     		orrs	r3, r3, r0
+  35 0014 024A     		ldr	r2, .L2+4
+  36 0016 1A43     		orrs	r2, r2, r3
+  37 0018 CA60     		str	r2, [r1, #12]
+  38 001a 7047     		bx	lr
+  39              	.L3:
+  40              		.align	2
+  41              	.L2:
+  42 001c 00ED00E0 		.word	-536810240
+  43 0020 0000FA05 		.word	100270080
+  45              		.section	.text.HAL_NVIC_SetPriority,"ax",%progbits
+  46              		.align	1
+  47              		.global	HAL_NVIC_SetPriority
+  48              		.syntax unified
+  49              		.thumb
+  50              		.thumb_func
+  51              		.fpu fpv5-d16
+  53              	HAL_NVIC_SetPriority:
+  54              		@ args = 0, pretend = 0, frame = 0
+  55              		@ frame_needed = 0, uses_anonymous_args = 0
+  56 0000 00B5     		push	{lr}
+  57 0002 174B     		ldr	r3, .L10
+  58 0004 DB68     		ldr	r3, [r3, #12]
+  59 0006 C3F30223 		ubfx	r3, r3, #8, #3
+  60 000a C3F1070C 		rsb	ip, r3, #7
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 2
+
+
+  61 000e BCF1040F 		cmp	ip, #4
+  62 0012 28BF     		it	cs
+  63 0014 4FF0040C 		movcs	ip, #4
+  64 0018 03F1040E 		add	lr, r3, #4
+  65 001c BEF1060F 		cmp	lr, #6
+  66 0020 14D9     		bls	.L8
+  67 0022 033B     		subs	r3, r3, #3
+  68              	.L5:
+  69 0024 4FF0FF3E 		mov	lr, #-1
+  70 0028 0EFA0CFC 		lsl	ip, lr, ip
+  71 002c 21EA0C01 		bic	r1, r1, ip
+  72 0030 9940     		lsls	r1, r1, r3
+  73 0032 0EFA03F3 		lsl	r3, lr, r3
+  74 0036 22EA0303 		bic	r3, r2, r3
+  75 003a 1943     		orrs	r1, r1, r3
+  76 003c 0028     		cmp	r0, #0
+  77 003e 07DB     		blt	.L6
+  78 0040 0901     		lsls	r1, r1, #4
+  79 0042 C9B2     		uxtb	r1, r1
+  80 0044 074B     		ldr	r3, .L10+4
+  81 0046 1954     		strb	r1, [r3, r0]
+  82              	.L4:
+  83 0048 5DF804FB 		ldr	pc, [sp], #4
+  84              	.L8:
+  85 004c 0023     		movs	r3, #0
+  86 004e E9E7     		b	.L5
+  87              	.L6:
+  88 0050 00F00F00 		and	r0, r0, #15
+  89 0054 0901     		lsls	r1, r1, #4
+  90 0056 C9B2     		uxtb	r1, r1
+  91 0058 034B     		ldr	r3, .L10+8
+  92 005a 1954     		strb	r1, [r3, r0]
+  93 005c F4E7     		b	.L4
+  94              	.L11:
+  95 005e 00BF     		.align	2
+  96              	.L10:
+  97 0060 00ED00E0 		.word	-536810240
+  98 0064 00E400E0 		.word	-536812544
+  99 0068 14ED00E0 		.word	-536810220
+ 101              		.section	.text.HAL_NVIC_EnableIRQ,"ax",%progbits
+ 102              		.align	1
+ 103              		.global	HAL_NVIC_EnableIRQ
+ 104              		.syntax unified
+ 105              		.thumb
+ 106              		.thumb_func
+ 107              		.fpu fpv5-d16
+ 109              	HAL_NVIC_EnableIRQ:
+ 110              		@ args = 0, pretend = 0, frame = 0
+ 111              		@ frame_needed = 0, uses_anonymous_args = 0
+ 112              		@ link register save eliminated.
+ 113 0000 0028     		cmp	r0, #0
+ 114 0002 07DB     		blt	.L12
+ 115 0004 00F01F02 		and	r2, r0, #31
+ 116 0008 4009     		lsrs	r0, r0, #5
+ 117 000a 0123     		movs	r3, #1
+ 118 000c 9340     		lsls	r3, r3, r2
+ 119 000e 024A     		ldr	r2, .L14
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 3
+
+
+ 120 0010 42F82030 		str	r3, [r2, r0, lsl #2]
+ 121              	.L12:
+ 122 0014 7047     		bx	lr
+ 123              	.L15:
+ 124 0016 00BF     		.align	2
+ 125              	.L14:
+ 126 0018 00E100E0 		.word	-536813312
+ 128              		.section	.text.HAL_NVIC_DisableIRQ,"ax",%progbits
+ 129              		.align	1
+ 130              		.global	HAL_NVIC_DisableIRQ
+ 131              		.syntax unified
+ 132              		.thumb
+ 133              		.thumb_func
+ 134              		.fpu fpv5-d16
+ 136              	HAL_NVIC_DisableIRQ:
+ 137              		@ args = 0, pretend = 0, frame = 0
+ 138              		@ frame_needed = 0, uses_anonymous_args = 0
+ 139              		@ link register save eliminated.
+ 140 0000 0028     		cmp	r0, #0
+ 141 0002 0CDB     		blt	.L16
+ 142 0004 00F01F02 		and	r2, r0, #31
+ 143 0008 4009     		lsrs	r0, r0, #5
+ 144 000a 0123     		movs	r3, #1
+ 145 000c 9340     		lsls	r3, r3, r2
+ 146 000e 2030     		adds	r0, r0, #32
+ 147 0010 034A     		ldr	r2, .L18
+ 148 0012 42F82030 		str	r3, [r2, r0, lsl #2]
+ 149              		.syntax unified
+ 150              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 151 0016 BFF34F8F 		dsb 0xF
+ 152              	@ 0 "" 2
+ 153              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 154 001a BFF36F8F 		isb 0xF
+ 155              	@ 0 "" 2
+ 156              		.thumb
+ 157              		.syntax unified
+ 158              	.L16:
+ 159 001e 7047     		bx	lr
+ 160              	.L19:
+ 161              		.align	2
+ 162              	.L18:
+ 163 0020 00E100E0 		.word	-536813312
+ 165              		.section	.text.HAL_NVIC_SystemReset,"ax",%progbits
+ 166              		.align	1
+ 167              		.global	HAL_NVIC_SystemReset
+ 168              		.syntax unified
+ 169              		.thumb
+ 170              		.thumb_func
+ 171              		.fpu fpv5-d16
+ 173              	HAL_NVIC_SystemReset:
+ 174              		@ Volatile: function does not return.
+ 175              		@ args = 0, pretend = 0, frame = 0
+ 176              		@ frame_needed = 0, uses_anonymous_args = 0
+ 177              		@ link register save eliminated.
+ 178              		.syntax unified
+ 179              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 180 0000 BFF34F8F 		dsb 0xF
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 4
+
+
+ 181              	@ 0 "" 2
+ 182              		.thumb
+ 183              		.syntax unified
+ 184 0004 0549     		ldr	r1, .L22
+ 185 0006 CA68     		ldr	r2, [r1, #12]
+ 186 0008 02F4E062 		and	r2, r2, #1792
+ 187 000c 044B     		ldr	r3, .L22+4
+ 188 000e 1343     		orrs	r3, r3, r2
+ 189 0010 CB60     		str	r3, [r1, #12]
+ 190              		.syntax unified
+ 191              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 192 0012 BFF34F8F 		dsb 0xF
+ 193              	@ 0 "" 2
+ 194              		.thumb
+ 195              		.syntax unified
+ 196              	.L21:
+ 197              		.syntax unified
+ 198              	@ 2167 "HAL_Lib/CMSIS/Core/Include/core_cm7.h" 1
+ 199 0016 00BF     		nop
+ 200              	@ 0 "" 2
+ 201              		.thumb
+ 202              		.syntax unified
+ 203 0018 FDE7     		b	.L21
+ 204              	.L23:
+ 205 001a 00BF     		.align	2
+ 206              	.L22:
+ 207 001c 00ED00E0 		.word	-536810240
+ 208 0020 0400FA05 		.word	100270084
+ 210              		.section	.text.HAL_SYSTICK_Config,"ax",%progbits
+ 211              		.align	1
+ 212              		.global	HAL_SYSTICK_Config
+ 213              		.syntax unified
+ 214              		.thumb
+ 215              		.thumb_func
+ 216              		.fpu fpv5-d16
+ 218              	HAL_SYSTICK_Config:
+ 219              		@ args = 0, pretend = 0, frame = 0
+ 220              		@ frame_needed = 0, uses_anonymous_args = 0
+ 221              		@ link register save eliminated.
+ 222 0000 0138     		subs	r0, r0, #1
+ 223 0002 B0F1807F 		cmp	r0, #16777216
+ 224 0006 0BD2     		bcs	.L26
+ 225 0008 4FF0E023 		mov	r3, #-536813568
+ 226 000c 5861     		str	r0, [r3, #20]
+ 227 000e 054A     		ldr	r2, .L27
+ 228 0010 F021     		movs	r1, #240
+ 229 0012 82F82310 		strb	r1, [r2, #35]
+ 230 0016 0020     		movs	r0, #0
+ 231 0018 9861     		str	r0, [r3, #24]
+ 232 001a 0722     		movs	r2, #7
+ 233 001c 1A61     		str	r2, [r3, #16]
+ 234 001e 7047     		bx	lr
+ 235              	.L26:
+ 236 0020 0120     		movs	r0, #1
+ 237 0022 7047     		bx	lr
+ 238              	.L28:
+ 239              		.align	2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 5
+
+
+ 240              	.L27:
+ 241 0024 00ED00E0 		.word	-536810240
+ 243              		.section	.text.HAL_MPU_Disable,"ax",%progbits
+ 244              		.align	1
+ 245              		.global	HAL_MPU_Disable
+ 246              		.syntax unified
+ 247              		.thumb
+ 248              		.thumb_func
+ 249              		.fpu fpv5-d16
+ 251              	HAL_MPU_Disable:
+ 252              		@ args = 0, pretend = 0, frame = 0
+ 253              		@ frame_needed = 0, uses_anonymous_args = 0
+ 254              		@ link register save eliminated.
+ 255              		.syntax unified
+ 256              	@ 957 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 257 0000 BFF35F8F 		dmb 0xF
+ 258              	@ 0 "" 2
+ 259              		.thumb
+ 260              		.syntax unified
+ 261 0004 044B     		ldr	r3, .L30
+ 262 0006 5A6A     		ldr	r2, [r3, #36]
+ 263 0008 22F48032 		bic	r2, r2, #65536
+ 264 000c 5A62     		str	r2, [r3, #36]
+ 265 000e 0022     		movs	r2, #0
+ 266 0010 C3F89420 		str	r2, [r3, #148]
+ 267 0014 7047     		bx	lr
+ 268              	.L31:
+ 269 0016 00BF     		.align	2
+ 270              	.L30:
+ 271 0018 00ED00E0 		.word	-536810240
+ 273              		.section	.text.HAL_MPU_Enable,"ax",%progbits
+ 274              		.align	1
+ 275              		.global	HAL_MPU_Enable
+ 276              		.syntax unified
+ 277              		.thumb
+ 278              		.thumb_func
+ 279              		.fpu fpv5-d16
+ 281              	HAL_MPU_Enable:
+ 282              		@ args = 0, pretend = 0, frame = 0
+ 283              		@ frame_needed = 0, uses_anonymous_args = 0
+ 284              		@ link register save eliminated.
+ 285 0000 40F00100 		orr	r0, r0, #1
+ 286 0004 054B     		ldr	r3, .L33
+ 287 0006 C3F89400 		str	r0, [r3, #148]
+ 288 000a 5A6A     		ldr	r2, [r3, #36]
+ 289 000c 42F48032 		orr	r2, r2, #65536
+ 290 0010 5A62     		str	r2, [r3, #36]
+ 291              		.syntax unified
+ 292              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 293 0012 BFF34F8F 		dsb 0xF
+ 294              	@ 0 "" 2
+ 295              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 296 0016 BFF36F8F 		isb 0xF
+ 297              	@ 0 "" 2
+ 298              		.thumb
+ 299              		.syntax unified
+ 300 001a 7047     		bx	lr
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 6
+
+
+ 301              	.L34:
+ 302              		.align	2
+ 303              	.L33:
+ 304 001c 00ED00E0 		.word	-536810240
+ 306              		.section	.text.HAL_MPU_ConfigRegion,"ax",%progbits
+ 307              		.align	1
+ 308              		.global	HAL_MPU_ConfigRegion
+ 309              		.syntax unified
+ 310              		.thumb
+ 311              		.thumb_func
+ 312              		.fpu fpv5-d16
+ 314              	HAL_MPU_ConfigRegion:
+ 315              		@ args = 0, pretend = 0, frame = 0
+ 316              		@ frame_needed = 0, uses_anonymous_args = 0
+ 317              		@ link register save eliminated.
+ 318 0000 4278     		ldrb	r2, [r0, #1]	@ zero_extendqisi2
+ 319 0002 164B     		ldr	r3, .L38
+ 320 0004 C3F89820 		str	r2, [r3, #152]
+ 321 0008 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+ 322 000a FBB1     		cbz	r3, .L36
+ 323 000c 4368     		ldr	r3, [r0, #4]
+ 324 000e 134A     		ldr	r2, .L38
+ 325 0010 C2F89C30 		str	r3, [r2, #156]
+ 326 0014 017B     		ldrb	r1, [r0, #12]	@ zero_extendqisi2
+ 327 0016 C37A     		ldrb	r3, [r0, #11]	@ zero_extendqisi2
+ 328 0018 1B06     		lsls	r3, r3, #24
+ 329 001a 43EA0173 		orr	r3, r3, r1, lsl #28
+ 330 001e 817A     		ldrb	r1, [r0, #10]	@ zero_extendqisi2
+ 331 0020 43EAC143 		orr	r3, r3, r1, lsl #19
+ 332 0024 417B     		ldrb	r1, [r0, #13]	@ zero_extendqisi2
+ 333 0026 43EA8143 		orr	r3, r3, r1, lsl #18
+ 334 002a 817B     		ldrb	r1, [r0, #14]	@ zero_extendqisi2
+ 335 002c 43EA4143 		orr	r3, r3, r1, lsl #17
+ 336 0030 C17B     		ldrb	r1, [r0, #15]	@ zero_extendqisi2
+ 337 0032 43EA0143 		orr	r3, r3, r1, lsl #16
+ 338 0036 417A     		ldrb	r1, [r0, #9]	@ zero_extendqisi2
+ 339 0038 43EA0123 		orr	r3, r3, r1, lsl #8
+ 340 003c 017A     		ldrb	r1, [r0, #8]	@ zero_extendqisi2
+ 341 003e 43EA4103 		orr	r3, r3, r1, lsl #1
+ 342 0042 0178     		ldrb	r1, [r0]	@ zero_extendqisi2
+ 343 0044 0B43     		orrs	r3, r3, r1
+ 344 0046 C2F8A030 		str	r3, [r2, #160]
+ 345 004a 7047     		bx	lr
+ 346              	.L36:
+ 347 004c 034B     		ldr	r3, .L38
+ 348 004e 0022     		movs	r2, #0
+ 349 0050 C3F89C20 		str	r2, [r3, #156]
+ 350 0054 C3F8A020 		str	r2, [r3, #160]
+ 351 0058 7047     		bx	lr
+ 352              	.L39:
+ 353 005a 00BF     		.align	2
+ 354              	.L38:
+ 355 005c 00ED00E0 		.word	-536810240
+ 357              		.section	.text.HAL_NVIC_GetPriorityGrouping,"ax",%progbits
+ 358              		.align	1
+ 359              		.global	HAL_NVIC_GetPriorityGrouping
+ 360              		.syntax unified
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 7
+
+
+ 361              		.thumb
+ 362              		.thumb_func
+ 363              		.fpu fpv5-d16
+ 365              	HAL_NVIC_GetPriorityGrouping:
+ 366              		@ args = 0, pretend = 0, frame = 0
+ 367              		@ frame_needed = 0, uses_anonymous_args = 0
+ 368              		@ link register save eliminated.
+ 369 0000 024B     		ldr	r3, .L41
+ 370 0002 D868     		ldr	r0, [r3, #12]
+ 371 0004 C0F30220 		ubfx	r0, r0, #8, #3
+ 372 0008 7047     		bx	lr
+ 373              	.L42:
+ 374 000a 00BF     		.align	2
+ 375              	.L41:
+ 376 000c 00ED00E0 		.word	-536810240
+ 378              		.section	.text.HAL_NVIC_GetPriority,"ax",%progbits
+ 379              		.align	1
+ 380              		.global	HAL_NVIC_GetPriority
+ 381              		.syntax unified
+ 382              		.thumb
+ 383              		.thumb_func
+ 384              		.fpu fpv5-d16
+ 386              	HAL_NVIC_GetPriority:
+ 387              		@ args = 0, pretend = 0, frame = 0
+ 388              		@ frame_needed = 0, uses_anonymous_args = 0
+ 389 0000 10B5     		push	{r4, lr}
+ 390 0002 0028     		cmp	r0, #0
+ 391 0004 1EDB     		blt	.L44
+ 392 0006 134C     		ldr	r4, .L49
+ 393 0008 205C     		ldrb	r0, [r4, r0]	@ zero_extendqisi2
+ 394 000a 0009     		lsrs	r0, r0, #4
+ 395              	.L45:
+ 396 000c 01F00701 		and	r1, r1, #7
+ 397 0010 C1F1070C 		rsb	ip, r1, #7
+ 398 0014 BCF1040F 		cmp	ip, #4
+ 399 0018 28BF     		it	cs
+ 400 001a 4FF0040C 		movcs	ip, #4
+ 401 001e 0C1D     		adds	r4, r1, #4
+ 402 0020 062C     		cmp	r4, #6
+ 403 0022 15D9     		bls	.L47
+ 404 0024 0339     		subs	r1, r1, #3
+ 405              	.L46:
+ 406 0026 20FA01F4 		lsr	r4, r0, r1
+ 407 002a 4FF0FF3E 		mov	lr, #-1
+ 408 002e 0EFA0CFC 		lsl	ip, lr, ip
+ 409 0032 24EA0C04 		bic	r4, r4, ip
+ 410 0036 1460     		str	r4, [r2]
+ 411 0038 0EFA01F1 		lsl	r1, lr, r1
+ 412 003c 20EA0100 		bic	r0, r0, r1
+ 413 0040 1860     		str	r0, [r3]
+ 414 0042 10BD     		pop	{r4, pc}
+ 415              	.L44:
+ 416 0044 00F00F00 		and	r0, r0, #15
+ 417 0048 034C     		ldr	r4, .L49+4
+ 418 004a 205C     		ldrb	r0, [r4, r0]	@ zero_extendqisi2
+ 419 004c 0009     		lsrs	r0, r0, #4
+ 420 004e DDE7     		b	.L45
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 8
+
+
+ 421              	.L47:
+ 422 0050 0021     		movs	r1, #0
+ 423 0052 E8E7     		b	.L46
+ 424              	.L50:
+ 425              		.align	2
+ 426              	.L49:
+ 427 0054 00E400E0 		.word	-536812544
+ 428 0058 14ED00E0 		.word	-536810220
+ 430              		.section	.text.HAL_NVIC_SetPendingIRQ,"ax",%progbits
+ 431              		.align	1
+ 432              		.global	HAL_NVIC_SetPendingIRQ
+ 433              		.syntax unified
+ 434              		.thumb
+ 435              		.thumb_func
+ 436              		.fpu fpv5-d16
+ 438              	HAL_NVIC_SetPendingIRQ:
+ 439              		@ args = 0, pretend = 0, frame = 0
+ 440              		@ frame_needed = 0, uses_anonymous_args = 0
+ 441              		@ link register save eliminated.
+ 442 0000 0028     		cmp	r0, #0
+ 443 0002 08DB     		blt	.L51
+ 444 0004 00F01F02 		and	r2, r0, #31
+ 445 0008 4009     		lsrs	r0, r0, #5
+ 446 000a 0123     		movs	r3, #1
+ 447 000c 9340     		lsls	r3, r3, r2
+ 448 000e 4030     		adds	r0, r0, #64
+ 449 0010 014A     		ldr	r2, .L53
+ 450 0012 42F82030 		str	r3, [r2, r0, lsl #2]
+ 451              	.L51:
+ 452 0016 7047     		bx	lr
+ 453              	.L54:
+ 454              		.align	2
+ 455              	.L53:
+ 456 0018 00E100E0 		.word	-536813312
+ 458              		.section	.text.HAL_NVIC_GetPendingIRQ,"ax",%progbits
+ 459              		.align	1
+ 460              		.global	HAL_NVIC_GetPendingIRQ
+ 461              		.syntax unified
+ 462              		.thumb
+ 463              		.thumb_func
+ 464              		.fpu fpv5-d16
+ 466              	HAL_NVIC_GetPendingIRQ:
+ 467              		@ args = 0, pretend = 0, frame = 0
+ 468              		@ frame_needed = 0, uses_anonymous_args = 0
+ 469              		@ link register save eliminated.
+ 470 0000 0028     		cmp	r0, #0
+ 471 0002 0BDB     		blt	.L57
+ 472 0004 4309     		lsrs	r3, r0, #5
+ 473 0006 4033     		adds	r3, r3, #64
+ 474 0008 054A     		ldr	r2, .L58
+ 475 000a 52F82330 		ldr	r3, [r2, r3, lsl #2]
+ 476 000e 00F01F00 		and	r0, r0, #31
+ 477 0012 23FA00F0 		lsr	r0, r3, r0
+ 478 0016 00F00100 		and	r0, r0, #1
+ 479 001a 7047     		bx	lr
+ 480              	.L57:
+ 481 001c 0020     		movs	r0, #0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 9
+
+
+ 482 001e 7047     		bx	lr
+ 483              	.L59:
+ 484              		.align	2
+ 485              	.L58:
+ 486 0020 00E100E0 		.word	-536813312
+ 488              		.section	.text.HAL_NVIC_ClearPendingIRQ,"ax",%progbits
+ 489              		.align	1
+ 490              		.global	HAL_NVIC_ClearPendingIRQ
+ 491              		.syntax unified
+ 492              		.thumb
+ 493              		.thumb_func
+ 494              		.fpu fpv5-d16
+ 496              	HAL_NVIC_ClearPendingIRQ:
+ 497              		@ args = 0, pretend = 0, frame = 0
+ 498              		@ frame_needed = 0, uses_anonymous_args = 0
+ 499              		@ link register save eliminated.
+ 500 0000 0028     		cmp	r0, #0
+ 501 0002 08DB     		blt	.L60
+ 502 0004 00F01F02 		and	r2, r0, #31
+ 503 0008 4009     		lsrs	r0, r0, #5
+ 504 000a 0123     		movs	r3, #1
+ 505 000c 9340     		lsls	r3, r3, r2
+ 506 000e 6030     		adds	r0, r0, #96
+ 507 0010 014A     		ldr	r2, .L62
+ 508 0012 42F82030 		str	r3, [r2, r0, lsl #2]
+ 509              	.L60:
+ 510 0016 7047     		bx	lr
+ 511              	.L63:
+ 512              		.align	2
+ 513              	.L62:
+ 514 0018 00E100E0 		.word	-536813312
+ 516              		.section	.text.HAL_NVIC_GetActive,"ax",%progbits
+ 517              		.align	1
+ 518              		.global	HAL_NVIC_GetActive
+ 519              		.syntax unified
+ 520              		.thumb
+ 521              		.thumb_func
+ 522              		.fpu fpv5-d16
+ 524              	HAL_NVIC_GetActive:
+ 525              		@ args = 0, pretend = 0, frame = 0
+ 526              		@ frame_needed = 0, uses_anonymous_args = 0
+ 527              		@ link register save eliminated.
+ 528 0000 0028     		cmp	r0, #0
+ 529 0002 0BDB     		blt	.L66
+ 530 0004 4309     		lsrs	r3, r0, #5
+ 531 0006 8033     		adds	r3, r3, #128
+ 532 0008 054A     		ldr	r2, .L67
+ 533 000a 52F82330 		ldr	r3, [r2, r3, lsl #2]
+ 534 000e 00F01F00 		and	r0, r0, #31
+ 535 0012 23FA00F0 		lsr	r0, r3, r0
+ 536 0016 00F00100 		and	r0, r0, #1
+ 537 001a 7047     		bx	lr
+ 538              	.L66:
+ 539 001c 0020     		movs	r0, #0
+ 540 001e 7047     		bx	lr
+ 541              	.L68:
+ 542              		.align	2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 10
+
+
+ 543              	.L67:
+ 544 0020 00E100E0 		.word	-536813312
+ 546              		.section	.text.HAL_SYSTICK_CLKSourceConfig,"ax",%progbits
+ 547              		.align	1
+ 548              		.global	HAL_SYSTICK_CLKSourceConfig
+ 549              		.syntax unified
+ 550              		.thumb
+ 551              		.thumb_func
+ 552              		.fpu fpv5-d16
+ 554              	HAL_SYSTICK_CLKSourceConfig:
+ 555              		@ args = 0, pretend = 0, frame = 0
+ 556              		@ frame_needed = 0, uses_anonymous_args = 0
+ 557              		@ link register save eliminated.
+ 558 0000 0428     		cmp	r0, #4
+ 559 0002 06D0     		beq	.L72
+ 560 0004 4FF0E022 		mov	r2, #-536813568
+ 561 0008 1369     		ldr	r3, [r2, #16]
+ 562 000a 23F00403 		bic	r3, r3, #4
+ 563 000e 1361     		str	r3, [r2, #16]
+ 564 0010 7047     		bx	lr
+ 565              	.L72:
+ 566 0012 4FF0E022 		mov	r2, #-536813568
+ 567 0016 1369     		ldr	r3, [r2, #16]
+ 568 0018 43F00403 		orr	r3, r3, #4
+ 569 001c 1361     		str	r3, [r2, #16]
+ 570 001e 7047     		bx	lr
+ 572              		.section	.text.HAL_SYSTICK_Callback,"ax",%progbits
+ 573              		.align	1
+ 574              		.weak	HAL_SYSTICK_Callback
+ 575              		.syntax unified
+ 576              		.thumb
+ 577              		.thumb_func
+ 578              		.fpu fpv5-d16
+ 580              	HAL_SYSTICK_Callback:
+ 581              		@ args = 0, pretend = 0, frame = 0
+ 582              		@ frame_needed = 0, uses_anonymous_args = 0
+ 583              		@ link register save eliminated.
+ 584 0000 7047     		bx	lr
+ 586              		.section	.text.HAL_SYSTICK_IRQHandler,"ax",%progbits
+ 587              		.align	1
+ 588              		.global	HAL_SYSTICK_IRQHandler
+ 589              		.syntax unified
+ 590              		.thumb
+ 591              		.thumb_func
+ 592              		.fpu fpv5-d16
+ 594              	HAL_SYSTICK_IRQHandler:
+ 595              		@ args = 0, pretend = 0, frame = 0
+ 596              		@ frame_needed = 0, uses_anonymous_args = 0
+ 597 0000 08B5     		push	{r3, lr}
+ 598 0002 FFF7FEFF 		bl	HAL_SYSTICK_Callback
+ 599 0006 08BD     		pop	{r3, pc}
+ 601              		.section	.text.HAL_GetCurrentCPUID,"ax",%progbits
+ 602              		.align	1
+ 603              		.global	HAL_GetCurrentCPUID
+ 604              		.syntax unified
+ 605              		.thumb
+ 606              		.thumb_func
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 11
+
+
+ 607              		.fpu fpv5-d16
+ 609              	HAL_GetCurrentCPUID:
+ 610              		@ args = 0, pretend = 0, frame = 0
+ 611              		@ frame_needed = 0, uses_anonymous_args = 0
+ 612              		@ link register save eliminated.
+ 613 0000 0320     		movs	r0, #3
+ 614 0002 7047     		bx	lr
+ 616              		.ident	"GCC: (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 12
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 stm32h7xx_hal_cortex.c
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:15     .text.HAL_NVIC_SetPriorityGrouping:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:23     .text.HAL_NVIC_SetPriorityGrouping:00000000 HAL_NVIC_SetPriorityGrouping
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:42     .text.HAL_NVIC_SetPriorityGrouping:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:46     .text.HAL_NVIC_SetPriority:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:53     .text.HAL_NVIC_SetPriority:00000000 HAL_NVIC_SetPriority
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:97     .text.HAL_NVIC_SetPriority:00000060 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:102    .text.HAL_NVIC_EnableIRQ:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:109    .text.HAL_NVIC_EnableIRQ:00000000 HAL_NVIC_EnableIRQ
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:126    .text.HAL_NVIC_EnableIRQ:00000018 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:129    .text.HAL_NVIC_DisableIRQ:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:136    .text.HAL_NVIC_DisableIRQ:00000000 HAL_NVIC_DisableIRQ
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:163    .text.HAL_NVIC_DisableIRQ:00000020 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:166    .text.HAL_NVIC_SystemReset:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:173    .text.HAL_NVIC_SystemReset:00000000 HAL_NVIC_SystemReset
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:207    .text.HAL_NVIC_SystemReset:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:211    .text.HAL_SYSTICK_Config:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:218    .text.HAL_SYSTICK_Config:00000000 HAL_SYSTICK_Config
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:241    .text.HAL_SYSTICK_Config:00000024 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:244    .text.HAL_MPU_Disable:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:251    .text.HAL_MPU_Disable:00000000 HAL_MPU_Disable
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:271    .text.HAL_MPU_Disable:00000018 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:274    .text.HAL_MPU_Enable:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:281    .text.HAL_MPU_Enable:00000000 HAL_MPU_Enable
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:304    .text.HAL_MPU_Enable:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:307    .text.HAL_MPU_ConfigRegion:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:314    .text.HAL_MPU_ConfigRegion:00000000 HAL_MPU_ConfigRegion
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:355    .text.HAL_MPU_ConfigRegion:0000005c $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:358    .text.HAL_NVIC_GetPriorityGrouping:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:365    .text.HAL_NVIC_GetPriorityGrouping:00000000 HAL_NVIC_GetPriorityGrouping
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:376    .text.HAL_NVIC_GetPriorityGrouping:0000000c $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:379    .text.HAL_NVIC_GetPriority:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:386    .text.HAL_NVIC_GetPriority:00000000 HAL_NVIC_GetPriority
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:427    .text.HAL_NVIC_GetPriority:00000054 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:431    .text.HAL_NVIC_SetPendingIRQ:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:438    .text.HAL_NVIC_SetPendingIRQ:00000000 HAL_NVIC_SetPendingIRQ
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:456    .text.HAL_NVIC_SetPendingIRQ:00000018 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:459    .text.HAL_NVIC_GetPendingIRQ:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:466    .text.HAL_NVIC_GetPendingIRQ:00000000 HAL_NVIC_GetPendingIRQ
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:486    .text.HAL_NVIC_GetPendingIRQ:00000020 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:489    .text.HAL_NVIC_ClearPendingIRQ:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:496    .text.HAL_NVIC_ClearPendingIRQ:00000000 HAL_NVIC_ClearPendingIRQ
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:514    .text.HAL_NVIC_ClearPendingIRQ:00000018 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:517    .text.HAL_NVIC_GetActive:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:524    .text.HAL_NVIC_GetActive:00000000 HAL_NVIC_GetActive
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:544    .text.HAL_NVIC_GetActive:00000020 $d
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:547    .text.HAL_SYSTICK_CLKSourceConfig:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:554    .text.HAL_SYSTICK_CLKSourceConfig:00000000 HAL_SYSTICK_CLKSourceConfig
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:573    .text.HAL_SYSTICK_Callback:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:580    .text.HAL_SYSTICK_Callback:00000000 HAL_SYSTICK_Callback
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:587    .text.HAL_SYSTICK_IRQHandler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:594    .text.HAL_SYSTICK_IRQHandler:00000000 HAL_SYSTICK_IRQHandler
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:602    .text.HAL_GetCurrentCPUID:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s:609    .text.HAL_GetCurrentCPUID:00000000 HAL_GetCurrentCPUID
+
+NO UNDEFINED SYMBOLS
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccRX9Vua.s 			page 13
+
+

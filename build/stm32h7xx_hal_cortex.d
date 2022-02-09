@@ -1,4 +1,6 @@
-build/main.o: main.c HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
+build/stm32h7xx_hal_cortex.o: \
+ HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
+ HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  HAL_Lib/Core/Inc/stm32h7xx_hal_conf.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h \
@@ -25,8 +27,7 @@ build/main.o: main.c HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h \
- HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h \
- System/runtime/runtime.h
+ HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h
 HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 HAL_Lib/Core/Inc/stm32h7xx_hal_conf.h:
 HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h:
@@ -55,4 +56,3 @@ HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h:
 HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h:
 HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h:
 HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h:
-System/runtime/runtime.h:
