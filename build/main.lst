@@ -1,0 +1,43 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccP1Ejsh.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"main.c"
+  13              		.text
+  14              		.section	.text.main,"ax",%progbits
+  15              		.align	1
+  16              		.global	main
+  17              		.arch armv7e-m
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu fpv5-d16
+  23              	main:
+  24              		@ args = 0, pretend = 0, frame = 0
+  25              		@ frame_needed = 0, uses_anonymous_args = 0
+  26 0000 08B5     		push	{r3, lr}
+  27 0002 44F62060 		movw	r0, #20000
+  28 0006 FFF7FEFF 		bl	Runtime_Config
+  29              	.L2:
+  30 000a FEE7     		b	.L2
+  32              		.ident	"GCC: (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccP1Ejsh.s 			page 2
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\huav\AppData\Local\Temp\ccP1Ejsh.s:15     .text.main:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccP1Ejsh.s:23     .text.main:00000000 main
+
+UNDEFINED SYMBOLS
+Runtime_Config

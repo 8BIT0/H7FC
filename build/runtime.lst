@@ -1,0 +1,582 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"runtime.c"
+  13              		.text
+  14              		.section	.text.Runtime_Stop,"ax",%progbits
+  15              		.align	1
+  16              		.global	Runtime_Stop
+  17              		.arch armv7e-m
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu fpv5-d16
+  23              	Runtime_Stop:
+  24              		@ args = 0, pretend = 0, frame = 0
+  25              		@ frame_needed = 0, uses_anonymous_args = 0
+  26 0000 08B5     		push	{r3, lr}
+  27 0002 084B     		ldr	r3, .L7
+  28 0004 5B7F     		ldrb	r3, [r3, #29]	@ zero_extendqisi2
+  29 0006 23B9     		cbnz	r3, .L6
+  30 0008 074B     		ldr	r3, .L7+4
+  31 000a 084A     		ldr	r2, .L7+8
+  32 000c 1A60     		str	r2, [r3]
+  33 000e 0020     		movs	r0, #0
+  34              	.L4:
+  35 0010 08BD     		pop	{r3, pc}
+  36              	.L6:
+  37 0012 044B     		ldr	r3, .L7
+  38 0014 0222     		movs	r2, #2
+  39 0016 1A77     		strb	r2, [r3, #28]
+  40 0018 5B69     		ldr	r3, [r3, #20]
+  41 001a 03B1     		cbz	r3, .L3
+  42 001c 9847     		blx	r3
+  43              	.L3:
+  44 001e 0120     		movs	r0, #1
+  45 0020 F6E7     		b	.L4
+  46              	.L8:
+  47 0022 00BF     		.align	2
+  48              	.L7:
+  49 0024 00000000 		.word	.LANCHOR0
+  50 0028 00000000 		.word	.LANCHOR1
+  51 002c 00000000 		.word	Runtime_Stop
+  53              		.section	.text.Runtime_SetCallback,"ax",%progbits
+  54              		.align	1
+  55              		.global	Runtime_SetCallback
+  56              		.syntax unified
+  57              		.thumb
+  58              		.thumb_func
+  59              		.fpu fpv5-d16
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 2
+
+
+  61              	Runtime_SetCallback:
+  62              		@ args = 0, pretend = 0, frame = 0
+  63              		@ frame_needed = 0, uses_anonymous_args = 0
+  64              		@ link register save eliminated.
+  65 0000 0128     		cmp	r0, #1
+  66 0002 08D0     		beq	.L10
+  67 0004 0228     		cmp	r0, #2
+  68 0006 0AD0     		beq	.L11
+  69 0008 08B1     		cbz	r0, .L14
+  70 000a 0020     		movs	r0, #0
+  71 000c 7047     		bx	lr
+  72              	.L14:
+  73 000e 064B     		ldr	r3, .L15
+  74 0010 1961     		str	r1, [r3, #16]
+  75 0012 0120     		movs	r0, #1
+  76 0014 7047     		bx	lr
+  77              	.L10:
+  78 0016 044B     		ldr	r3, .L15
+  79 0018 5961     		str	r1, [r3, #20]
+  80 001a 0120     		movs	r0, #1
+  81 001c 7047     		bx	lr
+  82              	.L11:
+  83 001e 024B     		ldr	r3, .L15
+  84 0020 9961     		str	r1, [r3, #24]
+  85 0022 0120     		movs	r0, #1
+  86 0024 7047     		bx	lr
+  87              	.L16:
+  88 0026 00BF     		.align	2
+  89              	.L15:
+  90 0028 00000000 		.word	.LANCHOR0
+  92              		.section	.text.Get_RuntimeState,"ax",%progbits
+  93              		.align	1
+  94              		.global	Get_RuntimeState
+  95              		.syntax unified
+  96              		.thumb
+  97              		.thumb_func
+  98              		.fpu fpv5-d16
+ 100              	Get_RuntimeState:
+ 101              		@ args = 0, pretend = 0, frame = 0
+ 102              		@ frame_needed = 0, uses_anonymous_args = 0
+ 103              		@ link register save eliminated.
+ 104 0000 014B     		ldr	r3, .L18
+ 105 0002 187F     		ldrb	r0, [r3, #28]	@ zero_extendqisi2
+ 106 0004 7047     		bx	lr
+ 107              	.L19:
+ 108 0006 00BF     		.align	2
+ 109              	.L18:
+ 110 0008 00000000 		.word	.LANCHOR0
+ 112              		.section	.text.Runtime_GetTickFrq,"ax",%progbits
+ 113              		.align	1
+ 114              		.global	Runtime_GetTickFrq
+ 115              		.syntax unified
+ 116              		.thumb
+ 117              		.thumb_func
+ 118              		.fpu fpv5-d16
+ 120              	Runtime_GetTickFrq:
+ 121              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 3
+
+
+ 122              		@ frame_needed = 0, uses_anonymous_args = 0
+ 123              		@ link register save eliminated.
+ 124 0000 014B     		ldr	r3, .L21
+ 125 0002 D868     		ldr	r0, [r3, #12]
+ 126 0004 7047     		bx	lr
+ 127              	.L22:
+ 128 0006 00BF     		.align	2
+ 129              	.L21:
+ 130 0008 00000000 		.word	.LANCHOR0
+ 132              		.section	.text.Runtime_GetTickBase,"ax",%progbits
+ 133              		.align	1
+ 134              		.global	Runtime_GetTickBase
+ 135              		.syntax unified
+ 136              		.thumb
+ 137              		.thumb_func
+ 138              		.fpu fpv5-d16
+ 140              	Runtime_GetTickBase:
+ 141              		@ args = 0, pretend = 0, frame = 0
+ 142              		@ frame_needed = 0, uses_anonymous_args = 0
+ 143              		@ link register save eliminated.
+ 144 0000 014B     		ldr	r3, .L24
+ 145 0002 9868     		ldr	r0, [r3, #8]
+ 146 0004 7047     		bx	lr
+ 147              	.L25:
+ 148 0006 00BF     		.align	2
+ 149              	.L24:
+ 150 0008 00000000 		.word	.LANCHOR0
+ 152              		.section	.text.Runtime_Config,"ax",%progbits
+ 153              		.align	1
+ 154              		.global	Runtime_Config
+ 155              		.syntax unified
+ 156              		.thumb
+ 157              		.thumb_func
+ 158              		.fpu fpv5-d16
+ 160              	Runtime_Config:
+ 161              		@ args = 0, pretend = 0, frame = 0
+ 162              		@ frame_needed = 0, uses_anonymous_args = 0
+ 163 0000 10B5     		push	{r4, lr}
+ 164 0002 2DED028B 		vpush.64	{d8}
+ 165 0006 42F21073 		movw	r3, #10000
+ 166 000a 9842     		cmp	r0, r3
+ 167 000c 0CD0     		beq	.L29
+ 168 000e 41F28833 		movw	r3, #5000
+ 169 0012 9842     		cmp	r0, r3
+ 170 0014 42D0     		beq	.L30
+ 171 0016 B0F5FA6F 		cmp	r0, #2000
+ 172 001a 42D0     		beq	.L31
+ 173 001c B0F57A7F 		cmp	r0, #1000
+ 174 0020 42D0     		beq	.L32
+ 175 0022 9FED256A 		vldr.32	s12, .L34+8	@ int
+ 176 0026 01E0     		b	.L27
+ 177              	.L29:
+ 178 0028 06EE100A 		vmov	s12, r0	@ int
+ 179              	.L27:
+ 180 002c 234C     		ldr	r4, .L34+12
+ 181 002e 0023     		movs	r3, #0
+ 182 0030 2377     		strb	r3, [r4, #28]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 4
+
+
+ 183 0032 B8EE466B 		vcvt.f64.u32	d6, s12
+ 184 0036 9FED1E8B 		vldr.64	d8, .L34
+ 185 003a 88EE067B 		vdiv.f64	d7, d8, d6
+ 186 003e BCEEC77B 		vcvt.u32.f64	s14, d7
+ 187 0042 84ED027A 		vstr.32	s14, [r4, #8]	@ int
+ 188 0046 E060     		str	r0, [r4, #12]
+ 189 0048 FFF7FEFF 		bl	SystemCoreClockUpdate
+ 190 004c 94ED027A 		vldr.32	s14, [r4, #8]	@ int
+ 191 0050 B8EE477B 		vcvt.f64.u32	d7, s14
+ 192 0054 88EE075B 		vdiv.f64	d5, d8, d7
+ 193 0058 194B     		ldr	r3, .L34+16
+ 194 005a 93ED006A 		vldr.32	s12, [r3]	@ int
+ 195 005e B8EE466B 		vcvt.f64.u32	d6, s12
+ 196 0062 86EE057B 		vdiv.f64	d7, d6, d5
+ 197 0066 FCEEC77B 		vcvt.u32.f64	s15, d7
+ 198 006a 17EE903A 		vmov	r3, s15	@ int
+ 199 006e 013B     		subs	r3, r3, #1
+ 200 0070 B3F1807F 		cmp	r3, #16777216
+ 201 0074 0AD2     		bcs	.L28
+ 202 0076 4FF0E022 		mov	r2, #-536813568
+ 203 007a 5361     		str	r3, [r2, #20]
+ 204 007c 114B     		ldr	r3, .L34+20
+ 205 007e F021     		movs	r1, #240
+ 206 0080 83F82310 		strb	r1, [r3, #35]
+ 207 0084 0023     		movs	r3, #0
+ 208 0086 9361     		str	r3, [r2, #24]
+ 209 0088 0723     		movs	r3, #7
+ 210 008a 1361     		str	r3, [r2, #16]
+ 211              	.L28:
+ 212 008c FFF7FEFF 		bl	HAL_RCC_GetSysClockFreq
+ 213 0090 0D4B     		ldr	r3, .L34+24
+ 214 0092 1860     		str	r0, [r3]
+ 215 0094 0120     		movs	r0, #1
+ 216 0096 BDEC028B 		vldm	sp!, {d8}
+ 217 009a 10BD     		pop	{r4, pc}
+ 218              	.L30:
+ 219 009c 06EE100A 		vmov	s12, r0	@ int
+ 220 00a0 C4E7     		b	.L27
+ 221              	.L31:
+ 222 00a2 06EE100A 		vmov	s12, r0	@ int
+ 223 00a6 C1E7     		b	.L27
+ 224              	.L32:
+ 225 00a8 06EE100A 		vmov	s12, r0	@ int
+ 226 00ac BEE7     		b	.L27
+ 227              	.L35:
+ 228 00ae 00BF     		.align	3
+ 229              	.L34:
+ 230 00b0 00000000 		.word	0
+ 231 00b4 0088D340 		.word	1087604736
+ 232 00b8 204E0000 		.word	20000
+ 233 00bc 00000000 		.word	.LANCHOR0
+ 234 00c0 00000000 		.word	SystemCoreClock
+ 235 00c4 00ED00E0 		.word	-536810240
+ 236 00c8 00000000 		.word	.LANCHOR2
+ 238              		.section	.text.Runtime_Start,"ax",%progbits
+ 239              		.align	1
+ 240              		.global	Runtime_Start
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 5
+
+
+ 241              		.syntax unified
+ 242              		.thumb
+ 243              		.thumb_func
+ 244              		.fpu fpv5-d16
+ 246              	Runtime_Start:
+ 247              		@ args = 0, pretend = 0, frame = 0
+ 248              		@ frame_needed = 0, uses_anonymous_args = 0
+ 249 0000 08B5     		push	{r3, lr}
+ 250 0002 034B     		ldr	r3, .L39
+ 251 0004 0122     		movs	r2, #1
+ 252 0006 1A77     		strb	r2, [r3, #28]
+ 253 0008 1B69     		ldr	r3, [r3, #16]
+ 254 000a 03B1     		cbz	r3, .L36
+ 255 000c 9847     		blx	r3
+ 256              	.L36:
+ 257 000e 08BD     		pop	{r3, pc}
+ 258              	.L40:
+ 259              		.align	2
+ 260              	.L39:
+ 261 0010 00000000 		.word	.LANCHOR0
+ 263              		.section	.text.RuntimeObj_Reset,"ax",%progbits
+ 264              		.align	1
+ 265              		.global	RuntimeObj_Reset
+ 266              		.syntax unified
+ 267              		.thumb
+ 268              		.thumb_func
+ 269              		.fpu fpv5-d16
+ 271              	RuntimeObj_Reset:
+ 272              		@ args = 0, pretend = 0, frame = 0
+ 273              		@ frame_needed = 0, uses_anonymous_args = 0
+ 274              		@ link register save eliminated.
+ 275 0000 0022     		movs	r2, #0
+ 276 0002 0023     		movs	r3, #0
+ 277 0004 C0E90023 		strd	r2, [r0]
+ 278 0008 7047     		bx	lr
+ 280              		.section	.text.Get_TimeDifference_Between,"ax",%progbits
+ 281              		.align	1
+ 282              		.global	Get_TimeDifference_Between
+ 283              		.syntax unified
+ 284              		.thumb
+ 285              		.thumb_func
+ 286              		.fpu fpv5-d16
+ 288              	Get_TimeDifference_Between:
+ 289              		@ args = 0, pretend = 0, frame = 0
+ 290              		@ frame_needed = 0, uses_anonymous_args = 0
+ 291              		@ link register save eliminated.
+ 292 0000 8242     		cmp	r2, r0
+ 293 0002 73EB010C 		sbcs	ip, r3, r1
+ 294 0006 03D2     		bcs	.L45
+ 295 0008 801A     		subs	r0, r0, r2
+ 296 000a 61EB0301 		sbc	r1, r1, r3
+ 297 000e 7047     		bx	lr
+ 298              	.L45:
+ 299 0010 101A     		subs	r0, r2, r0
+ 300 0012 63EB0101 		sbc	r1, r3, r1
+ 301 0016 7047     		bx	lr
+ 303              		.section	.text.Runtime_Tick,"ax",%progbits
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 6
+
+
+ 304              		.align	1
+ 305              		.global	Runtime_Tick
+ 306              		.syntax unified
+ 307              		.thumb
+ 308              		.thumb_func
+ 309              		.fpu fpv5-d16
+ 311              	Runtime_Tick:
+ 312              		@ args = 0, pretend = 0, frame = 0
+ 313              		@ frame_needed = 0, uses_anonymous_args = 0
+ 314 0000 08B5     		push	{r3, lr}
+ 315 0002 0E4B     		ldr	r3, .L53
+ 316 0004 1B7F     		ldrb	r3, [r3, #28]	@ zero_extendqisi2
+ 317 0006 012B     		cmp	r3, #1
+ 318 0008 01D0     		beq	.L52
+ 319 000a 0020     		movs	r0, #0
+ 320              	.L47:
+ 321 000c 08BD     		pop	{r3, pc}
+ 322              	.L52:
+ 323 000e 0B4B     		ldr	r3, .L53
+ 324 0010 0022     		movs	r2, #0
+ 325 0012 5A77     		strb	r2, [r3, #29]
+ 326 0014 9868     		ldr	r0, [r3, #8]
+ 327 0016 1A68     		ldr	r2, [r3]
+ 328 0018 5968     		ldr	r1, [r3, #4]
+ 329 001a 1218     		adds	r2, r2, r0
+ 330 001c 41F10001 		adc	r1, r1, #0
+ 331 0020 1A60     		str	r2, [r3]
+ 332 0022 5960     		str	r1, [r3, #4]
+ 333 0024 0122     		movs	r2, #1
+ 334 0026 5A77     		strb	r2, [r3, #29]
+ 335 0028 054B     		ldr	r3, .L53+4
+ 336 002a 1B68     		ldr	r3, [r3]
+ 337 002c 03B1     		cbz	r3, .L48
+ 338 002e 9847     		blx	r3
+ 339              	.L48:
+ 340 0030 024B     		ldr	r3, .L53
+ 341 0032 9B69     		ldr	r3, [r3, #24]
+ 342 0034 03B1     		cbz	r3, .L49
+ 343 0036 9847     		blx	r3
+ 344              	.L49:
+ 345 0038 0120     		movs	r0, #1
+ 346 003a E7E7     		b	.L47
+ 347              	.L54:
+ 348              		.align	2
+ 349              	.L53:
+ 350 003c 00000000 		.word	.LANCHOR0
+ 351 0040 00000000 		.word	.LANCHOR1
+ 353              		.section	.text.Get_CurrentRunningUs,"ax",%progbits
+ 354              		.align	1
+ 355              		.global	Get_CurrentRunningUs
+ 356              		.syntax unified
+ 357              		.thumb
+ 358              		.thumb_func
+ 359              		.fpu fpv5-d16
+ 361              	Get_CurrentRunningUs:
+ 362              		@ args = 0, pretend = 0, frame = 0
+ 363              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 7
+
+
+ 364              		@ link register save eliminated.
+ 365 0000 014B     		ldr	r3, .L56
+ 366 0002 D3E90001 		ldrd	r0, [r3]
+ 367 0006 7047     		bx	lr
+ 368              	.L57:
+ 369              		.align	2
+ 370              	.L56:
+ 371 0008 00000000 		.word	.LANCHOR0
+ 373              		.global	__aeabi_uldivmod
+ 374              		.section	.text.Get_CurrentRunningMs,"ax",%progbits
+ 375              		.align	1
+ 376              		.global	Get_CurrentRunningMs
+ 377              		.syntax unified
+ 378              		.thumb
+ 379              		.thumb_func
+ 380              		.fpu fpv5-d16
+ 382              	Get_CurrentRunningMs:
+ 383              		@ args = 0, pretend = 0, frame = 0
+ 384              		@ frame_needed = 0, uses_anonymous_args = 0
+ 385 0000 08B5     		push	{r3, lr}
+ 386 0002 4FF47A72 		mov	r2, #1000
+ 387 0006 0023     		movs	r3, #0
+ 388 0008 0249     		ldr	r1, .L60
+ 389 000a D1E90001 		ldrd	r0, [r1]
+ 390 000e FFF7FEFF 		bl	__aeabi_uldivmod
+ 391 0012 08BD     		pop	{r3, pc}
+ 392              	.L61:
+ 393              		.align	2
+ 394              	.L60:
+ 395 0014 00000000 		.word	.LANCHOR0
+ 397              		.section	.text.Get_CurrentRunningS,"ax",%progbits
+ 398              		.align	1
+ 399              		.global	Get_CurrentRunningS
+ 400              		.syntax unified
+ 401              		.thumb
+ 402              		.thumb_func
+ 403              		.fpu fpv5-d16
+ 405              	Get_CurrentRunningS:
+ 406              		@ args = 0, pretend = 0, frame = 0
+ 407              		@ frame_needed = 0, uses_anonymous_args = 0
+ 408 0000 08B5     		push	{r3, lr}
+ 409 0002 044A     		ldr	r2, .L64
+ 410 0004 0023     		movs	r3, #0
+ 411 0006 0449     		ldr	r1, .L64+4
+ 412 0008 D1E90001 		ldrd	r0, [r1]
+ 413 000c FFF7FEFF 		bl	__aeabi_uldivmod
+ 414 0010 08BD     		pop	{r3, pc}
+ 415              	.L65:
+ 416 0012 00BF     		.align	2
+ 417              	.L64:
+ 418 0014 40420F00 		.word	1000000
+ 419 0018 00000000 		.word	.LANCHOR0
+ 421              		.section	.text.Get_TargetRunTime,"ax",%progbits
+ 422              		.align	1
+ 423              		.global	Get_TargetRunTime
+ 424              		.syntax unified
+ 425              		.thumb
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 8
+
+
+ 426              		.thumb_func
+ 427              		.fpu fpv5-d16
+ 429              	Get_TargetRunTime:
+ 430              		@ args = 0, pretend = 0, frame = 0
+ 431              		@ frame_needed = 0, uses_anonymous_args = 0
+ 432              		@ link register save eliminated.
+ 433 0000 034A     		ldr	r2, .L67
+ 434 0002 1368     		ldr	r3, [r2]
+ 435 0004 5168     		ldr	r1, [r2, #4]
+ 436 0006 C018     		adds	r0, r0, r3
+ 437 0008 41F10001 		adc	r1, r1, #0
+ 438 000c 7047     		bx	lr
+ 439              	.L68:
+ 440 000e 00BF     		.align	2
+ 441              	.L67:
+ 442 0010 00000000 		.word	.LANCHOR0
+ 444              		.section	.text.RuntimeObj_Compare,"ax",%progbits
+ 445              		.align	1
+ 446              		.global	RuntimeObj_Compare
+ 447              		.syntax unified
+ 448              		.thumb
+ 449              		.thumb_func
+ 450              		.fpu fpv5-d16
+ 452              	RuntimeObj_Compare:
+ 453              		@ args = 0, pretend = 0, frame = 0
+ 454              		@ frame_needed = 0, uses_anonymous_args = 0
+ 455              		@ link register save eliminated.
+ 456 0000 30B4     		push	{r4, r5}
+ 457 0002 0568     		ldr	r5, [r0]
+ 458 0004 4268     		ldr	r2, [r0, #4]
+ 459 0006 0C68     		ldr	r4, [r1]
+ 460 0008 4B68     		ldr	r3, [r1, #4]
+ 461 000a AC42     		cmp	r4, r5
+ 462 000c 73EB020C 		sbcs	ip, r3, r2
+ 463 0010 04D3     		bcc	.L69
+ 464 0012 A542     		cmp	r5, r4
+ 465 0014 72EB0303 		sbcs	r3, r2, r3
+ 466 0018 02D3     		bcc	.L74
+ 467 001a 0020     		movs	r0, #0
+ 468              	.L69:
+ 469 001c 30BC     		pop	{r4, r5}
+ 470 001e 7047     		bx	lr
+ 471              	.L74:
+ 472 0020 0846     		mov	r0, r1
+ 473 0022 FBE7     		b	.L69
+ 475              		.section	.text.RuntimeObj_CompareWithCurrent,"ax",%progbits
+ 476              		.align	1
+ 477              		.global	RuntimeObj_CompareWithCurrent
+ 478              		.syntax unified
+ 479              		.thumb
+ 480              		.thumb_func
+ 481              		.fpu fpv5-d16
+ 483              	RuntimeObj_CompareWithCurrent:
+ 484              		@ args = 0, pretend = 0, frame = 0
+ 485              		@ frame_needed = 0, uses_anonymous_args = 0
+ 486              		@ link register save eliminated.
+ 487 0000 054B     		ldr	r3, .L78
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 9
+
+
+ 488 0002 1A68     		ldr	r2, [r3]
+ 489 0004 5B68     		ldr	r3, [r3, #4]
+ 490 0006 9042     		cmp	r0, r2
+ 491 0008 71EB0303 		sbcs	r3, r1, r3
+ 492 000c 01D2     		bcs	.L77
+ 493 000e 0020     		movs	r0, #0
+ 494 0010 7047     		bx	lr
+ 495              	.L77:
+ 496 0012 0120     		movs	r0, #1
+ 497 0014 7047     		bx	lr
+ 498              	.L79:
+ 499 0016 00BF     		.align	2
+ 500              	.L78:
+ 501 0018 00000000 		.word	.LANCHOR0
+ 503              		.section	.bss.RunTime,"aw",%nobits
+ 504              		.align	3
+ 505              		.set	.LANCHOR0,. + 0
+ 508              	RunTime:
+ 509 0000 00000000 		.space	32
+ 509      00000000 
+ 509      00000000 
+ 509      00000000 
+ 509      00000000 
+ 510              		.section	.bss.Runtime_Stop_FuncPtr,"aw",%nobits
+ 511              		.align	2
+ 512              		.set	.LANCHOR1,. + 0
+ 515              	Runtime_Stop_FuncPtr:
+ 516 0000 00000000 		.space	4
+ 517              		.section	.bss.sysclock,"aw",%nobits
+ 518              		.align	2
+ 519              		.set	.LANCHOR2,. + 0
+ 522              	sysclock:
+ 523 0000 00000000 		.space	4
+ 524              		.ident	"GCC: (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 10
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 runtime.c
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:15     .text.Runtime_Stop:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:23     .text.Runtime_Stop:00000000 Runtime_Stop
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:49     .text.Runtime_Stop:00000024 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:54     .text.Runtime_SetCallback:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:61     .text.Runtime_SetCallback:00000000 Runtime_SetCallback
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:90     .text.Runtime_SetCallback:00000028 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:93     .text.Get_RuntimeState:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:100    .text.Get_RuntimeState:00000000 Get_RuntimeState
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:110    .text.Get_RuntimeState:00000008 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:113    .text.Runtime_GetTickFrq:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:120    .text.Runtime_GetTickFrq:00000000 Runtime_GetTickFrq
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:130    .text.Runtime_GetTickFrq:00000008 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:133    .text.Runtime_GetTickBase:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:140    .text.Runtime_GetTickBase:00000000 Runtime_GetTickBase
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:150    .text.Runtime_GetTickBase:00000008 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:153    .text.Runtime_Config:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:160    .text.Runtime_Config:00000000 Runtime_Config
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:230    .text.Runtime_Config:000000b0 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:239    .text.Runtime_Start:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:246    .text.Runtime_Start:00000000 Runtime_Start
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:261    .text.Runtime_Start:00000010 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:264    .text.RuntimeObj_Reset:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:271    .text.RuntimeObj_Reset:00000000 RuntimeObj_Reset
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:281    .text.Get_TimeDifference_Between:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:288    .text.Get_TimeDifference_Between:00000000 Get_TimeDifference_Between
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:304    .text.Runtime_Tick:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:311    .text.Runtime_Tick:00000000 Runtime_Tick
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:350    .text.Runtime_Tick:0000003c $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:354    .text.Get_CurrentRunningUs:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:361    .text.Get_CurrentRunningUs:00000000 Get_CurrentRunningUs
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:371    .text.Get_CurrentRunningUs:00000008 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:375    .text.Get_CurrentRunningMs:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:382    .text.Get_CurrentRunningMs:00000000 Get_CurrentRunningMs
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:395    .text.Get_CurrentRunningMs:00000014 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:398    .text.Get_CurrentRunningS:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:405    .text.Get_CurrentRunningS:00000000 Get_CurrentRunningS
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:418    .text.Get_CurrentRunningS:00000014 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:422    .text.Get_TargetRunTime:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:429    .text.Get_TargetRunTime:00000000 Get_TargetRunTime
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:442    .text.Get_TargetRunTime:00000010 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:445    .text.RuntimeObj_Compare:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:452    .text.RuntimeObj_Compare:00000000 RuntimeObj_Compare
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:476    .text.RuntimeObj_CompareWithCurrent:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:483    .text.RuntimeObj_CompareWithCurrent:00000000 RuntimeObj_CompareWithCurrent
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:501    .text.RuntimeObj_CompareWithCurrent:00000018 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:504    .bss.RunTime:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:508    .bss.RunTime:00000000 RunTime
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:511    .bss.Runtime_Stop_FuncPtr:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:515    .bss.Runtime_Stop_FuncPtr:00000000 Runtime_Stop_FuncPtr
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:518    .bss.sysclock:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s:522    .bss.sysclock:00000000 sysclock
+
+UNDEFINED SYMBOLS
+SystemCoreClockUpdate
+HAL_RCC_GetSysClockFreq
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSZcc6w.s 			page 11
+
+
+SystemCoreClock
+__aeabi_uldivmod

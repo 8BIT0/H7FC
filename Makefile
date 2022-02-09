@@ -196,12 +196,14 @@ OPENOCD := openocd -f interface/cmsis-dap.cfg \
         -f target/stm32h7x.cfg \
 
 # download your program
+# $(OPENOCD) -c init \
+#  -c 'reset halt' \
+#     -c 'flash write_image erase $(BUILD_DIR)/$(TARGET).elf' \
+#     -c 'reset run' \
+#     -c exit
 flash: all
-	$(OPENOCD) -c init \
-        -c 'reset halt' \
-        -c 'flash write_image erase $(BUILD_DIR)/$(TARGET).elf' \
-        -c 'reset run' \
-        -c exit
+	$(OPENOCD) -c 'program build/H7FC.elf verify reset exit'
+
 debug:
 	$(OPENOCD)
 
