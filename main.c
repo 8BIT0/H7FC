@@ -6,7 +6,6 @@ void main(void)
     uint32_t i = 0;
 
     HAL_Init();
-
     Runtime_Config(RUNTIME_TICK_FRQ_20K);
 
     while (1)

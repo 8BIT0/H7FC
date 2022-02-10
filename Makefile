@@ -203,7 +203,7 @@ OPENOCD := openocd -f interface/cmsis-dap.cfg \
 #     -c 'reset run' \
 #     -c exit
 flash: all
-	$(OPENOCD) -c 'program $(BUILD_DIR)/$(TARGET).elf verify reset exit'
+	$(OPENOCD) -c 'program $(BUILD_DIR)/$(TARGET).elf verify reset run exit'
 
 debug:
 	$(OPENOCD)
