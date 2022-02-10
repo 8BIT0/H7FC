@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "Bsp_SPI_Cfg.h"
 
 typedef struct
 {
