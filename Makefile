@@ -20,7 +20,7 @@ TARGET = H7FC
 # building variables
 ######################################
 # debug build?
-DEBUG = 0
+DEBUG = 1
 # optimization
 OPT = -Og
 
@@ -44,22 +44,21 @@ HAL_Lib/Core/Src/system_stm32h7xx.c  \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash_ex.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_gpio.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma_ex.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdma.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr_ex.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c \
-# Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash_ex.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_gpio.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma_ex.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdma.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr_ex.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c \
 
 # ASM sources
 ASM_SOURCES =  \
