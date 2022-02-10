@@ -9,6 +9,8 @@
         "cstdint": "c",
         "stdio.h": "c",
         "stdbool.h": "c",
-        "bsp_spi.h": "c"
+        "bsp_spi.h": "c",
+        "stm32h7xx.h": "c",
+        "bsp_spi0.h": "c"
     }
 }

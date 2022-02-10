@@ -32,3 +32,19 @@ bool BspSPI0_Init()
 
     return true;
 }
+
+void BspSPI0_TransByte(uint8_t tx)
+{
+}
+
+uint8_t BspSPI0_ReceiveByte(void)
+{
+}
+
+uint8_t BspSPI0_TransMitByte(uint8_t tx)
+{
+}
+
+uint16_t BspSPI0_TransMitBuff(uint8_t *tx, uint8_t *rx, uint16_t size)
+{
+}
