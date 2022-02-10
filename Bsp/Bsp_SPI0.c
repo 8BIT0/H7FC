@@ -28,7 +28,7 @@ static bool BspSPI0_Init()
     hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
     hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
     hspi2.Init.NSS = SPI_NSS_SOFT;
-    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; // setable
     hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
     hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
     hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -44,7 +44,10 @@ static bool BspSPI0_Init()
     hspi2.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
     hspi2.Init.IOSwap = SPI_IO_SWAP_DISABLE;
 
-    HAL_SPI_Init(hspi);
+    if (HAL_SPI_Init(hspi) == HAL_OK)
+    {
+        return false;
+    }
 
     return true;
 }
