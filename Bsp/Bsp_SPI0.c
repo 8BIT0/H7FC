@@ -3,7 +3,23 @@
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal_spi.h"
 
-bool BspSPI0_Init()
+/* internal function */
+static bool BspSPI0_Init();
+static void BspSPI0_TransByte(uint8_t tx);
+static uint8_t BspSPI0_ReceiveByte(void);
+static uint8_t BspSPI0_TransMitByte(uint8_t tx);
+static uint16_t BspSPI0_TransMitBuff(uint8_t *tx, uint8_t *rx, uint16_t size);
+
+/* SPI0 Object */
+BspSpi_TypeDef BspSPI0 = {
+    .Init = BspSPI0_Init,
+    .TransByte = BspSPI0_TransByte,
+    .ReceiveByte = BspSPI0_ReceiveByte,
+    .TransMitByte = BspSPI0_TransMitByte,
+    .TransMitBuff = BspSPI0_TransMitBuff,
+};
+
+static bool BspSPI0_Init()
 {
     hspi2.Instance = SPI2;
     hspi2.Init.Mode = SPI_MODE_MASTER;
@@ -33,18 +49,18 @@ bool BspSPI0_Init()
     return true;
 }
 
-void BspSPI0_TransByte(uint8_t tx)
+static void BspSPI0_TransByte(uint8_t tx)
 {
 }
 
-uint8_t BspSPI0_ReceiveByte(void)
+static uint8_t BspSPI0_ReceiveByte(void)
 {
 }
 
-uint8_t BspSPI0_TransMitByte(uint8_t tx)
+static uint8_t BspSPI0_TransMitByte(uint8_t tx)
 {
 }
 
-uint16_t BspSPI0_TransMitBuff(uint8_t *tx, uint8_t *rx, uint16_t size)
+static uint16_t BspSPI0_TransMitBuff(uint8_t *tx, uint8_t *rx, uint16_t size)
 {
 }
