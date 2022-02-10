@@ -7,6 +7,8 @@
         "stm32h7xx_hal.h": "c",
         "stm32h7xx_it.h": "c",
         "cstdint": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "stdbool.h": "c",
+        "bsp_spi.h": "c"
     }
 }
