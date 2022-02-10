@@ -59,6 +59,7 @@ HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr_ex.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -197,13 +198,14 @@ OPENOCD := openocd -f interface/cmsis-dap.cfg \
         -f target/stm32h7x.cfg \
 
 # download your program
-# $(OPENOCD) -c init \
-#  -c 'reset halt' \
-#     -c 'flash write_image erase $(BUILD_DIR)/$(TARGET).elf' \
-#     -c 'reset run' \
-#     -c exit
+# $(OPENOCD)
+# -c 'program $(BUILD_DIR)/$(TARGET).elf verify reset run exit' 
 flash: all
-	$(OPENOCD) -c 'program $(BUILD_DIR)/$(TARGET).elf verify reset run exit'
+	$(OPENOCD) -c init \
+		-c 'reset halt' \
+		-c 'flash write_image erase $(BUILD_DIR)/$(TARGET).elf' \
+		-c 'reset run' \
+		-c exit
 
 debug:
 	$(OPENOCD)

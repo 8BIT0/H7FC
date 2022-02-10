@@ -7,6 +7,7 @@ void main(void)
 
     HAL_Init();
     Runtime_Config(RUNTIME_TICK_FRQ_20K);
+    Runtime_Start();
 
     while (1)
     {
