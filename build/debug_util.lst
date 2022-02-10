@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccFOMAke.s 			page 1
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cca0LWGk.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -14,58 +14,109 @@ ARM GAS  C:\Users\huav\AppData\Local\Temp\ccFOMAke.s 			page 1
   11              		.eabi_attribute 18, 4
   12              		.file	"debug_util.c"
   13              		.text
-  14              		.section	.text.CreateDebugPin,"ax",%progbits
-  15              		.align	1
-  16              		.global	CreateDebugPin
-  17              		.arch armv7e-m
-  18              		.syntax unified
-  19              		.thumb
-  20              		.thumb_func
-  21              		.fpu fpv5-d16
-  23              	CreateDebugPin:
-  24              		@ args = 0, pretend = 0, frame = 0
-  25              		@ frame_needed = 0, uses_anonymous_args = 0
-  26              		@ link register save eliminated.
-  27 0000 7047     		bx	lr
-  29              		.section	.text.DebugPin_Ctl,"ax",%progbits
-  30              		.align	1
-  31              		.global	DebugPin_Ctl
-  32              		.syntax unified
-  33              		.thumb
-  34              		.thumb_func
-  35              		.fpu fpv5-d16
-  37              	DebugPin_Ctl:
-  38              		@ args = 0, pretend = 0, frame = 0
-  39              		@ frame_needed = 0, uses_anonymous_args = 0
-  40              		@ link register save eliminated.
-  41 0000 7047     		bx	lr
-  43              		.section	.text.assert,"ax",%progbits
-  44              		.align	1
-  45              		.global	assert
-  46              		.syntax unified
-  47              		.thumb
-  48              		.thumb_func
-  49              		.fpu fpv5-d16
-  51              	assert:
-  52              		@ args = 0, pretend = 0, frame = 0
-  53              		@ frame_needed = 0, uses_anonymous_args = 0
-  54              		@ link register save eliminated.
-  55 0000 00B1     		cbz	r0, .L3
-  56              	.L5:
-  57 0002 FEE7     		b	.L5
-  58              	.L3:
-  59 0004 7047     		bx	lr
-  61              		.ident	"GCC: (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
-ARM GAS  C:\Users\huav\AppData\Local\Temp\ccFOMAke.s 			page 2
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.CreateDebugPin,"ax",%progbits
+  17              		.align	1
+  18              		.global	CreateDebugPin
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	CreateDebugPin:
+  26              	.LFB144:
+  27              		.file 1 "debug/debug_util.c"
+   1:debug/debug_util.c **** #include "debug_util.h"
+   2:debug/debug_util.c **** 
+   3:debug/debug_util.c **** bool CreateDebugPin()
+   4:debug/debug_util.c **** {
+  28              		.loc 1 4 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+   5:debug/debug_util.c **** }
+  33              		.loc 1 5 1 view .LVU1
+  34 0000 7047     		bx	lr
+  35              		.cfi_endproc
+  36              	.LFE144:
+  38              		.section	.text.DebugPin_Ctl,"ax",%progbits
+  39              		.align	1
+  40              		.global	DebugPin_Ctl
+  41              		.syntax unified
+  42              		.thumb
+  43              		.thumb_func
+  44              		.fpu fpv5-d16
+  46              	DebugPin_Ctl:
+  47              	.LVL0:
+  48              	.LFB145:
+   6:debug/debug_util.c **** 
+   7:debug/debug_util.c **** bool DebugPin_Ctl(bool state)
+   8:debug/debug_util.c **** {
+  49              		.loc 1 8 1 view -0
+  50              		.cfi_startproc
+  51              		@ args = 0, pretend = 0, frame = 0
+  52              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cca0LWGk.s 			page 2
+
+
+  53              		@ link register save eliminated.
+   9:debug/debug_util.c **** }
+  54              		.loc 1 9 1 view .LVU3
+  55              	.LVL1:
+  56              		.loc 1 9 1 is_stmt 0 view .LVU4
+  57 0000 7047     		bx	lr
+  58              		.cfi_endproc
+  59              	.LFE145:
+  61              		.section	.text.assert,"ax",%progbits
+  62              		.align	1
+  63              		.global	assert
+  64              		.syntax unified
+  65              		.thumb
+  66              		.thumb_func
+  67              		.fpu fpv5-d16
+  69              	assert:
+  70              	.LVL2:
+  71              	.LFB146:
+  10:debug/debug_util.c **** 
+  11:debug/debug_util.c **** void assert(bool state)
+  12:debug/debug_util.c **** {
+  72              		.loc 1 12 1 is_stmt 1 view -0
+  73              		.cfi_startproc
+  74              		@ args = 0, pretend = 0, frame = 0
+  75              		@ frame_needed = 0, uses_anonymous_args = 0
+  76              		@ link register save eliminated.
+  13:debug/debug_util.c ****     if (state)
+  77              		.loc 1 13 5 view .LVU6
+  78              		.loc 1 13 8 is_stmt 0 view .LVU7
+  79 0000 00B1     		cbz	r0, .L3
+  80              	.L5:
+  14:debug/debug_util.c ****         while (true)
+  81              		.loc 1 14 9 is_stmt 1 discriminator 1 view .LVU8
+  15:debug/debug_util.c ****             ;
+  82              		.loc 1 15 13 discriminator 1 view .LVU9
+  14:debug/debug_util.c ****         while (true)
+  83              		.loc 1 14 15 discriminator 1 view .LVU10
+  84 0002 FEE7     		b	.L5
+  85              	.L3:
+  16:debug/debug_util.c **** }
+  86              		.loc 1 16 1 is_stmt 0 view .LVU11
+  87 0004 7047     		bx	lr
+  88              		.cfi_endproc
+  89              	.LFE146:
+  91              		.text
+  92              	.Letext0:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cca0LWGk.s 			page 3
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 debug_util.c
-C:\Users\huav\AppData\Local\Temp\ccFOMAke.s:15     .text.CreateDebugPin:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccFOMAke.s:23     .text.CreateDebugPin:00000000 CreateDebugPin
-C:\Users\huav\AppData\Local\Temp\ccFOMAke.s:30     .text.DebugPin_Ctl:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccFOMAke.s:37     .text.DebugPin_Ctl:00000000 DebugPin_Ctl
-C:\Users\huav\AppData\Local\Temp\ccFOMAke.s:44     .text.assert:00000000 $t
-C:\Users\huav\AppData\Local\Temp\ccFOMAke.s:51     .text.assert:00000000 assert
+C:\Users\huav\AppData\Local\Temp\cca0LWGk.s:17     .text.CreateDebugPin:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cca0LWGk.s:25     .text.CreateDebugPin:00000000 CreateDebugPin
+C:\Users\huav\AppData\Local\Temp\cca0LWGk.s:39     .text.DebugPin_Ctl:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cca0LWGk.s:46     .text.DebugPin_Ctl:00000000 DebugPin_Ctl
+C:\Users\huav\AppData\Local\Temp\cca0LWGk.s:62     .text.assert:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cca0LWGk.s:69     .text.assert:00000000 assert
 
 NO UNDEFINED SYMBOLS
