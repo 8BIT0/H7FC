@@ -5,6 +5,12 @@
 #include <stdbool.h>
 #include "Bsp_SPI_Cfg.h"
 
+typedef enum
+{
+    BspSPI_Norm_Mode = 0,
+    BspSPI_Quad_Mode,
+} BspSPI_Mode_List;
+
 typedef struct
 {
     bool (*Init)();

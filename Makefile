@@ -38,6 +38,8 @@ BUILD_DIR = build
 C_SOURCES =  \
 main.c \
 debug/debug_util.c \
+Bsp/Bsp_GPIO.c \
+Device/Dev_Led.c \
 System/runtime/runtime.c \
 HAL_Lib/Core/Src/stm32h7xx_it.c \
 HAL_Lib/Core/Src/system_stm32h7xx.c  \
@@ -116,7 +118,10 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
--Idebug/ \
+-I\
+-Idebug \
+-IBsp \
+-IDevice \
 -ISystem/runtime \
 -IHAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHAL_Lib/Core/Inc \

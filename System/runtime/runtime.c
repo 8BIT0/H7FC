@@ -14,7 +14,7 @@ static void Error_Handler(void);
 
 /* internal variable */
 static uint32_t sysclock = 0;
-static Runtime_DataObj_TypeDef RunTime = {
+static volatile Runtime_DataObj_TypeDef RunTime = {
     .tick_callback = NULL,
     .start_callback = NULL,
     .stop_callback = NULL,
@@ -88,11 +88,11 @@ bool Runtime_Config(uint32_t tick_frq)
     SystemClock_Config();
 
     RunTime.module_state = Runtime_Module_Init;
-    RunTime.base = RUNTIEM_MAX_TICK_FRQ / frq;
+    RunTime.base = RUNTIME_1SINUS / frq;
     RunTime.frq = tick_frq;
 
     SystemCoreClockUpdate();
-    SysTick_Config(SystemCoreClock / (RUNTIEM_MAX_TICK_FRQ / RunTime.base));
+    SysTick_Config(SystemCoreClock / RunTime.frq);
 
     sysclock = HAL_RCC_GetSysClockFreq();
 
@@ -102,6 +102,8 @@ bool Runtime_Config(uint32_t tick_frq)
 void Runtime_Start(void)
 {
     RunTime.module_state = Runtime_Module_Start;
+
+    RunTime.Use_Us = 0;
 
     if (RunTime.start_callback != NULL)
     {
