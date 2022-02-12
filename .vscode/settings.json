@@ -11,6 +11,16 @@
         "stdbool.h": "c",
         "bsp_spi.h": "c",
         "stm32h7xx.h": "c",
-        "bsp_spi0.h": "c"
-    }
+        "bsp_spi0.h": "c",
+        "dev_led.h": "c",
+        "stdlib.h": "c",
+        "bsp_gpio.h": "c",
+        "io_definition.h": "c",
+        "stm32h7xx_hal_conf.h": "c",
+        "algorithm": "c",
+        "atomic": "c",
+        "random": "c",
+        "utility": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

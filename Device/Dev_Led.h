@@ -7,12 +7,17 @@
 
 typedef struct
 {
-
-} LedObj_TypeDef;
+    uint32_t port;
+    uint16_t pin;
+    bool default_state;
+} DevLedObj_TypeDef;
 
 typedef struct
 {
+    bool (*init)(DevLedObj_TypeDef obj);
+    bool (*ctl)(DevLedObj_TypeDef obj, bool state);
+} DevLed_TypeDef;
 
-} LedDevObj_TypeDef;
+extern DevLed_TypeDef DevLED;
 
 #endif

@@ -13,6 +13,7 @@
 
 #define RUNTIEM_MAX_TICK_FRQ RUNTIME_TICK_FRQ_20K
 
+#define RUNTIME_1SINUS 1000000
 #define RUNTIME_TICK_FRQ_20K 20000 /* 50us base time */
 #define RUNTIME_TICK_FRQ_10K 10000 /* 100us base time */
 #define RUNTIME_TICK_FRQ_5K 5000   /* 200us base time */
