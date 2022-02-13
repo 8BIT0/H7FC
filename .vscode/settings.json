@@ -20,7 +20,8 @@
         "algorithm": "c",
         "atomic": "c",
         "random": "c",
-        "utility": "c"
+        "utility": "c",
+        "dev_w25qxx.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
