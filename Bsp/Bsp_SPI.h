@@ -11,6 +11,18 @@ typedef enum
     BspSPI_Quad_Mode,
 } BspSPI_Mode_List;
 
+#pragma pack(1)
+typedef struct
+{
+    uint8_t id;
+} BspSpiNormalModeObj_TypeDef;
+
+typedef struct
+{
+    uint8_t id;
+} BspSpiQuadModeObj_TypeDef;
+#pragma pack()
+
 typedef struct
 {
     bool (*Init)();
