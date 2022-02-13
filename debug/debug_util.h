@@ -3,10 +3,23 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "stm32h743xx.h"
-#include "stm32h7xx_hal.h"
-#include "stm32h7xx_hal_rcc.h"
+#include "Bsp_GPIO.h"
 
 void assert(bool state);
+
+#pragma pack(1)
+typedef struct
+{
+    uint32_t port;
+    uint16_t pin;
+    bool default_state;
+} DebugPinObj_TypeDef;
+#pragma pack()
+
+typedef struct
+{
+    bool (*init)(DebugPinObj_TypeDef pin);
+    bool (*ctl)(DebugPinObj_TypeDef pin, bool state);
+} DebugPin_TypeDef;
 
 #endif
