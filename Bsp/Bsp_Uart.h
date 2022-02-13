@@ -41,6 +41,9 @@ typedef struct
     bool (*set_callback)(BspUARTObj_TypeDef *obj, BspUARTCallback_Type_List type, BspUART_Callback callback);
     BspUART_Callback (*get_callback)(BspUARTObj_TypeDef *obj, BspUARTCallback_Type_List type);
     bool (*send)(BspUARTObj_TypeDef *obj, uint8_t *tx, uint32_t size);
+    bool (*get_send_state)(BspUARTObj_TypeDef *obj);
+    bool (*receive)(BspUARTObj_TypeDef *obj, uint8_t *rx, uint16_t size);
+    bool (*reset_receive)(BspUARTObj_TypeDef *obj);
     uint16_t (*get_RecCount)(BspUARTObj_TypeDef *obj);
 } BspUART_TypeDef;
 
