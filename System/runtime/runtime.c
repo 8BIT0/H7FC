@@ -5,12 +5,13 @@
  *
  */
 #include "runtime.h"
+#include "system_cfg.h"
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_rcc.h"
 
 /* internal variable */
-static uint32_t sysclock = 0;
+static ITCM_CODE uint32_t sysclock = 0;
 static volatile Runtime_DataObj_TypeDef RunTime = {
     .tick_callback = NULL,
     .start_callback = NULL,
@@ -134,7 +135,7 @@ bool Runtime_Stop(void)
     return false;
 }
 
-bool Runtime_Tick(void)
+bool ITCM_CODE Runtime_Tick(void)
 {
     if (RunTime.module_state == Runtime_Module_Start)
     {
@@ -151,17 +152,17 @@ bool Runtime_Tick(void)
     return false;
 }
 
-inline SYSTEM_RunTime Get_CurrentRunningUs(void)
+inline SYSTEM_RunTime ITCM_CODE Get_CurrentRunningUs(void)
 {
     return RunTime.Use_Us;
 }
 
-inline SYSTEM_RunTime Get_CurrentRunningMs(void)
+inline SYSTEM_RunTime ITCM_CODE Get_CurrentRunningMs(void)
 {
     return (RunTime.Use_Us / REAL_MS);
 }
 
-SYSTEM_RunTime Get_CurrentRunningS(void)
+inline SYSTEM_RunTime ITCM_CODE Get_CurrentRunningS(void)
 {
     return (Get_CurrentRunningMs() / REAL_MS);
 }
