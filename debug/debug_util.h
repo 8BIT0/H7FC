@@ -22,4 +22,6 @@ typedef struct
     bool (*ctl)(DebugPinObj_TypeDef pin, bool state);
 } DebugPin_TypeDef;
 
+extern DebugPin_TypeDef DebugPin;
+
 #endif
