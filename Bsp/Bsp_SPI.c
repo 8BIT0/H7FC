@@ -1,4 +1,4 @@
-#include "Bsp_SPI0.h"
+#include "Bsp_SPI.h"
 #include "stm32h7xx.h"
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal_spi.h"
@@ -19,7 +19,11 @@ BspSpi_TypeDef BspSPI0 = {
     .TransMitBuff = BspSPI0_TransMitBuff,
 };
 
-static bool BspSPI0_Init()
+static bool BspSPI0_QuadMode_Init()
+{
+}
+
+static bool BspSPI0_NormalMode_Init()
 {
     hspi2.Instance = SPI2;
     hspi2.Init.Mode = SPI_MODE_MASTER;
