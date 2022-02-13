@@ -41,6 +41,7 @@ debug/debug_util.c \
 Bsp/Bsp_GPIO.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
+System/kernel/kernel.c \
 System/runtime/runtime.c \
 HAL_Lib/Core/Src/stm32h7xx_it.c \
 HAL_Lib/Core/Src/system_stm32h7xx.c  \
@@ -120,10 +121,11 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -I\
--Idebug \
+-Idebug/ \
 -IBsp \
 -IDevice \
 -ISystem/runtime \
+-ISystem/kernel/ \
 -IHAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHAL_Lib/Core/Inc \
 -IHAL_Lib/CMSIS/Device/ST/STM32H7xx/Include \

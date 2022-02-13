@@ -1,4 +1,4 @@
-#include "stm32h7xx_hal.h"
+#include "kernel.h"
 #include "IO_Definition.h"
 #include "runtime.h"
 #include "Dev_Led.h"
@@ -15,10 +15,8 @@ void main(void)
     volatile SYSTEM_RunTime Lst_Rt = 0;
     bool led_state = false;
 
-    SCB_EnableICache();
-    SCB_EnableDCache();
+    Kernel_Init();
 
-    HAL_Init();
     Runtime_Config(RUNTIME_TICK_FRQ_20K);
     Runtime_Start();
 
