@@ -40,6 +40,7 @@ main.c \
 debug/debug_util.c \
 Bsp/Bsp_GPIO.c \
 Device/Dev_Led.c \
+Device/Dev_W25Qxx.c \
 System/runtime/runtime.c \
 HAL_Lib/Core/Src/stm32h7xx_it.c \
 HAL_Lib/Core/Src/system_stm32h7xx.c  \
