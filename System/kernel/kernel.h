@@ -1,0 +1,11 @@
+#ifndef __KERNEL_H
+#define __KERNEL_H
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include "stm32h7xx.h"
+
+void Kernel_Init(void);
+
+#endif
