@@ -2,16 +2,28 @@
 
 static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t addr, uint32_t *rx, uint32_t size)
 {
+    dev.cs_ctl(true);
+
+    dev.cs_ctl(false);
+
     return DevW25Qxx_Ok;
 }
 
 static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef dev, uint32_t addr, uint8_t *tx, uint32_t size)
 {
+    dev.cs_ctl(true);
+
+    dev.cs_ctl(false);
+
     return DevW25Qxx_Ok;
 }
 
 static DevW25Qxx_Error_List DevW25Qxx_Erase(DevW25QxxObj_TypeDef dev, DevW25Qxx_EraseType_List type, uint32_t addr, uint32_t size)
 {
+    dev.cs_ctl(true);
+
+    dev.cs_ctl(false);
+
     return DevW25Qxx_Ok;
 }
 
