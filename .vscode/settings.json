@@ -21,7 +21,11 @@
         "atomic": "c",
         "random": "c",
         "utility": "c",
-        "dev_w25qxx.h": "c"
+        "dev_w25qxx.h": "c",
+        "cstdio": "cpp",
+        "type_traits": "cpp",
+        "new": "cpp",
+        "typeinfo": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
