@@ -72,6 +72,17 @@ FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 2048K
 /* Define output sections */
 SECTIONS
 {
+    tcm_code = LOADADDR(.tcm_code); 
+  .tcm_code :
+  {
+    . = ALIGN(4);
+    tcm_code_start = .; 
+    *(.tcm_code)
+    *(.tcm_code*)
+    . = ALIGN(4);
+    tcm_code_end = .; 
+  } >ITCM_RAM
+  
   /* The startup code goes first into FLASH */
   .isr_vector :
   {
