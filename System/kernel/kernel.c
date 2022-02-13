@@ -1,4 +1,9 @@
 #include "kernel.h"
+#include "system_cfg.h"
+
+extern uint8_t tcm_code_start;
+extern uint8_t tcm_code_end;
+extern uint8_t tcm_code;
 
 static bool KernelClock_Init(void);
 
@@ -8,6 +13,8 @@ void Kernel_Init(void)
     SCB_EnableDCache();
 
     HAL_Init();
+
+    memcpy(&tcm_code_start, &tcm_code, (size_t)(&tcm_code_end - &tcm_code_start));
 
     return KernelClock_Init();
 }
