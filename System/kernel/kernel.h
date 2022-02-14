@@ -6,6 +6,6 @@
 #include <string.h>
 #include "stm32h7xx.h"
 
-void Kernel_Init(void);
+bool Kernel_Init(void);
 
 #endif

@@ -25,7 +25,8 @@
         "cstdio": "cpp",
         "type_traits": "cpp",
         "new": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "kernel.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

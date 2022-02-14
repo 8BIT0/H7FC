@@ -11,7 +11,7 @@
 #include "stm32h7xx_hal_rcc.h"
 
 /* internal variable */
-static ITCM_CODE uint32_t sysclock = 0;
+static volatile uint32_t sysclock = 0;
 static volatile Runtime_DataObj_TypeDef RunTime = {
     .tick_callback = NULL,
     .start_callback = NULL,
@@ -135,7 +135,7 @@ bool Runtime_Stop(void)
     return false;
 }
 
-bool ITCM_CODE Runtime_Tick(void)
+bool Runtime_Tick(void)
 {
     if (RunTime.module_state == Runtime_Module_Start)
     {
@@ -152,17 +152,17 @@ bool ITCM_CODE Runtime_Tick(void)
     return false;
 }
 
-inline SYSTEM_RunTime ITCM_CODE Get_CurrentRunningUs(void)
+inline SYSTEM_RunTime Get_CurrentRunningUs(void)
 {
     return RunTime.Use_Us;
 }
 
-inline SYSTEM_RunTime ITCM_CODE Get_CurrentRunningMs(void)
+inline SYSTEM_RunTime Get_CurrentRunningMs(void)
 {
     return (RunTime.Use_Us / REAL_MS);
 }
 
-inline SYSTEM_RunTime ITCM_CODE Get_CurrentRunningS(void)
+inline SYSTEM_RunTime Get_CurrentRunningS(void)
 {
     return (Get_CurrentRunningMs() / REAL_MS);
 }
@@ -195,7 +195,7 @@ uint32_t RuntimeObj_Compare(const uint64_t *EQ_L, const uint64_t *EQ_R)
 
 /* input time object compare with current runtime */
 /* if input time object >= current runtime return true */
-inline bool RuntimeObj_CompareWithCurrent(const uint64_t time_in)
+bool RuntimeObj_CompareWithCurrent(const uint64_t time_in)
 {
     if (time_in >= RunTime.Use_Us)
     {
