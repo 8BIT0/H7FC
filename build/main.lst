@@ -1,0 +1,221 @@
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"main.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.global	__aeabi_uldivmod
+  17              		.section	.text.main,"ax",%progbits
+  18              		.align	1
+  19              		.global	main
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv5-d16
+  26              	main:
+  27              	.LFB147:
+  28              		.file 1 "main.c"
+   1:main.c        **** #include "kernel.h"
+   2:main.c        **** #include "IO_Definition.h"
+   3:main.c        **** #include "runtime.h"
+   4:main.c        **** #include "Dev_Led.h"
+   5:main.c        **** 
+   6:main.c        **** DevLedObj_TypeDef Led1 = {
+   7:main.c        ****     .port = LED1_PORT,
+   8:main.c        ****     .pin = LED1_PIN,
+   9:main.c        ****     // .LedClk_Enable = LED1_CLK_ENABLE,
+  10:main.c        **** };
+  11:main.c        **** 
+  12:main.c        **** void main(void)
+  13:main.c        **** {
+  29              		.loc 1 13 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 16
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33 0000 30B5     		push	{r4, r5, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 12
+  36              		.cfi_offset 4, -12
+  37              		.cfi_offset 5, -8
+  38              		.cfi_offset 14, -4
+  39 0002 85B0     		sub	sp, sp, #20
+  40              	.LCFI1:
+  41              		.cfi_def_cfa_offset 32
+  14:main.c        ****     volatile SYSTEM_RunTime Rt = 0;
+  42              		.loc 1 14 5 view .LVU1
+  43              		.loc 1 14 29 is_stmt 0 view .LVU2
+  44 0004 0022     		movs	r2, #0
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s 			page 2
+
+
+  45 0006 0023     		movs	r3, #0
+  46 0008 CDE90223 		strd	r2, [sp, #8]
+  15:main.c        ****     volatile SYSTEM_RunTime Lst_Rt = 0;
+  47              		.loc 1 15 5 is_stmt 1 view .LVU3
+  48              		.loc 1 15 29 is_stmt 0 view .LVU4
+  49 000c CDE90023 		strd	r2, [sp]
+  16:main.c        ****     bool led_state = false;
+  50              		.loc 1 16 5 is_stmt 1 view .LVU5
+  51              	.LVL0:
+  17:main.c        **** 
+  18:main.c        ****     Kernel_Init();
+  52              		.loc 1 18 5 view .LVU6
+  53 0010 FFF7FEFF 		bl	Kernel_Init
+  54              	.LVL1:
+  19:main.c        **** 
+  20:main.c        ****     Runtime_Config(RUNTIME_TICK_FRQ_20K);
+  55              		.loc 1 20 5 view .LVU7
+  56 0014 44F62060 		movw	r0, #20000
+  57 0018 FFF7FEFF 		bl	Runtime_Config
+  58              	.LVL2:
+  21:main.c        ****     Runtime_Start();
+  59              		.loc 1 21 5 view .LVU8
+  60 001c FFF7FEFF 		bl	Runtime_Start
+  61              	.LVL3:
+  22:main.c        **** 
+  23:main.c        ****     DevLED.init(Led1);
+  62              		.loc 1 23 5 view .LVU9
+  63              		.loc 1 23 11 is_stmt 0 view .LVU10
+  64 0020 144B     		ldr	r3, .L5
+  65 0022 1A68     		ldr	r2, [r3]
+  66              		.loc 1 23 5 view .LVU11
+  67 0024 144B     		ldr	r3, .L5+4
+  68 0026 93E80300 		ldm	r3, {r0, r1}
+  69 002a 9047     		blx	r2
+  70              	.LVL4:
+  16:main.c        **** 
+  71              		.loc 1 16 10 view .LVU12
+  72 002c 0025     		movs	r5, #0
+  73 002e 06E0     		b	.L3
+  74              	.LVL5:
+  75              	.L2:
+  24:main.c        **** 
+  25:main.c        ****     while (1)
+  26:main.c        ****     {
+  27:main.c        ****         Rt = Get_CurrentRunningMs();
+  28:main.c        **** 
+  29:main.c        ****         if ((Rt % 50 == 0) && (Lst_Rt != Rt))
+  30:main.c        ****         {
+  31:main.c        ****             led_state = !led_state;
+  32:main.c        ****             Lst_Rt = Rt;
+  33:main.c        ****         }
+  34:main.c        **** 
+  35:main.c        ****         DevLED.ctl(Led1, led_state);
+  76              		.loc 1 35 9 is_stmt 1 view .LVU13
+  77              		.loc 1 35 15 is_stmt 0 view .LVU14
+  78 0030 104B     		ldr	r3, .L5
+  79 0032 5C68     		ldr	r4, [r3, #4]
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s 			page 3
+
+
+  80              		.loc 1 35 9 view .LVU15
+  81 0034 104B     		ldr	r3, .L5+4
+  82 0036 2A46     		mov	r2, r5
+  83 0038 93E80300 		ldm	r3, {r0, r1}
+  84 003c A047     		blx	r4
+  85              	.LVL6:
+  25:main.c        ****     {
+  86              		.loc 1 25 11 is_stmt 1 view .LVU16
+  87              	.L3:
+  25:main.c        ****     {
+  88              		.loc 1 25 5 view .LVU17
+  27:main.c        **** 
+  89              		.loc 1 27 9 view .LVU18
+  27:main.c        **** 
+  90              		.loc 1 27 14 is_stmt 0 view .LVU19
+  91 003e FFF7FEFF 		bl	Get_CurrentRunningMs
+  92              	.LVL7:
+  27:main.c        **** 
+  93              		.loc 1 27 12 view .LVU20
+  94 0042 CDE90201 		strd	r0, [sp, #8]
+  29:main.c        ****         {
+  95              		.loc 1 29 9 is_stmt 1 view .LVU21
+  29:main.c        ****         {
+  96              		.loc 1 29 17 is_stmt 0 view .LVU22
+  97 0046 3222     		movs	r2, #50
+  98 0048 0023     		movs	r3, #0
+  99 004a DDE90201 		ldrd	r0, [sp, #8]
+ 100 004e FFF7FEFF 		bl	__aeabi_uldivmod
+ 101              	.LVL8:
+  29:main.c        ****         {
+ 102              		.loc 1 29 12 view .LVU23
+ 103 0052 1343     		orrs	r3, r3, r2
+ 104 0054 ECD1     		bne	.L2
+  29:main.c        ****         {
+ 105              		.loc 1 29 39 discriminator 1 view .LVU24
+ 106 0056 DDE90001 		ldrd	r0, [sp]
+ 107 005a DDE90223 		ldrd	r2, [sp, #8]
+  29:main.c        ****         {
+ 108              		.loc 1 29 28 discriminator 1 view .LVU25
+ 109 005e 9942     		cmp	r1, r3
+ 110 0060 08BF     		it	eq
+ 111 0062 9042     		cmpeq	r0, r2
+ 112 0064 E4D0     		beq	.L2
+  31:main.c        ****             Lst_Rt = Rt;
+ 113              		.loc 1 31 13 is_stmt 1 view .LVU26
+ 114 0066 85F00105 		eor	r5, r5, #1
+ 115              	.LVL9:
+  32:main.c        ****         }
+ 116              		.loc 1 32 13 view .LVU27
+  32:main.c        ****         }
+ 117              		.loc 1 32 20 is_stmt 0 view .LVU28
+ 118 006a DDE90223 		ldrd	r2, [sp, #8]
+ 119 006e CDE90023 		strd	r2, [sp]
+ 120 0072 DDE7     		b	.L2
+ 121              	.L6:
+ 122              		.align	2
+ 123              	.L5:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s 			page 4
+
+
+ 124 0074 00000000 		.word	DevLED
+ 125 0078 00000000 		.word	.LANCHOR0
+ 126              		.cfi_endproc
+ 127              	.LFE147:
+ 129              		.global	Led1
+ 130              		.section	.data.Led1,"aw"
+ 131              		.align	2
+ 132              		.set	.LANCHOR0,. + 0
+ 135              	Led1:
+ 136 0000 001C0258 		.word	1476533248
+ 137 0004 8000     		.short	128
+ 138 0006 0000     		.space	2
+ 139              		.text
+ 140              	.Letext0:
+ 141              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
+ 142              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 143              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 144              		.file 5 "System/runtime/runtime.h"
+ 145              		.file 6 "Device/Dev_Led.h"
+ 146              		.file 7 "System/kernel/kernel.h"
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 main.c
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s:18     .text.main:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s:26     .text.main:0000000000000000 main
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s:124    .text.main:0000000000000074 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s:135    .data.Led1:0000000000000000 Led1
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccKufiUM.s:131    .data.Led1:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+__aeabi_uldivmod
+Kernel_Init
+Runtime_Config
+Runtime_Start
+Get_CurrentRunningMs
+DevLED

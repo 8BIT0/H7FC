@@ -3,11 +3,16 @@
 
 static bool KernelClock_Init(void);
 
-void Kernel_Init(void)
+bool Kernel_Init(void)
 {
     extern uint8_t tcm_code_start;
     extern uint8_t tcm_code_end;
     extern uint8_t tcm_code;
+
+    uint32_t *SourceAddr = (uint32_t *)FLASH_BANK1_BASE;
+    uint32_t *DestAddr = (uint32_t *)D1_DTCMRAM_BASE;
+    memcpy(DestAddr, SourceAddr, 0x400);
+    SCB->VTOR = D1_DTCMRAM_BASE;
 
     SCB_EnableICache();
     SCB_EnableDCache();
