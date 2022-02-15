@@ -125,6 +125,7 @@ C_INCLUDES =  \
 -IBsp \
 -IDevice \
 -ISystem/ \
+-Idebug/ \
 -ISystem/runtime \
 -ISystem/kernel/ \
 -IHAL_Lib/STM32H7xx_HAL_Driver/Inc \
@@ -139,9 +140,9 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-ifeq ($(DEBUG), 1)
+# ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
-endif
+# endif
 
 
 # Generate dependency information

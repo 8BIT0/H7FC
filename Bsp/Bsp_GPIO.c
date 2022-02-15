@@ -1,4 +1,5 @@
 #include "Bsp_GPIO.h"
+#include "system_cfg.h"
 
 static bool BspGPIO_Init(BspGPIO_Obj_TypeDef IO_Obj);
 static bool BspGPIO_Read(uint32_t port, uint16_t pin);
