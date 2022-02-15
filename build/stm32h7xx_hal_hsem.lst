@@ -1,4 +1,4 @@
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -58,7 +58,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
   28:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   @verbatim
   29:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   ==============================================================================
   30:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****                      ##### How to use this driver #####
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 2
 
 
   31:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   ==============================================================================
@@ -118,7 +118,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
   85:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   */
   86:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** 
   87:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** /* Includes ------------------------------------------------------------------*/
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 3
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 3
 
 
   88:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** #include "stm32h7xx_hal.h"
@@ -178,7 +178,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  142:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****       (+) Take a semaphore with 2 Step method
  143:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****       (+) Fast Take a semaphore with 1 Step method
  144:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****       (+) Check semaphore state Taken or not
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 4
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 4
 
 
  145:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****       (+) Release a semaphore
@@ -238,7 +238,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
   47 000e 9342     		cmp	r3, r2
   48 0010 01D0     		beq	.L3
  181:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   {
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 5
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 5
 
 
  182:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****     /*take success when MasterID and ProcessID match and take bit set*/
@@ -298,7 +298,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  200:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** 
  201:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** #if  USE_MULTI_CORE_SHARED_CODE != 0U
  202:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   /* Read the RLR register to take the semaphore */
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 6
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 6
 
 
  203:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   if (HSEM->RLR[SemID] == (((HAL_GetCurrentCPUID() << POSITION_VAL(HSEM_R_MASTERID)) & HSEM_RLR_MAS
@@ -358,7 +358,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  124              	.LVL7:
  125              	.LFB146:
  220:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** /**
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 7
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 7
 
 
  221:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   * @brief  Check semaphore state Taken or not.
@@ -418,7 +418,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  234:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   * @param  ProcessID: Process ID from 0 to 255
  235:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   * @retval None
  236:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   */
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 8
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 8
 
 
  237:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** void  HAL_HSEM_Release(uint32_t SemID, uint32_t ProcessID)
@@ -478,7 +478,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  259:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** {
  201              		.loc 1 259 1 is_stmt 1 view -0
  202              		.cfi_startproc
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 9
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 9
 
 
  203              		@ args = 0, pretend = 0, frame = 0
@@ -538,7 +538,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  282:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   * @{
  283:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   */
  284:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 10
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 10
 
 
  285:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** /**
@@ -598,7 +598,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  273              		.loc 1 304 3 view .LVU50
  274              		.loc 1 304 15 is_stmt 0 view .LVU51
  275 0000 024B     		ldr	r3, .L27
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 11
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 11
 
 
  276 0002 D3F84401 		ldr	r0, [r3, #324]
@@ -658,7 +658,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  334:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   {
  335:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****     /*Use interrupt line 0 for CPU1 Master */
  336:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****     HSEM->C1IER |= SemMask;
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 12
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 12
 
 
  337:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   }
@@ -718,7 +718,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  362:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   else /* HSEM_CPU2_COREID */
  363:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****   {
  364:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****     /*Use interrupt line 1 for CPU2 Master*/
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 13
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 13
 
 
  365:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****     HSEM->C2IER &= ~SemMask;
@@ -778,7 +778,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  395:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** 
  396:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****     /*Disable Interrupts*/
  397:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c ****     HSEM->C2IER &= ~((uint32_t)statusreg);
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 14
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 14
 
 
  398:HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c **** 
@@ -838,7 +838,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  382              		.cfi_startproc
  383              		@ args = 0, pretend = 0, frame = 0
  384              		@ frame_needed = 0, uses_anonymous_args = 0
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 15
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 15
 
 
  385 0000 08B5     		push	{r3, lr}
@@ -882,46 +882,46 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 1
  414              	.LFE153:
  416              		.text
  417              	.Letext0:
- 418              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
- 419              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 418              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 419              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
  420              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
  421              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s 			page 16
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccocUS87.s 			page 16
 
 
 DEFINED SYMBOLS
-                            *ABS*:0000000000000000 stm32h7xx_hal_hsem.c
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:17     .text.HAL_HSEM_Take:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:25     .text.HAL_HSEM_Take:0000000000000000 HAL_HSEM_Take
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:64     .text.HAL_HSEM_Take:000000000000001c $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:70     .text.HAL_HSEM_FastTake:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:77     .text.HAL_HSEM_FastTake:0000000000000000 HAL_HSEM_FastTake
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:110    .text.HAL_HSEM_FastTake:0000000000000018 $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:116    .text.HAL_HSEM_IsSemTaken:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:123    .text.HAL_HSEM_IsSemTaken:0000000000000000 HAL_HSEM_IsSemTaken
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:152    .text.HAL_HSEM_IsSemTaken:0000000000000014 $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:157    .text.HAL_HSEM_Release:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:164    .text.HAL_HSEM_Release:0000000000000000 HAL_HSEM_Release
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:186    .text.HAL_HSEM_Release:000000000000000c $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:191    .text.HAL_HSEM_ReleaseAll:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:198    .text.HAL_HSEM_ReleaseAll:0000000000000000 HAL_HSEM_ReleaseAll
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:222    .text.HAL_HSEM_ReleaseAll:0000000000000010 $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:227    .text.HAL_HSEM_SetClearKey:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:234    .text.HAL_HSEM_SetClearKey:0000000000000000 HAL_HSEM_SetClearKey
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:254    .text.HAL_HSEM_SetClearKey:0000000000000014 $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:259    .text.HAL_HSEM_GetClearKey:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:266    .text.HAL_HSEM_GetClearKey:0000000000000000 HAL_HSEM_GetClearKey
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:283    .text.HAL_HSEM_GetClearKey:000000000000000c $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:288    .text.HAL_HSEM_ActivateNotification:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:295    .text.HAL_HSEM_ActivateNotification:0000000000000000 HAL_HSEM_ActivateNotification
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:314    .text.HAL_HSEM_ActivateNotification:000000000000000c $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:319    .text.HAL_HSEM_DeactivateNotification:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:326    .text.HAL_HSEM_DeactivateNotification:0000000000000000 HAL_HSEM_DeactivateNotification
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:345    .text.HAL_HSEM_DeactivateNotification:000000000000000c $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:350    .text.HAL_HSEM_FreeCallback:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:357    .text.HAL_HSEM_FreeCallback:0000000000000000 HAL_HSEM_FreeCallback
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:372    .text.HAL_HSEM_IRQHandler:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:379    .text.HAL_HSEM_IRQHandler:0000000000000000 HAL_HSEM_IRQHandler
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccvX8P0a.s:412    .text.HAL_HSEM_IRQHandler:0000000000000018 $d
+                            *ABS*:00000000 stm32h7xx_hal_hsem.c
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:17     .text.HAL_HSEM_Take:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:25     .text.HAL_HSEM_Take:00000000 HAL_HSEM_Take
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:64     .text.HAL_HSEM_Take:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:70     .text.HAL_HSEM_FastTake:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:77     .text.HAL_HSEM_FastTake:00000000 HAL_HSEM_FastTake
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:110    .text.HAL_HSEM_FastTake:00000018 $d
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:116    .text.HAL_HSEM_IsSemTaken:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:123    .text.HAL_HSEM_IsSemTaken:00000000 HAL_HSEM_IsSemTaken
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:152    .text.HAL_HSEM_IsSemTaken:00000014 $d
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:157    .text.HAL_HSEM_Release:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:164    .text.HAL_HSEM_Release:00000000 HAL_HSEM_Release
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:186    .text.HAL_HSEM_Release:0000000c $d
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:191    .text.HAL_HSEM_ReleaseAll:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:198    .text.HAL_HSEM_ReleaseAll:00000000 HAL_HSEM_ReleaseAll
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:222    .text.HAL_HSEM_ReleaseAll:00000010 $d
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:227    .text.HAL_HSEM_SetClearKey:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:234    .text.HAL_HSEM_SetClearKey:00000000 HAL_HSEM_SetClearKey
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:254    .text.HAL_HSEM_SetClearKey:00000014 $d
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:259    .text.HAL_HSEM_GetClearKey:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:266    .text.HAL_HSEM_GetClearKey:00000000 HAL_HSEM_GetClearKey
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:283    .text.HAL_HSEM_GetClearKey:0000000c $d
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:288    .text.HAL_HSEM_ActivateNotification:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:295    .text.HAL_HSEM_ActivateNotification:00000000 HAL_HSEM_ActivateNotification
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:314    .text.HAL_HSEM_ActivateNotification:0000000c $d
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:319    .text.HAL_HSEM_DeactivateNotification:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:326    .text.HAL_HSEM_DeactivateNotification:00000000 HAL_HSEM_DeactivateNotification
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:345    .text.HAL_HSEM_DeactivateNotification:0000000c $d
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:350    .text.HAL_HSEM_FreeCallback:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:357    .text.HAL_HSEM_FreeCallback:00000000 HAL_HSEM_FreeCallback
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:372    .text.HAL_HSEM_IRQHandler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:379    .text.HAL_HSEM_IRQHandler:00000000 HAL_HSEM_IRQHandler
+C:\Users\huav\AppData\Local\Temp\ccocUS87.s:412    .text.HAL_HSEM_IRQHandler:00000018 $d
 
 NO UNDEFINED SYMBOLS

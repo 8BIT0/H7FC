@@ -10,18 +10,18 @@ _Min_Stack_Size = 0x800; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-DTCMRAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
+DTCMRAM (xrw)      : ORIGIN = 0x20000400, LENGTH = 127K
 RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 512K
 RAM_D2 (xrw)      : ORIGIN = 0x30000000, LENGTH = 288K
 RAM_D3 (xrw)      : ORIGIN = 0x38000000, LENGTH = 64K
-ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
+ITCMRAM (xrw)      : ORIGIN = 0x00000400, LENGTH = 63K
 FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 2048K
 }
 
 /* Define output sections */
 SECTIONS
 {
-    tcm_code = LOADADDR(.tcm_code); 
+  tcm_code = LOADADDR(.tcm_code); 
   .tcm_code :
   {
     . = ALIGN(4);
@@ -30,7 +30,7 @@ SECTIONS
     *(.tcm_code*)
     . = ALIGN(4);
     tcm_code_end = .; 
-  } >ITCM_RAM
+  } >ITCMRAM
   
   /* The startup code goes first into FLASH */
   .isr_vector :

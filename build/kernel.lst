@@ -1,4 +1,4 @@
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -37,10 +37,10 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
    9:System/kernel/kernel.c ****     extern uint8_t tcm_code_end;
   10:System/kernel/kernel.c ****     extern uint8_t tcm_code;
   11:System/kernel/kernel.c **** 
-  12:System/kernel/kernel.c ****     // uint32_t *SourceAddr = (uint32_t *)FLASH_BANK1_BASE;
-  13:System/kernel/kernel.c ****     // uint32_t *DestAddr = (uint32_t *)D1_DTCMRAM_BASE;
-  14:System/kernel/kernel.c ****     // memcpy(DestAddr, SourceAddr, 0x400);
-  15:System/kernel/kernel.c ****     // SCB->VTOR = D1_DTCMRAM_BASE;
+  12:System/kernel/kernel.c ****     uint32_t *SourceAddr = (uint32_t *)FLASH_BANK1_BASE;
+  13:System/kernel/kernel.c ****     uint32_t *DestAddr = (uint32_t *)D1_DTCMRAM_BASE;
+  14:System/kernel/kernel.c ****     memcpy(DestAddr, SourceAddr, 0x400);
+  15:System/kernel/kernel.c ****     SCB->VTOR = D1_DTCMRAM_BASE;
   16:System/kernel/kernel.c **** 
   17:System/kernel/kernel.c ****     SCB_EnableICache();
   18:System/kernel/kernel.c ****     SCB_EnableDCache();
@@ -58,7 +58,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
   28              		.cfi_startproc
   29              		@ args = 0, pretend = 0, frame = 304
   30              		@ frame_needed = 0, uses_anonymous_args = 0
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 2
 
 
   31 0000 00B5     		push	{lr}
@@ -118,7 +118,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
   75 0036 DB6A     		ldr	r3, [r3, #44]
   76 0038 03F00103 		and	r3, r3, #1
   77 003c 0193     		str	r3, [sp, #4]
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 3
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 3
 
 
   78              		.loc 1 38 5 view .LVU13
@@ -178,7 +178,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  116              		.loc 1 51 32 is_stmt 0 view .LVU28
  117 0074 0123     		movs	r3, #1
  118 0076 3E93     		str	r3, [sp, #248]
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 4
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 4
 
 
   52:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -238,7 +238,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
   64:System/kernel/kernel.c ****         __disable_irq();
  161              		.loc 1 64 9 is_stmt 1 view .LVU52
  162              	.LBB54:
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 5
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 5
 
 
  163              	.LBI54:
@@ -298,7 +298,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
   53:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
   54:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
   55:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __USED
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 6
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 6
 
 
   56:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
@@ -358,7 +358,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  110:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
  111:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
  112:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 7
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 7
 
 
  113:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
@@ -418,7 +418,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  167:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
  168:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  169:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __INITIAL_SP
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 8
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 8
 
 
  170:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #define __INITIAL_SP              __StackTop
@@ -478,7 +478,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  178 00a0 0020     		movs	r0, #0
  179              	.L4:
   66:System/kernel/kernel.c ****     }
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 9
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 9
 
 
   67:System/kernel/kernel.c **** 
@@ -538,7 +538,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  194              		.loc 1 71 5 is_stmt 1 view .LVU60
   71:System/kernel/kernel.c ****     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
  195              		.loc 1 71 36 is_stmt 0 view .LVU61
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 10
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 10
 
 
  196 00ac 0323     		movs	r3, #3
@@ -598,7 +598,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  233              		.loc 2 209 3 view .LVU79
  234              		.syntax unified
  235              	@ 209 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 11
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 11
 
 
  236 00d0 72B6     		cpsid i
@@ -658,7 +658,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  274 00f2 1093     		str	r3, [sp, #64]
   91:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
  275              		.loc 1 91 5 is_stmt 1 view .LVU96
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 12
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 12
 
 
   91:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
@@ -718,7 +718,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  315              	.LBE58:
   99:System/kernel/kernel.c ****     }
  316              		.loc 1 99 9 view .LVU113
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 13
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 13
 
 
   99:System/kernel/kernel.c ****     }
@@ -758,11 +758,33 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  349              		.loc 1 9 5 view .LVU117
   10:System/kernel/kernel.c **** 
  350              		.loc 1 10 5 view .LVU118
+  12:System/kernel/kernel.c ****     uint32_t *DestAddr = (uint32_t *)D1_DTCMRAM_BASE;
+ 351              		.loc 1 12 5 view .LVU119
+ 352              	.LVL7:
+  13:System/kernel/kernel.c ****     memcpy(DestAddr, SourceAddr, 0x400);
+ 353              		.loc 1 13 5 view .LVU120
+  14:System/kernel/kernel.c ****     SCB->VTOR = D1_DTCMRAM_BASE;
+ 354              		.loc 1 14 5 view .LVU121
+ 355 0002 4FF00054 		mov	r4, #536870912
+ 356 0006 4FF48062 		mov	r2, #1024
+ 357 000a 4FF00061 		mov	r1, #134217728
+ 358 000e 2046     		mov	r0, r4
+ 359 0010 FFF7FEFF 		bl	memcpy
+ 360              	.LVL8:
+  15:System/kernel/kernel.c **** 
+ 361              		.loc 1 15 5 view .LVU122
+  15:System/kernel/kernel.c **** 
+ 362              		.loc 1 15 15 is_stmt 0 view .LVU123
+ 363 0014 284B     		ldr	r3, .L18
+ 364 0016 9C60     		str	r4, [r3, #8]
   17:System/kernel/kernel.c ****     SCB_EnableDCache();
- 351              		.loc 1 17 5 view .LVU119
- 352              	.LBB60:
- 353              	.LBI60:
- 354              		.file 3 "HAL_Lib/CMSIS/Core/Include/core_cm7.h"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 14
+
+
+ 365              		.loc 1 17 5 is_stmt 1 view .LVU124
+ 366              	.LBB60:
+ 367              	.LBI60:
+ 368              		.file 3 "HAL_Lib/CMSIS/Core/Include/core_cm7.h"
    1:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**************************************************************************//**
    2:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  * @file     core_cm7.h
    3:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  * @brief    CMSIS Cortex-M7 Core Peripheral Access Layer Header File
@@ -778,9 +800,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
   13:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  * not use this file except in compliance with the License.
   14:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  * You may obtain a copy of the License at
   15:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  *
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 14
-
-
   16:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  * www.apache.org/licenses/LICENSE-2.0
   17:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  *
   18:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  * Unless required by applicable law or agreed to in writing, software
@@ -819,6 +838,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
   51:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****      Function-like macros are used to allow more efficient code.
   52:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
   53:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 15
+
+
   54:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
   55:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /*******************************************************************************
   56:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  *                 CMSIS definitions
@@ -838,9 +860,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
   70:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
   71:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define __CORTEX_M                (7U)                                       /*!< Cortex-M Core */
   72:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 15
-
-
   73:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /** __FPU_USED indicates whether an FPU is used or not.
   74:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     For this, __FPU_PRESENT has to be checked prior to making use of FPU specific registers and fun
   75:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** */
@@ -879,6 +898,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  108:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #else
  109:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     #define __FPU_USED         0U
  110:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #endif
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 16
+
+
  111:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  112:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #elif defined ( __ICCARM__ )
  113:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #if defined __ARMVFP__
@@ -898,9 +920,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  127:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****       #define __FPU_USED       1U
  128:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     #else
  129:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****       #error "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 16
-
-
  130:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****       #define __FPU_USED       0U
  131:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     #endif
  132:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #else
@@ -939,6 +958,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  165:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #ifdef __cplusplus
  166:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** }
  167:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #endif
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 17
+
+
  168:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  169:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #endif /* __CORE_CM7_H_GENERIC */
  170:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -958,9 +980,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  184:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     #warning "__CM7_REV not defined in device header file; using default!"
  185:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #endif
  186:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 17
-
-
  187:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #ifndef __FPU_PRESENT
  188:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     #define __FPU_PRESENT             0U
  189:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     #warning "__FPU_PRESENT not defined in device header file; using default!"
@@ -999,6 +1018,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  222:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  223:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* IO definitions (access restrictions to peripheral registers) */
  224:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 18
+
+
  225:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     \defgroup CMSIS_glob_defs CMSIS Global Defines
  226:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  227:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     <strong>IO Type Qualifiers</strong> are used
@@ -1018,9 +1040,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  241:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define     __OM     volatile            /*! Defines 'write only' structure member permissions */
  242:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define     __IOM    volatile            /*! Defines 'read / write' structure member permissions */
  243:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 18
-
-
  244:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /*@} end of group Cortex_M7 */
  245:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  246:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1059,6 +1078,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  279:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t GE:4;                       /*!< bit: 16..19  Greater than or Equal flags */
  280:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t _reserved1:7;               /*!< bit: 20..26  Reserved */
  281:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t Q:1;                        /*!< bit:     27  Saturation condition flag */
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 19
+
+
  282:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t V:1;                        /*!< bit:     28  Overflow condition code flag */
  283:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t C:1;                        /*!< bit:     29  Carry condition code flag */
  284:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t Z:1;                        /*!< bit:     30  Zero condition code flag */
@@ -1078,9 +1100,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  298:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define APSR_C_Msk                         (1UL << APSR_C_Pos)                            /*!< APSR
  299:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  300:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define APSR_V_Pos                         28U                                            /*!< APSR
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 19
-
-
  301:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define APSR_V_Msk                         (1UL << APSR_V_Pos)                            /*!< APSR
  302:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  303:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define APSR_Q_Pos                         27U                                            /*!< APSR
@@ -1119,6 +1138,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  336:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t _reserved0:1;               /*!< bit:      9  Reserved */
  337:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t ICI_IT_1:6;                 /*!< bit: 10..15  ICI/IT part 1 */
  338:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t GE:4;                       /*!< bit: 16..19  Greater than or Equal flags */
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 20
+
+
  339:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t _reserved1:4;               /*!< bit: 20..23  Reserved */
  340:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t T:1;                        /*!< bit:     24  Thumb bit */
  341:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t ICI_IT_2:2;                 /*!< bit: 25..26  ICI/IT part 2 */
@@ -1138,9 +1160,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  355:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define xPSR_Z_Pos                         30U                                            /*!< xPSR
  356:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define xPSR_Z_Msk                         (1UL << xPSR_Z_Pos)                            /*!< xPSR
  357:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 20
-
-
  358:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define xPSR_C_Pos                         29U                                            /*!< xPSR
  359:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define xPSR_C_Msk                         (1UL << xPSR_C_Pos)                            /*!< xPSR
  360:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1179,6 +1198,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  393:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t _reserved0:29;              /*!< bit:  3..31  Reserved */
  394:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   } b;                                   /*!< Structure used for bit  access */
  395:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   uint32_t w;                            /*!< Type      used for word access */
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 21
+
+
  396:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** } CONTROL_Type;
  397:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  398:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* CONTROL Register Definitions */
@@ -1198,9 +1220,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  412:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \ingroup    CMSIS_core_register
  413:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \defgroup   CMSIS_NVIC  Nested Vectored Interrupt Controller (NVIC)
  414:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief      Type definitions for the NVIC Registers
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 21
-
-
  415:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   @{
  416:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
  417:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1239,6 +1258,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  450:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
  451:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  452:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 22
+
+
  453:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief  Structure type to access the System Control Block (SCB).
  454:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
  455:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** typedef struct
@@ -1258,9 +1280,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  469:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t BFAR;                   /*!< Offset: 0x038 (R/W)  BusFault Address Register */
  470:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t AFSR;                   /*!< Offset: 0x03C (R/W)  Auxiliary Fault Status Register 
  471:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IM  uint32_t ID_PFR[2U];             /*!< Offset: 0x040 (R/ )  Processor Feature Register */
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 22
-
-
  472:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IM  uint32_t ID_DFR;                 /*!< Offset: 0x048 (R/ )  Debug Feature Register */
  473:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IM  uint32_t ID_AFR;                 /*!< Offset: 0x04C (R/ )  Auxiliary Feature Register */
  474:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IM  uint32_t ID_MFR[4U];             /*!< Offset: 0x050 (R/ )  Memory Model Feature Register */
@@ -1299,6 +1318,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  507:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** } SCB_Type;
  508:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  509:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* SCB CPUID Register Definitions */
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 23
+
+
  510:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CPUID_IMPLEMENTER_Pos          24U                                            /*!< SCB 
  511:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CPUID_IMPLEMENTER_Msk          (0xFFUL << SCB_CPUID_IMPLEMENTER_Pos)          /*!< SCB 
  512:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1318,9 +1340,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  526:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_ICSR_NMIPENDSET_Pos            31U                                            /*!< SCB 
  527:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_ICSR_NMIPENDSET_Msk            (1UL << SCB_ICSR_NMIPENDSET_Pos)               /*!< SCB 
  528:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 23
-
-
  529:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_ICSR_PENDSVSET_Pos             28U                                            /*!< SCB 
  530:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_ICSR_PENDSVSET_Msk             (1UL << SCB_ICSR_PENDSVSET_Pos)                /*!< SCB 
  531:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1359,6 +1378,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  564:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_AIRCR_VECTKEYSTAT_Pos          16U                                            /*!< SCB 
  565:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_AIRCR_VECTKEYSTAT_Msk          (0xFFFFUL << SCB_AIRCR_VECTKEYSTAT_Pos)        /*!< SCB 
  566:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 24
+
+
  567:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_AIRCR_ENDIANESS_Pos            15U                                            /*!< SCB 
  568:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_AIRCR_ENDIANESS_Msk            (1UL << SCB_AIRCR_ENDIANESS_Pos)               /*!< SCB 
  569:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1378,9 +1400,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  583:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SCR_SEVONPEND_Pos               4U                                            /*!< SCB 
  584:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SCR_SEVONPEND_Msk              (1UL << SCB_SCR_SEVONPEND_Pos)                 /*!< SCB 
  585:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 24
-
-
  586:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SCR_SLEEPDEEP_Pos               2U                                            /*!< SCB 
  587:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SCR_SLEEPDEEP_Msk              (1UL << SCB_SCR_SLEEPDEEP_Pos)                 /*!< SCB 
  588:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1419,6 +1438,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  621:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SHCSR_USGFAULTENA_Pos          18U                                            /*!< SCB 
  622:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SHCSR_USGFAULTENA_Msk          (1UL << SCB_SHCSR_USGFAULTENA_Pos)             /*!< SCB 
  623:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 25
+
+
  624:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SHCSR_BUSFAULTENA_Pos          17U                                            /*!< SCB 
  625:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SHCSR_BUSFAULTENA_Msk          (1UL << SCB_SHCSR_BUSFAULTENA_Pos)             /*!< SCB 
  626:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1438,9 +1460,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  640:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SHCSR_USGFAULTPENDED_Msk       (1UL << SCB_SHCSR_USGFAULTPENDED_Pos)          /*!< SCB 
  641:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  642:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SHCSR_SYSTICKACT_Pos           11U                                            /*!< SCB 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 25
-
-
  643:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SHCSR_SYSTICKACT_Msk           (1UL << SCB_SHCSR_SYSTICKACT_Pos)              /*!< SCB 
  644:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  645:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_SHCSR_PENDSVACT_Pos            10U                                            /*!< SCB 
@@ -1479,6 +1498,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  678:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CFSR_MLSPERR_Msk               (1UL << SCB_CFSR_MLSPERR_Pos)                  /*!< SCB 
  679:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  680:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CFSR_MSTKERR_Pos               (SCB_SHCSR_MEMFAULTACT_Pos + 4U)               /*!< SCB 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 26
+
+
  681:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CFSR_MSTKERR_Msk               (1UL << SCB_CFSR_MSTKERR_Pos)                  /*!< SCB 
  682:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  683:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CFSR_MUNSTKERR_Pos             (SCB_SHCSR_MEMFAULTACT_Pos + 3U)               /*!< SCB 
@@ -1498,9 +1520,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  697:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CFSR_LSPERR_Msk               (1UL << SCB_CFSR_LSPERR_Pos)                    /*!< SCB 
  698:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  699:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CFSR_STKERR_Pos               (SCB_CFSR_BUSFAULTSR_Pos + 4U)                  /*!< SCB 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 26
-
-
  700:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CFSR_STKERR_Msk               (1UL << SCB_CFSR_STKERR_Pos)                    /*!< SCB 
  701:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  702:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CFSR_UNSTKERR_Pos             (SCB_CFSR_BUSFAULTSR_Pos + 3U)                  /*!< SCB 
@@ -1539,6 +1558,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  735:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_HFSR_DEBUGEVT_Msk              (1UL << SCB_HFSR_DEBUGEVT_Pos)                 /*!< SCB 
  736:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  737:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_HFSR_FORCED_Pos                30U                                            /*!< SCB 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 27
+
+
  738:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_HFSR_FORCED_Msk                (1UL << SCB_HFSR_FORCED_Pos)                   /*!< SCB 
  739:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  740:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_HFSR_VECTTBL_Pos                1U                                            /*!< SCB 
@@ -1558,9 +1580,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  754:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_DFSR_BKPT_Msk                  (1UL << SCB_DFSR_BKPT_Pos)                     /*!< SCB 
  755:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  756:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_DFSR_HALTED_Pos                 0U                                            /*!< SCB 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 27
-
-
  757:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_DFSR_HALTED_Msk                (1UL /*<< SCB_DFSR_HALTED_Pos*/)               /*!< SCB 
  758:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  759:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* SCB Cache Level ID Register Definitions */
@@ -1599,6 +1618,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  792:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CCSIDR_WA_Pos                  28U                                            /*!< SCB 
  793:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CCSIDR_WA_Msk                  (1UL << SCB_CCSIDR_WA_Pos)                     /*!< SCB 
  794:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 28
+
+
  795:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CCSIDR_NUMSETS_Pos             13U                                            /*!< SCB 
  796:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CCSIDR_NUMSETS_Msk             (0x7FFFUL << SCB_CCSIDR_NUMSETS_Pos)           /*!< SCB 
  797:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1618,9 +1640,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  811:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* SCB Software Triggered Interrupt Register Definitions */
  812:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_STIR_INTID_Pos                  0U                                            /*!< SCB 
  813:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_STIR_INTID_Msk                 (0x1FFUL /*<< SCB_STIR_INTID_Pos*/)            /*!< SCB 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 28
-
-
  814:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  815:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* SCB D-Cache Invalidate by Set-way Register Definitions */
  816:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_DCISW_WAY_Pos                  30U                                            /*!< SCB 
@@ -1659,6 +1678,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  849:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* Data Tightly-Coupled Memory Control Register Definitions */
  850:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_DTCMCR_SZ_Pos                   3U                                            /*!< SCB 
  851:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_DTCMCR_SZ_Msk                  (0xFUL << SCB_DTCMCR_SZ_Pos)                   /*!< SCB 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 29
+
+
  852:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  853:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_DTCMCR_RETEN_Pos                2U                                            /*!< SCB 
  854:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_DTCMCR_RETEN_Msk               (1UL << SCB_DTCMCR_RETEN_Pos)                   /*!< SCB
@@ -1678,9 +1700,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  868:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  869:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* L1 Cache Control Register Definitions */
  870:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CACR_FORCEWT_Pos                2U                                            /*!< SCB 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 29
-
-
  871:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CACR_FORCEWT_Msk               (1UL << SCB_CACR_FORCEWT_Pos)                  /*!< SCB 
  872:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  873:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_CACR_ECCEN_Pos                  1U                                            /*!< SCB 
@@ -1719,6 +1738,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  906:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCB_ABFSR_ITCM_Msk                 (1UL /*<< SCB_ABFSR_ITCM_Pos*/)                /*!< SCB 
  907:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  908:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /*@} end of group CMSIS_SCB */
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 30
+
+
  909:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  910:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  911:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
@@ -1738,9 +1760,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  925:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t ACTLR;                  /*!< Offset: 0x008 (R/W)  Auxiliary Control Register */
  926:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** } SCnSCB_Type;
  927:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 30
-
-
  928:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* Interrupt Controller Type Register Definitions */
  929:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCnSCB_ICTR_INTLINESNUM_Pos         0U                                         /*!< ICTR: I
  930:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCnSCB_ICTR_INTLINESNUM_Msk        (0xFUL /*<< SCnSCB_ICTR_INTLINESNUM_Pos*/)  /*!< ICTR: I
@@ -1779,6 +1798,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  963:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCnSCB_ACTLR_DISMCYCINT_Pos         0U                                         /*!< ACTLR: 
  964:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define SCnSCB_ACTLR_DISMCYCINT_Msk        (1UL /*<< SCnSCB_ACTLR_DISMCYCINT_Pos*/)    /*!< ACTLR: 
  965:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 31
+
+
  966:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /*@} end of group CMSIS_SCnotSCB */
  967:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  968:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -1798,9 +1820,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  982:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t LOAD;                   /*!< Offset: 0x004 (R/W)  SysTick Reload Value Register */
  983:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t VAL;                    /*!< Offset: 0x008 (R/W)  SysTick Current Value Register *
  984:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IM  uint32_t CALIB;                  /*!< Offset: 0x00C (R/ )  SysTick Calibration Register */
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 31
-
-
  985:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** } SysTick_Type;
  986:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
  987:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* SysTick Control / Status Register Definitions */
@@ -1839,6 +1858,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1020:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1021:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
 1022:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \ingroup  CMSIS_core_register
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 32
+
+
 1023:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \defgroup CMSIS_ITM     Instrumentation Trace Macrocell (ITM)
 1024:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief    Type definitions for the Instrumentation Trace Macrocell (ITM)
 1025:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   @{
@@ -1858,9 +1880,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1039:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****         uint32_t RESERVED0[864U];
 1040:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t TER;                    /*!< Offset: 0xE00 (R/W)  ITM Trace Enable Register */
 1041:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****         uint32_t RESERVED1[15U];
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 32
-
-
 1042:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t TPR;                    /*!< Offset: 0xE40 (R/W)  ITM Trace Privilege Register */
 1043:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****         uint32_t RESERVED2[15U];
 1044:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t TCR;                    /*!< Offset: 0xE80 (R/W)  ITM Trace Control Register */
@@ -1899,6 +1918,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1077:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1078:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define ITM_TCR_TSPrescale_Pos              8U                                            /*!< ITM 
 1079:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define ITM_TCR_TSPrescale_Msk             (3UL << ITM_TCR_TSPrescale_Pos)                /*!< ITM 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 33
+
+
 1080:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1081:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define ITM_TCR_SWOENA_Pos                  4U                                            /*!< ITM 
 1082:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define ITM_TCR_SWOENA_Msk                 (1UL << ITM_TCR_SWOENA_Pos)                    /*!< ITM 
@@ -1918,9 +1940,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1096:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* ITM Lock Status Register Definitions */
 1097:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define ITM_LSR_ByteAcc_Pos                 2U                                            /*!< ITM 
 1098:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define ITM_LSR_ByteAcc_Msk                (1UL << ITM_LSR_ByteAcc_Pos)                   /*!< ITM 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 33
-
-
 1099:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1100:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define ITM_LSR_Access_Pos                  1U                                            /*!< ITM 
 1101:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define ITM_LSR_Access_Msk                 (1UL << ITM_LSR_Access_Pos)                    /*!< ITM 
@@ -1959,6 +1978,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1134:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t MASK1;                  /*!< Offset: 0x034 (R/W)  Mask Register 1 */
 1135:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t FUNCTION1;              /*!< Offset: 0x038 (R/W)  Function Register 1 */
 1136:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****         uint32_t RESERVED1[1U];
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 34
+
+
 1137:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t COMP2;                  /*!< Offset: 0x040 (R/W)  Comparator Register 2 */
 1138:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t MASK2;                  /*!< Offset: 0x044 (R/W)  Mask Register 2 */
 1139:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t FUNCTION2;              /*!< Offset: 0x048 (R/W)  Function Register 2 */
@@ -1978,9 +2000,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1153:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_CTRL_NOTRCPKT_Pos              27U                                         /*!< DWT CTR
 1154:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_CTRL_NOTRCPKT_Msk              (0x1UL << DWT_CTRL_NOTRCPKT_Pos)            /*!< DWT CTR
 1155:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 34
-
-
 1156:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_CTRL_NOEXTTRIG_Pos             26U                                         /*!< DWT CTR
 1157:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_CTRL_NOEXTTRIG_Msk             (0x1UL << DWT_CTRL_NOEXTTRIG_Pos)           /*!< DWT CTR
 1158:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2019,6 +2038,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1191:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1192:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_CTRL_CYCTAP_Pos                 9U                                         /*!< DWT CTR
 1193:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_CTRL_CYCTAP_Msk                (0x1UL << DWT_CTRL_CYCTAP_Pos)              /*!< DWT CTR
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 35
+
+
 1194:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1195:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_CTRL_POSTINIT_Pos               5U                                         /*!< DWT CTR
 1196:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_CTRL_POSTINIT_Msk              (0xFUL << DWT_CTRL_POSTINIT_Pos)            /*!< DWT CTR
@@ -2038,9 +2060,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1210:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_EXCCNT_EXCCNT_Msk              (0xFFUL /*<< DWT_EXCCNT_EXCCNT_Pos*/)       /*!< DWT EXC
 1211:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1212:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* DWT Sleep Count Register Definitions */
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 35
-
-
 1213:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_SLEEPCNT_SLEEPCNT_Pos           0U                                         /*!< DWT SLE
 1214:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_SLEEPCNT_SLEEPCNT_Msk          (0xFFUL /*<< DWT_SLEEPCNT_SLEEPCNT_Pos*/)   /*!< DWT SLE
 1215:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2079,6 +2098,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1248:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_FUNCTION_CYCMATCH_Msk          (0x1UL << DWT_FUNCTION_CYCMATCH_Pos)        /*!< DWT FUN
 1249:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1250:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_FUNCTION_EMITRANGE_Pos          5U                                         /*!< DWT FUN
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 36
+
+
 1251:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_FUNCTION_EMITRANGE_Msk         (0x1UL << DWT_FUNCTION_EMITRANGE_Pos)       /*!< DWT FUN
 1252:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1253:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT_FUNCTION_FUNCTION_Pos           0U                                         /*!< DWT FUN
@@ -2098,9 +2120,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1267:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief  Structure type to access the Trace Port Interface Register (TPI).
 1268:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
 1269:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** typedef struct
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 36
-
-
 1270:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** {
 1271:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IM  uint32_t SSPSR;                  /*!< Offset: 0x000 (R/ )  Supported Parallel Port Size Reg
 1272:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t CSPSR;                  /*!< Offset: 0x004 (R/W)  Current Parallel Port Size Regis
@@ -2139,6 +2158,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1305:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* TPI Formatter and Flush Status Register Definitions */
 1306:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_FFSR_FtNonStop_Pos              3U                                         /*!< TPI FFS
 1307:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_FFSR_FtNonStop_Msk             (0x1UL << TPI_FFSR_FtNonStop_Pos)           /*!< TPI FFS
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 37
+
+
 1308:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1309:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_FFSR_TCPresent_Pos              2U                                         /*!< TPI FFS
 1310:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_FFSR_TCPresent_Msk             (0x1UL << TPI_FFSR_TCPresent_Pos)           /*!< TPI FFS
@@ -2158,9 +2180,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1324:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1325:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* TPI TRIGGER Register Definitions */
 1326:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_TRIGGER_TRIGGER_Pos             0U                                         /*!< TPI TRI
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 37
-
-
 1327:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_TRIGGER_TRIGGER_Msk            (0x1UL /*<< TPI_TRIGGER_TRIGGER_Pos*/)      /*!< TPI TRI
 1328:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1329:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* TPI Integration ETM Data Register Definitions (FIFO0) */
@@ -2199,6 +2218,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1362:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_FIFO1_ITM_bytecount_Pos        27U                                         /*!< TPI FIF
 1363:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_FIFO1_ITM_bytecount_Msk        (0x3UL << TPI_FIFO1_ITM_bytecount_Pos)      /*!< TPI FIF
 1364:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 38
+
+
 1365:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_FIFO1_ETM_ATVALID_Pos          26U                                         /*!< TPI FIF
 1366:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_FIFO1_ETM_ATVALID_Msk          (0x1UL << TPI_FIFO1_ETM_ATVALID_Pos)        /*!< TPI FIF
 1367:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2218,9 +2240,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1381:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_ITATBCTR0_ATREADY2_Pos          0U                                         /*!< TPI ITA
 1382:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_ITATBCTR0_ATREADY2_Msk         (0x1UL /*<< TPI_ITATBCTR0_ATREADY2_Pos*/)   /*!< TPI ITA
 1383:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 38
-
-
 1384:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_ITATBCTR0_ATREADY1_Pos          0U                                         /*!< TPI ITA
 1385:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI_ITATBCTR0_ATREADY1_Msk         (0x1UL /*<< TPI_ITATBCTR0_ATREADY1_Pos*/)   /*!< TPI ITA
 1386:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2259,6 +2278,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1419:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1420:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #if defined (__MPU_PRESENT) && (__MPU_PRESENT == 1U)
 1421:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 39
+
+
 1422:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \ingroup  CMSIS_core_register
 1423:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \defgroup CMSIS_MPU     Memory Protection Unit (MPU)
 1424:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief    Type definitions for the Memory Protection Unit (MPU)
@@ -2278,9 +2300,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1438:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t RBAR_A1;                /*!< Offset: 0x014 (R/W)  MPU Alias 1 Region Base Address 
 1439:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t RASR_A1;                /*!< Offset: 0x018 (R/W)  MPU Alias 1 Region Attribute and
 1440:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t RBAR_A2;                /*!< Offset: 0x01C (R/W)  MPU Alias 2 Region Base Address 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 39
-
-
 1441:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t RASR_A2;                /*!< Offset: 0x020 (R/W)  MPU Alias 2 Region Attribute and
 1442:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t RBAR_A3;                /*!< Offset: 0x024 (R/W)  MPU Alias 3 Region Base Address 
 1443:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IOM uint32_t RASR_A3;                /*!< Offset: 0x028 (R/W)  MPU Alias 3 Region Attribute and
@@ -2319,6 +2338,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1476:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define MPU_RBAR_VALID_Pos                  4U                                            /*!< MPU 
 1477:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define MPU_RBAR_VALID_Msk                 (1UL << MPU_RBAR_VALID_Pos)                    /*!< MPU 
 1478:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 40
+
+
 1479:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define MPU_RBAR_REGION_Pos                 0U                                            /*!< MPU 
 1480:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define MPU_RBAR_REGION_Msk                (0xFUL /*<< MPU_RBAR_REGION_Pos*/)             /*!< MPU 
 1481:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2338,9 +2360,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1495:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define MPU_RASR_S_Pos                     18U                                            /*!< MPU 
 1496:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define MPU_RASR_S_Msk                     (1UL << MPU_RASR_S_Pos)                        /*!< MPU 
 1497:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 40
-
-
 1498:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define MPU_RASR_C_Pos                     17U                                            /*!< MPU 
 1499:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define MPU_RASR_C_Msk                     (1UL << MPU_RASR_C_Pos)                        /*!< MPU 
 1500:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2379,6 +2398,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1533:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IM  uint32_t MVFR0;                  /*!< Offset: 0x010 (R/ )  Media and FP Feature Register 0 
 1534:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IM  uint32_t MVFR1;                  /*!< Offset: 0x014 (R/ )  Media and FP Feature Register 1 
 1535:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __IM  uint32_t MVFR2;                  /*!< Offset: 0x018 (R/ )  Media and FP Feature Register 2 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 41
+
+
 1536:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** } FPU_Type;
 1537:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1538:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* Floating-Point Context Control Register Definitions */
@@ -2398,9 +2420,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1552:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_FPCCR_MMRDY_Msk                (1UL << FPU_FPCCR_MMRDY_Pos)                   /*!< FPCC
 1553:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1554:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_FPCCR_HFRDY_Pos                 4U                                            /*!< FPCC
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 41
-
-
 1555:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_FPCCR_HFRDY_Msk                (1UL << FPU_FPCCR_HFRDY_Pos)                   /*!< FPCC
 1556:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1557:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_FPCCR_THREAD_Pos                3U                                            /*!< FPCC
@@ -2439,6 +2458,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1590:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_MVFR0_Square_root_Pos          20U                                            /*!< MVFR
 1591:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_MVFR0_Square_root_Msk          (0xFUL << FPU_MVFR0_Square_root_Pos)           /*!< MVFR
 1592:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 42
+
+
 1593:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_MVFR0_Divide_Pos               16U                                            /*!< MVFR
 1594:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_MVFR0_Divide_Msk               (0xFUL << FPU_MVFR0_Divide_Pos)                /*!< MVFR
 1595:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2458,9 +2480,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1609:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_MVFR1_FP_fused_MAC_Pos         28U                                            /*!< MVFR
 1610:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_MVFR1_FP_fused_MAC_Msk         (0xFUL << FPU_MVFR1_FP_fused_MAC_Pos)          /*!< MVFR
 1611:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 42
-
-
 1612:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_MVFR1_FP_HPFP_Pos              24U                                            /*!< MVFR
 1613:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define FPU_MVFR1_FP_HPFP_Msk              (0xFUL << FPU_MVFR1_FP_HPFP_Pos)               /*!< MVFR
 1614:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2499,6 +2518,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1647:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* Debug Halting Control and Status Register Definitions */
 1648:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DHCSR_DBGKEY_Pos         16U                                            /*!< Core
 1649:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DHCSR_DBGKEY_Msk         (0xFFFFUL << CoreDebug_DHCSR_DBGKEY_Pos)       /*!< Core
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 43
+
+
 1650:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1651:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DHCSR_S_RESET_ST_Pos     25U                                            /*!< Core
 1652:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DHCSR_S_RESET_ST_Msk     (1UL << CoreDebug_DHCSR_S_RESET_ST_Pos)        /*!< Core
@@ -2518,9 +2540,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1666:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DHCSR_S_REGRDY_Pos       16U                                            /*!< Core
 1667:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DHCSR_S_REGRDY_Msk       (1UL << CoreDebug_DHCSR_S_REGRDY_Pos)          /*!< Core
 1668:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 43
-
-
 1669:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DHCSR_C_SNAPSTALL_Pos     5U                                            /*!< Core
 1670:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DHCSR_C_SNAPSTALL_Msk    (1UL << CoreDebug_DHCSR_C_SNAPSTALL_Pos)       /*!< Core
 1671:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2559,6 +2578,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1704:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DEMCR_MON_EN_Pos         16U                                            /*!< Core
 1705:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DEMCR_MON_EN_Msk         (1UL << CoreDebug_DEMCR_MON_EN_Pos)            /*!< Core
 1706:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 44
+
+
 1707:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DEMCR_VC_HARDERR_Pos     10U                                            /*!< Core
 1708:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DEMCR_VC_HARDERR_Msk     (1UL << CoreDebug_DEMCR_VC_HARDERR_Pos)        /*!< Core
 1709:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2578,9 +2600,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1723:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DEMCR_VC_NOCPERR_Msk     (1UL << CoreDebug_DEMCR_VC_NOCPERR_Pos)        /*!< Core
 1724:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1725:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DEMCR_VC_MMERR_Pos        4U                                            /*!< Core
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 44
-
-
 1726:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DEMCR_VC_MMERR_Msk       (1UL << CoreDebug_DEMCR_VC_MMERR_Pos)          /*!< Core
 1727:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1728:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug_DEMCR_VC_CORERESET_Pos    0U                                            /*!< Core
@@ -2619,6 +2638,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1761:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \ingroup    CMSIS_core_register
 1762:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \defgroup   CMSIS_core_base     Core Definitions
 1763:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief      Definitions for base addresses, unions, and structures.
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 45
+
+
 1764:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   @{
 1765:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
 1766:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2638,9 +2660,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1780:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define NVIC                ((NVIC_Type      *)     NVIC_BASE     )   /*!< NVIC configuration struc
 1781:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define ITM                 ((ITM_Type       *)     ITM_BASE      )   /*!< ITM configuration struct
 1782:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define DWT                 ((DWT_Type       *)     DWT_BASE      )   /*!< DWT configuration struct
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 45
-
-
 1783:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define TPI                 ((TPI_Type       *)     TPI_BASE      )   /*!< TPI configuration struct
 1784:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #define CoreDebug           ((CoreDebug_Type *)     CoreDebug_BASE)   /*!< Core Debug configuration
 1785:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -2679,6 +2698,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1818:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
 1819:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1820:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #ifdef CMSIS_NVIC_VIRTUAL
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 46
+
+
 1821:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #ifndef CMSIS_NVIC_VIRTUAL_HEADER_FILE
 1822:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     #define CMSIS_NVIC_VIRTUAL_HEADER_FILE "cmsis_nvic_virtual.h"
 1823:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #endif
@@ -2698,9 +2720,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1837:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #define NVIC_SystemReset            __NVIC_SystemReset
 1838:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #endif /* CMSIS_NVIC_VIRTUAL */
 1839:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 46
-
-
 1840:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #ifdef CMSIS_VECTAB_VIRTUAL
 1841:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #ifndef CMSIS_VECTAB_VIRTUAL_HEADER_FILE
 1842:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     #define CMSIS_VECTAB_VIRTUAL_HEADER_FILE "cmsis_vectab_virtual.h"
@@ -2739,6 +2758,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1875:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1876:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   reg_value  =  SCB->AIRCR;                                                   /* read old register 
 1877:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   reg_value &= ~((uint32_t)(SCB_AIRCR_VECTKEY_Msk | SCB_AIRCR_PRIGROUP_Msk)); /* clear bits to chan
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 47
+
+
 1878:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   reg_value  =  (reg_value                                   |
 1879:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                 ((uint32_t)0x5FAUL << SCB_AIRCR_VECTKEY_Pos) |
 1880:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                 (PriorityGroupTmp << SCB_AIRCR_PRIGROUP_Pos)  );              /* Insert write key a
@@ -2758,9 +2780,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1894:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1895:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1896:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 47
-
-
 1897:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief   Enable Interrupt
 1898:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Enables a device specific interrupt in the NVIC interrupt controller.
 1899:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param [in]      IRQn  Device specific interrupt number.
@@ -2799,6 +2818,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1932:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1933:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 1934:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 48
+
+
 1935:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief   Disable Interrupt
 1936:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Disables a device specific interrupt in the NVIC interrupt controller.
 1937:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param [in]      IRQn  Device specific interrupt number.
@@ -2818,9 +2840,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1951:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
 1952:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief   Get Pending Interrupt
 1953:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Reads the NVIC pending register and returns the pending bit for the specified device spe
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 48
-
-
 1954:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param [in]      IRQn  Device specific interrupt number.
 1955:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \return             0  Interrupt status is not pending.
 1956:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \return             1  Interrupt status is pending.
@@ -2859,6 +2878,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 1989:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Clears the pending bit of a device specific interrupt in the NVIC pending register.
 1990:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param [in]      IRQn  Device specific interrupt number.
 1991:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \note    IRQn must not be negative.
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 49
+
+
 1992:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
 1993:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** __STATIC_INLINE void __NVIC_ClearPendingIRQ(IRQn_Type IRQn)
 1994:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** {
@@ -2878,9 +2900,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2008:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \note    IRQn must not be negative.
 2009:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
 2010:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** __STATIC_INLINE uint32_t __NVIC_GetActive(IRQn_Type IRQn)
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 49
-
-
 2011:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** {
 2012:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   if ((int32_t)(IRQn) >= 0)
 2013:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   {
@@ -2919,6 +2938,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2046:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief   Get Interrupt Priority
 2047:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Reads the priority of a device specific interrupt or a processor exception.
 2048:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****            The interrupt number can be positive to specify a device specific interrupt,
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 50
+
+
 2049:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****            or negative to specify a processor exception.
 2050:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param [in]   IRQn  Interrupt number.
 2051:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \return             Interrupt Priority.
@@ -2938,9 +2960,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2065:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** }
 2066:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2067:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 50
-
-
 2068:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
 2069:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief   Encode Priority
 2070:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Encodes the priority for an interrupt with the given priority group,
@@ -2979,6 +2998,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2103:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param [out] pPreemptPriority  Preemptive priority value (starting from 0).
 2104:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param [out]     pSubPriority  Subpriority value (starting from 0).
 2105:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****  */
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 51
+
+
 2106:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** __STATIC_INLINE void NVIC_DecodePriority (uint32_t Priority, uint32_t PriorityGroup, uint32_t* cons
 2107:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** {
 2108:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   uint32_t PriorityGroupTmp = (PriorityGroup & (uint32_t)0x07UL);   /* only values 0..7 are used   
@@ -2998,9 +3020,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2122:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Sets an interrupt vector in SRAM based interrupt vector table.
 2123:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****            The interrupt number can be positive to specify a device specific interrupt,
 2124:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****            or negative to specify a processor exception.
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 51
-
-
 2125:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****            VTOR must been relocated to SRAM before.
 2126:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param [in]   IRQn      Interrupt number
 2127:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param [in]   vector    Address of interrupt handler function
@@ -3039,6 +3058,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2160:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   SCB->AIRCR  = (uint32_t)((0x5FAUL << SCB_AIRCR_VECTKEY_Pos)    |
 2161:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                            (SCB->AIRCR & SCB_AIRCR_PRIGROUP_Msk) |
 2162:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                             SCB_AIRCR_SYSRESETREQ_Msk    );         /* Keep priority group unchange
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 52
+
+
 2163:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   __DSB();                                                          /* Ensure completion of memory 
 2164:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2165:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   for(;;)                                                           /* wait until reset */
@@ -3058,9 +3080,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2179:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2180:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** #endif
 2181:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 52
-
-
 2182:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2183:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* ##########################  FPU functions  #################################### */
 2184:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
@@ -3099,6 +3118,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2217:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2218:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /*@} end of CMSIS_Core_FpuFunctions */
 2219:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 53
+
+
 2220:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2221:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2222:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /* ##########################  Cache functions  #################################### */
@@ -3118,29 +3140,25 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2236:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2237:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
 2238:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief   Enable I-Cache
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 53
-
-
 2239:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Turns on I-Cache
 2240:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   */
 2241:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** __STATIC_FORCEINLINE void SCB_EnableICache (void)
- 355              		.loc 3 2241 27 view .LVU120
- 356              	.LBB61:
+ 369              		.loc 3 2241 27 view .LVU125
+ 370              	.LBB61:
 2242:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** {
 2243:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #if defined (__ICACHE_PRESENT) && (__ICACHE_PRESENT == 1U)
 2244:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     if (SCB->CCR & SCB_CCR_IC_Msk) return;  /* return if ICache is already enabled */
- 357              		.loc 3 2244 5 view .LVU121
- 358              		.loc 3 2244 12 is_stmt 0 view .LVU122
- 359 0002 284B     		ldr	r3, .L18
- 360 0004 5B69     		ldr	r3, [r3, #20]
- 361              		.loc 3 2244 8 view .LVU123
- 362 0006 13F4003F 		tst	r3, #131072
- 363 000a 13D1     		bne	.L12
+ 371              		.loc 3 2244 5 view .LVU126
+ 372              		.loc 3 2244 12 is_stmt 0 view .LVU127
+ 373 0018 5B69     		ldr	r3, [r3, #20]
+ 374              		.loc 3 2244 8 view .LVU128
+ 375 001a 13F4003F 		tst	r3, #131072
+ 376 001e 13D1     		bne	.L12
 2245:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2246:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __DSB();
- 364              		.loc 3 2246 5 is_stmt 1 view .LVU124
- 365              	.LBB62:
- 366              	.LBI62:
+ 377              		.loc 3 2246 5 is_stmt 1 view .LVU129
+ 378              	.LBB62:
+ 379              	.LBI62:
  210:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
  211:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  212:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
@@ -3160,6 +3178,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  226:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  227:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
  228:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 54
+
+
  229:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Get Control Register (non-secure)
  230:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Returns the content of the non-secure Control Register when in secure mode.
  231:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \return               non-secure Control Register value
@@ -3178,9 +3199,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  244:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Set Control Register
  245:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Writes the given value to the Control Register.
  246:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \param [in]    control  Control Register value to set
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 54
-
-
  247:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
  248:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_CONTROL(uint32_t control)
  249:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
@@ -3220,6 +3238,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  283:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Returns the content of the APSR Register.
  284:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \return               APSR Register value
  285:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 55
+
+
  286:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_APSR(void)
  287:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
  288:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   uint32_t result;
@@ -3238,9 +3259,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  301:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
  302:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   uint32_t result;
  303:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 55
-
-
  304:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, xpsr" : "=r" (result) );
  305:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   return(result);
  306:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
@@ -3280,6 +3298,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  340:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Set Process Stack Pointer
  341:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Assigns the given value to the Process Stack Pointer (PSP).
  342:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \param [in]    topOfProcStack  Process Stack Pointer value to set
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 56
+
+
  343:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
  344:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_PSP(uint32_t topOfProcStack)
  345:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
@@ -3298,9 +3319,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  358:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MSR psp_ns, %0" : : "r" (topOfProcStack) : );
  359:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
  360:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 56
-
-
  361:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  362:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  363:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
@@ -3340,6 +3358,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  397:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
  398:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_MSP(uint32_t topOfMainStack)
  399:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 57
+
+
  400:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MSR msp, %0" : : "r" (topOfMainStack) : );
  401:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
  402:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
@@ -3358,9 +3379,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  415:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  416:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  417:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 57
-
-
  418:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
  419:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Get Stack Pointer (non-secure)
  420:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Returns the current value of the non-secure Stack Pointer (SP) when in secure state.
@@ -3400,6 +3418,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  454:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   return(result);
  455:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
  456:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 58
+
+
  457:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  458:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
  459:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
@@ -3418,9 +3439,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  472:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  473:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  474:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 58
-
-
  475:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Set Priority Mask
  476:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Assigns the given value to the Priority Mask Register.
  477:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \param [in]    priMask  Priority Mask
@@ -3460,6 +3478,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  511:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  512:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
  513:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Disable FIQ
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 59
+
+
  514:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Disables FIQ interrupts by setting the F-bit in the CPSR.
  515:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
  516:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
@@ -3478,9 +3499,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  529:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
  530:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   uint32_t result;
  531:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 59
-
-
  532:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, basepri" : "=r" (result) );
  533:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   return(result);
  534:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
@@ -3520,6 +3538,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  568:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \param [in]    basePri  Base Priority value to set
  569:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
  570:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_BASEPRI_NS(uint32_t basePri)
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 60
+
+
  571:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
  572:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MSR basepri_ns, %0" : : "r" (basePri) : "memory");
  573:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
@@ -3538,9 +3559,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  586:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
  587:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  588:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 60
-
-
  589:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
  590:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Get Fault Mask
  591:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Returns the current value of the Fault Mask register.
@@ -3580,6 +3598,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  625:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
  626:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MSR faultmask, %0" : : "r" (faultMask) : "memory");
  627:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 61
+
+
  628:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  629:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  630:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
@@ -3598,9 +3619,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  643:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
  644:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1))    ) */
  645:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 61
-
-
  646:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  647:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if ((defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)) || \
  648:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_BASE__ ) && (__ARM_ARCH_8M_BASE__ == 1))    )
@@ -3640,6 +3658,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  682:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
  683:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if (!(defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)))
  684:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   // without main extensions, the non-secure PSPLIM is RAZ/WI
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 62
+
+
  685:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   return 0U;
  686:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #else
  687:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   uint32_t result;
@@ -3658,9 +3679,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  700:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   
  701:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Assigns the given value to the Process Stack Pointer Limit (PSPLIM).
  702:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \param [in]    ProcStackPtrLimit  Process Stack Pointer Limit value to set
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 62
-
-
  703:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
  704:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_PSPLIM(uint32_t ProcStackPtrLimit)
  705:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
@@ -3700,6 +3718,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  739:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   Devices without ARMv8-M Main Extensions (i.e. Cortex-M23) lack the non-secure
  740:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   Stack Pointer Limit register hence zero is returned always in non-secure
  741:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   mode.
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 63
+
+
  742:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  743:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Returns the current value of the Main Stack Pointer Limit (MSPLIM).
  744:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \return               MSPLIM Register value
@@ -3718,9 +3739,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  757:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
  758:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  759:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 63
-
-
  760:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE  ) && (__ARM_FEATURE_CMSE   == 3))
  761:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
  762:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Get Main Stack Pointer Limit (non-secure)
@@ -3760,6 +3778,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  796:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   // without main extensions, the non-secure MSPLIM is RAZ/WI
  797:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   (void)MainStackPtrLimit;
  798:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #else
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 64
+
+
  799:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MSR msplim, %0" : : "r" (MainStackPtrLimit));
  800:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
  801:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
@@ -3778,9 +3799,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  814:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
  815:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if (!(defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)))
  816:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   // without main extensions, the non-secure MSPLIM is RAZ/WI
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 64
-
-
  817:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   (void)MainStackPtrLimit;
  818:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #else
  819:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MSR msplim_ns, %0" : : "r" (MainStackPtrLimit));
@@ -3820,6 +3838,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  853:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  854:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
  855:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Set FPSCR
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 65
+
+
  856:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Assigns the given value to the Floating Point Status/Control register.
  857:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \param [in]    fpscr  Floating Point Status/Control value to set
  858:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
@@ -3838,9 +3859,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  871:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #else
  872:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   (void)fpscr;
  873:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 65
-
-
  874:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
  875:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  876:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
@@ -3880,6 +3898,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  910:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  911:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
  912:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 66
+
+
  913:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Wait For Event
  914:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Wait For Event is a hint instruction that permits the processor to enter
  915:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            a low-power state until one of a number of events occurs.
@@ -3898,9 +3919,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  928:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Instruction Synchronization Barrier
  929:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Instruction Synchronization Barrier flushes the pipeline in the processor,
  930:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            so that all instructions following the ISB are fetched from cache or memory,
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 66
-
-
  931:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            after the instruction has been completed.
  932:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
  933:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __ISB(void)
@@ -3915,127 +3933,127 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
  942:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            It completes when all explicit memory accesses before this instruction complete.
  943:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
  944:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __DSB(void)
- 367              		.loc 2 944 27 view .LVU125
- 368              	.LBB63:
+ 380              		.loc 2 944 27 view .LVU130
+ 381              	.LBB63:
  945:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
  946:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("dsb 0xF":::"memory");
- 369              		.loc 2 946 3 view .LVU126
- 370              		.syntax unified
- 371              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 372 000c BFF34F8F 		dsb 0xF
- 373              	@ 0 "" 2
- 374              		.thumb
- 375              		.syntax unified
- 376              	.LBE63:
- 377              	.LBE62:
+ 382              		.loc 2 946 3 view .LVU131
+ 383              		.syntax unified
+ 384              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 385 0020 BFF34F8F 		dsb 0xF
+ 386              	@ 0 "" 2
+ 387              		.thumb
+ 388              		.syntax unified
+ 389              	.LBE63:
+ 390              	.LBE62:
 2247:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __ISB();
- 378              		.loc 3 2247 5 view .LVU127
- 379              	.LBB64:
- 380              	.LBI64:
+ 391              		.loc 3 2247 5 view .LVU132
+ 392              	.LBB64:
+ 393              	.LBI64:
  933:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
- 381              		.loc 2 933 27 view .LVU128
- 382              	.LBB65:
+ 394              		.loc 2 933 27 view .LVU133
+ 395              	.LBB65:
  935:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
- 383              		.loc 2 935 3 view .LVU129
- 384              		.syntax unified
- 385              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 386 0010 BFF36F8F 		isb 0xF
- 387              	@ 0 "" 2
- 388              		.thumb
- 389              		.syntax unified
- 390              	.LBE65:
- 391              	.LBE64:
+ 396              		.loc 2 935 3 view .LVU134
+ 397              		.syntax unified
+ 398              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 399 0024 BFF36F8F 		isb 0xF
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 67
+
+
+ 400              	@ 0 "" 2
+ 401              		.thumb
+ 402              		.syntax unified
+ 403              	.LBE65:
+ 404              	.LBE64:
 2248:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     SCB->ICIALLU = 0UL;                     /* invalidate I-Cache */
- 392              		.loc 3 2248 5 view .LVU130
- 393              		.loc 3 2248 18 is_stmt 0 view .LVU131
- 394 0014 234B     		ldr	r3, .L18
- 395 0016 0022     		movs	r2, #0
- 396 0018 C3F85022 		str	r2, [r3, #592]
+ 405              		.loc 3 2248 5 view .LVU135
+ 406              		.loc 3 2248 18 is_stmt 0 view .LVU136
+ 407 0028 234B     		ldr	r3, .L18
+ 408 002a 0022     		movs	r2, #0
+ 409 002c C3F85022 		str	r2, [r3, #592]
 2249:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __DSB();
- 397              		.loc 3 2249 5 is_stmt 1 view .LVU132
- 398              	.LBB66:
- 399              	.LBI66:
+ 410              		.loc 3 2249 5 is_stmt 1 view .LVU137
+ 411              	.LBB66:
+ 412              	.LBI66:
  944:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
- 400              		.loc 2 944 27 view .LVU133
- 401              	.LBB67:
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 67
-
-
- 402              		.loc 2 946 3 view .LVU134
- 403              		.syntax unified
- 404              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 405 001c BFF34F8F 		dsb 0xF
- 406              	@ 0 "" 2
- 407              		.thumb
- 408              		.syntax unified
- 409              	.LBE67:
- 410              	.LBE66:
+ 413              		.loc 2 944 27 view .LVU138
+ 414              	.LBB67:
+ 415              		.loc 2 946 3 view .LVU139
+ 416              		.syntax unified
+ 417              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 418 0030 BFF34F8F 		dsb 0xF
+ 419              	@ 0 "" 2
+ 420              		.thumb
+ 421              		.syntax unified
+ 422              	.LBE67:
+ 423              	.LBE66:
 2250:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __ISB();
- 411              		.loc 3 2250 5 view .LVU135
- 412              	.LBB68:
- 413              	.LBI68:
+ 424              		.loc 3 2250 5 view .LVU140
+ 425              	.LBB68:
+ 426              	.LBI68:
  933:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
- 414              		.loc 2 933 27 view .LVU136
- 415              	.LBB69:
+ 427              		.loc 2 933 27 view .LVU141
+ 428              	.LBB69:
  935:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
- 416              		.loc 2 935 3 view .LVU137
- 417              		.syntax unified
- 418              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 419 0020 BFF36F8F 		isb 0xF
- 420              	@ 0 "" 2
- 421              		.thumb
- 422              		.syntax unified
- 423              	.LBE69:
- 424              	.LBE68:
+ 429              		.loc 2 935 3 view .LVU142
+ 430              		.syntax unified
+ 431              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 432 0034 BFF36F8F 		isb 0xF
+ 433              	@ 0 "" 2
+ 434              		.thumb
+ 435              		.syntax unified
+ 436              	.LBE69:
+ 437              	.LBE68:
 2251:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     SCB->CCR |=  (uint32_t)SCB_CCR_IC_Msk;  /* enable I-Cache */
- 425              		.loc 3 2251 5 view .LVU138
- 426              		.loc 3 2251 14 is_stmt 0 view .LVU139
- 427 0024 5A69     		ldr	r2, [r3, #20]
- 428 0026 42F40032 		orr	r2, r2, #131072
- 429 002a 5A61     		str	r2, [r3, #20]
+ 438              		.loc 3 2251 5 view .LVU143
+ 439              		.loc 3 2251 14 is_stmt 0 view .LVU144
+ 440 0038 5A69     		ldr	r2, [r3, #20]
+ 441 003a 42F40032 		orr	r2, r2, #131072
+ 442 003e 5A61     		str	r2, [r3, #20]
 2252:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __DSB();
- 430              		.loc 3 2252 5 is_stmt 1 view .LVU140
- 431              	.LBB70:
- 432              	.LBI70:
+ 443              		.loc 3 2252 5 is_stmt 1 view .LVU145
+ 444              	.LBB70:
+ 445              	.LBI70:
  944:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
- 433              		.loc 2 944 27 view .LVU141
- 434              	.LBB71:
- 435              		.loc 2 946 3 view .LVU142
- 436              		.syntax unified
- 437              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 438 002c BFF34F8F 		dsb 0xF
- 439              	@ 0 "" 2
- 440              		.thumb
- 441              		.syntax unified
- 442              	.LBE71:
- 443              	.LBE70:
+ 446              		.loc 2 944 27 view .LVU146
+ 447              	.LBB71:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 68
+
+
+ 448              		.loc 2 946 3 view .LVU147
+ 449              		.syntax unified
+ 450              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 451 0040 BFF34F8F 		dsb 0xF
+ 452              	@ 0 "" 2
+ 453              		.thumb
+ 454              		.syntax unified
+ 455              	.LBE71:
+ 456              	.LBE70:
 2253:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __ISB();
- 444              		.loc 3 2253 5 view .LVU143
- 445              	.LBB72:
- 446              	.LBI72:
+ 457              		.loc 3 2253 5 view .LVU148
+ 458              	.LBB72:
+ 459              	.LBI72:
  933:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
- 447              		.loc 2 933 27 view .LVU144
- 448              	.LBB73:
+ 460              		.loc 2 933 27 view .LVU149
+ 461              	.LBB73:
  935:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
- 449              		.loc 2 935 3 view .LVU145
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 68
-
-
- 450              		.syntax unified
- 451              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 452 0030 BFF36F8F 		isb 0xF
- 453              	@ 0 "" 2
- 454              		.thumb
- 455              		.syntax unified
- 456              	.L12:
- 457              	.LBE73:
- 458              	.LBE72:
- 459              	.LBE61:
- 460              	.LBE60:
+ 462              		.loc 2 935 3 view .LVU150
+ 463              		.syntax unified
+ 464              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 465 0044 BFF36F8F 		isb 0xF
+ 466              	@ 0 "" 2
+ 467              		.thumb
+ 468              		.syntax unified
+ 469              	.L12:
+ 470              	.LBE73:
+ 471              	.LBE72:
+ 472              	.LBE61:
+ 473              	.LBE60:
   18:System/kernel/kernel.c **** 
- 461              		.loc 1 18 5 view .LVU146
- 462              	.LBB74:
- 463              	.LBI74:
+ 474              		.loc 1 18 5 view .LVU151
+ 475              	.LBB74:
+ 476              	.LBI74:
 2254:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #endif
 2255:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** }
 2256:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
@@ -4060,6 +4078,9 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2275:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** /**
 2276:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \brief   Invalidate I-Cache
 2277:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Invalidates I-Cache
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 69
+
+
 2278:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   */
 2279:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** __STATIC_FORCEINLINE void SCB_InvalidateICache (void)
 2280:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** {
@@ -4078,9 +4099,6 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2293:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Invalidates I-Cache for the given address.
 2294:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****            I-Cache is invalidated starting from a 32 byte aligned address in 32 byte granularity.
 2295:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****            I-Cache memory blocks which are part of given address + given size are invalidated.
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 69
-
-
 2296:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param[in]   addr    address
 2297:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \param[in]   isize   size of memory block (in number of bytes)
 2298:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** */
@@ -4111,68 +4129,68 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2323:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   \details Turns on D-Cache
 2324:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   */
 2325:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** __STATIC_FORCEINLINE void SCB_EnableDCache (void)
- 464              		.loc 3 2325 27 view .LVU147
- 465              	.LBB75:
+ 477              		.loc 3 2325 27 view .LVU152
+ 478              	.LBB75:
 2326:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** {
 2327:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****   #if defined (__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
 2328:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t ccsidr;
- 466              		.loc 3 2328 5 view .LVU148
+ 479              		.loc 3 2328 5 view .LVU153
 2329:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t sets;
- 467              		.loc 3 2329 5 view .LVU149
+ 480              		.loc 3 2329 5 view .LVU154
 2330:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     uint32_t ways;
- 468              		.loc 3 2330 5 view .LVU150
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 70
+
+
+ 481              		.loc 3 2330 5 view .LVU155
 2331:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2332:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     if (SCB->CCR & SCB_CCR_DC_Msk) return;  /* return if DCache is already enabled */
- 469              		.loc 3 2332 5 view .LVU151
- 470              		.loc 3 2332 12 is_stmt 0 view .LVU152
- 471 0034 1B4B     		ldr	r3, .L18
- 472 0036 5B69     		ldr	r3, [r3, #20]
- 473              		.loc 3 2332 8 view .LVU153
- 474 0038 13F4803F 		tst	r3, #65536
- 475 003c 27D1     		bne	.L13
+ 482              		.loc 3 2332 5 view .LVU156
+ 483              		.loc 3 2332 12 is_stmt 0 view .LVU157
+ 484 0048 1B4B     		ldr	r3, .L18
+ 485 004a 5B69     		ldr	r3, [r3, #20]
+ 486              		.loc 3 2332 8 view .LVU158
+ 487 004c 13F4803F 		tst	r3, #65536
+ 488 0050 27D1     		bne	.L13
 2333:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2334:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     SCB->CSSELR = 0U;                       /* select Level 1 data cache */
- 476              		.loc 3 2334 5 is_stmt 1 view .LVU154
- 477              		.loc 3 2334 17 is_stmt 0 view .LVU155
- 478 003e 194B     		ldr	r3, .L18
- 479 0040 0022     		movs	r2, #0
- 480 0042 C3F88420 		str	r2, [r3, #132]
+ 489              		.loc 3 2334 5 is_stmt 1 view .LVU159
+ 490              		.loc 3 2334 17 is_stmt 0 view .LVU160
+ 491 0052 194B     		ldr	r3, .L18
+ 492 0054 0022     		movs	r2, #0
+ 493 0056 C3F88420 		str	r2, [r3, #132]
 2335:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __DSB();
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 70
-
-
- 481              		.loc 3 2335 5 is_stmt 1 view .LVU156
- 482              	.LBB76:
- 483              	.LBI76:
+ 494              		.loc 3 2335 5 is_stmt 1 view .LVU161
+ 495              	.LBB76:
+ 496              	.LBI76:
  944:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
- 484              		.loc 2 944 27 view .LVU157
- 485              	.LBB77:
- 486              		.loc 2 946 3 view .LVU158
- 487              		.syntax unified
- 488              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 489 0046 BFF34F8F 		dsb 0xF
- 490              	@ 0 "" 2
- 491              		.thumb
- 492              		.syntax unified
- 493              	.LBE77:
- 494              	.LBE76:
+ 497              		.loc 2 944 27 view .LVU162
+ 498              	.LBB77:
+ 499              		.loc 2 946 3 view .LVU163
+ 500              		.syntax unified
+ 501              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 502 005a BFF34F8F 		dsb 0xF
+ 503              	@ 0 "" 2
+ 504              		.thumb
+ 505              		.syntax unified
+ 506              	.LBE77:
+ 507              	.LBE76:
 2336:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2337:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     ccsidr = SCB->CCSIDR;
- 495              		.loc 3 2337 5 view .LVU159
- 496              		.loc 3 2337 12 is_stmt 0 view .LVU160
- 497 004a D3F88040 		ldr	r4, [r3, #128]
- 498              	.LVL7:
+ 508              		.loc 3 2337 5 view .LVU164
+ 509              		.loc 3 2337 12 is_stmt 0 view .LVU165
+ 510 005e D3F88040 		ldr	r4, [r3, #128]
+ 511              	.LVL9:
 2338:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2339:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                                             /* invalidate D-Cache */
 2340:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     sets = (uint32_t)(CCSIDR_SETS(ccsidr));
- 499              		.loc 3 2340 5 is_stmt 1 view .LVU161
- 500              		.loc 3 2340 10 is_stmt 0 view .LVU162
- 501 004e C4F34E30 		ubfx	r0, r4, #13, #15
- 502              	.LVL8:
- 503              		.loc 3 2340 10 view .LVU163
- 504 0052 00E0     		b	.L15
- 505              	.LVL9:
- 506              	.L16:
+ 512              		.loc 3 2340 5 is_stmt 1 view .LVU166
+ 513              		.loc 3 2340 10 is_stmt 0 view .LVU167
+ 514 0062 C4F34E30 		ubfx	r0, r4, #13, #15
+ 515              	.LVL10:
+ 516              		.loc 3 2340 10 view .LVU168
+ 517 0066 00E0     		b	.L15
+ 518              	.LVL11:
+ 519              	.L16:
 2341:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     do {
 2342:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****       ways = (uint32_t)(CCSIDR_WAYS(ccsidr));
 2343:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****       do {
@@ -4180,186 +4198,186 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 1
 2345:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                       ((ways << SCB_DCISW_WAY_Pos) & SCB_DCISW_WAY_Msk)  );
 2346:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****         #if defined ( __CC_ARM )
 2347:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****           __schedule_barrier();
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 71
+
+
 2348:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****         #endif
 2349:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****       } while (ways-- != 0U);
 2350:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     } while(sets-- != 0U);
- 507              		.loc 3 2350 17 view .LVU164
- 508 0054 1846     		mov	r0, r3
- 509              	.LVL10:
- 510              	.L15:
+ 520              		.loc 3 2350 17 view .LVU169
+ 521 0068 1846     		mov	r0, r3
+ 522              	.LVL12:
+ 523              	.L15:
 2341:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     do {
- 511              		.loc 3 2341 5 is_stmt 1 view .LVU165
+ 524              		.loc 3 2341 5 is_stmt 1 view .LVU170
 2342:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****       do {
- 512              		.loc 3 2342 7 view .LVU166
+ 525              		.loc 3 2342 7 view .LVU171
 2342:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****       do {
- 513              		.loc 3 2342 12 is_stmt 0 view .LVU167
- 514 0056 C4F3C902 		ubfx	r2, r4, #3, #10
- 515              	.LVL11:
- 516              	.L14:
+ 526              		.loc 3 2342 12 is_stmt 0 view .LVU172
+ 527 006a C4F3C902 		ubfx	r2, r4, #3, #10
+ 528              	.LVL13:
+ 529              	.L14:
 2343:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****         SCB->DCISW = (((sets << SCB_DCISW_SET_Pos) & SCB_DCISW_SET_Msk) |
- 517              		.loc 3 2343 7 is_stmt 1 view .LVU168
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 71
-
-
+ 530              		.loc 3 2343 7 is_stmt 1 view .LVU173
 2344:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                       ((ways << SCB_DCISW_WAY_Pos) & SCB_DCISW_WAY_Msk)  );
- 518              		.loc 3 2344 9 view .LVU169
+ 531              		.loc 3 2344 9 view .LVU174
 2344:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                       ((ways << SCB_DCISW_WAY_Pos) & SCB_DCISW_WAY_Msk)  );
- 519              		.loc 3 2344 52 is_stmt 0 view .LVU170
- 520 005a 43F6E073 		movw	r3, #16352
- 521 005e 03EA4013 		and	r3, r3, r0, lsl #5
+ 532              		.loc 3 2344 52 is_stmt 0 view .LVU175
+ 533 006e 43F6E073 		movw	r3, #16352
+ 534 0072 03EA4013 		and	r3, r3, r0, lsl #5
 2344:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                       ((ways << SCB_DCISW_WAY_Pos) & SCB_DCISW_WAY_Msk)  );
- 522              		.loc 3 2344 73 view .LVU171
- 523 0062 43EA8273 		orr	r3, r3, r2, lsl #30
+ 535              		.loc 3 2344 73 view .LVU176
+ 536 0076 43EA8273 		orr	r3, r3, r2, lsl #30
 2344:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****                       ((ways << SCB_DCISW_WAY_Pos) & SCB_DCISW_WAY_Msk)  );
- 524              		.loc 3 2344 20 view .LVU172
- 525 0066 0F49     		ldr	r1, .L18
- 526 0068 C1F86032 		str	r3, [r1, #608]
+ 537              		.loc 3 2344 20 view .LVU177
+ 538 007a 0F49     		ldr	r1, .L18
+ 539 007c C1F86032 		str	r3, [r1, #608]
 2349:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     } while(sets-- != 0U);
- 527              		.loc 3 2349 15 is_stmt 1 view .LVU173
- 528 006c 1346     		mov	r3, r2
+ 540              		.loc 3 2349 15 is_stmt 1 view .LVU178
+ 541 0080 1346     		mov	r3, r2
 2349:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     } while(sets-- != 0U);
- 529              		.loc 3 2349 20 is_stmt 0 view .LVU174
- 530 006e 013A     		subs	r2, r2, #1
- 531              	.LVL12:
+ 542              		.loc 3 2349 20 is_stmt 0 view .LVU179
+ 543 0082 013A     		subs	r2, r2, #1
+ 544              	.LVL14:
 2349:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     } while(sets-- != 0U);
- 532              		.loc 3 2349 7 view .LVU175
- 533 0070 002B     		cmp	r3, #0
- 534 0072 F2D1     		bne	.L14
- 535              		.loc 3 2350 12 is_stmt 1 view .LVU176
- 536              		.loc 3 2350 17 is_stmt 0 view .LVU177
- 537 0074 431E     		subs	r3, r0, #1
- 538              	.LVL13:
- 539              		.loc 3 2350 5 view .LVU178
- 540 0076 0028     		cmp	r0, #0
- 541 0078 ECD1     		bne	.L16
+ 545              		.loc 3 2349 7 view .LVU180
+ 546 0084 002B     		cmp	r3, #0
+ 547 0086 F2D1     		bne	.L14
+ 548              		.loc 3 2350 12 is_stmt 1 view .LVU181
+ 549              		.loc 3 2350 17 is_stmt 0 view .LVU182
+ 550 0088 431E     		subs	r3, r0, #1
+ 551              	.LVL15:
+ 552              		.loc 3 2350 5 view .LVU183
+ 553 008a 0028     		cmp	r0, #0
+ 554 008c ECD1     		bne	.L16
 2351:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __DSB();
- 542              		.loc 3 2351 5 is_stmt 1 view .LVU179
- 543              	.LBB78:
- 544              	.LBI78:
+ 555              		.loc 3 2351 5 is_stmt 1 view .LVU184
+ 556              	.LBB78:
+ 557              	.LBI78:
  944:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
- 545              		.loc 2 944 27 view .LVU180
- 546              	.LBB79:
- 547              		.loc 2 946 3 view .LVU181
- 548              		.syntax unified
- 549              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 550 007a BFF34F8F 		dsb 0xF
- 551              	@ 0 "" 2
- 552              		.thumb
- 553              		.syntax unified
- 554              	.LBE79:
- 555              	.LBE78:
+ 558              		.loc 2 944 27 view .LVU185
+ 559              	.LBB79:
+ 560              		.loc 2 946 3 view .LVU186
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 72
+
+
+ 561              		.syntax unified
+ 562              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 563 008e BFF34F8F 		dsb 0xF
+ 564              	@ 0 "" 2
+ 565              		.thumb
+ 566              		.syntax unified
+ 567              	.LBE79:
+ 568              	.LBE78:
 2352:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
 2353:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     SCB->CCR |=  (uint32_t)SCB_CCR_DC_Msk;  /* enable D-Cache */
- 556              		.loc 3 2353 5 view .LVU182
- 557              		.loc 3 2353 14 is_stmt 0 view .LVU183
- 558 007e 4B69     		ldr	r3, [r1, #20]
- 559              	.LVL14:
- 560              		.loc 3 2353 14 view .LVU184
- 561 0080 43F48033 		orr	r3, r3, #65536
- 562 0084 4B61     		str	r3, [r1, #20]
+ 569              		.loc 3 2353 5 view .LVU187
+ 570              		.loc 3 2353 14 is_stmt 0 view .LVU188
+ 571 0092 4B69     		ldr	r3, [r1, #20]
+ 572              	.LVL16:
+ 573              		.loc 3 2353 14 view .LVU189
+ 574 0094 43F48033 		orr	r3, r3, #65536
+ 575 0098 4B61     		str	r3, [r1, #20]
 2354:HAL_Lib/CMSIS/Core/Include/core_cm7.h **** 
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 72
-
-
 2355:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __DSB();
- 563              		.loc 3 2355 5 is_stmt 1 view .LVU185
- 564              	.LBB80:
- 565              	.LBI80:
+ 576              		.loc 3 2355 5 is_stmt 1 view .LVU190
+ 577              	.LBB80:
+ 578              	.LBI80:
  944:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
- 566              		.loc 2 944 27 view .LVU186
- 567              	.LBB81:
- 568              		.loc 2 946 3 view .LVU187
- 569              		.syntax unified
- 570              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 571 0086 BFF34F8F 		dsb 0xF
- 572              	@ 0 "" 2
- 573              		.thumb
- 574              		.syntax unified
- 575              	.LBE81:
- 576              	.LBE80:
+ 579              		.loc 2 944 27 view .LVU191
+ 580              	.LBB81:
+ 581              		.loc 2 946 3 view .LVU192
+ 582              		.syntax unified
+ 583              	@ 946 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 584 009a BFF34F8F 		dsb 0xF
+ 585              	@ 0 "" 2
+ 586              		.thumb
+ 587              		.syntax unified
+ 588              	.LBE81:
+ 589              	.LBE80:
 2356:HAL_Lib/CMSIS/Core/Include/core_cm7.h ****     __ISB();
- 577              		.loc 3 2356 5 view .LVU188
- 578              	.LBB82:
- 579              	.LBI82:
+ 590              		.loc 3 2356 5 view .LVU193
+ 591              	.LBB82:
+ 592              	.LBI82:
  933:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
- 580              		.loc 2 933 27 view .LVU189
- 581              	.LBB83:
+ 593              		.loc 2 933 27 view .LVU194
+ 594              	.LBB83:
  935:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
- 582              		.loc 2 935 3 view .LVU190
- 583              		.syntax unified
- 584              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
- 585 008a BFF36F8F 		isb 0xF
- 586              	@ 0 "" 2
- 587              	.LVL15:
- 588              		.thumb
- 589              		.syntax unified
- 590              	.L13:
+ 595              		.loc 2 935 3 view .LVU195
+ 596              		.syntax unified
+ 597              	@ 935 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 598 009e BFF36F8F 		isb 0xF
+ 599              	@ 0 "" 2
+ 600              	.LVL17:
+ 601              		.thumb
+ 602              		.syntax unified
+ 603              	.L13:
  935:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
- 591              		.loc 2 935 3 is_stmt 0 view .LVU191
- 592              	.LBE83:
- 593              	.LBE82:
- 594              	.LBE75:
- 595              	.LBE74:
+ 604              		.loc 2 935 3 is_stmt 0 view .LVU196
+ 605              	.LBE83:
+ 606              	.LBE82:
+ 607              	.LBE75:
+ 608              	.LBE74:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 73
+
+
   20:System/kernel/kernel.c **** 
- 596              		.loc 1 20 5 is_stmt 1 view .LVU192
- 597 008e FFF7FEFF 		bl	HAL_Init
- 598              	.LVL16:
-  22:System/kernel/kernel.c **** 
- 599              		.loc 1 22 5 view .LVU193
-  22:System/kernel/kernel.c **** 
- 600              		.loc 1 22 63 is_stmt 0 view .LVU194
- 601 0092 0548     		ldr	r0, .L18+4
-  22:System/kernel/kernel.c **** 
- 602              		.loc 1 22 5 view .LVU195
- 603 0094 054A     		ldr	r2, .L18+8
- 604 0096 121A     		subs	r2, r2, r0
- 605 0098 0549     		ldr	r1, .L18+12
- 606 009a FFF7FEFF 		bl	memcpy
- 607              	.LVL17:
-  24:System/kernel/kernel.c **** }
- 608              		.loc 1 24 5 is_stmt 1 view .LVU196
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 73
-
-
-  24:System/kernel/kernel.c **** }
- 609              		.loc 1 24 12 is_stmt 0 view .LVU197
- 610 009e FFF7FEFF 		bl	KernelClock_Init
+ 609              		.loc 1 20 5 is_stmt 1 view .LVU197
+ 610 00a2 FFF7FEFF 		bl	HAL_Init
  611              	.LVL18:
+  22:System/kernel/kernel.c **** 
+ 612              		.loc 1 22 5 view .LVU198
+  22:System/kernel/kernel.c **** 
+ 613              		.loc 1 22 63 is_stmt 0 view .LVU199
+ 614 00a6 0548     		ldr	r0, .L18+4
+  22:System/kernel/kernel.c **** 
+ 615              		.loc 1 22 5 view .LVU200
+ 616 00a8 054A     		ldr	r2, .L18+8
+ 617 00aa 121A     		subs	r2, r2, r0
+ 618 00ac 0549     		ldr	r1, .L18+12
+ 619 00ae FFF7FEFF 		bl	memcpy
+ 620              	.LVL19:
+  24:System/kernel/kernel.c **** }
+ 621              		.loc 1 24 5 is_stmt 1 view .LVU201
+  24:System/kernel/kernel.c **** }
+ 622              		.loc 1 24 12 is_stmt 0 view .LVU202
+ 623 00b2 FFF7FEFF 		bl	KernelClock_Init
+ 624              	.LVL20:
   25:System/kernel/kernel.c **** 
- 612              		.loc 1 25 1 view .LVU198
- 613 00a2 10BD     		pop	{r4, pc}
- 614              	.L19:
- 615              		.align	2
- 616              	.L18:
- 617 00a4 00ED00E0 		.word	-536810240
- 618 00a8 00000000 		.word	tcm_code_start
- 619 00ac 00000000 		.word	tcm_code_end
- 620 00b0 00000000 		.word	tcm_code
- 621              		.cfi_endproc
- 622              	.LFE144:
- 624              		.text
- 625              	.Letext0:
- 626              		.file 4 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
- 627              		.file 5 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
- 628              		.file 6 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/lib/gcc/arm-none-eabi/10.
- 629              		.file 7 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
- 630              		.file 8 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h"
- 631              		.file 9 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc_ex.h"
- 632              		.file 10 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h"
- 633              		.file 11 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
- 634              		.file 12 "<built-in>"
- 635              		.file 13 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s 			page 74
+ 625              		.loc 1 25 1 view .LVU203
+ 626 00b6 10BD     		pop	{r4, pc}
+ 627              	.L19:
+ 628              		.align	2
+ 629              	.L18:
+ 630 00b8 00ED00E0 		.word	-536810240
+ 631 00bc 00000000 		.word	tcm_code_start
+ 632 00c0 00000000 		.word	tcm_code_end
+ 633 00c4 00000000 		.word	tcm_code
+ 634              		.cfi_endproc
+ 635              	.LFE144:
+ 637              		.text
+ 638              	.Letext0:
+ 639              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 640              		.file 5 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 641              		.file 6 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\lib\\gcc\\arm-none
+ 642              		.file 7 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 643              		.file 8 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h"
+ 644              		.file 9 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc_ex.h"
+ 645              		.file 10 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h"
+ 646              		.file 11 "<built-in>"
+ 647              		.file 12 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 648              		.file 13 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s 			page 74
 
 
 DEFINED SYMBOLS
-                            *ABS*:0000000000000000 kernel.c
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s:17     .text.KernelClock_Init:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s:24     .text.KernelClock_Init:0000000000000000 KernelClock_Init
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s:323    .text.KernelClock_Init:0000000000000114 $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s:330    .text.Kernel_Init:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s:337    .text.Kernel_Init:0000000000000000 Kernel_Init
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRzgwG4.s:617    .text.Kernel_Init:00000000000000a4 $d
+                            *ABS*:00000000 kernel.c
+C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s:17     .text.KernelClock_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s:24     .text.KernelClock_Init:00000000 KernelClock_Init
+C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s:323    .text.KernelClock_Init:00000114 $d
+C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s:330    .text.Kernel_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s:337    .text.Kernel_Init:00000000 Kernel_Init
+C:\Users\huav\AppData\Local\Temp\ccF9D4pg.s:630    .text.Kernel_Init:000000b8 $d
 
 UNDEFINED SYMBOLS
 memset
@@ -4367,8 +4385,8 @@ HAL_PWREx_ConfigSupply
 HAL_RCC_OscConfig
 HAL_RCC_ClockConfig
 HAL_RCCEx_PeriphCLKConfig
-HAL_Init
 memcpy
+HAL_Init
 tcm_code_start
 tcm_code_end
 tcm_code

@@ -1,4 +1,4 @@
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 1
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -58,7 +58,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 1
   15:debug/debug_util.c **** 
   16:debug/debug_util.c ****     if (BspGPIO.init == NULL)
   42              		.loc 1 16 5 view .LVU2
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s 			page 2
 
 
   43              		.loc 1 16 16 is_stmt 0 view .LVU3
@@ -118,7 +118,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 1
   86 0050 23F8022B 		strh	r2, [r3], #2	@ movhi
   87 0054 120C     		lsrs	r2, r2, #16
   88 0056 1A70     		strb	r2, [r3]
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 3
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s 			page 3
 
 
   89 0058 07AB     		add	r3, sp, #28
@@ -149,7 +149,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 1
  111 0068 00000000 		.word	BspGPIO
  112              		.cfi_endproc
  113              	.LFE144:
- 115              		.section	.text.DebugPin_Ctl,"ax",%progbits
+ 115              		.section	.tcm_code,"ax",%progbits
  116              		.align	1
  117              		.syntax unified
  118              		.thumb
@@ -159,7 +159,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 1
  123              	.LVL1:
  124              	.LFB145:
   29:debug/debug_util.c **** 
-  30:debug/debug_util.c **** static bool DebugPin_Ctl(DebugPinObj_TypeDef debug_pin, bool state)
+  30:debug/debug_util.c **** static ITCM_CODE bool DebugPin_Ctl(DebugPinObj_TypeDef debug_pin, bool state)
   31:debug/debug_util.c **** {
  125              		.loc 1 31 1 is_stmt 1 view -0
  126              		.cfi_startproc
@@ -178,7 +178,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 1
   32:debug/debug_util.c ****     if (BspGPIO.write == NULL)
  139              		.loc 1 32 5 is_stmt 1 view .LVU28
  140              		.loc 1 32 16 is_stmt 0 view .LVU29
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 4
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s 			page 4
 
 
  141 000a 064B     		ldr	r3, .L11
@@ -238,7 +238,7 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 1
  188              		@ frame_needed = 0, uses_anonymous_args = 0
  189              		@ link register save eliminated.
   41:debug/debug_util.c ****     if (state)
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 5
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s 			page 5
 
 
  190              		.loc 1 41 5 view .LVU37
@@ -266,27 +266,27 @@ ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 1
  211 0004 00000000 		.word	DebugPin_Ctl
  212              		.text
  213              	.Letext0:
- 214              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
- 215              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 214              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 215              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
  216              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
  217              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
  218              		.file 6 "Bsp/Bsp_GPIO.h"
  219              		.file 7 "debug/debug_util.h"
-ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s 			page 6
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s 			page 6
 
 
 DEFINED SYMBOLS
-                            *ABS*:0000000000000000 debug_util.c
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:17     .text.DebugPin_Init:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:24     .text.DebugPin_Init:0000000000000000 DebugPin_Init
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:111    .text.DebugPin_Init:0000000000000068 $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:116    .text.DebugPin_Ctl:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:122    .text.DebugPin_Ctl:0000000000000000 DebugPin_Ctl
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:170    .text.DebugPin_Ctl:0000000000000024 $d
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:175    .text.assert:0000000000000000 $t
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:182    .text.assert:0000000000000000 assert
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:209    .data.DebugPin:0000000000000000 DebugPin
-/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccQFonGp.s:206    .data.DebugPin:0000000000000000 $d
+                            *ABS*:00000000 debug_util.c
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:17     .text.DebugPin_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:24     .text.DebugPin_Init:00000000 DebugPin_Init
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:111    .text.DebugPin_Init:00000068 $d
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:116    .tcm_code:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:122    .tcm_code:00000000 DebugPin_Ctl
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:170    .tcm_code:00000024 $d
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:175    .text.assert:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:182    .text.assert:00000000 assert
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:209    .data.DebugPin:00000000 DebugPin
+C:\Users\huav\AppData\Local\Temp\ccNEGkaE.s:206    .data.DebugPin:00000000 $d
 
 UNDEFINED SYMBOLS
 BspGPIO

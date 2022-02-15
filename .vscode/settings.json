@@ -26,7 +26,9 @@
         "type_traits": "cpp",
         "new": "cpp",
         "typeinfo": "cpp",
-        "kernel.h": "c"
+        "kernel.h": "c",
+        "debug_util.h": "c",
+        "system_cfg.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

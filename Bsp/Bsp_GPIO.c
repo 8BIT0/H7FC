@@ -1,4 +1,5 @@
 #include "Bsp_GPIO.h"
+#include "system_cfg.h"
 
 static bool BspGPIO_Init(BspGPIO_Obj_TypeDef IO_Obj);
 static bool BspGPIO_Read(uint32_t port, uint16_t pin);
@@ -51,7 +52,7 @@ static bool BspGPIO_Read(uint32_t port, uint16_t pin)
     return HAL_GPIO_ReadPin(port, pin);
 }
 
-static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state)
+static ITCM_CODE void BspGPIO_Write(uint32_t port, uint16_t pin, bool state)
 {
     HAL_GPIO_WritePin(port, pin, state);
 }

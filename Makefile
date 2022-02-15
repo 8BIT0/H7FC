@@ -125,6 +125,7 @@ C_INCLUDES =  \
 -IBsp \
 -IDevice \
 -ISystem/ \
+-Idebug/ \
 -ISystem/runtime \
 -ISystem/kernel/ \
 -IHAL_Lib/STM32H7xx_HAL_Driver/Inc \

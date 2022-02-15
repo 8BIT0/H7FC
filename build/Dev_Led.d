@@ -26,7 +26,8 @@ build/Dev_Led.o: Device/Dev_Led.c Device/Dev_Led.h Bsp/Bsp_GPIO.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h \
  HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h \
- HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h
+ HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h \
+ System/system_cfg.h
 Device/Dev_Led.h:
 Bsp/Bsp_GPIO.h:
 HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
@@ -57,3 +58,4 @@ HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h:
 HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h:
 HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h:
 HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h:
+System/system_cfg.h:

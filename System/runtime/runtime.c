@@ -135,7 +135,7 @@ bool Runtime_Stop(void)
     return false;
 }
 
-bool Runtime_Tick(void)
+ITCM_CODE bool Runtime_Tick(void)
 {
     if (RunTime.module_state == Runtime_Module_Start)
     {
@@ -152,27 +152,27 @@ bool Runtime_Tick(void)
     return false;
 }
 
-inline SYSTEM_RunTime Get_CurrentRunningUs(void)
+ITCM_CODE SYSTEM_RunTime Get_CurrentRunningUs(void)
 {
     return RunTime.Use_Us;
 }
 
-inline SYSTEM_RunTime Get_CurrentRunningMs(void)
+ITCM_CODE SYSTEM_RunTime Get_CurrentRunningMs(void)
 {
     return (RunTime.Use_Us / REAL_MS);
 }
 
-inline SYSTEM_RunTime Get_CurrentRunningS(void)
+ITCM_CODE SYSTEM_RunTime Get_CurrentRunningS(void)
 {
     return (Get_CurrentRunningMs() / REAL_MS);
 }
 
-inline SYSTEM_RunTime Get_TimeDifference(uint64_t time_in)
+ITCM_CODE SYSTEM_RunTime Get_TimeDifference(uint64_t time_in)
 {
     return (RunTime.Use_Us - time_in);
 }
 
-inline SYSTEM_RunTime Get_TargetRunTime(uint16_t duration)
+ITCM_CODE SYSTEM_RunTime Get_TargetRunTime(uint16_t duration)
 {
     return (RunTime.Use_Us + duration);
 }
