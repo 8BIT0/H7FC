@@ -28,7 +28,8 @@
                 "typeinfo": "cpp",
                 "kernel.h": "c",
                 "debug_util.h": "c",
-                "system_cfg.h": "c"
+                "system_cfg.h": "c",
+                "ios": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
