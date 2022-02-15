@@ -86,6 +86,8 @@ static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
+
+    return true;
 }
 
 static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg)
@@ -155,6 +157,38 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg)
 
 static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg)
 {
+    if (spi_cfg.Instance == SPI1)
+    {
+        __SPI1_CLK_DISABLE();
+    }
+    else if (spi_cfg.Instance == SPI2)
+    {
+        __SPI2_CLK_DISABLE();
+    }
+    else if (spi_cfg.Instance == SPI3)
+    {
+        __SPI3_CLK_DISABLE();
+    }
+    else if (spi_cfg.Instance == SPI4)
+    {
+        __SPI4_CLK_DISABLE();
+    }
+    else if (spi_cfg.Instance == SPI5)
+    {
+        __SPI5_CLK_DISABLE();
+    }
+    else if (spi_cfg.Instance == SPI6)
+    {
+        __SPI6_CLK_DISABLE();
+    }
+    else
+        return false;
+
+    HAL_GPIO_DeInit(spi_cfg.Pin.port_mosi, spi_cfg.Pin.pin_mosi);
+    HAL_GPIO_DeInit(spi_cfg.Pin.port_miso, spi_cfg.Pin.pin_miso);
+    HAL_GPIO_DeInit(spi_cfg.Pin.port_clk, spi_cfg.Pin.pin_clk);
+
+    return true;
 }
 
 static void BspSPI_TransByte(uint8_t tx)
