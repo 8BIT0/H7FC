@@ -71,10 +71,18 @@
 #define W25Qx_Enable() HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET)
 #define W25Qx_Disable() HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET)
 
-typedef bool (*bus_port_init)(void);
-typedef bool (*bus_transmit_buff)(uint8_t *tx_buff, uint8_t *rx_buff, uint16_t size);
+typedef bool (*bus_init)(void);
+typedef bool (*bus_transmit)(void *instance, uint8_t *tx, uint16_t size, uint16_t time_out);
+typedef bool (*bus_receive)(void *instance, uint8_t *rx, uint16_t size, uint16_t time_out);
+typedef bool (*bus_trans_receive)(void *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
 typedef bool (*cs_pin_init)(void);
 typedef bool (*cs_pin_ctl)(bool state);
+
+typedef enum
+{
+    DevW25Qxx_Norm_SpiBus = 0,
+    DevW25Qxx_Quad_SpiBus,
+} DevW25Qxx_SpiBustype_List;
 
 typedef enum
 {
@@ -95,8 +103,14 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    bus_port_init bus_init;
-    bus_transmit_buff bus_trans_buff;
+    DevW25Qxx_SpiBustype_List bus_type;
+    void *bus_instance;
+
+    bus_init bus_init;
+    bus_transmit trans;
+    bus_receive receive;
+    bus_trans_receive trans_receive;
+
     cs_pin_init cs_init;
     cs_pin_ctl cs_ctl;
 } DevW25QxxObj_TypeDef;

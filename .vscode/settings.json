@@ -29,7 +29,9 @@
                 "kernel.h": "c",
                 "debug_util.h": "c",
                 "system_cfg.h": "c",
-                "ios": "c"
+                "ios": "c",
+                "stm32h7xx_hal_gpio.h": "c",
+                "stm32h7xx_hal_spi.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

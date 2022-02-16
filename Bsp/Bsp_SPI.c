@@ -1,63 +1,20 @@
 #include "Bsp_SPI.h"
-#include "stm32h7xx.h"
-#include "stm32h743xx.h"
-#include "stm32h7xx_hal_rcc.h"
-#include "stm32h7xx_hal_gpio.h"
-#include "stm32h7xx_hal_spi.h"
 
 /* internal function */
-static bool BspSPI_Init();
-static void BspSPI_TransByte(uint8_t tx);
-static uint8_t BspSPI_ReceiveByte(void);
-static uint8_t BspSPI_TransMitByte(uint8_t tx);
-static uint16_t BspSPI_TransMitBuff(uint8_t *tx, uint8_t *rx, uint16_t size);
+static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_instance);
+static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg);
+static bool BspSPI_Trans(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint16_t size, uint16_t time_out);
+static bool BspSPI_Receive(SPI_HandleTypeDef *spi_instance, uint8_t *rx, uint16_t size, uint16_t time_out);
+static uint16_t BspSPI_TransReceive(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
 
 /* SPI0 Object */
 BspSpi_TypeDef BspSPI = {
-    .Init = BspSPI0_Init,
-    .TransByte = BspSPI0_TransByte,
-    .ReceiveByte = BspSPI0_ReceiveByte,
-    .TransMitByte = BspSPI0_TransMitByte,
-    .TransMitBuff = BspSPI0_TransMitBuff,
+    .init = BspSPI_NormalMode_Init,
+    .deinit = BspSPI_DeInit,
+    .trans = BspSPI_Trans,
+    .receive = BspSPI_Receive,
+    .trans_receive = BspSPI_TransReceive,
 };
-
-static bool BspSPI_QuadMode_Init()
-{
-}
-
-#pragma pack(1)
-typedef struct
-{
-    GPIO_TypeDef *port_mosi;
-    GPIO_TypeDef *port_miso;
-    GPIO_TypeDef *port_clk;
-
-    uint32_t pin_mosi;
-    uint32_t pin_miso;
-    uint32_t pin_clk;
-
-    uint32_t pin_Alternate;
-} BspSPI_PinConfig_TypeDef;
-
-typedef struct
-{
-    BspSPI_PinConfig_TypeDef Pin;
-    SPI_TypeDef *Instance;
-    uint32_t Mode;
-    uint32_t Direction;
-    uint32_t DataSize;
-    uint32_t CLKPolarity;
-    uint32_t CLKPhase;
-    uint32_t NSS;
-    uint32_t BaudRatePrescaler;
-    uint32_t FirstBit;
-} BspSPI_NorModeConfig_TypeDef;
-
-typedef struct
-{
-    SPI_TypeDef *Instance;
-} BspSPI_QuadModeConfig_TypeDef;
-#pragma pack()
 
 static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
 {
@@ -90,7 +47,7 @@ static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
     return true;
 }
 
-static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg)
+static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_instance)
 {
     SPI_HandleTypeDef SPI_InitStructure;
 
@@ -147,10 +104,12 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg)
     SPI_InitStructure.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
     SPI_InitStructure.Init.IOSwap = SPI_IO_SWAP_DISABLE;
 
-    if (HAL_SPI_Init(SPI_InitStructure) == HAL_OK)
+    if (HAL_SPI_Init(&SPI_InitStructure) == HAL_OK)
     {
         return false;
     }
+
+    *spi_instance = SPI_InitStructure;
 
     return true;
 }
@@ -191,18 +150,26 @@ static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg)
     return true;
 }
 
-static void BspSPI_TransByte(uint8_t tx)
+static bool BspSPI_Trans(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint16_t size, uint16_t time_out)
 {
+    if (HAL_SPI_Transmit(spi_instance, tx, size, time_out) == HAL_OK)
+        return true;
+
+    return false;
 }
 
-static uint8_t BspSPI_ReceiveByte(void)
+static bool BspSPI_Receive(SPI_HandleTypeDef *spi_instance, uint8_t *rx, uint16_t size, uint16_t time_out)
 {
+    if (HAL_SPI_Receive(spi_instance, rx, size, time_out) == HAL_OK)
+        return true;
+
+    return false;
 }
 
-static uint8_t BspSPI_TransMitByte(uint8_t tx)
+static uint16_t BspSPI_TransReceive(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out)
 {
-}
+    if (HAL_SPI_TransmitReceive(spi_instance, tx, rx, size, time_out) == HAL_OK)
+        return true;
 
-static uint16_t BspSPI_TransMitBuff(uint8_t *tx, uint8_t *rx, uint16_t size)
-{
+    return false;
 }

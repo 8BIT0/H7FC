@@ -3,33 +3,50 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "Bsp_SPI_Cfg.h"
-
-typedef enum
-{
-    BspSPI_Norm_Mode = 0,
-    BspSPI_Quad_Mode,
-} BspSPI_Mode_List;
+#include "stm32h743xx.h"
+#include "stm32h7xx_hal.h"
+#include "stm32h7xx_hal_rcc.h"
+#include "stm32h7xx_hal_gpio.h"
+#include "stm32h7xx_hal_spi.h"
 
 #pragma pack(1)
 typedef struct
 {
-    uint8_t id;
-} BspSpiNormalModeObj_TypeDef;
+    GPIO_TypeDef *port_mosi;
+    GPIO_TypeDef *port_miso;
+    GPIO_TypeDef *port_clk;
+
+    uint32_t pin_mosi;
+    uint32_t pin_miso;
+    uint32_t pin_clk;
+
+    uint32_t pin_Alternate;
+} BspSPI_PinConfig_TypeDef;
 
 typedef struct
 {
-    uint8_t id;
-} BspSpiQuadModeObj_TypeDef;
+    BspSPI_PinConfig_TypeDef Pin;
+    SPI_TypeDef *Instance;
+    uint32_t Mode;
+    uint32_t Direction;
+    uint32_t DataSize;
+    uint32_t CLKPolarity;
+    uint32_t CLKPhase;
+    uint32_t NSS;
+    uint32_t BaudRatePrescaler;
+    uint32_t FirstBit;
+} BspSPI_NorModeConfig_TypeDef;
 #pragma pack()
 
 typedef struct
 {
-    bool (*Init)();
-    void (*TransByte)(uint8_t tx);
-    uint8_t (*ReceiveByte)(void);
-    uint8_t (*TransMitByte)(uint8_t tx);
-    uint16_t (*TransMitBuff)(uint8_t *tx, uint8_t *rx, uint16_t size);
+    bool (*init)(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_instance);
+    bool (*deinit)(BspSPI_NorModeConfig_TypeDef spi_cfg);
+    bool (*trans)(SPI_HandleTypeDef *instance, uint8_t *tx, uint16_t size, uint16_t time_out);
+    bool (*receive)(SPI_HandleTypeDef *instance, uint8_t *rx, uint16_t size, uint16_t time_out);
+    bool (*trans_receive)(SPI_HandleTypeDef *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
 } BspSpi_TypeDef;
+
+extern BspSpi_TypeDef BspSPI;
 
 #endif

@@ -39,6 +39,7 @@ C_SOURCES =  \
 main.c \
 debug/debug_util.c \
 Bsp/Bsp_GPIO.c \
+Bsp/Bsp_SPI.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 System/kernel/kernel.c \
