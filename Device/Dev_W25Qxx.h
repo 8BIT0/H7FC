@@ -77,6 +77,7 @@ typedef bool (*bus_receive)(void *instance, uint8_t *rx, uint16_t size, uint16_t
 typedef bool (*bus_trans_receive)(void *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
 typedef bool (*cs_pin_init)(void);
 typedef bool (*cs_pin_ctl)(bool state);
+typedef uint32_t (*get_systick)(void);
 
 typedef enum
 {
@@ -92,14 +93,6 @@ typedef enum
     DevW25Qxx_TimeOut,
 } DevW25Qxx_Error_List;
 
-typedef enum
-{
-    DevW25Qxx_Erase_Addr = 0,
-    DevW25Qxx_Erase_Section,
-    DevW25Qxx_Erase_Page,
-    DevW25Qxx_Erase_All,
-} DevW25Qxx_EraseType_List;
-
 #pragma pack(1)
 typedef struct
 {
@@ -113,6 +106,8 @@ typedef struct
 
     cs_pin_init cs_init;
     cs_pin_ctl cs_ctl;
+
+    get_systick systick;
 } DevW25QxxObj_TypeDef;
 #pragma pack()
 
@@ -121,7 +116,8 @@ typedef struct
     DevW25Qxx_Error_List (*init)(DevW25QxxObj_TypeDef obj);
     DevW25Qxx_Error_List (*write)(DevW25QxxObj_TypeDef obj, uint32_t addr, uint8_t *tx, uint32_t size);
     DevW25Qxx_Error_List (*read)(DevW25QxxObj_TypeDef obj, uint32_t addr, uint8_t *rx, uint32_t size);
-    DevW25Qxx_Error_List (*erase)(DevW25QxxObj_TypeDef obj, DevW25Qxx_EraseType_List type, uint32_t addr, uint32_t size);
+    DevW25Qxx_Error_List (*erase_block)(DevW25QxxObj_TypeDef obj, uint32_t addr);
+    DevW25Qxx_Error_List (*erase_chip)(DevW25QxxObj_TypeDef obj);
 } DevW25Qxx_TypeDef;
 
 extern DevW25Qxx_TypeDef DevW25Q64;

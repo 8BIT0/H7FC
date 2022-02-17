@@ -31,7 +31,8 @@
                 "system_cfg.h": "c",
                 "ios": "c",
                 "stm32h7xx_hal_gpio.h": "c",
-                "stm32h7xx_hal_spi.h": "c"
+                "stm32h7xx_hal_spi.h": "c",
+                "filesystem": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
