@@ -8,6 +8,17 @@ static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t Re
 static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef dev, uint32_t Address);
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef dev);
 
+static const BspSPI_NorModeConfig_TypeDef DevW25QxxSPI_Cfg = {
+    .Mode =,
+    .Direction =,
+    .DataSize =,
+    .CLKPolarity =,
+    .CLKPhase =,
+    .NSS =,
+    .BaudRatePrescaler =,
+    .FirstBit =,
+};
+
 DevW25Qxx_TypeDef DevW25Q64 = {
     .init = DevW25Qxx_Init,
     .reset = DevW25Qxx_Reset,

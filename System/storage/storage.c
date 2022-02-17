@@ -2,7 +2,7 @@
 #include "Dev_W25Qxx.h"
 
 #if (EXTERNAL_STORAGE_MODULE == 1)
-DevW25QxxObj_TypeDef W25Q64_Obj;
+DevW25QxxObj_TypeDef W25Q64_Obj = {};
 
 bool ExtStorage_Init(void)
 {
