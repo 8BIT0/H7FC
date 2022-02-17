@@ -1,6 +1,22 @@
 #include "Dev_W25Qxx.h"
 #include "Bsp_SPI.h"
 
+static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev);
+static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef dev);
+static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size);
+static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size);
+static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef dev, uint32_t Address);
+static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef dev);
+
+DevW25Qxx_TypeDef DevW25Q64 = {
+    .init = DevW25Qxx_Init,
+    .reset = DevW25Qxx_Reset,
+    .write = DevW25Qxx_Write,
+    .read = DevW25Qxx_Read,
+    .erase_block = DevW25Qxx_EraseBlock,
+    .erase_chip = DevW25Qxx_EraseChip,
+};
+
 /* DevW25Qxx Base SPI communicate interface */
 static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef dev, uint8_t *tx, uint16_t size)
 {
@@ -64,15 +80,15 @@ static bool DevW25Qxx_ReadID(DevW25QxxObj_TypeDef dev)
     return true;
 }
 
-static bool DevW25Qxx_Reset(DevW25QxxObj_TypeDef dev)
+static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef dev)
 {
-    bool state = false;
     uint8_t cmd[2] = {RESET_ENABLE_CMD, RESET_MEMORY_CMD};
 
     /* Send the reset command */
-    state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+    if (DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)))
+        return DevW25Qxx_Ok;
 
-    return state;
+    return DevW25Qxx_Error;
 }
 
 static DevW25Qxx_Error_List DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef dev)
@@ -116,7 +132,7 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef dev)
     return DevW25Qxx_Ok;
 }
 
-static bool DevW25Qxx_Init(DevW25QxxObj_TypeDef dev)
+static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev)
 {
     if ((dev.cs_init == NULL) ||
         (dev.cs_ctl == NULL) ||
@@ -125,7 +141,7 @@ static bool DevW25Qxx_Init(DevW25QxxObj_TypeDef dev)
         (dev.trans == NULL) ||
         (dev.receive == NULL) ||
         (dev.trans_receive == NULL))
-        return false;
+        return DevW25Qxx_Error;
 
     dev.bus_init();
     dev.cs_init();
@@ -133,9 +149,9 @@ static bool DevW25Qxx_Init(DevW25QxxObj_TypeDef dev)
     /* Reset W25Qxxx */
     if ((DevW25Qxx_Reset(dev) != DevW25Qxx_Ok) ||
         (DevW25Qxx_GetStatue(dev) != DevW25Qxx_Ok))
-        return false;
+        return DevW25Qxx_Error;
 
-    return true;
+    return DevW25Qxx_Ok;
 }
 
 static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size)

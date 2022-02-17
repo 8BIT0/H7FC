@@ -32,7 +32,10 @@
                 "ios": "c",
                 "stm32h7xx_hal_gpio.h": "c",
                 "stm32h7xx_hal_spi.h": "c",
-                "filesystem": "c"
+                "filesystem": "c",
+                "stdint.h": "c",
+                "storage.h": "c",
+                "ostream": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
