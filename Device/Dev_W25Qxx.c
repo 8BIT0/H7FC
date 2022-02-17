@@ -85,7 +85,7 @@ static bool DevW25Qxx_Reset(DevW25QxxObj_TypeDef dev)
     return state;
 }
 
-static uint8_t DevW25Qxx_GetStatue()
+static uint8_t DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef dev)
 {
     uint8_t cmd = READ_STATUS_REG1_CMD;
     bool trans_state = false;
@@ -93,22 +93,18 @@ static uint8_t DevW25Qxx_GetStatue()
 
     dev.cs_ctl(true);
 
-    /* Send the read status command */
-    HAL_SPI_Transmit(&hspi1, cmd, 1, W25Qx_TIMEOUT_VALUE);
-    /* Reception of the data */
-    HAL_SPI_Receive(&hspi1, &status, 1, W25Qx_TIMEOUT_VALUE);
+    trans_state = DevW25Qxx_BusTrans_Receive(dev, &cmd, &dev_status, sizeof(dev_status));
 
     dev.cs_ctl(false);
 
+    if (!trans_state)
+        return DevW25Qxx_Error;
+
     /* Check the value of the register */
     if ((status & W25Q128FV_FSR_BUSY) != 0)
-    {
-        return W25Qx_BUSY;
-    }
-    else
-    {
-        return W25Qx_OK;
-    }
+        return DevW25Qxx_Busy;
+
+    return DevW25Qxx_Ok;
 }
 
 static bool DevW25Qxx_WriteEnable()
