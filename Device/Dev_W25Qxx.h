@@ -71,10 +71,6 @@
 #define W25Qx_Enable() HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET)
 #define W25Qx_Disable() HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET)
 
-typedef bool (*bus_init)(void);
-typedef bool (*bus_transmit)(void *instance, uint8_t *tx, uint16_t size, uint16_t time_out);
-typedef bool (*bus_receive)(void *instance, uint8_t *rx, uint16_t size, uint16_t time_out);
-typedef bool (*bus_trans_receive)(void *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
 typedef bool (*cs_pin_init)(void);
 typedef bool (*cs_pin_ctl)(bool state);
 typedef uint32_t (*get_systick)(void);
