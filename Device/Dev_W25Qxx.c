@@ -156,13 +156,13 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev)
 {
     if ((dev.CSPin.init == NULL) ||
         (dev.CSPin.ctl == NULL) ||
-        (dev.BusPort.init == NULL) ||
-        (dev.BusPort.trans == NULL) ||
-        (dev.BusPort.receive == NULL) ||
-        (dev.BusPort.trans_receive == NULL))
+        (dev.BusPort == NULL) ||
+        (DevW25Qxx_GetSspiInstance(dev)->trans == NULL) ||
+        (DevW25Qxx_GetSspiInstance(dev)->receive == NULL) ||
+        (DevW25Qxx_GetSspiInstance(dev)->trans_receive == NULL))
         return DevW25Qxx_Error;
 
-    DevW25Qxx_GetSspiInstance(dev)->init();
+    // DevW25Qxx_GetSspiInstance(dev)->init();
     dev.CSPin.init();
 
     /* Reset W25Qxxx */
