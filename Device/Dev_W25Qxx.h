@@ -79,6 +79,12 @@ typedef bool (*cs_pin_init)(void);
 typedef bool (*cs_pin_ctl)(bool state);
 typedef uint32_t (*get_systick)(void);
 
+typedef struct
+{
+    cs_pin_init init;
+    cs_pin_ctl ctl;
+} DevW25Qxx_CSInstance_TypeDef;
+
 typedef enum
 {
     DevW25Qxx_Norm_SpiBus = 0,
@@ -99,13 +105,8 @@ typedef struct
     DevW25Qxx_SpiBustype_List bus_type;
     void *bus_instance;
 
-    bus_init bus_init;
-    bus_transmit trans;
-    bus_receive receive;
-    bus_trans_receive trans_receive;
-
-    cs_pin_init cs_init;
-    cs_pin_ctl cs_ctl;
+    void *BusPort;
+    DevW25Qxx_CSInstance_TypeDef CSPin;
 
     get_systick systick;
 } DevW25QxxObj_TypeDef;

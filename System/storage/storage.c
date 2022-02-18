@@ -1,5 +1,6 @@
 #include "storage.h"
 #include "Dev_W25Qxx.h"
+#include "IO_Definition.h"
 
 #if (EXTERNAL_STORAGE_MODULE == 1)
 DevW25QxxObj_TypeDef W25Q64_Obj = {};
