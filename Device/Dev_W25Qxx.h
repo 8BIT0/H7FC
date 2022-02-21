@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include "Bsp_SPI.h"
 
 #define W25Q128FV_FLASH_SIZE 0x1000000  /* 128 MBits => 16MBytes */
 #define W25Q128FV_SECTOR_SIZE 0x10000   /* 256 sectors of 64KBytes */
@@ -75,6 +76,8 @@ typedef bool (*cs_pin_init)(void);
 typedef bool (*cs_pin_ctl)(bool state);
 typedef uint32_t (*get_systick)(void);
 
+typedef BspSPI_PinConfig_TypeDef DevW25QxxPin_Config_TypeDef;
+
 typedef struct
 {
     cs_pin_init init;
@@ -110,7 +113,7 @@ typedef struct
 
 typedef struct
 {
-    DevW25Qxx_Error_List (*init)(DevW25QxxObj_TypeDef obj);
+    DevW25Qxx_Error_List (*init)(DevW25QxxObj_TypeDef dev, void *BusPort, DevW25QxxPin_Config_TypeDef DevPin);
     DevW25Qxx_Error_List (*reset)(DevW25QxxObj_TypeDef obj);
     DevW25Qxx_Error_List (*write)(DevW25QxxObj_TypeDef obj, uint32_t addr, uint8_t *tx, uint32_t size);
     DevW25Qxx_Error_List (*read)(DevW25QxxObj_TypeDef obj, uint32_t addr, uint8_t *rx, uint32_t size);

@@ -44,6 +44,7 @@ Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 System/kernel/kernel.c \
 System/runtime/runtime.c \
+System/storage/storage.c \
 HAL_Lib/Core/Src/stm32h7xx_it.c \
 HAL_Lib/Core/Src/system_stm32h7xx.c  \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
@@ -121,7 +122,7 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
--I\
+-IIO_Def/ \
 -Idebug/ \
 -IBsp \
 -IDevice \
@@ -129,6 +130,7 @@ C_INCLUDES =  \
 -Idebug/ \
 -ISystem/runtime \
 -ISystem/kernel/ \
+-ISystem/storage/ \
 -IHAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHAL_Lib/Core/Inc \
 -IHAL_Lib/CMSIS/Device/ST/STM32H7xx/Include \

@@ -3,13 +3,16 @@
 #include "IO_Definition.h"
 
 #if (EXTERNAL_STORAGE_MODULE == 1)
-DevW25QxxObj_TypeDef W25Q64_Obj = {};
+DevW25QxxObj_TypeDef W25Q64_Obj = {
+    .bus_type = DevW25Qxx_Norm_SpiBus,
+    .BusPort = SPI1,
+};
 
 bool ExtStorage_Init(void)
 {
     bool init_state = false;
 
-    DevW25Q64.init(W25Q64_Obj);
+    // DevW25Q64.init(W25Q64_Obj);
 
     return init_state;
 }
