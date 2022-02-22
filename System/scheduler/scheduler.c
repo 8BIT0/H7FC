@@ -49,6 +49,8 @@ void Os_Init(uint32_t TickFRQ)
 {
     Kernel_Init();
     Runtime_Config(TickFRQ);
+
+    // Runtime_SetCallback(RtCallback_Type_Tick, test_pin_ctl);
 }
 
 void Os_Start(void)
