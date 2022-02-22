@@ -8,6 +8,18 @@ DevW25QxxObj_TypeDef W25Q64_Obj = {
     .BusPort = SPI1,
 };
 
+DevW25QxxPin_Config_TypeDef W25Qxx_Pin = {
+    .pin_Alternate =,
+
+    .pin_clk =,
+    .pin_miso =,
+    .pin_mosi =,
+
+    .port_clk =,
+    .port_miso =,
+    .port_mosi =,
+};
+
 bool ExtStorage_Init(void)
 {
     bool init_state = false;
