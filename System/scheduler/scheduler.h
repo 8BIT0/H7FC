@@ -30,7 +30,7 @@ typedef uint32_t Task_Handle;
 
 typedef enum
 {
-    TaskPriority_Occupy = 1, /* already have created task in current group & priority */
+    TaskPriority_Occupy = 1, /* already have created task in current group & priority has been occupy */
 } Task_Error_List;
 
 typedef enum
@@ -118,7 +118,7 @@ typedef struct
 
 typedef struct
 {
-    Priority_Str priority;
+    uint8_t priority;
     char *Task_name;
 
     uint32_t exec_frq;

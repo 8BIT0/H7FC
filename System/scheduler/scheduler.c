@@ -46,6 +46,8 @@ static const uint8_t Task_Priority_List[256] =
      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0}; // 0xF0 ~ 0xFF
 
 static Task *TaskMap[Task_Group_Sum][Task_Priority_Sum];
+static volatile Task *CurRunTsk_Ptr = NULL;
+static volatile Task *NxtRunTsk_Ptr = NULL;
 
 void Os_Init(uint32_t TickFRQ)
 {
