@@ -1,5 +1,7 @@
 #include "scheduler.h"
+#include "kernel.h"
 #include "runtime.h"
+#include "linked_list.h"
 
 // coder: 8_B!T0
 // bref:
@@ -45,6 +47,8 @@ static const uint8_t Task_Priority_List[256] =
 
 bool Os_Init(uint32_t TickFRQ)
 {
+
+    return true;
 }
 
 Task_Handle Os_CreateTask()

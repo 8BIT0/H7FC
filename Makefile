@@ -42,6 +42,8 @@ Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
+DataStructure/queue.c \
+DataStructure/linked_list.c \
 System/kernel/kernel.c \
 System/runtime/runtime.c \
 System/storage/storage.c \
@@ -128,6 +130,7 @@ C_INCLUDES =  \
 -IDevice \
 -ISystem/ \
 -Idebug/ \
+-IDataStructure/ \
 -ISystem/runtime \
 -ISystem/kernel/ \
 -ISystem/storage/ \
