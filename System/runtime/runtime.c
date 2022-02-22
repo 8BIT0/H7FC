@@ -84,7 +84,7 @@ bool Runtime_Config(uint32_t tick_frq)
     }
 
     RunTime.module_state = Runtime_Module_Init;
-    RunTime.base = RUNTIME_1SINUS / frq;
+    RunTime.base = REAL_1S / frq;
     RunTime.frq = tick_frq;
 
     SystemCoreClockUpdate();

@@ -8,12 +8,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#define REAL_MS 1000 /* 1ms == 1000us */
-#define REAL_S REAL_MS * 1000
+#define REAL_1US 1
+#define REAL_1MS 1000 * REAL_1US /* 1ms == 1000us */
+#define REAL_1S 1000 * REAL_MS
 
 #define RUNTIEM_MAX_TICK_FRQ RUNTIME_TICK_FRQ_20K
 
-#define RUNTIME_1SINUS 1000000
 #define RUNTIME_TICK_FRQ_20K 20000 /* 50us base time */
 #define RUNTIME_TICK_FRQ_10K 10000 /* 100us base time */
 #define RUNTIME_TICK_FRQ_5K 5000   /* 200us base time */

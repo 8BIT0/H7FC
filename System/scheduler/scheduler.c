@@ -51,7 +51,11 @@ bool Os_Init(uint32_t TickFRQ)
     return true;
 }
 
-Task_Handle Os_CreateTask()
+void Os_Start(void)
+{
+}
+
+Task_Handle Os_CreateTask(char *name, uint32_t frq)
 {
     Task_Handle Tmp_Hdl;
 
