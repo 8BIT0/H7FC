@@ -1,7 +1,9 @@
 #ifndef __QUEUE_H
 #define __QUEUE_H
 
-#include "stm32f4xx.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
 
 #define QUEUE_MAX_SIZE 512
 #define MAX_QUEUE_NUM 10
