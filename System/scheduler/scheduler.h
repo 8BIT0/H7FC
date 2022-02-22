@@ -95,4 +95,7 @@ typedef struct
 } TaskMap_TypeDef;
 #pragma pack()
 
+void Os_Init(uint32_t TickFRQ);
+void Os_Start(void);
+
 #endif
