@@ -45,10 +45,20 @@ static const uint8_t Task_Priority_List[256] =
      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,  // 0xE0 ~ 0xEF
      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0}; // 0xF0 ~ 0xFF
 
+static Task *TaskMap[Task_Group_Sum][Task_Priority_Sum];
+
 void Os_Init(uint32_t TickFRQ)
 {
     Kernel_Init();
     Runtime_Config(TickFRQ);
+
+    for (uint8_t g = Task_Group_0; g < Task_Group_Sum; g++)
+    {
+        for (uint8_t t = Task_Priority_0; t < Task_Priority_Sum; t++)
+        {
+            TaskMap[g][t] = NULL;
+        }
+    }
 
     // Runtime_SetCallback(RtCallback_Type_Tick, test_pin_ctl);
 }
