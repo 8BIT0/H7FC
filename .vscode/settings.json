@@ -35,7 +35,8 @@
                 "filesystem": "c",
                 "stdint.h": "c",
                 "storage.h": "c",
-                "ostream": "c"
+                "ostream": "c",
+                "scheduler.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

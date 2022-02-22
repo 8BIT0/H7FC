@@ -1,4 +1,5 @@
 #include "scheduler.h"
+#include "runtime.h"
 
 // coder: 8_B!T0
 // bref:
@@ -42,7 +43,11 @@ static const uint8_t Task_Priority_List[256] =
      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,  // 0xE0 ~ 0xEF
      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0}; // 0xF0 ~ 0xFF
 
-Task_Handle Task_Create()
+bool Os_Init(uint32_t TickFRQ)
+{
+}
+
+Task_Handle Os_CreateTask()
 {
     Task_Handle Tmp_Hdl;
 
