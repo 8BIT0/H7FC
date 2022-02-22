@@ -45,14 +45,15 @@ static const uint8_t Task_Priority_List[256] =
      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,  // 0xE0 ~ 0xEF
      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0}; // 0xF0 ~ 0xFF
 
-bool Os_Init(uint32_t TickFRQ)
+void Os_Init(uint32_t TickFRQ)
 {
-
-    return true;
+    Kernel_Init();
+    Runtime_Config(TickFRQ);
 }
 
 void Os_Start(void)
 {
+    Runtime_Start();
 }
 
 Task_Handle Os_CreateTask(char *name, uint32_t frq)
@@ -60,4 +61,8 @@ Task_Handle Os_CreateTask(char *name, uint32_t frq)
     Task_Handle Tmp_Hdl;
 
     return Tmp_Hdl;
+}
+
+void Os_SchedulerRun(void)
+{
 }
