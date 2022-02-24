@@ -113,7 +113,9 @@ typedef struct
     Flg_template Grp;
     Flg_template TskInGrp[Task_Group_Sum];
 } TaskMap_TypeDef;
+#pragma pack()
 
+#pragma pack(4)
 typedef struct
 {
     Task_STK_Ptr Top_Stk_Ptr;

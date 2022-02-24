@@ -90,6 +90,27 @@ __attribute__((naked)) static void Os_SetPendSVPro(void)
     __ASM("BX       LR");
 }
 
+static uint32_t Os_EnterCritical(void)
+{
+    /* Set BASEPRI to the max syscall priority to effect a critical
+    section. */
+    uint32_t ulOriginalBASEPRI, ulNewBASEPRI;
+
+    __asm volatile(
+        "	mrs %0, basepri											\n"
+        "	mov %1, %2												\n"
+        "	msr basepri, %1											\n"
+        "	isb														\n"
+        "	dsb														\n"
+        : "=r"(ulOriginalBASEPRI), "=r"(ulNewBASEPRI)
+        : "i"(80)
+        : "memory");
+
+    /* This return will not be reached but is necessary to prevent compiler
+    warnings. */
+    return ulOriginalBASEPRI;
+}
+
 __attribute__((naked)) static void Os_TriggerPendSV(void)
 {
     __ASM(".equ NVIC_INT_CTRL, 0xE000ED04");
@@ -99,6 +120,93 @@ __attribute__((naked)) static void Os_TriggerPendSV(void)
     __ASM("LDR      R1, =NVIC_PENDSVSET");
     __ASM("STR      R1, [R0]");
     __ASM("BX       LR");
+}
+
+__attribute__((nake)) static void Os_SetBASEPRI(uint32_t ulBASEPRI)
+{
+    __ASM("	msr basepri, %0	" ::"r"(ulBASEPRI)
+          : "memory");
+}
+
+__attribute__((naked)) static void Os_ExitCritical(void)
+{
+    /* Barrier instructions are not used as this function is only used to
+    lower the BASEPRI value. */
+    __ASM("	msr basepri, %0	" ::"r"(0)
+          : "memory");
+}
+
+__attribute__((naked)) void Os_LoadFirstTask(void)
+{
+    __ASM("LDR	  R3, =CurTsk_TCB");
+    __ASM("LDR    R1, [R3]");
+    __ASM("LDR    R0, [R1]");
+
+    __ASM("LDMIA  R0!, {R4-R11, R14}");
+
+    /******************************  FPU SECTION  *********************************/
+    __ASM("TST      R14, #0x10");
+    __ASM("IT       EQ");
+    __ASM("VLDMIAEQ R0!, {s16-s31}");
+    /******************************  FPU SECTION  *********************************/
+
+    __ASM("MSR    PSP, R0");
+    __ASM("ISB");
+    //__ASM("MOV    R0, #240");
+    //__ASM("MSR	  BASEPRI, R0");
+    __ASM("BX     R14");
+    __ASM(".ALIGN 4");
+}
+
+__attribute__((naked)) void Os_SwitchContext(void)
+{
+    __ASM("MRS      R0, PSP");
+    __ASM("ISB");
+
+    __ASM("LDR      R3, CurrentTCBConst_Tmp");
+    __ASM("LDR      R2, [R3]");
+
+    /******************************  FPU SECTION  *********************************/
+    __ASM("TST      R14, #0x10");
+    __ASM("IT       EQ");
+    __ASM("VSTMDBEQ R0!, {s16-s31}");
+    /******************************  FPU SECTION  *********************************/
+
+    __ASM("STMDB    R0!, {R4-R11, R14}");
+    __ASM("STR      R0, [R2]");
+
+    __ASM("STMDB    SP!, {R0, R3}");
+    __ASM("MOV      R0, %0" ::"i"(0x50));
+    __ASM("MSR      BASEPRI, R0");
+
+    __ASM("DSB");
+    __ASM("ISB");
+
+    __ASM("BL       Task_SwitchStack");
+
+    __ASM("MOV      R0, #0");
+    __ASM("MSR      BASEPRI, R0");
+    __ASM("LDMIA    SP!, {R0, R3}");
+
+    __ASM("LDR      R1, [R3]");
+    __ASM("LDR      R0, [R1]");
+
+    __ASM("LDMIA    R0!, {R4-R11, R14}");
+
+    /******************************  FPU SECTION  *********************************/
+    __ASM("TST      R14, #0x10");
+    __ASM("IT       EQ");
+    __ASM("VLDMIAEQ R0!, {s16-s31}");
+    /******************************  FPU SECTION  *********************************/
+
+    __ASM("MSR      PSP,R0");
+    __ASM("ISB");
+    //__ASM("MOV      R0, #240");
+    //__ASM("MSR	    BASEPRI, R0");
+    __ASM("BX       R14");
+
+    __ASM("CurrentTCBConst_Tmp: .word CurTsk_TCB");
+    __ASM(".ALIGN 4");
 }
 
 void Os_Init(uint32_t TickFRQ)
