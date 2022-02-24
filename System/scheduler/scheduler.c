@@ -323,3 +323,20 @@ static void Os_TaskCaller(void)
         Os_TaskExec(NxtRunTsk_Ptr);
     }
 }
+
+static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg)
+{
+    if (data != NULL)
+    {
+        // get current highest priority task handler AKA NxtRunTsk_Ptr
+
+        if ((scheduler_state == Scheduler_Start) &&
+            (((Task *)data)->Exec_status.State == Task_Stop) &&
+            (!RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
+        {
+            Task_SetReady((Task *)data);
+        }
+    }
+
+    return 0;
+}
