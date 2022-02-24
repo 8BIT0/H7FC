@@ -64,6 +64,42 @@ static void Os_ResetTask_Data(Task *task);
 static void Os_Set_TaskReady(Task *tsk);
 static void Os_Clr_TaskReady(Task *tsk);
 static void Os_SchedulerRun(void);
+static void Os_TaskExit(void);
+static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
+
+// first need to know is linux support AT&T formate ASM code
+__attribute__((naked)) static void Os_SetPendSVPro(void)
+{
+    // set pendsv interrupt
+    __ASM(".equ NVIC_SYSPRI14, 0xE000ED22");
+    __ASM(".equ NVIC_PENDSV_PRI, 0xFF");
+
+    __ASM("LDR      R0, =NVIC_SYSPRI14");
+    __ASM("LDR      R1, =NVIC_PENDSV_PRI");
+    __ASM("STRB     R1, [R0]");
+
+    // set PSP to 0 to initial context switch call
+    __ASM("MOVS     R0, #0");
+    __ASM("MSR      PSP, R0");
+
+    // initial MSP to Task_OS_ExpStkBase
+    __ASM("LDR      R0, =Task_OS_ExpStkBase");
+    __ASM("LDR      R1, [R0]");
+    __ASM("MSR      MSP, R1");
+
+    __ASM("BX       LR");
+}
+
+__attribute__((naked)) static void Os_TriggerPendSV(void)
+{
+    __ASM(".equ NVIC_INT_CTRL, 0xE000ED04");
+    __ASM(".equ NVIC_PENDSVSET, 0x10000000");
+
+    __ASM("LDR      R0, =NVIC_INT_CTRL");
+    __ASM("LDR      R1, =NVIC_PENDSVSET");
+    __ASM("STR      R1, [R0]");
+    __ASM("BX       LR");
+}
 
 void Os_Init(uint32_t TickFRQ)
 {
@@ -163,4 +199,54 @@ static void Os_Clr_TaskReady(Task *tsk)
 
 static void Os_SchedulerRun(void)
 {
+}
+
+/*
+ * task caller will not exit
+ * if Os run into this func is sort of error happened
+ */
+static void Os_TaskExit(void)
+{
+    while (true)
+    {
+    }
+}
+
+// return high priority task pointer
+static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
+{
+    if ((tsk_l == NULL) && (tsk_r == NULL))
+    {
+        return NULL;
+    }
+
+    if ((tsk_l == NULL) && (tsk_r != NULL))
+    {
+        return tsk_r;
+    }
+
+    if ((tsk_l != NULL) && (tsk_r == NULL))
+    {
+        return tsk_l;
+    }
+
+    if (GET_TASKGROUP_PRIORITY(tsk_l->priority) < GET_TASKGROUP_PRIORITY(tsk_r->priority))
+    {
+        return tsk_l;
+    }
+    else if (GET_TASKGROUP_PRIORITY(tsk_l->priority) > GET_TASKGROUP_PRIORITY(tsk_r->priority))
+    {
+        return tsk_r;
+    }
+    else if (GET_TASKGROUP_PRIORITY(tsk_l->priority) == GET_TASKGROUP_PRIORITY(tsk_r->priority))
+    {
+        if (GET_TASKINGROUP_PRIORITY(tsk_l->priority) < GET_TASKINGROUP_PRIORITY(tsk_r->priority))
+        {
+            return tsk_l;
+        }
+        else if (GET_TASKINGROUP_PRIORITY(tsk_l->priority) > GET_TASKINGROUP_PRIORITY(tsk_r->priority))
+        {
+            return tsk_r;
+        }
+    }
 }
