@@ -48,9 +48,17 @@ static const uint8_t Task_Priority_List[256] =
 static Task *TaskMap[Task_Group_Sum][Task_Priority_Sum];
 static volatile Task *CurRunTsk_Ptr = NULL;
 static volatile Task *NxtRunTsk_Ptr = NULL;
+static bool traverse_start = false;
+
+static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
+static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
+static volatile TaskMap_TypeDef TskHdl_BlkMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 
 /* internal function */
 static void Os_ResetTask_Data(Task *task);
+static void Os_Set_TaskReady(Task *tsk);
+static void Os_Clr_TaskReady(Task *tsk);
+static void Os_SchedulerRun(void);
 
 void Os_Init(uint32_t TickFRQ)
 {
@@ -106,6 +114,31 @@ static void Os_ResetTask_Data(Task *task)
     task->Exec_status.State = Task_Init;
 }
 
-void Os_SchedulerRun(void)
+static void Os_Set_TaskReady(Task *tsk)
+{
+    uint8_t grp_id = GET_TASKGROUP_PRIORITY(tsk->priority);
+    uint8_t tsk_id = GET_TASKINGROUP_PRIORITY(tsk->priority);
+
+    // set current group flag to ready
+    TskHdl_RdyMap.Grp.Flg |= 1 << grp_id;
+    // set current task under this group flag to ready
+    TskHdl_RdyMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
+
+    tsk->Exec_status.State = Task_Ready;
+}
+
+static void Os_Clr_TaskReady(Task *tsk)
+{
+    uint8_t grp_id = GET_TASKGROUP_PRIORITY(tsk->priority);
+    uint8_t tsk_id = GET_TASKINGROUP_PRIORITY(tsk->priority);
+
+    TskHdl_RdyMap.TskInGrp[grp_id].Flg &= ~(1 << tsk_id);
+    if (TskHdl_RdyMap.TskInGrp[grp_id].Flg == 0)
+    {
+        TskHdl_RdyMap.Grp.Flg &= ~(1 << grp_id);
+    }
+}
+
+static void Os_SchedulerRun(void)
 {
 }
