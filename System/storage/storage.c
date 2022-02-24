@@ -9,15 +9,15 @@ DevW25QxxObj_TypeDef W25Q64_Obj = {
 };
 
 DevW25QxxPin_Config_TypeDef W25Qxx_Pin = {
-    .pin_Alternate =,
+    // .pin_Alternate =,
 
-    .pin_clk =,
-    .pin_miso =,
-    .pin_mosi =,
+    // .pin_clk =,
+    // .pin_miso =,
+    // .pin_mosi =,
 
-    .port_clk =,
-    .port_miso =,
-    .port_mosi =,
+    // .port_clk =,
+    // .port_miso =,
+    // .port_mosi =,
 };
 
 bool ExtStorage_Init(void)

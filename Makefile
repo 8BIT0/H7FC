@@ -44,6 +44,7 @@ Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
+System/scheduler/scheduler.c \
 System/kernel/kernel.c \
 System/runtime/runtime.c \
 System/storage/storage.c \
@@ -131,7 +132,8 @@ C_INCLUDES =  \
 -ISystem/ \
 -Idebug/ \
 -IDataStructure/ \
--ISystem/runtime \
+-ISystem/runtime/ \
+-ISystem/scheduler/ \
 -ISystem/kernel/ \
 -ISystem/storage/ \
 -IHAL_Lib/STM32H7xx_HAL_Driver/Inc \

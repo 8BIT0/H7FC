@@ -159,12 +159,12 @@ ITCM_CODE SYSTEM_RunTime Get_CurrentRunningUs(void)
 
 ITCM_CODE SYSTEM_RunTime Get_CurrentRunningMs(void)
 {
-    return (RunTime.Use_Us / REAL_MS);
+    return (RunTime.Use_Us / REAL_1MS);
 }
 
 ITCM_CODE SYSTEM_RunTime Get_CurrentRunningS(void)
 {
-    return (Get_CurrentRunningMs() / REAL_MS);
+    return (Get_CurrentRunningMs() / REAL_1MS);
 }
 
 ITCM_CODE SYSTEM_RunTime Get_TimeDifference(uint64_t time_in)

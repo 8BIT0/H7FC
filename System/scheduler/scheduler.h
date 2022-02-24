@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include "runtime.h"
+#include "linked_list.h"
 
 typedef uint32_t Task_Handle;
 
@@ -28,19 +30,32 @@ typedef uint32_t Task_Handle;
 #define TASK_EXEC_2Hz 2
 #define TASK_EXEC_1HZ 1
 
-typedef enum
-{
-    TaskPriority_Occupy = 1, /* already have created task in current group & priority has been occupy */
-} Task_Error_List;
+#define NOERROR 0
+#define ERROR_NULLTASK 1
+
+#define TASK_IDLE_GROUP 8
+#define TASK_IDLE_PRIORITY 8
+
+typedef uint32_t Task_Handle;
+typedef void (*Task_Func)(Task_Handle hdl);
+typedef uint32_t *Task_STK_Ptr;
+
+#define TaskHandleToTaskObj(x) ((Task *)x)
 
 typedef enum
 {
-    Task_Ready = 0,
+    Task_Init = 0,
+    Task_Ready,
     Task_Running,
     Task_Stop,
     Task_Block,
     Task_Pending,
-} Task_State;
+} TASK_STATE;
+
+typedef enum
+{
+    TaskPriority_Occupy = 1, /* already have created task in current group & priority has been occupy */
+} Task_Error_List;
 
 typedef enum
 {
@@ -101,9 +116,20 @@ typedef struct
 
 typedef struct
 {
-    SYSTEM_RunTime Init_Time;
-    SYSTEM_RunTime Start_Time;
-    SYSTEM_RunTime Exec_Time;
+    Task_STK_Ptr Top_Stk_Ptr;
+    Task_STK_Ptr Stack;
+} TaskStack_ControlBlock;
+
+typedef struct
+{
+    bool on_delay;
+    Task_Handle tsk_hdl;
+    uint32_t time_unit;
+    SYSTEM_RunTime resume_Rt;
+} delay_reg;
+
+typedef struct
+{
 
     uint32_t detect_exec_frq;      // detect task running frq
     uint32_t detect_exec_time_arv; // task  average running time
@@ -123,6 +149,8 @@ typedef struct
 
     uint32_t exec_frq;
     uint16_t exec_interval_us;
+
+    SYSTEM_RunTime Exec_Time;
 
     Task_Func Exec_Func;
     Task_Exec_Status Exec_status;
