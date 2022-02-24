@@ -86,7 +86,7 @@ typedef enum
 typedef enum
 {
     Scheduler_Initial = 0,
-    Scheduler_Prepare,
+    Scheduler_ready,
     Scheduler_Start,
 } Scheduler_State_List;
 
@@ -166,6 +166,12 @@ typedef struct
     item_obj *item_ptr;
     item_obj delay_item;
 } Task;
+
+typedef struct
+{
+    uint8_t num;
+    list_obj list;
+} Task_Create_RegList_s;
 #pragma pack()
 
 void Os_Init(uint32_t TickFRQ);

@@ -27,6 +27,7 @@ group7     |_______|_______|_______|_______|_______|_______|_______|_______|
 #define GET_TASKGROUP_PRIORITY(x) x >> 3
 #define GET_TASKINGROUP_PRIORITY(y) y & 0X07
 
+/* internal variable */
 static const uint8_t Task_Priority_List[256] =
     {0, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,  // 0x00 ~ 0x0F
      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,  // 0x10 ~ 0x1F
@@ -45,7 +46,7 @@ static const uint8_t Task_Priority_List[256] =
      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,  // 0xE0 ~ 0xEF
      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0}; // 0xF0 ~ 0xFF
 
-static Task *TaskMap[Task_Group_Sum][Task_Priority_Sum];
+static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum];
 static volatile Task *CurRunTsk_Ptr = NULL;
 static volatile Task *NxtRunTsk_Ptr = NULL;
 static bool traverse_start = false;
@@ -53,6 +54,10 @@ static bool traverse_start = false;
 static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_BlkMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
+
+static Task_Create_RegList_s TskCrt_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
+
+static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 
 /* internal function */
 static void Os_ResetTask_Data(Task *task);
@@ -69,10 +74,27 @@ void Os_Init(uint32_t TickFRQ)
     {
         for (uint8_t t = Task_Priority_0; t < Task_Priority_Sum; t++)
         {
-            Os_ResetTask_Data(&TaskMap[g][t]);
-            TaskMap[g][t] = NULL;
+            /* clear each data in task map ptr */
+            Os_ResetTask_Data(&TaskPtr_Map[g][t]);
+
+            /* clear stack depth and stack memory and stack top pointer */
+            TaskPtr_Map[g][t]->Stack_Depth = 0;
+            TaskPtr_Map[g][t]->TCB.Stack = NULL;
+            TaskPtr_Map[g][t]->TCB.Top_Stk_Ptr = NULL;
+
+            TaskPtr_Map[g][t] = NULL;
         }
     }
+
+    TskCrt_RegList.num = 0;
+    TskCrt_RegList.list.data = NULL;
+    TskCrt_RegList.list.nxt = NULL;
+    TskCrt_RegList.list.prv = NULL;
+
+    ReSet_Task_Data(CurRunTsk_Ptr);
+    ReSet_Task_Data(NxtRunTsk_Ptr);
+
+    scheduler_state = Scheduler_ready;
 }
 
 void Os_Start(void)
