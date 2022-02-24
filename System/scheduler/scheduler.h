@@ -130,14 +130,16 @@ typedef struct
 
 typedef struct
 {
+    SYSTEM_RunTime Exec_Time;
+    SYSTEM_RunTime Start_Time;
 
     uint32_t detect_exec_frq;      // detect task running frq
     uint32_t detect_exec_time_arv; // task  average running time
     uint32_t detect_exec_time_max; // task max running time
-    uint32_t Exec_Times;
+    uint32_t Exec_cnt;
     uint8_t error_code;
 
-    uint32_t totlal_running_time;
+    uint32_t Running_Time;
     float cpu_opy;
     TASK_STATE State;
 } Task_Exec_Status;
@@ -149,8 +151,6 @@ typedef struct
 
     uint32_t exec_frq;
     uint16_t exec_interval_us;
-
-    SYSTEM_RunTime Exec_Time;
 
     Task_Func Exec_Func;
     Task_Exec_Status Exec_status;

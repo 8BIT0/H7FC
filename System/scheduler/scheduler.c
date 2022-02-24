@@ -157,9 +157,9 @@ static void Os_ResetTask_Data(Task *task)
     task->Exec_status.detect_exec_frq = 0;
     task->Exec_status.detect_exec_time_arv = 0;
     task->Exec_status.detect_exec_time_max = 0;
-    task->Exec_status.Exec_Times = 0;
+    task->Exec_status.Exec_cnt = 0;
     task->Exec_status.cpu_opy = 0;
-    task->Exec_status.totlal_running_time = 0;
+    task->Exec_status.Running_Time = 0;
 
     task->delay_info.on_delay = false;
     task->delay_info.tsk_hdl = 0;
@@ -167,7 +167,7 @@ static void Os_ResetTask_Data(Task *task)
 
     List_ItemInit(&task->delay_item, &task->delay_info);
 
-    RuntimeObj_Reset(&(task->Exec_Time));
+    RuntimeObj_Reset(&(task->Exec_status.Exec_Time));
 
     task->Exec_status.State = Task_Init;
 }
@@ -248,5 +248,93 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
         {
             return tsk_r;
         }
+    }
+}
+
+static void Os_TaskExec(Task *tsk_ptr)
+{
+    SYSTEM_RunTime time_diff;
+    RuntimeObj_Reset(&time_diff);
+
+    tsk_ptr = NxtRunTsk_Ptr;
+
+    while (true)
+    {
+        if (tsk_ptr->Exec_status.State == Task_Ready)
+        {
+            tsk_ptr->TskFuncUing_US = 0;
+
+            // when task function execute finish reset ready flag of current task in group
+            // code down below
+            Task_ClearReady(tsk_ptr);
+
+            // set current running task
+            CurRunTsk_Ptr = tsk_ptr;
+
+            if (tsk_ptr->Exec_status.Exec_cnt == 0)
+            {
+                tsk_ptr->Exec_status.Start_Time = Get_CurrentRunningUs();
+                tsk_ptr->Exec_status.Exec_Time = tsk_ptr->Exec_status.Start_Time;
+            }
+
+            tsk_ptr->Exec_status.State = Task_Running;
+
+            // execute task funtion
+            tsk_ptr->Exec_Func(*&tsk_ptr);
+
+            // record task running times
+            tsk_ptr->Exec_status.Exec_cnt++;
+
+            // get max task execut time
+            if (tsk_ptr->TskFuncUing_US > tsk_ptr->Exec_status.detect_exec_time_max)
+            {
+                tsk_ptr->Exec_status.detect_exec_time_max = tsk_ptr->TskFuncUing_US;
+            }
+
+            // get task total execute time unit in us
+            tsk_ptr->Exec_status.Running_Time += tsk_ptr->TskFuncUing_US;
+            time_diff = Get_TimeDifference_Between(tsk_ptr->Exec_status.Start_Time, tsk_ptr->Exec_status.Exec_Time);
+
+            tsk_ptr->Exec_status.cpu_opy = tsk_ptr->Exec_status.Running_Time / (float)time_diff;
+            tsk_ptr->Exec_status.cpu_opy *= 100;
+
+            // get average task running time
+            tsk_ptr->Exec_status.detect_exec_time_arv += tsk_ptr->TskFuncUing_US;
+            if (tsk_ptr->Exec_status.Exec_cnt > 1)
+            {
+                tsk_ptr->Exec_status.detect_exec_time_arv /= 2;
+            }
+
+            tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(tsk_ptr->exec_interval_us);
+
+            // get task execute frequence
+            if (tsk_ptr->Exec_status.Exec_cnt)
+            {
+                tsk_ptr->Exec_status.detect_exec_frq = (uint32_t)(tsk_ptr->Exec_status.Exec_cnt / (float)(Get_CurrentRunningS()));
+            }
+
+            tsk_ptr->Exec_status.State = Task_Stop;
+
+            // erase currnet runnint task pointer
+            CurRunTsk_Ptr = NULL;
+        }
+    }
+}
+
+static void Os_TaskCaller(void)
+{
+    static uint8_t i = 0;
+
+    // if any task in any group is under ready state
+    if (NxtRunTsk_Ptr != NULL)
+    {
+        i++;
+        if (i == TskCrt_RegList.num)
+        {
+            traverse_start = true;
+        }
+
+        // execute task function in function matrix
+        Os_TaskExec(NxtRunTsk_Ptr);
     }
 }
