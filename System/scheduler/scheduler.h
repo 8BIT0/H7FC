@@ -133,9 +133,7 @@ typedef struct
     SYSTEM_RunTime Exec_Time;
     SYSTEM_RunTime Start_Time;
 
-    uint32_t detect_exec_frq;      // detect task running frq
-    uint32_t detect_exec_time_arv; // task  average running time
-    uint32_t detect_exec_time_max; // task max running time
+    uint32_t detect_exec_frq; // detect task running frq
     uint32_t Exec_cnt;
     uint8_t error_code;
 

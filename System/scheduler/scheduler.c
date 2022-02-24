@@ -155,8 +155,6 @@ static void Os_ResetTask_Data(Task *task)
     task->Exec_Func = NULL;
 
     task->Exec_status.detect_exec_frq = 0;
-    task->Exec_status.detect_exec_time_arv = 0;
-    task->Exec_status.detect_exec_time_max = 0;
     task->Exec_status.Exec_cnt = 0;
     task->Exec_status.cpu_opy = 0;
     task->Exec_status.Running_Time = 0;
@@ -285,25 +283,12 @@ static void Os_TaskExec(Task *tsk_ptr)
             // record task running times
             tsk_ptr->Exec_status.Exec_cnt++;
 
-            // get max task execut time
-            if (tsk_ptr->TskFuncUing_US > tsk_ptr->Exec_status.detect_exec_time_max)
-            {
-                tsk_ptr->Exec_status.detect_exec_time_max = tsk_ptr->TskFuncUing_US;
-            }
-
             // get task total execute time unit in us
             tsk_ptr->Exec_status.Running_Time += tsk_ptr->TskFuncUing_US;
             time_diff = Get_TimeDifference_Between(tsk_ptr->Exec_status.Start_Time, tsk_ptr->Exec_status.Exec_Time);
 
             tsk_ptr->Exec_status.cpu_opy = tsk_ptr->Exec_status.Running_Time / (float)time_diff;
             tsk_ptr->Exec_status.cpu_opy *= 100;
-
-            // get average task running time
-            tsk_ptr->Exec_status.detect_exec_time_arv += tsk_ptr->TskFuncUing_US;
-            if (tsk_ptr->Exec_status.Exec_cnt > 1)
-            {
-                tsk_ptr->Exec_status.detect_exec_time_arv /= 2;
-            }
 
             tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(tsk_ptr->exec_interval_us);
 
