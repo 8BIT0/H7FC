@@ -137,7 +137,7 @@ typedef struct
     uint32_t Exec_cnt;
     uint8_t error_code;
 
-    uint32_t Running_Time;
+    SYSTEM_RunTime Running_Time;
     float cpu_opy;
     TASK_STATE State;
 } Task_Exec_Status;

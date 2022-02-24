@@ -194,10 +194,10 @@ uint32_t RuntimeObj_Compare(const uint64_t *EQ_L, const uint64_t *EQ_R)
 }
 
 /* input time object compare with current runtime */
-/* if input time object >= current runtime return true */
+/* if input time object equl to current runtime return true */
 bool RuntimeObj_CompareWithCurrent(const uint64_t time_in)
 {
-    if (time_in >= RunTime.Use_Us)
+    if (time_in == RunTime.Use_Us)
     {
         return true;
     }
