@@ -141,11 +141,12 @@ typedef struct
 
     SYSTEM_RunTime Running_Time;
     float cpu_opy;
-    TASK_STATE State;
 } Task_Exec_Status;
 
 typedef struct
 {
+    TASK_STATE State;
+
     uint8_t priority;
     char *Task_name;
 

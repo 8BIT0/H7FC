@@ -367,7 +367,7 @@ static void Os_ResetTask_Data(Task *task)
 
     RuntimeObj_Reset(&(task->Exec_status.Exec_Time));
 
-    task->Exec_status.State = Task_Init;
+    task->State = Task_Init;
 }
 
 static void Os_Set_TaskReady(Task *tsk)
@@ -380,7 +380,7 @@ static void Os_Set_TaskReady(Task *tsk)
     // set current task under this group flag to ready
     TskHdl_RdyMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
 
-    tsk->Exec_status.State = Task_Ready;
+    tsk->State = Task_Ready;
 }
 
 static void Os_Clr_TaskReady(Task *tsk)
@@ -458,7 +458,7 @@ static void Os_TaskExec(Task *tsk_ptr)
 
     while (true)
     {
-        if (tsk_ptr->Exec_status.State == Task_Ready)
+        if (tsk_ptr->State == Task_Ready)
         {
             tsk_ptr->TskFuncUing_US = 0;
 
@@ -475,7 +475,7 @@ static void Os_TaskExec(Task *tsk_ptr)
                 tsk_ptr->Exec_status.Exec_Time = tsk_ptr->Exec_status.Start_Time;
             }
 
-            tsk_ptr->Exec_status.State = Task_Running;
+            tsk_ptr->State = Task_Running;
 
             // execute task funtion
             tsk_ptr->Exec_Func(*&tsk_ptr);
@@ -498,7 +498,7 @@ static void Os_TaskExec(Task *tsk_ptr)
                 tsk_ptr->Exec_status.detect_exec_frq = (uint32_t)(tsk_ptr->Exec_status.Exec_cnt / (float)(Get_CurrentRunningS()));
             }
 
-            tsk_ptr->Exec_status.State = Task_Stop;
+            tsk_ptr->State = Task_Stop;
 
             // erase currnet runnint task pointer
             CurRunTsk_Ptr = NULL;
@@ -531,7 +531,7 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
         // get current highest priority task handler AKA NxtRunTsk_Ptr
 
         if ((scheduler_state == Scheduler_Start) &&
-            (((Task *)data)->Exec_status.State == Task_Stop) &&
+            (((Task *)data)->State == Task_Stop) &&
             (!RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
             Task_SetReady((Task *)data);
