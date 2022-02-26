@@ -44,6 +44,7 @@ Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
+System/mmu/mmu.c \
 System/scheduler/scheduler.c \
 System/kernel/kernel.c \
 System/runtime/runtime.c \
@@ -130,6 +131,7 @@ C_INCLUDES =  \
 -IBsp \
 -IDevice \
 -ISystem/ \
+-ISystem/mmu/ \
 -Idebug/ \
 -IDataStructure/ \
 -ISystem/runtime/ \

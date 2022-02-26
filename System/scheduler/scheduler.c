@@ -2,6 +2,7 @@
 #include "kernel.h"
 #include "runtime.h"
 #include "linked_list.h"
+#include "mmu.h"
 
 // coder: 8_B!T0
 // bref:
@@ -49,6 +50,8 @@ static const uint8_t Task_Priority_List[256] =
 static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum];
 static volatile Task *CurRunTsk_Ptr = NULL;
 static volatile Task *NxtRunTsk_Ptr = NULL;
+volatile TaskStack_ControlBlock CurTsk_TCB;
+volatile TaskStack_ControlBlock NxtTsk_TCB;
 static bool traverse_start = false;
 
 static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
@@ -244,14 +247,103 @@ void Os_Init(uint32_t TickFRQ)
 void Os_Start(void)
 {
     Runtime_Start();
-    // Runtime_SetCallback(RtCallback_Type_Tick, test_pin_ctl);
+
+    NxtRunTsk_Ptr = Task_Get_HighestRank_RdyTask();
+
+    if (NxtRunTsk_Ptr != NULL)
+    {
+        NxtTsk_TCB.Top_Stk_Ptr = &NxtRunTsk_Ptr->TCB.Top_Stk_Ptr;
+        NxtTsk_TCB.Stack = NxtRunTsk_Ptr->TCB.Stack;
+
+        CurTsk_TCB = NxtTsk_TCB;
+    }
+
+    // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
+    Task_SetPendSVPro();
+    Task_TriggerPendSV();
 }
 
-Task_Handle Os_CreateTask(char *name, uint32_t frq)
+Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth)
 {
-    Task_Handle Tmp_Hdl;
+    Task_Handle handle;
+    uint16_t task_name_len = strlen(name);
+    uint32_t *Tsk_Ptr_tmp = NULL;
 
-    return Tmp_Hdl;
+    // already have task in current group and priority in task pointer matrix
+    if (TaskPtr_Map[group][priority] != NULL)
+        return NULL;
+
+    // request a memory space for Task_Ptr contain
+    TaskPtr_Map[group][priority] = (Task *)MMU_Malloc(sizeof(Task));
+
+    // record Task_Ptr poiner`s address
+    handle = *&TaskPtr_Map[group][priority];
+
+    TaskPtr_Map[group][priority]->Task_name = name;
+
+    TaskPtr_Map[group][priority]->exec_frq = frq;
+    TaskPtr_Map[group][priority]->exec_interval_us = RUNTIEM_MAX_TICK_FRQ / frq;
+    TaskPtr_Map[group][priority]->Exec_Func = func;
+
+    TaskPtr_Map[group][priority]->priority = (group << 3) | priority;
+
+    // init delay tag
+    TaskPtr_Map[group][priority]->delay_info.on_delay = false;
+    TaskPtr_Map[group][priority]->delay_info.tsk_hdl = handle;
+    TaskPtr_Map[group][priority]->delay_info.time_unit = 0;
+
+    // request memory space for task stack
+    TaskPtr_Map[group][priority]->Stack_Depth = StackDepth;
+    TaskPtr_Map[group][priority]->TCB.Stack = (uint32_t *)MMU_Malloc(StackDepth * sizeof(uint32_t));
+
+    if (TaskPtr_Map[group][priority]->TCB.Stack != NULL)
+    {
+        Task_SetStkPtr_Val(TaskPtr_Map[group][priority]);
+    }
+    else
+        return NULL;
+
+    // reset single loop running us
+    TaskPtr_Map[group][priority]->TskFuncUing_US = 0;
+
+    // reset task cpu occupy data
+    TaskPtr_Map[group][priority]->Exec_status.cpu_opy = 0;
+    TaskPtr_Map[group][priority]->Exec_status.Running_Time = 0;
+
+    // set current group flag to ready
+    TskHdl_RdyMap.Grp.Flg |= 1 << GET_TASKGROUP_PRIORITY(TaskPtr_Map[group][priority]->priority);
+    // set current task under this group flag to ready
+    TskHdl_RdyMap.TskInGrp[GET_TASKGROUP_PRIORITY(TaskPtr_Map[group][priority]->priority)].Flg |= 1 << GET_TASKINGROUP_PRIORITY(TaskPtr_Map[group][priority]->priority);
+
+    TaskPtr_Map[group][priority]->Exec_status.detect_exec_frq = 0;
+
+    RuntimeObj_Reset(&(TaskPtr_Map[group][priority]->Exec_status.Exec_Time));
+    RuntimeObj_Reset(&(TaskPtr_Map[group][priority]->Exec_status.Start_Time));
+
+    TaskPtr_Map[group][priority]->Exec_status.Exec_cnt = 0;
+    TaskPtr_Map[group][priority]->Exec_status.error_code = NOERROR;
+
+    Task_SetReady(TaskPtr_Map[group][priority]);
+
+    TaskPtr_Map[group][priority]->item_ptr = (item_obj *)MMU_Malloc(sizeof(item_obj));
+    if (TaskPtr_Map[group][priority]->item_ptr == NULL)
+        return NULL;
+
+    List_ItemInit(TaskPtr_Map[group][priority]->item_ptr, TaskPtr_Map[group][priority]);
+    if (TskCrt_RegList.num == 0)
+    {
+        List_Init(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
+    }
+    else
+    {
+        List_Insert_Item(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr);
+    }
+
+    List_ItemInit(&TaskPtr_Map[group][priority]->delay_item, &TaskPtr_Map[group][priority]->delay_info);
+
+    TskCrt_RegList.num++;
+
+    return handle;
 }
 
 static void Os_ResetTask_Data(Task *task)

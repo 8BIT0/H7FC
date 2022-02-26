@@ -81,7 +81,7 @@ typedef enum
     Task_Group_6,
     Task_Group_7,
     Task_Group_Sum,
-} Task_Group_Priority;
+} Task_Group;
 
 typedef enum
 {
