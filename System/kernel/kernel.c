@@ -20,6 +20,7 @@ bool Kernel_Init(void)
     // SCB->VTOR = D1_DTCMRAM_BASE;
 
     // disable interrupt at the first place
+    Kernel_DisableIRQ();
 
     // clear kernel stack
     memset(Kernel_Stack, NULL, KERNEL_STACK_SIZE);

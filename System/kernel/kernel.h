@@ -6,6 +6,9 @@
 #include <string.h>
 #include "stm32h7xx.h"
 
+#define Kernel_DisableIRQ() __asm("cpsid i")
+#define Kernel_EnableIRQ() __asm("cpsie i")
+
 bool Kernel_Init(void);
 void Kernel_SetPendSV(void);
 void Kernel_TriggerPendSV(void);
