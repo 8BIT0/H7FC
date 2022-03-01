@@ -477,8 +477,13 @@ static void Os_TaskExec(Task *tsk_ptr)
 
             tsk_ptr->State = Task_Running;
 
-            // execute task funtion
-            tsk_ptr->Exec_Func(*&tsk_ptr);
+            if (tsk_ptr->Exec_Func != NULL)
+            {
+                // execute task funtion
+                tsk_ptr->Exec_Func(*&tsk_ptr);
+            }
+            else
+                return;
 
             // record task running times
             tsk_ptr->Exec_status.Exec_cnt++;
