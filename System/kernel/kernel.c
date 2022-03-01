@@ -104,3 +104,25 @@ static bool KernelClock_Init(void)
     __enable_irq();
     return true;
 }
+
+__attribute__((naked)) void Kernel_SetPendSV(void)
+{
+    __ASM(".equ NVIC_SYSPRI14, 0xE000ED22");
+    __ASM(".equ NVIC_PENDSV_PRI, 0xFF");
+
+    __ASM("LDR      R0, =NVIC_SYSPRI14");
+    __ASM("LDR      R1, =NVIC_PENDSV_PRI");
+    __ASM("STRB     R1, [R0]");
+    __ASM("BX       LR");
+}
+
+__attribute__((naked)) void Kernel_TriggerPendSV(void)
+{
+    __ASM(".equ NVIC_INT_CTRL, 0xE000ED04");
+    __ASM(".equ NVIC_PENDSVSET, 0x10000000");
+
+    __ASM("LDR      R0, =NVIC_INT_CTRL");
+    __ASM("LDR      R1, =NVIC_PENDSVSET");
+    __ASM("STR      R1, [R0]");
+    __ASM("BX       LR");
+}

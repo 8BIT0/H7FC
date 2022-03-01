@@ -7,5 +7,7 @@
 #include "stm32h7xx.h"
 
 bool Kernel_Init(void);
+void Kernel_SetPendSV(void);
+void Kernel_TriggerPendSV(void);
 
 #endif

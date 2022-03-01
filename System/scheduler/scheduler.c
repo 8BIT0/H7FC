@@ -73,14 +73,6 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
 // first need to know is linux support AT&T formate ASM code
 __attribute__((naked)) static void Os_SetPendSVPro(void)
 {
-    // set pendsv interrupt
-    __ASM(".equ NVIC_SYSPRI14, 0xE000ED22");
-    __ASM(".equ NVIC_PENDSV_PRI, 0xFF");
-
-    __ASM("LDR      R0, =NVIC_SYSPRI14");
-    __ASM("LDR      R1, =NVIC_PENDSV_PRI");
-    __ASM("STRB     R1, [R0]");
-
     // set PSP to 0 to initial context switch call
     __ASM("MOVS     R0, #0");
     __ASM("MSR      PSP, R0");
@@ -112,17 +104,6 @@ static uint32_t Os_EnterCritical(void)
     /* This return will not be reached but is necessary to prevent compiler
     warnings. */
     return ulOriginalBASEPRI;
-}
-
-__attribute__((naked)) static void Os_TriggerPendSV(void)
-{
-    __ASM(".equ NVIC_INT_CTRL, 0xE000ED04");
-    __ASM(".equ NVIC_PENDSVSET, 0x10000000");
-
-    __ASM("LDR      R0, =NVIC_INT_CTRL");
-    __ASM("LDR      R1, =NVIC_PENDSVSET");
-    __ASM("STR      R1, [R0]");
-    __ASM("BX       LR");
 }
 
 __attribute__((nake)) static void Os_SetBASEPRI(uint32_t ulBASEPRI)
@@ -212,6 +193,39 @@ __attribute__((naked)) void Os_SwitchContext(void)
     __ASM(".ALIGN 4");
 }
 
+static void Os_Set_TaskStk(Task *tsk)
+{
+    uint32_t *Tsk_Ptr_tmp = NULL;
+
+    memset(tsk->TCB.Stack, NULL, tsk->Stack_Depth * sizeof(uint32_t));
+
+    Tsk_Ptr_tmp = &tsk->TCB.Stack + (tsk->Stack_Depth - (uint32_t)1);
+    Tsk_Ptr_tmp = (uint32_t *)((uint32_t)(Tsk_Ptr_tmp)&0XFFFFFFF8ul);
+
+    Tsk_Ptr_tmp--;
+    *Tsk_Ptr_tmp = 0x01000000uL; /* xPSR */
+
+    Tsk_Ptr_tmp--;
+    *Tsk_Ptr_tmp = ((uint32_t)Os_TaskCaller) & 0xfffffffeUL; /* PC */
+
+    Tsk_Ptr_tmp--;
+    *Tsk_Ptr_tmp = (uint32_t)Os_TaskExit; /* LR */
+
+    /* Save code space by skipping register initialisation. */
+    Tsk_Ptr_tmp -= 5;              /* R12, R3, R2 and R1. */
+    *Tsk_Ptr_tmp = (uint32_t)NULL; /* R0 */
+
+    /* A save method is being used that requires each task to maintain its
+        own exec return value. */
+    Tsk_Ptr_tmp--;
+    *Tsk_Ptr_tmp = 0xfffffffd;
+
+    Tsk_Ptr_tmp -= 8; /* R11, R10, R9, R8, R7, R6, R5 and R4. */
+
+    // set task stack top pointer
+    tsk->TCB.Top_Stk_Ptr = Tsk_Ptr_tmp; //&Tsk_Ptr_tmp
+}
+
 void Os_Init(uint32_t TickFRQ)
 {
     Kernel_Init();
@@ -242,6 +256,8 @@ void Os_Init(uint32_t TickFRQ)
     ReSet_Task_Data(NxtRunTsk_Ptr);
 
     scheduler_state = Scheduler_ready;
+
+    // diasble all irq
 }
 
 void Os_Start(void)
@@ -258,9 +274,14 @@ void Os_Start(void)
         CurTsk_TCB = NxtTsk_TCB;
     }
 
+    // trigger SVC make Os into SYSmode then set first task stack in SVC handler
+
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
-    Task_SetPendSVPro();
-    Task_TriggerPendSV();
+    Kernel_SetPendSV();
+
+    // enable all irq
+
+    Kernel_TriggerPendSV();
 }
 
 Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth)
@@ -298,7 +319,7 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
 
     if (TaskPtr_Map[group][priority]->TCB.Stack != NULL)
     {
-        Task_SetStkPtr_Val(TaskPtr_Map[group][priority]);
+        Os_Set_TaskStk(TaskPtr_Map[group][priority]);
     }
     else
         return NULL;
