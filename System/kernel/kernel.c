@@ -3,25 +3,33 @@
 #include "stm32h7xx_hal_pwr.h"
 #include "system_cfg.h"
 
+/* isolate kernel using stack with user stack  */
+static uint8_t Kernel_Stack[KERNEL_STACK_SIZE] __attribute__((section(".kernel_stack_section")));
+
 static bool KernelClock_Init(void);
 
 bool Kernel_Init(void)
 {
-    extern uint8_t tcm_code_start;
-    extern uint8_t tcm_code_end;
-    extern uint8_t tcm_code;
+    // extern uint8_t tcm_code_start;
+    // extern uint8_t tcm_code_end;
+    // extern uint8_t tcm_code;
 
-    uint32_t *SourceAddr = (uint32_t *)FLASH_BANK1_BASE;
-    uint32_t *DestAddr = (uint32_t *)D1_DTCMRAM_BASE;
-    memcpy(DestAddr, SourceAddr, 0x400);
-    SCB->VTOR = D1_DTCMRAM_BASE;
+    // uint32_t *SourceAddr = (uint32_t *)FLASH_BANK1_BASE;
+    // uint32_t *DestAddr = (uint32_t *)D1_DTCMRAM_BASE;
+    // memcpy(DestAddr, SourceAddr, 0x400);
+    // SCB->VTOR = D1_DTCMRAM_BASE;
+
+    // disable interrupt at the first place
+
+    // clear kernel stack
+    memset(Kernel_Stack, NULL, KERNEL_STACK_SIZE);
 
     SCB_EnableICache();
     SCB_EnableDCache();
 
     HAL_Init();
 
-    memcpy(&tcm_code_start, &tcm_code, (size_t)(&tcm_code_end - &tcm_code_start));
+    // memcpy(&tcm_code_start, &tcm_code, (size_t)(&tcm_code_end - &tcm_code_start));
 
     return KernelClock_Init();
 }

@@ -36,10 +36,6 @@ void UsageFault_Handler(void)
   }
 }
 
-void Reset_Handler(void)
-{
-}
-
 void SVC_Handler(void)
 {
 }

@@ -195,35 +195,35 @@ __attribute__((naked)) void Os_SwitchContext(void)
 
 static void Os_Set_TaskStk(Task *tsk)
 {
-    uint32_t *Tsk_Ptr_tmp = NULL;
+    // uint32_t *Tsk_Ptr_tmp = NULL;
 
-    memset(tsk->TCB.Stack, NULL, tsk->Stack_Depth * sizeof(uint32_t));
+    // memset(tsk->TCB.Stack, NULL, tsk->Stack_Depth * sizeof(uint32_t));
 
-    Tsk_Ptr_tmp = &tsk->TCB.Stack + (tsk->Stack_Depth - (uint32_t)1);
-    Tsk_Ptr_tmp = (uint32_t *)((uint32_t)(Tsk_Ptr_tmp)&0XFFFFFFF8ul);
+    // Tsk_Ptr_tmp = &tsk->TCB.Stack + (tsk->Stack_Depth - (uint32_t)1);
+    // Tsk_Ptr_tmp = (uint32_t *)((uint32_t)(Tsk_Ptr_tmp)&0XFFFFFFF8ul);
 
-    Tsk_Ptr_tmp--;
-    *Tsk_Ptr_tmp = 0x01000000uL; /* xPSR */
+    // Tsk_Ptr_tmp--;
+    // *Tsk_Ptr_tmp = 0x01000000uL; /* xPSR */
 
-    Tsk_Ptr_tmp--;
-    *Tsk_Ptr_tmp = ((uint32_t)Os_TaskCaller) & 0xfffffffeUL; /* PC */
+    // Tsk_Ptr_tmp--;
+    // *Tsk_Ptr_tmp = ((uint32_t)Os_TaskCaller) & 0xfffffffeUL; /* PC */
 
-    Tsk_Ptr_tmp--;
-    *Tsk_Ptr_tmp = (uint32_t)Os_TaskExit; /* LR */
+    // Tsk_Ptr_tmp--;
+    // *Tsk_Ptr_tmp = (uint32_t)Os_TaskExit; /* LR */
 
-    /* Save code space by skipping register initialisation. */
-    Tsk_Ptr_tmp -= 5;              /* R12, R3, R2 and R1. */
-    *Tsk_Ptr_tmp = (uint32_t)NULL; /* R0 */
+    // /* Save code space by skipping register initialisation. */
+    // Tsk_Ptr_tmp -= 5;              /* R12, R3, R2 and R1. */
+    // *Tsk_Ptr_tmp = (uint32_t)NULL; /* R0 */
 
-    /* A save method is being used that requires each task to maintain its
-        own exec return value. */
-    Tsk_Ptr_tmp--;
-    *Tsk_Ptr_tmp = 0xfffffffd;
+    // /* A save method is being used that requires each task to maintain its
+    //     own exec return value. */
+    // Tsk_Ptr_tmp--;
+    // *Tsk_Ptr_tmp = 0xfffffffd;
 
-    Tsk_Ptr_tmp -= 8; /* R11, R10, R9, R8, R7, R6, R5 and R4. */
+    // Tsk_Ptr_tmp -= 8; /* R11, R10, R9, R8, R7, R6, R5 and R4. */
 
-    // set task stack top pointer
-    tsk->TCB.Top_Stk_Ptr = Tsk_Ptr_tmp; //&Tsk_Ptr_tmp
+    // // set task stack top pointer
+    // tsk->TCB.Top_Stk_Ptr = Tsk_Ptr_tmp; //&Tsk_Ptr_tmp
 }
 
 void Os_Init(uint32_t TickFRQ)
@@ -256,8 +256,6 @@ void Os_Init(uint32_t TickFRQ)
     ReSet_Task_Data(NxtRunTsk_Ptr);
 
     scheduler_state = Scheduler_ready;
-
-    // diasble all irq
 }
 
 void Os_Start(void)
