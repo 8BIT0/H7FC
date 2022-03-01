@@ -114,6 +114,13 @@ static bool KernelClock_Init(void)
     return true;
 }
 
+/*
+ * set msp in svc interrupt
+ */
+void Kernel_InitMSP(void)
+{
+}
+
 __attribute__((naked)) void Kernel_SetPendSV(void)
 {
     __ASM(".equ NVIC_SYSPRI14, 0xE000ED22");

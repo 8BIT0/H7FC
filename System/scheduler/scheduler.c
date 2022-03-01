@@ -228,7 +228,9 @@ static void Os_Set_TaskStk(Task *tsk)
 
 void Os_Init(uint32_t TickFRQ)
 {
+    // we disable irq in Kernel_Init() we need enable irq when Os start triggerd
     Kernel_Init();
+
     Runtime_Config(TickFRQ);
 
     for (uint8_t g = Task_Group_0; g < Task_Group_Sum; g++)
