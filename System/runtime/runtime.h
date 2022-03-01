@@ -7,12 +7,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include "system_cfg.h"
 
 #define REAL_1US 1
 #define REAL_1MS 1000 * REAL_1US /* 1ms == 1000us */
 #define REAL_1S 1000 * REAL_1MS
-
-#define RUNTIEM_MAX_TICK_FRQ RUNTIME_TICK_FRQ_40K
 
 #define RUNTIME_TICK_FRQ_40K 40000 /* 25us base time */
 #define RUNTIME_TICK_FRQ_20K 20000 /* 50us base time */
