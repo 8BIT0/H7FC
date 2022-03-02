@@ -194,6 +194,11 @@ __attribute__((naked)) void Os_SwitchContext(void)
     __ASM(".ALIGN 4");
 }
 
+static void Os_SwitchTaskStack(void)
+{
+    CurTsk_TCB = NxtTsk_TCB;
+}
+
 static void Os_Set_TaskStk(Task *tsk)
 {
     uint32_t *Tsk_Ptr_tmp = NULL;
