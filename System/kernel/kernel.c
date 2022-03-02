@@ -141,7 +141,7 @@ void Kernel_StkReg_Init(void)
     __ASM("BX       LR");
 }
 
-__attribute__((naked)) void Kernel_SetPendSV(void)
+__attribute__((naked)) void Kernel_EnablePendSV(void)
 {
     __ASM(".equ NVIC_SYSPRI14, 0xE000ED22");
     __ASM(".equ NVIC_PENDSV_PRI, 0xFF");

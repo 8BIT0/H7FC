@@ -290,15 +290,7 @@ void Os_Start(void)
     // trigger SVC make Os into SYSmode then set first task stack in SVC handler
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
-    Kernel_SetPendSV();
-
-    // enable all irq
-
-    Kernel_TriggerPendSV();
-
-    while (true)
-    {
-    }
+    Kernel_EnablePendSV();
 }
 
 Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth)

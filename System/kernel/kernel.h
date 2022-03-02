@@ -10,7 +10,7 @@
 #define Kernel_EnableIRQ() __asm("cpsie i")
 
 bool Kernel_Init(void);
-void Kernel_SetPendSV(void);
+void Kernel_EnablePendSV(void);
 void Kernel_TriggerPendSV(void);
 
 #endif
