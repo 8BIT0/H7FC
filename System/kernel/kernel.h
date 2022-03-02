@@ -13,5 +13,6 @@ bool Kernel_Init(void);
 void Kernel_EnablePendSV(void);
 void Kernel_TriggerPendSV(void);
 void Kernel_StkReg_Init(void);
+void Kernel_CallSVC(void);
 
 #endif

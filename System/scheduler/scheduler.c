@@ -292,6 +292,9 @@ void Os_Start(void)
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
     Kernel_EnablePendSV();
+
+    // trigger SVC Handler
+    Kernel_CallSVC();
 }
 
 Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth)
