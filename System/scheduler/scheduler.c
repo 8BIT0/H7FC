@@ -283,6 +283,9 @@ void Os_Start(void)
         CurTsk_TCB = NxtTsk_TCB;
     }
 
+    // enable irq
+    Kernel_EnableIRQ();
+
     // trigger SVC make Os into SYSmode then set first task stack in SVC handler
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
@@ -291,6 +294,10 @@ void Os_Start(void)
     // enable all irq
 
     Kernel_TriggerPendSV();
+
+    while (true)
+    {
+    }
 }
 
 Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth)
