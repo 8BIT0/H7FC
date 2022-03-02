@@ -71,6 +71,8 @@ static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
 static void Os_TaskCaller(void);
 static void Os_SwitchTaskStack(void);
+static Task *Os_Get_HighestRank_PndTask(void);
+static Task *Os_Get_HighestRank_RdyTask(void);
 
 // first need to know is linux support AT&T formate ASM code
 __attribute__((naked)) static void Os_SetPendSVPro(void)
@@ -461,6 +463,33 @@ static Task *Os_Get_HighestRank_RdyTask(void)
     {
         TskHdl_RdyMap.Grp.Flg &= ~(1 << grp_id);
         TskHdl_RdyMap.TskInGrp[grp_id].Flg &= ~(1 << tsk_id);
+        return NULL;
+    }
+}
+
+static Task *Os_Get_HighestRank_PndTask(void)
+{
+    uint8_t grp_id;
+    uint8_t tsk_id;
+
+    if (TskHdl_PndMap.Grp.Flg)
+    {
+        // find group
+        grp_id = TaskPtr_Map[TskHdl_PndMap.Grp.Flg];
+        // find task in group
+        tsk_id = TaskPtr_Map[TskHdl_PndMap.TskInGrp[grp_id].Flg];
+    }
+    else
+        return NULL;
+
+    if (TaskPtr_Map[grp_id][tsk_id] != NULL)
+    {
+        return TaskPtr_Map[grp_id][tsk_id];
+    }
+    else
+    {
+        TskHdl_PndMap.Grp.Flg &= ~(1 << grp_id);
+        TskHdl_PndMap.TskInGrp[grp_id].Flg &= ~(1 << tsk_id);
         return NULL;
     }
 }
