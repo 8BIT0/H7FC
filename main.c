@@ -4,6 +4,7 @@
 #include "Dev_Led.h"
 #include "system_cfg.h"
 #include "debug_util.h"
+#include "scheduler.h"
 
 DevLedObj_TypeDef Led1 = {
     .port = LED1_PORT,
@@ -53,4 +54,11 @@ void main(void)
 
         DevLED.ctl(Led1, led_state);
     }
+
+    // Os_Init(RUNTIME_TICK_FRQ_40K);
+    // Os_Start();
+
+    // while (true)
+    // {
+    // }
 }

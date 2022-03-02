@@ -264,8 +264,8 @@ void Os_Init(uint32_t TickFRQ)
     TskCrt_RegList.list.nxt = NULL;
     TskCrt_RegList.list.prv = NULL;
 
-    ReSet_Task_Data(CurRunTsk_Ptr);
-    ReSet_Task_Data(NxtRunTsk_Ptr);
+    Os_ResetTask_Data(CurRunTsk_Ptr);
+    Os_ResetTask_Data(NxtRunTsk_Ptr);
 
     scheduler_state = Scheduler_ready;
 }
@@ -274,7 +274,7 @@ void Os_Start(void)
 {
     Runtime_Start();
 
-    NxtRunTsk_Ptr = Task_Get_HighestRank_RdyTask();
+    NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
 
     if (NxtRunTsk_Ptr != NULL)
     {

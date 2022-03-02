@@ -126,8 +126,8 @@ void Kernel_StkReg_Init(void)
     __ASM("MOVS     R0, #0");
     __ASM("MSR      PSP, R0");
 
-    // initial MSP to Task_OS_ExpStkBase
-    __ASM("LDR      R0, =Task_OS_ExpStkBase");
+    // initial MSP to Kernel_Stack
+    __ASM("LDR      R0, =Kernel_Stack");
     __ASM("LDR      R1, [R0]");
     __ASM("MSR      MSP, R1");
 
