@@ -477,76 +477,71 @@ static void Os_TaskExec(Task *tsk_ptr)
 
     tsk_ptr = NxtRunTsk_Ptr;
 
-    while (true)
+    if (tsk_ptr->State == Task_Ready)
     {
-        if (tsk_ptr->State == Task_Ready)
+        tsk_ptr->TskFuncUing_US = 0;
+
+        // when task function execute finish reset ready flag of current task in group
+        // code down below
+        Os_Clr_TaskReady(tsk_ptr);
+
+        // set current running task
+        CurRunTsk_Ptr = tsk_ptr;
+
+        if (tsk_ptr->Exec_status.Exec_cnt == 0)
         {
-            tsk_ptr->TskFuncUing_US = 0;
+            tsk_ptr->Exec_status.Start_Time = Get_CurrentRunningUs();
+            tsk_ptr->Exec_status.Exec_Time = tsk_ptr->Exec_status.Start_Time;
+        }
 
-            // when task function execute finish reset ready flag of current task in group
-            // code down below
-            Task_ClearReady(tsk_ptr);
-
-            // set current running task
-            CurRunTsk_Ptr = tsk_ptr;
-
-            if (tsk_ptr->Exec_status.Exec_cnt == 0)
-            {
-                tsk_ptr->Exec_status.Start_Time = Get_CurrentRunningUs();
-                tsk_ptr->Exec_status.Exec_Time = tsk_ptr->Exec_status.Start_Time;
-            }
-
+        if (tsk_ptr->Exec_Func != NULL)
+        {
             tsk_ptr->State = Task_Running;
 
-            if (tsk_ptr->Exec_Func != NULL)
-            {
-                // execute task funtion
-                tsk_ptr->Exec_Func(*&tsk_ptr);
-            }
-            else
-                return;
-
-            // record task running times
-            tsk_ptr->Exec_status.Exec_cnt++;
-
-            // get task total execute time unit in us
-            tsk_ptr->Exec_status.Running_Time += tsk_ptr->TskFuncUing_US;
-            time_diff = Get_TimeDifference_Between(tsk_ptr->Exec_status.Start_Time, tsk_ptr->Exec_status.Exec_Time);
-
-            tsk_ptr->Exec_status.cpu_opy = tsk_ptr->Exec_status.Running_Time / (float)time_diff;
-            tsk_ptr->Exec_status.cpu_opy *= 100;
-
-            tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(tsk_ptr->exec_interval_us);
-
-            // get task execute frequence
-            if (tsk_ptr->Exec_status.Exec_cnt)
-            {
-                tsk_ptr->Exec_status.detect_exec_frq = (uint32_t)(tsk_ptr->Exec_status.Exec_cnt / (float)(Get_CurrentRunningS()));
-            }
-
-            tsk_ptr->State = Task_Stop;
-
-            // erase currnet runnint task pointer
-            CurRunTsk_Ptr = NULL;
+            // execute task funtion
+            tsk_ptr->Exec_Func(*&tsk_ptr);
         }
+        else
+        {
+            tsk_ptr->State = Task_Stop;
+            return;
+        }
+
+        // record task running times
+        tsk_ptr->Exec_status.Exec_cnt++;
+
+        // get task total execute time unit in us
+        tsk_ptr->Exec_status.Running_Time += tsk_ptr->TskFuncUing_US;
+        time_diff = Get_TimeDifference_Between(tsk_ptr->Exec_status.Start_Time, tsk_ptr->Exec_status.Exec_Time);
+
+        tsk_ptr->Exec_status.cpu_opy = tsk_ptr->Exec_status.Running_Time / (float)time_diff;
+        tsk_ptr->Exec_status.cpu_opy *= 100;
+
+        tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(tsk_ptr->exec_interval_us);
+
+        // get task execute frequence
+        if (tsk_ptr->Exec_status.Exec_cnt)
+        {
+            tsk_ptr->Exec_status.detect_exec_frq = (uint32_t)(tsk_ptr->Exec_status.Exec_cnt / (float)(Get_CurrentRunningS()));
+        }
+
+        tsk_ptr->State = Task_Stop;
+
+        // erase currnet runnint task pointer
+        CurRunTsk_Ptr = NULL;
     }
 }
 
 static void Os_TaskCaller(void)
 {
-    static uint8_t i = 0;
-
     // if any task in any group is under ready state
-    if (NxtRunTsk_Ptr != NULL)
+    while (true)
     {
-        i++;
-        if (i == TskCrt_RegList.num)
+        if (NxtRunTsk_Ptr != NULL)
         {
-            traverse_start = true;
+            // execute task function in function matrix
+            Os_TaskExec(NxtRunTsk_Ptr);
         }
-
-        // execute task function in function matrix
-        Os_TaskExec(NxtRunTsk_Ptr);
     }
 }
 

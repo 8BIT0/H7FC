@@ -46,7 +46,7 @@ typedef struct
     Queue_state state;
     uint16_t head_pos;
     uint16_t end_pos;
-    char buff[QUEUE_MAX_SIZE];
+    uint8_t buff[QUEUE_MAX_SIZE];
     QueueData_OutType output_type;
     uint32_t error_times[QUEUE_ERROR_TYPENUM];
     uint32_t total_error_times;
