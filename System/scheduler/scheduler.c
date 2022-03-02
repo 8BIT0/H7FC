@@ -597,10 +597,14 @@ static void Os_TaskExec(Task *tsk_ptr)
 
 static void Os_TaskCaller(void)
 {
+    volatile Task *Hst_RdyTskPtr = NULL;
+    volatile Task *Hst_PndTskPtr = NULL;
+
     // if any task in any group is under ready state
     while (true)
     {
-        NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
+        Hst_RdyTskPtr = Os_Get_HighestRank_RdyTask();
+        Hst_PndTskPtr = Os_Get_HighestRank_PndTask();
 
         if (NxtRunTsk_Ptr != NULL)
         {
