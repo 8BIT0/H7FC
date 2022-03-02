@@ -431,6 +431,33 @@ static void Os_TaskExit(void)
     }
 }
 
+static Task *Os_Get_HighestRank_RdyTask(void)
+{
+    uint8_t grp_id = 0;
+    uint8_t tsk_id = 0;
+
+    if (TskHdl_RdyMap.Grp.Flg)
+    {
+        // find group
+        grp_id = TaskPtr_Map[TskHdl_RdyMap.Grp.Flg];
+        // find task in group
+        tsk_id = TaskPtr_Map[TskHdl_RdyMap.TskInGrp[grp_id].Flg];
+    }
+    else
+        return NULL;
+
+    if (TaskPtr_Map[grp_id][tsk_id] != NULL)
+    {
+        return TaskPtr_Map[grp_id][tsk_id];
+    }
+    else
+    {
+        TskHdl_RdyMap.Grp.Flg &= ~(1 << grp_id);
+        TskHdl_RdyMap.TskInGrp[grp_id].Flg &= ~(1 << tsk_id);
+        return NULL;
+    }
+}
+
 // return high priority task pointer
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
 {

@@ -42,7 +42,8 @@ typedef union
 typedef struct
 {
     char *name;
-    uint16_t size;
+    uint16_t lenth; // total queue size
+    uint16_t size;  // current data size in queue
     Queue_state state;
     uint16_t head_pos;
     uint16_t end_pos;
@@ -54,13 +55,13 @@ typedef struct
 
 Queue_state Queue_Init(queue_s *queue, char *name, QueueData_OutType type);
 Queue_state Queue_Reset(queue_s *queue);
-Queue_state Queue_Dump(queue_s *queue, char *out_data);
-Queue_state Queue_PushChar(queue_s *queue, char data);
-Queue_state Queue_PushLenChar(queue_s *queue, uint16_t len, char *data);
-Queue_state Queue_PopCharFromFront(queue_s *queue, char *out_data);
-Queue_state Queue_PopCharFromBack(queue_s *queue, char *out_data);
-Queue_state Queue_PopLenCharFromFront(queue_s *queue, uint16_t len, char *out_buff);
-Queue_state Queue_PopLenCharFromBack(queue_s *queue, uint16_t len, char *out_buff);
+Queue_state Queue_Dump(queue_s *queue, uint8_t *out_data);
+Queue_state Queue_PushByte(queue_s *queue, uint8_t data);
+Queue_state Queue_PushLenByte(queue_s *queue, uint16_t len, uint8_t *data);
+Queue_state Queue_PopByteFromFront(queue_s *queue, uint8_t *out_data);
+Queue_state Queue_PopByteFromBack(queue_s *queue, uint8_t *out_data);
+Queue_state Queue_PopLenByteFromFront(queue_s *queue, uint16_t len, uint8_t *out_buff);
+Queue_state Queue_PopLenByteFromBack(queue_s *queue, uint16_t len, uint8_t *out_buff);
 Queue_CheckOut_u Queue_CheckData(queue_s queue, uint16_t index);
 void Queue_Output_ErrorTimes(queue_s queue);
 #endif

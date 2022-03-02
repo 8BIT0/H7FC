@@ -21,10 +21,8 @@ Queue_state Queue_Init(queue_s *queue, char *name, QueueData_OutType type)
     queue->size = 0;
     queue->output_type = type;
 
-    for (uint8_t i = 0; i < QUEUE_ERROR_TYPENUM; i++)
-    {
-        queue->error_times[i] = 0;
-    }
+    memset(queue->error_times, NULL, QUEUE_ERROR_TYPENUM);
+
     queue->total_error_times = 0;
 
     return queue->state;
@@ -57,7 +55,7 @@ static Queue_state Queue_GetState(queue_s *queue)
     return Queue_ok;
 }
 
-Queue_state Queue_PushChar(queue_s *queue, char data)
+Queue_state Queue_PushByte(queue_s *queue, uint8_t data)
 {
     if (queue->state == Queue_ok)
     {
@@ -72,7 +70,7 @@ Queue_state Queue_PushChar(queue_s *queue, char data)
     return queue->state;
 }
 
-Queue_state Queue_PushLenChar(queue_s *queue, uint16_t len, char *data)
+Queue_state Queue_PushLenByte(queue_s *queue, uint16_t len, uint8_t *data)
 {
     if ((queue->state == Queue_ok) || (queue->state == Queue_empty))
     {
@@ -98,7 +96,7 @@ Queue_state Queue_PushLenChar(queue_s *queue, uint16_t len, char *data)
     return queue->state;
 }
 
-Queue_state Queue_PopCharFromFront(queue_s *queue, char *out_data)
+Queue_state Queue_PopByteFromFront(queue_s *queue, uint8_t *out_data)
 {
     if ((queue->state == Queue_ok) || (queue->state == Queue_full))
     {
@@ -114,8 +112,8 @@ Queue_state Queue_PopCharFromFront(queue_s *queue, char *out_data)
     return queue->state;
 }
 
-//still have bug in this func fix when i start to use it hahahahha boooyaaaaa
-Queue_state Queue_PopCharFromBack(queue_s *queue, char *out_data)
+// still have bug in this func fix when i start to use it hahahahha boooyaaaaa
+Queue_state Queue_PopByteFromBack(queue_s *queue, uint8_t *out_data)
 {
     if ((queue->state == Queue_ok) || (queue->state == Queue_full))
     {
@@ -131,7 +129,7 @@ Queue_state Queue_PopCharFromBack(queue_s *queue, char *out_data)
     return queue->state;
 }
 
-Queue_state Queue_Dump(queue_s *queue, char *out_data)
+Queue_state Queue_Dump(queue_s *queue, uint8_t *out_data)
 {
 
     for (uint16_t index = 0; index < queue->size; index++)
@@ -156,7 +154,7 @@ Queue_state Queue_Dump(queue_s *queue, char *out_data)
     return queue->state;
 }
 
-Queue_state Queue_PopLenCharFromFront(queue_s *queue, uint16_t len, char *out_buff)
+Queue_state Queue_PopLenByteFromFront(queue_s *queue, uint16_t len, uint8_t *out_buff)
 {
     static uint32_t test = 0;
     if ((queue->state == Queue_ok) || (queue->state == Queue_full))
@@ -167,13 +165,13 @@ Queue_state Queue_PopLenCharFromFront(queue_s *queue, uint16_t len, char *out_bu
             {
                 if (queue->output_type == Queue_FIFO)
                 {
-                    //FIFO
+                    // FIFO
                     out_buff[index] = queue->buff[queue->head_pos + index];
                     queue->buff[queue->head_pos + index] = NULL;
                 }
                 else
                 {
-                    //LIFO
+                    // LIFO
                     out_buff[index] = queue->buff[queue->head_pos + len - 1 - index];
                     queue->buff[queue->head_pos + len - 1 - index] = NULL;
                 }
@@ -188,7 +186,7 @@ Queue_state Queue_PopLenCharFromFront(queue_s *queue, uint16_t len, char *out_bu
         else
         {
             test++;
-            //count error num
+            // count error num
             queue->error_times[GET_QUEUE_ERROR_INDEX(Queue_overlimit_r)]++;
             queue->total_error_times++;
             return Queue_overlimit_r;
@@ -200,8 +198,8 @@ Queue_state Queue_PopLenCharFromFront(queue_s *queue, uint16_t len, char *out_bu
     }
 }
 
-//func describe same as Queue_PopCharFromBack
-Queue_state Queue_PopLenCharFromBack(queue_s *queue, uint16_t len, char *out_buff)
+// func describe same as Queue_PopCharFromBack
+Queue_state Queue_PopLenByteFromBack(queue_s *queue, uint16_t len, uint8_t *out_buff)
 {
     if ((queue->state == Queue_ok) || (queue->state == Queue_full))
     {
