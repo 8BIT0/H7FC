@@ -288,6 +288,7 @@ void Os_Start(void)
     Kernel_EnableIRQ();
 
     // trigger SVC make Os into SYSmode then set first task stack in SVC handler
+    Kernel_StkReg_Init();
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
     Kernel_EnablePendSV();

@@ -138,6 +138,10 @@ void Kernel_StkReg_Init(void)
 
     /* Set the msp back to the start of the stack. */
     __ASM("MSR      MSP, R0");
+
+    __ASM("DSB");
+    __ASM("ISB");
+
     __ASM("BX       LR");
 }
 
