@@ -589,27 +589,21 @@ static void Os_TaskExec(Task *tsk_ptr)
         }
 
         tsk_ptr->State = Task_Stop;
-
-        // erase currnet runnint task pointer
-        CurRunTsk_Ptr = NULL;
     }
 }
 
 static void Os_TaskCaller(void)
 {
-    volatile Task *Hst_RdyTskPtr = NULL;
-    volatile Task *Hst_PndTskPtr = NULL;
-
     // if any task in any group is under ready state
     while (true)
     {
-        Hst_RdyTskPtr = Os_Get_HighestRank_RdyTask();
-        Hst_PndTskPtr = Os_Get_HighestRank_PndTask();
-
-        if (NxtRunTsk_Ptr != NULL)
+        if (CurRunTsk_Ptr != NULL)
         {
             // execute task function in function matrix
-            Os_TaskExec(NxtRunTsk_Ptr);
+            Os_TaskExec(CurRunTsk_Ptr);
+
+            // erase currnet runnint task pointer
+            CurRunTsk_Ptr = NULL;
         }
     }
 }

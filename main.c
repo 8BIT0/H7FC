@@ -37,7 +37,7 @@ void main(void)
     Runtime_Config(RUNTIME_TICK_FRQ_20K);
     Runtime_Start();
 
-    Runtime_SetCallback(RtCallback_Type_Tick, test_pin_ctl);
+    // Runtime_SetCallback(RtCallback_Type_Tick, test_pin_ctl);
 
     while (1)
     {
@@ -50,5 +50,7 @@ void main(void)
         }
 
         DevLED.ctl(Led1, led_state);
+
+        test_pin_ctl();
     }
 }
