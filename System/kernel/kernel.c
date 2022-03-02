@@ -72,7 +72,6 @@ static bool KernelClock_Init(void)
     RCC_OscInitStruct.PLL.PLLFRACN = 0;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
-        __disable_irq();
         return false;
     }
 
@@ -88,7 +87,6 @@ static bool KernelClock_Init(void)
     RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
     {
-        __disable_irq();
         return false;
     }
 
@@ -106,19 +104,41 @@ static bool KernelClock_Init(void)
     PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
-        __disable_irq();
         return false;
     }
 
-    __enable_irq();
     return true;
 }
 
 /*
- * set msp in svc interrupt
+ * trigger SVC Handler to make kernel into privileged mode
  */
-void Kernel_InitMSP(void)
+void Kernel_CallSVC(void)
 {
+    __asm("SVC 0");
+}
+
+/*
+ * init irq vactor and set perticular memory address for msp
+ */
+void Kernel_StkReg_Init(void)
+{
+    __ASM("MOVS     R0, #0");
+    __ASM("MSR      PSP, R0");
+
+    // initial MSP to Task_OS_ExpStkBase
+    __ASM("LDR      R0, =Task_OS_ExpStkBase");
+    __ASM("LDR      R1, [R0]");
+    __ASM("MSR      MSP, R1");
+
+    /* set irq vactor */
+    __ASM("LDR      R0, =0xE000ED08");
+    __ASM("LDR      R0, [R0]");
+    __ASM("LDR      R0, [R0]");
+
+    /* Set the msp back to the start of the stack. */
+    __ASM("MSR      MSP, R0");
+    __ASM("BX       LR");
 }
 
 __attribute__((naked)) void Kernel_SetPendSV(void)

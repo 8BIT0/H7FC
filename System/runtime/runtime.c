@@ -56,7 +56,7 @@ Tick_Base Runtime_GetTickBase(void)
 
 /**
  \param [in] : tick frequence
-                RUNTIME_TICK_FRQ_20K (default)
+                RUNTIME_TICK_FRQ_20K
                 RUNTIME_TICK_FRQ_10K
                 RUNTIME_TICK_FRQ_5K
                 RUNTIME_TICK_FRQ_2K
@@ -64,9 +64,13 @@ Tick_Base Runtime_GetTickBase(void)
 **/
 bool Runtime_Config(uint32_t tick_frq)
 {
-    uint32_t frq = RUNTIME_TICK_FRQ_20K;
+    uint32_t frq = RUNTIME_TICK_FRQ_40K;
 
-    if (tick_frq == RUNTIME_TICK_FRQ_10K)
+    if (tick_frq == RUNTIME_TICK_FRQ_40K)
+    {
+        frq = RUNTIME_TICK_FRQ_40K;
+    }
+    else if (tick_frq == RUNTIME_TICK_FRQ_10K)
     {
         frq = RUNTIME_TICK_FRQ_10K;
     }

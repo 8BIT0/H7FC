@@ -23,6 +23,8 @@ void test_pin_ctl(void)
     DebugPin.ctl(Debug_PC0, false);
 }
 
+extern uint32_t msp;
+
 void main(void)
 {
     volatile SYSTEM_RunTime Rt = 0;
@@ -34,7 +36,7 @@ void main(void)
 
     Kernel_Init();
 
-    Runtime_Config(RUNTIME_TICK_FRQ_20K);
+    Runtime_Config(RUNTIME_TICK_FRQ_40K);
     Runtime_Start();
 
     // Runtime_SetCallback(RtCallback_Type_Tick, test_pin_ctl);
@@ -50,7 +52,5 @@ void main(void)
         }
 
         DevLED.ctl(Led1, led_state);
-
-        test_pin_ctl();
     }
 }

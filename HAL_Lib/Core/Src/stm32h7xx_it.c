@@ -36,8 +36,11 @@ void UsageFault_Handler(void)
   }
 }
 
+uint32_t msp = 0;
 void SVC_Handler(void)
 {
+  __asm volatile("MRS %0, msp"
+                 : "=r"(msp));
 }
 
 void DebugMon_Handler(void)

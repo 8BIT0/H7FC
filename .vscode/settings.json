@@ -36,7 +36,8 @@
                 "stdint.h": "c",
                 "storage.h": "c",
                 "ostream": "c",
-                "scheduler.h": "c"
+                "scheduler.h": "c",
+                "__locale": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
