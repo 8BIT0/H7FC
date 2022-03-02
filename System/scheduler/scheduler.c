@@ -70,6 +70,7 @@ static void Os_SchedulerRun(void);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
 static void Os_TaskCaller(void);
+static void Os_SwitchTaskStack(void);
 
 // first need to know is linux support AT&T formate ASM code
 __attribute__((naked)) static void Os_SetPendSVPro(void)
@@ -167,7 +168,7 @@ __attribute__((naked)) void Os_SwitchContext(void)
     __ASM("DSB");
     __ASM("ISB");
 
-    __ASM("BL       Task_SwitchStack");
+    __ASM("BL       Os_SwitchTaskStack");
 
     __ASM("MOV      R0, #0");
     __ASM("MSR      BASEPRI, R0");
