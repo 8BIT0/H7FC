@@ -30,10 +30,6 @@ void main(void)
 {
     Os_Init(RUNTIME_TICK_FRQ_40K);
     Os_Start();
-
-    while (true)
-    {
-    }
 }
 
 void Run(void)

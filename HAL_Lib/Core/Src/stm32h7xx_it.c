@@ -39,7 +39,7 @@ void UsageFault_Handler(void)
 
 void SVC_Handler(void)
 {
-  __asm("BL Run");
+  __asm("BL     Run");
 }
 
 void DebugMon_Handler(void)
