@@ -277,8 +277,6 @@ Scheduler_State_List Os_State(void)
 
 void Os_Start(void)
 {
-    Runtime_Start();
-
     NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
 
     if (NxtRunTsk_Ptr != NULL)
@@ -292,14 +290,12 @@ void Os_Start(void)
     // enable irq
     Kernel_EnableIRQ();
 
-    // trigger SVC make Os into SYSmode then set first task stack in SVC handler
-    // Kernel_StkReg_Init();
-
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
-    // Kernel_EnablePendSV();
+    Kernel_EnablePendSV();
+    Runtime_Start();
 
     // trigger SVC Handler
-    Kernel_CallSVC();
+    Kernel_LoadProcess();
 }
 
 Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth)

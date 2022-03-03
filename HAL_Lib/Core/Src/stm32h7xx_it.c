@@ -1,5 +1,4 @@
 #include "stm32h7xx_it.h"
-#include "scheduler.h"
 #include "kernel.h"
 #include "runtime.h"
 
@@ -40,10 +39,7 @@ void UsageFault_Handler(void)
 
 void SVC_Handler(void)
 {
-  if (Os_State() == Scheduler_ready)
-  {
-    Kernel_StkReg_Init();
-  }
+  __asm("BL Run");
 }
 
 void DebugMon_Handler(void)

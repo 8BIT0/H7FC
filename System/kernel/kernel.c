@@ -3,9 +3,6 @@
 #include "stm32h7xx_hal_pwr.h"
 #include "system_cfg.h"
 
-/* isolate kernel using stack with user stack  */
-static uint8_t Kernel_Stack[KERNEL_STACK_SIZE] __attribute__((section(".kernel_stack_section")));
-
 static bool KernelClock_Init(void);
 
 bool Kernel_Init(void)
@@ -21,9 +18,6 @@ bool Kernel_Init(void)
 
     // disable interrupt at the first place
     Kernel_DisableIRQ();
-
-    // clear kernel stack
-    memset(Kernel_Stack, NULL, KERNEL_STACK_SIZE);
 
     SCB_EnableICache();
     SCB_EnableDCache();
@@ -111,20 +105,13 @@ static bool KernelClock_Init(void)
 }
 
 /*
- * trigger SVC Handler to make kernel into privileged mode
- */
-void Kernel_CallSVC(void)
-{
-    __asm("SVC 0");
-}
-
-/*
  * init irq vactor and set perticular memory address for msp
  */
-void Kernel_StkReg_Init(void)
+void Kernel_LoadProcess(void)
 {
     uint32_t msp_addr = 0;
 
+    /* clear PSP */
     __ASM("MOVS     R0, #0");
     __ASM("MSR      PSP, R0");
 
@@ -132,26 +119,12 @@ void Kernel_StkReg_Init(void)
     __ASM("LDR      R0, =0xE000ED08");
     __ASM("LDR      R0, [R0]");
     __ASM("LDR      R0, [R0]");
-
-    /* Set the msp back to the start of the stack. */
     __ASM("MSR      MSP, R0");
 
-    // initial MSP to Kernel_Stack
-    __ASM volatile("MSR MSP, %0"
-                   :
-                   : "r"(Kernel_Stack)
-                   :);
-
-    __ASM("DSB");
-    __ASM("ISB");
-
-    __ASM volatile("MRS %0, MSP"
-                   : "=r"(msp_addr));
-
-    while (msp_addr != (uint32_t)&Kernel_Stack)
-        ;
-
-    __ASM("BX       LR");
+    /* trigger svc to push first task in process stack */
+    __asm("SVC      0");
+    __asm("ISB");
+    __asm("NOP");
 }
 
 __attribute__((naked)) void Kernel_EnablePendSV(void)
