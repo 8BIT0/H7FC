@@ -28,37 +28,37 @@ extern uint32_t msp;
 
 void main(void)
 {
-    volatile SYSTEM_RunTime Rt = 0;
-    volatile SYSTEM_RunTime Lst_Rt = 0;
-    bool led_state = false;
+    // volatile SYSTEM_RunTime Rt = 0;
+    // volatile SYSTEM_RunTime Lst_Rt = 0;
+    // bool led_state = false;
 
-    DevLED.init(Led1);
-    DebugPin.init(Debug_PC0);
+    // DevLED.init(Led1);
+    // DebugPin.init(Debug_PC0);
 
-    Kernel_Init();
+    // Kernel_Init();
 
-    Runtime_Config(RUNTIME_TICK_FRQ_40K);
-    Runtime_Start();
+    // Runtime_Config(RUNTIME_TICK_FRQ_40K);
+    // Runtime_Start();
 
-    // Runtime_SetCallback(RtCallback_Type_Tick, test_pin_ctl);
+    // // Runtime_SetCallback(RtCallback_Type_Tick, test_pin_ctl);
 
-    while (1)
-    {
-        Rt = Get_CurrentRunningMs();
-
-        if ((Rt % 50 == 0) && (Lst_Rt != Rt))
-        {
-            led_state = !led_state;
-            Lst_Rt = Rt;
-        }
-
-        DevLED.ctl(Led1, led_state);
-    }
-
-    // Os_Init(RUNTIME_TICK_FRQ_40K);
-    // Os_Start();
-
-    // while (true)
+    // while (1)
     // {
+    //     Rt = Get_CurrentRunningMs();
+
+    //     if ((Rt % 50 == 0) && (Lst_Rt != Rt))
+    //     {
+    //         led_state = !led_state;
+    //         Lst_Rt = Rt;
+    //     }
+
+    //     DevLED.ctl(Led1, led_state);
     // }
+
+    Os_Init(RUNTIME_TICK_FRQ_40K);
+    Os_Start();
+
+    while (true)
+    {
+    }
 }

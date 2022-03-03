@@ -177,5 +177,6 @@ typedef struct
 
 void Os_Init(uint32_t TickFRQ);
 void Os_Start(void);
+Scheduler_State_List Os_State(void);
 
 #endif

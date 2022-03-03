@@ -1,4 +1,6 @@
 #include "stm32h7xx_it.h"
+#include "scheduler.h"
+#include "kernel.h"
 #include "runtime.h"
 
 void NMI_Handler(void)
@@ -36,11 +38,12 @@ void UsageFault_Handler(void)
   }
 }
 
-uint32_t msp = 0;
 void SVC_Handler(void)
 {
-  __asm volatile("MRS %0, msp"
-                 : "=r"(msp));
+  if (Os_State() == Scheduler_ready)
+  {
+    Kernel_StkReg_Init();
+  }
 }
 
 void DebugMon_Handler(void)

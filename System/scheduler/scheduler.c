@@ -270,6 +270,11 @@ void Os_Init(uint32_t TickFRQ)
     scheduler_state = Scheduler_ready;
 }
 
+Scheduler_State_List Os_State(void)
+{
+    return scheduler_state;
+}
+
 void Os_Start(void)
 {
     Runtime_Start();
@@ -288,10 +293,10 @@ void Os_Start(void)
     Kernel_EnableIRQ();
 
     // trigger SVC make Os into SYSmode then set first task stack in SVC handler
-    Kernel_StkReg_Init();
+    // Kernel_StkReg_Init();
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
-    Kernel_EnablePendSV();
+    // Kernel_EnablePendSV();
 
     // trigger SVC Handler
     Kernel_CallSVC();

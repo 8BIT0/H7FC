@@ -123,13 +123,10 @@ void Kernel_CallSVC(void)
  */
 void Kernel_StkReg_Init(void)
 {
+    uint32_t msp_addr = 0;
+
     __ASM("MOVS     R0, #0");
     __ASM("MSR      PSP, R0");
-
-    // initial MSP to Kernel_Stack
-    __ASM("LDR      R0, =Kernel_Stack");
-    __ASM("LDR      R1, [R0]");
-    __ASM("MSR      MSP, R1");
 
     /* set irq vactor */
     __ASM("LDR      R0, =0xE000ED08");
@@ -139,8 +136,20 @@ void Kernel_StkReg_Init(void)
     /* Set the msp back to the start of the stack. */
     __ASM("MSR      MSP, R0");
 
+    // initial MSP to Kernel_Stack
+    __ASM volatile("MSR MSP, %0"
+                   :
+                   : "r"(Kernel_Stack)
+                   :);
+
     __ASM("DSB");
     __ASM("ISB");
+
+    __ASM volatile("MRS %0, MSP"
+                   : "=r"(msp_addr));
+
+    while (msp_addr != (uint32_t)&Kernel_Stack)
+        ;
 
     __ASM("BX       LR");
 }
