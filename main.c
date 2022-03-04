@@ -29,6 +29,11 @@ extern uint32_t msp;
 void main(void)
 {
     Os_Init(RUNTIME_TICK_FRQ_40K);
+
+    /* create task down below */
+
+    /* create task up top */
+
     Os_Start();
 }
 
