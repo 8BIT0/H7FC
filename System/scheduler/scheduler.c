@@ -66,28 +66,13 @@ static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 static void Os_ResetTask_Data(Task *task);
 static void Os_Set_TaskReady(Task *tsk);
 static void Os_Clr_TaskReady(Task *tsk);
-static void Os_SchedulerRun(void);
+static void Os_SchedulerRun(SYSTEM_RunTime Rt);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
 static void Os_TaskCaller(void);
 static void Os_SwitchTaskStack(void);
 static Task *Os_Get_HighestRank_PndTask(void);
 static Task *Os_Get_HighestRank_RdyTask(void);
-
-// first need to know is linux support AT&T formate ASM code
-__attribute__((naked)) static void Os_SetPendSVPro(void)
-{
-    // set PSP to 0 to initial context switch call
-    __ASM("MOVS     R0, #0");
-    __ASM("MSR      PSP, R0");
-
-    // initial MSP to Task_OS_ExpStkBase
-    __ASM("LDR      R0, =Task_OS_ExpStkBase");
-    __ASM("LDR      R1, [R0]");
-    __ASM("MSR      MSP, R1");
-
-    __ASM("BX       LR");
-}
 
 static uint32_t Os_EnterCritical(void)
 {
@@ -431,8 +416,18 @@ static void Os_Clr_TaskReady(Task *tsk)
     }
 }
 
-static void Os_SchedulerRun(void)
+static void Os_Polling_CheckTaskReady(SYSTEM_RunTime Rt, Task *Tsk_Ptr)
 {
+}
+
+static void Os_SchedulerRun(SYSTEM_RunTime Rt)
+{
+    SYSTEM_RunTime CurRt_US = Rt;
+
+    if (TskCrt_RegList.num)
+    {
+        List_traverse(&TskCrt_RegList.list, , &CurRt_US, pre_callback);
+    }
 }
 
 /*

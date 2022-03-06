@@ -107,7 +107,7 @@ void Runtime_Start(void)
 
     if (RunTime.start_callback != NULL)
     {
-        RunTime.start_callback();
+        RunTime.start_callback(0);
     }
 }
 
@@ -131,7 +131,7 @@ bool Runtime_Stop(void)
         RunTime.module_state = Runtime_Module_Stop;
 
         if (RunTime.stop_callback != NULL)
-            RunTime.stop_callback();
+            RunTime.stop_callback(0);
 
         return true;
     }
@@ -148,7 +148,7 @@ bool Runtime_Tick(void)
         RunTime.tick_state = Runtime_Run_Wait;
 
         if (RunTime.tick_callback != NULL)
-            RunTime.tick_callback();
+            RunTime.tick_callback(RunTime.Use_Us);
 
         return true;
     }
