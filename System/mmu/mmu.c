@@ -60,6 +60,7 @@ static void MMU_Init(void)
     Mem_Monitor.init = true;
 }
 
+/* do not use this func in any irq hander */
 void *MMU_Malloc(uint16_t size)
 {
     MemBlock_TypeDef *PrvFreeBlock = NULL;
