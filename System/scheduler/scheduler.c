@@ -416,8 +416,15 @@ static void Os_Clr_TaskReady(Task *tsk)
     }
 }
 
-static void Os_Polling_CheckTaskReady(SYSTEM_RunTime Rt, Task *Tsk_Ptr)
+static void Os_Polling_CheckTaskReady(list_obj *list, void *Tsk_Ptr, SYSTEM_RunTime *Rt)
 {
+    if (Tsk_Ptr == NULL)
+        return;
+
+    if (TaskHandlerToObj(Tsk_Ptr)->Exec_status.Exec_Time == *Rt)
+    {
+        Os_Set_TaskReady(Tsk_Ptr);
+    }
 }
 
 static void Os_SchedulerRun(SYSTEM_RunTime Rt)
@@ -426,7 +433,7 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 
     if (TskCrt_RegList.num)
     {
-        List_traverse(&TskCrt_RegList.list, , &CurRt_US, pre_callback);
+        List_traverse(&TskCrt_RegList.list, Os_Polling_CheckTaskReady, &CurRt_US, pre_callback);
     }
 }
 

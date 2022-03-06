@@ -42,8 +42,6 @@ typedef uint32_t *Task_STK_Ptr;
 
 #define TaskHandlerToObj(x) ((Task *)x)
 
-#define TaskHandleToTaskObj(x) ((Task *)x)
-
 typedef enum
 {
     Task_Init = 0,
