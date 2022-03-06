@@ -69,6 +69,7 @@ static void Os_Clr_TaskReady(Task *tsk);
 static void Os_SchedulerRun(SYSTEM_RunTime Rt);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
+static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg);
 static void Os_TaskCaller(void);
 static void Os_SwitchTaskStack(void);
 static Task *Os_Get_HighestRank_PndTask(void);
@@ -416,24 +417,30 @@ static void Os_Clr_TaskReady(Task *tsk)
     }
 }
 
-static void Os_Polling_CheckTaskReady(list_obj *list, void *Tsk_Ptr, SYSTEM_RunTime *Rt)
-{
-    if (Tsk_Ptr == NULL)
-        return;
-
-    if (TaskHandlerToObj(Tsk_Ptr)->Exec_status.Exec_Time == *Rt)
-    {
-        Os_Set_TaskReady(Tsk_Ptr);
-    }
-}
-
 static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 {
     SYSTEM_RunTime CurRt_US = Rt;
+    Task *HstPri_InRdyList = NULL;
+    Task *HstPri_InPndList = NULL;
+    Task *TskPtr_Tmp = NULL;
 
     if (TskCrt_RegList.num)
     {
-        List_traverse(&TskCrt_RegList.list, Os_Polling_CheckTaskReady, &CurRt_US, pre_callback);
+        /* check task state ready or not */
+        List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
+    }
+
+    HstPri_InRdyList = Os_Get_HighestRank_RdyTask();
+    HstPri_InPndList = Os_Get_HighestRank_PndTask();
+
+    if (CurRunTsk_Ptr != NULL)
+    {
+        TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(HstPri_InRdyList, HstPri_InPndList), CurRunTsk_Ptr);
+
+        if (TskPtr_Tmp != CurRunTsk_Ptr)
+        {
+            /* trigger pendsv to switch task */
+        }
     }
 }
 
@@ -626,7 +633,7 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
             (((Task *)data)->State == Task_Stop) &&
             (!RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
-            Task_SetReady((Task *)data);
+            Os_Set_TaskReady((Task *)data);
         }
     }
 
