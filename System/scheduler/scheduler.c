@@ -420,8 +420,6 @@ static void Os_Clr_TaskReady(Task *tsk)
 static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 {
     SYSTEM_RunTime CurRt_US = Rt;
-    Task *HstPri_InRdyList = NULL;
-    Task *HstPri_InPndList = NULL;
     Task *TskPtr_Tmp = NULL;
 
     if (TskCrt_RegList.num)
@@ -430,12 +428,11 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
         List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
     }
 
-    HstPri_InRdyList = Os_Get_HighestRank_RdyTask();
-    HstPri_InPndList = Os_Get_HighestRank_PndTask();
+    TskPtr_Tmp = Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask());
 
     if (CurRunTsk_Ptr != NULL)
     {
-        TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(HstPri_InRdyList, HstPri_InPndList), CurRunTsk_Ptr);
+        TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(TskPtr_Tmp, CurRunTsk_Ptr);
 
         if (TskPtr_Tmp != CurRunTsk_Ptr)
         {
@@ -451,6 +448,12 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
             /* set current task in pending list */
 
             /* trigger pendsv to switch task */
+        }
+    }
+    else
+    {
+        if (TskPtr_Tmp != NULL)
+        {
         }
     }
 }
