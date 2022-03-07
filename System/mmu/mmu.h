@@ -23,7 +23,7 @@ typedef struct _MemBlock_TypeDef
     struct _MemBlock_TypeDef *nxtFree;
 
     /* request size */
-    uint16_t size;
+    uint32_t size;
 } MemBlock_TypeDef;
 
 typedef struct
@@ -34,7 +34,7 @@ typedef struct
     MemSize_t total_size;
 
     MemBlock_TypeDef *FreeBlock;
-    uint16_t FreeBlock_Num;
+    uint32_t FreeBlock_Num;
 
     uint32_t req_t;
     uint32_t fre_t;
