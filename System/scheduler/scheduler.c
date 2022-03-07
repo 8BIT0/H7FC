@@ -439,6 +439,17 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 
         if (TskPtr_Tmp != CurRunTsk_Ptr)
         {
+            if (TskPtr_Tmp == HstPri_InRdyList)
+            {
+                /* set next task block */
+            }
+            else if (TskPtr_Tmp == HstPri_InPndList)
+            {
+                /* set next task block */
+            }
+
+            /* set current task in pending list */
+
             /* trigger pendsv to switch task */
         }
     }
