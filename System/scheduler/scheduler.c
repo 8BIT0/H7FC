@@ -66,28 +66,14 @@ static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 static void Os_ResetTask_Data(Task *task);
 static void Os_Set_TaskReady(Task *tsk);
 static void Os_Clr_TaskReady(Task *tsk);
-static void Os_SchedulerRun(void);
+static void Os_SchedulerRun(SYSTEM_RunTime Rt);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
+static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg);
 static void Os_TaskCaller(void);
 static void Os_SwitchTaskStack(void);
 static Task *Os_Get_HighestRank_PndTask(void);
 static Task *Os_Get_HighestRank_RdyTask(void);
-
-// first need to know is linux support AT&T formate ASM code
-__attribute__((naked)) static void Os_SetPendSVPro(void)
-{
-    // set PSP to 0 to initial context switch call
-    __ASM("MOVS     R0, #0");
-    __ASM("MSR      PSP, R0");
-
-    // initial MSP to Task_OS_ExpStkBase
-    __ASM("LDR      R0, =Task_OS_ExpStkBase");
-    __ASM("LDR      R1, [R0]");
-    __ASM("MSR      MSP, R1");
-
-    __ASM("BX       LR");
-}
 
 static uint32_t Os_EnterCritical(void)
 {
@@ -292,6 +278,7 @@ void Os_Start(void)
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
     Kernel_EnablePendSV();
+    Runtime_SetCallback(RtCallback_Type_Tick, Os_SchedulerRun);
     Runtime_Start();
 
     // trigger SVC Handler
@@ -430,8 +417,31 @@ static void Os_Clr_TaskReady(Task *tsk)
     }
 }
 
-static void Os_SchedulerRun(void)
+static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 {
+    SYSTEM_RunTime CurRt_US = Rt;
+    Task *HstPri_InRdyList = NULL;
+    Task *HstPri_InPndList = NULL;
+    Task *TskPtr_Tmp = NULL;
+
+    if (TskCrt_RegList.num)
+    {
+        /* check task state ready or not */
+        List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
+    }
+
+    HstPri_InRdyList = Os_Get_HighestRank_RdyTask();
+    HstPri_InPndList = Os_Get_HighestRank_PndTask();
+
+    if (CurRunTsk_Ptr != NULL)
+    {
+        TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(HstPri_InRdyList, HstPri_InPndList), CurRunTsk_Ptr);
+
+        if (TskPtr_Tmp != CurRunTsk_Ptr)
+        {
+            /* trigger pendsv to switch task */
+        }
+    }
 }
 
 /*
@@ -623,7 +633,7 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
             (((Task *)data)->State == Task_Stop) &&
             (!RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
-            Task_SetReady((Task *)data);
+            Os_Set_TaskReady((Task *)data);
         }
     }
 

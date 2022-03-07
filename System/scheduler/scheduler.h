@@ -40,7 +40,7 @@ typedef uint32_t Task_Handle;
 typedef void (*Task_Func)(Task_Handle hdl);
 typedef uint32_t *Task_STK_Ptr;
 
-#define TaskHandleToTaskObj(x) ((Task *)x)
+#define TaskHandlerToObj(x) ((Task *)x)
 
 typedef enum
 {
@@ -51,11 +51,6 @@ typedef enum
     Task_Block,
     Task_Pending,
 } TASK_STATE;
-
-typedef enum
-{
-    TaskPriority_Occupy = 1, /* already have created task in current group & priority has been occupy */
-} Task_Error_List;
 
 typedef enum
 {
@@ -91,8 +86,7 @@ typedef enum
 } Scheduler_State_List;
 
 #pragma pack(1)
-typedef union
-{
+typedef union {
     uint8_t Flg;
 
     struct

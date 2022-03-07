@@ -27,7 +27,7 @@ typedef enum
     RtCallback_Type_Tick,
 } Runtime_BaseCallback_TypeList;
 
-typedef uint32_t (*runtime_callback_p)(void);
+typedef uint32_t (*runtime_callback_p)(uint64_t Rt);
 
 typedef uint64_t SYSTEM_RunTime;
 typedef uint32_t Tick_Frq;
