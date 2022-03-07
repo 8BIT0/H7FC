@@ -416,7 +416,7 @@ void Os_Set_TaskPending(Task *tsk)
     TskHdl_PndMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
 
     // set task state
-    tsk->Exec_status.State = Task_Pending;
+    tsk->State = Task_Pending;
 }
 
 static void Os_Clr_TaskReady(Task *tsk)
@@ -454,13 +454,17 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
         List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
     }
 
-    TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
+    TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
 
     if (TskPtr_Tmp != CurRunTsk_Ptr)
     {
         if (TskPtr_Tmp != NULL)
         {
+            if (TskPtr_Tmp->State == Task_Pending)
+                Os_Set_TaskReady(TskPtr_Tmp);
+
             /* set current task in pending list */
+            Os_Set_TaskPending(CurRunTsk_Ptr);
 
             /* trigger pendsv to switch task */
         }
