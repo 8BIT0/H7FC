@@ -405,6 +405,20 @@ static void Os_Set_TaskReady(Task *tsk)
     tsk->State = Task_Ready;
 }
 
+void Os_Set_TaskPending(Task *tsk)
+{
+    uint8_t grp_id = GET_TASKGROUP_PRIORITY(tsk->priority);
+    uint8_t tsk_id = GET_TASKINGROUP_PRIORITY(tsk->priority);
+
+    // set current group pending
+    TskHdl_PndMap.Grp.Flg |= 1 << grp_id;
+    // set current task under this group flag to ready
+    TskHdl_PndMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
+
+    // set task state
+    tsk->Exec_status.State = Task_Pending;
+}
+
 static void Os_Clr_TaskReady(Task *tsk)
 {
     uint8_t grp_id = GET_TASKGROUP_PRIORITY(tsk->priority);
@@ -414,6 +428,18 @@ static void Os_Clr_TaskReady(Task *tsk)
     if (TskHdl_RdyMap.TskInGrp[grp_id].Flg == 0)
     {
         TskHdl_RdyMap.Grp.Flg &= ~(1 << grp_id);
+    }
+}
+
+static void Os_Clr_TaskPending(Task *tsk)
+{
+    uint8_t grp_id = GET_TASKGROUP_PRIORITY(tsk->priority);
+    uint8_t tsk_id = GET_TASKINGROUP_PRIORITY(tsk->priority);
+
+    TskHdl_PndMap.TskInGrp[grp_id].Flg &= ~(1 << tsk_id);
+    if (TskHdl_PndMap.TskInGrp[grp_id].Flg == 0)
+    {
+        TskHdl_PndMap.Grp.Flg &= ~(1 << grp_id);
     }
 }
 
@@ -428,32 +454,19 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
         List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
     }
 
-    TskPtr_Tmp = Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask());
+    TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
 
-    if (CurRunTsk_Ptr != NULL)
+    if (TskPtr_Tmp != CurRunTsk_Ptr)
     {
-        TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(TskPtr_Tmp, CurRunTsk_Ptr);
-
-        if (TskPtr_Tmp != CurRunTsk_Ptr)
+        if (TskPtr_Tmp != NULL)
         {
-            if (TskPtr_Tmp == HstPri_InRdyList)
-            {
-                /* set next task block */
-            }
-            else if (TskPtr_Tmp == HstPri_InPndList)
-            {
-                /* set next task block */
-            }
-
             /* set current task in pending list */
 
             /* trigger pendsv to switch task */
         }
-    }
-    else
-    {
-        if (TskPtr_Tmp != NULL)
+        else
         {
+            /* do idle task */
         }
     }
 }
