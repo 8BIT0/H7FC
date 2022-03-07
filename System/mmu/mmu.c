@@ -4,7 +4,7 @@
 #include "mmu.h"
 
 #pragma pack(BLOCK_ALIGMENT_SIZE)
-uint8_t Mem_Buff[PHY_MEM_SIZE] __attribute__((section(".ccmram")));
+uint8_t Mem_Buff[PHY_MEM_SIZE] __attribute__((section(".MMU_Section")));
 #pragma pack()
 
 Mem_Monitor_TypeDef Mem_Monitor;
@@ -35,10 +35,7 @@ static void MMU_Init(void)
     Mem_Monitor.used_size = 0;
     Mem_Monitor.FreeBlock_Num = 1;
 
-    for (uint32_t i = 0; i < PHY_MEM_SIZE; i++)
-    {
-        Mem_Buff[i] = 0;
-    }
+    memset(Mem_Buff, NULL, sizeof(Mem_Buff));
 
     MemStart.nxtFree = (void *)Mem_Buff;
     MemStart.size = 0;

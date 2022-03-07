@@ -126,8 +126,6 @@ __attribute__((naked)) void Os_LoadFirstTask(void)
 
     __ASM("MSR    PSP, R0");
     __ASM("ISB");
-    //__ASM("MOV    R0, #240");
-    //__ASM("MSR	  BASEPRI, R0");
     __ASM("BX     R14");
     __ASM(".ALIGN 4");
 }
@@ -298,6 +296,9 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     // request a memory space for Task_Ptr contain
     TaskPtr_Map[group][priority] = (Task *)MMU_Malloc(sizeof(Task));
 
+    if (TaskPtr_Map[group][priority] == NULL)
+        return NULL;
+
     // record Task_Ptr poiner`s address
     handle = *&TaskPtr_Map[group][priority];
 
@@ -345,7 +346,7 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     TaskPtr_Map[group][priority]->Exec_status.Exec_cnt = 0;
     TaskPtr_Map[group][priority]->Exec_status.error_code = NOERROR;
 
-    Task_SetReady(TaskPtr_Map[group][priority]);
+    Os_Set_TaskReady(TaskPtr_Map[group][priority]);
 
     TaskPtr_Map[group][priority]->item_ptr = (item_obj *)MMU_Malloc(sizeof(item_obj));
     if (TaskPtr_Map[group][priority]->item_ptr == NULL)

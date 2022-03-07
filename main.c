@@ -6,6 +6,9 @@
 #include "debug_util.h"
 #include "scheduler.h"
 
+Task_Handle Blink_Task = NULL;
+void Run(Task_Handle hdl);
+
 DevLedObj_TypeDef Led1 = {
     .port = LED1_PORT,
     .pin = LED1_PIN,
@@ -31,13 +34,13 @@ void main(void)
     Os_Init(RUNTIME_TICK_FRQ_40K);
 
     /* create task down below */
-
+    Blink_Task = Os_CreateTask("Blink", TASK_EXEC_100HZ, Task_Group_0, Task_Group_0, Run, 64);
     /* create task up top */
 
     Os_Start();
 }
 
-void Run(void)
+void Run(Task_Handle handle)
 {
     volatile SYSTEM_RunTime Rt = 0;
     volatile SYSTEM_RunTime Lst_Rt = 0;

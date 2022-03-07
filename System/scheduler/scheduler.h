@@ -169,8 +169,10 @@ typedef struct
 } Task_Create_RegList_s;
 #pragma pack()
 
-void Os_Init(uint32_t TickFRQ);
 void Os_Start(void);
+void Os_LoadFirstTask(void);
+void Os_Init(uint32_t TickFRQ);
 Scheduler_State_List Os_State(void);
+Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth);
 
 #endif

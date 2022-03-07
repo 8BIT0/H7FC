@@ -29,16 +29,16 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-   .kernel_stack_section :
+   .MMU_Section :
   {
     . = ALIGN(4);
-    kernel_section_s = .;
-    *(.kernel_stack_section)
-    *(.kernel_stack_section*)
+    MMU_s = .;
+    *(.MMU_Section)
+    *(.MMU_Section*)
     
     . = ALIGN(4);
-     kernel_section_e = .;
-  } >RAM_D2 AT >FLASH
+    MMU_e = .;
+  } >RAM_D1
 
   tcm_code = LOADADDR(.tcm_code); 
   .tcm_code :
