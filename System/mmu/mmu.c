@@ -96,7 +96,7 @@ void *MMU_Malloc(uint16_t size)
                 Block_Tmp = Block_Tmp->nxtFree;
             }
 
-            if ((((uint32_t)Block_Tmp & 0xF0000000) == (uint32_t)Mem_Buff) && (Block_Tmp != MemEnd))
+            if ((((uint32_t)Block_Tmp & 0xFF000000) == (uint32_t)Mem_Buff) && (Block_Tmp != MemEnd))
             {
                 Mem_Monitor.req_t++;
 
