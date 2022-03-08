@@ -271,6 +271,8 @@ void Os_Start(void)
         CurTsk_TCB = NxtTsk_TCB;
     }
 
+    scheduler_state = Scheduler_Start;
+
     // enable irq
     Kernel_EnableIRQ();
 
@@ -305,7 +307,7 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     TaskPtr_Map[group][priority]->Task_name = name;
 
     TaskPtr_Map[group][priority]->exec_frq = frq;
-    TaskPtr_Map[group][priority]->exec_interval_us = RUNTIEM_MAX_TICK_FRQ / frq;
+    TaskPtr_Map[group][priority]->exec_interval_us = SCHEDULER_TIMEBASE / frq;
     TaskPtr_Map[group][priority]->Exec_Func = func;
 
     TaskPtr_Map[group][priority]->priority = (group << 3) | priority;
@@ -452,7 +454,7 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     if (TskCrt_RegList.num)
     {
         /* check task state ready or not */
-        // List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
+        List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
     }
 
     // TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
@@ -647,9 +649,6 @@ static void Os_TaskCaller(void)
             // execute task function in function matrix
             Os_TaskExec(NxtRunTsk_Ptr);
 
-            // debug
-            NxtRunTsk_Ptr->State = Task_Ready;
-
             // erase currnet runnint task pointer
             CurRunTsk_Ptr = NULL;
         }
@@ -664,7 +663,7 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
 
         if ((scheduler_state == Scheduler_Start) &&
             (((Task *)data)->State == Task_Stop) &&
-            (!RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
+            (RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
             Os_Set_TaskReady((Task *)data);
         }
