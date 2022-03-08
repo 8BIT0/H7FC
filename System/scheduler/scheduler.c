@@ -449,7 +449,7 @@ static void Os_Clr_TaskPending(Task *tsk)
 static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 {
     SYSTEM_RunTime CurRt_US = Rt;
-    Task *TskPtr_Tmp = NULL;
+    volatile Task *TskPtr_Tmp = NULL;
 
     if (TskCrt_RegList.num)
     {
@@ -459,27 +459,27 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 
     TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
 
-    // if (TskPtr_Tmp != CurRunTsk_Ptr)
-    // {
-    //     if (TskPtr_Tmp != NULL)
-    //     {
-    //         if (TskPtr_Tmp->State == Task_Pending)
-    //         {
-    //             Os_Clr_TaskPending(TskPtr_Tmp);
-    //             Os_Set_TaskReady(TskPtr_Tmp);
-    //         }
+    if (TskPtr_Tmp != CurRunTsk_Ptr)
+    {
+        //     if (TskPtr_Tmp != NULL)
+        //     {
+        //         if (TskPtr_Tmp->State == Task_Pending)
+        //         {
+        //             Os_Clr_TaskPending(TskPtr_Tmp);
+        //             Os_Set_TaskReady(TskPtr_Tmp);
+        //         }
 
-    //         /* set current task in pending list */
-    //         Os_Set_TaskPending(CurRunTsk_Ptr);
+        //         /* set current task in pending list */
+        //         Os_Set_TaskPending(CurRunTsk_Ptr);
 
-    //         /* trigger pendsv to switch task */
-    //         Kernel_TriggerPendSV();
-    //     }
-    //     else
-    //     {
-    //         /* do idle task */
-    //     }
-    // }
+        //         /* trigger pendsv to switch task */
+        //         Kernel_TriggerPendSV();
+        //     }
+        //     else
+        //     {
+        //         /* do idle task */
+        //     }
+    }
 }
 
 /*
