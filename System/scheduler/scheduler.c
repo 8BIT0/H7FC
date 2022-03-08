@@ -464,12 +464,16 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     //     if (TskPtr_Tmp != NULL)
     //     {
     //         if (TskPtr_Tmp->State == Task_Pending)
+    //         {
+    //             Os_Clr_TaskPending(TskPtr_Tmp);
     //             Os_Set_TaskReady(TskPtr_Tmp);
+    //         }
 
     //         /* set current task in pending list */
     //         Os_Set_TaskPending(CurRunTsk_Ptr);
 
     //         /* trigger pendsv to switch task */
+    //         Kernel_TriggerPendSV();
     //     }
     //     else
     //     {
