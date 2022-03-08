@@ -457,7 +457,7 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
         List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
     }
 
-    // TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
+    TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
 
     // if (TskPtr_Tmp != CurRunTsk_Ptr)
     // {
@@ -528,9 +528,9 @@ static Task *Os_Get_HighestRank_PndTask(void)
     if (TskHdl_PndMap.Grp.Flg)
     {
         // find group
-        grp_id = TaskPtr_Map[TskHdl_PndMap.Grp.Flg];
+        grp_id = Task_Priority_List[TskHdl_PndMap.Grp.Flg];
         // find task in group
-        tsk_id = TaskPtr_Map[TskHdl_PndMap.TskInGrp[grp_id].Flg];
+        tsk_id = Task_Priority_List[TskHdl_PndMap.TskInGrp[grp_id].Flg];
     }
     else
         return NULL;
