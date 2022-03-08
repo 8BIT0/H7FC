@@ -34,7 +34,7 @@ void main(void)
     Os_Init(RUNTIME_TICK_FRQ_40K);
 
     /* create task down below */
-    Blink_Task = Os_CreateTask("Blink", TASK_EXEC_100HZ, Task_Group_0, Task_Group_0, Run, 64);
+    Blink_Task = Os_CreateTask("Blink", TASK_EXEC_100HZ, Task_Group_0, Task_Group_0, Run, 512);
     /* create task up top */
 
     Os_Start();
@@ -43,29 +43,21 @@ void main(void)
 void Run(Task_Handle handle)
 {
     volatile SYSTEM_RunTime Rt = 0;
-    volatile SYSTEM_RunTime Lst_Rt = 0;
-    bool led_state = false;
+    static volatile SYSTEM_RunTime Lst_Rt = 0;
+    static bool led_state = false;
 
     DevLED.init(Led1);
     DebugPin.init(Debug_PC0);
 
-    Kernel_Init();
-
-    Runtime_Config(RUNTIME_TICK_FRQ_40K);
-    Runtime_Start();
-
     // Runtime_SetCallback(RtCallback_Type_Tick, test_pin_ctl);
 
-    while (1)
+    Rt = Get_CurrentRunningMs();
+
+    if ((Rt % 50 == 0) && (Lst_Rt != Rt))
     {
-        Rt = Get_CurrentRunningMs();
-
-        if ((Rt % 50 == 0) && (Lst_Rt != Rt))
-        {
-            led_state = !led_state;
-            Lst_Rt = Rt;
-        }
-
-        DevLED.ctl(Led1, led_state);
+        led_state = !led_state;
+        Lst_Rt = Rt;
     }
+
+    DevLED.ctl(Led1, led_state);
 }

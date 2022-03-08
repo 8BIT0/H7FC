@@ -225,8 +225,6 @@ void Os_Init(uint32_t TickFRQ)
     while (!Kernel_Init())
         ;
 
-    Runtime_Config(TickFRQ);
-
     for (uint8_t g = Task_Group_0; g < Task_Group_Sum; g++)
     {
         for (uint8_t t = Task_Priority_0; t < Task_Priority_Sum; t++)
@@ -250,6 +248,8 @@ void Os_Init(uint32_t TickFRQ)
 
     Os_ResetTask_Data(CurRunTsk_Ptr);
     Os_ResetTask_Data(NxtRunTsk_Ptr);
+
+    Runtime_Config(TickFRQ);
 
     scheduler_state = Scheduler_ready;
 }
@@ -452,28 +452,28 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     if (TskCrt_RegList.num)
     {
         /* check task state ready or not */
-        List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
+        // List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
     }
 
-    TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
+    // TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
 
-    if (TskPtr_Tmp != CurRunTsk_Ptr)
-    {
-        if (TskPtr_Tmp != NULL)
-        {
-            if (TskPtr_Tmp->State == Task_Pending)
-                Os_Set_TaskReady(TskPtr_Tmp);
+    // if (TskPtr_Tmp != CurRunTsk_Ptr)
+    // {
+    //     if (TskPtr_Tmp != NULL)
+    //     {
+    //         if (TskPtr_Tmp->State == Task_Pending)
+    //             Os_Set_TaskReady(TskPtr_Tmp);
 
-            /* set current task in pending list */
-            Os_Set_TaskPending(CurRunTsk_Ptr);
+    //         /* set current task in pending list */
+    //         Os_Set_TaskPending(CurRunTsk_Ptr);
 
-            /* trigger pendsv to switch task */
-        }
-        else
-        {
-            /* do idle task */
-        }
-    }
+    //         /* trigger pendsv to switch task */
+    //     }
+    //     else
+    //     {
+    //         /* do idle task */
+    //     }
+    // }
 }
 
 /*
@@ -495,9 +495,9 @@ static Task *Os_Get_HighestRank_RdyTask(void)
     if (TskHdl_RdyMap.Grp.Flg)
     {
         // find group
-        grp_id = TaskPtr_Map[TskHdl_RdyMap.Grp.Flg];
+        grp_id = Task_Priority_List[TskHdl_RdyMap.Grp.Flg];
         // find task in group
-        tsk_id = TaskPtr_Map[TskHdl_RdyMap.TskInGrp[grp_id].Flg];
+        tsk_id = Task_Priority_List[TskHdl_RdyMap.TskInGrp[grp_id].Flg];
     }
     else
         return NULL;
@@ -585,8 +585,6 @@ static void Os_TaskExec(Task *tsk_ptr)
     SYSTEM_RunTime time_diff;
     RuntimeObj_Reset(&time_diff);
 
-    tsk_ptr = NxtRunTsk_Ptr;
-
     if (tsk_ptr->State == Task_Ready)
     {
         tsk_ptr->TskFuncUing_US = 0;
@@ -644,10 +642,13 @@ static void Os_TaskCaller(void)
     // if any task in any group is under ready state
     while (true)
     {
-        if (CurRunTsk_Ptr != NULL)
+        if (NxtRunTsk_Ptr != NULL)
         {
             // execute task function in function matrix
-            Os_TaskExec(CurRunTsk_Ptr);
+            Os_TaskExec(NxtRunTsk_Ptr);
+
+            // debug
+            NxtRunTsk_Ptr->State = Task_Ready;
 
             // erase currnet runnint task pointer
             CurRunTsk_Ptr = NULL;
