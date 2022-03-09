@@ -103,6 +103,7 @@ typedef struct
     void (*cs_ctl)(bool state);
     bool (*bus_trans)(uint8_t *tx, uint8_t *rx, uint16_t len);
     uint64_t (*get_runtime)(void);
+    void (*delay)(uint32_t ms);
 
     bool drdy;
     bool update;

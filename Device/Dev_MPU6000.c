@@ -66,6 +66,7 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
 
     /* reset power manage register first */
     DevMPU6000_Reg_Write(MPU6000_PWR_MGMT_1, BIT_H_RESET);
+    sensor_obj->delay(2);
 
     return true;
 }

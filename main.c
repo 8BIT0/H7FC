@@ -8,8 +8,10 @@
 
 Task_Handle Blink_Task = NULL;
 Task_Handle Test_Task = NULL;
+Task_Handle Test2_Task = NULL;
 void Run(Task_Handle handle);
 void Test(Task_Handle handle);
+void Test2(Task_Handle handle);
 
 DevLedObj_TypeDef Led1 = {
     .port = LED1_PORT,
@@ -29,6 +31,12 @@ DebugPinObj_TypeDef Debug_PC1 = {
     .default_state = false,
 };
 
+DebugPinObj_TypeDef Debug_PC2 = {
+    .port = GPIOC,
+    .pin = GPIO_PIN_2,
+    .default_state = false,
+};
+
 void test_PC0_ctl(void)
 {
     DebugPin.ctl(Debug_PC0, true);
@@ -41,22 +49,33 @@ void test_PC1_ctl(void)
     DebugPin.ctl(Debug_PC1, false);
 }
 
-extern uint32_t msp;
+void test_PC2_ctl(void)
+{
+    DebugPin.ctl(Debug_PC2, true);
+    DebugPin.ctl(Debug_PC2, false);
+}
 
 void main(void)
 {
     DevLED.init(Led1);
     DebugPin.init(Debug_PC0);
     DebugPin.init(Debug_PC1);
+    DebugPin.init(Debug_PC2);
 
     Os_Init(RUNTIME_TICK_FRQ_40K);
 
     /* create task down below */
     Blink_Task = Os_CreateTask("Blink", TASK_EXEC_10KHZ, Task_Group_0, Task_Group_0, Run, 256);
     Test_Task = Os_CreateTask("test", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
+    Test2_Task = Os_CreateTask("test", TASK_EXEC_4KHZ, Task_Group_0, Task_Group_2, Test2, 256);
     /* create task up top */
 
     Os_Start();
+}
+
+void Test2(Task_Handle handle)
+{
+    test_PC2_ctl();
 }
 
 void Test(Task_Handle handle)
