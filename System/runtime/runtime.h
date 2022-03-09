@@ -81,4 +81,7 @@ uint32_t RuntimeObj_Compare(const SYSTEM_RunTime *EQ_L, const SYSTEM_RunTime *EQ
 
 Tick_Frq Runtime_GetTickFrq(void);
 Tick_Base Runtime_GetTickBase(void);
+
+void Runtime_DelayMs(uint32_t ms);
+
 #endif
