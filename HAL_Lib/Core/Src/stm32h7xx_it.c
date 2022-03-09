@@ -1,6 +1,7 @@
 #include "stm32h7xx_it.h"
 #include "kernel.h"
 #include "runtime.h"
+#include "scheduler.h"
 
 void NMI_Handler(void)
 {
@@ -48,6 +49,7 @@ void DebugMon_Handler(void)
 
 void PendSV_Handler(void)
 {
+  Os_SwitchContext();
 }
 
 void SysTick_Handler(void)

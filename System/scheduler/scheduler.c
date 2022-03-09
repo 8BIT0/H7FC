@@ -72,9 +72,9 @@ static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
 static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg);
 static void Os_TaskCaller(void);
-static void Os_SwitchTaskStack(void);
 static Task *Os_Get_HighestRank_PndTask(void);
 static Task *Os_Get_HighestRank_RdyTask(void);
+void Os_SwitchTaskStack(void);
 
 static uint32_t Os_EnterCritical(void)
 {
@@ -182,7 +182,7 @@ __attribute__((naked)) void Os_SwitchContext(void)
     __ASM(".ALIGN 4");
 }
 
-static void Os_SwitchTaskStack(void)
+void Os_SwitchTaskStack(void)
 {
     CurTsk_TCB = NxtTsk_TCB;
 }
@@ -452,6 +452,9 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     SYSTEM_RunTime CurRt_US = Rt;
     volatile Task *TskPtr_Tmp = NULL;
 
+    if (pend_scheduler)
+        return;
+
     if (TskCrt_RegList.num)
     {
         /* check task state ready or not */
@@ -478,8 +481,11 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 
             NxtRunTsk_Ptr = TskPtr_Tmp;
 
+            NxtTsk_TCB.Top_Stk_Ptr = &NxtRunTsk_Ptr->TCB.Top_Stk_Ptr;
+            NxtTsk_TCB.Stack = NxtRunTsk_Ptr->TCB.Stack;
+
             /* trigger pendsv to switch task */
-            // Kernel_TriggerPendSV();
+            Kernel_TriggerPendSV();
         }
         else
         {
@@ -651,8 +657,6 @@ static void Os_TaskExec(Task *tsk_ptr)
 
 static void Os_TaskCaller(void)
 {
-    Task *NxtTskPtr_Tmp = NULL;
-
     // if any task in any group is under ready state
     while (true)
     {
@@ -665,6 +669,9 @@ static void Os_TaskCaller(void)
             CurRunTsk_Ptr = NULL;
 
             // get net task ptr
+            pend_scheduler = true;
+            NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
+            pend_scheduler = false;
         }
     }
 }

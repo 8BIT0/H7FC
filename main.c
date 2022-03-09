@@ -7,7 +7,9 @@
 #include "scheduler.h"
 
 Task_Handle Blink_Task = NULL;
-void Run(Task_Handle hdl);
+Task_Handle Test_Task = NULL;
+void Run(Task_Handle handle);
+void Test(Task_Handle handle);
 
 DevLedObj_TypeDef Led1 = {
     .port = LED1_PORT,
@@ -21,23 +23,45 @@ DebugPinObj_TypeDef Debug_PC0 = {
     .default_state = false,
 };
 
-void test_pin_ctl(void)
+DebugPinObj_TypeDef Debug_PC1 = {
+    .port = GPIOC,
+    .pin = GPIO_PIN_1,
+    .default_state = false,
+};
+
+void test_PC0_ctl(void)
 {
     DebugPin.ctl(Debug_PC0, true);
     DebugPin.ctl(Debug_PC0, false);
+}
+
+void test_PC1_ctl(void)
+{
+    DebugPin.ctl(Debug_PC1, true);
+    DebugPin.ctl(Debug_PC1, false);
 }
 
 extern uint32_t msp;
 
 void main(void)
 {
+    DevLED.init(Led1);
+    DebugPin.init(Debug_PC0);
+    DebugPin.init(Debug_PC1);
+
     Os_Init(RUNTIME_TICK_FRQ_40K);
 
     /* create task down below */
     Blink_Task = Os_CreateTask("Blink", TASK_EXEC_10KHZ, Task_Group_0, Task_Group_0, Run, 256);
+    Test_Task = Os_CreateTask("test", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
     /* create task up top */
 
     Os_Start();
+}
+
+void Test(Task_Handle handle)
+{
+    test_PC0_ctl();
 }
 
 void Run(Task_Handle handle)
@@ -45,9 +69,6 @@ void Run(Task_Handle handle)
     volatile SYSTEM_RunTime Rt = 0;
     static volatile SYSTEM_RunTime Lst_Rt = 0;
     static bool led_state = false;
-
-    DevLED.init(Led1);
-    DebugPin.init(Debug_PC0);
 
     Rt = Get_CurrentRunningMs();
 
@@ -58,5 +79,4 @@ void Run(Task_Handle handle)
     }
 
     DevLED.ctl(Led1, led_state);
-    test_pin_ctl();
 }
