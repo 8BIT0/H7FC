@@ -81,3 +81,8 @@ static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     sensor_obj->drdy = true;
 }
+
+static bool DevMPU6000_GetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)
+{
+    return sensor_obj->drdy;
+}
