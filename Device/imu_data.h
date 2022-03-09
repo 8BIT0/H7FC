@@ -21,11 +21,14 @@ typedef enum
 typedef struct
 {
     uint64_t time_stamp;
-    int16_t gyr[Axis_Sum];
-    int16_t acc[Axis_Sum];
 
-    double gyr[Axis_Sum];
-    double acc[Axis_Sum];
+    int16_t temp_int;
+    int16_t gyr_int[Axis_Sum];
+    int16_t acc_int[Axis_Sum];
+
+    float temp_flt;
+    double gyr_dou[Axis_Sum];
+    double acc_dou[Axis_Sum];
 } IMUData_TypeDef;
 #pragma pack()
 
