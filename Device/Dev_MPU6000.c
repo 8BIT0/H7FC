@@ -2,35 +2,44 @@
 
 static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx)
 {
-    uint8_t addr_tmp = addr;
+    uint8_t write_buff[2] = {0};
+    uint8_t read_buff[2] = {0};
     bool state = false;
 
     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
         return false;
 
+    write_buff[0] = addr;
+
     sensor_obj->cs_ctl(true);
-    state = sensor_obj->bus_trans(&addr_tmp, rx, 1);
+    state = sensor_obj->bus_trans(write_buff, read_buff, 2);
     sensor_obj->cs_ctl(false);
+
+    *rx = read_buff[1];
 
     return state;
 }
 
 static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx)
 {
-    uint8_t addr_tmp = addr;
+    uint8_t write_buff[2] = {0};
+    uint8_t read_buff[2] = {0};
     bool state = false;
 
     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
         return false;
 
+    write_buff[0] = addr;
+    write_buff[1] = tx;
+
     sensor_obj->cs_ctl(true);
-    state = sensor_obj->bus_trans(&addr_tmp, NULL, 1);
+    state = sensor_obj->bus_trans(write_buff, NULL, 2);
     sensor_obj->cs_ctl(false);
 
     return state;
 }
 
-static bool DevMPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uint8_t *rx)
+static bool DevMPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
 {
     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
         return false;
