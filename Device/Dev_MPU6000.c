@@ -64,6 +64,9 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     sensor_obj->cs_init();
     sensor_obj->bus_init();
 
+    /* reset power manage register first */
+    DevMPU6000_Reg_Write(MPU6000_PWR_MGMT_1, BIT_H_RESET);
+
     return true;
 }
 
@@ -82,7 +85,23 @@ static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)
     sensor_obj->drdy = true;
 }
 
-static bool DevMPU6000_GetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)
+static void DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
 {
-    return sensor_obj->drdy;
+    if (sensor_obj->drdy)
+    {
+
+        sensor_obj->update = true;
+        sensor_obj->drdy = false;
+    }
+}
+
+IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
+{
+    if (sensor_obj->update)
+    {
+        sensor_obj->update = false;
+        return sensor_obj->OriData;
+    }
+    else
+        return sensor_obj->OriData_Lst;
 }
