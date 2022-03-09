@@ -469,11 +469,16 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
                 Os_Set_TaskReady(TskPtr_Tmp);
             }
 
-            /* set current task in pending list */
-            Os_Set_TaskPending(CurRunTsk_Ptr);
+            if (CurRunTsk_Ptr != NULL)
+            {
+                /* set current task in pending list */
+                Os_Set_TaskPending(CurRunTsk_Ptr);
+            }
+
+            NxtRunTsk_Ptr = TskPtr_Tmp;
 
             /* trigger pendsv to switch task */
-            Kernel_TriggerPendSV();
+            // Kernel_TriggerPendSV();
         }
         else
         {
@@ -655,6 +660,8 @@ static void Os_TaskCaller(void)
 
             // erase currnet runnint task pointer
             CurRunTsk_Ptr = NULL;
+
+            //call scheduler to switch to next task
         }
     }
 }
