@@ -34,6 +34,7 @@ typedef struct
     void (*set_drdy)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*get_drdy)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*sample)(DevMPU6000Obj_TypeDef *sensor_obj);
+    IMUData_TypeDef (*get_data)(DevMPU6000Obj_TypeDef *sensor_obj);
 } DevMPU6000_TypeDef;
 
 #endif

@@ -66,3 +66,18 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
 
     return true;
 }
+
+static bool DevMPU6000_Reset(DevMPU6000Obj_TypeDef *sensor_obj)
+{
+    bool state = false;
+
+    if (sensor_obj == NULL)
+        return false;
+
+    return state;
+}
+
+static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)
+{
+    sensor_obj->drdy = true;
+}
