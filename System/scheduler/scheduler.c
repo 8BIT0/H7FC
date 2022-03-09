@@ -53,6 +53,7 @@ static volatile Task *NxtRunTsk_Ptr = NULL;
 volatile TaskStack_ControlBlock CurTsk_TCB;
 volatile TaskStack_ControlBlock NxtTsk_TCB;
 static bool traverse_start = false;
+static bool pend_scheduler = false;
 
 static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
@@ -650,6 +651,8 @@ static void Os_TaskExec(Task *tsk_ptr)
 
 static void Os_TaskCaller(void)
 {
+    Task *NxtTskPtr_Tmp = NULL;
+
     // if any task in any group is under ready state
     while (true)
     {
@@ -661,7 +664,7 @@ static void Os_TaskCaller(void)
             // erase currnet runnint task pointer
             CurRunTsk_Ptr = NULL;
 
-            //call scheduler to switch to next task
+            // get net task ptr
         }
     }
 }
