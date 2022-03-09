@@ -10,10 +10,9 @@
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_rcc.h"
 
-static uint32_t RunTime_Delay = 0;
-
 /* internal variable */
 static volatile uint32_t sysclock = 0;
+static uint32_t Runtime_DelayUs = 0;
 static volatile Runtime_DataObj_TypeDef RunTime = {
     .tick_callback = NULL,
     .start_callback = NULL,
@@ -152,6 +151,9 @@ bool Runtime_Tick(void)
         if (RunTime.tick_callback != NULL)
             RunTime.tick_callback(RunTime.Use_Us);
 
+        if (Runtime_DelayUs)
+            Runtime_DelayUs--;
+
         return true;
     }
 
@@ -213,8 +215,8 @@ bool RuntimeObj_CompareWithCurrent(const uint64_t time_in)
 
 void Runtime_DelayMs(uint32_t ms)
 {
-    RunTime_Delay = ms;
+    Runtime_DelayUs = ms * (REAL_1MS / RunTime.base);
 
-    while (RunTime_Delay)
+    while (Runtime_DelayUs)
         ;
 }
