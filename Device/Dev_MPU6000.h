@@ -19,7 +19,7 @@ typedef struct
     void (*cs_init)(void);
     void (*bus_init)(void);
     void (*cs_ctl)(bool state);
-    void (*bus_trans)(uint8_t *tx, uint8_t *rx, uint16_t len);
+    bool (*bus_trans)(uint8_t *tx, uint8_t *rx, uint16_t len);
 
     bool drdy;
     IMUData_TypeDef OriData;
