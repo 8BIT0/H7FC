@@ -79,4 +79,5 @@ void Run(Task_Handle handle)
     }
 
     DevLED.ctl(Led1, led_state);
+    test_PC1_ctl();
 }
