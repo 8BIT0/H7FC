@@ -37,7 +37,8 @@
                 "storage.h": "c",
                 "ostream": "c",
                 "scheduler.h": "c",
-                "__locale": "c"
+                "__locale": "c",
+                "dev_mpu6000.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

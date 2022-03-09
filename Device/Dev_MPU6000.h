@@ -10,6 +10,7 @@
 typedef enum
 {
     MPU6000_No_Error = 0,
+    MPU6000_Obj_Error,
     MPU6000_DevID_Error,
 } DevMPU6000_Error_List;
 
@@ -22,15 +23,8 @@ typedef struct
     void (*bus_send)(uint8_t tx);
     void (*bus_receive)(uint8_t rx);
 
-    uint16_t gyro_org[3];
-    uint16_t acc_org[3];
-
-    double gyro[3];
-    double acc[3];
-
-    uint64_t time_stamp;
-
     bool drdy;
+    IMUData_TypeDef OriData;
 
     DevMPU6000_Error_List error;
 } DevMPU6000Obj_TypeDef;
