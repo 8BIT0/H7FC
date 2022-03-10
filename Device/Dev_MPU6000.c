@@ -49,6 +49,8 @@ static bool DevMPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
 
 static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
 {
+    uint8_t read_out = 0;
+
     if (sensor_obj == NULL)
         return false;
 
@@ -65,8 +67,11 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     sensor_obj->bus_init();
 
     /* reset power manage register first */
-    DevMPU6000_Reg_Write(MPU6000_PWR_MGMT_1, BIT_H_RESET);
-    sensor_obj->delay(2);
+    DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, BIT_H_RESET);
+    sensor_obj->delay(100);
+
+    DevMPU6000_Reg_Read(sensor_obj, MPU6000_WHOAMI, &read_out);
+    sensor_obj->delay(100);
 
     return true;
 }
