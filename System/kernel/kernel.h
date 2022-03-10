@@ -13,7 +13,7 @@ bool Kernel_Init(void);
 void Kernel_EnablePendSV(void);
 void Kernel_TriggerPendSV(void);
 void Kernel_LoadProcess(void);
-void Os_SetBASEPRI(uint32_t ulBASEPRI);
-void Os_ExitCritical(void);
+void Kernel_SetBASEPRI(uint32_t ulBASEPRI);
+void Kernel_ExitCritical(void);
 
 #endif

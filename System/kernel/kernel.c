@@ -149,13 +149,13 @@ __attribute__((naked)) void Kernel_TriggerPendSV(void)
     __ASM("BX       LR");
 }
 
-void Os_SetBASEPRI(uint32_t ulBASEPRI)
+void Kernel_SetBASEPRI(uint32_t ulBASEPRI)
 {
     __ASM("	msr basepri, %0	" ::"r"(ulBASEPRI)
           : "memory");
 }
 
-void Os_ExitCritical(void)
+void Kernel_ExitCritical(void)
 {
     /* Barrier instructions are not used as this function is only used to
     lower the BASEPRI value. */
