@@ -53,13 +53,13 @@ static volatile Task *NxtRunTsk_Ptr = NULL;
 volatile TaskStack_ControlBlock CurTsk_TCB;
 volatile TaskStack_ControlBlock NxtTsk_TCB;
 static bool traverse_start = false;
-static bool pend_scheduler = false;
 
 static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_BlkMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 
-static Task_Create_RegList_s TskCrt_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
+static Task_List_s TskCrt_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
+static Task_List_s TskDly_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
 
 static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 
@@ -95,20 +95,6 @@ static uint32_t Os_EnterCritical(void)
     /* This return will not be reached but is necessary to prevent compiler
     warnings. */
     return ulOriginalBASEPRI;
-}
-
-__attribute__((nake)) static void Os_SetBASEPRI(uint32_t ulBASEPRI)
-{
-    __ASM("	msr basepri, %0	" ::"r"(ulBASEPRI)
-          : "memory");
-}
-
-__attribute__((naked)) static void Os_ExitCritical(void)
-{
-    /* Barrier instructions are not used as this function is only used to
-    lower the BASEPRI value. */
-    __ASM("	msr basepri, %0	" ::"r"(0)
-          : "memory");
 }
 
 __attribute__((naked)) void Os_LoadFirstTask(void)
@@ -314,9 +300,8 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     TaskPtr_Map[group][priority]->priority = (group << 3) | priority;
 
     // init delay tag
-    TaskPtr_Map[group][priority]->delay_info.on_delay = false;
     TaskPtr_Map[group][priority]->delay_info.tsk_hdl = handle;
-    TaskPtr_Map[group][priority]->delay_info.time_unit = 0;
+    TaskPtr_Map[group][priority]->delay_info.resume_Rt = 0;
 
     // request memory space for task stack
     TaskPtr_Map[group][priority]->Stack_Depth = StackDepth;
@@ -365,6 +350,10 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
         List_Insert_Item(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr);
     }
 
+    TaskPtr_Map[group][priority]->delay_item = (item_obj *)MMU_Malloc(sizeof(item_obj));
+    if (TaskPtr_Map[group][priority]->delay_item == NULL)
+        return NULL;
+
     List_ItemInit(&TaskPtr_Map[group][priority]->delay_item, &TaskPtr_Map[group][priority]->delay_info);
 
     TskCrt_RegList.num++;
@@ -385,9 +374,7 @@ static void Os_ResetTask_Data(Task *task)
     task->Exec_status.cpu_opy = 0;
     task->Exec_status.Running_Time = 0;
 
-    task->delay_info.on_delay = false;
     task->delay_info.tsk_hdl = 0;
-    task->delay_info.time_unit = 0;
 
     List_ItemInit(&task->delay_item, &task->delay_info);
 
@@ -450,10 +437,7 @@ static void Os_Clr_TaskPending(Task *tsk)
 static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 {
     SYSTEM_RunTime CurRt_US = Rt;
-    volatile Task *TskPtr_Tmp = NULL;
-
-    if (pend_scheduler)
-        return;
+    Task *TskPtr_Tmp = NULL;
 
     if (TskCrt_RegList.num)
     {
@@ -492,6 +476,11 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
             /* do idle task */
         }
     }
+}
+
+static void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
+{
+    TaskHandlerToObj(hdl)->delay_info.resume_Rt = 0;
 }
 
 /*
@@ -668,11 +657,10 @@ static void Os_TaskCaller(void)
             // erase currnet runnint task pointer
             CurRunTsk_Ptr = NULL;
 
-            // get net task ptr
-            // may have bug down below
-            pend_scheduler = true;
-            NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
-            pend_scheduler = false;
+            // get net task
+            // need to enter critical
+            Os_SchedulerRun(Get_CurrentRunningUs());
+            // after process exti critical
         }
     }
 }

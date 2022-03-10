@@ -86,7 +86,8 @@ typedef enum
 } Scheduler_State_List;
 
 #pragma pack(1)
-typedef union {
+typedef union
+{
     uint8_t Flg;
 
     struct
@@ -118,9 +119,7 @@ typedef struct
 
 typedef struct
 {
-    bool on_delay;
     Task_Handle tsk_hdl;
-    uint32_t time_unit;
     SYSTEM_RunTime resume_Rt;
 } delay_reg;
 
@@ -159,14 +158,14 @@ typedef struct
     delay_reg delay_info;
 
     item_obj *item_ptr;
-    item_obj delay_item;
+    item_obj *delay_item;
 } Task;
 
 typedef struct
 {
     uint8_t num;
     list_obj list;
-} Task_Create_RegList_s;
+} Task_List_s;
 #pragma pack()
 
 void Os_Start(void);
@@ -175,5 +174,6 @@ void Os_Init(uint32_t TickFRQ);
 Scheduler_State_List Os_State(void);
 Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth);
 void Os_SwitchContext(void);
+static void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms);
 
 #endif
