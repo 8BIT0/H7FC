@@ -14,6 +14,7 @@ BspSpi_TypeDef BspSPI = {
     .trans = BspSPI_Trans,
     .receive = BspSPI_Receive,
     .trans_receive = BspSPI_TransReceive,
+    .set_speed = NULL,
 };
 
 static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
