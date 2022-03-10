@@ -41,10 +41,16 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
 
 static bool DevMPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
 {
-    if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
-        return false;
+    bool state = false;
 
-    return true;
+    if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
+        return state;
+
+    sensor_obj->cs_ctl(true);
+    state = sensor_obj->bus_trans(tx, rx, size);
+    sensor_obj->cs_ctl(false);
+
+    return state;
 }
 
 static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
