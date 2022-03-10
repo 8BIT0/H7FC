@@ -669,6 +669,7 @@ static void Os_TaskCaller(void)
             CurRunTsk_Ptr = NULL;
 
             // get net task ptr
+            // may have bug down below
             pend_scheduler = true;
             NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
             pend_scheduler = false;
