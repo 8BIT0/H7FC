@@ -73,6 +73,27 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     DevMPU6000_Reg_Read(sensor_obj, MPU6000_WHOAMI, &read_out);
     sensor_obj->delay(100);
 
+    switch (read_out)
+    {
+    case MPU6000ES_REV_C4:
+    case MPU6000ES_REV_C5:
+    case MPU6000ES_REV_D6:
+    case MPU6000ES_REV_D7:
+    case MPU6000ES_REV_D8:
+    case MPU6000_REV_C4:
+    case MPU6000_REV_C5:
+    case MPU6000_REV_D6:
+    case MPU6000_REV_D7:
+    case MPU6000_REV_D8:
+    case MPU6000_REV_D9:
+    case MPU6000_REV_D10:
+        break;
+
+    default:
+        sensor_obj->error = MPU6000_DevID_Error;
+        return false;
+    }
+
     return true;
 }
 
