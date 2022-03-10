@@ -38,7 +38,8 @@
                 "ostream": "c",
                 "scheduler.h": "c",
                 "__locale": "c",
-                "dev_mpu6000.h": "c"
+                "dev_mpu6000.h": "c",
+                "stm32h7xx_hal_pwr.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

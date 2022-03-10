@@ -3,6 +3,12 @@
 #include "stm32h7xx_hal_pwr.h"
 #include "system_cfg.h"
 
+#define KERNEL_SYSPRI2_REG (*((volatile uint32_t *)0xe000ed20))
+
+#define KERNEL_INTERRUPT_PRIORITY (KERNEL_LOWEST_INTERRUPT_PRIORITY << 4)
+
+static uint16_t CriticalNasting_Cnt = 0;
+
 static bool KernelClock_Init(void);
 
 bool Kernel_Init(void)
@@ -101,6 +107,10 @@ static bool KernelClock_Init(void)
         return false;
     }
 
+    // we need set systick priority as 15 pendsv priority as 14
+    KERNEL_SYSPRI2_REG |= (((uint32_t)KERNEL_INTERRUPT_PRIORITY) << 16UL);
+    KERNEL_SYSPRI2_REG |= (((uint32_t)KERNEL_INTERRUPT_PRIORITY) << 24UL);
+
     return true;
 }
 
@@ -149,16 +159,31 @@ __attribute__((naked)) void Kernel_TriggerPendSV(void)
     __ASM("BX       LR");
 }
 
-void Kernel_SetBASEPRI(uint32_t ulBASEPRI)
+static void Kernel_SetBASEPRI(uint32_t ulBASEPRI)
 {
     __ASM("	msr basepri, %0	" ::"r"(ulBASEPRI)
           : "memory");
+    __ASM("DSB");
+    __ASM("ISB");
+}
+
+void Kernel_EnterCritical(void)
+{
+    Kernel_SetBASEPRI(SYSCALL_INTERRUPT_PRIORITY);
+    CriticalNasting_Cnt++;
 }
 
 void Kernel_ExitCritical(void)
 {
-    /* Barrier instructions are not used as this function is only used to
-    lower the BASEPRI value. */
-    __ASM("	msr basepri, %0	" ::"r"(0)
-          : "memory");
+    if (CriticalNasting_Cnt > 0)
+    {
+        CriticalNasting_Cnt--;
+
+        if (CriticalNasting_Cnt == 0)
+        {
+            Kernel_SetBASEPRI(0);
+        }
+    }
+    else
+        Kernel_SetBASEPRI(0);
 }

@@ -135,7 +135,7 @@ __attribute__((naked)) void Os_SwitchContext(void)
     __ASM("STR      R0, [R2]");
 
     __ASM("STMDB    SP!, {R0, R3}");
-    __ASM("MOV      R0, %0" ::"i"(0x50));
+    __ASM("MOV      R0, %0" ::"i"(SYSCALL_INTERRUPT_PRIORITY));
     __ASM("MSR      BASEPRI, R0");
 
     __ASM("DSB");
@@ -459,6 +459,9 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 
             if (CurRunTsk_Ptr != NULL)
             {
+                if (CurRunTsk_Ptr->State == Task_Ready)
+                    Os_Clr_TaskReady(CurRunTsk_Ptr);
+
                 /* set current task in pending list */
                 Os_Set_TaskPending(CurRunTsk_Ptr);
             }
@@ -658,9 +661,9 @@ static void Os_TaskCaller(void)
             CurRunTsk_Ptr = NULL;
 
             // get net task
-            // need to enter critical
+            Kernel_EnterCritical();
             Os_SchedulerRun(Get_CurrentRunningUs());
-            // after process exti critical
+            Kernel_ExitCritical();
         }
     }
 }

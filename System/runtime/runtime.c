@@ -160,27 +160,27 @@ bool Runtime_Tick(void)
     return false;
 }
 
-ITCM_CODE SYSTEM_RunTime Get_CurrentRunningUs(void)
+SYSTEM_RunTime Get_CurrentRunningUs(void)
 {
     return RunTime.Use_Us;
 }
 
-ITCM_CODE SYSTEM_RunTime Get_CurrentRunningMs(void)
+SYSTEM_RunTime Get_CurrentRunningMs(void)
 {
     return (RunTime.Use_Us / REAL_1MS);
 }
 
-ITCM_CODE SYSTEM_RunTime Get_CurrentRunningS(void)
+SYSTEM_RunTime Get_CurrentRunningS(void)
 {
     return (Get_CurrentRunningMs() / REAL_1MS);
 }
 
-ITCM_CODE SYSTEM_RunTime Get_TimeDifference(uint64_t time_in)
+SYSTEM_RunTime Get_TimeDifference(uint64_t time_in)
 {
     return (RunTime.Use_Us - time_in);
 }
 
-ITCM_CODE SYSTEM_RunTime Get_TargetRunTime(uint16_t duration)
+SYSTEM_RunTime Get_TargetRunTime(uint16_t duration)
 {
     return (RunTime.Use_Us + duration);
 }
