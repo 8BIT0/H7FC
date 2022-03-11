@@ -487,18 +487,31 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 static void Os_TaskDelayList_Discount(void *arg)
 {
     item_obj *DlyItem_tmp = NULL;
+    uint32_t Rt_Base = Runtime_GetTickBase();
 
     if (TskDly_RegList.num)
     {
         DlyItem_tmp = TskDly_RegList.list;
 
-        for (uint8_t i = 0; i < TskDly_RegList.num; i++, )
+        for (uint8_t i = 0; i < TskDly_RegList.num; i++)
         {
+            if (DataToDelayRegPtr(DlyItem_tmp->data)->resume_Rt)
+            {
+                DataToDelayRegPtr(DlyItem_tmp->data)->resume_Rt -= Rt_Base;
+
+                if (DataToDelayRegPtr(DlyItem_tmp->data)->resume_Rt == 0)
+                {
+                    /* need remove current delay item from list */
+                    Os_Clr_TaskBlock(TaskHandlerToObj(DataToDelayRegPtr(DlyItem_tmp->data)->tsk_hdl));
+                }
+            }
+
+            DlyItem_tmp = DlyItem_tmp->nxt;
         }
     }
 }
 
-static void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
+void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
 {
     TaskHandlerToObj(hdl)->delay_info.resume_Rt = Ms * Runtime_GetTickBase();
     TaskHandlerToObj(hdl)->delay_info.tsk_hdl = hdl;

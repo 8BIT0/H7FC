@@ -41,6 +41,7 @@ typedef void (*Task_Func)(Task_Handle hdl);
 typedef uint32_t *Task_STK_Ptr;
 
 #define TaskHandlerToObj(x) ((Task *)x)
+#define DataToDelayRegPtr(x) ((delay_reg *)(x))
 
 typedef enum
 {
@@ -174,6 +175,6 @@ void Os_Init(uint32_t TickFRQ);
 Scheduler_State_List Os_State(void);
 Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth);
 void Os_SwitchContext(void);
-static void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms);
+void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms);
 
 #endif
