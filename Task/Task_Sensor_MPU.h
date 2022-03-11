@@ -1,5 +1,5 @@
-#ifndef __TASK_SENSOR_H
-#define __TASK_SENSOR_H
+#ifndef __TASK_SENSOR_MPU_H
+#define __TASK_SENSOR_MPU_H
 
 #include <stdbool.h>
 #include <stdint.h>
