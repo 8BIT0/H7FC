@@ -49,6 +49,11 @@ System/scheduler/scheduler.c \
 System/kernel/kernel.c \
 System/runtime/runtime.c \
 System/storage/storage.c \
+System/shell/shell_cmd_list.c \
+System/shell/shell_companion.c \
+System/shell/shell_ext.c \
+System/shell/shell_port.c \
+System/shell/shell.c \
 USB/USB_DEVICE/App/usb_device.c \
 USB/USB_DEVICE/App/usbd_desc.c \
 USB/USB_DEVICE/App/usbd_cdc_if.c \
@@ -143,6 +148,7 @@ C_INCLUDES =  \
 -IDevice \
 -ISystem/ \
 -ISystem/mmu/ \
+-ISystem/shell \
 -Idebug/ \
 -IDataStructure/ \
 -ISystem/runtime/ \
@@ -157,7 +163,6 @@ C_INCLUDES =  \
 -IUSB/STM32_USB_Device_Library/Class/CDC/Inc \
 -IUSB/USB_DEVICE/App \
 -IUSB/USB_DEVICE/Target \
-
 
 
 # compile gcc flags

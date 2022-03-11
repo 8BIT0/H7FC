@@ -62,6 +62,9 @@ SECTIONS
   {
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
+    _shell_command_start = .;
+    KEEP (*(shellCommand))
+    _shell_command_end = .;
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
   } >FLASH

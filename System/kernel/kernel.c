@@ -164,6 +164,14 @@ __attribute__((naked)) void Kernel_TriggerPendSV(void)
     __ASM("BX       LR");
 }
 
+/*
+ *   return true in IRQ_Handler
+ */
+bool Kernel_GetMode(void)
+{
+    return __get_IPSR() != 0;
+}
+
 static void Kernel_SetBASEPRI(uint32_t ulBASEPRI)
 {
     __ASM("	msr basepri, %0	" ::"r"(ulBASEPRI)
