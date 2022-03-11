@@ -87,8 +87,7 @@ typedef enum
 } Scheduler_State_List;
 
 #pragma pack(1)
-typedef union
-{
+typedef union {
     uint8_t Flg;
 
     struct

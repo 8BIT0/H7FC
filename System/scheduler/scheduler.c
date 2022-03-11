@@ -71,6 +71,7 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
 static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg);
+static void Os_Tick_Scheduler_Callback(SYSTEM_RunTime Rt);
 static void Os_TaskCaller(void);
 static Task *Os_Get_HighestRank_PndTask(void);
 static Task *Os_Get_HighestRank_RdyTask(void);
@@ -242,7 +243,7 @@ void Os_Start(void)
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
     Kernel_EnablePendSV();
-    Runtime_SetCallback(RtCallback_Type_Tick, Os_SchedulerRun);
+    Runtime_SetCallback(RtCallback_Type_Tick, Os_Tick_Scheduler_Callback);
     Runtime_Start();
 
     // trigger SVC Handler
@@ -331,7 +332,7 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     if (TaskPtr_Map[group][priority]->delay_item == NULL)
         return NULL;
 
-    List_ItemInit(&TaskPtr_Map[group][priority]->delay_item, &TaskPtr_Map[group][priority]->delay_info);
+    List_ItemInit(TaskPtr_Map[group][priority]->delay_item, &(TaskPtr_Map[group][priority]->delay_info));
 
     TskCrt_RegList.num++;
 
@@ -442,8 +443,6 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     SYSTEM_RunTime CurRt_US = Rt;
     Task *TskPtr_Tmp = NULL;
 
-    Os_TaskDelayList_Discount();
-
     if (TskCrt_RegList.num)
     {
         /* check task state ready or not */
@@ -498,6 +497,9 @@ static void Os_TaskDelayList_Discount(void)
 
         for (uint8_t i = 0; i < delay_task_num; i++)
         {
+            if ((DlyItem_tmp == NULL) || (DlyItem_tmp->data == NULL))
+                return;
+
             if (DataToDelayRegPtr(DlyItem_tmp->data)->resume_Rt)
             {
                 DataToDelayRegPtr(DlyItem_tmp->data)->resume_Rt -= Rt_Base;
@@ -512,12 +514,19 @@ static void Os_TaskDelayList_Discount(void)
                     DlyItem_tmp->nxt->prv = DlyItem_tmp->prv;
 
                     TskDly_RegList.num--;
+                    DlyItem_tmp->data = NULL;
                 }
             }
 
             DlyItem_tmp = DlyItem_tmp->nxt;
         }
     }
+}
+
+static void Os_Tick_Scheduler_Callback(SYSTEM_RunTime Rt)
+{
+    Os_TaskDelayList_Discount();
+    Os_SchedulerRun(Rt);
 }
 
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
@@ -731,12 +740,16 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
     if (data != NULL)
     {
         // get current highest priority task handler AKA NxtRunTsk_Ptr
-
         if ((scheduler_state == Scheduler_Start) &&
             (((Task *)data)->State == Task_Stop) &&
             (RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
             Os_Set_TaskReady((Task *)data);
+        }
+
+        if ((((Task *)data)->delay_item)->data == NULL)
+        {
+            List_Delete_Item(((Task *)data)->delay_item, NULL);
         }
     }
 
