@@ -49,6 +49,14 @@ System/scheduler/scheduler.c \
 System/kernel/kernel.c \
 System/runtime/runtime.c \
 System/storage/storage.c \
+USB/USB_DEVICE/App/usb_device.c \
+USB/USB_DEVICE/App/usbd_desc.c \
+USB/USB_DEVICE/App/usbd_cdc_if.c \
+USB/USB_DEVICE/Target/usbd_conf.c \
+USB/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+USB/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
+USB/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c  \
 HAL_Lib/Core/Src/stm32h7xx_it.c \
 HAL_Lib/Core/Src/system_stm32h7xx.c  \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
@@ -70,6 +78,9 @@ HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -142,6 +153,10 @@ C_INCLUDES =  \
 -IHAL_Lib/Core/Inc \
 -IHAL_Lib/CMSIS/Device/ST/STM32H7xx/Include \
 -IHAL_Lib/CMSIS/Core/Include \
+-IUSB/STM32_USB_Device_Library/Core/Inc \
+-IUSB/STM32_USB_Device_Library/Class/CDC/Inc \
+-IUSB/USB_DEVICE/App \
+-IUSB/USB_DEVICE/Target \
 
 
 

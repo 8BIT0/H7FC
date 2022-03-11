@@ -56,3 +56,9 @@ void SysTick_Handler(void)
 {
   Runtime_Tick();
 }
+
+void OTG_FS_IRQHandler(void)
+{
+  extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+}
