@@ -488,6 +488,7 @@ static void Os_TaskDelayList_Discount(void *arg)
 {
     item_obj *DlyItem_tmp = NULL;
     uint32_t Rt_Base = Runtime_GetTickBase();
+    bool any_resume = false;
 
     if (TskDly_RegList.num)
     {
@@ -503,10 +504,18 @@ static void Os_TaskDelayList_Discount(void *arg)
                 {
                     /* need remove current delay item from list */
                     Os_Clr_TaskBlock(TaskHandlerToObj(DataToDelayRegPtr(DlyItem_tmp->data)->tsk_hdl));
+
+                    any_resume = true;
                 }
             }
 
-            DlyItem_tmp = DlyItem_tmp->nxt;
+            if (!any_resume)
+            {
+                DlyItem_tmp = DlyItem_tmp->nxt;
+            }
+            else
+            {
+            }
         }
     }
 }
