@@ -25,8 +25,13 @@ bool Kernel_Init(void)
     // disable interrupt at the first place
     Kernel_DisableIRQ();
 
-    SCB_EnableICache();
+#if KERNEL_DCACHE_STATE == 1
     SCB_EnableDCache();
+#endif
+
+#if KERNEL_ICACHE_STATE == 1
+    SCB_EnableICache();
+#endif
 
     HAL_Init();
 
