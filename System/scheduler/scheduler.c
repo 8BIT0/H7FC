@@ -67,6 +67,7 @@ static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 static void Os_ResetTask_Data(Task *task);
 static void Os_Set_TaskReady(Task *tsk);
 static void Os_Clr_TaskReady(Task *tsk);
+static void Os_Tick_Callback(SYSTEM_RunTime Rt);
 static void Os_SchedulerRun(SYSTEM_RunTime Rt);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
@@ -242,7 +243,7 @@ void Os_Start(void)
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
     Kernel_EnablePendSV();
-    Runtime_SetCallback(RtCallback_Type_Tick, Os_SchedulerRun);
+    Runtime_SetCallback(RtCallback_Type_Tick, Os_Tick_Callback);
     Runtime_Start();
 
     // trigger SVC Handler
@@ -484,15 +485,14 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     }
 }
 
-static void Os_TaskDelayList_Discount(void *arg)
+static void Os_TaskDelayList_Discount(void)
 {
     item_obj *DlyItem_tmp = NULL;
     uint32_t Rt_Base = Runtime_GetTickBase();
-    bool any_resume = false;
 
     if (TskDly_RegList.num)
     {
-        DlyItem_tmp = TskDly_RegList.list;
+        DlyItem_tmp = &TskDly_RegList.list;
 
         for (uint8_t i = 0; i < TskDly_RegList.num; i++)
         {
@@ -502,22 +502,24 @@ static void Os_TaskDelayList_Discount(void *arg)
 
                 if (DataToDelayRegPtr(DlyItem_tmp->data)->resume_Rt == 0)
                 {
-                    /* need remove current delay item from list */
                     Os_Clr_TaskBlock(TaskHandlerToObj(DataToDelayRegPtr(DlyItem_tmp->data)->tsk_hdl));
+                    Os_Set_TaskReady(TaskHandlerToObj(DataToDelayRegPtr(DlyItem_tmp->data)->tsk_hdl));
 
-                    any_resume = true;
+                    /* need remove current delay item from list */
+                    DlyItem_tmp->prv->nxt = DlyItem_tmp->nxt;
+                    DlyItem_tmp->nxt->prv = DlyItem_tmp->prv;
                 }
             }
 
-            if (!any_resume)
-            {
-                DlyItem_tmp = DlyItem_tmp->nxt;
-            }
-            else
-            {
-            }
+            DlyItem_tmp = DlyItem_tmp->nxt;
         }
     }
+}
+
+static void Os_Tick_Callback(SYSTEM_RunTime Rt)
+{
+    Os_SchedulerRun(Rt);
+    Os_TaskDelayList_Discount();
 }
 
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
@@ -531,11 +533,11 @@ void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
     /* add task in delay list */
     if (TskDly_RegList.num == 0)
     {
-        List_Init(TskDly_RegList.list, TaskHandlerToObj(hdl)->delay_item, by_order, NULL);
+        List_Init(&TskDly_RegList.list, TaskHandlerToObj(hdl)->delay_item, by_order, NULL);
     }
     else
     {
-        List_Insert_Item(TskDly_RegList.list, TaskHandlerToObj(hdl)->delay_item);
+        List_Insert_Item(&TskDly_RegList.list, TaskHandlerToObj(hdl)->delay_item);
     }
 
     TskDly_RegList.num++;
