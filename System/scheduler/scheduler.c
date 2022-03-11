@@ -484,9 +484,24 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     }
 }
 
+static void Os_TaskDelayList_Discount(void *arg)
+{
+    item_obj *DlyItem_tmp = NULL;
+
+    if (TskDly_RegList.num)
+    {
+        DlyItem_tmp = TskDly_RegList.list;
+
+        for (uint8_t i = 0; i < TskDly_RegList.num; i++, )
+        {
+        }
+    }
+}
+
 static void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
 {
     TaskHandlerToObj(hdl)->delay_info.resume_Rt = Ms * Runtime_GetTickBase();
+    TaskHandlerToObj(hdl)->delay_info.tsk_hdl = hdl;
 
     Kernel_EnterCritical();
     Os_Set_TaskBlock(TaskHandlerToObj(hdl));
@@ -502,6 +517,8 @@ static void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
     }
 
     TskDly_RegList.num++;
+
+    Os_SchedulerRun(Get_CurrentRunningUs());
     Kernel_ExitCritical();
 }
 
