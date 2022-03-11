@@ -44,7 +44,8 @@
                 "usb_device.h": "c",
                 "samephore.h": "c",
                 "queue.h": "c",
-                "task_sensor_mpu.h": "c"
+                "task_sensor_mpu.h": "c",
+                "linked_list.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

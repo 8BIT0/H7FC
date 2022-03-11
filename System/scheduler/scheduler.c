@@ -76,27 +76,6 @@ static Task *Os_Get_HighestRank_PndTask(void);
 static Task *Os_Get_HighestRank_RdyTask(void);
 void Os_SwitchTaskStack(void);
 
-static uint32_t Os_EnterCritical(void)
-{
-    /* Set BASEPRI to the max syscall priority to effect a critical
-    section. */
-    uint32_t ulOriginalBASEPRI, ulNewBASEPRI;
-
-    __asm volatile(
-        "	mrs %0, basepri											\n"
-        "	mov %1, %2												\n"
-        "	msr basepri, %1											\n"
-        "	isb														\n"
-        "	dsb														\n"
-        : "=r"(ulOriginalBASEPRI), "=r"(ulNewBASEPRI)
-        : "i"(80)
-        : "memory");
-
-    /* This return will not be reached but is necessary to prevent compiler
-    warnings. */
-    return ulOriginalBASEPRI;
-}
-
 __attribute__((naked)) void Os_LoadFirstTask(void)
 {
     __ASM("LDR	  R3, =CurTsk_TCB");
@@ -160,8 +139,6 @@ __attribute__((naked)) void Os_SwitchContext(void)
 
     __ASM("MSR      PSP,R0");
     __ASM("ISB");
-    //__ASM("MOV      R0, #240");
-    //__ASM("MSR	    BASEPRI, R0");
     __ASM("BX       R14");
 
     __ASM("CurrentTCBConst_Tmp: .word CurTsk_TCB");
@@ -410,6 +387,20 @@ void Os_Set_TaskPending(Task *tsk)
     tsk->State = Task_Pending;
 }
 
+static void Os_Set_TaskBlock(Task *tsk)
+{
+    uint8_t grp_id = GET_TASKGROUP_PRIORITY(tsk->priority);
+    uint8_t tsk_id = GET_TASKINGROUP_PRIORITY(tsk->priority);
+
+    // set current group pending
+    TskHdl_BlkMap.Grp.Flg |= 1 << grp_id;
+    // set current task under this group flag to ready
+    TskHdl_BlkMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
+
+    // set task state
+    tsk->State = Task_Block;
+}
+
 static void Os_Clr_TaskReady(Task *tsk)
 {
     uint8_t grp_id = GET_TASKGROUP_PRIORITY(tsk->priority);
@@ -431,6 +422,18 @@ static void Os_Clr_TaskPending(Task *tsk)
     if (TskHdl_PndMap.TskInGrp[grp_id].Flg == 0)
     {
         TskHdl_PndMap.Grp.Flg &= ~(1 << grp_id);
+    }
+}
+
+static void Os_Clr_TaskBlock(Task *tsk)
+{
+    uint8_t grp_id = GET_TASKGROUP_PRIORITY(tsk->priority);
+    uint8_t tsk_id = GET_TASKINGROUP_PRIORITY(tsk->priority);
+
+    TskHdl_BlkMap.TskInGrp[grp_id].Flg &= ~(1 << tsk_id);
+    if (TskHdl_BlkMap.TskInGrp[grp_id].Flg == 0)
+    {
+        TskHdl_BlkMap.Grp.Flg &= ~(1 << grp_id);
     }
 }
 
@@ -483,7 +486,23 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 
 static void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
 {
-    TaskHandlerToObj(hdl)->delay_info.resume_Rt = 0;
+    TaskHandlerToObj(hdl)->delay_info.resume_Rt = Ms * Runtime_GetTickBase();
+
+    Kernel_EnterCritical();
+    Os_Set_TaskBlock(TaskHandlerToObj(hdl));
+
+    /* add task in delay list */
+    if (TskDly_RegList.num == 0)
+    {
+        List_Init(TskDly_RegList.list, TaskHandlerToObj(hdl)->delay_item, by_order, NULL);
+    }
+    else
+    {
+        List_Insert_Item(TskDly_RegList.list, TaskHandlerToObj(hdl)->delay_item);
+    }
+
+    TskDly_RegList.num++;
+    Kernel_ExitCritical();
 }
 
 /*
