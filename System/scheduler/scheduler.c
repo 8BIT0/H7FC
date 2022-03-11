@@ -67,7 +67,6 @@ static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 static void Os_ResetTask_Data(Task *task);
 static void Os_Set_TaskReady(Task *tsk);
 static void Os_Clr_TaskReady(Task *tsk);
-static void Os_Tick_Callback(SYSTEM_RunTime Rt);
 static void Os_SchedulerRun(SYSTEM_RunTime Rt);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
@@ -243,7 +242,7 @@ void Os_Start(void)
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
     Kernel_EnablePendSV();
-    Runtime_SetCallback(RtCallback_Type_Tick, Os_Tick_Callback);
+    Runtime_SetCallback(RtCallback_Type_Tick, Os_SchedulerRun);
     Runtime_Start();
 
     // trigger SVC Handler
@@ -443,6 +442,8 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     SYSTEM_RunTime CurRt_US = Rt;
     Task *TskPtr_Tmp = NULL;
 
+    Os_TaskDelayList_Discount();
+
     if (TskCrt_RegList.num)
     {
         /* check task state ready or not */
@@ -517,12 +518,6 @@ static void Os_TaskDelayList_Discount(void)
             DlyItem_tmp = DlyItem_tmp->nxt;
         }
     }
-}
-
-static void Os_Tick_Callback(SYSTEM_RunTime Rt)
-{
-    Os_SchedulerRun(Rt);
-    Os_TaskDelayList_Discount();
 }
 
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
