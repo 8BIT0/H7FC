@@ -38,18 +38,7 @@ SECTIONS
     
     . = ALIGN(4);
     MMU_e = .;
-  } >RAM_D1
-
-  tcm_code = LOADADDR(.tcm_code); 
-  .tcm_code :
-  {
-    . = ALIGN(4);
-    tcm_code_start = .; 
-    *(.tcm_code)
-    *(.tcm_code*)
-    . = ALIGN(4);
-    tcm_code_end = .; 
-  } >ITCMRAM
+  } >RAM_D1 AT>FLASH
 
   /* The program code and other data goes into FLASH */
   .text :

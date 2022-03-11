@@ -5,6 +5,7 @@
 #include "system_cfg.h"
 #include "debug_util.h"
 #include "scheduler.h"
+#include "usb_device.h"
 
 Task_Handle Blink_Task = NULL;
 Task_Handle Test_Task = NULL;
@@ -61,6 +62,7 @@ void main(void)
     DebugPin.init(Debug_PC0);
     DebugPin.init(Debug_PC1);
     DebugPin.init(Debug_PC2);
+    USB_DEVICE_Init();
 
     Os_Init(RUNTIME_TICK_FRQ_40K);
 
