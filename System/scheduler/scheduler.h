@@ -138,6 +138,14 @@ typedef struct
 
 typedef struct
 {
+    uint8_t num;
+    list_obj list;
+} Task_List_s;
+#pragma pack()
+
+#pragma pack(4)
+typedef struct
+{
     TASK_STATE State;
 
     uint8_t priority;
@@ -160,12 +168,6 @@ typedef struct
     item_obj *item_ptr;
     item_obj *delay_item;
 } Task;
-
-typedef struct
-{
-    uint8_t num;
-    list_obj list;
-} Task_List_s;
 #pragma pack()
 
 void Os_Start(void);

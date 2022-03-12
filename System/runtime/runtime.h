@@ -47,6 +47,7 @@ typedef enum
 } Runtime_RunState_List;
 
 /* runtime data block object definition*/
+#pragma pack(4)
 typedef struct
 {
     SYSTEM_RunTime Use_Us;
@@ -61,6 +62,7 @@ typedef struct
     Runtime_ModuleState_List module_state;
     Runtime_RunState_List tick_state;
 } Runtime_DataObj_TypeDef;
+#pragma pack()
 
 bool Runtime_SetCallback(Runtime_BaseCallback_TypeList type, runtime_callback_p stop_cb);
 void RuntimeObj_Reset(SYSTEM_RunTime *Obj);

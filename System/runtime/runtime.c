@@ -13,7 +13,7 @@
 /* internal variable */
 static volatile uint32_t sysclock = 0;
 static uint32_t Runtime_DelayUs = 0;
-static volatile Runtime_DataObj_TypeDef RunTime = {
+static Runtime_DataObj_TypeDef RunTime = {
     .tick_callback = NULL,
     .start_callback = NULL,
     .stop_callback = NULL,

@@ -69,7 +69,7 @@ void main(void)
     /* create task down below */
     Blink_Task = Os_CreateTask("Blink", TASK_EXEC_10KHZ, Task_Group_0, Task_Group_0, Run, 256);
     Test_Task = Os_CreateTask("test", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
-    Test2_Task = Os_CreateTask("test", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_2, Test2, 256);
+    // Test2_Task = Os_CreateTask("test2", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_2, Test2, 256);
     /* create task up top */
 
     Os_Start();

@@ -60,6 +60,7 @@ static volatile TaskMap_TypeDef TskHdl_BlkMap = {.Grp = 0, .TskInGrp[0] = 0, .Ts
 
 static Task_List_s TskCrt_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
 static Task_List_s TskDly_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
+static Task_List_s TskRdy_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
 
 static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 
