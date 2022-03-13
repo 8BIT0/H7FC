@@ -83,17 +83,21 @@ void Test2(Task_Handle handle)
 void Test(Task_Handle handle)
 {
     // test_PC0_ctl();
+    // DevLED.ctl(Led1, true);
     DebugPin.ctl(Debug_PC0, true);
-    Os_TaskDelay_Ms(handle, 10);
+    Os_TaskDelay_Ms(handle, 100);
 
+    // DevLED.ctl(Led1, false);
     DebugPin.ctl(Debug_PC0, false);
-    Os_TaskDelay_Ms(handle, 10);
+    Os_TaskDelay_Ms(handle, 100);
 
+    // DevLED.ctl(Led1, true);
     DebugPin.ctl(Debug_PC0, true);
-    Os_TaskDelay_Ms(handle, 10);
+    Os_TaskDelay_Ms(handle, 100);
 
+    // DevLED.ctl(Led1, false);
     DebugPin.ctl(Debug_PC0, false);
-    Os_TaskDelay_Ms(handle, 10);
+    Os_TaskDelay_Ms(handle, 100);
 }
 
 void Run(Task_Handle handle)
