@@ -27,6 +27,7 @@ group7     |_______|_______|_______|_______|_______|_______|_______|_______|
 
 #define GET_TASKGROUP_PRIORITY(x) x >> 3
 #define GET_TASKINGROUP_PRIORITY(y) y & 0X07
+#define IDLE_TASK_STACK 256
 
 /* internal variable */
 static const uint8_t Task_Priority_List[256] =
@@ -59,10 +60,10 @@ static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .Ts
 static volatile TaskMap_TypeDef TskHdl_BlkMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 
 static Task_List_s TskCrt_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
-static Task_List_s TskDly_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
 static Task_List_s TskRdy_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
 
 static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
+static Task *Idle_Task;
 
 /* internal function */
 static void Os_ResetTask_Data(Task *task);
@@ -72,10 +73,11 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
 static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg);
-static void Os_Tick_Scheduler_Callback(SYSTEM_RunTime Rt);
 static void Os_TaskCaller(void);
 static Task *Os_Get_HighestRank_PndTask(void);
 static Task *Os_Get_HighestRank_RdyTask(void);
+static bool Os_CreateIdle(void);
+static void Os_Idle(void);
 void Os_SwitchTaskStack(void);
 
 __attribute__((naked)) void Os_LoadFirstTask(void)
@@ -239,16 +241,54 @@ void Os_Start(void)
 
     scheduler_state = Scheduler_Start;
 
+    /* before start we need create a idle task */
+    Os_CreateIdle();
+
     // enable irq
     Kernel_EnableIRQ();
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
     Kernel_EnablePendSV();
-    Runtime_SetCallback(RtCallback_Type_Tick, Os_Tick_Scheduler_Callback);
+    Runtime_SetCallback(RtCallback_Type_Tick, Os_SchedulerRun);
     Runtime_Start();
 
     // trigger SVC Handler
     Kernel_LoadProcess();
+}
+
+static void Os_Idle(void)
+{
+    volatile SYSTEM_RunTime Rt = 0;
+    static volatile uint64_t idle_cnt = 0;
+
+    if (Rt != Get_CurrentRunningUs())
+    {
+        Rt = Get_CurrentRunningUs();
+        idle_cnt++;
+    }
+}
+
+static bool Os_CreateIdle(void)
+{
+    /* for idle task we don`t need priority or other state */
+    Idle_Task = (Task *)MMU_Malloc(sizeof(Task));
+
+    if (Idle_Task == NULL)
+        return false;
+
+    Idle_Task->Exec_Func = Os_Idle;
+
+    Idle_Task->Stack_Depth = IDLE_TASK_STACK;
+    Idle_Task->TCB.Stack = (uint32_t *)MMU_Malloc(IDLE_TASK_STACK * sizeof(uint32_t));
+
+    if (Idle_Task->TCB.Stack != NULL)
+    {
+        Os_Set_TaskStk(Idle_Task);
+    }
+    else
+        return false;
+
+    return true;
 }
 
 Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth)
@@ -277,10 +317,6 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     TaskPtr_Map[group][priority]->Exec_Func = func;
 
     TaskPtr_Map[group][priority]->priority = (group << 3) | priority;
-
-    // init delay tag
-    TaskPtr_Map[group][priority]->delay_info.tsk_hdl = handle;
-    TaskPtr_Map[group][priority]->delay_info.resume_Rt = 0;
 
     // request memory space for task stack
     TaskPtr_Map[group][priority]->Stack_Depth = StackDepth;
@@ -329,12 +365,6 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
         List_Insert_Item(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr);
     }
 
-    TaskPtr_Map[group][priority]->delay_item = (item_obj *)MMU_Malloc(sizeof(item_obj));
-    if (TaskPtr_Map[group][priority]->delay_item == NULL)
-        return NULL;
-
-    List_ItemInit(TaskPtr_Map[group][priority]->delay_item, &(TaskPtr_Map[group][priority]->delay_info));
-
     TskCrt_RegList.num++;
 
     return handle;
@@ -352,10 +382,6 @@ static void Os_ResetTask_Data(Task *task)
     task->Exec_status.Exec_cnt = 0;
     task->Exec_status.cpu_opy = 0;
     task->Exec_status.Running_Time = 0;
-
-    task->delay_info.tsk_hdl = 0;
-
-    List_ItemInit(&task->delay_item, &task->delay_info);
 
     RuntimeObj_Reset(&(task->Exec_status.Exec_Time));
 
@@ -389,7 +415,7 @@ void Os_Set_TaskPending(Task *tsk)
     tsk->State = Task_Pending;
 }
 
-static void Os_Set_TaskBlock(Task *tsk)
+static void Os_Set_TaskBlock(Task *tsk, TASK_STATE state)
 {
     uint8_t grp_id = GET_TASKGROUP_PRIORITY(tsk->priority);
     uint8_t tsk_id = GET_TASKINGROUP_PRIORITY(tsk->priority);
@@ -400,7 +426,7 @@ static void Os_Set_TaskBlock(Task *tsk)
     TskHdl_BlkMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
 
     // set task state
-    tsk->State = Task_Block;
+    tsk->State = state;
 }
 
 static void Os_Clr_TaskReady(Task *tsk)
@@ -464,11 +490,9 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 
             if (CurRunTsk_Ptr != NULL)
             {
-                if (CurRunTsk_Ptr->State == Task_Ready)
-                    Os_Clr_TaskReady(CurRunTsk_Ptr);
-
-                /* set current task in pending list */
-                Os_Set_TaskPending(CurRunTsk_Ptr);
+                if (CurRunTsk_Ptr->State == Task_Running)
+                    /* set current task in pending list */
+                    Os_Set_TaskPending(CurRunTsk_Ptr);
             }
 
             NxtRunTsk_Ptr = TskPtr_Tmp;
@@ -479,79 +503,28 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
             /* trigger pendsv to switch task */
             Kernel_TriggerPendSV();
         }
-        else
-        {
-            /* do idle task */
-        }
     }
 }
 
-static void Os_TaskDelayList_Discount(void)
-{
-    item_obj *DlyItem_tmp = NULL;
-    uint8_t delay_task_num = TskDly_RegList.num;
-    uint32_t Rt_Base = Runtime_GetTickBase();
-
-    if (delay_task_num)
-    {
-        DlyItem_tmp = &TskDly_RegList.list;
-
-        for (uint8_t i = 0; i < delay_task_num; i++)
-        {
-            if ((DlyItem_tmp == NULL) || (DlyItem_tmp->data == NULL))
-                return;
-
-            if (DataToDelayRegPtr(DlyItem_tmp->data)->resume_Rt)
-            {
-                DataToDelayRegPtr(DlyItem_tmp->data)->resume_Rt -= Rt_Base;
-
-                if (DataToDelayRegPtr(DlyItem_tmp->data)->resume_Rt == 0)
-                {
-                    Os_Clr_TaskBlock(TaskHandlerToObj(DataToDelayRegPtr(DlyItem_tmp->data)->tsk_hdl));
-                    Os_Set_TaskReady(TaskHandlerToObj(DataToDelayRegPtr(DlyItem_tmp->data)->tsk_hdl));
-
-                    /* need remove current delay item from list */
-                    DlyItem_tmp->prv->nxt = DlyItem_tmp->nxt;
-                    DlyItem_tmp->nxt->prv = DlyItem_tmp->prv;
-
-                    TskDly_RegList.num--;
-                    DlyItem_tmp->data = NULL;
-                }
-            }
-
-            DlyItem_tmp = DlyItem_tmp->nxt;
-        }
-    }
-}
-
-static void Os_Tick_Scheduler_Callback(SYSTEM_RunTime Rt)
-{
-    Os_TaskDelayList_Discount();
-    Os_SchedulerRun(Rt);
-}
-
+/* still got bug down here */
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
 {
-    TaskHandlerToObj(hdl)->delay_info.resume_Rt = Ms * Runtime_GetTickBase();
-    TaskHandlerToObj(hdl)->delay_info.tsk_hdl = hdl;
+    SYSTEM_RunTime delay_tick_base = (Ms * REAL_1MS) * Runtime_GetTickBase();
 
-    Kernel_EnterCritical();
-    Os_Set_TaskBlock(TaskHandlerToObj(hdl));
+    /* set task next ready time */
+    TaskHandlerToObj(hdl)->Exec_status.Exec_Time += delay_tick_base;
 
-    /* add task in delay list */
-    if (TskDly_RegList.num == 0)
-    {
-        List_Init(&TskDly_RegList.list, TaskHandlerToObj(hdl)->delay_item, by_order, NULL);
-    }
-    else
-    {
-        List_Insert_Item(&TskDly_RegList.list, TaskHandlerToObj(hdl)->delay_item);
-    }
+    Os_Set_TaskBlock(TaskHandlerToObj(hdl), Task_DelayBlock);
 
-    TskDly_RegList.num++;
+    // Kernel_EnterCritical();
+    // Os_SchedulerRun(Get_CurrentRunningUs());
+    // Kernel_ExitCritical();
 
-    Os_SchedulerRun(Get_CurrentRunningUs());
-    Kernel_ExitCritical();
+    NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
+    NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
+
+    /* trigger pendsv to switch task */
+    Kernel_TriggerPendSV();
 }
 
 /*
@@ -622,6 +595,11 @@ static Task *Os_Get_HighestRank_PndTask(void)
 // return high priority task pointer
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
 {
+    volatile uint8_t grp_l = GET_TASKGROUP_PRIORITY(tsk_l->priority);
+    volatile uint8_t grp_r = GET_TASKGROUP_PRIORITY(tsk_r->priority);
+    volatile uint8_t pri_l = GET_TASKINGROUP_PRIORITY(tsk_l->priority);
+    volatile uint8_t pri_r = GET_TASKINGROUP_PRIORITY(tsk_r->priority);
+
     if ((tsk_l == NULL) && (tsk_r == NULL))
     {
         return NULL;
@@ -637,21 +615,21 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
         return tsk_l;
     }
 
-    if (GET_TASKGROUP_PRIORITY(tsk_l->priority) < GET_TASKGROUP_PRIORITY(tsk_r->priority))
+    if (grp_l < grp_r)
     {
         return tsk_l;
     }
-    else if (GET_TASKGROUP_PRIORITY(tsk_l->priority) > GET_TASKGROUP_PRIORITY(tsk_r->priority))
+    else if (grp_l > grp_r)
     {
         return tsk_r;
     }
-    else if (GET_TASKGROUP_PRIORITY(tsk_l->priority) == GET_TASKGROUP_PRIORITY(tsk_r->priority))
+    else if (grp_l == grp_r)
     {
-        if (GET_TASKINGROUP_PRIORITY(tsk_l->priority) < GET_TASKINGROUP_PRIORITY(tsk_r->priority))
+        if (pri_l < pri_r)
         {
             return tsk_l;
         }
-        else if (GET_TASKINGROUP_PRIORITY(tsk_l->priority) > GET_TASKINGROUP_PRIORITY(tsk_r->priority))
+        else if (pri_l > pri_r)
         {
             return tsk_r;
         }
@@ -729,9 +707,9 @@ static void Os_TaskCaller(void)
             CurRunTsk_Ptr = NULL;
 
             // get net task
-            Kernel_EnterCritical();
+            // Kernel_EnterCritical();
             Os_SchedulerRun(Get_CurrentRunningUs());
-            Kernel_ExitCritical();
+            // Kernel_ExitCritical();
         }
     }
 }
@@ -742,15 +720,11 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
     {
         // get current highest priority task handler AKA NxtRunTsk_Ptr
         if ((scheduler_state == Scheduler_Start) &&
-            (((Task *)data)->State == Task_Stop) &&
+            ((((Task *)data)->State == Task_Stop) ||
+             (((Task *)data)->State == Task_DelayBlock)) &&
             (RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
             Os_Set_TaskReady((Task *)data);
-        }
-
-        if ((((Task *)data)->delay_item)->data == NULL)
-        {
-            List_Delete_Item(((Task *)data)->delay_item, NULL);
         }
     }
 

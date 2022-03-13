@@ -1,3 +1,9 @@
+/*
+ * coder: 8_B!T0
+ * Kernel Funciont portable for any Kernel u use
+ * for stm32 some assemble and regsiter are in common
+ */
+
 #include "kernel.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_pwr.h"
@@ -13,15 +19,6 @@ static bool KernelClock_Init(void);
 
 bool Kernel_Init(void)
 {
-    // extern uint8_t tcm_code_start;
-    // extern uint8_t tcm_code_end;
-    // extern uint8_t tcm_code;
-
-    // uint32_t *SourceAddr = (uint32_t *)FLASH_BANK1_BASE;
-    // uint32_t *DestAddr = (uint32_t *)D1_DTCMRAM_BASE;
-    // memcpy(DestAddr, SourceAddr, 0x400);
-    // SCB->VTOR = D1_DTCMRAM_BASE;
-
     // disable interrupt at the first place
     Kernel_DisableIRQ();
 
@@ -35,11 +32,13 @@ bool Kernel_Init(void)
 
     HAL_Init();
 
-    // memcpy(&tcm_code_start, &tcm_code, (size_t)(&tcm_code_end - &tcm_code_start));
-
     return KernelClock_Init();
 }
 
+/*
+ * clock init
+ * general by stm32cubemx
+ */
 static bool KernelClock_Init(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};

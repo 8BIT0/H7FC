@@ -49,7 +49,8 @@ typedef enum
     Task_Ready,
     Task_Running,
     Task_Stop,
-    Task_Block,
+    Task_SignalBlock,
+    Task_DelayBlock,
     Task_Pending,
 } TASK_STATE;
 
@@ -87,7 +88,8 @@ typedef enum
 } Scheduler_State_List;
 
 #pragma pack(1)
-typedef union {
+typedef union
+{
     uint8_t Flg;
 
     struct
@@ -116,12 +118,6 @@ typedef struct
     Task_STK_Ptr Top_Stk_Ptr;
     Task_STK_Ptr Stack;
 } TaskStack_ControlBlock;
-
-typedef struct
-{
-    Task_Handle tsk_hdl;
-    SYSTEM_RunTime resume_Rt;
-} delay_reg;
 
 typedef struct
 {
@@ -163,10 +159,7 @@ typedef struct
     // private variable
     uint32_t TskFuncUing_US; // Cast US time while system Calling the Target task function
 
-    delay_reg delay_info;
-
     item_obj *item_ptr;
-    item_obj *delay_item;
 } Task;
 #pragma pack()
 
