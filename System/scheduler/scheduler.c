@@ -262,6 +262,8 @@ static void Os_Idle(void)
     volatile SYSTEM_RunTime Rt = 0;
     static volatile uint64_t idle_cnt = 0;
 
+    Idle_Task->State = Task_Ready;
+
     if (Rt != Get_CurrentRunningUs())
     {
         Rt = Get_CurrentRunningUs();
@@ -496,7 +498,7 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
                     Os_Set_TaskPending(CurRunTsk_Ptr);
             }
 
-            if ((TskPtr_Tmp->State != Task_DelayBlock) || (TskPtr_Tmp->State != Task_SignalBlock))
+            if ((TskPtr_Tmp->State != Task_DelayBlock) && (TskPtr_Tmp->State != Task_SignalBlock))
             {
                 NxtRunTsk_Ptr = TskPtr_Tmp;
 
@@ -507,19 +509,13 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
                 Kernel_TriggerPendSV();
             }
         }
-        if ((TskPtr_Tmp == NULL) || (CurRunTsk_Ptr == NULL))
-        {
-            NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
-            NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
-
-            /* trigger pendsv to switch task */
-            Kernel_TriggerPendSV();
-        }
     }
     else
     {
         if ((TskPtr_Tmp->State == Task_DelayBlock) || (TskPtr_Tmp->State == Task_SignalBlock))
         {
+            Idle_Task->State = Task_Ready;
+
             NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
             NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
 
@@ -538,6 +534,9 @@ void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
     TaskHandlerToObj(hdl)->Exec_status.Exec_Time += delay_tick_base;
 
     Os_Set_TaskBlock(TaskHandlerToObj(hdl), Task_DelayBlock);
+
+    NxtRunTsk_Ptr = Idle_Task;
+    Idle_Task->State = Task_Ready;
 
     NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
     NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
@@ -671,7 +670,7 @@ static void Os_TaskExec(Task *tsk_ptr)
         // set current running task
         CurRunTsk_Ptr = tsk_ptr;
 
-        if (tsk_ptr->Exec_status.Exec_cnt == 0)
+        if ((tsk_ptr->Exec_status.Exec_cnt == 0) && (tsk_ptr != Idle_Task))
         {
             tsk_ptr->Exec_status.Start_Time = Get_CurrentRunningUs();
             tsk_ptr->Exec_status.Exec_Time = tsk_ptr->Exec_status.Start_Time;
@@ -689,6 +688,9 @@ static void Os_TaskExec(Task *tsk_ptr)
             tsk_ptr->State = Task_Stop;
             return;
         }
+
+        if (tsk_ptr == Idle_Task)
+            return;
 
         // record task running times
         tsk_ptr->Exec_status.Exec_cnt++;
@@ -723,12 +725,13 @@ static void Os_TaskCaller(void)
             Os_TaskExec(NxtRunTsk_Ptr);
 
             // erase currnet runnint task pointer
-            CurRunTsk_Ptr = NULL;
+            if (CurRunTsk_Ptr != Idle_Task)
+            {
+                CurRunTsk_Ptr = NULL;
+            }
 
             // get net task
-            // Kernel_EnterCritical();
             Os_SchedulerRun(Get_CurrentRunningUs());
-            // Kernel_ExitCritical();
         }
     }
 }
