@@ -85,6 +85,10 @@ void Test(Task_Handle handle)
     // test_PC0_ctl();
     DebugPin.ctl(Debug_PC0, true);
     Os_TaskDelay_Ms(handle, 10);
+
+    DebugPin.ctl(Debug_PC0, false);
+    Os_TaskDelay_Ms(handle, 10);
+
     DebugPin.ctl(Debug_PC0, false);
 }
 

@@ -146,6 +146,7 @@ bool Runtime_Tick(void)
     {
         RunTime.tick_state = Runtime_Run_Tick;
         RunTime.Use_Us += RunTime.base;
+        RunTime.Use_Ms = RunTime.Use_Us / REAL_1MS;
         RunTime.tick_state = Runtime_Run_Wait;
 
         if (RunTime.tick_callback != NULL)
@@ -167,7 +168,7 @@ SYSTEM_RunTime Get_CurrentRunningUs(void)
 
 SYSTEM_RunTime Get_CurrentRunningMs(void)
 {
-    return (RunTime.Use_Us / REAL_1MS);
+    return RunTime.Use_Us / REAL_1MS;
 }
 
 SYSTEM_RunTime Get_CurrentRunningS(void)

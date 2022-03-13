@@ -152,6 +152,7 @@ __attribute__((naked)) void Os_SwitchContext(void)
 void Os_SwitchTaskStack(void)
 {
     CurTsk_TCB = NxtTsk_TCB;
+    CurRunTsk_Ptr = NxtRunTsk_Ptr;
 }
 
 static void Os_Set_TaskStk(Task *tsk)
@@ -495,10 +496,32 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
                     Os_Set_TaskPending(CurRunTsk_Ptr);
             }
 
-            NxtRunTsk_Ptr = TskPtr_Tmp;
+            if ((TskPtr_Tmp->State != Task_DelayBlock) || (TskPtr_Tmp->State != Task_SignalBlock))
+            {
+                NxtRunTsk_Ptr = TskPtr_Tmp;
 
-            NxtTsk_TCB.Top_Stk_Ptr = &NxtRunTsk_Ptr->TCB.Top_Stk_Ptr;
-            NxtTsk_TCB.Stack = NxtRunTsk_Ptr->TCB.Stack;
+                NxtTsk_TCB.Top_Stk_Ptr = &NxtRunTsk_Ptr->TCB.Top_Stk_Ptr;
+                NxtTsk_TCB.Stack = NxtRunTsk_Ptr->TCB.Stack;
+
+                /* trigger pendsv to switch task */
+                Kernel_TriggerPendSV();
+            }
+        }
+        if ((TskPtr_Tmp == NULL) || (CurRunTsk_Ptr == NULL))
+        {
+            NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
+            NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
+
+            /* trigger pendsv to switch task */
+            Kernel_TriggerPendSV();
+        }
+    }
+    else
+    {
+        if ((TskPtr_Tmp->State == Task_DelayBlock) || (TskPtr_Tmp->State == Task_SignalBlock))
+        {
+            NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
+            NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
 
             /* trigger pendsv to switch task */
             Kernel_TriggerPendSV();
@@ -509,16 +532,12 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 /* still got bug down here */
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
 {
-    SYSTEM_RunTime delay_tick_base = (Ms * REAL_1MS) * Runtime_GetTickBase();
+    SYSTEM_RunTime delay_tick_base = (Ms * REAL_1MS);
 
     /* set task next ready time */
     TaskHandlerToObj(hdl)->Exec_status.Exec_Time += delay_tick_base;
 
     Os_Set_TaskBlock(TaskHandlerToObj(hdl), Task_DelayBlock);
-
-    // Kernel_EnterCritical();
-    // Os_SchedulerRun(Get_CurrentRunningUs());
-    // Kernel_ExitCritical();
 
     NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
     NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;

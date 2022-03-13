@@ -51,6 +51,7 @@ typedef enum
 typedef struct
 {
     SYSTEM_RunTime Use_Us;
+    SYSTEM_RunTime Use_Ms;
 
     Tick_Base base;
     Tick_Frq frq;
