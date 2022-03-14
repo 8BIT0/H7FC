@@ -49,21 +49,21 @@ static const uint8_t Task_Priority_List[256] =
      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,  // 0xE0 ~ 0xEF
      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0}; // 0xF0 ~ 0xFF
 
-static volatile Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum];
 static volatile Task *CurRunTsk_Ptr = NULL;
 static volatile Task *NxtRunTsk_Ptr = NULL;
 static volatile TaskStack_ControlBlock CurTsk_TCB;
 static volatile TaskStack_ControlBlock NxtTsk_TCB;
-static bool traverse_start = false;
 
 static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_BlkMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 
-static Task_List_s TskCrt_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
-static Task_List_s TskRdy_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
+static volatile Task_List_s TskCrt_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
+static volatile Task_List_s TskRdy_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
 
 static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
+
+static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum];
 static Task *Idle_Task;
 
 /* internal function */
@@ -404,6 +404,8 @@ static void Os_Set_TaskReady(Task *tsk)
     // set current task under this group flag to ready
     TskHdl_RdyMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
 
+    tsk->Exec_status.Exec_Time = Get_TargetRunTime(tsk->exec_interval_us);
+
     tsk->State = Task_Ready;
 }
 
@@ -494,9 +496,6 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 
                 Os_Clr_TaskPending(TskPtr_Tmp);
                 Os_Set_TaskReady(TskPtr_Tmp);
-
-                /* reset task exec system runtime */
-                TskPtr_Tmp->Exec_status.Exec_Time = Get_TargetRunTime(TskPtr_Tmp->exec_interval_us);
             }
 
             if ((CurRunTsk_Ptr != NULL) && (CurRunTsk_Ptr != Idle_Task) && (CurRunTsk_Ptr->State == Task_Running))
@@ -519,9 +518,14 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     }
     else
     {
-        if ((TskPtr_Tmp->State == Task_DelayBlock) && (TskPtr_Tmp->State == Task_SignalBlock)) // ||
+        if (((TskPtr_Tmp == NULL) &&
+             (CurRunTsk_Ptr == NULL)) ||
+            ((TskPtr_Tmp->State == Task_DelayBlock) &&
+             (TskPtr_Tmp->State == Task_SignalBlock))) // ||
         {
             Idle_Task->State = Task_Ready;
+
+            NxtRunTsk_Ptr = Idle_Task;
 
             NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
             NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
@@ -709,8 +713,6 @@ static void Os_TaskExec(Task *tsk_ptr)
 
         tsk_ptr->Exec_status.cpu_opy = tsk_ptr->Exec_status.Running_Time / (float)time_diff;
         tsk_ptr->Exec_status.cpu_opy *= 100;
-
-        tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(tsk_ptr->exec_interval_us);
 
         // get task execute frequence
         if (tsk_ptr->Exec_status.Exec_cnt)
