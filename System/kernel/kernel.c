@@ -175,7 +175,7 @@ uint32_t Kernel_GetPSR(void)
  * control[0] : 0 is privilage mode / 1 is none privilage mode
  * control[1] : 0 is MSP / 1 is PSP
  */
-bool Kernel_GetMode(void)
+uint32_t Kernel_GetMode(void)
 {
     return __get_CONTROL();
 }

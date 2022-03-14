@@ -15,7 +15,7 @@ void Kernel_TriggerPendSV(void);
 void Kernel_LoadProcess(void);
 void Kernel_EnterCritical(void);
 void Kernel_ExitCritical(void);
-bool Kernel_GetMode(void);
+uint32_t Kernel_GetMode(void);
 uint32_t Kernel_GetPSR(void);
 
 #endif
