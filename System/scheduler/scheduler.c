@@ -554,11 +554,10 @@ void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
     NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
 
     /* trigger pendsv to switch task */
-    Kernel_EnterCritical();
+    /* do not anticipate scheduler been triggerd when it happend  */
     hold_scheduler++;
     Kernel_TriggerPendSV();
     hold_scheduler--;
-    Kernel_ExitCritical();
 }
 
 /*
