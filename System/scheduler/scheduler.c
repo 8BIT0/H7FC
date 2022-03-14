@@ -55,7 +55,6 @@ static volatile Task *NxtRunTsk_Ptr = NULL;
 static volatile TaskStack_ControlBlock CurTsk_TCB;
 static volatile TaskStack_ControlBlock NxtTsk_TCB;
 static bool traverse_start = false;
-static uint16_t hold_scheduler = 0;
 
 static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
@@ -281,6 +280,7 @@ static bool Os_CreateIdle(void)
     if (Idle_Task == NULL)
         return false;
 
+    Idle_Task->Task_name = "Idle";
     Idle_Task->priority = IDLE_TASK_PRIORITY;
     Idle_Task->Exec_Func = Os_Idle;
 
@@ -476,9 +476,6 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     SYSTEM_RunTime CurRt_US = Rt;
     Task *TskPtr_Tmp = NULL;
 
-    if (hold_scheduler)
-        return;
-
     if (TskCrt_RegList.num)
     {
         /* check task state ready or not */
@@ -502,11 +499,10 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
                 TskPtr_Tmp->Exec_status.Exec_Time = Get_TargetRunTime(TskPtr_Tmp->exec_interval_us);
             }
 
-            if (CurRunTsk_Ptr != NULL)
+            if ((CurRunTsk_Ptr != NULL) && (CurRunTsk_Ptr != Idle_Task) && (CurRunTsk_Ptr->State == Task_Running))
             {
-                if (CurRunTsk_Ptr->State == Task_Running)
-                    /* set current task in pending list */
-                    Os_Set_TaskPending(CurRunTsk_Ptr);
+                /* set current task in pending list */
+                Os_Set_TaskPending(CurRunTsk_Ptr);
             }
 
             if ((TskPtr_Tmp->State != Task_DelayBlock) && (TskPtr_Tmp->State != Task_SignalBlock))
@@ -554,9 +550,7 @@ void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
 
     /* trigger pendsv to switch task */
     /* do not anticipate scheduler been triggerd when it happend  */
-    hold_scheduler++;
     Kernel_TriggerPendSV();
-    hold_scheduler--;
 }
 
 /*
