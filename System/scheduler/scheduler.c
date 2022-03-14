@@ -8,7 +8,6 @@
 // bref:
 // estabishment a task running system with priority calling functional
 // alway calling the highest priority function in all function under the ready table
-// reference to ucos (version earler than v8.6)
 
 /*
 *******************************   TASK Handle    *******************************

@@ -164,11 +164,20 @@ __attribute__((naked)) void Kernel_TriggerPendSV(void)
 }
 
 /*
- *   return true in IRQ_Handler
+ *   return IRQ serial number in IRQ_Handler
+ */
+uint32_t Kernel_GetPSR(void)
+{
+    return __get_IPSR();
+}
+
+/*
+ * control[0] : 0 is privilage mode / 1 is none privilage mode
+ * control[1] : 0 is MSP / 1 is PSP
  */
 bool Kernel_GetMode(void)
 {
-    return __get_IPSR() != 0;
+    return __get_CONTROL();
 }
 
 static void Kernel_SetBASEPRI(uint32_t ulBASEPRI)
