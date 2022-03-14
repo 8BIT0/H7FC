@@ -520,8 +520,8 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     {
         if (((TskPtr_Tmp == NULL) &&
              (CurRunTsk_Ptr == NULL)) ||
-            ((TskPtr_Tmp->State == Task_DelayBlock) &&
-             (TskPtr_Tmp->State == Task_SignalBlock))) // ||
+            (TskPtr_Tmp->State == Task_DelayBlock) ||
+            (TskPtr_Tmp->State == Task_SignalBlock))
         {
             Idle_Task->State = Task_Ready;
 
