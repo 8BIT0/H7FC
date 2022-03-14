@@ -1,0 +1,1395 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"kernel.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.Kernel_SetBASEPRI,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	Kernel_SetBASEPRI:
+  25              	.LVL0:
+  26              	.LFB339:
+  27              		.file 1 "System/kernel/kernel.c"
+   1:System/kernel/kernel.c **** /*
+   2:System/kernel/kernel.c ****  * coder: 8_B!T0
+   3:System/kernel/kernel.c ****  * Kernel Funciont portable for any Kernel u use
+   4:System/kernel/kernel.c ****  * for stm32 some assemble and regsiter are in common
+   5:System/kernel/kernel.c ****  */
+   6:System/kernel/kernel.c **** 
+   7:System/kernel/kernel.c **** #include "kernel.h"
+   8:System/kernel/kernel.c **** #include "stm32h7xx_hal_rcc.h"
+   9:System/kernel/kernel.c **** #include "stm32h7xx_hal_pwr.h"
+  10:System/kernel/kernel.c **** #include "system_cfg.h"
+  11:System/kernel/kernel.c **** 
+  12:System/kernel/kernel.c **** #define KERNEL_SYSPRI2_REG (*((volatile uint32_t *)0xe000ed20))
+  13:System/kernel/kernel.c **** 
+  14:System/kernel/kernel.c **** #define KERNEL_INTERRUPT_PRIORITY (KERNEL_LOWEST_INTERRUPT_PRIORITY << 4)
+  15:System/kernel/kernel.c **** 
+  16:System/kernel/kernel.c **** static uint16_t CriticalNasting_Cnt = 0;
+  17:System/kernel/kernel.c **** 
+  18:System/kernel/kernel.c **** static bool KernelClock_Init(void);
+  19:System/kernel/kernel.c **** 
+  20:System/kernel/kernel.c **** bool Kernel_Init(void)
+  21:System/kernel/kernel.c **** {
+  22:System/kernel/kernel.c ****     // disable interrupt at the first place
+  23:System/kernel/kernel.c ****     Kernel_DisableIRQ();
+  24:System/kernel/kernel.c **** 
+  25:System/kernel/kernel.c **** #if KERNEL_DCACHE_STATE == 1
+  26:System/kernel/kernel.c ****     SCB_EnableDCache();
+  27:System/kernel/kernel.c **** #endif
+  28:System/kernel/kernel.c **** 
+  29:System/kernel/kernel.c **** #if KERNEL_ICACHE_STATE == 1
+  30:System/kernel/kernel.c ****     SCB_EnableICache();
+  31:System/kernel/kernel.c **** #endif
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 2
+
+
+  32:System/kernel/kernel.c **** 
+  33:System/kernel/kernel.c ****     HAL_Init();
+  34:System/kernel/kernel.c **** 
+  35:System/kernel/kernel.c ****     return KernelClock_Init();
+  36:System/kernel/kernel.c **** }
+  37:System/kernel/kernel.c **** 
+  38:System/kernel/kernel.c **** /*
+  39:System/kernel/kernel.c ****  * clock init
+  40:System/kernel/kernel.c ****  * general by stm32cubemx
+  41:System/kernel/kernel.c ****  */
+  42:System/kernel/kernel.c **** static bool KernelClock_Init(void)
+  43:System/kernel/kernel.c **** {
+  44:System/kernel/kernel.c ****     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  45:System/kernel/kernel.c ****     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  46:System/kernel/kernel.c ****     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  47:System/kernel/kernel.c **** 
+  48:System/kernel/kernel.c ****     /** Supply configuration update enable
+  49:System/kernel/kernel.c ****      */
+  50:System/kernel/kernel.c ****     HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+  51:System/kernel/kernel.c ****     /** Configure the main internal regulator output voltage
+  52:System/kernel/kernel.c ****      */
+  53:System/kernel/kernel.c ****     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
+  54:System/kernel/kernel.c **** 
+  55:System/kernel/kernel.c ****     while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY))
+  56:System/kernel/kernel.c ****     {
+  57:System/kernel/kernel.c ****     }
+  58:System/kernel/kernel.c ****     /** Macro to configure the PLL clock source
+  59:System/kernel/kernel.c ****      */
+  60:System/kernel/kernel.c ****     __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
+  61:System/kernel/kernel.c ****     /** Initializes the RCC Oscillators according to the specified parameters
+  62:System/kernel/kernel.c ****      * in the RCC_OscInitTypeDef structure.
+  63:System/kernel/kernel.c ****      */
+  64:System/kernel/kernel.c ****     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
+  65:System/kernel/kernel.c ****     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  66:System/kernel/kernel.c ****     RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  67:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  68:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  69:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLM = 5;
+  70:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLN = 128;
+  71:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLP = 2;
+  72:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLQ = 8;
+  73:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLR = 8;
+  74:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+  75:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+  76:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLFRACN = 0;
+  77:System/kernel/kernel.c ****     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  78:System/kernel/kernel.c ****     {
+  79:System/kernel/kernel.c ****         return false;
+  80:System/kernel/kernel.c ****     }
+  81:System/kernel/kernel.c **** 
+  82:System/kernel/kernel.c ****     /** Initializes the CPU, AHB and APB buses clocks
+  83:System/kernel/kernel.c ****      */
+  84:System/kernel/kernel.c ****     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 |
+  85:System/kernel/kernel.c ****     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  86:System/kernel/kernel.c ****     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+  87:System/kernel/kernel.c ****     RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+  88:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 3
+
+
+  89:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+  90:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+  91:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+  92:System/kernel/kernel.c ****     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  93:System/kernel/kernel.c ****     {
+  94:System/kernel/kernel.c ****         return false;
+  95:System/kernel/kernel.c ****     }
+  96:System/kernel/kernel.c **** 
+  97:System/kernel/kernel.c ****     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3 | RCC_PERIPHCLK_UART4 | RCC_PER
+  98:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3M = 25;
+  99:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3N = 240;
+ 100:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3P = 4;
+ 101:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3Q = 3;
+ 102:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3R = 2;
+ 103:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_0;
+ 104:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+ 105:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+ 106:System/kernel/kernel.c ****     PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL3;
+ 107:System/kernel/kernel.c ****     PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+ 108:System/kernel/kernel.c ****     PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+ 109:System/kernel/kernel.c ****     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+ 110:System/kernel/kernel.c ****     {
+ 111:System/kernel/kernel.c ****         return false;
+ 112:System/kernel/kernel.c ****     }
+ 113:System/kernel/kernel.c **** 
+ 114:System/kernel/kernel.c ****     // we need set systick priority as 15 pendsv priority as 14
+ 115:System/kernel/kernel.c ****     KERNEL_SYSPRI2_REG |= (((uint32_t)KERNEL_INTERRUPT_PRIORITY) << 16UL);
+ 116:System/kernel/kernel.c ****     KERNEL_SYSPRI2_REG |= (((uint32_t)KERNEL_INTERRUPT_PRIORITY) << 24UL);
+ 117:System/kernel/kernel.c **** 
+ 118:System/kernel/kernel.c ****     return true;
+ 119:System/kernel/kernel.c **** }
+ 120:System/kernel/kernel.c **** 
+ 121:System/kernel/kernel.c **** /*
+ 122:System/kernel/kernel.c ****  * init irq vactor and set perticular memory address for msp
+ 123:System/kernel/kernel.c ****  */
+ 124:System/kernel/kernel.c **** void Kernel_LoadProcess(void)
+ 125:System/kernel/kernel.c **** {
+ 126:System/kernel/kernel.c ****     uint32_t msp_addr = 0;
+ 127:System/kernel/kernel.c **** 
+ 128:System/kernel/kernel.c ****     /* clear PSP */
+ 129:System/kernel/kernel.c ****     __ASM("MOVS     R0, #0");
+ 130:System/kernel/kernel.c ****     __ASM("MSR      PSP, R0");
+ 131:System/kernel/kernel.c **** 
+ 132:System/kernel/kernel.c ****     /* set irq vactor */
+ 133:System/kernel/kernel.c ****     __ASM("LDR      R0, =0xE000ED08");
+ 134:System/kernel/kernel.c ****     __ASM("LDR      R0, [R0]");
+ 135:System/kernel/kernel.c ****     __ASM("LDR      R0, [R0]");
+ 136:System/kernel/kernel.c ****     __ASM("MSR      MSP, R0");
+ 137:System/kernel/kernel.c **** 
+ 138:System/kernel/kernel.c ****     /* trigger svc to push first task in process stack */
+ 139:System/kernel/kernel.c ****     __asm("SVC      0");
+ 140:System/kernel/kernel.c ****     __asm("ISB");
+ 141:System/kernel/kernel.c ****     __asm("NOP");
+ 142:System/kernel/kernel.c **** }
+ 143:System/kernel/kernel.c **** 
+ 144:System/kernel/kernel.c **** __attribute__((naked)) void Kernel_EnablePendSV(void)
+ 145:System/kernel/kernel.c **** {
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 4
+
+
+ 146:System/kernel/kernel.c ****     __ASM(".equ NVIC_SYSPRI14, 0xE000ED22");
+ 147:System/kernel/kernel.c ****     __ASM(".equ NVIC_PENDSV_PRI, 0xFF");
+ 148:System/kernel/kernel.c **** 
+ 149:System/kernel/kernel.c ****     __ASM("LDR      R0, =NVIC_SYSPRI14");
+ 150:System/kernel/kernel.c ****     __ASM("LDR      R1, =NVIC_PENDSV_PRI");
+ 151:System/kernel/kernel.c ****     __ASM("STRB     R1, [R0]");
+ 152:System/kernel/kernel.c ****     __ASM("BX       LR");
+ 153:System/kernel/kernel.c **** }
+ 154:System/kernel/kernel.c **** 
+ 155:System/kernel/kernel.c **** __attribute__((naked)) void Kernel_TriggerPendSV(void)
+ 156:System/kernel/kernel.c **** {
+ 157:System/kernel/kernel.c ****     __ASM(".equ NVIC_INT_CTRL, 0xE000ED04");
+ 158:System/kernel/kernel.c ****     __ASM(".equ NVIC_PENDSVSET, 0x10000000");
+ 159:System/kernel/kernel.c **** 
+ 160:System/kernel/kernel.c ****     __ASM("LDR      R0, =NVIC_INT_CTRL");
+ 161:System/kernel/kernel.c ****     __ASM("LDR      R1, =NVIC_PENDSVSET");
+ 162:System/kernel/kernel.c ****     __ASM("STR      R1, [R0]");
+ 163:System/kernel/kernel.c ****     __ASM("BX       LR");
+ 164:System/kernel/kernel.c **** }
+ 165:System/kernel/kernel.c **** 
+ 166:System/kernel/kernel.c **** /*
+ 167:System/kernel/kernel.c ****  *   return true in IRQ_Handler
+ 168:System/kernel/kernel.c ****  */
+ 169:System/kernel/kernel.c **** bool Kernel_GetMode(void)
+ 170:System/kernel/kernel.c **** {
+ 171:System/kernel/kernel.c ****     return __get_IPSR() != 0;
+ 172:System/kernel/kernel.c **** }
+ 173:System/kernel/kernel.c **** 
+ 174:System/kernel/kernel.c **** static void Kernel_SetBASEPRI(uint32_t ulBASEPRI)
+ 175:System/kernel/kernel.c **** {
+  28              		.loc 1 175 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+ 176:System/kernel/kernel.c ****     __ASM("	msr basepri, %0	" ::"r"(ulBASEPRI)
+  33              		.loc 1 176 5 view .LVU1
+  34              		.syntax unified
+  35              	@ 176 "System/kernel/kernel.c" 1
+  36 0000 80F31188 			msr basepri, r0	
+  37              	@ 0 "" 2
+ 177:System/kernel/kernel.c ****           : "memory");
+ 178:System/kernel/kernel.c ****     __ASM("DSB");
+  38              		.loc 1 178 5 view .LVU2
+  39              	@ 178 "System/kernel/kernel.c" 1
+  40 0004 BFF34F8F 		DSB
+  41              	@ 0 "" 2
+ 179:System/kernel/kernel.c ****     __ASM("ISB");
+  42              		.loc 1 179 5 view .LVU3
+  43              	@ 179 "System/kernel/kernel.c" 1
+  44 0008 BFF36F8F 		ISB
+  45              	@ 0 "" 2
+ 180:System/kernel/kernel.c **** }
+  46              		.loc 1 180 1 is_stmt 0 view .LVU4
+  47              		.thumb
+  48              		.syntax unified
+  49 000c 7047     		bx	lr
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 5
+
+
+  50              		.cfi_endproc
+  51              	.LFE339:
+  53              		.section	.text.KernelClock_Init,"ax",%progbits
+  54              		.align	1
+  55              		.syntax unified
+  56              		.thumb
+  57              		.thumb_func
+  58              		.fpu fpv5-d16
+  60              	KernelClock_Init:
+  61              	.LFB334:
+  43:System/kernel/kernel.c ****     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  62              		.loc 1 43 1 is_stmt 1 view -0
+  63              		.cfi_startproc
+  64              		@ args = 0, pretend = 0, frame = 304
+  65              		@ frame_needed = 0, uses_anonymous_args = 0
+  66 0000 00B5     		push	{lr}
+  67              	.LCFI0:
+  68              		.cfi_def_cfa_offset 4
+  69              		.cfi_offset 14, -4
+  70 0002 CDB0     		sub	sp, sp, #308
+  71              	.LCFI1:
+  72              		.cfi_def_cfa_offset 312
+  44:System/kernel/kernel.c ****     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  73              		.loc 1 44 5 view .LVU6
+  44:System/kernel/kernel.c ****     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  74              		.loc 1 44 24 is_stmt 0 view .LVU7
+  75 0004 4C22     		movs	r2, #76
+  76 0006 0021     		movs	r1, #0
+  77 0008 39A8     		add	r0, sp, #228
+  78 000a FFF7FEFF 		bl	memset
+  79              	.LVL1:
+  45:System/kernel/kernel.c ****     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  80              		.loc 1 45 5 is_stmt 1 view .LVU8
+  45:System/kernel/kernel.c ****     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  81              		.loc 1 45 24 is_stmt 0 view .LVU9
+  82 000e 2022     		movs	r2, #32
+  83 0010 0021     		movs	r1, #0
+  84 0012 31A8     		add	r0, sp, #196
+  85 0014 FFF7FEFF 		bl	memset
+  86              	.LVL2:
+  46:System/kernel/kernel.c **** 
+  87              		.loc 1 46 5 is_stmt 1 view .LVU10
+  46:System/kernel/kernel.c **** 
+  88              		.loc 1 46 30 is_stmt 0 view .LVU11
+  89 0018 BC22     		movs	r2, #188
+  90 001a 0021     		movs	r1, #0
+  91 001c 02A8     		add	r0, sp, #8
+  92 001e FFF7FEFF 		bl	memset
+  93              	.LVL3:
+  50:System/kernel/kernel.c ****     /** Configure the main internal regulator output voltage
+  94              		.loc 1 50 5 is_stmt 1 view .LVU12
+  95 0022 0220     		movs	r0, #2
+  96 0024 FFF7FEFF 		bl	HAL_PWREx_ConfigSupply
+  97              	.LVL4:
+  53:System/kernel/kernel.c **** 
+  98              		.loc 1 53 5 view .LVU13
+  99              	.LBB4:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 6
+
+
+  53:System/kernel/kernel.c **** 
+ 100              		.loc 1 53 5 view .LVU14
+ 101 0028 0023     		movs	r3, #0
+ 102 002a 0193     		str	r3, [sp, #4]
+  53:System/kernel/kernel.c **** 
+ 103              		.loc 1 53 5 view .LVU15
+  53:System/kernel/kernel.c **** 
+ 104              		.loc 1 53 5 view .LVU16
+ 105 002c 3F4B     		ldr	r3, .L11
+ 106 002e 9A69     		ldr	r2, [r3, #24]
+ 107 0030 42F44042 		orr	r2, r2, #49152
+ 108 0034 9A61     		str	r2, [r3, #24]
+  53:System/kernel/kernel.c **** 
+ 109              		.loc 1 53 5 view .LVU17
+ 110 0036 9B69     		ldr	r3, [r3, #24]
+ 111 0038 03F44043 		and	r3, r3, #49152
+ 112 003c 0193     		str	r3, [sp, #4]
+  53:System/kernel/kernel.c **** 
+ 113              		.loc 1 53 5 view .LVU18
+ 114 003e 3C4B     		ldr	r3, .L11+4
+ 115 0040 DA6A     		ldr	r2, [r3, #44]
+ 116 0042 42F00102 		orr	r2, r2, #1
+ 117 0046 DA62     		str	r2, [r3, #44]
+  53:System/kernel/kernel.c **** 
+ 118              		.loc 1 53 5 view .LVU19
+ 119 0048 DB6A     		ldr	r3, [r3, #44]
+ 120 004a 03F00103 		and	r3, r3, #1
+ 121 004e 0193     		str	r3, [sp, #4]
+  53:System/kernel/kernel.c **** 
+ 122              		.loc 1 53 5 view .LVU20
+ 123 0050 019B     		ldr	r3, [sp, #4]
+ 124              	.LBE4:
+  53:System/kernel/kernel.c **** 
+ 125              		.loc 1 53 5 view .LVU21
+  55:System/kernel/kernel.c ****     {
+ 126              		.loc 1 55 5 view .LVU22
+ 127              	.L3:
+  57:System/kernel/kernel.c ****     /** Macro to configure the PLL clock source
+ 128              		.loc 1 57 5 discriminator 1 view .LVU23
+  55:System/kernel/kernel.c ****     {
+ 129              		.loc 1 55 11 discriminator 1 view .LVU24
+  55:System/kernel/kernel.c ****     {
+ 130              		.loc 1 55 13 is_stmt 0 discriminator 1 view .LVU25
+ 131 0052 364B     		ldr	r3, .L11
+ 132 0054 9B69     		ldr	r3, [r3, #24]
+  55:System/kernel/kernel.c ****     {
+ 133              		.loc 1 55 11 discriminator 1 view .LVU26
+ 134 0056 13F4005F 		tst	r3, #8192
+ 135 005a FAD0     		beq	.L3
+  60:System/kernel/kernel.c ****     /** Initializes the RCC Oscillators according to the specified parameters
+ 136              		.loc 1 60 5 is_stmt 1 view .LVU27
+ 137 005c 354A     		ldr	r2, .L11+8
+ 138 005e 936A     		ldr	r3, [r2, #40]
+ 139 0060 23F00303 		bic	r3, r3, #3
+ 140 0064 43F00203 		orr	r3, r3, #2
+ 141 0068 9362     		str	r3, [r2, #40]
+  64:System/kernel/kernel.c ****     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 7
+
+
+ 142              		.loc 1 64 5 view .LVU28
+  64:System/kernel/kernel.c ****     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+ 143              		.loc 1 64 38 is_stmt 0 view .LVU29
+ 144 006a 0923     		movs	r3, #9
+ 145 006c 3993     		str	r3, [sp, #228]
+  65:System/kernel/kernel.c ****     RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+ 146              		.loc 1 65 5 is_stmt 1 view .LVU30
+  65:System/kernel/kernel.c ****     RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+ 147              		.loc 1 65 32 is_stmt 0 view .LVU31
+ 148 006e 4FF48033 		mov	r3, #65536
+ 149 0072 3A93     		str	r3, [sp, #232]
+  66:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 150              		.loc 1 66 5 is_stmt 1 view .LVU32
+  66:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 151              		.loc 1 66 32 is_stmt 0 view .LVU33
+ 152 0074 0123     		movs	r3, #1
+ 153 0076 3E93     		str	r3, [sp, #248]
+  67:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+ 154              		.loc 1 67 5 is_stmt 1 view .LVU34
+  67:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+ 155              		.loc 1 67 36 is_stmt 0 view .LVU35
+ 156 0078 0223     		movs	r3, #2
+ 157 007a 4293     		str	r3, [sp, #264]
+  68:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLM = 5;
+ 158              		.loc 1 68 5 is_stmt 1 view .LVU36
+  68:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLM = 5;
+ 159              		.loc 1 68 37 is_stmt 0 view .LVU37
+ 160 007c 4393     		str	r3, [sp, #268]
+  69:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLN = 128;
+ 161              		.loc 1 69 5 is_stmt 1 view .LVU38
+  69:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLN = 128;
+ 162              		.loc 1 69 32 is_stmt 0 view .LVU39
+ 163 007e 0522     		movs	r2, #5
+ 164 0080 4492     		str	r2, [sp, #272]
+  70:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLP = 2;
+ 165              		.loc 1 70 5 is_stmt 1 view .LVU40
+  70:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLP = 2;
+ 166              		.loc 1 70 32 is_stmt 0 view .LVU41
+ 167 0082 8022     		movs	r2, #128
+ 168 0084 4592     		str	r2, [sp, #276]
+  71:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLQ = 8;
+ 169              		.loc 1 71 5 is_stmt 1 view .LVU42
+  71:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLQ = 8;
+ 170              		.loc 1 71 32 is_stmt 0 view .LVU43
+ 171 0086 4693     		str	r3, [sp, #280]
+  72:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLR = 8;
+ 172              		.loc 1 72 5 is_stmt 1 view .LVU44
+  72:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLR = 8;
+ 173              		.loc 1 72 32 is_stmt 0 view .LVU45
+ 174 0088 0823     		movs	r3, #8
+ 175 008a 4793     		str	r3, [sp, #284]
+  73:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+ 176              		.loc 1 73 5 is_stmt 1 view .LVU46
+  73:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+ 177              		.loc 1 73 32 is_stmt 0 view .LVU47
+ 178 008c 4893     		str	r3, [sp, #288]
+  74:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 8
+
+
+ 179              		.loc 1 74 5 is_stmt 1 view .LVU48
+  74:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+ 180              		.loc 1 74 34 is_stmt 0 view .LVU49
+ 181 008e 4993     		str	r3, [sp, #292]
+  75:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLFRACN = 0;
+ 182              		.loc 1 75 5 is_stmt 1 view .LVU50
+  75:System/kernel/kernel.c ****     RCC_OscInitStruct.PLL.PLLFRACN = 0;
+ 183              		.loc 1 75 37 is_stmt 0 view .LVU51
+ 184 0090 0023     		movs	r3, #0
+ 185 0092 4A93     		str	r3, [sp, #296]
+  76:System/kernel/kernel.c ****     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 186              		.loc 1 76 5 is_stmt 1 view .LVU52
+  76:System/kernel/kernel.c ****     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 187              		.loc 1 76 36 is_stmt 0 view .LVU53
+ 188 0094 4B93     		str	r3, [sp, #300]
+  77:System/kernel/kernel.c ****     {
+ 189              		.loc 1 77 5 is_stmt 1 view .LVU54
+  77:System/kernel/kernel.c ****     {
+ 190              		.loc 1 77 9 is_stmt 0 view .LVU55
+ 191 0096 39A8     		add	r0, sp, #228
+ 192 0098 FFF7FEFF 		bl	HAL_RCC_OscConfig
+ 193              	.LVL5:
+  77:System/kernel/kernel.c ****     {
+ 194              		.loc 1 77 8 view .LVU56
+ 195 009c 18B1     		cbz	r0, .L9
+  79:System/kernel/kernel.c ****     }
+ 196              		.loc 1 79 16 view .LVU57
+ 197 009e 0020     		movs	r0, #0
+ 198              	.L4:
+ 119:System/kernel/kernel.c **** 
+ 199              		.loc 1 119 1 view .LVU58
+ 200 00a0 4DB0     		add	sp, sp, #308
+ 201              	.LCFI2:
+ 202              		.cfi_remember_state
+ 203              		.cfi_def_cfa_offset 4
+ 204              		@ sp needed
+ 205 00a2 5DF804FB 		ldr	pc, [sp], #4
+ 206              	.L9:
+ 207              	.LCFI3:
+ 208              		.cfi_restore_state
+  84:System/kernel/kernel.c ****     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+ 209              		.loc 1 84 5 is_stmt 1 view .LVU59
+  84:System/kernel/kernel.c ****     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+ 210              		.loc 1 84 33 is_stmt 0 view .LVU60
+ 211 00a6 3F23     		movs	r3, #63
+ 212 00a8 3193     		str	r3, [sp, #196]
+  85:System/kernel/kernel.c ****     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+ 213              		.loc 1 85 5 is_stmt 1 view .LVU61
+  85:System/kernel/kernel.c ****     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+ 214              		.loc 1 85 36 is_stmt 0 view .LVU62
+ 215 00aa 0323     		movs	r3, #3
+ 216 00ac 3293     		str	r3, [sp, #200]
+  86:System/kernel/kernel.c ****     RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+ 217              		.loc 1 86 5 is_stmt 1 view .LVU63
+  86:System/kernel/kernel.c ****     RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+ 218              		.loc 1 86 37 is_stmt 0 view .LVU64
+ 219 00ae 0023     		movs	r3, #0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 9
+
+
+ 220 00b0 3393     		str	r3, [sp, #204]
+  87:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+ 221              		.loc 1 87 5 is_stmt 1 view .LVU65
+  87:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+ 222              		.loc 1 87 37 is_stmt 0 view .LVU66
+ 223 00b2 0823     		movs	r3, #8
+ 224 00b4 3493     		str	r3, [sp, #208]
+  88:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+ 225              		.loc 1 88 5 is_stmt 1 view .LVU67
+  88:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+ 226              		.loc 1 88 38 is_stmt 0 view .LVU68
+ 227 00b6 4023     		movs	r3, #64
+ 228 00b8 3593     		str	r3, [sp, #212]
+  89:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+ 229              		.loc 1 89 5 is_stmt 1 view .LVU69
+  89:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+ 230              		.loc 1 89 38 is_stmt 0 view .LVU70
+ 231 00ba 3693     		str	r3, [sp, #216]
+  90:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+ 232              		.loc 1 90 5 is_stmt 1 view .LVU71
+  90:System/kernel/kernel.c ****     RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+ 233              		.loc 1 90 38 is_stmt 0 view .LVU72
+ 234 00bc 4FF48062 		mov	r2, #1024
+ 235 00c0 3792     		str	r2, [sp, #220]
+  91:System/kernel/kernel.c ****     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+ 236              		.loc 1 91 5 is_stmt 1 view .LVU73
+  91:System/kernel/kernel.c ****     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+ 237              		.loc 1 91 38 is_stmt 0 view .LVU74
+ 238 00c2 3893     		str	r3, [sp, #224]
+  92:System/kernel/kernel.c ****     {
+ 239              		.loc 1 92 5 is_stmt 1 view .LVU75
+  92:System/kernel/kernel.c ****     {
+ 240              		.loc 1 92 9 is_stmt 0 view .LVU76
+ 241 00c4 0221     		movs	r1, #2
+ 242 00c6 31A8     		add	r0, sp, #196
+ 243 00c8 FFF7FEFF 		bl	HAL_RCC_ClockConfig
+ 244              	.LVL6:
+  92:System/kernel/kernel.c ****     {
+ 245              		.loc 1 92 8 view .LVU77
+ 246 00cc 08B1     		cbz	r0, .L10
+  94:System/kernel/kernel.c ****     }
+ 247              		.loc 1 94 16 view .LVU78
+ 248 00ce 0020     		movs	r0, #0
+ 249 00d0 E6E7     		b	.L4
+ 250              	.L10:
+  97:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3M = 25;
+ 251              		.loc 1 97 5 is_stmt 1 view .LVU79
+  97:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3M = 25;
+ 252              		.loc 1 97 46 is_stmt 0 view .LVU80
+ 253 00d2 41F20303 		movw	r3, #4099
+ 254 00d6 0293     		str	r3, [sp, #8]
+  98:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3N = 240;
+ 255              		.loc 1 98 5 is_stmt 1 view .LVU81
+  98:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3N = 240;
+ 256              		.loc 1 98 36 is_stmt 0 view .LVU82
+ 257 00d8 1923     		movs	r3, #25
+ 258 00da 0B93     		str	r3, [sp, #44]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 10
+
+
+  99:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3P = 4;
+ 259              		.loc 1 99 5 is_stmt 1 view .LVU83
+  99:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3P = 4;
+ 260              		.loc 1 99 36 is_stmt 0 view .LVU84
+ 261 00dc F023     		movs	r3, #240
+ 262 00de 0C93     		str	r3, [sp, #48]
+ 100:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3Q = 3;
+ 263              		.loc 1 100 5 is_stmt 1 view .LVU85
+ 100:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3Q = 3;
+ 264              		.loc 1 100 36 is_stmt 0 view .LVU86
+ 265 00e0 0423     		movs	r3, #4
+ 266 00e2 0D93     		str	r3, [sp, #52]
+ 101:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3R = 2;
+ 267              		.loc 1 101 5 is_stmt 1 view .LVU87
+ 101:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3R = 2;
+ 268              		.loc 1 101 36 is_stmt 0 view .LVU88
+ 269 00e4 0323     		movs	r3, #3
+ 270 00e6 0E93     		str	r3, [sp, #56]
+ 102:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_0;
+ 271              		.loc 1 102 5 is_stmt 1 view .LVU89
+ 102:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_0;
+ 272              		.loc 1 102 36 is_stmt 0 view .LVU90
+ 273 00e8 0223     		movs	r3, #2
+ 274 00ea 0F93     		str	r3, [sp, #60]
+ 103:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+ 275              		.loc 1 103 5 is_stmt 1 view .LVU91
+ 103:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+ 276              		.loc 1 103 38 is_stmt 0 view .LVU92
+ 277 00ec 0023     		movs	r3, #0
+ 278 00ee 1093     		str	r3, [sp, #64]
+ 104:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+ 279              		.loc 1 104 5 is_stmt 1 view .LVU93
+ 104:System/kernel/kernel.c ****     PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+ 280              		.loc 1 104 41 is_stmt 0 view .LVU94
+ 281 00f0 1193     		str	r3, [sp, #68]
+ 105:System/kernel/kernel.c ****     PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL3;
+ 282              		.loc 1 105 5 is_stmt 1 view .LVU95
+ 105:System/kernel/kernel.c ****     PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL3;
+ 283              		.loc 1 105 40 is_stmt 0 view .LVU96
+ 284 00f2 1293     		str	r3, [sp, #72]
+ 106:System/kernel/kernel.c ****     PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+ 285              		.loc 1 106 5 is_stmt 1 view .LVU97
+ 106:System/kernel/kernel.c ****     PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+ 286              		.loc 1 106 46 is_stmt 0 view .LVU98
+ 287 00f4 4FF40052 		mov	r2, #8192
+ 288 00f8 1992     		str	r2, [sp, #100]
+ 107:System/kernel/kernel.c ****     PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+ 289              		.loc 1 107 5 is_stmt 1 view .LVU99
+ 107:System/kernel/kernel.c ****     PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+ 290              		.loc 1 107 51 is_stmt 0 view .LVU100
+ 291 00fa 1F93     		str	r3, [sp, #124]
+ 108:System/kernel/kernel.c ****     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+ 292              		.loc 1 108 5 is_stmt 1 view .LVU101
+ 108:System/kernel/kernel.c ****     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+ 293              		.loc 1 108 47 is_stmt 0 view .LVU102
+ 294 00fc 2093     		str	r3, [sp, #128]
+ 109:System/kernel/kernel.c ****     {
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 11
+
+
+ 295              		.loc 1 109 5 is_stmt 1 view .LVU103
+ 109:System/kernel/kernel.c ****     {
+ 296              		.loc 1 109 9 is_stmt 0 view .LVU104
+ 297 00fe 02A8     		add	r0, sp, #8
+ 298 0100 FFF7FEFF 		bl	HAL_RCCEx_PeriphCLKConfig
+ 299              	.LVL7:
+ 109:System/kernel/kernel.c ****     {
+ 300              		.loc 1 109 8 view .LVU105
+ 301 0104 78B9     		cbnz	r0, .L7
+ 115:System/kernel/kernel.c ****     KERNEL_SYSPRI2_REG |= (((uint32_t)KERNEL_INTERRUPT_PRIORITY) << 24UL);
+ 302              		.loc 1 115 5 is_stmt 1 view .LVU106
+ 115:System/kernel/kernel.c ****     KERNEL_SYSPRI2_REG |= (((uint32_t)KERNEL_INTERRUPT_PRIORITY) << 24UL);
+ 303              		.loc 1 115 24 is_stmt 0 view .LVU107
+ 304 0106 4FF0E023 		mov	r3, #-536813568
+ 305 010a D3F8202D 		ldr	r2, [r3, #3360]
+ 306 010e 42F47002 		orr	r2, r2, #15728640
+ 307 0112 C3F8202D 		str	r2, [r3, #3360]
+ 116:System/kernel/kernel.c **** 
+ 308              		.loc 1 116 5 is_stmt 1 view .LVU108
+ 116:System/kernel/kernel.c **** 
+ 309              		.loc 1 116 24 is_stmt 0 view .LVU109
+ 310 0116 D3F8202D 		ldr	r2, [r3, #3360]
+ 311 011a 42F07042 		orr	r2, r2, #-268435456
+ 312 011e C3F8202D 		str	r2, [r3, #3360]
+ 118:System/kernel/kernel.c **** }
+ 313              		.loc 1 118 5 is_stmt 1 view .LVU110
+ 118:System/kernel/kernel.c **** }
+ 314              		.loc 1 118 12 is_stmt 0 view .LVU111
+ 315 0122 0120     		movs	r0, #1
+ 316 0124 BCE7     		b	.L4
+ 317              	.L7:
+ 111:System/kernel/kernel.c ****     }
+ 318              		.loc 1 111 16 view .LVU112
+ 319 0126 0020     		movs	r0, #0
+ 320 0128 BAE7     		b	.L4
+ 321              	.L12:
+ 322 012a 00BF     		.align	2
+ 323              	.L11:
+ 324 012c 00480258 		.word	1476544512
+ 325 0130 00040058 		.word	1476396032
+ 326 0134 00440258 		.word	1476543488
+ 327              		.cfi_endproc
+ 328              	.LFE334:
+ 330              		.section	.text.Kernel_Init,"ax",%progbits
+ 331              		.align	1
+ 332              		.global	Kernel_Init
+ 333              		.syntax unified
+ 334              		.thumb
+ 335              		.thumb_func
+ 336              		.fpu fpv5-d16
+ 338              	Kernel_Init:
+ 339              	.LFB333:
+  21:System/kernel/kernel.c ****     // disable interrupt at the first place
+ 340              		.loc 1 21 1 is_stmt 1 view -0
+ 341              		.cfi_startproc
+ 342              		@ args = 0, pretend = 0, frame = 0
+ 343              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 12
+
+
+ 344 0000 08B5     		push	{r3, lr}
+ 345              	.LCFI4:
+ 346              		.cfi_def_cfa_offset 8
+ 347              		.cfi_offset 3, -8
+ 348              		.cfi_offset 14, -4
+  23:System/kernel/kernel.c **** 
+ 349              		.loc 1 23 5 view .LVU114
+ 350              		.syntax unified
+ 351              	@ 23 "System/kernel/kernel.c" 1
+ 352 0002 72B6     		cpsid i
+ 353              	@ 0 "" 2
+  33:System/kernel/kernel.c **** 
+ 354              		.loc 1 33 5 view .LVU115
+ 355              		.thumb
+ 356              		.syntax unified
+ 357 0004 FFF7FEFF 		bl	HAL_Init
+ 358              	.LVL8:
+  35:System/kernel/kernel.c **** }
+ 359              		.loc 1 35 5 view .LVU116
+  35:System/kernel/kernel.c **** }
+ 360              		.loc 1 35 12 is_stmt 0 view .LVU117
+ 361 0008 FFF7FEFF 		bl	KernelClock_Init
+ 362              	.LVL9:
+  36:System/kernel/kernel.c **** 
+ 363              		.loc 1 36 1 view .LVU118
+ 364 000c 08BD     		pop	{r3, pc}
+ 365              		.cfi_endproc
+ 366              	.LFE333:
+ 368              		.section	.text.Kernel_LoadProcess,"ax",%progbits
+ 369              		.align	1
+ 370              		.global	Kernel_LoadProcess
+ 371              		.syntax unified
+ 372              		.thumb
+ 373              		.thumb_func
+ 374              		.fpu fpv5-d16
+ 376              	Kernel_LoadProcess:
+ 377              	.LFB335:
+ 125:System/kernel/kernel.c ****     uint32_t msp_addr = 0;
+ 378              		.loc 1 125 1 is_stmt 1 view -0
+ 379              		.cfi_startproc
+ 380              		@ args = 0, pretend = 0, frame = 0
+ 381              		@ frame_needed = 0, uses_anonymous_args = 0
+ 382              		@ link register save eliminated.
+ 126:System/kernel/kernel.c **** 
+ 383              		.loc 1 126 5 view .LVU120
+ 384              	.LVL10:
+ 129:System/kernel/kernel.c ****     __ASM("MSR      PSP, R0");
+ 385              		.loc 1 129 5 view .LVU121
+ 386              		.syntax unified
+ 387              	@ 129 "System/kernel/kernel.c" 1
+ 388 0000 0020     		MOVS     R0, #0
+ 389              	@ 0 "" 2
+ 130:System/kernel/kernel.c **** 
+ 390              		.loc 1 130 5 view .LVU122
+ 391              	@ 130 "System/kernel/kernel.c" 1
+ 392 0002 80F30988 		MSR      PSP, R0
+ 393              	@ 0 "" 2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 13
+
+
+ 133:System/kernel/kernel.c ****     __ASM("LDR      R0, [R0]");
+ 394              		.loc 1 133 5 view .LVU123
+ 395              	@ 133 "System/kernel/kernel.c" 1
+ 396 0006 0548     		LDR      R0, =0xE000ED08
+ 397              	@ 0 "" 2
+ 134:System/kernel/kernel.c ****     __ASM("LDR      R0, [R0]");
+ 398              		.loc 1 134 5 view .LVU124
+ 399              	@ 134 "System/kernel/kernel.c" 1
+ 400 0008 0068     		LDR      R0, [R0]
+ 401              	@ 0 "" 2
+ 135:System/kernel/kernel.c ****     __ASM("MSR      MSP, R0");
+ 402              		.loc 1 135 5 view .LVU125
+ 403              	@ 135 "System/kernel/kernel.c" 1
+ 404 000a 0068     		LDR      R0, [R0]
+ 405              	@ 0 "" 2
+ 136:System/kernel/kernel.c **** 
+ 406              		.loc 1 136 5 view .LVU126
+ 407              	@ 136 "System/kernel/kernel.c" 1
+ 408 000c 80F30888 		MSR      MSP, R0
+ 409              	@ 0 "" 2
+ 139:System/kernel/kernel.c ****     __asm("ISB");
+ 410              		.loc 1 139 5 view .LVU127
+ 411              	@ 139 "System/kernel/kernel.c" 1
+ 412 0010 00DF     		SVC      0
+ 413              	@ 0 "" 2
+ 140:System/kernel/kernel.c ****     __asm("NOP");
+ 414              		.loc 1 140 5 view .LVU128
+ 415              	@ 140 "System/kernel/kernel.c" 1
+ 416 0012 BFF36F8F 		ISB
+ 417              	@ 0 "" 2
+ 141:System/kernel/kernel.c **** }
+ 418              		.loc 1 141 5 view .LVU129
+ 419              	@ 141 "System/kernel/kernel.c" 1
+ 420 0016 00BF     		NOP
+ 421              	@ 0 "" 2
+ 142:System/kernel/kernel.c **** 
+ 422              		.loc 1 142 1 is_stmt 0 view .LVU130
+ 423              		.thumb
+ 424              		.syntax unified
+ 425 0018 7047     		bx	lr
+ 426              		.cfi_endproc
+ 427              	.LFE335:
+ 429 001a 0000     		.section	.text.Kernel_EnablePendSV,"ax",%progbits
+ 430              		.align	1
+ 431              		.global	Kernel_EnablePendSV
+ 432              		.syntax unified
+ 433              		.thumb
+ 434              		.thumb_func
+ 435              		.fpu fpv5-d16
+ 437              	Kernel_EnablePendSV:
+ 438              	.LFB336:
+ 145:System/kernel/kernel.c ****     __ASM(".equ NVIC_SYSPRI14, 0xE000ED22");
+ 439              		.loc 1 145 1 is_stmt 1 view -0
+ 440              		.cfi_startproc
+ 441              		@ Naked Function: prologue and epilogue provided by programmer.
+ 442              		@ args = 0, pretend = 0, frame = 0
+ 443              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 14
+
+
+ 146:System/kernel/kernel.c ****     __ASM(".equ NVIC_PENDSV_PRI, 0xFF");
+ 444              		.loc 1 146 5 view .LVU132
+ 445              		.syntax unified
+ 446              	@ 146 "System/kernel/kernel.c" 1
+ 447              		.equ NVIC_SYSPRI14, 0xE000ED22
+ 448              	@ 0 "" 2
+ 147:System/kernel/kernel.c **** 
+ 449              		.loc 1 147 5 view .LVU133
+ 450              	@ 147 "System/kernel/kernel.c" 1
+ 451              		.equ NVIC_PENDSV_PRI, 0xFF
+ 452              	@ 0 "" 2
+ 149:System/kernel/kernel.c ****     __ASM("LDR      R1, =NVIC_PENDSV_PRI");
+ 453              		.loc 1 149 5 view .LVU134
+ 454              	@ 149 "System/kernel/kernel.c" 1
+ 455 0000 0248     		LDR      R0, =NVIC_SYSPRI14
+ 456              	@ 0 "" 2
+ 150:System/kernel/kernel.c ****     __ASM("STRB     R1, [R0]");
+ 457              		.loc 1 150 5 view .LVU135
+ 458              	@ 150 "System/kernel/kernel.c" 1
+ 459 0002 4FF0FF01 		LDR      R1, =NVIC_PENDSV_PRI
+ 460              	@ 0 "" 2
+ 151:System/kernel/kernel.c ****     __ASM("BX       LR");
+ 461              		.loc 1 151 5 view .LVU136
+ 462              	@ 151 "System/kernel/kernel.c" 1
+ 463 0006 0170     		STRB     R1, [R0]
+ 464              	@ 0 "" 2
+ 152:System/kernel/kernel.c **** }
+ 465              		.loc 1 152 5 view .LVU137
+ 466              	@ 152 "System/kernel/kernel.c" 1
+ 467 0008 7047     		BX       LR
+ 468              	@ 0 "" 2
+ 153:System/kernel/kernel.c **** 
+ 469              		.loc 1 153 1 is_stmt 0 view .LVU138
+ 470              		.thumb
+ 471              		.syntax unified
+ 472              		.cfi_endproc
+ 473              	.LFE336:
+ 475 000a 0000     		.section	.text.Kernel_TriggerPendSV,"ax",%progbits
+ 476              		.align	1
+ 477              		.global	Kernel_TriggerPendSV
+ 478              		.syntax unified
+ 479              		.thumb
+ 480              		.thumb_func
+ 481              		.fpu fpv5-d16
+ 483              	Kernel_TriggerPendSV:
+ 484              	.LFB337:
+ 156:System/kernel/kernel.c ****     __ASM(".equ NVIC_INT_CTRL, 0xE000ED04");
+ 485              		.loc 1 156 1 is_stmt 1 view -0
+ 486              		.cfi_startproc
+ 487              		@ Naked Function: prologue and epilogue provided by programmer.
+ 488              		@ args = 0, pretend = 0, frame = 0
+ 489              		@ frame_needed = 0, uses_anonymous_args = 0
+ 157:System/kernel/kernel.c ****     __ASM(".equ NVIC_PENDSVSET, 0x10000000");
+ 490              		.loc 1 157 5 view .LVU140
+ 491              		.syntax unified
+ 492              	@ 157 "System/kernel/kernel.c" 1
+ 493              		.equ NVIC_INT_CTRL, 0xE000ED04
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 15
+
+
+ 494              	@ 0 "" 2
+ 158:System/kernel/kernel.c **** 
+ 495              		.loc 1 158 5 view .LVU141
+ 496              	@ 158 "System/kernel/kernel.c" 1
+ 497              		.equ NVIC_PENDSVSET, 0x10000000
+ 498              	@ 0 "" 2
+ 160:System/kernel/kernel.c ****     __ASM("LDR      R1, =NVIC_PENDSVSET");
+ 499              		.loc 1 160 5 view .LVU142
+ 500              	@ 160 "System/kernel/kernel.c" 1
+ 501 0000 0248     		LDR      R0, =NVIC_INT_CTRL
+ 502              	@ 0 "" 2
+ 161:System/kernel/kernel.c ****     __ASM("STR      R1, [R0]");
+ 503              		.loc 1 161 5 view .LVU143
+ 504              	@ 161 "System/kernel/kernel.c" 1
+ 505 0002 4FF08051 		LDR      R1, =NVIC_PENDSVSET
+ 506              	@ 0 "" 2
+ 162:System/kernel/kernel.c ****     __ASM("BX       LR");
+ 507              		.loc 1 162 5 view .LVU144
+ 508              	@ 162 "System/kernel/kernel.c" 1
+ 509 0006 0160     		STR      R1, [R0]
+ 510              	@ 0 "" 2
+ 163:System/kernel/kernel.c **** }
+ 511              		.loc 1 163 5 view .LVU145
+ 512              	@ 163 "System/kernel/kernel.c" 1
+ 513 0008 7047     		BX       LR
+ 514              	@ 0 "" 2
+ 164:System/kernel/kernel.c **** 
+ 515              		.loc 1 164 1 is_stmt 0 view .LVU146
+ 516              		.thumb
+ 517              		.syntax unified
+ 518              		.cfi_endproc
+ 519              	.LFE337:
+ 521 000a 0000     		.section	.text.Kernel_GetMode,"ax",%progbits
+ 522              		.align	1
+ 523              		.global	Kernel_GetMode
+ 524              		.syntax unified
+ 525              		.thumb
+ 526              		.thumb_func
+ 527              		.fpu fpv5-d16
+ 529              	Kernel_GetMode:
+ 530              	.LFB338:
+ 170:System/kernel/kernel.c ****     return __get_IPSR() != 0;
+ 531              		.loc 1 170 1 is_stmt 1 view -0
+ 532              		.cfi_startproc
+ 533              		@ args = 0, pretend = 0, frame = 0
+ 534              		@ frame_needed = 0, uses_anonymous_args = 0
+ 535              		@ link register save eliminated.
+ 171:System/kernel/kernel.c **** }
+ 536              		.loc 1 171 5 view .LVU148
+ 537              	.LBB5:
+ 538              	.LBI5:
+ 539              		.file 2 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h"
+   1:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * @version  V5.2.0
+   5:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * @date     08. May 2019
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 16
+
+
+   6:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /*
+   8:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2019 Arm Limited. All rights reserved.
+   9:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  *
+  10:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  *
+  12:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  *
+  16:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  *
+  18:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+  24:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+  25:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+  28:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+  34:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  38:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+  39:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  43:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  46:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  49:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif                                           
+  52:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  55:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  58:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  61:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 17
+
+
+  63:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  64:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  67:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  70:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  78:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  86:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+  94:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 102:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 110:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 113:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 116:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef   __COMPILER_BARRIER
+ 117:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   #define __COMPILER_BARRIER()                   __ASM volatile("":::"memory")
+ 118:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 119:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 18
+
+
+ 120:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /* #########################  Startup and Lowlevel Init  ######################## */
+ 121:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 122:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __PROGRAM_START
+ 123:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 124:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 125:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Initializes data and bss sections
+ 126:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details This default implementations initialized all data and additional bss
+ 127:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            sections relying on .copy.table and .zero.table specified properly
+ 128:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            in the used linker script.
+ 129:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   
+ 130:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 131:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE __NO_RETURN void __cmsis_start(void)
+ 132:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 133:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   extern void _start(void) __NO_RETURN;
+ 134:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   
+ 135:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   typedef struct {
+ 136:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     uint32_t const* src;
+ 137:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     uint32_t* dest;
+ 138:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     uint32_t  wlen;
+ 139:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   } __copy_table_t;
+ 140:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   
+ 141:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   typedef struct {
+ 142:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     uint32_t* dest;
+ 143:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     uint32_t  wlen;
+ 144:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   } __zero_table_t;
+ 145:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   
+ 146:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   extern const __copy_table_t __copy_table_start__;
+ 147:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   extern const __copy_table_t __copy_table_end__;
+ 148:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   extern const __zero_table_t __zero_table_start__;
+ 149:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   extern const __zero_table_t __zero_table_end__;
+ 150:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 151:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   for (__copy_table_t const* pTable = &__copy_table_start__; pTable < &__copy_table_end__; ++pTable
+ 152:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     for(uint32_t i=0u; i<pTable->wlen; ++i) {
+ 153:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****       pTable->dest[i] = pTable->src[i];
+ 154:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     }
+ 155:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   }
+ 156:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  
+ 157:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   for (__zero_table_t const* pTable = &__zero_table_start__; pTable < &__zero_table_end__; ++pTable
+ 158:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     for(uint32_t i=0u; i<pTable->wlen; ++i) {
+ 159:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****       pTable->dest[i] = 0u;
+ 160:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     }
+ 161:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   }
+ 162:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  
+ 163:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   _start();
+ 164:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 165:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   
+ 166:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #define __PROGRAM_START           __cmsis_start
+ 167:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 168:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 169:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __INITIAL_SP
+ 170:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #define __INITIAL_SP              __StackTop
+ 171:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 172:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 173:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __STACK_LIMIT
+ 174:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #define __STACK_LIMIT             __StackLimit
+ 175:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 176:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 19
+
+
+ 177:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __VECTOR_TABLE
+ 178:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #define __VECTOR_TABLE            __Vectors
+ 179:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 180:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 181:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #ifndef __VECTOR_TABLE_ATTRIBUTE
+ 182:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #define __VECTOR_TABLE_ATTRIBUTE  __attribute((used, section(".vectors")))
+ 183:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 184:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 185:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 186:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 187:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 188:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   @{
+ 189:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 190:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 191:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 192:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 193:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 194:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 195:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 196:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 197:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 198:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 199:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 200:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 201:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 202:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 203:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 204:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 205:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 206:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 207:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 208:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 209:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+ 210:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 211:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 212:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 213:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 214:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Get Control Register
+ 215:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Returns the content of the Control Register.
+ 216:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \return               Control Register value
+ 217:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 218:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_CONTROL(void)
+ 219:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 220:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   uint32_t result;
+ 221:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 222:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, control" : "=r" (result) );
+ 223:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   return(result);
+ 224:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 225:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 226:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 227:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 228:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 229:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Get Control Register (non-secure)
+ 230:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Returns the content of the non-secure Control Register when in secure mode.
+ 231:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \return               non-secure Control Register value
+ 232:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 233:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_CONTROL_NS(void)
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 20
+
+
+ 234:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 235:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   uint32_t result;
+ 236:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 237:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, control_ns" : "=r" (result) );
+ 238:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   return(result);
+ 239:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 240:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 241:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 242:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 243:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 244:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Set Control Register
+ 245:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Writes the given value to the Control Register.
+ 246:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \param [in]    control  Control Register value to set
+ 247:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 248:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_CONTROL(uint32_t control)
+ 249:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 250:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MSR control, %0" : : "r" (control) : "memory");
+ 251:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 252:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 253:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 254:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 255:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 256:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Set Control Register (non-secure)
+ 257:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Writes the given value to the non-secure Control Register when in secure state.
+ 258:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \param [in]    control  Control Register value to set
+ 259:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 260:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_CONTROL_NS(uint32_t control)
+ 261:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 262:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MSR control_ns, %0" : : "r" (control) : "memory");
+ 263:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** }
+ 264:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** #endif
+ 265:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 266:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 267:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** /**
+ 268:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \brief   Get IPSR Register
+ 269:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \details Returns the content of the IPSR Register.
+ 270:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   \return               IPSR Register value
+ 271:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****  */
+ 272:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_IPSR(void)
+ 540              		.loc 2 272 31 view .LVU149
+ 541              	.LBB6:
+ 273:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** {
+ 274:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   uint32_t result;
+ 542              		.loc 2 274 3 view .LVU150
+ 275:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h **** 
+ 276:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, ipsr" : "=r" (result) );
+ 543              		.loc 2 276 3 view .LVU151
+ 544              		.syntax unified
+ 545              	@ 276 "HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h" 1
+ 546 0000 EFF30580 		MRS r0, ipsr
+ 547              	@ 0 "" 2
+ 548              	.LVL11:
+ 277:HAL_Lib/CMSIS/Core/Include/cmsis_gcc.h ****   return(result);
+ 549              		.loc 2 277 3 view .LVU152
+ 550              		.loc 2 277 3 is_stmt 0 view .LVU153
+ 551              		.thumb
+ 552              		.syntax unified
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 21
+
+
+ 553              	.LBE6:
+ 554              	.LBE5:
+ 172:System/kernel/kernel.c **** 
+ 555              		.loc 1 172 1 view .LVU154
+ 556 0004 0038     		subs	r0, r0, #0
+ 557 0006 18BF     		it	ne
+ 558 0008 0120     		movne	r0, #1
+ 559 000a 7047     		bx	lr
+ 560              		.cfi_endproc
+ 561              	.LFE338:
+ 563              		.section	.text.Kernel_EnterCritical,"ax",%progbits
+ 564              		.align	1
+ 565              		.global	Kernel_EnterCritical
+ 566              		.syntax unified
+ 567              		.thumb
+ 568              		.thumb_func
+ 569              		.fpu fpv5-d16
+ 571              	Kernel_EnterCritical:
+ 572              	.LFB340:
+ 181:System/kernel/kernel.c **** 
+ 182:System/kernel/kernel.c **** void Kernel_EnterCritical(void)
+ 183:System/kernel/kernel.c **** {
+ 573              		.loc 1 183 1 is_stmt 1 view -0
+ 574              		.cfi_startproc
+ 575              		@ args = 0, pretend = 0, frame = 0
+ 576              		@ frame_needed = 0, uses_anonymous_args = 0
+ 577 0000 08B5     		push	{r3, lr}
+ 578              	.LCFI5:
+ 579              		.cfi_def_cfa_offset 8
+ 580              		.cfi_offset 3, -8
+ 581              		.cfi_offset 14, -4
+ 184:System/kernel/kernel.c ****     Kernel_SetBASEPRI(SYSCALL_INTERRUPT_PRIORITY);
+ 582              		.loc 1 184 5 view .LVU156
+ 583 0002 3020     		movs	r0, #48
+ 584 0004 FFF7FEFF 		bl	Kernel_SetBASEPRI
+ 585              	.LVL12:
+ 185:System/kernel/kernel.c ****     CriticalNasting_Cnt++;
+ 586              		.loc 1 185 5 view .LVU157
+ 587              		.loc 1 185 24 is_stmt 0 view .LVU158
+ 588 0008 024A     		ldr	r2, .L21
+ 589 000a 1388     		ldrh	r3, [r2]
+ 590 000c 0133     		adds	r3, r3, #1
+ 591 000e 1380     		strh	r3, [r2]	@ movhi
+ 186:System/kernel/kernel.c **** }
+ 592              		.loc 1 186 1 view .LVU159
+ 593 0010 08BD     		pop	{r3, pc}
+ 594              	.L22:
+ 595 0012 00BF     		.align	2
+ 596              	.L21:
+ 597 0014 00000000 		.word	.LANCHOR0
+ 598              		.cfi_endproc
+ 599              	.LFE340:
+ 601              		.section	.text.Kernel_ExitCritical,"ax",%progbits
+ 602              		.align	1
+ 603              		.global	Kernel_ExitCritical
+ 604              		.syntax unified
+ 605              		.thumb
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 22
+
+
+ 606              		.thumb_func
+ 607              		.fpu fpv5-d16
+ 609              	Kernel_ExitCritical:
+ 610              	.LFB341:
+ 187:System/kernel/kernel.c **** 
+ 188:System/kernel/kernel.c **** void Kernel_ExitCritical(void)
+ 189:System/kernel/kernel.c **** {
+ 611              		.loc 1 189 1 is_stmt 1 view -0
+ 612              		.cfi_startproc
+ 613              		@ args = 0, pretend = 0, frame = 0
+ 614              		@ frame_needed = 0, uses_anonymous_args = 0
+ 615 0000 08B5     		push	{r3, lr}
+ 616              	.LCFI6:
+ 617              		.cfi_def_cfa_offset 8
+ 618              		.cfi_offset 3, -8
+ 619              		.cfi_offset 14, -4
+ 190:System/kernel/kernel.c ****     if (CriticalNasting_Cnt > 0)
+ 620              		.loc 1 190 5 view .LVU161
+ 621              		.loc 1 190 29 is_stmt 0 view .LVU162
+ 622 0002 084B     		ldr	r3, .L28
+ 623 0004 1B88     		ldrh	r3, [r3]
+ 624              		.loc 1 190 8 view .LVU163
+ 625 0006 4BB1     		cbz	r3, .L24
+ 191:System/kernel/kernel.c ****     {
+ 192:System/kernel/kernel.c ****         CriticalNasting_Cnt--;
+ 626              		.loc 1 192 9 is_stmt 1 view .LVU164
+ 627              		.loc 1 192 28 is_stmt 0 view .LVU165
+ 628 0008 013B     		subs	r3, r3, #1
+ 629 000a 9BB2     		uxth	r3, r3
+ 630 000c 054A     		ldr	r2, .L28
+ 631 000e 1380     		strh	r3, [r2]	@ movhi
+ 193:System/kernel/kernel.c **** 
+ 194:System/kernel/kernel.c ****         if (CriticalNasting_Cnt == 0)
+ 632              		.loc 1 194 9 is_stmt 1 view .LVU166
+ 633              		.loc 1 194 12 is_stmt 0 view .LVU167
+ 634 0010 03B1     		cbz	r3, .L27
+ 635              	.L23:
+ 195:System/kernel/kernel.c ****         {
+ 196:System/kernel/kernel.c ****             Kernel_SetBASEPRI(0);
+ 197:System/kernel/kernel.c ****         }
+ 198:System/kernel/kernel.c ****     }
+ 199:System/kernel/kernel.c ****     else
+ 200:System/kernel/kernel.c ****         Kernel_SetBASEPRI(0);
+ 201:System/kernel/kernel.c **** }
+ 636              		.loc 1 201 1 view .LVU168
+ 637 0012 08BD     		pop	{r3, pc}
+ 638              	.L27:
+ 196:System/kernel/kernel.c ****         }
+ 639              		.loc 1 196 13 is_stmt 1 view .LVU169
+ 640 0014 0020     		movs	r0, #0
+ 641 0016 FFF7FEFF 		bl	Kernel_SetBASEPRI
+ 642              	.LVL13:
+ 643 001a FAE7     		b	.L23
+ 644              	.L24:
+ 200:System/kernel/kernel.c **** }
+ 645              		.loc 1 200 9 view .LVU170
+ 646 001c 0020     		movs	r0, #0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 23
+
+
+ 647 001e FFF7FEFF 		bl	Kernel_SetBASEPRI
+ 648              	.LVL14:
+ 649              		.loc 1 201 1 is_stmt 0 view .LVU171
+ 650 0022 F6E7     		b	.L23
+ 651              	.L29:
+ 652              		.align	2
+ 653              	.L28:
+ 654 0024 00000000 		.word	.LANCHOR0
+ 655              		.cfi_endproc
+ 656              	.LFE341:
+ 658              		.section	.bss.CriticalNasting_Cnt,"aw",%nobits
+ 659              		.align	1
+ 660              		.set	.LANCHOR0,. + 0
+ 663              	CriticalNasting_Cnt:
+ 664 0000 0000     		.space	2
+ 665              		.text
+ 666              	.Letext0:
+ 667              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 668              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 669              		.file 5 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 670              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h"
+ 671              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc_ex.h"
+ 672              		.file 8 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h"
+ 673              		.file 9 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 674              		.file 10 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 675              		.file 11 "<built-in>"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccKBwwka.s 			page 24
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 kernel.c
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:17     .text.Kernel_SetBASEPRI:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:24     .text.Kernel_SetBASEPRI:00000000 Kernel_SetBASEPRI
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:54     .text.KernelClock_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:60     .text.KernelClock_Init:00000000 KernelClock_Init
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:324    .text.KernelClock_Init:0000012c $d
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:331    .text.Kernel_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:338    .text.Kernel_Init:00000000 Kernel_Init
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:369    .text.Kernel_LoadProcess:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:376    .text.Kernel_LoadProcess:00000000 Kernel_LoadProcess
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:430    .text.Kernel_EnablePendSV:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:437    .text.Kernel_EnablePendSV:00000000 Kernel_EnablePendSV
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:447    *ABS*:e000ed22 NVIC_SYSPRI14
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:451    *ABS*:000000ff NVIC_PENDSV_PRI
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:476    .text.Kernel_TriggerPendSV:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:483    .text.Kernel_TriggerPendSV:00000000 Kernel_TriggerPendSV
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:493    *ABS*:e000ed04 NVIC_INT_CTRL
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:497    *ABS*:10000000 NVIC_PENDSVSET
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:522    .text.Kernel_GetMode:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:529    .text.Kernel_GetMode:00000000 Kernel_GetMode
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:564    .text.Kernel_EnterCritical:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:571    .text.Kernel_EnterCritical:00000000 Kernel_EnterCritical
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:597    .text.Kernel_EnterCritical:00000014 $d
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:602    .text.Kernel_ExitCritical:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:609    .text.Kernel_ExitCritical:00000000 Kernel_ExitCritical
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:654    .text.Kernel_ExitCritical:00000024 $d
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:659    .bss.CriticalNasting_Cnt:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:663    .bss.CriticalNasting_Cnt:00000000 CriticalNasting_Cnt
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:521    .text.Kernel_TriggerPendSV:0000000a $d
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:4220   .text.Kernel_TriggerPendSV:0000000c $d
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:475    .text.Kernel_EnablePendSV:0000000a $d
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:4220   .text.Kernel_EnablePendSV:0000000c $d
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:429    .text.Kernel_LoadProcess:0000001a $d
+C:\Users\huav\AppData\Local\Temp\ccKBwwka.s:4220   .text.Kernel_LoadProcess:0000001c $d
+
+UNDEFINED SYMBOLS
+memset
+HAL_PWREx_ConfigSupply
+HAL_RCC_OscConfig
+HAL_RCC_ClockConfig
+HAL_RCCEx_PeriphCLKConfig
+HAL_Init

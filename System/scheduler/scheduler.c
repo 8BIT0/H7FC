@@ -50,12 +50,13 @@ static const uint8_t Task_Priority_List[256] =
      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,  // 0xE0 ~ 0xEF
      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0}; // 0xF0 ~ 0xFF
 
-static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum];
+static volatile Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum];
 static volatile Task *CurRunTsk_Ptr = NULL;
 static volatile Task *NxtRunTsk_Ptr = NULL;
-volatile TaskStack_ControlBlock CurTsk_TCB;
-volatile TaskStack_ControlBlock NxtTsk_TCB;
+static volatile TaskStack_ControlBlock CurTsk_TCB;
+static volatile TaskStack_ControlBlock NxtTsk_TCB;
 static bool traverse_start = false;
+static uint16_t hold_scheduler = 0;
 
 static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
@@ -476,6 +477,9 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     SYSTEM_RunTime CurRt_US = Rt;
     Task *TskPtr_Tmp = NULL;
 
+    if (hold_scheduler)
+        return;
+
     if (TskCrt_RegList.num)
     {
         /* check task state ready or not */
@@ -490,8 +494,13 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
         {
             if (TskPtr_Tmp->State == Task_Pending)
             {
+                /* got problem after priority preemption */
+
                 Os_Clr_TaskPending(TskPtr_Tmp);
                 Os_Set_TaskReady(TskPtr_Tmp);
+
+                /* reset task exec system runtime */
+                TskPtr_Tmp->Exec_status.Exec_Time = Get_TargetRunTime(TskPtr_Tmp->exec_interval_us);
             }
 
             if (CurRunTsk_Ptr != NULL)
@@ -528,7 +537,7 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     }
 }
 
-/* still got bug down here */
+/* still got bug down below */
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
 {
     SYSTEM_RunTime delay_tick_base = (Ms * REAL_1MS);
@@ -545,7 +554,11 @@ void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
     NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
 
     /* trigger pendsv to switch task */
+    Kernel_EnterCritical();
+    hold_scheduler++;
     Kernel_TriggerPendSV();
+    hold_scheduler--;
+    Kernel_ExitCritical();
 }
 
 /*

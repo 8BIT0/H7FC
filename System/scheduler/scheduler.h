@@ -137,9 +137,7 @@ typedef struct
     uint8_t num;
     list_obj list;
 } Task_List_s;
-#pragma pack()
 
-#pragma pack(4)
 typedef struct
 {
     TASK_STATE State;

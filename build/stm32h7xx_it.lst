@@ -1,0 +1,381 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvEGbza.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"stm32h7xx_it.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.NMI_Handler,"ax",%progbits
+  17              		.align	1
+  18              		.global	NMI_Handler
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	NMI_Handler:
+  26              	.LFB336:
+  27              		.file 1 "HAL_Lib/Core/Src/stm32h7xx_it.c"
+   1:HAL_Lib/Core/Src/stm32h7xx_it.c **** #include "stm32h7xx_it.h"
+   2:HAL_Lib/Core/Src/stm32h7xx_it.c **** #include "kernel.h"
+   3:HAL_Lib/Core/Src/stm32h7xx_it.c **** #include "runtime.h"
+   4:HAL_Lib/Core/Src/stm32h7xx_it.c **** #include "scheduler.h"
+   5:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+   6:HAL_Lib/Core/Src/stm32h7xx_it.c **** void NMI_Handler(void)
+   7:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+  28              		.loc 1 7 1 view -0
+  29              		.cfi_startproc
+  30              		@ Volatile: function does not return.
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34              	.L2:
+   8:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+  35              		.loc 1 8 3 discriminator 1 view .LVU1
+   9:HAL_Lib/Core/Src/stm32h7xx_it.c ****   {
+  10:HAL_Lib/Core/Src/stm32h7xx_it.c ****   }
+  36              		.loc 1 10 3 discriminator 1 view .LVU2
+   8:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+  37              		.loc 1 8 9 discriminator 1 view .LVU3
+  38 0000 FEE7     		b	.L2
+  39              		.cfi_endproc
+  40              	.LFE336:
+  42              		.section	.text.HardFault_Handler,"ax",%progbits
+  43              		.align	1
+  44              		.global	HardFault_Handler
+  45              		.syntax unified
+  46              		.thumb
+  47              		.thumb_func
+  48              		.fpu fpv5-d16
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvEGbza.s 			page 2
+
+
+  50              	HardFault_Handler:
+  51              	.LFB337:
+  11:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+  12:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+  13:HAL_Lib/Core/Src/stm32h7xx_it.c **** void HardFault_Handler(void)
+  14:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+  52              		.loc 1 14 1 view -0
+  53              		.cfi_startproc
+  54              		@ Volatile: function does not return.
+  55              		@ args = 0, pretend = 0, frame = 0
+  56              		@ frame_needed = 0, uses_anonymous_args = 0
+  57              		@ link register save eliminated.
+  58              	.L4:
+  15:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+  59              		.loc 1 15 3 discriminator 1 view .LVU5
+  16:HAL_Lib/Core/Src/stm32h7xx_it.c ****   {
+  17:HAL_Lib/Core/Src/stm32h7xx_it.c ****   }
+  60              		.loc 1 17 3 discriminator 1 view .LVU6
+  15:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+  61              		.loc 1 15 9 discriminator 1 view .LVU7
+  62 0000 FEE7     		b	.L4
+  63              		.cfi_endproc
+  64              	.LFE337:
+  66              		.section	.text.MemManage_Handler,"ax",%progbits
+  67              		.align	1
+  68              		.global	MemManage_Handler
+  69              		.syntax unified
+  70              		.thumb
+  71              		.thumb_func
+  72              		.fpu fpv5-d16
+  74              	MemManage_Handler:
+  75              	.LFB338:
+  18:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+  19:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+  20:HAL_Lib/Core/Src/stm32h7xx_it.c **** void MemManage_Handler(void)
+  21:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+  76              		.loc 1 21 1 view -0
+  77              		.cfi_startproc
+  78              		@ Volatile: function does not return.
+  79              		@ args = 0, pretend = 0, frame = 0
+  80              		@ frame_needed = 0, uses_anonymous_args = 0
+  81              		@ link register save eliminated.
+  82              	.L6:
+  22:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+  83              		.loc 1 22 3 discriminator 1 view .LVU9
+  23:HAL_Lib/Core/Src/stm32h7xx_it.c ****   {
+  24:HAL_Lib/Core/Src/stm32h7xx_it.c ****   }
+  84              		.loc 1 24 3 discriminator 1 view .LVU10
+  22:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+  85              		.loc 1 22 9 discriminator 1 view .LVU11
+  86 0000 FEE7     		b	.L6
+  87              		.cfi_endproc
+  88              	.LFE338:
+  90              		.section	.text.BusFault_Handler,"ax",%progbits
+  91              		.align	1
+  92              		.global	BusFault_Handler
+  93              		.syntax unified
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvEGbza.s 			page 3
+
+
+  94              		.thumb
+  95              		.thumb_func
+  96              		.fpu fpv5-d16
+  98              	BusFault_Handler:
+  99              	.LFB339:
+  25:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+  26:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+  27:HAL_Lib/Core/Src/stm32h7xx_it.c **** void BusFault_Handler(void)
+  28:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+ 100              		.loc 1 28 1 view -0
+ 101              		.cfi_startproc
+ 102              		@ Volatile: function does not return.
+ 103              		@ args = 0, pretend = 0, frame = 0
+ 104              		@ frame_needed = 0, uses_anonymous_args = 0
+ 105              		@ link register save eliminated.
+ 106              	.L8:
+  29:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+ 107              		.loc 1 29 3 discriminator 1 view .LVU13
+  30:HAL_Lib/Core/Src/stm32h7xx_it.c ****   {
+  31:HAL_Lib/Core/Src/stm32h7xx_it.c ****   }
+ 108              		.loc 1 31 3 discriminator 1 view .LVU14
+  29:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+ 109              		.loc 1 29 9 discriminator 1 view .LVU15
+ 110 0000 FEE7     		b	.L8
+ 111              		.cfi_endproc
+ 112              	.LFE339:
+ 114              		.section	.text.UsageFault_Handler,"ax",%progbits
+ 115              		.align	1
+ 116              		.global	UsageFault_Handler
+ 117              		.syntax unified
+ 118              		.thumb
+ 119              		.thumb_func
+ 120              		.fpu fpv5-d16
+ 122              	UsageFault_Handler:
+ 123              	.LFB340:
+  32:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+  33:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+  34:HAL_Lib/Core/Src/stm32h7xx_it.c **** void UsageFault_Handler(void)
+  35:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+ 124              		.loc 1 35 1 view -0
+ 125              		.cfi_startproc
+ 126              		@ Volatile: function does not return.
+ 127              		@ args = 0, pretend = 0, frame = 0
+ 128              		@ frame_needed = 0, uses_anonymous_args = 0
+ 129              		@ link register save eliminated.
+ 130              	.L10:
+  36:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+ 131              		.loc 1 36 3 discriminator 1 view .LVU17
+  37:HAL_Lib/Core/Src/stm32h7xx_it.c ****   {
+  38:HAL_Lib/Core/Src/stm32h7xx_it.c ****   }
+ 132              		.loc 1 38 3 discriminator 1 view .LVU18
+  36:HAL_Lib/Core/Src/stm32h7xx_it.c ****   while (1)
+ 133              		.loc 1 36 9 discriminator 1 view .LVU19
+ 134 0000 FEE7     		b	.L10
+ 135              		.cfi_endproc
+ 136              	.LFE340:
+ 138              		.section	.text.SVC_Handler,"ax",%progbits
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvEGbza.s 			page 4
+
+
+ 139              		.align	1
+ 140              		.global	SVC_Handler
+ 141              		.syntax unified
+ 142              		.thumb
+ 143              		.thumb_func
+ 144              		.fpu fpv5-d16
+ 146              	SVC_Handler:
+ 147              	.LFB341:
+  39:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+  40:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+  41:HAL_Lib/Core/Src/stm32h7xx_it.c **** void SVC_Handler(void)
+  42:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+ 148              		.loc 1 42 1 view -0
+ 149              		.cfi_startproc
+ 150              		@ args = 0, pretend = 0, frame = 0
+ 151              		@ frame_needed = 0, uses_anonymous_args = 0
+ 152 0000 08B5     		push	{r3, lr}
+ 153              	.LCFI0:
+ 154              		.cfi_def_cfa_offset 8
+ 155              		.cfi_offset 3, -8
+ 156              		.cfi_offset 14, -4
+  43:HAL_Lib/Core/Src/stm32h7xx_it.c ****   Os_LoadFirstTask();
+ 157              		.loc 1 43 3 view .LVU21
+ 158 0002 FFF7FEFF 		bl	Os_LoadFirstTask
+ 159              	.LVL0:
+  44:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+ 160              		.loc 1 44 1 is_stmt 0 view .LVU22
+ 161 0006 08BD     		pop	{r3, pc}
+ 162              		.cfi_endproc
+ 163              	.LFE341:
+ 165              		.section	.text.DebugMon_Handler,"ax",%progbits
+ 166              		.align	1
+ 167              		.global	DebugMon_Handler
+ 168              		.syntax unified
+ 169              		.thumb
+ 170              		.thumb_func
+ 171              		.fpu fpv5-d16
+ 173              	DebugMon_Handler:
+ 174              	.LFB342:
+  45:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+  46:HAL_Lib/Core/Src/stm32h7xx_it.c **** void DebugMon_Handler(void)
+  47:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+ 175              		.loc 1 47 1 is_stmt 1 view -0
+ 176              		.cfi_startproc
+ 177              		@ args = 0, pretend = 0, frame = 0
+ 178              		@ frame_needed = 0, uses_anonymous_args = 0
+ 179              		@ link register save eliminated.
+  48:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+ 180              		.loc 1 48 1 view .LVU24
+ 181 0000 7047     		bx	lr
+ 182              		.cfi_endproc
+ 183              	.LFE342:
+ 185              		.section	.text.PendSV_Handler,"ax",%progbits
+ 186              		.align	1
+ 187              		.global	PendSV_Handler
+ 188              		.syntax unified
+ 189              		.thumb
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvEGbza.s 			page 5
+
+
+ 190              		.thumb_func
+ 191              		.fpu fpv5-d16
+ 193              	PendSV_Handler:
+ 194              	.LFB343:
+  49:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+  50:HAL_Lib/Core/Src/stm32h7xx_it.c **** void PendSV_Handler(void)
+  51:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+ 195              		.loc 1 51 1 view -0
+ 196              		.cfi_startproc
+ 197              		@ args = 0, pretend = 0, frame = 0
+ 198              		@ frame_needed = 0, uses_anonymous_args = 0
+ 199 0000 08B5     		push	{r3, lr}
+ 200              	.LCFI1:
+ 201              		.cfi_def_cfa_offset 8
+ 202              		.cfi_offset 3, -8
+ 203              		.cfi_offset 14, -4
+  52:HAL_Lib/Core/Src/stm32h7xx_it.c ****   Os_SwitchContext();
+ 204              		.loc 1 52 3 view .LVU26
+ 205 0002 FFF7FEFF 		bl	Os_SwitchContext
+ 206              	.LVL1:
+  53:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+ 207              		.loc 1 53 1 is_stmt 0 view .LVU27
+ 208 0006 08BD     		pop	{r3, pc}
+ 209              		.cfi_endproc
+ 210              	.LFE343:
+ 212              		.section	.text.SysTick_Handler,"ax",%progbits
+ 213              		.align	1
+ 214              		.global	SysTick_Handler
+ 215              		.syntax unified
+ 216              		.thumb
+ 217              		.thumb_func
+ 218              		.fpu fpv5-d16
+ 220              	SysTick_Handler:
+ 221              	.LFB344:
+  54:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+  55:HAL_Lib/Core/Src/stm32h7xx_it.c **** void SysTick_Handler(void)
+  56:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+ 222              		.loc 1 56 1 is_stmt 1 view -0
+ 223              		.cfi_startproc
+ 224              		@ args = 0, pretend = 0, frame = 0
+ 225              		@ frame_needed = 0, uses_anonymous_args = 0
+ 226 0000 08B5     		push	{r3, lr}
+ 227              	.LCFI2:
+ 228              		.cfi_def_cfa_offset 8
+ 229              		.cfi_offset 3, -8
+ 230              		.cfi_offset 14, -4
+  57:HAL_Lib/Core/Src/stm32h7xx_it.c ****   Runtime_Tick();
+ 231              		.loc 1 57 3 view .LVU29
+ 232 0002 FFF7FEFF 		bl	Runtime_Tick
+ 233              	.LVL2:
+  58:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+ 234              		.loc 1 58 1 is_stmt 0 view .LVU30
+ 235 0006 08BD     		pop	{r3, pc}
+ 236              		.cfi_endproc
+ 237              	.LFE344:
+ 239              		.section	.text.OTG_FS_IRQHandler,"ax",%progbits
+ 240              		.align	1
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvEGbza.s 			page 6
+
+
+ 241              		.global	OTG_FS_IRQHandler
+ 242              		.syntax unified
+ 243              		.thumb
+ 244              		.thumb_func
+ 245              		.fpu fpv5-d16
+ 247              	OTG_FS_IRQHandler:
+ 248              	.LFB345:
+  59:HAL_Lib/Core/Src/stm32h7xx_it.c **** 
+  60:HAL_Lib/Core/Src/stm32h7xx_it.c **** void OTG_FS_IRQHandler(void)
+  61:HAL_Lib/Core/Src/stm32h7xx_it.c **** {
+ 249              		.loc 1 61 1 is_stmt 1 view -0
+ 250              		.cfi_startproc
+ 251              		@ args = 0, pretend = 0, frame = 0
+ 252              		@ frame_needed = 0, uses_anonymous_args = 0
+ 253 0000 08B5     		push	{r3, lr}
+ 254              	.LCFI3:
+ 255              		.cfi_def_cfa_offset 8
+ 256              		.cfi_offset 3, -8
+ 257              		.cfi_offset 14, -4
+  62:HAL_Lib/Core/Src/stm32h7xx_it.c ****   extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+ 258              		.loc 1 62 3 view .LVU32
+  63:HAL_Lib/Core/Src/stm32h7xx_it.c ****   HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+ 259              		.loc 1 63 3 view .LVU33
+ 260 0002 0248     		ldr	r0, .L20
+ 261 0004 FFF7FEFF 		bl	HAL_PCD_IRQHandler
+ 262              	.LVL3:
+  64:HAL_Lib/Core/Src/stm32h7xx_it.c **** }
+ 263              		.loc 1 64 1 is_stmt 0 view .LVU34
+ 264 0008 08BD     		pop	{r3, pc}
+ 265              	.L21:
+ 266 000a 00BF     		.align	2
+ 267              	.L20:
+ 268 000c 00000000 		.word	hpcd_USB_OTG_FS
+ 269              		.cfi_endproc
+ 270              	.LFE345:
+ 272              		.text
+ 273              	.Letext0:
+ 274              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 275              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 276              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 277              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 278              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_usb.h"
+ 279              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pcd.h"
+ 280              		.file 8 "System/runtime/runtime.h"
+ 281              		.file 9 "System/scheduler/scheduler.h"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvEGbza.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 stm32h7xx_it.c
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:17     .text.NMI_Handler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:25     .text.NMI_Handler:00000000 NMI_Handler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:43     .text.HardFault_Handler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:50     .text.HardFault_Handler:00000000 HardFault_Handler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:67     .text.MemManage_Handler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:74     .text.MemManage_Handler:00000000 MemManage_Handler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:91     .text.BusFault_Handler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:98     .text.BusFault_Handler:00000000 BusFault_Handler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:115    .text.UsageFault_Handler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:122    .text.UsageFault_Handler:00000000 UsageFault_Handler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:139    .text.SVC_Handler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:146    .text.SVC_Handler:00000000 SVC_Handler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:166    .text.DebugMon_Handler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:173    .text.DebugMon_Handler:00000000 DebugMon_Handler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:186    .text.PendSV_Handler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:193    .text.PendSV_Handler:00000000 PendSV_Handler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:213    .text.SysTick_Handler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:220    .text.SysTick_Handler:00000000 SysTick_Handler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:240    .text.OTG_FS_IRQHandler:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:247    .text.OTG_FS_IRQHandler:00000000 OTG_FS_IRQHandler
+C:\Users\huav\AppData\Local\Temp\ccvEGbza.s:268    .text.OTG_FS_IRQHandler:0000000c $d
+
+UNDEFINED SYMBOLS
+Os_LoadFirstTask
+Os_SwitchContext
+Runtime_Tick
+HAL_PCD_IRQHandler
+hpcd_USB_OTG_FS

@@ -68,8 +68,8 @@ void main(void)
 
     /* create task down below */
     Blink_Task = Os_CreateTask("Blink", TASK_EXEC_10KHZ, Task_Group_0, Task_Group_0, Run, 256);
-    Test_Task = Os_CreateTask("test", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
-    // Test2_Task = Os_CreateTask("test2", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_2, Test2, 256);
+    Test_Task = Os_CreateTask("test", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_2, Test, 256);
+    Test2_Task = Os_CreateTask("test2", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_1, Test2, 256);
     /* create task up top */
 
     Os_Start();
@@ -85,19 +85,19 @@ void Test(Task_Handle handle)
     // test_PC0_ctl();
     // DevLED.ctl(Led1, true);
     DebugPin.ctl(Debug_PC0, true);
-    Os_TaskDelay_Ms(handle, 100);
+    Os_TaskDelay_Ms(handle, 10);
 
     // DevLED.ctl(Led1, false);
     DebugPin.ctl(Debug_PC0, false);
-    Os_TaskDelay_Ms(handle, 100);
+    Os_TaskDelay_Ms(handle, 20);
 
     // DevLED.ctl(Led1, true);
     DebugPin.ctl(Debug_PC0, true);
-    Os_TaskDelay_Ms(handle, 100);
+    Os_TaskDelay_Ms(handle, 30);
 
     // DevLED.ctl(Led1, false);
     DebugPin.ctl(Debug_PC0, false);
-    Os_TaskDelay_Ms(handle, 100);
+    Os_TaskDelay_Ms(handle, 40);
 }
 
 void Run(Task_Handle handle)

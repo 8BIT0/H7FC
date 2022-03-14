@@ -1,0 +1,1217 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Bsp_SPI.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.BspSPI_TransReceive,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	BspSPI_TransReceive:
+  25              	.LVL0:
+  26              	.LFB338:
+  27              		.file 1 "Bsp/Bsp_SPI.c"
+   1:Bsp/Bsp_SPI.c **** #include "Bsp_SPI.h"
+   2:Bsp/Bsp_SPI.c **** 
+   3:Bsp/Bsp_SPI.c **** /* internal function */
+   4:Bsp/Bsp_SPI.c **** static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_ins
+   5:Bsp/Bsp_SPI.c **** static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg);
+   6:Bsp/Bsp_SPI.c **** static bool BspSPI_Trans(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint16_t size, uint16_t time
+   7:Bsp/Bsp_SPI.c **** static bool BspSPI_Receive(SPI_HandleTypeDef *spi_instance, uint8_t *rx, uint16_t size, uint16_t ti
+   8:Bsp/Bsp_SPI.c **** static uint16_t BspSPI_TransReceive(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint8_t *rx, uint
+   9:Bsp/Bsp_SPI.c **** 
+  10:Bsp/Bsp_SPI.c **** /* SPI0 Object */
+  11:Bsp/Bsp_SPI.c **** BspSpi_TypeDef BspSPI = {
+  12:Bsp/Bsp_SPI.c ****     .init = BspSPI_NormalMode_Init,
+  13:Bsp/Bsp_SPI.c ****     .deinit = BspSPI_DeInit,
+  14:Bsp/Bsp_SPI.c ****     .trans = BspSPI_Trans,
+  15:Bsp/Bsp_SPI.c ****     .receive = BspSPI_Receive,
+  16:Bsp/Bsp_SPI.c ****     .trans_receive = BspSPI_TransReceive,
+  17:Bsp/Bsp_SPI.c ****     .set_speed = NULL,
+  18:Bsp/Bsp_SPI.c **** };
+  19:Bsp/Bsp_SPI.c **** 
+  20:Bsp/Bsp_SPI.c **** static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
+  21:Bsp/Bsp_SPI.c **** {
+  22:Bsp/Bsp_SPI.c ****     GPIO_InitTypeDef GPIO_InitStruct;
+  23:Bsp/Bsp_SPI.c **** 
+  24:Bsp/Bsp_SPI.c ****     /* mosi pin init */
+  25:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pin = pin_cfg.pin_mosi;
+  26:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  27:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+  28:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  29:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+  30:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
+  31:Bsp/Bsp_SPI.c **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 2
+
+
+  32:Bsp/Bsp_SPI.c ****     /* miso pin init */
+  33:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pin = pin_cfg.pin_miso;
+  34:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  35:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+  36:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  37:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+  38:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_miso, &GPIO_InitStruct);
+  39:Bsp/Bsp_SPI.c **** 
+  40:Bsp/Bsp_SPI.c ****     /* clk pin init */
+  41:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pin = pin_cfg.pin_clk;
+  42:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  43:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+  44:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  45:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+  46:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
+  47:Bsp/Bsp_SPI.c **** 
+  48:Bsp/Bsp_SPI.c ****     return true;
+  49:Bsp/Bsp_SPI.c **** }
+  50:Bsp/Bsp_SPI.c **** 
+  51:Bsp/Bsp_SPI.c **** static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_ins
+  52:Bsp/Bsp_SPI.c **** {
+  53:Bsp/Bsp_SPI.c ****     SPI_HandleTypeDef SPI_InitStructure;
+  54:Bsp/Bsp_SPI.c **** 
+  55:Bsp/Bsp_SPI.c ****     if (spi_cfg.Instance == SPI1)
+  56:Bsp/Bsp_SPI.c ****     {
+  57:Bsp/Bsp_SPI.c ****         __SPI1_CLK_ENABLE();
+  58:Bsp/Bsp_SPI.c ****     }
+  59:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI2)
+  60:Bsp/Bsp_SPI.c ****     {
+  61:Bsp/Bsp_SPI.c ****         __SPI2_CLK_ENABLE();
+  62:Bsp/Bsp_SPI.c ****     }
+  63:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI3)
+  64:Bsp/Bsp_SPI.c ****     {
+  65:Bsp/Bsp_SPI.c ****         __SPI3_CLK_ENABLE();
+  66:Bsp/Bsp_SPI.c ****     }
+  67:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI4)
+  68:Bsp/Bsp_SPI.c ****     {
+  69:Bsp/Bsp_SPI.c ****         __SPI4_CLK_ENABLE();
+  70:Bsp/Bsp_SPI.c ****     }
+  71:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI5)
+  72:Bsp/Bsp_SPI.c ****     {
+  73:Bsp/Bsp_SPI.c ****         __SPI5_CLK_ENABLE();
+  74:Bsp/Bsp_SPI.c ****     }
+  75:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI6)
+  76:Bsp/Bsp_SPI.c ****     {
+  77:Bsp/Bsp_SPI.c ****         __SPI6_CLK_ENABLE();
+  78:Bsp/Bsp_SPI.c ****     }
+  79:Bsp/Bsp_SPI.c ****     else
+  80:Bsp/Bsp_SPI.c ****         return false;
+  81:Bsp/Bsp_SPI.c **** 
+  82:Bsp/Bsp_SPI.c ****     BspSPI_PinInit(spi_cfg.Pin);
+  83:Bsp/Bsp_SPI.c **** 
+  84:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Instance = spi_cfg.Instance;                        // SPI2;
+  85:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Mode = spi_cfg.Mode;                           // SPI_MODE_MASTER;
+  86:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Direction = spi_cfg.Direction;                 // SPI_DIRECTION_2LINES;
+  87:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.DataSize = spi_cfg.DataSize;                   // SPI_DATASIZE_8BIT;
+  88:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPolarity = spi_cfg.CLKPolarity;             // SPI_POLARITY_LOW;
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 3
+
+
+  89:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPhase = spi_cfg.CLKPhase;                   // SPI_PHASE_1EDGE;
+  90:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSS = spi_cfg.NSS;                             // SPI_NSS_SOFT;
+  91:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.BaudRatePrescaler = spi_cfg.BaudRatePrescaler; // SPI_BAUDRATEPRESCALER_
+  92:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FirstBit = spi_cfg.FirstBit;                   // SPI_FIRSTBIT_MSB;
+  93:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TIMode = SPI_TIMODE_DISABLE;
+  94:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  95:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCPolynomial = 7;
+  96:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+  97:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+  98:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+  99:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+ 100:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 101:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 102:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+ 103:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+ 104:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+ 105:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+ 106:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+ 107:Bsp/Bsp_SPI.c **** 
+ 108:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Init(&SPI_InitStructure) == HAL_OK)
+ 109:Bsp/Bsp_SPI.c ****     {
+ 110:Bsp/Bsp_SPI.c ****         return false;
+ 111:Bsp/Bsp_SPI.c ****     }
+ 112:Bsp/Bsp_SPI.c **** 
+ 113:Bsp/Bsp_SPI.c ****     *spi_instance = SPI_InitStructure;
+ 114:Bsp/Bsp_SPI.c **** 
+ 115:Bsp/Bsp_SPI.c ****     return true;
+ 116:Bsp/Bsp_SPI.c **** }
+ 117:Bsp/Bsp_SPI.c **** 
+ 118:Bsp/Bsp_SPI.c **** static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg)
+ 119:Bsp/Bsp_SPI.c **** {
+ 120:Bsp/Bsp_SPI.c ****     if (spi_cfg.Instance == SPI1)
+ 121:Bsp/Bsp_SPI.c ****     {
+ 122:Bsp/Bsp_SPI.c ****         __SPI1_CLK_DISABLE();
+ 123:Bsp/Bsp_SPI.c ****     }
+ 124:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI2)
+ 125:Bsp/Bsp_SPI.c ****     {
+ 126:Bsp/Bsp_SPI.c ****         __SPI2_CLK_DISABLE();
+ 127:Bsp/Bsp_SPI.c ****     }
+ 128:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI3)
+ 129:Bsp/Bsp_SPI.c ****     {
+ 130:Bsp/Bsp_SPI.c ****         __SPI3_CLK_DISABLE();
+ 131:Bsp/Bsp_SPI.c ****     }
+ 132:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI4)
+ 133:Bsp/Bsp_SPI.c ****     {
+ 134:Bsp/Bsp_SPI.c ****         __SPI4_CLK_DISABLE();
+ 135:Bsp/Bsp_SPI.c ****     }
+ 136:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI5)
+ 137:Bsp/Bsp_SPI.c ****     {
+ 138:Bsp/Bsp_SPI.c ****         __SPI5_CLK_DISABLE();
+ 139:Bsp/Bsp_SPI.c ****     }
+ 140:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI6)
+ 141:Bsp/Bsp_SPI.c ****     {
+ 142:Bsp/Bsp_SPI.c ****         __SPI6_CLK_DISABLE();
+ 143:Bsp/Bsp_SPI.c ****     }
+ 144:Bsp/Bsp_SPI.c ****     else
+ 145:Bsp/Bsp_SPI.c ****         return false;
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 4
+
+
+ 146:Bsp/Bsp_SPI.c **** 
+ 147:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_mosi, spi_cfg.Pin.pin_mosi);
+ 148:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_miso, spi_cfg.Pin.pin_miso);
+ 149:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_clk, spi_cfg.Pin.pin_clk);
+ 150:Bsp/Bsp_SPI.c **** 
+ 151:Bsp/Bsp_SPI.c ****     return true;
+ 152:Bsp/Bsp_SPI.c **** }
+ 153:Bsp/Bsp_SPI.c **** 
+ 154:Bsp/Bsp_SPI.c **** static bool BspSPI_Trans(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint16_t size, uint16_t time
+ 155:Bsp/Bsp_SPI.c **** {
+ 156:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Transmit(spi_instance, tx, size, time_out) == HAL_OK)
+ 157:Bsp/Bsp_SPI.c ****         return true;
+ 158:Bsp/Bsp_SPI.c **** 
+ 159:Bsp/Bsp_SPI.c ****     return false;
+ 160:Bsp/Bsp_SPI.c **** }
+ 161:Bsp/Bsp_SPI.c **** 
+ 162:Bsp/Bsp_SPI.c **** static bool BspSPI_Receive(SPI_HandleTypeDef *spi_instance, uint8_t *rx, uint16_t size, uint16_t ti
+ 163:Bsp/Bsp_SPI.c **** {
+ 164:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Receive(spi_instance, rx, size, time_out) == HAL_OK)
+ 165:Bsp/Bsp_SPI.c ****         return true;
+ 166:Bsp/Bsp_SPI.c **** 
+ 167:Bsp/Bsp_SPI.c ****     return false;
+ 168:Bsp/Bsp_SPI.c **** }
+ 169:Bsp/Bsp_SPI.c **** 
+ 170:Bsp/Bsp_SPI.c **** static uint16_t BspSPI_TransReceive(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint8_t *rx, uint
+ 171:Bsp/Bsp_SPI.c **** {
+  28              		.loc 1 171 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 4, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 171 1 is_stmt 0 view .LVU1
+  33 0000 10B5     		push	{r4, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 8
+  36              		.cfi_offset 4, -8
+  37              		.cfi_offset 14, -4
+  38 0002 82B0     		sub	sp, sp, #8
+  39              	.LCFI1:
+  40              		.cfi_def_cfa_offset 16
+ 172:Bsp/Bsp_SPI.c ****     if (HAL_SPI_TransmitReceive(spi_instance, tx, rx, size, time_out) == HAL_OK)
+  41              		.loc 1 172 5 is_stmt 1 view .LVU2
+  42              		.loc 1 172 9 is_stmt 0 view .LVU3
+  43 0004 BDF81040 		ldrh	r4, [sp, #16]
+  44 0008 0094     		str	r4, [sp]
+  45 000a FFF7FEFF 		bl	HAL_SPI_TransmitReceive
+  46              	.LVL1:
+  47              		.loc 1 172 8 view .LVU4
+  48 000e 10B1     		cbz	r0, .L3
+ 173:Bsp/Bsp_SPI.c ****         return true;
+ 174:Bsp/Bsp_SPI.c **** 
+ 175:Bsp/Bsp_SPI.c ****     return false;
+  49              		.loc 1 175 12 view .LVU5
+  50 0010 0020     		movs	r0, #0
+  51              	.L2:
+ 176:Bsp/Bsp_SPI.c **** }
+  52              		.loc 1 176 1 view .LVU6
+  53 0012 02B0     		add	sp, sp, #8
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 5
+
+
+  54              	.LCFI2:
+  55              		.cfi_remember_state
+  56              		.cfi_def_cfa_offset 8
+  57              		@ sp needed
+  58 0014 10BD     		pop	{r4, pc}
+  59              	.LVL2:
+  60              	.L3:
+  61              	.LCFI3:
+  62              		.cfi_restore_state
+ 173:Bsp/Bsp_SPI.c ****         return true;
+  63              		.loc 1 173 16 view .LVU7
+  64 0016 0120     		movs	r0, #1
+  65 0018 FBE7     		b	.L2
+  66              		.cfi_endproc
+  67              	.LFE338:
+  69              		.section	.text.BspSPI_Receive,"ax",%progbits
+  70              		.align	1
+  71              		.syntax unified
+  72              		.thumb
+  73              		.thumb_func
+  74              		.fpu fpv5-d16
+  76              	BspSPI_Receive:
+  77              	.LVL3:
+  78              	.LFB337:
+ 163:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Receive(spi_instance, rx, size, time_out) == HAL_OK)
+  79              		.loc 1 163 1 is_stmt 1 view -0
+  80              		.cfi_startproc
+  81              		@ args = 0, pretend = 0, frame = 0
+  82              		@ frame_needed = 0, uses_anonymous_args = 0
+ 163:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Receive(spi_instance, rx, size, time_out) == HAL_OK)
+  83              		.loc 1 163 1 is_stmt 0 view .LVU9
+  84 0000 08B5     		push	{r3, lr}
+  85              	.LCFI4:
+  86              		.cfi_def_cfa_offset 8
+  87              		.cfi_offset 3, -8
+  88              		.cfi_offset 14, -4
+ 164:Bsp/Bsp_SPI.c ****         return true;
+  89              		.loc 1 164 5 is_stmt 1 view .LVU10
+ 164:Bsp/Bsp_SPI.c ****         return true;
+  90              		.loc 1 164 9 is_stmt 0 view .LVU11
+  91 0002 FFF7FEFF 		bl	HAL_SPI_Receive
+  92              	.LVL4:
+ 164:Bsp/Bsp_SPI.c ****         return true;
+  93              		.loc 1 164 8 view .LVU12
+  94 0006 08B1     		cbz	r0, .L7
+ 167:Bsp/Bsp_SPI.c **** }
+  95              		.loc 1 167 12 view .LVU13
+  96 0008 0020     		movs	r0, #0
+  97              	.L6:
+ 168:Bsp/Bsp_SPI.c **** 
+  98              		.loc 1 168 1 view .LVU14
+  99 000a 08BD     		pop	{r3, pc}
+ 100              	.L7:
+ 165:Bsp/Bsp_SPI.c **** 
+ 101              		.loc 1 165 16 view .LVU15
+ 102 000c 0120     		movs	r0, #1
+ 103 000e FCE7     		b	.L6
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 6
+
+
+ 104              		.cfi_endproc
+ 105              	.LFE337:
+ 107              		.section	.text.BspSPI_Trans,"ax",%progbits
+ 108              		.align	1
+ 109              		.syntax unified
+ 110              		.thumb
+ 111              		.thumb_func
+ 112              		.fpu fpv5-d16
+ 114              	BspSPI_Trans:
+ 115              	.LVL5:
+ 116              	.LFB336:
+ 155:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Transmit(spi_instance, tx, size, time_out) == HAL_OK)
+ 117              		.loc 1 155 1 is_stmt 1 view -0
+ 118              		.cfi_startproc
+ 119              		@ args = 0, pretend = 0, frame = 0
+ 120              		@ frame_needed = 0, uses_anonymous_args = 0
+ 155:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Transmit(spi_instance, tx, size, time_out) == HAL_OK)
+ 121              		.loc 1 155 1 is_stmt 0 view .LVU17
+ 122 0000 08B5     		push	{r3, lr}
+ 123              	.LCFI5:
+ 124              		.cfi_def_cfa_offset 8
+ 125              		.cfi_offset 3, -8
+ 126              		.cfi_offset 14, -4
+ 156:Bsp/Bsp_SPI.c ****         return true;
+ 127              		.loc 1 156 5 is_stmt 1 view .LVU18
+ 156:Bsp/Bsp_SPI.c ****         return true;
+ 128              		.loc 1 156 9 is_stmt 0 view .LVU19
+ 129 0002 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 130              	.LVL6:
+ 156:Bsp/Bsp_SPI.c ****         return true;
+ 131              		.loc 1 156 8 view .LVU20
+ 132 0006 08B1     		cbz	r0, .L11
+ 159:Bsp/Bsp_SPI.c **** }
+ 133              		.loc 1 159 12 view .LVU21
+ 134 0008 0020     		movs	r0, #0
+ 135              	.L10:
+ 160:Bsp/Bsp_SPI.c **** 
+ 136              		.loc 1 160 1 view .LVU22
+ 137 000a 08BD     		pop	{r3, pc}
+ 138              	.L11:
+ 157:Bsp/Bsp_SPI.c **** 
+ 139              		.loc 1 157 16 view .LVU23
+ 140 000c 0120     		movs	r0, #1
+ 141 000e FCE7     		b	.L10
+ 142              		.cfi_endproc
+ 143              	.LFE336:
+ 145              		.section	.text.BspSPI_DeInit,"ax",%progbits
+ 146              		.align	1
+ 147              		.syntax unified
+ 148              		.thumb
+ 149              		.thumb_func
+ 150              		.fpu fpv5-d16
+ 152              	BspSPI_DeInit:
+ 153              	.LFB335:
+ 119:Bsp/Bsp_SPI.c ****     if (spi_cfg.Instance == SPI1)
+ 154              		.loc 1 119 1 is_stmt 1 view -0
+ 155              		.cfi_startproc
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 7
+
+
+ 156              		@ args = 64, pretend = 16, frame = 0
+ 157              		@ frame_needed = 0, uses_anonymous_args = 0
+ 158 0000 84B0     		sub	sp, sp, #16
+ 159              	.LCFI6:
+ 160              		.cfi_def_cfa_offset 16
+ 161 0002 08B5     		push	{r3, lr}
+ 162              	.LCFI7:
+ 163              		.cfi_def_cfa_offset 24
+ 164              		.cfi_offset 3, -24
+ 165              		.cfi_offset 14, -20
+ 166 0004 0DF1080C 		add	ip, sp, #8
+ 167 0008 8CE80F00 		stm	ip, {r0, r1, r2, r3}
+ 120:Bsp/Bsp_SPI.c ****     {
+ 168              		.loc 1 120 5 view .LVU25
+ 120:Bsp/Bsp_SPI.c ****     {
+ 169              		.loc 1 120 16 is_stmt 0 view .LVU26
+ 170 000c 099B     		ldr	r3, [sp, #36]
+ 120:Bsp/Bsp_SPI.c ****     {
+ 171              		.loc 1 120 8 view .LVU27
+ 172 000e 2A4A     		ldr	r2, .L29
+ 173 0010 9342     		cmp	r3, r2
+ 174 0012 10D0     		beq	.L23
+ 124:Bsp/Bsp_SPI.c ****     {
+ 175              		.loc 1 124 10 is_stmt 1 view .LVU28
+ 124:Bsp/Bsp_SPI.c ****     {
+ 176              		.loc 1 124 13 is_stmt 0 view .LVU29
+ 177 0014 294A     		ldr	r2, .L29+4
+ 178 0016 9342     		cmp	r3, r2
+ 179 0018 25D0     		beq	.L24
+ 128:Bsp/Bsp_SPI.c ****     {
+ 180              		.loc 1 128 10 is_stmt 1 view .LVU30
+ 128:Bsp/Bsp_SPI.c ****     {
+ 181              		.loc 1 128 13 is_stmt 0 view .LVU31
+ 182 001a 294A     		ldr	r2, .L29+8
+ 183 001c 9342     		cmp	r3, r2
+ 184 001e 2AD0     		beq	.L25
+ 132:Bsp/Bsp_SPI.c ****     {
+ 185              		.loc 1 132 10 is_stmt 1 view .LVU32
+ 132:Bsp/Bsp_SPI.c ****     {
+ 186              		.loc 1 132 13 is_stmt 0 view .LVU33
+ 187 0020 284A     		ldr	r2, .L29+12
+ 188 0022 9342     		cmp	r3, r2
+ 189 0024 2FD0     		beq	.L26
+ 136:Bsp/Bsp_SPI.c ****     {
+ 190              		.loc 1 136 10 is_stmt 1 view .LVU34
+ 136:Bsp/Bsp_SPI.c ****     {
+ 191              		.loc 1 136 13 is_stmt 0 view .LVU35
+ 192 0026 284A     		ldr	r2, .L29+16
+ 193 0028 9342     		cmp	r3, r2
+ 194 002a 34D0     		beq	.L27
+ 140:Bsp/Bsp_SPI.c ****     {
+ 195              		.loc 1 140 10 is_stmt 1 view .LVU36
+ 140:Bsp/Bsp_SPI.c ****     {
+ 196              		.loc 1 140 13 is_stmt 0 view .LVU37
+ 197 002c 274A     		ldr	r2, .L29+20
+ 198 002e 9342     		cmp	r3, r2
+ 199 0030 39D0     		beq	.L28
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 8
+
+
+ 145:Bsp/Bsp_SPI.c **** 
+ 200              		.loc 1 145 16 view .LVU38
+ 201 0032 0020     		movs	r0, #0
+ 202 0034 13E0     		b	.L20
+ 203              	.L23:
+ 122:Bsp/Bsp_SPI.c ****     }
+ 204              		.loc 1 122 9 is_stmt 1 view .LVU39
+ 205 0036 264A     		ldr	r2, .L29+24
+ 206 0038 D2F8F030 		ldr	r3, [r2, #240]
+ 207 003c 23F48053 		bic	r3, r3, #4096
+ 208 0040 C2F8F030 		str	r3, [r2, #240]
+ 209              	.L15:
+ 147:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_miso, spi_cfg.Pin.pin_miso);
+ 210              		.loc 1 147 5 view .LVU40
+ 211 0044 0599     		ldr	r1, [sp, #20]
+ 212 0046 0298     		ldr	r0, [sp, #8]
+ 213 0048 FFF7FEFF 		bl	HAL_GPIO_DeInit
+ 214              	.LVL7:
+ 148:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_clk, spi_cfg.Pin.pin_clk);
+ 215              		.loc 1 148 5 view .LVU41
+ 216 004c 0699     		ldr	r1, [sp, #24]
+ 217 004e 0398     		ldr	r0, [sp, #12]
+ 218 0050 FFF7FEFF 		bl	HAL_GPIO_DeInit
+ 219              	.LVL8:
+ 149:Bsp/Bsp_SPI.c **** 
+ 220              		.loc 1 149 5 view .LVU42
+ 221 0054 0799     		ldr	r1, [sp, #28]
+ 222 0056 0498     		ldr	r0, [sp, #16]
+ 223 0058 FFF7FEFF 		bl	HAL_GPIO_DeInit
+ 224              	.LVL9:
+ 151:Bsp/Bsp_SPI.c **** }
+ 225              		.loc 1 151 5 view .LVU43
+ 151:Bsp/Bsp_SPI.c **** }
+ 226              		.loc 1 151 12 is_stmt 0 view .LVU44
+ 227 005c 0120     		movs	r0, #1
+ 228              	.L20:
+ 152:Bsp/Bsp_SPI.c **** 
+ 229              		.loc 1 152 1 view .LVU45
+ 230 005e BDE80840 		pop	{r3, lr}
+ 231              	.LCFI8:
+ 232              		.cfi_remember_state
+ 233              		.cfi_restore 14
+ 234              		.cfi_restore 3
+ 235              		.cfi_def_cfa_offset 16
+ 236 0062 04B0     		add	sp, sp, #16
+ 237              	.LCFI9:
+ 238              		.cfi_def_cfa_offset 0
+ 239 0064 7047     		bx	lr
+ 240              	.L24:
+ 241              	.LCFI10:
+ 242              		.cfi_restore_state
+ 126:Bsp/Bsp_SPI.c ****     }
+ 243              		.loc 1 126 9 is_stmt 1 view .LVU46
+ 244 0066 1A4A     		ldr	r2, .L29+24
+ 245 0068 D2F8E830 		ldr	r3, [r2, #232]
+ 246 006c 23F48043 		bic	r3, r3, #16384
+ 247 0070 C2F8E830 		str	r3, [r2, #232]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 9
+
+
+ 248 0074 E6E7     		b	.L15
+ 249              	.L25:
+ 130:Bsp/Bsp_SPI.c ****     }
+ 250              		.loc 1 130 9 view .LVU47
+ 251 0076 164A     		ldr	r2, .L29+24
+ 252 0078 D2F8E830 		ldr	r3, [r2, #232]
+ 253 007c 23F40043 		bic	r3, r3, #32768
+ 254 0080 C2F8E830 		str	r3, [r2, #232]
+ 255 0084 DEE7     		b	.L15
+ 256              	.L26:
+ 134:Bsp/Bsp_SPI.c ****     }
+ 257              		.loc 1 134 9 view .LVU48
+ 258 0086 124A     		ldr	r2, .L29+24
+ 259 0088 D2F8F030 		ldr	r3, [r2, #240]
+ 260 008c 23F40053 		bic	r3, r3, #8192
+ 261 0090 C2F8F030 		str	r3, [r2, #240]
+ 262 0094 D6E7     		b	.L15
+ 263              	.L27:
+ 138:Bsp/Bsp_SPI.c ****     }
+ 264              		.loc 1 138 9 view .LVU49
+ 265 0096 0E4A     		ldr	r2, .L29+24
+ 266 0098 D2F8F030 		ldr	r3, [r2, #240]
+ 267 009c 23F48013 		bic	r3, r3, #1048576
+ 268 00a0 C2F8F030 		str	r3, [r2, #240]
+ 269 00a4 CEE7     		b	.L15
+ 270              	.L28:
+ 142:Bsp/Bsp_SPI.c ****     }
+ 271              		.loc 1 142 9 view .LVU50
+ 272 00a6 02F50C32 		add	r2, r2, #143360
+ 273 00aa D2F8F430 		ldr	r3, [r2, #244]
+ 274 00ae 23F02003 		bic	r3, r3, #32
+ 275 00b2 C2F8F430 		str	r3, [r2, #244]
+ 276 00b6 C5E7     		b	.L15
+ 277              	.L30:
+ 278              		.align	2
+ 279              	.L29:
+ 280 00b8 00300140 		.word	1073819648
+ 281 00bc 00380040 		.word	1073756160
+ 282 00c0 003C0040 		.word	1073757184
+ 283 00c4 00340140 		.word	1073820672
+ 284 00c8 00500140 		.word	1073827840
+ 285 00cc 00140058 		.word	1476400128
+ 286 00d0 00440258 		.word	1476543488
+ 287              		.cfi_endproc
+ 288              	.LFE335:
+ 290              		.section	.text.BspSPI_PinInit,"ax",%progbits
+ 291              		.align	1
+ 292              		.syntax unified
+ 293              		.thumb
+ 294              		.thumb_func
+ 295              		.fpu fpv5-d16
+ 297              	BspSPI_PinInit:
+ 298              	.LFB333:
+  21:Bsp/Bsp_SPI.c ****     GPIO_InitTypeDef GPIO_InitStruct;
+ 299              		.loc 1 21 1 view -0
+ 300              		.cfi_startproc
+ 301              		@ args = 28, pretend = 16, frame = 24
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 10
+
+
+ 302              		@ frame_needed = 0, uses_anonymous_args = 0
+ 303 0000 84B0     		sub	sp, sp, #16
+ 304              	.LCFI11:
+ 305              		.cfi_def_cfa_offset 16
+ 306 0002 F0B5     		push	{r4, r5, r6, r7, lr}
+ 307              	.LCFI12:
+ 308              		.cfi_def_cfa_offset 36
+ 309              		.cfi_offset 4, -36
+ 310              		.cfi_offset 5, -32
+ 311              		.cfi_offset 6, -28
+ 312              		.cfi_offset 7, -24
+ 313              		.cfi_offset 14, -20
+ 314 0004 87B0     		sub	sp, sp, #28
+ 315              	.LCFI13:
+ 316              		.cfi_def_cfa_offset 64
+ 317 0006 0CAC     		add	r4, sp, #48
+ 318 0008 84E80F00 		stm	r4, {r0, r1, r2, r3}
+  22:Bsp/Bsp_SPI.c **** 
+ 319              		.loc 1 22 5 view .LVU52
+  25:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 320              		.loc 1 25 5 view .LVU53
+  25:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 321              		.loc 1 25 25 is_stmt 0 view .LVU54
+ 322 000c 0193     		str	r3, [sp, #4]
+  26:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 323              		.loc 1 26 5 is_stmt 1 view .LVU55
+  26:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 324              		.loc 1 26 26 is_stmt 0 view .LVU56
+ 325 000e 0227     		movs	r7, #2
+ 326 0010 0297     		str	r7, [sp, #8]
+  27:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+ 327              		.loc 1 27 5 is_stmt 1 view .LVU57
+  27:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+ 328              		.loc 1 27 26 is_stmt 0 view .LVU58
+ 329 0012 0026     		movs	r6, #0
+ 330 0014 0396     		str	r6, [sp, #12]
+  28:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 331              		.loc 1 28 5 is_stmt 1 view .LVU59
+  28:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 332              		.loc 1 28 27 is_stmt 0 view .LVU60
+ 333 0016 0325     		movs	r5, #3
+ 334 0018 0495     		str	r5, [sp, #16]
+  29:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
+ 335              		.loc 1 29 5 is_stmt 1 view .LVU61
+  29:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
+ 336              		.loc 1 29 40 is_stmt 0 view .LVU62
+ 337 001a 129C     		ldr	r4, [sp, #72]
+  29:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
+ 338              		.loc 1 29 31 view .LVU63
+ 339 001c 0594     		str	r4, [sp, #20]
+  30:Bsp/Bsp_SPI.c **** 
+ 340              		.loc 1 30 5 is_stmt 1 view .LVU64
+ 341 001e 01A9     		add	r1, sp, #4
+ 342 0020 FFF7FEFF 		bl	HAL_GPIO_Init
+ 343              	.LVL10:
+  33:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 344              		.loc 1 33 5 view .LVU65
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 11
+
+
+  33:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 345              		.loc 1 33 34 is_stmt 0 view .LVU66
+ 346 0024 109B     		ldr	r3, [sp, #64]
+  33:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 347              		.loc 1 33 25 view .LVU67
+ 348 0026 0193     		str	r3, [sp, #4]
+  34:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 349              		.loc 1 34 5 is_stmt 1 view .LVU68
+  34:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 350              		.loc 1 34 26 is_stmt 0 view .LVU69
+ 351 0028 0297     		str	r7, [sp, #8]
+  35:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+ 352              		.loc 1 35 5 is_stmt 1 view .LVU70
+  35:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+ 353              		.loc 1 35 26 is_stmt 0 view .LVU71
+ 354 002a 0396     		str	r6, [sp, #12]
+  36:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 355              		.loc 1 36 5 is_stmt 1 view .LVU72
+  36:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 356              		.loc 1 36 27 is_stmt 0 view .LVU73
+ 357 002c 0495     		str	r5, [sp, #16]
+  37:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_miso, &GPIO_InitStruct);
+ 358              		.loc 1 37 5 is_stmt 1 view .LVU74
+  37:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_miso, &GPIO_InitStruct);
+ 359              		.loc 1 37 31 is_stmt 0 view .LVU75
+ 360 002e 0594     		str	r4, [sp, #20]
+  38:Bsp/Bsp_SPI.c **** 
+ 361              		.loc 1 38 5 is_stmt 1 view .LVU76
+ 362 0030 01A9     		add	r1, sp, #4
+ 363 0032 0D98     		ldr	r0, [sp, #52]
+ 364 0034 FFF7FEFF 		bl	HAL_GPIO_Init
+ 365              	.LVL11:
+  41:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 366              		.loc 1 41 5 view .LVU77
+  41:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 367              		.loc 1 41 34 is_stmt 0 view .LVU78
+ 368 0038 119B     		ldr	r3, [sp, #68]
+  41:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 369              		.loc 1 41 25 view .LVU79
+ 370 003a 0193     		str	r3, [sp, #4]
+  42:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 371              		.loc 1 42 5 is_stmt 1 view .LVU80
+  42:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 372              		.loc 1 42 26 is_stmt 0 view .LVU81
+ 373 003c 0297     		str	r7, [sp, #8]
+  43:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+ 374              		.loc 1 43 5 is_stmt 1 view .LVU82
+  43:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+ 375              		.loc 1 43 26 is_stmt 0 view .LVU83
+ 376 003e 0396     		str	r6, [sp, #12]
+  44:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 377              		.loc 1 44 5 is_stmt 1 view .LVU84
+  44:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 378              		.loc 1 44 27 is_stmt 0 view .LVU85
+ 379 0040 0495     		str	r5, [sp, #16]
+  45:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
+ 380              		.loc 1 45 5 is_stmt 1 view .LVU86
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 12
+
+
+  45:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
+ 381              		.loc 1 45 31 is_stmt 0 view .LVU87
+ 382 0042 0594     		str	r4, [sp, #20]
+  46:Bsp/Bsp_SPI.c **** 
+ 383              		.loc 1 46 5 is_stmt 1 view .LVU88
+ 384 0044 01A9     		add	r1, sp, #4
+ 385 0046 0E98     		ldr	r0, [sp, #56]
+ 386 0048 FFF7FEFF 		bl	HAL_GPIO_Init
+ 387              	.LVL12:
+  48:Bsp/Bsp_SPI.c **** }
+ 388              		.loc 1 48 5 view .LVU89
+  49:Bsp/Bsp_SPI.c **** 
+ 389              		.loc 1 49 1 is_stmt 0 view .LVU90
+ 390 004c 0120     		movs	r0, #1
+ 391 004e 07B0     		add	sp, sp, #28
+ 392              	.LCFI14:
+ 393              		.cfi_def_cfa_offset 36
+ 394              		@ sp needed
+ 395 0050 BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 396              	.LCFI15:
+ 397              		.cfi_restore 14
+ 398              		.cfi_restore 7
+ 399              		.cfi_restore 6
+ 400              		.cfi_restore 5
+ 401              		.cfi_restore 4
+ 402              		.cfi_def_cfa_offset 16
+ 403 0054 04B0     		add	sp, sp, #16
+ 404              	.LCFI16:
+ 405              		.cfi_def_cfa_offset 0
+ 406 0056 7047     		bx	lr
+ 407              		.cfi_endproc
+ 408              	.LFE333:
+ 410              		.section	.text.BspSPI_NormalMode_Init,"ax",%progbits
+ 411              		.align	1
+ 412              		.syntax unified
+ 413              		.thumb
+ 414              		.thumb_func
+ 415              		.fpu fpv5-d16
+ 417              	BspSPI_NormalMode_Init:
+ 418              	.LVL13:
+ 419              	.LFB334:
+  52:Bsp/Bsp_SPI.c ****     SPI_HandleTypeDef SPI_InitStructure;
+ 420              		.loc 1 52 1 is_stmt 1 view -0
+ 421              		.cfi_startproc
+ 422              		@ args = 68, pretend = 16, frame = 160
+ 423              		@ frame_needed = 0, uses_anonymous_args = 0
+  52:Bsp/Bsp_SPI.c ****     SPI_HandleTypeDef SPI_InitStructure;
+ 424              		.loc 1 52 1 is_stmt 0 view .LVU92
+ 425 0000 84B0     		sub	sp, sp, #16
+ 426              	.LCFI17:
+ 427              		.cfi_def_cfa_offset 16
+ 428 0002 10B5     		push	{r4, lr}
+ 429              	.LCFI18:
+ 430              		.cfi_def_cfa_offset 24
+ 431              		.cfi_offset 4, -24
+ 432              		.cfi_offset 14, -20
+ 433 0004 ACB0     		sub	sp, sp, #176
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 13
+
+
+ 434              	.LCFI19:
+ 435              		.cfi_def_cfa_offset 200
+ 436 0006 2EAC     		add	r4, sp, #184
+ 437 0008 84E80F00 		stm	r4, {r0, r1, r2, r3}
+  53:Bsp/Bsp_SPI.c **** 
+ 438              		.loc 1 53 5 is_stmt 1 view .LVU93
+  55:Bsp/Bsp_SPI.c ****     {
+ 439              		.loc 1 55 5 view .LVU94
+  55:Bsp/Bsp_SPI.c ****     {
+ 440              		.loc 1 55 16 is_stmt 0 view .LVU95
+ 441 000c 359C     		ldr	r4, [sp, #212]
+  55:Bsp/Bsp_SPI.c ****     {
+ 442              		.loc 1 55 8 view .LVU96
+ 443 000e 534B     		ldr	r3, .L50
+ 444 0010 9C42     		cmp	r4, r3
+ 445 0012 11D0     		beq	.L44
+  59:Bsp/Bsp_SPI.c ****     {
+ 446              		.loc 1 59 10 is_stmt 1 view .LVU97
+  59:Bsp/Bsp_SPI.c ****     {
+ 447              		.loc 1 59 13 is_stmt 0 view .LVU98
+ 448 0014 524B     		ldr	r3, .L50+4
+ 449 0016 9C42     		cmp	r4, r3
+ 450 0018 57D0     		beq	.L45
+  63:Bsp/Bsp_SPI.c ****     {
+ 451              		.loc 1 63 10 is_stmt 1 view .LVU99
+  63:Bsp/Bsp_SPI.c ****     {
+ 452              		.loc 1 63 13 is_stmt 0 view .LVU100
+ 453 001a 524B     		ldr	r3, .L50+8
+ 454 001c 9C42     		cmp	r4, r3
+ 455 001e 62D0     		beq	.L46
+  67:Bsp/Bsp_SPI.c ****     {
+ 456              		.loc 1 67 10 is_stmt 1 view .LVU101
+  67:Bsp/Bsp_SPI.c ****     {
+ 457              		.loc 1 67 13 is_stmt 0 view .LVU102
+ 458 0020 514B     		ldr	r3, .L50+12
+ 459 0022 9C42     		cmp	r4, r3
+ 460 0024 6DD0     		beq	.L47
+  71:Bsp/Bsp_SPI.c ****     {
+ 461              		.loc 1 71 10 is_stmt 1 view .LVU103
+  71:Bsp/Bsp_SPI.c ****     {
+ 462              		.loc 1 71 13 is_stmt 0 view .LVU104
+ 463 0026 514B     		ldr	r3, .L50+16
+ 464 0028 9C42     		cmp	r4, r3
+ 465 002a 78D0     		beq	.L48
+  75:Bsp/Bsp_SPI.c ****     {
+ 466              		.loc 1 75 10 is_stmt 1 view .LVU105
+  75:Bsp/Bsp_SPI.c ****     {
+ 467              		.loc 1 75 13 is_stmt 0 view .LVU106
+ 468 002c 504B     		ldr	r3, .L50+20
+ 469 002e 9C42     		cmp	r4, r3
+ 470 0030 00F08380 		beq	.L49
+  80:Bsp/Bsp_SPI.c **** 
+ 471              		.loc 1 80 16 view .LVU107
+ 472 0034 0020     		movs	r0, #0
+ 473 0036 43E0     		b	.L40
+ 474              	.L44:
+  57:Bsp/Bsp_SPI.c ****     }
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 14
+
+
+ 475              		.loc 1 57 9 is_stmt 1 view .LVU108
+ 476              	.LBB2:
+  57:Bsp/Bsp_SPI.c ****     }
+ 477              		.loc 1 57 9 view .LVU109
+  57:Bsp/Bsp_SPI.c ****     }
+ 478              		.loc 1 57 9 view .LVU110
+ 479 0038 4E4B     		ldr	r3, .L50+24
+ 480 003a D3F8F020 		ldr	r2, [r3, #240]
+ 481 003e 42F48052 		orr	r2, r2, #4096
+ 482 0042 C3F8F020 		str	r2, [r3, #240]
+ 483              	.LVL14:
+  57:Bsp/Bsp_SPI.c ****     }
+ 484              		.loc 1 57 9 view .LVU111
+ 485 0046 D3F8F030 		ldr	r3, [r3, #240]
+ 486 004a 03F48053 		and	r3, r3, #4096
+ 487 004e 0493     		str	r3, [sp, #16]
+  57:Bsp/Bsp_SPI.c ****     }
+ 488              		.loc 1 57 9 view .LVU112
+ 489 0050 049B     		ldr	r3, [sp, #16]
+ 490              	.LBE2:
+  57:Bsp/Bsp_SPI.c ****     }
+ 491              		.loc 1 57 9 view .LVU113
+ 492              	.L35:
+  82:Bsp/Bsp_SPI.c **** 
+ 493              		.loc 1 82 5 view .LVU114
+ 494 0052 32AB     		add	r3, sp, #200
+ 495 0054 93E80700 		ldm	r3, {r0, r1, r2}
+ 496 0058 8DE80700 		stm	sp, {r0, r1, r2}
+ 497 005c 2EAB     		add	r3, sp, #184
+ 498 005e 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 499 0060 FFF7FEFF 		bl	BspSPI_PinInit
+ 500              	.LVL15:
+  84:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Mode = spi_cfg.Mode;                           // SPI_MODE_MASTER;
+ 501              		.loc 1 84 5 view .LVU115
+  84:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Mode = spi_cfg.Mode;                           // SPI_MODE_MASTER;
+ 502              		.loc 1 84 32 is_stmt 0 view .LVU116
+ 503 0064 0A94     		str	r4, [sp, #40]
+  85:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Direction = spi_cfg.Direction;                 // SPI_DIRECTION_2LINES;
+ 504              		.loc 1 85 5 is_stmt 1 view .LVU117
+  85:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Direction = spi_cfg.Direction;                 // SPI_DIRECTION_2LINES;
+ 505              		.loc 1 85 42 is_stmt 0 view .LVU118
+ 506 0066 369B     		ldr	r3, [sp, #216]
+  85:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Direction = spi_cfg.Direction;                 // SPI_DIRECTION_2LINES;
+ 507              		.loc 1 85 33 view .LVU119
+ 508 0068 0B93     		str	r3, [sp, #44]
+  86:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.DataSize = spi_cfg.DataSize;                   // SPI_DATASIZE_8BIT;
+ 509              		.loc 1 86 5 is_stmt 1 view .LVU120
+  86:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.DataSize = spi_cfg.DataSize;                   // SPI_DATASIZE_8BIT;
+ 510              		.loc 1 86 47 is_stmt 0 view .LVU121
+ 511 006a 379B     		ldr	r3, [sp, #220]
+  86:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.DataSize = spi_cfg.DataSize;                   // SPI_DATASIZE_8BIT;
+ 512              		.loc 1 86 38 view .LVU122
+ 513 006c 0C93     		str	r3, [sp, #48]
+  87:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPolarity = spi_cfg.CLKPolarity;             // SPI_POLARITY_LOW;
+ 514              		.loc 1 87 5 is_stmt 1 view .LVU123
+  87:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPolarity = spi_cfg.CLKPolarity;             // SPI_POLARITY_LOW;
+ 515              		.loc 1 87 46 is_stmt 0 view .LVU124
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 15
+
+
+ 516 006e 389B     		ldr	r3, [sp, #224]
+  87:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPolarity = spi_cfg.CLKPolarity;             // SPI_POLARITY_LOW;
+ 517              		.loc 1 87 37 view .LVU125
+ 518 0070 0D93     		str	r3, [sp, #52]
+  88:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPhase = spi_cfg.CLKPhase;                   // SPI_PHASE_1EDGE;
+ 519              		.loc 1 88 5 is_stmt 1 view .LVU126
+  88:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPhase = spi_cfg.CLKPhase;                   // SPI_PHASE_1EDGE;
+ 520              		.loc 1 88 49 is_stmt 0 view .LVU127
+ 521 0072 399B     		ldr	r3, [sp, #228]
+  88:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPhase = spi_cfg.CLKPhase;                   // SPI_PHASE_1EDGE;
+ 522              		.loc 1 88 40 view .LVU128
+ 523 0074 0E93     		str	r3, [sp, #56]
+  89:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSS = spi_cfg.NSS;                             // SPI_NSS_SOFT;
+ 524              		.loc 1 89 5 is_stmt 1 view .LVU129
+  89:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSS = spi_cfg.NSS;                             // SPI_NSS_SOFT;
+ 525              		.loc 1 89 46 is_stmt 0 view .LVU130
+ 526 0076 3A9B     		ldr	r3, [sp, #232]
+  89:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSS = spi_cfg.NSS;                             // SPI_NSS_SOFT;
+ 527              		.loc 1 89 37 view .LVU131
+ 528 0078 0F93     		str	r3, [sp, #60]
+  90:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.BaudRatePrescaler = spi_cfg.BaudRatePrescaler; // SPI_BAUDRATEPRESCALER_
+ 529              		.loc 1 90 5 is_stmt 1 view .LVU132
+  90:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.BaudRatePrescaler = spi_cfg.BaudRatePrescaler; // SPI_BAUDRATEPRESCALER_
+ 530              		.loc 1 90 41 is_stmt 0 view .LVU133
+ 531 007a 3B9B     		ldr	r3, [sp, #236]
+  90:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.BaudRatePrescaler = spi_cfg.BaudRatePrescaler; // SPI_BAUDRATEPRESCALER_
+ 532              		.loc 1 90 32 view .LVU134
+ 533 007c 1093     		str	r3, [sp, #64]
+  91:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FirstBit = spi_cfg.FirstBit;                   // SPI_FIRSTBIT_MSB;
+ 534              		.loc 1 91 5 is_stmt 1 view .LVU135
+  91:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FirstBit = spi_cfg.FirstBit;                   // SPI_FIRSTBIT_MSB;
+ 535              		.loc 1 91 55 is_stmt 0 view .LVU136
+ 536 007e 3C9B     		ldr	r3, [sp, #240]
+  91:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FirstBit = spi_cfg.FirstBit;                   // SPI_FIRSTBIT_MSB;
+ 537              		.loc 1 91 46 view .LVU137
+ 538 0080 1193     		str	r3, [sp, #68]
+  92:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TIMode = SPI_TIMODE_DISABLE;
+ 539              		.loc 1 92 5 is_stmt 1 view .LVU138
+  92:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TIMode = SPI_TIMODE_DISABLE;
+ 540              		.loc 1 92 46 is_stmt 0 view .LVU139
+ 541 0082 3D9B     		ldr	r3, [sp, #244]
+  92:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TIMode = SPI_TIMODE_DISABLE;
+ 542              		.loc 1 92 37 view .LVU140
+ 543 0084 1293     		str	r3, [sp, #72]
+  93:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+ 544              		.loc 1 93 5 is_stmt 1 view .LVU141
+  93:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+ 545              		.loc 1 93 35 is_stmt 0 view .LVU142
+ 546 0086 0023     		movs	r3, #0
+ 547 0088 1393     		str	r3, [sp, #76]
+  94:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCPolynomial = 7;
+ 548              		.loc 1 94 5 is_stmt 1 view .LVU143
+  94:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCPolynomial = 7;
+ 549              		.loc 1 94 43 is_stmt 0 view .LVU144
+ 550 008a 1493     		str	r3, [sp, #80]
+  95:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+ 551              		.loc 1 95 5 is_stmt 1 view .LVU145
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 16
+
+
+  95:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+ 552              		.loc 1 95 42 is_stmt 0 view .LVU146
+ 553 008c 0722     		movs	r2, #7
+ 554 008e 1592     		str	r2, [sp, #84]
+  96:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+ 555              		.loc 1 96 5 is_stmt 1 view .LVU147
+  96:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+ 556              		.loc 1 96 38 is_stmt 0 view .LVU148
+ 557 0090 1693     		str	r3, [sp, #88]
+  97:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+ 558              		.loc 1 97 5 is_stmt 1 view .LVU149
+  97:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+ 559              		.loc 1 97 37 is_stmt 0 view .LVU150
+ 560 0092 1793     		str	r3, [sp, #92]
+  98:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+ 561              		.loc 1 98 5 is_stmt 1 view .LVU151
+  98:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+ 562              		.loc 1 98 40 is_stmt 0 view .LVU152
+ 563 0094 1893     		str	r3, [sp, #96]
+  99:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 564              		.loc 1 99 5 is_stmt 1 view .LVU153
+  99:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 565              		.loc 1 99 42 is_stmt 0 view .LVU154
+ 566 0096 1993     		str	r3, [sp, #100]
+ 100:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 567              		.loc 1 100 5 is_stmt 1 view .LVU155
+ 100:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 568              		.loc 1 100 55 is_stmt 0 view .LVU156
+ 569 0098 1A93     		str	r3, [sp, #104]
+ 101:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+ 570              		.loc 1 101 5 is_stmt 1 view .LVU157
+ 101:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+ 571              		.loc 1 101 55 is_stmt 0 view .LVU158
+ 572 009a 1B93     		str	r3, [sp, #108]
+ 102:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+ 573              		.loc 1 102 5 is_stmt 1 view .LVU159
+ 102:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+ 574              		.loc 1 102 45 is_stmt 0 view .LVU160
+ 575 009c 1C93     		str	r3, [sp, #112]
+ 103:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+ 576              		.loc 1 103 5 is_stmt 1 view .LVU161
+ 103:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+ 577              		.loc 1 103 52 is_stmt 0 view .LVU162
+ 578 009e 1D93     		str	r3, [sp, #116]
+ 104:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+ 579              		.loc 1 104 5 is_stmt 1 view .LVU163
+ 104:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+ 580              		.loc 1 104 51 is_stmt 0 view .LVU164
+ 581 00a0 1E93     		str	r3, [sp, #120]
+ 105:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+ 582              		.loc 1 105 5 is_stmt 1 view .LVU165
+ 105:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+ 583              		.loc 1 105 46 is_stmt 0 view .LVU166
+ 584 00a2 4FF00042 		mov	r2, #-2147483648
+ 585 00a6 1F92     		str	r2, [sp, #124]
+ 106:Bsp/Bsp_SPI.c **** 
+ 586              		.loc 1 106 5 is_stmt 1 view .LVU167
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 17
+
+
+ 106:Bsp/Bsp_SPI.c **** 
+ 587              		.loc 1 106 35 is_stmt 0 view .LVU168
+ 588 00a8 2093     		str	r3, [sp, #128]
+ 108:Bsp/Bsp_SPI.c ****     {
+ 589              		.loc 1 108 5 is_stmt 1 view .LVU169
+ 108:Bsp/Bsp_SPI.c ****     {
+ 590              		.loc 1 108 9 is_stmt 0 view .LVU170
+ 591 00aa 0AA8     		add	r0, sp, #40
+ 592 00ac FFF7FEFF 		bl	HAL_SPI_Init
+ 593              	.LVL16:
+ 108:Bsp/Bsp_SPI.c ****     {
+ 594              		.loc 1 108 8 view .LVU171
+ 595 00b0 0028     		cmp	r0, #0
+ 596 00b2 51D0     		beq	.L42
+ 113:Bsp/Bsp_SPI.c **** 
+ 597              		.loc 1 113 5 is_stmt 1 view .LVU172
+ 113:Bsp/Bsp_SPI.c **** 
+ 598              		.loc 1 113 19 is_stmt 0 view .LVU173
+ 599 00b4 8822     		movs	r2, #136
+ 600 00b6 0AA9     		add	r1, sp, #40
+ 601 00b8 3E98     		ldr	r0, [sp, #248]
+ 602 00ba FFF7FEFF 		bl	memcpy
+ 603              	.LVL17:
+ 115:Bsp/Bsp_SPI.c **** }
+ 604              		.loc 1 115 5 is_stmt 1 view .LVU174
+ 115:Bsp/Bsp_SPI.c **** }
+ 605              		.loc 1 115 12 is_stmt 0 view .LVU175
+ 606 00be 0120     		movs	r0, #1
+ 607              	.L40:
+ 116:Bsp/Bsp_SPI.c **** 
+ 608              		.loc 1 116 1 view .LVU176
+ 609 00c0 2CB0     		add	sp, sp, #176
+ 610              	.LCFI20:
+ 611              		.cfi_remember_state
+ 612              		.cfi_def_cfa_offset 24
+ 613              		@ sp needed
+ 614 00c2 BDE81040 		pop	{r4, lr}
+ 615              	.LCFI21:
+ 616              		.cfi_restore 14
+ 617              		.cfi_restore 4
+ 618              		.cfi_def_cfa_offset 16
+ 619 00c6 04B0     		add	sp, sp, #16
+ 620              	.LCFI22:
+ 621              		.cfi_def_cfa_offset 0
+ 622 00c8 7047     		bx	lr
+ 623              	.LVL18:
+ 624              	.L45:
+ 625              	.LCFI23:
+ 626              		.cfi_restore_state
+  61:Bsp/Bsp_SPI.c ****     }
+ 627              		.loc 1 61 9 is_stmt 1 view .LVU177
+ 628              	.LBB3:
+  61:Bsp/Bsp_SPI.c ****     }
+ 629              		.loc 1 61 9 view .LVU178
+  61:Bsp/Bsp_SPI.c ****     }
+ 630              		.loc 1 61 9 view .LVU179
+ 631 00ca 2A4B     		ldr	r3, .L50+24
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 18
+
+
+ 632 00cc D3F8E820 		ldr	r2, [r3, #232]
+ 633 00d0 42F48042 		orr	r2, r2, #16384
+ 634 00d4 C3F8E820 		str	r2, [r3, #232]
+ 635              	.LVL19:
+  61:Bsp/Bsp_SPI.c ****     }
+ 636              		.loc 1 61 9 view .LVU180
+ 637 00d8 D3F8E830 		ldr	r3, [r3, #232]
+ 638 00dc 03F48043 		and	r3, r3, #16384
+ 639 00e0 0593     		str	r3, [sp, #20]
+  61:Bsp/Bsp_SPI.c ****     }
+ 640              		.loc 1 61 9 view .LVU181
+ 641 00e2 059B     		ldr	r3, [sp, #20]
+ 642              	.LBE3:
+  61:Bsp/Bsp_SPI.c ****     }
+ 643              		.loc 1 61 9 view .LVU182
+ 644 00e4 B5E7     		b	.L35
+ 645              	.LVL20:
+ 646              	.L46:
+  65:Bsp/Bsp_SPI.c ****     }
+ 647              		.loc 1 65 9 view .LVU183
+ 648              	.LBB4:
+  65:Bsp/Bsp_SPI.c ****     }
+ 649              		.loc 1 65 9 view .LVU184
+  65:Bsp/Bsp_SPI.c ****     }
+ 650              		.loc 1 65 9 view .LVU185
+ 651 00e6 234B     		ldr	r3, .L50+24
+ 652 00e8 D3F8E820 		ldr	r2, [r3, #232]
+ 653 00ec 42F40042 		orr	r2, r2, #32768
+ 654 00f0 C3F8E820 		str	r2, [r3, #232]
+ 655              	.LVL21:
+  65:Bsp/Bsp_SPI.c ****     }
+ 656              		.loc 1 65 9 view .LVU186
+ 657 00f4 D3F8E830 		ldr	r3, [r3, #232]
+ 658 00f8 03F40043 		and	r3, r3, #32768
+ 659 00fc 0693     		str	r3, [sp, #24]
+  65:Bsp/Bsp_SPI.c ****     }
+ 660              		.loc 1 65 9 view .LVU187
+ 661 00fe 069B     		ldr	r3, [sp, #24]
+ 662              	.LBE4:
+  65:Bsp/Bsp_SPI.c ****     }
+ 663              		.loc 1 65 9 view .LVU188
+ 664 0100 A7E7     		b	.L35
+ 665              	.LVL22:
+ 666              	.L47:
+  69:Bsp/Bsp_SPI.c ****     }
+ 667              		.loc 1 69 9 view .LVU189
+ 668              	.LBB5:
+  69:Bsp/Bsp_SPI.c ****     }
+ 669              		.loc 1 69 9 view .LVU190
+  69:Bsp/Bsp_SPI.c ****     }
+ 670              		.loc 1 69 9 view .LVU191
+ 671 0102 1C4B     		ldr	r3, .L50+24
+ 672 0104 D3F8F020 		ldr	r2, [r3, #240]
+ 673 0108 42F40052 		orr	r2, r2, #8192
+ 674 010c C3F8F020 		str	r2, [r3, #240]
+ 675              	.LVL23:
+  69:Bsp/Bsp_SPI.c ****     }
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 19
+
+
+ 676              		.loc 1 69 9 view .LVU192
+ 677 0110 D3F8F030 		ldr	r3, [r3, #240]
+ 678 0114 03F40053 		and	r3, r3, #8192
+ 679 0118 0793     		str	r3, [sp, #28]
+  69:Bsp/Bsp_SPI.c ****     }
+ 680              		.loc 1 69 9 view .LVU193
+ 681 011a 079B     		ldr	r3, [sp, #28]
+ 682              	.LBE5:
+  69:Bsp/Bsp_SPI.c ****     }
+ 683              		.loc 1 69 9 view .LVU194
+ 684 011c 99E7     		b	.L35
+ 685              	.LVL24:
+ 686              	.L48:
+  73:Bsp/Bsp_SPI.c ****     }
+ 687              		.loc 1 73 9 view .LVU195
+ 688              	.LBB6:
+  73:Bsp/Bsp_SPI.c ****     }
+ 689              		.loc 1 73 9 view .LVU196
+  73:Bsp/Bsp_SPI.c ****     }
+ 690              		.loc 1 73 9 view .LVU197
+ 691 011e 154B     		ldr	r3, .L50+24
+ 692 0120 D3F8F020 		ldr	r2, [r3, #240]
+ 693 0124 42F48012 		orr	r2, r2, #1048576
+ 694 0128 C3F8F020 		str	r2, [r3, #240]
+ 695              	.LVL25:
+  73:Bsp/Bsp_SPI.c ****     }
+ 696              		.loc 1 73 9 view .LVU198
+ 697 012c D3F8F030 		ldr	r3, [r3, #240]
+ 698 0130 03F48013 		and	r3, r3, #1048576
+ 699 0134 0893     		str	r3, [sp, #32]
+  73:Bsp/Bsp_SPI.c ****     }
+ 700              		.loc 1 73 9 view .LVU199
+ 701 0136 089B     		ldr	r3, [sp, #32]
+ 702              	.LBE6:
+  73:Bsp/Bsp_SPI.c ****     }
+ 703              		.loc 1 73 9 view .LVU200
+ 704 0138 8BE7     		b	.L35
+ 705              	.LVL26:
+ 706              	.L49:
+  77:Bsp/Bsp_SPI.c ****     }
+ 707              		.loc 1 77 9 view .LVU201
+ 708              	.LBB7:
+  77:Bsp/Bsp_SPI.c ****     }
+ 709              		.loc 1 77 9 view .LVU202
+  77:Bsp/Bsp_SPI.c ****     }
+ 710              		.loc 1 77 9 view .LVU203
+ 711 013a 03F50C33 		add	r3, r3, #143360
+ 712 013e D3F8F420 		ldr	r2, [r3, #244]
+ 713 0142 42F02002 		orr	r2, r2, #32
+ 714 0146 C3F8F420 		str	r2, [r3, #244]
+ 715              	.LVL27:
+  77:Bsp/Bsp_SPI.c ****     }
+ 716              		.loc 1 77 9 view .LVU204
+ 717 014a D3F8F430 		ldr	r3, [r3, #244]
+ 718 014e 03F02003 		and	r3, r3, #32
+ 719 0152 0993     		str	r3, [sp, #36]
+  77:Bsp/Bsp_SPI.c ****     }
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 20
+
+
+ 720              		.loc 1 77 9 view .LVU205
+ 721 0154 099B     		ldr	r3, [sp, #36]
+ 722              	.LBE7:
+  77:Bsp/Bsp_SPI.c ****     }
+ 723              		.loc 1 77 9 view .LVU206
+ 724 0156 7CE7     		b	.L35
+ 725              	.L42:
+ 110:Bsp/Bsp_SPI.c ****     }
+ 726              		.loc 1 110 16 is_stmt 0 view .LVU207
+ 727 0158 0020     		movs	r0, #0
+ 728 015a B1E7     		b	.L40
+ 729              	.L51:
+ 730              		.align	2
+ 731              	.L50:
+ 732 015c 00300140 		.word	1073819648
+ 733 0160 00380040 		.word	1073756160
+ 734 0164 003C0040 		.word	1073757184
+ 735 0168 00340140 		.word	1073820672
+ 736 016c 00500140 		.word	1073827840
+ 737 0170 00140058 		.word	1476400128
+ 738 0174 00440258 		.word	1476543488
+ 739              		.cfi_endproc
+ 740              	.LFE334:
+ 742              		.global	BspSPI
+ 743              		.section	.data.BspSPI,"aw"
+ 744              		.align	2
+ 747              	BspSPI:
+ 748 0000 00000000 		.word	BspSPI_NormalMode_Init
+ 749 0004 00000000 		.word	BspSPI_DeInit
+ 750 0008 00000000 		.word	0
+ 751 000c 00000000 		.word	BspSPI_Trans
+ 752 0010 00000000 		.word	BspSPI_Receive
+ 753 0014 00000000 		.word	BspSPI_TransReceive
+ 754              		.text
+ 755              	.Letext0:
+ 756              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 757              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 758              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 759              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 760              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 761              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 762              		.file 8 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h"
+ 763              		.file 9 "Bsp/Bsp_SPI.h"
+ 764              		.file 10 "<built-in>"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s 			page 21
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Bsp_SPI.c
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:17     .text.BspSPI_TransReceive:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:24     .text.BspSPI_TransReceive:00000000 BspSPI_TransReceive
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:70     .text.BspSPI_Receive:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:76     .text.BspSPI_Receive:00000000 BspSPI_Receive
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:108    .text.BspSPI_Trans:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:114    .text.BspSPI_Trans:00000000 BspSPI_Trans
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:146    .text.BspSPI_DeInit:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:152    .text.BspSPI_DeInit:00000000 BspSPI_DeInit
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:280    .text.BspSPI_DeInit:000000b8 $d
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:291    .text.BspSPI_PinInit:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:297    .text.BspSPI_PinInit:00000000 BspSPI_PinInit
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:411    .text.BspSPI_NormalMode_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:417    .text.BspSPI_NormalMode_Init:00000000 BspSPI_NormalMode_Init
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:732    .text.BspSPI_NormalMode_Init:0000015c $d
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:747    .data.BspSPI:00000000 BspSPI
+C:\Users\huav\AppData\Local\Temp\ccvTcCbu.s:744    .data.BspSPI:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_SPI_TransmitReceive
+HAL_SPI_Receive
+HAL_SPI_Transmit
+HAL_GPIO_DeInit
+HAL_GPIO_Init
+HAL_SPI_Init
+memcpy
