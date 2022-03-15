@@ -404,8 +404,6 @@ static void Os_Set_TaskReady(Task *tsk)
     // set current task under this group flag to ready
     TskHdl_RdyMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
 
-    tsk->Exec_status.Exec_Time = Get_TargetRunTime(tsk->exec_interval_us);
-
     tsk->State = Task_Ready;
 }
 
@@ -539,6 +537,8 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 /* still got bug down below */
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
 {
+    Task *NxtTsk_Tmp = NULL;
+
     SYSTEM_RunTime delay_tick_base = (Ms * REAL_1MS);
 
     /* set task next ready time */
@@ -710,6 +710,7 @@ static void Os_TaskExec(Task *tsk_ptr)
         // get task total execute time unit in us
         tsk_ptr->Exec_status.Running_Time += tsk_ptr->TskFuncUing_US;
         time_diff = Get_TimeDifference_Between(tsk_ptr->Exec_status.Start_Time, tsk_ptr->Exec_status.Exec_Time);
+        tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(tsk_ptr->exec_interval_us);
 
         tsk_ptr->Exec_status.cpu_opy = tsk_ptr->Exec_status.Running_Time / (float)time_diff;
         tsk_ptr->Exec_status.cpu_opy *= 100;

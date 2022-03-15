@@ -77,6 +77,13 @@ void main(void)
 
 void Test2(Task_Handle handle)
 {
+    static uint8_t t = 0;
+
+    if (((Task *)handle)->Exec_status.Exec_cnt == 21)
+    {
+        t++;
+    }
+
     test_PC2_ctl();
 }
 
