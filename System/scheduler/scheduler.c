@@ -544,13 +544,26 @@ void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
     /* set task next ready time */
     TaskHandlerToObj(hdl)->Exec_status.Exec_Time += delay_tick_base;
 
+    Os_Clr_TaskReady(TaskHandlerToObj(hdl));
     Os_Set_TaskBlock(TaskHandlerToObj(hdl), Task_DelayBlock);
 
-    NxtRunTsk_Ptr = Idle_Task;
-    Idle_Task->State = Task_Ready;
+    NxtTsk_Tmp = Os_Get_HighestRank_RdyTask();
 
-    NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
-    NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
+    if (NxtTsk_Tmp == NULL)
+    {
+        NxtRunTsk_Ptr = Idle_Task;
+        Idle_Task->State = Task_Ready;
+
+        NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
+        NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
+    }
+    else
+    {
+        NxtRunTsk_Ptr = NxtTsk_Tmp;
+
+        NxtTsk_TCB.Top_Stk_Ptr = &NxtTsk_Tmp->TCB.Top_Stk_Ptr;
+        NxtTsk_TCB.Stack = NxtTsk_Tmp->TCB.Stack;
+    }
 
     /* trigger pendsv to switch task */
     /* do not anticipate scheduler been triggerd when it happend  */
@@ -637,31 +650,95 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
 
     if ((tsk_l == NULL) && (tsk_r != NULL))
     {
-        return tsk_r;
+        if ((tsk_r->State != Task_DelayBlock) && (tsk_r->State != Task_SignalBlock))
+        {
+            return tsk_r;
+        }
+        else
+            return NULL;
     }
 
     if ((tsk_l != NULL) && (tsk_r == NULL))
     {
-        return tsk_l;
+        if ((tsk_l->State != Task_DelayBlock) && (tsk_l->State != Task_SignalBlock))
+        {
+            return tsk_l;
+        }
+        else
+            return NULL;
     }
 
     if (grp_l < grp_r)
     {
-        return tsk_l;
+        if ((tsk_l->State != Task_DelayBlock) && (tsk_l->State != Task_SignalBlock))
+        {
+            return tsk_l;
+        }
+
+        if ((tsk_r->State != Task_DelayBlock) && (tsk_r->State != Task_SignalBlock))
+        {
+            return tsk_r;
+        }
+
+        return NULL;
     }
     else if (grp_l > grp_r)
     {
-        return tsk_r;
+        if ((tsk_r->State != Task_DelayBlock) && (tsk_r->State != Task_SignalBlock))
+        {
+            return tsk_r;
+        }
+
+        if ((tsk_l->State != Task_DelayBlock) && (tsk_l->State != Task_SignalBlock))
+        {
+            return tsk_l;
+        }
+
+        return NULL;
     }
     else if (grp_l == grp_r)
     {
         if (pri_l < pri_r)
         {
-            return tsk_l;
+            if ((tsk_l->State != Task_DelayBlock) && (tsk_l->State != Task_SignalBlock))
+            {
+                return tsk_l;
+            }
+
+            if ((tsk_r->State != Task_DelayBlock) && (tsk_r->State != Task_SignalBlock))
+            {
+                return tsk_r;
+            }
+
+            return NULL;
         }
         else if (pri_l > pri_r)
         {
-            return tsk_r;
+            if ((tsk_r->State != Task_DelayBlock) && (tsk_r->State != Task_SignalBlock))
+            {
+                return tsk_r;
+            }
+
+            if ((tsk_l->State != Task_DelayBlock) && (tsk_l->State != Task_SignalBlock))
+            {
+                return tsk_l;
+            }
+
+            return NULL;
+        }
+        else
+        {
+            if ((tsk_r->State != Task_DelayBlock) && (tsk_r->State != Task_SignalBlock))
+            {
+                return tsk_r;
+            }
+
+            if ((tsk_l->State != Task_DelayBlock) && (tsk_l->State != Task_SignalBlock))
+            {
+                return tsk_l;
+            }
+
+            return NULL;
         }
     }
 }
