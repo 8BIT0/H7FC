@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "scheduler.h"
 #include "runtime.h"
 
 #pragma pack(1)
@@ -20,5 +21,7 @@ typedef struct
     SYSTEM_RunTime Rt;
 } ProtIMUData_TypeDef;
 #pragma pack()
+
+void TaskProtocol_Core(Task_Handle hdl);
 
 #endif
