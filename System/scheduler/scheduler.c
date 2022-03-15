@@ -544,6 +544,7 @@ void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
     /* set task next ready time */
     TaskHandlerToObj(hdl)->Exec_status.Exec_Time += delay_tick_base;
 
+    /* clear from ready list */
     Os_Clr_TaskReady(TaskHandlerToObj(hdl));
     Os_Set_TaskBlock(TaskHandlerToObj(hdl), Task_DelayBlock);
 
