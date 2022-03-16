@@ -45,7 +45,9 @@
                 "samephore.h": "c",
                 "queue.h": "c",
                 "task_sensor_mpu.h": "c",
-                "linked_list.h": "c"
+                "linked_list.h": "c",
+                "task_protocol.h": "c",
+                "task_manager.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

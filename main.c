@@ -5,7 +5,7 @@
 #include "system_cfg.h"
 #include "debug_util.h"
 #include "scheduler.h"
-#include "usb_device.h"
+#include "Task_Manager.h"
 
 Task_Handle Blink_Task = NULL;
 Task_Handle Test_Task = NULL;
@@ -62,7 +62,6 @@ void main(void)
     DebugPin.init(Debug_PC0);
     DebugPin.init(Debug_PC1);
     DebugPin.init(Debug_PC2);
-    USB_DEVICE_Init();
 
     Os_Init(RUNTIME_TICK_FRQ_40K);
 
@@ -70,6 +69,7 @@ void main(void)
     Blink_Task = Os_CreateTask("Blink", TASK_EXEC_10KHZ, Task_Group_0, Task_Group_0, Run, 256);
     Test_Task = Os_CreateTask("test", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
     Test2_Task = Os_CreateTask("test2", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_2, Test2, 256);
+    Task_Manager();
     /* create task up top */
 
     Os_Start();

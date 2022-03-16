@@ -38,6 +38,8 @@ BUILD_DIR = build
 C_SOURCES =  \
 main.c \
 debug/debug_util.c \
+Task/Task_Protocol.c \
+Task/Task_Manager.c \
 Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \
 Device/Dev_Led.c \
@@ -145,6 +147,7 @@ C_INCLUDES =  \
 -IIO_Def/ \
 -Idebug/ \
 -IBsp \
+-ITask/ \
 -IDevice \
 -ISystem/ \
 -ISystem/mmu/ \

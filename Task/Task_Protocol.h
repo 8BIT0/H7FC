@@ -16,11 +16,17 @@ typedef struct
     double Flt_Gyr[3];
 
     int16_t Org_temp;
-    float Org_temp;
 
     SYSTEM_RunTime Rt;
 } ProtIMUData_TypeDef;
 #pragma pack()
+
+typedef enum
+{
+    TaskProto_Init = 0,
+    TaskProto_Core,
+    TaskProto_Error_Proc,
+} TaskProto_State_List;
 
 void TaskProtocol_Core(Task_Handle hdl);
 
