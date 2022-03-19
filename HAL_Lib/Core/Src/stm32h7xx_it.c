@@ -3,6 +3,8 @@
 #include "runtime.h"
 #include "scheduler.h"
 
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+
 void NMI_Handler(void)
 {
   while (1)
@@ -56,8 +58,10 @@ void SysTick_Handler(void)
 {
   static uint32_t time_base = 0;
 
+  /* Os relay on */
   Runtime_Tick();
 
+  /* periph relay on */
   if (time_base / REAL_1MS)
   {
     time_base = 0;
@@ -71,6 +75,5 @@ void SysTick_Handler(void)
 
 void OTG_FS_IRQHandler(void)
 {
-  extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
   HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
 }

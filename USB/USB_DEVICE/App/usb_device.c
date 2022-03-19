@@ -85,6 +85,7 @@ bool USB_DEVICE_Init(void)
   HAL_PWREx_EnableUSBVoltageDetector();
 
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
+  return true;
 }
 
 /**

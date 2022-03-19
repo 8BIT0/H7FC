@@ -2,6 +2,7 @@
 #include "scheduler.h"
 #include "shell.h"
 #include "usb_device.h"
+#include "usbd_cdc_if.h"
 
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Init;
@@ -9,6 +10,14 @@ static TaskProto_State_List task_state = TaskProto_Init;
 static bool TaskProtocol_Init(void)
 {
     return USB_DEVICE_Init();
+}
+
+static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
+{
+    if (CDC_Transmit_FS(data, size) != USBD_OK)
+        return false;
+
+    return true;
 }
 
 void TaskProtocol_Core(Task_Handle hdl)
@@ -26,6 +35,7 @@ void TaskProtocol_Core(Task_Handle hdl)
         break;
 
     case TaskProto_Core:
+        TaskProtocol_TransBuff("8bit test\r\n", strlen("8bit test\r\n"));
         break;
 
     case TaskProto_Error_Proc:
