@@ -54,7 +54,19 @@ void PendSV_Handler(void)
 
 void SysTick_Handler(void)
 {
+  static uint32_t time_base = 0;
+
   Runtime_Tick();
+
+  if (time_base / REAL_1MS)
+  {
+    time_base = 0;
+    HAL_IncTick();
+  }
+  else
+  {
+    time_base += Runtime_GetTickBase();
+  }
 }
 
 void OTG_FS_IRQHandler(void)

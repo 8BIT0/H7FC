@@ -1,9 +1,6 @@
 #ifndef __SYSTEM_CFG_H
 #define __SYSTEM_CFG_H
 
-#define KERNEL_DCACHE_STATE 0
-#define KERNEL_ICACHE_STATE 0
-
 #define US_IN_1S REAL_1S
 #define SCHEDULER_TIMEBASE US_IN_1S
 

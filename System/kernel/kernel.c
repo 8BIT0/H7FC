@@ -22,14 +22,6 @@ bool Kernel_Init(void)
     // disable interrupt at the first place
     Kernel_DisableIRQ();
 
-#if KERNEL_DCACHE_STATE == 1
-    SCB_EnableDCache();
-#endif
-
-#if KERNEL_ICACHE_STATE == 1
-    SCB_EnableICache();
-#endif
-
     HAL_Init();
 
     return KernelClock_Init();
@@ -57,7 +49,7 @@ static bool KernelClock_Init(void)
     }
     /** Macro to configure the PLL clock source
      */
-    __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
+    // __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
     /** Initializes the RCC Oscillators according to the specified parameters
      * in the RCC_OscInitTypeDef structure.
      */
@@ -74,6 +66,16 @@ static bool KernelClock_Init(void)
     RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
     RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        return false;
+    }
+
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48 | RCC_OSCILLATORTYPE_HSI;
+    RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
         return false;
