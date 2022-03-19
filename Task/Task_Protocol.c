@@ -36,6 +36,7 @@ void TaskProtocol_Core(Task_Handle hdl)
 
     case TaskProto_Core:
         TaskProtocol_TransBuff("8bit test\r\n", strlen("8bit test\r\n"));
+        TaaskProtocol_Main(NULL, 0);
         break;
 
     case TaskProto_Error_Proc:
@@ -44,4 +45,8 @@ void TaskProtocol_Core(Task_Handle hdl)
     default:
         break;
     }
+}
+
+static void TaaskProtocol_Main(uint8_t *data, uint16_t size)
+{
 }
