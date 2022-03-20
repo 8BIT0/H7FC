@@ -7,6 +7,9 @@
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Init;
 
+/* internal function */
+static void TaaskProtocol_Main(uint8_t *data, uint16_t size);
+
 static bool TaskProtocol_Init(void)
 {
     return USB_DEVICE_Init();
