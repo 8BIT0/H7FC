@@ -9,10 +9,14 @@ static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr,
     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
         return false;
 
-    write_buff[0] = addr;
+    write_buff[0] = addr | MPU6000_WRITE_MASK;
 
+    /* CS High */
     sensor_obj->cs_ctl(true);
+
     state = sensor_obj->bus_trans(write_buff, read_buff, 2);
+
+    /* CS Low */
     sensor_obj->cs_ctl(false);
 
     *rx = read_buff[1];
@@ -32,22 +36,12 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
     write_buff[0] = addr;
     write_buff[1] = tx;
 
+    /* CS High */
     sensor_obj->cs_ctl(true);
+
     state = sensor_obj->bus_trans(write_buff, NULL, 2);
-    sensor_obj->cs_ctl(false);
 
-    return state;
-}
-
-static bool DevMPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
-{
-    bool state = false;
-
-    if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
-        return state;
-
-    sensor_obj->cs_ctl(true);
-    state = sensor_obj->bus_trans(tx, rx, size);
+    /* CS Low */
     sensor_obj->cs_ctl(false);
 
     return state;
@@ -56,6 +50,7 @@ static bool DevMPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
 static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     uint8_t read_out = 0;
+    uint8_t Reg_Data = 0;
 
     if (sensor_obj == NULL)
         return false;
@@ -69,15 +64,25 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
         return false;
     }
 
-    sensor_obj->cs_init();
-    sensor_obj->bus_init();
+    if (!sensor_obj->cs_init() || !sensor_obj->bus_init() || !sensor_obj->set_SPI_1MSpeed())
+    {
+        sensor_obj->error = MPU6000_Interface_Error;
+        return false;
+    }
 
     /* reset power manage register first */
-    DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, BIT_H_RESET);
-    sensor_obj->delay(100);
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, BIT_H_RESET))
+    {
+        sensor_obj->error = MPU6000_BusCommunicate_Error;
+        return false;
+    }
+    sensor_obj->delay(15);
 
-    DevMPU6000_Reg_Read(sensor_obj, MPU6000_WHOAMI, &read_out);
-    sensor_obj->delay(100);
+    if (!DevMPU6000_Reg_Read(sensor_obj, MPU6000_WHOAMI, &read_out))
+    {
+        sensor_obj->error = MPU6000_BusCommunicate_Error;
+        return false;
+    }
 
     switch (read_out)
     {
@@ -97,6 +102,21 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
 
     default:
         sensor_obj->error = MPU6000_DevID_Error;
+        sensor_obj->delay(15);
+        return false;
+    }
+
+    Reg_Data = BIT_GYRO | BIT_ACC | BIT_TEMP;
+    if (!DevMPU6000_Reg_Read(sensor_obj, MPU6000_SIGNAL_PATH_RESET, &Reg_Data))
+    {
+        sensor_obj->error = MPU6000_SignalPathReset_Error;
+        return false;
+    }
+    sensor_obj->delay(15);
+
+    if (!sensor_obj->set_SPI_20MSpeed())
+    {
+        sensor_obj->error = MPU6000_BusSampleSpeed_Error;
         return false;
     }
 
@@ -118,6 +138,11 @@ static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)
     sensor_obj->drdy = true;
 }
 
+static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj)
+{
+    return sensor_obj->drdy;
+}
+
 static void DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     if (sensor_obj->drdy)
@@ -133,6 +158,7 @@ IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
     if (sensor_obj->update)
     {
         sensor_obj->update = false;
+        sensor_obj->OriData_Lst = sensor_obj->OriData;
         return sensor_obj->OriData;
     }
     else

@@ -42,6 +42,7 @@ Task/Task_Protocol.c \
 Task/Task_Manager.c \
 Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \
+Device/Dev_MPU6000.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 DataStructure/queue.c \

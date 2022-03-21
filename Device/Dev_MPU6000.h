@@ -4,8 +4,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <stddef.f>
+#include <stddef.h>
 #include "imu_data.h"
+
+#define MPU6000_WRITE_MASK 0x80
 
 #define MPU6000_CONFIG 0x1A
 #define MPU6000_PRODUCT_ID 0x0C
@@ -93,15 +95,21 @@ typedef enum
 {
     MPU6000_No_Error = 0,
     MPU6000_Obj_Error,
+    MPU6000_Interface_Error,
+    MPU6000_BusCommunicate_Error,
     MPU6000_DevID_Error,
+    MPU6000_SignalPathReset_Error,
+    MPU6000_BusSampleSpeed_Error,
 } DevMPU6000_Error_List;
 
 typedef struct
 {
-    void (*cs_init)(void);
-    void (*bus_init)(void);
+    bool (*cs_init)(void);
+    bool (*bus_init)(void);
     void (*cs_ctl)(bool state);
     bool (*bus_trans)(uint8_t *tx, uint8_t *rx, uint16_t len);
+    bool (*set_SPI_1MSpeed)(void);
+    bool (*set_SPI_20MSpeed)(void);
     uint64_t (*get_runtime)(void);
     void (*delay)(uint32_t ms);
 
