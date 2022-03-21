@@ -100,6 +100,7 @@ typedef enum
     MPU6000_DevID_Error,
     MPU6000_SignalPathReset_Error,
     MPU6000_BusSampleSpeed_Error,
+    MPU6000_DisableI2C_Error,
 } DevMPU6000_Error_List;
 
 typedef struct

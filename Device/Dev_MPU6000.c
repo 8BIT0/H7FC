@@ -112,9 +112,18 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     }
     sensor_obj->delay(15);
 
+    /* Clock Source PPL with Z axis gyro reference */
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, MPU_CLK_SEL_PLLGYROZ))
     {
         sensor_obj->error = MPU6000_SignalPathReset_Error;
+        return false;
+    }
+    sensor_obj->delay(15);
+
+    /* Disable Primary I2C Interface */
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_USER_CTRL, BIT_I2C_IF_DIS))
+    {
+        sensor_obj->error = MPU6000_DisableI2C_Error;
         return false;
     }
     sensor_obj->delay(15);
