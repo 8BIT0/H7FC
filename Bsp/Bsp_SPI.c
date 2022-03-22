@@ -25,7 +25,7 @@ static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
     GPIO_InitStruct.Pin = pin_cfg.pin_mosi;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
 
@@ -33,7 +33,7 @@ static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
     GPIO_InitStruct.Pin = pin_cfg.pin_miso;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_miso, &GPIO_InitStruct);
 
@@ -41,7 +41,7 @@ static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
     GPIO_InitStruct.Pin = pin_cfg.pin_clk;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
 
@@ -92,7 +92,7 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_Han
     SPI_InitStructure.Init.FirstBit = spi_cfg.FirstBit;                   // SPI_FIRSTBIT_MSB;
     SPI_InitStructure.Init.TIMode = SPI_TIMODE_DISABLE;
     SPI_InitStructure.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    SPI_InitStructure.Init.CRCPolynomial = 7;
+    SPI_InitStructure.Init.CRCPolynomial = 0;
     SPI_InitStructure.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
     SPI_InitStructure.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
     SPI_InitStructure.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
@@ -106,11 +106,19 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_Han
     SPI_InitStructure.Init.IOSwap = SPI_IO_SWAP_DISABLE;
 
     if (HAL_SPI_Init(&SPI_InitStructure) == HAL_OK)
-    {
         return false;
-    }
 
     *spi_instance = SPI_InitStructure;
+
+    return true;
+}
+
+static bool BspSPI_Set_CLKSpeed(SPI_HandleTypeDef *spi_instance, uint32_t speed)
+{
+    if (spi_instance == NULL)
+        return false;
+
+    spi_instance->Init.BaudRatePrescaler = speed;
 
     return true;
 }
