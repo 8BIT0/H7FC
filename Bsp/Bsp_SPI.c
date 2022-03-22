@@ -6,6 +6,7 @@ static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg);
 static bool BspSPI_Trans(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint16_t size, uint16_t time_out);
 static bool BspSPI_Receive(SPI_HandleTypeDef *spi_instance, uint8_t *rx, uint16_t size, uint16_t time_out);
 static uint16_t BspSPI_TransReceive(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
+static bool BspSPI_Set_CLKSpeed(SPI_HandleTypeDef *spi_instance, uint32_t speed);
 
 /* SPI0 Object */
 BspSpi_TypeDef BspSPI = {
@@ -14,7 +15,7 @@ BspSpi_TypeDef BspSPI = {
     .trans = BspSPI_Trans,
     .receive = BspSPI_Receive,
     .trans_receive = BspSPI_TransReceive,
-    .set_speed = NULL,
+    .set_speed = BspSPI_Set_CLKSpeed,
 };
 
 static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)

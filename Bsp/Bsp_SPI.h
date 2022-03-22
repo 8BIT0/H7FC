@@ -42,10 +42,10 @@ typedef struct
 {
     bool (*init)(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_instance);
     bool (*deinit)(BspSPI_NorModeConfig_TypeDef spi_cfg);
-    bool (*set_speed)(uint8_t speed_index);
     bool (*trans)(SPI_HandleTypeDef *instance, uint8_t *tx, uint16_t size, uint16_t time_out);
     bool (*receive)(SPI_HandleTypeDef *instance, uint8_t *rx, uint16_t size, uint16_t time_out);
     bool (*trans_receive)(SPI_HandleTypeDef *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
+    bool (*set_speed)(SPI_HandleTypeDef *instance, uint32_t speed);
 } BspSpi_TypeDef;
 
 extern BspSpi_TypeDef BspSPI;
