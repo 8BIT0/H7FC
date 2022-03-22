@@ -91,6 +91,9 @@
 #define BITS_DLPF_CFG_98HZ 0x02
 #define BITS_DLPF_CFG_42HZ 0x03
 
+#define MPU_RF_DATA_RDY_EN (1 << 0)
+#define MPU_CYCLE (1 << 5)
+
 typedef enum
 {
     MPU6000_No_Error = 0,
@@ -102,6 +105,11 @@ typedef enum
     MPU6000_BusSampleSpeed_Error,
     MPU6000_DisableI2C_Error,
     MPU6000_PWRMNG2_Set_Error,
+    MPU6000_DIV_Set_Error,
+    MPU6000_Gyr_Cfg_Error,
+    MPU6000_Acc_Cfg_Error,
+    MPU6000_IntPin_Set_Error,
+    MPU6000_EnableInt_Error,
 } DevMPU6000_Error_List;
 
 typedef struct

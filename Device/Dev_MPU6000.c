@@ -137,6 +137,45 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     }
     sensor_obj->delay(15);
 
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_SMPLRT_DIV, 0x00))
+    {
+        sensor_obj->error = MPU6000_DIV_Set_Error;
+        return false;
+    }
+    sensor_obj->delay(15);
+
+    /* set gyro range 2000dps */
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_GYRO_CONFIG, BITS_FS_2000DPS))
+    {
+        sensor_obj->error = MPU6000_Gyr_Cfg_Error;
+        return false;
+    }
+    sensor_obj->delay(15);
+
+    /* set acc range 16G */
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_ACCEL_CONFIG, BITS_FS_16G))
+    {
+        sensor_obj->error = MPU6000_Acc_Cfg_Error;
+        return false;
+    }
+    sensor_obj->delay(15);
+
+    /* interrupt pin config */
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_INT_PIN_CFG, 0 << 7 | 0 << 6 | 0 << 5 | 1 << 4 | 0 << 3 | 0 << 2 | 0 << 1 | 0 << 0))
+    {
+        sensor_obj->error = MPU6000_IntPin_Set_Error;
+        return false;
+    }
+    sensor_obj->delay(15);
+
+    /* enable interrupt */
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_INT_ENABLE, MPU_RF_DATA_RDY_EN))
+    {
+        sensor_obj->error = MPU6000_EnableInt_Error;
+        return false;
+    }
+    sensor_obj->delay(15);
+
     /* set SPI Bus Speed to 20M before inertial sensor sample */
     if (!sensor_obj->set_SPI_20MSpeed())
     {
@@ -144,10 +183,11 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
         return false;
     }
 
+    sensor_obj->error = MPU6000_No_Error;
     return true;
 }
 
-static bool DevMPU6000_Reset(DevMPU6000Obj_TypeDef *sensor_obj)
+static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     bool state = false;
 
@@ -169,7 +209,7 @@ static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj)
 
 static void DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
 {
-    if (sensor_obj->drdy)
+    if ((sensor_obj->error == MPU6000_No_Error) && (sensor_obj->drdy))
     {
 
         sensor_obj->update = true;
@@ -179,7 +219,7 @@ static void DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
 
 IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
 {
-    if (sensor_obj->update)
+    if ((sensor_obj->error == MPU6000_No_Error) && sensor_obj->update)
     {
         sensor_obj->update = false;
         sensor_obj->OriData_Lst = sensor_obj->OriData;
@@ -188,42 +228,3 @@ IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
     else
         return sensor_obj->OriData_Lst;
 }
-
-//     spiSetClkDivisor(&gyro->dev, spiCalculateDivider(MPU6000_MAX_SPI_INIT_CLK_HZ));
-
-//     // Device was already reset during detection so proceed with configuration
-
-//     // Clock Source PPL with Z axis gyro reference
-//     spiWriteReg(&gyro->dev, MPU_RA_PWR_MGMT_1, MPU_CLK_SEL_PLLGYROZ);
-//     delayMicroseconds(15);
-
-//     // Disable Primary I2C Interface
-//     spiWriteReg(&gyro->dev, MPU_RA_USER_CTRL, BIT_I2C_IF_DIS);
-//     delayMicroseconds(15);
-
-//     spiWriteReg(&gyro->dev, MPU_RA_PWR_MGMT_2, 0x00);
-//     delayMicroseconds(15);
-
-//     // Accel Sample Rate 1kHz
-//     // Gyroscope Output Rate =  1kHz when the DLPF is enabled
-//     spiWriteReg(&gyro->dev, MPU_RA_SMPLRT_DIV, gyro->mpuDividerDrops);
-//     delayMicroseconds(15);
-
-//     // Gyro +/- 2000 DPS Full Scale
-//     spiWriteReg(&gyro->dev, MPU_RA_GYRO_CONFIG, INV_FSR_2000DPS << 3);
-//     delayMicroseconds(15);
-
-//     // Accel +/- 16 G Full Scale
-//     spiWriteReg(&gyro->dev, MPU_RA_ACCEL_CONFIG, INV_FSR_16G << 3);
-//     delayMicroseconds(15);
-
-//     spiWriteReg(&gyro->dev, MPU_RA_INT_PIN_CFG, 0 << 7 | 0 << 6 | 0 << 5 | 1 << 4 | 0 << 3 | 0 << 2 | 0 << 1 | 0 << 0);  // INT_ANYRD_2CLEAR
-//     delayMicroseconds(15);
-
-// #ifdef USE_MPU_DATA_READY_SIGNAL
-//     spiWriteReg(&gyro->dev, MPU_RA_INT_ENABLE, MPU_RF_DATA_RDY_EN);
-//     delayMicroseconds(15);
-// #endif
-
-//     spiSetClkDivisor(&gyro->dev, spiCalculateDivider(MPU6000_MAX_SPI_CLK_HZ));
-//     delayMicroseconds(1);
