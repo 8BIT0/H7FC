@@ -1,5 +1,27 @@
 #include "Dev_MPU6000.h"
 
+/* internal function */
+static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx);
+static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx);
+
+/* external function */
+static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj);
+static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj);
+static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj);
+static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj);
+static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
+IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
+
+/* external MPU6000 Object */
+DevMPU6000_TypeDef DevMPU6000 = {
+    .init = DevMPU6000_Init,
+    .reset = DevMPU6000_SwReset,
+    .set_drdy = DevMPU6000_SetDRDY,
+    .get_drdy = DevMPU6000_GetReady,
+    .sample = DevMPU6000_Sample,
+    .get_data = DevMPU6000_Get_Data,
+};
+
 static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx)
 {
     uint8_t write_buff[2] = {0};
@@ -57,15 +79,13 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     if ((sensor_obj->bus_init == NULL) ||
         (sensor_obj->bus_trans == NULL) ||
         (sensor_obj->cs_ctl == NULL) ||
-        (sensor_obj->cs_init == NULL) ||
-        (sensor_obj->set_SPI_1MSpeed == NULL) ||
-        (sensor_obj->set_SPI_20MSpeed == NULL))
+        (sensor_obj->cs_init == NULL))
     {
         sensor_obj->error = MPU6000_Obj_Error;
         return false;
     }
 
-    if (!sensor_obj->cs_init() || !sensor_obj->bus_init() || !sensor_obj->set_SPI_1MSpeed())
+    if (!sensor_obj->cs_init() || !sensor_obj->bus_init())
     {
         sensor_obj->error = MPU6000_Interface_Error;
         return false;
@@ -176,25 +196,8 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     }
     sensor_obj->delay(15);
 
-    /* set SPI Bus Speed to 20M before inertial sensor sample */
-    if (!sensor_obj->set_SPI_20MSpeed())
-    {
-        sensor_obj->error = MPU6000_BusSampleSpeed_Error;
-        return false;
-    }
-
     sensor_obj->error = MPU6000_No_Error;
     return true;
-}
-
-static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj)
-{
-    bool state = false;
-
-    if (sensor_obj == NULL)
-        return false;
-
-    return state;
 }
 
 static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)
@@ -207,14 +210,29 @@ static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj)
     return sensor_obj->drdy;
 }
 
-static void DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
+/* half develop */
+static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj)
+{
+    bool state = false;
+
+    if (sensor_obj == NULL)
+        return false;
+
+    return state;
+}
+
+static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     if ((sensor_obj->error == MPU6000_No_Error) && (sensor_obj->drdy))
     {
 
         sensor_obj->update = true;
         sensor_obj->drdy = false;
+
+        return true;
     }
+
+    return false;
 }
 
 IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)

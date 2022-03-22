@@ -102,7 +102,6 @@ typedef enum
     MPU6000_BusCommunicate_Error,
     MPU6000_DevID_Error,
     MPU6000_SignalPathReset_Error,
-    MPU6000_BusSampleSpeed_Error,
     MPU6000_DisableI2C_Error,
     MPU6000_PWRMNG2_Set_Error,
     MPU6000_DIV_Set_Error,
@@ -118,8 +117,6 @@ typedef struct
     bool (*bus_init)(void);
     void (*cs_ctl)(bool state);
     bool (*bus_trans)(uint8_t *tx, uint8_t *rx, uint16_t len);
-    bool (*set_SPI_1MSpeed)(void);
-    bool (*set_SPI_20MSpeed)(void);
     uint64_t (*get_runtime)(void);
     void (*delay)(uint32_t ms);
 
@@ -136,6 +133,7 @@ typedef struct
 {
     bool (*init)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*reset)(DevMPU6000Obj_TypeDef *snesor_obj);
+    bool (*get_drdy)(DevMPU6000Obj_TypeDef *sensor_obj);
     void (*set_drdy)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*sample)(DevMPU6000Obj_TypeDef *sensor_obj);
     IMUData_TypeDef (*get_data)(DevMPU6000Obj_TypeDef *sensor_obj);
