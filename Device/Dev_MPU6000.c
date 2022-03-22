@@ -57,7 +57,9 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     if ((sensor_obj->bus_init == NULL) ||
         (sensor_obj->bus_trans == NULL) ||
         (sensor_obj->cs_ctl == NULL) ||
-        (sensor_obj->cs_init == NULL))
+        (sensor_obj->cs_init == NULL) ||
+        (sensor_obj->set_SPI_1MSpeed == NULL) ||
+        (sensor_obj->set_SPI_20MSpeed == NULL))
     {
         sensor_obj->error = MPU6000_Obj_Error;
         return false;
@@ -124,6 +126,13 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_USER_CTRL, BIT_I2C_IF_DIS))
     {
         sensor_obj->error = MPU6000_DisableI2C_Error;
+        return false;
+    }
+    sensor_obj->delay(15);
+
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_2, 0x00))
+    {
+        sensor_obj->error = MPU6000_PWRMNG2_Set_Error;
         return false;
     }
     sensor_obj->delay(15);
