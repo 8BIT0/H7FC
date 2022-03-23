@@ -47,7 +47,9 @@
                 "task_sensor_mpu.h": "c",
                 "linked_list.h": "c",
                 "task_protocol.h": "c",
-                "task_manager.h": "c"
+                "task_manager.h": "c",
+                "srvmpu_sample.h": "c",
+                "drv_gpio.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
