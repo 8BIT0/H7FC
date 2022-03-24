@@ -16,7 +16,7 @@ static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state);
 static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
 
 BspGPIO_TypeDef BspGPIO = {
-    .exti_init = NULL,
+    .exti_init = BspGPIO_ExtiInit,
     .out_init = BspGPIO_Output_Init,
     .read = BspGPIO_Read,
     .write = BspGPIO_Write,
