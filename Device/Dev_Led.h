@@ -4,13 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "Bsp_GPIO.h"
 
-typedef struct
-{
-    uint32_t port;
-    uint16_t pin;
-    bool default_state;
-} DevLedObj_TypeDef;
+typedef BspGPIO_OutPutObj_TypeDef DevLedObj_TypeDef;
 
 typedef struct
 {

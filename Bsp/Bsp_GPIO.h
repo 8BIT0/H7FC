@@ -14,14 +14,13 @@ typedef struct
 {
     GPIO_TypeDef *port;
     uint16_t pin;
-    GPIO_InitTypeDef cfg_structure;
     GPIO_PinState init_state;
-} BspGPIO_Obj_TypeDef;
+} BspGPIO_OutPutObj_TypeDef;
 #pragma pack()
 
 typedef struct
 {
-    bool (*init)(BspGPIO_Obj_TypeDef IO_Obj);
+    bool (*out_init)(BspGPIO_OutPutObj_TypeDef IO_Obj);
     bool (*read)(uint32_t port, uint16_t pin);
     void (*write)(uint32_t port, uint16_t pin, bool state);
 } BspGPIO_TypeDef;

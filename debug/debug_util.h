@@ -8,12 +8,7 @@
 void assert(bool state);
 
 #pragma pack(1)
-typedef struct
-{
-    uint32_t port;
-    uint16_t pin;
-    bool default_state;
-} DebugPinObj_TypeDef;
+typedef BspGPIO_OutPutObj_TypeDef DebugPinObj_TypeDef;
 #pragma pack()
 
 typedef struct

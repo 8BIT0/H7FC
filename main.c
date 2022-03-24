@@ -17,25 +17,25 @@ void Test2(Task_Handle handle);
 DevLedObj_TypeDef Led1 = {
     .port = LED1_PORT,
     .pin = LED1_PIN,
-    .default_state = true,
+    .init_state = true,
 };
 
 DebugPinObj_TypeDef Debug_PC0 = {
     .port = GPIOC,
     .pin = GPIO_PIN_0,
-    .default_state = false,
+    .init_state = false,
 };
 
 DebugPinObj_TypeDef Debug_PC1 = {
     .port = GPIOC,
     .pin = GPIO_PIN_1,
-    .default_state = false,
+    .init_state = false,
 };
 
 DebugPinObj_TypeDef Debug_PC2 = {
     .port = GPIOC,
     .pin = GPIO_PIN_2,
-    .default_state = false,
+    .init_state = false,
 };
 
 void test_PC0_ctl(void)

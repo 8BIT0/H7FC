@@ -1,12 +1,12 @@
 #include "Bsp_GPIO.h"
 #include "system_cfg.h"
 
-static bool BspGPIO_Init(BspGPIO_Obj_TypeDef IO_Obj);
+static bool BspGPIO_Output_Init(BspGPIO_OutPutObj_TypeDef IO_Obj);
 static bool BspGPIO_Read(uint32_t port, uint16_t pin);
 static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state);
 
 BspGPIO_TypeDef BspGPIO = {
-    .init = BspGPIO_Init,
+    .out_init = BspGPIO_Output_Init,
     .read = BspGPIO_Read,
     .write = BspGPIO_Write,
 };
@@ -39,19 +39,26 @@ static void BspGPIO_CLK_Enable(GPIO_TypeDef *port)
         __HAL_RCC_GPIOK_CLK_ENABLE();
 }
 
-static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj)
-{
-}
+// static bool BspGPIO_ExtiInit(BspGPIO_OutPutObj_TypeDef IO_Obj)
+// {
+// }
 
-static bool BspGPIO_Init(BspGPIO_Obj_TypeDef IO_Obj)
+static bool BspGPIO_Output_Init(BspGPIO_OutPutObj_TypeDef IO_Obj)
 {
+    GPIO_InitTypeDef cfg_structure;
+
     if (IO_Obj.port == NULL)
         return false;
 
     BspGPIO_CLK_Enable(IO_Obj.port);
 
+    cfg_structure.Pin = IO_Obj.pin;
+    cfg_structure.Mode = GPIO_MODE_OUTPUT_PP;
+    cfg_structure.Pull = GPIO_NOPULL;
+    cfg_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+
     HAL_GPIO_WritePin(IO_Obj.port, IO_Obj.pin, IO_Obj.init_state);
-    HAL_GPIO_Init(IO_Obj.port, &(IO_Obj.cfg_structure));
+    HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
 
     return true;
 }
