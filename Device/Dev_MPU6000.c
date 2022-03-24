@@ -76,18 +76,10 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     if (sensor_obj == NULL)
         return false;
 
-    if ((sensor_obj->bus_init == NULL) ||
-        (sensor_obj->bus_trans == NULL) ||
-        (sensor_obj->cs_ctl == NULL) ||
-        (sensor_obj->cs_init == NULL))
+    if ((sensor_obj->bus_trans == NULL) ||
+        (sensor_obj->cs_ctl == NULL))
     {
         sensor_obj->error = MPU6000_Obj_Error;
-        return false;
-    }
-
-    if (!sensor_obj->cs_init() || !sensor_obj->bus_init())
-    {
-        sensor_obj->error = MPU6000_Interface_Error;
         return false;
     }
 

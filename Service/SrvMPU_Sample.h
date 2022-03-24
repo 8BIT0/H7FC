@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "runtime.h"
+#include "common_def.h"
 
 typedef enum
 {
@@ -17,8 +18,9 @@ typedef struct
 {
     SYSTEM_RunTime time;
 
-    int16_t int_gyr[];
-
+    int16_t int_gyr[Axis_Sum];
+    int32_t int_acc[Axis_Sum];
+    int8_t temp;
 } SrvIMU_Data_TypeDef;
 #pragma pack()
 

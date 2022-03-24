@@ -98,7 +98,6 @@ typedef enum
 {
     MPU6000_No_Error = 0,
     MPU6000_Obj_Error,
-    MPU6000_Interface_Error,
     MPU6000_BusCommunicate_Error,
     MPU6000_DevID_Error,
     MPU6000_SignalPathReset_Error,
@@ -113,8 +112,6 @@ typedef enum
 
 typedef struct
 {
-    bool (*cs_init)(void);
-    bool (*bus_init)(void);
     void (*cs_ctl)(bool state);
     bool (*bus_trans)(uint8_t *tx, uint8_t *rx, uint16_t len);
     uint64_t (*get_runtime)(void);

@@ -99,7 +99,8 @@ static IRQn_Type BspGPIO_GetExti_IRQnID(BspGPIO_Obj_TypeDef IO_Obj)
         return EXTI15_10_IRQn;
 
     default:
-        return -15;
+        while (1)
+            ;
     }
 }
 
@@ -123,8 +124,8 @@ static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
     /* set exti callback */
     EXTI_CallBack_List[BspGPIO_GetEXTI_Index(IO_Obj.pin)] = callback;
 
-    HAL_NVIC_SetPriority(BspGPIO_GetExti_ID(IO_Obj), 3, 0);
-    HAL_NVIC_EnableIRQ(BspGPIO_GetExti_ID(IO_Obj));
+    HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 3, 0);
+    HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
 
     return true;
 }
