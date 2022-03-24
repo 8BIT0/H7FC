@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "Bsp_GPIO.h"
 
-typedef BspGPIO_OutPutObj_TypeDef DevLedObj_TypeDef;
+typedef BspGPIO_Obj_TypeDef DevLedObj_TypeDef;
 
 typedef struct
 {

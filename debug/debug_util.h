@@ -8,7 +8,7 @@
 void assert(bool state);
 
 #pragma pack(1)
-typedef BspGPIO_OutPutObj_TypeDef DebugPinObj_TypeDef;
+typedef BspGPIO_Obj_TypeDef DebugPinObj_TypeDef;
 #pragma pack()
 
 typedef struct

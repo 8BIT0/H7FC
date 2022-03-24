@@ -5,9 +5,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "stm32h7xx.h"
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_gpio.h"
+
+#define GPIO_EXTI_SUM 16
+typedef void (*EXTI_Callback)(void);
 
 #pragma pack(1)
 typedef struct
@@ -15,12 +19,19 @@ typedef struct
     GPIO_TypeDef *port;
     uint16_t pin;
     GPIO_PinState init_state;
-} BspGPIO_OutPutObj_TypeDef;
+} BspGPIO_Obj_TypeDef;
+
+typedef struct
+{
+    GPIO_TypeDef *port;
+    uint16_t pin;
+} BspGPIO_ExtiObj_TypeDef;
 #pragma pack()
 
 typedef struct
 {
-    bool (*out_init)(BspGPIO_OutPutObj_TypeDef IO_Obj);
+    bool (*exti_init)(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
+    bool (*out_init)(BspGPIO_Obj_TypeDef IO_Obj);
     bool (*read)(uint32_t port, uint16_t pin);
     void (*write)(uint32_t port, uint16_t pin, bool state);
 } BspGPIO_TypeDef;
