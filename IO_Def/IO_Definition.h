@@ -1,7 +1,34 @@
 #ifndef __IO_DEFINITION_H
 #define __IO_DEFINITION_H
 
-#define LED1_PIN GPIO_PIN_7 // LED1 pin
-#define LED1_PORT GPIOH     // LED1 port
+#define LED1_PIN GPIO_PIN_3 // LED1 pin
+#define LED1_PORT GPIOE     // LED1 port
+
+#define LED2_PIN GPIO_PIN_4 // LED1 pin
+#define LED2_PORT GPIOE     // LED1 port
+
+#define MPU6000_CS_PORT GPIOC
+#define MPU6000_CS_PIN GPIO_PIN_15
+
+#define MPU6000_INT_PORT GPIOB
+#define MPU6000_INT_PIN GPIO_PIN_2
+
+#define ICM20602_CS_PORT GPIOE
+#define ICM20602_CS_PIN GPIO_PIN_11
+
+#define ICM20602_INT_PORT GPIOE
+#define ICM20602_INT_PIN GPIO_PIN_15
+
+/* MPU6000 Pin */
+// #define GYRO_1_SPI_BUS SPI1
+// #define SPI1_SCK_PIN PA5
+// #define SPI1_MISO_PIN PA6
+// #define SPI1_MOSI_PIN PD7
+
+/* ICM20602 Pin */
+// #define GYRO_2_SPI_BUS SPI4
+// #define SPI4_SCK_PIN PE12
+// #define SPI4_MISO_PIN PE13
+// #define SPI4_MOSI_PIN PE14
 
 #endif

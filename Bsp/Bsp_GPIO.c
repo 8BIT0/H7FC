@@ -1,5 +1,6 @@
 #include "Bsp_GPIO.h"
 #include "system_cfg.h"
+#include "debug_util.h"
 
 /* interbal function */
 static EXTI_Callback EXTI_CallBack_List[GPIO_EXTI_SUM] = {NULL};
@@ -99,8 +100,8 @@ static IRQn_Type BspGPIO_GetExti_IRQnID(BspGPIO_Obj_TypeDef IO_Obj)
         return EXTI15_10_IRQn;
 
     default:
-        while (1)
-            ;
+        assert(true);
+        break;
     }
 }
 

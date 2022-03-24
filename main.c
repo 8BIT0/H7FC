@@ -20,6 +20,12 @@ DevLedObj_TypeDef Led1 = {
     .init_state = true,
 };
 
+DevLedObj_TypeDef Led2 = {
+    .port = LED2_PORT,
+    .pin = LED2_PIN,
+    .init_state = true,
+};
+
 DebugPinObj_TypeDef Debug_PC0 = {
     .port = GPIOC,
     .pin = GPIO_PIN_0,
@@ -59,6 +65,7 @@ void test_PC2_ctl(void)
 void main(void)
 {
     DevLED.init(Led1);
+    DevLED.init(Led2);
     DebugPin.init(Debug_PC0);
     DebugPin.init(Debug_PC1);
     DebugPin.init(Debug_PC2);
@@ -77,13 +84,19 @@ void main(void)
 
 void Test2(Task_Handle handle)
 {
-    static uint8_t t = 0;
+    volatile SYSTEM_RunTime Rt = 0;
+    static volatile SYSTEM_RunTime Lst_Rt = 0;
+    static bool led_state = false;
 
-    if (((Task *)handle)->Exec_status.Exec_cnt == 21)
+    Rt = Get_CurrentRunningMs();
+
+    if ((Rt % 100 == 0) && (Lst_Rt != Rt))
     {
-        t++;
+        led_state = !led_state;
+        Lst_Rt = Rt;
     }
 
+    DevLED.ctl(Led2, led_state);
     test_PC2_ctl();
 }
 
