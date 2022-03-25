@@ -163,6 +163,6 @@ static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (EXTI_CallBack_List[BspGPIO_GetEXTI_Index(GPIO_Pin)] != NULL)
+    if ((BspGPIO_GetEXTI_Index(GPIO_Pin) >= 0) && (EXTI_CallBack_List[BspGPIO_GetEXTI_Index(GPIO_Pin)] != NULL))
         EXTI_CallBack_List[BspGPIO_GetEXTI_Index(GPIO_Pin)]();
 }
