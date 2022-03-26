@@ -9,14 +9,9 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef dev);
 
 /* without pin config in this down */
 static const BspSPI_NorModeConfig_TypeDef DevW25QxxSPI_Cfg = {
-    .Mode = SPI_MODE_MASTER,
-    .Direction = SPI_DIRECTION_2LINES,
-    .DataSize = SPI_DATASIZE_8BIT,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
-    .NSS = SPI_NSS_SOFT,
     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
-    .FirstBit = SPI_FIRSTBIT_MSB,
 };
 
 DevW25Qxx_TypeDef DevW25Q64 = {

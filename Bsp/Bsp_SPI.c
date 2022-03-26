@@ -18,31 +18,30 @@ BspSpi_TypeDef BspSPI = {
     .set_speed = BspSPI_Set_CLKSpeed,
 };
 
+static const GPIO_InitTypeDef BspSPI_Pin_Cfg = {
+    .Alternate = 0,
+    .Mode = GPIO_MODE_AF_PP,
+    .Pin = 0,
+    .Pull = GPIO_NOPULL,
+    .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
+};
+
 static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
 {
-    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitTypeDef GPIO_InitStruct = BspSPI_Pin_Cfg;
 
     /* mosi pin init */
     GPIO_InitStruct.Pin = pin_cfg.pin_mosi;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
 
     /* miso pin init */
     GPIO_InitStruct.Pin = pin_cfg.pin_miso;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_miso, &GPIO_InitStruct);
 
     /* clk pin init */
     GPIO_InitStruct.Pin = pin_cfg.pin_clk;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
 
@@ -83,14 +82,14 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_Han
     BspSPI_PinInit(spi_cfg.Pin);
 
     SPI_InitStructure.Instance = spi_cfg.Instance;                        // SPI2;
-    SPI_InitStructure.Init.Mode = spi_cfg.Mode;                           // SPI_MODE_MASTER;
-    SPI_InitStructure.Init.Direction = spi_cfg.Direction;                 // SPI_DIRECTION_2LINES;
-    SPI_InitStructure.Init.DataSize = spi_cfg.DataSize;                   // SPI_DATASIZE_8BIT;
+    SPI_InitStructure.Init.Mode = SPI_MODE_MASTER;                        // SPI_MODE_MASTER;
+    SPI_InitStructure.Init.Direction = SPI_DIRECTION_2LINES;              // SPI_DIRECTION_2LINES;
+    SPI_InitStructure.Init.DataSize = SPI_DATASIZE_8BIT;                  // SPI_DATASIZE_8BIT;
     SPI_InitStructure.Init.CLKPolarity = spi_cfg.CLKPolarity;             // SPI_POLARITY_LOW;
     SPI_InitStructure.Init.CLKPhase = spi_cfg.CLKPhase;                   // SPI_PHASE_1EDGE;
-    SPI_InitStructure.Init.NSS = spi_cfg.NSS;                             // SPI_NSS_SOFT;
+    SPI_InitStructure.Init.NSS = SPI_NSS_SOFT;                            // SPI_NSS_SOFT;
     SPI_InitStructure.Init.BaudRatePrescaler = spi_cfg.BaudRatePrescaler; // SPI_BAUDRATEPRESCALER_2;
-    SPI_InitStructure.Init.FirstBit = spi_cfg.FirstBit;                   // SPI_FIRSTBIT_MSB;
+    SPI_InitStructure.Init.FirstBit = SPI_FIRSTBIT_MSB;                   // SPI_FIRSTBIT_MSB;
     SPI_InitStructure.Init.TIMode = SPI_TIMODE_DISABLE;
     SPI_InitStructure.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     SPI_InitStructure.Init.CRCPolynomial = 0;

@@ -27,14 +27,9 @@ typedef struct
 {
     BspSPI_PinConfig_TypeDef Pin;
     SPI_TypeDef *Instance;
-    uint32_t Mode;
-    uint32_t Direction;
-    uint32_t DataSize;
     uint32_t CLKPolarity;
     uint32_t CLKPhase;
-    uint32_t NSS;
     uint32_t BaudRatePrescaler;
-    uint32_t FirstBit;
 } BspSPI_NorModeConfig_TypeDef;
 #pragma pack()
 
