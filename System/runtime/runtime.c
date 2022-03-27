@@ -152,11 +152,11 @@ bool Runtime_Tick(void)
         if (RunTime.tick_callback != NULL)
             RunTime.tick_callback(RunTime.Use_Us);
 
-        if (Runtime_DelayUs)
-            Runtime_DelayUs--;
-
         return true;
     }
+
+    if (Runtime_DelayUs)
+        Runtime_DelayUs--;
 
     return false;
 }

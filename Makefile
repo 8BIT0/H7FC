@@ -45,6 +45,7 @@ Bsp/Bsp_SPI.c \
 Device/Dev_MPU6000.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
+Service/SrvMPU_Sample.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
 System/mmu/mmu.c \
@@ -147,9 +148,10 @@ AS_INCLUDES =
 C_INCLUDES =  \
 -IIO_Def/ \
 -Idebug/ \
--IBsp \
+-IBsp/ \
 -ITask/ \
--IDevice \
+-IDevice/ \
+-IService/ \
 -ISystem/ \
 -ISystem/mmu/ \
 -ISystem/shell \

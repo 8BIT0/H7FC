@@ -40,12 +40,11 @@ static BspSPI_PinConfig_TypeDef MPU6000_BusPin = {
 };
 
 static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
-    .Pin = MPU6000_BusPin,
     .Instance = MPU6000_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
-);
+};
 
 /* ICM20602 Instance */
 static BspGPIO_Obj_TypeDef ICM20602_CSPin = {
@@ -74,12 +73,11 @@ static BspSPI_PinConfig_TypeDef ICM20602_BusPin = {
 };
 
 static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
-    .Pin = ICM20602_BusPin,
     .Instance = ICM20602_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
-);
+};
 
 static DevMPU6000Obj_TypeDef MPU6000Obj;
 
@@ -103,6 +101,8 @@ bool SrvIMU_Init(void)
     if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
         return false;
 
+    MPU6000_BusCfg.Pin = MPU6000_BusPin;
+
     DevMPU6000.pre_init(&MPU6000Obj,
                         SrvIMU_SecIMU_CS_Ctl,
                         SrvIMU_PriIMU_BusTrans_Rec,
@@ -110,6 +110,9 @@ bool SrvIMU_Init(void)
 
     if (!DevMPU6000.init(&MPU6000Obj))
         return false;
+
+    /* Set SPI Speed 20M */
+    MPU6000_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
 
     /* secondary IMU Pin & Bus Init */
     // if (!BspGPIO.out_init(ICM20602_CSPin))
@@ -120,6 +123,8 @@ bool SrvIMU_Init(void)
 
     // if (!BspSPI.init(ICM20602_BusCfg, &ICM20602_Bus_Instance))
     //     return false;
+
+    // MPU6000_BusCfg.Pin = ICM20602_BusPin;
 
     return true;
 }
