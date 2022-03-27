@@ -16,6 +16,7 @@ static int8_t SrvIMU_InitState = 0;
 /* internal function */
 static void TaaskProtocol_Main(uint8_t *data, uint16_t size);
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
+static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 
 void TaskProtocol_GetSrvMPU_InitState(int8_t state)
 {
@@ -27,6 +28,7 @@ static bool TaskProtocol_Init(void)
     if (!USB_DEVICE_Init())
         return false;
 
+    usb_setrec_callback(TaskProtocol_Rec);
     Shell_Init(TaskProtocol_TransBuff);
 
     return true;
@@ -55,7 +57,7 @@ void TaskProtocol_Core(Task_Handle hdl)
         break;
 
     case TaskProto_Core:
-        usb_printf("MPU6000 Init State : %d\r\n", SrvIMU_InitState);
+        // usb_printf("MPU6000 Init State : %d\r\n", SrvIMU_InitState);
 
         TaaskProtocol_Main(NULL, 0);
         break;
@@ -70,6 +72,14 @@ void TaskProtocol_Core(Task_Handle hdl)
 
 static void TaaskProtocol_Main(uint8_t *data, uint16_t size)
 {
+}
+
+static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
+{
+    // usb_printf("rec size : %d\r\n", len);
+    // usb_printf("%s\r\n", data);
+
+    TaskProtocol_TransBuff(data, len);
 }
 
 // shellHandler(Shell_GetInstence(), data[i]);
