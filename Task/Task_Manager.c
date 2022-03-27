@@ -1,8 +1,13 @@
 #include "Task_Manager.h"
 #include "Task_Protocol.h"
+#include "SrvMPU_Sample.h"
 #include "scheduler.h"
 
 Task_Handle TaskProtocol_Handle;
+
+void FCModule_Init(void)
+{
+}
 
 void Task_Manager(void)
 {
