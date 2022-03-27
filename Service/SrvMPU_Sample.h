@@ -30,4 +30,6 @@ typedef struct
     SrvIMU_ErrorCode_List (*sample)(void);
 } SrvIMU_TypeDef;
 
+bool SrvIMU_Init(void);
+
 #endif

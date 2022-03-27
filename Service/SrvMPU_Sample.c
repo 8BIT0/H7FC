@@ -3,6 +3,7 @@
 #include "Bsp_GPIO.h"
 #include "Dev_MPU6000.h"
 #include "IO_Definition.h"
+#include "runtime.h"
 
 /*
  *   PriIMU -> MPU6000
@@ -90,9 +91,7 @@ static void SrvIMU_SecIMU_CS_Ctl(bool state);
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 
-static bool SrvIMU_Init(void);
-
-static bool SrvIMU_Init(void)
+bool SrvIMU_Init(void)
 {
     /* primary IMU Pin & Bus Init */
     if (!BspGPIO.out_init(MPU6000_CSPin))
@@ -104,7 +103,10 @@ static bool SrvIMU_Init(void)
     if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
         return false;
 
-    DevMPU6000.pre_init(&MPU6000Obj, );
+    DevMPU6000.pre_init(&MPU6000Obj,
+                        SrvIMU_SecIMU_CS_Ctl,
+                        SrvIMU_PriIMU_BusTrans_Rec,
+                        Runtime_DelayMs);
 
     if (!DevMPU6000.init(&MPU6000Obj))
         return false;
