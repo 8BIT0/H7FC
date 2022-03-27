@@ -110,12 +110,15 @@ typedef enum
     MPU6000_EnableInt_Error,
 } DevMPU6000_Error_List;
 
+typedef void (*cs_ctl_callback)(bool state);
+typedef bool (*bus_trans_callback)(uint8_t *tx, uint8_t *rx, uint16_t len);
+typedef void (*delay_callback)(uint32_t ms);
+
 typedef struct
 {
-    void (*cs_ctl)(bool state);
-    bool (*bus_trans)(uint8_t *tx, uint8_t *rx, uint16_t len);
-    uint64_t (*get_runtime)(void);
-    void (*delay)(uint32_t ms);
+    cs_ctl_callback cs_ctl;
+    bus_trans_callback bus_trans;
+    delay_callback delay;
 
     bool drdy;
     bool update;
@@ -128,6 +131,7 @@ typedef struct
 
 typedef struct
 {
+    void (*pre_init)(DevMPU6000Obj_TypeDef *sensor_obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay);
     bool (*init)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*reset)(DevMPU6000Obj_TypeDef *snesor_obj);
     bool (*get_drdy)(DevMPU6000Obj_TypeDef *sensor_obj);
@@ -135,5 +139,7 @@ typedef struct
     bool (*sample)(DevMPU6000Obj_TypeDef *sensor_obj);
     IMUData_TypeDef (*get_data)(DevMPU6000Obj_TypeDef *sensor_obj);
 } DevMPU6000_TypeDef;
+
+extern DevMPU6000_TypeDef DevMPU6000;
 
 #endif

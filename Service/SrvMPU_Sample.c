@@ -4,6 +4,13 @@
 #include "Dev_MPU6000.h"
 #include "IO_Definition.h"
 
+/*
+ *   PriIMU -> MPU6000
+ *   SecIMU -> ICM20602
+ */
+
+#define IMU_Commu_TimeOut 1000
+
 /* internal variable */
 /* MPU6000 Instance */
 static BspGPIO_Obj_TypeDef MPU6000_CSPin = {
@@ -53,7 +60,18 @@ static BspGPIO_Obj_TypeDef ICM20602_INTPin = {
 };
 
 static SPI_HandleTypeDef ICM20602_Bus_Instance;
-static BspSPI_PinConfig_TypeDef ICM20602_BusPin;
+static BspSPI_PinConfig_TypeDef ICM20602_BusPin = {
+    .pin_Alternate = GPIO_AF5_SPI4,
+
+    .port_clk = ICM20602_CLK_PORT,
+    .port_miso = ICM20602_MISO_PORT,
+    .port_mosi = ICM20602_MOSI_PORT,
+
+    .pin_clk = ICM20602_CLK_PIN,
+    .pin_miso = ICM20602_MISO_PIN,
+    .pin_mosi = ICM20602_MOSI_PIN,
+};
+
 static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
     .Pin = ICM20602_BusPin,
     .Instance = ICM20602_SPI_BUS,
@@ -62,22 +80,67 @@ static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
 );
 
+static DevMPU6000Obj_TypeDef MPU6000Obj;
+
 /* internal function */
 static void SrvIMU_PriIMU_ExtiCallback(void);
 static void SrvIMU_SecIMU_ExtiCallback(void);
+static void SrvIMU_PriIMU_CS_Ctl(bool state);
+static void SrvIMU_SecIMU_CS_Ctl(bool state);
+static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
+static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
+
 static bool SrvIMU_Init(void);
 
-static bool SrvIMU_Periph_Init(void)
+static bool SrvIMU_Init(void)
 {
     /* primary IMU Pin & Bus Init */
-    BspGPIO.out_init(MPU6000_CSPin);
-    BspGPIO.exti_init(MPU6000_INTPin, SrvIMU_PriIMU_ExtiCallback);
-    BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance);
+    if (!BspGPIO.out_init(MPU6000_CSPin))
+        return false;
+
+    if (!BspGPIO.exti_init(MPU6000_INTPin, SrvIMU_PriIMU_ExtiCallback))
+        return false;
+
+    if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
+        return false;
+
+    DevMPU6000.pre_init(&MPU6000Obj, );
+
+    if (!DevMPU6000.init(&MPU6000Obj))
+        return false;
 
     /* secondary IMU Pin & Bus Init */
-    BspGPIO.out_init(ICM20602_CSPin);
-    BspGPIO.exti_init(ICM20602_INTPin, SrvIMU_SecIMU_ExtiCallback);
-    BspSPI.init(ICM20602_BusCfg, &ICM20602_Bus_Instance);
+    // if (!BspGPIO.out_init(ICM20602_CSPin))
+    //     return false;
+
+    // if (!BspGPIO.exti_init(ICM20602_INTPin, SrvIMU_SecIMU_ExtiCallback))
+    //     return false;
+
+    // if (!BspSPI.init(ICM20602_BusCfg, &ICM20602_Bus_Instance))
+    //     return false;
+
+    return true;
+}
+
+/* input true selected / false deselected */
+static void SrvIMU_PriIMU_CS_Ctl(bool state)
+{
+    BspGPIO.write(MPU6000_CSPin.port, MPU6000_CSPin.pin, state);
+}
+
+static void SrvIMU_SecIMU_CS_Ctl(bool state)
+{
+    BspGPIO.write(ICM20602_CSPin.port, ICM20602_CSPin.pin, state);
+}
+
+static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
+{
+    return BspSPI.trans_receive(&MPU6000_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
+}
+
+static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
+{
+    return BspSPI.trans_receive(&ICM20602_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
 }
 
 static void SrvIMU_PriIMU_ExtiCallback(void)

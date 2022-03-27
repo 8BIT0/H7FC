@@ -5,6 +5,10 @@ static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr,
 static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx);
 
 /* external function */
+static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
+                               cs_ctl_callback cs_ctl,
+                               bus_trans_callback bus_trans,
+                               delay_callback delay);
 static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj);
 static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj);
@@ -14,6 +18,7 @@ IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
 
 /* external MPU6000 Object */
 DevMPU6000_TypeDef DevMPU6000 = {
+    .pre_init = DevMPU6000_PreInit,
     .init = DevMPU6000_Init,
     .reset = DevMPU6000_SwReset,
     .set_drdy = DevMPU6000_SetDRDY,
@@ -67,6 +72,16 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
     sensor_obj->cs_ctl(false);
 
     return state;
+}
+
+static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
+                               cs_ctl_callback cs_ctl,
+                               bus_trans_callback bus_trans,
+                               delay_callback delay)
+{
+    sensor_obj->cs_ctl = cs_ctl;
+    sensor_obj->bus_trans = bus_trans;
+    sensor_obj->delay = delay;
 }
 
 static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
