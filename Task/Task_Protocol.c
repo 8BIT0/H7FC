@@ -1,12 +1,16 @@
 #include "Task_Protocol.h"
 #include "scheduler.h"
 #include "shell.h"
+#include "shell_port.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 #include <stdio.h>
 
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Init;
+static bool Shell_Mode = false;
+
+/* test */
 static int8_t SrvIMU_InitState = 0;
 
 /* internal function */
@@ -20,7 +24,12 @@ void TaskProtocol_GetSrvMPU_InitState(int8_t state)
 
 static bool TaskProtocol_Init(void)
 {
-    return USB_DEVICE_Init();
+    if (!USB_DEVICE_Init())
+        return false;
+
+    Shell_Init(TaskProtocol_TransBuff);
+
+    return true;
 }
 
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
@@ -62,3 +71,5 @@ void TaskProtocol_Core(Task_Handle hdl)
 static void TaaskProtocol_Main(uint8_t *data, uint16_t size)
 {
 }
+
+// shellHandler(Shell_GetInstence(), data[i]);
