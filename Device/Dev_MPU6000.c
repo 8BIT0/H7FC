@@ -15,6 +15,7 @@ static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
 IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
+static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
 
 /* external MPU6000 Object */
 DevMPU6000_TypeDef DevMPU6000 = {
@@ -25,6 +26,7 @@ DevMPU6000_TypeDef DevMPU6000 = {
     .get_drdy = DevMPU6000_GetReady,
     .sample = DevMPU6000_Sample,
     .get_data = DevMPU6000_Get_Data,
+    .get_error = DevMPU6000_Get_InitError,
 };
 
 static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx)
@@ -66,7 +68,7 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
     /* CS High */
     sensor_obj->cs_ctl(true);
 
-    state = sensor_obj->bus_trans(write_buff, NULL, 2);
+    state = sensor_obj->bus_trans(write_buff, read_buff, 2);
 
     /* CS Low */
     sensor_obj->cs_ctl(false);
@@ -205,6 +207,11 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
 
     sensor_obj->error = MPU6000_No_Error;
     return true;
+}
+
+static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj)
+{
+    return sensor_obj->error;
 }
 
 static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)

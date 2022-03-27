@@ -3,12 +3,20 @@
 #include "shell.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
+#include <stdio.h>
 
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Init;
+static int8_t SrvIMU_InitState = 0;
 
 /* internal function */
 static void TaaskProtocol_Main(uint8_t *data, uint16_t size);
+static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
+
+void TaskProtocol_GetSrvMPU_InitState(int8_t state)
+{
+    SrvIMU_InitState = state;
+}
 
 static bool TaskProtocol_Init(void)
 {
@@ -38,7 +46,8 @@ void TaskProtocol_Core(Task_Handle hdl)
         break;
 
     case TaskProto_Core:
-        TaskProtocol_TransBuff("8bit test\r\n", strlen("8bit test\r\n"));
+        usb_printf("MPU6000 Init State : %d\r\n", SrvIMU_InitState);
+
         TaaskProtocol_Main(NULL, 0);
         break;
 

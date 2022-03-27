@@ -13,12 +13,7 @@ typedef enum
     SrvIMU_Sample_Blunt,
 } SrvIMU_ErrorCode_List;
 
-typedef struct
-{
-    bool (*init)(void);
-    SrvIMU_ErrorCode_List (*sample)(void);
-} SrvIMU_TypeDef;
-
-bool SrvIMU_Init(void);
+int8_t SrvIMU_Init(void);
+int8_t SrvIMU_GetPri_InitError(void);
 
 #endif

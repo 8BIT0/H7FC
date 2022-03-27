@@ -58,6 +58,7 @@ System/shell/shell_companion.c \
 System/shell/shell_ext.c \
 System/shell/shell_port.c \
 System/shell/shell.c \
+Common/reboot.c \
 USB/USB_DEVICE/App/usb_device.c \
 USB/USB_DEVICE/App/usbd_desc.c \
 USB/USB_DEVICE/App/usbd_cdc_if.c \
@@ -151,6 +152,7 @@ C_INCLUDES =  \
 -IBsp/ \
 -ITask/ \
 -IDevice/ \
+-ICommon/ \
 -IService/ \
 -ISystem/ \
 -ISystem/mmu/ \

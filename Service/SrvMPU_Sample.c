@@ -89,17 +89,17 @@ static void SrvIMU_SecIMU_CS_Ctl(bool state);
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 
-bool SrvIMU_Init(void)
+int8_t SrvIMU_Init(void)
 {
     /* primary IMU Pin & Bus Init */
     if (!BspGPIO.out_init(MPU6000_CSPin))
-        return false;
+        return -1;
 
     if (!BspGPIO.exti_init(MPU6000_INTPin, SrvIMU_PriIMU_ExtiCallback))
-        return false;
+        return -2;
 
     if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
-        return false;
+        return -3;
 
     MPU6000_BusCfg.Pin = MPU6000_BusPin;
 
@@ -109,7 +109,7 @@ bool SrvIMU_Init(void)
                         Runtime_DelayMs);
 
     if (!DevMPU6000.init(&MPU6000Obj))
-        return false;
+        return -4;
 
     /* Set SPI Speed 20M */
     MPU6000_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
@@ -126,7 +126,7 @@ bool SrvIMU_Init(void)
 
     // MPU6000_BusCfg.Pin = ICM20602_BusPin;
 
-    return true;
+    return 0;
 }
 
 /* input true selected / false deselected */
@@ -158,4 +158,9 @@ static void SrvIMU_PriIMU_ExtiCallback(void)
 static void SrvIMU_SecIMU_ExtiCallback(void)
 {
     /* ICM20602 Sample */
+}
+
+int8_t SrvIMU_GetPri_InitError(void)
+{
+    return DevMPU6000.get_error(&MPU6000Obj);
 }

@@ -109,6 +109,7 @@ extern "C"
    */
 
   uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len);
+  void usb_printf(const char *format, ...);
 
   /* USER CODE BEGIN EXPORTED_FUNCTIONS */
 

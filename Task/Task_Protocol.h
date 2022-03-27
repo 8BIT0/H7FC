@@ -29,5 +29,6 @@ typedef enum
 } TaskProto_State_List;
 
 void TaskProtocol_Core(Task_Handle hdl);
+void TaskProtocol_GetSrvMPU_InitState(int8_t state);
 
 #endif

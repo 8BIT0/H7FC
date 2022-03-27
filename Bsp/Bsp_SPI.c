@@ -105,7 +105,7 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_Han
     SPI_InitStructure.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
     SPI_InitStructure.Init.IOSwap = SPI_IO_SWAP_DISABLE;
 
-    if (HAL_SPI_Init(&SPI_InitStructure) == HAL_OK)
+    if (HAL_SPI_Init(&SPI_InitStructure) != HAL_OK)
         return false;
 
     *spi_instance = SPI_InitStructure;
