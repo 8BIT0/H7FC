@@ -23,14 +23,18 @@ void TaskProtocol_GetSrvMPU_InitState(int8_t state)
     SrvIMU_InitState = state;
 }
 
-static bool TaskProtocol_Init(void)
+bool TaskProtocol_Init(void)
 {
     if (!USB_DEVICE_Init())
+    {
+        task_state = TaskProto_Error_Proc;
         return false;
+    }
 
     usb_setrec_callback(TaskProtocol_Rec);
     Shell_Init(TaskProtocol_TransBuff);
 
+    task_state = TaskProto_Core;
     return true;
 }
 
@@ -46,18 +50,9 @@ void TaskProtocol_Core(Task_Handle hdl)
 {
     switch ((uint8_t)task_state)
     {
-    case TaskProto_Init:
-        if (!TaskProtocol_Init())
-        {
-            task_state = TaskProto_Error_Proc;
-            break;
-        }
-
-        task_state = TaskProto_Core;
-        break;
-
     case TaskProto_Core:
         // usb_printf("MPU6000 Init State : %d\r\n", SrvIMU_InitState);
+        usb_printf("test \r\n");
 
         TaaskProtocol_Main(NULL, 0);
         break;

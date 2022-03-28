@@ -16,5 +16,7 @@ void Task_Manager(void)
     else
         TaskProtocol_GetSrvMPU_InitState(error);
 
-    TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_1KHZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 512);
+    TaskProtocol_Init();
+
+    TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 1024);
 }

@@ -7,6 +7,9 @@
 #define LED2_PIN GPIO_PIN_4
 #define LED2_PORT GPIOE
 
+#define LED3_PIN GPIO_PIN_7
+#define LED3_PORT GPIOH
+
 /* MPU6000 Pin */
 #define MPU6000_SPI_BUS SPI1
 

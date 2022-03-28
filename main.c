@@ -26,6 +26,12 @@ DevLedObj_TypeDef Led2 = {
     .init_state = true,
 };
 
+DevLedObj_TypeDef Led3 = {
+    .port = LED3_PORT,
+    .pin = LED3_PIN,
+    .init_state = true,
+};
+
 DebugPinObj_TypeDef Debug_PC0 = {
     .port = GPIOC,
     .pin = GPIO_PIN_0,
@@ -66,6 +72,8 @@ void main(void)
 {
     DevLED.init(Led1);
     DevLED.init(Led2);
+    DevLED.init(Led3);
+
     DebugPin.init(Debug_PC0);
     DebugPin.init(Debug_PC1);
     DebugPin.init(Debug_PC2);
@@ -73,9 +81,9 @@ void main(void)
     Os_Init(RUNTIME_TICK_FRQ_40K);
 
     /* create task down below */
-    Blink_Task = Os_CreateTask("Blink", TASK_EXEC_10KHZ, Task_Group_0, Task_Group_0, Run, 256);
-    Test_Task = Os_CreateTask("test", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
-    Test2_Task = Os_CreateTask("test2", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_2, Test2, 256);
+    Blink_Task = Os_CreateTask("Blink", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_0, Run, 256);
+    Test_Task = Os_CreateTask("test delay", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
+    Test2_Task = Os_CreateTask("test2", TASK_EXEC_1KHZ, Task_Group_0, Task_Group_2, Test2, 256);
     Task_Manager();
     /* create task up top */
 
@@ -97,6 +105,8 @@ void Test2(Task_Handle handle)
     }
 
     DevLED.ctl(Led2, led_state);
+    DevLED.ctl(Led3, led_state);
+
     test_PC2_ctl();
 }
 
@@ -105,19 +115,19 @@ void Test(Task_Handle handle)
     // test_PC0_ctl();
     // DevLED.ctl(Led1, true);
     DebugPin.ctl(Debug_PC0, true);
-    Os_TaskDelay_Ms(handle, 10);
+    // Os_TaskDelay_Ms(handle, 10);
 
     // DevLED.ctl(Led1, false);
     DebugPin.ctl(Debug_PC0, false);
-    Os_TaskDelay_Ms(handle, 20);
+    // Os_TaskDelay_Ms(handle, 20);
 
-    // DevLED.ctl(Led1, true);
-    DebugPin.ctl(Debug_PC0, true);
-    Os_TaskDelay_Ms(handle, 30);
+    // // DevLED.ctl(Led1, true);
+    // DebugPin.ctl(Debug_PC0, true);
+    // Os_TaskDelay_Ms(handle, 30);
 
-    // DevLED.ctl(Led1, false);
-    DebugPin.ctl(Debug_PC0, false);
-    Os_TaskDelay_Ms(handle, 40);
+    // // DevLED.ctl(Led1, false);
+    // DebugPin.ctl(Debug_PC0, false);
+    // Os_TaskDelay_Ms(handle, 40);
 }
 
 void Run(Task_Handle handle)
@@ -135,5 +145,7 @@ void Run(Task_Handle handle)
     }
 
     DevLED.ctl(Led1, led_state);
+    // DevLED.ctl(Led3, led_state);
+
     test_PC1_ctl();
 }

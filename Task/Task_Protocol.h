@@ -28,6 +28,7 @@ typedef enum
     TaskProto_Error_Proc,
 } TaskProto_State_List;
 
+bool TaskProtocol_Init(void);
 void TaskProtocol_Core(Task_Handle hdl);
 void TaskProtocol_GetSrvMPU_InitState(int8_t state);
 

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include "runtime.h"
 #include "linked_list.h"
+#include "kernel.h"
 
 typedef uint32_t Task_Handle;
 

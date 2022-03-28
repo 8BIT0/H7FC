@@ -831,7 +831,8 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
     {
         // get current highest priority task handler AKA NxtRunTsk_Ptr
         if ((scheduler_state == Scheduler_Start) &&
-            ((((Task *)data)->State == Task_Stop) ||
+            ((((Task *)data)->State == Task_Ready) ||
+             (((Task *)data)->State == Task_Stop) ||
              (((Task *)data)->State == Task_DelayBlock)) &&
             (RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
