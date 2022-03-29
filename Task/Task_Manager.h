@@ -5,7 +5,8 @@
 #include "Task_Protocol.h"
 #include "scheduler.h"
 
-void Task_Manager(void);
+void Task_Manager_Init(void);
+void Task_Manager_CreateTask(void);
 
 extern Task_Handle TaskProtocol_Handle;
 

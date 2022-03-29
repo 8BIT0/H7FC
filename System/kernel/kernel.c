@@ -117,6 +117,9 @@ static bool KernelClock_Init(void)
     KERNEL_SYSPRI2_REG |= (((uint32_t)KERNEL_INTERRUPT_PRIORITY) << 16UL);
     KERNEL_SYSPRI2_REG |= (((uint32_t)KERNEL_INTERRUPT_PRIORITY) << 24UL);
 
+    // enable irq
+    Kernel_EnableIRQ();
+
     return true;
 }
 

@@ -191,7 +191,6 @@ static void Os_Set_TaskStk(Task *tsk)
 
 void Os_Init(uint32_t TickFRQ)
 {
-    // we disable irq in Kernel_Init() we need enable irq when Os start triggerd
     while (!Kernel_Init())
         ;
 
@@ -245,9 +244,6 @@ void Os_Start(void)
 
     /* before start we need create a idle task */
     Os_CreateIdle();
-
-    // enable irq
-    Kernel_EnableIRQ();
 
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
     Kernel_EnablePendSV();
