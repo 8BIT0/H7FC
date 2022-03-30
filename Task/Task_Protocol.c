@@ -42,6 +42,8 @@ bool TaskProtocol_Init(void)
     usb_setrec_callback(TaskProtocol_Rec);
     Shell_Init(TaskProtocol_TransBuff);
 
+    usb_printf("Task_Proto Init\r\n");
+
     task_state = TaskProto_Core;
     return true;
 }
@@ -61,7 +63,7 @@ void TaskProtocol_Core(Task_Handle hdl)
     switch ((uint8_t)task_state)
     {
     case TaskProto_Core:
-        // usb_printf("MPU6000 Init State : %d\r\n", SrvIMU_InitState);
+        usb_printf("MPU6000 Init State : %d\r\n", SrvIMU_InitState);
         usb_printf("test \r\n");
 
         TaaskProtocol_Main(NULL, 0);
@@ -83,10 +85,12 @@ static void TaaskProtocol_Main(uint8_t *data, uint16_t size)
 
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
 {
-    // usb_printf("rec size : %d\r\n", len);
-    // usb_printf("%s\r\n", data);
-
+    // shellHandler(Shell_GetInstence(), data[i]);
     TaskProtocol_TransBuff(data, len);
 }
 
-// shellHandler(Shell_GetInstence(), data[i]);
+static void shell_test(void)
+{
+    usb_printf("8_B!T0 Shell test\r\n");
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, test, shell_test, Shell Test);

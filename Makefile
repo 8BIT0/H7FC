@@ -48,6 +48,7 @@ Device/Dev_W25Qxx.c \
 Service/SrvMPU_Sample.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
+Common/reboot.c \
 System/mmu/mmu.c \
 System/scheduler/scheduler.c \
 System/kernel/kernel.c \
@@ -58,7 +59,6 @@ System/shell/shell_companion.c \
 System/shell/shell_ext.c \
 System/shell/shell_port.c \
 System/shell/shell.c \
-Common/reboot.c \
 USB/USB_DEVICE/App/usb_device.c \
 USB/USB_DEVICE/App/usbd_desc.c \
 USB/USB_DEVICE/App/usbd_cdc_if.c \
