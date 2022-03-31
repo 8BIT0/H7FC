@@ -1,5 +1,7 @@
 #include "Dev_MPU6000.h"
 
+uint8_t test_DevId;
+
 /* internal function */
 static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx);
 static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx);
@@ -128,6 +130,7 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     case MPU6000_REV_D8:
     case MPU6000_REV_D9:
     case MPU6000_REV_D10:
+        test_DevId = read_out;
         break;
 
     default:

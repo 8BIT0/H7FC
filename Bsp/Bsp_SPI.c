@@ -26,22 +26,52 @@ static const GPIO_InitTypeDef BspSPI_Pin_Cfg = {
     .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
 };
 
+static void BspSPI_PinCLK_Enable(GPIO_TypeDef *port)
+{
+    if (port == GPIOA)
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+    else if (port == GPIOB)
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+    else if (port == GPIOC)
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+    else if (port == GPIOD)
+        __HAL_RCC_GPIOD_CLK_ENABLE();
+    else if (port == GPIOE)
+        __HAL_RCC_GPIOE_CLK_ENABLE();
+    else if (port == GPIOF)
+        __HAL_RCC_GPIOF_CLK_ENABLE();
+    else if (port == GPIOG)
+        __HAL_RCC_GPIOG_CLK_ENABLE();
+    else if (port == GPIOH)
+        __HAL_RCC_GPIOH_CLK_ENABLE();
+#if defined(GPIOI)
+    else if (port == GPIOI)
+        __HAL_RCC_GPIOI_CLK_ENABLE();
+#endif
+    else if (port == GPIOJ)
+        __HAL_RCC_GPIOJ_CLK_ENABLE();
+    else if (port == GPIOK)
+        __HAL_RCC_GPIOK_CLK_ENABLE();
+}
+
 static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
 {
     GPIO_InitTypeDef GPIO_InitStruct = BspSPI_Pin_Cfg;
 
-    __HAL_RCC_GPIOC_CLK_ENABLE();
     /* mosi pin init */
+    BspSPI_PinCLK_Enable(pin_cfg.port_mosi);
     GPIO_InitStruct.Pin = pin_cfg.pin_mosi;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
 
     /* miso pin init */
+    BspSPI_PinCLK_Enable(pin_cfg.port_miso);
     GPIO_InitStruct.Pin = pin_cfg.pin_miso;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_miso, &GPIO_InitStruct);
 
     /* clk pin init */
+    BspSPI_PinCLK_Enable(pin_cfg.port_clk);
     GPIO_InitStruct.Pin = pin_cfg.pin_clk;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
