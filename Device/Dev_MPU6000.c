@@ -41,12 +41,12 @@ static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr,
     write_buff[0] = addr | MPU6000_WRITE_MASK;
 
     /* CS High */
-    sensor_obj->cs_ctl(true);
+    sensor_obj->cs_ctl(false);
 
     state = sensor_obj->bus_trans(write_buff, read_buff, 2);
 
     /* CS Low */
-    sensor_obj->cs_ctl(false);
+    sensor_obj->cs_ctl(true);
 
     *rx = read_buff[1];
 
@@ -66,12 +66,12 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
     write_buff[1] = tx;
 
     /* CS High */
-    sensor_obj->cs_ctl(true);
+    sensor_obj->cs_ctl(false);
 
     state = sensor_obj->bus_trans(write_buff, read_buff, 2);
 
     /* CS Low */
-    sensor_obj->cs_ctl(false);
+    sensor_obj->cs_ctl(true);
 
     return state;
 }

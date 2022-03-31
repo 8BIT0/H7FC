@@ -30,6 +30,7 @@ static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
 {
     GPIO_InitTypeDef GPIO_InitStruct = BspSPI_Pin_Cfg;
 
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     /* mosi pin init */
     GPIO_InitStruct.Pin = pin_cfg.pin_mosi;
     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
