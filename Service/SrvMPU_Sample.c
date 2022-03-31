@@ -98,15 +98,15 @@ int8_t SrvIMU_Init(void)
     if (!BspGPIO.exti_init(MPU6000_INTPin, SrvIMU_PriIMU_ExtiCallback))
         return -2;
 
-    if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
-        return -3;
-
     MPU6000_BusCfg.Pin = MPU6000_BusPin;
 
     DevMPU6000.pre_init(&MPU6000Obj,
                         SrvIMU_SecIMU_CS_Ctl,
                         SrvIMU_PriIMU_BusTrans_Rec,
                         Runtime_DelayMs);
+
+    if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
+        return -3;
 
     if (!DevMPU6000.init(&MPU6000Obj))
         return -4;

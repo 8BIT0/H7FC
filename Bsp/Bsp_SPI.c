@@ -108,7 +108,7 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_Han
     if (HAL_SPI_Init(&SPI_InitStructure) != HAL_OK)
         return false;
 
-    *spi_instance = SPI_InitStructure;
+    memcpy(spi_instance, &SPI_InitStructure, sizeof(SPI_InitStructure));
 
     return true;
 }

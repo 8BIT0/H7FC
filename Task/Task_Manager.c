@@ -74,7 +74,7 @@ void Task_Manager_Init(void)
 {
     DevLED.init(Led1);
     DevLED.init(Led2);
-    // DevLED.init(Led3);
+    DevLED.init(Led3);
 
     DebugPin.init(Debug_PC0);
     DebugPin.init(Debug_PC1);
@@ -115,7 +115,7 @@ void Test2(Task_Handle handle)
     }
 
     DevLED.ctl(Led2, led_state);
-    // DevLED.ctl(Led3, led_state);
+    DevLED.ctl(Led3, led_state);
 
     test_PC2_ctl();
 }
