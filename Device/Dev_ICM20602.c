@@ -1,5 +1,17 @@
 #include "Dev_ICM20602.h"
 
+static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t *rx, uint8_t len)
+{
+    uint8_t Rx_Tmp[2];
+    uint8_t Tx_Tmp[2];
+}
+
+static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t *tx, uint8_t len)
+{
+    uint8_t Rx_Tmp[2];
+    uint8_t Tx_Tmp[2];
+}
+
 static void DevICM20602_SetSampleRate(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate)
 {
     Obj->rate = rate;
