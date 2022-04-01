@@ -54,6 +54,7 @@ System/scheduler/scheduler.c \
 System/kernel/kernel.c \
 System/runtime/runtime.c \
 System/diskio/DiskIO.c \
+System/diskio/BPlus_Tree.c \
 System/shell/shell_cmd_list.c \
 System/shell/shell_companion.c \
 System/shell/shell_ext.c \
