@@ -16,11 +16,13 @@ static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
 IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
 static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
+static void DevMPU6000_SetSampleRate(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate);
 
 /* external MPU6000 Object */
 DevMPU6000_TypeDef DevMPU6000 = {
     .pre_init = DevMPU6000_PreInit,
     .init = DevMPU6000_Init,
+    .set_rate = DevMPU6000_SetSampleRate,
     .reset = DevMPU6000_SwReset,
     .set_drdy = DevMPU6000_SetDRDY,
     .get_drdy = DevMPU6000_GetReady,
@@ -77,6 +79,11 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
     return state;
 }
 
+static void DevMPU6000_SetSampleRate(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate)
+{
+    sensor_obj->rate = rate;
+}
+
 static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
                                cs_ctl_callback cs_ctl,
                                bus_trans_callback bus_trans,
@@ -98,6 +105,19 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
         (sensor_obj->cs_ctl == NULL))
     {
         sensor_obj->error = MPU6000_Obj_Error;
+        return false;
+    }
+
+    switch ((uint8_t)sensor_obj->rate)
+    {
+    case DevMPU6000_SampleRate_8K:
+    case DevMPU6000_SampleRate_4K:
+    case DevMPU6000_SampleRate_2K:
+    case DevMPU6000_SampleRate_1K:
+        break;
+
+    default:
+        sensor_obj->error = MPU6000_SampleRate_Error;
         return false;
     }
 
@@ -152,7 +172,7 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     }
     sensor_obj->delay(15);
 
-    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_SMPLRT_DIV, 0x00))
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_SMPLRT_DIV, sensor_obj->rate))
     {
         sensor_obj->error = MPU6000_DIV_Set_Error;
         return false;

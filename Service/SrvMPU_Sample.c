@@ -4,6 +4,7 @@
 #include "Dev_MPU6000.h"
 #include "IO_Definition.h"
 #include "runtime.h"
+#include "debug_util.h"
 
 /*
  *   PriIMU -> MPU6000
@@ -82,6 +83,8 @@ static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
 static DevMPU6000Obj_TypeDef MPU6000Obj;
 
 /* internal function */
+static int8_t SrvIMU_PriIMU_Init(void);
+static int8_t SrvIMU_SecIMU_Init(void);
 static void SrvIMU_PriIMU_ExtiCallback(void);
 static void SrvIMU_SecIMU_ExtiCallback(void);
 static void SrvIMU_PriIMU_CS_Ctl(bool state);
@@ -90,6 +93,13 @@ static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 
 int8_t SrvIMU_Init(void)
+{
+    SrvIMU_PriIMU_Init();
+    SrvIMU_SecIMU_Init();
+}
+
+/* init primary IMU Device */
+static int8_t SrvIMU_PriIMU_Init(void)
 {
     /* primary IMU Pin & Bus Init */
     if (!BspGPIO.out_init(MPU6000_CSPin))
@@ -105,6 +115,8 @@ int8_t SrvIMU_Init(void)
                         SrvIMU_PriIMU_BusTrans_Rec,
                         Runtime_DelayMs);
 
+    DevMPU6000.set_rate(&MPU6000Obj, DevMPU6000_SampleRate_8K);
+
     if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
         return SrvIMU_PriBus_Init_Error;
 
@@ -114,18 +126,12 @@ int8_t SrvIMU_Init(void)
     /* Set SPI Speed 20M */
     MPU6000_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
 
-    /* secondary IMU Pin & Bus Init */
-    // if (!BspGPIO.out_init(ICM20602_CSPin))
-    //     return false;
+    return SrvIMU_No_Error;
+}
 
-    // if (!BspGPIO.exti_init(ICM20602_INTPin, SrvIMU_SecIMU_ExtiCallback))
-    //     return false;
-
-    // if (!BspSPI.init(ICM20602_BusCfg, &ICM20602_Bus_Instance))
-    //     return false;
-
-    // MPU6000_BusCfg.Pin = ICM20602_BusPin;
-
+/* init primary IMU Device */
+static int8_t SrvIMU_SecIMU_Init(void)
+{
     return SrvIMU_No_Error;
 }
 

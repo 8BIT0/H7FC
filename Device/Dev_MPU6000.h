@@ -99,6 +99,7 @@ typedef enum
 {
     MPU6000_No_Error = 0,
     MPU6000_Obj_Error,
+    MPU6000_SampleRate_Error,
     MPU6000_BusCommunicate_Error,
     MPU6000_DevID_Error,
     MPU6000_SignalPathReset_Error,
@@ -110,6 +111,14 @@ typedef enum
     MPU6000_IntPin_Set_Error,
     MPU6000_EnableInt_Error,
 } DevMPU6000_Error_List;
+
+typedef enum
+{
+    DevMPU6000_SampleRate_8K = 0,
+    DevMPU6000_SampleRate_4K = 1,
+    DevMPU6000_SampleRate_2K = 3,
+    DevMPU6000_SampleRate_1K = 7,
+} DevMPU6000_SampleRate_List;
 
 typedef void (*cs_ctl_callback)(bool state);
 typedef bool (*bus_trans_callback)(uint8_t *tx, uint8_t *rx, uint16_t len);
@@ -123,6 +132,7 @@ typedef struct
 
     bool drdy;
     bool update;
+    DevMPU6000_SampleRate_List rate;
 
     IMUData_TypeDef OriData;
     IMUData_TypeDef OriData_Lst;
@@ -133,6 +143,7 @@ typedef struct
 typedef struct
 {
     void (*pre_init)(DevMPU6000Obj_TypeDef *sensor_obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay);
+    void (*set_rate)(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate);
     bool (*init)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*reset)(DevMPU6000Obj_TypeDef *snesor_obj);
     bool (*get_drdy)(DevMPU6000Obj_TypeDef *sensor_obj);

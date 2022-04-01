@@ -114,8 +114,8 @@ void Test2(Task_Handle handle)
         Lst_Rt = Rt;
     }
 
-    DevLED.ctl(Led2, led_state);
-    DevLED.ctl(Led3, led_state);
+    // DevLED.ctl(Led2, led_state);
+    // DevLED.ctl(Led3, led_state);
 
     test_PC2_ctl();
 }
@@ -148,13 +148,14 @@ void Run(Task_Handle handle)
 
     Rt = Get_CurrentRunningMs();
 
-    if ((Rt % 50 == 0) && (Lst_Rt != Rt))
+    if ((Rt % 20 == 0) && (Lst_Rt != Rt))
     {
         led_state = !led_state;
         Lst_Rt = Rt;
     }
 
-    DevLED.ctl(Led1, led_state);
+    // DevLED.ctl(Led1, led_state);
+    DevLED.ctl(Led2, led_state);
     // DevLED.ctl(Led3, led_state);
 
     test_PC1_ctl();
