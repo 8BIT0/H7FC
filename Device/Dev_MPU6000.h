@@ -73,6 +73,7 @@
 #define BIT_ACC 2
 #define BIT_TEMP 1
 
+#define MPU6000_DEV_ID 0x68
 #define MPU6000ES_REV_C4 0x14
 #define MPU6000ES_REV_C5 0x15
 #define MPU6000ES_REV_D6 0x16

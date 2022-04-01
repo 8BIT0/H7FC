@@ -1,7 +1,5 @@
 #include "Dev_MPU6000.h"
 
-uint8_t test_DevId;
-
 /* internal function */
 static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx);
 static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx);
@@ -116,26 +114,9 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
         sensor_obj->error = MPU6000_BusCommunicate_Error;
         return false;
     }
-    sensor_obj->delay(15);
 
-    switch (read_out)
+    switch (read_out != MPU6000_DEV_ID)
     {
-    case MPU6000ES_REV_C4:
-    case MPU6000ES_REV_C5:
-    case MPU6000ES_REV_D6:
-    case MPU6000ES_REV_D7:
-    case MPU6000ES_REV_D8:
-    case MPU6000_REV_C4:
-    case MPU6000_REV_C5:
-    case MPU6000_REV_D6:
-    case MPU6000_REV_D7:
-    case MPU6000_REV_D8:
-    case MPU6000_REV_D9:
-    case MPU6000_REV_D10:
-        test_DevId = read_out;
-        break;
-
-    default:
         sensor_obj->error = MPU6000_DevID_Error;
         sensor_obj->delay(15);
         return false;

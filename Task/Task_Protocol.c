@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include "Dev_MPU6000.h"
 
-extern uint8_t test_DevId;
-
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Init;
 static bool Shell_Mode = false;
@@ -66,8 +64,6 @@ void TaskProtocol_Core(Task_Handle hdl)
     switch ((uint8_t)task_state)
     {
     case TaskProto_Core:
-        usb_printf("MPU6000 Init State : %d\r\n", SrvIMU_InitState);
-        usb_printf("ID : %d\r\b", test_DevId);
         usb_printf("test \r\n");
 
         TaaskProtocol_Main(NULL, 0);

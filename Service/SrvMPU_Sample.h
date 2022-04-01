@@ -9,6 +9,16 @@
 
 typedef enum
 {
+    SrvIMU_PriCSPin_Init_Error = -8,
+    SrvIMU_PriExtiPin_Init_Error = -7,
+    SrvIMU_PriBus_Init_Error = -6,
+    SrvIMU_PriDev_Init_Error = -5,
+    SrvIMU_SecCSPin_Init_Error = -4,
+    SrvIMU_SecExtiPin_Init_Error = -3,
+    SrvIMU_SecBus_Init_Error = -2,
+    SrvIMU_SecDev_Init_Error = -1,
+    SrvIMU_No_Error = 0,
+    SrvIMU_Sample_Init_Error,
     SrvIMU_Sample_OverRange,
     SrvIMU_Sample_Blunt,
 } SrvIMU_ErrorCode_List;
