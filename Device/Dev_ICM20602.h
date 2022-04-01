@@ -23,6 +23,7 @@ typedef enum
 typedef struct
 {
     bool drdy;
+    ICM20602_Error_List error;
     ICM20602_SampleRate_List rate;
 } DevICM20602Obj_TypeDef;
 
