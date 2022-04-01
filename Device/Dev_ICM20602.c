@@ -1,7 +1,8 @@
 #include "Dev_ICM20602.h"
 
-static void DevICM20602_SetSampleRate()
+static void DevICM20602_SetSampleRate(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate)
 {
+    Obj->rate = rate;
 }
 
 static bool DevICM20602_PreInit()
