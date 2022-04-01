@@ -55,6 +55,7 @@ static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr,
     return state;
 }
 
+/* MAX Byte I&O Speed 20k */
 static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx)
 {
     uint8_t write_buff[2] = {0};
@@ -110,14 +111,13 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     }
     sensor_obj->delay(15);
 
-    while (1) // test
+    if (!DevMPU6000_Reg_Read(sensor_obj, MPU6000_WHOAMI, &read_out))
     {
-        if (!DevMPU6000_Reg_Read(sensor_obj, MPU6000_WHOAMI, &read_out))
-        {
-            sensor_obj->error = MPU6000_BusCommunicate_Error;
-            return false;
-        }
+        sensor_obj->error = MPU6000_BusCommunicate_Error;
+        return false;
     }
+    sensor_obj->delay(15);
+
     switch (read_out)
     {
     case MPU6000ES_REV_C4:
