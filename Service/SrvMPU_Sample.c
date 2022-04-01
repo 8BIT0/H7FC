@@ -159,6 +159,7 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
     /* MPU6000 Sample */
+    DevMPU6000.set_drdy(&MPU6000Obj);
 }
 
 static void SrvIMU_SecIMU_ExtiCallback(void)
