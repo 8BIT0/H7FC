@@ -1,0 +1,646 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"SrvMPU_Sample.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.SrvIMU_PriIMU_CS_Ctl,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	SrvIMU_PriIMU_CS_Ctl:
+  25              	.LVL0:
+  26              	.LFB337:
+  27              		.file 1 "Service/SrvMPU_Sample.c"
+   1:Service/SrvMPU_Sample.c **** #include "SrvMPU_Sample.h"
+   2:Service/SrvMPU_Sample.c **** #include "Bsp_SPI.h"
+   3:Service/SrvMPU_Sample.c **** #include "Bsp_GPIO.h"
+   4:Service/SrvMPU_Sample.c **** #include "Dev_MPU6000.h"
+   5:Service/SrvMPU_Sample.c **** #include "IO_Definition.h"
+   6:Service/SrvMPU_Sample.c **** #include "runtime.h"
+   7:Service/SrvMPU_Sample.c **** 
+   8:Service/SrvMPU_Sample.c **** /*
+   9:Service/SrvMPU_Sample.c ****  *   PriIMU -> MPU6000
+  10:Service/SrvMPU_Sample.c ****  *   SecIMU -> ICM20602
+  11:Service/SrvMPU_Sample.c ****  */
+  12:Service/SrvMPU_Sample.c **** 
+  13:Service/SrvMPU_Sample.c **** #define IMU_Commu_TimeOut 1000
+  14:Service/SrvMPU_Sample.c **** 
+  15:Service/SrvMPU_Sample.c **** /* internal variable */
+  16:Service/SrvMPU_Sample.c **** /* MPU6000 Instance */
+  17:Service/SrvMPU_Sample.c **** static BspGPIO_Obj_TypeDef MPU6000_CSPin = {
+  18:Service/SrvMPU_Sample.c ****     .init_state = true,
+  19:Service/SrvMPU_Sample.c ****     .pin = MPU6000_CS_PIN,
+  20:Service/SrvMPU_Sample.c ****     .port = MPU6000_CS_PORT,
+  21:Service/SrvMPU_Sample.c **** };
+  22:Service/SrvMPU_Sample.c **** 
+  23:Service/SrvMPU_Sample.c **** static BspGPIO_Obj_TypeDef MPU6000_INTPin = {
+  24:Service/SrvMPU_Sample.c ****     .init_state = true,
+  25:Service/SrvMPU_Sample.c ****     .pin = MPU6000_INT_PIN,
+  26:Service/SrvMPU_Sample.c ****     .port = MPU6000_INT_PORT,
+  27:Service/SrvMPU_Sample.c **** };
+  28:Service/SrvMPU_Sample.c **** 
+  29:Service/SrvMPU_Sample.c **** static SPI_HandleTypeDef MPU6000_Bus_Instance;
+  30:Service/SrvMPU_Sample.c **** static BspSPI_PinConfig_TypeDef MPU6000_BusPin = {
+  31:Service/SrvMPU_Sample.c ****     .pin_Alternate = GPIO_AF5_SPI1,
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 2
+
+
+  32:Service/SrvMPU_Sample.c **** 
+  33:Service/SrvMPU_Sample.c ****     .port_clk = MPU6000_CLK_PORT,
+  34:Service/SrvMPU_Sample.c ****     .port_miso = MPU6000_MISO_PORT,
+  35:Service/SrvMPU_Sample.c ****     .port_mosi = MPU6000_MOSI_PORT,
+  36:Service/SrvMPU_Sample.c **** 
+  37:Service/SrvMPU_Sample.c ****     .pin_clk = MPU6000_CLK_PIN,
+  38:Service/SrvMPU_Sample.c ****     .pin_miso = MPU6000_MISO_PIN,
+  39:Service/SrvMPU_Sample.c ****     .pin_mosi = MPU6000_MOSI_PIN,
+  40:Service/SrvMPU_Sample.c **** };
+  41:Service/SrvMPU_Sample.c **** 
+  42:Service/SrvMPU_Sample.c **** static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
+  43:Service/SrvMPU_Sample.c ****     .Instance = MPU6000_SPI_BUS,
+  44:Service/SrvMPU_Sample.c ****     .CLKPolarity = SPI_POLARITY_HIGH,
+  45:Service/SrvMPU_Sample.c ****     .CLKPhase = SPI_PHASE_2EDGE,
+  46:Service/SrvMPU_Sample.c ****     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
+  47:Service/SrvMPU_Sample.c **** };
+  48:Service/SrvMPU_Sample.c **** 
+  49:Service/SrvMPU_Sample.c **** /* ICM20602 Instance */
+  50:Service/SrvMPU_Sample.c **** static BspGPIO_Obj_TypeDef ICM20602_CSPin = {
+  51:Service/SrvMPU_Sample.c ****     .init_state = true,
+  52:Service/SrvMPU_Sample.c ****     .pin = ICM20602_CS_PIN,
+  53:Service/SrvMPU_Sample.c ****     .port = ICM20602_CS_PORT,
+  54:Service/SrvMPU_Sample.c **** };
+  55:Service/SrvMPU_Sample.c **** 
+  56:Service/SrvMPU_Sample.c **** static BspGPIO_Obj_TypeDef ICM20602_INTPin = {
+  57:Service/SrvMPU_Sample.c ****     .init_state = true,
+  58:Service/SrvMPU_Sample.c ****     .pin = ICM20602_INT_PIN,
+  59:Service/SrvMPU_Sample.c ****     .port = ICM20602_INT_PORT,
+  60:Service/SrvMPU_Sample.c **** };
+  61:Service/SrvMPU_Sample.c **** 
+  62:Service/SrvMPU_Sample.c **** static SPI_HandleTypeDef ICM20602_Bus_Instance;
+  63:Service/SrvMPU_Sample.c **** static BspSPI_PinConfig_TypeDef ICM20602_BusPin = {
+  64:Service/SrvMPU_Sample.c ****     .pin_Alternate = GPIO_AF5_SPI4,
+  65:Service/SrvMPU_Sample.c **** 
+  66:Service/SrvMPU_Sample.c ****     .port_clk = ICM20602_CLK_PORT,
+  67:Service/SrvMPU_Sample.c ****     .port_miso = ICM20602_MISO_PORT,
+  68:Service/SrvMPU_Sample.c ****     .port_mosi = ICM20602_MOSI_PORT,
+  69:Service/SrvMPU_Sample.c **** 
+  70:Service/SrvMPU_Sample.c ****     .pin_clk = ICM20602_CLK_PIN,
+  71:Service/SrvMPU_Sample.c ****     .pin_miso = ICM20602_MISO_PIN,
+  72:Service/SrvMPU_Sample.c ****     .pin_mosi = ICM20602_MOSI_PIN,
+  73:Service/SrvMPU_Sample.c **** };
+  74:Service/SrvMPU_Sample.c **** 
+  75:Service/SrvMPU_Sample.c **** static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
+  76:Service/SrvMPU_Sample.c ****     .Instance = ICM20602_SPI_BUS,
+  77:Service/SrvMPU_Sample.c ****     .CLKPolarity = SPI_POLARITY_HIGH,
+  78:Service/SrvMPU_Sample.c ****     .CLKPhase = SPI_PHASE_2EDGE,
+  79:Service/SrvMPU_Sample.c ****     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
+  80:Service/SrvMPU_Sample.c **** };
+  81:Service/SrvMPU_Sample.c **** 
+  82:Service/SrvMPU_Sample.c **** static DevMPU6000Obj_TypeDef MPU6000Obj;
+  83:Service/SrvMPU_Sample.c **** 
+  84:Service/SrvMPU_Sample.c **** /* internal function */
+  85:Service/SrvMPU_Sample.c **** static void SrvIMU_PriIMU_ExtiCallback(void);
+  86:Service/SrvMPU_Sample.c **** static void SrvIMU_SecIMU_ExtiCallback(void);
+  87:Service/SrvMPU_Sample.c **** static void SrvIMU_PriIMU_CS_Ctl(bool state);
+  88:Service/SrvMPU_Sample.c **** static void SrvIMU_SecIMU_CS_Ctl(bool state);
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 3
+
+
+  89:Service/SrvMPU_Sample.c **** static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
+  90:Service/SrvMPU_Sample.c **** static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
+  91:Service/SrvMPU_Sample.c **** 
+  92:Service/SrvMPU_Sample.c **** int8_t SrvIMU_Init(void)
+  93:Service/SrvMPU_Sample.c **** {
+  94:Service/SrvMPU_Sample.c ****     /* primary IMU Pin & Bus Init */
+  95:Service/SrvMPU_Sample.c ****     if (!BspGPIO.out_init(MPU6000_CSPin))
+  96:Service/SrvMPU_Sample.c ****         return -1;
+  97:Service/SrvMPU_Sample.c **** 
+  98:Service/SrvMPU_Sample.c ****     if (!BspGPIO.exti_init(MPU6000_INTPin, SrvIMU_PriIMU_ExtiCallback))
+  99:Service/SrvMPU_Sample.c ****         return -2;
+ 100:Service/SrvMPU_Sample.c **** 
+ 101:Service/SrvMPU_Sample.c ****     MPU6000_BusCfg.Pin = MPU6000_BusPin;
+ 102:Service/SrvMPU_Sample.c **** 
+ 103:Service/SrvMPU_Sample.c ****     DevMPU6000.pre_init(&MPU6000Obj,
+ 104:Service/SrvMPU_Sample.c ****                         SrvIMU_PriIMU_CS_Ctl,
+ 105:Service/SrvMPU_Sample.c ****                         SrvIMU_PriIMU_BusTrans_Rec,
+ 106:Service/SrvMPU_Sample.c ****                         Runtime_DelayMs);
+ 107:Service/SrvMPU_Sample.c **** 
+ 108:Service/SrvMPU_Sample.c ****     if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
+ 109:Service/SrvMPU_Sample.c ****         return -3;
+ 110:Service/SrvMPU_Sample.c **** 
+ 111:Service/SrvMPU_Sample.c ****     if (!DevMPU6000.init(&MPU6000Obj))
+ 112:Service/SrvMPU_Sample.c ****         return -4;
+ 113:Service/SrvMPU_Sample.c **** 
+ 114:Service/SrvMPU_Sample.c ****     /* Set SPI Speed 20M */
+ 115:Service/SrvMPU_Sample.c ****     MPU6000_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+ 116:Service/SrvMPU_Sample.c **** 
+ 117:Service/SrvMPU_Sample.c ****     /* secondary IMU Pin & Bus Init */
+ 118:Service/SrvMPU_Sample.c ****     // if (!BspGPIO.out_init(ICM20602_CSPin))
+ 119:Service/SrvMPU_Sample.c ****     //     return false;
+ 120:Service/SrvMPU_Sample.c **** 
+ 121:Service/SrvMPU_Sample.c ****     // if (!BspGPIO.exti_init(ICM20602_INTPin, SrvIMU_SecIMU_ExtiCallback))
+ 122:Service/SrvMPU_Sample.c ****     //     return false;
+ 123:Service/SrvMPU_Sample.c **** 
+ 124:Service/SrvMPU_Sample.c ****     // if (!BspSPI.init(ICM20602_BusCfg, &ICM20602_Bus_Instance))
+ 125:Service/SrvMPU_Sample.c ****     //     return false;
+ 126:Service/SrvMPU_Sample.c **** 
+ 127:Service/SrvMPU_Sample.c ****     // MPU6000_BusCfg.Pin = ICM20602_BusPin;
+ 128:Service/SrvMPU_Sample.c **** 
+ 129:Service/SrvMPU_Sample.c ****     return 0;
+ 130:Service/SrvMPU_Sample.c **** }
+ 131:Service/SrvMPU_Sample.c **** 
+ 132:Service/SrvMPU_Sample.c **** /* input true selected / false deselected */
+ 133:Service/SrvMPU_Sample.c **** static void SrvIMU_PriIMU_CS_Ctl(bool state)
+ 134:Service/SrvMPU_Sample.c **** {
+  28              		.loc 1 134 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 134 1 is_stmt 0 view .LVU1
+  33 0000 08B5     		push	{r3, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 8
+  36              		.cfi_offset 3, -8
+  37              		.cfi_offset 14, -4
+  38 0002 0246     		mov	r2, r0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 4
+
+
+ 135:Service/SrvMPU_Sample.c ****     BspGPIO.write(MPU6000_CSPin.port, MPU6000_CSPin.pin, state);
+  39              		.loc 1 135 5 is_stmt 1 view .LVU2
+  40              		.loc 1 135 12 is_stmt 0 view .LVU3
+  41 0004 034B     		ldr	r3, .L3
+  42 0006 DB68     		ldr	r3, [r3, #12]
+  43              		.loc 1 135 5 view .LVU4
+  44 0008 4FF40041 		mov	r1, #32768
+  45 000c 0248     		ldr	r0, .L3+4
+  46              	.LVL1:
+  47              		.loc 1 135 5 view .LVU5
+  48 000e 9847     		blx	r3
+  49              	.LVL2:
+ 136:Service/SrvMPU_Sample.c **** }
+  50              		.loc 1 136 1 view .LVU6
+  51 0010 08BD     		pop	{r3, pc}
+  52              	.L4:
+  53 0012 00BF     		.align	2
+  54              	.L3:
+  55 0014 00000000 		.word	BspGPIO
+  56 0018 00080258 		.word	1476528128
+  57              		.cfi_endproc
+  58              	.LFE337:
+  60              		.section	.text.SrvIMU_PriIMU_BusTrans_Rec,"ax",%progbits
+  61              		.align	1
+  62              		.syntax unified
+  63              		.thumb
+  64              		.thumb_func
+  65              		.fpu fpv5-d16
+  67              	SrvIMU_PriIMU_BusTrans_Rec:
+  68              	.LVL3:
+  69              	.LFB339:
+ 137:Service/SrvMPU_Sample.c **** 
+ 138:Service/SrvMPU_Sample.c **** static void SrvIMU_SecIMU_CS_Ctl(bool state)
+ 139:Service/SrvMPU_Sample.c **** {
+ 140:Service/SrvMPU_Sample.c ****     BspGPIO.write(ICM20602_CSPin.port, ICM20602_CSPin.pin, state);
+ 141:Service/SrvMPU_Sample.c **** }
+ 142:Service/SrvMPU_Sample.c **** 
+ 143:Service/SrvMPU_Sample.c **** static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
+ 144:Service/SrvMPU_Sample.c **** {
+  70              		.loc 1 144 1 is_stmt 1 view -0
+  71              		.cfi_startproc
+  72              		@ args = 0, pretend = 0, frame = 0
+  73              		@ frame_needed = 0, uses_anonymous_args = 0
+  74              		.loc 1 144 1 is_stmt 0 view .LVU8
+  75 0000 10B5     		push	{r4, lr}
+  76              	.LCFI1:
+  77              		.cfi_def_cfa_offset 8
+  78              		.cfi_offset 4, -8
+  79              		.cfi_offset 14, -4
+  80 0002 82B0     		sub	sp, sp, #8
+  81              	.LCFI2:
+  82              		.cfi_def_cfa_offset 16
+  83 0004 1346     		mov	r3, r2
+ 145:Service/SrvMPU_Sample.c ****     return BspSPI.trans_receive(&MPU6000_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
+  84              		.loc 1 145 5 is_stmt 1 view .LVU9
+  85              		.loc 1 145 18 is_stmt 0 view .LVU10
+  86 0006 054A     		ldr	r2, .L7
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 5
+
+
+  87              	.LVL4:
+  88              		.loc 1 145 18 view .LVU11
+  89 0008 1469     		ldr	r4, [r2, #16]
+  90              		.loc 1 145 12 view .LVU12
+  91 000a 4FF47A72 		mov	r2, #1000
+  92 000e 0092     		str	r2, [sp]
+  93 0010 0A46     		mov	r2, r1
+  94 0012 0146     		mov	r1, r0
+  95              	.LVL5:
+  96              		.loc 1 145 12 view .LVU13
+  97 0014 0248     		ldr	r0, .L7+4
+  98              	.LVL6:
+  99              		.loc 1 145 12 view .LVU14
+ 100 0016 A047     		blx	r4
+ 101              	.LVL7:
+ 146:Service/SrvMPU_Sample.c **** }
+ 102              		.loc 1 146 1 view .LVU15
+ 103 0018 02B0     		add	sp, sp, #8
+ 104              	.LCFI3:
+ 105              		.cfi_def_cfa_offset 8
+ 106              		@ sp needed
+ 107 001a 10BD     		pop	{r4, pc}
+ 108              	.L8:
+ 109              		.align	2
+ 110              	.L7:
+ 111 001c 00000000 		.word	BspSPI
+ 112 0020 00000000 		.word	.LANCHOR0
+ 113              		.cfi_endproc
+ 114              	.LFE339:
+ 116              		.section	.text.SrvIMU_PriIMU_ExtiCallback,"ax",%progbits
+ 117              		.align	1
+ 118              		.syntax unified
+ 119              		.thumb
+ 120              		.thumb_func
+ 121              		.fpu fpv5-d16
+ 123              	SrvIMU_PriIMU_ExtiCallback:
+ 124              	.LFB341:
+ 147:Service/SrvMPU_Sample.c **** 
+ 148:Service/SrvMPU_Sample.c **** static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
+ 149:Service/SrvMPU_Sample.c **** {
+ 150:Service/SrvMPU_Sample.c ****     return BspSPI.trans_receive(&ICM20602_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
+ 151:Service/SrvMPU_Sample.c **** }
+ 152:Service/SrvMPU_Sample.c **** 
+ 153:Service/SrvMPU_Sample.c **** static void SrvIMU_PriIMU_ExtiCallback(void)
+ 154:Service/SrvMPU_Sample.c **** {
+ 125              		.loc 1 154 1 is_stmt 1 view -0
+ 126              		.cfi_startproc
+ 127              		@ args = 0, pretend = 0, frame = 0
+ 128              		@ frame_needed = 0, uses_anonymous_args = 0
+ 129              		@ link register save eliminated.
+ 155:Service/SrvMPU_Sample.c ****     /* MPU6000 Sample */
+ 156:Service/SrvMPU_Sample.c **** }
+ 130              		.loc 1 156 1 view .LVU17
+ 131 0000 7047     		bx	lr
+ 132              		.cfi_endproc
+ 133              	.LFE341:
+ 135              		.section	.text.SrvIMU_Init,"ax",%progbits
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 6
+
+
+ 136              		.align	1
+ 137              		.global	SrvIMU_Init
+ 138              		.syntax unified
+ 139              		.thumb
+ 140              		.thumb_func
+ 141              		.fpu fpv5-d16
+ 143              	SrvIMU_Init:
+ 144              	.LFB336:
+  93:Service/SrvMPU_Sample.c ****     /* primary IMU Pin & Bus Init */
+ 145              		.loc 1 93 1 view -0
+ 146              		.cfi_startproc
+ 147              		@ args = 0, pretend = 0, frame = 0
+ 148              		@ frame_needed = 0, uses_anonymous_args = 0
+ 149 0000 70B5     		push	{r4, r5, r6, lr}
+ 150              	.LCFI4:
+ 151              		.cfi_def_cfa_offset 16
+ 152              		.cfi_offset 4, -16
+ 153              		.cfi_offset 5, -12
+ 154              		.cfi_offset 6, -8
+ 155              		.cfi_offset 14, -4
+ 156 0002 88B0     		sub	sp, sp, #32
+ 157              	.LCFI5:
+ 158              		.cfi_def_cfa_offset 48
+  95:Service/SrvMPU_Sample.c ****         return -1;
+ 159              		.loc 1 95 5 view .LVU19
+  95:Service/SrvMPU_Sample.c ****         return -1;
+ 160              		.loc 1 95 17 is_stmt 0 view .LVU20
+ 161 0004 234B     		ldr	r3, .L17
+ 162 0006 5A68     		ldr	r2, [r3, #4]
+  95:Service/SrvMPU_Sample.c ****         return -1;
+ 163              		.loc 1 95 10 view .LVU21
+ 164 0008 234B     		ldr	r3, .L17+4
+ 165 000a 93E80300 		ldm	r3, {r0, r1}
+ 166 000e 9047     		blx	r2
+ 167              	.LVL8:
+  95:Service/SrvMPU_Sample.c ****         return -1;
+ 168              		.loc 1 95 8 view .LVU22
+ 169 0010 0028     		cmp	r0, #0
+ 170 0012 33D0     		beq	.L12
+  98:Service/SrvMPU_Sample.c ****         return -2;
+ 171              		.loc 1 98 5 is_stmt 1 view .LVU23
+  98:Service/SrvMPU_Sample.c ****         return -2;
+ 172              		.loc 1 98 17 is_stmt 0 view .LVU24
+ 173 0014 1F4B     		ldr	r3, .L17
+ 174 0016 1C68     		ldr	r4, [r3]
+  98:Service/SrvMPU_Sample.c ****         return -2;
+ 175              		.loc 1 98 10 view .LVU25
+ 176 0018 204B     		ldr	r3, .L17+8
+ 177 001a 214A     		ldr	r2, .L17+12
+ 178 001c 93E80300 		ldm	r3, {r0, r1}
+ 179 0020 A047     		blx	r4
+ 180              	.LVL9:
+  98:Service/SrvMPU_Sample.c ****         return -2;
+ 181              		.loc 1 98 8 view .LVU26
+ 182 0022 0028     		cmp	r0, #0
+ 183 0024 2DD0     		beq	.L13
+ 101:Service/SrvMPU_Sample.c **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 7
+
+
+ 184              		.loc 1 101 5 is_stmt 1 view .LVU27
+ 101:Service/SrvMPU_Sample.c **** 
+ 185              		.loc 1 101 24 is_stmt 0 view .LVU28
+ 186 0026 1F4E     		ldr	r6, .L17+16
+ 187 0028 3446     		mov	r4, r6
+ 188 002a 1F4D     		ldr	r5, .L17+20
+ 189 002c 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 190 002e 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 191 0030 95E80700 		ldm	r5, {r0, r1, r2}
+ 192 0034 84E80700 		stm	r4, {r0, r1, r2}
+ 103:Service/SrvMPU_Sample.c ****                         SrvIMU_PriIMU_CS_Ctl,
+ 193              		.loc 1 103 5 is_stmt 1 view .LVU29
+ 103:Service/SrvMPU_Sample.c ****                         SrvIMU_PriIMU_CS_Ctl,
+ 194              		.loc 1 103 15 is_stmt 0 view .LVU30
+ 195 0038 1C4B     		ldr	r3, .L17+24
+ 196 003a 1D68     		ldr	r5, [r3]
+ 103:Service/SrvMPU_Sample.c ****                         SrvIMU_PriIMU_CS_Ctl,
+ 197              		.loc 1 103 5 view .LVU31
+ 198 003c 1C4B     		ldr	r3, .L17+28
+ 199 003e 1D4A     		ldr	r2, .L17+32
+ 200 0040 1D49     		ldr	r1, .L17+36
+ 201 0042 1E48     		ldr	r0, .L17+40
+ 202 0044 A847     		blx	r5
+ 203              	.LVL10:
+ 108:Service/SrvMPU_Sample.c ****         return -3;
+ 204              		.loc 1 108 5 is_stmt 1 view .LVU32
+ 108:Service/SrvMPU_Sample.c ****         return -3;
+ 205              		.loc 1 108 16 is_stmt 0 view .LVU33
+ 206 0046 1E4B     		ldr	r3, .L17+44
+ 207 0048 1D68     		ldr	r5, [r3]
+ 108:Service/SrvMPU_Sample.c ****         return -3;
+ 208              		.loc 1 108 10 view .LVU34
+ 209 004a 1E4B     		ldr	r3, .L17+48
+ 210 004c 0793     		str	r3, [sp, #28]
+ 211 004e EC46     		mov	ip, sp
+ 212 0050 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 213 0052 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 214 0056 94E80700 		ldm	r4, {r0, r1, r2}
+ 215 005a 8CE80700 		stm	ip, {r0, r1, r2}
+ 216 005e 96E80F00 		ldm	r6, {r0, r1, r2, r3}
+ 217 0062 A847     		blx	r5
+ 218              	.LVL11:
+ 108:Service/SrvMPU_Sample.c ****         return -3;
+ 219              		.loc 1 108 8 view .LVU35
+ 220 0064 80B1     		cbz	r0, .L14
+ 111:Service/SrvMPU_Sample.c ****         return -4;
+ 221              		.loc 1 111 5 is_stmt 1 view .LVU36
+ 111:Service/SrvMPU_Sample.c ****         return -4;
+ 222              		.loc 1 111 20 is_stmt 0 view .LVU37
+ 223 0066 114B     		ldr	r3, .L17+24
+ 224 0068 5B68     		ldr	r3, [r3, #4]
+ 111:Service/SrvMPU_Sample.c ****         return -4;
+ 225              		.loc 1 111 10 view .LVU38
+ 226 006a 1448     		ldr	r0, .L17+40
+ 227 006c 9847     		blx	r3
+ 228              	.LVL12:
+ 111:Service/SrvMPU_Sample.c ****         return -4;
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 8
+
+
+ 229              		.loc 1 111 8 view .LVU39
+ 230 006e 70B1     		cbz	r0, .L15
+ 115:Service/SrvMPU_Sample.c **** 
+ 231              		.loc 1 115 5 is_stmt 1 view .LVU40
+ 115:Service/SrvMPU_Sample.c **** 
+ 232              		.loc 1 115 38 is_stmt 0 view .LVU41
+ 233 0070 4FF08052 		mov	r2, #268435456
+ 234 0074 B262     		str	r2, [r6, #40]
+ 129:Service/SrvMPU_Sample.c **** }
+ 235              		.loc 1 129 5 is_stmt 1 view .LVU42
+ 129:Service/SrvMPU_Sample.c **** }
+ 236              		.loc 1 129 12 is_stmt 0 view .LVU43
+ 237 0076 0020     		movs	r0, #0
+ 238              	.L11:
+ 130:Service/SrvMPU_Sample.c **** 
+ 239              		.loc 1 130 1 view .LVU44
+ 240 0078 08B0     		add	sp, sp, #32
+ 241              	.LCFI6:
+ 242              		.cfi_remember_state
+ 243              		.cfi_def_cfa_offset 16
+ 244              		@ sp needed
+ 245 007a 70BD     		pop	{r4, r5, r6, pc}
+ 246              	.L12:
+ 247              	.LCFI7:
+ 248              		.cfi_restore_state
+  96:Service/SrvMPU_Sample.c **** 
+ 249              		.loc 1 96 16 view .LVU45
+ 250 007c 4FF0FF30 		mov	r0, #-1
+ 251 0080 FAE7     		b	.L11
+ 252              	.L13:
+  99:Service/SrvMPU_Sample.c **** 
+ 253              		.loc 1 99 16 view .LVU46
+ 254 0082 6FF00100 		mvn	r0, #1
+ 255 0086 F7E7     		b	.L11
+ 256              	.L14:
+ 109:Service/SrvMPU_Sample.c **** 
+ 257              		.loc 1 109 16 view .LVU47
+ 258 0088 6FF00200 		mvn	r0, #2
+ 259 008c F4E7     		b	.L11
+ 260              	.L15:
+ 112:Service/SrvMPU_Sample.c **** 
+ 261              		.loc 1 112 16 view .LVU48
+ 262 008e 6FF00300 		mvn	r0, #3
+ 263 0092 F1E7     		b	.L11
+ 264              	.L18:
+ 265              		.align	2
+ 266              	.L17:
+ 267 0094 00000000 		.word	BspGPIO
+ 268 0098 00000000 		.word	.LANCHOR1
+ 269 009c 00000000 		.word	.LANCHOR2
+ 270 00a0 00000000 		.word	SrvIMU_PriIMU_ExtiCallback
+ 271 00a4 00000000 		.word	.LANCHOR3
+ 272 00a8 00000000 		.word	.LANCHOR4
+ 273 00ac 00000000 		.word	DevMPU6000
+ 274 00b0 00000000 		.word	Runtime_DelayMs
+ 275 00b4 00000000 		.word	SrvIMU_PriIMU_BusTrans_Rec
+ 276 00b8 00000000 		.word	SrvIMU_PriIMU_CS_Ctl
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 9
+
+
+ 277 00bc 00000000 		.word	.LANCHOR5
+ 278 00c0 00000000 		.word	BspSPI
+ 279 00c4 00000000 		.word	.LANCHOR0
+ 280              		.cfi_endproc
+ 281              	.LFE336:
+ 283              		.section	.text.SrvIMU_GetPri_InitError,"ax",%progbits
+ 284              		.align	1
+ 285              		.global	SrvIMU_GetPri_InitError
+ 286              		.syntax unified
+ 287              		.thumb
+ 288              		.thumb_func
+ 289              		.fpu fpv5-d16
+ 291              	SrvIMU_GetPri_InitError:
+ 292              	.LFB343:
+ 157:Service/SrvMPU_Sample.c **** 
+ 158:Service/SrvMPU_Sample.c **** static void SrvIMU_SecIMU_ExtiCallback(void)
+ 159:Service/SrvMPU_Sample.c **** {
+ 160:Service/SrvMPU_Sample.c ****     /* ICM20602 Sample */
+ 161:Service/SrvMPU_Sample.c **** }
+ 162:Service/SrvMPU_Sample.c **** 
+ 163:Service/SrvMPU_Sample.c **** int8_t SrvIMU_GetPri_InitError(void)
+ 164:Service/SrvMPU_Sample.c **** {
+ 293              		.loc 1 164 1 is_stmt 1 view -0
+ 294              		.cfi_startproc
+ 295              		@ args = 0, pretend = 0, frame = 0
+ 296              		@ frame_needed = 0, uses_anonymous_args = 0
+ 297 0000 08B5     		push	{r3, lr}
+ 298              	.LCFI8:
+ 299              		.cfi_def_cfa_offset 8
+ 300              		.cfi_offset 3, -8
+ 301              		.cfi_offset 14, -4
+ 165:Service/SrvMPU_Sample.c ****     return DevMPU6000.get_error(&MPU6000Obj);
+ 302              		.loc 1 165 5 view .LVU50
+ 303              		.loc 1 165 22 is_stmt 0 view .LVU51
+ 304 0002 034B     		ldr	r3, .L21
+ 305 0004 DB69     		ldr	r3, [r3, #28]
+ 306              		.loc 1 165 12 view .LVU52
+ 307 0006 0348     		ldr	r0, .L21+4
+ 308 0008 9847     		blx	r3
+ 309              	.LVL13:
+ 166:Service/SrvMPU_Sample.c **** }
+ 310              		.loc 1 166 1 view .LVU53
+ 311 000a 40B2     		sxtb	r0, r0
+ 312 000c 08BD     		pop	{r3, pc}
+ 313              	.L22:
+ 314 000e 00BF     		.align	2
+ 315              	.L21:
+ 316 0010 00000000 		.word	DevMPU6000
+ 317 0014 00000000 		.word	.LANCHOR5
+ 318              		.cfi_endproc
+ 319              	.LFE343:
+ 321              		.section	.bss.MPU6000Obj,"aw",%nobits
+ 322              		.align	2
+ 323              		.set	.LANCHOR5,. + 0
+ 326              	MPU6000Obj:
+ 327 0000 00000000 		.space	164
+ 327      00000000 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 10
+
+
+ 327      00000000 
+ 327      00000000 
+ 327      00000000 
+ 328              		.section	.bss.MPU6000_Bus_Instance,"aw",%nobits
+ 329              		.align	2
+ 330              		.set	.LANCHOR0,. + 0
+ 333              	MPU6000_Bus_Instance:
+ 334 0000 00000000 		.space	136
+ 334      00000000 
+ 334      00000000 
+ 334      00000000 
+ 334      00000000 
+ 335              		.section	.data.MPU6000_BusCfg,"aw"
+ 336              		.align	2
+ 337              		.set	.LANCHOR3,. + 0
+ 340              	MPU6000_BusCfg:
+ 341 0000 00000000 		.space	28
+ 341      00000000 
+ 341      00000000 
+ 341      00000000 
+ 341      00000000 
+ 342 001c 00300140 		.word	1073819648
+ 343 0020 00000002 		.word	33554432
+ 344 0024 00000001 		.word	16777216
+ 345 0028 00000060 		.word	1610612736
+ 346              		.section	.rodata.MPU6000_BusPin,"a"
+ 347              		.align	2
+ 348              		.set	.LANCHOR4,. + 0
+ 351              	MPU6000_BusPin:
+ 352 0000 000C0258 		.word	1476529152
+ 353 0004 00000258 		.word	1476526080
+ 354 0008 00000258 		.word	1476526080
+ 355 000c 80000000 		.word	128
+ 356 0010 40000000 		.word	64
+ 357 0014 20000000 		.word	32
+ 358 0018 05000000 		.word	5
+ 359              		.section	.rodata.MPU6000_CSPin,"a"
+ 360              		.align	2
+ 361              		.set	.LANCHOR1,. + 0
+ 364              	MPU6000_CSPin:
+ 365 0000 00080258 		.word	1476528128
+ 366 0004 0080     		.short	-32768
+ 367 0006 01       		.byte	1
+ 368              		.section	.rodata.MPU6000_INTPin,"a"
+ 369              		.align	2
+ 370              		.set	.LANCHOR2,. + 0
+ 373              	MPU6000_INTPin:
+ 374 0000 00040258 		.word	1476527104
+ 375 0004 0400     		.short	4
+ 376 0006 01       		.byte	1
+ 377              		.text
+ 378              	.Letext0:
+ 379              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 380              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 381              		.file 4 "Service/imu_data.h"
+ 382              		.file 5 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 383              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 11
+
+
+ 384              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 385              		.file 8 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 386              		.file 9 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h"
+ 387              		.file 10 "Bsp/Bsp_SPI.h"
+ 388              		.file 11 "Bsp/Bsp_GPIO.h"
+ 389              		.file 12 "Device/Dev_MPU6000.h"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s 			page 12
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 SrvMPU_Sample.c
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:17     .text.SrvIMU_PriIMU_CS_Ctl:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:24     .text.SrvIMU_PriIMU_CS_Ctl:00000000 SrvIMU_PriIMU_CS_Ctl
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:55     .text.SrvIMU_PriIMU_CS_Ctl:00000014 $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:61     .text.SrvIMU_PriIMU_BusTrans_Rec:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:67     .text.SrvIMU_PriIMU_BusTrans_Rec:00000000 SrvIMU_PriIMU_BusTrans_Rec
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:111    .text.SrvIMU_PriIMU_BusTrans_Rec:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:117    .text.SrvIMU_PriIMU_ExtiCallback:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:123    .text.SrvIMU_PriIMU_ExtiCallback:00000000 SrvIMU_PriIMU_ExtiCallback
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:136    .text.SrvIMU_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:143    .text.SrvIMU_Init:00000000 SrvIMU_Init
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:267    .text.SrvIMU_Init:00000094 $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:284    .text.SrvIMU_GetPri_InitError:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:291    .text.SrvIMU_GetPri_InitError:00000000 SrvIMU_GetPri_InitError
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:316    .text.SrvIMU_GetPri_InitError:00000010 $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:322    .bss.MPU6000Obj:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:326    .bss.MPU6000Obj:00000000 MPU6000Obj
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:329    .bss.MPU6000_Bus_Instance:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:333    .bss.MPU6000_Bus_Instance:00000000 MPU6000_Bus_Instance
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:336    .data.MPU6000_BusCfg:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:340    .data.MPU6000_BusCfg:00000000 MPU6000_BusCfg
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:347    .rodata.MPU6000_BusPin:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:351    .rodata.MPU6000_BusPin:00000000 MPU6000_BusPin
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:360    .rodata.MPU6000_CSPin:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:364    .rodata.MPU6000_CSPin:00000000 MPU6000_CSPin
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:369    .rodata.MPU6000_INTPin:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccMNR5F0.s:373    .rodata.MPU6000_INTPin:00000000 MPU6000_INTPin
+
+UNDEFINED SYMBOLS
+BspGPIO
+BspSPI
+DevMPU6000
+Runtime_DelayMs

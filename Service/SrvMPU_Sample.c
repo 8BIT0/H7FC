@@ -101,7 +101,7 @@ int8_t SrvIMU_Init(void)
     MPU6000_BusCfg.Pin = MPU6000_BusPin;
 
     DevMPU6000.pre_init(&MPU6000Obj,
-                        SrvIMU_SecIMU_CS_Ctl,
+                        SrvIMU_PriIMU_CS_Ctl,
                         SrvIMU_PriIMU_BusTrans_Rec,
                         Runtime_DelayMs);
 

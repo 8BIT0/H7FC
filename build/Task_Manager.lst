@@ -1,0 +1,1170 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Task_Manager.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.Test,"ax",%progbits
+  17              		.align	1
+  18              		.global	Test
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	Test:
+  26              	.LVL0:
+  27              	.LFB342:
+  28              		.file 1 "Task/Task_Manager.c"
+   1:Task/Task_Manager.c **** #include "Task_Manager.h"
+   2:Task/Task_Manager.c **** #include "Task_Protocol.h"
+   3:Task/Task_Manager.c **** #include "SrvMPU_Sample.h"
+   4:Task/Task_Manager.c **** #include "scheduler.h"
+   5:Task/Task_Manager.c **** #include "debug_util.h"
+   6:Task/Task_Manager.c **** #include "IO_Definition.h"
+   7:Task/Task_Manager.c **** #include "runtime.h"
+   8:Task/Task_Manager.c **** #include "Dev_Led.h"
+   9:Task/Task_Manager.c **** 
+  10:Task/Task_Manager.c **** Task_Handle TaskProtocol_Handle = NULL;
+  11:Task/Task_Manager.c **** Task_Handle Blink_Task = NULL;
+  12:Task/Task_Manager.c **** Task_Handle Test_Task = NULL;
+  13:Task/Task_Manager.c **** Task_Handle Test2_Task = NULL;
+  14:Task/Task_Manager.c **** 
+  15:Task/Task_Manager.c **** void Run(Task_Handle handle);
+  16:Task/Task_Manager.c **** void Test(Task_Handle handle);
+  17:Task/Task_Manager.c **** void Test2(Task_Handle handle);
+  18:Task/Task_Manager.c **** 
+  19:Task/Task_Manager.c **** DevLedObj_TypeDef Led1 = {
+  20:Task/Task_Manager.c ****     .port = LED1_PORT,
+  21:Task/Task_Manager.c ****     .pin = LED1_PIN,
+  22:Task/Task_Manager.c ****     .init_state = true,
+  23:Task/Task_Manager.c **** };
+  24:Task/Task_Manager.c **** 
+  25:Task/Task_Manager.c **** DevLedObj_TypeDef Led2 = {
+  26:Task/Task_Manager.c ****     .port = LED2_PORT,
+  27:Task/Task_Manager.c ****     .pin = LED2_PIN,
+  28:Task/Task_Manager.c ****     .init_state = true,
+  29:Task/Task_Manager.c **** };
+  30:Task/Task_Manager.c **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 2
+
+
+  31:Task/Task_Manager.c **** DevLedObj_TypeDef Led3 = {
+  32:Task/Task_Manager.c ****     .port = LED3_PORT,
+  33:Task/Task_Manager.c ****     .pin = LED3_PIN,
+  34:Task/Task_Manager.c ****     .init_state = true,
+  35:Task/Task_Manager.c **** };
+  36:Task/Task_Manager.c **** 
+  37:Task/Task_Manager.c **** DebugPinObj_TypeDef Debug_PC0 = {
+  38:Task/Task_Manager.c ****     .port = GPIOC,
+  39:Task/Task_Manager.c ****     .pin = GPIO_PIN_0,
+  40:Task/Task_Manager.c ****     .init_state = false,
+  41:Task/Task_Manager.c **** };
+  42:Task/Task_Manager.c **** 
+  43:Task/Task_Manager.c **** DebugPinObj_TypeDef Debug_PC1 = {
+  44:Task/Task_Manager.c ****     .port = GPIOC,
+  45:Task/Task_Manager.c ****     .pin = GPIO_PIN_1,
+  46:Task/Task_Manager.c ****     .init_state = false,
+  47:Task/Task_Manager.c **** };
+  48:Task/Task_Manager.c **** 
+  49:Task/Task_Manager.c **** DebugPinObj_TypeDef Debug_PC2 = {
+  50:Task/Task_Manager.c ****     .port = GPIOC,
+  51:Task/Task_Manager.c ****     .pin = GPIO_PIN_2,
+  52:Task/Task_Manager.c ****     .init_state = false,
+  53:Task/Task_Manager.c **** };
+  54:Task/Task_Manager.c **** 
+  55:Task/Task_Manager.c **** void test_PC0_ctl(void)
+  56:Task/Task_Manager.c **** {
+  57:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, true);
+  58:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, false);
+  59:Task/Task_Manager.c **** }
+  60:Task/Task_Manager.c **** 
+  61:Task/Task_Manager.c **** void test_PC1_ctl(void)
+  62:Task/Task_Manager.c **** {
+  63:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC1, true);
+  64:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC1, false);
+  65:Task/Task_Manager.c **** }
+  66:Task/Task_Manager.c **** 
+  67:Task/Task_Manager.c **** void test_PC2_ctl(void)
+  68:Task/Task_Manager.c **** {
+  69:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC2, true);
+  70:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC2, false);
+  71:Task/Task_Manager.c **** }
+  72:Task/Task_Manager.c **** 
+  73:Task/Task_Manager.c **** void Task_Manager_Init(void)
+  74:Task/Task_Manager.c **** {
+  75:Task/Task_Manager.c ****     DevLED.init(Led1);
+  76:Task/Task_Manager.c ****     DevLED.init(Led2);
+  77:Task/Task_Manager.c ****     DevLED.init(Led3);
+  78:Task/Task_Manager.c **** 
+  79:Task/Task_Manager.c ****     DebugPin.init(Debug_PC0);
+  80:Task/Task_Manager.c ****     DebugPin.init(Debug_PC1);
+  81:Task/Task_Manager.c ****     DebugPin.init(Debug_PC2);
+  82:Task/Task_Manager.c **** 
+  83:Task/Task_Manager.c ****     int8_t error = SrvIMU_Init();
+  84:Task/Task_Manager.c **** 
+  85:Task/Task_Manager.c ****     if (error == -4)
+  86:Task/Task_Manager.c ****     {
+  87:Task/Task_Manager.c ****         TaskProtocol_GetSrvMPU_InitState(SrvIMU_GetPri_InitError());
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 3
+
+
+  88:Task/Task_Manager.c ****     }
+  89:Task/Task_Manager.c ****     else
+  90:Task/Task_Manager.c ****         TaskProtocol_GetSrvMPU_InitState(error);
+  91:Task/Task_Manager.c **** 
+  92:Task/Task_Manager.c ****     TaskProtocol_Init();
+  93:Task/Task_Manager.c **** }
+  94:Task/Task_Manager.c **** 
+  95:Task/Task_Manager.c **** void Task_Manager_CreateTask(void)
+  96:Task/Task_Manager.c **** {
+  97:Task/Task_Manager.c ****     Blink_Task = Os_CreateTask("Blink", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_0, Run, 256);
+  98:Task/Task_Manager.c ****     Test_Task = Os_CreateTask("test delay", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
+  99:Task/Task_Manager.c ****     Test2_Task = Os_CreateTask("test2", TASK_EXEC_1KHZ, Task_Group_0, Task_Group_2, Test2, 256);
+ 100:Task/Task_Manager.c ****     TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, T
+ 101:Task/Task_Manager.c **** }
+ 102:Task/Task_Manager.c **** 
+ 103:Task/Task_Manager.c **** void Test2(Task_Handle handle)
+ 104:Task/Task_Manager.c **** {
+ 105:Task/Task_Manager.c ****     volatile SYSTEM_RunTime Rt = 0;
+ 106:Task/Task_Manager.c ****     static volatile SYSTEM_RunTime Lst_Rt = 0;
+ 107:Task/Task_Manager.c ****     static bool led_state = false;
+ 108:Task/Task_Manager.c **** 
+ 109:Task/Task_Manager.c ****     Rt = Get_CurrentRunningMs();
+ 110:Task/Task_Manager.c **** 
+ 111:Task/Task_Manager.c ****     if ((Rt % 100 == 0) && (Lst_Rt != Rt))
+ 112:Task/Task_Manager.c ****     {
+ 113:Task/Task_Manager.c ****         led_state = !led_state;
+ 114:Task/Task_Manager.c ****         Lst_Rt = Rt;
+ 115:Task/Task_Manager.c ****     }
+ 116:Task/Task_Manager.c **** 
+ 117:Task/Task_Manager.c ****     DevLED.ctl(Led2, led_state);
+ 118:Task/Task_Manager.c ****     DevLED.ctl(Led3, led_state);
+ 119:Task/Task_Manager.c **** 
+ 120:Task/Task_Manager.c ****     test_PC2_ctl();
+ 121:Task/Task_Manager.c **** }
+ 122:Task/Task_Manager.c **** 
+ 123:Task/Task_Manager.c **** void Test(Task_Handle handle)
+ 124:Task/Task_Manager.c **** {
+  29              		.loc 1 124 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 124 1 is_stmt 0 view .LVU1
+  34 0000 70B5     		push	{r4, r5, r6, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 16
+  37              		.cfi_offset 4, -16
+  38              		.cfi_offset 5, -12
+  39              		.cfi_offset 6, -8
+  40              		.cfi_offset 14, -4
+  41 0002 0546     		mov	r5, r0
+ 125:Task/Task_Manager.c ****     // test_PC0_ctl();
+ 126:Task/Task_Manager.c ****     // DevLED.ctl(Led1, true);
+ 127:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, true);
+  42              		.loc 1 127 5 is_stmt 1 view .LVU2
+  43              		.loc 1 127 13 is_stmt 0 view .LVU3
+  44 0004 134E     		ldr	r6, .L3
+  45 0006 7368     		ldr	r3, [r6, #4]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 4
+
+
+  46              		.loc 1 127 5 view .LVU4
+  47 0008 134C     		ldr	r4, .L3+4
+  48 000a 0122     		movs	r2, #1
+  49 000c 94E80300 		ldm	r4, {r0, r1}
+  50              	.LVL1:
+  51              		.loc 1 127 5 view .LVU5
+  52 0010 9847     		blx	r3
+  53              	.LVL2:
+ 128:Task/Task_Manager.c ****     Os_TaskDelay_Ms(handle, 10);
+  54              		.loc 1 128 5 is_stmt 1 view .LVU6
+  55 0012 0A21     		movs	r1, #10
+  56 0014 2846     		mov	r0, r5
+  57 0016 FFF7FEFF 		bl	Os_TaskDelay_Ms
+  58              	.LVL3:
+ 129:Task/Task_Manager.c **** 
+ 130:Task/Task_Manager.c ****     // DevLED.ctl(Led1, false);
+ 131:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, false);
+  59              		.loc 1 131 5 view .LVU7
+  60              		.loc 1 131 13 is_stmt 0 view .LVU8
+  61 001a 7368     		ldr	r3, [r6, #4]
+  62              		.loc 1 131 5 view .LVU9
+  63 001c 0022     		movs	r2, #0
+  64 001e 94E80300 		ldm	r4, {r0, r1}
+  65 0022 9847     		blx	r3
+  66              	.LVL4:
+ 132:Task/Task_Manager.c ****     Os_TaskDelay_Ms(handle, 20);
+  67              		.loc 1 132 5 is_stmt 1 view .LVU10
+  68 0024 1421     		movs	r1, #20
+  69 0026 2846     		mov	r0, r5
+  70 0028 FFF7FEFF 		bl	Os_TaskDelay_Ms
+  71              	.LVL5:
+ 133:Task/Task_Manager.c **** 
+ 134:Task/Task_Manager.c ****     // DevLED.ctl(Led1, true);
+ 135:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, true);
+  72              		.loc 1 135 5 view .LVU11
+  73              		.loc 1 135 13 is_stmt 0 view .LVU12
+  74 002c 7368     		ldr	r3, [r6, #4]
+  75              		.loc 1 135 5 view .LVU13
+  76 002e 0122     		movs	r2, #1
+  77 0030 94E80300 		ldm	r4, {r0, r1}
+  78 0034 9847     		blx	r3
+  79              	.LVL6:
+ 136:Task/Task_Manager.c ****     Os_TaskDelay_Ms(handle, 30);
+  80              		.loc 1 136 5 is_stmt 1 view .LVU14
+  81 0036 1E21     		movs	r1, #30
+  82 0038 2846     		mov	r0, r5
+  83 003a FFF7FEFF 		bl	Os_TaskDelay_Ms
+  84              	.LVL7:
+ 137:Task/Task_Manager.c **** 
+ 138:Task/Task_Manager.c ****     // DevLED.ctl(Led1, false);
+ 139:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, false);
+  85              		.loc 1 139 5 view .LVU15
+  86              		.loc 1 139 13 is_stmt 0 view .LVU16
+  87 003e 7368     		ldr	r3, [r6, #4]
+  88              		.loc 1 139 5 view .LVU17
+  89 0040 0022     		movs	r2, #0
+  90 0042 94E80300 		ldm	r4, {r0, r1}
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 5
+
+
+  91 0046 9847     		blx	r3
+  92              	.LVL8:
+ 140:Task/Task_Manager.c ****     Os_TaskDelay_Ms(handle, 40);
+  93              		.loc 1 140 5 is_stmt 1 view .LVU18
+  94 0048 2821     		movs	r1, #40
+  95 004a 2846     		mov	r0, r5
+  96 004c FFF7FEFF 		bl	Os_TaskDelay_Ms
+  97              	.LVL9:
+ 141:Task/Task_Manager.c **** }
+  98              		.loc 1 141 1 is_stmt 0 view .LVU19
+  99 0050 70BD     		pop	{r4, r5, r6, pc}
+ 100              	.LVL10:
+ 101              	.L4:
+ 102              		.loc 1 141 1 view .LVU20
+ 103 0052 00BF     		.align	2
+ 104              	.L3:
+ 105 0054 00000000 		.word	DebugPin
+ 106 0058 00000000 		.word	.LANCHOR0
+ 107              		.cfi_endproc
+ 108              	.LFE342:
+ 110              		.section	.text.test_PC0_ctl,"ax",%progbits
+ 111              		.align	1
+ 112              		.global	test_PC0_ctl
+ 113              		.syntax unified
+ 114              		.thumb
+ 115              		.thumb_func
+ 116              		.fpu fpv5-d16
+ 118              	test_PC0_ctl:
+ 119              	.LFB336:
+  56:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, true);
+ 120              		.loc 1 56 1 is_stmt 1 view -0
+ 121              		.cfi_startproc
+ 122              		@ args = 0, pretend = 0, frame = 0
+ 123              		@ frame_needed = 0, uses_anonymous_args = 0
+ 124 0000 38B5     		push	{r3, r4, r5, lr}
+ 125              	.LCFI1:
+ 126              		.cfi_def_cfa_offset 16
+ 127              		.cfi_offset 3, -16
+ 128              		.cfi_offset 4, -12
+ 129              		.cfi_offset 5, -8
+ 130              		.cfi_offset 14, -4
+  57:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, false);
+ 131              		.loc 1 57 5 view .LVU22
+  57:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, false);
+ 132              		.loc 1 57 13 is_stmt 0 view .LVU23
+ 133 0002 064D     		ldr	r5, .L7
+ 134 0004 6B68     		ldr	r3, [r5, #4]
+  57:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC0, false);
+ 135              		.loc 1 57 5 view .LVU24
+ 136 0006 064C     		ldr	r4, .L7+4
+ 137 0008 0122     		movs	r2, #1
+ 138 000a 94E80300 		ldm	r4, {r0, r1}
+ 139 000e 9847     		blx	r3
+ 140              	.LVL11:
+  58:Task/Task_Manager.c **** }
+ 141              		.loc 1 58 5 is_stmt 1 view .LVU25
+  58:Task/Task_Manager.c **** }
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 6
+
+
+ 142              		.loc 1 58 13 is_stmt 0 view .LVU26
+ 143 0010 6B68     		ldr	r3, [r5, #4]
+  58:Task/Task_Manager.c **** }
+ 144              		.loc 1 58 5 view .LVU27
+ 145 0012 0022     		movs	r2, #0
+ 146 0014 94E80300 		ldm	r4, {r0, r1}
+ 147 0018 9847     		blx	r3
+ 148              	.LVL12:
+  59:Task/Task_Manager.c **** 
+ 149              		.loc 1 59 1 view .LVU28
+ 150 001a 38BD     		pop	{r3, r4, r5, pc}
+ 151              	.L8:
+ 152              		.align	2
+ 153              	.L7:
+ 154 001c 00000000 		.word	DebugPin
+ 155 0020 00000000 		.word	.LANCHOR0
+ 156              		.cfi_endproc
+ 157              	.LFE336:
+ 159              		.section	.text.test_PC1_ctl,"ax",%progbits
+ 160              		.align	1
+ 161              		.global	test_PC1_ctl
+ 162              		.syntax unified
+ 163              		.thumb
+ 164              		.thumb_func
+ 165              		.fpu fpv5-d16
+ 167              	test_PC1_ctl:
+ 168              	.LFB337:
+  62:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC1, true);
+ 169              		.loc 1 62 1 is_stmt 1 view -0
+ 170              		.cfi_startproc
+ 171              		@ args = 0, pretend = 0, frame = 0
+ 172              		@ frame_needed = 0, uses_anonymous_args = 0
+ 173 0000 38B5     		push	{r3, r4, r5, lr}
+ 174              	.LCFI2:
+ 175              		.cfi_def_cfa_offset 16
+ 176              		.cfi_offset 3, -16
+ 177              		.cfi_offset 4, -12
+ 178              		.cfi_offset 5, -8
+ 179              		.cfi_offset 14, -4
+  63:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC1, false);
+ 180              		.loc 1 63 5 view .LVU30
+  63:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC1, false);
+ 181              		.loc 1 63 13 is_stmt 0 view .LVU31
+ 182 0002 064D     		ldr	r5, .L11
+ 183 0004 6B68     		ldr	r3, [r5, #4]
+  63:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC1, false);
+ 184              		.loc 1 63 5 view .LVU32
+ 185 0006 064C     		ldr	r4, .L11+4
+ 186 0008 0122     		movs	r2, #1
+ 187 000a 94E80300 		ldm	r4, {r0, r1}
+ 188 000e 9847     		blx	r3
+ 189              	.LVL13:
+  64:Task/Task_Manager.c **** }
+ 190              		.loc 1 64 5 is_stmt 1 view .LVU33
+  64:Task/Task_Manager.c **** }
+ 191              		.loc 1 64 13 is_stmt 0 view .LVU34
+ 192 0010 6B68     		ldr	r3, [r5, #4]
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 7
+
+
+  64:Task/Task_Manager.c **** }
+ 193              		.loc 1 64 5 view .LVU35
+ 194 0012 0022     		movs	r2, #0
+ 195 0014 94E80300 		ldm	r4, {r0, r1}
+ 196 0018 9847     		blx	r3
+ 197              	.LVL14:
+  65:Task/Task_Manager.c **** 
+ 198              		.loc 1 65 1 view .LVU36
+ 199 001a 38BD     		pop	{r3, r4, r5, pc}
+ 200              	.L12:
+ 201              		.align	2
+ 202              	.L11:
+ 203 001c 00000000 		.word	DebugPin
+ 204 0020 00000000 		.word	.LANCHOR1
+ 205              		.cfi_endproc
+ 206              	.LFE337:
+ 208              		.global	__aeabi_uldivmod
+ 209              		.section	.text.Run,"ax",%progbits
+ 210              		.align	1
+ 211              		.global	Run
+ 212              		.syntax unified
+ 213              		.thumb
+ 214              		.thumb_func
+ 215              		.fpu fpv5-d16
+ 217              	Run:
+ 218              	.LVL15:
+ 219              	.LFB343:
+ 142:Task/Task_Manager.c **** 
+ 143:Task/Task_Manager.c **** void Run(Task_Handle handle)
+ 144:Task/Task_Manager.c **** {
+ 220              		.loc 1 144 1 is_stmt 1 view -0
+ 221              		.cfi_startproc
+ 222              		@ args = 0, pretend = 0, frame = 8
+ 223              		@ frame_needed = 0, uses_anonymous_args = 0
+ 224              		.loc 1 144 1 is_stmt 0 view .LVU38
+ 225 0000 10B5     		push	{r4, lr}
+ 226              	.LCFI3:
+ 227              		.cfi_def_cfa_offset 8
+ 228              		.cfi_offset 4, -8
+ 229              		.cfi_offset 14, -4
+ 230 0002 82B0     		sub	sp, sp, #8
+ 231              	.LCFI4:
+ 232              		.cfi_def_cfa_offset 16
+ 145:Task/Task_Manager.c ****     volatile SYSTEM_RunTime Rt = 0;
+ 233              		.loc 1 145 5 is_stmt 1 view .LVU39
+ 234              		.loc 1 145 29 is_stmt 0 view .LVU40
+ 235 0004 0022     		movs	r2, #0
+ 236 0006 0023     		movs	r3, #0
+ 237 0008 CDE90023 		strd	r2, [sp]
+ 146:Task/Task_Manager.c ****     static volatile SYSTEM_RunTime Lst_Rt = 0;
+ 238              		.loc 1 146 5 is_stmt 1 view .LVU41
+ 147:Task/Task_Manager.c ****     static bool led_state = false;
+ 239              		.loc 1 147 5 view .LVU42
+ 148:Task/Task_Manager.c **** 
+ 149:Task/Task_Manager.c ****     Rt = Get_CurrentRunningMs();
+ 240              		.loc 1 149 5 view .LVU43
+ 241              		.loc 1 149 10 is_stmt 0 view .LVU44
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 8
+
+
+ 242 000c FFF7FEFF 		bl	Get_CurrentRunningMs
+ 243              	.LVL16:
+ 244              		.loc 1 149 8 view .LVU45
+ 245 0010 CDE90001 		strd	r0, [sp]
+ 150:Task/Task_Manager.c **** 
+ 151:Task/Task_Manager.c ****     if ((Rt % 50 == 0) && (Lst_Rt != Rt))
+ 246              		.loc 1 151 5 is_stmt 1 view .LVU46
+ 247              		.loc 1 151 13 is_stmt 0 view .LVU47
+ 248 0014 3222     		movs	r2, #50
+ 249 0016 0023     		movs	r3, #0
+ 250 0018 DDE90001 		ldrd	r0, [sp]
+ 251 001c FFF7FEFF 		bl	__aeabi_uldivmod
+ 252              	.LVL17:
+ 253              		.loc 1 151 8 view .LVU48
+ 254 0020 1343     		orrs	r3, r3, r2
+ 255 0022 12D1     		bne	.L14
+ 256              		.loc 1 151 35 discriminator 1 view .LVU49
+ 257 0024 0F4B     		ldr	r3, .L16
+ 258 0026 D3E90001 		ldrd	r0, [r3]
+ 259 002a DDE90023 		ldrd	r2, [sp]
+ 260              		.loc 1 151 24 discriminator 1 view .LVU50
+ 261 002e 9942     		cmp	r1, r3
+ 262 0030 08BF     		it	eq
+ 263 0032 9042     		cmpeq	r0, r2
+ 264 0034 09D0     		beq	.L14
+ 152:Task/Task_Manager.c ****     {
+ 153:Task/Task_Manager.c ****         led_state = !led_state;
+ 265              		.loc 1 153 9 is_stmt 1 view .LVU51
+ 266 0036 0C4A     		ldr	r2, .L16+4
+ 267 0038 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 268 003a 83F00103 		eor	r3, r3, #1
+ 269              		.loc 1 153 19 is_stmt 0 view .LVU52
+ 270 003e 1370     		strb	r3, [r2]
+ 154:Task/Task_Manager.c ****         Lst_Rt = Rt;
+ 271              		.loc 1 154 9 is_stmt 1 view .LVU53
+ 272              		.loc 1 154 16 is_stmt 0 view .LVU54
+ 273 0040 DDE90001 		ldrd	r0, [sp]
+ 274 0044 074B     		ldr	r3, .L16
+ 275 0046 C3E90001 		strd	r0, [r3]
+ 276              	.L14:
+ 155:Task/Task_Manager.c ****     }
+ 156:Task/Task_Manager.c **** 
+ 157:Task/Task_Manager.c ****     DevLED.ctl(Led1, led_state);
+ 277              		.loc 1 157 5 is_stmt 1 view .LVU55
+ 278              		.loc 1 157 11 is_stmt 0 view .LVU56
+ 279 004a 084B     		ldr	r3, .L16+8
+ 280 004c 5C68     		ldr	r4, [r3, #4]
+ 281              		.loc 1 157 5 view .LVU57
+ 282 004e 084B     		ldr	r3, .L16+12
+ 283 0050 054A     		ldr	r2, .L16+4
+ 284 0052 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 285 0054 93E80300 		ldm	r3, {r0, r1}
+ 286 0058 A047     		blx	r4
+ 287              	.LVL18:
+ 158:Task/Task_Manager.c ****     // DevLED.ctl(Led3, led_state);
+ 159:Task/Task_Manager.c **** 
+ 160:Task/Task_Manager.c ****     test_PC1_ctl();
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 9
+
+
+ 288              		.loc 1 160 5 is_stmt 1 view .LVU58
+ 289 005a FFF7FEFF 		bl	test_PC1_ctl
+ 290              	.LVL19:
+ 161:Task/Task_Manager.c **** }
+ 291              		.loc 1 161 1 is_stmt 0 view .LVU59
+ 292 005e 02B0     		add	sp, sp, #8
+ 293              	.LCFI5:
+ 294              		.cfi_def_cfa_offset 8
+ 295              		@ sp needed
+ 296 0060 10BD     		pop	{r4, pc}
+ 297              	.L17:
+ 298 0062 00BF     		.align	2
+ 299              	.L16:
+ 300 0064 00000000 		.word	.LANCHOR2
+ 301 0068 00000000 		.word	.LANCHOR3
+ 302 006c 00000000 		.word	DevLED
+ 303 0070 00000000 		.word	.LANCHOR4
+ 304              		.cfi_endproc
+ 305              	.LFE343:
+ 307              		.section	.text.test_PC2_ctl,"ax",%progbits
+ 308              		.align	1
+ 309              		.global	test_PC2_ctl
+ 310              		.syntax unified
+ 311              		.thumb
+ 312              		.thumb_func
+ 313              		.fpu fpv5-d16
+ 315              	test_PC2_ctl:
+ 316              	.LFB338:
+  68:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC2, true);
+ 317              		.loc 1 68 1 is_stmt 1 view -0
+ 318              		.cfi_startproc
+ 319              		@ args = 0, pretend = 0, frame = 0
+ 320              		@ frame_needed = 0, uses_anonymous_args = 0
+ 321 0000 38B5     		push	{r3, r4, r5, lr}
+ 322              	.LCFI6:
+ 323              		.cfi_def_cfa_offset 16
+ 324              		.cfi_offset 3, -16
+ 325              		.cfi_offset 4, -12
+ 326              		.cfi_offset 5, -8
+ 327              		.cfi_offset 14, -4
+  69:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC2, false);
+ 328              		.loc 1 69 5 view .LVU61
+  69:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC2, false);
+ 329              		.loc 1 69 13 is_stmt 0 view .LVU62
+ 330 0002 064D     		ldr	r5, .L20
+ 331 0004 6B68     		ldr	r3, [r5, #4]
+  69:Task/Task_Manager.c ****     DebugPin.ctl(Debug_PC2, false);
+ 332              		.loc 1 69 5 view .LVU63
+ 333 0006 064C     		ldr	r4, .L20+4
+ 334 0008 0122     		movs	r2, #1
+ 335 000a 94E80300 		ldm	r4, {r0, r1}
+ 336 000e 9847     		blx	r3
+ 337              	.LVL20:
+  70:Task/Task_Manager.c **** }
+ 338              		.loc 1 70 5 is_stmt 1 view .LVU64
+  70:Task/Task_Manager.c **** }
+ 339              		.loc 1 70 13 is_stmt 0 view .LVU65
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 10
+
+
+ 340 0010 6B68     		ldr	r3, [r5, #4]
+  70:Task/Task_Manager.c **** }
+ 341              		.loc 1 70 5 view .LVU66
+ 342 0012 0022     		movs	r2, #0
+ 343 0014 94E80300 		ldm	r4, {r0, r1}
+ 344 0018 9847     		blx	r3
+ 345              	.LVL21:
+  71:Task/Task_Manager.c **** 
+ 346              		.loc 1 71 1 view .LVU67
+ 347 001a 38BD     		pop	{r3, r4, r5, pc}
+ 348              	.L21:
+ 349              		.align	2
+ 350              	.L20:
+ 351 001c 00000000 		.word	DebugPin
+ 352 0020 00000000 		.word	.LANCHOR5
+ 353              		.cfi_endproc
+ 354              	.LFE338:
+ 356              		.section	.text.Test2,"ax",%progbits
+ 357              		.align	1
+ 358              		.global	Test2
+ 359              		.syntax unified
+ 360              		.thumb
+ 361              		.thumb_func
+ 362              		.fpu fpv5-d16
+ 364              	Test2:
+ 365              	.LVL22:
+ 366              	.LFB341:
+ 104:Task/Task_Manager.c ****     volatile SYSTEM_RunTime Rt = 0;
+ 367              		.loc 1 104 1 is_stmt 1 view -0
+ 368              		.cfi_startproc
+ 369              		@ args = 0, pretend = 0, frame = 8
+ 370              		@ frame_needed = 0, uses_anonymous_args = 0
+ 104:Task/Task_Manager.c ****     volatile SYSTEM_RunTime Rt = 0;
+ 371              		.loc 1 104 1 is_stmt 0 view .LVU69
+ 372 0000 30B5     		push	{r4, r5, lr}
+ 373              	.LCFI7:
+ 374              		.cfi_def_cfa_offset 12
+ 375              		.cfi_offset 4, -12
+ 376              		.cfi_offset 5, -8
+ 377              		.cfi_offset 14, -4
+ 378 0002 83B0     		sub	sp, sp, #12
+ 379              	.LCFI8:
+ 380              		.cfi_def_cfa_offset 24
+ 105:Task/Task_Manager.c ****     static volatile SYSTEM_RunTime Lst_Rt = 0;
+ 381              		.loc 1 105 5 is_stmt 1 view .LVU70
+ 105:Task/Task_Manager.c ****     static volatile SYSTEM_RunTime Lst_Rt = 0;
+ 382              		.loc 1 105 29 is_stmt 0 view .LVU71
+ 383 0004 0022     		movs	r2, #0
+ 384 0006 0023     		movs	r3, #0
+ 385 0008 CDE90023 		strd	r2, [sp]
+ 106:Task/Task_Manager.c ****     static bool led_state = false;
+ 386              		.loc 1 106 5 is_stmt 1 view .LVU72
+ 107:Task/Task_Manager.c **** 
+ 387              		.loc 1 107 5 view .LVU73
+ 109:Task/Task_Manager.c **** 
+ 388              		.loc 1 109 5 view .LVU74
+ 109:Task/Task_Manager.c **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 11
+
+
+ 389              		.loc 1 109 10 is_stmt 0 view .LVU75
+ 390 000c FFF7FEFF 		bl	Get_CurrentRunningMs
+ 391              	.LVL23:
+ 109:Task/Task_Manager.c **** 
+ 392              		.loc 1 109 8 view .LVU76
+ 393 0010 CDE90001 		strd	r0, [sp]
+ 111:Task/Task_Manager.c ****     {
+ 394              		.loc 1 111 5 is_stmt 1 view .LVU77
+ 111:Task/Task_Manager.c ****     {
+ 395              		.loc 1 111 13 is_stmt 0 view .LVU78
+ 396 0014 6422     		movs	r2, #100
+ 397 0016 0023     		movs	r3, #0
+ 398 0018 DDE90001 		ldrd	r0, [sp]
+ 399 001c FFF7FEFF 		bl	__aeabi_uldivmod
+ 400              	.LVL24:
+ 111:Task/Task_Manager.c ****     {
+ 401              		.loc 1 111 8 view .LVU79
+ 402 0020 1343     		orrs	r3, r3, r2
+ 403 0022 12D1     		bne	.L23
+ 111:Task/Task_Manager.c ****     {
+ 404              		.loc 1 111 36 discriminator 1 view .LVU80
+ 405 0024 124B     		ldr	r3, .L25
+ 406 0026 D3E90001 		ldrd	r0, [r3]
+ 407 002a DDE90023 		ldrd	r2, [sp]
+ 111:Task/Task_Manager.c ****     {
+ 408              		.loc 1 111 25 discriminator 1 view .LVU81
+ 409 002e 9942     		cmp	r1, r3
+ 410 0030 08BF     		it	eq
+ 411 0032 9042     		cmpeq	r0, r2
+ 412 0034 09D0     		beq	.L23
+ 113:Task/Task_Manager.c ****         Lst_Rt = Rt;
+ 413              		.loc 1 113 9 is_stmt 1 view .LVU82
+ 414 0036 0F4A     		ldr	r2, .L25+4
+ 415 0038 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 416 003a 83F00103 		eor	r3, r3, #1
+ 113:Task/Task_Manager.c ****         Lst_Rt = Rt;
+ 417              		.loc 1 113 19 is_stmt 0 view .LVU83
+ 418 003e 1370     		strb	r3, [r2]
+ 114:Task/Task_Manager.c ****     }
+ 419              		.loc 1 114 9 is_stmt 1 view .LVU84
+ 114:Task/Task_Manager.c ****     }
+ 420              		.loc 1 114 16 is_stmt 0 view .LVU85
+ 421 0040 DDE90001 		ldrd	r0, [sp]
+ 422 0044 0A4B     		ldr	r3, .L25
+ 423 0046 C3E90001 		strd	r0, [r3]
+ 424              	.L23:
+ 117:Task/Task_Manager.c ****     DevLED.ctl(Led3, led_state);
+ 425              		.loc 1 117 5 is_stmt 1 view .LVU86
+ 117:Task/Task_Manager.c ****     DevLED.ctl(Led3, led_state);
+ 426              		.loc 1 117 11 is_stmt 0 view .LVU87
+ 427 004a 0B4D     		ldr	r5, .L25+8
+ 117:Task/Task_Manager.c ****     DevLED.ctl(Led3, led_state);
+ 428              		.loc 1 117 5 view .LVU88
+ 429 004c 094C     		ldr	r4, .L25+4
+ 430 004e 0B4B     		ldr	r3, .L25+12
+ 431 0050 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 432 0052 93E80300 		ldm	r3, {r0, r1}
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 12
+
+
+ 433 0056 6B68     		ldr	r3, [r5, #4]
+ 434 0058 9847     		blx	r3
+ 435              	.LVL25:
+ 118:Task/Task_Manager.c **** 
+ 436              		.loc 1 118 5 is_stmt 1 view .LVU89
+ 118:Task/Task_Manager.c **** 
+ 437              		.loc 1 118 11 is_stmt 0 view .LVU90
+ 438 005a 6D68     		ldr	r5, [r5, #4]
+ 118:Task/Task_Manager.c **** 
+ 439              		.loc 1 118 5 view .LVU91
+ 440 005c 084B     		ldr	r3, .L25+16
+ 441 005e 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 442 0060 93E80300 		ldm	r3, {r0, r1}
+ 443 0064 A847     		blx	r5
+ 444              	.LVL26:
+ 120:Task/Task_Manager.c **** }
+ 445              		.loc 1 120 5 is_stmt 1 view .LVU92
+ 446 0066 FFF7FEFF 		bl	test_PC2_ctl
+ 447              	.LVL27:
+ 121:Task/Task_Manager.c **** 
+ 448              		.loc 1 121 1 is_stmt 0 view .LVU93
+ 449 006a 03B0     		add	sp, sp, #12
+ 450              	.LCFI9:
+ 451              		.cfi_def_cfa_offset 12
+ 452              		@ sp needed
+ 453 006c 30BD     		pop	{r4, r5, pc}
+ 454              	.L26:
+ 455 006e 00BF     		.align	2
+ 456              	.L25:
+ 457 0070 00000000 		.word	.LANCHOR6
+ 458 0074 00000000 		.word	.LANCHOR7
+ 459 0078 00000000 		.word	DevLED
+ 460 007c 00000000 		.word	.LANCHOR8
+ 461 0080 00000000 		.word	.LANCHOR9
+ 462              		.cfi_endproc
+ 463              	.LFE341:
+ 465              		.section	.text.Task_Manager_Init,"ax",%progbits
+ 466              		.align	1
+ 467              		.global	Task_Manager_Init
+ 468              		.syntax unified
+ 469              		.thumb
+ 470              		.thumb_func
+ 471              		.fpu fpv5-d16
+ 473              	Task_Manager_Init:
+ 474              	.LFB339:
+  74:Task/Task_Manager.c ****     DevLED.init(Led1);
+ 475              		.loc 1 74 1 is_stmt 1 view -0
+ 476              		.cfi_startproc
+ 477              		@ args = 0, pretend = 0, frame = 0
+ 478              		@ frame_needed = 0, uses_anonymous_args = 0
+ 479 0000 10B5     		push	{r4, lr}
+ 480              	.LCFI10:
+ 481              		.cfi_def_cfa_offset 8
+ 482              		.cfi_offset 4, -8
+ 483              		.cfi_offset 14, -4
+  75:Task/Task_Manager.c ****     DevLED.init(Led2);
+ 484              		.loc 1 75 5 view .LVU95
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 13
+
+
+  75:Task/Task_Manager.c ****     DevLED.init(Led2);
+ 485              		.loc 1 75 11 is_stmt 0 view .LVU96
+ 486 0002 174C     		ldr	r4, .L32
+ 487 0004 2268     		ldr	r2, [r4]
+  75:Task/Task_Manager.c ****     DevLED.init(Led2);
+ 488              		.loc 1 75 5 view .LVU97
+ 489 0006 174B     		ldr	r3, .L32+4
+ 490 0008 93E80300 		ldm	r3, {r0, r1}
+ 491 000c 9047     		blx	r2
+ 492              	.LVL28:
+  76:Task/Task_Manager.c ****     DevLED.init(Led3);
+ 493              		.loc 1 76 5 is_stmt 1 view .LVU98
+  76:Task/Task_Manager.c ****     DevLED.init(Led3);
+ 494              		.loc 1 76 11 is_stmt 0 view .LVU99
+ 495 000e 2268     		ldr	r2, [r4]
+  76:Task/Task_Manager.c ****     DevLED.init(Led3);
+ 496              		.loc 1 76 5 view .LVU100
+ 497 0010 154B     		ldr	r3, .L32+8
+ 498 0012 93E80300 		ldm	r3, {r0, r1}
+ 499 0016 9047     		blx	r2
+ 500              	.LVL29:
+  77:Task/Task_Manager.c **** 
+ 501              		.loc 1 77 5 is_stmt 1 view .LVU101
+  77:Task/Task_Manager.c **** 
+ 502              		.loc 1 77 11 is_stmt 0 view .LVU102
+ 503 0018 2268     		ldr	r2, [r4]
+  77:Task/Task_Manager.c **** 
+ 504              		.loc 1 77 5 view .LVU103
+ 505 001a 144B     		ldr	r3, .L32+12
+ 506 001c 93E80300 		ldm	r3, {r0, r1}
+ 507 0020 9047     		blx	r2
+ 508              	.LVL30:
+  79:Task/Task_Manager.c ****     DebugPin.init(Debug_PC1);
+ 509              		.loc 1 79 5 is_stmt 1 view .LVU104
+  79:Task/Task_Manager.c ****     DebugPin.init(Debug_PC1);
+ 510              		.loc 1 79 13 is_stmt 0 view .LVU105
+ 511 0022 134C     		ldr	r4, .L32+16
+ 512 0024 2268     		ldr	r2, [r4]
+  79:Task/Task_Manager.c ****     DebugPin.init(Debug_PC1);
+ 513              		.loc 1 79 5 view .LVU106
+ 514 0026 134B     		ldr	r3, .L32+20
+ 515 0028 93E80300 		ldm	r3, {r0, r1}
+ 516 002c 9047     		blx	r2
+ 517              	.LVL31:
+  80:Task/Task_Manager.c ****     DebugPin.init(Debug_PC2);
+ 518              		.loc 1 80 5 is_stmt 1 view .LVU107
+  80:Task/Task_Manager.c ****     DebugPin.init(Debug_PC2);
+ 519              		.loc 1 80 13 is_stmt 0 view .LVU108
+ 520 002e 2268     		ldr	r2, [r4]
+  80:Task/Task_Manager.c ****     DebugPin.init(Debug_PC2);
+ 521              		.loc 1 80 5 view .LVU109
+ 522 0030 114B     		ldr	r3, .L32+24
+ 523 0032 93E80300 		ldm	r3, {r0, r1}
+ 524 0036 9047     		blx	r2
+ 525              	.LVL32:
+  81:Task/Task_Manager.c **** 
+ 526              		.loc 1 81 5 is_stmt 1 view .LVU110
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 14
+
+
+  81:Task/Task_Manager.c **** 
+ 527              		.loc 1 81 13 is_stmt 0 view .LVU111
+ 528 0038 2268     		ldr	r2, [r4]
+  81:Task/Task_Manager.c **** 
+ 529              		.loc 1 81 5 view .LVU112
+ 530 003a 104B     		ldr	r3, .L32+28
+ 531 003c 93E80300 		ldm	r3, {r0, r1}
+ 532 0040 9047     		blx	r2
+ 533              	.LVL33:
+  83:Task/Task_Manager.c **** 
+ 534              		.loc 1 83 5 is_stmt 1 view .LVU113
+  83:Task/Task_Manager.c **** 
+ 535              		.loc 1 83 20 is_stmt 0 view .LVU114
+ 536 0042 FFF7FEFF 		bl	SrvIMU_Init
+ 537              	.LVL34:
+  85:Task/Task_Manager.c ****     {
+ 538              		.loc 1 85 5 is_stmt 1 view .LVU115
+  85:Task/Task_Manager.c ****     {
+ 539              		.loc 1 85 8 is_stmt 0 view .LVU116
+ 540 0046 10F1040F 		cmn	r0, #4
+ 541 004a 04D0     		beq	.L31
+  90:Task/Task_Manager.c **** 
+ 542              		.loc 1 90 9 is_stmt 1 view .LVU117
+ 543 004c FFF7FEFF 		bl	TaskProtocol_GetSrvMPU_InitState
+ 544              	.LVL35:
+ 545              	.L29:
+  92:Task/Task_Manager.c **** }
+ 546              		.loc 1 92 5 view .LVU118
+ 547 0050 FFF7FEFF 		bl	TaskProtocol_Init
+ 548              	.LVL36:
+  93:Task/Task_Manager.c **** 
+ 549              		.loc 1 93 1 is_stmt 0 view .LVU119
+ 550 0054 10BD     		pop	{r4, pc}
+ 551              	.LVL37:
+ 552              	.L31:
+  87:Task/Task_Manager.c ****     }
+ 553              		.loc 1 87 9 is_stmt 1 view .LVU120
+ 554 0056 FFF7FEFF 		bl	SrvIMU_GetPri_InitError
+ 555              	.LVL38:
+  87:Task/Task_Manager.c ****     }
+ 556              		.loc 1 87 9 is_stmt 0 view .LVU121
+ 557 005a FFF7FEFF 		bl	TaskProtocol_GetSrvMPU_InitState
+ 558              	.LVL39:
+ 559 005e F7E7     		b	.L29
+ 560              	.L33:
+ 561              		.align	2
+ 562              	.L32:
+ 563 0060 00000000 		.word	DevLED
+ 564 0064 00000000 		.word	.LANCHOR4
+ 565 0068 00000000 		.word	.LANCHOR8
+ 566 006c 00000000 		.word	.LANCHOR9
+ 567 0070 00000000 		.word	DebugPin
+ 568 0074 00000000 		.word	.LANCHOR0
+ 569 0078 00000000 		.word	.LANCHOR1
+ 570 007c 00000000 		.word	.LANCHOR5
+ 571              		.cfi_endproc
+ 572              	.LFE339:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 15
+
+
+ 574              		.section	.rodata.Task_Manager_CreateTask.str1.4,"aMS",%progbits,1
+ 575              		.align	2
+ 576              	.LC0:
+ 577 0000 426C696E 		.ascii	"Blink\000"
+ 577      6B00
+ 578 0006 0000     		.align	2
+ 579              	.LC1:
+ 580 0008 74657374 		.ascii	"test delay\000"
+ 580      2064656C 
+ 580      617900
+ 581 0013 00       		.align	2
+ 582              	.LC2:
+ 583 0014 74657374 		.ascii	"test2\000"
+ 583      3200
+ 584 001a 0000     		.align	2
+ 585              	.LC3:
+ 586 001c 50726F74 		.ascii	"Protocl\000"
+ 586      6F636C00 
+ 587              		.section	.text.Task_Manager_CreateTask,"ax",%progbits
+ 588              		.align	1
+ 589              		.global	Task_Manager_CreateTask
+ 590              		.syntax unified
+ 591              		.thumb
+ 592              		.thumb_func
+ 593              		.fpu fpv5-d16
+ 595              	Task_Manager_CreateTask:
+ 596              	.LFB340:
+  96:Task/Task_Manager.c ****     Blink_Task = Os_CreateTask("Blink", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_0, Run, 256);
+ 597              		.loc 1 96 1 is_stmt 1 view -0
+ 598              		.cfi_startproc
+ 599              		@ args = 0, pretend = 0, frame = 0
+ 600              		@ frame_needed = 0, uses_anonymous_args = 0
+ 601 0000 10B5     		push	{r4, lr}
+ 602              	.LCFI11:
+ 603              		.cfi_def_cfa_offset 8
+ 604              		.cfi_offset 4, -8
+ 605              		.cfi_offset 14, -4
+ 606 0002 82B0     		sub	sp, sp, #8
+ 607              	.LCFI12:
+ 608              		.cfi_def_cfa_offset 16
+  97:Task/Task_Manager.c ****     Test_Task = Os_CreateTask("test delay", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
+ 609              		.loc 1 97 5 view .LVU123
+  97:Task/Task_Manager.c ****     Test_Task = Os_CreateTask("test delay", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
+ 610              		.loc 1 97 18 is_stmt 0 view .LVU124
+ 611 0004 4FF48074 		mov	r4, #256
+ 612 0008 0194     		str	r4, [sp, #4]
+ 613 000a 194B     		ldr	r3, .L36
+ 614 000c 0093     		str	r3, [sp]
+ 615 000e 0023     		movs	r3, #0
+ 616 0010 1A46     		mov	r2, r3
+ 617 0012 4FF4FA51 		mov	r1, #8000
+ 618 0016 1748     		ldr	r0, .L36+4
+ 619 0018 FFF7FEFF 		bl	Os_CreateTask
+ 620              	.LVL40:
+  97:Task/Task_Manager.c ****     Test_Task = Os_CreateTask("test delay", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
+ 621              		.loc 1 97 16 view .LVU125
+ 622 001c 164B     		ldr	r3, .L36+8
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 16
+
+
+ 623 001e 1860     		str	r0, [r3]
+  98:Task/Task_Manager.c ****     Test2_Task = Os_CreateTask("test2", TASK_EXEC_1KHZ, Task_Group_0, Task_Group_2, Test2, 256);
+ 624              		.loc 1 98 5 is_stmt 1 view .LVU126
+  98:Task/Task_Manager.c ****     Test2_Task = Os_CreateTask("test2", TASK_EXEC_1KHZ, Task_Group_0, Task_Group_2, Test2, 256);
+ 625              		.loc 1 98 17 is_stmt 0 view .LVU127
+ 626 0020 0194     		str	r4, [sp, #4]
+ 627 0022 164B     		ldr	r3, .L36+12
+ 628 0024 0093     		str	r3, [sp]
+ 629 0026 0123     		movs	r3, #1
+ 630 0028 0022     		movs	r2, #0
+ 631 002a 4FF4FA51 		mov	r1, #8000
+ 632 002e 1448     		ldr	r0, .L36+16
+ 633 0030 FFF7FEFF 		bl	Os_CreateTask
+ 634              	.LVL41:
+  98:Task/Task_Manager.c ****     Test2_Task = Os_CreateTask("test2", TASK_EXEC_1KHZ, Task_Group_0, Task_Group_2, Test2, 256);
+ 635              		.loc 1 98 15 view .LVU128
+ 636 0034 134B     		ldr	r3, .L36+20
+ 637 0036 1860     		str	r0, [r3]
+  99:Task/Task_Manager.c ****     TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, T
+ 638              		.loc 1 99 5 is_stmt 1 view .LVU129
+  99:Task/Task_Manager.c ****     TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, T
+ 639              		.loc 1 99 18 is_stmt 0 view .LVU130
+ 640 0038 0194     		str	r4, [sp, #4]
+ 641 003a 134B     		ldr	r3, .L36+24
+ 642 003c 0093     		str	r3, [sp]
+ 643 003e 0223     		movs	r3, #2
+ 644 0040 0022     		movs	r2, #0
+ 645 0042 4FF47A71 		mov	r1, #1000
+ 646 0046 1148     		ldr	r0, .L36+28
+ 647 0048 FFF7FEFF 		bl	Os_CreateTask
+ 648              	.LVL42:
+  99:Task/Task_Manager.c ****     TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, T
+ 649              		.loc 1 99 16 view .LVU131
+ 650 004c 104B     		ldr	r3, .L36+32
+ 651 004e 1860     		str	r0, [r3]
+ 100:Task/Task_Manager.c **** }
+ 652              		.loc 1 100 5 is_stmt 1 view .LVU132
+ 100:Task/Task_Manager.c **** }
+ 653              		.loc 1 100 27 is_stmt 0 view .LVU133
+ 654 0050 4FF48063 		mov	r3, #1024
+ 655 0054 0193     		str	r3, [sp, #4]
+ 656 0056 0F4B     		ldr	r3, .L36+36
+ 657 0058 0093     		str	r3, [sp]
+ 658 005a 0023     		movs	r3, #0
+ 659 005c 0122     		movs	r2, #1
+ 660 005e 1421     		movs	r1, #20
+ 661 0060 0D48     		ldr	r0, .L36+40
+ 662 0062 FFF7FEFF 		bl	Os_CreateTask
+ 663              	.LVL43:
+ 100:Task/Task_Manager.c **** }
+ 664              		.loc 1 100 25 view .LVU134
+ 665 0066 0D4B     		ldr	r3, .L36+44
+ 666 0068 1860     		str	r0, [r3]
+ 101:Task/Task_Manager.c **** 
+ 667              		.loc 1 101 1 view .LVU135
+ 668 006a 02B0     		add	sp, sp, #8
+ 669              	.LCFI13:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 17
+
+
+ 670              		.cfi_def_cfa_offset 8
+ 671              		@ sp needed
+ 672 006c 10BD     		pop	{r4, pc}
+ 673              	.L37:
+ 674 006e 00BF     		.align	2
+ 675              	.L36:
+ 676 0070 00000000 		.word	Run
+ 677 0074 00000000 		.word	.LC0
+ 678 0078 00000000 		.word	.LANCHOR10
+ 679 007c 00000000 		.word	Test
+ 680 0080 08000000 		.word	.LC1
+ 681 0084 00000000 		.word	.LANCHOR11
+ 682 0088 00000000 		.word	Test2
+ 683 008c 14000000 		.word	.LC2
+ 684 0090 00000000 		.word	.LANCHOR12
+ 685 0094 00000000 		.word	TaskProtocol_Core
+ 686 0098 1C000000 		.word	.LC3
+ 687 009c 00000000 		.word	.LANCHOR13
+ 688              		.cfi_endproc
+ 689              	.LFE340:
+ 691              		.global	Debug_PC2
+ 692              		.global	Debug_PC1
+ 693              		.global	Debug_PC0
+ 694              		.global	Led3
+ 695              		.global	Led2
+ 696              		.global	Led1
+ 697              		.global	Test2_Task
+ 698              		.global	Test_Task
+ 699              		.global	Blink_Task
+ 700              		.global	TaskProtocol_Handle
+ 701              		.section	.bss.Blink_Task,"aw",%nobits
+ 702              		.align	2
+ 703              		.set	.LANCHOR10,. + 0
+ 706              	Blink_Task:
+ 707 0000 00000000 		.space	4
+ 708              		.section	.bss.Lst_Rt.1,"aw",%nobits
+ 709              		.align	3
+ 710              		.set	.LANCHOR2,. + 0
+ 713              	Lst_Rt.1:
+ 714 0000 00000000 		.space	8
+ 714      00000000 
+ 715              		.section	.bss.Lst_Rt.3,"aw",%nobits
+ 716              		.align	3
+ 717              		.set	.LANCHOR6,. + 0
+ 720              	Lst_Rt.3:
+ 721 0000 00000000 		.space	8
+ 721      00000000 
+ 722              		.section	.bss.TaskProtocol_Handle,"aw",%nobits
+ 723              		.align	2
+ 724              		.set	.LANCHOR13,. + 0
+ 727              	TaskProtocol_Handle:
+ 728 0000 00000000 		.space	4
+ 729              		.section	.bss.Test2_Task,"aw",%nobits
+ 730              		.align	2
+ 731              		.set	.LANCHOR12,. + 0
+ 734              	Test2_Task:
+ 735 0000 00000000 		.space	4
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 18
+
+
+ 736              		.section	.bss.Test_Task,"aw",%nobits
+ 737              		.align	2
+ 738              		.set	.LANCHOR11,. + 0
+ 741              	Test_Task:
+ 742 0000 00000000 		.space	4
+ 743              		.section	.bss.led_state.0,"aw",%nobits
+ 744              		.set	.LANCHOR3,. + 0
+ 747              	led_state.0:
+ 748 0000 00       		.space	1
+ 749              		.section	.bss.led_state.2,"aw",%nobits
+ 750              		.set	.LANCHOR7,. + 0
+ 753              	led_state.2:
+ 754 0000 00       		.space	1
+ 755              		.section	.data.Debug_PC0,"aw"
+ 756              		.align	2
+ 757              		.set	.LANCHOR0,. + 0
+ 760              	Debug_PC0:
+ 761 0000 00080258 		.word	1476528128
+ 762 0004 0100     		.short	1
+ 763 0006 00       		.byte	0
+ 764              		.section	.data.Debug_PC1,"aw"
+ 765              		.align	2
+ 766              		.set	.LANCHOR1,. + 0
+ 769              	Debug_PC1:
+ 770 0000 00080258 		.word	1476528128
+ 771 0004 0200     		.short	2
+ 772 0006 00       		.byte	0
+ 773              		.section	.data.Debug_PC2,"aw"
+ 774              		.align	2
+ 775              		.set	.LANCHOR5,. + 0
+ 778              	Debug_PC2:
+ 779 0000 00080258 		.word	1476528128
+ 780 0004 0400     		.short	4
+ 781 0006 00       		.byte	0
+ 782              		.section	.data.Led1,"aw"
+ 783              		.align	2
+ 784              		.set	.LANCHOR4,. + 0
+ 787              	Led1:
+ 788 0000 00100258 		.word	1476530176
+ 789 0004 0800     		.short	8
+ 790 0006 01       		.byte	1
+ 791              		.section	.data.Led2,"aw"
+ 792              		.align	2
+ 793              		.set	.LANCHOR8,. + 0
+ 796              	Led2:
+ 797 0000 00100258 		.word	1476530176
+ 798 0004 1000     		.short	16
+ 799 0006 01       		.byte	1
+ 800              		.section	.data.Led3,"aw"
+ 801              		.align	2
+ 802              		.set	.LANCHOR9,. + 0
+ 805              	Led3:
+ 806 0000 001C0258 		.word	1476533248
+ 807 0004 8000     		.short	128
+ 808 0006 01       		.byte	1
+ 809              		.text
+ 810              	.Letext0:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 19
+
+
+ 811              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 812              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 813              		.file 4 "System/runtime/runtime.h"
+ 814              		.file 5 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 815              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 816              		.file 7 "System/scheduler/scheduler.h"
+ 817              		.file 8 "Service/imu_data.h"
+ 818              		.file 9 "Bsp/Bsp_GPIO.h"
+ 819              		.file 10 "debug/debug_util.h"
+ 820              		.file 11 "Task/Task_Manager.h"
+ 821              		.file 12 "Device/Dev_Led.h"
+ 822              		.file 13 "Service/SrvMPU_Sample.h"
+ 823              		.file 14 "Task/Task_Protocol.h"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 20
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_Manager.c
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:17     .text.Test:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:25     .text.Test:00000000 Test
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:105    .text.Test:00000054 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:111    .text.test_PC0_ctl:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:118    .text.test_PC0_ctl:00000000 test_PC0_ctl
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:154    .text.test_PC0_ctl:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:160    .text.test_PC1_ctl:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:167    .text.test_PC1_ctl:00000000 test_PC1_ctl
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:203    .text.test_PC1_ctl:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:210    .text.Run:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:217    .text.Run:00000000 Run
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:300    .text.Run:00000064 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:308    .text.test_PC2_ctl:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:315    .text.test_PC2_ctl:00000000 test_PC2_ctl
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:351    .text.test_PC2_ctl:0000001c $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:357    .text.Test2:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:364    .text.Test2:00000000 Test2
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:457    .text.Test2:00000070 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:466    .text.Task_Manager_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:473    .text.Task_Manager_Init:00000000 Task_Manager_Init
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:563    .text.Task_Manager_Init:00000060 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:575    .rodata.Task_Manager_CreateTask.str1.4:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:588    .text.Task_Manager_CreateTask:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:595    .text.Task_Manager_CreateTask:00000000 Task_Manager_CreateTask
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:676    .text.Task_Manager_CreateTask:00000070 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:778    .data.Debug_PC2:00000000 Debug_PC2
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:769    .data.Debug_PC1:00000000 Debug_PC1
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:760    .data.Debug_PC0:00000000 Debug_PC0
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:805    .data.Led3:00000000 Led3
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:796    .data.Led2:00000000 Led2
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:787    .data.Led1:00000000 Led1
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:734    .bss.Test2_Task:00000000 Test2_Task
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:741    .bss.Test_Task:00000000 Test_Task
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:706    .bss.Blink_Task:00000000 Blink_Task
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:727    .bss.TaskProtocol_Handle:00000000 TaskProtocol_Handle
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:702    .bss.Blink_Task:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:709    .bss.Lst_Rt.1:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:713    .bss.Lst_Rt.1:00000000 Lst_Rt.1
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:716    .bss.Lst_Rt.3:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:720    .bss.Lst_Rt.3:00000000 Lst_Rt.3
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:723    .bss.TaskProtocol_Handle:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:730    .bss.Test2_Task:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:737    .bss.Test_Task:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:747    .bss.led_state.0:00000000 led_state.0
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:748    .bss.led_state.0:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:753    .bss.led_state.2:00000000 led_state.2
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:754    .bss.led_state.2:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:756    .data.Debug_PC0:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:765    .data.Debug_PC1:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:774    .data.Debug_PC2:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:783    .data.Led1:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:792    .data.Led2:00000000 $d
+C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s:801    .data.Led3:00000000 $d
+
+UNDEFINED SYMBOLS
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccSgdVmv.s 			page 21
+
+
+Os_TaskDelay_Ms
+DebugPin
+__aeabi_uldivmod
+Get_CurrentRunningMs
+DevLED
+SrvIMU_Init
+TaskProtocol_GetSrvMPU_InitState
+TaskProtocol_Init
+SrvIMU_GetPri_InitError
+Os_CreateTask
+TaskProtocol_Core
