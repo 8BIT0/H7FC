@@ -1,5 +1,5 @@
-#ifndef __STORAGE_H
-#define __STORAGE_H
+#ifndef __DISKIO_H
+#define __DISKIO_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -11,7 +11,7 @@ typedef enum
     OCS_System_Param = 1,
     OCS_Applic_Param,
     OCS_Custom_Param,
-} OnChipStorage_Section_List;
+} Default_Section_List;
 
 #if (EXTERNAL_STORAGE_MODULE == 1)
 #define EXS_SECTION_INFO_SIZE 1024 * 1024
@@ -23,6 +23,6 @@ typedef enum
 } ExternalStorage_Section_List;
 #endif
 
-bool Storage_Init(void);
+bool Disk_Init(void);
 
 #endif

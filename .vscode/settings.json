@@ -54,7 +54,8 @@
                 "__string": "c",
                 "string": "c",
                 "string_view": "c",
-                "usbd_cdc_if.h": "c"
+                "usbd_cdc_if.h": "c",
+                "diskio.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

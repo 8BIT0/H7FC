@@ -1,4 +1,4 @@
-#include "storage.h"
+#include "DiskIO.h"
 #include "Dev_W25Qxx.h"
 #include "IO_Definition.h"
 
@@ -20,7 +20,7 @@ DevW25QxxPin_Config_TypeDef W25Qxx_Pin = {
     // .port_mosi =,
 };
 
-bool ExtStorage_Init(void)
+bool ExtDisk_Init(void)
 {
     bool init_state = false;
 
@@ -30,21 +30,21 @@ bool ExtStorage_Init(void)
 }
 #endif
 
-bool IntStorage_Init(void)
+bool IntDisk_Init(void)
 {
     bool init_state = false;
 
     return init_state;
 }
 
-bool Storage_Init(void)
+bool Disk_Init(void)
 {
 #if (EXTERNAL_STORAGE_MODULE == 1)
-    if (!ExtStorage_Init())
+    if (!ExtDisk_Init())
         return false;
 #endif
 
-    if (!IntStorage_Init())
+    if (!IntDisk_Init())
         return false;
 
     return true;
