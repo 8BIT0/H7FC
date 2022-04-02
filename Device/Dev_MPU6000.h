@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include "imu_data.h"
 
+#define ConvertToTrip_Reg(x) (x << 3)
+
 #define MPU6000_WRITE_MASK 0x80
 
 #define MPU6000_CONFIG 0x1A
@@ -95,6 +97,16 @@
 #define MPU_RF_DATA_RDY_EN (1 << 0)
 #define MPU_CYCLE (1 << 5)
 
+#define MPU_ACC_16G_SCALE 2048.0
+#define MPU_ACC_8G_SCALE 4096.0
+#define MPU_ACC_4G_SCALE 8192.0
+#define MPU_ACC_2G_SCALE 16384.0
+
+#define MPU_GYR_2000DPS_SCALE 16.4
+#define MPU_GYR_1000DPS_SCALE 32.8
+#define MPU_GYR_500DPS_SCALE 65.5
+#define MPU_GYR_250DPS_SCALE 131.0
+
 typedef enum
 {
     MPU6000_No_Error = 0,
@@ -120,15 +132,39 @@ typedef enum
     DevMPU6000_SampleRate_1K = 7,
 } DevMPU6000_SampleRate_List;
 
+typedef enum
+{
+    MPU6000_Gyr_250DPS = 0,
+    MPU6000_Gyr_500DPS,
+    MPU6000_Gyr_1000DPS,
+    MPU6000_Gyr_2000DPS
+} DevMPU6000_GyrTrip_List;
+
+typedef enum
+{
+    MPU6000_Acc_2G = 0,
+    MPU6000_Acc_4G,
+    MPU6000_Acc_8G,
+    MPU6000_Acc_16G,
+} DevMPU6000_AccTrip_List;
+
 typedef void (*cs_ctl_callback)(bool state);
 typedef bool (*bus_trans_callback)(uint8_t *tx, uint8_t *rx, uint16_t len);
 typedef void (*delay_callback)(uint32_t ms);
+typedef uint64_t (*get_time_stamp_callback)(void);
 
 typedef struct
 {
     cs_ctl_callback cs_ctl;
     bus_trans_callback bus_trans;
     delay_callback delay;
+    get_time_stamp_callback get_timestamp;
+
+    uint8_t AccTrip;
+    uint8_t GyrTrip;
+
+    double acc_scale;
+    double gyr_scale;
 
     bool drdy;
     bool update;
@@ -142,8 +178,8 @@ typedef struct
 
 typedef struct
 {
-    void (*pre_init)(DevMPU6000Obj_TypeDef *sensor_obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay);
-    void (*set_rate)(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate);
+    void (*pre_init)(DevMPU6000Obj_TypeDef *sensor_obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay, get_time_stamp_callback ge_time_stamp);
+    void (*config)(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate, DevMPU6000_AccTrip_List AccTrip, DevMPU6000_GyrTrip_List GyrTrip);
     bool (*init)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*reset)(DevMPU6000Obj_TypeDef *snesor_obj);
     bool (*get_drdy)(DevMPU6000Obj_TypeDef *sensor_obj);

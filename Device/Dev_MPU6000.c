@@ -8,7 +8,14 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
 static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
                                cs_ctl_callback cs_ctl,
                                bus_trans_callback bus_trans,
-                               delay_callback delay);
+                               delay_callback delay,
+                               get_time_stamp_callback ge_time_stamp);
+
+static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj,
+                              DevMPU6000_SampleRate_List rate,
+                              DevMPU6000_AccTrip_List AccTrip,
+                              DevMPU6000_GyrTrip_List GyrTrip);
+
 static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj);
 static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj);
@@ -16,13 +23,12 @@ static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
 IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
 static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
-static void DevMPU6000_SetSampleRate(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate);
 
 /* external MPU6000 Object */
 DevMPU6000_TypeDef DevMPU6000 = {
     .pre_init = DevMPU6000_PreInit,
     .init = DevMPU6000_Init,
-    .set_rate = DevMPU6000_SetSampleRate,
+    .config = DevMPU6000_Config,
     .reset = DevMPU6000_SwReset,
     .set_drdy = DevMPU6000_SetDRDY,
     .get_drdy = DevMPU6000_GetReady,
@@ -30,6 +36,26 @@ DevMPU6000_TypeDef DevMPU6000 = {
     .get_data = DevMPU6000_Get_Data,
     .get_error = DevMPU6000_Get_InitError,
 };
+
+static bool Dev_MPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uint8_t *rx, uint8_t size)
+{
+    bool state = false;
+
+    if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
+        return false;
+
+    tx[0] = addr | MPU6000_WRITE_MASK;
+
+    /* CS Low */
+    sensor_obj->cs_ctl(false);
+
+    state = sensor_obj->bus_trans(tx, rx, size);
+
+    /* CS High */
+    sensor_obj->cs_ctl(true);
+
+    return state;
+}
 
 static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx)
 {
@@ -79,19 +105,70 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
     return state;
 }
 
-static void DevMPU6000_SetSampleRate(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate)
+static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate, DevMPU6000_AccTrip_List AccTrip, DevMPU6000_GyrTrip_List GyrTrip)
 {
     sensor_obj->rate = rate;
+
+    switch ((uint8_t)AccTrip)
+    {
+    case MPU6000_Acc_2G:
+        sensor_obj->acc_scale = MPU_ACC_2G_SCALE;
+        break;
+
+    case MPU6000_Acc_4G:
+        sensor_obj->acc_scale = MPU_ACC_4G_SCALE;
+        break;
+
+    case MPU6000_Acc_8G:
+        sensor_obj->acc_scale = MPU_ACC_8G_SCALE;
+        break;
+
+    case MPU6000_Acc_16G:
+        sensor_obj->acc_scale = MPU_ACC_16G_SCALE;
+        break;
+
+    default:
+        return false;
+    }
+
+    switch ((uint8_t)GyrTrip)
+    {
+    case MPU6000_Gyr_250DPS:
+        sensor_obj->gyr_scale = MPU_GYR_250DPS_SCALE;
+        break;
+
+    case MPU6000_Gyr_500DPS:
+        sensor_obj->gyr_scale = MPU_GYR_500DPS_SCALE;
+        break;
+
+    case MPU6000_Gyr_1000DPS:
+        sensor_obj->gyr_scale = MPU_GYR_1000DPS_SCALE;
+        break;
+
+    case MPU6000_Gyr_2000DPS:
+        sensor_obj->gyr_scale = MPU_GYR_2000DPS_SCALE;
+        break;
+
+    default:
+        return false;
+    }
+
+    sensor_obj->AccTrip = ConvertToTrip_Reg(AccTrip);
+    sensor_obj->GyrTrip = ConvertToTrip_Reg(GyrTrip);
+
+    return true;
 }
 
 static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
                                cs_ctl_callback cs_ctl,
                                bus_trans_callback bus_trans,
-                               delay_callback delay)
+                               delay_callback delay,
+                               get_time_stamp_callback get_time_stamp)
 {
     sensor_obj->cs_ctl = cs_ctl;
     sensor_obj->bus_trans = bus_trans;
     sensor_obj->delay = delay;
+    sensor_obj->get_timestamp = get_time_stamp;
 }
 
 static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
@@ -180,7 +257,7 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     sensor_obj->delay(15);
 
     /* set gyro range 2000dps */
-    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_GYRO_CONFIG, BITS_FS_2000DPS))
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_GYRO_CONFIG, sensor_obj->GyrTrip))
     {
         sensor_obj->error = MPU6000_Gyr_Cfg_Error;
         return false;
@@ -188,7 +265,7 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     sensor_obj->delay(15);
 
     /* set acc range 16G */
-    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_ACCEL_CONFIG, BITS_FS_16G))
+    if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_ACCEL_CONFIG, sensor_obj->AccTrip))
     {
         sensor_obj->error = MPU6000_Acc_Cfg_Error;
         return false;
@@ -243,12 +320,34 @@ static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj)
 
 static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
 {
+    uint8_t AccTx_Buff[Axis_Sum * 2] = {0};
+    uint8_t AccRx_Buff[Axis_Sum * 2] = {0};
+    uint8_t GyrTx_Buff[Axis_Sum * 2] = {0};
+    uint8_t GyrRx_Buff[Axis_Sum * 2] = {0};
+
     if ((sensor_obj->error == MPU6000_No_Error) && (sensor_obj->drdy))
     {
+        sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
 
         sensor_obj->update = true;
+
+        Dev_MPU6000_Regs_Read(sensor_obj, MPU6000_ACCEL_XOUT_H, AccTx_Buff, AccRx_Buff, Axis_Sum * 2);
+        Dev_MPU6000_Regs_Read(sensor_obj, MPU6000_GYRO_XOUT_H, GyrTx_Buff, GyrRx_Buff, Axis_Sum * 2);
+
+        for (uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
+        {
+            sensor_obj->OriData.acc_int[axis] = (int16_t)((AccRx_Buff[axis * 2] << 8) | AccRx_Buff[axis * 2 + 1]);
+            sensor_obj->OriData.gyr_int[axis] = (int16_t)((GyrRx_Buff[axis * 2] << 8) | GyrRx_Buff[axis * 2 + 1]);
+
+            /* convert int data to double */
+            sensor_obj->OriData.acc_dou[axis] /= sensor_obj->acc_scale;
+            sensor_obj->OriData.gyr_dou[axis] /= sensor_obj->gyr_scale;
+        }
+
+        sensor_obj->update = false;
         sensor_obj->drdy = false;
 
+        sensor_obj->OriData_Lst = sensor_obj->OriData;
         return true;
     }
 
@@ -257,10 +356,8 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
 
 IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
 {
-    if ((sensor_obj->error == MPU6000_No_Error) && sensor_obj->update)
+    if ((sensor_obj->error == MPU6000_No_Error) && !sensor_obj->update)
     {
-        sensor_obj->update = false;
-        sensor_obj->OriData_Lst = sensor_obj->OriData;
         return sensor_obj->OriData;
     }
     else

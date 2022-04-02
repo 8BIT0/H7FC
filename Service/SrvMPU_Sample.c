@@ -113,9 +113,13 @@ static int8_t SrvIMU_PriIMU_Init(void)
     DevMPU6000.pre_init(&MPU6000Obj,
                         SrvIMU_PriIMU_CS_Ctl,
                         SrvIMU_PriIMU_BusTrans_Rec,
-                        Runtime_DelayMs);
+                        Runtime_DelayMs,
+                        Get_CurrentRunningUs);
 
-    DevMPU6000.set_rate(&MPU6000Obj, DevMPU6000_SampleRate_8K);
+    DevMPU6000.config(&MPU6000Obj,
+                      DevMPU6000_SampleRate_4K,
+                      MPU6000_Acc_16G,
+                      MPU6000_Gyr_2000DPS);
 
     if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
         return SrvIMU_PriBus_Init_Error;
