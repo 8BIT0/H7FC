@@ -14,11 +14,10 @@ Error_Handler Error_Register(char *ErrorTree_Name, Error_Obj_Typedef *Obj_List, 
     ErrorTree_Tmp->sum = num;
     ErrorTree_Tmp->Tree_Name = ErrorTree_Name;
 
-    /* init error tree root node */
-    Tree_Node_Init(ErrorTree_Tmp->root, ErrorTree_Name, NULL);
-
     for (uint16_t i = 0; i < num; i++)
     {
+        /* init error tree root node */
+        Tree_Node_Init(ErrorTree_Tmp->root, Obj_List->desc, NULL);
     }
 
     return (uint32_t)ErrorTree_Tmp;

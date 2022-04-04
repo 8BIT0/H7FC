@@ -1,10 +1,10 @@
 #include "SrvMPU_Sample.h"
-#include "Bsp_SPI.h"
-#include "Bsp_GPIO.h"
 #include "Dev_MPU6000.h"
 #include "IO_Definition.h"
 #include "runtime.h"
 #include "debug_util.h"
+#include "Bsp_SPI.h"
+#include "error_log.h"
 
 /*
  *   PriIMU -> MPU6000
@@ -15,31 +15,7 @@
 
 /* internal variable */
 /* MPU6000 Instance */
-static BspGPIO_Obj_TypeDef MPU6000_CSPin = {
-    .init_state = true,
-    .pin = MPU6000_CS_PIN,
-    .port = MPU6000_CS_PORT,
-};
-
-static BspGPIO_Obj_TypeDef MPU6000_INTPin = {
-    .init_state = true,
-    .pin = MPU6000_INT_PIN,
-    .port = MPU6000_INT_PORT,
-};
-
 static SPI_HandleTypeDef MPU6000_Bus_Instance;
-static BspSPI_PinConfig_TypeDef MPU6000_BusPin = {
-    .pin_Alternate = GPIO_AF5_SPI1,
-
-    .port_clk = MPU6000_CLK_PORT,
-    .port_miso = MPU6000_MISO_PORT,
-    .port_mosi = MPU6000_MOSI_PORT,
-
-    .pin_clk = MPU6000_CLK_PIN,
-    .pin_miso = MPU6000_MISO_PIN,
-    .pin_mosi = MPU6000_MOSI_PIN,
-};
-
 static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
     .Instance = MPU6000_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
@@ -48,31 +24,7 @@ static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
 };
 
 /* ICM20602 Instance */
-static BspGPIO_Obj_TypeDef ICM20602_CSPin = {
-    .init_state = true,
-    .pin = ICM20602_CS_PIN,
-    .port = ICM20602_CS_PORT,
-};
-
-static BspGPIO_Obj_TypeDef ICM20602_INTPin = {
-    .init_state = true,
-    .pin = ICM20602_INT_PIN,
-    .port = ICM20602_INT_PORT,
-};
-
 static SPI_HandleTypeDef ICM20602_Bus_Instance;
-static BspSPI_PinConfig_TypeDef ICM20602_BusPin = {
-    .pin_Alternate = GPIO_AF5_SPI4,
-
-    .port_clk = ICM20602_CLK_PORT,
-    .port_miso = ICM20602_MISO_PORT,
-    .port_mosi = ICM20602_MOSI_PORT,
-
-    .pin_clk = ICM20602_CLK_PIN,
-    .pin_miso = ICM20602_MISO_PIN,
-    .pin_mosi = ICM20602_MOSI_PIN,
-};
-
 static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
     .Instance = ICM20602_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,

@@ -1,6 +1,8 @@
 #ifndef __IO_DEFINITION_H
 #define __IO_DEFINITION_H
 
+#include "Bsp_GPIO.h"
+#include "Bsp_SPI.h"
 #include "Dev_Led.h"
 
 #define LED1_PIN GPIO_PIN_3
@@ -51,5 +53,11 @@
 extern DevLedObj_TypeDef Led1;
 extern DevLedObj_TypeDef Led2;
 extern DevLedObj_TypeDef Led3;
+extern BspGPIO_Obj_TypeDef MPU6000_CSPin;
+extern BspGPIO_Obj_TypeDef MPU6000_INTPin;
+extern BspGPIO_Obj_TypeDef ICM20602_CSPin;
+extern BspGPIO_Obj_TypeDef ICM20602_INTPin;
+extern BspSPI_PinConfig_TypeDef MPU6000_BusPin;
+extern BspSPI_PinConfig_TypeDef ICM20602_BusPin;
 
 #endif
