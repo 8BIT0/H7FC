@@ -7,6 +7,8 @@
 #include "binary_tree.h"
 
 #define ErrorHanleToObj(x) ((ErrorTree_TypeDef *)x)
+#define ErrorTreeDataToObj(x) ((Error_Obj_Typedef *)x)
+
 typedef void (*error_proc_callback)(uint8_t *p_data, uint16_t size);
 
 typedef uint32_t Error_Handler;
