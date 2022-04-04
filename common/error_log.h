@@ -49,6 +49,6 @@ typedef struct
 #pragma pack()
 
 Error_Handler Error_Register(char *ErrorTree_Name, Error_Obj_Typedef *Obj_List, uint16_t num);
-bool Error_Proc(Error_Handler);
+bool Error_Proc(Error_Handler hdl);
 
 #endif

@@ -20,3 +20,11 @@ Error_Handler Error_Register(char *ErrorTree_Name, Error_Obj_Typedef *Obj_List, 
 
     return (uint32_t)ErrorTree_Tmp;
 }
+
+bool Error_Proc(Error_Handler hdl)
+{
+    if (hdl == 0)
+        return false;
+
+    return true;
+}
