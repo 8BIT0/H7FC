@@ -15,8 +15,7 @@ typedef uint32_t Error_Handler;
 
 typedef enum
 {
-    Error_UltraHigh_Prioriy = 0,
-    Error_High_Priority,
+    Error_High_Priority = 0,
     Error_Mid_Priority,
     Error_Less_Priority,
 } Error_Level_List;
@@ -43,6 +42,7 @@ typedef struct
 
 typedef struct
 {
+    char *Tree_Name;
     uint16_t sum;
     node_template *root;
 } ErrorTree_TypeDef;
