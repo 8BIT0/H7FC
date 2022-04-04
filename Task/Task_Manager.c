@@ -1,5 +1,6 @@
 #include "Task_Manager.h"
 #include "Task_Protocol.h"
+#include "Task_SensorInertial.h"
 #include "SrvMPU_Sample.h"
 #include "scheduler.h"
 #include "debug_util.h"
@@ -8,31 +9,13 @@
 #include "Dev_Led.h"
 
 Task_Handle TaskProtocol_Handle = NULL;
-Task_Handle Blink_Task = NULL;
+Task_Handle TaskInertial_Handle = NULL;
 Task_Handle Test_Task = NULL;
 Task_Handle Test2_Task = NULL;
 
 void Run(Task_Handle handle);
 void Test(Task_Handle handle);
 void Test2(Task_Handle handle);
-
-DevLedObj_TypeDef Led1 = {
-    .port = LED1_PORT,
-    .pin = LED1_PIN,
-    .init_state = true,
-};
-
-DevLedObj_TypeDef Led2 = {
-    .port = LED2_PORT,
-    .pin = LED2_PIN,
-    .init_state = true,
-};
-
-DevLedObj_TypeDef Led3 = {
-    .port = LED3_PORT,
-    .pin = LED3_PIN,
-    .init_state = true,
-};
 
 DebugPinObj_TypeDef Debug_PC0 = {
     .port = GPIOC,
@@ -94,9 +77,9 @@ void Task_Manager_Init(void)
 
 void Task_Manager_CreateTask(void)
 {
-    Blink_Task = Os_CreateTask("Blink", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_0, Run, 256);
-    Test_Task = Os_CreateTask("test delay", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
+    TaskInertial_Handle = Os_CreateTask("Inertial Sample", TASK_EXEC_4KHZ, Task_Group_0, Task_Group_0, TaskInertical_Core, 1024);
     Test2_Task = Os_CreateTask("test2", TASK_EXEC_1KHZ, Task_Group_0, Task_Group_2, Test2, 256);
+    Test_Task = Os_CreateTask("test delay", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
     TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 1024);
 }
 
@@ -114,7 +97,7 @@ void Test2(Task_Handle handle)
         Lst_Rt = Rt;
     }
 
-    // DevLED.ctl(Led2, led_state);
+    DevLED.ctl(Led1, led_state);
     // DevLED.ctl(Led3, led_state);
 
     test_PC2_ctl();
@@ -138,25 +121,4 @@ void Test(Task_Handle handle)
     // DevLED.ctl(Led1, false);
     DebugPin.ctl(Debug_PC0, false);
     Os_TaskDelay_Ms(handle, 40);
-}
-
-void Run(Task_Handle handle)
-{
-    volatile SYSTEM_RunTime Rt = 0;
-    static volatile SYSTEM_RunTime Lst_Rt = 0;
-    static bool led_state = false;
-
-    Rt = Get_CurrentRunningMs();
-
-    if ((Rt % 20 == 0) && (Lst_Rt != Rt))
-    {
-        led_state = !led_state;
-        Lst_Rt = Rt;
-    }
-
-    // DevLED.ctl(Led1, led_state);
-    DevLED.ctl(Led2, led_state);
-    // DevLED.ctl(Led3, led_state);
-
-    test_PC1_ctl();
 }

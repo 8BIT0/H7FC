@@ -1,6 +1,8 @@
 #ifndef __IO_DEFINITION_H
 #define __IO_DEFINITION_H
 
+#include "Dev_Led.h"
+
 #define LED1_PIN GPIO_PIN_3
 #define LED1_PORT GPIOE
 
@@ -45,5 +47,9 @@
 
 #define ICM20602_MOSI_PORT GPIOE
 #define ICM20602_MOSI_PIN GPIO_PIN_14
+
+extern DevLedObj_TypeDef Led1;
+extern DevLedObj_TypeDef Led2;
+extern DevLedObj_TypeDef Led3;
 
 #endif

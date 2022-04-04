@@ -6,21 +6,12 @@
 #include <string.h>
 #include "scheduler.h"
 #include "runtime.h"
-
-/* Axis definition */
-typedef enum
-{
-    Axis_X = 0,
-    Axis_Y,
-    Axis_Z,
-    Axis_Sum,
-} Axis_List;
+#include "imu_data.h"
 
 /* task state */
 typedef enum
 {
-    Task_SensorInertial_Init = 0,
-    Task_SensorInertial_Core,
+    Task_SensorInertial_Core = 0,
     Task_SensorInertial_Error,
 } Task_SensorInertial_State;
 

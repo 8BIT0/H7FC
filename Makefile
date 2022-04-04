@@ -40,6 +40,8 @@ main.c \
 debug/debug_util.c \
 Task/Task_Protocol.c \
 Task/Task_Manager.c \
+Task/Task_SensorInertial.c \
+IO_Def/IO_Definition.c \
 Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \
 Device/Dev_MPU6000.c \
@@ -49,6 +51,7 @@ Service/SrvMPU_Sample.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
 Common/reboot.c \
+Common/error_log.c \
 System/mmu/mmu.c \
 System/scheduler/scheduler.c \
 System/kernel/kernel.c \

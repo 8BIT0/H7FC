@@ -1,1 +1,22 @@
 #include "error_log.h"
+#include "mmu.h"
+
+Error_Handler Error_Register(char *ErrorTree_Name, Error_Obj_Typedef *Obj_List, uint16_t num)
+{
+    ErrorTree_TypeDef *ErrorTree_Tmp = NULL;
+
+    ErrorTree_Tmp = (ErrorTree_TypeDef *)MMU_Malloc(sizeof(ErrorTree_TypeDef));
+
+    if (ErrorTree_Tmp == NULL)
+        return NULL;
+
+    ErrorTree_Tmp->sum = num;
+    /* init error tree root node */
+    Tree_Node_Init(ErrorTree_Tmp->root, ErrorTree_Name, NULL);
+
+    for (uint16_t i = 0; i < num; i++)
+    {
+    }
+
+    return (uint32_t)ErrorTree_Tmp;
+}
