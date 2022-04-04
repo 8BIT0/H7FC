@@ -6,6 +6,7 @@
 #include <string.h>
 #include "binary_tree.h"
 
+#define ErrorHanleToObj(x) ((ErrorTree_TypeDef *)x)
 typedef void (*error_proc_callback)(uint8_t *p_data, uint16_t size);
 
 typedef uint32_t Error_Handler;
@@ -28,6 +29,7 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
+    uint16_t id;
     int16_t code;
     Error_Level_List level;
     Error_Proc_List proc_type;
@@ -45,5 +47,6 @@ typedef struct
 #pragma pack()
 
 Error_Handler Error_Register(char *ErrorTree_Name, Error_Obj_Typedef *Obj_List, uint16_t num);
+bool Error_Proc(Error_Handler);
 
 #endif
