@@ -46,17 +46,35 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 
 SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
+    uint8_t imu_num = 0;
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
 
-    // error log
+    /* register error */
 
-    if ((PriIMU_Init_State != SrvIMU_No_Error) && (SecIMU_Init_State != SrvIMU_No_Error))
+    if (PriIMU_Init_State == SrvIMU_No_Error)
     {
-        return SrvIMU_Sample_Init_Error;
+        imu_num++;
     }
 
-    return SrvIMU_No_Error;
+    if (SecIMU_Init_State == SrvIMU_No_Error)
+    {
+        imu_num++;
+    }
+
+    switch (imu_num)
+    {
+    case 0:
+        /* trigger error */
+        return SrvIMU_Sample_Init_Error;
+
+    case 1:
+        /* trigger error */
+        return SrvIMU_Sample_Init_Error;
+
+    case 2:
+        return SrvIMU_No_Error;
+    }
 }
 
 /* init primary IMU Device */
