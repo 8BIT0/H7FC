@@ -7,8 +7,13 @@
 #include "runtime.h"
 #include "imu_data.h"
 
-#define MPU_MODULE_INIT_RETRY 10   // init retry count 10
 #define MPU_MODULE_OPR_DURATION 50 // duration time 50ms
+
+typedef union
+{
+    uint8_t PriDev_Init_State : 4;
+    uint8_t SecDev_Init_State : 4;
+} SrvMpu_InitReg_TypeDef;
 
 typedef enum
 {

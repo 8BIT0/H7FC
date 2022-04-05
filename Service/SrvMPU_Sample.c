@@ -6,12 +6,14 @@
 #include "Bsp_SPI.h"
 #include "error_log.h"
 
+#define IMU_Commu_TimeOut 1000
+#define MPU_MODULE_INIT_RETRY 10 // init retry count 10
+
 /*
  *   PriIMU -> MPU6000
  *   SecIMU -> ICM20602
  */
-
-#define IMU_Commu_TimeOut 1000
+static SrvMpu_InitReg_TypeDef SrvMpu_Reg;
 
 /* internal variable */
 /* MPU6000 Instance */
@@ -46,35 +48,34 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 
 SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
-    uint8_t imu_num = 0;
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
 
-    /* register error */
+    SrvMpu_Reg.PriDev_Init_State = false;
+    SrvMpu_Reg.SecDev_Init_State = false;
 
     if (PriIMU_Init_State == SrvIMU_No_Error)
     {
-        imu_num++;
+        SrvMpu_Reg.PriDev_Init_State = true;
+    }
+    else
+    {
     }
 
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
-        imu_num++;
+        SrvMpu_Reg.SecDev_Init_State = true;
     }
-
-    switch (imu_num)
+    else
     {
-    case 0:
-        /* trigger error */
-        return SrvIMU_Sample_Init_Error;
-
-    case 1:
-        /* trigger error */
-        return SrvIMU_Sample_Init_Error;
-
-    case 2:
-        return SrvIMU_No_Error;
     }
+
+    if (!SrvMpu_Reg.PriDev_Init_State && !SrvMpu_Reg.SecDev_Init_State)
+    {
+        return SrvIMU_Sample_Init_Error;
+    }
+
+    return SrvIMU_No_Error;
 }
 
 /* init primary IMU Device */
@@ -153,4 +154,36 @@ static void SrvIMU_SecIMU_ExtiCallback(void)
 int8_t SrvIMU_GetPri_InitError(void)
 {
     return DevMPU6000.get_error(&MPU6000Obj);
+}
+
+bool SrvIMU_PriDev_ReInit(void)
+{
+    static uint8_t retry = MPU_MODULE_INIT_RETRY;
+
+    if (retry)
+    {
+        // do pri mpu module reset
+
+        // do pri imu reinit
+
+        retry--;
+    }
+
+    return false;
+}
+
+bool SrvIMU_SecDev_ReInit(void)
+{
+    static uint8_t retry = MPU_MODULE_INIT_RETRY;
+
+    if (retry)
+    {
+        // do sec mpu module reset
+
+        // do sec mpu module init
+
+        retry--;
+    }
+
+    return false;
 }
