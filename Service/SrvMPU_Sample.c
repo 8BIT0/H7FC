@@ -160,13 +160,13 @@ bool SrvIMU_PriDev_ReInit(void)
 {
     static uint8_t retry = MPU_MODULE_INIT_RETRY;
 
-    if (retry)
+    while (retry)
     {
+        retry--;
+
         // do pri mpu module reset
 
         // do pri imu reinit
-
-        retry--;
     }
 
     return false;
@@ -176,13 +176,13 @@ bool SrvIMU_SecDev_ReInit(void)
 {
     static uint8_t retry = MPU_MODULE_INIT_RETRY;
 
-    if (retry)
+    while (retry)
     {
+        retry--;
+
         // do sec mpu module reset
 
         // do sec mpu module init
-
-        retry--;
     }
 
     return false;
