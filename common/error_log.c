@@ -23,6 +23,14 @@ Error_Handler Error_Register(char *ErrorTree_Name, Error_Obj_Typedef *Obj_List, 
     return (uint32_t)ErrorTree_Tmp;
 }
 
+bool Error_Trigger(Error_Handler hdl, int16_t code)
+{
+    if (hdl == NULL)
+        return false;
+
+    return true;
+}
+
 bool Error_Proc(Error_Handler hdl)
 {
     if (hdl == 0)
