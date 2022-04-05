@@ -166,7 +166,7 @@ bool SrvIMU_PriDev_ReInit(void)
 
         // do pri mpu module reset
 
-        // do pri imu reinit
+        // do pri mpy module reinit
     }
 
     return false;
@@ -182,7 +182,7 @@ bool SrvIMU_SecDev_ReInit(void)
 
         // do sec mpu module reset
 
-        // do sec mpu module init
+        // do sec mpu module reinit
     }
 
     return false;
