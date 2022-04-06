@@ -59,7 +59,11 @@ void TaskProtocol_Core(Task_Handle hdl)
     switch ((uint8_t)task_state)
     {
     case TaskProto_Core:
+        DevLED.ctl(Led2, true);
+
         usb_printf("test \r\n");
+
+        DevLED.ctl(Led2, false);
 
         TaaskProtocol_Main(NULL, 0);
         break;
