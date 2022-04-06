@@ -17,7 +17,7 @@ void TaskInertical_Core(Task_Handle hdl)
     switch ((uint8_t)TaskInertial_State)
     {
     case Task_SensorInertial_Core:
-        Blink_Notification(50);
+        // Blink_Notification(50);
         DebugPin.ctl(Debug_PB5, true);
         DebugPin.ctl(Debug_PB5, false);
         break;

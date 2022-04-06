@@ -64,6 +64,7 @@
 extern DebugPinObj_TypeDef Debug_PC0;
 extern DebugPinObj_TypeDef Debug_PC1;
 extern DebugPinObj_TypeDef Debug_PC2;
+extern DebugPinObj_TypeDef Debug_PC3;
 extern DebugPinObj_TypeDef Debug_PB3;
 extern DebugPinObj_TypeDef Debug_PB4;
 extern DebugPinObj_TypeDef Debug_PB5;

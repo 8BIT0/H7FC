@@ -144,7 +144,6 @@ AS_DEFS =
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32H743xx \
--DFC_BOARD
 
 
 # AS includes
@@ -248,7 +247,7 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
-OPENOCD := openocd -f interface/stlink-v2.cfg \
+OPENOCD := openocd -f interface/cmsis-dap.cfg \
         -f target/stm32h7x.cfg \
 
 # download your program

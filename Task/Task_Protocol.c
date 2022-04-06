@@ -7,6 +7,8 @@
 #include "debug_util.h"
 #include <stdio.h>
 #include "Dev_MPU6000.h"
+#include "Dev_Led.h"
+#include "IO_Definition.h"
 
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Init;
@@ -14,11 +16,6 @@ static bool Shell_Mode = false;
 
 /* test */
 static int8_t SrvIMU_InitState = 0;
-DebugPinObj_TypeDef Debug_PC3 = {
-    .port = GPIOC,
-    .pin = GPIO_PIN_3,
-    .init_state = false,
-};
 
 /* internal function */
 static void TaaskProtocol_Main(uint8_t *data, uint16_t size);
@@ -32,8 +29,6 @@ void TaskProtocol_GetSrvMPU_InitState(int8_t state)
 
 bool TaskProtocol_Init(void)
 {
-    DebugPin.init(Debug_PC3);
-
     if (!USB_DEVICE_Init())
     {
         task_state = TaskProto_Error_Proc;

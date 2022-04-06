@@ -44,6 +44,7 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PC0);
     DebugPin.init(Debug_PC1);
     DebugPin.init(Debug_PC2);
+    DebugPin.init(Debug_PC3);
     DebugPin.init(Debug_PB3);
     DebugPin.init(Debug_PB4);
     DebugPin.init(Debug_PB5);
@@ -90,18 +91,18 @@ void Test(Task_Handle handle)
 {
     // test_PC0_ctl();
     DebugPin.ctl(Debug_PC0, true);
-    DebugPin.ctl(Debug_PB3, true);
+    // DebugPin.ctl(Debug_PB3, true);
     Os_TaskDelay_Ms(handle, 10);
 
     DebugPin.ctl(Debug_PC0, false);
-    DebugPin.ctl(Debug_PB3, false);
+    // DebugPin.ctl(Debug_PB3, false);
     Os_TaskDelay_Ms(handle, 20);
 
     DebugPin.ctl(Debug_PC0, true);
-    DebugPin.ctl(Debug_PB3, true);
+    // DebugPin.ctl(Debug_PB3, true);
     Os_TaskDelay_Ms(handle, 30);
 
     DebugPin.ctl(Debug_PC0, false);
-    DebugPin.ctl(Debug_PB3, false);
+    // DebugPin.ctl(Debug_PB3, false);
     Os_TaskDelay_Ms(handle, 40);
 }

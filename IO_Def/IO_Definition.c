@@ -19,6 +19,12 @@ DebugPinObj_TypeDef Debug_PC2 = {
     .init_state = false,
 };
 
+DebugPinObj_TypeDef Debug_PC3 = {
+    .port = GPIOC,
+    .pin = GPIO_PIN_3,
+    .init_state = false,
+};
+
 DebugPinObj_TypeDef Debug_PB3 = {
     .port = GPIOB,
     .pin = GPIO_PIN_3,

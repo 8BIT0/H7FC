@@ -13,7 +13,7 @@
             "type": "cortex-debug",
             "servertype": "openocd",
             "configFiles": [
-                "interface/stlink-v2.cfg",
+                "interface/cmsis-dap.cfg",
                 "target/stm32h7x.cfg"
             ],
             //"svdFile": "/Users/mac/Desktop/Stm32/tool/cmsis-svd/data/STMicro/STM32F405.svd"

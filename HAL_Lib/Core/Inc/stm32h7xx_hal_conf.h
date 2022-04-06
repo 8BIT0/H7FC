@@ -21,6 +21,8 @@
 #ifndef STM32H7xx_HAL_CONF_H
 #define STM32H7xx_HAL_CONF_H
 
+#include "system_cfg.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -108,7 +110,8 @@ extern "C"
 #if !defined(HSE_VALUE)
 #if defined DEVELOP_KIT
 #define HSE_VALUE (25000000UL) /*!< Value of the External oscillator in Hz : FPGA case fixed to 60MHZ */
-#elif defined FC_BOARD
+#endif
+#if defined FC_BOARD
 #define HSE_VALUE (8000000UL) /*!< Value of the External oscillator in Hz : FPGA case fixed to 60MHZ */
 #endif
 #endif /* HSE_VALUE */

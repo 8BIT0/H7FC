@@ -42,7 +42,7 @@ static bool KernelClock_Init(void)
     HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
     /** Configure the main internal regulator output voltage
      */
-    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
 
     while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY))
     {
@@ -110,7 +110,8 @@ static bool KernelClock_Init(void)
     {
         return false;
     }
-#elif defined FC_BOARD
+#endif
+#if defined FC_BOARD
 
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -139,7 +140,7 @@ static bool KernelClock_Init(void)
     RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV1;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV1;
     RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
     {
         return false;
     }

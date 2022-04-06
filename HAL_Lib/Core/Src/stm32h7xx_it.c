@@ -3,6 +3,8 @@
 #include "runtime.h"
 #include "scheduler.h"
 #include "stm32h7xx_hal_gpio.h"
+#include "IO_Definition.h"
+#include "debug_util.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
@@ -64,10 +66,12 @@ void SysTick_Handler(void)
   Runtime_Tick();
 
   /* periph relay on */
-  if (time_base / REAL_1MS)
+  if (time_base == REAL_1MS)
   {
+    DebugPin.ctl(Debug_PB3, true);
     time_base = 0;
     HAL_IncTick();
+    DebugPin.ctl(Debug_PB3, false);
   }
   else
   {
