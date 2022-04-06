@@ -5,7 +5,8 @@
 
 void main(void)
 {
-    Os_Init(RUNTIME_TICK_FRQ_40K);
+    // runtime module ticked frequence by 8K can make system stablize while using 8M External Oscillator
+    Os_Init(RUNTIME_TICK_FRQ_8K);
 
     /* create task down below */
     Task_Manager_Init();

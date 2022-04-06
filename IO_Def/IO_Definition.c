@@ -37,6 +37,18 @@ DebugPinObj_TypeDef Debug_PB5 = {
     .init_state = false,
 };
 
+DebugPinObj_TypeDef Debug_PB6 = {
+    .port = GPIOB,
+    .pin = GPIO_PIN_6,
+    .init_state = false,
+};
+
+DebugPinObj_TypeDef Debug_PB10 = {
+    .port = GPIOB,
+    .pin = GPIO_PIN_10,
+    .init_state = false,
+};
+
 DevLedObj_TypeDef Led1 = {
     .port = LED1_PORT,
     .pin = LED1_PIN,

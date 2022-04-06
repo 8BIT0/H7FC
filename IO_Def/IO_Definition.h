@@ -67,6 +67,8 @@ extern DebugPinObj_TypeDef Debug_PC2;
 extern DebugPinObj_TypeDef Debug_PB3;
 extern DebugPinObj_TypeDef Debug_PB4;
 extern DebugPinObj_TypeDef Debug_PB5;
+extern DebugPinObj_TypeDef Debug_PB6;
+extern DebugPinObj_TypeDef Debug_PB10;
 
 extern DevLedObj_TypeDef Led1;
 extern DevLedObj_TypeDef Led2;

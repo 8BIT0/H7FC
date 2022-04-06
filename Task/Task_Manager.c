@@ -47,10 +47,12 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PB3);
     DebugPin.init(Debug_PB4);
     DebugPin.init(Debug_PB5);
+    DebugPin.init(Debug_PB6);
+    DebugPin.init(Debug_PB10);
 
-    // SrvIMU_Init();
+    SrvIMU_Init();
 
-    // TaskProtocol_Init();
+    TaskProtocol_Init();
 }
 
 void Task_Manager_CreateTask(void)
@@ -63,12 +65,12 @@ void Task_Manager_CreateTask(void)
 
 void Test2(Task_Handle handle)
 {
-    volatile SYSTEM_RunTime Rt = 0;
-    static volatile SYSTEM_RunTime Lst_Rt = 0;
+    SYSTEM_RunTime Rt = 0;
+    static SYSTEM_RunTime Lst_Rt = 0;
     static bool led_state = false;
 
-    DebugPin.ctl(Debug_PB3, true);
-    DebugPin.ctl(Debug_PB3, false);
+    // DebugPin.ctl(Debug_PB3, true);
+    // DebugPin.ctl(Debug_PB3, false);
 
     Rt = Get_CurrentRunningMs();
 
@@ -81,25 +83,25 @@ void Test2(Task_Handle handle)
     DevLED.ctl(Led1, led_state);
     // DevLED.ctl(Led3, led_state);
 
-    test_PC2_ctl();
+    // test_PC2_ctl();
 }
 
 void Test(Task_Handle handle)
 {
     // test_PC0_ctl();
-    // DevLED.ctl(Led1, true);
     DebugPin.ctl(Debug_PC0, true);
+    DebugPin.ctl(Debug_PB3, true);
     Os_TaskDelay_Ms(handle, 10);
 
-    // DevLED.ctl(Led1, false);
     DebugPin.ctl(Debug_PC0, false);
+    DebugPin.ctl(Debug_PB3, false);
     Os_TaskDelay_Ms(handle, 20);
 
-    // DevLED.ctl(Led1, true);
     DebugPin.ctl(Debug_PC0, true);
+    DebugPin.ctl(Debug_PB3, true);
     Os_TaskDelay_Ms(handle, 30);
 
-    // DevLED.ctl(Led1, false);
     DebugPin.ctl(Debug_PC0, false);
+    DebugPin.ctl(Debug_PB3, false);
     Os_TaskDelay_Ms(handle, 40);
 }

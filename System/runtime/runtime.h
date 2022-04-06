@@ -16,6 +16,7 @@
 #define RUNTIME_TICK_FRQ_40K 40000 /* 25us base time */
 #define RUNTIME_TICK_FRQ_20K 20000 /* 50us base time */
 #define RUNTIME_TICK_FRQ_10K 10000 /* 100us base time */
+#define RUNTIME_TICK_FRQ_8K 8000   /* 125us base time */
 #define RUNTIME_TICK_FRQ_5K 5000   /* 200us base time */
 #define RUNTIME_TICK_FRQ_2K 2000   /* 500us base time */
 #define RUNTIME_TICK_FRQ_1K 1000   /* 1ms base time */

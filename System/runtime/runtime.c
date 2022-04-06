@@ -61,6 +61,7 @@ Tick_Base Runtime_GetTickBase(void)
  \param [in] : tick frequence
                 RUNTIME_TICK_FRQ_20K
                 RUNTIME_TICK_FRQ_10K
+                RUNTIME_TICK_FRQ_8K
                 RUNTIME_TICK_FRQ_5K
                 RUNTIME_TICK_FRQ_2K
                 RUNTIME_TICK_FRQ_1K
@@ -76,6 +77,10 @@ bool Runtime_Config(uint32_t tick_frq)
     else if (tick_frq == RUNTIME_TICK_FRQ_10K)
     {
         frq = RUNTIME_TICK_FRQ_10K;
+    }
+    else if (tick_frq == RUNTIME_TICK_FRQ_8K)
+    {
+        frq = RUNTIME_TICK_FRQ_8K;
     }
     else if (tick_frq == RUNTIME_TICK_FRQ_5K)
     {
@@ -146,6 +151,9 @@ bool Runtime_Tick(void)
 {
     if (RunTime.module_state == Runtime_Module_Start)
     {
+        DebugPin.ctl(Debug_PB4, true);
+        DebugPin.ctl(Debug_PB4, false);
+
         RunTime.tick_state = Runtime_Run_Tick;
         RunTime.Use_Us += RunTime.base;
         RunTime.Use_Ms = RunTime.Use_Us / REAL_1MS;

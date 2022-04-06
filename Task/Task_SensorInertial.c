@@ -18,8 +18,8 @@ void TaskInertical_Core(Task_Handle hdl)
     {
     case Task_SensorInertial_Core:
         Blink_Notification(50);
-        DebugPin.ctl(Debug_PB4, true);
-        DebugPin.ctl(Debug_PB4, false);
+        DebugPin.ctl(Debug_PB5, true);
+        DebugPin.ctl(Debug_PB5, false);
         break;
 
     case Task_SensorInertial_Error:
@@ -32,8 +32,8 @@ void TaskInertical_Core(Task_Handle hdl)
 
 void Blink_Notification(uint16_t duration)
 {
-    volatile SYSTEM_RunTime Rt = 0;
-    static volatile SYSTEM_RunTime Lst_Rt = 0;
+    SYSTEM_RunTime Rt = 0;
+    static SYSTEM_RunTime Lst_Rt = 0;
     static bool led_state = false;
 
     Rt = Get_CurrentRunningMs();

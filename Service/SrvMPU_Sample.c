@@ -145,8 +145,8 @@ static void SrvIMU_PriIMU_ExtiCallback(void)
     /* MPU6000 Sample */
     DevMPU6000.set_drdy(&MPU6000Obj);
 
-    DebugPin.ctl(Debug_PB3, true);
-    DebugPin.ctl(Debug_PB3, false);
+    // DebugPin.ctl(Debug_PB3, true);
+    // DebugPin.ctl(Debug_PB3, false);
 }
 
 static void SrvIMU_SecIMU_ExtiCallback(void)

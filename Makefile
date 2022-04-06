@@ -143,7 +143,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32H743xx
+-DSTM32H743xx \
+-DFC_BOARD
 
 
 # AS includes
