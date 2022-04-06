@@ -18,6 +18,8 @@ void TaskInertical_Core(Task_Handle hdl)
     {
     case Task_SensorInertial_Core:
         Blink_Notification(50);
+        DebugPin.ctl(Debug_PB4, true);
+        DebugPin.ctl(Debug_PB4, false);
         break;
 
     case Task_SensorInertial_Error:

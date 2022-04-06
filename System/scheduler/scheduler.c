@@ -248,7 +248,6 @@ void Os_Start(void)
     // DrvTimer.ctl(DrvTimer_Counter_SetState, (uint32_t)&SysTimerObj, ENABLE);
     Kernel_EnablePendSV();
     Runtime_SetCallback(RtCallback_Type_Tick, Os_SchedulerRun);
-    Runtime_Start();
 
     // trigger SVC Handler
     Kernel_LoadProcess();

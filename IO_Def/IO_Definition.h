@@ -4,6 +4,7 @@
 #include "Bsp_GPIO.h"
 #include "Bsp_SPI.h"
 #include "Dev_Led.h"
+#include "debug_util.h"
 
 #define LED1_PIN GPIO_PIN_3
 #define LED1_PORT GPIOE
@@ -13,6 +14,16 @@
 
 #define LED3_PIN GPIO_PIN_7
 #define LED3_PORT GPIOH
+
+/* SPI3 Reserve SPI */
+#define RESERVE_SPI_CLK_PORT GPIOB
+#define RESERVE_SPI_CLK_PIN GPIO_PIN_3
+
+#define RESERVE_SPI_MISO_PORT GPIOB
+#define RESERVE_SPI_MISO_PIN GPIO_PIN_4
+
+#define RESERVE_SPI_MOSI_PORT GPIOB
+#define RESERVE_SPI_MOSI_PIN GPIO_PIN_5
 
 /* MPU6000 Pin */
 #define MPU6000_SPI_BUS SPI1
@@ -50,13 +61,22 @@
 #define ICM20602_MOSI_PORT GPIOE
 #define ICM20602_MOSI_PIN GPIO_PIN_14
 
+extern DebugPinObj_TypeDef Debug_PC0;
+extern DebugPinObj_TypeDef Debug_PC1;
+extern DebugPinObj_TypeDef Debug_PC2;
+extern DebugPinObj_TypeDef Debug_PB3;
+extern DebugPinObj_TypeDef Debug_PB4;
+extern DebugPinObj_TypeDef Debug_PB5;
+
 extern DevLedObj_TypeDef Led1;
 extern DevLedObj_TypeDef Led2;
 extern DevLedObj_TypeDef Led3;
+
 extern BspGPIO_Obj_TypeDef MPU6000_CSPin;
 extern BspGPIO_Obj_TypeDef MPU6000_INTPin;
 extern BspGPIO_Obj_TypeDef ICM20602_CSPin;
 extern BspGPIO_Obj_TypeDef ICM20602_INTPin;
+
 extern BspSPI_PinConfig_TypeDef MPU6000_BusPin;
 extern BspSPI_PinConfig_TypeDef ICM20602_BusPin;
 

@@ -1,6 +1,42 @@
 #include "IO_Definition.h"
 #include "Dev_Led.h"
 
+DebugPinObj_TypeDef Debug_PC0 = {
+    .port = GPIOC,
+    .pin = GPIO_PIN_0,
+    .init_state = false,
+};
+
+DebugPinObj_TypeDef Debug_PC1 = {
+    .port = GPIOC,
+    .pin = GPIO_PIN_1,
+    .init_state = false,
+};
+
+DebugPinObj_TypeDef Debug_PC2 = {
+    .port = GPIOC,
+    .pin = GPIO_PIN_2,
+    .init_state = false,
+};
+
+DebugPinObj_TypeDef Debug_PB3 = {
+    .port = GPIOB,
+    .pin = GPIO_PIN_3,
+    .init_state = false,
+};
+
+DebugPinObj_TypeDef Debug_PB4 = {
+    .port = GPIOB,
+    .pin = GPIO_PIN_4,
+    .init_state = false,
+};
+
+DebugPinObj_TypeDef Debug_PB5 = {
+    .port = GPIOB,
+    .pin = GPIO_PIN_5,
+    .init_state = false,
+};
+
 DevLedObj_TypeDef Led1 = {
     .port = LED1_PORT,
     .pin = LED1_PIN,

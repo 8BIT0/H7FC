@@ -17,24 +17,6 @@ void Run(Task_Handle handle);
 void Test(Task_Handle handle);
 void Test2(Task_Handle handle);
 
-DebugPinObj_TypeDef Debug_PC0 = {
-    .port = GPIOC,
-    .pin = GPIO_PIN_0,
-    .init_state = false,
-};
-
-DebugPinObj_TypeDef Debug_PC1 = {
-    .port = GPIOC,
-    .pin = GPIO_PIN_1,
-    .init_state = false,
-};
-
-DebugPinObj_TypeDef Debug_PC2 = {
-    .port = GPIOC,
-    .pin = GPIO_PIN_2,
-    .init_state = false,
-};
-
 void test_PC0_ctl(void)
 {
     DebugPin.ctl(Debug_PC0, true);
@@ -62,17 +44,13 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PC0);
     DebugPin.init(Debug_PC1);
     DebugPin.init(Debug_PC2);
+    DebugPin.init(Debug_PB3);
+    DebugPin.init(Debug_PB4);
+    DebugPin.init(Debug_PB5);
 
-    int8_t error = SrvIMU_Init();
+    // SrvIMU_Init();
 
-    if (error == -4)
-    {
-        TaskProtocol_GetSrvMPU_InitState(SrvIMU_GetPri_InitError());
-    }
-    else
-        TaskProtocol_GetSrvMPU_InitState(error);
-
-    TaskProtocol_Init();
+    // TaskProtocol_Init();
 }
 
 void Task_Manager_CreateTask(void)
@@ -88,6 +66,9 @@ void Test2(Task_Handle handle)
     volatile SYSTEM_RunTime Rt = 0;
     static volatile SYSTEM_RunTime Lst_Rt = 0;
     static bool led_state = false;
+
+    DebugPin.ctl(Debug_PB3, true);
+    DebugPin.ctl(Debug_PB3, false);
 
     Rt = Get_CurrentRunningMs();
 

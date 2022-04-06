@@ -9,6 +9,8 @@
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_rcc.h"
+#include "IO_Definition.h"
+#include "debug_util.h"
 
 /* internal variable */
 static volatile uint32_t sysclock = 0;
