@@ -175,18 +175,23 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
     if (SrvMpu_Reg.PriDev_Init_State)
-        /* MPU6000 Sample */
         DevMPU6000.set_drdy(&MPU6000Obj);
 }
 
 static void SrvIMU_SecIMU_ExtiCallback(void)
 {
-    /* ICM20602 Sample */
+    if (SrvMpu_Reg.SecDev_Init_State)
+        DevICM20602.set_ready(&ICM20602Obj);
 }
 
 int8_t SrvIMU_GetPri_InitError(void)
 {
     return DevMPU6000.get_error(&MPU6000Obj);
+}
+
+int8_t SrvIMU_GetSec_InitError(void)
+{
+    return DevICM20602.get_error(&ICM20602Obj);
 }
 
 static bool SrvIMU_PriDev_ReInit(void)
