@@ -59,7 +59,9 @@
                 "task_sensorinertial.h": "c",
                 "binary_tree.h": "c",
                 "error_log.h": "c",
-                "mmu.h": "c"
+                "mmu.h": "c",
+                "dev_icm20602.h": "c",
+                "imu_data.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

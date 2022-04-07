@@ -9,6 +9,11 @@
 #define IMU_ZERO_SAMPLE_CNT 50
 #define IMU_OVER_RANGE_CNT 50
 
+typedef void (*cs_ctl_callback)(bool state);
+typedef bool (*bus_trans_callback)(uint8_t *tx, uint8_t *rx, uint16_t len);
+typedef void (*delay_callback)(uint32_t ms);
+typedef uint64_t (*get_time_stamp_callback)(void);
+
 typedef enum
 {
     Axis_X = 0,
