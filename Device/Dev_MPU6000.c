@@ -118,7 +118,7 @@ static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_Samp
     default:
         return false;
     }
-    
+
     sensor_obj->rate = rate;
 
     switch ((uint8_t)AccTrip)
@@ -328,6 +328,7 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
     {
         sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
 
+        /* lock update */
         sensor_obj->update = true;
 
         Dev_MPU6000_Regs_Read(sensor_obj, MPU6000_ACCEL_XOUT_H, AccTx_Buff, AccRx_Buff, Axis_Sum * 2);
@@ -343,6 +344,7 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
             sensor_obj->OriData.gyr_dou[axis] /= sensor_obj->gyr_scale;
         }
 
+        /* unlock update */
         sensor_obj->update = false;
         sensor_obj->OriData_Lst = sensor_obj->OriData;
         return true;
