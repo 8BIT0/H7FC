@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define ConvertToTrip_Reg(x) (x << 3)
+
 #define IMU_BLUNT_SAMPLE_CNT 50
 #define IMU_ZERO_SAMPLE_CNT 50
 #define IMU_OVER_RANGE_CNT 50

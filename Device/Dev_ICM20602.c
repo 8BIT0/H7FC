@@ -3,6 +3,7 @@
 /* internal function */
 
 /* external function */
+static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj);
 
 static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
 {
@@ -132,6 +133,8 @@ static void DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_
     }
 
     // set Trip Reg val
+    Obj->AccTrip = ConvertToTrip_Reg(AccTrip);
+    Obj->GyrTrip = ConvertToTrip_Reg(GyrTrip);
 
     return true;
 }
@@ -155,7 +158,73 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     DevICM20602_Reg_Read(Obj, ICM20602_WHO_AM_I, &read_out);
     Obj->delay(10);
 
-    switch(read_out)
+    /* reset device */
+    if(!DevICM20602_SwReset(Obj))
+    {
+        Obj->error = ICM20602_Reset_Error;
+        return false;
+    }
+
+    /* set oscillator clock */
+    DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_1, 0x01);
+    Obj->delay(10);
+
+    DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_1, &read_out);
+    if (read_out != 0x01)
+    {
+        Obj->error = ICM20602_OSC_Error;
+        return false;
+    }
+
+    /* enable gyro and acc */
+    DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_2, 0x00);
+    Obj->delay(10);
+
+    DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_2, &read_out);
+    if (read_out != 0x00)
+    {
+        Obj->error = ICM20602_InertialEnable_Error;
+        return false;
+    }
+
+    /* disable iic interface */
+    DevICM20602_Reg_Write(Obj, ICM20602_I2C_IF, 0x40);
+    Obj->delay(10);
+
+    DevICM20602_Reg_Read(Obj, ICM20602_I2C_IF, &read_out);
+    if (read_out != 0x40)
+    {
+        Obj->error = ICM20602_InterfaceSet_Error;
+        return false;
+    }
+
+    /* set sample rate */
+
+    /* set acc trip */
+    DevICM20602_Reg_Write(Obj, ICM20602_ACCEL_CONFIG, Obj->AccTrip);
+    Obj->delay(10);
+
+    DevICM20602_Reg_Read(Obj, ICM20602_ACCEL_CONFIG, &read_out);
+    if (read_out != Obj->AccTrip)
+    {
+        Obj->error = ICM20602_AccSet_Error;
+        return false;
+    }
+
+    /* set gyr trip */
+    DevICM20602_Reg_Write(Obj, ICM20602_GYRO_CONFIG, Obj->GyrTrip);
+    Obj->delay(10);
+
+    DevICM20602_Reg_Read(Obj, ICM20602_GYRO_CONFIG, &read_out);
+    if (read_out != Obj->GyrTrip)
+    {
+        Obj->error = ICM20602_GyrSet_Error;
+        return false;
+    }
+
+    /* enable odr int output */
+
+    switch (read_out)
     {
         case ICM20602_DEV_V1_ID:
         case ICM20602_DEV_V2_ID:
@@ -166,12 +235,8 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
             return false;
     }
 
-    // icm_spi_w_reg_byte(ICM20602_PWR_MGMT_1, 0x01);     //时钟设置
-    // icm_spi_w_reg_byte(ICM20602_PWR_MGMT_2, 0x00);     //开启陀螺仪和加速度计
     // icm_spi_w_reg_byte(ICM20602_CONFIG, 0x01);         // 176HZ 1KHZ
     // icm_spi_w_reg_byte(ICM20602_SMPLRT_DIV, 0x07);     //采样速率 SAMPLE_RATE = INTERNAL_SAMPLE_RATE / (1 + SMPLRT_DIV)
-    // icm_spi_w_reg_byte(ICM20602_GYRO_CONFIG, 0x18);    //±2000 dps
-    // icm_spi_w_reg_byte(ICM20602_ACCEL_CONFIG, 0x10);   //±8g
     // icm_spi_w_reg_byte(ICM20602_ACCEL_CONFIG_2, 0x03); // Average 4 samples   44.8HZ   //0x23 Average 16 samples
 
     return ICM20602_No_Error;
@@ -184,6 +249,22 @@ static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj)
 
 static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj)
 {
+    uint8_t read_out = 0;
+    uint64_t reset_UsRt = 0;
+
+    DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_1, ICM20602_RESET_CMD);
+    Obj->delay(20);
+    reset_UsRt = Obj->get_timestamp();
+
+    do
+    {
+        if ((Obj->get_timestamp() - reset_UsRt) >= ICM20602_RESET_TIMEOUT)
+            return false;
+
+        DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_1, &read_out);
+    } while (ICM20602_RESET_SUCCESS != read_out);
+
+    return true;
 }
 
 static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj)

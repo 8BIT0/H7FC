@@ -7,8 +7,6 @@
 #include <stddef.h>
 #include "imu_data.h"
 
-#define ConvertToTrip_Reg(x) (x << 3)
-
 #define MPU6000_WRITE_MASK 0x80
 
 #define MPU6000_CONFIG 0x1A

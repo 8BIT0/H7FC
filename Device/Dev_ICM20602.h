@@ -7,9 +7,14 @@
 #include <stddef.h>
 #include "imu_data.h"
 
+#define ICM20602_RESET_TIMEOUT 100
+
 #define ICM20602_WRITE_MASK 0x80
 #define ICM20602_DEV_V1_ID 0x69 // SA0 attach with GND then Device ID is 0x68 else if SA0 Pull Up 0x69 (default)
 #define ICM20602_DEV_V2_ID 0x68
+
+#define ICM20602_RESET_CMD 0x80
+#define ICM20602_RESET_SUCCESS 0x41
 
 #define ICM20602_XG_OFFS_TC_H 0x04
 #define ICM20602_XG_OFFS_TC_L 0x05
@@ -77,15 +82,15 @@
 #define ICM20602_ZA_OFFSET_H 0x7D
 #define ICM20602_ZA_OFFSET_L 0x7E
 
-#define ICM20602_ACC_16G_SCALE 0
-#define ICM20602_ACC_8G_SCALE 0
-#define ICM20602_ACC_4G_SCALE 0
-#define ICM20602_ACC_2G_SCALE 0
+#define ICM20602_ACC_16G_SCALE 2048.0
+#define ICM20602_ACC_8G_SCALE 4096.0
+#define ICM20602_ACC_4G_SCALE 8192.0
+#define ICM20602_ACC_2G_SCALE 16384.0
 
-#define ICM20602_GYR_2000DPS_SCALE 0
-#define ICM20602_GYR_1000DPS_SCALE 0
-#define ICM20602_GYR_500DPS_SCALE 0
-#define ICM20602_GYR_250DPS_SCALE 0
+#define ICM20602_GYR_2000DPS_SCALE 16.4
+#define ICM20602_GYR_1000DPS_SCALE 32.8
+#define ICM20602_GYR_500DPS_SCALE 65.5
+#define ICM20602_GYR_250DPS_SCALE 131.0
 
 typedef enum
 {
@@ -115,6 +120,12 @@ typedef enum
 {
     ICM20602_No_Error = 0,
     ICM20602_DevID_Error,
+    ICM20602_Reset_Error,
+    ICM20602_OSC_Error,
+    ICM20602_InertialEnable_Error,
+    ICM20602_InterfaceSet_Error,
+    ICM20602_AccSet_Error,
+    ICM20602_GyrSet_Error,
 } ICM20602_Error_List;
 
 typedef struct
