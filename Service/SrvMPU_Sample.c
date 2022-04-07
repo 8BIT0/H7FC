@@ -6,6 +6,7 @@
 #include "debug_util.h"
 #include "Bsp_SPI.h"
 #include "error_log.h"
+#include "Dev_Led.h"
 
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
@@ -31,8 +32,8 @@ static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
 static SPI_HandleTypeDef ICM20602_Bus_Instance;
 static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
     .Instance = ICM20602_SPI_BUS,
-    .CLKPolarity = SPI_POLARITY_HIGH,
-    .CLKPhase = SPI_PHASE_2EDGE,
+    .CLKPolarity = SPI_POLARITY_LOW,
+    .CLKPhase = SPI_PHASE_1EDGE,
     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
 };
 
@@ -53,6 +54,8 @@ static bool SrvIMU_SecDev_ReInit(void);
 
 SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
+    DevLED.ctl(Led2, true);
+
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
 
@@ -68,6 +71,7 @@ SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
+        DevLED.ctl(Led2, false);
         SrvMpu_Reg.SecDev_Init_State = true;
     }
     else
@@ -140,10 +144,10 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                        ICM20602_Gyr_2000DPS);
 
     if (!BspSPI.init(ICM20602_BusCfg, &ICM20602_Bus_Instance))
-        return SrvIMU_PriBus_Init_Error;
+        return SrvIMU_SecBus_Init_Error;
 
     if (!DevICM20602.init(&ICM20602Obj))
-        return SrvIMU_PriDev_Init_Error;
+        return SrvIMU_SecDev_Init_Error;
 
     /* Set SPI Speed 20M */
     ICM20602_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;

@@ -9,6 +9,8 @@
 #include "Dev_MPU6000.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
+#include "Dev_ICM20602.h"
+#include "Dev_MPU6000.h"
 
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Init;
@@ -50,6 +52,9 @@ static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
     return true;
 }
 
+extern uint8_t ICM20602_ID;
+extern uint8_t MPU6000_ID;
+
 void TaskProtocol_Core(Task_Handle hdl)
 {
     DebugPin.ctl(Debug_PC3, true);
@@ -57,7 +62,9 @@ void TaskProtocol_Core(Task_Handle hdl)
     switch ((uint8_t)task_state)
     {
     case TaskProto_Core:
-        usb_printf("test \r\n");
+        usb_printf("Icm20602: %2x \r\n", ICM20602_ID);
+        usb_printf("Mpu6000: %2x \r\n\r\n", MPU6000_ID);
+
         TaaskProtocol_Main(NULL, 0);
         break;
 

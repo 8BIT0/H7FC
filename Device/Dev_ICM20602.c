@@ -179,12 +179,22 @@ static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
     Obj->get_timestamp = get_time_stamp;
 }
 
+uint8_t ICM20602_ID = 0xFE;
+
 static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
 {
     uint8_t read_out = 0;
 
     DevICM20602_Reg_Read(Obj, ICM20602_WHO_AM_I, &read_out);
     Obj->delay(10);
+
+    if ((read_out != ICM20602_DEV_V1_ID) && (read_out != ICM20602_DEV_V2_ID))
+    {
+        Obj->error = ICM20602_DevID_Error;
+        return false;
+    }
+
+    ICM20602_ID = read_out;
 
     /* reset device */
     if (!DevICM20602_SwReset(Obj))
@@ -270,18 +280,7 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
         return false;
     }
 
-    switch (read_out)
-    {
-    case ICM20602_DEV_V1_ID:
-    case ICM20602_DEV_V2_ID:
-        break;
-
-    default:
-        Obj->error = ICM20602_DevID_Error;
-        return false;
-    }
-
-    return ICM20602_No_Error;
+    return true;
 }
 
 static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj)
@@ -298,13 +297,13 @@ static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj)
     Obj->delay(20);
     reset_UsRt = Obj->get_timestamp();
 
-    do
-    {
-        if ((Obj->get_timestamp() - reset_UsRt) >= ICM20602_RESET_TIMEOUT)
-            return false;
+    // do
+    // {
+    //     if ((Obj->get_timestamp() - reset_UsRt) >= ICM20602_RESET_TIMEOUT)
+    //         return false;
 
-        DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_1, &read_out);
-    } while (ICM20602_RESET_SUCCESS != read_out);
+    //     DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_1, &read_out);
+    // } while (ICM20602_RESET_SUCCESS != read_out);
 
     return true;
 }
