@@ -107,6 +107,18 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
 
 static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate, DevMPU6000_AccTrip_List AccTrip, DevMPU6000_GyrTrip_List GyrTrip)
 {
+    switch ((uint8_t)sensor_obj->rate)
+    {
+    case DevMPU6000_SampleRate_8K:
+    case DevMPU6000_SampleRate_4K:
+    case DevMPU6000_SampleRate_2K:
+    case DevMPU6000_SampleRate_1K:
+        break;
+
+    default:
+        return false;
+    }
+    
     sensor_obj->rate = rate;
 
     switch ((uint8_t)AccTrip)
@@ -182,19 +194,6 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
         (sensor_obj->cs_ctl == NULL))
     {
         sensor_obj->error = MPU6000_Obj_Error;
-        return false;
-    }
-
-    switch ((uint8_t)sensor_obj->rate)
-    {
-    case DevMPU6000_SampleRate_8K:
-    case DevMPU6000_SampleRate_4K:
-    case DevMPU6000_SampleRate_2K:
-    case DevMPU6000_SampleRate_1K:
-        break;
-
-    default:
-        sensor_obj->error = MPU6000_SampleRate_Error;
         return false;
     }
 

@@ -71,7 +71,7 @@ static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uin
     return state;
 }
 
-static void DevICM20602_SetSampleRate(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate)
+static void DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate, ICM20602_GyrTrip_List gyr_trip, ICM20602_AccTrip_List acc_trip)
 {
     Obj->rate = rate;
 }
