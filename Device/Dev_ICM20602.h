@@ -114,14 +114,22 @@ typedef struct
     get_time_stamp_callback get_timestamp;
 
     bool drdy;
+
+    uint8_t AccTrip;
+    uint8_t GyrTrip;
+
+    double acc_scale;
+    double gyr_scale;
+
     ICM20602_Error_List error;
     ICM20602_SampleRate_List rate;
 } DevICM20602Obj_TypeDef;
 
 typedef struct
 {
-    void (*set_rate)(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate);
     bool (*init)(DevICM20602Obj_TypeDef *Obj);
+    void (*set_ready)(DevICM20602Obj_TypeDef *Obj);
+    bool (*get_ready)(DevICM20602Obj_TypeDef *Obj);
 } DevICM20602_TypeDef;
 
 #endif

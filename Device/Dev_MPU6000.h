@@ -162,7 +162,6 @@ typedef struct
     double gyr_scale;
 
     bool drdy;
-    bool update;
     DevMPU6000_SampleRate_List rate;
 
     IMUData_TypeDef OriData;

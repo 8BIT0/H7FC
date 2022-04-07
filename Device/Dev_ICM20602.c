@@ -76,6 +76,8 @@ static void DevICM20602_SetSampleRate(DevICM20602Obj_TypeDef *Obj, ICM20602_Samp
     Obj->rate = rate;
 }
 
+
+
 static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
                                 cs_ctl_callback cs_ctl,
                                 bus_trans_callback bus_trans,
