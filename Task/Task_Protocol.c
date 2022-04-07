@@ -38,8 +38,6 @@ bool TaskProtocol_Init(void)
     usb_setrec_callback(TaskProtocol_Rec);
     Shell_Init(TaskProtocol_TransBuff);
 
-    usb_printf("Task_Proto Init\r\n");
-
     task_state = TaskProto_Core;
     return true;
 }
@@ -59,12 +57,7 @@ void TaskProtocol_Core(Task_Handle hdl)
     switch ((uint8_t)task_state)
     {
     case TaskProto_Core:
-        DevLED.ctl(Led2, true);
-
         usb_printf("test \r\n");
-
-        DevLED.ctl(Led2, false);
-
         TaaskProtocol_Main(NULL, 0);
         break;
 

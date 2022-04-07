@@ -151,9 +151,6 @@ bool Runtime_Tick(void)
 {
     if (RunTime.module_state == Runtime_Module_Start)
     {
-        DebugPin.ctl(Debug_PB4, true);
-        DebugPin.ctl(Debug_PB4, false);
-
         RunTime.tick_state = Runtime_Run_Tick;
         RunTime.Use_Us += RunTime.base;
         RunTime.Use_Ms = RunTime.Use_Us / REAL_1MS;

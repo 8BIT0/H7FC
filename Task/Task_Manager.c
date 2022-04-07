@@ -1,7 +1,6 @@
 #include "Task_Manager.h"
 #include "Task_Protocol.h"
 #include "Task_SensorInertial.h"
-#include "SrvMPU_Sample.h"
 #include "scheduler.h"
 #include "debug_util.h"
 #include "IO_Definition.h"
@@ -51,8 +50,7 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PB6);
     DebugPin.init(Debug_PB10);
 
-    SrvIMU_Init();
-
+    TaskInertial_Init();
     TaskProtocol_Init();
 }
 
@@ -61,7 +59,7 @@ void Task_Manager_CreateTask(void)
     TaskInertial_Handle = Os_CreateTask("Inertial Sample", TASK_EXEC_4KHZ, Task_Group_0, Task_Group_0, TaskInertical_Core, 1024);
     TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 1024);
     Test2_Task = Os_CreateTask("test2", TASK_EXEC_1KHZ, Task_Group_0, Task_Group_2, Test2, 256);
-    Test_Task = Os_CreateTask("test delay", TASK_EXEC_8KHZ, Task_Group_0, Task_Group_1, Test, 256);
+    Test_Task = Os_CreateTask("test delay", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_1, Test, 256);
 }
 
 void Test2(Task_Handle handle)
@@ -70,8 +68,8 @@ void Test2(Task_Handle handle)
     static SYSTEM_RunTime Lst_Rt = 0;
     static bool led_state = false;
 
-    // DebugPin.ctl(Debug_PB3, true);
-    // DebugPin.ctl(Debug_PB3, false);
+    DebugPin.ctl(Debug_PB4, true);
+    DebugPin.ctl(Debug_PB4, false);
 
     Rt = Get_CurrentRunningMs();
 
@@ -83,26 +81,25 @@ void Test2(Task_Handle handle)
 
     DevLED.ctl(Led1, led_state);
     // DevLED.ctl(Led3, led_state);
-
-    // test_PC2_ctl();
 }
 
 void Test(Task_Handle handle)
 {
-    // test_PC0_ctl();
-    DebugPin.ctl(Debug_PC0, true);
+    // DebugPin.ctl(Debug_PC0, true);
     // DebugPin.ctl(Debug_PB3, true);
-    Os_TaskDelay_Ms(handle, 10);
+    // Os_TaskDelay_Ms(handle, 10);
 
-    DebugPin.ctl(Debug_PC0, false);
+    // DebugPin.ctl(Debug_PC0, false);
     // DebugPin.ctl(Debug_PB3, false);
-    Os_TaskDelay_Ms(handle, 20);
+    // Os_TaskDelay_Ms(handle, 20);
 
-    DebugPin.ctl(Debug_PC0, true);
+    // DebugPin.ctl(Debug_PC0, true);
     // DebugPin.ctl(Debug_PB3, true);
-    Os_TaskDelay_Ms(handle, 30);
+    // Os_TaskDelay_Ms(handle, 30);
 
-    DebugPin.ctl(Debug_PC0, false);
+    // DebugPin.ctl(Debug_PC0, false);
     // DebugPin.ctl(Debug_PB3, false);
-    Os_TaskDelay_Ms(handle, 40);
+    // Os_TaskDelay_Ms(handle, 40);
+    DebugPin.ctl(Debug_PB3, true);
+    DebugPin.ctl(Debug_PB3, false);
 }

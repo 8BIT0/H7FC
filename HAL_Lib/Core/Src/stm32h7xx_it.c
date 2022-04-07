@@ -66,12 +66,10 @@ void SysTick_Handler(void)
   Runtime_Tick();
 
   /* periph relay on */
-  if (time_base == REAL_1MS)
+  if (time_base == REAL_1MS - Runtime_GetTickBase())
   {
-    DebugPin.ctl(Debug_PB3, true);
     time_base = 0;
     HAL_IncTick();
-    DebugPin.ctl(Debug_PB3, false);
   }
   else
   {

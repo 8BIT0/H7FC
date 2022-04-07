@@ -5,7 +5,6 @@
 #include "debug_util.h"
 #include "Bsp_SPI.h"
 #include "error_log.h"
-#include "Dev_Led.h"
 
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
@@ -15,6 +14,7 @@
  *   SecIMU -> ICM20602
  */
 static SrvMpu_InitReg_TypeDef SrvMpu_Reg;
+static Error_Handler SrvMPU_ErrorLog_Handle = NULL;
 
 /* internal variable */
 /* MPU6000 Instance */
@@ -143,11 +143,9 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
-    /* MPU6000 Sample */
-    DevMPU6000.set_drdy(&MPU6000Obj);
-
-    // DebugPin.ctl(Debug_PB3, true);
-    // DebugPin.ctl(Debug_PB3, false);
+    if (SrvMpu_Reg.PriDev_Init_State)
+        /* MPU6000 Sample */
+        DevMPU6000.set_drdy(&MPU6000Obj);
 }
 
 static void SrvIMU_SecIMU_ExtiCallback(void)

@@ -4,22 +4,32 @@
 #include "runtime.h"
 #include "IO_Definition.h"
 #include "SrvMPU_Sample.h"
+#include "debug_util.h"
+#include "error_log.h"
 
 /* internal var */
 static Task_SensorInertial_State TaskInertial_State = Task_SensorInertial_Core;
+static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
+
+/* internal function */
+static void TaskInertical_Blink_Notification(uint16_t duration);
+
+/* external function */
 
 void TaskInertial_Init(void)
 {
+    /* regist error */
+
+    SrvIMU_Init();
 }
 
 void TaskInertical_Core(Task_Handle hdl)
 {
+    DebugPin.ctl(Debug_PB5, true);
     switch ((uint8_t)TaskInertial_State)
     {
     case Task_SensorInertial_Core:
-        // Blink_Notification(50);
-        DebugPin.ctl(Debug_PB5, true);
-        DebugPin.ctl(Debug_PB5, false);
+        TaskInertical_Blink_Notification(250);
         break;
 
     case Task_SensorInertial_Error:
@@ -28,9 +38,10 @@ void TaskInertical_Core(Task_Handle hdl)
     default:
         break;
     }
+    DebugPin.ctl(Debug_PB5, false);
 }
 
-void Blink_Notification(uint16_t duration)
+static void TaskInertical_Blink_Notification(uint16_t duration)
 {
     SYSTEM_RunTime Rt = 0;
     static SYSTEM_RunTime Lst_Rt = 0;

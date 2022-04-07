@@ -35,6 +35,7 @@ typedef struct
 } SensorInertial_Data_TypeDef;
 #pragma pack()
 
+void TaskInertial_Init(void);
 void TaskInertical_Core(Task_Handle hdl);
 
 #endif
