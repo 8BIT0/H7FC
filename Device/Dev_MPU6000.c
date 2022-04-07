@@ -109,10 +109,10 @@ static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_Samp
 {
     switch ((uint8_t)sensor_obj->rate)
     {
-    case DevMPU6000_SampleRate_8K:
-    case DevMPU6000_SampleRate_4K:
-    case DevMPU6000_SampleRate_2K:
-    case DevMPU6000_SampleRate_1K:
+    case MPU6000_SampleRate_8K:
+    case MPU6000_SampleRate_4K:
+    case MPU6000_SampleRate_2K:
+    case MPU6000_SampleRate_1K:
         break;
 
     default:
@@ -124,19 +124,19 @@ static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_Samp
     switch ((uint8_t)AccTrip)
     {
     case MPU6000_Acc_2G:
-        sensor_obj->acc_scale = MPU_ACC_2G_SCALE;
+        sensor_obj->acc_scale = MPU6000_ACC_2G_SCALE;
         break;
 
     case MPU6000_Acc_4G:
-        sensor_obj->acc_scale = MPU_ACC_4G_SCALE;
+        sensor_obj->acc_scale = MPU6000_ACC_4G_SCALE;
         break;
 
     case MPU6000_Acc_8G:
-        sensor_obj->acc_scale = MPU_ACC_8G_SCALE;
+        sensor_obj->acc_scale = MPU6000_ACC_8G_SCALE;
         break;
 
     case MPU6000_Acc_16G:
-        sensor_obj->acc_scale = MPU_ACC_16G_SCALE;
+        sensor_obj->acc_scale = MPU6000_ACC_16G_SCALE;
         break;
 
     default:
@@ -146,19 +146,19 @@ static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_Samp
     switch ((uint8_t)GyrTrip)
     {
     case MPU6000_Gyr_250DPS:
-        sensor_obj->gyr_scale = MPU_GYR_250DPS_SCALE;
+        sensor_obj->gyr_scale = MPU6000_GYR_250DPS_SCALE;
         break;
 
     case MPU6000_Gyr_500DPS:
-        sensor_obj->gyr_scale = MPU_GYR_500DPS_SCALE;
+        sensor_obj->gyr_scale = MPU6000_GYR_500DPS_SCALE;
         break;
 
     case MPU6000_Gyr_1000DPS:
-        sensor_obj->gyr_scale = MPU_GYR_1000DPS_SCALE;
+        sensor_obj->gyr_scale = MPU6000_GYR_1000DPS_SCALE;
         break;
 
     case MPU6000_Gyr_2000DPS:
-        sensor_obj->gyr_scale = MPU_GYR_2000DPS_SCALE;
+        sensor_obj->gyr_scale = MPU6000_GYR_2000DPS_SCALE;
         break;
 
     default:

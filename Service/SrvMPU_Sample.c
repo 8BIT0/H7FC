@@ -98,7 +98,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
                         Get_CurrentRunningUs);
 
     DevMPU6000.config(&MPU6000Obj,
-                      DevMPU6000_SampleRate_4K,
+                      MPU6000_SampleRate_4K,
                       MPU6000_Acc_16G,
                       MPU6000_Gyr_2000DPS);
 

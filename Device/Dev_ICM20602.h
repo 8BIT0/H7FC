@@ -77,6 +77,16 @@
 #define ICM20602_ZA_OFFSET_H 0x7D
 #define ICM20602_ZA_OFFSET_L 0x7E
 
+#define ICM20602_ACC_16G_SCALE 0
+#define ICM20602_ACC_8G_SCALE 0
+#define ICM20602_ACC_4G_SCALE 0
+#define ICM20602_ACC_2G_SCALE 0
+
+#define ICM20602_GYR_2000DPS_SCALE 0
+#define ICM20602_GYR_1000DPS_SCALE 0
+#define ICM20602_GYR_500DPS_SCALE 0
+#define ICM20602_GYR_250DPS_SCALE 0
+
 typedef enum
 {
     ICM20602_SampleRate_8K = 0,
@@ -104,6 +114,7 @@ typedef enum
 typedef enum
 {
     ICM20602_No_Error = 0,
+    ICM20602_DevID_Error,
 } ICM20602_Error_List;
 
 typedef struct

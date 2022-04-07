@@ -97,15 +97,15 @@
 #define MPU_RF_DATA_RDY_EN (1 << 0)
 #define MPU_CYCLE (1 << 5)
 
-#define MPU_ACC_16G_SCALE 2048.0
-#define MPU_ACC_8G_SCALE 4096.0
-#define MPU_ACC_4G_SCALE 8192.0
-#define MPU_ACC_2G_SCALE 16384.0
+#define MPU6000_ACC_16G_SCALE 2048.0
+#define MPU6000_ACC_8G_SCALE 4096.0
+#define MPU6000_ACC_4G_SCALE 8192.0
+#define MPU6000_ACC_2G_SCALE 16384.0
 
-#define MPU_GYR_2000DPS_SCALE 16.4
-#define MPU_GYR_1000DPS_SCALE 32.8
-#define MPU_GYR_500DPS_SCALE 65.5
-#define MPU_GYR_250DPS_SCALE 131.0
+#define MPU6000_GYR_2000DPS_SCALE 16.4
+#define MPU6000_GYR_1000DPS_SCALE 32.8
+#define MPU6000_GYR_500DPS_SCALE 65.5
+#define MPU6000_GYR_250DPS_SCALE 131.0
 
 typedef enum
 {
@@ -126,10 +126,10 @@ typedef enum
 
 typedef enum
 {
-    DevMPU6000_SampleRate_8K = 0,
-    DevMPU6000_SampleRate_4K = 1,
-    DevMPU6000_SampleRate_2K = 3,
-    DevMPU6000_SampleRate_1K = 7,
+    MPU6000_SampleRate_8K = 0,
+    MPU6000_SampleRate_4K = 1,
+    MPU6000_SampleRate_2K = 3,
+    MPU6000_SampleRate_1K = 7,
 } DevMPU6000_SampleRate_List;
 
 typedef enum
@@ -162,6 +162,7 @@ typedef struct
     double gyr_scale;
 
     bool drdy;
+    bool update;
     DevMPU6000_SampleRate_List rate;
 
     IMUData_TypeDef OriData;
