@@ -95,9 +95,9 @@
 typedef enum
 {
     ICM20602_SampleRate_8K = 0,
-    ICM20602_SampleRate_4K,
-    ICM20602_SampleRate_2K,
-    ICM20602_SampleRate_1K,
+    ICM20602_SampleRate_4K = 1,
+    ICM20602_SampleRate_2K = 3,
+    ICM20602_SampleRate_1K = 7,
 } ICM20602_SampleRate_List;
 
 typedef enum
@@ -126,6 +126,7 @@ typedef enum
     ICM20602_InterfaceSet_Error,
     ICM20602_AccSet_Error,
     ICM20602_GyrSet_Error,
+    ICM20602_RateSet_Error,
 } ICM20602_Error_List;
 
 typedef struct

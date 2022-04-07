@@ -199,6 +199,15 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     }
 
     /* set sample rate */
+    DevICM20602_Reg_Write(Obj, ICM20602_SMPLRT_DIV, Obj->rate);
+    Obj->delay(10);
+
+    DevICM20602_Reg_Read(Obj, ICM20602_SMPLRT_DIV, &read_out);
+    if (read_out != Obj->rate)
+    {
+        Obj->error = ICM20602_RateSet_Error;
+        return false;
+    }
 
     /* set acc trip */
     DevICM20602_Reg_Write(Obj, ICM20602_ACCEL_CONFIG, Obj->AccTrip);
@@ -223,6 +232,15 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     }
 
     /* enable odr int output */
+    DevICM20602_Reg_Write(Obj, ICM20602_INT_PIN_CFG, 0x60);
+    Obj->delay(10);
+
+    DevICM20602_Reg_Read(Obj, ICM20602_INT_PIN_CFG, &read_out);
+    if (read_out != 0x60)
+    {
+        Obj->error = ICM20602_GyrSet_Error;
+        return false;
+    }
 
     switch (read_out)
     {
@@ -234,10 +252,6 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
             Obj->error = ICM20602_DevID_Error;
             return false;
     }
-
-    // icm_spi_w_reg_byte(ICM20602_CONFIG, 0x01);         // 176HZ 1KHZ
-    // icm_spi_w_reg_byte(ICM20602_SMPLRT_DIV, 0x07);     //采样速率 SAMPLE_RATE = INTERNAL_SAMPLE_RATE / (1 + SMPLRT_DIV)
-    // icm_spi_w_reg_byte(ICM20602_ACCEL_CONFIG_2, 0x03); // Average 4 samples   44.8HZ   //0x23 Average 16 samples
 
     return ICM20602_No_Error;
 }
