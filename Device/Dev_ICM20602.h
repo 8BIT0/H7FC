@@ -137,6 +137,7 @@ typedef struct
     get_time_stamp_callback get_timestamp;
 
     bool drdy;
+    bool update;
 
     uint8_t AccTrip;
     uint8_t GyrTrip;
@@ -146,13 +147,31 @@ typedef struct
 
     ICM20602_Error_List error;
     ICM20602_SampleRate_List rate;
+
+    IMUData_TypeDef OriData;
+    IMUData_TypeDef OriData_Lst;
 } DevICM20602Obj_TypeDef;
 
 typedef struct
 {
+    void (*config)(DevICM20602Obj_TypeDef *Obj,
+                   ICM20602_SampleRate_List rate,
+                   ICM20602_GyrTrip_List GyrTrip,
+                   ICM20602_AccTrip_List AccTrip);
+    void (*pre_init)(DevICM20602Obj_TypeDef *Obj,
+                     cs_ctl_callback cs_ctl,
+                     bus_trans_callback bus_trans,
+                     delay_callback delay,
+                     get_time_stamp_callback get_time_stamp);
     bool (*init)(DevICM20602Obj_TypeDef *Obj);
     void (*set_ready)(DevICM20602Obj_TypeDef *Obj);
     bool (*get_ready)(DevICM20602Obj_TypeDef *Obj);
+    bool (*reset)(DevICM20602Obj_TypeDef *Obj);
+    void (*sample)(DevICM20602Obj_TypeDef *Obj);
+    IMUData_TypeDef (*get_data)(DevICM20602Obj_TypeDef *Obj);
+    ICM20602_Error_List (*get_error)(DevICM20602Obj_TypeDef *Obj);
 } DevICM20602_TypeDef;
+
+extern DevICM20602_TypeDef DevICM20602;
 
 #endif

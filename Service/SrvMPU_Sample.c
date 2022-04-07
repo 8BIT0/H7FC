@@ -1,5 +1,6 @@
 #include "SrvMPU_Sample.h"
 #include "Dev_MPU6000.h"
+#include "Dev_ICM20602.h"
 #include "IO_Definition.h"
 #include "runtime.h"
 #include "debug_util.h"
@@ -36,6 +37,7 @@ static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
 };
 
 static DevMPU6000Obj_TypeDef MPU6000Obj;
+static DevICM20602Obj_TypeDef ICM20602Obj;
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -117,6 +119,35 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 /* init primary IMU Device */
 static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 {
+    /* primary IMU Pin & Bus Init */
+    if (!BspGPIO.out_init(ICM20602_CSPin))
+        return SrvIMU_SecCSPin_Init_Error;
+
+    if (!BspGPIO.exti_init(ICM20602_INTPin, SrvIMU_SecIMU_ExtiCallback))
+        return SrvIMU_SecExtiPin_Init_Error;
+
+    ICM20602_BusCfg.Pin = ICM20602_BusPin;
+
+    DevICM20602.pre_init(&ICM20602Obj,
+                         SrvIMU_SecIMU_CS_Ctl,
+                         SrvIMU_SecIMU_BusTrans_Rec,
+                         Runtime_DelayMs,
+                         Get_CurrentRunningUs);
+
+    DevICM20602.config(&ICM20602Obj,
+                       ICM20602_SampleRate_4K,
+                       ICM20602_Acc_16G,
+                       ICM20602_Gyr_2000DPS);
+
+    if (!BspSPI.init(ICM20602_BusCfg, &ICM20602_Bus_Instance))
+        return SrvIMU_PriBus_Init_Error;
+
+    if (!DevICM20602.init(&ICM20602Obj))
+        return SrvIMU_PriDev_Init_Error;
+
+    /* Set SPI Speed 20M */
+    ICM20602_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+
     return SrvIMU_No_Error;
 }
 
