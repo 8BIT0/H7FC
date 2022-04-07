@@ -131,10 +131,10 @@ static void DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_
         return false;
     }
 
+    // set Trip Reg val
+
     return true;
 }
-
-
 
 static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
                                 cs_ctl_callback cs_ctl,
