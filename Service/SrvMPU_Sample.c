@@ -54,8 +54,6 @@ static bool SrvIMU_SecDev_ReInit(void);
 
 SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
-    DevLED.ctl(Led2, true);
-
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
 
@@ -71,7 +69,6 @@ SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
-        DevLED.ctl(Led2, false);
         SrvMpu_Reg.SecDev_Init_State = true;
     }
     else
