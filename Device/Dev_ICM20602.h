@@ -119,6 +119,7 @@ typedef enum
 typedef enum
 {
     ICM20602_No_Error = 0,
+    ICM20602_Obj_Error,
     ICM20602_DevID_Error,
     ICM20602_Reset_Error,
     ICM20602_OSC_Error,

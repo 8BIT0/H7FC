@@ -189,10 +189,8 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     uint8_t read_out = 0;
 
-    if (sensor_obj == NULL)
-        return false;
-
-    if ((sensor_obj->bus_trans == NULL) ||
+    if ((sensor_obj == NULL) ||
+        (sensor_obj->bus_trans == NULL) ||
         (sensor_obj->cs_ctl == NULL))
     {
         sensor_obj->error = MPU6000_Obj_Error;

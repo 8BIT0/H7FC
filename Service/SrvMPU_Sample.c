@@ -25,16 +25,16 @@ static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
     .Instance = MPU6000_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
+    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16,
 };
 
 /* ICM20602 Instance */
 static SPI_HandleTypeDef ICM20602_Bus_Instance;
 static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
     .Instance = ICM20602_SPI_BUS,
-    .CLKPolarity = SPI_POLARITY_LOW,
-    .CLKPhase = SPI_PHASE_1EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
+    .CLKPolarity = SPI_POLARITY_HIGH,
+    .CLKPhase = SPI_PHASE_2EDGE,
+    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16,
 };
 
 static DevMPU6000Obj_TypeDef MPU6000Obj;

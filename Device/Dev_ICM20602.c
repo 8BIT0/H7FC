@@ -185,6 +185,14 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
 {
     uint8_t read_out = 0;
 
+    if ((Obj == NULL) ||
+        (Obj->bus_trans == NULL) ||
+        (Obj->cs_ctl == NULL))
+    {
+        Obj->error = ICM20602_Obj_Error;
+        return false;
+    }
+
     DevICM20602_Reg_Read(Obj, ICM20602_WHO_AM_I, &read_out);
     Obj->delay(10);
 

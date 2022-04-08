@@ -2,6 +2,7 @@
 #define __SYSTEM_CFG_H
 
 #define FC_BOARD 1
+// #define DEVELOP_KIT 1
 
 #define US_IN_1S REAL_1S
 #define SCHEDULER_TIMEBASE US_IN_1S
