@@ -4,17 +4,32 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include "linked_list.h"
+#include "binary_tree.h"
 
 typedef bool (*Error_Proc_Callback)(uint32_t *arg, uint16_t size);
+
+typedef enum
+{
+    Error_Proc_Immd,
+    Error_Proc_Poll,
+} ErrorProc_Type_List;
 
 #pragma pack(1)
 typedef struct
 {
     char *desc;
-    uint8_t bit_code;
-    uint16_t priority;
+    ErrorProc_Type_List type;
+    uint8_t code;
     Error_Proc_Callback callback;
 } ErrorObj_TypeDef;
+
+typedef struct
+{
+    char *node_name;
+    uint8_t limb_num;
+    node_template *root;
+} ErrorTree_TypeDef;
 #pragma pack()
 
 void Error_Regist();

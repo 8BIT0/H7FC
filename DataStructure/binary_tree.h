@@ -61,6 +61,7 @@ typedef struct
     node_template *occur_node_ptr;
     direction_e occur_dir;
 } balance_check_ouput_s;
+#pragma pack()
 
 typedef void (*unbalance_callback)(node_template *root_tmp);
 typedef void (*display_callback)(node_template *root_tmp);
