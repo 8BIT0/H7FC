@@ -15,13 +15,6 @@ typedef uint32_t Error_Handler;
 
 typedef enum
 {
-    Error_High_Priority = 0,
-    Error_Mid_Priority,
-    Error_Less_Priority,
-} Error_Level_List;
-
-typedef enum
-{
     Error_Proc_Immd = 0,
     Error_Proc_Next,
     Error_Proc_Ignore,
@@ -32,7 +25,6 @@ typedef struct
 {
     uint16_t id;
     int16_t code;
-    Error_Level_List level;
     Error_Proc_List proc_type;
     bool triggered;
     bool out;
@@ -42,8 +34,8 @@ typedef struct
 
 typedef struct
 {
-    char *Tree_Name;
-    uint16_t sum;
+    char *name;
+    uint16_t limb_num;
     node_template *root;
 } ErrorTree_TypeDef;
 #pragma pack()
