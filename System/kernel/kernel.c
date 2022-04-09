@@ -5,9 +5,9 @@
  */
 
 #include "kernel.h"
+#include "system_cfg.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_pwr.h"
-#include "system_cfg.h"
 
 #define KERNEL_SYSPRI2_REG (*((volatile uint32_t *)0xe000ed20))
 
@@ -35,7 +35,6 @@ static bool KernelClock_Init(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
     /** Supply configuration update enable
      */
@@ -47,7 +46,8 @@ static bool KernelClock_Init(void)
     while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY))
     {
     }
-#if defined DEVELOP_KIT
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
     /** Initializes the RCC Oscillators according to the specified parameters
      * in the RCC_OscInitTypeDef structure.
      */
@@ -94,7 +94,7 @@ static bool KernelClock_Init(void)
         return false;
     }
 
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3 | RCC_PERIPHCLK_UART4 | RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_UART8 | RCC_PERIPHCLK_UART5 | RCC_PERIPHCLK_SPI2;
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3 | RCC_PERIPHCLK_UART4 | RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_UART8 | RCC_PERIPHCLK_UART5 | RCC_PERIPHCLK_SPI4 | RCC_PERIPHCLK_SPI123;
     PeriphClkInitStruct.PLL3.PLL3M = 25;
     PeriphClkInitStruct.PLL3.PLL3N = 240;
     PeriphClkInitStruct.PLL3.PLL3P = 4;
@@ -110,42 +110,9 @@ static bool KernelClock_Init(void)
     {
         return false;
     }
-#endif
-#if defined FC_BOARD
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_HSI48 | RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
-    RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = 5;
-    RCC_OscInitStruct.PLL.PLLN = 128;
-    RCC_OscInitStruct.PLL.PLLP = 2;
-    RCC_OscInitStruct.PLL.PLLQ = 8;
-    RCC_OscInitStruct.PLL.PLLR = 8;
-    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
-    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-    RCC_OscInitStruct.PLL.PLLFRACN = 0;
-    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-    {
-        return false;
-    }
 
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1;
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
-    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV1;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV1;
-    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-    {
-        return false;
-    }
-#endif
+    __HAL_RCC_GPIOH_CLK_ENABLE();
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
 
     // we need set systick priority as 15 pendsv priority as 14
     KERNEL_SYSPRI2_REG |= (((uint32_t)KERNEL_INTERRUPT_PRIORITY) << 16UL);

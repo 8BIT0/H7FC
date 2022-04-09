@@ -25,7 +25,7 @@ static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
     .Instance = MPU6000_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16,
+    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8,
 };
 
 /* ICM20602 Instance */
@@ -34,7 +34,7 @@ static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
     .Instance = ICM20602_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16,
+    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8,
 };
 
 static DevMPU6000Obj_TypeDef MPU6000Obj;
@@ -49,8 +49,6 @@ static void SrvIMU_PriIMU_CS_Ctl(bool state);
 static void SrvIMU_SecIMU_CS_Ctl(bool state);
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
-static bool SrvIMU_PriDev_ReInit(void);
-static bool SrvIMU_SecDev_ReInit(void);
 
 SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
@@ -64,15 +62,11 @@ SrvIMU_ErrorCode_List SrvIMU_Init(void)
     {
         SrvMpu_Reg.PriDev_Init_State = true;
     }
-    else
-        SrvMpu_Reg.PriDev_Init_State = SrvIMU_PriDev_ReInit();
 
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
         SrvMpu_Reg.SecDev_Init_State = true;
     }
-    else
-        SrvMpu_Reg.SecDev_Init_State = SrvIMU_SecDev_ReInit();
 
     if (!SrvMpu_Reg.PriDev_Init_State && !SrvMpu_Reg.SecDev_Init_State)
     {
@@ -193,36 +187,4 @@ int8_t SrvIMU_GetPri_InitError(void)
 int8_t SrvIMU_GetSec_InitError(void)
 {
     return DevICM20602.get_error(&ICM20602Obj);
-}
-
-static bool SrvIMU_PriDev_ReInit(void)
-{
-    static uint8_t retry = MPU_MODULE_INIT_RETRY;
-
-    while (retry)
-    {
-        retry--;
-
-        // do pri mpu module reset
-
-        // do pri mpy module reinit
-    }
-
-    return false;
-}
-
-static bool SrvIMU_SecDev_ReInit(void)
-{
-    static uint8_t retry = MPU_MODULE_INIT_RETRY;
-
-    while (retry)
-    {
-        retry--;
-
-        // do sec mpu module reset
-
-        // do sec mpu module reinit
-    }
-
-    return false;
 }

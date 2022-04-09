@@ -196,13 +196,13 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     DevICM20602_Reg_Read(Obj, ICM20602_WHO_AM_I, &read_out);
     Obj->delay(10);
 
+    ICM20602_ID = read_out;
+
     if ((read_out != ICM20602_DEV_V1_ID) && (read_out != ICM20602_DEV_V2_ID))
     {
         Obj->error = ICM20602_DevID_Error;
         return false;
     }
-
-    ICM20602_ID = read_out;
 
     /* reset device */
     if (!DevICM20602_SwReset(Obj))
