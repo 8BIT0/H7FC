@@ -5,8 +5,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include "binary_tree.h"
+#include "linked_list.h"
 
-#define ErrorHanleToObj(x) ((ErrorTree_TypeDef *)x)
+#define ErrorHandleToObj(x) ((ErrorTree_TypeDef *)x)
 #define ErrorTreeDataToObj(x) ((Error_Obj_Typedef *)x)
 
 typedef void (*error_proc_callback)(uint8_t *p_data, uint16_t size);
@@ -30,17 +31,20 @@ typedef struct
     bool out;
     char *desc;
     error_proc_callback callback;
+    item_obj *item;
 } Error_Obj_Typedef;
 
 typedef struct
 {
     char *name;
     uint16_t limb_num;
-    node_template *root;
+    node_template *tree_node;
+    list_obj *link_node;
 } ErrorTree_TypeDef;
 #pragma pack()
 
-Error_Handler Error_Register(char *ErrorTree_Name, Error_Obj_Typedef *Obj_List, uint16_t num);
+Error_Handler ErrorTree_Create(char *name);
+bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *obj, uint16_t num);
 bool Error_Trigger(Error_Handler hdl, int16_t code);
 bool Error_Proc(Error_Handler hdl);
 

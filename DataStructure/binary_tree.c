@@ -1,6 +1,6 @@
 /*
 coder: 8_B!T0
-bref: 
+bref:
 to make search and sort function more effcient. so i create this file
 in order to make doubly linked list can be mutual converted with binary tree
 and make some search function effcient.
@@ -48,12 +48,12 @@ void Tree_InsertNode(node_template *relative_root, node_template *node, compare_
     if ((node == NULL) || (callback == NULL) || (relative_root == node))
         return;
 
-    //need traverse process compare all node in current root
+    // need traverse process compare all node in current root
     cmp_out = callback(relative_root->data_ptr, node->data_ptr);
 
     if (cmp_out != NULL)
     {
-        //relative root data is bigger then node data
+        // relative root data is bigger then node data
         if (cmp_out == (uint32_t)relative_root->data_ptr)
         {
             if (relative_root->L_Node != NULL)
@@ -117,54 +117,54 @@ void Tree_Printf_NodeName(node_template *node)
     }
 }
 
-//traverse rule : root left right
+// traverse rule : root left right
 void Tree_Pre_Traverse(node_template *relative_node, tree_traverse_callback callback)
 {
     if (relative_node != NULL)
     {
-        //process root node
+        // process root node
         if (callback != NULL)
         {
             callback(relative_node);
         }
 
-        //traverse left node
+        // traverse left node
         Tree_Pre_Traverse(relative_node->L_Node, callback);
-        //traverse right node
+        // traverse right node
         Tree_Pre_Traverse(relative_node->R_Node, callback);
     }
 }
 
-//traverse rule : left root right
+// traverse rule : left root right
 void Tree_Mid_Traverse(node_template *relative_node, tree_traverse_callback callback)
 {
     if (relative_node != NULL)
     {
-        //traverse left node
+        // traverse left node
         Tree_Mid_Traverse(relative_node->L_Node, callback);
 
-        //process root node
+        // process root node
         if (callback != NULL)
         {
             callback(relative_node);
         }
 
-        //traverse right node
+        // traverse right node
         Tree_Mid_Traverse(relative_node->R_Node, callback);
     }
 }
 
-//traverse rule : left right root
+// traverse rule : left right root
 void Tree_Bck_Traverse(node_template *relative_node, tree_traverse_callback callback)
 {
     if (relative_node != NULL)
     {
-        //traverse left node
+        // traverse left node
         Tree_Bck_Traverse(relative_node->L_Node, callback);
-        //traverse right node
+        // traverse right node
         Tree_Bck_Traverse(relative_node->R_Node, callback);
 
-        //precess root node
+        // precess root node
         if (callback != NULL)
         {
             callback(relative_node);
@@ -241,7 +241,7 @@ balance_check_ouput_s Tree_Balance_Checker(node_template *relative_root, int8_t 
     output_tmp.occur_dir = dir_none;
     output_tmp.occur_node_ptr = NULL;
 
-    //remember the empty tree is balance
+    // remember the empty tree is balance
     if (relative_root == NULL)
     {
         *depth = 0;
@@ -256,7 +256,7 @@ balance_check_ouput_s Tree_Balance_Checker(node_template *relative_root, int8_t 
             {
                 *depth = left_depth > right_depth ? (left_depth + 1) : (right_depth + 1);
 
-                //if left sub tree and right sub tree both in balance
+                // if left sub tree and right sub tree both in balance
                 bias_bwt_LR = abs(left_depth - right_depth);
 
                 if (bias_bwt_LR <= 1)
@@ -384,7 +384,7 @@ static void Tree_RotateLeft(node_template *root, node_template *a)
     }
     else
     {
-        //b node is root
+        // b node is root
         root = b;
     }
 
@@ -400,7 +400,7 @@ static void Tree_RotateRight(node_template *root, node_template *a)
     node_template *b = a->L_Node;
     node_template *d = b->R_Node;
 
-    a->L_Node = d; //this step make left node equle to right node
+    a->L_Node = d; // this step make left node equle to right node
     if (d != NULL)
     {
         d->F_Node = a;
@@ -421,7 +421,7 @@ static void Tree_RotateRight(node_template *root, node_template *a)
     }
     else
     {
-        //b node is root
+        // b node is root
         root = b;
     }
 
@@ -429,12 +429,12 @@ static void Tree_RotateRight(node_template *root, node_template *a)
     b->R_Node = a;
 }
 
-node_template *Tree_Search(node_template *Root_Ptr, node_template *node_obj, search_callback callback)
+uint32_t Tree_Search(node_template *Root_Ptr, node_template *node_obj, search_callback callback)
 {
     if (Root_Ptr == NULL)
-        return NULL;
+        return 0;
 
-    //doing search here
+    // doing search here
 
-    return NULL;
+    return 0;
 }
