@@ -12,7 +12,7 @@
 #define BALANCE 1
 
 #define MATCHED 0
-#define ERROR_MATCH -1
+#define ERROR_MATCH 1
 
 typedef enum
 {
@@ -69,7 +69,7 @@ typedef struct
 typedef void (*unbalance_callback)(node_template *root_tmp);
 typedef void (*display_callback)(node_template *root_tmp);
 typedef uint32_t (*compare_callback)(void *eq_l, void *eq_r);
-typedef uint32_t (*search_callback)(void *arg, uint16_t len);
+typedef uint32_t (*search_callback)(void *arg);
 #define tree_traverse_callback display_callback
 
 void Tree_Node_Init(node_template *node, char *node_name, void *data);

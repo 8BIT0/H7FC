@@ -440,9 +440,12 @@ uint32_t Tree_Search(node_template *Root_Ptr, node_template *node_obj, search_ca
 
     if (node_addr == MATCHED)
     {
+        mth_callback(node_obj->data_ptr);
+        return (uint32_t)(((node_template *)node_addr)->data_ptr);
     }
     else if (node_addr == ERROR_MATCH)
     {
+        return ERROR_MATCH;
     }
     else
     {
