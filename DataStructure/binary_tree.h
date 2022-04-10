@@ -11,6 +11,9 @@
 #define INVALID_SEARCH -1
 #define BALANCE 1
 
+#define MATCHED 0
+#define ERROR_MATCH -1
+
 typedef enum
 {
     full_tree,
@@ -77,6 +80,6 @@ void Tree_Printf_NodeName(node_template *node);
 uint8_t Tree_GetDepth(node_template *relative_root);
 void Tree_SwapLR(node_template *relative_root);
 node_template *Tree_ReSetRoot(node_template *relative_root);
-uint32_t Tree_Search(node_template *Root_Ptr, node_template *node_obj, search_callback callback);
+uint32_t Tree_Search(node_template *Root_Ptr, node_template *node_obj, search_callback mth_callback, compare_callback cmp_callback);
 
 #endif
