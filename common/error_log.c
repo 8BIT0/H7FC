@@ -55,16 +55,30 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
     return true;
 }
 
+static uint32_t Error_CompareCallback(Error_Obj_Typedef *obj, void *code_addr)
+{
+    if (obj->code == ((int16_t)(*code_addr)))
+    {
+    }
+}
+
 bool Error_Trigger(Error_Handler hdl, int16_t code)
 {
     Error_Obj_Typedef *ErrorObj_Tmp;
+    int16_t code_tmp = code;
 
     if (hdl == NULL)
         return false;
 
-    ErrorObj_Tmp = Tree_Search(ErrorHandleToObj(hdl)->tree_node, );
+    ErrorObj_Tmp = Tree_Search(ErrorHandleToObj(hdl)->tree_node, (uint32_t)&code_tmp, NULL, Error_CompareCallback);
 
-    return true;
+    if (ErrorObj_Tmp != ERROR_MATCH)
+    {
+
+        return true;
+    }
+
+    return false;
 }
 
 bool Error_Proc(Error_Handler hdl)

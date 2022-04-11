@@ -429,21 +429,23 @@ static void Tree_RotateRight(node_template *root, node_template *a)
     b->R_Node = a;
 }
 
-uint32_t Tree_Search(node_template *Root_Ptr, node_template *node_obj, search_callback mth_callback, compare_callback cmp_callback)
+uint32_t Tree_Search(node_template *Root_Ptr, void *node_data, search_callback mth_callback, compare_callback cmp_callback)
 {
     uint32_t node_addr = 0;
 
-    if (Root_Ptr == NULL || node_obj == NULL || mth_callback == NULL || cmp_callback == NULL)
+    if (Root_Ptr == NULL || node_data == NULL || cmp_callback == NULL)
         return ERROR_MATCH;
 
-    node_addr = cmp_callback(Root_Ptr->data_ptr, node_obj->data_ptr);
+    node_addr = cmp_callback(Root_Ptr->data_ptr, node_data);
 
-    if (node_addr == (uint32_t)node_obj)
+    if (node_addr == (uint32_t)node_data)
         node_addr = MATCHED;
 
     if (node_addr == MATCHED)
     {
-        mth_callback(node_obj->data_ptr);
+        if (mth_callback != NULL)
+            mth_callback(node_data);
+
         return (uint32_t)((node_template *)node_addr);
     }
     else if (node_addr == ERROR_MATCH)
@@ -451,8 +453,6 @@ uint32_t Tree_Search(node_template *Root_Ptr, node_template *node_obj, search_ca
         return ERROR_MATCH;
     }
     else
-    {
         // doing search here
-        return Tree_Search((node_template *)node_addr, node_obj, mth_callback, cmp_callback);
-    }
+        return Tree_Search((node_template *)node_addr, node_data, mth_callback, cmp_callback);
 }
