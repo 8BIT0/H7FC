@@ -11,8 +11,8 @@
 #define INVALID_SEARCH -1
 #define BALANCE 1
 
-#define MATCHED 0
-#define ERROR_MATCH 1
+#define MATCHED 1
+#define ERROR_MATCH 0
 
 typedef enum
 {
@@ -45,7 +45,7 @@ typedef enum
     bck_trv,
 } traverse_type;
 
-#pragma pack(4)
+#pragma pack(1)
 typedef struct node
 {
     struct node *F_Node;
