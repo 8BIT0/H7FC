@@ -439,7 +439,7 @@ uint32_t Tree_Search(node_template *Root_Ptr, void *node_data, search_callback m
 
     node_tmp = Root_Ptr;
 
-    node_addr = cmp_callback(node_tmp->data_ptr, node_data);
+    node_addr = cmp_callback(node_tmp->data_ptr, node_data); // have bug
 
     if (node_addr == (uint32_t)Root_Ptr)
         node_addr = MATCHED;

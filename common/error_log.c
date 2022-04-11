@@ -59,6 +59,7 @@ static uint32_t Error_CompareCallback(Error_Obj_Typedef *obj, void *code_addr)
 {
     if (obj->code == ((int16_t)(*code_addr)))
     {
+        return 1
     }
 }
 
