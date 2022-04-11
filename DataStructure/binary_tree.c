@@ -432,13 +432,16 @@ static void Tree_RotateRight(node_template *root, node_template *a)
 uint32_t Tree_Search(node_template *Root_Ptr, void *node_data, search_callback mth_callback, compare_callback cmp_callback)
 {
     uint32_t node_addr = 0;
+    node_template *node_tmp = NULL;
 
     if (Root_Ptr == NULL || node_data == NULL || cmp_callback == NULL)
         return ERROR_MATCH;
 
-    node_addr = cmp_callback(Root_Ptr->data_ptr, node_data);
+    node_tmp = Root_Ptr;
 
-    if (node_addr == (uint32_t)node_data)
+    node_addr = cmp_callback(node_tmp->data_ptr, node_data);
+
+    if (node_addr == (uint32_t)Root_Ptr)
         node_addr = MATCHED;
 
     if (node_addr == MATCHED)
