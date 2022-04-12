@@ -11,8 +11,8 @@
 #define INVALID_SEARCH -1
 #define BALANCE 1
 
-#define MATCHED 1
-#define ERROR_MATCH 0
+#define MATCHED 0
+#define ERROR_MATCH 1
 
 typedef enum
 {
