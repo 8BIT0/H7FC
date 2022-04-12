@@ -45,6 +45,8 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
         Tree_Node_Init(tree_node, Obj_List[i].desc, &Obj_List[i]);
         List_ItemInit(linked_item, &Obj_List[i]);
 
+        Obj_List[i].triggered = false;
+
         if (ErrorHandleToObj(hdl)->tree_node != NULL)
             Tree_InsertNode(ErrorHandleToObj(hdl)->tree_node, tree_node, Error_InsertPriority_Compare);
         else

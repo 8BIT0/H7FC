@@ -24,7 +24,6 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    uint16_t id;
     int16_t code;
     Error_Proc_List proc_type;
     bool triggered;
