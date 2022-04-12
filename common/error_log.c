@@ -1,12 +1,15 @@
 #include "error_log.h"
 #include "mmu.h"
 
-static uint32_t ErrorPriority_Compare(uint32_t l_addr, uint32_t r_addr)
+static uint32_t Error_InsertPriority_Compare(uint32_t l_addr, uint32_t r_addr)
 {
     if (ErrorTreeDataToObj(l_addr)->code > ErrorTreeDataToObj(r_addr)->code)
         return l_addr;
 
-    return r_addr;
+    if (ErrorTreeDataToObj(l_addr)->code < ErrorTreeDataToObj(r_addr)->code)
+        return r_addr;
+
+    return 0;
 }
 
 Error_Handler ErrorTree_Create(char *name)
@@ -44,7 +47,7 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
 
         if (ErrorHandleToObj(hdl)->tree_node != NULL)
         {
-            Tree_InsertNode(ErrorHandleToObj(hdl)->tree_node, tree_node, ErrorPriority_Compare);
+            Tree_InsertNode(ErrorHandleToObj(hdl)->tree_node, tree_node, Error_InsertPriority_Compare);
         }
         else
             ErrorHandleToObj(hdl)->tree_node = tree_node;
@@ -55,12 +58,22 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
     return true;
 }
 
-static uint32_t Error_CompareCallback(Error_Obj_Typedef *obj, void *code_addr)
+static uint32_t Error_TriggerCompareCallback(node_template *node, void *code_addr)
 {
-    if (obj->code == ((int16_t)(*code_addr)))
-    {
-        return 1
-    }
+    Error_Obj_Typedef *Obj = (Error_Obj_Typedef *)(node->data_ptr);
+    int16_t error_code = *((int16_t *)code_addr);
+
+    if (Obj == NULL)
+        return 0;
+
+    if (Obj->code == error_code)
+        return 1;
+
+    if (Obj->code > error_code)
+        return node->L_Node;
+
+    if (Obj->code < error_code)
+        return node->R_Node;
 }
 
 bool Error_Trigger(Error_Handler hdl, int16_t code)
@@ -71,7 +84,7 @@ bool Error_Trigger(Error_Handler hdl, int16_t code)
     if (hdl == NULL)
         return false;
 
-    ErrorObj_Tmp = Tree_Search(ErrorHandleToObj(hdl)->tree_node, (uint32_t)&code_tmp, NULL, Error_CompareCallback);
+    ErrorObj_Tmp = Tree_Search(ErrorHandleToObj(hdl)->tree_node, (uint32_t)&code_tmp, NULL, Error_TriggerCompareCallback);
 
     if (ErrorObj_Tmp != ERROR_MATCH)
     {

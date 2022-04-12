@@ -51,7 +51,7 @@ void Tree_InsertNode(node_template *relative_root, node_template *node, compare_
     // need traverse process compare all node in current root
     cmp_out = callback(relative_root->data_ptr, node->data_ptr);
 
-    if (cmp_out != NULL)
+    if (cmp_out)
     {
         // relative root data is bigger then node data
         if (cmp_out == (uint32_t)relative_root->data_ptr)
