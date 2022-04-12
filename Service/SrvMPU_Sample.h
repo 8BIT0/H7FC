@@ -32,6 +32,5 @@ typedef enum
 } SrvIMU_ErrorCode_List;
 
 SrvIMU_ErrorCode_List SrvIMU_Init(void);
-int8_t SrvIMU_GetPri_InitError(void);
 
 #endif

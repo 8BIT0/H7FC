@@ -46,15 +46,12 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
         List_ItemInit(linked_item, &Obj_List[i]);
 
         if (ErrorHandleToObj(hdl)->tree_node != NULL)
-        {
             Tree_InsertNode(ErrorHandleToObj(hdl)->tree_node, tree_node, Error_InsertPriority_Compare);
-        }
         else
             ErrorHandleToObj(hdl)->tree_node = tree_node;
     }
 
     ErrorHandleToObj(hdl)->limb_num = num;
-
     return true;
 }
 
@@ -87,10 +84,7 @@ bool Error_Trigger(Error_Handler hdl, int16_t code)
     ErrorObj_Tmp = Tree_Search(ErrorHandleToObj(hdl)->tree_node, (uint32_t)&code_tmp, NULL, Error_TriggerCompareCallback);
 
     if (ErrorObj_Tmp != ERROR_MATCH)
-    {
-
         return true;
-    }
 
     return false;
 }

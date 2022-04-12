@@ -16,7 +16,7 @@
  *   SecIMU -> ICM20602
  */
 static SrvMpu_InitReg_TypeDef SrvMpu_Reg;
-static Error_Handler SrvMPU_ErrorLog_Handle = NULL;
+static Error_Handler SrvMPU_Error_Handle = NULL;
 
 /* internal variable */
 /* MPU6000 Instance */
@@ -40,6 +40,101 @@ static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
 static DevMPU6000Obj_TypeDef MPU6000Obj;
 static DevICM20602Obj_TypeDef ICM20602Obj;
 
+static Error_Obj_Typedef SrvIMU_ErrorList[] = {
+    {
+        .callback = NULL,
+        .code = SrvIMU_PriCSPin_Init_Error,
+        .desc = "Pri CS Pin Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_PriExtiPin_Init_Error,
+        .desc = "Pri Ext Pin Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_PriBus_Init_Error,
+        .desc = "Pri Bus Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_PriDev_Init_Error,
+        .desc = "Pri Dev Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_SecCSPin_Init_Error,
+        .desc = "Sec CS Pin Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_SecExtiPin_Init_Error,
+        .desc = "Sec Ext Pin Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_SecBus_Init_Error,
+        .desc = "Sec Bus Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_SecDev_Init_Error,
+        .desc = "Sec Dev Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_SecDev_Init_Error,
+        .desc = "Sec Dev Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_SecDev_Init_Error,
+        .desc = "Sec Dev Init Failed",
+        .item = NULL,
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_Sample_Init_Error,
+        .desc = "Sec Sample Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_Sample_OverRange,
+        .desc = "Sec Sample OverRange",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_Sample_Blunt,
+        .desc = "Sec Sample Blunt",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+};
+
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
 static int8_t SrvIMU_SecIMU_Init(void);
@@ -52,6 +147,10 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 
 SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
+    SrvMPU_Error_Handle = ErrorTree_Create("SrvIMU_Error");
+
+    Error_Register(SrvMPU_Error_Handle, SrvIMU_ErrorList, sizeof(SrvIMU_ErrorList));
+
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
 

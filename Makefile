@@ -51,6 +51,7 @@ Device/Dev_W25Qxx.c \
 Service/SrvMPU_Sample.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
+DataStructure/binary_tree.c \
 Common/reboot.c \
 Common/error_log.c \
 System/mmu/mmu.c \
