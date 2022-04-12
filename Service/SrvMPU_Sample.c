@@ -147,8 +147,10 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 
 SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
+    /* create error log handle */
     SrvMPU_Error_Handle = ErrorTree_Create("SrvIMU_Error");
 
+    /* regist all error to the error tree */
     Error_Register(SrvMPU_Error_Handle, SrvIMU_ErrorList, sizeof(SrvIMU_ErrorList));
 
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
