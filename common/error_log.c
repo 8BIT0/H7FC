@@ -1,20 +1,21 @@
 #include "error_log.h"
 #include "mmu.h"
 
+/* return low priority one */
 static uint32_t Error_InsertPriority_Compare(uint32_t l_addr, uint32_t r_addr)
 {
     if (ErrorTreeDataToObj(l_addr)->code > ErrorTreeDataToObj(r_addr)->code)
-        return l_addr;
+        return r_addr;
 
     if (ErrorTreeDataToObj(l_addr)->code < ErrorTreeDataToObj(r_addr)->code)
-        return r_addr;
+        return l_addr;
 
     return 0;
 }
 
 Error_Handler ErrorTree_Create(char *name)
 {
-    ErrorTree_TypeDef *Error_Tmp = NULL;
+    volatile ErrorTree_TypeDef *Error_Tmp = NULL;
 
     Error_Tmp = (ErrorTree_TypeDef *)MMU_Malloc(sizeof(ErrorTree_TypeDef));
 
@@ -29,6 +30,7 @@ Error_Handler ErrorTree_Create(char *name)
     return (uint32_t)Error_Tmp;
 }
 
+volatile node_template *root = NULL;
 bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num)
 {
     item_obj *linked_item = NULL;
@@ -52,6 +54,8 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
         else
             ErrorHandleToObj(hdl)->tree_node = tree_node;
     }
+
+    ErrorHandleToObj(hdl)->tree_node = Tree_ReSetRoot(ErrorHandleToObj(hdl)->tree_node);
 
     ErrorHandleToObj(hdl)->limb_num = num;
     return true;
@@ -91,7 +95,7 @@ bool Error_Trigger(Error_Handler hdl, int16_t code)
         if (ErrorHandleToObj(hdl)->link_node == NULL)
         {
             node_item = ((Error_Obj_Typedef *)(NodeAddrToNodeObj(ErrorObj_Tmp)->data_ptr))->item;
-            ErrorHandleToObj(hdl)->link_node = node_item;
+            // ErrorHandleToObj(hdl)->link_node = node_item;
             List_Init(ErrorHandleToObj(hdl)->link_node, node_item, by_order, Error_InsertPriority_Compare);
         }
         else

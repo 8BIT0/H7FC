@@ -3,16 +3,16 @@
 
 void List_Init(list_obj *list, item_obj *first_item, list_arrangement_mode mode, item_compare_callback callback)
 {
-    if ((first_item != NULL) && (first_item->data != NULL))
-    {
-        list->data = first_item->data;
-        list->nxt = first_item->nxt;
+    // if ((first_item != NULL) && (first_item->data != NULL))
+    // {
+    list->data = first_item->data;
+    list->nxt = first_item->nxt;
 
-        first_item->compare_callback = callback;
-        first_item->mode = mode;
-    }
-    else
-        list->nxt = NULL;
+    first_item->compare_callback = callback;
+    first_item->mode = mode;
+    // }
+    // else
+    //     list->nxt = NULL;
 
     list->mode = mode;
     list->compare_callback = callback;

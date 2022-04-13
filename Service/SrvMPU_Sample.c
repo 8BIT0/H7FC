@@ -151,7 +151,7 @@ SrvIMU_ErrorCode_List SrvIMU_Init(void)
     SrvMPU_Error_Handle = ErrorTree_Create("SrvIMU_Error");
 
     /* regist all error to the error tree */
-    Error_Register(SrvMPU_Error_Handle, SrvIMU_ErrorList, sizeof(SrvIMU_ErrorList));
+    Error_Register(SrvMPU_Error_Handle, SrvIMU_ErrorList, sizeof(SrvIMU_ErrorList) / sizeof(SrvIMU_ErrorList[0]));
 
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();

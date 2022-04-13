@@ -32,13 +32,9 @@ node_template *Tree_ReSetRoot(node_template *tree)
         return NULL;
 
     if (tree->F_Node == NULL)
-    {
         return tree;
-    }
     else
-    {
-        Tree_ReSetRoot(tree->F_Node);
-    }
+        return Tree_ReSetRoot(tree->F_Node);
 }
 
 void Tree_InsertNode(node_template *relative_root, node_template *node, compare_callback callback)
