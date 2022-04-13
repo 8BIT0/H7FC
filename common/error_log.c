@@ -78,6 +78,7 @@ static uint32_t Error_TriggerCompareCallback(node_template *node, void *code_add
 bool Error_Trigger(Error_Handler hdl, int16_t code)
 {
     Error_Obj_Typedef *ErrorObj_Tmp;
+    item_obj *node_item = NULL;
     int16_t code_tmp = code;
 
     if (hdl == NULL)
@@ -89,11 +90,13 @@ bool Error_Trigger(Error_Handler hdl, int16_t code)
     {
         if (ErrorHandleToObj(hdl)->link_node == NULL)
         {
-            ErrorHandleToObj(hdl)->link_node = ((Error_Obj_Typedef *)(NodeAddrToNodeObj(ErrorObj_Tmp)->data_ptr))->item;
+            node_item = ((Error_Obj_Typedef *)(NodeAddrToNodeObj(ErrorObj_Tmp)->data_ptr))->item;
+            ErrorHandleToObj(hdl)->link_node = node_item;
+            List_Init(ErrorHandleToObj(hdl)->link_node, node_item, by_order, Error_InsertPriority_Compare);
         }
         else
         {
-            List_Insert_Item();
+            List_Insert_Item(ErrorHandleToObj(hdl)->link_node, node_item);
         }
 
         return true;

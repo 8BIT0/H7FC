@@ -116,7 +116,7 @@ void List_ItemInit(item_obj *obj, void *arg)
     }
 }
 
-static void List_InsertToPrv(list_obj *list, item_obj *item)
+void List_InsertToPrv(list_obj *list, item_obj *item)
 {
     if (list->nxt != NULL)
     {
@@ -129,7 +129,7 @@ static void List_InsertToPrv(list_obj *list, item_obj *item)
     }
 }
 
-static void List_InsertByOrder(list_obj *list, item_obj *item)
+void List_InsertByOrder(list_obj *list, item_obj *item)
 {
     if (list->nxt != NULL)
     {
