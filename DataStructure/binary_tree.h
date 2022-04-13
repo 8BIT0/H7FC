@@ -14,6 +14,8 @@
 #define MATCHED 0
 #define ERROR_MATCH 1
 
+#define NodeAddrToNodeObj(x) ((node_template *)x)
+
 typedef enum
 {
     full_tree,

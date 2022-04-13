@@ -42,7 +42,7 @@ static void List_ItemSwapLRItem(item_obj *item)
     }
 }
 
-//minimun check pos is 1
+// minimun check pos is 1
 item_obj *List_CheckAt(list_obj *list, uint16_t layer)
 {
     item_obj *item_tmp = NULL;
@@ -116,7 +116,7 @@ void List_ItemInit(item_obj *obj, void *arg)
     }
 }
 
-void List_InsertToPrv(list_obj *list, item_obj *item)
+static void List_InsertToPrv(list_obj *list, item_obj *item)
 {
     if (list->nxt != NULL)
     {
@@ -129,7 +129,7 @@ void List_InsertToPrv(list_obj *list, item_obj *item)
     }
 }
 
-void List_InsertByOrder(list_obj *list, item_obj *item)
+static void List_InsertByOrder(list_obj *list, item_obj *item)
 {
     if (list->nxt != NULL)
     {

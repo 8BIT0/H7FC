@@ -86,7 +86,18 @@ bool Error_Trigger(Error_Handler hdl, int16_t code)
     ErrorObj_Tmp = Tree_Search(ErrorHandleToObj(hdl)->tree_node, (uint32_t)&code_tmp, NULL, Error_TriggerCompareCallback);
 
     if (ErrorObj_Tmp != ERROR_MATCH)
+    {
+        if (ErrorHandleToObj(hdl)->link_node == NULL)
+        {
+            ErrorHandleToObj(hdl)->link_node = ((Error_Obj_Typedef *)(NodeAddrToNodeObj(ErrorObj_Tmp)->data_ptr))->item;
+        }
+        else
+        {
+            List_Insert_Item();
+        }
+
         return true;
+    }
 
     return false;
 }
