@@ -72,34 +72,45 @@ static uint32_t Error_TriggerCompareCallback(node_template *node, void *code_add
         return 1;
 
     if (Obj->code > error_code)
-        return node->L_Node;
+        return (uint32_t)(node->L_Node);
 
     if (Obj->code < error_code)
-        return node->R_Node;
+        return (uint32_t)(node->R_Node);
 }
 
 bool Error_Trigger(Error_Handler hdl, int16_t code)
 {
-    Error_Obj_Typedef *ErrorObj_Tmp;
+    uint32_t ErrorNodeObj_Tmp;
     item_obj *node_item = NULL;
     int16_t code_tmp = code;
+    Error_Obj_Typedef *errorobj_tmp = NULL;
 
     if (hdl == NULL)
         return false;
 
-    ErrorObj_Tmp = Tree_Search(ErrorHandleToObj(hdl)->tree_node, (uint32_t)&code_tmp, NULL, Error_TriggerCompareCallback);
+    ErrorNodeObj_Tmp = Tree_Search(ErrorHandleToObj(hdl)->tree_node, (uint32_t)&code_tmp, NULL, Error_TriggerCompareCallback);
 
-    if (ErrorObj_Tmp != ERROR_MATCH)
+    if (ErrorNodeObj_Tmp != ERROR_MATCH)
     {
-        if (ErrorHandleToObj(hdl)->link_node == NULL)
+        errorobj_tmp = ((node_template *)ErrorNodeObj_Tmp)->data_ptr;
+
+        if (errorobj_tmp->proc_type != Error_Proc_Immd)
         {
-            node_item = ((Error_Obj_Typedef *)(NodeAddrToNodeObj(ErrorObj_Tmp)->data_ptr))->item;
-            // ErrorHandleToObj(hdl)->link_node = node_item;
-            List_Init(ErrorHandleToObj(hdl)->link_node, node_item, by_order, Error_InsertPriority_Compare);
+            node_item = errorobj_tmp->item;
+
+            if (ErrorHandleToObj(hdl)->link_node == NULL)
+            {
+                List_Init(ErrorHandleToObj(hdl)->link_node, node_item, by_order, Error_InsertPriority_Compare);
+            }
+            else
+            {
+                List_Insert_Item(ErrorHandleToObj(hdl)->link_node, node_item);
+            }
         }
         else
         {
-            List_Insert_Item(ErrorHandleToObj(hdl)->link_node, node_item);
+            /* trigger error process immediately */
+            // if ()
         }
 
         return true;

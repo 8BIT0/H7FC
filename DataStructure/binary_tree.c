@@ -1,9 +1,7 @@
 /*
 coder: 8_B!T0
 bref:
-to make search and sort function more effcient. so i create this file
-in order to make doubly linked list can be mutual converted with binary tree
-and make some search function effcient.
+use binary tree structure estabilsh a error log tree make error trigger and seach effcient
 */
 #include "binary_tree.h"
 #include <string.h>
@@ -427,7 +425,7 @@ static void Tree_RotateRight(node_template *root, node_template *a)
 
 uint32_t Tree_Search(node_template *Root_Ptr, void *node_data, search_callback mth_callback, compare_callback cmp_callback)
 {
-    uint32_t nxt_node = 0;
+    node_template *nxt_node = NULL;
     node_template *node_tmp = NULL;
 
     if (Root_Ptr == NULL || node_data == NULL || cmp_callback == NULL)
@@ -435,14 +433,14 @@ uint32_t Tree_Search(node_template *Root_Ptr, void *node_data, search_callback m
 
     node_tmp = Root_Ptr;
 
-    nxt_node = cmp_callback(node_tmp->data_ptr, node_data);
+    nxt_node = (node_template *)(cmp_callback(node_tmp->data_ptr, node_data));
 
     if (nxt_node == (uint32_t)node_tmp)
     {
         if (mth_callback != NULL)
             mth_callback(node_data);
 
-        return (uint32_t)((node_template *)nxt_node);
+        return (uint32_t)nxt_node;
     }
     else if (nxt_node > ERROR_MATCH)
     {
