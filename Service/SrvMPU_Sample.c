@@ -15,6 +15,9 @@
  *   PriIMU -> MPU6000
  *   SecIMU -> ICM20602
  */
+static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size);
+static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size);
+
 static SrvMpu_InitReg_TypeDef SrvMpu_Reg;
 static Error_Handler SrvMPU_Error_Handle = NULL;
 
@@ -63,11 +66,11 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .proc_type = Error_Proc_Ignore,
     },
     {
-        .callback = NULL,
+        .callback = SrvIMU_PriDev_InitError,
         .code = SrvIMU_PriDev_Init_Error,
         .desc = "Pri Dev Init Failed",
         .out = false,
-        .proc_type = Error_Proc_Ignore,
+        .proc_type = Error_Proc_Immd,
     },
     {
         .callback = NULL,
@@ -91,26 +94,11 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .proc_type = Error_Proc_Ignore,
     },
     {
-        .callback = NULL,
+        .callback = SrvIMU_SecDev_InitError,
         .code = SrvIMU_SecDev_Init_Error,
         .desc = "Sec Dev Init Failed",
-        .out = false,
-        .proc_type = Error_Proc_Ignore,
-    },
-    {
-        .callback = NULL,
-        .code = SrvIMU_SecDev_Init_Error,
-        .desc = "Sec Dev Init Failed",
-        .out = false,
-        .proc_type = Error_Proc_Ignore,
-    },
-    {
-        .callback = NULL,
-        .code = SrvIMU_SecDev_Init_Error,
-        .desc = "Sec Dev Init Failed",
-        .item = NULL,
-        .out = false,
-        .proc_type = Error_Proc_Ignore,
+        .out = true,
+        .proc_type = Error_Proc_Immd,
     },
     {
         .callback = NULL,
@@ -163,11 +151,15 @@ SrvIMU_ErrorCode_List SrvIMU_Init(void)
     {
         SrvMpu_Reg.PriDev_Init_State = true;
     }
+    else
+        Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, NULL, 0);
 
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
         SrvMpu_Reg.SecDev_Init_State = true;
     }
+    else
+        Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, NULL, 0);
 
     if (!SrvMpu_Reg.PriDev_Init_State && !SrvMpu_Reg.SecDev_Init_State)
     {
@@ -288,4 +280,18 @@ int8_t SrvIMU_GetPri_InitError(void)
 int8_t SrvIMU_GetSec_InitError(void)
 {
     return DevICM20602.get_error(&ICM20602Obj);
+}
+
+static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size)
+{
+    static uint8_t a;
+
+    a++;
+}
+
+static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size)
+{
+    static uint8_t a;
+
+    a++;
 }

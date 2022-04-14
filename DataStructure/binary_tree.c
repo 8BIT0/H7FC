@@ -433,16 +433,16 @@ uint32_t Tree_Search(node_template *Root_Ptr, void *node_data, search_callback m
 
     node_tmp = Root_Ptr;
 
-    nxt_node = (node_template *)(cmp_callback(node_tmp->data_ptr, node_data));
+    nxt_node = (node_template *)(cmp_callback(node_tmp, node_data));
 
-    if (nxt_node == (uint32_t)node_tmp)
+    if (nxt_node == node_tmp)
     {
         if (mth_callback != NULL)
             mth_callback(node_data);
 
         return (uint32_t)nxt_node;
     }
-    else if (nxt_node > ERROR_MATCH)
+    else if ((uint32_t)nxt_node > ERROR_MATCH)
     {
         return Tree_Search((node_template *)nxt_node, node_data, mth_callback, cmp_callback);
     }

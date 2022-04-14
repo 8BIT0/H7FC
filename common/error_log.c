@@ -66,10 +66,10 @@ static uint32_t Error_TriggerCompareCallback(node_template *node, void *code_add
     int16_t error_code = *((int16_t *)code_addr);
 
     if (Obj == NULL)
-        return 0;
+        return 1;
 
     if (Obj->code == error_code)
-        return 1;
+        return node;
 
     if (Obj->code > error_code)
         return (uint32_t)(node->L_Node);
@@ -78,7 +78,7 @@ static uint32_t Error_TriggerCompareCallback(node_template *node, void *code_add
         return (uint32_t)(node->R_Node);
 }
 
-bool Error_Trigger(Error_Handler hdl, int16_t code)
+bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
 {
     uint32_t ErrorNodeObj_Tmp;
     item_obj *node_item = NULL;
@@ -110,7 +110,8 @@ bool Error_Trigger(Error_Handler hdl, int16_t code)
         else
         {
             /* trigger error process immediately */
-            // if ()
+            if (errorobj_tmp->callback)
+                errorobj_tmp->callback(p_arg, size);
         }
 
         return true;

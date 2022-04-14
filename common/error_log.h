@@ -44,7 +44,7 @@ typedef struct
 
 Error_Handler ErrorTree_Create(char *name);
 bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *obj, uint16_t num);
-bool Error_Trigger(Error_Handler hdl, int16_t code);
+bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size);
 bool Error_Proc(Error_Handler hdl);
 
 #endif
