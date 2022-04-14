@@ -92,7 +92,7 @@ bool Error_Trigger(Error_Handler hdl, int16_t code)
 
     if (ErrorNodeObj_Tmp != ERROR_MATCH)
     {
-        errorobj_tmp = ((node_template *)ErrorNodeObj_Tmp)->data_ptr;
+        errorobj_tmp = (Error_Obj_Typedef *)(((node_template *)ErrorNodeObj_Tmp)->data_ptr);
 
         if (errorobj_tmp->proc_type != Error_Proc_Immd)
         {
