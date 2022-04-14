@@ -30,7 +30,6 @@ Error_Handler ErrorTree_Create(char *name)
     return (uint32_t)Error_Tmp;
 }
 
-volatile node_template *root = NULL;
 bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num)
 {
     item_obj *linked_item = NULL;
