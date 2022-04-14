@@ -166,6 +166,8 @@ SrvIMU_ErrorCode_List SrvIMU_Init(void)
         return SrvIMU_Sample_Init_Error;
     }
 
+    Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, NULL, 0);
+
     return SrvIMU_No_Error;
 }
 
