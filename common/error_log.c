@@ -1,7 +1,6 @@
 #include "error_log.h"
 #include "mmu.h"
 
-/* return low priority one */
 static uint32_t Error_InsertPriority_Compare(uint32_t l_addr, uint32_t r_addr)
 {
     if (ErrorTreeDataToObj(l_addr)->code > ErrorTreeDataToObj(r_addr)->code)
