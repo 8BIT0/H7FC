@@ -57,15 +57,6 @@ typedef struct node
     char *name;
     void *data_ptr;
 } node_template;
-
-typedef struct
-{
-    bool isBalance;
-    uint8_t layer;
-    uint8_t hi_bias;
-    node_template *occur_node_ptr;
-    direction_e occur_dir;
-} balance_check_ouput_s;
 #pragma pack()
 
 typedef void (*unbalance_callback)(node_template *root_tmp);
@@ -75,7 +66,6 @@ typedef uint32_t (*search_callback)(void *arg);
 #define tree_traverse_callback display_callback
 
 void Tree_Node_Init(node_template *node, char *node_name, void *data);
-balance_check_ouput_s Tree_Balance_Checker(node_template *relative_root, int8_t *depth, unbalance_callback cb_func);
 void Tree_InsertNode(node_template *relative_root, node_template *node, compare_callback callback);
 void Tree_Structure_Dsp(node_template *relative_root, display_callback dsp_func, traverse_type type);
 void Tree_Printf_NodeName(node_template *node);
