@@ -4,370 +4,406 @@ bref:
 use binary tree structure estabilsh a error log tree make error trigger and seach effcient
 */
 #include "binary_tree.h"
-#include <string.h>
+#include "mmu.h"
 
-static bool Tree_DynamicTrim(node_template *relative_root);
-static void Tree_RotateLeft(node_template *root, node_template *a);
-static void Tree_RotateRight(node_template *root, node_template *a);
+#define TreeMalloc(x) MMU_Malloc(x)
+#define TreeFree(x) MMU_Free(x)
 
-void Tree_Node_Init(node_template *node, char *node_name, void *data)
+static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Callback search, Tree_Callback compare);
+static void Tree_Traverse(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback callback);
+static bool Tree_Insert(Tree_TypeDef *tree, char *node_name, data_handle data_addr);
+
+BinaryTree_TypeDef BlanceTree = {
+    .Create = BinaryTree_Create,
+    .Insert = Tree_Insert,
+    .Traverse = Tree_Traverse,
+    .Search = NULL,
+};
+
+static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Callback search, Tree_Callback compare)
 {
-    if (node == NULL)
-        return;
+    Tree_TypeDef *tree_tmp = NULL;
 
-    node->data_ptr = data;
+    tree_tmp = (Tree_TypeDef *)TreeMalloc(sizeof(Tree_TypeDef));
 
-    node->F_Node = NULL;
-    node->L_Node = NULL;
-    node->R_Node = NULL;
-
-    node->name = node_name;
-}
-
-node_template *Tree_ReSetRoot(node_template *tree)
-{
-    if (tree == NULL)
-        return NULL;
-
-    if (tree->F_Node == NULL)
-        return tree;
-    else
-        return Tree_ReSetRoot(tree->F_Node);
-}
-
-void Tree_InsertNode(node_template *relative_root, node_template *node, compare_callback callback)
-{
-    uint32_t cmp_out = 0;
-
-    if ((node == NULL) || (callback == NULL) || (relative_root == node))
-        return;
-
-    // need traverse process compare all node in current root
-    cmp_out = callback(relative_root->data_ptr, node->data_ptr);
-
-    if (cmp_out)
+    if (tree_tmp)
     {
-        // relative root data is bigger then node data
-        if (cmp_out == (uint32_t)relative_root->data_ptr)
+        if ((insert != NULL) && (search != NULL) && (compare != NULL))
         {
-            if (relative_root->L_Node != NULL)
-            {
-                Tree_InsertNode(relative_root->L_Node, node, callback);
-            }
-            else
-            {
-                if (relative_root == node)
-                    return;
+            tree_tmp->name = name;
+            tree_tmp->search_callback = search;
+            tree_tmp->insert_callback = insert;
+            tree_tmp->compare_callback = compare;
+            tree_tmp->root_node = NULL;
+        }
+        else
+        {
+            TreeFree(tree_tmp);
+            tree_tmp = NULL;
+        }
+    }
 
-                node->F_Node = relative_root;
-                relative_root->L_Node = node;
+    return tree_tmp;
+}
+
+static int16_t Tree_Get_Depth(TreeNode_TypeDef *target)
+{
+    int16_t l_depth = 0;
+    int16_t r_depth = 0;
+
+    if (target != NULL)
+    {
+        l_depth = Tree_Get_Depth(target->L_Node) + 1;
+        r_depth = Tree_Get_Depth(target->R_Node) + 1;
+
+        return (l_depth >= r_depth) ? l_depth : r_depth;
+    }
+
+    return 0;
+}
+
+static int16_t Tree_Get_BalanceFactory(TreeNode_TypeDef *target)
+{
+    if (target)
+        return Tree_Get_Depth(target->L_Node) - Tree_Get_Depth(target->R_Node);
+
+    return 0;
+}
+
+static TreeNode_TypeDef *Tree_Search_RootNode(TreeNode_TypeDef *node)
+{
+    if (node)
+    {
+        if (node->F_Node)
+        {
+            return Tree_Search_RootNode(node->F_Node);
+        }
+        else
+            return node;
+    }
+
+    return NULL;
+}
+
+static TreeNode_TypeDef *TreeNode_RightRotate(TreeNode_TypeDef *node)
+{
+    TreeNode_TypeDef *o_r = NULL; // old root node
+    TreeNode_TypeDef *n_r = NULL; // new root node
+    TreeNode_TypeDef *f_n = NULL; // father node
+
+    if (node)
+    {
+        o_r = node;
+        n_r = node->L_Node;
+        f_n = node->F_Node;
+
+        if (f_n)
+        {
+            /* old root data < father node data */
+            if (node->compare_callback(f_n->data, n_r->data) == n_r->data)
+            {
+                f_n->L_Node = n_r;
+            }
+            else if (node->compare_callback(f_n->data, n_r->data) == n_r->data)
+            {
+                f_n->R_Node = n_r;
             }
         }
-        else if (cmp_out == (uint32_t)node->data_ptr)
-        {
-            if (relative_root->R_Node != NULL)
-            {
-                Tree_InsertNode(relative_root->R_Node, node, callback);
-            }
-            else
-            {
-                if (relative_root == node)
-                    return;
+        n_r->F_Node = f_n;
 
-                node->F_Node = relative_root;
-                relative_root->R_Node = node;
+        o_r->L_Node = n_r->R_Node;
+        if (n_r->R_Node)
+        {
+            n_r->R_Node->F_Node = o_r;
+        }
+        n_r->R_Node = o_r;
+        o_r->F_Node = n_r;
+    }
+
+    return n_r;
+}
+
+static TreeNode_TypeDef *TreeNode_LeftRotate(TreeNode_TypeDef *node)
+{
+    TreeNode_TypeDef *o_r = NULL; // old root node
+    TreeNode_TypeDef *n_r = NULL; // new root node
+    TreeNode_TypeDef *f_n = NULL; // father node
+
+    if (node)
+    {
+        o_r = node;
+        n_r = node->R_Node;
+        f_n = node->F_Node;
+
+        if (f_n)
+        {
+            if (node->compare_callback(f_n->data, n_r->data) == n_r->data)
+            {
+                f_n->L_Node = n_r;
+            }
+            else if (node->compare_callback(f_n->data, n_r->data) == f_n->data)
+            {
+                f_n->R_Node = n_r;
             }
         }
+        n_r->F_Node = f_n;
 
-        Tree_DynamicTrim(relative_root);
+        o_r->R_Node = n_r->L_Node;
+        if (n_r->L_Node)
+        {
+            n_r->L_Node->F_Node = o_r;
+        }
+        n_r->L_Node = o_r;
+        o_r->F_Node = n_r;
+    }
+
+    return n_r;
+}
+
+static void TreeNoe_Dynamic_Trim(TreeNode_TypeDef *root)
+{
+    int16_t bf = 0;
+    int16_t lbf = 0;
+    int16_t rbf = 0;
+
+    if (root == NULL)
+        return;
+
+    bf = Tree_Get_BalanceFactory(root);
+    if (bf == 2) // LL
+    {
+        lbf = Tree_Get_BalanceFactory(root->L_Node);
+        if (lbf == -1) // LR
+        {
+            root->L_Node = TreeNode_LeftRotate(root->L_Node);
+        }
+
+        root = TreeNode_RightRotate(root);
+    }
+    else if (bf == -2) // RR
+    {
+        rbf = Tree_Get_BalanceFactory(root->R_Node);
+        if (rbf == 1) // RL
+        {
+            root->R_Node = TreeNode_RightRotate(root->R_Node);
+        }
+
+        root = TreeNode_LeftRotate(root);
     }
 }
 
-bool Tree_DeleteNode(node_template *node)
+static bool TreeNode_Insert(TreeNode_TypeDef *root, TreeNode_TypeDef *node)
 {
-    if ((node->F_Node != NULL) || (node != NULL))
-    {
-        if (node->F_Node->L_Node == node)
-        {
-            node->F_Node->L_Node = NULL;
-        }
-        else if (node->F_Node->R_Node == node)
-        {
-            node->F_Node->R_Node = NULL;
-        }
+    data_handle hdl_tmp = 0;
 
-        node->F_Node = NULL;
+    if (root == NULL || node == NULL)
+        return false;
+
+    hdl_tmp = root->insert_callback(root->data, node->data);
+
+    /* insert callback return smaller data`s addr */
+    if (hdl_tmp == node->data)
+    {
+        /* insert node data smaller than root/target_node data */
+        if (root->L_Node != NULL)
+        {
+            return TreeNode_Insert(root->L_Node, node);
+        }
+        else
+        {
+            node->F_Node = root;
+            root->L_Node = node;
+        }
+    }
+    else if (hdl_tmp == root->data)
+    {
+        /* insert node data bigger than root/target_node data  */
+        if (root->R_Node != NULL)
+        {
+            return TreeNode_Insert(root->R_Node, node);
+        }
+        else
+        {
+            node->F_Node = root;
+            root->R_Node = node;
+        }
+    }
+    else
+        return false;
+
+    return true;
+}
+
+static void TreeNode_Update_BalanceFactory(TreeNode_TypeDef *node)
+{
+    if (node)
+    {
+        node->balance_factory = Tree_Get_BalanceFactory(node);
+
+        TreeNode_Update_BalanceFactory(node->L_Node);
+        TreeNode_Update_BalanceFactory(node->R_Node);
+
+        if ((node->balance_factory == 2) || (node->balance_factory == -2))
+        {
+            /* dynamic balance trim */
+            TreeNoe_Dynamic_Trim(node);
+        }
+    }
+}
+
+static void Tree_RootUpdate(Tree_TypeDef *tree)
+{
+    TreeNode_TypeDef *root = NULL;
+
+    if (tree && tree->root_node)
+    {
+        root = Tree_Search_RootNode(tree->root_node);
+
+        if (root != NULL)
+        {
+            tree->root_node = root;
+
+            /* test code */
+            TreeNode_Update_BalanceFactory(tree->root_node);
+        }
+    }
+}
+
+static bool TreeNode_Init(TreeNode_TypeDef *node, char *name, data_handle data, Tree_Callback insert, Tree_Callback search, Tree_Callback compare)
+{
+    if (node && data)
+    {
+        if ((insert == NULL) || (search == NULL) || (compare == NULL))
+            return false;
+
+        node->name = name;
+        node->data = data;
+        node->compare_callback = compare;
+        node->insert_callback = insert;
+        node->search_callback = search;
+
         return true;
     }
 
     return false;
 }
 
-void Tree_Printf_NodeName(node_template *node)
+static bool Tree_Insert(Tree_TypeDef *tree, char *node_name, data_handle data_addr)
 {
-    if (node->name != NULL)
+    /* create node first */
+    TreeNode_TypeDef *node_tmp = NULL;
+
+    if (tree == NULL)
+        return false;
+
+    node_tmp = (TreeNode_TypeDef *)TreeMalloc(sizeof(TreeNode_TypeDef));
+    TreeNode_Init(node_tmp, node_name, data_addr, tree->insert_callback, tree->search_callback, tree->compare_callback);
+
+    if (node_tmp)
     {
-        printf("%s\n", node->name);
+        /* update root node */
+        Tree_RootUpdate(tree);
+
+        if (tree->root_node != NULL)
+        {
+            TreeNode_Insert(tree->root_node, node_tmp);
+        }
+        else
+            tree->root_node = node_tmp;
+
+        /* update root node */
+        Tree_RootUpdate(tree);
+
+        return true;
     }
+
+    return false;
 }
 
-// traverse rule : root left right
-void Tree_Pre_Traverse(node_template *relative_node, tree_traverse_callback callback)
+static void TreeNode_Pre_Traverse(TreeNode_TypeDef *node, Tree_Traverse_Callback callback)
 {
-    if (relative_node != NULL)
+    if (node != NULL)
     {
         // process root node
         if (callback != NULL)
-        {
-            callback(relative_node);
-        }
+            callback(node->data);
 
         // traverse left node
-        Tree_Pre_Traverse(relative_node->L_Node, callback);
+        TreeNode_Pre_Traverse(node->L_Node, callback);
         // traverse right node
-        Tree_Pre_Traverse(relative_node->R_Node, callback);
+        TreeNode_Pre_Traverse(node->R_Node, callback);
     }
 }
 
-// traverse rule : left root right
-void Tree_Mid_Traverse(node_template *relative_node, tree_traverse_callback callback)
+static void TreeNode_Mid_Traverse(TreeNode_TypeDef *node, Tree_Traverse_Callback callback)
 {
-    if (relative_node != NULL)
+    if (node != NULL)
     {
         // traverse left node
-        Tree_Mid_Traverse(relative_node->L_Node, callback);
+        TreeNode_Mid_Traverse(node->L_Node, callback);
 
         // process root node
         if (callback != NULL)
-        {
-            callback(relative_node);
-        }
+            callback(node->data);
 
         // traverse right node
-        Tree_Mid_Traverse(relative_node->R_Node, callback);
+        TreeNode_Mid_Traverse(node->R_Node, callback);
     }
 }
 
-// traverse rule : left right root
-void Tree_Bck_Traverse(node_template *relative_node, tree_traverse_callback callback)
+static void TreeNode_Bck_Traverse(TreeNode_TypeDef *node, Tree_Traverse_Callback callback)
 {
-    if (relative_node != NULL)
+    if (node != NULL)
     {
         // traverse left node
-        Tree_Bck_Traverse(relative_node->L_Node, callback);
+        TreeNode_Bck_Traverse(node->L_Node, callback);
         // traverse right node
-        Tree_Bck_Traverse(relative_node->R_Node, callback);
+        TreeNode_Bck_Traverse(node->R_Node, callback);
 
         // precess root node
         if (callback != NULL)
+            callback(node->data);
+    }
+}
+
+static void Tree_Traverse(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback callback)
+{
+    if (tree && tree->root_node)
+    {
+        switch ((uint8_t)type)
         {
-            callback(relative_node);
+        case Tree_Pre_Traverse:
+            TreeNode_Pre_Traverse(tree->root_node, callback);
+            break;
+
+        case Tree_Mid_Traverse:
+            TreeNode_Mid_Traverse(tree->root_node, callback);
+            break;
+
+        case Tree_Bck_Traverse:
+            TreeNode_Bck_Traverse(tree->root_node, callback);
+            break;
+
+        default:
+            break;
         }
     }
 }
 
-void Tree_Structure_Dsp(node_template *relative_root, display_callback dsp_func, traverse_type type)
+static data_handle TreeNode_Search(TreeNode_TypeDef *node, data_handle data)
 {
-    switch (type)
-    {
-    case pre_trv:
-        printf("\r\npre traverse\r\n");
-        Tree_Pre_Traverse(relative_root, dsp_func);
-        break;
+    data_handle handle_tmp = 0;
 
-    case mid_trv:
-        printf("\r\nmid traverse\r\n");
-        Tree_Mid_Traverse(relative_root, dsp_func);
-        break;
-
-    case bck_trv:
-        printf("\r\nbck traverse\r\n");
-        Tree_Bck_Traverse(relative_root, dsp_func);
-        break;
-
-    default:
-        break;
-    }
-}
-
-uint8_t Tree_GetDepth(node_template *relative_root)
-{
-    uint8_t left_depth_tmp = 0;
-    uint8_t right_depth_tmp = 0;
-
-    if (relative_root == NULL)
-    {
-        return 0;
-    }
-
-    left_depth_tmp = Tree_GetDepth(relative_root->L_Node) + 1;
-    right_depth_tmp = Tree_GetDepth(relative_root->R_Node) + 1;
-
-    return (left_depth_tmp > right_depth_tmp) ? left_depth_tmp : right_depth_tmp;
-}
-
-void Tree_SwapLR(node_template *relative_root)
-{
-    node_template *node_tmp = NULL;
-
-    if (relative_root != NULL)
-    {
-        node_tmp = relative_root->L_Node;
-
-        relative_root->L_Node = relative_root->R_Node;
-        relative_root->R_Node = node_tmp;
-
-        Tree_SwapLR(relative_root->L_Node);
-        Tree_SwapLR(relative_root->R_Node);
-    }
-}
-
-static int8_t Tree_GetBalance_Gain(node_template *relative_node)
-{
-    if (relative_node == NULL)
+    if ((node == NULL) || (data == 0) || (node->search_callback == NULL))
         return 0;
 
-    return Tree_GetDepth(relative_node->L_Node) - Tree_GetDepth(relative_node->R_Node);
+    return handle_tmp;
 }
 
-static bool Tree_DynamicTrim(node_template *relative_root)
+static bool Tree_Search(Tree_TypeDef *tree, data_handle data)
 {
-    node_template *node_tmp;
-    trim_style_list trim_type;
-    int8_t DepthDif = 0;
-
-    if (relative_root == NULL)
+    if (tree == NULL || data == 0 || tree->search_callback == NULL)
         return false;
 
-    while (relative_root != NULL)
-    {
-        DepthDif = Tree_GetBalance_Gain(relative_root);
-
-        if ((DepthDif > 2) || (DepthDif < -2))
-            return false;
-
-        if (DepthDif == 2)
-        {
-            if (relative_root->L_Node->R_Node != NULL)
-            {
-                Tree_RotateLeft(relative_root->F_Node, relative_root->L_Node);
-            }
-
-            Tree_RotateRight(relative_root->F_Node, relative_root);
-        }
-        else if (DepthDif == -2)
-        {
-            if (relative_root->R_Node->L_Node != NULL)
-            {
-                Tree_RotateRight(relative_root->F_Node, relative_root->R_Node);
-            }
-
-            Tree_RotateLeft(relative_root->F_Node, relative_root);
-        }
-
-        relative_root = relative_root->F_Node;
-    }
-
     return true;
-}
-
-static void Tree_RotateLeft(node_template *root, node_template *a)
-{
-    if (a == NULL)
-        return;
-
-    node_template *b = a->R_Node;
-    node_template *d = b->L_Node;
-
-    a->R_Node = d;
-    if (d != NULL)
-    {
-        d->F_Node = a;
-    }
-
-    b->F_Node = a->F_Node;
-
-    if (b->F_Node != NULL)
-    {
-        if (b->F_Node->L_Node == a)
-        {
-            b->F_Node->L_Node = b;
-        }
-        else
-        {
-            b->F_Node->R_Node = b;
-        }
-    }
-    else
-    {
-        // b node is root
-        root = b;
-    }
-
-    a->F_Node = b;
-    b->L_Node = a;
-}
-
-static void Tree_RotateRight(node_template *root, node_template *a)
-{
-    if (a == NULL)
-        return;
-
-    node_template *b = a->L_Node;
-    node_template *d = b->R_Node;
-
-    a->L_Node = d; // this step make left node equle to right node
-    if (d != NULL)
-    {
-        d->F_Node = a;
-    }
-
-    b->F_Node = a->F_Node;
-
-    if (b->F_Node != NULL)
-    {
-        if (b->F_Node->L_Node == a)
-        {
-            b->F_Node->L_Node = b;
-        }
-        else
-        {
-            b->F_Node->R_Node = b;
-        }
-    }
-    else
-    {
-        // b node is root
-        root = b;
-    }
-
-    a->F_Node = b;
-    b->R_Node = a;
-}
-
-uint32_t Tree_Search(node_template *Root_Ptr, void *node_data, search_callback mth_callback, compare_callback cmp_callback)
-{
-    node_template *nxt_node = NULL;
-    node_template *node_tmp = NULL;
-
-    if (Root_Ptr == NULL || node_data == NULL || cmp_callback == NULL)
-        return ERROR_MATCH;
-
-    node_tmp = Root_Ptr;
-
-    nxt_node = (node_template *)(cmp_callback(node_tmp, node_data));
-
-    if (nxt_node == node_tmp)
-    {
-        if (mth_callback != NULL)
-            mth_callback(node_data);
-
-        return (uint32_t)nxt_node;
-    }
-    else if ((uint32_t)nxt_node > ERROR_MATCH)
-    {
-        return Tree_Search((node_template *)nxt_node, node_data, mth_callback, cmp_callback);
-    }
-    else
-        return ERROR_MATCH;
 }

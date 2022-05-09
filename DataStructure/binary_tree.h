@@ -1,77 +1,65 @@
 #ifndef __BINARY_TREE_H
 #define __BINARY_TREE_H
 
-#include "stdint.h"
-#include "stdio.h"
-#include "stddef.h"
-#include "stdbool.h"
-#include "string.h"
-#include "stdlib.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 
-#define INVALID_SEARCH -1
-#define BALANCE 1
+typedef uint32_t Gen_Handle;
+typedef Gen_Handle data_handle;
+typedef Gen_Handle Tree_Handle;
+typedef Gen_Handle TreeNode_Handle;
 
-#define MATCHED 0
-#define ERROR_MATCH 1
-
-#define NodeAddrToNodeObj(x) ((node_template *)x)
-
-typedef enum
-{
-    full_tree,
-    complete_tree,
-    uncomplete_tree,
-} bintree_type;
+/* return smaller data handler */
+typedef data_handle (*Tree_Callback)(data_handle node_data, data_handle insert_data);
+typedef void (*Tree_Traverse_Callback)(data_handle data);
 
 typedef enum
 {
-    trim_ll = 0,
-    trim_rr,
-    trim_lr,
-    trim_rl,
-
-    trim_style_sum,
-} trim_style_list;
-
-typedef enum
-{
-    dir_none = 0,
-    dir_left = 1,
-    dir_right,
-} direction_e;
-
-typedef enum
-{
-    pre_trv = 1,
-    mid_trv,
-    bck_trv,
-} traverse_type;
+    Tree_Pre_Traverse = 1,
+    Tree_Mid_Traverse,
+    Tree_Bck_Traverse,
+} Tree_TraverseType_List;
 
 #pragma pack(1)
-typedef struct node
-{
-    struct node *F_Node;
-    struct node *L_Node;
-    struct node *R_Node;
 
+typedef struct Node_TypeDef
+{
     char *name;
-    void *data_ptr;
-} node_template;
+
+    data_handle data;
+    int16_t balance_factory;
+
+    struct Node_TypeDef *F_Node;
+    struct Node_TypeDef *L_Node;
+    struct Node_TypeDef *R_Node;
+
+    Tree_Callback insert_callback;
+    Tree_Callback search_callback;
+    Tree_Callback compare_callback;
+} TreeNode_TypeDef;
+
+typedef struct
+{
+    char *name;
+    TreeNode_TypeDef *root_node;
+
+    Tree_Callback insert_callback;
+    Tree_Callback search_callback;
+    Tree_Callback compare_callback;
+} Tree_TypeDef;
+
 #pragma pack()
 
-typedef void (*unbalance_callback)(node_template *root_tmp);
-typedef void (*display_callback)(node_template *root_tmp);
-typedef uint32_t (*compare_callback)(void *eq_l, void *eq_r);
-typedef uint32_t (*search_callback)(void *arg);
-#define tree_traverse_callback display_callback
+typedef struct
+{
+    Tree_TypeDef *(*Create)(char *name, Tree_Callback insert, Tree_Callback search, Tree_Callback compare);
+    bool (*Insert)(Tree_TypeDef *tree, char *node_name, data_handle data_addr);
+    TreeNode_TypeDef (*Search)(Tree_TypeDef *tree, data_handle data_addr);
+    void (*Traverse)(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback callback);
+} BinaryTree_TypeDef;
 
-void Tree_Node_Init(node_template *node, char *node_name, void *data);
-void Tree_InsertNode(node_template *relative_root, node_template *node, compare_callback callback);
-void Tree_Structure_Dsp(node_template *relative_root, display_callback dsp_func, traverse_type type);
-void Tree_Printf_NodeName(node_template *node);
-uint8_t Tree_GetDepth(node_template *relative_root);
-void Tree_SwapLR(node_template *relative_root);
-node_template *Tree_ReSetRoot(node_template *relative_root);
-uint32_t Tree_Search(node_template *Root_Ptr, void *node_data, search_callback mth_callback, compare_callback cmp_callback);
+extern BinaryTree_TypeDef BlanceTree;
 
 #endif

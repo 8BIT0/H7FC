@@ -61,7 +61,8 @@
                 "error_log.h": "c",
                 "mmu.h": "c",
                 "dev_icm20602.h": "c",
-                "imu_data.h": "c"
+                "imu_data.h": "c",
+                "stddef.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

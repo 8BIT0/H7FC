@@ -1,0 +1,1689 @@
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"SrvMPU_Sample.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.SrvIMU_PriIMU_Init,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	SrvIMU_PriIMU_Init:
+  25              	.LFB148:
+  26              		.file 1 "Service/SrvMPU_Sample.c"
+   1:Service/SrvMPU_Sample.c **** #include "SrvMPU_Sample.h"
+   2:Service/SrvMPU_Sample.c **** #include "Dev_MPU6000.h"
+   3:Service/SrvMPU_Sample.c **** #include "Dev_ICM20602.h"
+   4:Service/SrvMPU_Sample.c **** #include "IO_Definition.h"
+   5:Service/SrvMPU_Sample.c **** #include "runtime.h"
+   6:Service/SrvMPU_Sample.c **** #include "debug_util.h"
+   7:Service/SrvMPU_Sample.c **** #include "Bsp_SPI.h"
+   8:Service/SrvMPU_Sample.c **** #include "error_log.h"
+   9:Service/SrvMPU_Sample.c **** #include "Dev_Led.h"
+  10:Service/SrvMPU_Sample.c **** 
+  11:Service/SrvMPU_Sample.c **** #define IMU_Commu_TimeOut 1000
+  12:Service/SrvMPU_Sample.c **** #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
+  13:Service/SrvMPU_Sample.c **** 
+  14:Service/SrvMPU_Sample.c **** /*
+  15:Service/SrvMPU_Sample.c ****  *   PriIMU -> MPU6000
+  16:Service/SrvMPU_Sample.c ****  *   SecIMU -> ICM20602
+  17:Service/SrvMPU_Sample.c ****  */
+  18:Service/SrvMPU_Sample.c **** static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size);
+  19:Service/SrvMPU_Sample.c **** static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size);
+  20:Service/SrvMPU_Sample.c **** 
+  21:Service/SrvMPU_Sample.c **** static SrvMpu_InitReg_TypeDef SrvMpu_Reg;
+  22:Service/SrvMPU_Sample.c **** static Error_Handler SrvMPU_Error_Handle = NULL;
+  23:Service/SrvMPU_Sample.c **** 
+  24:Service/SrvMPU_Sample.c **** /* internal variable */
+  25:Service/SrvMPU_Sample.c **** /* MPU6000 Instance */
+  26:Service/SrvMPU_Sample.c **** static SPI_HandleTypeDef MPU6000_Bus_Instance;
+  27:Service/SrvMPU_Sample.c **** static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
+  28:Service/SrvMPU_Sample.c ****     .Instance = MPU6000_SPI_BUS,
+  29:Service/SrvMPU_Sample.c ****     .CLKPolarity = SPI_POLARITY_HIGH,
+  30:Service/SrvMPU_Sample.c ****     .CLKPhase = SPI_PHASE_2EDGE,
+  31:Service/SrvMPU_Sample.c ****     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8,
+  32:Service/SrvMPU_Sample.c **** };
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 2
+
+
+  33:Service/SrvMPU_Sample.c **** 
+  34:Service/SrvMPU_Sample.c **** /* ICM20602 Instance */
+  35:Service/SrvMPU_Sample.c **** static SPI_HandleTypeDef ICM20602_Bus_Instance;
+  36:Service/SrvMPU_Sample.c **** static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
+  37:Service/SrvMPU_Sample.c ****     .Instance = ICM20602_SPI_BUS,
+  38:Service/SrvMPU_Sample.c ****     .CLKPolarity = SPI_POLARITY_HIGH,
+  39:Service/SrvMPU_Sample.c ****     .CLKPhase = SPI_PHASE_2EDGE,
+  40:Service/SrvMPU_Sample.c ****     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8,
+  41:Service/SrvMPU_Sample.c **** };
+  42:Service/SrvMPU_Sample.c **** 
+  43:Service/SrvMPU_Sample.c **** static DevMPU6000Obj_TypeDef MPU6000Obj;
+  44:Service/SrvMPU_Sample.c **** static DevICM20602Obj_TypeDef ICM20602Obj;
+  45:Service/SrvMPU_Sample.c **** 
+  46:Service/SrvMPU_Sample.c **** static Error_Obj_Typedef SrvIMU_ErrorList[] = {
+  47:Service/SrvMPU_Sample.c ****     {
+  48:Service/SrvMPU_Sample.c ****         .callback = NULL,
+  49:Service/SrvMPU_Sample.c ****         .code = SrvIMU_PriCSPin_Init_Error,
+  50:Service/SrvMPU_Sample.c ****         .desc = "Pri CS Pin Init Failed",
+  51:Service/SrvMPU_Sample.c ****         .out = false,
+  52:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Ignore,
+  53:Service/SrvMPU_Sample.c ****     },
+  54:Service/SrvMPU_Sample.c ****     {
+  55:Service/SrvMPU_Sample.c ****         .callback = NULL,
+  56:Service/SrvMPU_Sample.c ****         .code = SrvIMU_PriExtiPin_Init_Error,
+  57:Service/SrvMPU_Sample.c ****         .desc = "Pri Ext Pin Init Failed",
+  58:Service/SrvMPU_Sample.c ****         .out = false,
+  59:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Ignore,
+  60:Service/SrvMPU_Sample.c ****     },
+  61:Service/SrvMPU_Sample.c ****     {
+  62:Service/SrvMPU_Sample.c ****         .callback = NULL,
+  63:Service/SrvMPU_Sample.c ****         .code = SrvIMU_PriBus_Init_Error,
+  64:Service/SrvMPU_Sample.c ****         .desc = "Pri Bus Init Failed",
+  65:Service/SrvMPU_Sample.c ****         .out = false,
+  66:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Ignore,
+  67:Service/SrvMPU_Sample.c ****     },
+  68:Service/SrvMPU_Sample.c ****     {
+  69:Service/SrvMPU_Sample.c ****         .callback = SrvIMU_PriDev_InitError,
+  70:Service/SrvMPU_Sample.c ****         .code = SrvIMU_PriDev_Init_Error,
+  71:Service/SrvMPU_Sample.c ****         .desc = "Pri Dev Init Failed",
+  72:Service/SrvMPU_Sample.c ****         .out = false,
+  73:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Immd,
+  74:Service/SrvMPU_Sample.c ****     },
+  75:Service/SrvMPU_Sample.c ****     {
+  76:Service/SrvMPU_Sample.c ****         .callback = NULL,
+  77:Service/SrvMPU_Sample.c ****         .code = SrvIMU_SecCSPin_Init_Error,
+  78:Service/SrvMPU_Sample.c ****         .desc = "Sec CS Pin Init Failed",
+  79:Service/SrvMPU_Sample.c ****         .out = false,
+  80:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Ignore,
+  81:Service/SrvMPU_Sample.c ****     },
+  82:Service/SrvMPU_Sample.c ****     {
+  83:Service/SrvMPU_Sample.c ****         .callback = NULL,
+  84:Service/SrvMPU_Sample.c ****         .code = SrvIMU_SecExtiPin_Init_Error,
+  85:Service/SrvMPU_Sample.c ****         .desc = "Sec Ext Pin Init Failed",
+  86:Service/SrvMPU_Sample.c ****         .out = false,
+  87:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Ignore,
+  88:Service/SrvMPU_Sample.c ****     },
+  89:Service/SrvMPU_Sample.c ****     {
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 3
+
+
+  90:Service/SrvMPU_Sample.c ****         .callback = NULL,
+  91:Service/SrvMPU_Sample.c ****         .code = SrvIMU_SecBus_Init_Error,
+  92:Service/SrvMPU_Sample.c ****         .desc = "Sec Bus Init Failed",
+  93:Service/SrvMPU_Sample.c ****         .out = false,
+  94:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Ignore,
+  95:Service/SrvMPU_Sample.c ****     },
+  96:Service/SrvMPU_Sample.c ****     {
+  97:Service/SrvMPU_Sample.c ****         .callback = SrvIMU_SecDev_InitError,
+  98:Service/SrvMPU_Sample.c ****         .code = SrvIMU_SecDev_Init_Error,
+  99:Service/SrvMPU_Sample.c ****         .desc = "Sec Dev Init Failed",
+ 100:Service/SrvMPU_Sample.c ****         .out = true,
+ 101:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Immd,
+ 102:Service/SrvMPU_Sample.c ****     },
+ 103:Service/SrvMPU_Sample.c ****     {
+ 104:Service/SrvMPU_Sample.c ****         .callback = NULL,
+ 105:Service/SrvMPU_Sample.c ****         .code = SrvIMU_Sample_Init_Error,
+ 106:Service/SrvMPU_Sample.c ****         .desc = "Sec Sample Init Failed",
+ 107:Service/SrvMPU_Sample.c ****         .out = false,
+ 108:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Ignore,
+ 109:Service/SrvMPU_Sample.c ****     },
+ 110:Service/SrvMPU_Sample.c ****     {
+ 111:Service/SrvMPU_Sample.c ****         .callback = NULL,
+ 112:Service/SrvMPU_Sample.c ****         .code = SrvIMU_Sample_OverRange,
+ 113:Service/SrvMPU_Sample.c ****         .desc = "Sec Sample OverRange",
+ 114:Service/SrvMPU_Sample.c ****         .out = false,
+ 115:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Ignore,
+ 116:Service/SrvMPU_Sample.c ****     },
+ 117:Service/SrvMPU_Sample.c ****     {
+ 118:Service/SrvMPU_Sample.c ****         .callback = NULL,
+ 119:Service/SrvMPU_Sample.c ****         .code = SrvIMU_Sample_Blunt,
+ 120:Service/SrvMPU_Sample.c ****         .desc = "Sec Sample Blunt",
+ 121:Service/SrvMPU_Sample.c ****         .out = false,
+ 122:Service/SrvMPU_Sample.c ****         .proc_type = Error_Proc_Ignore,
+ 123:Service/SrvMPU_Sample.c ****     },
+ 124:Service/SrvMPU_Sample.c **** };
+ 125:Service/SrvMPU_Sample.c **** 
+ 126:Service/SrvMPU_Sample.c **** /* internal function */
+ 127:Service/SrvMPU_Sample.c **** static int8_t SrvIMU_PriIMU_Init(void);
+ 128:Service/SrvMPU_Sample.c **** static int8_t SrvIMU_SecIMU_Init(void);
+ 129:Service/SrvMPU_Sample.c **** static void SrvIMU_PriIMU_ExtiCallback(void);
+ 130:Service/SrvMPU_Sample.c **** static void SrvIMU_SecIMU_ExtiCallback(void);
+ 131:Service/SrvMPU_Sample.c **** static void SrvIMU_PriIMU_CS_Ctl(bool state);
+ 132:Service/SrvMPU_Sample.c **** static void SrvIMU_SecIMU_CS_Ctl(bool state);
+ 133:Service/SrvMPU_Sample.c **** static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
+ 134:Service/SrvMPU_Sample.c **** static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
+ 135:Service/SrvMPU_Sample.c **** 
+ 136:Service/SrvMPU_Sample.c **** SrvIMU_ErrorCode_List SrvIMU_Init(void)
+ 137:Service/SrvMPU_Sample.c **** {
+ 138:Service/SrvMPU_Sample.c ****     /* create error log handle */
+ 139:Service/SrvMPU_Sample.c ****     SrvMPU_Error_Handle = ErrorTree_Create("SrvIMU_Error");
+ 140:Service/SrvMPU_Sample.c **** 
+ 141:Service/SrvMPU_Sample.c ****     /* regist all error to the error tree */
+ 142:Service/SrvMPU_Sample.c ****     Error_Register(SrvMPU_Error_Handle, SrvIMU_ErrorList, sizeof(SrvIMU_ErrorList) / sizeof(SrvIMU_
+ 143:Service/SrvMPU_Sample.c **** 
+ 144:Service/SrvMPU_Sample.c ****     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
+ 145:Service/SrvMPU_Sample.c ****     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
+ 146:Service/SrvMPU_Sample.c **** 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 4
+
+
+ 147:Service/SrvMPU_Sample.c ****     SrvMpu_Reg.PriDev_Init_State = false;
+ 148:Service/SrvMPU_Sample.c ****     SrvMpu_Reg.SecDev_Init_State = false;
+ 149:Service/SrvMPU_Sample.c **** 
+ 150:Service/SrvMPU_Sample.c ****     if (PriIMU_Init_State == SrvIMU_No_Error)
+ 151:Service/SrvMPU_Sample.c ****     {
+ 152:Service/SrvMPU_Sample.c ****         SrvMpu_Reg.PriDev_Init_State = true;
+ 153:Service/SrvMPU_Sample.c ****     }
+ 154:Service/SrvMPU_Sample.c ****     else
+ 155:Service/SrvMPU_Sample.c ****         Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, NULL, 0);
+ 156:Service/SrvMPU_Sample.c **** 
+ 157:Service/SrvMPU_Sample.c ****     if (SecIMU_Init_State == SrvIMU_No_Error)
+ 158:Service/SrvMPU_Sample.c ****     {
+ 159:Service/SrvMPU_Sample.c ****         SrvMpu_Reg.SecDev_Init_State = true;
+ 160:Service/SrvMPU_Sample.c ****     }
+ 161:Service/SrvMPU_Sample.c ****     else
+ 162:Service/SrvMPU_Sample.c ****         Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, NULL, 0);
+ 163:Service/SrvMPU_Sample.c **** 
+ 164:Service/SrvMPU_Sample.c ****     if (!SrvMpu_Reg.PriDev_Init_State && !SrvMpu_Reg.SecDev_Init_State)
+ 165:Service/SrvMPU_Sample.c ****     {
+ 166:Service/SrvMPU_Sample.c ****         return SrvIMU_Sample_Init_Error;
+ 167:Service/SrvMPU_Sample.c ****     }
+ 168:Service/SrvMPU_Sample.c **** 
+ 169:Service/SrvMPU_Sample.c ****     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, NULL, 0);
+ 170:Service/SrvMPU_Sample.c **** 
+ 171:Service/SrvMPU_Sample.c ****     return SrvIMU_No_Error;
+ 172:Service/SrvMPU_Sample.c **** }
+ 173:Service/SrvMPU_Sample.c **** 
+ 174:Service/SrvMPU_Sample.c **** /* init primary IMU Device */
+ 175:Service/SrvMPU_Sample.c **** static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
+ 176:Service/SrvMPU_Sample.c **** {
+  27              		.loc 1 176 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 20
+  34              		.cfi_offset 4, -20
+  35              		.cfi_offset 5, -16
+  36              		.cfi_offset 6, -12
+  37              		.cfi_offset 7, -8
+  38              		.cfi_offset 14, -4
+  39 0002 89B0     		sub	sp, sp, #36
+  40              	.LCFI1:
+  41              		.cfi_def_cfa_offset 56
+ 177:Service/SrvMPU_Sample.c ****     /* primary IMU Pin & Bus Init */
+ 178:Service/SrvMPU_Sample.c ****     if (!BspGPIO.out_init(MPU6000_CSPin))
+  42              		.loc 1 178 5 view .LVU1
+  43              		.loc 1 178 17 is_stmt 0 view .LVU2
+  44 0004 344B     		ldr	r3, .L8
+  45 0006 5A68     		ldr	r2, [r3, #4]
+  46              		.loc 1 178 10 view .LVU3
+  47 0008 344B     		ldr	r3, .L8+4
+  48 000a 1979     		ldrb	r1, [r3, #4]	@ zero_extendqisi2
+  49 000c 5879     		ldrb	r0, [r3, #5]	@ zero_extendqisi2
+  50 000e 41EA0021 		orr	r1, r1, r0, lsl #8
+  51 0012 9879     		ldrb	r0, [r3, #6]	@ zero_extendqisi2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 5
+
+
+  52 0014 41EA0041 		orr	r1, r1, r0, lsl #16
+  53 0018 1868     		ldr	r0, [r3]	@ unaligned
+  54 001a 21F07F41 		bic	r1, r1, #-16777216
+  55 001e 9047     		blx	r2
+  56              	.LVL0:
+  57              		.loc 1 178 8 view .LVU4
+  58 0020 0028     		cmp	r0, #0
+  59 0022 4CD0     		beq	.L3
+ 179:Service/SrvMPU_Sample.c ****         return SrvIMU_PriCSPin_Init_Error;
+ 180:Service/SrvMPU_Sample.c **** 
+ 181:Service/SrvMPU_Sample.c ****     if (!BspGPIO.exti_init(MPU6000_INTPin, SrvIMU_PriIMU_ExtiCallback))
+  60              		.loc 1 181 5 is_stmt 1 view .LVU5
+  61              		.loc 1 181 17 is_stmt 0 view .LVU6
+  62 0024 2C4B     		ldr	r3, .L8
+  63 0026 1C68     		ldr	r4, [r3]
+  64              		.loc 1 181 10 view .LVU7
+  65 0028 2D4B     		ldr	r3, .L8+8
+  66 002a 1979     		ldrb	r1, [r3, #4]	@ zero_extendqisi2
+  67 002c 5A79     		ldrb	r2, [r3, #5]	@ zero_extendqisi2
+  68 002e 41EA0221 		orr	r1, r1, r2, lsl #8
+  69 0032 9A79     		ldrb	r2, [r3, #6]	@ zero_extendqisi2
+  70 0034 41EA0241 		orr	r1, r1, r2, lsl #16
+  71 0038 2A4A     		ldr	r2, .L8+12
+  72 003a 1868     		ldr	r0, [r3]	@ unaligned
+  73 003c 21F07F41 		bic	r1, r1, #-16777216
+  74 0040 A047     		blx	r4
+  75              	.LVL1:
+  76              		.loc 1 181 8 view .LVU8
+  77 0042 0028     		cmp	r0, #0
+  78 0044 3ED0     		beq	.L4
+ 182:Service/SrvMPU_Sample.c ****         return SrvIMU_PriExtiPin_Init_Error;
+ 183:Service/SrvMPU_Sample.c **** 
+ 184:Service/SrvMPU_Sample.c ****     MPU6000_BusCfg.Pin = MPU6000_BusPin;
+  79              		.loc 1 184 5 is_stmt 1 view .LVU9
+  80              		.loc 1 184 24 is_stmt 0 view .LVU10
+  81 0046 284D     		ldr	r5, .L8+16
+  82 0048 284C     		ldr	r4, .L8+20
+  83 004a AC46     		mov	ip, r5
+  84 004c 2068     		ldr	r0, [r4]	@ unaligned
+  85 004e 6168     		ldr	r1, [r4, #4]	@ unaligned
+  86 0050 A268     		ldr	r2, [r4, #8]	@ unaligned
+  87 0052 E368     		ldr	r3, [r4, #12]	@ unaligned
+  88 0054 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+  89 0058 2069     		ldr	r0, [r4, #16]	@ unaligned
+  90 005a 6169     		ldr	r1, [r4, #20]	@ unaligned
+  91 005c A269     		ldr	r2, [r4, #24]	@ unaligned
+  92 005e ACE80700 		stmia	ip!, {r0, r1, r2}
+ 185:Service/SrvMPU_Sample.c **** 
+ 186:Service/SrvMPU_Sample.c ****     DevMPU6000.pre_init(&MPU6000Obj,
+  93              		.loc 1 186 5 is_stmt 1 view .LVU11
+  94              		.loc 1 186 15 is_stmt 0 view .LVU12
+  95 0062 234E     		ldr	r6, .L8+24
+  96              		.loc 1 186 5 view .LVU13
+  97 0064 234C     		ldr	r4, .L8+28
+  98 0066 244B     		ldr	r3, .L8+32
+  99 0068 0093     		str	r3, [sp]
+ 100 006a 244B     		ldr	r3, .L8+36
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 6
+
+
+ 101 006c 244A     		ldr	r2, .L8+40
+ 102 006e 2549     		ldr	r1, .L8+44
+ 103 0070 2046     		mov	r0, r4
+ 104 0072 3768     		ldr	r7, [r6]
+ 105 0074 B847     		blx	r7
+ 106              	.LVL2:
+ 187:Service/SrvMPU_Sample.c ****                         SrvIMU_PriIMU_CS_Ctl,
+ 188:Service/SrvMPU_Sample.c ****                         SrvIMU_PriIMU_BusTrans_Rec,
+ 189:Service/SrvMPU_Sample.c ****                         Runtime_DelayMs,
+ 190:Service/SrvMPU_Sample.c ****                         Get_CurrentRunningUs);
+ 191:Service/SrvMPU_Sample.c **** 
+ 192:Service/SrvMPU_Sample.c ****     DevMPU6000.config(&MPU6000Obj,
+ 107              		.loc 1 192 5 is_stmt 1 view .LVU14
+ 108              		.loc 1 192 15 is_stmt 0 view .LVU15
+ 109 0076 7668     		ldr	r6, [r6, #4]
+ 110              		.loc 1 192 5 view .LVU16
+ 111 0078 0323     		movs	r3, #3
+ 112 007a 1A46     		mov	r2, r3
+ 113 007c 0121     		movs	r1, #1
+ 114 007e 2046     		mov	r0, r4
+ 115 0080 B047     		blx	r6
+ 116              	.LVL3:
+ 193:Service/SrvMPU_Sample.c ****                       MPU6000_SampleRate_4K,
+ 194:Service/SrvMPU_Sample.c ****                       MPU6000_Acc_16G,
+ 195:Service/SrvMPU_Sample.c ****                       MPU6000_Gyr_2000DPS);
+ 196:Service/SrvMPU_Sample.c **** 
+ 197:Service/SrvMPU_Sample.c ****     if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
+ 117              		.loc 1 197 5 is_stmt 1 view .LVU17
+ 118              		.loc 1 197 16 is_stmt 0 view .LVU18
+ 119 0082 214B     		ldr	r3, .L8+48
+ 120 0084 1C68     		ldr	r4, [r3]
+ 121              		.loc 1 197 10 view .LVU19
+ 122 0086 214B     		ldr	r3, .L8+52
+ 123 0088 0793     		str	r3, [sp, #28]
+ 124 008a EC46     		mov	ip, sp
+ 125 008c 05F1100E 		add	lr, r5, #16
+ 126 0090 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 127 0094 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 128 0098 9EE80700 		ldm	lr, {r0, r1, r2}
+ 129 009c 8CE80700 		stm	ip, {r0, r1, r2}
+ 130 00a0 95E80F00 		ldm	r5, {r0, r1, r2, r3}
+ 131 00a4 A047     		blx	r4
+ 132              	.LVL4:
+ 133              		.loc 1 197 8 view .LVU20
+ 134 00a6 80B1     		cbz	r0, .L5
+ 198:Service/SrvMPU_Sample.c ****         return SrvIMU_PriBus_Init_Error;
+ 199:Service/SrvMPU_Sample.c **** 
+ 200:Service/SrvMPU_Sample.c ****     if (!DevMPU6000.init(&MPU6000Obj))
+ 135              		.loc 1 200 5 is_stmt 1 view .LVU21
+ 136              		.loc 1 200 20 is_stmt 0 view .LVU22
+ 137 00a8 114B     		ldr	r3, .L8+24
+ 138 00aa 9B68     		ldr	r3, [r3, #8]
+ 139              		.loc 1 200 10 view .LVU23
+ 140 00ac 1148     		ldr	r0, .L8+28
+ 141 00ae 9847     		blx	r3
+ 142              	.LVL5:
+ 143              		.loc 1 200 8 view .LVU24
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 7
+
+
+ 144 00b0 70B1     		cbz	r0, .L6
+ 201:Service/SrvMPU_Sample.c ****         return SrvIMU_PriDev_Init_Error;
+ 202:Service/SrvMPU_Sample.c **** 
+ 203:Service/SrvMPU_Sample.c ****     /* Set SPI Speed 20M */
+ 204:Service/SrvMPU_Sample.c ****     MPU6000_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+ 145              		.loc 1 204 5 is_stmt 1 view .LVU25
+ 146              		.loc 1 204 38 is_stmt 0 view .LVU26
+ 147 00b2 4FF08052 		mov	r2, #268435456
+ 148 00b6 AA62     		str	r2, [r5, #40]
+ 205:Service/SrvMPU_Sample.c **** 
+ 206:Service/SrvMPU_Sample.c ****     return SrvIMU_No_Error;
+ 149              		.loc 1 206 5 is_stmt 1 view .LVU27
+ 150              		.loc 1 206 12 is_stmt 0 view .LVU28
+ 151 00b8 0020     		movs	r0, #0
+ 152              	.L2:
+ 207:Service/SrvMPU_Sample.c **** }
+ 153              		.loc 1 207 1 view .LVU29
+ 154 00ba 09B0     		add	sp, sp, #36
+ 155              	.LCFI2:
+ 156              		.cfi_remember_state
+ 157              		.cfi_def_cfa_offset 20
+ 158              		@ sp needed
+ 159 00bc F0BD     		pop	{r4, r5, r6, r7, pc}
+ 160              	.L3:
+ 161              	.LCFI3:
+ 162              		.cfi_restore_state
+ 179:Service/SrvMPU_Sample.c **** 
+ 163              		.loc 1 179 16 view .LVU30
+ 164 00be 6FF00700 		mvn	r0, #7
+ 165 00c2 FAE7     		b	.L2
+ 166              	.L4:
+ 182:Service/SrvMPU_Sample.c **** 
+ 167              		.loc 1 182 16 view .LVU31
+ 168 00c4 6FF00600 		mvn	r0, #6
+ 169 00c8 F7E7     		b	.L2
+ 170              	.L5:
+ 198:Service/SrvMPU_Sample.c **** 
+ 171              		.loc 1 198 16 view .LVU32
+ 172 00ca 6FF00500 		mvn	r0, #5
+ 173 00ce F4E7     		b	.L2
+ 174              	.L6:
+ 201:Service/SrvMPU_Sample.c **** 
+ 175              		.loc 1 201 16 view .LVU33
+ 176 00d0 6FF00400 		mvn	r0, #4
+ 177 00d4 F1E7     		b	.L2
+ 178              	.L9:
+ 179 00d6 00BF     		.align	2
+ 180              	.L8:
+ 181 00d8 00000000 		.word	BspGPIO
+ 182 00dc 00000000 		.word	MPU6000_CSPin
+ 183 00e0 00000000 		.word	MPU6000_INTPin
+ 184 00e4 00000000 		.word	SrvIMU_PriIMU_ExtiCallback
+ 185 00e8 00000000 		.word	.LANCHOR0
+ 186 00ec 00000000 		.word	MPU6000_BusPin
+ 187 00f0 00000000 		.word	DevMPU6000
+ 188 00f4 00000000 		.word	.LANCHOR1
+ 189 00f8 00000000 		.word	Get_CurrentRunningUs
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 8
+
+
+ 190 00fc 00000000 		.word	Runtime_DelayMs
+ 191 0100 00000000 		.word	SrvIMU_PriIMU_BusTrans_Rec
+ 192 0104 00000000 		.word	SrvIMU_PriIMU_CS_Ctl
+ 193 0108 00000000 		.word	BspSPI
+ 194 010c 00000000 		.word	.LANCHOR2
+ 195              		.cfi_endproc
+ 196              	.LFE148:
+ 198              		.section	.text.SrvIMU_SecIMU_Init,"ax",%progbits
+ 199              		.align	1
+ 200              		.syntax unified
+ 201              		.thumb
+ 202              		.thumb_func
+ 203              		.fpu fpv5-d16
+ 205              	SrvIMU_SecIMU_Init:
+ 206              	.LFB149:
+ 208:Service/SrvMPU_Sample.c **** 
+ 209:Service/SrvMPU_Sample.c **** /* init primary IMU Device */
+ 210:Service/SrvMPU_Sample.c **** static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
+ 211:Service/SrvMPU_Sample.c **** {
+ 207              		.loc 1 211 1 is_stmt 1 view -0
+ 208              		.cfi_startproc
+ 209              		@ args = 0, pretend = 0, frame = 0
+ 210              		@ frame_needed = 0, uses_anonymous_args = 0
+ 211 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 212              	.LCFI4:
+ 213              		.cfi_def_cfa_offset 20
+ 214              		.cfi_offset 4, -20
+ 215              		.cfi_offset 5, -16
+ 216              		.cfi_offset 6, -12
+ 217              		.cfi_offset 7, -8
+ 218              		.cfi_offset 14, -4
+ 219 0002 89B0     		sub	sp, sp, #36
+ 220              	.LCFI5:
+ 221              		.cfi_def_cfa_offset 56
+ 212:Service/SrvMPU_Sample.c ****     /* primary IMU Pin & Bus Init */
+ 213:Service/SrvMPU_Sample.c ****     if (!BspGPIO.out_init(ICM20602_CSPin))
+ 222              		.loc 1 213 5 view .LVU35
+ 223              		.loc 1 213 17 is_stmt 0 view .LVU36
+ 224 0004 344B     		ldr	r3, .L17
+ 225 0006 5A68     		ldr	r2, [r3, #4]
+ 226              		.loc 1 213 10 view .LVU37
+ 227 0008 344B     		ldr	r3, .L17+4
+ 228 000a 1979     		ldrb	r1, [r3, #4]	@ zero_extendqisi2
+ 229 000c 5879     		ldrb	r0, [r3, #5]	@ zero_extendqisi2
+ 230 000e 41EA0021 		orr	r1, r1, r0, lsl #8
+ 231 0012 9879     		ldrb	r0, [r3, #6]	@ zero_extendqisi2
+ 232 0014 41EA0041 		orr	r1, r1, r0, lsl #16
+ 233 0018 1868     		ldr	r0, [r3]	@ unaligned
+ 234 001a 21F07F41 		bic	r1, r1, #-16777216
+ 235 001e 9047     		blx	r2
+ 236              	.LVL6:
+ 237              		.loc 1 213 8 view .LVU38
+ 238 0020 0028     		cmp	r0, #0
+ 239 0022 4CD0     		beq	.L12
+ 214:Service/SrvMPU_Sample.c ****         return SrvIMU_SecCSPin_Init_Error;
+ 215:Service/SrvMPU_Sample.c **** 
+ 216:Service/SrvMPU_Sample.c ****     if (!BspGPIO.exti_init(ICM20602_INTPin, SrvIMU_SecIMU_ExtiCallback))
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 9
+
+
+ 240              		.loc 1 216 5 is_stmt 1 view .LVU39
+ 241              		.loc 1 216 17 is_stmt 0 view .LVU40
+ 242 0024 2C4B     		ldr	r3, .L17
+ 243 0026 1C68     		ldr	r4, [r3]
+ 244              		.loc 1 216 10 view .LVU41
+ 245 0028 2D4B     		ldr	r3, .L17+8
+ 246 002a 1979     		ldrb	r1, [r3, #4]	@ zero_extendqisi2
+ 247 002c 5A79     		ldrb	r2, [r3, #5]	@ zero_extendqisi2
+ 248 002e 41EA0221 		orr	r1, r1, r2, lsl #8
+ 249 0032 9A79     		ldrb	r2, [r3, #6]	@ zero_extendqisi2
+ 250 0034 41EA0241 		orr	r1, r1, r2, lsl #16
+ 251 0038 2A4A     		ldr	r2, .L17+12
+ 252 003a 1868     		ldr	r0, [r3]	@ unaligned
+ 253 003c 21F07F41 		bic	r1, r1, #-16777216
+ 254 0040 A047     		blx	r4
+ 255              	.LVL7:
+ 256              		.loc 1 216 8 view .LVU42
+ 257 0042 0028     		cmp	r0, #0
+ 258 0044 3ED0     		beq	.L13
+ 217:Service/SrvMPU_Sample.c ****         return SrvIMU_SecExtiPin_Init_Error;
+ 218:Service/SrvMPU_Sample.c **** 
+ 219:Service/SrvMPU_Sample.c ****     ICM20602_BusCfg.Pin = ICM20602_BusPin;
+ 259              		.loc 1 219 5 is_stmt 1 view .LVU43
+ 260              		.loc 1 219 25 is_stmt 0 view .LVU44
+ 261 0046 284D     		ldr	r5, .L17+16
+ 262 0048 284C     		ldr	r4, .L17+20
+ 263 004a AC46     		mov	ip, r5
+ 264 004c 2068     		ldr	r0, [r4]	@ unaligned
+ 265 004e 6168     		ldr	r1, [r4, #4]	@ unaligned
+ 266 0050 A268     		ldr	r2, [r4, #8]	@ unaligned
+ 267 0052 E368     		ldr	r3, [r4, #12]	@ unaligned
+ 268 0054 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 269 0058 2069     		ldr	r0, [r4, #16]	@ unaligned
+ 270 005a 6169     		ldr	r1, [r4, #20]	@ unaligned
+ 271 005c A269     		ldr	r2, [r4, #24]	@ unaligned
+ 272 005e ACE80700 		stmia	ip!, {r0, r1, r2}
+ 220:Service/SrvMPU_Sample.c **** 
+ 221:Service/SrvMPU_Sample.c ****     DevICM20602.pre_init(&ICM20602Obj,
+ 273              		.loc 1 221 5 is_stmt 1 view .LVU45
+ 274              		.loc 1 221 16 is_stmt 0 view .LVU46
+ 275 0062 234E     		ldr	r6, .L17+24
+ 276              		.loc 1 221 5 view .LVU47
+ 277 0064 234C     		ldr	r4, .L17+28
+ 278 0066 244B     		ldr	r3, .L17+32
+ 279 0068 0093     		str	r3, [sp]
+ 280 006a 244B     		ldr	r3, .L17+36
+ 281 006c 244A     		ldr	r2, .L17+40
+ 282 006e 2549     		ldr	r1, .L17+44
+ 283 0070 2046     		mov	r0, r4
+ 284 0072 7768     		ldr	r7, [r6, #4]
+ 285 0074 B847     		blx	r7
+ 286              	.LVL8:
+ 222:Service/SrvMPU_Sample.c ****                          SrvIMU_SecIMU_CS_Ctl,
+ 223:Service/SrvMPU_Sample.c ****                          SrvIMU_SecIMU_BusTrans_Rec,
+ 224:Service/SrvMPU_Sample.c ****                          Runtime_DelayMs,
+ 225:Service/SrvMPU_Sample.c ****                          Get_CurrentRunningUs);
+ 226:Service/SrvMPU_Sample.c **** 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 10
+
+
+ 227:Service/SrvMPU_Sample.c ****     DevICM20602.config(&ICM20602Obj,
+ 287              		.loc 1 227 5 is_stmt 1 view .LVU48
+ 288              		.loc 1 227 16 is_stmt 0 view .LVU49
+ 289 0076 3668     		ldr	r6, [r6]
+ 290              		.loc 1 227 5 view .LVU50
+ 291 0078 0323     		movs	r3, #3
+ 292 007a 1A46     		mov	r2, r3
+ 293 007c 0121     		movs	r1, #1
+ 294 007e 2046     		mov	r0, r4
+ 295 0080 B047     		blx	r6
+ 296              	.LVL9:
+ 228:Service/SrvMPU_Sample.c ****                        ICM20602_SampleRate_4K,
+ 229:Service/SrvMPU_Sample.c ****                        ICM20602_Acc_16G,
+ 230:Service/SrvMPU_Sample.c ****                        ICM20602_Gyr_2000DPS);
+ 231:Service/SrvMPU_Sample.c **** 
+ 232:Service/SrvMPU_Sample.c ****     if (!BspSPI.init(ICM20602_BusCfg, &ICM20602_Bus_Instance))
+ 297              		.loc 1 232 5 is_stmt 1 view .LVU51
+ 298              		.loc 1 232 16 is_stmt 0 view .LVU52
+ 299 0082 214B     		ldr	r3, .L17+48
+ 300 0084 1C68     		ldr	r4, [r3]
+ 301              		.loc 1 232 10 view .LVU53
+ 302 0086 214B     		ldr	r3, .L17+52
+ 303 0088 0793     		str	r3, [sp, #28]
+ 304 008a EC46     		mov	ip, sp
+ 305 008c 05F1100E 		add	lr, r5, #16
+ 306 0090 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 307 0094 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 308 0098 9EE80700 		ldm	lr, {r0, r1, r2}
+ 309 009c 8CE80700 		stm	ip, {r0, r1, r2}
+ 310 00a0 95E80F00 		ldm	r5, {r0, r1, r2, r3}
+ 311 00a4 A047     		blx	r4
+ 312              	.LVL10:
+ 313              		.loc 1 232 8 view .LVU54
+ 314 00a6 80B1     		cbz	r0, .L14
+ 233:Service/SrvMPU_Sample.c ****         return SrvIMU_SecBus_Init_Error;
+ 234:Service/SrvMPU_Sample.c **** 
+ 235:Service/SrvMPU_Sample.c ****     if (!DevICM20602.init(&ICM20602Obj))
+ 315              		.loc 1 235 5 is_stmt 1 view .LVU55
+ 316              		.loc 1 235 21 is_stmt 0 view .LVU56
+ 317 00a8 114B     		ldr	r3, .L17+24
+ 318 00aa 9B68     		ldr	r3, [r3, #8]
+ 319              		.loc 1 235 10 view .LVU57
+ 320 00ac 1148     		ldr	r0, .L17+28
+ 321 00ae 9847     		blx	r3
+ 322              	.LVL11:
+ 323              		.loc 1 235 8 view .LVU58
+ 324 00b0 70B1     		cbz	r0, .L15
+ 236:Service/SrvMPU_Sample.c ****         return SrvIMU_SecDev_Init_Error;
+ 237:Service/SrvMPU_Sample.c **** 
+ 238:Service/SrvMPU_Sample.c ****     /* Set SPI Speed 20M */
+ 239:Service/SrvMPU_Sample.c ****     ICM20602_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+ 325              		.loc 1 239 5 is_stmt 1 view .LVU59
+ 326              		.loc 1 239 39 is_stmt 0 view .LVU60
+ 327 00b2 4FF08052 		mov	r2, #268435456
+ 328 00b6 AA62     		str	r2, [r5, #40]
+ 240:Service/SrvMPU_Sample.c **** 
+ 241:Service/SrvMPU_Sample.c ****     return SrvIMU_No_Error;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 11
+
+
+ 329              		.loc 1 241 5 is_stmt 1 view .LVU61
+ 330              		.loc 1 241 12 is_stmt 0 view .LVU62
+ 331 00b8 0020     		movs	r0, #0
+ 332              	.L11:
+ 242:Service/SrvMPU_Sample.c **** }
+ 333              		.loc 1 242 1 view .LVU63
+ 334 00ba 09B0     		add	sp, sp, #36
+ 335              	.LCFI6:
+ 336              		.cfi_remember_state
+ 337              		.cfi_def_cfa_offset 20
+ 338              		@ sp needed
+ 339 00bc F0BD     		pop	{r4, r5, r6, r7, pc}
+ 340              	.L12:
+ 341              	.LCFI7:
+ 342              		.cfi_restore_state
+ 214:Service/SrvMPU_Sample.c **** 
+ 343              		.loc 1 214 16 view .LVU64
+ 344 00be 6FF00300 		mvn	r0, #3
+ 345 00c2 FAE7     		b	.L11
+ 346              	.L13:
+ 217:Service/SrvMPU_Sample.c **** 
+ 347              		.loc 1 217 16 view .LVU65
+ 348 00c4 6FF00200 		mvn	r0, #2
+ 349 00c8 F7E7     		b	.L11
+ 350              	.L14:
+ 233:Service/SrvMPU_Sample.c **** 
+ 351              		.loc 1 233 16 view .LVU66
+ 352 00ca 6FF00100 		mvn	r0, #1
+ 353 00ce F4E7     		b	.L11
+ 354              	.L15:
+ 236:Service/SrvMPU_Sample.c **** 
+ 355              		.loc 1 236 16 view .LVU67
+ 356 00d0 4FF0FF30 		mov	r0, #-1
+ 357 00d4 F1E7     		b	.L11
+ 358              	.L18:
+ 359 00d6 00BF     		.align	2
+ 360              	.L17:
+ 361 00d8 00000000 		.word	BspGPIO
+ 362 00dc 00000000 		.word	ICM20602_CSPin
+ 363 00e0 00000000 		.word	ICM20602_INTPin
+ 364 00e4 00000000 		.word	SrvIMU_SecIMU_ExtiCallback
+ 365 00e8 00000000 		.word	.LANCHOR3
+ 366 00ec 00000000 		.word	ICM20602_BusPin
+ 367 00f0 00000000 		.word	DevICM20602
+ 368 00f4 00000000 		.word	.LANCHOR4
+ 369 00f8 00000000 		.word	Get_CurrentRunningUs
+ 370 00fc 00000000 		.word	Runtime_DelayMs
+ 371 0100 00000000 		.word	SrvIMU_SecIMU_BusTrans_Rec
+ 372 0104 00000000 		.word	SrvIMU_SecIMU_CS_Ctl
+ 373 0108 00000000 		.word	BspSPI
+ 374 010c 00000000 		.word	.LANCHOR5
+ 375              		.cfi_endproc
+ 376              	.LFE149:
+ 378              		.section	.text.SrvIMU_PriIMU_CS_Ctl,"ax",%progbits
+ 379              		.align	1
+ 380              		.syntax unified
+ 381              		.thumb
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 12
+
+
+ 382              		.thumb_func
+ 383              		.fpu fpv5-d16
+ 385              	SrvIMU_PriIMU_CS_Ctl:
+ 386              	.LVL12:
+ 387              	.LFB150:
+ 243:Service/SrvMPU_Sample.c **** 
+ 244:Service/SrvMPU_Sample.c **** /* input true selected / false deselected */
+ 245:Service/SrvMPU_Sample.c **** static void SrvIMU_PriIMU_CS_Ctl(bool state)
+ 246:Service/SrvMPU_Sample.c **** {
+ 388              		.loc 1 246 1 is_stmt 1 view -0
+ 389              		.cfi_startproc
+ 390              		@ args = 0, pretend = 0, frame = 0
+ 391              		@ frame_needed = 0, uses_anonymous_args = 0
+ 392              		.loc 1 246 1 is_stmt 0 view .LVU69
+ 393 0000 10B5     		push	{r4, lr}
+ 394              	.LCFI8:
+ 395              		.cfi_def_cfa_offset 8
+ 396              		.cfi_offset 4, -8
+ 397              		.cfi_offset 14, -4
+ 398 0002 0246     		mov	r2, r0
+ 247:Service/SrvMPU_Sample.c ****     BspGPIO.write(MPU6000_CSPin.port, MPU6000_CSPin.pin, state);
+ 399              		.loc 1 247 5 is_stmt 1 view .LVU70
+ 400              		.loc 1 247 12 is_stmt 0 view .LVU71
+ 401 0004 034B     		ldr	r3, .L21
+ 402 0006 DC68     		ldr	r4, [r3, #12]
+ 403              		.loc 1 247 32 view .LVU72
+ 404 0008 034B     		ldr	r3, .L21+4
+ 405              		.loc 1 247 5 view .LVU73
+ 406 000a 9988     		ldrh	r1, [r3, #4]	@ unaligned
+ 407 000c 1868     		ldr	r0, [r3]	@ unaligned
+ 408              	.LVL13:
+ 409              		.loc 1 247 5 view .LVU74
+ 410 000e A047     		blx	r4
+ 411              	.LVL14:
+ 248:Service/SrvMPU_Sample.c **** }
+ 412              		.loc 1 248 1 view .LVU75
+ 413 0010 10BD     		pop	{r4, pc}
+ 414              	.L22:
+ 415 0012 00BF     		.align	2
+ 416              	.L21:
+ 417 0014 00000000 		.word	BspGPIO
+ 418 0018 00000000 		.word	MPU6000_CSPin
+ 419              		.cfi_endproc
+ 420              	.LFE150:
+ 422              		.section	.text.SrvIMU_SecIMU_CS_Ctl,"ax",%progbits
+ 423              		.align	1
+ 424              		.syntax unified
+ 425              		.thumb
+ 426              		.thumb_func
+ 427              		.fpu fpv5-d16
+ 429              	SrvIMU_SecIMU_CS_Ctl:
+ 430              	.LVL15:
+ 431              	.LFB151:
+ 249:Service/SrvMPU_Sample.c **** 
+ 250:Service/SrvMPU_Sample.c **** static void SrvIMU_SecIMU_CS_Ctl(bool state)
+ 251:Service/SrvMPU_Sample.c **** {
+ 432              		.loc 1 251 1 is_stmt 1 view -0
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 13
+
+
+ 433              		.cfi_startproc
+ 434              		@ args = 0, pretend = 0, frame = 0
+ 435              		@ frame_needed = 0, uses_anonymous_args = 0
+ 436              		.loc 1 251 1 is_stmt 0 view .LVU77
+ 437 0000 10B5     		push	{r4, lr}
+ 438              	.LCFI9:
+ 439              		.cfi_def_cfa_offset 8
+ 440              		.cfi_offset 4, -8
+ 441              		.cfi_offset 14, -4
+ 442 0002 0246     		mov	r2, r0
+ 252:Service/SrvMPU_Sample.c ****     BspGPIO.write(ICM20602_CSPin.port, ICM20602_CSPin.pin, state);
+ 443              		.loc 1 252 5 is_stmt 1 view .LVU78
+ 444              		.loc 1 252 12 is_stmt 0 view .LVU79
+ 445 0004 034B     		ldr	r3, .L25
+ 446 0006 DC68     		ldr	r4, [r3, #12]
+ 447              		.loc 1 252 33 view .LVU80
+ 448 0008 034B     		ldr	r3, .L25+4
+ 449              		.loc 1 252 5 view .LVU81
+ 450 000a 9988     		ldrh	r1, [r3, #4]	@ unaligned
+ 451 000c 1868     		ldr	r0, [r3]	@ unaligned
+ 452              	.LVL16:
+ 453              		.loc 1 252 5 view .LVU82
+ 454 000e A047     		blx	r4
+ 455              	.LVL17:
+ 253:Service/SrvMPU_Sample.c **** }
+ 456              		.loc 1 253 1 view .LVU83
+ 457 0010 10BD     		pop	{r4, pc}
+ 458              	.L26:
+ 459 0012 00BF     		.align	2
+ 460              	.L25:
+ 461 0014 00000000 		.word	BspGPIO
+ 462 0018 00000000 		.word	ICM20602_CSPin
+ 463              		.cfi_endproc
+ 464              	.LFE151:
+ 466              		.section	.text.SrvIMU_PriIMU_BusTrans_Rec,"ax",%progbits
+ 467              		.align	1
+ 468              		.syntax unified
+ 469              		.thumb
+ 470              		.thumb_func
+ 471              		.fpu fpv5-d16
+ 473              	SrvIMU_PriIMU_BusTrans_Rec:
+ 474              	.LVL18:
+ 475              	.LFB152:
+ 254:Service/SrvMPU_Sample.c **** 
+ 255:Service/SrvMPU_Sample.c **** static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
+ 256:Service/SrvMPU_Sample.c **** {
+ 476              		.loc 1 256 1 is_stmt 1 view -0
+ 477              		.cfi_startproc
+ 478              		@ args = 0, pretend = 0, frame = 0
+ 479              		@ frame_needed = 0, uses_anonymous_args = 0
+ 480              		.loc 1 256 1 is_stmt 0 view .LVU85
+ 481 0000 10B5     		push	{r4, lr}
+ 482              	.LCFI10:
+ 483              		.cfi_def_cfa_offset 8
+ 484              		.cfi_offset 4, -8
+ 485              		.cfi_offset 14, -4
+ 486 0002 82B0     		sub	sp, sp, #8
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 14
+
+
+ 487              	.LCFI11:
+ 488              		.cfi_def_cfa_offset 16
+ 489 0004 1346     		mov	r3, r2
+ 257:Service/SrvMPU_Sample.c ****     return BspSPI.trans_receive(&MPU6000_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
+ 490              		.loc 1 257 5 is_stmt 1 view .LVU86
+ 491              		.loc 1 257 18 is_stmt 0 view .LVU87
+ 492 0006 054A     		ldr	r2, .L29
+ 493              	.LVL19:
+ 494              		.loc 1 257 18 view .LVU88
+ 495 0008 1469     		ldr	r4, [r2, #16]
+ 496              		.loc 1 257 12 view .LVU89
+ 497 000a 4FF47A72 		mov	r2, #1000
+ 498 000e 0092     		str	r2, [sp]
+ 499 0010 0A46     		mov	r2, r1
+ 500 0012 0146     		mov	r1, r0
+ 501              	.LVL20:
+ 502              		.loc 1 257 12 view .LVU90
+ 503 0014 0248     		ldr	r0, .L29+4
+ 504              	.LVL21:
+ 505              		.loc 1 257 12 view .LVU91
+ 506 0016 A047     		blx	r4
+ 507              	.LVL22:
+ 258:Service/SrvMPU_Sample.c **** }
+ 508              		.loc 1 258 1 view .LVU92
+ 509 0018 02B0     		add	sp, sp, #8
+ 510              	.LCFI12:
+ 511              		.cfi_def_cfa_offset 8
+ 512              		@ sp needed
+ 513 001a 10BD     		pop	{r4, pc}
+ 514              	.L30:
+ 515              		.align	2
+ 516              	.L29:
+ 517 001c 00000000 		.word	BspSPI
+ 518 0020 00000000 		.word	.LANCHOR2
+ 519              		.cfi_endproc
+ 520              	.LFE152:
+ 522              		.section	.text.SrvIMU_SecIMU_BusTrans_Rec,"ax",%progbits
+ 523              		.align	1
+ 524              		.syntax unified
+ 525              		.thumb
+ 526              		.thumb_func
+ 527              		.fpu fpv5-d16
+ 529              	SrvIMU_SecIMU_BusTrans_Rec:
+ 530              	.LVL23:
+ 531              	.LFB153:
+ 259:Service/SrvMPU_Sample.c **** 
+ 260:Service/SrvMPU_Sample.c **** static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
+ 261:Service/SrvMPU_Sample.c **** {
+ 532              		.loc 1 261 1 is_stmt 1 view -0
+ 533              		.cfi_startproc
+ 534              		@ args = 0, pretend = 0, frame = 0
+ 535              		@ frame_needed = 0, uses_anonymous_args = 0
+ 536              		.loc 1 261 1 is_stmt 0 view .LVU94
+ 537 0000 10B5     		push	{r4, lr}
+ 538              	.LCFI13:
+ 539              		.cfi_def_cfa_offset 8
+ 540              		.cfi_offset 4, -8
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 15
+
+
+ 541              		.cfi_offset 14, -4
+ 542 0002 82B0     		sub	sp, sp, #8
+ 543              	.LCFI14:
+ 544              		.cfi_def_cfa_offset 16
+ 545 0004 1346     		mov	r3, r2
+ 262:Service/SrvMPU_Sample.c ****     return BspSPI.trans_receive(&ICM20602_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
+ 546              		.loc 1 262 5 is_stmt 1 view .LVU95
+ 547              		.loc 1 262 18 is_stmt 0 view .LVU96
+ 548 0006 054A     		ldr	r2, .L33
+ 549              	.LVL24:
+ 550              		.loc 1 262 18 view .LVU97
+ 551 0008 1469     		ldr	r4, [r2, #16]
+ 552              		.loc 1 262 12 view .LVU98
+ 553 000a 4FF47A72 		mov	r2, #1000
+ 554 000e 0092     		str	r2, [sp]
+ 555 0010 0A46     		mov	r2, r1
+ 556 0012 0146     		mov	r1, r0
+ 557              	.LVL25:
+ 558              		.loc 1 262 12 view .LVU99
+ 559 0014 0248     		ldr	r0, .L33+4
+ 560              	.LVL26:
+ 561              		.loc 1 262 12 view .LVU100
+ 562 0016 A047     		blx	r4
+ 563              	.LVL27:
+ 263:Service/SrvMPU_Sample.c **** }
+ 564              		.loc 1 263 1 view .LVU101
+ 565 0018 02B0     		add	sp, sp, #8
+ 566              	.LCFI15:
+ 567              		.cfi_def_cfa_offset 8
+ 568              		@ sp needed
+ 569 001a 10BD     		pop	{r4, pc}
+ 570              	.L34:
+ 571              		.align	2
+ 572              	.L33:
+ 573 001c 00000000 		.word	BspSPI
+ 574 0020 00000000 		.word	.LANCHOR5
+ 575              		.cfi_endproc
+ 576              	.LFE153:
+ 578              		.section	.text.SrvIMU_PriIMU_ExtiCallback,"ax",%progbits
+ 579              		.align	1
+ 580              		.syntax unified
+ 581              		.thumb
+ 582              		.thumb_func
+ 583              		.fpu fpv5-d16
+ 585              	SrvIMU_PriIMU_ExtiCallback:
+ 586              	.LFB154:
+ 264:Service/SrvMPU_Sample.c **** 
+ 265:Service/SrvMPU_Sample.c **** static void SrvIMU_PriIMU_ExtiCallback(void)
+ 266:Service/SrvMPU_Sample.c **** {
+ 587              		.loc 1 266 1 is_stmt 1 view -0
+ 588              		.cfi_startproc
+ 589              		@ args = 0, pretend = 0, frame = 0
+ 590              		@ frame_needed = 0, uses_anonymous_args = 0
+ 591 0000 08B5     		push	{r3, lr}
+ 592              	.LCFI16:
+ 593              		.cfi_def_cfa_offset 8
+ 594              		.cfi_offset 3, -8
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 16
+
+
+ 595              		.cfi_offset 14, -4
+ 267:Service/SrvMPU_Sample.c ****     if (SrvMpu_Reg.PriDev_Init_State)
+ 596              		.loc 1 267 5 view .LVU103
+ 597              		.loc 1 267 9 is_stmt 0 view .LVU104
+ 598 0002 054B     		ldr	r3, .L38
+ 599 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 600              		.loc 1 267 8 view .LVU105
+ 601 0006 13F00F0F 		tst	r3, #15
+ 602 000a 03D0     		beq	.L35
+ 268:Service/SrvMPU_Sample.c ****         DevMPU6000.set_drdy(&MPU6000Obj);
+ 603              		.loc 1 268 9 is_stmt 1 view .LVU106
+ 604              		.loc 1 268 19 is_stmt 0 view .LVU107
+ 605 000c 034B     		ldr	r3, .L38+4
+ 606 000e 5B69     		ldr	r3, [r3, #20]
+ 607              		.loc 1 268 9 view .LVU108
+ 608 0010 0348     		ldr	r0, .L38+8
+ 609 0012 9847     		blx	r3
+ 610              	.LVL28:
+ 611              	.L35:
+ 269:Service/SrvMPU_Sample.c **** }
+ 612              		.loc 1 269 1 view .LVU109
+ 613 0014 08BD     		pop	{r3, pc}
+ 614              	.L39:
+ 615 0016 00BF     		.align	2
+ 616              	.L38:
+ 617 0018 00000000 		.word	.LANCHOR6
+ 618 001c 00000000 		.word	DevMPU6000
+ 619 0020 00000000 		.word	.LANCHOR1
+ 620              		.cfi_endproc
+ 621              	.LFE154:
+ 623              		.section	.text.SrvIMU_SecIMU_ExtiCallback,"ax",%progbits
+ 624              		.align	1
+ 625              		.syntax unified
+ 626              		.thumb
+ 627              		.thumb_func
+ 628              		.fpu fpv5-d16
+ 630              	SrvIMU_SecIMU_ExtiCallback:
+ 631              	.LFB155:
+ 270:Service/SrvMPU_Sample.c **** 
+ 271:Service/SrvMPU_Sample.c **** static void SrvIMU_SecIMU_ExtiCallback(void)
+ 272:Service/SrvMPU_Sample.c **** {
+ 632              		.loc 1 272 1 is_stmt 1 view -0
+ 633              		.cfi_startproc
+ 634              		@ args = 0, pretend = 0, frame = 0
+ 635              		@ frame_needed = 0, uses_anonymous_args = 0
+ 636 0000 08B5     		push	{r3, lr}
+ 637              	.LCFI17:
+ 638              		.cfi_def_cfa_offset 8
+ 639              		.cfi_offset 3, -8
+ 640              		.cfi_offset 14, -4
+ 273:Service/SrvMPU_Sample.c ****     if (SrvMpu_Reg.SecDev_Init_State)
+ 641              		.loc 1 273 5 view .LVU111
+ 642              		.loc 1 273 9 is_stmt 0 view .LVU112
+ 643 0002 054B     		ldr	r3, .L43
+ 644 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 645              		.loc 1 273 8 view .LVU113
+ 646 0006 13F00F0F 		tst	r3, #15
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 17
+
+
+ 647 000a 03D0     		beq	.L40
+ 274:Service/SrvMPU_Sample.c ****         DevICM20602.set_ready(&ICM20602Obj);
+ 648              		.loc 1 274 9 is_stmt 1 view .LVU114
+ 649              		.loc 1 274 20 is_stmt 0 view .LVU115
+ 650 000c 034B     		ldr	r3, .L43+4
+ 651 000e DB68     		ldr	r3, [r3, #12]
+ 652              		.loc 1 274 9 view .LVU116
+ 653 0010 0348     		ldr	r0, .L43+8
+ 654 0012 9847     		blx	r3
+ 655              	.LVL29:
+ 656              	.L40:
+ 275:Service/SrvMPU_Sample.c **** }
+ 657              		.loc 1 275 1 view .LVU117
+ 658 0014 08BD     		pop	{r3, pc}
+ 659              	.L44:
+ 660 0016 00BF     		.align	2
+ 661              	.L43:
+ 662 0018 00000000 		.word	.LANCHOR6
+ 663 001c 00000000 		.word	DevICM20602
+ 664 0020 00000000 		.word	.LANCHOR4
+ 665              		.cfi_endproc
+ 666              	.LFE155:
+ 668              		.section	.text.SrvIMU_PriDev_InitError,"ax",%progbits
+ 669              		.align	1
+ 670              		.syntax unified
+ 671              		.thumb
+ 672              		.thumb_func
+ 673              		.fpu fpv5-d16
+ 675              	SrvIMU_PriDev_InitError:
+ 676              	.LVL30:
+ 677              	.LFB158:
+ 276:Service/SrvMPU_Sample.c **** 
+ 277:Service/SrvMPU_Sample.c **** int8_t SrvIMU_GetPri_InitError(void)
+ 278:Service/SrvMPU_Sample.c **** {
+ 279:Service/SrvMPU_Sample.c ****     return DevMPU6000.get_error(&MPU6000Obj);
+ 280:Service/SrvMPU_Sample.c **** }
+ 281:Service/SrvMPU_Sample.c **** 
+ 282:Service/SrvMPU_Sample.c **** int8_t SrvIMU_GetSec_InitError(void)
+ 283:Service/SrvMPU_Sample.c **** {
+ 284:Service/SrvMPU_Sample.c ****     return DevICM20602.get_error(&ICM20602Obj);
+ 285:Service/SrvMPU_Sample.c **** }
+ 286:Service/SrvMPU_Sample.c **** 
+ 287:Service/SrvMPU_Sample.c **** static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size)
+ 288:Service/SrvMPU_Sample.c **** {
+ 678              		.loc 1 288 1 is_stmt 1 view -0
+ 679              		.cfi_startproc
+ 680              		@ args = 0, pretend = 0, frame = 0
+ 681              		@ frame_needed = 0, uses_anonymous_args = 0
+ 682              		@ link register save eliminated.
+ 289:Service/SrvMPU_Sample.c ****     static uint8_t a;
+ 683              		.loc 1 289 5 view .LVU119
+ 290:Service/SrvMPU_Sample.c **** 
+ 291:Service/SrvMPU_Sample.c ****     a++;
+ 684              		.loc 1 291 5 view .LVU120
+ 685              		.loc 1 291 6 is_stmt 0 view .LVU121
+ 686 0000 024A     		ldr	r2, .L46
+ 687 0002 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 18
+
+
+ 688 0004 0133     		adds	r3, r3, #1
+ 689 0006 1370     		strb	r3, [r2]
+ 292:Service/SrvMPU_Sample.c **** }
+ 690              		.loc 1 292 1 view .LVU122
+ 691 0008 7047     		bx	lr
+ 692              	.L47:
+ 693 000a 00BF     		.align	2
+ 694              	.L46:
+ 695 000c 00000000 		.word	.LANCHOR7
+ 696              		.cfi_endproc
+ 697              	.LFE158:
+ 699              		.section	.text.SrvIMU_SecDev_InitError,"ax",%progbits
+ 700              		.align	1
+ 701              		.syntax unified
+ 702              		.thumb
+ 703              		.thumb_func
+ 704              		.fpu fpv5-d16
+ 706              	SrvIMU_SecDev_InitError:
+ 707              	.LVL31:
+ 708              	.LFB159:
+ 293:Service/SrvMPU_Sample.c **** 
+ 294:Service/SrvMPU_Sample.c **** static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size)
+ 295:Service/SrvMPU_Sample.c **** {
+ 709              		.loc 1 295 1 is_stmt 1 view -0
+ 710              		.cfi_startproc
+ 711              		@ args = 0, pretend = 0, frame = 0
+ 712              		@ frame_needed = 0, uses_anonymous_args = 0
+ 713              		@ link register save eliminated.
+ 296:Service/SrvMPU_Sample.c ****     static uint8_t a;
+ 714              		.loc 1 296 5 view .LVU124
+ 297:Service/SrvMPU_Sample.c **** 
+ 298:Service/SrvMPU_Sample.c ****     a++;
+ 715              		.loc 1 298 5 view .LVU125
+ 716              		.loc 1 298 6 is_stmt 0 view .LVU126
+ 717 0000 024A     		ldr	r2, .L49
+ 718 0002 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 719 0004 0133     		adds	r3, r3, #1
+ 720 0006 1370     		strb	r3, [r2]
+ 299:Service/SrvMPU_Sample.c **** }
+ 721              		.loc 1 299 1 view .LVU127
+ 722 0008 7047     		bx	lr
+ 723              	.L50:
+ 724 000a 00BF     		.align	2
+ 725              	.L49:
+ 726 000c 00000000 		.word	.LANCHOR8
+ 727              		.cfi_endproc
+ 728              	.LFE159:
+ 730              		.section	.rodata.SrvIMU_Init.str1.4,"aMS",%progbits,1
+ 731              		.align	2
+ 732              	.LC0:
+ 733 0000 53727649 		.ascii	"SrvIMU_Error\000"
+ 733      4D555F45 
+ 733      72726F72 
+ 733      00
+ 734              		.section	.text.SrvIMU_Init,"ax",%progbits
+ 735              		.align	1
+ 736              		.global	SrvIMU_Init
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 19
+
+
+ 737              		.syntax unified
+ 738              		.thumb
+ 739              		.thumb_func
+ 740              		.fpu fpv5-d16
+ 742              	SrvIMU_Init:
+ 743              	.LFB147:
+ 137:Service/SrvMPU_Sample.c ****     /* create error log handle */
+ 744              		.loc 1 137 1 is_stmt 1 view -0
+ 745              		.cfi_startproc
+ 746              		@ args = 0, pretend = 0, frame = 0
+ 747              		@ frame_needed = 0, uses_anonymous_args = 0
+ 748 0000 38B5     		push	{r3, r4, r5, lr}
+ 749              	.LCFI18:
+ 750              		.cfi_def_cfa_offset 16
+ 751              		.cfi_offset 3, -16
+ 752              		.cfi_offset 4, -12
+ 753              		.cfi_offset 5, -8
+ 754              		.cfi_offset 14, -4
+ 139:Service/SrvMPU_Sample.c **** 
+ 755              		.loc 1 139 5 view .LVU129
+ 139:Service/SrvMPU_Sample.c **** 
+ 756              		.loc 1 139 27 is_stmt 0 view .LVU130
+ 757 0002 2248     		ldr	r0, .L60
+ 758 0004 FFF7FEFF 		bl	ErrorTree_Create
+ 759              	.LVL32:
+ 139:Service/SrvMPU_Sample.c **** 
+ 760              		.loc 1 139 25 view .LVU131
+ 761 0008 214B     		ldr	r3, .L60+4
+ 762 000a 1860     		str	r0, [r3]
+ 142:Service/SrvMPU_Sample.c **** 
+ 763              		.loc 1 142 5 is_stmt 1 view .LVU132
+ 764 000c 0B22     		movs	r2, #11
+ 765 000e 2149     		ldr	r1, .L60+8
+ 766 0010 FFF7FEFF 		bl	Error_Register
+ 767              	.LVL33:
+ 144:Service/SrvMPU_Sample.c ****     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
+ 768              		.loc 1 144 5 view .LVU133
+ 144:Service/SrvMPU_Sample.c ****     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
+ 769              		.loc 1 144 47 is_stmt 0 view .LVU134
+ 770 0014 FFF7FEFF 		bl	SrvIMU_PriIMU_Init
+ 771              	.LVL34:
+ 772 0018 0546     		mov	r5, r0
+ 773              	.LVL35:
+ 145:Service/SrvMPU_Sample.c **** 
+ 774              		.loc 1 145 5 is_stmt 1 view .LVU135
+ 145:Service/SrvMPU_Sample.c **** 
+ 775              		.loc 1 145 47 is_stmt 0 view .LVU136
+ 776 001a FFF7FEFF 		bl	SrvIMU_SecIMU_Init
+ 777              	.LVL36:
+ 778 001e 0446     		mov	r4, r0
+ 779              	.LVL37:
+ 147:Service/SrvMPU_Sample.c ****     SrvMpu_Reg.SecDev_Init_State = false;
+ 780              		.loc 1 147 5 is_stmt 1 view .LVU137
+ 147:Service/SrvMPU_Sample.c ****     SrvMpu_Reg.SecDev_Init_State = false;
+ 781              		.loc 1 147 34 is_stmt 0 view .LVU138
+ 782 0020 1D4B     		ldr	r3, .L60+12
+ 783 0022 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 20
+
+
+ 784 0024 6FF30302 		bfc	r2, #0, #4
+ 785 0028 1A70     		strb	r2, [r3]
+ 148:Service/SrvMPU_Sample.c **** 
+ 786              		.loc 1 148 5 is_stmt 1 view .LVU139
+ 150:Service/SrvMPU_Sample.c ****     {
+ 787              		.loc 1 150 5 view .LVU140
+ 150:Service/SrvMPU_Sample.c ****     {
+ 788              		.loc 1 150 8 is_stmt 0 view .LVU141
+ 789 002a 95B9     		cbnz	r5, .L52
+ 152:Service/SrvMPU_Sample.c ****     }
+ 790              		.loc 1 152 9 is_stmt 1 view .LVU142
+ 152:Service/SrvMPU_Sample.c ****     }
+ 791              		.loc 1 152 38 is_stmt 0 view .LVU143
+ 792 002c D2B2     		uxtb	r2, r2
+ 793 002e 0121     		movs	r1, #1
+ 794 0030 61F30302 		bfi	r2, r1, #0, #4
+ 795 0034 1A70     		strb	r2, [r3]
+ 796              	.L53:
+ 157:Service/SrvMPU_Sample.c ****     {
+ 797              		.loc 1 157 5 is_stmt 1 view .LVU144
+ 157:Service/SrvMPU_Sample.c ****     {
+ 798              		.loc 1 157 8 is_stmt 0 view .LVU145
+ 799 0036 ACB9     		cbnz	r4, .L54
+ 159:Service/SrvMPU_Sample.c ****     }
+ 800              		.loc 1 159 9 is_stmt 1 view .LVU146
+ 159:Service/SrvMPU_Sample.c ****     }
+ 801              		.loc 1 159 38 is_stmt 0 view .LVU147
+ 802 0038 174B     		ldr	r3, .L60+12
+ 803 003a 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 804 003c 0121     		movs	r1, #1
+ 805 003e 61F30302 		bfi	r2, r1, #0, #4
+ 806 0042 1A70     		strb	r2, [r3]
+ 807              	.L55:
+ 164:Service/SrvMPU_Sample.c ****     {
+ 808              		.loc 1 164 5 is_stmt 1 view .LVU148
+ 164:Service/SrvMPU_Sample.c ****     {
+ 809              		.loc 1 164 9 is_stmt 0 view .LVU149
+ 810 0044 144B     		ldr	r3, .L60+12
+ 811 0046 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 164:Service/SrvMPU_Sample.c ****     {
+ 812              		.loc 1 164 8 view .LVU150
+ 813 0048 13F00F0F 		tst	r3, #15
+ 814 004c 13D1     		bne	.L59
+ 166:Service/SrvMPU_Sample.c ****     }
+ 815              		.loc 1 166 16 view .LVU151
+ 816 004e 0120     		movs	r0, #1
+ 817              	.L56:
+ 172:Service/SrvMPU_Sample.c **** 
+ 818              		.loc 1 172 1 view .LVU152
+ 819 0050 38BD     		pop	{r3, r4, r5, pc}
+ 820              	.LVL38:
+ 821              	.L52:
+ 155:Service/SrvMPU_Sample.c **** 
+ 822              		.loc 1 155 9 is_stmt 1 view .LVU153
+ 823 0052 0023     		movs	r3, #0
+ 824 0054 1A46     		mov	r2, r3
+ 825 0056 6FF00401 		mvn	r1, #4
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 21
+
+
+ 826 005a 0D48     		ldr	r0, .L60+4
+ 827 005c 0068     		ldr	r0, [r0]
+ 828 005e FFF7FEFF 		bl	Error_Trigger
+ 829              	.LVL39:
+ 830 0062 E8E7     		b	.L53
+ 831              	.L54:
+ 162:Service/SrvMPU_Sample.c **** 
+ 832              		.loc 1 162 9 view .LVU154
+ 833 0064 0023     		movs	r3, #0
+ 834 0066 1A46     		mov	r2, r3
+ 835 0068 4FF0FF31 		mov	r1, #-1
+ 836 006c 0848     		ldr	r0, .L60+4
+ 837 006e 0068     		ldr	r0, [r0]
+ 838 0070 FFF7FEFF 		bl	Error_Trigger
+ 839              	.LVL40:
+ 840 0074 E6E7     		b	.L55
+ 841              	.L59:
+ 169:Service/SrvMPU_Sample.c **** 
+ 842              		.loc 1 169 5 view .LVU155
+ 843 0076 0023     		movs	r3, #0
+ 844 0078 1A46     		mov	r2, r3
+ 845 007a 6FF00401 		mvn	r1, #4
+ 846 007e 0448     		ldr	r0, .L60+4
+ 847 0080 0068     		ldr	r0, [r0]
+ 848 0082 FFF7FEFF 		bl	Error_Trigger
+ 849              	.LVL41:
+ 171:Service/SrvMPU_Sample.c **** }
+ 850              		.loc 1 171 5 view .LVU156
+ 171:Service/SrvMPU_Sample.c **** }
+ 851              		.loc 1 171 12 is_stmt 0 view .LVU157
+ 852 0086 0020     		movs	r0, #0
+ 853 0088 E2E7     		b	.L56
+ 854              	.L61:
+ 855 008a 00BF     		.align	2
+ 856              	.L60:
+ 857 008c 00000000 		.word	.LC0
+ 858 0090 00000000 		.word	.LANCHOR9
+ 859 0094 00000000 		.word	.LANCHOR10
+ 860 0098 00000000 		.word	.LANCHOR6
+ 861              		.cfi_endproc
+ 862              	.LFE147:
+ 864              		.section	.text.SrvIMU_GetPri_InitError,"ax",%progbits
+ 865              		.align	1
+ 866              		.global	SrvIMU_GetPri_InitError
+ 867              		.syntax unified
+ 868              		.thumb
+ 869              		.thumb_func
+ 870              		.fpu fpv5-d16
+ 872              	SrvIMU_GetPri_InitError:
+ 873              	.LFB156:
+ 278:Service/SrvMPU_Sample.c ****     return DevMPU6000.get_error(&MPU6000Obj);
+ 874              		.loc 1 278 1 is_stmt 1 view -0
+ 875              		.cfi_startproc
+ 876              		@ args = 0, pretend = 0, frame = 0
+ 877              		@ frame_needed = 0, uses_anonymous_args = 0
+ 878 0000 08B5     		push	{r3, lr}
+ 879              	.LCFI19:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 22
+
+
+ 880              		.cfi_def_cfa_offset 8
+ 881              		.cfi_offset 3, -8
+ 882              		.cfi_offset 14, -4
+ 279:Service/SrvMPU_Sample.c **** }
+ 883              		.loc 1 279 5 view .LVU159
+ 279:Service/SrvMPU_Sample.c **** }
+ 884              		.loc 1 279 22 is_stmt 0 view .LVU160
+ 885 0002 034B     		ldr	r3, .L64
+ 886 0004 1B6A     		ldr	r3, [r3, #32]
+ 279:Service/SrvMPU_Sample.c **** }
+ 887              		.loc 1 279 12 view .LVU161
+ 888 0006 0348     		ldr	r0, .L64+4
+ 889 0008 9847     		blx	r3
+ 890              	.LVL42:
+ 280:Service/SrvMPU_Sample.c **** 
+ 891              		.loc 1 280 1 view .LVU162
+ 892 000a 40B2     		sxtb	r0, r0
+ 893 000c 08BD     		pop	{r3, pc}
+ 894              	.L65:
+ 895 000e 00BF     		.align	2
+ 896              	.L64:
+ 897 0010 00000000 		.word	DevMPU6000
+ 898 0014 00000000 		.word	.LANCHOR1
+ 899              		.cfi_endproc
+ 900              	.LFE156:
+ 902              		.section	.text.SrvIMU_GetSec_InitError,"ax",%progbits
+ 903              		.align	1
+ 904              		.global	SrvIMU_GetSec_InitError
+ 905              		.syntax unified
+ 906              		.thumb
+ 907              		.thumb_func
+ 908              		.fpu fpv5-d16
+ 910              	SrvIMU_GetSec_InitError:
+ 911              	.LFB157:
+ 283:Service/SrvMPU_Sample.c ****     return DevICM20602.get_error(&ICM20602Obj);
+ 912              		.loc 1 283 1 is_stmt 1 view -0
+ 913              		.cfi_startproc
+ 914              		@ args = 0, pretend = 0, frame = 0
+ 915              		@ frame_needed = 0, uses_anonymous_args = 0
+ 916 0000 08B5     		push	{r3, lr}
+ 917              	.LCFI20:
+ 918              		.cfi_def_cfa_offset 8
+ 919              		.cfi_offset 3, -8
+ 920              		.cfi_offset 14, -4
+ 284:Service/SrvMPU_Sample.c **** }
+ 921              		.loc 1 284 5 view .LVU164
+ 284:Service/SrvMPU_Sample.c **** }
+ 922              		.loc 1 284 23 is_stmt 0 view .LVU165
+ 923 0002 034B     		ldr	r3, .L68
+ 924 0004 1B6A     		ldr	r3, [r3, #32]
+ 284:Service/SrvMPU_Sample.c **** }
+ 925              		.loc 1 284 12 view .LVU166
+ 926 0006 0348     		ldr	r0, .L68+4
+ 927 0008 9847     		blx	r3
+ 928              	.LVL43:
+ 285:Service/SrvMPU_Sample.c **** 
+ 929              		.loc 1 285 1 view .LVU167
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 23
+
+
+ 930 000a 40B2     		sxtb	r0, r0
+ 931 000c 08BD     		pop	{r3, pc}
+ 932              	.L69:
+ 933 000e 00BF     		.align	2
+ 934              	.L68:
+ 935 0010 00000000 		.word	DevICM20602
+ 936 0014 00000000 		.word	.LANCHOR4
+ 937              		.cfi_endproc
+ 938              	.LFE157:
+ 940              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 941              		.align	2
+ 942              	.LC1:
+ 943 0000 50726920 		.ascii	"Pri CS Pin Init Failed\000"
+ 943      43532050 
+ 943      696E2049 
+ 943      6E697420 
+ 943      4661696C 
+ 944 0017 00       		.align	2
+ 945              	.LC2:
+ 946 0018 50726920 		.ascii	"Pri Ext Pin Init Failed\000"
+ 946      45787420 
+ 946      50696E20 
+ 946      496E6974 
+ 946      20466169 
+ 947              		.align	2
+ 948              	.LC3:
+ 949 0030 50726920 		.ascii	"Pri Bus Init Failed\000"
+ 949      42757320 
+ 949      496E6974 
+ 949      20466169 
+ 949      6C656400 
+ 950              		.align	2
+ 951              	.LC4:
+ 952 0044 50726920 		.ascii	"Pri Dev Init Failed\000"
+ 952      44657620 
+ 952      496E6974 
+ 952      20466169 
+ 952      6C656400 
+ 953              		.align	2
+ 954              	.LC5:
+ 955 0058 53656320 		.ascii	"Sec CS Pin Init Failed\000"
+ 955      43532050 
+ 955      696E2049 
+ 955      6E697420 
+ 955      4661696C 
+ 956 006f 00       		.align	2
+ 957              	.LC6:
+ 958 0070 53656320 		.ascii	"Sec Ext Pin Init Failed\000"
+ 958      45787420 
+ 958      50696E20 
+ 958      496E6974 
+ 958      20466169 
+ 959              		.align	2
+ 960              	.LC7:
+ 961 0088 53656320 		.ascii	"Sec Bus Init Failed\000"
+ 961      42757320 
+ 961      496E6974 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 24
+
+
+ 961      20466169 
+ 961      6C656400 
+ 962              		.align	2
+ 963              	.LC8:
+ 964 009c 53656320 		.ascii	"Sec Dev Init Failed\000"
+ 964      44657620 
+ 964      496E6974 
+ 964      20466169 
+ 964      6C656400 
+ 965              		.align	2
+ 966              	.LC9:
+ 967 00b0 53656320 		.ascii	"Sec Sample Init Failed\000"
+ 967      53616D70 
+ 967      6C652049 
+ 967      6E697420 
+ 967      4661696C 
+ 968 00c7 00       		.align	2
+ 969              	.LC10:
+ 970 00c8 53656320 		.ascii	"Sec Sample OverRange\000"
+ 970      53616D70 
+ 970      6C65204F 
+ 970      76657252 
+ 970      616E6765 
+ 971 00dd 000000   		.align	2
+ 972              	.LC11:
+ 973 00e0 53656320 		.ascii	"Sec Sample Blunt\000"
+ 973      53616D70 
+ 973      6C652042 
+ 973      6C756E74 
+ 973      00
+ 974              		.section	.bss.ICM20602Obj,"aw",%nobits
+ 975              		.align	3
+ 976              		.set	.LANCHOR4,. + 0
+ 979              	ICM20602Obj:
+ 980 0000 00000000 		.space	192
+ 980      00000000 
+ 980      00000000 
+ 980      00000000 
+ 980      00000000 
+ 981              		.section	.bss.ICM20602_Bus_Instance,"aw",%nobits
+ 982              		.align	2
+ 983              		.set	.LANCHOR5,. + 0
+ 986              	ICM20602_Bus_Instance:
+ 987 0000 00000000 		.space	136
+ 987      00000000 
+ 987      00000000 
+ 987      00000000 
+ 987      00000000 
+ 988              		.section	.bss.MPU6000Obj,"aw",%nobits
+ 989              		.align	3
+ 990              		.set	.LANCHOR1,. + 0
+ 993              	MPU6000Obj:
+ 994 0000 00000000 		.space	192
+ 994      00000000 
+ 994      00000000 
+ 994      00000000 
+ 994      00000000 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 25
+
+
+ 995              		.section	.bss.MPU6000_Bus_Instance,"aw",%nobits
+ 996              		.align	2
+ 997              		.set	.LANCHOR2,. + 0
+ 1000              	MPU6000_Bus_Instance:
+ 1001 0000 00000000 		.space	136
+ 1001      00000000 
+ 1001      00000000 
+ 1001      00000000 
+ 1001      00000000 
+ 1002              		.section	.bss.SrvMPU_Error_Handle,"aw",%nobits
+ 1003              		.align	2
+ 1004              		.set	.LANCHOR9,. + 0
+ 1007              	SrvMPU_Error_Handle:
+ 1008 0000 00000000 		.space	4
+ 1009              		.section	.bss.SrvMpu_Reg,"aw",%nobits
+ 1010              		.align	2
+ 1011              		.set	.LANCHOR6,. + 0
+ 1014              	SrvMpu_Reg:
+ 1015 0000 00       		.space	1
+ 1016              		.section	.bss.a.0,"aw",%nobits
+ 1017              		.set	.LANCHOR7,. + 0
+ 1020              	a.0:
+ 1021 0000 00       		.space	1
+ 1022              		.section	.bss.a.1,"aw",%nobits
+ 1023              		.set	.LANCHOR8,. + 0
+ 1026              	a.1:
+ 1027 0000 00       		.space	1
+ 1028              		.section	.data.ICM20602_BusCfg,"aw"
+ 1029              		.align	2
+ 1030              		.set	.LANCHOR3,. + 0
+ 1033              	ICM20602_BusCfg:
+ 1034 0000 00000000 		.space	28
+ 1034      00000000 
+ 1034      00000000 
+ 1034      00000000 
+ 1034      00000000 
+ 1035 001c 00340140 		.word	1073820672
+ 1036 0020 00000002 		.word	33554432
+ 1037 0024 00000001 		.word	16777216
+ 1038 0028 00000020 		.word	536870912
+ 1039              		.section	.data.MPU6000_BusCfg,"aw"
+ 1040              		.align	2
+ 1041              		.set	.LANCHOR0,. + 0
+ 1044              	MPU6000_BusCfg:
+ 1045 0000 00000000 		.space	28
+ 1045      00000000 
+ 1045      00000000 
+ 1045      00000000 
+ 1045      00000000 
+ 1046 001c 00300140 		.word	1073819648
+ 1047 0020 00000002 		.word	33554432
+ 1048 0024 00000001 		.word	16777216
+ 1049 0028 00000020 		.word	536870912
+ 1050              		.section	.data.SrvIMU_ErrorList,"aw"
+ 1051              		.align	2
+ 1052              		.set	.LANCHOR10,. + 0
+ 1055              	SrvIMU_ErrorList:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 26
+
+
+ 1056 0000 F8FF     		.short	-8
+ 1057 0002 02       		.byte	2
+ 1058 0003 00       		.space	1
+ 1059 0004 00       		.byte	0
+ 1060 0005 00000000 		.4byte	.LC1
+ 1061 0009 00000000 		.4byte	0
+ 1062 000d 00000000 		.space	4
+ 1063 0011 F9FF     		.2byte	-7
+ 1064 0013 02       		.byte	2
+ 1065 0014 00       		.space	1
+ 1066 0015 00       		.byte	0
+ 1067 0016 18000000 		.4byte	.LC2
+ 1068 001a 00000000 		.4byte	0
+ 1069 001e 00000000 		.space	4
+ 1070 0022 FAFF     		.short	-6
+ 1071 0024 02       		.byte	2
+ 1072 0025 00       		.space	1
+ 1073 0026 00       		.byte	0
+ 1074 0027 30000000 		.4byte	.LC3
+ 1075 002b 00000000 		.4byte	0
+ 1076 002f 00000000 		.space	4
+ 1077 0033 FBFF     		.2byte	-5
+ 1078 0035 00       		.byte	0
+ 1079 0036 00       		.space	1
+ 1080 0037 00       		.byte	0
+ 1081 0038 44000000 		.4byte	.LC4
+ 1082 003c 00000000 		.4byte	SrvIMU_PriDev_InitError
+ 1083 0040 00000000 		.space	4
+ 1084 0044 FCFF     		.short	-4
+ 1085 0046 02       		.byte	2
+ 1086 0047 00       		.space	1
+ 1087 0048 00       		.byte	0
+ 1088 0049 58000000 		.4byte	.LC5
+ 1089 004d 00000000 		.4byte	0
+ 1090 0051 00000000 		.space	4
+ 1091 0055 FDFF     		.2byte	-3
+ 1092 0057 02       		.byte	2
+ 1093 0058 00       		.space	1
+ 1094 0059 00       		.byte	0
+ 1095 005a 70000000 		.4byte	.LC6
+ 1096 005e 00000000 		.4byte	0
+ 1097 0062 00000000 		.space	4
+ 1098 0066 FEFF     		.short	-2
+ 1099 0068 02       		.byte	2
+ 1100 0069 00       		.space	1
+ 1101 006a 00       		.byte	0
+ 1102 006b 88000000 		.4byte	.LC7
+ 1103 006f 00000000 		.4byte	0
+ 1104 0073 00000000 		.space	4
+ 1105 0077 FFFF     		.2byte	-1
+ 1106 0079 00       		.byte	0
+ 1107 007a 00       		.space	1
+ 1108 007b 01       		.byte	1
+ 1109 007c 9C000000 		.4byte	.LC8
+ 1110 0080 00000000 		.4byte	SrvIMU_SecDev_InitError
+ 1111 0084 00000000 		.space	4
+ 1112 0088 0100     		.short	1
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 27
+
+
+ 1113 008a 02       		.byte	2
+ 1114 008b 00       		.space	1
+ 1115 008c 00       		.byte	0
+ 1116 008d B0000000 		.4byte	.LC9
+ 1117 0091 00000000 		.4byte	0
+ 1118 0095 00000000 		.space	4
+ 1119 0099 0200     		.2byte	2
+ 1120 009b 02       		.byte	2
+ 1121 009c 00       		.space	1
+ 1122 009d 00       		.byte	0
+ 1123 009e C8000000 		.4byte	.LC10
+ 1124 00a2 00000000 		.4byte	0
+ 1125 00a6 00000000 		.space	4
+ 1126 00aa 0300     		.short	3
+ 1127 00ac 02       		.byte	2
+ 1128 00ad 00       		.space	1
+ 1129 00ae 00       		.byte	0
+ 1130 00af E0000000 		.4byte	.LC11
+ 1131 00b3 00000000 		.4byte	0
+ 1132 00b7 00000000 		.space	4
+ 1133              		.text
+ 1134              	.Letext0:
+ 1135              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
+ 1136              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 1137              		.file 4 "Service/imu_data.h"
+ 1138              		.file 5 "Service/SrvMPU_Sample.h"
+ 1139              		.file 6 "Device/Dev_MPU6000.h"
+ 1140              		.file 7 "Device/Dev_ICM20602.h"
+ 1141              		.file 8 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1142              		.file 9 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1143              		.file 10 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1144              		.file 11 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1145              		.file 12 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h"
+ 1146              		.file 13 "Bsp/Bsp_GPIO.h"
+ 1147              		.file 14 "Bsp/Bsp_SPI.h"
+ 1148              		.file 15 "IO_Def/IO_Definition.h"
+ 1149              		.file 16 "DataStructure/linked_list.h"
+ 1150              		.file 17 "Common/error_log.h"
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 SrvMPU_Sample.c
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:17     .text.SrvIMU_PriIMU_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:24     .text.SrvIMU_PriIMU_Init:0000000000000000 SrvIMU_PriIMU_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:181    .text.SrvIMU_PriIMU_Init:00000000000000d8 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:585    .text.SrvIMU_PriIMU_ExtiCallback:0000000000000000 SrvIMU_PriIMU_ExtiCallback
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:473    .text.SrvIMU_PriIMU_BusTrans_Rec:0000000000000000 SrvIMU_PriIMU_BusTrans_Rec
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:385    .text.SrvIMU_PriIMU_CS_Ctl:0000000000000000 SrvIMU_PriIMU_CS_Ctl
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:199    .text.SrvIMU_SecIMU_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:205    .text.SrvIMU_SecIMU_Init:0000000000000000 SrvIMU_SecIMU_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:361    .text.SrvIMU_SecIMU_Init:00000000000000d8 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:630    .text.SrvIMU_SecIMU_ExtiCallback:0000000000000000 SrvIMU_SecIMU_ExtiCallback
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:529    .text.SrvIMU_SecIMU_BusTrans_Rec:0000000000000000 SrvIMU_SecIMU_BusTrans_Rec
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:429    .text.SrvIMU_SecIMU_CS_Ctl:0000000000000000 SrvIMU_SecIMU_CS_Ctl
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:379    .text.SrvIMU_PriIMU_CS_Ctl:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:417    .text.SrvIMU_PriIMU_CS_Ctl:0000000000000014 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:423    .text.SrvIMU_SecIMU_CS_Ctl:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:461    .text.SrvIMU_SecIMU_CS_Ctl:0000000000000014 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:467    .text.SrvIMU_PriIMU_BusTrans_Rec:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:517    .text.SrvIMU_PriIMU_BusTrans_Rec:000000000000001c $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:523    .text.SrvIMU_SecIMU_BusTrans_Rec:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:573    .text.SrvIMU_SecIMU_BusTrans_Rec:000000000000001c $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:579    .text.SrvIMU_PriIMU_ExtiCallback:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:617    .text.SrvIMU_PriIMU_ExtiCallback:0000000000000018 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:624    .text.SrvIMU_SecIMU_ExtiCallback:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:662    .text.SrvIMU_SecIMU_ExtiCallback:0000000000000018 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:669    .text.SrvIMU_PriDev_InitError:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:675    .text.SrvIMU_PriDev_InitError:0000000000000000 SrvIMU_PriDev_InitError
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:695    .text.SrvIMU_PriDev_InitError:000000000000000c $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:700    .text.SrvIMU_SecDev_InitError:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:706    .text.SrvIMU_SecDev_InitError:0000000000000000 SrvIMU_SecDev_InitError
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:726    .text.SrvIMU_SecDev_InitError:000000000000000c $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:731    .rodata.SrvIMU_Init.str1.4:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:735    .text.SrvIMU_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:742    .text.SrvIMU_Init:0000000000000000 SrvIMU_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:857    .text.SrvIMU_Init:000000000000008c $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:865    .text.SrvIMU_GetPri_InitError:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:872    .text.SrvIMU_GetPri_InitError:0000000000000000 SrvIMU_GetPri_InitError
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:897    .text.SrvIMU_GetPri_InitError:0000000000000010 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:903    .text.SrvIMU_GetSec_InitError:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:910    .text.SrvIMU_GetSec_InitError:0000000000000000 SrvIMU_GetSec_InitError
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:935    .text.SrvIMU_GetSec_InitError:0000000000000010 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:941    .rodata.str1.4:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:975    .bss.ICM20602Obj:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:979    .bss.ICM20602Obj:0000000000000000 ICM20602Obj
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:982    .bss.ICM20602_Bus_Instance:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:986    .bss.ICM20602_Bus_Instance:0000000000000000 ICM20602_Bus_Instance
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:989    .bss.MPU6000Obj:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:993    .bss.MPU6000Obj:0000000000000000 MPU6000Obj
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:996    .bss.MPU6000_Bus_Instance:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1000   .bss.MPU6000_Bus_Instance:0000000000000000 MPU6000_Bus_Instance
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1003   .bss.SrvMPU_Error_Handle:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1007   .bss.SrvMPU_Error_Handle:0000000000000000 SrvMPU_Error_Handle
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1010   .bss.SrvMpu_Reg:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1014   .bss.SrvMpu_Reg:0000000000000000 SrvMpu_Reg
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1020   .bss.a.0:0000000000000000 a.0
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1021   .bss.a.0:0000000000000000 $d
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s 			page 29
+
+
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1026   .bss.a.1:0000000000000000 a.1
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1027   .bss.a.1:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1029   .data.ICM20602_BusCfg:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1033   .data.ICM20602_BusCfg:0000000000000000 ICM20602_BusCfg
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1040   .data.MPU6000_BusCfg:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1044   .data.MPU6000_BusCfg:0000000000000000 MPU6000_BusCfg
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1051   .data.SrvIMU_ErrorList:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccWvQ9I0.s:1055   .data.SrvIMU_ErrorList:0000000000000000 SrvIMU_ErrorList
+
+UNDEFINED SYMBOLS
+BspGPIO
+MPU6000_CSPin
+MPU6000_INTPin
+MPU6000_BusPin
+DevMPU6000
+Get_CurrentRunningUs
+Runtime_DelayMs
+BspSPI
+ICM20602_CSPin
+ICM20602_INTPin
+ICM20602_BusPin
+DevICM20602
+ErrorTree_Create
+Error_Register
+Error_Trigger

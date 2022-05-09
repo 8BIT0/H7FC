@@ -1,0 +1,1715 @@
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Bsp_SPI.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.BspSPI_PinCLK_Enable,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	BspSPI_PinCLK_Enable:
+  25              	.LVL0:
+  26              	.LFB144:
+  27              		.file 1 "Bsp/Bsp_SPI.c"
+   1:Bsp/Bsp_SPI.c **** #include "Bsp_SPI.h"
+   2:Bsp/Bsp_SPI.c **** 
+   3:Bsp/Bsp_SPI.c **** /* internal function */
+   4:Bsp/Bsp_SPI.c **** static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_ins
+   5:Bsp/Bsp_SPI.c **** static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg);
+   6:Bsp/Bsp_SPI.c **** static bool BspSPI_Trans(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint16_t size, uint16_t time
+   7:Bsp/Bsp_SPI.c **** static bool BspSPI_Receive(SPI_HandleTypeDef *spi_instance, uint8_t *rx, uint16_t size, uint16_t ti
+   8:Bsp/Bsp_SPI.c **** static uint16_t BspSPI_TransReceive(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint8_t *rx, uint
+   9:Bsp/Bsp_SPI.c **** static bool BspSPI_Set_CLKSpeed(SPI_HandleTypeDef *spi_instance, uint32_t speed);
+  10:Bsp/Bsp_SPI.c **** 
+  11:Bsp/Bsp_SPI.c **** /* SPI0 Object */
+  12:Bsp/Bsp_SPI.c **** BspSpi_TypeDef BspSPI = {
+  13:Bsp/Bsp_SPI.c ****     .init = BspSPI_NormalMode_Init,
+  14:Bsp/Bsp_SPI.c ****     .deinit = BspSPI_DeInit,
+  15:Bsp/Bsp_SPI.c ****     .trans = BspSPI_Trans,
+  16:Bsp/Bsp_SPI.c ****     .receive = BspSPI_Receive,
+  17:Bsp/Bsp_SPI.c ****     .trans_receive = BspSPI_TransReceive,
+  18:Bsp/Bsp_SPI.c ****     .set_speed = BspSPI_Set_CLKSpeed,
+  19:Bsp/Bsp_SPI.c **** };
+  20:Bsp/Bsp_SPI.c **** 
+  21:Bsp/Bsp_SPI.c **** static const GPIO_InitTypeDef BspSPI_Pin_Cfg = {
+  22:Bsp/Bsp_SPI.c ****     .Alternate = 0,
+  23:Bsp/Bsp_SPI.c ****     .Mode = GPIO_MODE_AF_PP,
+  24:Bsp/Bsp_SPI.c ****     .Pin = 0,
+  25:Bsp/Bsp_SPI.c ****     .Pull = GPIO_NOPULL,
+  26:Bsp/Bsp_SPI.c ****     .Speed = GPIO_SPEED_FREQ_HIGH,
+  27:Bsp/Bsp_SPI.c **** };
+  28:Bsp/Bsp_SPI.c **** 
+  29:Bsp/Bsp_SPI.c **** static void BspSPI_PinCLK_Enable(GPIO_TypeDef *port)
+  30:Bsp/Bsp_SPI.c **** {
+  28              		.loc 1 30 1 view -0
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 2
+
+
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 40
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              		.loc 1 30 1 is_stmt 0 view .LVU1
+  34 0000 8AB0     		sub	sp, sp, #40
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 40
+  31:Bsp/Bsp_SPI.c ****     if (port == GPIOA)
+  37              		.loc 1 31 5 is_stmt 1 view .LVU2
+  38              		.loc 1 31 8 is_stmt 0 view .LVU3
+  39 0002 5B4B     		ldr	r3, .L22
+  40 0004 9842     		cmp	r0, r3
+  41 0006 2AD0     		beq	.L13
+  32:Bsp/Bsp_SPI.c ****     {
+  33:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOA_CLK_ENABLE();
+  34:Bsp/Bsp_SPI.c ****     }
+  35:Bsp/Bsp_SPI.c ****     else if (port == GPIOB)
+  42              		.loc 1 35 10 is_stmt 1 view .LVU4
+  43              		.loc 1 35 13 is_stmt 0 view .LVU5
+  44 0008 5A4B     		ldr	r3, .L22+4
+  45 000a 9842     		cmp	r0, r3
+  46 000c 37D0     		beq	.L14
+  36:Bsp/Bsp_SPI.c ****     {
+  37:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOB_CLK_ENABLE();
+  38:Bsp/Bsp_SPI.c ****     }
+  39:Bsp/Bsp_SPI.c ****     else if (port == GPIOC)
+  47              		.loc 1 39 10 is_stmt 1 view .LVU6
+  48              		.loc 1 39 13 is_stmt 0 view .LVU7
+  49 000e 5A4B     		ldr	r3, .L22+8
+  50 0010 9842     		cmp	r0, r3
+  51 0012 43D0     		beq	.L15
+  40:Bsp/Bsp_SPI.c ****     {
+  41:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOC_CLK_ENABLE();
+  42:Bsp/Bsp_SPI.c ****     }
+  43:Bsp/Bsp_SPI.c ****     else if (port == GPIOD)
+  52              		.loc 1 43 10 is_stmt 1 view .LVU8
+  53              		.loc 1 43 13 is_stmt 0 view .LVU9
+  54 0014 594B     		ldr	r3, .L22+12
+  55 0016 9842     		cmp	r0, r3
+  56 0018 4FD0     		beq	.L16
+  44:Bsp/Bsp_SPI.c ****     {
+  45:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOD_CLK_ENABLE();
+  46:Bsp/Bsp_SPI.c ****     }
+  47:Bsp/Bsp_SPI.c ****     else if (port == GPIOE)
+  57              		.loc 1 47 10 is_stmt 1 view .LVU10
+  58              		.loc 1 47 13 is_stmt 0 view .LVU11
+  59 001a 594B     		ldr	r3, .L22+16
+  60 001c 9842     		cmp	r0, r3
+  61 001e 5BD0     		beq	.L17
+  48:Bsp/Bsp_SPI.c ****     {
+  49:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOE_CLK_ENABLE();
+  50:Bsp/Bsp_SPI.c ****     }
+  51:Bsp/Bsp_SPI.c ****     else if (port == GPIOF)
+  62              		.loc 1 51 10 is_stmt 1 view .LVU12
+  63              		.loc 1 51 13 is_stmt 0 view .LVU13
+  64 0020 584B     		ldr	r3, .L22+20
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 3
+
+
+  65 0022 9842     		cmp	r0, r3
+  66 0024 67D0     		beq	.L18
+  52:Bsp/Bsp_SPI.c ****     {
+  53:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOF_CLK_ENABLE();
+  54:Bsp/Bsp_SPI.c ****     }
+  55:Bsp/Bsp_SPI.c ****     else if (port == GPIOG)
+  67              		.loc 1 55 10 is_stmt 1 view .LVU14
+  68              		.loc 1 55 13 is_stmt 0 view .LVU15
+  69 0026 584B     		ldr	r3, .L22+24
+  70 0028 9842     		cmp	r0, r3
+  71 002a 73D0     		beq	.L19
+  56:Bsp/Bsp_SPI.c ****     {
+  57:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOG_CLK_ENABLE();
+  58:Bsp/Bsp_SPI.c ****     }
+  59:Bsp/Bsp_SPI.c ****     else if (port == GPIOH)
+  72              		.loc 1 59 10 is_stmt 1 view .LVU16
+  73              		.loc 1 59 13 is_stmt 0 view .LVU17
+  74 002c 574B     		ldr	r3, .L22+28
+  75 002e 9842     		cmp	r0, r3
+  76 0030 7FD0     		beq	.L20
+  60:Bsp/Bsp_SPI.c ****     {
+  61:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOH_CLK_ENABLE();
+  62:Bsp/Bsp_SPI.c ****     }
+  63:Bsp/Bsp_SPI.c ****     else if (port == GPIOJ)
+  77              		.loc 1 63 10 is_stmt 1 view .LVU18
+  78              		.loc 1 63 13 is_stmt 0 view .LVU19
+  79 0032 574B     		ldr	r3, .L22+32
+  80 0034 9842     		cmp	r0, r3
+  81 0036 00F08B80 		beq	.L21
+  64:Bsp/Bsp_SPI.c ****     {
+  65:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOJ_CLK_ENABLE();
+  66:Bsp/Bsp_SPI.c ****     }
+  67:Bsp/Bsp_SPI.c ****     else if (port == GPIOK)
+  82              		.loc 1 67 10 is_stmt 1 view .LVU20
+  83              		.loc 1 67 13 is_stmt 0 view .LVU21
+  84 003a 564B     		ldr	r3, .L22+36
+  85 003c 9842     		cmp	r0, r3
+  86 003e 1CD1     		bne	.L1
+  68:Bsp/Bsp_SPI.c ****     {
+  69:Bsp/Bsp_SPI.c ****         __HAL_RCC_GPIOK_CLK_ENABLE();
+  87              		.loc 1 69 9 is_stmt 1 view .LVU22
+  88              	.LBB2:
+  89              		.loc 1 69 9 view .LVU23
+  90              		.loc 1 69 9 view .LVU24
+  91 0040 03F5E053 		add	r3, r3, #7168
+  92 0044 D3F8E020 		ldr	r2, [r3, #224]
+  93 0048 42F48062 		orr	r2, r2, #1024
+  94 004c C3F8E020 		str	r2, [r3, #224]
+  95              		.loc 1 69 9 view .LVU25
+  96 0050 D3F8E030 		ldr	r3, [r3, #224]
+  97 0054 03F48063 		and	r3, r3, #1024
+  98 0058 0993     		str	r3, [sp, #36]
+  99              		.loc 1 69 9 view .LVU26
+ 100 005a 099B     		ldr	r3, [sp, #36]
+ 101              	.LBE2:
+ 102              		.loc 1 69 9 view .LVU27
+  70:Bsp/Bsp_SPI.c ****     }
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 4
+
+
+  71:Bsp/Bsp_SPI.c **** }
+ 103              		.loc 1 71 1 is_stmt 0 view .LVU28
+ 104 005c 0DE0     		b	.L1
+ 105              	.L13:
+  33:Bsp/Bsp_SPI.c ****     }
+ 106              		.loc 1 33 9 is_stmt 1 view .LVU29
+ 107              	.LBB3:
+  33:Bsp/Bsp_SPI.c ****     }
+ 108              		.loc 1 33 9 view .LVU30
+  33:Bsp/Bsp_SPI.c ****     }
+ 109              		.loc 1 33 9 view .LVU31
+ 110 005e 03F58843 		add	r3, r3, #17408
+ 111 0062 D3F8E020 		ldr	r2, [r3, #224]
+ 112 0066 42F00102 		orr	r2, r2, #1
+ 113 006a C3F8E020 		str	r2, [r3, #224]
+  33:Bsp/Bsp_SPI.c ****     }
+ 114              		.loc 1 33 9 view .LVU32
+ 115 006e D3F8E030 		ldr	r3, [r3, #224]
+ 116 0072 03F00103 		and	r3, r3, #1
+ 117 0076 0093     		str	r3, [sp]
+  33:Bsp/Bsp_SPI.c ****     }
+ 118              		.loc 1 33 9 view .LVU33
+ 119 0078 009B     		ldr	r3, [sp]
+ 120              	.LBE3:
+  33:Bsp/Bsp_SPI.c ****     }
+ 121              		.loc 1 33 9 view .LVU34
+ 122              	.L1:
+ 123              		.loc 1 71 1 is_stmt 0 view .LVU35
+ 124 007a 0AB0     		add	sp, sp, #40
+ 125              	.LCFI1:
+ 126              		.cfi_remember_state
+ 127              		.cfi_def_cfa_offset 0
+ 128              		@ sp needed
+ 129 007c 7047     		bx	lr
+ 130              	.L14:
+ 131              	.LCFI2:
+ 132              		.cfi_restore_state
+  37:Bsp/Bsp_SPI.c ****     }
+ 133              		.loc 1 37 9 is_stmt 1 view .LVU36
+ 134              	.LBB4:
+  37:Bsp/Bsp_SPI.c ****     }
+ 135              		.loc 1 37 9 view .LVU37
+  37:Bsp/Bsp_SPI.c ****     }
+ 136              		.loc 1 37 9 view .LVU38
+ 137 007e 03F58043 		add	r3, r3, #16384
+ 138 0082 D3F8E020 		ldr	r2, [r3, #224]
+ 139 0086 42F00202 		orr	r2, r2, #2
+ 140 008a C3F8E020 		str	r2, [r3, #224]
+  37:Bsp/Bsp_SPI.c ****     }
+ 141              		.loc 1 37 9 view .LVU39
+ 142 008e D3F8E030 		ldr	r3, [r3, #224]
+ 143 0092 03F00203 		and	r3, r3, #2
+ 144 0096 0193     		str	r3, [sp, #4]
+  37:Bsp/Bsp_SPI.c ****     }
+ 145              		.loc 1 37 9 view .LVU40
+ 146 0098 019B     		ldr	r3, [sp, #4]
+ 147              	.LBE4:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 5
+
+
+  37:Bsp/Bsp_SPI.c ****     }
+ 148              		.loc 1 37 9 view .LVU41
+ 149 009a EEE7     		b	.L1
+ 150              	.L15:
+  41:Bsp/Bsp_SPI.c ****     }
+ 151              		.loc 1 41 9 view .LVU42
+ 152              	.LBB5:
+  41:Bsp/Bsp_SPI.c ****     }
+ 153              		.loc 1 41 9 view .LVU43
+  41:Bsp/Bsp_SPI.c ****     }
+ 154              		.loc 1 41 9 view .LVU44
+ 155 009c 03F57053 		add	r3, r3, #15360
+ 156 00a0 D3F8E020 		ldr	r2, [r3, #224]
+ 157 00a4 42F00402 		orr	r2, r2, #4
+ 158 00a8 C3F8E020 		str	r2, [r3, #224]
+  41:Bsp/Bsp_SPI.c ****     }
+ 159              		.loc 1 41 9 view .LVU45
+ 160 00ac D3F8E030 		ldr	r3, [r3, #224]
+ 161 00b0 03F00403 		and	r3, r3, #4
+ 162 00b4 0293     		str	r3, [sp, #8]
+  41:Bsp/Bsp_SPI.c ****     }
+ 163              		.loc 1 41 9 view .LVU46
+ 164 00b6 029B     		ldr	r3, [sp, #8]
+ 165              	.LBE5:
+  41:Bsp/Bsp_SPI.c ****     }
+ 166              		.loc 1 41 9 view .LVU47
+ 167 00b8 DFE7     		b	.L1
+ 168              	.L16:
+  45:Bsp/Bsp_SPI.c ****     }
+ 169              		.loc 1 45 9 view .LVU48
+ 170              	.LBB6:
+  45:Bsp/Bsp_SPI.c ****     }
+ 171              		.loc 1 45 9 view .LVU49
+  45:Bsp/Bsp_SPI.c ****     }
+ 172              		.loc 1 45 9 view .LVU50
+ 173 00ba 03F56053 		add	r3, r3, #14336
+ 174 00be D3F8E020 		ldr	r2, [r3, #224]
+ 175 00c2 42F00802 		orr	r2, r2, #8
+ 176 00c6 C3F8E020 		str	r2, [r3, #224]
+  45:Bsp/Bsp_SPI.c ****     }
+ 177              		.loc 1 45 9 view .LVU51
+ 178 00ca D3F8E030 		ldr	r3, [r3, #224]
+ 179 00ce 03F00803 		and	r3, r3, #8
+ 180 00d2 0393     		str	r3, [sp, #12]
+  45:Bsp/Bsp_SPI.c ****     }
+ 181              		.loc 1 45 9 view .LVU52
+ 182 00d4 039B     		ldr	r3, [sp, #12]
+ 183              	.LBE6:
+  45:Bsp/Bsp_SPI.c ****     }
+ 184              		.loc 1 45 9 view .LVU53
+ 185 00d6 D0E7     		b	.L1
+ 186              	.L17:
+  49:Bsp/Bsp_SPI.c ****     }
+ 187              		.loc 1 49 9 view .LVU54
+ 188              	.LBB7:
+  49:Bsp/Bsp_SPI.c ****     }
+ 189              		.loc 1 49 9 view .LVU55
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 6
+
+
+  49:Bsp/Bsp_SPI.c ****     }
+ 190              		.loc 1 49 9 view .LVU56
+ 191 00d8 03F55053 		add	r3, r3, #13312
+ 192 00dc D3F8E020 		ldr	r2, [r3, #224]
+ 193 00e0 42F01002 		orr	r2, r2, #16
+ 194 00e4 C3F8E020 		str	r2, [r3, #224]
+  49:Bsp/Bsp_SPI.c ****     }
+ 195              		.loc 1 49 9 view .LVU57
+ 196 00e8 D3F8E030 		ldr	r3, [r3, #224]
+ 197 00ec 03F01003 		and	r3, r3, #16
+ 198 00f0 0493     		str	r3, [sp, #16]
+  49:Bsp/Bsp_SPI.c ****     }
+ 199              		.loc 1 49 9 view .LVU58
+ 200 00f2 049B     		ldr	r3, [sp, #16]
+ 201              	.LBE7:
+  49:Bsp/Bsp_SPI.c ****     }
+ 202              		.loc 1 49 9 view .LVU59
+ 203 00f4 C1E7     		b	.L1
+ 204              	.L18:
+  53:Bsp/Bsp_SPI.c ****     }
+ 205              		.loc 1 53 9 view .LVU60
+ 206              	.LBB8:
+  53:Bsp/Bsp_SPI.c ****     }
+ 207              		.loc 1 53 9 view .LVU61
+  53:Bsp/Bsp_SPI.c ****     }
+ 208              		.loc 1 53 9 view .LVU62
+ 209 00f6 03F54053 		add	r3, r3, #12288
+ 210 00fa D3F8E020 		ldr	r2, [r3, #224]
+ 211 00fe 42F02002 		orr	r2, r2, #32
+ 212 0102 C3F8E020 		str	r2, [r3, #224]
+  53:Bsp/Bsp_SPI.c ****     }
+ 213              		.loc 1 53 9 view .LVU63
+ 214 0106 D3F8E030 		ldr	r3, [r3, #224]
+ 215 010a 03F02003 		and	r3, r3, #32
+ 216 010e 0593     		str	r3, [sp, #20]
+  53:Bsp/Bsp_SPI.c ****     }
+ 217              		.loc 1 53 9 view .LVU64
+ 218 0110 059B     		ldr	r3, [sp, #20]
+ 219              	.LBE8:
+  53:Bsp/Bsp_SPI.c ****     }
+ 220              		.loc 1 53 9 view .LVU65
+ 221 0112 B2E7     		b	.L1
+ 222              	.L19:
+  57:Bsp/Bsp_SPI.c ****     }
+ 223              		.loc 1 57 9 view .LVU66
+ 224              	.LBB9:
+  57:Bsp/Bsp_SPI.c ****     }
+ 225              		.loc 1 57 9 view .LVU67
+  57:Bsp/Bsp_SPI.c ****     }
+ 226              		.loc 1 57 9 view .LVU68
+ 227 0114 03F53053 		add	r3, r3, #11264
+ 228 0118 D3F8E020 		ldr	r2, [r3, #224]
+ 229 011c 42F04002 		orr	r2, r2, #64
+ 230 0120 C3F8E020 		str	r2, [r3, #224]
+  57:Bsp/Bsp_SPI.c ****     }
+ 231              		.loc 1 57 9 view .LVU69
+ 232 0124 D3F8E030 		ldr	r3, [r3, #224]
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 7
+
+
+ 233 0128 03F04003 		and	r3, r3, #64
+ 234 012c 0693     		str	r3, [sp, #24]
+  57:Bsp/Bsp_SPI.c ****     }
+ 235              		.loc 1 57 9 view .LVU70
+ 236 012e 069B     		ldr	r3, [sp, #24]
+ 237              	.LBE9:
+  57:Bsp/Bsp_SPI.c ****     }
+ 238              		.loc 1 57 9 view .LVU71
+ 239 0130 A3E7     		b	.L1
+ 240              	.L20:
+  61:Bsp/Bsp_SPI.c ****     }
+ 241              		.loc 1 61 9 view .LVU72
+ 242              	.LBB10:
+  61:Bsp/Bsp_SPI.c ****     }
+ 243              		.loc 1 61 9 view .LVU73
+  61:Bsp/Bsp_SPI.c ****     }
+ 244              		.loc 1 61 9 view .LVU74
+ 245 0132 03F52053 		add	r3, r3, #10240
+ 246 0136 D3F8E020 		ldr	r2, [r3, #224]
+ 247 013a 42F08002 		orr	r2, r2, #128
+ 248 013e C3F8E020 		str	r2, [r3, #224]
+  61:Bsp/Bsp_SPI.c ****     }
+ 249              		.loc 1 61 9 view .LVU75
+ 250 0142 D3F8E030 		ldr	r3, [r3, #224]
+ 251 0146 03F08003 		and	r3, r3, #128
+ 252 014a 0793     		str	r3, [sp, #28]
+  61:Bsp/Bsp_SPI.c ****     }
+ 253              		.loc 1 61 9 view .LVU76
+ 254 014c 079B     		ldr	r3, [sp, #28]
+ 255              	.LBE10:
+  61:Bsp/Bsp_SPI.c ****     }
+ 256              		.loc 1 61 9 view .LVU77
+ 257 014e 94E7     		b	.L1
+ 258              	.L21:
+  65:Bsp/Bsp_SPI.c ****     }
+ 259              		.loc 1 65 9 view .LVU78
+ 260              	.LBB11:
+  65:Bsp/Bsp_SPI.c ****     }
+ 261              		.loc 1 65 9 view .LVU79
+  65:Bsp/Bsp_SPI.c ****     }
+ 262              		.loc 1 65 9 view .LVU80
+ 263 0150 03F50053 		add	r3, r3, #8192
+ 264 0154 D3F8E020 		ldr	r2, [r3, #224]
+ 265 0158 42F40072 		orr	r2, r2, #512
+ 266 015c C3F8E020 		str	r2, [r3, #224]
+  65:Bsp/Bsp_SPI.c ****     }
+ 267              		.loc 1 65 9 view .LVU81
+ 268 0160 D3F8E030 		ldr	r3, [r3, #224]
+ 269 0164 03F40073 		and	r3, r3, #512
+ 270 0168 0893     		str	r3, [sp, #32]
+  65:Bsp/Bsp_SPI.c ****     }
+ 271              		.loc 1 65 9 view .LVU82
+ 272 016a 089B     		ldr	r3, [sp, #32]
+ 273              	.LBE11:
+  65:Bsp/Bsp_SPI.c ****     }
+ 274              		.loc 1 65 9 view .LVU83
+ 275 016c 85E7     		b	.L1
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 8
+
+
+ 276              	.L23:
+ 277 016e 00BF     		.align	2
+ 278              	.L22:
+ 279 0170 00000258 		.word	1476526080
+ 280 0174 00040258 		.word	1476527104
+ 281 0178 00080258 		.word	1476528128
+ 282 017c 000C0258 		.word	1476529152
+ 283 0180 00100258 		.word	1476530176
+ 284 0184 00140258 		.word	1476531200
+ 285 0188 00180258 		.word	1476532224
+ 286 018c 001C0258 		.word	1476533248
+ 287 0190 00240258 		.word	1476535296
+ 288 0194 00280258 		.word	1476536320
+ 289              		.cfi_endproc
+ 290              	.LFE144:
+ 292              		.section	.text.BspSPI_Set_CLKSpeed,"ax",%progbits
+ 293              		.align	1
+ 294              		.syntax unified
+ 295              		.thumb
+ 296              		.thumb_func
+ 297              		.fpu fpv5-d16
+ 299              	BspSPI_Set_CLKSpeed:
+ 300              	.LVL1:
+ 301              	.LFB147:
+  72:Bsp/Bsp_SPI.c **** 
+  73:Bsp/Bsp_SPI.c **** static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
+  74:Bsp/Bsp_SPI.c **** {
+  75:Bsp/Bsp_SPI.c ****     GPIO_InitTypeDef GPIO_InitStruct = BspSPI_Pin_Cfg;
+  76:Bsp/Bsp_SPI.c **** 
+  77:Bsp/Bsp_SPI.c ****     /* mosi pin init */
+  78:Bsp/Bsp_SPI.c ****     BspSPI_PinCLK_Enable(pin_cfg.port_mosi);
+  79:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pin = pin_cfg.pin_mosi;
+  80:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+  81:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
+  82:Bsp/Bsp_SPI.c **** 
+  83:Bsp/Bsp_SPI.c ****     /* miso pin init */
+  84:Bsp/Bsp_SPI.c ****     BspSPI_PinCLK_Enable(pin_cfg.port_miso);
+  85:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pin = pin_cfg.pin_miso;
+  86:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+  87:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_miso, &GPIO_InitStruct);
+  88:Bsp/Bsp_SPI.c **** 
+  89:Bsp/Bsp_SPI.c ****     /* clk pin init */
+  90:Bsp/Bsp_SPI.c ****     BspSPI_PinCLK_Enable(pin_cfg.port_clk);
+  91:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pin = pin_cfg.pin_clk;
+  92:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+  93:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
+  94:Bsp/Bsp_SPI.c **** 
+  95:Bsp/Bsp_SPI.c ****     return true;
+  96:Bsp/Bsp_SPI.c **** }
+  97:Bsp/Bsp_SPI.c **** 
+  98:Bsp/Bsp_SPI.c **** static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_ins
+  99:Bsp/Bsp_SPI.c **** {
+ 100:Bsp/Bsp_SPI.c ****     SPI_HandleTypeDef SPI_InitStructure;
+ 101:Bsp/Bsp_SPI.c ****     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+ 102:Bsp/Bsp_SPI.c **** 
+ 103:Bsp/Bsp_SPI.c ****     if (spi_cfg.Instance == SPI1)
+ 104:Bsp/Bsp_SPI.c ****     {
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 9
+
+
+ 105:Bsp/Bsp_SPI.c ****         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1;
+ 106:Bsp/Bsp_SPI.c ****         PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
+ 107:Bsp/Bsp_SPI.c ****         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+ 108:Bsp/Bsp_SPI.c ****             return false;
+ 109:Bsp/Bsp_SPI.c **** 
+ 110:Bsp/Bsp_SPI.c ****         __SPI1_CLK_ENABLE();
+ 111:Bsp/Bsp_SPI.c ****     }
+ 112:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI2)
+ 113:Bsp/Bsp_SPI.c ****     {
+ 114:Bsp/Bsp_SPI.c ****         __SPI2_CLK_ENABLE();
+ 115:Bsp/Bsp_SPI.c ****     }
+ 116:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI3)
+ 117:Bsp/Bsp_SPI.c ****     {
+ 118:Bsp/Bsp_SPI.c ****         __SPI3_CLK_ENABLE();
+ 119:Bsp/Bsp_SPI.c ****     }
+ 120:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI4)
+ 121:Bsp/Bsp_SPI.c ****     {
+ 122:Bsp/Bsp_SPI.c ****         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI4;
+ 123:Bsp/Bsp_SPI.c ****         PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_D2PCLK1;
+ 124:Bsp/Bsp_SPI.c ****         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+ 125:Bsp/Bsp_SPI.c ****             return false;
+ 126:Bsp/Bsp_SPI.c **** 
+ 127:Bsp/Bsp_SPI.c ****         __SPI4_CLK_ENABLE();
+ 128:Bsp/Bsp_SPI.c ****     }
+ 129:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI5)
+ 130:Bsp/Bsp_SPI.c ****     {
+ 131:Bsp/Bsp_SPI.c ****         __SPI5_CLK_ENABLE();
+ 132:Bsp/Bsp_SPI.c ****     }
+ 133:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI6)
+ 134:Bsp/Bsp_SPI.c ****     {
+ 135:Bsp/Bsp_SPI.c ****         __SPI6_CLK_ENABLE();
+ 136:Bsp/Bsp_SPI.c ****     }
+ 137:Bsp/Bsp_SPI.c ****     else
+ 138:Bsp/Bsp_SPI.c ****         return false;
+ 139:Bsp/Bsp_SPI.c **** 
+ 140:Bsp/Bsp_SPI.c ****     BspSPI_PinInit(spi_cfg.Pin);
+ 141:Bsp/Bsp_SPI.c **** 
+ 142:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Instance = spi_cfg.Instance;                        // SPI2;
+ 143:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Mode = SPI_MODE_MASTER;                        // SPI_MODE_MASTER;
+ 144:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Direction = SPI_DIRECTION_2LINES;              // SPI_DIRECTION_2LINES;
+ 145:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.DataSize = SPI_DATASIZE_8BIT;                  // SPI_DATASIZE_8BIT;
+ 146:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPolarity = spi_cfg.CLKPolarity;             // SPI_POLARITY_LOW;
+ 147:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPhase = spi_cfg.CLKPhase;                   // SPI_PHASE_1EDGE;
+ 148:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSS = SPI_NSS_SOFT;                            // SPI_NSS_SOFT;
+ 149:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.BaudRatePrescaler = spi_cfg.BaudRatePrescaler; // SPI_BAUDRATEPRESCALER_
+ 150:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FirstBit = SPI_FIRSTBIT_MSB;                   // SPI_FIRSTBIT_MSB;
+ 151:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TIMode = SPI_TIMODE_DISABLE;
+ 152:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+ 153:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCPolynomial = 0;
+ 154:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+ 155:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+ 156:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+ 157:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+ 158:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 159:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 160:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+ 161:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 10
+
+
+ 162:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+ 163:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+ 164:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+ 165:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Init(&SPI_InitStructure) != HAL_OK)
+ 166:Bsp/Bsp_SPI.c ****         return false;
+ 167:Bsp/Bsp_SPI.c **** 
+ 168:Bsp/Bsp_SPI.c ****     *spi_instance = SPI_InitStructure;
+ 169:Bsp/Bsp_SPI.c **** 
+ 170:Bsp/Bsp_SPI.c ****     return true;
+ 171:Bsp/Bsp_SPI.c **** }
+ 172:Bsp/Bsp_SPI.c **** 
+ 173:Bsp/Bsp_SPI.c **** static bool BspSPI_Set_CLKSpeed(SPI_HandleTypeDef *spi_instance, uint32_t speed)
+ 174:Bsp/Bsp_SPI.c **** {
+ 302              		.loc 1 174 1 view -0
+ 303              		.cfi_startproc
+ 304              		@ args = 0, pretend = 0, frame = 0
+ 305              		@ frame_needed = 0, uses_anonymous_args = 0
+ 306              		@ link register save eliminated.
+ 175:Bsp/Bsp_SPI.c ****     if (spi_instance == NULL)
+ 307              		.loc 1 175 5 view .LVU85
+ 308              		.loc 1 175 8 is_stmt 0 view .LVU86
+ 309 0000 10B1     		cbz	r0, .L26
+ 176:Bsp/Bsp_SPI.c ****         return false;
+ 177:Bsp/Bsp_SPI.c **** 
+ 178:Bsp/Bsp_SPI.c ****     spi_instance->Init.BaudRatePrescaler = speed;
+ 310              		.loc 1 178 5 is_stmt 1 view .LVU87
+ 311              		.loc 1 178 42 is_stmt 0 view .LVU88
+ 312 0002 C161     		str	r1, [r0, #28]
+ 179:Bsp/Bsp_SPI.c **** 
+ 180:Bsp/Bsp_SPI.c ****     return true;
+ 313              		.loc 1 180 5 is_stmt 1 view .LVU89
+ 314              		.loc 1 180 12 is_stmt 0 view .LVU90
+ 315 0004 0120     		movs	r0, #1
+ 316              	.LVL2:
+ 317              		.loc 1 180 12 view .LVU91
+ 318 0006 7047     		bx	lr
+ 319              	.LVL3:
+ 320              	.L26:
+ 176:Bsp/Bsp_SPI.c ****         return false;
+ 321              		.loc 1 176 16 view .LVU92
+ 322 0008 0020     		movs	r0, #0
+ 323              	.LVL4:
+ 181:Bsp/Bsp_SPI.c **** }
+ 324              		.loc 1 181 1 view .LVU93
+ 325 000a 7047     		bx	lr
+ 326              		.cfi_endproc
+ 327              	.LFE147:
+ 329              		.section	.text.BspSPI_TransReceive,"ax",%progbits
+ 330              		.align	1
+ 331              		.syntax unified
+ 332              		.thumb
+ 333              		.thumb_func
+ 334              		.fpu fpv5-d16
+ 336              	BspSPI_TransReceive:
+ 337              	.LVL5:
+ 338              	.LFB151:
+ 182:Bsp/Bsp_SPI.c **** 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 11
+
+
+ 183:Bsp/Bsp_SPI.c **** static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg)
+ 184:Bsp/Bsp_SPI.c **** {
+ 185:Bsp/Bsp_SPI.c ****     if (spi_cfg.Instance == SPI1)
+ 186:Bsp/Bsp_SPI.c ****     {
+ 187:Bsp/Bsp_SPI.c ****         __SPI1_CLK_DISABLE();
+ 188:Bsp/Bsp_SPI.c ****     }
+ 189:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI2)
+ 190:Bsp/Bsp_SPI.c ****     {
+ 191:Bsp/Bsp_SPI.c ****         __SPI2_CLK_DISABLE();
+ 192:Bsp/Bsp_SPI.c ****     }
+ 193:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI3)
+ 194:Bsp/Bsp_SPI.c ****     {
+ 195:Bsp/Bsp_SPI.c ****         __SPI3_CLK_DISABLE();
+ 196:Bsp/Bsp_SPI.c ****     }
+ 197:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI4)
+ 198:Bsp/Bsp_SPI.c ****     {
+ 199:Bsp/Bsp_SPI.c ****         __SPI4_CLK_DISABLE();
+ 200:Bsp/Bsp_SPI.c ****     }
+ 201:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI5)
+ 202:Bsp/Bsp_SPI.c ****     {
+ 203:Bsp/Bsp_SPI.c ****         __SPI5_CLK_DISABLE();
+ 204:Bsp/Bsp_SPI.c ****     }
+ 205:Bsp/Bsp_SPI.c ****     else if (spi_cfg.Instance == SPI6)
+ 206:Bsp/Bsp_SPI.c ****     {
+ 207:Bsp/Bsp_SPI.c ****         __SPI6_CLK_DISABLE();
+ 208:Bsp/Bsp_SPI.c ****     }
+ 209:Bsp/Bsp_SPI.c ****     else
+ 210:Bsp/Bsp_SPI.c ****         return false;
+ 211:Bsp/Bsp_SPI.c **** 
+ 212:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_mosi, spi_cfg.Pin.pin_mosi);
+ 213:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_miso, spi_cfg.Pin.pin_miso);
+ 214:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_clk, spi_cfg.Pin.pin_clk);
+ 215:Bsp/Bsp_SPI.c **** 
+ 216:Bsp/Bsp_SPI.c ****     return true;
+ 217:Bsp/Bsp_SPI.c **** }
+ 218:Bsp/Bsp_SPI.c **** 
+ 219:Bsp/Bsp_SPI.c **** static bool BspSPI_Trans(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint16_t size, uint16_t time
+ 220:Bsp/Bsp_SPI.c **** {
+ 221:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Transmit(spi_instance, tx, size, time_out) == HAL_OK)
+ 222:Bsp/Bsp_SPI.c ****         return true;
+ 223:Bsp/Bsp_SPI.c **** 
+ 224:Bsp/Bsp_SPI.c ****     return false;
+ 225:Bsp/Bsp_SPI.c **** }
+ 226:Bsp/Bsp_SPI.c **** 
+ 227:Bsp/Bsp_SPI.c **** static bool BspSPI_Receive(SPI_HandleTypeDef *spi_instance, uint8_t *rx, uint16_t size, uint16_t ti
+ 228:Bsp/Bsp_SPI.c **** {
+ 229:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Receive(spi_instance, rx, size, time_out) == HAL_OK)
+ 230:Bsp/Bsp_SPI.c ****         return true;
+ 231:Bsp/Bsp_SPI.c **** 
+ 232:Bsp/Bsp_SPI.c ****     return false;
+ 233:Bsp/Bsp_SPI.c **** }
+ 234:Bsp/Bsp_SPI.c **** 
+ 235:Bsp/Bsp_SPI.c **** static uint16_t BspSPI_TransReceive(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint8_t *rx, uint
+ 236:Bsp/Bsp_SPI.c **** {
+ 339              		.loc 1 236 1 is_stmt 1 view -0
+ 340              		.cfi_startproc
+ 341              		@ args = 4, pretend = 0, frame = 0
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 12
+
+
+ 342              		@ frame_needed = 0, uses_anonymous_args = 0
+ 343              		.loc 1 236 1 is_stmt 0 view .LVU95
+ 344 0000 10B5     		push	{r4, lr}
+ 345              	.LCFI3:
+ 346              		.cfi_def_cfa_offset 8
+ 347              		.cfi_offset 4, -8
+ 348              		.cfi_offset 14, -4
+ 349 0002 82B0     		sub	sp, sp, #8
+ 350              	.LCFI4:
+ 351              		.cfi_def_cfa_offset 16
+ 237:Bsp/Bsp_SPI.c ****     if (HAL_SPI_TransmitReceive(spi_instance, tx, rx, size, time_out) == HAL_OK)
+ 352              		.loc 1 237 5 is_stmt 1 view .LVU96
+ 353              		.loc 1 237 9 is_stmt 0 view .LVU97
+ 354 0004 BDF81040 		ldrh	r4, [sp, #16]
+ 355 0008 0094     		str	r4, [sp]
+ 356 000a FFF7FEFF 		bl	HAL_SPI_TransmitReceive
+ 357              	.LVL6:
+ 358              		.loc 1 237 8 view .LVU98
+ 359 000e 10B1     		cbz	r0, .L29
+ 238:Bsp/Bsp_SPI.c ****         return true;
+ 239:Bsp/Bsp_SPI.c **** 
+ 240:Bsp/Bsp_SPI.c ****     return false;
+ 360              		.loc 1 240 12 view .LVU99
+ 361 0010 0020     		movs	r0, #0
+ 362              	.L28:
+ 241:Bsp/Bsp_SPI.c **** }
+ 363              		.loc 1 241 1 view .LVU100
+ 364 0012 02B0     		add	sp, sp, #8
+ 365              	.LCFI5:
+ 366              		.cfi_remember_state
+ 367              		.cfi_def_cfa_offset 8
+ 368              		@ sp needed
+ 369 0014 10BD     		pop	{r4, pc}
+ 370              	.LVL7:
+ 371              	.L29:
+ 372              	.LCFI6:
+ 373              		.cfi_restore_state
+ 238:Bsp/Bsp_SPI.c ****         return true;
+ 374              		.loc 1 238 16 view .LVU101
+ 375 0016 0120     		movs	r0, #1
+ 376 0018 FBE7     		b	.L28
+ 377              		.cfi_endproc
+ 378              	.LFE151:
+ 380              		.section	.text.BspSPI_Receive,"ax",%progbits
+ 381              		.align	1
+ 382              		.syntax unified
+ 383              		.thumb
+ 384              		.thumb_func
+ 385              		.fpu fpv5-d16
+ 387              	BspSPI_Receive:
+ 388              	.LVL8:
+ 389              	.LFB150:
+ 228:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Receive(spi_instance, rx, size, time_out) == HAL_OK)
+ 390              		.loc 1 228 1 is_stmt 1 view -0
+ 391              		.cfi_startproc
+ 392              		@ args = 0, pretend = 0, frame = 0
+ 393              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 13
+
+
+ 228:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Receive(spi_instance, rx, size, time_out) == HAL_OK)
+ 394              		.loc 1 228 1 is_stmt 0 view .LVU103
+ 395 0000 08B5     		push	{r3, lr}
+ 396              	.LCFI7:
+ 397              		.cfi_def_cfa_offset 8
+ 398              		.cfi_offset 3, -8
+ 399              		.cfi_offset 14, -4
+ 229:Bsp/Bsp_SPI.c ****         return true;
+ 400              		.loc 1 229 5 is_stmt 1 view .LVU104
+ 229:Bsp/Bsp_SPI.c ****         return true;
+ 401              		.loc 1 229 9 is_stmt 0 view .LVU105
+ 402 0002 FFF7FEFF 		bl	HAL_SPI_Receive
+ 403              	.LVL9:
+ 229:Bsp/Bsp_SPI.c ****         return true;
+ 404              		.loc 1 229 8 view .LVU106
+ 405 0006 08B1     		cbz	r0, .L33
+ 232:Bsp/Bsp_SPI.c **** }
+ 406              		.loc 1 232 12 view .LVU107
+ 407 0008 0020     		movs	r0, #0
+ 408              	.L32:
+ 233:Bsp/Bsp_SPI.c **** 
+ 409              		.loc 1 233 1 view .LVU108
+ 410 000a 08BD     		pop	{r3, pc}
+ 411              	.L33:
+ 230:Bsp/Bsp_SPI.c **** 
+ 412              		.loc 1 230 16 view .LVU109
+ 413 000c 0120     		movs	r0, #1
+ 414 000e FCE7     		b	.L32
+ 415              		.cfi_endproc
+ 416              	.LFE150:
+ 418              		.section	.text.BspSPI_Trans,"ax",%progbits
+ 419              		.align	1
+ 420              		.syntax unified
+ 421              		.thumb
+ 422              		.thumb_func
+ 423              		.fpu fpv5-d16
+ 425              	BspSPI_Trans:
+ 426              	.LVL10:
+ 427              	.LFB149:
+ 220:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Transmit(spi_instance, tx, size, time_out) == HAL_OK)
+ 428              		.loc 1 220 1 is_stmt 1 view -0
+ 429              		.cfi_startproc
+ 430              		@ args = 0, pretend = 0, frame = 0
+ 431              		@ frame_needed = 0, uses_anonymous_args = 0
+ 220:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Transmit(spi_instance, tx, size, time_out) == HAL_OK)
+ 432              		.loc 1 220 1 is_stmt 0 view .LVU111
+ 433 0000 08B5     		push	{r3, lr}
+ 434              	.LCFI8:
+ 435              		.cfi_def_cfa_offset 8
+ 436              		.cfi_offset 3, -8
+ 437              		.cfi_offset 14, -4
+ 221:Bsp/Bsp_SPI.c ****         return true;
+ 438              		.loc 1 221 5 is_stmt 1 view .LVU112
+ 221:Bsp/Bsp_SPI.c ****         return true;
+ 439              		.loc 1 221 9 is_stmt 0 view .LVU113
+ 440 0002 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 441              	.LVL11:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 14
+
+
+ 221:Bsp/Bsp_SPI.c ****         return true;
+ 442              		.loc 1 221 8 view .LVU114
+ 443 0006 08B1     		cbz	r0, .L37
+ 224:Bsp/Bsp_SPI.c **** }
+ 444              		.loc 1 224 12 view .LVU115
+ 445 0008 0020     		movs	r0, #0
+ 446              	.L36:
+ 225:Bsp/Bsp_SPI.c **** 
+ 447              		.loc 1 225 1 view .LVU116
+ 448 000a 08BD     		pop	{r3, pc}
+ 449              	.L37:
+ 222:Bsp/Bsp_SPI.c **** 
+ 450              		.loc 1 222 16 view .LVU117
+ 451 000c 0120     		movs	r0, #1
+ 452 000e FCE7     		b	.L36
+ 453              		.cfi_endproc
+ 454              	.LFE149:
+ 456              		.section	.text.BspSPI_DeInit,"ax",%progbits
+ 457              		.align	1
+ 458              		.syntax unified
+ 459              		.thumb
+ 460              		.thumb_func
+ 461              		.fpu fpv5-d16
+ 463              	BspSPI_DeInit:
+ 464              	.LFB148:
+ 184:Bsp/Bsp_SPI.c ****     if (spi_cfg.Instance == SPI1)
+ 465              		.loc 1 184 1 is_stmt 1 view -0
+ 466              		.cfi_startproc
+ 467              		@ args = 44, pretend = 16, frame = 0
+ 468              		@ frame_needed = 0, uses_anonymous_args = 0
+ 469 0000 84B0     		sub	sp, sp, #16
+ 470              	.LCFI9:
+ 471              		.cfi_def_cfa_offset 16
+ 472 0002 08B5     		push	{r3, lr}
+ 473              	.LCFI10:
+ 474              		.cfi_def_cfa_offset 24
+ 475              		.cfi_offset 3, -24
+ 476              		.cfi_offset 14, -20
+ 477 0004 0DF1080C 		add	ip, sp, #8
+ 478 0008 8CE80F00 		stm	ip, {r0, r1, r2, r3}
+ 185:Bsp/Bsp_SPI.c ****     {
+ 479              		.loc 1 185 5 view .LVU119
+ 185:Bsp/Bsp_SPI.c ****     {
+ 480              		.loc 1 185 16 is_stmt 0 view .LVU120
+ 481 000c 099B     		ldr	r3, [sp, #36]
+ 185:Bsp/Bsp_SPI.c ****     {
+ 482              		.loc 1 185 8 view .LVU121
+ 483 000e 2A4A     		ldr	r2, .L55
+ 484 0010 9342     		cmp	r3, r2
+ 485 0012 10D0     		beq	.L49
+ 189:Bsp/Bsp_SPI.c ****     {
+ 486              		.loc 1 189 10 is_stmt 1 view .LVU122
+ 189:Bsp/Bsp_SPI.c ****     {
+ 487              		.loc 1 189 13 is_stmt 0 view .LVU123
+ 488 0014 294A     		ldr	r2, .L55+4
+ 489 0016 9342     		cmp	r3, r2
+ 490 0018 25D0     		beq	.L50
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 15
+
+
+ 193:Bsp/Bsp_SPI.c ****     {
+ 491              		.loc 1 193 10 is_stmt 1 view .LVU124
+ 193:Bsp/Bsp_SPI.c ****     {
+ 492              		.loc 1 193 13 is_stmt 0 view .LVU125
+ 493 001a 294A     		ldr	r2, .L55+8
+ 494 001c 9342     		cmp	r3, r2
+ 495 001e 2AD0     		beq	.L51
+ 197:Bsp/Bsp_SPI.c ****     {
+ 496              		.loc 1 197 10 is_stmt 1 view .LVU126
+ 197:Bsp/Bsp_SPI.c ****     {
+ 497              		.loc 1 197 13 is_stmt 0 view .LVU127
+ 498 0020 284A     		ldr	r2, .L55+12
+ 499 0022 9342     		cmp	r3, r2
+ 500 0024 2FD0     		beq	.L52
+ 201:Bsp/Bsp_SPI.c ****     {
+ 501              		.loc 1 201 10 is_stmt 1 view .LVU128
+ 201:Bsp/Bsp_SPI.c ****     {
+ 502              		.loc 1 201 13 is_stmt 0 view .LVU129
+ 503 0026 284A     		ldr	r2, .L55+16
+ 504 0028 9342     		cmp	r3, r2
+ 505 002a 34D0     		beq	.L53
+ 205:Bsp/Bsp_SPI.c ****     {
+ 506              		.loc 1 205 10 is_stmt 1 view .LVU130
+ 205:Bsp/Bsp_SPI.c ****     {
+ 507              		.loc 1 205 13 is_stmt 0 view .LVU131
+ 508 002c 274A     		ldr	r2, .L55+20
+ 509 002e 9342     		cmp	r3, r2
+ 510 0030 39D0     		beq	.L54
+ 210:Bsp/Bsp_SPI.c **** 
+ 511              		.loc 1 210 16 view .LVU132
+ 512 0032 0020     		movs	r0, #0
+ 513 0034 13E0     		b	.L46
+ 514              	.L49:
+ 187:Bsp/Bsp_SPI.c ****     }
+ 515              		.loc 1 187 9 is_stmt 1 view .LVU133
+ 516 0036 264A     		ldr	r2, .L55+24
+ 517 0038 D2F8F030 		ldr	r3, [r2, #240]
+ 518 003c 23F48053 		bic	r3, r3, #4096
+ 519 0040 C2F8F030 		str	r3, [r2, #240]
+ 520              	.L41:
+ 212:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_miso, spi_cfg.Pin.pin_miso);
+ 521              		.loc 1 212 5 view .LVU134
+ 522 0044 0599     		ldr	r1, [sp, #20]
+ 523 0046 0298     		ldr	r0, [sp, #8]
+ 524 0048 FFF7FEFF 		bl	HAL_GPIO_DeInit
+ 525              	.LVL12:
+ 213:Bsp/Bsp_SPI.c ****     HAL_GPIO_DeInit(spi_cfg.Pin.port_clk, spi_cfg.Pin.pin_clk);
+ 526              		.loc 1 213 5 view .LVU135
+ 527 004c 0699     		ldr	r1, [sp, #24]
+ 528 004e 0398     		ldr	r0, [sp, #12]
+ 529 0050 FFF7FEFF 		bl	HAL_GPIO_DeInit
+ 530              	.LVL13:
+ 214:Bsp/Bsp_SPI.c **** 
+ 531              		.loc 1 214 5 view .LVU136
+ 532 0054 0799     		ldr	r1, [sp, #28]
+ 533 0056 0498     		ldr	r0, [sp, #16]
+ 534 0058 FFF7FEFF 		bl	HAL_GPIO_DeInit
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 16
+
+
+ 535              	.LVL14:
+ 216:Bsp/Bsp_SPI.c **** }
+ 536              		.loc 1 216 5 view .LVU137
+ 216:Bsp/Bsp_SPI.c **** }
+ 537              		.loc 1 216 12 is_stmt 0 view .LVU138
+ 538 005c 0120     		movs	r0, #1
+ 539              	.L46:
+ 217:Bsp/Bsp_SPI.c **** 
+ 540              		.loc 1 217 1 view .LVU139
+ 541 005e BDE80840 		pop	{r3, lr}
+ 542              	.LCFI11:
+ 543              		.cfi_remember_state
+ 544              		.cfi_restore 14
+ 545              		.cfi_restore 3
+ 546              		.cfi_def_cfa_offset 16
+ 547 0062 04B0     		add	sp, sp, #16
+ 548              	.LCFI12:
+ 549              		.cfi_def_cfa_offset 0
+ 550 0064 7047     		bx	lr
+ 551              	.L50:
+ 552              	.LCFI13:
+ 553              		.cfi_restore_state
+ 191:Bsp/Bsp_SPI.c ****     }
+ 554              		.loc 1 191 9 is_stmt 1 view .LVU140
+ 555 0066 1A4A     		ldr	r2, .L55+24
+ 556 0068 D2F8E830 		ldr	r3, [r2, #232]
+ 557 006c 23F48043 		bic	r3, r3, #16384
+ 558 0070 C2F8E830 		str	r3, [r2, #232]
+ 559 0074 E6E7     		b	.L41
+ 560              	.L51:
+ 195:Bsp/Bsp_SPI.c ****     }
+ 561              		.loc 1 195 9 view .LVU141
+ 562 0076 164A     		ldr	r2, .L55+24
+ 563 0078 D2F8E830 		ldr	r3, [r2, #232]
+ 564 007c 23F40043 		bic	r3, r3, #32768
+ 565 0080 C2F8E830 		str	r3, [r2, #232]
+ 566 0084 DEE7     		b	.L41
+ 567              	.L52:
+ 199:Bsp/Bsp_SPI.c ****     }
+ 568              		.loc 1 199 9 view .LVU142
+ 569 0086 124A     		ldr	r2, .L55+24
+ 570 0088 D2F8F030 		ldr	r3, [r2, #240]
+ 571 008c 23F40053 		bic	r3, r3, #8192
+ 572 0090 C2F8F030 		str	r3, [r2, #240]
+ 573 0094 D6E7     		b	.L41
+ 574              	.L53:
+ 203:Bsp/Bsp_SPI.c ****     }
+ 575              		.loc 1 203 9 view .LVU143
+ 576 0096 0E4A     		ldr	r2, .L55+24
+ 577 0098 D2F8F030 		ldr	r3, [r2, #240]
+ 578 009c 23F48013 		bic	r3, r3, #1048576
+ 579 00a0 C2F8F030 		str	r3, [r2, #240]
+ 580 00a4 CEE7     		b	.L41
+ 581              	.L54:
+ 207:Bsp/Bsp_SPI.c ****     }
+ 582              		.loc 1 207 9 view .LVU144
+ 583 00a6 02F50C32 		add	r2, r2, #143360
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 17
+
+
+ 584 00aa D2F8F430 		ldr	r3, [r2, #244]
+ 585 00ae 23F02003 		bic	r3, r3, #32
+ 586 00b2 C2F8F430 		str	r3, [r2, #244]
+ 587 00b6 C5E7     		b	.L41
+ 588              	.L56:
+ 589              		.align	2
+ 590              	.L55:
+ 591 00b8 00300140 		.word	1073819648
+ 592 00bc 00380040 		.word	1073756160
+ 593 00c0 003C0040 		.word	1073757184
+ 594 00c4 00340140 		.word	1073820672
+ 595 00c8 00500140 		.word	1073827840
+ 596 00cc 00140058 		.word	1476400128
+ 597 00d0 00440258 		.word	1476543488
+ 598              		.cfi_endproc
+ 599              	.LFE148:
+ 601              		.section	.text.BspSPI_PinInit,"ax",%progbits
+ 602              		.align	1
+ 603              		.syntax unified
+ 604              		.thumb
+ 605              		.thumb_func
+ 606              		.fpu fpv5-d16
+ 608              	BspSPI_PinInit:
+ 609              	.LFB145:
+  74:Bsp/Bsp_SPI.c ****     GPIO_InitTypeDef GPIO_InitStruct = BspSPI_Pin_Cfg;
+ 610              		.loc 1 74 1 view -0
+ 611              		.cfi_startproc
+ 612              		@ args = 28, pretend = 16, frame = 24
+ 613              		@ frame_needed = 0, uses_anonymous_args = 0
+ 614 0000 84B0     		sub	sp, sp, #16
+ 615              	.LCFI14:
+ 616              		.cfi_def_cfa_offset 16
+ 617 0002 30B5     		push	{r4, r5, lr}
+ 618              	.LCFI15:
+ 619              		.cfi_def_cfa_offset 28
+ 620              		.cfi_offset 4, -28
+ 621              		.cfi_offset 5, -24
+ 622              		.cfi_offset 14, -20
+ 623 0004 87B0     		sub	sp, sp, #28
+ 624              	.LCFI16:
+ 625              		.cfi_def_cfa_offset 56
+ 626 0006 0AAC     		add	r4, sp, #40
+ 627 0008 84E80F00 		stm	r4, {r0, r1, r2, r3}
+  75:Bsp/Bsp_SPI.c **** 
+ 628              		.loc 1 75 5 view .LVU146
+  75:Bsp/Bsp_SPI.c **** 
+ 629              		.loc 1 75 22 is_stmt 0 view .LVU147
+ 630 000c 0DF1040C 		add	ip, sp, #4
+ 631 0010 174C     		ldr	r4, .L59
+ 632 0012 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 633 0014 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 634 0018 2368     		ldr	r3, [r4]
+ 635 001a CCF80030 		str	r3, [ip]
+  78:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pin = pin_cfg.pin_mosi;
+ 636              		.loc 1 78 5 is_stmt 1 view .LVU148
+ 637 001e 0A9D     		ldr	r5, [sp, #40]
+ 638 0020 2846     		mov	r0, r5
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 18
+
+
+ 639 0022 FFF7FEFF 		bl	BspSPI_PinCLK_Enable
+ 640              	.LVL15:
+  79:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 641              		.loc 1 79 5 view .LVU149
+  79:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 642              		.loc 1 79 34 is_stmt 0 view .LVU150
+ 643 0026 0D9B     		ldr	r3, [sp, #52]
+  79:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 644              		.loc 1 79 25 view .LVU151
+ 645 0028 0193     		str	r3, [sp, #4]
+  80:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
+ 646              		.loc 1 80 5 is_stmt 1 view .LVU152
+  80:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
+ 647              		.loc 1 80 40 is_stmt 0 view .LVU153
+ 648 002a 109C     		ldr	r4, [sp, #64]
+  80:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_mosi, &GPIO_InitStruct);
+ 649              		.loc 1 80 31 view .LVU154
+ 650 002c 0594     		str	r4, [sp, #20]
+  81:Bsp/Bsp_SPI.c **** 
+ 651              		.loc 1 81 5 is_stmt 1 view .LVU155
+ 652 002e 01A9     		add	r1, sp, #4
+ 653 0030 2846     		mov	r0, r5
+ 654 0032 FFF7FEFF 		bl	HAL_GPIO_Init
+ 655              	.LVL16:
+  84:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pin = pin_cfg.pin_miso;
+ 656              		.loc 1 84 5 view .LVU156
+ 657 0036 0B9D     		ldr	r5, [sp, #44]
+ 658 0038 2846     		mov	r0, r5
+ 659 003a FFF7FEFF 		bl	BspSPI_PinCLK_Enable
+ 660              	.LVL17:
+  85:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 661              		.loc 1 85 5 view .LVU157
+  85:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 662              		.loc 1 85 34 is_stmt 0 view .LVU158
+ 663 003e 0E9B     		ldr	r3, [sp, #56]
+  85:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 664              		.loc 1 85 25 view .LVU159
+ 665 0040 0193     		str	r3, [sp, #4]
+  86:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_miso, &GPIO_InitStruct);
+ 666              		.loc 1 86 5 is_stmt 1 view .LVU160
+  86:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_miso, &GPIO_InitStruct);
+ 667              		.loc 1 86 31 is_stmt 0 view .LVU161
+ 668 0042 0594     		str	r4, [sp, #20]
+  87:Bsp/Bsp_SPI.c **** 
+ 669              		.loc 1 87 5 is_stmt 1 view .LVU162
+ 670 0044 01A9     		add	r1, sp, #4
+ 671 0046 2846     		mov	r0, r5
+ 672 0048 FFF7FEFF 		bl	HAL_GPIO_Init
+ 673              	.LVL18:
+  90:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Pin = pin_cfg.pin_clk;
+ 674              		.loc 1 90 5 view .LVU163
+ 675 004c 0C9D     		ldr	r5, [sp, #48]
+ 676 004e 2846     		mov	r0, r5
+ 677 0050 FFF7FEFF 		bl	BspSPI_PinCLK_Enable
+ 678              	.LVL19:
+  91:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 679              		.loc 1 91 5 view .LVU164
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 19
+
+
+  91:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 680              		.loc 1 91 34 is_stmt 0 view .LVU165
+ 681 0054 0F9B     		ldr	r3, [sp, #60]
+  91:Bsp/Bsp_SPI.c ****     GPIO_InitStruct.Alternate = pin_cfg.pin_Alternate;
+ 682              		.loc 1 91 25 view .LVU166
+ 683 0056 0193     		str	r3, [sp, #4]
+  92:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
+ 684              		.loc 1 92 5 is_stmt 1 view .LVU167
+  92:Bsp/Bsp_SPI.c ****     HAL_GPIO_Init(pin_cfg.port_clk, &GPIO_InitStruct);
+ 685              		.loc 1 92 31 is_stmt 0 view .LVU168
+ 686 0058 0594     		str	r4, [sp, #20]
+  93:Bsp/Bsp_SPI.c **** 
+ 687              		.loc 1 93 5 is_stmt 1 view .LVU169
+ 688 005a 01A9     		add	r1, sp, #4
+ 689 005c 2846     		mov	r0, r5
+ 690 005e FFF7FEFF 		bl	HAL_GPIO_Init
+ 691              	.LVL20:
+  95:Bsp/Bsp_SPI.c **** }
+ 692              		.loc 1 95 5 view .LVU170
+  96:Bsp/Bsp_SPI.c **** 
+ 693              		.loc 1 96 1 is_stmt 0 view .LVU171
+ 694 0062 0120     		movs	r0, #1
+ 695 0064 07B0     		add	sp, sp, #28
+ 696              	.LCFI17:
+ 697              		.cfi_def_cfa_offset 28
+ 698              		@ sp needed
+ 699 0066 BDE83040 		pop	{r4, r5, lr}
+ 700              	.LCFI18:
+ 701              		.cfi_restore 14
+ 702              		.cfi_restore 5
+ 703              		.cfi_restore 4
+ 704              		.cfi_def_cfa_offset 16
+ 705 006a 04B0     		add	sp, sp, #16
+ 706              	.LCFI19:
+ 707              		.cfi_def_cfa_offset 0
+ 708 006c 7047     		bx	lr
+ 709              	.L60:
+ 710 006e 00BF     		.align	2
+ 711              	.L59:
+ 712 0070 00000000 		.word	.LANCHOR0
+ 713              		.cfi_endproc
+ 714              	.LFE145:
+ 716              		.section	.text.BspSPI_NormalMode_Init,"ax",%progbits
+ 717              		.align	1
+ 718              		.syntax unified
+ 719              		.thumb
+ 720              		.thumb_func
+ 721              		.fpu fpv5-d16
+ 723              	BspSPI_NormalMode_Init:
+ 724              	.LVL21:
+ 725              	.LFB146:
+  99:Bsp/Bsp_SPI.c ****     SPI_HandleTypeDef SPI_InitStructure;
+ 726              		.loc 1 99 1 is_stmt 1 view -0
+ 727              		.cfi_startproc
+ 728              		@ args = 48, pretend = 16, frame = 352
+ 729              		@ frame_needed = 0, uses_anonymous_args = 0
+  99:Bsp/Bsp_SPI.c ****     SPI_HandleTypeDef SPI_InitStructure;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 20
+
+
+ 730              		.loc 1 99 1 is_stmt 0 view .LVU173
+ 731 0000 84B0     		sub	sp, sp, #16
+ 732              	.LCFI20:
+ 733              		.cfi_def_cfa_offset 16
+ 734 0002 10B5     		push	{r4, lr}
+ 735              	.LCFI21:
+ 736              		.cfi_def_cfa_offset 24
+ 737              		.cfi_offset 4, -24
+ 738              		.cfi_offset 14, -20
+ 739 0004 DCB0     		sub	sp, sp, #368
+ 740              	.LCFI22:
+ 741              		.cfi_def_cfa_offset 392
+ 742 0006 5EAC     		add	r4, sp, #376
+ 743 0008 84E80F00 		stm	r4, {r0, r1, r2, r3}
+ 100:Bsp/Bsp_SPI.c ****     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+ 744              		.loc 1 100 5 is_stmt 1 view .LVU174
+ 101:Bsp/Bsp_SPI.c **** 
+ 745              		.loc 1 101 5 view .LVU175
+ 101:Bsp/Bsp_SPI.c **** 
+ 746              		.loc 1 101 30 is_stmt 0 view .LVU176
+ 747 000c BC22     		movs	r2, #188
+ 748 000e 0021     		movs	r1, #0
+ 749 0010 0BA8     		add	r0, sp, #44
+ 750 0012 FFF7FEFF 		bl	memset
+ 751              	.LVL22:
+ 103:Bsp/Bsp_SPI.c ****     {
+ 752              		.loc 1 103 5 is_stmt 1 view .LVU177
+ 103:Bsp/Bsp_SPI.c ****     {
+ 753              		.loc 1 103 16 is_stmt 0 view .LVU178
+ 754 0016 659C     		ldr	r4, [sp, #404]
+ 103:Bsp/Bsp_SPI.c ****     {
+ 755              		.loc 1 103 8 view .LVU179
+ 756 0018 5D4B     		ldr	r3, .L80
+ 757 001a 9C42     		cmp	r4, r3
+ 758 001c 12D0     		beq	.L74
+ 112:Bsp/Bsp_SPI.c ****     {
+ 759              		.loc 1 112 10 is_stmt 1 view .LVU180
+ 112:Bsp/Bsp_SPI.c ****     {
+ 760              		.loc 1 112 13 is_stmt 0 view .LVU181
+ 761 001e 5D4B     		ldr	r3, .L80+4
+ 762 0020 9C42     		cmp	r4, r3
+ 763 0022 26D0     		beq	.L75
+ 116:Bsp/Bsp_SPI.c ****     {
+ 764              		.loc 1 116 10 is_stmt 1 view .LVU182
+ 116:Bsp/Bsp_SPI.c ****     {
+ 765              		.loc 1 116 13 is_stmt 0 view .LVU183
+ 766 0024 5C4B     		ldr	r3, .L80+8
+ 767 0026 9C42     		cmp	r4, r3
+ 768 0028 6BD0     		beq	.L76
+ 120:Bsp/Bsp_SPI.c ****     {
+ 769              		.loc 1 120 10 is_stmt 1 view .LVU184
+ 120:Bsp/Bsp_SPI.c ****     {
+ 770              		.loc 1 120 13 is_stmt 0 view .LVU185
+ 771 002a 5C4B     		ldr	r3, .L80+12
+ 772 002c 9C42     		cmp	r4, r3
+ 773 002e 76D0     		beq	.L77
+ 129:Bsp/Bsp_SPI.c ****     {
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 21
+
+
+ 774              		.loc 1 129 10 is_stmt 1 view .LVU186
+ 129:Bsp/Bsp_SPI.c ****     {
+ 775              		.loc 1 129 13 is_stmt 0 view .LVU187
+ 776 0030 5B4B     		ldr	r3, .L80+16
+ 777 0032 9C42     		cmp	r4, r3
+ 778 0034 00F08880 		beq	.L78
+ 133:Bsp/Bsp_SPI.c ****     {
+ 779              		.loc 1 133 10 is_stmt 1 view .LVU188
+ 133:Bsp/Bsp_SPI.c ****     {
+ 780              		.loc 1 133 13 is_stmt 0 view .LVU189
+ 781 0038 5A4B     		ldr	r3, .L80+20
+ 782 003a 9C42     		cmp	r4, r3
+ 783 003c 00F09280 		beq	.L79
+ 138:Bsp/Bsp_SPI.c **** 
+ 784              		.loc 1 138 16 view .LVU190
+ 785 0040 0020     		movs	r0, #0
+ 786 0042 59E0     		b	.L63
+ 787              	.L74:
+ 105:Bsp/Bsp_SPI.c ****         PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
+ 788              		.loc 1 105 9 is_stmt 1 view .LVU191
+ 105:Bsp/Bsp_SPI.c ****         PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
+ 789              		.loc 1 105 50 is_stmt 0 view .LVU192
+ 790 0044 4FF48053 		mov	r3, #4096
+ 791 0048 0B93     		str	r3, [sp, #44]
+ 106:Bsp/Bsp_SPI.c ****         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+ 792              		.loc 1 106 9 is_stmt 1 view .LVU193
+ 107:Bsp/Bsp_SPI.c ****             return false;
+ 793              		.loc 1 107 9 view .LVU194
+ 107:Bsp/Bsp_SPI.c ****             return false;
+ 794              		.loc 1 107 13 is_stmt 0 view .LVU195
+ 795 004a 0BA8     		add	r0, sp, #44
+ 796 004c FFF7FEFF 		bl	HAL_RCCEx_PeriphCLKConfig
+ 797              	.LVL23:
+ 107:Bsp/Bsp_SPI.c ****             return false;
+ 798              		.loc 1 107 12 view .LVU196
+ 799 0050 0028     		cmp	r0, #0
+ 800 0052 40F09680 		bne	.L69
+ 110:Bsp/Bsp_SPI.c ****     }
+ 801              		.loc 1 110 9 is_stmt 1 view .LVU197
+ 802              	.LBB12:
+ 110:Bsp/Bsp_SPI.c ****     }
+ 803              		.loc 1 110 9 view .LVU198
+ 110:Bsp/Bsp_SPI.c ****     }
+ 804              		.loc 1 110 9 view .LVU199
+ 805 0056 544B     		ldr	r3, .L80+24
+ 806 0058 D3F8F020 		ldr	r2, [r3, #240]
+ 807 005c 42F48052 		orr	r2, r2, #4096
+ 808 0060 C3F8F020 		str	r2, [r3, #240]
+ 809              	.LVL24:
+ 110:Bsp/Bsp_SPI.c ****     }
+ 810              		.loc 1 110 9 view .LVU200
+ 811 0064 D3F8F030 		ldr	r3, [r3, #240]
+ 812 0068 03F48053 		and	r3, r3, #4096
+ 813 006c 0593     		str	r3, [sp, #20]
+ 110:Bsp/Bsp_SPI.c ****     }
+ 814              		.loc 1 110 9 view .LVU201
+ 815 006e 059B     		ldr	r3, [sp, #20]
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 22
+
+
+ 816              	.LBE12:
+ 110:Bsp/Bsp_SPI.c ****     }
+ 817              		.loc 1 110 9 view .LVU202
+ 818 0070 0CE0     		b	.L64
+ 819              	.LVL25:
+ 820              	.L75:
+ 114:Bsp/Bsp_SPI.c ****     }
+ 821              		.loc 1 114 9 view .LVU203
+ 822              	.LBB13:
+ 114:Bsp/Bsp_SPI.c ****     }
+ 823              		.loc 1 114 9 view .LVU204
+ 114:Bsp/Bsp_SPI.c ****     }
+ 824              		.loc 1 114 9 view .LVU205
+ 825 0072 4D4B     		ldr	r3, .L80+24
+ 826 0074 D3F8E820 		ldr	r2, [r3, #232]
+ 827 0078 42F48042 		orr	r2, r2, #16384
+ 828 007c C3F8E820 		str	r2, [r3, #232]
+ 829              	.LVL26:
+ 114:Bsp/Bsp_SPI.c ****     }
+ 830              		.loc 1 114 9 view .LVU206
+ 831 0080 D3F8E830 		ldr	r3, [r3, #232]
+ 832 0084 03F48043 		and	r3, r3, #16384
+ 833 0088 0693     		str	r3, [sp, #24]
+ 114:Bsp/Bsp_SPI.c ****     }
+ 834              		.loc 1 114 9 view .LVU207
+ 835 008a 069B     		ldr	r3, [sp, #24]
+ 836              	.LBE13:
+ 114:Bsp/Bsp_SPI.c ****     }
+ 837              		.loc 1 114 9 view .LVU208
+ 838              	.L64:
+ 140:Bsp/Bsp_SPI.c **** 
+ 839              		.loc 1 140 5 view .LVU209
+ 840 008c 62AB     		add	r3, sp, #392
+ 841 008e 93E80700 		ldm	r3, {r0, r1, r2}
+ 842 0092 8DE80700 		stm	sp, {r0, r1, r2}
+ 843 0096 5EAB     		add	r3, sp, #376
+ 844 0098 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 845 009a FFF7FEFF 		bl	BspSPI_PinInit
+ 846              	.LVL27:
+ 142:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Mode = SPI_MODE_MASTER;                        // SPI_MODE_MASTER;
+ 847              		.loc 1 142 5 view .LVU210
+ 142:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Mode = SPI_MODE_MASTER;                        // SPI_MODE_MASTER;
+ 848              		.loc 1 142 32 is_stmt 0 view .LVU211
+ 849 009e 3A94     		str	r4, [sp, #232]
+ 143:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Direction = SPI_DIRECTION_2LINES;              // SPI_DIRECTION_2LINES;
+ 850              		.loc 1 143 5 is_stmt 1 view .LVU212
+ 143:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.Direction = SPI_DIRECTION_2LINES;              // SPI_DIRECTION_2LINES;
+ 851              		.loc 1 143 33 is_stmt 0 view .LVU213
+ 852 00a0 4FF48003 		mov	r3, #4194304
+ 853 00a4 3B93     		str	r3, [sp, #236]
+ 144:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.DataSize = SPI_DATASIZE_8BIT;                  // SPI_DATASIZE_8BIT;
+ 854              		.loc 1 144 5 is_stmt 1 view .LVU214
+ 144:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.DataSize = SPI_DATASIZE_8BIT;                  // SPI_DATASIZE_8BIT;
+ 855              		.loc 1 144 38 is_stmt 0 view .LVU215
+ 856 00a6 0023     		movs	r3, #0
+ 857 00a8 3C93     		str	r3, [sp, #240]
+ 145:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPolarity = spi_cfg.CLKPolarity;             // SPI_POLARITY_LOW;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 23
+
+
+ 858              		.loc 1 145 5 is_stmt 1 view .LVU216
+ 145:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPolarity = spi_cfg.CLKPolarity;             // SPI_POLARITY_LOW;
+ 859              		.loc 1 145 37 is_stmt 0 view .LVU217
+ 860 00aa 0722     		movs	r2, #7
+ 861 00ac 3D92     		str	r2, [sp, #244]
+ 146:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPhase = spi_cfg.CLKPhase;                   // SPI_PHASE_1EDGE;
+ 862              		.loc 1 146 5 is_stmt 1 view .LVU218
+ 146:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPhase = spi_cfg.CLKPhase;                   // SPI_PHASE_1EDGE;
+ 863              		.loc 1 146 49 is_stmt 0 view .LVU219
+ 864 00ae 669A     		ldr	r2, [sp, #408]
+ 146:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CLKPhase = spi_cfg.CLKPhase;                   // SPI_PHASE_1EDGE;
+ 865              		.loc 1 146 40 view .LVU220
+ 866 00b0 3E92     		str	r2, [sp, #248]
+ 147:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSS = SPI_NSS_SOFT;                            // SPI_NSS_SOFT;
+ 867              		.loc 1 147 5 is_stmt 1 view .LVU221
+ 147:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSS = SPI_NSS_SOFT;                            // SPI_NSS_SOFT;
+ 868              		.loc 1 147 46 is_stmt 0 view .LVU222
+ 869 00b2 679A     		ldr	r2, [sp, #412]
+ 147:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSS = SPI_NSS_SOFT;                            // SPI_NSS_SOFT;
+ 870              		.loc 1 147 37 view .LVU223
+ 871 00b4 3F92     		str	r2, [sp, #252]
+ 148:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.BaudRatePrescaler = spi_cfg.BaudRatePrescaler; // SPI_BAUDRATEPRESCALER_
+ 872              		.loc 1 148 5 is_stmt 1 view .LVU224
+ 148:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.BaudRatePrescaler = spi_cfg.BaudRatePrescaler; // SPI_BAUDRATEPRESCALER_
+ 873              		.loc 1 148 32 is_stmt 0 view .LVU225
+ 874 00b6 4FF08062 		mov	r2, #67108864
+ 875 00ba 4092     		str	r2, [sp, #256]
+ 149:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FirstBit = SPI_FIRSTBIT_MSB;                   // SPI_FIRSTBIT_MSB;
+ 876              		.loc 1 149 5 is_stmt 1 view .LVU226
+ 149:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FirstBit = SPI_FIRSTBIT_MSB;                   // SPI_FIRSTBIT_MSB;
+ 877              		.loc 1 149 55 is_stmt 0 view .LVU227
+ 878 00bc 689A     		ldr	r2, [sp, #416]
+ 149:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FirstBit = SPI_FIRSTBIT_MSB;                   // SPI_FIRSTBIT_MSB;
+ 879              		.loc 1 149 46 view .LVU228
+ 880 00be 4192     		str	r2, [sp, #260]
+ 150:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TIMode = SPI_TIMODE_DISABLE;
+ 881              		.loc 1 150 5 is_stmt 1 view .LVU229
+ 150:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TIMode = SPI_TIMODE_DISABLE;
+ 882              		.loc 1 150 37 is_stmt 0 view .LVU230
+ 883 00c0 4293     		str	r3, [sp, #264]
+ 151:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+ 884              		.loc 1 151 5 is_stmt 1 view .LVU231
+ 151:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+ 885              		.loc 1 151 35 is_stmt 0 view .LVU232
+ 886 00c2 4393     		str	r3, [sp, #268]
+ 152:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCPolynomial = 0;
+ 887              		.loc 1 152 5 is_stmt 1 view .LVU233
+ 152:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCPolynomial = 0;
+ 888              		.loc 1 152 43 is_stmt 0 view .LVU234
+ 889 00c4 4493     		str	r3, [sp, #272]
+ 153:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+ 890              		.loc 1 153 5 is_stmt 1 view .LVU235
+ 153:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+ 891              		.loc 1 153 42 is_stmt 0 view .LVU236
+ 892 00c6 4593     		str	r3, [sp, #276]
+ 154:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+ 893              		.loc 1 154 5 is_stmt 1 view .LVU237
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 24
+
+
+ 154:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+ 894              		.loc 1 154 38 is_stmt 0 view .LVU238
+ 895 00c8 4693     		str	r3, [sp, #280]
+ 155:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+ 896              		.loc 1 155 5 is_stmt 1 view .LVU239
+ 155:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+ 897              		.loc 1 155 37 is_stmt 0 view .LVU240
+ 898 00ca 4793     		str	r3, [sp, #284]
+ 156:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+ 899              		.loc 1 156 5 is_stmt 1 view .LVU241
+ 156:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+ 900              		.loc 1 156 40 is_stmt 0 view .LVU242
+ 901 00cc 4893     		str	r3, [sp, #288]
+ 157:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 902              		.loc 1 157 5 is_stmt 1 view .LVU243
+ 157:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 903              		.loc 1 157 42 is_stmt 0 view .LVU244
+ 904 00ce 4993     		str	r3, [sp, #292]
+ 158:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 905              		.loc 1 158 5 is_stmt 1 view .LVU245
+ 158:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+ 906              		.loc 1 158 55 is_stmt 0 view .LVU246
+ 907 00d0 4A93     		str	r3, [sp, #296]
+ 159:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+ 908              		.loc 1 159 5 is_stmt 1 view .LVU247
+ 159:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+ 909              		.loc 1 159 55 is_stmt 0 view .LVU248
+ 910 00d2 4B93     		str	r3, [sp, #300]
+ 160:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+ 911              		.loc 1 160 5 is_stmt 1 view .LVU249
+ 160:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+ 912              		.loc 1 160 45 is_stmt 0 view .LVU250
+ 913 00d4 4C93     		str	r3, [sp, #304]
+ 161:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+ 914              		.loc 1 161 5 is_stmt 1 view .LVU251
+ 161:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+ 915              		.loc 1 161 52 is_stmt 0 view .LVU252
+ 916 00d6 4D93     		str	r3, [sp, #308]
+ 162:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+ 917              		.loc 1 162 5 is_stmt 1 view .LVU253
+ 162:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+ 918              		.loc 1 162 51 is_stmt 0 view .LVU254
+ 919 00d8 4E93     		str	r3, [sp, #312]
+ 163:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+ 920              		.loc 1 163 5 is_stmt 1 view .LVU255
+ 163:Bsp/Bsp_SPI.c ****     SPI_InitStructure.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+ 921              		.loc 1 163 46 is_stmt 0 view .LVU256
+ 922 00da 4FF00042 		mov	r2, #-2147483648
+ 923 00de 4F92     		str	r2, [sp, #316]
+ 164:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Init(&SPI_InitStructure) != HAL_OK)
+ 924              		.loc 1 164 5 is_stmt 1 view .LVU257
+ 164:Bsp/Bsp_SPI.c ****     if (HAL_SPI_Init(&SPI_InitStructure) != HAL_OK)
+ 925              		.loc 1 164 35 is_stmt 0 view .LVU258
+ 926 00e0 5093     		str	r3, [sp, #320]
+ 165:Bsp/Bsp_SPI.c ****         return false;
+ 927              		.loc 1 165 5 is_stmt 1 view .LVU259
+ 165:Bsp/Bsp_SPI.c ****         return false;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 25
+
+
+ 928              		.loc 1 165 9 is_stmt 0 view .LVU260
+ 929 00e2 3AA8     		add	r0, sp, #232
+ 930 00e4 FFF7FEFF 		bl	HAL_SPI_Init
+ 931              	.LVL28:
+ 165:Bsp/Bsp_SPI.c ****         return false;
+ 932              		.loc 1 165 8 view .LVU261
+ 933 00e8 0028     		cmp	r0, #0
+ 934 00ea 4ED1     		bne	.L72
+ 168:Bsp/Bsp_SPI.c **** 
+ 935              		.loc 1 168 5 is_stmt 1 view .LVU262
+ 168:Bsp/Bsp_SPI.c **** 
+ 936              		.loc 1 168 19 is_stmt 0 view .LVU263
+ 937 00ec 8822     		movs	r2, #136
+ 938 00ee 3AA9     		add	r1, sp, #232
+ 939 00f0 6998     		ldr	r0, [sp, #420]
+ 940 00f2 FFF7FEFF 		bl	memcpy
+ 941              	.LVL29:
+ 170:Bsp/Bsp_SPI.c **** }
+ 942              		.loc 1 170 5 is_stmt 1 view .LVU264
+ 170:Bsp/Bsp_SPI.c **** }
+ 943              		.loc 1 170 12 is_stmt 0 view .LVU265
+ 944 00f6 0120     		movs	r0, #1
+ 945              	.L63:
+ 171:Bsp/Bsp_SPI.c **** 
+ 946              		.loc 1 171 1 view .LVU266
+ 947 00f8 5CB0     		add	sp, sp, #368
+ 948              	.LCFI23:
+ 949              		.cfi_remember_state
+ 950              		.cfi_def_cfa_offset 24
+ 951              		@ sp needed
+ 952 00fa BDE81040 		pop	{r4, lr}
+ 953              	.LCFI24:
+ 954              		.cfi_restore 14
+ 955              		.cfi_restore 4
+ 956              		.cfi_def_cfa_offset 16
+ 957 00fe 04B0     		add	sp, sp, #16
+ 958              	.LCFI25:
+ 959              		.cfi_def_cfa_offset 0
+ 960 0100 7047     		bx	lr
+ 961              	.LVL30:
+ 962              	.L76:
+ 963              	.LCFI26:
+ 964              		.cfi_restore_state
+ 118:Bsp/Bsp_SPI.c ****     }
+ 965              		.loc 1 118 9 is_stmt 1 view .LVU267
+ 966              	.LBB14:
+ 118:Bsp/Bsp_SPI.c ****     }
+ 967              		.loc 1 118 9 view .LVU268
+ 118:Bsp/Bsp_SPI.c ****     }
+ 968              		.loc 1 118 9 view .LVU269
+ 969 0102 294B     		ldr	r3, .L80+24
+ 970 0104 D3F8E820 		ldr	r2, [r3, #232]
+ 971 0108 42F40042 		orr	r2, r2, #32768
+ 972 010c C3F8E820 		str	r2, [r3, #232]
+ 973              	.LVL31:
+ 118:Bsp/Bsp_SPI.c ****     }
+ 974              		.loc 1 118 9 view .LVU270
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 26
+
+
+ 975 0110 D3F8E830 		ldr	r3, [r3, #232]
+ 976 0114 03F40043 		and	r3, r3, #32768
+ 977 0118 0793     		str	r3, [sp, #28]
+ 118:Bsp/Bsp_SPI.c ****     }
+ 978              		.loc 1 118 9 view .LVU271
+ 979 011a 079B     		ldr	r3, [sp, #28]
+ 980              	.LBE14:
+ 118:Bsp/Bsp_SPI.c ****     }
+ 981              		.loc 1 118 9 view .LVU272
+ 982 011c B6E7     		b	.L64
+ 983              	.LVL32:
+ 984              	.L77:
+ 122:Bsp/Bsp_SPI.c ****         PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_D2PCLK1;
+ 985              		.loc 1 122 9 view .LVU273
+ 122:Bsp/Bsp_SPI.c ****         PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_D2PCLK1;
+ 986              		.loc 1 122 50 is_stmt 0 view .LVU274
+ 987 011e 4FF40053 		mov	r3, #8192
+ 988 0122 0B93     		str	r3, [sp, #44]
+ 123:Bsp/Bsp_SPI.c ****         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+ 989              		.loc 1 123 9 is_stmt 1 view .LVU275
+ 124:Bsp/Bsp_SPI.c ****             return false;
+ 990              		.loc 1 124 9 view .LVU276
+ 124:Bsp/Bsp_SPI.c ****             return false;
+ 991              		.loc 1 124 13 is_stmt 0 view .LVU277
+ 992 0124 0BA8     		add	r0, sp, #44
+ 993 0126 FFF7FEFF 		bl	HAL_RCCEx_PeriphCLKConfig
+ 994              	.LVL33:
+ 124:Bsp/Bsp_SPI.c ****             return false;
+ 995              		.loc 1 124 12 view .LVU278
+ 996 012a 60BB     		cbnz	r0, .L70
+ 127:Bsp/Bsp_SPI.c ****     }
+ 997              		.loc 1 127 9 is_stmt 1 view .LVU279
+ 998              	.LBB15:
+ 127:Bsp/Bsp_SPI.c ****     }
+ 999              		.loc 1 127 9 view .LVU280
+ 127:Bsp/Bsp_SPI.c ****     }
+ 1000              		.loc 1 127 9 view .LVU281
+ 1001 012c 1E4B     		ldr	r3, .L80+24
+ 1002 012e D3F8F020 		ldr	r2, [r3, #240]
+ 1003 0132 42F40052 		orr	r2, r2, #8192
+ 1004 0136 C3F8F020 		str	r2, [r3, #240]
+ 1005              	.LVL34:
+ 127:Bsp/Bsp_SPI.c ****     }
+ 1006              		.loc 1 127 9 view .LVU282
+ 1007 013a D3F8F030 		ldr	r3, [r3, #240]
+ 1008 013e 03F40053 		and	r3, r3, #8192
+ 1009 0142 0893     		str	r3, [sp, #32]
+ 127:Bsp/Bsp_SPI.c ****     }
+ 1010              		.loc 1 127 9 view .LVU283
+ 1011 0144 089B     		ldr	r3, [sp, #32]
+ 1012              	.LBE15:
+ 127:Bsp/Bsp_SPI.c ****     }
+ 1013              		.loc 1 127 9 view .LVU284
+ 1014 0146 A1E7     		b	.L64
+ 1015              	.LVL35:
+ 1016              	.L78:
+ 131:Bsp/Bsp_SPI.c ****     }
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 27
+
+
+ 1017              		.loc 1 131 9 view .LVU285
+ 1018              	.LBB16:
+ 131:Bsp/Bsp_SPI.c ****     }
+ 1019              		.loc 1 131 9 view .LVU286
+ 131:Bsp/Bsp_SPI.c ****     }
+ 1020              		.loc 1 131 9 view .LVU287
+ 1021 0148 174B     		ldr	r3, .L80+24
+ 1022 014a D3F8F020 		ldr	r2, [r3, #240]
+ 1023 014e 42F48012 		orr	r2, r2, #1048576
+ 1024 0152 C3F8F020 		str	r2, [r3, #240]
+ 1025              	.LVL36:
+ 131:Bsp/Bsp_SPI.c ****     }
+ 1026              		.loc 1 131 9 view .LVU288
+ 1027 0156 D3F8F030 		ldr	r3, [r3, #240]
+ 1028 015a 03F48013 		and	r3, r3, #1048576
+ 1029 015e 0993     		str	r3, [sp, #36]
+ 131:Bsp/Bsp_SPI.c ****     }
+ 1030              		.loc 1 131 9 view .LVU289
+ 1031 0160 099B     		ldr	r3, [sp, #36]
+ 1032              	.LBE16:
+ 131:Bsp/Bsp_SPI.c ****     }
+ 1033              		.loc 1 131 9 view .LVU290
+ 1034 0162 93E7     		b	.L64
+ 1035              	.LVL37:
+ 1036              	.L79:
+ 135:Bsp/Bsp_SPI.c ****     }
+ 1037              		.loc 1 135 9 view .LVU291
+ 1038              	.LBB17:
+ 135:Bsp/Bsp_SPI.c ****     }
+ 1039              		.loc 1 135 9 view .LVU292
+ 135:Bsp/Bsp_SPI.c ****     }
+ 1040              		.loc 1 135 9 view .LVU293
+ 1041 0164 03F50C33 		add	r3, r3, #143360
+ 1042 0168 D3F8F420 		ldr	r2, [r3, #244]
+ 1043 016c 42F02002 		orr	r2, r2, #32
+ 1044 0170 C3F8F420 		str	r2, [r3, #244]
+ 1045              	.LVL38:
+ 135:Bsp/Bsp_SPI.c ****     }
+ 1046              		.loc 1 135 9 view .LVU294
+ 1047 0174 D3F8F430 		ldr	r3, [r3, #244]
+ 1048 0178 03F02003 		and	r3, r3, #32
+ 1049 017c 0A93     		str	r3, [sp, #40]
+ 135:Bsp/Bsp_SPI.c ****     }
+ 1050              		.loc 1 135 9 view .LVU295
+ 1051 017e 0A9B     		ldr	r3, [sp, #40]
+ 1052              	.LBE17:
+ 135:Bsp/Bsp_SPI.c ****     }
+ 1053              		.loc 1 135 9 view .LVU296
+ 1054 0180 84E7     		b	.L64
+ 1055              	.LVL39:
+ 1056              	.L69:
+ 108:Bsp/Bsp_SPI.c **** 
+ 1057              		.loc 1 108 20 is_stmt 0 view .LVU297
+ 1058 0182 0020     		movs	r0, #0
+ 1059 0184 B8E7     		b	.L63
+ 1060              	.L70:
+ 125:Bsp/Bsp_SPI.c **** 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 28
+
+
+ 1061              		.loc 1 125 20 view .LVU298
+ 1062 0186 0020     		movs	r0, #0
+ 1063 0188 B6E7     		b	.L63
+ 1064              	.LVL40:
+ 1065              	.L72:
+ 166:Bsp/Bsp_SPI.c **** 
+ 1066              		.loc 1 166 16 view .LVU299
+ 1067 018a 0020     		movs	r0, #0
+ 1068 018c B4E7     		b	.L63
+ 1069              	.L81:
+ 1070 018e 00BF     		.align	2
+ 1071              	.L80:
+ 1072 0190 00300140 		.word	1073819648
+ 1073 0194 00380040 		.word	1073756160
+ 1074 0198 003C0040 		.word	1073757184
+ 1075 019c 00340140 		.word	1073820672
+ 1076 01a0 00500140 		.word	1073827840
+ 1077 01a4 00140058 		.word	1476400128
+ 1078 01a8 00440258 		.word	1476543488
+ 1079              		.cfi_endproc
+ 1080              	.LFE146:
+ 1082              		.global	BspSPI
+ 1083              		.section	.data.BspSPI,"aw"
+ 1084              		.align	2
+ 1087              	BspSPI:
+ 1088 0000 00000000 		.word	BspSPI_NormalMode_Init
+ 1089 0004 00000000 		.word	BspSPI_DeInit
+ 1090 0008 00000000 		.word	BspSPI_Trans
+ 1091 000c 00000000 		.word	BspSPI_Receive
+ 1092 0010 00000000 		.word	BspSPI_TransReceive
+ 1093 0014 00000000 		.word	BspSPI_Set_CLKSpeed
+ 1094              		.section	.rodata.BspSPI_Pin_Cfg,"a"
+ 1095              		.align	2
+ 1096              		.set	.LANCHOR0,. + 0
+ 1099              	BspSPI_Pin_Cfg:
+ 1100 0000 00000000 		.word	0
+ 1101 0004 02000000 		.word	2
+ 1102 0008 00000000 		.word	0
+ 1103 000c 02000000 		.word	2
+ 1104 0010 00000000 		.word	0
+ 1105              		.text
+ 1106              	.Letext0:
+ 1107              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
+ 1108              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 1109              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1110              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1111              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc_ex.h"
+ 1112              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1113              		.file 8 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1114              		.file 9 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h"
+ 1115              		.file 10 "Bsp/Bsp_SPI.h"
+ 1116              		.file 11 "<built-in>"
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s 			page 29
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 Bsp_SPI.c
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:17     .text.BspSPI_PinCLK_Enable:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:24     .text.BspSPI_PinCLK_Enable:0000000000000000 BspSPI_PinCLK_Enable
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:279    .text.BspSPI_PinCLK_Enable:0000000000000170 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:293    .text.BspSPI_Set_CLKSpeed:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:299    .text.BspSPI_Set_CLKSpeed:0000000000000000 BspSPI_Set_CLKSpeed
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:330    .text.BspSPI_TransReceive:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:336    .text.BspSPI_TransReceive:0000000000000000 BspSPI_TransReceive
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:381    .text.BspSPI_Receive:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:387    .text.BspSPI_Receive:0000000000000000 BspSPI_Receive
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:419    .text.BspSPI_Trans:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:425    .text.BspSPI_Trans:0000000000000000 BspSPI_Trans
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:457    .text.BspSPI_DeInit:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:463    .text.BspSPI_DeInit:0000000000000000 BspSPI_DeInit
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:591    .text.BspSPI_DeInit:00000000000000b8 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:602    .text.BspSPI_PinInit:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:608    .text.BspSPI_PinInit:0000000000000000 BspSPI_PinInit
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:712    .text.BspSPI_PinInit:0000000000000070 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:717    .text.BspSPI_NormalMode_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:723    .text.BspSPI_NormalMode_Init:0000000000000000 BspSPI_NormalMode_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:1072   .text.BspSPI_NormalMode_Init:0000000000000190 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:1087   .data.BspSPI:0000000000000000 BspSPI
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:1084   .data.BspSPI:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:1095   .rodata.BspSPI_Pin_Cfg:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cchYFSKU.s:1099   .rodata.BspSPI_Pin_Cfg:0000000000000000 BspSPI_Pin_Cfg
+
+UNDEFINED SYMBOLS
+HAL_SPI_TransmitReceive
+HAL_SPI_Receive
+HAL_SPI_Transmit
+HAL_GPIO_DeInit
+HAL_GPIO_Init
+memset
+HAL_RCCEx_PeriphCLKConfig
+HAL_SPI_Init
+memcpy
