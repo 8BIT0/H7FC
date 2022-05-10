@@ -13,7 +13,16 @@ typedef Gen_Handle TreeNode_Handle;
 
 /* return smaller data handler */
 typedef data_handle (*Tree_Callback)(data_handle node_data, data_handle insert_data);
+typedef uint8_t (*Tree_Search_Callback)(data_handle node_data, data_handle search_data);
 typedef void (*Tree_Traverse_Callback)(data_handle data);
+
+typedef enum
+{
+    Tree_Search_L = 1, /* search left node */
+    Tree_Search_R,     /* search right node */
+    Tree_Search_D,     /* search matched data */
+    Tree_Search_E,     /* search error */
+} Tree_Search_State_List;
 
 typedef enum
 {
@@ -23,6 +32,12 @@ typedef enum
 } Tree_TraverseType_List;
 
 #pragma pack(1)
+
+typedef struct
+{
+    Gen_Handle node_hdl;
+    Tree_Search_State_List state;
+} TreeSearch_Out_TypeDef;
 
 typedef struct Node_TypeDef
 {
@@ -46,7 +61,7 @@ typedef struct
     TreeNode_TypeDef *root_node;
 
     Tree_Callback insert_callback;
-    Tree_Callback search_callback;
+    Tree_Search_Callback search_callback;
     Tree_Callback compare_callback;
 } Tree_TypeDef;
 
@@ -54,12 +69,12 @@ typedef struct
 
 typedef struct
 {
-    Tree_TypeDef *(*Create)(char *name, Tree_Callback insert, Tree_Callback search, Tree_Callback compare);
+    Tree_TypeDef *(*Create)(char *name, Tree_Callback insert, Tree_Search_Callback search, Tree_Callback compare);
     bool (*Insert)(Tree_TypeDef *tree, char *node_name, data_handle data_addr);
     TreeNode_TypeDef (*Search)(Tree_TypeDef *tree, data_handle data_addr);
     void (*Traverse)(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback callback);
 } BinaryTree_TypeDef;
 
-extern BinaryTree_TypeDef BlanceTree;
+extern BinaryTree_TypeDef BalanceTree;
 
 #endif

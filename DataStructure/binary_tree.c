@@ -13,7 +13,7 @@ static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Ca
 static void Tree_Traverse(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback callback);
 static bool Tree_Insert(Tree_TypeDef *tree, char *node_name, data_handle data_addr);
 
-BinaryTree_TypeDef BlanceTree = {
+BinaryTree_TypeDef BalanceTree = {
     .Create = BinaryTree_Create,
     .Insert = Tree_Insert,
     .Traverse = Tree_Traverse,
@@ -398,6 +398,40 @@ static data_handle TreeNode_Search(TreeNode_TypeDef *node, data_handle data)
         return 0;
 
     return handle_tmp;
+}
+
+static TreeSearch_Out_TypeDef TreeNode_Search(TreeNode_TypeDef *node, data_handle data)
+{
+    TreeSearch_Out_TypeDef search_out;
+    data_handle data_hdl_out = 0;
+
+    memset(&search_out, NULL, sizeof(search_out));
+
+    if (node != NULL || node->search_callback != NULL)
+    {
+        data_hdl_out = node->search_callback(node->data, data);
+
+        /* search no error occured */
+        if (search_out.state != Tree_Search_E)
+        {
+            if (search_out.state == Tree_Search_D)
+            {
+            }
+
+            if (search_handle == data)
+            {
+                return (TreeNode_Handle)node;
+            }
+            else if (search_handle == node->data)
+            {
+            }
+
+            /* return error data handle */
+            return 0;
+        }
+    }
+
+    return 0;
 }
 
 static bool Tree_Search(Tree_TypeDef *tree, data_handle data)

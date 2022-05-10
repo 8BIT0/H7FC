@@ -1,7 +1,7 @@
 #include "error_log.h"
 #include "mmu.h"
 
-static uint32_t Error_InsertPriority_Compare(uint32_t l_addr, uint32_t r_addr)
+static data_handle Error_InsertPriority_Compare(data_handle l_addr, data_handle r_addr)
 {
     if (ErrorTreeDataToObj(l_addr)->code > ErrorTreeDataToObj(r_addr)->code)
         return r_addr;
@@ -21,7 +21,8 @@ Error_Handler ErrorTree_Create(char *name)
     if (Error_Tmp == NULL)
         return NULL;
 
-    Error_Tmp->name = name;
+    BalanceTree.Create(name, Error_InsertPriority_Compare, , Error_InsertPriority_Compare);
+
     Error_Tmp->limb_num = 0;
     Error_Tmp->link_node = NULL;
     Error_Tmp->tree_node = NULL;
@@ -59,7 +60,7 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
     return true;
 }
 
-static uint32_t Error_TriggerCompareCallback(node_template *node, void *code_addr)
+static TreeNode_Handle Error_TriggerCompareCallback(TreeNode_TypeDef *node, void *code_addr)
 {
     Error_Obj_Typedef *Obj = (Error_Obj_Typedef *)(node->data_ptr);
     int16_t error_code = *((int16_t *)code_addr);
@@ -71,10 +72,10 @@ static uint32_t Error_TriggerCompareCallback(node_template *node, void *code_add
         return node;
 
     if (Obj->code > error_code)
-        return (uint32_t)(node->L_Node);
+        return (TreeNode_Handle)(node->L_Node);
 
     if (Obj->code < error_code)
-        return (uint32_t)(node->R_Node);
+        return (TreeNode_Handle)(node->R_Node);
 }
 
 bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
