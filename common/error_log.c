@@ -23,13 +23,16 @@ static data_handle Error_InsertPriority_Compare(data_handle l_addr, data_handle 
 
 static uint8_t Error_Search(data_handle l_addr, data_handle r_addr)
 {
-    if (ErrorTreeDataToObj(l_addr)->code > ErrorTreeDataToObj(r_addr)->code)
-        return Tree_Search_R;
+    volatile int16_t node_code = ErrorTreeDataToObj(l_addr)->code;
+    volatile int16_t code = *((int16_t *)((uint32_t)r_addr));
 
-    if (ErrorTreeDataToObj(l_addr)->code < ErrorTreeDataToObj(r_addr)->code)
+    if (node_code > code)
         return Tree_Search_L;
 
-    if (ErrorTreeDataToObj(l_addr)->code == ErrorTreeDataToObj(r_addr)->code)
+    if (node_code < code)
+        return Tree_Search_R;
+
+    if (node_code == code)
         return Tree_Search_D;
 }
 
@@ -68,8 +71,18 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
 
 bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
 {
+    int16_t code_tmp = code;
+
     if (hdl == 0)
         return false;
+
+    TreeNode_Handle search_handle = BalanceTree.Search(ErrorHandleToObj(hdl)->tree, (data_handle)&code_tmp);
+
+    /* find target node */
+    if (search_handle)
+    {
+        /* trigger process callback */
+    }
 
     return true;
 }
