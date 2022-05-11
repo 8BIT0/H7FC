@@ -51,7 +51,7 @@ typedef struct Node_TypeDef
     struct Node_TypeDef *R_Node;
 
     Tree_Callback insert_callback;
-    Tree_Callback search_callback;
+    Tree_Search_Callback search_callback;
     Tree_Callback compare_callback;
 } TreeNode_TypeDef;
 
@@ -71,7 +71,7 @@ typedef struct
 {
     Tree_TypeDef *(*Create)(char *name, Tree_Callback insert, Tree_Search_Callback search, Tree_Callback compare);
     bool (*Insert)(Tree_TypeDef *tree, char *node_name, data_handle data_addr);
-    TreeNode_TypeDef (*Search)(Tree_TypeDef *tree, data_handle data_addr);
+    TreeNode_Handle (*Search)(Tree_TypeDef *tree, data_handle data_addr);
     void (*Traverse)(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback callback);
 } BinaryTree_TypeDef;
 

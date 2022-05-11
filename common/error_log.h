@@ -35,8 +35,8 @@ typedef struct
 
 typedef struct
 {
-    uint16_t limb_num;
-    Tree_TypeDef *tree_node;
+    uint16_t reg_num;
+    Tree_TypeDef *tree;
     list_obj *link_node;
 } ErrorTree_TypeDef;
 #pragma pack()

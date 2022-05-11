@@ -9,18 +9,19 @@ use binary tree structure estabilsh a error log tree make error trigger and seac
 #define TreeMalloc(x) MMU_Malloc(x)
 #define TreeFree(x) MMU_Free(x)
 
-static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Callback search, Tree_Callback compare);
+static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Search_Callback search, Tree_Callback compare);
 static void Tree_Traverse(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback callback);
 static bool Tree_Insert(Tree_TypeDef *tree, char *node_name, data_handle data_addr);
+static TreeNode_Handle Tree_Search(Tree_TypeDef *tree, data_handle data);
 
 BinaryTree_TypeDef BalanceTree = {
     .Create = BinaryTree_Create,
     .Insert = Tree_Insert,
     .Traverse = Tree_Traverse,
-    .Search = NULL,
+    .Search = Tree_Search,
 };
 
-static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Callback search, Tree_Callback compare)
+static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Search_Callback search, Tree_Callback compare)
 {
     Tree_TypeDef *tree_tmp = NULL;
 
@@ -390,54 +391,60 @@ static void Tree_Traverse(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_
     }
 }
 
-static data_handle TreeNode_Search(TreeNode_TypeDef *node, data_handle data)
-{
-    data_handle handle_tmp = 0;
-
-    if ((node == NULL) || (data == 0) || (node->search_callback == NULL))
-        return 0;
-
-    return handle_tmp;
-}
-
 static TreeSearch_Out_TypeDef TreeNode_Search(TreeNode_TypeDef *node, data_handle data)
 {
     TreeSearch_Out_TypeDef search_out;
-    data_handle data_hdl_out = 0;
 
     memset(&search_out, NULL, sizeof(search_out));
 
+    search_out.state = Tree_Search_E;
+    search_out.node_hdl = 0;
+
     if (node != NULL || node->search_callback != NULL)
     {
-        data_hdl_out = node->search_callback(node->data, data);
+        search_out.state = node->search_callback(node->data, data);
 
-        /* search no error occured */
-        if (search_out.state != Tree_Search_E)
+        switch (search_out.state)
         {
-            if (search_out.state == Tree_Search_D)
-            {
-            }
+        case Tree_Search_D:
+            /* data matach */
+            search_out.node_hdl = (TreeNode_Handle)node;
+            break;
 
-            if (search_handle == data)
-            {
-                return (TreeNode_Handle)node;
-            }
-            else if (search_handle == node->data)
-            {
-            }
+        case Tree_Search_L:
+            /* search left node */
+            return TreeNode_Search(node->L_Node, data);
 
-            /* return error data handle */
-            return 0;
+        case Tree_Search_R:
+            /* search right node */
+            return TreeNode_Search(node->R_Node, data);
+
+        case Tree_Search_E:
+        default:
+            /* error match */
+            break;
         }
     }
 
-    return 0;
+    return search_out;
 }
 
-static bool Tree_Search(Tree_TypeDef *tree, data_handle data)
+static TreeNode_Handle Tree_Search(Tree_TypeDef *tree, data_handle data)
 {
-    if (tree == NULL || data == 0 || tree->search_callback == NULL)
-        return false;
+    TreeSearch_Out_TypeDef search_out;
 
-    return true;
+    search_out.state = Tree_Search_E;
+    search_out.node_hdl = 0;
+
+    if (tree == NULL || data == 0 || tree->search_callback == NULL)
+        return 0;
+
+    search_out = TreeNode_Search(tree->root_node, data);
+
+    if (search_out.state == Tree_Search_D)
+    {
+        return search_out.node_hdl;
+    }
+    else
+        return 0;
 }
