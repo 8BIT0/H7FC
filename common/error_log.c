@@ -72,6 +72,7 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
 bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
 {
     int16_t code_tmp = code;
+    data_handle match_data = 0;
 
     if (hdl == 0)
         return false;
@@ -81,7 +82,23 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
     /* find target node */
     if (search_handle)
     {
-        /* trigger process callback */
+        if (TreeNodeHandleToObj(search_handle)->data)
+        {
+            if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Immd)
+            {
+                /* trigger process callback */
+                if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->callback)
+                    ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->callback(NULL, 0);
+            }
+            else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Next)
+            {
+                /* add error into linked list */
+            }
+            else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Ignore)
+            {
+                /* reserve */
+            }
+        }
     }
 
     return true;
@@ -91,6 +108,10 @@ bool Error_Proc(Error_Handler hdl)
 {
     if (hdl == 0)
         return false;
+
+    if (ErrorHandleToObj(hdl)->link_node)
+    {
+    }
 
     return true;
 }

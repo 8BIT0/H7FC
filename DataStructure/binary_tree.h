@@ -11,6 +11,8 @@ typedef Gen_Handle data_handle;
 typedef Gen_Handle Tree_Handle;
 typedef Gen_Handle TreeNode_Handle;
 
+#define TreeNodeHandleToObj(x) ((TreeNode_TypeDef *)x)
+
 /* return smaller data handler */
 typedef data_handle (*Tree_Callback)(data_handle node_data, data_handle insert_data);
 typedef uint8_t (*Tree_Search_Callback)(data_handle node_data, data_handle search_data);
