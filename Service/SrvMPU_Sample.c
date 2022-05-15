@@ -254,7 +254,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
                         Get_CurrentRunningUs);
 
     DevMPU6000.config(&MPU6000Obj,
-                      MPU6000_SampleRate_4K,
+                      MPU6000_SampleRate_8K,
                       MPU6000_Acc_16G,
                       MPU6000_Gyr_2000DPS);
 
@@ -349,11 +349,11 @@ static void SrvIMU_Sample(void)
         {
             pri_test++;
         }
-        else
-            Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_UnReady, NULL, 0);
+        // else
+        //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_UnReady, NULL, 0);
     }
-    else
-        Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_Init_Error, NULL, 0);
+    // else
+    //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_Init_Error, NULL, 0);
 
     /* sec imu init successed */
     if (SrvMpu_Init_Reg.Sec_State)
@@ -363,18 +363,22 @@ static void SrvIMU_Sample(void)
         {
             sec_test++;
         }
-        else
-            Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_UnReady, NULL, 0);
+        // else
+        //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_UnReady, NULL, 0);
     }
-    else
-        Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_Init_Error, NULL, 0);
+    // else
+    //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_Init_Error, NULL, 0);
 }
 
 /************************************************************ DataReady Pin Exti Callback *****************************************************************************/
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
+    // DebugPin.ctl(Debug_PB5, true);
+
     if (SrvMpu_Init_Reg.Pri_State)
         DevMPU6000.set_drdy(&MPU6000Obj);
+
+    // DebugPin.ctl(Debug_PB5, false);
 }
 
 static void SrvIMU_SecIMU_ExtiCallback(void)

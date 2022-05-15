@@ -62,8 +62,12 @@ void SysTick_Handler(void)
 {
   static uint32_t time_base = 0;
 
+  DebugPin.ctl(Debug_PB3, true);
+
   /* Os relay on */
   Runtime_Tick();
+
+  DebugPin.ctl(Debug_PB3, false);
 
   /* periph relay on */
   if (time_base == REAL_1MS - Runtime_GetTickBase())

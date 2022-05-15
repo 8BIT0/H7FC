@@ -63,6 +63,7 @@ Tick_Base Runtime_GetTickBase(void)
                 RUNTIME_TICK_FRQ_10K
                 RUNTIME_TICK_FRQ_8K
                 RUNTIME_TICK_FRQ_5K
+                RUNTIME_TICK_FRQ_4K
                 RUNTIME_TICK_FRQ_2K
                 RUNTIME_TICK_FRQ_1K
 **/
@@ -85,6 +86,10 @@ bool Runtime_Config(uint32_t tick_frq)
     else if (tick_frq == RUNTIME_TICK_FRQ_5K)
     {
         frq = RUNTIME_TICK_FRQ_5K;
+    }
+    else if (tick_frq == RUNTIME_TICK_FRQ_4K)
+    {
+        frq = RUNTIME_TICK_FRQ_4K;
     }
     else if (tick_frq == RUNTIME_TICK_FRQ_2K)
     {
@@ -213,7 +218,7 @@ uint32_t RuntimeObj_Compare(const uint64_t *EQ_L, const uint64_t *EQ_R)
 /* if input time object equl to current runtime return true */
 bool RuntimeObj_CompareWithCurrent(const uint64_t time_in)
 {
-    if (time_in <= RunTime.Use_Us)
+    if (time_in == RunTime.Use_Us)
         return true;
 
     return false;
