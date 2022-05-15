@@ -168,7 +168,7 @@ typedef struct
     void (*set_ready)(DevICM20602Obj_TypeDef *Obj);
     bool (*get_ready)(DevICM20602Obj_TypeDef *Obj);
     bool (*reset)(DevICM20602Obj_TypeDef *Obj);
-    void (*sample)(DevICM20602Obj_TypeDef *Obj);
+    bool (*sample)(DevICM20602Obj_TypeDef *Obj);
     IMUData_TypeDef (*get_data)(DevICM20602Obj_TypeDef *Obj);
     ICM20602_Error_List (*get_error)(DevICM20602Obj_TypeDef *Obj);
 } DevICM20602_TypeDef;

@@ -19,8 +19,8 @@ static void TaskInertical_Blink_Notification(uint16_t duration);
 void TaskInertial_Init(void)
 {
     /* regist error */
-
-    SrvIMU_Init();
+    if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
+        TaskInertial_State = Task_SensorInertial_Error;
 }
 
 void TaskInertical_Core(Task_Handle hdl)
@@ -29,7 +29,8 @@ void TaskInertical_Core(Task_Handle hdl)
     switch ((uint8_t)TaskInertial_State)
     {
     case Task_SensorInertial_Core:
-        // TaskInertical_Blink_Notification(250);
+        TaskInertical_Blink_Notification(50);
+        SrvIMU.sample();
         break;
 
     case Task_SensorInertial_Error:

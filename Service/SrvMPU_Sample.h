@@ -11,9 +11,15 @@
 
 typedef union
 {
-    uint8_t PriDev_Init_State : 4;
-    uint8_t SecDev_Init_State : 4;
-} SrvMpu_InitReg_TypeDef;
+    uint8_t Pri_State : 4;
+    uint8_t Sec_State : 4;
+} SrvMpu_Reg_TypeDef;
+
+typedef enum
+{
+    SrvIMU_PriModule = 1,
+    SrvIMU_SecModule,
+} SrvIMU_Module_Type;
 
 typedef enum
 {
@@ -37,6 +43,12 @@ typedef enum
     SrvIMU_SecSample_UnReady,
 } SrvIMU_ErrorCode_List;
 
-SrvIMU_ErrorCode_List SrvIMU_Init(void);
+typedef struct
+{
+    SrvIMU_ErrorCode_List (*init)(void);
+    bool (*sample)(void);
+} SrvIMU_TypeDef;
+
+extern SrvIMU_TypeDef SrvIMU;
 
 #endif

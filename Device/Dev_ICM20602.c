@@ -16,7 +16,7 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj);
 static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj);
 static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj);
 static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj);
-static void DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj);
+static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj);
 static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj);
 static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj);
 
@@ -321,8 +321,12 @@ static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj)
     return Obj->drdy;
 }
 
-static void DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj)
+static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj)
 {
+    if (Obj == NULL)
+        return false;
+
+    return true;
 }
 
 static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj)
