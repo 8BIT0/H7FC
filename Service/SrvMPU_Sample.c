@@ -112,34 +112,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .out = true,
         .proc_type = Error_Proc_Immd,
     },
-    {
-        .callback = NULL,
-        .code = SrvIMU_PriSample_OverRange,
-        .desc = "Pri Sample OverRange",
-        .out = false,
-        .proc_type = Error_Proc_Ignore,
-    },
-    {
-        .callback = NULL,
-        .code = SrvIMU_PriSample_Blunt,
-        .desc = "Pri Sample Blunt",
-        .out = false,
-        .proc_type = Error_Proc_Ignore,
-    },
-    {
-        .callback = NULL,
-        .code = SrvIMU_SecSample_OverRange,
-        .desc = "Sec Sample OverRange",
-        .out = false,
-        .proc_type = Error_Proc_Ignore,
-    },
-    {
-        .callback = NULL,
-        .code = SrvIMU_SecSample_Blunt,
-        .desc = "Sec Sample Blunt",
-        .out = false,
-        .proc_type = Error_Proc_Ignore,
-    },
 };
 /************************************************************************ Error Tree Item ************************************************************************/
 
