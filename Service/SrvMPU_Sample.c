@@ -114,13 +114,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
     },
     {
         .callback = NULL,
-        .code = SrvIMU_PriSample_Init_Error,
-        .desc = "Pri Sample Init Failed",
-        .out = false,
-        .proc_type = Error_Proc_Ignore,
-    },
-    {
-        .callback = NULL,
         .code = SrvIMU_PriSample_OverRange,
         .desc = "Pri Sample OverRange",
         .out = false,
@@ -139,13 +132,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .desc = "Pri Sample Unready",
         .out = false,
         .proc_type = Error_Proc_Immd,
-    },
-    {
-        .callback = NULL,
-        .code = SrvIMU_SecSample_Init_Error,
-        .desc = "Sec Sample Init Failed",
-        .out = false,
-        .proc_type = Error_Proc_Ignore,
     },
     {
         .callback = NULL,
@@ -352,8 +338,6 @@ static void SrvIMU_Sample(void)
         // else
         //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_UnReady, NULL, 0);
     }
-    // else
-    //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_Init_Error, NULL, 0);
 
     /* sec imu init successed */
     if (SrvMpu_Init_Reg.Sec_State)
@@ -366,8 +350,6 @@ static void SrvIMU_Sample(void)
         // else
         //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_UnReady, NULL, 0);
     }
-    // else
-    //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_Init_Error, NULL, 0);
 }
 
 /************************************************************ DataReady Pin Exti Callback *****************************************************************************/
