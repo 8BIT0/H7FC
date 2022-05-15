@@ -18,6 +18,8 @@
 static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size);
 static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size);
 static void SrvIMU_AllModule_InitError(uint8_t *p_arg, uint16_t size);
+static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size);
+static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size);
 
 static SrvMpu_InitReg_TypeDef SrvMpu_Reg = {.PriDev_Init_State = false, .SecDev_Init_State = false};
 static Error_Handler SrvMPU_Error_Handle = NULL;
@@ -130,6 +132,13 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .proc_type = Error_Proc_Ignore,
     },
     {
+        .callback = SrvIMU_PriSample_Undrdy,
+        .code = SrvIMU_PriSample_UnReady,
+        .desc = "Pri Sample Unready",
+        .out = false,
+        .proc_type = Error_Proc_Immd,
+    },
+    {
         .callback = NULL,
         .code = SrvIMU_SecSample_Init_Error,
         .desc = "Sec Sample Init Failed",
@@ -149,6 +158,13 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .desc = "Sec Sample Blunt",
         .out = false,
         .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = SrvIMU_SecSample_Undrdy,
+        .code = SrvIMU_SecSample_UnReady,
+        .desc = "Sec Sample Unready",
+        .out = false,
+        .proc_type = Error_Proc_Immd,
     },
 };
 
@@ -310,8 +326,7 @@ static void SrvIMU_PriSample(void)
         {
         }
         else
-        {
-        }
+            Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_UnReady, NULL, 0);
     }
     else
         Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_Init_Error, NULL, 0);
@@ -327,8 +342,7 @@ static void SrvIMU_SecSample(void)
         {
         }
         else
-        {
-        }
+            Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_UnReady, NULL, 0);
     }
     else
         Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_Init_Error, NULL, 0);
@@ -363,6 +377,20 @@ static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size)
 }
 
 static void SrvIMU_AllModule_InitError(uint8_t *p_arg, uint16_t size)
+{
+    static uint8_t a;
+
+    a++;
+}
+
+static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size)
+{
+    static uint8_t a;
+
+    a++;
+}
+
+static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size)
 {
     static uint8_t a;
 
