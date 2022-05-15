@@ -323,6 +323,7 @@ static void SrvIMU_Sample(void)
         if (DevMPU6000.get_drdy(&MPU6000Obj) && DevMPU6000.sample(&MPU6000Obj))
         {
             pri_test++;
+            /* update pri imu data */
         }
         else
             SrvIMU_PriSample_Undrdy(NULL, 0);
@@ -335,6 +336,7 @@ static void SrvIMU_Sample(void)
         if (DevICM20602.get_ready(&ICM20602Obj) && DevICM20602.sample(&ICM20602Obj))
         {
             sec_test++;
+            /* update sec imu data */
         }
         else
             SrvIMU_SecSample_Undrdy(NULL, 0);
