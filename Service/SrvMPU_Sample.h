@@ -35,10 +35,8 @@ typedef enum
     SrvIMU_AllModule_Init_Error,
     SrvIMU_PriSample_OverRange,
     SrvIMU_PriSample_Blunt,
-    SrvIMU_PriSample_UnReady,
     SrvIMU_SecSample_OverRange,
     SrvIMU_SecSample_Blunt,
-    SrvIMU_SecSample_UnReady,
 } SrvIMU_ErrorCode_List;
 
 typedef struct

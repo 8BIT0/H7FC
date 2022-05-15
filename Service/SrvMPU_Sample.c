@@ -127,13 +127,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .proc_type = Error_Proc_Ignore,
     },
     {
-        .callback = SrvIMU_PriSample_Undrdy,
-        .code = SrvIMU_PriSample_UnReady,
-        .desc = "Pri Sample Unready",
-        .out = false,
-        .proc_type = Error_Proc_Immd,
-    },
-    {
         .callback = NULL,
         .code = SrvIMU_SecSample_OverRange,
         .desc = "Sec Sample OverRange",
@@ -146,13 +139,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .desc = "Sec Sample Blunt",
         .out = false,
         .proc_type = Error_Proc_Ignore,
-    },
-    {
-        .callback = SrvIMU_SecSample_Undrdy,
-        .code = SrvIMU_SecSample_UnReady,
-        .desc = "Sec Sample Unready",
-        .out = false,
-        .proc_type = Error_Proc_Immd,
     },
 };
 /************************************************************************ Error Tree Item ************************************************************************/
@@ -327,6 +313,9 @@ static void SrvIMU_Sample(void)
     static volatile uint32_t pri_test = 0;
     static volatile uint32_t sec_test = 0;
 
+    /* don`t use error tree down below it may decrease code efficient */
+    /* trigger error directly */
+
     /* pri imu init successed */
     if (SrvMpu_Init_Reg.Pri_State)
     {
@@ -335,8 +324,8 @@ static void SrvIMU_Sample(void)
         {
             pri_test++;
         }
-        // else
-        //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_UnReady, NULL, 0);
+        else
+            SrvIMU_PriSample_Undrdy(NULL, 0);
     }
 
     /* sec imu init successed */
@@ -347,8 +336,8 @@ static void SrvIMU_Sample(void)
         {
             sec_test++;
         }
-        // else
-        //     Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_UnReady, NULL, 0);
+        else
+            SrvIMU_SecSample_Undrdy(NULL, 0);
     }
 }
 
