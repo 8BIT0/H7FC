@@ -29,7 +29,7 @@ void TaskInertical_Core(Task_Handle hdl)
     switch ((uint8_t)TaskInertial_State)
     {
     case Task_SensorInertial_Core:
-        TaskInertical_Blink_Notification(50);
+        // TaskInertical_Blink_Notification(100);
         SrvIMU.sample();
         break;
 
