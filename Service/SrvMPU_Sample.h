@@ -26,9 +26,13 @@ typedef enum
     SrvIMU_SecBus_Init_Error = -2,
     SrvIMU_SecDev_Init_Error = -1,
     SrvIMU_No_Error = 0,
-    SrvIMU_Sample_Init_Error,
-    SrvIMU_Sample_OverRange,
-    SrvIMU_Sample_Blunt,
+    SrvIMU_AllModule_Init_Error,
+    SrvIMU_PriSample_Init_Error,
+    SrvIMU_PriSample_OverRange,
+    SrvIMU_PriSample_Blunt,
+    SrvIMU_SecSample_Init_Error,
+    SrvIMU_SecSample_OverRange,
+    SrvIMU_SecSample_Blunt,
 } SrvIMU_ErrorCode_List;
 
 SrvIMU_ErrorCode_List SrvIMU_Init(void);

@@ -17,8 +17,9 @@
  */
 static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size);
 static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size);
+static void SrvIMU_AllModule_InitError(uint8_t *p_arg, uint16_t size);
 
-static SrvMpu_InitReg_TypeDef SrvMpu_Reg;
+static SrvMpu_InitReg_TypeDef SrvMpu_Reg = {.PriDev_Init_State = false, .SecDev_Init_State = false};
 static Error_Handler SrvMPU_Error_Handle = NULL;
 
 /* internal variable */
@@ -101,22 +102,50 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .proc_type = Error_Proc_Immd,
     },
     {
+        .callback = SrvIMU_AllModule_InitError,
+        .code = SrvIMU_AllModule_Init_Error,
+        .desc = "All IMU Module Init Failed",
+        .out = true,
+        .proc_type = Error_Proc_Immd,
+    },
+    {
         .callback = NULL,
-        .code = SrvIMU_Sample_Init_Error,
+        .code = SrvIMU_PriSample_Init_Error,
+        .desc = "Pri Sample Init Failed",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_PriSample_OverRange,
+        .desc = "Pri Sample OverRange",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_PriSample_Blunt,
+        .desc = "Pri Sample Blunt",
+        .out = false,
+        .proc_type = Error_Proc_Ignore,
+    },
+    {
+        .callback = NULL,
+        .code = SrvIMU_SecSample_Init_Error,
         .desc = "Sec Sample Init Failed",
         .out = false,
         .proc_type = Error_Proc_Ignore,
     },
     {
         .callback = NULL,
-        .code = SrvIMU_Sample_OverRange,
+        .code = SrvIMU_SecSample_OverRange,
         .desc = "Sec Sample OverRange",
         .out = false,
         .proc_type = Error_Proc_Ignore,
     },
     {
         .callback = NULL,
-        .code = SrvIMU_Sample_Blunt,
+        .code = SrvIMU_SecSample_Blunt,
         .desc = "Sec Sample Blunt",
         .out = false,
         .proc_type = Error_Proc_Ignore,
@@ -163,10 +192,10 @@ SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     if (!SrvMpu_Reg.PriDev_Init_State && !SrvMpu_Reg.SecDev_Init_State)
     {
-        return SrvIMU_Sample_Init_Error;
+        return SrvIMU_AllModule_Init_Error;
     }
 
-    Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, NULL, 0);
+    Error_Trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, NULL, 0);
 
     return SrvIMU_No_Error;
 }
@@ -217,7 +246,6 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
         return SrvIMU_SecExtiPin_Init_Error;
 
     ICM20602_BusCfg.Pin = ICM20602_BusPin;
-
     DevICM20602.pre_init(&ICM20602Obj,
                          SrvIMU_SecIMU_CS_Ctl,
                          SrvIMU_SecIMU_BusTrans_Rec,
@@ -262,6 +290,51 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
     return BspSPI.trans_receive(&ICM20602_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
 }
 
+int8_t SrvIMU_GetPri_InitError(void)
+{
+    return DevMPU6000.get_error(&MPU6000Obj);
+}
+
+int8_t SrvIMU_GetSec_InitError(void)
+{
+    return DevICM20602.get_error(&ICM20602Obj);
+}
+
+static void SrvIMU_PriSample(void)
+{
+    /* pri imu init successed */
+    if (SrvMpu_Reg.PriDev_Init_State)
+    {
+        /* pri imu module data ready triggered */
+        if (DevMPU6000.get_drdy(&MPU6000Obj))
+        {
+        }
+        else
+        {
+        }
+    }
+    else
+        Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriSample_Init_Error, NULL, 0);
+}
+
+static void SrvIMU_SecSample(void)
+{
+    /* sec imu init successed */
+    if (SrvMpu_Reg.SecDev_Init_State)
+    {
+        /* sec imu module data ready triggered */
+        if (DevICM20602.get_ready(&ICM20602Obj))
+        {
+        }
+        else
+        {
+        }
+    }
+    else
+        Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecSample_Init_Error, NULL, 0);
+}
+
+/************************************************************ DataReady Pin Exti Callback *****************************************************************************/
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
     if (SrvMpu_Reg.PriDev_Init_State)
@@ -274,16 +347,7 @@ static void SrvIMU_SecIMU_ExtiCallback(void)
         DevICM20602.set_ready(&ICM20602Obj);
 }
 
-int8_t SrvIMU_GetPri_InitError(void)
-{
-    return DevMPU6000.get_error(&MPU6000Obj);
-}
-
-int8_t SrvIMU_GetSec_InitError(void)
-{
-    return DevICM20602.get_error(&ICM20602Obj);
-}
-
+/*************************************************************** Error Process Callback *******************************************************************************/
 static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size)
 {
     static uint8_t a;
@@ -292,6 +356,13 @@ static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size)
 }
 
 static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size)
+{
+    static uint8_t a;
+
+    a++;
+}
+
+static void SrvIMU_AllModule_InitError(uint8_t *p_arg, uint16_t size)
 {
     static uint8_t a;
 
