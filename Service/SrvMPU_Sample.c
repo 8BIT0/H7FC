@@ -296,6 +296,8 @@ static void SrvIMU_Sample(void)
         {
             pri_test++;
             /* update pri imu data */
+
+            /* then use dma m2m as data pipe to protocol data to target buff */
         }
         else
             SrvIMU_PriSample_Undrdy(NULL, 0);
@@ -309,6 +311,8 @@ static void SrvIMU_Sample(void)
         {
             sec_test++;
             /* update sec imu data */
+
+            /* then use dma m2m as data pipe to protocol data to target buff */
         }
         else
             SrvIMU_SecSample_Undrdy(NULL, 0);
