@@ -122,6 +122,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
 /* external function */
 static SrvIMU_ErrorCode_List SrvIMU_Init(void);
 static void SrvIMU_Sample(void);
+static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -136,6 +137,7 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 SrvIMU_TypeDef SrvIMU = {
     .init = SrvIMU_Init,
     .sample = SrvIMU_Sample,
+    .get_data = SrvIMU_Get_Data,
 };
 
 static SrvIMU_ErrorCode_List SrvIMU_Init(void)
@@ -319,7 +321,7 @@ static void SrvIMU_Sample(void)
                 PriIMU_Data.gyr[i] = MPU6000Obj.OriData.gyr_dou[i];
             }
 
-            /* then use dma m2m as data pipe to protocol data to target buff */
+            /* filter Pri IMU Module data */
 
             /* unlock */
             SrvMpu_Update_Reg.Pri_State = false;
@@ -350,7 +352,7 @@ static void SrvIMU_Sample(void)
                 SecIMU_Data.gyr[i] = ICM20602Obj.OriData.gyr_dou[i];
             }
 
-            /* then use dma m2m as data pipe to protocol data to target buff */
+            /* filter Sec IMU Module data */
 
             /* unlock */
             SrvMpu_Update_Reg.Sec_State = false;

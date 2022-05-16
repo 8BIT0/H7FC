@@ -31,6 +31,9 @@ void TaskInertical_Core(Task_Handle hdl)
     case Task_SensorInertial_Core:
         // TaskInertical_Blink_Notification(100);
         SrvIMU.sample();
+
+        /* then use dma m2m as data pipe to protocol data to target buff */
+
         break;
 
     case Task_SensorInertial_Error:
