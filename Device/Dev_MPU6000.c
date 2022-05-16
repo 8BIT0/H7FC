@@ -40,15 +40,16 @@ DevMPU6000_TypeDef DevMPU6000 = {
 static bool Dev_MPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uint8_t *rx, uint8_t size)
 {
     bool state = false;
+    uint8_t addr_tmp = addr | MPU6000_WRITE_MASK;
+    uint8_t read_tmp = 0;
 
     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
         return false;
 
-    tx[0] = addr | MPU6000_WRITE_MASK;
-
     /* CS Low */
     sensor_obj->cs_ctl(false);
 
+    state = sensor_obj->bus_trans(&addr_tmp, &read_tmp, 1);
     state = sensor_obj->bus_trans(tx, rx, size);
 
     /* CS High */
@@ -339,8 +340,8 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
             sensor_obj->OriData.gyr_int[axis] = (int16_t)((GyrRx_Buff[axis * 2] << 8) | GyrRx_Buff[axis * 2 + 1]);
 
             /* convert int data to double */
-            sensor_obj->OriData.acc_dou[axis] /= sensor_obj->acc_scale;
-            sensor_obj->OriData.gyr_dou[axis] /= sensor_obj->gyr_scale;
+            sensor_obj->OriData.acc_dou[axis] = sensor_obj->OriData.acc_int[axis] / sensor_obj->acc_scale;
+            sensor_obj->OriData.gyr_dou[axis] = sensor_obj->OriData.gyr_int[axis] / sensor_obj->gyr_scale;
         }
 
         sensor_obj->drdy = false;

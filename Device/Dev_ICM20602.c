@@ -36,15 +36,16 @@ DevICM20602_TypeDef DevICM20602 = {
 static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
 {
     bool state = false;
+    uint8_t addr_tmp = addr | ICM20602_WRITE_MASK;
+    uint8_t read_tmp = 0;
 
     if (Obj == NULL || Obj->cs_ctl == NULL || Obj->bus_trans == NULL)
         return false;
 
-    tx[0] = addr | ICM20602_WRITE_MASK;
-
     /* CS Low */
     Obj->cs_ctl(false);
 
+    state = Obj->bus_trans(&addr_tmp, &read_tmp, 1);
     state = Obj->bus_trans(tx, rx, size);
 
     /* CS High */
@@ -69,10 +70,10 @@ static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint
 
     state = Obj->bus_trans(Tx_Tmp, Rx_Tmp, 2);
 
-    *rx = Rx_Tmp[1];
-
     /* cs high */
     Obj->cs_ctl(true);
+
+    *rx = Rx_Tmp[1];
 
     return state;
 }
