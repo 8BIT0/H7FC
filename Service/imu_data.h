@@ -28,6 +28,7 @@ typedef enum
 typedef struct
 {
     uint64_t time_stamp;
+    uint64_t cycle_cnt;
 
     int16_t temp_int;
     int16_t gyr_int[Axis_Sum];

@@ -287,9 +287,7 @@ int8_t SrvIMU_GetSec_InitError(void)
 /************************************************************ Module Sample API Function *****************************************************************************/
 static void SrvIMU_Sample(void)
 {
-    static volatile uint32_t pri_test = 0;
-    static volatile uint32_t sec_test = 0;
-
+    SYSTEM_RunTime Rt = Get_CurrentRunningUs();
     /* don`t use error tree down below it may decrease code efficient */
     /* trigger error directly */
 
@@ -299,7 +297,9 @@ static void SrvIMU_Sample(void)
         /* pri imu module data ready triggered */
         if (DevMPU6000.get_drdy(&MPU6000Obj) && DevMPU6000.sample(&MPU6000Obj))
         {
-            pri_test++;
+            PriIMU_Data.cycle_cnt++;
+            PriIMU_Data.time_stamp = Rt;
+
             /* update pri imu data */
 
             /* then use dma m2m as data pipe to protocol data to target buff */
@@ -314,7 +314,9 @@ static void SrvIMU_Sample(void)
         /* sec imu module data ready triggered */
         if (DevICM20602.get_ready(&ICM20602Obj) && DevICM20602.sample(&ICM20602Obj))
         {
-            sec_test++;
+            SecIMU_Data.cycle_cnt++;
+            SecIMU_Data.time_stamp = Rt;
+
             /* update sec imu data */
 
             /* then use dma m2m as data pipe to protocol data to target buff */
