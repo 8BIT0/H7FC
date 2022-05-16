@@ -18,6 +18,8 @@
 static SrvMpu_Reg_TypeDef SrvMpu_Init_Reg = {.Pri_State = false, .Sec_State = false};
 static Error_Handler SrvMPU_Error_Handle = NULL;
 static SrvMpu_Reg_TypeDef SrvMpu_Update_Reg = {.Pri_State = false, .Sec_State = false};
+static IMUData_TypeDef PriIMU_Data;
+static IMUData_TypeDef SecIMU_Data;
 
 /* internal variable */
 /* MPU6000 Instance */
@@ -161,6 +163,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     }
     else
         Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, NULL, 0);
+
+    memset(&PriIMU_Data, NULL, sizeof(PriIMU_Data));
+    memset(&SecIMU_Data, NULL, sizeof(SecIMU_Data));
 
     if (!SrvMpu_Init_Reg.Pri_State && !SrvMpu_Init_Reg.Sec_State)
     {
@@ -322,12 +327,8 @@ static void SrvIMU_Sample(void)
 /************************************************************ DataReady Pin Exti Callback *****************************************************************************/
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
-    // DebugPin.ctl(Debug_PB5, true);
-
     if (SrvMpu_Init_Reg.Pri_State)
         DevMPU6000.set_drdy(&MPU6000Obj);
-
-    // DebugPin.ctl(Debug_PB5, false);
 }
 
 static void SrvIMU_SecIMU_ExtiCallback(void)
