@@ -16,10 +16,12 @@
  *   SecIMU -> ICM20602
  */
 static SrvMpu_Reg_TypeDef SrvMpu_Init_Reg = {.Pri_State = false, .Sec_State = false};
-static Error_Handler SrvMPU_Error_Handle = NULL;
 static SrvMpu_Reg_TypeDef SrvMpu_Update_Reg = {.Pri_State = false, .Sec_State = false};
-static IMUData_TypeDef PriIMU_Data;
-static IMUData_TypeDef SecIMU_Data;
+static SrvIMU_Data_TypeDef PriIMU_Data;
+static SrvIMU_Data_TypeDef SecIMU_Data;
+static SrvIMU_Data_TypeDef PriIMU_Data_Lst;
+static SrvIMU_Data_TypeDef SecIMU_Data_Lst;
+static Error_Handler SrvMPU_Error_Handle = NULL;
 
 /* internal variable */
 /* MPU6000 Instance */
@@ -167,6 +169,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     memset(&PriIMU_Data, NULL, sizeof(PriIMU_Data));
     memset(&SecIMU_Data, NULL, sizeof(SecIMU_Data));
 
+    memset(&PriIMU_Data_Lst, NULL, sizeof(PriIMU_Data_Lst));
+    memset(&SecIMU_Data_Lst, NULL, sizeof(SecIMU_Data_Lst));
+
     if (!SrvMpu_Init_Reg.Pri_State && !SrvMpu_Init_Reg.Sec_State)
     {
         Error_Trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, NULL, 0);
@@ -288,6 +293,8 @@ int8_t SrvIMU_GetSec_InitError(void)
 static void SrvIMU_Sample(void)
 {
     SYSTEM_RunTime Rt = Get_CurrentRunningUs();
+    uint8_t i = Axis_X;
+
     /* don`t use error tree down below it may decrease code efficient */
     /* trigger error directly */
 
@@ -297,12 +304,26 @@ static void SrvIMU_Sample(void)
         /* pri imu module data ready triggered */
         if (DevMPU6000.get_drdy(&MPU6000Obj) && DevMPU6000.sample(&MPU6000Obj))
         {
+            /* lock */
+            SrvMpu_Update_Reg.Pri_State = true;
+
             PriIMU_Data.cycle_cnt++;
             PriIMU_Data.time_stamp = Rt;
 
             /* update pri imu data */
+            PriIMU_Data.tempera = MPU6000Obj.OriData.temp_flt;
+
+            for (i = Axis_X; i < Axis_Sum; i++)
+            {
+                PriIMU_Data.acc[i] = MPU6000Obj.OriData.acc_dou[i];
+                PriIMU_Data.gyr[i] = MPU6000Obj.OriData.gyr_dou[i];
+            }
 
             /* then use dma m2m as data pipe to protocol data to target buff */
+
+            /* unlock */
+            SrvMpu_Update_Reg.Pri_State = false;
+            PriIMU_Data_Lst = PriIMU_Data;
         }
         else
             SrvIMU_PriSample_Undrdy(NULL, 0);
@@ -314,16 +335,58 @@ static void SrvIMU_Sample(void)
         /* sec imu module data ready triggered */
         if (DevICM20602.get_ready(&ICM20602Obj) && DevICM20602.sample(&ICM20602Obj))
         {
+            /* lock */
+            SrvMpu_Update_Reg.Sec_State = true;
+
             SecIMU_Data.cycle_cnt++;
             SecIMU_Data.time_stamp = Rt;
 
             /* update sec imu data */
+            SecIMU_Data.tempera = ICM20602Obj.OriData.temp_flt;
+
+            for (i = Axis_X; i < Axis_Sum; i++)
+            {
+                SecIMU_Data.acc[i] = ICM20602Obj.OriData.acc_dou[i];
+                SecIMU_Data.gyr[i] = ICM20602Obj.OriData.gyr_dou[i];
+            }
 
             /* then use dma m2m as data pipe to protocol data to target buff */
+
+            /* unlock */
+            SrvMpu_Update_Reg.Sec_State = false;
+            SecIMU_Data_Lst = SecIMU_Data;
         }
         else
             SrvIMU_SecSample_Undrdy(NULL, 0);
     }
+}
+
+static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
+{
+    SrvIMU_Data_TypeDef imu_data_tmp;
+
+    memset(&imu_data_tmp, NULL, sizeof(SrvIMU_Data_TypeDef));
+
+    if (type == SrvIMU_PriModule)
+    {
+        if (!SrvMpu_Update_Reg.Pri_State)
+        {
+            memcpy(&imu_data_tmp, &PriIMU_Data, sizeof(SrvIMU_Data_TypeDef));
+        }
+        else
+            memcpy(&imu_data_tmp, &PriIMU_Data_Lst, sizeof(SrvIMU_Data_TypeDef));
+    }
+    else if (type == SrvIMU_SecModule)
+    {
+        if (!SrvMpu_Update_Reg.Sec_State)
+        {
+            memcpy(&imu_data_tmp, &SecIMU_Data, sizeof(SrvIMU_Data_TypeDef));
+        }
+        else
+            memcpy(&imu_data_tmp, &SecIMU_Data_Lst, sizeof(SrvIMU_Data_TypeDef));
+    }
+
+    return imu_data_tmp;
 }
 
 /************************************************************ DataReady Pin Exti Callback *****************************************************************************/

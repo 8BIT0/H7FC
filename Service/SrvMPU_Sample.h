@@ -35,10 +35,23 @@ typedef enum
     SrvIMU_AllModule_Init_Error,
 } SrvIMU_ErrorCode_List;
 
+#pragma pack(1)
+typedef struct
+{
+    SYSTEM_RunTime time_stamp;
+    uint64_t cycle_cnt;
+
+    float tempera;
+    double gyr[Axis_Sum];
+    double acc[Axis_Sum];
+} SrvIMU_Data_TypeDef;
+#pragma pack()
+
 typedef struct
 {
     SrvIMU_ErrorCode_List (*init)(void);
     bool (*sample)(void);
+    SrvIMU_Data_TypeDef (*get_data)(SrvIMU_Module_Type type);
 } SrvIMU_TypeDef;
 
 extern SrvIMU_TypeDef SrvIMU;
