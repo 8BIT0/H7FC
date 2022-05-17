@@ -102,10 +102,10 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_Han
 
     if (spi_cfg.Instance == SPI1)
     {
-        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1;
-        PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
-        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-            return false;
+        // PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1;
+        // PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
+        // if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+        //     return false;
 
         __SPI1_CLK_ENABLE();
     }
@@ -119,10 +119,10 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_Han
     }
     else if (spi_cfg.Instance == SPI4)
     {
-        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI4;
-        PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_D2PCLK1;
-        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-            return false;
+        // PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI4;
+        // PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_D2PCLK1;
+        // if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+        //     return false;
 
         __SPI4_CLK_ENABLE();
     }
