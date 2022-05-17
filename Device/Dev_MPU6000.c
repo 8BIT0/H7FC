@@ -322,26 +322,23 @@ static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj)
 
 static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
 {
-    uint8_t AccTx_Buff[Axis_Sum * 2] = {0};
-    uint8_t AccRx_Buff[Axis_Sum * 2] = {0};
-    uint8_t GyrTx_Buff[Axis_Sum * 2] = {0};
-    uint8_t GyrRx_Buff[Axis_Sum * 2] = {0};
+    uint8_t Tx[14] = {0};
+    uint8_t Rx[14] = {0};
 
     if ((sensor_obj->error == MPU6000_No_Error) && (sensor_obj->drdy))
     {
         sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
 
-        Dev_MPU6000_Regs_Read(sensor_obj, MPU6000_ACCEL_XOUT_H, AccTx_Buff, AccRx_Buff, Axis_Sum * 2);
-        Dev_MPU6000_Regs_Read(sensor_obj, MPU6000_GYRO_XOUT_H, GyrTx_Buff, GyrRx_Buff, Axis_Sum * 2);
+        Dev_MPU6000_Regs_Read(sensor_obj, MPU6000_ACCEL_XOUT_H, Tx, Rx, 14);
 
         for (uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
         {
-            sensor_obj->OriData.acc_int[axis] = (int16_t)((AccRx_Buff[axis * 2] << 8) | AccRx_Buff[axis * 2 + 1]);
-            sensor_obj->OriData.gyr_int[axis] = (int16_t)((GyrRx_Buff[axis * 2] << 8) | GyrRx_Buff[axis * 2 + 1]);
+            sensor_obj->OriData.acc_int[axis] = (int16_t)((Rx[axis * 2] << 8) | Rx[axis * 2 + 1]);
+            sensor_obj->OriData.gyr_int[axis] = (int16_t)((Rx[axis * 2 + 8] << 8) | Rx[axis * 2 + 9]);
 
             /* convert int data to double */
-            sensor_obj->OriData.acc_dou[axis] = sensor_obj->OriData.acc_int[axis] / sensor_obj->acc_scale;
-            sensor_obj->OriData.gyr_dou[axis] = sensor_obj->OriData.gyr_int[axis] / sensor_obj->gyr_scale;
+            sensor_obj->OriData.acc_dou[axis] = ((double)sensor_obj->OriData.acc_int[axis] / sensor_obj->acc_scale);
+            sensor_obj->OriData.gyr_dou[axis] = ((double)sensor_obj->OriData.gyr_int[axis] / sensor_obj->gyr_scale);
         }
 
         sensor_obj->drdy = false;

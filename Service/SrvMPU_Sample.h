@@ -11,8 +11,13 @@
 
 typedef union
 {
-    uint8_t Pri_State : 4;
-    uint8_t Sec_State : 4;
+    struct
+    {
+        uint8_t Pri_State : 4;
+        uint8_t Sec_State : 4;
+    } sec;
+
+    uint8_t val;
 } SrvMpu_Reg_TypeDef;
 
 typedef enum

@@ -15,8 +15,8 @@
  *   PriIMU -> MPU6000
  *   SecIMU -> ICM20602
  */
-static SrvMpu_Reg_TypeDef SrvMpu_Init_Reg = {.Pri_State = false, .Sec_State = false};
-static SrvMpu_Reg_TypeDef SrvMpu_Update_Reg = {.Pri_State = false, .Sec_State = false};
+static SrvMpu_Reg_TypeDef SrvMpu_Init_Reg;
+static SrvMpu_Reg_TypeDef SrvMpu_Update_Reg;
 static SrvIMU_Data_TypeDef PriIMU_Data;
 static SrvIMU_Data_TypeDef SecIMU_Data;
 static SrvIMU_Data_TypeDef PriIMU_Data_Lst;
@@ -30,7 +30,7 @@ static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
     .Instance = MPU6000_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8,
+    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4,
 };
 
 /* ICM20602 Instance */
@@ -39,7 +39,7 @@ static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
     .Instance = ICM20602_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8,
+    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4,
 };
 
 static DevMPU6000Obj_TypeDef MPU6000Obj;
@@ -151,19 +151,19 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
 
-    SrvMpu_Init_Reg.Pri_State = false;
-    SrvMpu_Init_Reg.Sec_State = false;
+    SrvMpu_Init_Reg.val = 0;
+    SrvMpu_Update_Reg.val = 0;
 
     if (PriIMU_Init_State == SrvIMU_No_Error)
     {
-        SrvMpu_Init_Reg.Pri_State = true;
+        SrvMpu_Init_Reg.sec.Pri_State = true;
     }
     else
         Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, NULL, 0);
 
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
-        SrvMpu_Init_Reg.Sec_State = true;
+        SrvMpu_Init_Reg.sec.Sec_State = true;
     }
     else
         Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, NULL, 0);
@@ -174,16 +174,16 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     memset(&PriIMU_Data_Lst, NULL, sizeof(PriIMU_Data_Lst));
     memset(&SecIMU_Data_Lst, NULL, sizeof(SecIMU_Data_Lst));
 
-    if (!SrvMpu_Init_Reg.Pri_State && !SrvMpu_Init_Reg.Sec_State)
+    if (!SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
         Error_Trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, NULL, 0);
         return SrvIMU_AllModule_Init_Error;
     }
-    else if (!SrvMpu_Init_Reg.Pri_State && SrvMpu_Init_Reg.Sec_State)
+    else if (!SrvMpu_Init_Reg.sec.Pri_State && SrvMpu_Init_Reg.sec.Sec_State)
     {
         return SrvIMU_PriDev_Init_Error;
     }
-    else if (SrvMpu_Init_Reg.Pri_State && !SrvMpu_Init_Reg.Sec_State)
+    else if (SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
         return SrvIMU_SecDev_Init_Error;
     }
@@ -220,9 +220,6 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
     if (!DevMPU6000.init(&MPU6000Obj))
         return SrvIMU_PriDev_Init_Error;
 
-    /* Set SPI Speed 20M */
-    MPU6000_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-
     return SrvIMU_No_Error;
 }
 
@@ -253,9 +250,6 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 
     if (!DevICM20602.init(&ICM20602Obj))
         return SrvIMU_SecDev_Init_Error;
-
-    /* Set SPI Speed 20M */
-    ICM20602_BusCfg.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
 
     return SrvIMU_No_Error;
 }
@@ -301,13 +295,13 @@ static void SrvIMU_Sample(void)
     /* trigger error directly */
 
     /* pri imu init successed */
-    if (SrvMpu_Init_Reg.Pri_State)
+    if (SrvMpu_Init_Reg.sec.Pri_State)
     {
         /* pri imu module data ready triggered */
         if (DevMPU6000.get_drdy(&MPU6000Obj) && DevMPU6000.sample(&MPU6000Obj))
         {
             /* lock */
-            SrvMpu_Update_Reg.Pri_State = true;
+            SrvMpu_Update_Reg.sec.Pri_State = true;
 
             PriIMU_Data.cycle_cnt++;
             PriIMU_Data.time_stamp = Rt;
@@ -324,7 +318,7 @@ static void SrvIMU_Sample(void)
             /* filter Pri IMU Module data */
 
             /* unlock */
-            SrvMpu_Update_Reg.Pri_State = false;
+            SrvMpu_Update_Reg.sec.Pri_State = false;
             PriIMU_Data_Lst = PriIMU_Data;
         }
         else
@@ -332,13 +326,13 @@ static void SrvIMU_Sample(void)
     }
 
     /* sec imu init successed */
-    if (SrvMpu_Init_Reg.Sec_State)
+    if (SrvMpu_Init_Reg.sec.Sec_State)
     {
         /* sec imu module data ready triggered */
         if (DevICM20602.get_ready(&ICM20602Obj) && DevICM20602.sample(&ICM20602Obj))
         {
             /* lock */
-            SrvMpu_Update_Reg.Sec_State = true;
+            SrvMpu_Update_Reg.sec.Sec_State = true;
 
             SecIMU_Data.cycle_cnt++;
             SecIMU_Data.time_stamp = Rt;
@@ -355,7 +349,7 @@ static void SrvIMU_Sample(void)
             /* filter Sec IMU Module data */
 
             /* unlock */
-            SrvMpu_Update_Reg.Sec_State = false;
+            SrvMpu_Update_Reg.sec.Sec_State = false;
             SecIMU_Data_Lst = SecIMU_Data;
         }
         else
@@ -371,7 +365,7 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
 
     if (type == SrvIMU_PriModule)
     {
-        if (!SrvMpu_Update_Reg.Pri_State)
+        if (!SrvMpu_Update_Reg.sec.Pri_State)
         {
             memcpy(&imu_data_tmp, &PriIMU_Data, sizeof(SrvIMU_Data_TypeDef));
         }
@@ -380,7 +374,7 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
     }
     else if (type == SrvIMU_SecModule)
     {
-        if (!SrvMpu_Update_Reg.Sec_State)
+        if (!SrvMpu_Update_Reg.sec.Sec_State)
         {
             memcpy(&imu_data_tmp, &SecIMU_Data, sizeof(SrvIMU_Data_TypeDef));
         }
@@ -394,13 +388,13 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
 /************************************************************ DataReady Pin Exti Callback *****************************************************************************/
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
-    if (SrvMpu_Init_Reg.Pri_State)
+    if (SrvMpu_Init_Reg.sec.Pri_State)
         DevMPU6000.set_drdy(&MPU6000Obj);
 }
 
 static void SrvIMU_SecIMU_ExtiCallback(void)
 {
-    if (SrvMpu_Init_Reg.Sec_State)
+    if (SrvMpu_Init_Reg.sec.Sec_State)
         DevICM20602.set_ready(&ICM20602Obj);
 }
 
