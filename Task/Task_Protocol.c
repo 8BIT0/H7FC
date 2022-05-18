@@ -62,8 +62,7 @@ void TaskProtocol_Core(Task_Handle hdl)
     switch ((uint8_t)task_state)
     {
     case TaskProto_Core:
-        usb_printf("Icm20602: %2x \r\n", ICM20602_ID);
-        usb_printf("Mpu6000: %2x \r\n\r\n", MPU6000_ID);
+        usb_printf("Icm20602: %2x \r\nMpu6000: %2x\r\n\r\n", ICM20602_ID, MPU6000_ID);
 
         TaaskProtocol_Main(NULL, 0);
         break;
