@@ -9,9 +9,8 @@
 
 #define ICM20602_RESET_TIMEOUT 100
 
-#define ICM20602_WRITE_MASK 0x80
-#define ICM20602_DEV_V1_ID 0x69 // SA0 attach with GND then Device ID is 0x68 else if SA0 Pull Up 0x69 (default)
-#define ICM20602_DEV_V2_ID 0x68
+#define ICM20602_READ_MASK 0x80
+#define ICM20602_DEV_ID 0x12 // SA0 attach with GND then Device ID is 0x68 else if SA0 Pull Up 0x69 (default)
 
 #define ICM20602_RESET_CMD 0x80
 #define ICM20602_RESET_SUCCESS 0x41

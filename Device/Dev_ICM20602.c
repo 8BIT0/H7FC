@@ -36,7 +36,7 @@ DevICM20602_TypeDef DevICM20602 = {
 static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
 {
     bool state = false;
-    uint8_t addr_tmp = addr | ICM20602_WRITE_MASK;
+    uint8_t addr_tmp = addr | ICM20602_READ_MASK;
     uint8_t read_tmp = 0;
 
     if (Obj == NULL || Obj->cs_ctl == NULL || Obj->bus_trans == NULL)
@@ -63,7 +63,7 @@ static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint
     if (Obj == NULL || Obj->cs_ctl == NULL || Obj->bus_trans == NULL)
         return false;
 
-    Tx_Tmp[0] = addr | ICM20602_WRITE_MASK;
+    Tx_Tmp[0] = addr | ICM20602_READ_MASK;
 
     /* cs low */
     Obj->cs_ctl(false);
@@ -194,21 +194,21 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
         return false;
     }
 
+    /* reset device */
+    if (!DevICM20602_SwReset(Obj))
+    {
+        Obj->error = ICM20602_Reset_Error;
+        return false;
+    }
+
     DevICM20602_Reg_Read(Obj, ICM20602_WHO_AM_I, &read_out);
     Obj->delay(10);
 
     ICM20602_ID = read_out;
 
-    if ((read_out != ICM20602_DEV_V1_ID) && (read_out != ICM20602_DEV_V2_ID))
+    if (read_out != ICM20602_DEV_ID)
     {
         Obj->error = ICM20602_DevID_Error;
-        return false;
-    }
-
-    /* reset device */
-    if (!DevICM20602_SwReset(Obj))
-    {
-        Obj->error = ICM20602_Reset_Error;
         return false;
     }
 

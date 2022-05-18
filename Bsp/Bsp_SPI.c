@@ -23,7 +23,7 @@ static const GPIO_InitTypeDef BspSPI_Pin_Cfg = {
     .Mode = GPIO_MODE_AF_PP,
     .Pin = 0,
     .Pull = GPIO_NOPULL,
-    .Speed = GPIO_SPEED_FREQ_HIGH,
+    .Speed = GPIO_SPEED_FREQ_LOW,
 };
 
 static void BspSPI_PinCLK_Enable(GPIO_TypeDef *port)
@@ -98,15 +98,9 @@ static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
 static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_instance)
 {
     SPI_HandleTypeDef SPI_InitStructure;
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
     if (spi_cfg.Instance == SPI1)
     {
-        // PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1;
-        // PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
-        // if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-        //     return false;
-
         __SPI1_CLK_ENABLE();
     }
     else if (spi_cfg.Instance == SPI2)
@@ -119,11 +113,6 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_Han
     }
     else if (spi_cfg.Instance == SPI4)
     {
-        // PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI4;
-        // PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_D2PCLK1;
-        // if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-        //     return false;
-
         __SPI4_CLK_ENABLE();
     }
     else if (spi_cfg.Instance == SPI5)
