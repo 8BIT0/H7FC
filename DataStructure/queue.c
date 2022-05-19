@@ -34,6 +34,7 @@ static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len)
     obj->lenth = len;
 
     obj->buff = (uint8_t *)Queue_Mem_Malloc(len);
+    memset(obj->buff, NULL, obj->lenth);
 
     if (obj->buff == NULL)
         return false;

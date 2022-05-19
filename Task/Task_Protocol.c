@@ -10,10 +10,11 @@
 #include "queue.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
-#include "Dev_ICM20602.h"
-#include "Dev_MPU6000.h"
+
+#define VCP_QUEUE_BUFF_SIZE 4096
 
 /* Send Queue */
+static QueueObj_TypeDef VCP_ProtoQueue;
 
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Init;
@@ -40,6 +41,9 @@ bool TaskProtocol_Init(void)
         return false;
     }
 
+    if (!Queue.create(&VCP_ProtoQueue, "VCP Send Queue", VCP_QUEUE_BUFF_SIZE))
+        return false;
+
     usb_setrec_callback(TaskProtocol_Rec);
     Shell_Init(TaskProtocol_TransBuff);
 
@@ -55,9 +59,6 @@ static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
     return true;
 }
 
-extern uint8_t ICM20602_ID;
-extern uint8_t MPU6000_ID;
-
 void TaskProtocol_Core(Task_Handle hdl)
 {
     DebugPin.ctl(Debug_PC3, true);
@@ -65,8 +66,6 @@ void TaskProtocol_Core(Task_Handle hdl)
     switch ((uint8_t)task_state)
     {
     case TaskProto_Core:
-        usb_printf("Icm20602: %2x \r\nMpu6000: %2x\r\n\r\n", ICM20602_ID, MPU6000_ID);
-
         TaaskProtocol_Main(NULL, 0);
         break;
 

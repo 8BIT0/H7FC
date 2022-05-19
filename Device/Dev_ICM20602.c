@@ -180,8 +180,6 @@ static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
     Obj->get_timestamp = get_time_stamp;
 }
 
-uint8_t ICM20602_ID = 0xFE;
-
 static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
 {
     uint8_t read_out = 0;
@@ -203,8 +201,6 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
 
     DevICM20602_Reg_Read(Obj, ICM20602_WHO_AM_I, &read_out);
     Obj->delay(10);
-
-    ICM20602_ID = read_out;
 
     if (read_out != ICM20602_DEV_ID)
     {

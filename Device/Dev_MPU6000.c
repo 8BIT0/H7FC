@@ -184,8 +184,6 @@ static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
     sensor_obj->get_timestamp = get_time_stamp;
 }
 
-uint8_t MPU6000_ID = 0x17;
-
 static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     uint8_t read_out = 0;
@@ -211,8 +209,6 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
         sensor_obj->error = MPU6000_BusCommunicate_Error;
         return false;
     }
-
-    MPU6000_ID = read_out;
 
     if (read_out != MPU6000_DEV_ID)
     {
