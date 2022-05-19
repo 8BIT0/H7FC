@@ -82,16 +82,15 @@ static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t len
     {
         if (len <= (obj->lenth - obj->size))
         {
-            /* has bug */
-            for (uint16_t index = 0; index < len; index++)
+            for (uint16_t i = 0; i < len; i++)
             {
-                obj->buff[(obj->end_pos + index) % obj->lenth] = data[index];
-            }
+                obj->end_pos = (obj->end_pos++) % obj->lenth;
 
-            obj->end_pos = (obj->end_pos + len) % obj->lenth;
-            obj->size += len;
-            Queue_UpdateState(obj);
-            /* has bug */
+                obj->buff[obj->end_pos] = data[i];
+                obj->size++;
+
+                Queue_UpdateState(obj);
+            }
         }
         else
             return Queue_overflow_w;
@@ -106,7 +105,7 @@ static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size
     {
         for (uint16_t i = 0; i < size; i++)
         {
-            obj->head_pos = (obj->head_pos + 1) % obj->lenth;
+            obj->head_pos = (obj->head_pos++) % obj->lenth;
 
             data[i] = obj->buff[obj->head_pos];
             obj->buff[obj->head_pos] = NULL;
