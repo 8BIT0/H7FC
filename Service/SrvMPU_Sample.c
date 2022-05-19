@@ -58,7 +58,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .prc_callback = NULL,
         .code = SrvIMU_PriCSPin_Init_Error,
         .desc = "Pri CS Pin Init Failed",
-        .out = true,
         .proc_type = Error_Proc_Ignore,
     },
     {
@@ -66,7 +65,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .prc_callback = NULL,
         .code = SrvIMU_PriExtiPin_Init_Error,
         .desc = "Pri Ext Pin Init Failed",
-        .out = true,
         .proc_type = Error_Proc_Ignore,
     },
     {
@@ -74,7 +72,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .prc_callback = NULL,
         .code = SrvIMU_PriBus_Init_Error,
         .desc = "Pri Bus Init Failed",
-        .out = true,
         .proc_type = Error_Proc_Ignore,
     },
     {
@@ -82,7 +79,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .prc_callback = SrvIMU_PriDev_InitError,
         .code = SrvIMU_PriDev_Init_Error,
         .desc = "Pri Dev Init Failed",
-        .out = true,
         .proc_type = Error_Proc_Immd,
     },
     {
@@ -90,7 +86,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .prc_callback = NULL,
         .code = SrvIMU_SecCSPin_Init_Error,
         .desc = "Sec CS Pin Init Failed",
-        .out = true,
         .proc_type = Error_Proc_Ignore,
     },
     {
@@ -98,7 +93,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .prc_callback = NULL,
         .code = SrvIMU_SecExtiPin_Init_Error,
         .desc = "Sec Ext Pin Init Failed",
-        .out = true,
         .proc_type = Error_Proc_Ignore,
     },
     {
@@ -106,7 +100,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .prc_callback = NULL,
         .code = SrvIMU_SecBus_Init_Error,
         .desc = "Sec Bus Init Failed",
-        .out = true,
         .proc_type = Error_Proc_Ignore,
     },
     {
@@ -114,7 +107,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .prc_callback = SrvIMU_SecDev_InitError,
         .code = SrvIMU_SecDev_Init_Error,
         .desc = "Sec Dev Init Failed",
-        .out = true,
         .proc_type = Error_Proc_Immd,
     },
     {
@@ -122,7 +114,6 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .prc_callback = SrvIMU_AllModule_InitError,
         .code = SrvIMU_AllModule_Init_Error,
         .desc = "All IMU Module Init Failed",
-        .out = true,
         .proc_type = Error_Proc_Immd,
     },
 };

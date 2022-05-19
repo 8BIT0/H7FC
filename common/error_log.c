@@ -98,6 +98,12 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
             {
                 /* reserve */
             }
+
+            if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out_callback)
+            {
+                /* out put error */
+                ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out_callback(p_arg, size);
+            }
         }
     }
 

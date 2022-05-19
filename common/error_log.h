@@ -27,7 +27,6 @@ typedef struct
     int16_t code;
     Error_Proc_List proc_type;
     bool triggered;
-    bool out;
     char *desc;
     error_proc_callback prc_callback;
     error_proc_callback out_callback;
