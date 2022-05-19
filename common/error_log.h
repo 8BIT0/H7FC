@@ -29,7 +29,8 @@ typedef struct
     bool triggered;
     bool out;
     char *desc;
-    error_proc_callback callback;
+    error_proc_callback prc_callback;
+    error_proc_callback out_callback;
     item_obj *item;
 } Error_Obj_Typedef;
 

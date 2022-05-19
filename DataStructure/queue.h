@@ -16,6 +16,7 @@ typedef enum
     Queue_overflow_r,
     Queue_empty,
     Queue_full,
+    Queue_obj_error,
 } Queue_state;
 
 typedef union

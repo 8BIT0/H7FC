@@ -87,8 +87,8 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
             if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Immd)
             {
                 /* trigger process callback */
-                if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->callback)
-                    ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->callback(NULL, 0);
+                if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback)
+                    ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(NULL, 0);
             }
             else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Next)
             {

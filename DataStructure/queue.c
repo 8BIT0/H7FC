@@ -11,7 +11,7 @@ static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj);
 /* external function */
 static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len);
 static bool Queue_Reset(QueueObj_TypeDef *obj);
-static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t len);
+static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
 static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
 
 /* extern virable */
@@ -77,13 +77,16 @@ static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj)
     return obj->state;
 }
 
-static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t len)
+static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size)
 {
+    if ((obj == NULL) || (obj->lenth == 0))
+        return Queue_obj_error;
+
     if ((obj->state == Queue_ok) || (obj->state == Queue_empty))
     {
-        if (len <= (obj->lenth - obj->size))
+        if (size <= (obj->lenth - obj->size))
         {
-            for (uint16_t i = 0; i < len; i++)
+            for (uint16_t i = 0; i < size; i++)
             {
                 obj->end_pos = (obj->end_pos++) % obj->lenth;
 
@@ -102,21 +105,27 @@ static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t len
 
 static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size)
 {
+    if ((obj == NULL) || (obj->lenth == 0))
+        return Queue_obj_error;
+
     if ((obj->state == Queue_ok) || (obj->state == Queue_full))
     {
-        for (uint16_t i = 0; i < size; i++)
+        if (size <= obj->size)
         {
-            obj->head_pos = (obj->head_pos++) % obj->lenth;
+            for (uint16_t i = 0; i < size; i++)
+            {
+                obj->head_pos = (obj->head_pos++) % obj->lenth;
 
-            data[i] = obj->buff[obj->head_pos];
-            obj->buff[obj->head_pos] = NULL;
-            obj->size--;
+                data[i] = obj->buff[obj->head_pos];
+                obj->buff[obj->head_pos] = NULL;
+                obj->size--;
 
-            Queue_UpdateState(obj);
+                Queue_UpdateState(obj);
+            }
         }
+        else
+            return Queue_overflow_r;
     }
-    else
-        return Queue_overflow_r;
 
     return obj->state;
 }
