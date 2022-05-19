@@ -63,7 +63,18 @@
                 "dev_icm20602.h": "c",
                 "imu_data.h": "c",
                 "stddef.h": "c",
-                "system_error": "c"
+                "system_error": "c",
+                "queue": "c",
+                "chrono": "c",
+                "__hash_table": "c",
+                "__split_buffer": "c",
+                "array": "c",
+                "bitset": "c",
+                "deque": "c",
+                "initializer_list": "c",
+                "stack": "c",
+                "unordered_map": "c",
+                "vector": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

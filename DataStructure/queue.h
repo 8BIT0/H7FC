@@ -4,29 +4,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include "mmu.h"
 
-#define QUEUE_MAX_SIZE 512
-#define MAX_QUEUE_NUM 10
-
-typedef enum
-{
-    Queue_FIFO,
-    Queue_LIFO,
-} QueueData_OutType;
+#define Queue_Mem_Malloc(x) MMU_Malloc(x)
+#define Queue_Mem_Free(x) MMU_Free(x)
 
 typedef enum
 {
     Queue_ok,
-    Queue_CheckErrorPos,
     Queue_overflow_w,
-    Queue_overlimit_r,
+    Queue_overflow_r,
     Queue_empty,
     Queue_full,
-    Queue_CreateFailed,
 } Queue_state;
-
-#define QUEUE_ERROR_TYPENUM Queue_CreateFailed - Queue_overflow_w
-#define GET_QUEUE_ERROR_INDEX(x) ((x - Queue_overflow_w) >= 0) ? (((x - Queue_overflow_w) < QUEUE_ERROR_TYPENUM) ? (x - Queue_overflow_w) : -2) : -1
 
 typedef union
 {
@@ -39,6 +29,7 @@ typedef union
     } reg;
 } Queue_CheckOut_u;
 
+#pragma pack(1)
 typedef struct
 {
     char *name;
@@ -47,21 +38,19 @@ typedef struct
     Queue_state state;
     uint16_t head_pos;
     uint16_t end_pos;
-    uint8_t buff[QUEUE_MAX_SIZE];
-    QueueData_OutType output_type;
-    uint32_t error_times[QUEUE_ERROR_TYPENUM];
-    uint32_t total_error_times;
-} queue_s;
+    uint8_t *buff;
+} QueueObj_TypeDef;
 
-Queue_state Queue_Init(queue_s *queue, char *name, QueueData_OutType type);
-Queue_state Queue_Reset(queue_s *queue);
-Queue_state Queue_Dump(queue_s *queue, uint8_t *out_data);
-Queue_state Queue_PushByte(queue_s *queue, uint8_t data);
-Queue_state Queue_PushLenByte(queue_s *queue, uint16_t len, uint8_t *data);
-Queue_state Queue_PopByteFromFront(queue_s *queue, uint8_t *out_data);
-Queue_state Queue_PopByteFromBack(queue_s *queue, uint8_t *out_data);
-Queue_state Queue_PopLenByteFromFront(queue_s *queue, uint16_t len, uint8_t *out_buff);
-Queue_state Queue_PopLenByteFromBack(queue_s *queue, uint16_t len, uint8_t *out_buff);
-Queue_CheckOut_u Queue_CheckData(queue_s queue, uint16_t index);
-void Queue_Output_ErrorTimes(queue_s queue);
+#pragma pack()
+
+typedef struct
+{
+    bool (*create)(QueueObj_TypeDef *obj, char *name, uint16_t len);
+    bool (*reset)(QueueObj_TypeDef *obj);
+    Queue_state (*push)(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
+    Queue_state (*pop)(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
+} Queue_TypeDef;
+
+extern Queue_TypeDef Queue;
+
 #endif

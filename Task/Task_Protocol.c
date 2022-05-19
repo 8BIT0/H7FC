@@ -7,10 +7,13 @@
 #include "debug_util.h"
 #include <stdio.h>
 #include "Dev_MPU6000.h"
+#include "queue.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
 #include "Dev_ICM20602.h"
 #include "Dev_MPU6000.h"
+
+/* Send Queue */
 
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Init;

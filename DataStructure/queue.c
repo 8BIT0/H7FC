@@ -1,291 +1,122 @@
 #include "queue.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdio.h>
 
-static uint8_t Cur_Crtd_Queue = 0;
+/* internal function */
+static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj);
 
-Queue_state Queue_Init(queue_s *queue, char *name, QueueData_OutType type)
+/* external function */
+static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len);
+static bool Queue_Reset(QueueObj_TypeDef *obj);
+static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t len);
+static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
+
+/* extern virable */
+Queue_TypeDef Queue = {
+    .create = Queue_Create,
+    .reset = Queue_Reset,
+    .push = Queue_Push,
+    .pop = Queue_Pop,
+};
+
+static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len)
 {
-    if (Cur_Crtd_Queue < MAX_QUEUE_NUM)
-    {
-        Cur_Crtd_Queue++;
-        queue->state = Queue_ok;
-    }
-    else
-        queue->state = Queue_CreateFailed;
+    if ((obj == NULL) || (len == 0))
+        return false;
 
-    memset(queue->buff, NULL, QUEUE_MAX_SIZE);
-    queue->name = name;
-    queue->end_pos = 0;
-    queue->head_pos = 0;
-    queue->size = 0;
-    queue->output_type = type;
+    obj->name = name;
+    obj->end_pos = 0;
+    obj->head_pos = 0;
+    obj->size = 0;
+    obj->lenth = len;
 
-    memset(queue->error_times, NULL, QUEUE_ERROR_TYPENUM);
+    obj->buff = (uint8_t *)Queue_Mem_Malloc(len);
 
-    queue->total_error_times = 0;
+    if (obj->buff == NULL)
+        return false;
 
-    return queue->state;
+    obj->state = Queue_empty;
+
+    return true;
 }
 
-Queue_state Queue_Reset(queue_s *queue)
+static bool Queue_Reset(QueueObj_TypeDef *obj)
 {
-    return Queue_init(queue, queue->name);
+    if ((obj == NULL) || (obj->buff == NULL) || (obj->lenth == 0))
+        return false;
+
+    obj->end_pos = 0;
+    obj->head_pos = 0;
+    obj->size = 0;
+
+    obj->state = Queue_empty;
+    memset(obj->buff, NULL, obj->lenth);
+
+    return true;
 }
 
-static Queue_state Queue_GetState(queue_s *queue)
+static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj)
 {
-    if ((queue->head_pos == queue->end_pos) || (queue->size == 0))
+    if ((obj->head_pos == obj->end_pos) || (obj->size == 0))
     {
-        queue->error_times[GET_QUEUE_ERROR_INDEX(Queue_empty)]++;
-        queue->total_error_times++;
-        queue->state = Queue_empty;
+        obj->state = Queue_empty;
         return Queue_empty;
     }
 
-    if (((queue->end_pos + 1) % QUEUE_MAX_SIZE) == queue->head_pos)
+    if (((obj->end_pos + 1) % obj->lenth) == obj->head_pos)
     {
-        queue->error_times[GET_QUEUE_ERROR_INDEX(Queue_full)]++;
-        queue->total_error_times++;
-        queue->state = Queue_full;
+        obj->state = Queue_full;
         return Queue_full;
     }
 
-    queue->state = Queue_ok;
-    return Queue_ok;
+    obj->state = Queue_ok;
+    return obj->state;
 }
 
-Queue_state Queue_PushByte(queue_s *queue, uint8_t data)
+static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t len)
 {
-    if (queue->state == Queue_ok)
+    if ((obj->state == Queue_ok) || (obj->state == Queue_empty))
     {
-        queue->buff[queue->end_pos] = data;
-
-        queue->end_pos = (queue->end_pos + 1) % QUEUE_MAX_SIZE;
-        queue->size++;
-
-        Queue_GetState(queue);
-    }
-
-    return queue->state;
-}
-
-Queue_state Queue_PushLenByte(queue_s *queue, uint16_t len, uint8_t *data)
-{
-    if ((queue->state == Queue_ok) || (queue->state == Queue_empty))
-    {
-        if (len <= (QUEUE_MAX_SIZE - queue->size))
+        if (len <= (obj->lenth - obj->size))
         {
+            /* has bug */
             for (uint16_t index = 0; index < len; index++)
             {
-                queue->buff[queue->end_pos + index] = data[index];
+                obj->buff[(obj->end_pos + index) % obj->lenth] = data[index];
             }
 
-            queue->end_pos = (queue->end_pos + len) % QUEUE_MAX_SIZE;
-            queue->size += len;
-            Queue_GetState(queue);
+            obj->end_pos = (obj->end_pos + len) % obj->lenth;
+            obj->size += len;
+            Queue_UpdateState(obj);
+            /* has bug */
         }
         else
-        {
-            queue->error_times[GET_QUEUE_ERROR_INDEX(Queue_overflow_w)]++;
-            queue->total_error_times++;
             return Queue_overflow_w;
-        }
     }
 
-    return queue->state;
+    return obj->state;
 }
 
-Queue_state Queue_PopByteFromFront(queue_s *queue, uint8_t *out_data)
+static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size)
 {
-    if ((queue->state == Queue_ok) || (queue->state == Queue_full))
+    if ((obj->state == Queue_ok) || (obj->state == Queue_full))
     {
-        *out_data = queue->buff[queue->head_pos];
-        queue->buff[queue->head_pos] = NULL;
-
-        queue->head_pos == (queue->head_pos + 1) % QUEUE_MAX_SIZE;
-        queue->size--;
-
-        Queue_GetState(queue);
-    }
-
-    return queue->state;
-}
-
-// still have bug in this func fix when i start to use it hahahahha boooyaaaaa
-Queue_state Queue_PopByteFromBack(queue_s *queue, uint8_t *out_data)
-{
-    if ((queue->state == Queue_ok) || (queue->state == Queue_full))
-    {
-        *out_data = queue->buff[queue->end_pos - 1];
-        queue->buff[queue->end_pos - 1] = NULL;
-
-        queue->end_pos = (queue->end_pos - 1) % QUEUE_MAX_SIZE;
-        queue->size--;
-
-        Queue_GetState(queue);
-    }
-
-    return queue->state;
-}
-
-Queue_state Queue_Dump(queue_s *queue, uint8_t *out_data)
-{
-
-    for (uint16_t index = 0; index < queue->size; index++)
-    {
-        if (queue->output_type == Queue_FIFO)
+        for (uint16_t i = 0; i < size; i++)
         {
-            out_data[index] = queue->buff[index];
-        }
-        else
-        {
-            out_data[index] = queue->buff[queue->size - 1 - index];
-        }
+            obj->head_pos = (obj->head_pos + 1) % obj->lenth;
 
-        queue->buff[index] = NULL;
-    }
+            data[i] = obj->buff[obj->head_pos];
+            obj->buff[obj->head_pos] = NULL;
+            obj->size--;
 
-    queue->size = 0;
-    queue->end_pos = 0;
-    queue->head_pos = 0;
-    queue->state = Queue_empty;
-
-    return queue->state;
-}
-
-Queue_state Queue_PopLenByteFromFront(queue_s *queue, uint16_t len, uint8_t *out_buff)
-{
-    static uint32_t test = 0;
-    if ((queue->state == Queue_ok) || (queue->state == Queue_full))
-    {
-        if (len <= queue->size)
-        {
-            for (uint16_t index = 0; index < len; index++)
-            {
-                if (queue->output_type == Queue_FIFO)
-                {
-                    // FIFO
-                    out_buff[index] = queue->buff[queue->head_pos + index];
-                    queue->buff[queue->head_pos + index] = NULL;
-                }
-                else
-                {
-                    // LIFO
-                    out_buff[index] = queue->buff[queue->head_pos + len - 1 - index];
-                    queue->buff[queue->head_pos + len - 1 - index] = NULL;
-                }
-            }
-
-            queue->size -= len;
-            queue->head_pos = (queue->head_pos + len) % QUEUE_MAX_SIZE;
-
-            Queue_GetState(queue);
-            return Queue_ok;
-        }
-        else
-        {
-            test++;
-            // count error num
-            queue->error_times[GET_QUEUE_ERROR_INDEX(Queue_overlimit_r)]++;
-            queue->total_error_times++;
-            return Queue_overlimit_r;
+            Queue_UpdateState(obj);
         }
     }
     else
-    {
-        return Queue_empty;
-    }
-}
+        return Queue_overflow_r;
 
-// func describe same as Queue_PopCharFromBack
-Queue_state Queue_PopLenByteFromBack(queue_s *queue, uint16_t len, uint8_t *out_buff)
-{
-    if ((queue->state == Queue_ok) || (queue->state == Queue_full))
-    {
-        if (len < queue->size)
-        {
-            for (uint16_t index = 0; index < len; index++)
-            {
-                if (queue->output_type == Queue_LIFO)
-                {
-                    out_buff[index] = queue->buff[(queue->end_pos - 1) - index];
-                    queue->buff[(queue->end_pos - 1) - index] = NULL;
-                }
-                else
-                {
-                    out_buff[index] = queue->buff[(queue->end_pos - 1 - len) + index];
-                    queue->buff[(queue->end_pos - 1 - len) + index] = NULL;
-                }
-            }
-
-            queue->size -= len;
-            queue->end_pos = (queue->end_pos - len) % QUEUE_MAX_SIZE;
-
-            Queue_GetState(queue);
-        }
-        else
-        {
-            queue->error_times[GET_QUEUE_ERROR_INDEX(Queue_overlimit_r)]++;
-            queue->total_error_times++;
-            return Queue_overlimit_r;
-        }
-    }
-
-    return queue->state;
-}
-
-Queue_CheckOut_u Queue_CheckData(queue_s queue, uint16_t index)
-{
-    Queue_CheckOut_u Data_tmp;
-    Data_tmp.reg.value = 0;
-
-    if (queue.state != Queue_empty)
-    {
-        if ((index < QUEUE_MAX_SIZE) && (index <= queue.size))
-        {
-            Data_tmp.reg.state = Queue_ok;
-            Data_tmp.reg.value = queue.buff[(index + queue.head_pos) % QUEUE_MAX_SIZE];
-        }
-        else
-        {
-            Data_tmp.reg.state = Queue_CheckErrorPos;
-        }
-    }
-    else
-    {
-        Data_tmp.reg.state = Queue_empty;
-    }
-
-    return Data_tmp;
-}
-
-void Queue_Output_ErrorTimes(queue_s queue)
-{
-    if (queue.total_error_times)
-    {
-        for (uint8_t i = 0; i < QUEUE_ERROR_TYPENUM; i++)
-        {
-            if (queue.error_times[i])
-            {
-                switch (i + Queue_overflow_w)
-                {
-                case Queue_overflow_w:
-                    break;
-
-                case Queue_overlimit_r:
-                    break;
-
-                case Queue_empty:
-                    break;
-
-                case Queue_full:
-                    break;
-
-                case Queue_CreateFailed:
-                    break;
-                }
-            }
-        }
-    }
+    return obj->state;
 }
