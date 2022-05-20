@@ -20,12 +20,6 @@ typedef struct
     uint16_t pin;
     GPIO_PinState init_state;
 } BspGPIO_Obj_TypeDef;
-
-typedef struct
-{
-    GPIO_TypeDef *port;
-    uint16_t pin;
-} BspGPIO_ExtiObj_TypeDef;
 #pragma pack()
 
 typedef struct

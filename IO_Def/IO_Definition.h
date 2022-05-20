@@ -61,6 +61,10 @@
 #define ICM20602_MOSI_PORT GPIOE
 #define ICM20602_MOSI_PIN GPIO_PIN_14
 
+/* USB Detected Pin */
+#define USB_DETECT_INT_PORT GPIOE
+#define USB_DETECT_INT_PIN GPIO_PIN_2
+
 extern DebugPinObj_TypeDef Debug_PC0;
 extern DebugPinObj_TypeDef Debug_PC1;
 extern DebugPinObj_TypeDef Debug_PC2;
@@ -75,9 +79,10 @@ extern DevLedObj_TypeDef Led1;
 extern DevLedObj_TypeDef Led2;
 extern DevLedObj_TypeDef Led3;
 
+extern BspGPIO_Obj_TypeDef USB_DctPin;
 extern BspGPIO_Obj_TypeDef MPU6000_CSPin;
-extern BspGPIO_Obj_TypeDef MPU6000_INTPin;
 extern BspGPIO_Obj_TypeDef ICM20602_CSPin;
+extern BspGPIO_Obj_TypeDef MPU6000_INTPin;
 extern BspGPIO_Obj_TypeDef ICM20602_INTPin;
 
 extern BspSPI_PinConfig_TypeDef MPU6000_BusPin;
