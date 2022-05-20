@@ -69,6 +69,7 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
     return true;
 }
 
+/* still in half way */
 bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
 {
     int16_t code_tmp = code;
@@ -110,6 +111,7 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
     return true;
 }
 
+/* still in half way */
 bool Error_Proc(Error_Handler hdl)
 {
     if (hdl == 0)

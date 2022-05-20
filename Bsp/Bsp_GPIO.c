@@ -15,12 +15,16 @@ static bool BspGPIO_Output_Init(BspGPIO_Obj_TypeDef IO_Obj);
 static bool BspGPIO_Read(uint32_t port, uint16_t pin);
 static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state);
 static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
+static bool BspGPIO_ResetExtiCallback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
+static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode);
 
 BspGPIO_TypeDef BspGPIO = {
     .exti_init = BspGPIO_ExtiInit,
     .out_init = BspGPIO_Output_Init,
     .read = BspGPIO_Read,
     .write = BspGPIO_Write,
+    .set_exti_callback = BspGPIO_ResetExtiCallback,
+    .set_exti_mode = BspGPIO_ExtiSetMode,
 };
 
 static uint8_t BspGPIO_GetEXTI_Index(uint16_t exti_id)
@@ -104,6 +108,57 @@ static IRQn_Type BspGPIO_GetExti_IRQnID(BspGPIO_Obj_TypeDef IO_Obj)
         break;
     }
 }
+
+static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode)
+{
+    uint32_t mode_val;
+    GPIO_InitTypeDef cfg_structure;
+
+    if (IO_Obj.port == NULL)
+        return false;
+
+    HAL_NVIC_DisableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
+
+    switch ((uint8_t)mode)
+    {
+        case GPIO_Exti_Rasing:
+            mode_val = GPIO_MODE_IT_RISING;
+        break;
+
+        case GPIO_Exti_Falling:
+            mode_val = GPIO_MODE_IT_FALLING;
+        break;
+
+        case GPIO_Exti_TwoEdge:
+            mode_val = GPIO_MODE_IT_RISING_FALLING;
+        break;
+
+        default:
+            mode_val = GPIO_MODE_IT_FALLING;
+        break;
+    }
+
+
+    BspGPIO_CLK_Enable(IO_Obj.port);
+
+    cfg_structure.Pin = IO_Obj.pin;
+    cfg_structure.Mode = mode_val;
+    cfg_structure.Pull = GPIO_NOPULL;
+    cfg_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+
+    HAL_GPIO_WritePin(IO_Obj.port, IO_Obj.pin, IO_Obj.init_state);
+    HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
+
+    HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 3, 0);
+    HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
+}
+
+static bool BspGPIO_ResetExtiCallback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
+{
+    /* set exti callback */
+    EXTI_CallBack_List[BspGPIO_GetEXTI_Index(IO_Obj.pin)] = callback;
+}
+
 
 static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
 {

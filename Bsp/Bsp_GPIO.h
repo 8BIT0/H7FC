@@ -13,6 +13,13 @@
 #define GPIO_EXTI_SUM 16
 typedef void (*EXTI_Callback)(void);
 
+typedef enum
+{
+    GPIO_Exti_Rasing = 1,
+    GPIO_Exti_Falling,
+    GPIO_Exti_TwoEdge,
+}BspGPOP_ExtiMode_List;
+
 #pragma pack(1)
 typedef struct
 {
@@ -27,6 +34,8 @@ typedef struct
     bool (*exti_init)(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
     bool (*out_init)(BspGPIO_Obj_TypeDef IO_Obj);
     bool (*read)(uint32_t port, uint16_t pin);
+    bool (*set_exti_callback)(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
+    bool (*set_exti_mode)(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode);
     void (*write)(uint32_t port, uint16_t pin, bool state);
 } BspGPIO_TypeDef;
 
