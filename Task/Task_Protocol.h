@@ -30,6 +30,5 @@ typedef enum
 
 bool TaskProtocol_Init(void);
 void TaskProtocol_Core(Task_Handle hdl);
-void TaskProtocol_GetSrvMPU_InitState(int8_t state);
 
 #endif

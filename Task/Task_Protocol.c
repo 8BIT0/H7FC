@@ -1,3 +1,7 @@
+/*
+*  coder: 8_B!T0
+*  bref: use this task make FC communicate to computer configuration
+*/
 #include "Task_Protocol.h"
 #include "scheduler.h"
 #include "shell.h"
@@ -20,18 +24,11 @@ static QueueObj_TypeDef VCP_ProtoQueue;
 static TaskProto_State_List task_state = TaskProto_Init;
 static bool Shell_Mode = false;
 
-/* test */
-static int8_t SrvIMU_InitState = 0;
-
 /* internal function */
 static void TaaskProtocol_Main(uint8_t *data, uint16_t size);
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 
-void TaskProtocol_GetSrvMPU_InitState(int8_t state)
-{
-    SrvIMU_InitState = state;
-}
 
 bool TaskProtocol_Init(void)
 {
