@@ -4,10 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include "mmu.h"
-
-#define Queue_Mem_Malloc(x) MMU_Malloc(x)
-#define Queue_Mem_Free(x) MMU_Free(x)
 
 typedef enum
 {

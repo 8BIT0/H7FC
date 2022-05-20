@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
+#include "mmu.h"
+
+#define Queue_Mem_Malloc(x) MMU_Malloc(x)
+#define Queue_Mem_Free(x) MMU_Free(x)
 
 /* internal function */
 static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj);
