@@ -110,6 +110,10 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
                 /* trigger process callback */
                 if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback)
                     ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(code, NULL, 0);
+
+                if (ErrorQueue_CreateState)
+                    /* Push Error describe into Error_Queue */
+                    Queue.push(&ErrorQueue, ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
             }
             else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Next)
             {
@@ -125,11 +129,11 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
             {
                 if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out && out_callback)
                     /* out put error */
-                    out_callback(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data), strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)));
+                    out_callback(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
 
                 if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->log && log_callback)
                     /* log error */
-                    log_callback(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data), strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)));
+                    log_callback(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
             }
         }
     }
