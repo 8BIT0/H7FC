@@ -114,6 +114,7 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
             else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Next)
             {
                 /* add error into linked list */
+                /* reserve */
             }
             else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Ignore)
             {
@@ -136,12 +137,14 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
     return true;
 }
 
-static bool Error_Set_OutCallback(void)
+void Error_Set_OutCallback(error_port_callback out)
 {
+    out_callback = out;
 }
 
-static bool Error_Log_OutCallback(void)
+void Error_Log_OutCallback(error_port_callback log)
 {
+    log_callback = log;
 }
 
 /* still in half way */
