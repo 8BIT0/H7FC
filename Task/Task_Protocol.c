@@ -1,7 +1,7 @@
 /*
-*  coder: 8_B!T0
-*  bref: use this task make FC communicate to computer configuration
-*/
+ *  coder: 8_B!T0
+ *  bref: use this task make FC communicate to computer configuration
+ */
 #include "Task_Protocol.h"
 #include "scheduler.h"
 #include "shell.h"
@@ -41,7 +41,7 @@ bool TaskProtocol_Init(void)
     }
 
     /* init USB connect detect pin */
-    BspGPIO.exti_init(USB_DctPin, TaskProtocol_PlugDetect_Callback);
+    // BspGPIO.in_init(USB_DctPin);
 
     if (!Queue.create(&VCP_ProtoQueue, "VCP Send Queue", VCP_QUEUE_BUFF_SIZE))
         return false;
@@ -63,6 +63,8 @@ static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
 
 void TaskProtocol_Core(Task_Handle hdl)
 {
+    static uint32_t a, b = 0;
+
     DebugPin.ctl(Debug_PC3, true);
 
     switch ((uint8_t)task_state)
@@ -93,7 +95,9 @@ static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
 
 static void TaskProtocol_PlugDetect_Callback(void)
 {
+    static uint8_t a;
 
+    a++;
 }
 
 static void shell_test(void)

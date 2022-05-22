@@ -1,6 +1,9 @@
 #include "error_log.h"
 #include "mmu.h"
 
+/* internal vriable */
+static uint8_t Error_DescBuf[ERROR_DESC_BUFFSIZE] = {0};
+
 static data_handle Error_InsertPriority_Compare(data_handle l_addr, data_handle r_addr)
 {
     volatile int16_t l_code = 0;
@@ -89,7 +92,7 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
             {
                 /* trigger process callback */
                 if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback)
-                    ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(NULL, 0);
+                    ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(code, NULL, 0);
             }
             else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Next)
             {
@@ -100,15 +103,22 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
                 /* reserve */
             }
 
-            if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out_callback)
+            if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out)
             {
                 /* out put error */
-                ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out_callback(p_arg, size);
             }
         }
     }
 
     return true;
+}
+
+static bool Error_Out(void)
+{
+}
+
+static bool Error_Log(void)
+{
 }
 
 /* still in half way */

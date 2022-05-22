@@ -18,9 +18,9 @@ typedef enum
     GPIO_Exti_Rasing = 1,
     GPIO_Exti_Falling,
     GPIO_Exti_TwoEdge,
-}BspGPOP_ExtiMode_List;
+} BspGPOP_ExtiMode_List;
 
-#pragma pack(1)
+#pragma pack(4)
 typedef struct
 {
     GPIO_TypeDef *port;
@@ -33,7 +33,8 @@ typedef struct
 {
     bool (*exti_init)(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
     bool (*out_init)(BspGPIO_Obj_TypeDef IO_Obj);
-    bool (*read)(uint32_t port, uint16_t pin);
+    bool (*in_init)(BspGPIO_Obj_TypeDef IO_Obj);
+    bool (*read)(BspGPIO_Obj_TypeDef IO_Obj);
     bool (*set_exti_callback)(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
     bool (*set_exti_mode)(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode);
     void (*write)(uint32_t port, uint16_t pin, bool state);

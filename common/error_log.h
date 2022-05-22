@@ -7,10 +7,12 @@
 #include "binary_tree.h"
 #include "linked_list.h"
 
+#define ERROR_DESC_BUFFSIZE 1024
+
 #define ErrorHandleToObj(x) ((ErrorTree_TypeDef *)x)
 #define ErrorTreeDataToObj(x) ((Error_Obj_Typedef *)x)
 
-typedef void (*error_proc_callback)(uint8_t *p_data, uint16_t size);
+typedef void (*error_proc_callback)(int16_t code, uint8_t *p_data, uint16_t size);
 
 typedef uint32_t Error_Handler;
 
@@ -28,8 +30,9 @@ typedef struct
     Error_Proc_List proc_type;
     bool triggered;
     char *desc;
+    bool out;
+    bool log;
     error_proc_callback prc_callback;
-    error_proc_callback out_callback;
     item_obj *item;
 } Error_Obj_Typedef;
 

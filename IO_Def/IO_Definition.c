@@ -122,7 +122,7 @@ BspSPI_PinConfig_TypeDef ICM20602_BusPin = {
 };
 
 BspGPIO_Obj_TypeDef USB_DctPin = {
-    .init_state = true,
+    .init_state = false,
     .pin = USB_DETECT_INT_PIN,
     .port = USB_DETECT_INT_PORT,
 };

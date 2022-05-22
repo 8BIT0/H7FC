@@ -46,71 +46,78 @@ static DevMPU6000Obj_TypeDef MPU6000Obj;
 static DevICM20602Obj_TypeDef ICM20602Obj;
 
 /************************************************************************ Error Tree Item ************************************************************************/
-static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size);
-static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size);
-static void SrvIMU_AllModule_InitError(uint8_t *p_arg, uint16_t size);
+static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
+static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
+static void SrvIMU_AllModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size);
 static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size);
 
 static Error_Obj_Typedef SrvIMU_ErrorList[] = {
     {
-        .out_callback = NULL,
+        .out = false,
+        .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_PriCSPin_Init_Error,
         .desc = "Pri CS Pin Init Failed",
         .proc_type = Error_Proc_Ignore,
     },
     {
-        .out_callback = NULL,
+        .out = false,
+        .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_PriExtiPin_Init_Error,
         .desc = "Pri Ext Pin Init Failed",
         .proc_type = Error_Proc_Ignore,
     },
     {
-        .out_callback = NULL,
+        .out = false,
+        .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_PriBus_Init_Error,
         .desc = "Pri Bus Init Failed",
         .proc_type = Error_Proc_Ignore,
     },
     {
-        .out_callback = NULL,
+        .out = false,
+        .log = false,
         .prc_callback = SrvIMU_PriDev_InitError,
         .code = SrvIMU_PriDev_Init_Error,
         .desc = "Pri Dev Init Failed",
         .proc_type = Error_Proc_Immd,
     },
     {
-        .out_callback = NULL,
+        .out = false,
+        .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_SecCSPin_Init_Error,
         .desc = "Sec CS Pin Init Failed",
         .proc_type = Error_Proc_Ignore,
     },
     {
-        .out_callback = NULL,
+        .out = false,
         .prc_callback = NULL,
         .code = SrvIMU_SecExtiPin_Init_Error,
         .desc = "Sec Ext Pin Init Failed",
         .proc_type = Error_Proc_Ignore,
     },
     {
-        .out_callback = NULL,
+        .out = false,
+        .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_SecBus_Init_Error,
         .desc = "Sec Bus Init Failed",
         .proc_type = Error_Proc_Ignore,
     },
     {
-        .out_callback = NULL,
+        .out = false,
         .prc_callback = SrvIMU_SecDev_InitError,
         .code = SrvIMU_SecDev_Init_Error,
         .desc = "Sec Dev Init Failed",
         .proc_type = Error_Proc_Immd,
     },
     {
-        .out_callback = NULL,
+        .out = false,
+        .log = false,
         .prc_callback = SrvIMU_AllModule_InitError,
         .code = SrvIMU_AllModule_Init_Error,
         .desc = "All IMU Module Init Failed",
@@ -399,21 +406,21 @@ static void SrvIMU_SecIMU_ExtiCallback(void)
 }
 
 /*************************************************************** Error Process Callback *******************************************************************************/
-static void SrvIMU_PriDev_InitError(uint8_t *p_arg, uint16_t size)
+static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
     static uint8_t a;
 
     a++;
 }
 
-static void SrvIMU_SecDev_InitError(uint8_t *p_arg, uint16_t size)
+static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
     static uint8_t a;
 
     a++;
 }
 
-static void SrvIMU_AllModule_InitError(uint8_t *p_arg, uint16_t size)
+static void SrvIMU_AllModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
     static uint8_t a;
 

@@ -12,7 +12,8 @@ static IRQn_Type BspGPIO_GetExti_IRQnID(BspGPIO_Obj_TypeDef IO_Obj);
 
 /* external function */
 static bool BspGPIO_Output_Init(BspGPIO_Obj_TypeDef IO_Obj);
-static bool BspGPIO_Read(uint32_t port, uint16_t pin);
+static bool BspGPIO_Input_Init(BspGPIO_Obj_TypeDef IO_Obj);
+static bool BspGPIO_Read(BspGPIO_Obj_TypeDef IO_Obj);
 static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state);
 static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
 static bool BspGPIO_ResetExtiCallback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
@@ -20,6 +21,7 @@ static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_Lis
 
 BspGPIO_TypeDef BspGPIO = {
     .exti_init = BspGPIO_ExtiInit,
+    .in_init = BspGPIO_Input_Init,
     .out_init = BspGPIO_Output_Init,
     .read = BspGPIO_Read,
     .write = BspGPIO_Write,
@@ -121,23 +123,22 @@ static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_Lis
 
     switch ((uint8_t)mode)
     {
-        case GPIO_Exti_Rasing:
-            mode_val = GPIO_MODE_IT_RISING;
+    case GPIO_Exti_Rasing:
+        mode_val = GPIO_MODE_IT_RISING;
         break;
 
-        case GPIO_Exti_Falling:
-            mode_val = GPIO_MODE_IT_FALLING;
+    case GPIO_Exti_Falling:
+        mode_val = GPIO_MODE_IT_FALLING;
         break;
 
-        case GPIO_Exti_TwoEdge:
-            mode_val = GPIO_MODE_IT_RISING_FALLING;
+    case GPIO_Exti_TwoEdge:
+        mode_val = GPIO_MODE_IT_RISING_FALLING;
         break;
 
-        default:
-            mode_val = GPIO_MODE_IT_FALLING;
+    default:
+        mode_val = GPIO_MODE_IT_FALLING;
         break;
     }
-
 
     BspGPIO_CLK_Enable(IO_Obj.port);
 
@@ -159,6 +160,21 @@ static bool BspGPIO_ResetExtiCallback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback 
     EXTI_CallBack_List[BspGPIO_GetEXTI_Index(IO_Obj.pin)] = callback;
 }
 
+static bool BspGPIO_Input_Init(BspGPIO_Obj_TypeDef IO_Obj)
+{
+    GPIO_InitTypeDef cfg_structure;
+
+    BspGPIO_CLK_Enable(IO_Obj.port);
+
+    cfg_structure.Pin = IO_Obj.pin;
+    cfg_structure.Mode = GPIO_MODE_INPUT;
+    cfg_structure.Pull = GPIO_PULLDOWN;
+    cfg_structure.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
+
+    return true;
+}
 
 static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
 {
@@ -180,7 +196,7 @@ static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
     /* set exti callback */
     EXTI_CallBack_List[BspGPIO_GetEXTI_Index(IO_Obj.pin)] = callback;
 
-    HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 3, 0);
+    HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 4, 0);
     HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
 
     return true;
@@ -206,9 +222,9 @@ static bool BspGPIO_Output_Init(BspGPIO_Obj_TypeDef IO_Obj)
     return true;
 }
 
-static bool BspGPIO_Read(uint32_t port, uint16_t pin)
+static bool BspGPIO_Read(BspGPIO_Obj_TypeDef IO_Obj)
 {
-    return HAL_GPIO_ReadPin(port, pin);
+    return HAL_GPIO_ReadPin(IO_Obj.port, IO_Obj.pin);
 }
 
 static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state)
