@@ -1,8 +1,19 @@
 #include "error_log.h"
+#include "queue.h"
 #include "mmu.h"
 
 /* internal vriable */
-static uint8_t Error_DescBuf[ERROR_DESC_BUFFSIZE] = {0};
+static bool ErrorQueue_Init = false;
+static bool ErrorQueue_CreateState = false;
+static QueueObj_TypeDef ErrorQueue;
+static Error_OutState_List ErrorOut_State = Error_OutFree;
+static Error_LogState_List ErrorLog_State = Error_LogFree;
+static error_port_callback out_callback = NULL;
+static error_port_callback log_callback = NULL;
+
+/* internal function */
+static bool Error_Out(void);
+static bool Error_Log(void);
 
 static data_handle Error_InsertPriority_Compare(data_handle l_addr, data_handle r_addr)
 {
@@ -42,6 +53,12 @@ static uint8_t Error_Search(data_handle l_addr, data_handle r_addr)
 Error_Handler ErrorTree_Create(char *name)
 {
     volatile ErrorTree_TypeDef *Error_Tmp = NULL;
+
+    if (!ErrorQueue_Init)
+    {
+        ErrorQueue_CreateState = Queue.create(&ErrorQueue, "ErrorQueue", ERROR_DESC_BUFFSIZE);
+        ErrorQueue_Init = true;
+    }
 
     Error_Tmp = (ErrorTree_TypeDef *)MMU_Malloc(sizeof(ErrorTree_TypeDef));
 
@@ -103,9 +120,15 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
                 /* reserve */
             }
 
-            if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out)
+            if (ErrorQueue_CreateState)
             {
-                /* out put error */
+                if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out && out_callback)
+                    /* out put error */
+                    out_callback(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data), strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)));
+
+                if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->log && log_callback)
+                    /* log error */
+                    log_callback(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data), strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)));
             }
         }
     }
@@ -113,11 +136,11 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
     return true;
 }
 
-static bool Error_Out(void)
+static bool Error_Set_OutCallback(void)
 {
 }
 
-static bool Error_Log(void)
+static bool Error_Log_OutCallback(void)
 {
 }
 

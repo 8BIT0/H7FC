@@ -12,6 +12,7 @@
 #define ErrorHandleToObj(x) ((ErrorTree_TypeDef *)x)
 #define ErrorTreeDataToObj(x) ((Error_Obj_Typedef *)x)
 
+typedef void (*error_port_callback)(uint8_t *p_data, uint16_t size);
 typedef void (*error_proc_callback)(int16_t code, uint8_t *p_data, uint16_t size);
 
 typedef uint32_t Error_Handler;
@@ -22,6 +23,24 @@ typedef enum
     Error_Proc_Next,
     Error_Proc_Ignore,
 } Error_Proc_List;
+
+typedef enum
+{
+    Error_OutFree = 0,
+    Error_OutFailed,
+    Error_OutDone,
+    Error_OutBusy,
+    Error_Out_NullCallback,
+} Error_OutState_List;
+
+typedef enum
+{
+    Error_LogFree = 0,
+    Error_LogFailed,
+    Error_LogDone,
+    Error_LogBusy,
+    Error_Log_NullCallback,
+} Error_LogState_List;
 
 #pragma pack(1)
 typedef struct
