@@ -19,6 +19,12 @@ typedef uint32_t Error_Handler;
 
 typedef enum
 {
+    Error_Out_Callback = 1,
+    Error_Log_Callback,
+} ErrorLog_Callback_Type_List;
+
+typedef enum
+{
     Error_Proc_Immd = 0,
     Error_Proc_Next,
     Error_Proc_Ignore,
@@ -49,9 +55,16 @@ typedef union
     {
         uint8_t out_reg : 4;
         uint8_t log_reg : 4;
+        uint16_t len : 16;
     } section;
-    uint8_t val;
+    uint32_t val;
 } Error_Port_Reg;
+
+typedef struct
+{
+    uint8_t *p_data;
+    uint16_t size;
+} ErrorStream_TypeDef;
 
 typedef struct
 {
@@ -73,11 +86,15 @@ typedef struct
 } ErrorTree_TypeDef;
 #pragma pack()
 
-Error_Handler ErrorTree_Create(char *name);
-bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *obj, uint16_t num);
-bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size);
-bool Error_Proc(Error_Handler hdl);
-void Error_Set_OutCallback(error_port_callback out);
-void Error_Log_OutCallback(error_port_callback log);
+typedef struct
+{
+    Error_Handler (*create)(char *name);
+    bool (*registe)(Error_Handler hdl, Error_Obj_Typedef *obj, uint16_t num);
+    bool (*trigger)(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size);
+    bool (*proc)(Error_Handler hdl);
+    void (*set_callback)(ErrorLog_Callback_Type_List type, error_port_callback callback);
+} ErrorLog_TypeDef;
+
+extern ErrorLog_TypeDef ErrorLog;
 
 #endif

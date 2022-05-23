@@ -2,6 +2,13 @@
 #include "queue.h"
 #include "mmu.h"
 
+/*
+error data in queue
+--------------------------------------------------------------------------------------------
+| out state | log state | info size |                    error describe                    |
+--------------------------------------------------------------------------------------------
+*/
+
 /* internal vriable */
 static bool ErrorQueue_Init = false;
 static bool ErrorQueue_CreateState = false;
@@ -16,6 +23,21 @@ static uint32_t ErrorOut_Cnt = 0;
 /* internal function */
 static bool Error_Out(void);
 static bool Error_Log(void);
+
+/* external function */
+static Error_Handler ErrorTree_Create(char *name);
+static bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *obj, uint16_t num);
+static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size);
+static bool Error_Proc(Error_Handler hdl);
+static void Error_Set_Callback(ErrorLog_Callback_Type_List type, error_port_callback callback);
+
+ErrorLog_TypeDef ErrorLog = {
+    .create = ErrorTree_Create,
+    .proc = Error_Proc,
+    .registe = Error_Register,
+    .trigger = Error_Trigger,
+    .set_callback = Error_Set_Callback,
+};
 
 static data_handle Error_InsertPriority_Compare(data_handle l_addr, data_handle r_addr)
 {
@@ -52,7 +74,7 @@ static uint8_t Error_Search(data_handle l_addr, data_handle r_addr)
         return Tree_Search_D;
 }
 
-Error_Handler ErrorTree_Create(char *name)
+static Error_Handler ErrorTree_Create(char *name)
 {
     volatile ErrorTree_TypeDef *Error_Tmp = NULL;
 
@@ -78,7 +100,7 @@ Error_Handler ErrorTree_Create(char *name)
     return (Error_Handler)Error_Tmp;
 }
 
-bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num)
+static bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num)
 {
     item_obj *linked_item = NULL;
 
@@ -92,7 +114,7 @@ bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num
 }
 
 /* still in half way */
-bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
+static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
 {
     int16_t code_tmp = code;
     data_handle match_data = 0;
@@ -128,6 +150,7 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
 
             port_reg.section.log_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->log;
             port_reg.section.out_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out;
+            port_reg.section.len = strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc);
 
             if (ErrorQueue_CreateState && port_reg.val)
             {
@@ -150,19 +173,31 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
     return true;
 }
 
-void Error_Set_OutCallback(error_port_callback out)
+static void Error_Set_Callback(ErrorLog_Callback_Type_List type, error_port_callback callback)
 {
-    out_callback = out;
-}
+    switch (type)
+    {
+    case Error_Out_Callback:
+        out_callback = callback;
+        break;
 
-void Error_Log_OutCallback(error_port_callback log)
-{
-    log_callback = log;
-}
+    case Error_Log_Callback:
+        log_callback = callback;
+        break;
 
+    default:
+        break;
+    }
+}
 /* still in half way */
-bool Error_Proc(Error_Handler hdl)
+static bool Error_Proc(Error_Handler hdl)
 {
+    ErrorStream_TypeDef stream;
+    Error_Port_Reg ErrorQueue_Head_State;
+
+    memset(&ErrorQueue_Head_State, NULL, sizeof(Error_Port_Reg));
+    memset(&stream, NULL, sizeof(ErrorStream_TypeDef));
+
     if (hdl == 0)
         return false;
 

@@ -1,0 +1,505 @@
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Task_Protocol.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.TaskProtocol_TransBuff,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	TaskProtocol_TransBuff:
+  25              	.LVL0:
+  26              	.LFB149:
+  27              		.file 1 "Task/Task_Protocol.c"
+   1:Task/Task_Protocol.c **** /*
+   2:Task/Task_Protocol.c ****  *  coder: 8_B!T0
+   3:Task/Task_Protocol.c ****  *  bref: use this task make FC communicate to computer configuration
+   4:Task/Task_Protocol.c ****  */
+   5:Task/Task_Protocol.c **** #include "Task_Protocol.h"
+   6:Task/Task_Protocol.c **** #include "scheduler.h"
+   7:Task/Task_Protocol.c **** #include "shell.h"
+   8:Task/Task_Protocol.c **** #include "shell_port.h"
+   9:Task/Task_Protocol.c **** #include "usb_device.h"
+  10:Task/Task_Protocol.c **** #include "usbd_cdc_if.h"
+  11:Task/Task_Protocol.c **** #include "debug_util.h"
+  12:Task/Task_Protocol.c **** #include <stdio.h>
+  13:Task/Task_Protocol.c **** #include "Dev_MPU6000.h"
+  14:Task/Task_Protocol.c **** #include "queue.h"
+  15:Task/Task_Protocol.c **** #include "Dev_Led.h"
+  16:Task/Task_Protocol.c **** #include "IO_Definition.h"
+  17:Task/Task_Protocol.c **** #include "Bsp_GPIO.h"
+  18:Task/Task_Protocol.c **** 
+  19:Task/Task_Protocol.c **** #define VCP_QUEUE_BUFF_SIZE 4096
+  20:Task/Task_Protocol.c **** 
+  21:Task/Task_Protocol.c **** /* internal vriable */
+  22:Task/Task_Protocol.c **** static QueueObj_TypeDef VCP_ProtoQueue; /* Send Queue */
+  23:Task/Task_Protocol.c **** static bool VCP_Connect_State = false;  /* USB connect state */
+  24:Task/Task_Protocol.c **** 
+  25:Task/Task_Protocol.c **** /* task state var */
+  26:Task/Task_Protocol.c **** static TaskProto_State_List task_state = TaskProto_Init;
+  27:Task/Task_Protocol.c **** static bool Shell_Mode = false;
+  28:Task/Task_Protocol.c **** 
+  29:Task/Task_Protocol.c **** /* internal function */
+  30:Task/Task_Protocol.c **** static void TaaskProtocol_Main(uint8_t *data, uint16_t size);
+  31:Task/Task_Protocol.c **** static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s 			page 2
+
+
+  32:Task/Task_Protocol.c **** static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
+  33:Task/Task_Protocol.c **** static void TaskProtocol_PlugDetect_Callback(void);
+  34:Task/Task_Protocol.c **** 
+  35:Task/Task_Protocol.c **** bool TaskProtocol_Init(void)
+  36:Task/Task_Protocol.c **** {
+  37:Task/Task_Protocol.c ****     if (!USB_DEVICE_Init())
+  38:Task/Task_Protocol.c ****     {
+  39:Task/Task_Protocol.c ****         task_state = TaskProto_Error_Proc;
+  40:Task/Task_Protocol.c ****         return false;
+  41:Task/Task_Protocol.c ****     }
+  42:Task/Task_Protocol.c **** 
+  43:Task/Task_Protocol.c ****     /* init USB connect detect pin */
+  44:Task/Task_Protocol.c ****     // BspGPIO.in_init(USB_DctPin);
+  45:Task/Task_Protocol.c **** 
+  46:Task/Task_Protocol.c ****     if (!Queue.create(&VCP_ProtoQueue, "VCP Send Queue", VCP_QUEUE_BUFF_SIZE))
+  47:Task/Task_Protocol.c ****         return false;
+  48:Task/Task_Protocol.c **** 
+  49:Task/Task_Protocol.c ****     usb_setrec_callback(TaskProtocol_Rec);
+  50:Task/Task_Protocol.c ****     Shell_Init(TaskProtocol_TransBuff);
+  51:Task/Task_Protocol.c **** 
+  52:Task/Task_Protocol.c ****     task_state = TaskProto_Core;
+  53:Task/Task_Protocol.c ****     return true;
+  54:Task/Task_Protocol.c **** }
+  55:Task/Task_Protocol.c **** 
+  56:Task/Task_Protocol.c **** static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
+  57:Task/Task_Protocol.c **** {
+  28              		.loc 1 57 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 57 1 is_stmt 0 view .LVU1
+  33 0000 08B5     		push	{r3, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 8
+  36              		.cfi_offset 3, -8
+  37              		.cfi_offset 14, -4
+  58:Task/Task_Protocol.c ****     if (CDC_Transmit_FS(data, size) != USBD_OK)
+  38              		.loc 1 58 5 is_stmt 1 view .LVU2
+  39              		.loc 1 58 9 is_stmt 0 view .LVU3
+  40 0002 FFF7FEFF 		bl	CDC_Transmit_FS
+  41              	.LVL1:
+  42              		.loc 1 58 8 view .LVU4
+  43 0006 08B9     		cbnz	r0, .L3
+  59:Task/Task_Protocol.c ****         return false;
+  60:Task/Task_Protocol.c **** 
+  61:Task/Task_Protocol.c ****     return true;
+  44              		.loc 1 61 12 view .LVU5
+  45 0008 0120     		movs	r0, #1
+  46              	.L2:
+  62:Task/Task_Protocol.c **** }
+  47              		.loc 1 62 1 view .LVU6
+  48 000a 08BD     		pop	{r3, pc}
+  49              	.L3:
+  59:Task/Task_Protocol.c ****         return false;
+  50              		.loc 1 59 16 view .LVU7
+  51 000c 0020     		movs	r0, #0
+  52 000e FCE7     		b	.L2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s 			page 3
+
+
+  53              		.cfi_endproc
+  54              	.LFE149:
+  56              		.section	.text.TaskProtocol_Rec,"ax",%progbits
+  57              		.align	1
+  58              		.syntax unified
+  59              		.thumb
+  60              		.thumb_func
+  61              		.fpu fpv5-d16
+  63              	TaskProtocol_Rec:
+  64              	.LVL2:
+  65              	.LFB152:
+  63:Task/Task_Protocol.c **** 
+  64:Task/Task_Protocol.c **** void TaskProtocol_Core(Task_Handle hdl)
+  65:Task/Task_Protocol.c **** {
+  66:Task/Task_Protocol.c ****     static uint32_t a, b = 0;
+  67:Task/Task_Protocol.c **** 
+  68:Task/Task_Protocol.c ****     DebugPin.ctl(Debug_PC3, true);
+  69:Task/Task_Protocol.c **** 
+  70:Task/Task_Protocol.c ****     switch ((uint8_t)task_state)
+  71:Task/Task_Protocol.c ****     {
+  72:Task/Task_Protocol.c ****     case TaskProto_Core:
+  73:Task/Task_Protocol.c ****         TaaskProtocol_Main(NULL, 0);
+  74:Task/Task_Protocol.c ****         break;
+  75:Task/Task_Protocol.c **** 
+  76:Task/Task_Protocol.c ****     case TaskProto_Error_Proc:
+  77:Task/Task_Protocol.c ****         break;
+  78:Task/Task_Protocol.c **** 
+  79:Task/Task_Protocol.c ****     default:
+  80:Task/Task_Protocol.c ****         break;
+  81:Task/Task_Protocol.c ****     }
+  82:Task/Task_Protocol.c **** 
+  83:Task/Task_Protocol.c ****     DebugPin.ctl(Debug_PC3, false);
+  84:Task/Task_Protocol.c **** }
+  85:Task/Task_Protocol.c **** 
+  86:Task/Task_Protocol.c **** static void TaaskProtocol_Main(uint8_t *data, uint16_t size)
+  87:Task/Task_Protocol.c **** {
+  88:Task/Task_Protocol.c **** }
+  89:Task/Task_Protocol.c **** 
+  90:Task/Task_Protocol.c **** static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
+  91:Task/Task_Protocol.c **** {
+  66              		.loc 1 91 1 is_stmt 1 view -0
+  67              		.cfi_startproc
+  68              		@ args = 0, pretend = 0, frame = 0
+  69              		@ frame_needed = 0, uses_anonymous_args = 0
+  70              		.loc 1 91 1 is_stmt 0 view .LVU9
+  71 0000 08B5     		push	{r3, lr}
+  72              	.LCFI1:
+  73              		.cfi_def_cfa_offset 8
+  74              		.cfi_offset 3, -8
+  75              		.cfi_offset 14, -4
+  92:Task/Task_Protocol.c ****     // shellHandler(Shell_GetInstence(), data[i]);
+  93:Task/Task_Protocol.c ****     TaskProtocol_TransBuff(data, len);
+  76              		.loc 1 93 5 is_stmt 1 view .LVU10
+  77 0002 FFF7FEFF 		bl	TaskProtocol_TransBuff
+  78              	.LVL3:
+  94:Task/Task_Protocol.c **** }
+  79              		.loc 1 94 1 is_stmt 0 view .LVU11
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s 			page 4
+
+
+  80 0006 08BD     		pop	{r3, pc}
+  81              		.cfi_endproc
+  82              	.LFE152:
+  84              		.section	.rodata.shell_test.str1.4,"aMS",%progbits,1
+  85              		.align	2
+  86              	.LC0:
+  87 0000 385F4221 		.ascii	"8_B!T0 Shell test\015\012\000"
+  87      54302053 
+  87      68656C6C 
+  87      20746573 
+  87      740D0A00 
+  88              		.section	.text.shell_test,"ax",%progbits
+  89              		.align	1
+  90              		.syntax unified
+  91              		.thumb
+  92              		.thumb_func
+  93              		.fpu fpv5-d16
+  95              	shell_test:
+  96              	.LFB154:
+  95:Task/Task_Protocol.c **** 
+  96:Task/Task_Protocol.c **** static void TaskProtocol_PlugDetect_Callback(void)
+  97:Task/Task_Protocol.c **** {
+  98:Task/Task_Protocol.c ****     static uint8_t a;
+  99:Task/Task_Protocol.c **** 
+ 100:Task/Task_Protocol.c ****     a++;
+ 101:Task/Task_Protocol.c **** }
+ 102:Task/Task_Protocol.c **** 
+ 103:Task/Task_Protocol.c **** static void shell_test(void)
+ 104:Task/Task_Protocol.c **** {
+  97              		.loc 1 104 1 is_stmt 1 view -0
+  98              		.cfi_startproc
+  99              		@ args = 0, pretend = 0, frame = 0
+ 100              		@ frame_needed = 0, uses_anonymous_args = 0
+ 101 0000 08B5     		push	{r3, lr}
+ 102              	.LCFI2:
+ 103              		.cfi_def_cfa_offset 8
+ 104              		.cfi_offset 3, -8
+ 105              		.cfi_offset 14, -4
+ 105:Task/Task_Protocol.c ****     usb_printf("8_B!T0 Shell test\r\n");
+ 106              		.loc 1 105 5 view .LVU13
+ 107 0002 0248     		ldr	r0, .L9
+ 108 0004 FFF7FEFF 		bl	usb_printf
+ 109              	.LVL4:
+ 106:Task/Task_Protocol.c **** }
+ 110              		.loc 1 106 1 is_stmt 0 view .LVU14
+ 111 0008 08BD     		pop	{r3, pc}
+ 112              	.L10:
+ 113 000a 00BF     		.align	2
+ 114              	.L9:
+ 115 000c 00000000 		.word	.LC0
+ 116              		.cfi_endproc
+ 117              	.LFE154:
+ 119              		.section	.rodata.TaskProtocol_Init.str1.4,"aMS",%progbits,1
+ 120              		.align	2
+ 121              	.LC1:
+ 122 0000 56435020 		.ascii	"VCP Send Queue\000"
+ 122      53656E64 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s 			page 5
+
+
+ 122      20517565 
+ 122      756500
+ 123              		.section	.text.TaskProtocol_Init,"ax",%progbits
+ 124              		.align	1
+ 125              		.global	TaskProtocol_Init
+ 126              		.syntax unified
+ 127              		.thumb
+ 128              		.thumb_func
+ 129              		.fpu fpv5-d16
+ 131              	TaskProtocol_Init:
+ 132              	.LFB148:
+  36:Task/Task_Protocol.c ****     if (!USB_DEVICE_Init())
+ 133              		.loc 1 36 1 is_stmt 1 view -0
+ 134              		.cfi_startproc
+ 135              		@ args = 0, pretend = 0, frame = 0
+ 136              		@ frame_needed = 0, uses_anonymous_args = 0
+ 137 0000 10B5     		push	{r4, lr}
+ 138              	.LCFI3:
+ 139              		.cfi_def_cfa_offset 8
+ 140              		.cfi_offset 4, -8
+ 141              		.cfi_offset 14, -4
+  37:Task/Task_Protocol.c ****     {
+ 142              		.loc 1 37 5 view .LVU16
+  37:Task/Task_Protocol.c ****     {
+ 143              		.loc 1 37 10 is_stmt 0 view .LVU17
+ 144 0002 FFF7FEFF 		bl	USB_DEVICE_Init
+ 145              	.LVL5:
+  37:Task/Task_Protocol.c ****     {
+ 146              		.loc 1 37 8 view .LVU18
+ 147 0006 90B1     		cbz	r0, .L15
+  46:Task/Task_Protocol.c ****         return false;
+ 148              		.loc 1 46 5 is_stmt 1 view .LVU19
+  46:Task/Task_Protocol.c ****         return false;
+ 149              		.loc 1 46 15 is_stmt 0 view .LVU20
+ 150 0008 0C4B     		ldr	r3, .L16
+ 151 000a 1B68     		ldr	r3, [r3]
+  46:Task/Task_Protocol.c ****         return false;
+ 152              		.loc 1 46 10 view .LVU21
+ 153 000c 4FF48052 		mov	r2, #4096
+ 154 0010 0B49     		ldr	r1, .L16+4
+ 155 0012 0C48     		ldr	r0, .L16+8
+ 156 0014 9847     		blx	r3
+ 157              	.LVL6:
+  46:Task/Task_Protocol.c ****         return false;
+ 158              		.loc 1 46 8 view .LVU22
+ 159 0016 0446     		mov	r4, r0
+ 160 0018 68B1     		cbz	r0, .L13
+  49:Task/Task_Protocol.c ****     Shell_Init(TaskProtocol_TransBuff);
+ 161              		.loc 1 49 5 is_stmt 1 view .LVU23
+ 162 001a 0B48     		ldr	r0, .L16+12
+ 163 001c FFF7FEFF 		bl	usb_setrec_callback
+ 164              	.LVL7:
+  50:Task/Task_Protocol.c **** 
+ 165              		.loc 1 50 5 view .LVU24
+ 166 0020 0A48     		ldr	r0, .L16+16
+ 167 0022 FFF7FEFF 		bl	Shell_Init
+ 168              	.LVL8:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s 			page 6
+
+
+  52:Task/Task_Protocol.c ****     return true;
+ 169              		.loc 1 52 5 view .LVU25
+  52:Task/Task_Protocol.c ****     return true;
+ 170              		.loc 1 52 16 is_stmt 0 view .LVU26
+ 171 0026 0A4B     		ldr	r3, .L16+20
+ 172 0028 0122     		movs	r2, #1
+ 173 002a 1A70     		strb	r2, [r3]
+  53:Task/Task_Protocol.c **** }
+ 174              		.loc 1 53 5 is_stmt 1 view .LVU27
+  53:Task/Task_Protocol.c **** }
+ 175              		.loc 1 53 12 is_stmt 0 view .LVU28
+ 176 002c 03E0     		b	.L13
+ 177              	.L15:
+ 178 002e 0446     		mov	r4, r0
+  39:Task/Task_Protocol.c ****         return false;
+ 179              		.loc 1 39 9 is_stmt 1 view .LVU29
+  39:Task/Task_Protocol.c ****         return false;
+ 180              		.loc 1 39 20 is_stmt 0 view .LVU30
+ 181 0030 074B     		ldr	r3, .L16+20
+ 182 0032 0222     		movs	r2, #2
+ 183 0034 1A70     		strb	r2, [r3]
+  40:Task/Task_Protocol.c ****     }
+ 184              		.loc 1 40 9 is_stmt 1 view .LVU31
+ 185              	.L13:
+  54:Task/Task_Protocol.c **** 
+ 186              		.loc 1 54 1 is_stmt 0 view .LVU32
+ 187 0036 2046     		mov	r0, r4
+ 188 0038 10BD     		pop	{r4, pc}
+ 189              	.L17:
+ 190 003a 00BF     		.align	2
+ 191              	.L16:
+ 192 003c 00000000 		.word	Queue
+ 193 0040 00000000 		.word	.LC1
+ 194 0044 00000000 		.word	.LANCHOR1
+ 195 0048 00000000 		.word	TaskProtocol_Rec
+ 196 004c 00000000 		.word	TaskProtocol_TransBuff
+ 197 0050 00000000 		.word	.LANCHOR0
+ 198              		.cfi_endproc
+ 199              	.LFE148:
+ 201              		.section	.text.TaskProtocol_Core,"ax",%progbits
+ 202              		.align	1
+ 203              		.global	TaskProtocol_Core
+ 204              		.syntax unified
+ 205              		.thumb
+ 206              		.thumb_func
+ 207              		.fpu fpv5-d16
+ 209              	TaskProtocol_Core:
+ 210              	.LVL9:
+ 211              	.LFB150:
+  65:Task/Task_Protocol.c ****     static uint32_t a, b = 0;
+ 212              		.loc 1 65 1 is_stmt 1 view -0
+ 213              		.cfi_startproc
+ 214              		@ args = 0, pretend = 0, frame = 0
+ 215              		@ frame_needed = 0, uses_anonymous_args = 0
+  65:Task/Task_Protocol.c ****     static uint32_t a, b = 0;
+ 216              		.loc 1 65 1 is_stmt 0 view .LVU34
+ 217 0000 38B5     		push	{r3, r4, r5, lr}
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s 			page 7
+
+
+ 218              	.LCFI4:
+ 219              		.cfi_def_cfa_offset 16
+ 220              		.cfi_offset 3, -16
+ 221              		.cfi_offset 4, -12
+ 222              		.cfi_offset 5, -8
+ 223              		.cfi_offset 14, -4
+  66:Task/Task_Protocol.c **** 
+ 224              		.loc 1 66 5 is_stmt 1 view .LVU35
+  68:Task/Task_Protocol.c **** 
+ 225              		.loc 1 68 5 view .LVU36
+  68:Task/Task_Protocol.c **** 
+ 226              		.loc 1 68 13 is_stmt 0 view .LVU37
+ 227 0002 064D     		ldr	r5, .L20
+ 228 0004 6B68     		ldr	r3, [r5, #4]
+  68:Task/Task_Protocol.c **** 
+ 229              		.loc 1 68 5 view .LVU38
+ 230 0006 064C     		ldr	r4, .L20+4
+ 231 0008 0122     		movs	r2, #1
+ 232 000a 94E80300 		ldm	r4, {r0, r1}
+ 233              	.LVL10:
+  68:Task/Task_Protocol.c **** 
+ 234              		.loc 1 68 5 view .LVU39
+ 235 000e 9847     		blx	r3
+ 236              	.LVL11:
+  70:Task/Task_Protocol.c ****     {
+ 237              		.loc 1 70 5 is_stmt 1 view .LVU40
+  83:Task/Task_Protocol.c **** }
+ 238              		.loc 1 83 5 view .LVU41
+  83:Task/Task_Protocol.c **** }
+ 239              		.loc 1 83 13 is_stmt 0 view .LVU42
+ 240 0010 6B68     		ldr	r3, [r5, #4]
+  83:Task/Task_Protocol.c **** }
+ 241              		.loc 1 83 5 view .LVU43
+ 242 0012 0022     		movs	r2, #0
+ 243 0014 94E80300 		ldm	r4, {r0, r1}
+ 244 0018 9847     		blx	r3
+ 245              	.LVL12:
+  84:Task/Task_Protocol.c **** 
+ 246              		.loc 1 84 1 view .LVU44
+ 247 001a 38BD     		pop	{r3, r4, r5, pc}
+ 248              	.L21:
+ 249              		.align	2
+ 250              	.L20:
+ 251 001c 00000000 		.word	DebugPin
+ 252 0020 00000000 		.word	Debug_PC3
+ 253              		.cfi_endproc
+ 254              	.LFE150:
+ 256              		.global	shellCommandtest
+ 257              		.global	shellDesctest
+ 258              		.global	shellCmdtest
+ 259              		.section	.bss.VCP_ProtoQueue,"aw",%nobits
+ 260              		.align	2
+ 261              		.set	.LANCHOR1,. + 0
+ 264              	VCP_ProtoQueue:
+ 265 0000 00000000 		.space	17
+ 265      00000000 
+ 265      00000000 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s 			page 8
+
+
+ 265      00000000 
+ 265      00
+ 266              		.section	.bss.task_state,"aw",%nobits
+ 267              		.set	.LANCHOR0,. + 0
+ 270              	task_state:
+ 271 0000 00       		.space	1
+ 272              		.section	.rodata.shellCmdtest,"a"
+ 273              		.align	2
+ 276              	shellCmdtest:
+ 277 0000 74657374 		.ascii	"test\000"
+ 277      00
+ 278              		.section	.rodata.shellDesctest,"a"
+ 279              		.align	2
+ 282              	shellDesctest:
+ 283 0000 5368656C 		.ascii	"Shell Test\000"
+ 283      6C205465 
+ 283      737400
+ 284              		.section	shellCommand,"a"
+ 285              		.align	2
+ 288              	shellCommandtest:
+ 289 0000 00210000 		.word	8448
+ 290 0004 00000000 		.word	shellCmdtest
+ 291 0008 00000000 		.word	shell_test
+ 292 000c 00000000 		.word	shellDesctest
+ 293              		.text
+ 294              	.Letext0:
+ 295              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
+ 296              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 297              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 298              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 299              		.file 6 "System/scheduler/scheduler.h"
+ 300              		.file 7 "Task/Task_Protocol.h"
+ 301              		.file 8 "System/shell/shell.h"
+ 302              		.file 9 "USB/STM32_USB_Device_Library/Core/Inc/usbd_def.h"
+ 303              		.file 10 "Bsp/Bsp_GPIO.h"
+ 304              		.file 11 "debug/debug_util.h"
+ 305              		.file 12 "Service/imu_data.h"
+ 306              		.file 13 "DataStructure/queue.h"
+ 307              		.file 14 "IO_Def/IO_Definition.h"
+ 308              		.file 15 "USB/USB_DEVICE/App/usbd_cdc_if.h"
+ 309              		.file 16 "USB/USB_DEVICE/App/usb_device.h"
+ 310              		.file 17 "System/shell/shell_port.h"
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 Task_Protocol.c
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:17     .text.TaskProtocol_TransBuff:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:24     .text.TaskProtocol_TransBuff:0000000000000000 TaskProtocol_TransBuff
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:57     .text.TaskProtocol_Rec:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:63     .text.TaskProtocol_Rec:0000000000000000 TaskProtocol_Rec
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:85     .rodata.shell_test.str1.4:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:89     .text.shell_test:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:95     .text.shell_test:0000000000000000 shell_test
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:115    .text.shell_test:000000000000000c $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:120    .rodata.TaskProtocol_Init.str1.4:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:124    .text.TaskProtocol_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:131    .text.TaskProtocol_Init:0000000000000000 TaskProtocol_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:192    .text.TaskProtocol_Init:000000000000003c $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:202    .text.TaskProtocol_Core:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:209    .text.TaskProtocol_Core:0000000000000000 TaskProtocol_Core
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:251    .text.TaskProtocol_Core:000000000000001c $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:288    shellCommand:0000000000000000 shellCommandtest
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:282    .rodata.shellDesctest:0000000000000000 shellDesctest
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:276    .rodata.shellCmdtest:0000000000000000 shellCmdtest
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:260    .bss.VCP_ProtoQueue:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:264    .bss.VCP_ProtoQueue:0000000000000000 VCP_ProtoQueue
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:270    .bss.task_state:0000000000000000 task_state
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:271    .bss.task_state:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:273    .rodata.shellCmdtest:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:279    .rodata.shellDesctest:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccRiZmCf.s:285    shellCommand:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+CDC_Transmit_FS
+usb_printf
+USB_DEVICE_Init
+usb_setrec_callback
+Shell_Init
+Queue
+DebugPin
+Debug_PC3

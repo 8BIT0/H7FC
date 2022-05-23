@@ -1,0 +1,173 @@
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"DiskIO.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.ExtDisk_Init,"ax",%progbits
+  17              		.align	1
+  18              		.global	ExtDisk_Init
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	ExtDisk_Init:
+  26              	.LFB144:
+  27              		.file 1 "System/diskio/DiskIO.c"
+   1:System/diskio/DiskIO.c **** #include "DiskIO.h"
+   2:System/diskio/DiskIO.c **** #include "Dev_W25Qxx.h"
+   3:System/diskio/DiskIO.c **** #include "IO_Definition.h"
+   4:System/diskio/DiskIO.c **** 
+   5:System/diskio/DiskIO.c **** #if (EXTERNAL_STORAGE_MODULE == 1)
+   6:System/diskio/DiskIO.c **** DevW25QxxObj_TypeDef W25Q64_Obj = {
+   7:System/diskio/DiskIO.c ****     .bus_type = DevW25Qxx_Norm_SpiBus,
+   8:System/diskio/DiskIO.c ****     .BusPort = SPI1,
+   9:System/diskio/DiskIO.c **** };
+  10:System/diskio/DiskIO.c **** 
+  11:System/diskio/DiskIO.c **** bool ExtDisk_Init(void)
+  12:System/diskio/DiskIO.c **** {
+  28              		.loc 1 12 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  13:System/diskio/DiskIO.c ****     bool init_state = false;
+  33              		.loc 1 13 5 view .LVU1
+  34              	.LVL0:
+  14:System/diskio/DiskIO.c **** 
+  15:System/diskio/DiskIO.c ****     // DevW25Q64.init(W25Q64_Obj);
+  16:System/diskio/DiskIO.c **** 
+  17:System/diskio/DiskIO.c ****     return init_state;
+  35              		.loc 1 17 5 view .LVU2
+  18:System/diskio/DiskIO.c **** }
+  36              		.loc 1 18 1 is_stmt 0 view .LVU3
+  37 0000 0020     		movs	r0, #0
+  38 0002 7047     		bx	lr
+  39              		.cfi_endproc
+  40              	.LFE144:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s 			page 2
+
+
+  42              		.section	.text.IntDisk_Init,"ax",%progbits
+  43              		.align	1
+  44              		.global	IntDisk_Init
+  45              		.syntax unified
+  46              		.thumb
+  47              		.thumb_func
+  48              		.fpu fpv5-d16
+  50              	IntDisk_Init:
+  51              	.LFB145:
+  19:System/diskio/DiskIO.c **** #endif
+  20:System/diskio/DiskIO.c **** 
+  21:System/diskio/DiskIO.c **** bool IntDisk_Init(void)
+  22:System/diskio/DiskIO.c **** {
+  52              		.loc 1 22 1 is_stmt 1 view -0
+  53              		.cfi_startproc
+  54              		@ args = 0, pretend = 0, frame = 0
+  55              		@ frame_needed = 0, uses_anonymous_args = 0
+  56              		@ link register save eliminated.
+  23:System/diskio/DiskIO.c ****     bool init_state = false;
+  57              		.loc 1 23 5 view .LVU5
+  58              	.LVL1:
+  24:System/diskio/DiskIO.c **** 
+  25:System/diskio/DiskIO.c ****     return init_state;
+  59              		.loc 1 25 5 view .LVU6
+  26:System/diskio/DiskIO.c **** }
+  60              		.loc 1 26 1 is_stmt 0 view .LVU7
+  61 0000 0020     		movs	r0, #0
+  62 0002 7047     		bx	lr
+  63              		.cfi_endproc
+  64              	.LFE145:
+  66              		.section	.text.Disk_Init,"ax",%progbits
+  67              		.align	1
+  68              		.global	Disk_Init
+  69              		.syntax unified
+  70              		.thumb
+  71              		.thumb_func
+  72              		.fpu fpv5-d16
+  74              	Disk_Init:
+  75              	.LFB146:
+  27:System/diskio/DiskIO.c **** 
+  28:System/diskio/DiskIO.c **** bool Disk_Init(void)
+  29:System/diskio/DiskIO.c **** {
+  76              		.loc 1 29 1 is_stmt 1 view -0
+  77              		.cfi_startproc
+  78              		@ args = 0, pretend = 0, frame = 0
+  79              		@ frame_needed = 0, uses_anonymous_args = 0
+  80 0000 08B5     		push	{r3, lr}
+  81              	.LCFI0:
+  82              		.cfi_def_cfa_offset 8
+  83              		.cfi_offset 3, -8
+  84              		.cfi_offset 14, -4
+  30:System/diskio/DiskIO.c **** #if (EXTERNAL_STORAGE_MODULE == 1)
+  31:System/diskio/DiskIO.c ****     if (!ExtDisk_Init())
+  85              		.loc 1 31 5 view .LVU9
+  86              		.loc 1 31 10 is_stmt 0 view .LVU10
+  87 0002 FFF7FEFF 		bl	ExtDisk_Init
+  88              	.LVL2:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s 			page 3
+
+
+  89              		.loc 1 31 8 view .LVU11
+  90 0006 08B1     		cbz	r0, .L4
+  32:System/diskio/DiskIO.c ****         return false;
+  33:System/diskio/DiskIO.c **** #endif
+  34:System/diskio/DiskIO.c **** 
+  35:System/diskio/DiskIO.c ****     if (!IntDisk_Init())
+  91              		.loc 1 35 5 is_stmt 1 view .LVU12
+  92              		.loc 1 35 10 is_stmt 0 view .LVU13
+  93 0008 FFF7FEFF 		bl	IntDisk_Init
+  94              	.LVL3:
+  95              	.L4:
+  36:System/diskio/DiskIO.c ****         return false;
+  37:System/diskio/DiskIO.c **** 
+  38:System/diskio/DiskIO.c ****     return true;
+  39:System/diskio/DiskIO.c **** }
+  96              		.loc 1 39 1 view .LVU14
+  97 000c 08BD     		pop	{r3, pc}
+  98              		.cfi_endproc
+  99              	.LFE146:
+ 101              		.global	W25Q64_Obj
+ 102              		.section	.data.W25Q64_Obj,"aw"
+ 103              		.align	2
+ 106              	W25Q64_Obj:
+ 107 0000 00       		.byte	0
+ 108 0001 00000000 		.space	4
+ 109 0005 00300140 		.4byte	1073819648
+ 110 0009 00000000 		.space	12
+ 110      00000000 
+ 110      00000000 
+ 111              		.text
+ 112              	.Letext0:
+ 113              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
+ 114              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 115              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 116              		.file 5 "Device/Dev_W25Qxx.h"
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 DiskIO.c
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s:17     .text.ExtDisk_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s:25     .text.ExtDisk_Init:0000000000000000 ExtDisk_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s:43     .text.IntDisk_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s:50     .text.IntDisk_Init:0000000000000000 IntDisk_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s:67     .text.Disk_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s:74     .text.Disk_Init:0000000000000000 Disk_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s:106    .data.W25Q64_Obj:0000000000000000 W25Q64_Obj
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccMN2w1M.s:103    .data.W25Q64_Obj:0000000000000000 $d
+
+NO UNDEFINED SYMBOLS

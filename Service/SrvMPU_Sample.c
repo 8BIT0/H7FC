@@ -151,10 +151,10 @@ SrvIMU_TypeDef SrvIMU = {
 static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
     /* create error log handle */
-    SrvMPU_Error_Handle = ErrorTree_Create("SrvIMU_Error");
+    SrvMPU_Error_Handle = ErrorLog.create("SrvIMU_Error");
 
     /* regist all error to the error tree */
-    Error_Register(SrvMPU_Error_Handle, SrvIMU_ErrorList, sizeof(SrvIMU_ErrorList) / sizeof(SrvIMU_ErrorList[0]));
+    ErrorLog.registe(SrvMPU_Error_Handle, SrvIMU_ErrorList, sizeof(SrvIMU_ErrorList) / sizeof(SrvIMU_ErrorList[0]));
 
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
@@ -167,14 +167,14 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         SrvMpu_Init_Reg.sec.Pri_State = true;
     }
     else
-        Error_Trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, NULL, 0);
+        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, NULL, 0);
 
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
         SrvMpu_Init_Reg.sec.Sec_State = true;
     }
     else
-        Error_Trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, NULL, 0);
+        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, NULL, 0);
 
     memset(&PriIMU_Data, NULL, sizeof(PriIMU_Data));
     memset(&SecIMU_Data, NULL, sizeof(SecIMU_Data));
@@ -184,7 +184,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     if (!SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
-        Error_Trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, NULL, 0);
+        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, NULL, 0);
         return SrvIMU_AllModule_Init_Error;
     }
     else if (!SrvMpu_Init_Reg.sec.Pri_State && SrvMpu_Init_Reg.sec.Sec_State)
