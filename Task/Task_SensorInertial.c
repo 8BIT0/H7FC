@@ -42,6 +42,8 @@ void TaskInertical_Core(Task_Handle hdl)
     default:
         break;
     }
+
+    SrvIMU.error_proc();
     DebugPin.ctl(Debug_PB5, false);
 }
 

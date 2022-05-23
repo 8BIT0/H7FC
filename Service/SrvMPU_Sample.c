@@ -131,6 +131,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
 static SrvIMU_ErrorCode_List SrvIMU_Init(void);
 static void SrvIMU_Sample(void);
 static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type);
+static void SrvIMU_ErrorProc(void);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -146,6 +147,7 @@ SrvIMU_TypeDef SrvIMU = {
     .init = SrvIMU_Init,
     .sample = SrvIMU_Sample,
     .get_data = SrvIMU_Get_Data,
+    .error_proc = SrvIMU_ErrorProc,
 };
 
 static SrvIMU_ErrorCode_List SrvIMU_Init(void)
@@ -391,6 +393,11 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
     }
 
     return imu_data_tmp;
+}
+
+static void SrvIMU_ErrorProc(void)
+{
+    ErrorLog.proc(SrvMPU_Error_Handle);
 }
 
 /************************************************************ DataReady Pin Exti Callback *****************************************************************************/

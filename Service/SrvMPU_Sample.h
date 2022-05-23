@@ -62,6 +62,7 @@ typedef struct
     SrvIMU_ErrorCode_List (*init)(void);
     bool (*sample)(void);
     SrvIMU_Data_TypeDef (*get_data)(SrvIMU_Module_Type type);
+    void (*error_proc)(void);
 } SrvIMU_TypeDef;
 
 extern SrvIMU_TypeDef SrvIMU;
