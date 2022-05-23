@@ -198,7 +198,7 @@ static bool Error_Proc(Error_Handler hdl)
     memset(&ErrorQueue_Head_State, NULL, sizeof(Error_Port_Reg));
     memset(&stream, NULL, sizeof(ErrorStream_TypeDef));
 
-    if (hdl == 0)
+    if (hdl == 0 || !ErrorQueue_CreateState)
         return false;
 
     if (ErrorHandleToObj(hdl)->link_node)
