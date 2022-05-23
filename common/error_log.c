@@ -205,12 +205,14 @@ static bool Error_Proc(Error_Handler hdl)
     {
     }
 
-    if (ErrorOut_Cnt && out_callback)
+    Queue.check_head(&ErrorQueue, &ErrorQueue_Head_State, sizeof(ErrorQueue_Head_State));
+
+    if (ErrorQueue_Head_State.section.out_reg && out_callback)
     {
         ErrorOut_Cnt--;
     }
 
-    if (ErrorLog_Cnt && log_callback)
+    if (ErrorQueue_Head_State.section.log_reg && log_callback)
     {
         ErrorLog_Cnt--;
     }
