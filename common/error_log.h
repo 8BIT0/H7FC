@@ -43,6 +43,16 @@ typedef enum
 } Error_LogState_List;
 
 #pragma pack(1)
+typedef union
+{
+    struct
+    {
+        uint8_t out_reg : 4;
+        uint8_t log_reg : 4;
+    } section;
+    uint8_t val;
+} Error_Port_Reg;
+
 typedef struct
 {
     int16_t code;

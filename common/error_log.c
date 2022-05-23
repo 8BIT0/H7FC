@@ -10,6 +10,8 @@ static Error_OutState_List ErrorOut_State = Error_OutFree;
 static Error_LogState_List ErrorLog_State = Error_LogFree;
 static error_port_callback out_callback = NULL;
 static error_port_callback log_callback = NULL;
+static uint32_t ErrorLog_Cnt = 0;
+static uint32_t ErrorOut_Cnt = 0;
 
 /* internal function */
 static bool Error_Out(void);
@@ -94,6 +96,9 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
 {
     int16_t code_tmp = code;
     data_handle match_data = 0;
+    Error_Port_Reg port_reg;
+
+    port_reg.val = 0;
 
     if (hdl == 0)
         return false;
@@ -110,10 +115,6 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
                 /* trigger process callback */
                 if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback)
                     ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(code, NULL, 0);
-
-                if (ErrorQueue_CreateState)
-                    /* Push Error describe into Error_Queue */
-                    Queue.push(&ErrorQueue, ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
             }
             else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Next)
             {
@@ -125,19 +126,23 @@ bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t siz
                 /* reserve */
             }
 
-            if (ErrorQueue_CreateState)
-            {
-                if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out && out_callback)
-                {
-                    /* out put error */
-                    out_callback(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
-                }
+            port_reg.section.log_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->log;
+            port_reg.section.out_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out;
 
-                if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->log && log_callback)
-                {
-                    /* log error */
-                    log_callback(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
-                }
+            if (ErrorQueue_CreateState && port_reg.val)
+            {
+                if (port_reg.section.log_reg)
+                    ErrorLog_Cnt++;
+
+                if (port_reg.section.out_reg)
+                    ErrorOut_Cnt++;
+
+                /* Push Error describe into Error_Queue */
+                /* push out or log state */
+                Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
+
+                /* push error decribe */
+                Queue.push(&ErrorQueue, ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
             }
         }
     }
@@ -163,6 +168,16 @@ bool Error_Proc(Error_Handler hdl)
 
     if (ErrorHandleToObj(hdl)->link_node)
     {
+    }
+
+    if (ErrorOut_Cnt && out_callback)
+    {
+        ErrorOut_Cnt--;
+    }
+
+    if (ErrorLog_Cnt && log_callback)
+    {
+        ErrorLog_Cnt--;
     }
 
     return true;
