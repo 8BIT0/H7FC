@@ -11,6 +11,7 @@ typedef enum
     ProtoQueue_Idle = 0,
     ProtoQueue_Ok,
     ProtoQueue_Busy,
+    ProtoQueue_Full,
     ProtoQueeu_Error,
 } ProtoQueue_State_List;
 

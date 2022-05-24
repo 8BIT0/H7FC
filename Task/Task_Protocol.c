@@ -22,6 +22,7 @@
 /* internal vriable */
 static QueueObj_TypeDef VCP_ProtoQueue; /* Send Queue */
 static bool VCP_Queue_CreateState = false;
+static ProtoQueue_State_List VCPQueue_State = ProtoQueue_Idle;
 static bool VCP_Connect_State = false; /* USB connect state */
 
 /* task state var */
@@ -63,12 +64,36 @@ bool TaskProtocol_Init(void)
 static ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size)
 {
     /* push into send queue */
-    if (VCP_Queue_CreateState && ((Queue.state(VCP_ProtoQueue) == Queue_Full) || (Queue.state(VCP_ProtoQueue) == Queue_ok)))
+    if (VCP_Queue_CreateState &&
+        ((VCPQueue_State == ProtoQueue_Ok) ||
+         (VCPQueue_State == ProtoQueue_Idle)) &&
+        ((Queue.state(VCP_ProtoQueue) == Queue_empty) ||
+         (Queue.state(VCP_ProtoQueue) == Queue_ok)))
     {
-        /* push send data into VCP queue */
-    }
+        VCPQueue_State = ProtoQueue_Busy;
 
-    return ProtoQueeu_Error;
+        /* push send data into VCP queue */
+        Queue.push(&VCP_ProtoQueue, p_data, size);
+
+        VCPQueue_State = ProtoQueue_Ok;
+
+        return ProtoQueue_Ok;
+    }
+    else if (!VCP_Queue_CreateState)
+    {
+        VCPQueue_State = ProtoQueeu_Error;
+        return ProtoQueeu_Error;
+    }
+    else if (Queue.state(VCP_ProtoQueue) == Queue_full)
+    {
+        VCPQueue_State = ProtoQueue_Full;
+        return ProtoQueue_Full;
+    }
+    else if ((VCPQueue_State != ProtoQueue_Ok) ||
+             (VCPQueue_State != ProtoQueue_Idle))
+    {
+        return VCPQueue_State;
+    }
 }
 
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
@@ -92,7 +117,7 @@ void TaskProtocol_Core(Task_Handle hdl)
 
         /* check vcp send queue state */
         /* if it has any data then send them out */
-        if ((Queue.state() == Queue_ok) || (Queue.state() == Queue_full))
+        if ((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Queue_full))
         {
             /* send */
         }
