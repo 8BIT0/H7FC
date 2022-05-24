@@ -63,8 +63,9 @@ bool TaskProtocol_Init(void)
 static ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size)
 {
     /* push into send queue */
-    if (VCP_Queue_CreateState)
+    if (VCP_Queue_CreateState && ((Queue.state(VCP_ProtoQueue) == Queue_Full) || (Queue.state(VCP_ProtoQueue) == Queue_ok)))
     {
+        /* push send data into VCP queue */
     }
 
     return ProtoQueeu_Error;
@@ -88,6 +89,13 @@ void TaskProtocol_Core(Task_Handle hdl)
     {
     case TaskProto_Core:
         TaskProtocol_Main(NULL, 0);
+
+        /* check vcp send queue state */
+        /* if it has any data then send them out */
+        if ((Queue.state() == Queue_ok) || (Queue.state() == Queue_full))
+        {
+            /* send */
+        }
         break;
 
     case TaskProto_Error_Proc:
