@@ -21,7 +21,8 @@
 
 /* internal vriable */
 static QueueObj_TypeDef VCP_ProtoQueue; /* Send Queue */
-static bool VCP_Connect_State = false;  /* USB connect state */
+static bool VCP_Queue_CreateState = false;
+static bool VCP_Connect_State = false; /* USB connect state */
 
 /* task state var */
 static TaskProto_State_List task_state = TaskProto_Core;
@@ -32,6 +33,7 @@ static void TaskProtocol_Main(uint8_t *data, uint16_t size);
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 static void TaskProtocol_PlugDetect_Callback(void);
+static ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
 
 bool TaskProtocol_Init(void)
 {
@@ -47,11 +49,25 @@ bool TaskProtocol_Init(void)
     if (!Queue.create(&VCP_ProtoQueue, "VCP Send Queue", VCP_QUEUE_BUFF_SIZE))
         return false;
 
+    VCP_Queue_CreateState = true;
+
     usb_setrec_callback(TaskProtocol_Rec);
     Shell_Init(TaskProtocol_TransBuff);
 
+    ErrorLog.set_callback(Error_Out_Callback, TaskProto_PushProtocolQueue);
+
     task_state = TaskProto_Core;
     return true;
+}
+
+static ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size)
+{
+    /* push into send queue */
+    if (VCP_Queue_CreateState)
+    {
+    }
+
+    return ProtoQueeu_Error;
 }
 
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
@@ -92,9 +108,6 @@ static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
 {
     // shellHandler(Shell_GetInstence(), data[i]);
     // TaskProtocol_TransBuff(data, len);
-
-    /* test */
-    ErrorLog.set_callback(Error_Out_Callback, TaskProtocol_TransBuff);
 }
 
 static void TaskProtocol_PlugDetect_Callback(void)

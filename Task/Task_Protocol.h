@@ -6,6 +6,14 @@
 #include "scheduler.h"
 #include "runtime.h"
 
+typedef enum
+{
+    ProtoQueue_Idle = 0,
+    ProtoQueue_Ok,
+    ProtoQueue_Busy,
+    ProtoQueeu_Error,
+} ProtoQueue_State_List;
+
 #pragma pack(1)
 typedef struct
 {
