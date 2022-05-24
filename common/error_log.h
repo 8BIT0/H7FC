@@ -12,7 +12,7 @@
 #define ErrorHandleToObj(x) ((ErrorTree_TypeDef *)x)
 #define ErrorTreeDataToObj(x) ((Error_Obj_Typedef *)x)
 
-typedef void (*error_port_callback)(uint8_t *p_data, uint16_t size);
+typedef bool (*error_port_callback)(uint8_t *p_data, uint16_t size);
 typedef void (*error_proc_callback)(int16_t code, uint8_t *p_data, uint16_t size);
 
 typedef uint32_t Error_Handler;

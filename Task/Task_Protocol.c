@@ -15,6 +15,7 @@
 #include "Dev_Led.h"
 #include "IO_Definition.h"
 #include "Bsp_GPIO.h"
+#include "error_log.h"
 
 #define VCP_QUEUE_BUFF_SIZE 4096
 
@@ -23,11 +24,11 @@ static QueueObj_TypeDef VCP_ProtoQueue; /* Send Queue */
 static bool VCP_Connect_State = false;  /* USB connect state */
 
 /* task state var */
-static TaskProto_State_List task_state = TaskProto_Init;
+static TaskProto_State_List task_state = TaskProto_Core;
 static bool Shell_Mode = false;
 
 /* internal function */
-static void TaaskProtocol_Main(uint8_t *data, uint16_t size);
+static void TaskProtocol_Main(uint8_t *data, uint16_t size);
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 static void TaskProtocol_PlugDetect_Callback(void);
@@ -70,7 +71,7 @@ void TaskProtocol_Core(Task_Handle hdl)
     switch ((uint8_t)task_state)
     {
     case TaskProto_Core:
-        TaaskProtocol_Main(NULL, 0);
+        TaskProtocol_Main(NULL, 0);
         break;
 
     case TaskProto_Error_Proc:
@@ -83,14 +84,17 @@ void TaskProtocol_Core(Task_Handle hdl)
     DebugPin.ctl(Debug_PC3, false);
 }
 
-static void TaaskProtocol_Main(uint8_t *data, uint16_t size)
+static void TaskProtocol_Main(uint8_t *data, uint16_t size)
 {
 }
 
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
 {
     // shellHandler(Shell_GetInstence(), data[i]);
-    TaskProtocol_TransBuff(data, len);
+    // TaskProtocol_TransBuff(data, len);
+
+    /* test */
+    ErrorLog.set_callback(Error_Out_Callback, TaskProtocol_TransBuff);
 }
 
 static void TaskProtocol_PlugDetect_Callback(void)

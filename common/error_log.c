@@ -17,8 +17,6 @@ static Error_OutState_List ErrorOut_State = Error_OutFree;
 static Error_LogState_List ErrorLog_State = Error_LogFree;
 static error_port_callback out_callback = NULL;
 static error_port_callback log_callback = NULL;
-static uint32_t ErrorLog_Cnt = 0;
-static uint32_t ErrorOut_Cnt = 0;
 
 /* internal function */
 static bool Error_Out(void);
@@ -154,16 +152,9 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
 
             if (ErrorQueue_CreateState && port_reg.val)
             {
-                if (port_reg.section.log_reg)
-                    ErrorLog_Cnt++;
-
-                if (port_reg.section.out_reg)
-                    ErrorOut_Cnt++;
-
                 /* Push Error describe into Error_Queue */
                 /* push out or log state */
                 Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
-
                 /* push error decribe */
                 Queue.push(&ErrorQueue, ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
             }
@@ -194,6 +185,7 @@ static bool Error_Proc(Error_Handler hdl)
 {
     ErrorStream_TypeDef stream;
     Error_Port_Reg ErrorQueue_Head_State;
+    uint8_t *p_data = NULL;
 
     memset(&ErrorQueue_Head_State, NULL, sizeof(Error_Port_Reg));
     memset(&stream, NULL, sizeof(ErrorStream_TypeDef));
@@ -201,20 +193,37 @@ static bool Error_Proc(Error_Handler hdl)
     if (hdl == 0 || !ErrorQueue_CreateState)
         return false;
 
+    /* reserved still developing */
     if (ErrorHandleToObj(hdl)->link_node)
     {
     }
 
-    Queue.check_head(&ErrorQueue, &ErrorQueue_Head_State.val, sizeof(ErrorQueue_Head_State.val));
+    Queue.check(&ErrorQueue, 0, &ErrorQueue_Head_State.val, sizeof(ErrorQueue_Head_State.val));
 
-    if (ErrorQueue_Head_State.section.out_reg && out_callback)
+    if ((ErrorQueue_Head_State.section.out_reg || ErrorQueue_Head_State.section.log_reg) && (out_callback || log_callback))
     {
-        ErrorOut_Cnt--;
-    }
+        p_data = (uint8_t *)MMU_Malloc(ErrorQueue_Head_State.section.len);
 
-    if (ErrorQueue_Head_State.section.log_reg && log_callback)
-    {
-        ErrorLog_Cnt--;
+        if (p_data)
+        {
+            if ((Queue.state(ErrorQueue) == Queue_full) || (Queue.state(ErrorQueue) == Queue_ok))
+            {
+                Queue.pop(&ErrorQueue, &ErrorQueue_Head_State.val, sizeof(ErrorQueue_Head_State.val));
+                Queue.pop(&ErrorQueue, p_data, ErrorQueue_Head_State.section.len);
+
+                if (ErrorQueue_Head_State.section.out_reg && out_callback && p_data)
+                {
+                    out_callback(p_data, ErrorQueue_Head_State.section.len);
+                }
+
+                if (ErrorQueue_Head_State.section.log_reg && log_callback && p_data)
+                {
+                    log_callback(p_data, ErrorQueue_Head_State.section.len);
+                }
+            }
+
+            MMU_Free(p_data);
+        }
     }
 
     return true;

@@ -15,9 +15,10 @@ static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj);
 /* external function */
 static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len);
 static bool Queue_Reset(QueueObj_TypeDef *obj);
+static Queue_state Queue_GetState(QueueObj_TypeDef obj);
 static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
 static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
-static bool Queue_CheckHead(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
+static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, uint16_t size);
 
 /* extern virable */
 Queue_TypeDef Queue = {
@@ -25,7 +26,8 @@ Queue_TypeDef Queue = {
     .reset = Queue_Reset,
     .push = Queue_Push,
     .pop = Queue_Pop,
-    .check_head = Queue_CheckHead,
+    .check = Queue_Check,
+    .state = Queue_GetState,
 };
 
 static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len)
@@ -140,15 +142,20 @@ static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size
     return obj->state;
 }
 
-static bool Queue_CheckHead(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size)
+static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, uint16_t size)
 {
     if (obj == NULL || (size == 0) || (data == NULL))
         return false;
 
     for (uint8_t i = 0; i < size; i++)
     {
-        data[i] = obj->buff[obj->head_pos + i];
+        data[i] = obj->buff[obj->head_pos + index + i];
     }
 
     return true;
+}
+
+static Queue_state Queue_GetState(QueueObj_TypeDef obj)
+{
+    return obj.state;
 }
