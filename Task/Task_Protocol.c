@@ -16,6 +16,9 @@
 #include "IO_Definition.h"
 #include "Bsp_GPIO.h"
 #include "error_log.h"
+#include "mmu.h"
+
+static bool test = false;
 
 #define VCP_QUEUE_BUFF_SIZE 4096
 
@@ -106,7 +109,8 @@ static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
 
 void TaskProtocol_Core(Task_Handle hdl)
 {
-    static uint32_t a, b = 0;
+    uint8_t *p_buf = NULL;
+    uint16_t p_buf_size = 0;
 
     DebugPin.ctl(Debug_PC3, true);
 
@@ -117,9 +121,19 @@ void TaskProtocol_Core(Task_Handle hdl)
 
         /* check vcp send queue state */
         /* if it has any data then send them out */
-        if ((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Queue_full))
+        if (test && ((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Queue_full)) && Queue.size(VCP_ProtoQueue))
         {
-            /* send */
+            p_buf = (uint8_t *)MMU_Malloc(Queue.size(VCP_ProtoQueue));
+
+            if (p_buf)
+            {
+                p_buf_size = Queue.size(VCP_ProtoQueue);
+                Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
+
+                TaskProtocol_TransBuff(p_buf, p_buf_size);
+
+                MMU_Free(p_buf);
+            }
         }
         break;
 
@@ -141,6 +155,7 @@ static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
 {
     // shellHandler(Shell_GetInstence(), data[i]);
     // TaskProtocol_TransBuff(data, len);
+    test = true;
 }
 
 static void TaskProtocol_PlugDetect_Callback(void)

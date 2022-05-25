@@ -19,6 +19,7 @@ static Queue_state Queue_GetState(QueueObj_TypeDef obj);
 static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
 static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
 static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, uint16_t size);
+static uint16_t Queue_GetSize(QueueObj_TypeDef obj);
 
 /* extern virable */
 Queue_TypeDef Queue = {
@@ -28,6 +29,7 @@ Queue_TypeDef Queue = {
     .pop = Queue_Pop,
     .check = Queue_Check,
     .state = Queue_GetState,
+    .size = Queue_GetSize,
 };
 
 static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len)
@@ -158,4 +160,9 @@ static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, ui
 static Queue_state Queue_GetState(QueueObj_TypeDef obj)
 {
     return obj.state;
+}
+
+static uint16_t Queue_GetSize(QueueObj_TypeDef obj)
+{
+    return obj.size;
 }

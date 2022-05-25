@@ -42,6 +42,7 @@ typedef struct
 
 typedef struct
 {
+    uint16_t (*size)(QueueObj_TypeDef obj);
     bool (*create)(QueueObj_TypeDef *obj, char *name, uint16_t len);
     bool (*reset)(QueueObj_TypeDef *obj);
     bool (*check)(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, uint16_t size);
