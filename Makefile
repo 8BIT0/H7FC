@@ -44,6 +44,7 @@ Task/Task_SensorInertial.c \
 IO_Def/IO_Definition.c \
 Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \
+Bsp/Bsp_SDIO.c \
 Device/Dev_MPU6000.c \
 Device/Dev_ICM20602.c \
 Device/Dev_Led.c \
@@ -95,6 +96,8 @@ HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_sdmmc.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c \
 
 # ASM sources

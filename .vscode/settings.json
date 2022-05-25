@@ -74,7 +74,9 @@
                 "initializer_list": "c",
                 "stack": "c",
                 "unordered_map": "c",
-                "vector": "c"
+                "vector": "c",
+                "bsp_sdio.h": "c",
+                "stm32h7xx_ll_sdmmc.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
