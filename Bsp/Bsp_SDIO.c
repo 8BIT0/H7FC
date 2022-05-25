@@ -41,32 +41,33 @@ static bool BspSDIO_CLK_Init(SDMMC_TypeDef *instance)
 static bool BspSDIO_Pin_Init(BspSDIO_Obj_TypeDef *obj)
 {
     GPIO_InitTypeDef GPIO_InitStruct = BspSDIO_PinCfg;
-    // if (hsd->Instance == SDMMC1)
-    // {
-    //     __HAL_RCC_GPIOD_CLK_ENABLE();
-    //     __HAL_RCC_GPIOC_CLK_ENABLE();
-    //     /**SDMMC1 GPIO Configuration
-    //     PD2     ------> SDMMC1_CMD
-    //     PC11     ------> SDMMC1_D3
-    //     PC10     ------> SDMMC1_D2
-    //     PC12     ------> SDMMC1_CK
-    //     PC9     ------> SDMMC1_D1
-    //     PC8     ------> SDMMC1_D0
-    //     */
-    //     GPIO_InitStruct.Pin = GPIO_PIN_2;
-    //     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    //     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    //     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    //     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO1;
-    //     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-    //     GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_10 | GPIO_PIN_12 | GPIO_PIN_9 | GPIO_PIN_8;
-    //     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    //     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    //     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    //     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO1;
-    //     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-    // }
+    if (obj->instance == SDMMC1)
+    {
+        //     __HAL_RCC_GPIOD_CLK_ENABLE();
+        //     __HAL_RCC_GPIOC_CLK_ENABLE();
+        //     /**SDMMC1 GPIO Configuration
+        //     PD2     ------> SDMMC1_CMD
+        //     PC11     ------> SDMMC1_D3
+        //     PC10     ------> SDMMC1_D2
+        //     PC12     ------> SDMMC1_CK
+        //     PC9     ------> SDMMC1_D1
+        //     PC8     ------> SDMMC1_D0
+        //     */
+        //     GPIO_InitStruct.Pin = GPIO_PIN_2;
+        //     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        //     GPIO_InitStruct.Pull = GPIO_NOPULL;
+        //     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        //     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO1;
+        //     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+        //     GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_10 | GPIO_PIN_12 | GPIO_PIN_9 | GPIO_PIN_8;
+        //     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        //     GPIO_InitStruct.Pull = GPIO_NOPULL;
+        //     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        //     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO1;
+        //     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    }
 }
 
 static bool BspSDIO_Init(BspSDIO_Obj_TypeDef *obj)
