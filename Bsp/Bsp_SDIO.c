@@ -1,5 +1,14 @@
 #include "Bsp_SDIO.h"
 
+static const GPIO_InitTypeDef BspSDIO_PinCfg = {
+    .Mode = GPIO_MODE_AF_PP,
+    .Pull = GPIO_NOPULL,
+    .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
+};
+
+/* internal function */
+static bool BspSDIO_CLK_Init(SDMMC_TypeDef *instance);
+
 /* external function */
 static bool BspSDIO_Init(void);
 static SD_HandleTypeDef SD_handler;
@@ -10,10 +19,13 @@ BspSDIO_TypeDef BspSDIO = {
     .write = NULL,
 };
 
-static bool BspSDIO_CLK_Init()
+static bool BspSDIO_CLK_Init(SDMMC_TypeDef *instance)
 {
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-    if (hsd->Instance == SDMMC1)
+    if (instance == NULL)
+        return false;
+
+    if (instance == SDMMC1)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SDMMC;
         PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
@@ -26,27 +38,11 @@ static bool BspSDIO_CLK_Init()
     return true;
 }
 
-static bool BspSDIO_Pin_Init()
+static bool BspSDIO_Pin_Init(BspSDIO_Obj_TypeDef *obj)
 {
-    // GPIO_InitTypeDef GPIO_InitStruct = {0};
-    // RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+    GPIO_InitTypeDef GPIO_InitStruct = BspSDIO_PinCfg;
     // if (hsd->Instance == SDMMC1)
     // {
-    //     /* USER CODE BEGIN SDMMC1_MspInit 0 */
-
-    //     /* USER CODE END SDMMC1_MspInit 0 */
-    //     /** Initializes the peripherals clock
-    //      */
-    //     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SDMMC;
-    //     PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
-    //     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-    //     {
-    //         Error_Handler();
-    //     }
-
-    //     /* Peripheral clock enable */
-    //     __HAL_RCC_SDMMC1_CLK_ENABLE();
-
     //     __HAL_RCC_GPIOD_CLK_ENABLE();
     //     __HAL_RCC_GPIOC_CLK_ENABLE();
     //     /**SDMMC1 GPIO Configuration
@@ -75,7 +71,9 @@ static bool BspSDIO_Pin_Init()
 
 static bool BspSDIO_Init(BspSDIO_Obj_TypeDef *obj)
 {
-    SD_handler.Instance = SDMMC1;
+    BspSDIO_CLK_Init(obj->instance);
+
+    SD_handler.Instance = obj->instance; // SDMMC1;
     SD_handler.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
     SD_handler.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
     SD_handler.Init.BusWide = SDMMC_BUS_WIDE_4B;
