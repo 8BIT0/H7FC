@@ -49,7 +49,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(void);
+    bool (*init)(BspSDIO_Obj_TypeDef *obj);
     bool (*read)(uint32_t addr, uint8_t *data, uint32_t size);
     bool (*write)(uint32_t addr, uint8_t *data, uint32_t size);
 } BspSDIO_TypeDef;

@@ -10,6 +10,22 @@ BspSDIO_TypeDef BspSDIO = {
     .write = NULL,
 };
 
+static bool BspSDIO_CLK_Init()
+{
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+    if (hsd->Instance == SDMMC1)
+    {
+        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SDMMC;
+        PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
+        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+            return false;
+
+        __HAL_RCC_SDMMC1_CLK_ENABLE();
+    }
+
+    return true;
+}
+
 static bool BspSDIO_Pin_Init()
 {
     // GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -57,7 +73,7 @@ static bool BspSDIO_Pin_Init()
     // }
 }
 
-static bool BspSDIO_Init(void)
+static bool BspSDIO_Init(BspSDIO_Obj_TypeDef *obj)
 {
     SD_handler.Instance = SDMMC1;
     SD_handler.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
@@ -66,6 +82,7 @@ static bool BspSDIO_Init(void)
     SD_handler.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
     SD_handler.Init.ClockDiv = 0;
     SD_handler.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
+
     if (HAL_SD_Init(&SD_handler) != HAL_OK)
         return false;
 
