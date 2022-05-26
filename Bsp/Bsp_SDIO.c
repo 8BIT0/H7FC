@@ -91,41 +91,39 @@ static bool BspSDIO_Pin_Init(SD_TypeDef *type, BspSDIO_PinConfig_TypeDef *obj)
 
     if (type == SDMMC1)
     {
+        GPIO_InitStruct.Alternate = obj->Alternate;
+
         BspSDIO_PinCLK_Enable(obj->CK_Port);
+        GPIO_InitStruct.Pin = obj->CK_Pin;
+        HAL_GPIO_Init(obj->CK_Port, &GPIO_InitStruct);
+
         BspSDIO_PinCLK_Enable(obj->CMD_Port);
+        GPIO_InitStruct.Pin = obj->CMD_Pin;
+        HAL_GPIO_Init(obj->CMD_Port, &GPIO_InitStruct);
+
         BspSDIO_PinCLK_Enable(obj->D0_Port);
+        GPIO_InitStruct.Pin = obj->D0_Pin;
+        HAL_GPIO_Init(obj->D0_Port, &GPIO_InitStruct);
+
         BspSDIO_PinCLK_Enable(obj->D1_Port);
+        GPIO_InitStruct.Pin = obj->D1_Pin;
+        HAL_GPIO_Init(obj->D1_Port, &GPIO_InitStruct);
+
         BspSDIO_PinCLK_Enable(obj->D2_Port);
+        GPIO_InitStruct.Pin = obj->D2_Pin;
+        HAL_GPIO_Init(obj->D2_Port, &GPIO_InitStruct);
+
         BspSDIO_PinCLK_Enable(obj->D3_Port);
-
-        //     __HAL_RCC_GPIOC_CLK_ENABLE();
-        //     /**SDMMC1 GPIO Configuration
-        //     PD2     ------> SDMMC1_CMD
-        //     PC11     ------> SDMMC1_D3
-        //     PC10     ------> SDMMC1_D2
-        //     PC12     ------> SDMMC1_CK
-        //     PC9     ------> SDMMC1_D1
-        //     PC8     ------> SDMMC1_D0
-        //     */
-        //     GPIO_InitStruct.Pin = GPIO_PIN_2;
-        //     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        //     GPIO_InitStruct.Pull = GPIO_NOPULL;
-        //     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        //     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO1;
-        //     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-        //     GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_10 | GPIO_PIN_12 | GPIO_PIN_9 | GPIO_PIN_8;
-        //     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        //     GPIO_InitStruct.Pull = GPIO_NOPULL;
-        //     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        //     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO1;
-        //     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+        GPIO_InitStruct.Pin = obj->D3_Pin;
+        HAL_GPIO_Init(obj->D3_Port, &GPIO_InitStruct);
     }
 }
 
 static bool BspSDIO_Init(BspSDIO_Obj_TypeDef *obj)
 {
     BspSDIO_PortCLK_Init(obj->instance);
+
+    BspSDIO_Pin_Init(obj->instance, obj->pin);
 
     obj->hdl.Instance = obj->instance; // SDMMC1;
     obj->hdl.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;

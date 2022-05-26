@@ -41,7 +41,7 @@ typedef struct
 
 typedef struct
 {
-    BspSDIO_PinConfig_TypeDef pin;
+    BspSDIO_PinConfig_TypeDef *pin;
     SD_HandleTypeDef hdl;
     SD_TypeDef *instance;
 } BspSDIO_Obj_TypeDef;
