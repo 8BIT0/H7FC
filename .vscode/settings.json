@@ -76,7 +76,9 @@
                 "unordered_map": "c",
                 "vector": "c",
                 "bsp_sdio.h": "c",
-                "stm32h7xx_ll_sdmmc.h": "c"
+                "stm32h7xx_ll_sdmmc.h": "c",
+                "dev_tfcard.h": "c",
+                "bsp_sdmmc.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

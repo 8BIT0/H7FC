@@ -1,4 +1,5 @@
 #include "stm32h7xx_it.h"
+#include "stm32h7xx_hal.h"
 #include "kernel.h"
 #include "runtime.h"
 #include "scheduler.h"

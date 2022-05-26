@@ -1,5 +1,5 @@
-#ifndef __BSP_SDIO_H
-#define __BSP_SDIO_H
+#ifndef __BSP_SDMMC_H
+#define __BSP_SDMMC_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -42,7 +42,7 @@ typedef struct
 typedef struct
 {
     BspSDIO_PinConfig_TypeDef *pin;
-    SD_HandleTypeDef hdl;
+    SD_HandleTypeDef *hdl;
     SD_TypeDef *instance;
 } BspSDIO_Obj_TypeDef;
 #pragma pack()
