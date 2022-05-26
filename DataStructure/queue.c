@@ -98,10 +98,9 @@ static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t siz
         {
             for (uint16_t i = 0; i < size; i++)
             {
-                obj->buff[obj->end_pos] = data[i];
-
-                obj->end_pos++;
                 obj->end_pos %= obj->lenth;
+                obj->buff[obj->end_pos] = data[i];
+                obj->end_pos++;
 
                 obj->size++;
 
@@ -126,11 +125,10 @@ static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size
         {
             for (uint16_t i = 0; i < size; i++)
             {
+                obj->head_pos %= obj->lenth;
                 data[i] = obj->buff[obj->head_pos];
                 obj->buff[obj->head_pos] = NULL;
-
                 obj->head_pos++;
-                obj->head_pos %= obj->lenth;
 
                 obj->size--;
 
@@ -151,7 +149,7 @@ static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, ui
 
     for (uint8_t i = 0; i < size; i++)
     {
-        data[i] = obj->buff[obj->head_pos + index + i];
+        data[i] = obj->buff[(obj->head_pos + index + i) % obj->lenth];
     }
 
     return true;

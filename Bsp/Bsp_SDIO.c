@@ -7,11 +7,11 @@ static const GPIO_InitTypeDef BspSDIO_PinCfg = {
 };
 
 /* internal function */
-static bool BspSDIO_CLK_Init(SDMMC_TypeDef *instance);
+static bool BspSDIO_PortCLK_Init(SDMMC_TypeDef *instance);
+static void BspSDIO_PinCLK_Enable(GPIO_TypeDef *port);
 
 /* external function */
-static bool BspSDIO_Init(void);
-static SD_HandleTypeDef SD_handler;
+static bool BspSDIO_Init(BspSDIO_Obj_TypeDef *obj);
 
 BspSDIO_TypeDef BspSDIO = {
     .init = BspSDIO_Init,
@@ -19,7 +19,51 @@ BspSDIO_TypeDef BspSDIO = {
     .write = NULL,
 };
 
-static bool BspSDIO_CLK_Init(SDMMC_TypeDef *instance)
+static void BspSDIO_PinCLK_Enable(GPIO_TypeDef *port)
+{
+    if (port == GPIOA)
+    {
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+    }
+    else if (port == GPIOB)
+    {
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+    }
+    else if (port == GPIOC)
+    {
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+    }
+    else if (port == GPIOD)
+    {
+        __HAL_RCC_GPIOD_CLK_ENABLE();
+    }
+    else if (port == GPIOE)
+    {
+        __HAL_RCC_GPIOE_CLK_ENABLE();
+    }
+    else if (port == GPIOF)
+    {
+        __HAL_RCC_GPIOF_CLK_ENABLE();
+    }
+    else if (port == GPIOG)
+    {
+        __HAL_RCC_GPIOG_CLK_ENABLE();
+    }
+    else if (port == GPIOH)
+    {
+        __HAL_RCC_GPIOH_CLK_ENABLE();
+    }
+    else if (port == GPIOJ)
+    {
+        __HAL_RCC_GPIOJ_CLK_ENABLE();
+    }
+    else if (port == GPIOK)
+    {
+        __HAL_RCC_GPIOK_CLK_ENABLE();
+    }
+}
+
+static bool BspSDIO_PortCLK_Init(SDMMC_TypeDef *instance)
 {
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
     if (instance == NULL)
@@ -38,13 +82,22 @@ static bool BspSDIO_CLK_Init(SDMMC_TypeDef *instance)
     return true;
 }
 
-static bool BspSDIO_Pin_Init(BspSDIO_Obj_TypeDef *obj)
+static bool BspSDIO_Pin_Init(SD_TypeDef *type, BspSDIO_PinConfig_TypeDef *obj)
 {
     GPIO_InitTypeDef GPIO_InitStruct = BspSDIO_PinCfg;
 
-    if (obj->instance == SDMMC1)
+    if (obj == NULL)
+        return false;
+
+    if (type == SDMMC1)
     {
-        //     __HAL_RCC_GPIOD_CLK_ENABLE();
+        BspSDIO_PinCLK_Enable(obj->CK_Port);
+        BspSDIO_PinCLK_Enable(obj->CMD_Port);
+        BspSDIO_PinCLK_Enable(obj->D0_Port);
+        BspSDIO_PinCLK_Enable(obj->D1_Port);
+        BspSDIO_PinCLK_Enable(obj->D2_Port);
+        BspSDIO_PinCLK_Enable(obj->D3_Port);
+
         //     __HAL_RCC_GPIOC_CLK_ENABLE();
         //     /**SDMMC1 GPIO Configuration
         //     PD2     ------> SDMMC1_CMD
@@ -72,17 +125,17 @@ static bool BspSDIO_Pin_Init(BspSDIO_Obj_TypeDef *obj)
 
 static bool BspSDIO_Init(BspSDIO_Obj_TypeDef *obj)
 {
-    BspSDIO_CLK_Init(obj->instance);
+    BspSDIO_PortCLK_Init(obj->instance);
 
-    SD_handler.Instance = obj->instance; // SDMMC1;
-    SD_handler.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
-    SD_handler.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
-    SD_handler.Init.BusWide = SDMMC_BUS_WIDE_4B;
-    SD_handler.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-    SD_handler.Init.ClockDiv = 0;
-    SD_handler.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
+    obj->hdl.Instance = obj->instance; // SDMMC1;
+    obj->hdl.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
+    obj->hdl.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
+    obj->hdl.Init.BusWide = SDMMC_BUS_WIDE_4B;
+    obj->hdl.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
+    obj->hdl.Init.ClockDiv = 0;
+    obj->hdl.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
 
-    if (HAL_SD_Init(&SD_handler) != HAL_OK)
+    if (HAL_SD_Init(&(obj->hdl)) != HAL_OK)
         return false;
 
     return true;
