@@ -2,15 +2,18 @@
 #include "Dev_W25Qxx.h"
 #include "Dev_Card.h"
 #include "IO_Definition.h"
+#include "error_log.h"
 
-#if (EXTERNAL_STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
+static Disk_Info_TypeDef Disk_Info;
+
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
 DevW25QxxObj_TypeDef W25Q64_Obj = {
     .bus_type = DevW25Qxx_Norm_SpiBus,
     .BusPort = SPI1,
 };
 #endif
 
-#if (EXTERNAL_STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
 static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
     .CK_Port = SDMMC_CLK_PORT,
     .CMD_Port = SDMMC_CMD_PORT,
@@ -40,33 +43,41 @@ static DevCard_Obj_TypeDef DevTFCard_Obj = {
 
 bool ExtDisk_Init(void)
 {
-    bool init_state = true;
+    bool init_state = false;
 
-#if (EXTERNAL_STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
-    DevW25Q64.init(W25Q64_Obj);
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
+    init_state &= DevW25Q64.init(W25Q64_Obj);
 #endif
 
-#if (EXTERNAL_STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
-    DevCard.Init(DevTFCard_Obj);
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+    init_state &= DevCard.Init(DevTFCard_Obj);
 #endif
 
     return init_state;
 }
 
+#if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
 bool IntDisk_Init(void)
 {
     bool init_state = false;
 
     return init_state;
 }
+#endif
 
 bool Disk_Init(void)
 {
-    if (!ExtDisk_Init())
-        return false;
+    memset(&Disk_Info, NULL, sizeof(Disk_Info));
 
+#if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
     if (!IntDisk_Init())
         return false;
+#endif
+
+#if ((STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD) || (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH))
+    if (ExtDisk_Init() != STORAGE_MODULE_NO_ERROR)
+        return false;
+#endif
 
     return true;
 }

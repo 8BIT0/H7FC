@@ -6,6 +6,8 @@
 #include <string.h>
 #include "system_cfg.h"
 
+#define STORAGE_MODULE_NO_ERROR 0
+
 typedef enum
 {
     OCS_System_Param = 1,
@@ -13,15 +15,41 @@ typedef enum
     OCS_Custom_Param,
 } Default_Section_List;
 
-#if (EXTERNAL_STORAGE_MODULE == 1)
-#define EXS_SECTION_INFO_SIZE 1024 * 1024
-
-typedef enum
+#pragma pack(1)
+typedef union
 {
-    EXS_Section_Info = 1,
-    EXS_Storage_Data,
-} ExternalStorage_Section_List;
-#endif
+    struct
+    {
+        uint8_t internal_module_EN : 1;
+        uint8_t TFCard_modlue_EN : 1;
+        uing8_t FlashChip_module_EN : 1;
+        uint8_t reserve : 1;
+
+        uint8_t FlashChip_module_CNT : 4;
+    } section;
+
+    uint8_t val;
+} StorageModule_TypeDef;
+
+typedef union
+{
+    struct
+    {
+        uint8_t internal_module_error_code : 8;
+        uint8_t TFCard_module_error_code : 8;
+        uint8_t FlashChip_module_error_code : 8;
+        uint8_t reserve : 8;
+    } section;
+
+    uint32_t val;
+} StorageModule_Error_Reg;
+
+typedef struct
+{
+    StorageModule_TypeDef module_reg;
+    StorageModule_Error_Reg module_error_reg;
+} Disk_Info_TypeDef;
+#pragma pack()
 
 bool Disk_Init(void);
 

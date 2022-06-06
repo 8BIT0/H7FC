@@ -7,6 +7,13 @@
 #include <stdio.h>
 #include "Bsp_SDMMC.h"
 
+typedef enum
+{
+    DevCard_No_Error = 0,
+    DevCard_Bus_Error,
+    DevCard_Info_Error,
+} DevCard_Error_List;
+
 #pragma pack(1)
 typedef struct
 {
@@ -16,7 +23,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*Init)(DevCard_Obj_TypeDef *Obj);
+    DevCard_Error_List (*Init)(DevCard_Obj_TypeDef *Obj);
     bool (*Insert)(DevCard_Obj_TypeDef *Obj);
     bool (*GetState)(DevCard_Obj_TypeDef *Obj);
 } DevCard_TypeDef;
