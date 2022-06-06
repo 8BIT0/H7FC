@@ -11,12 +11,20 @@ static bool BspSDMMC_PortCLK_Init(SDMMC_TypeDef *instance);
 static void BspSDMMC_PinCLK_Enable(GPIO_TypeDef *port);
 
 /* external function */
-static bool BspSDMMC_Init(BspSDIO_Obj_TypeDef *obj);
+static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj);
+static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks);
+static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks);
+static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr);
+static bool BspSDMMC_GetStatus(BspSDMMC_Obj_TypeDef *obj);
+static bool BspSDMMC_GetInfo(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info_out);
 
-BspSDIO_TypeDef BspSDIO = {
+BspSDMMC_TypeDef BspSDMMC = {
     .init = BspSDMMC_Init,
-    .read = NULL,
-    .write = NULL,
+    .read = BspSDMMC_Read,
+    .write = BspSDMMC_Write,
+    .erase = BspSDMMC_Erase,
+    .status = BspSDMMC_GetStatus,
+    .info = BspSDMMC_GetInfo,
 };
 
 static void BspSDMMC_PinCLK_Enable(GPIO_TypeDef *port)
@@ -83,7 +91,7 @@ static bool BspSDMMC_PortCLK_Init(SDMMC_TypeDef *instance)
     return true;
 }
 
-static bool BspSDMMC_Pin_Init(SD_TypeDef *type, BspSDIO_PinConfig_TypeDef *obj)
+static bool BspSDMMC_Pin_Init(SD_TypeDef *type, BspSDMMC_PinConfig_TypeDef *obj)
 {
     GPIO_InitTypeDef GPIO_InitStruct = BspSDMMC_PinCfg;
 
@@ -124,18 +132,18 @@ static bool BspSDMMC_Pin_Init(SD_TypeDef *type, BspSDIO_PinConfig_TypeDef *obj)
     return false;
 }
 
-static bool BspSDMMC_Init(BspSDIO_Obj_TypeDef *obj)
+static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
 {
     BspSDMMC_PortCLK_Init(obj->instance);
     BspSDMMC_Pin_Init(obj->instance, obj->pin);
 
-    obj->hdl->Instance = obj->instance; // SDMMC1;
-    obj->hdl->Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
-    obj->hdl->Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
-    obj->hdl->Init.BusWide = SDMMC_BUS_WIDE_4B;
-    obj->hdl->Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-    obj->hdl->Init.ClockDiv = 0;
-    obj->hdl->Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
+    obj->hdl.Instance = obj->instance; // SDMMC1;
+    obj->hdl.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
+    obj->hdl.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
+    obj->hdl.Init.BusWide = SDMMC_BUS_WIDE_4B;
+    obj->hdl.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
+    obj->hdl.Init.ClockDiv = 0;
+    obj->hdl.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
 
     if (HAL_SD_Init(&(obj->hdl)) != HAL_OK)
         return false;
@@ -143,32 +151,52 @@ static bool BspSDMMC_Init(BspSDIO_Obj_TypeDef *obj)
     return true;
 }
 
-static bool BspSDMMC_Read(BspSDIO_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
+static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
 {
     bool sd_state = true;
 
-    if (HAL_SD_ReadBlocks(obj->hdl, (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) != HAL_OK)
+    if (HAL_SD_ReadBlocks(&(obj->hdl), (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) != HAL_OK)
         sd_state = false;
 
     return sd_state;
 }
 
-static bool BspSDMMC_Write(BspSDIO_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
+static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
     bool sd_state = true;
 
-    if (HAL_SD_WriteBlocks(obj->hdl, (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) != HAL_OK)
+    if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) != HAL_OK)
         sd_state = false;
 
     return sd_state;
 }
 
-static bool BspSDMMC_Erase(BspSDIO_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr)
+static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr)
 {
     bool sd_state = true;
 
-    if (HAL_SD_Erase(obj->hdl, StartAddr, EndAddr) != HAL_OK)
+    if (HAL_SD_Erase(&(obj->hdl), StartAddr, EndAddr) != HAL_OK)
         sd_state = false;
 
     return sd_state;
+}
+
+static bool BspSDMMC_GetStatus(BspSDMMC_Obj_TypeDef *obj)
+{
+    if (obj == NULL)
+        return false;
+
+    return ((HAL_SD_GetCardState(&(obj->hdl)) == HAL_SD_CARD_TRANSFER) ? true : false);
+}
+
+static bool BspSDMMC_GetInfo(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info_out)
+{
+    if ((obj == NULL) && (info_out == NULL))
+        return false;
+
+    memset(&(obj->info), NULL, sizeof(obj->info));
+    HAL_SD_GetCardInfo(&(obj->hdl), &(obj->info));
+    info_out = &(obj->info);
+
+    return true;
 }

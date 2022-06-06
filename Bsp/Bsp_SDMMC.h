@@ -37,23 +37,27 @@ typedef struct
     uint32_t CMD_Pin;
 
     uint32_t Alternate;
-} BspSDIO_PinConfig_TypeDef;
+} BspSDMMC_PinConfig_TypeDef;
 
 typedef struct
 {
-    BspSDIO_PinConfig_TypeDef *pin;
-    SD_HandleTypeDef *hdl;
+    BspSDMMC_PinConfig_TypeDef *pin;
+    SD_HandleTypeDef hdl;
     SD_TypeDef *instance;
-} BspSDIO_Obj_TypeDef;
+    HAL_SD_CardInfoTypeDef info;
+} BspSDMMC_Obj_TypeDef;
 #pragma pack()
 
 typedef struct
 {
-    bool (*init)(BspSDIO_Obj_TypeDef *obj);
-    bool (*read)(uint32_t addr, uint8_t *data, uint32_t size);
-    bool (*write)(uint32_t addr, uint8_t *data, uint32_t size);
-} BspSDIO_TypeDef;
+    bool (*init)(BspSDMMC_Obj_TypeDef *obj);
+    bool (*read)(BspSDMMC_Obj_TypeDef *obj, uint32_t addr, uint8_t *data, uint32_t size);
+    bool (*write)(BspSDMMC_Obj_TypeDef *obj, uint32_t addr, uint8_t *data, uint32_t size);
+    bool (*erase)(BspSDMMC_Obj_TypeDef *obj, uint32_t addr, uint32_t start_addr, uint32_t end_addr);
+    bool (*status)(BspSDMMC_Obj_TypeDef *obj);
+    bool (*info)(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info);
+} BspSDMMC_TypeDef;
 
-extern BspSDIO_TypeDef BspSDIO;
+extern BspSDMMC_TypeDef BspSDMMC;
 
 #endif

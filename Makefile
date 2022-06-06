@@ -49,6 +49,7 @@ Device/Dev_MPU6000.c \
 Device/Dev_ICM20602.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
+Device/Dev_Card.c \
 Service/SrvMPU_Sample.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
@@ -59,7 +60,6 @@ System/mmu/mmu.c \
 System/scheduler/scheduler.c \
 System/kernel/kernel.c \
 System/runtime/runtime.c \
-System/diskio/DiskIO.c \
 System/shell/shell_cmd_list.c \
 System/shell/shell_companion.c \
 System/shell/shell_ext.c \
@@ -170,7 +170,7 @@ C_INCLUDES =  \
 -ISystem/runtime/ \
 -ISystem/scheduler/ \
 -ISystem/kernel/ \
--ISystem/diskio/ \
+-ISystem/AsyncFatFs/inc \
 -IHAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHAL_Lib/Core/Inc \
 -IHAL_Lib/CMSIS/Device/ST/STM32H7xx/Include \

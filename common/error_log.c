@@ -117,6 +117,7 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
     int16_t code_tmp = code;
     data_handle match_data = 0;
     Error_Port_Reg port_reg;
+    char *letter = NULL;
 
     port_reg.val = 0;
 
@@ -148,13 +149,22 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
 
             port_reg.section.log_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->log;
             port_reg.section.out_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out;
-            port_reg.section.len = strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc);
+            port_reg.section.len = strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc) + strlen(ErrorHandleToObj(hdl)->tree->name) + strlen("[  ] ");
 
             if (ErrorQueue_CreateState && port_reg.val)
             {
                 /* Push Error describe into Error_Queue */
                 /* push out or log state */
                 Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
+                /* push error tree name */
+                letter = "[ ";
+                Queue.push(&ErrorQueue, letter, strlen(letter));
+
+                Queue.push(&ErrorQueue, ErrorHandleToObj(hdl)->tree->name, strlen(ErrorHandleToObj(hdl)->tree->name));
+
+                letter = " ] ";
+                Queue.push(&ErrorQueue, letter, strlen(letter));
+
                 /* push error decribe */
                 Queue.push(&ErrorQueue, ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
             }

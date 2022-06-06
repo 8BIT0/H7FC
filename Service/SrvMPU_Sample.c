@@ -153,7 +153,7 @@ SrvIMU_TypeDef SrvIMU = {
 static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
     /* create error log handle */
-    SrvMPU_Error_Handle = ErrorLog.create("SrvIMU_Error  ");
+    SrvMPU_Error_Handle = ErrorLog.create("SrvIMU_Error");
 
     /* regist all error to the error tree */
     ErrorLog.registe(SrvMPU_Error_Handle, SrvIMU_ErrorList, sizeof(SrvIMU_ErrorList) / sizeof(SrvIMU_ErrorList[0]));

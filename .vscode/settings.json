@@ -78,7 +78,9 @@
                 "bsp_sdio.h": "c",
                 "stm32h7xx_ll_sdmmc.h": "c",
                 "dev_tfcard.h": "c",
-                "bsp_sdmmc.h": "c"
+                "bsp_sdmmc.h": "c",
+                "sdcard_standard.h": "c",
+                "dev_card.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
