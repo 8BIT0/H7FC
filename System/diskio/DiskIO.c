@@ -8,6 +8,7 @@ static Error_Handler DevCard_Error_Handle = NULL;
 static Disk_Info_TypeDef Disk_Info;
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
+/******************************************************************************** SPI Interface **************************************************************************/
 DevW25QxxObj_TypeDef W25Q64_Obj = {
     .bus_type = DevW25Qxx_Norm_SpiBus,
     .BusPort = SPI1,
@@ -15,6 +16,7 @@ DevW25QxxObj_TypeDef W25Q64_Obj = {
 #endif
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+/******************************************************************************** SDMMC Interface **************************************************************************/
 static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
     .CK_Port = SDMMC_CLK_PORT,
     .CMD_Port = SDMMC_CMD_PORT,
@@ -40,6 +42,7 @@ static DevCard_Obj_TypeDef DevTFCard_Obj = {
 };
 #endif
 
+/******************************************************************************* Error Proc Object **************************************************************************/
 static Error_Obj_Typedef DevCard_ErrorList[] = {
     {
         .out = true,
@@ -80,10 +83,14 @@ static bool ExtDisk_Init(void)
     ErrorLog.registe(DevCard_Error_Handle, DevCard_ErrorList, sizeof(DevCard_ErrorList) / sizeof(DevCard_ErrorList[0]));
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
-    Disk_Info.module_reg.section.internal_module_EN = true;
-    Disk_Info.module_error_reg.section.internal_module_error_code = DevW25Q64.init(W25Q64_Obj);
+    Disk_Info.module_reg.section.FlashChip_module_EN = true;
+    Disk_Info.module_error_reg.section.FlashChip_module_error_code = DevW25Q64.init(W25Q64_Obj);
 
     /* trigger error */
+    if (Disk_Info.module_error_reg.section.FlashChip_module_error_code)
+    {
+        // ErrorLog.trigger(DevCard_Error_Handle, );
+    }
 #endif
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
@@ -93,10 +100,10 @@ static bool ExtDisk_Init(void)
     Disk_Info.module_error_reg.section.TFCard_module_error_code = DevCard.Init(&DevTFCard_Obj.SDMMC_Obj);
 
     /* trigger error */
-#endif
-
-#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
-    Disk_Info.module_reg.section.FlashChip_module_EN = true;
+    if (Disk_Info.module_error_reg.section.TFCard_module_error_code)
+    {
+        // ErrorLog.trigger(DevCard_Error_Handle, );
+    }
 #endif
 
     if (Disk_Info.module_error_reg.val != 0)

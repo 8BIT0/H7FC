@@ -10,6 +10,7 @@
 typedef enum
 {
     DevCard_No_Error = 0,
+    DevCard_Obj_Error,
     DevCard_Bus_Error,
     DevCard_Info_Error,
 } DevCard_Error_List;
@@ -18,6 +19,7 @@ typedef enum
 typedef struct
 {
     BspSDMMC_Obj_TypeDef SDMMC_Obj;
+    DevCard_Error_List error_code;
 } DevCard_Obj_TypeDef;
 #pragma pack()
 
@@ -26,6 +28,7 @@ typedef struct
     DevCard_Error_List (*Init)(DevCard_Obj_TypeDef *Obj);
     bool (*Insert)(DevCard_Obj_TypeDef *Obj);
     bool (*GetState)(DevCard_Obj_TypeDef *Obj);
+    DevCard_Error_List (*Get_ErrorCode)(DevCard_Obj_TypeDef *Obj);
 } DevCard_TypeDef;
 
 extern DevCard_TypeDef DevCard;
