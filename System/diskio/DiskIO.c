@@ -4,34 +4,8 @@
 #include "IO_Definition.h"
 #include "error_log.h"
 
+static Error_Handler DevCard_Error_Handle = NULL;
 static Disk_Info_TypeDef Disk_Info;
-
-static Error_Obj_Typedef DevCard_ErrorList[] = {
-    {
-        .out = true,
-        .log = false,
-        .prc_callback = NULL,
-        .code = DevCard_Internal_Module_Init_Error,
-        .desc = "internal Storage Init Error\r\n",
-        .proc_type = Error_Proc_Ignore,
-        .prc_data_stream = {
-            .p_data = NULL,
-            .size = 0,
-        },
-    },
-    {
-        .out = true,
-        .log = false,
-        .prc_callback = NULL,
-        .code = DevCard_External_Module_Init_Error,
-        .desc = "External Storage Init Error\r\n",
-        .proc_type = Error_Proc_Ignore,
-        .prc_data_stream = {
-            .p_data = NULL,
-            .size = 0,
-        },
-    },
-}
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
 DevW25QxxObj_TypeDef W25Q64_Obj = {
@@ -59,26 +33,74 @@ static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
     .Alternate = GPIO_AF12_SDIO1,
 };
 
-static BspSDMMC_Obj_TypeDef SDMMC_Instance = {
-    .instance = SDMMC1,
-};
-
 static DevCard_Obj_TypeDef DevTFCard_Obj = {
-    .SDMMC_Obj = SDMMC_Instance,
+    .SDMMC_Obj = {
+        .instance = SDMMC1,
+    },
 };
 #endif
 
-bool ExtDisk_Init(void)
+static Error_Obj_Typedef DevCard_ErrorList[] = {
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = NULL,
+        .code = DevCard_Internal_Module_Init_Error,
+        .desc = "internal Storage Init Error\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = NULL,
+        .code = DevCard_External_Module_Init_Error,
+        .desc = "External Storage Init Error\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+};
+
+static bool ExtDisk_Init(void)
 {
-    bool init_state = false;
+    bool init_state = true;
+
+    memset(&Disk_Info, NULL, sizeof(Disk_Info));
+
+    /* create error log handle */
+    DevCard_Error_Handle = ErrorLog.create("DevCard_Error");
+
+    /* regist all error to the error tree */
+    ErrorLog.registe(DevCard_Error_Handle, DevCard_ErrorList, sizeof(DevCard_ErrorList) / sizeof(DevCard_ErrorList[0]));
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
-    init_state &= DevW25Q64.init(W25Q64_Obj);
+    Disk_Info.module_reg.section.internal_module_EN = true;
+    Disk_Info.module_error_reg.section.internal_module_error_code = DevW25Q64.init(W25Q64_Obj);
+
+    /* trigger error */
 #endif
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
-    init_state &= DevCard.Init(DevTFCard_Obj);
+    DevTFCard_Obj.SDMMC_Obj.pin = &SDMMC_Pin;
+
+    Disk_Info.module_reg.section.TFCard_modlue_EN = true;
+    Disk_Info.module_error_reg.section.TFCard_module_error_code = DevCard.Init(&DevTFCard_Obj.SDMMC_Obj);
+
+    /* trigger error */
 #endif
+
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
+    Disk_Info.module_reg.section.FlashChip_module_EN = true;
+#endif
+
+    if (Disk_Info.module_error_reg.val != 0)
+        init_state = false;
 
     return init_state;
 }

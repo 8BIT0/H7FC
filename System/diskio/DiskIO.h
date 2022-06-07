@@ -12,7 +12,7 @@ typedef enum
 {
     DevCard_Internal_Module_Init_Error = 0,
     DevCard_External_Module_Init_Error,
-} DevCard_Error_List;
+} DiskIO_Error_List;
 
 typedef enum
 {
@@ -28,7 +28,7 @@ typedef union
     {
         uint8_t internal_module_EN : 1;
         uint8_t TFCard_modlue_EN : 1;
-        uing8_t FlashChip_module_EN : 1;
+        uint8_t FlashChip_module_EN : 1;
         uint8_t reserve : 1;
 
         uint8_t FlashChip_module_CNT : 4;

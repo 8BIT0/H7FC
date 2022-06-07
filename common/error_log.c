@@ -102,6 +102,9 @@ static bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint1
 {
     item_obj *linked_item = NULL;
 
+    if (hdl == 0)
+        return false;
+
     for (uint16_t i = 0; i < num; i++)
     {
         BalanceTree.Insert(ErrorHandleToObj(hdl)->tree, Obj_List[i].desc, (data_handle)(&Obj_List[i]));
