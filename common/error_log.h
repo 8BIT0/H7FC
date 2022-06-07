@@ -75,6 +75,7 @@ typedef struct
     bool out;
     bool log;
     error_proc_callback prc_callback;
+    ErrorStream_TypeDef prc_data_stream;
     item_obj *item;
 } Error_Obj_Typedef;
 

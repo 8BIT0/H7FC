@@ -6,6 +6,33 @@
 
 static Disk_Info_TypeDef Disk_Info;
 
+static Error_Obj_Typedef DevCard_ErrorList[] = {
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = NULL,
+        .code = DevCard_Internal_Module_Init_Error,
+        .desc = "internal Storage Init Error\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = NULL,
+        .code = DevCard_External_Module_Init_Error,
+        .desc = "External Storage Init Error\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+}
+
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
 DevW25QxxObj_TypeDef W25Q64_Obj = {
     .bus_type = DevW25Qxx_Norm_SpiBus,
@@ -80,4 +107,8 @@ bool Disk_Init(void)
 #endif
 
     return true;
+}
+
+static void DevCard_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
+{
 }

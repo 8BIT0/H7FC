@@ -10,6 +10,12 @@
 
 typedef enum
 {
+    DevCard_Internal_Module_Init_Error = 0,
+    DevCard_External_Module_Init_Error,
+} DevCard_Error_List;
+
+typedef enum
+{
     OCS_System_Param = 1,
     OCS_Applic_Param,
     OCS_Custom_Param,

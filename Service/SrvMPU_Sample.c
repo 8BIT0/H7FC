@@ -11,6 +11,11 @@
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
 
+/* test var */
+static uint32_t SrvIMU_PriIMU_Init_Error_CNT = 0;
+static uint32_t SrvIMU_SecIMU_Init_Error_CNT = 0;
+static uint32_t SrvIMU_ALLModule_Init_Error_CNT = 0;
+
 /*
  *   PriIMU -> MPU6000
  *   SecIMU -> ICM20602
@@ -60,6 +65,10 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .code = SrvIMU_PriCSPin_Init_Error,
         .desc = "Pri CS Pin Init Failed\r\n",
         .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
     },
     {
         .out = false,
@@ -68,6 +77,10 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .code = SrvIMU_PriExtiPin_Init_Error,
         .desc = "Pri Ext Pin Init Failed\r\n",
         .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
     },
     {
         .out = false,
@@ -76,6 +89,10 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .code = SrvIMU_PriBus_Init_Error,
         .desc = "Pri Bus Init Failed\r\n",
         .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
     },
     {
         .out = true,
@@ -84,6 +101,10 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .code = SrvIMU_PriDev_Init_Error,
         .desc = "Pri Dev Init Failed\r\n",
         .proc_type = Error_Proc_Immd,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
     },
     {
         .out = false,
@@ -92,6 +113,10 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .code = SrvIMU_SecCSPin_Init_Error,
         .desc = "Sec CS Pin Init Failed\r\n",
         .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
     },
     {
         .out = false,
@@ -99,6 +124,10 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .code = SrvIMU_SecExtiPin_Init_Error,
         .desc = "Sec Ext Pin Init Failed\r\n",
         .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
     },
     {
         .out = false,
@@ -107,22 +136,34 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         .code = SrvIMU_SecBus_Init_Error,
         .desc = "Sec Bus Init Failed\r\n",
         .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
     },
     {
         .out = true,
-        .log = true,
+        .log = false,
         .prc_callback = SrvIMU_SecDev_InitError,
         .code = SrvIMU_SecDev_Init_Error,
         .desc = "Sec Dev Init Failed\r\n",
         .proc_type = Error_Proc_Immd,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
     },
     {
         .out = true,
-        .log = true,
+        .log = false,
         .prc_callback = SrvIMU_AllModule_InitError,
         .code = SrvIMU_AllModule_Init_Error,
         .desc = "All IMU Module Init Failed\r\n",
         .proc_type = Error_Proc_Immd,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
     },
 };
 /************************************************************************ Error Tree Item ************************************************************************/
@@ -169,14 +210,14 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         SrvMpu_Init_Reg.sec.Pri_State = true;
     }
     else
-        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, NULL, 0);
+        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, &SrvIMU_PriIMU_Init_Error_CNT, sizeof(SrvIMU_PriIMU_Init_Error_CNT));
 
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
         SrvMpu_Init_Reg.sec.Sec_State = true;
     }
     else
-        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, NULL, 0);
+        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, &SrvIMU_SecIMU_Init_Error_CNT, sizeof(SrvIMU_SecIMU_Init_Error_CNT));
 
     memset(&PriIMU_Data, NULL, sizeof(PriIMU_Data));
     memset(&SecIMU_Data, NULL, sizeof(SecIMU_Data));
@@ -186,7 +227,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     if (!SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
-        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, NULL, 0);
+        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, &SrvIMU_ALLModule_Init_Error_CNT, sizeof(SrvIMU_ALLModule_Init_Error_CNT));
         return SrvIMU_AllModule_Init_Error;
     }
     else if (!SrvMpu_Init_Reg.sec.Pri_State && SrvMpu_Init_Reg.sec.Sec_State)
@@ -416,35 +457,23 @@ static void SrvIMU_SecIMU_ExtiCallback(void)
 /*************************************************************** Error Process Callback *******************************************************************************/
 static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
-    static uint8_t a;
-
-    a++;
+    (*(uint32_t *)p_arg)++;
 }
 
 static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
-    static uint8_t a;
-
-    a++;
+    (*(uint32_t *)p_arg)++;
 }
 
 static void SrvIMU_AllModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
-    static uint8_t a;
-
-    a++;
+    (*(uint32_t *)p_arg)++;
 }
 
 static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size)
 {
-    static uint8_t a;
-
-    a++;
 }
 
 static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size)
 {
-    static uint8_t a;
-
-    a++;
 }

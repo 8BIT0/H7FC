@@ -117,6 +117,7 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
     int16_t code_tmp = code;
     data_handle match_data = 0;
     Error_Port_Reg port_reg;
+    ErrorStream_TypeDef data_stream;
     char *letter = NULL;
 
     port_reg.val = 0;
@@ -125,6 +126,12 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
         return false;
 
     TreeNode_Handle search_handle = BalanceTree.Search(ErrorHandleToObj(hdl)->tree, (data_handle)&code_tmp);
+
+    data_stream.p_data = p_arg;
+    data_stream.size = size;
+
+    (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_data_stream).p_data = p_arg;
+    (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_data_stream).size = size;
 
     /* find target node */
     if (search_handle)
@@ -135,7 +142,9 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
             {
                 /* trigger process callback */
                 if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback)
-                    ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(code, NULL, 0);
+                {
+                    ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(code, data_stream.p_data, data_stream.size);
+                }
             }
             else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Next)
             {
