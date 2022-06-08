@@ -3,9 +3,18 @@
 #include "Dev_Card.h"
 #include "IO_Definition.h"
 #include "error_log.h"
+#include <stdarg.h>
+#include <stdio.h>
+
+static uint8_t Disk_Print_Buff[128] = {0};
+static Disk_Printf_Callback Disk_PrintOut = NULL;
 
 static Error_Handler DevCard_Error_Handle = NULL;
 static Disk_Info_TypeDef Disk_Info;
+
+/* Internal Function */
+static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
+static void Disk_Printf(const char *str, ...);
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
 /******************************************************************************** SPI Interface **************************************************************************/
@@ -44,25 +53,27 @@ static DevCard_Obj_TypeDef DevTFCard_Obj = {
 
 /******************************************************************************* Error Proc Object **************************************************************************/
 static Error_Obj_Typedef DevCard_ErrorList[] = {
+#if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
     {
         .out = true,
         .log = false,
         .prc_callback = NULL,
         .code = DevCard_Internal_Module_Init_Error,
         .desc = "internal Storage Init Error\r\n",
-        .proc_type = Error_Proc_Ignore,
+        .proc_type = Error_Proc_Immd,
         .prc_data_stream = {
             .p_data = NULL,
             .size = 0,
         },
     },
+#endif
     {
         .out = true,
         .log = false,
-        .prc_callback = NULL,
+        .prc_callback = Disk_ExtModule_InitError,
         .code = DevCard_External_Module_Init_Error,
         .desc = "External Storage Init Error\r\n",
-        .proc_type = Error_Proc_Ignore,
+        .proc_type = Error_Proc_Immd,
         .prc_data_stream = {
             .p_data = NULL,
             .size = 0,
@@ -102,7 +113,11 @@ static bool ExtDisk_Init(void)
     /* trigger error */
     if (Disk_Info.module_error_reg.section.TFCard_module_error_code)
     {
-        // ErrorLog.trigger(DevCard_Error_Handle, );
+        uint8_t Error_Code = Disk_Info.module_error_reg.section.TFCard_module_error_code;
+
+        ErrorLog.trigger(DevCard_Error_Handle,
+                         DevCard_External_Module_Init_Error,
+                         &Error_Code, sizeof(uint8_t));
     }
 #endif
 
@@ -121,9 +136,17 @@ bool IntDisk_Init(void)
 }
 #endif
 
-bool Disk_Init(void)
+void Disk_Set_Printf(Disk_Printf_Callback Callback)
+{
+    Disk_PrintOut = Callback;
+}
+
+bool Disk_Init(Disk_Printf_Callback Callback)
 {
     memset(&Disk_Info, NULL, sizeof(Disk_Info));
+
+    /* set printf callback */
+    Disk_PrintOut = Callback;
 
 #if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
     if (!IntDisk_Init())
@@ -131,13 +154,40 @@ bool Disk_Init(void)
 #endif
 
 #if ((STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD) || (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH))
-    if (ExtDisk_Init() != STORAGE_MODULE_NO_ERROR)
+    if (ExtDisk_Init() == STORAGE_MODULE_NO_ERROR)
         return false;
 #endif
+
+    Disk_Printf("Disk Init Done\r\n");
 
     return true;
 }
 
-static void DevCard_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
+/******************************************************************************* Error Proc Function **************************************************************************/
+#if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
+static void Disk_Internal_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
+}
+#endif
+
+static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
+{
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+    Disk_Printf("\tTF Card Error Code: %d\r\n", *p_arg);
+#endif
+}
+
+static void Disk_Printf(const char *str, ...)
+{
+    va_list arp;
+    va_start(arp, str);
+
+    if (Disk_PrintOut)
+    {
+        sprintf(Disk_Print_Buff, str, arp);
+        Disk_PrintOut(Disk_Print_Buff, strlen(Disk_Print_Buff));
+        memset(Disk_Print_Buff, NULL, sizeof(Disk_Print_Buff));
+    }
+
+    va_end(arp);
 }

@@ -8,6 +8,8 @@
 
 #define STORAGE_MODULE_NO_ERROR 0
 
+typedef void (*Disk_Printf_Callback)(uint8_t *p_buff, uint16_t size);
+
 typedef enum
 {
     DevCard_Internal_Module_Init_Error = 0,
@@ -57,6 +59,6 @@ typedef struct
 } Disk_Info_TypeDef;
 #pragma pack()
 
-bool Disk_Init(void);
+bool Disk_Init(Disk_Printf_Callback Callback);
 
 #endif

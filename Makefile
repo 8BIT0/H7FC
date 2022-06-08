@@ -166,6 +166,7 @@ C_INCLUDES =  \
 -ISystem/ \
 -ISystem/mmu/ \
 -ISystem/shell \
+-ISystem/diskio \
 -Idebug/ \
 -IDataStructure/ \
 -ISystem/runtime/ \

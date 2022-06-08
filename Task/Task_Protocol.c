@@ -37,7 +37,7 @@ static void TaskProtocol_Main(uint8_t *data, uint16_t size);
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 static void TaskProtocol_PlugDetect_Callback(void);
-static ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
+ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
 
 bool TaskProtocol_Init(void)
 {
@@ -64,7 +64,7 @@ bool TaskProtocol_Init(void)
     return true;
 }
 
-static ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size)
+ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size)
 {
     /* push into send queue */
     if (VCP_Queue_CreateState &&

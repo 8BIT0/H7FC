@@ -6,6 +6,7 @@
 #include "IO_Definition.h"
 #include "runtime.h"
 #include "Dev_Led.h"
+#include "DiskIO.h"
 
 Task_Handle TaskProtocol_Handle = NULL;
 Task_Handle TaskInertial_Handle = NULL;
@@ -50,6 +51,8 @@ void Task_Manager_Init(void)
 
     TaskInertial_Init();
     TaskProtocol_Init();
+
+    Disk_Init(TaskProto_PushProtocolQueue);
 }
 
 void Task_Manager_CreateTask(void)

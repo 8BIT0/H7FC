@@ -39,5 +39,6 @@ typedef enum
 
 bool TaskProtocol_Init(void);
 void TaskProtocol_Core(Task_Handle hdl);
+ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
 
 #endif
