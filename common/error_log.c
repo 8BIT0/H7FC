@@ -1,6 +1,7 @@
 #include "error_log.h"
 #include "queue.h"
 #include "mmu.h"
+#include <stdarg.h>
 
 /*
 error data in queue
@@ -17,6 +18,7 @@ static Error_OutState_List ErrorOut_State = Error_OutFree;
 static Error_LogState_List ErrorLog_State = Error_LogFree;
 static error_port_callback out_callback = NULL;
 static error_port_callback log_callback = NULL;
+static Error_Port_Reg port_reg;
 
 /* internal function */
 static bool Error_Out(void);
@@ -28,6 +30,7 @@ static bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *obj, uint16_t n
 static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size);
 static bool Error_Proc(Error_Handler hdl);
 static void Error_Set_Callback(ErrorLog_Callback_Type_List type, error_port_callback callback);
+static uint32_t Error_DescToQueue(const char *str, ...);
 
 ErrorLog_TypeDef ErrorLog = {
     .create = ErrorTree_Create,
@@ -35,6 +38,7 @@ ErrorLog_TypeDef ErrorLog = {
     .registe = Error_Register,
     .trigger = Error_Trigger,
     .set_callback = Error_Set_Callback,
+    .add_desc = Error_DescToQueue,
 };
 
 static data_handle Error_InsertPriority_Compare(data_handle l_addr, data_handle r_addr)
@@ -114,12 +118,31 @@ static bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint1
     return true;
 }
 
+static uint32_t Error_DescToQueue(const char *str, ...)
+{
+    uint32_t length = 0;
+    char p_data[128] = {0};
+    va_list arp;
+    va_start(arp, str);
+
+    if (ErrorQueue_CreateState)
+    {
+        length = vsnprintf((char *)p_data, sizeof(p_data), (char *)str, arp);
+
+        port_reg.section.len = length;
+        Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
+        Queue.push(&ErrorQueue, p_data, length);
+    }
+
+    va_end(arp);
+    return length;
+}
+
 /* still in half way */
 static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
 {
     int16_t code_tmp = code;
     data_handle match_data = 0;
-    Error_Port_Reg port_reg;
     ErrorStream_TypeDef data_stream;
     char *letter = NULL;
 
@@ -141,24 +164,6 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
     {
         if (TreeNodeHandleToObj(search_handle)->data)
         {
-            if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Immd)
-            {
-                /* trigger process callback */
-                if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback)
-                {
-                    ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(code, data_stream.p_data, data_stream.size);
-                }
-            }
-            else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Next)
-            {
-                /* add error into linked list */
-                /* reserve */
-            }
-            else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Ignore)
-            {
-                /* reserve */
-            }
-
             port_reg.section.log_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->log;
             port_reg.section.out_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->out;
             port_reg.section.len = strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc) + strlen(ErrorHandleToObj(hdl)->tree->name) + strlen("[  ] ");
@@ -180,8 +185,28 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
                 /* push error decribe */
                 Queue.push(&ErrorQueue, ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
             }
+
+            if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Immd)
+            {
+                /* trigger process callback */
+                if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback)
+                {
+                    ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(code, data_stream.p_data, data_stream.size);
+                }
+            }
+            else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Next)
+            {
+                /* add error into linked list */
+                /* reserve */
+            }
+            else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Ignore)
+            {
+                /* reserve */
+            }
         }
     }
+
+    port_reg.val = 0;
 
     return true;
 }

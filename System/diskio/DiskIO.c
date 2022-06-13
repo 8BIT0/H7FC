@@ -14,7 +14,8 @@ static Disk_Info_TypeDef Disk_Info;
 
 /* Internal Function */
 static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
-static void Disk_Printf(const char *str, ...);
+static void Disk_Printf(char *str, ...);
+static Disk_Card_Info Disk_GetCard_Info(void);
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
 /******************************************************************************** SPI Interface **************************************************************************/
@@ -154,15 +155,31 @@ bool Disk_Init(Disk_Printf_Callback Callback)
 #endif
 
 #if ((STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD) || (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH))
-    if (ExtDisk_Init() == STORAGE_MODULE_NO_ERROR)
+    if (!ExtDisk_Init())
         return false;
 #endif
 
     Disk_Printf("Disk Init Done\r\n");
 
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+    Disk_Printf("    [Card Info] BlockNbr:     %d\r\n", Disk_GetCard_Info().BlockNbr);
+    Disk_Printf("    [Card Info] BlockSize:    %d\r\n", Disk_GetCard_Info().BlockSize);
+    Disk_Printf("    [Card Info] CardSpeed:    %d\r\n", Disk_GetCard_Info().CardSpeed);
+    Disk_Printf("    [Card Info] CardType:     %d\r\n", Disk_GetCard_Info().CardType);
+    Disk_Printf("    [Card Info] CardVersion:  %d\r\n", Disk_GetCard_Info().CardVersion);
+    Disk_Printf("    [Card Info] Class:        %d\r\n", Disk_GetCard_Info().Class);
+    Disk_Printf("    [Card Info] LogBlockNbr:  %d\r\n", Disk_GetCard_Info().LogBlockNbr);
+    Disk_Printf("    [Card Info] LogBlockSize: %d\r\n", Disk_GetCard_Info().LogBlockSize);
+    Disk_Printf("    [Card Info] RelCardAdd:   %d\r\n", Disk_GetCard_Info().RelCardAdd);
+    Disk_Printf("\r\n");
+#endif
     return true;
 }
 
+static Disk_Card_Info Disk_GetCard_Info(void)
+{
+    return DevCard.Get_Info(&DevTFCard_Obj.SDMMC_Obj);
+}
 /******************************************************************************* Error Proc Function **************************************************************************/
 #if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
 static void Disk_Internal_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
@@ -173,19 +190,21 @@ static void Disk_Internal_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
-    Disk_Printf("\tTF Card Error Code: %d\r\n", *p_arg);
+    ErrorLog.add_desc("    TF Card Error Code: %d\r\n", *p_arg);
 #endif
 }
 
-static void Disk_Printf(const char *str, ...)
+/********************************************************************************* Printf Interface ***************************************************************************/
+static void Disk_Printf(char *str, ...)
 {
     va_list arp;
     va_start(arp, str);
 
     if (Disk_PrintOut)
     {
-        sprintf(Disk_Print_Buff, str, arp);
-        Disk_PrintOut(Disk_Print_Buff, strlen(Disk_Print_Buff));
+        uint32_t length = vsnprintf((char *)Disk_Print_Buff, sizeof(Disk_Print_Buff), (char *)str, arp);
+        Disk_PrintOut(Disk_Print_Buff, length);
+
         memset(Disk_Print_Buff, NULL, sizeof(Disk_Print_Buff));
     }
 

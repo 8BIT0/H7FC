@@ -18,8 +18,28 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
+    bool valid;
+
+    uint32_t CardType;
+    uint32_t CardVersion;
+    uint32_t Class;
+    uint32_t RelCardAdd;
+    uint32_t BlockNbr;
+    uint32_t BlockSize;
+    uint32_t LogBlockNbr;
+    uint32_t LogBlockSize;
+    uint32_t CardSpeed;
+
+    uint32_t UsdBlockNbr;
+    uint32_t RmnBlockNbr;
+    uint16_t RmnByteInCurBlock;
+} DevCard_Info_TypeDef;
+
+typedef struct
+{
     BspSDMMC_Obj_TypeDef SDMMC_Obj;
     DevCard_Error_List error_code;
+    DevCard_Info_TypeDef info;
 } DevCard_Obj_TypeDef;
 #pragma pack()
 
@@ -29,6 +49,7 @@ typedef struct
     bool (*Insert)(DevCard_Obj_TypeDef *Obj);
     bool (*GetState)(DevCard_Obj_TypeDef *Obj);
     DevCard_Error_List (*Get_ErrorCode)(DevCard_Obj_TypeDef *Obj);
+    DevCard_Info_TypeDef (*Get_Info)(DevCard_Obj_TypeDef *Obj);
 } DevCard_TypeDef;
 
 extern DevCard_TypeDef DevCard;

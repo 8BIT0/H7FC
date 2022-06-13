@@ -5,9 +5,9 @@
 #include <stdint.h>
 #include <string.h>
 #include "system_cfg.h"
+#include "Dev_Card.h"
 
-#define STORAGE_MODULE_NO_ERROR 0
-
+typedef DevCard_Info_TypeDef Disk_Card_Info;
 typedef void (*Disk_Printf_Callback)(uint8_t *p_buff, uint16_t size);
 
 typedef enum

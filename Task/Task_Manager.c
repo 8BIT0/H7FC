@@ -49,8 +49,8 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PB6);
     DebugPin.init(Debug_PB10);
 
-    TaskInertial_Init();
     TaskProtocol_Init();
+    TaskInertial_Init();
 
     Disk_Init(TaskProto_PushProtocolQueue);
 }

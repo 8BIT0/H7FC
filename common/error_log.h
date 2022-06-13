@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdarg.h>
 #include "binary_tree.h"
 #include "linked_list.h"
 
@@ -94,6 +95,7 @@ typedef struct
     bool (*trigger)(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size);
     bool (*proc)(Error_Handler hdl);
     void (*set_callback)(ErrorLog_Callback_Type_List type, error_port_callback callback);
+    uint32_t (*add_desc)(const char *str, ...);
 } ErrorLog_TypeDef;
 
 extern ErrorLog_TypeDef ErrorLog;

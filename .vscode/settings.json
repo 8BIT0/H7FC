@@ -80,7 +80,8 @@
                 "dev_tfcard.h": "c",
                 "bsp_sdmmc.h": "c",
                 "sdcard_standard.h": "c",
-                "dev_card.h": "c"
+                "dev_card.h": "c",
+                "iterator": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
