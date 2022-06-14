@@ -6,9 +6,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
 static uint8_t Disk_Print_Buff[128] = {0};
-static uint8_t Disk_Card_SectionBuff[DISK_CARD_SENCTION_SZIE] = {0};
 static Disk_Printf_Callback Disk_PrintOut = NULL;
 
 static Error_Handler DevCard_Error_Handle = NULL;
@@ -52,6 +50,13 @@ static DevCard_Obj_TypeDef DevTFCard_Obj = {
         .instance = SDMMC1,
     },
 };
+
+static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
+
+/* is not an appropriate data cache structure i think */
+/* still developing */
+static uint8_t Disk_Card_SectionBuff[DISK_CARD_SENCTION_SZIE * 2] = {0};
+
 #endif
 
 /******************************************************************************* Error Proc Object **************************************************************************/
