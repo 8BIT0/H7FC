@@ -69,18 +69,20 @@ static DevCard_Info_TypeDef DevCard_GetInfo(DevCard_Obj_TypeDef *Instance)
     return info_tmp;
 }
 
-static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t size)
+static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t data_size, uint16_t block_num)
 {
-    if ((Instance == NULL) || (p_data == NULL) || (size == 0))
+    if ((Instance == NULL) || (p_data == NULL) || (block_num == 0) || (block == 0) || (block > Instance->info.BlockNbr) || (data_size < block_num * Instance->info.BlockSize))
         return false;
 
     return true;
 }
 
-static bool DevCard_Read(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t size)
+static bool DevCard_Read(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t data_size, uint16_t block_num)
 {
-    if ((Instance == NULL) || (p_data == NULL) || (size == 0))
+    if ((Instance == NULL) || (p_data == NULL) || (block_num == 0) || (block > Instance->info.BlockNbr) || (data_size < block_num * Instance->info.BlockSize))
         return false;
+
+    BspSDMMC.read(&(Instance->SDMMC_Obj), p_data, block, block_num);
 
     return true;
 }
