@@ -6,7 +6,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
 static uint8_t Disk_Print_Buff[128] = {0};
+static uint8_t Disk_Card_SectionBuff[DISK_CARD_SENCTION_SZIE] = {0};
 static Disk_Printf_Callback Disk_PrintOut = NULL;
 
 static Error_Handler DevCard_Error_Handle = NULL;
@@ -180,6 +182,14 @@ static Disk_Card_Info Disk_GetCard_Info(void)
 {
     return DevCard.Get_Info(&DevTFCard_Obj.SDMMC_Obj);
 }
+/******************************************************************************* Disk File Function ***************************************************************************/
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+static void Disk_CheckMBR(Disk_FATFileSys_TypeDef *FATObj)
+{
+    DiskCard_NoneMBR_Label;
+}
+
+#endif
 /******************************************************************************* Error Proc Function **************************************************************************/
 #if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
 static void Disk_Internal_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
