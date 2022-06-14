@@ -16,6 +16,7 @@ static Disk_Info_TypeDef Disk_Info;
 static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void Disk_Printf(char *str, ...);
 static Disk_Card_Info Disk_GetCard_Info(void);
+static void Disk_CheckMBR(Disk_FATFileSys_TypeDef *FATObj);
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
 /******************************************************************************** SPI Interface **************************************************************************/
@@ -52,6 +53,7 @@ static DevCard_Obj_TypeDef DevTFCard_Obj = {
 };
 
 static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
+static Disk_FATFileSys_TypeDef FATFs_Obj;
 
 /* is not an appropriate data cache structure i think */
 /* still developing */
@@ -113,6 +115,8 @@ static bool ExtDisk_Init(void)
 #endif
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+    memset(&FATFs_Obj, NULL, sizeof(FATFs_Obj));
+
     DevTFCard_Obj.SDMMC_Obj.pin = &SDMMC_Pin;
 
     Disk_Info.module_reg.section.TFCard_modlue_EN = true;
@@ -179,6 +183,9 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_Printf("    [Card Info] LogBlockSize: %d\r\n", Disk_GetCard_Info().LogBlockSize);
     Disk_Printf("    [Card Info] RelCardAdd:   %d\r\n", Disk_GetCard_Info().RelCardAdd);
     Disk_Printf("\r\n");
+
+    /* Check MBR Section Info */
+    Disk_CheckMBR(&FATFs_Obj);
 #endif
     return true;
 }
@@ -191,7 +198,17 @@ static Disk_Card_Info Disk_GetCard_Info(void)
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
 static void Disk_CheckMBR(Disk_FATFileSys_TypeDef *FATObj)
 {
-    DiskCard_NoneMBR_Label;
+    if (FATObj == NULL)
+        return;
+
+    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, DISK_CARD_MBR_SECTION, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    if (memcmp(DiskCard_NoneMBR_Label, Disk_Card_SectionBuff, sizeof(DiskCard_NoneMBR_Label)) == 0)
+    {
+        FATObj->has_mbr = false;
+    }
+    else
+        FATObj->has_mbr = true;
 }
 
 #endif
