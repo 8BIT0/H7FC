@@ -83,7 +83,34 @@ typedef struct
 
 typedef struct
 {
+    uint8_t JMP_CMD[3];
     char OEM_tag[8];
+
+    uint16_t BytesPerSec;
+    uint8_t SecPerClus;
+    uint16_t ResdSecCnt;
+    uint8_t NumFATs;
+    uint16_t RootEntCnt;
+    uint16_t TotSec16;
+    uint8_t Media;
+    uint16_t FATSz16;
+    uint16_t SecPerTrk;
+    uint16_t NumHeads;
+    uint32_t HiddSec;
+    uint32_t TotSec32;
+    uint32_t FATSz32;
+    uint16_t ExtFlags;
+    uint16_t FSVer;
+    uint32_t RootClus;
+    uint16_t FSInfo;
+    uint16_t BkBootSec;
+    uint8_t Reserved[12];
+    uint8_t DrvNum;
+    uint8_t Reserved1;
+    uint8_t BootSig;
+    uint32_t VolID;
+    uint8_t FileSysType[11];
+    uint64_t FilSysType1;
 } Disk_CardDBR_SectionInfo_TypeDef;
 
 typedef struct
