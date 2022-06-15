@@ -188,6 +188,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
 
     /* Parse MBR Section Info */
     Disk_ParseMBR(&FATFs_Obj);
+    Disk_ParseDBR(&FATFs_Obj);
 #endif
     return true;
 }
@@ -231,7 +232,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     {
         DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->disk_section_table[0].StartLBA, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-        memcpy(FATObj->DBR_info.OEM_tag, Disk_Card_SectionBuff + DISK_CARD_DBR_OEM_OFFSET, sizeof(FATObj->DBR_info.OEM_tag));
+        memcpy(&(FATObj->DBR_info), Disk_Card_SectionBuff, sizeof(FATObj->DBR_info));
     }
     else
     {
