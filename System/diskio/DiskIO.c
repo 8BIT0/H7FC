@@ -217,19 +217,21 @@ static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
         if ((*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_1_OFFSET) == DISK_CARD_TERMINATION_BYTE_1) &&
             (*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_2_OFFSET) == DISK_CARD_TERMINATION_BYTE_2))
             memcpy(FATObj->disk_section_table, Disk_Card_SectionBuff + DISK_CARD_MBR_STARTUP_OFFSET, DISK_CARD_SECTION_AREA_TABLE * DISK_CARD_SECTION_INFO_NUM);
+
+        memset(Disk_Card_SectionBuff, NULL, sizeof(Disk_Card_SectionBuff));
     }
 }
 
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
 {
-    uint32_t DBR_Addr = 0;
-
     if (FATObj == NULL)
         return;
 
     if (FATObj->has_mbr)
     {
-        DBR_Addr = FATObj->disk_section_table[0].StartLBA * DISK_CARD_SENCTION_SZIE;
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->disk_section_table[0].StartLBA, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+        memcpy(FATObj->DBR_info.OEM_tag, Disk_Card_SectionBuff + DISK_CARD_DBR_OEM_OFFSET, sizeof(FATObj->DBR_info.OEM_tag));
     }
     else
     {

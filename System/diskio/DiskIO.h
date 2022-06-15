@@ -16,6 +16,7 @@
 #define DISK_CARD_SECTION_INFO_NUM 4
 #define DISK_CARD_TERMINATION_BYTE_1 0x55
 #define DISK_CARD_TERMINATION_BYTE_2 0xAA
+#define DISK_CARD_DBR_OEM_OFFSET 3
 
 typedef DevCard_Info_TypeDef Disk_Card_Info;
 typedef void (*Disk_Printf_Callback)(uint8_t *p_buff, uint16_t size);
