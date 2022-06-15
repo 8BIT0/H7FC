@@ -15,8 +15,6 @@ static Disk_Info_TypeDef Disk_Info;
 /* Internal Function */
 static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void Disk_Printf(char *str, ...);
-static Disk_Card_Info Disk_GetCard_Info(void);
-static void Disk_CheckMBR(Disk_FATFileSys_TypeDef *FATObj);
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
 /******************************************************************************** SPI Interface **************************************************************************/
@@ -27,6 +25,10 @@ DevW25QxxObj_TypeDef W25Q64_Obj = {
 #endif
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+static Disk_Card_Info Disk_GetCard_Info(void);
+static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
+static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
+
 /******************************************************************************** SDMMC Interface **************************************************************************/
 static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
     .CK_Port = SDMMC_CLK_PORT,
@@ -184,8 +186,8 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_Printf("    [Card Info] RelCardAdd:   %d\r\n", Disk_GetCard_Info().RelCardAdd);
     Disk_Printf("\r\n");
 
-    /* Check MBR Section Info */
-    Disk_CheckMBR(&FATFs_Obj);
+    /* Parse MBR Section Info */
+    Disk_ParseMBR(&FATFs_Obj);
 #endif
     return true;
 }
@@ -196,7 +198,7 @@ static Disk_Card_Info Disk_GetCard_Info(void)
 }
 /******************************************************************************* Disk File Function ***************************************************************************/
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
-static void Disk_CheckMBR(Disk_FATFileSys_TypeDef *FATObj)
+static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
 {
     if (FATObj == NULL)
         return;
@@ -208,12 +210,31 @@ static void Disk_CheckMBR(Disk_FATFileSys_TypeDef *FATObj)
         FATObj->has_mbr = false;
     }
     else
+    {
         FATObj->has_mbr = true;
 
-    /* Check TF Card Termination Byte */
-    if ((*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_1_OFFSET) == DISK_CARD_TERMINATION_BYTE_1) &&
-        (*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_2_OFFSET) == DISK_CARD_TERMINATION_BYTE_2))
-        memcpy(FATObj->disk_section_table, Disk_Card_SectionBuff + DISK_CARD_MBR_STARTUP_OFFSET, DISK_CARD_SECTION_AREA_TABLE * DISK_CARD_SECTION_INFO_NUM);
+        /* Check TF Card Termination Byte */
+        if ((*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_1_OFFSET) == DISK_CARD_TERMINATION_BYTE_1) &&
+            (*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_2_OFFSET) == DISK_CARD_TERMINATION_BYTE_2))
+            memcpy(FATObj->disk_section_table, Disk_Card_SectionBuff + DISK_CARD_MBR_STARTUP_OFFSET, DISK_CARD_SECTION_AREA_TABLE * DISK_CARD_SECTION_INFO_NUM);
+    }
+}
+
+static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
+{
+    uint32_t DBR_Addr = 0;
+
+    if (FATObj == NULL)
+        return;
+
+    if (FATObj->has_mbr)
+    {
+        DBR_Addr = FATObj->disk_section_table[0].StartLBA * DISK_CARD_SENCTION_SZIE;
+    }
+    else
+    {
+        /* if card has no MBR section then Read DBR info from the first section */
+    }
 }
 
 #endif

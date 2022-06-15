@@ -82,10 +82,14 @@ typedef struct
 
 typedef struct
 {
+    char OEM_tag[8];
+} Disk_CardDBR_SectionInfo_TypeDef;
+
+typedef struct
+{
     bool has_mbr;
 
     Disk_CardMBR_SectionInfo_TypeDef disk_section_table[DISK_CARD_SECTION_INFO_NUM];
-
 } Disk_FATFileSys_TypeDef;
 #pragma pack()
 
