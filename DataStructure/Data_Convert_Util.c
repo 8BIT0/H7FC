@@ -6,10 +6,10 @@ uint32_t LEndian2Word(const uint8_t *ptr)
 {
     uint32_t tmp = 0;
 
-    for (uint8_t i = 0; i < sizeof(uint32_t); i++)
-    {
-        ((uint8_t *)&tmp)[i] = ptr[sizeof(uint32_t) - i - 1];
-    }
+    tmp |= ptr[0];
+    tmp |= ptr[1] << 8;
+    tmp |= ptr[2] << 16;
+    tmp |= ptr[3] << 24;
 
     return tmp;
 }
@@ -18,10 +18,8 @@ uint16_t LEndian2HalfWord(const uint8_t *ptr)
 {
     uint16_t tmp = 0;
 
-    for (uint8_t i = 0; i < sizeof(uint16_t); i++)
-    {
-        ((uint8_t *)&tmp)[i] = ptr[sizeof(uint16_t) - i - 1];
-    }
+    tmp |= ptr[0];
+    tmp |= ptr[1] << 8;
 
     return tmp;
 }
