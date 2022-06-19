@@ -249,17 +249,18 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     if (FATObj->has_mbr)
     {
         DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->disk_section_table[0].StartLBA, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
-
-        /* Check TF Card Termination Byte */
-        if ((*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_1_OFFSET) == DISK_CARD_TERMINATION_BYTE_1) &&
-            (*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_2_OFFSET) == DISK_CARD_TERMINATION_BYTE_2))
-        {
-            memcpy(&(FATObj->DBR_info), Disk_Card_SectionBuff, sizeof(FATObj->DBR_info));
-        }
     }
     else
     {
         /* if card has no MBR section then Read DBR info from the first section */
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, 0, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+    }
+
+    /* Check TF Card Termination Byte */
+    if ((*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_1_OFFSET) == DISK_CARD_TERMINATION_BYTE_1) &&
+        (*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_2_OFFSET) == DISK_CARD_TERMINATION_BYTE_2))
+    {
+        memcpy(&(FATObj->DBR_info), Disk_Card_SectionBuff, sizeof(FATObj->DBR_info));
     }
 }
 
