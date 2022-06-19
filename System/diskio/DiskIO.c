@@ -2,6 +2,7 @@
 #include "Dev_W25Qxx.h"
 #include "Dev_Card.h"
 #include "IO_Definition.h"
+#include "Data_Convert_Util.h"
 #include "error_log.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -217,7 +218,24 @@ static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
         /* Check TF Card Termination Byte */
         if ((*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_1_OFFSET) == DISK_CARD_TERMINATION_BYTE_1) &&
             (*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_2_OFFSET) == DISK_CARD_TERMINATION_BYTE_2))
-            memcpy(FATObj->disk_section_table, Disk_Card_SectionBuff + DISK_CARD_MBR_STARTUP_OFFSET, DISK_CARD_SECTION_AREA_TABLE * DISK_CARD_SECTION_INFO_NUM);
+        {
+            memcpy(&(FATObj->disk_section_table), Disk_Card_SectionBuff + DISK_CARD_MBR_STARTUP_OFFSET, DISK_CARD_SECTION_AREA_TABLE * DISK_CARD_SECTION_INFO_NUM);
+
+            for (uint8_t sec_index = 0; sec_index < DISK_CARD_SECTION_INFO_NUM; sec_index++)
+            {
+                uint16_t StartCylSect = 0;
+                uint32_t StartLBA = 0;
+                uint32_t size = 0;
+
+                StartCylSect = FATObj->disk_section_table[sec_index].StartCylSect;
+                StartLBA = FATObj->disk_section_table[sec_index].StartLBA;
+                size = FATObj->disk_section_table[sec_index].Size;
+
+                FATObj->disk_section_table[sec_index].StartCylSect = LEndian2HalfWord(&StartCylSect);
+                FATObj->disk_section_table[sec_index].StartLBA = LEndian2Word(&StartLBA);
+                FATObj->disk_section_table[sec_index].Size = LEndian2Word(&size);
+            }
+        }
 
         memset(Disk_Card_SectionBuff, NULL, sizeof(Disk_Card_SectionBuff));
     }

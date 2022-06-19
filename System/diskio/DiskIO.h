@@ -34,6 +34,14 @@ typedef enum
     OCS_Custom_Param,
 } Default_Section_List;
 
+typedef enum
+{
+    Card_FSType_FAT32 = 0x01,
+    Card_FSType_Win95_FAT32_1 = 0x0B,
+    Card_FSType_Win95_FAT32_2 = 0x0C,
+    Card_FSType_Hidden_FAT32 = 0x1B,
+} DiskCard_FAT_TypeList;
+
 #pragma pack(1)
 typedef union
 {
