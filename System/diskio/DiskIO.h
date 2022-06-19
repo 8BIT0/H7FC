@@ -25,6 +25,8 @@ typedef enum
 {
     DevCard_Internal_Module_Init_Error = 0,
     DevCard_External_Module_Init_Error,
+    DevCard_Read_MBR_Error,
+    DevCard_Read_DBR_Error,
 } DiskIO_Error_List;
 
 typedef enum
