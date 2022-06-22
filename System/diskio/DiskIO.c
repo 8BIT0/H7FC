@@ -260,8 +260,66 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     if ((*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_1_OFFSET) == DISK_CARD_TERMINATION_BYTE_1) &&
         (*(Disk_Card_SectionBuff + DISK_CARD_MBR_TERMINATION_BYTE_2_OFFSET) == DISK_CARD_TERMINATION_BYTE_2))
     {
+        uint16_t half_word_tmp = 0;
+        uint32_t word_tmp = 0;
+
         memcpy(&(FATObj->DBR_info), Disk_Card_SectionBuff, sizeof(FATObj->DBR_info));
+
+        half_word_tmp = FATObj->DBR_info.BytesPerSec;
+        FATObj->DBR_info.BytesPerSec = LEndian2HalfWord(&half_word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.RsvdSecCnt;
+        FATObj->DBR_info.RsvdSecCnt = LEndian2HalfWord(&half_word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.RootEntCnt;
+        FATObj->DBR_info.RootEntCnt = LEndian2HalfWord(&half_word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.TotSec16;
+        FATObj->DBR_info.TotSec16 = LEndian2HalfWord(&half_word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.FATSz16;
+        FATObj->DBR_info.FATSz16 = LEndian2HalfWord(&half_word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.SecPerTrk;
+        FATObj->DBR_info.SecPerTrk = LEndian2HalfWord(&half_word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.NumHeads;
+        FATObj->DBR_info.NumHeads = LEndian2HalfWord(&half_word_tmp);
+
+        word_tmp = FATObj->DBR_info.HiddSec;
+        FATObj->DBR_info.HiddSec = LEndian2Word(&word_tmp);
+
+        word_tmp = FATObj->DBR_info.TotSec32;
+        FATObj->DBR_info.TotSec32 = LEndian2Word(&word_tmp);
+
+        word_tmp = FATObj->DBR_info.FATSz32;
+        FATObj->DBR_info.FATSz32 = LEndian2Word(&word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.ExtFlags;
+        FATObj->DBR_info.ExtFlags = LEndian2HalfWord(&half_word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.FSVer;
+        FATObj->DBR_info.FSVer = LEndian2HalfWord(&half_word_tmp);
+
+        word_tmp = FATObj->DBR_info.RootClus;
+        FATObj->DBR_info.RootClus = LEndian2Word(&word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.FSInfo;
+        FATObj->DBR_info.FSInfo = LEndian2HalfWord(&half_word_tmp);
+
+        half_word_tmp = FATObj->DBR_info.BkBootSec;
+        FATObj->DBR_info.BkBootSec = LEndian2HalfWord(&half_word_tmp);
+
+        word_tmp = FATObj->DBR_info.VolID;
+        FATObj->DBR_info.VolID = LEndian2Word(&word_tmp);
+
+        FATObj->Fst_FATSector = FATObj->disk_section_table[0].StartLBA + FATObj->DBR_info.RsvdSecCnt;
+        FATObj->Fst_DirSector = FATObj->Fst_FATSector + FATObj->DBR_info.NumFATs * FATObj->DBR_info.FATSz32;
     }
+}
+
+bool Disk_Create_File()
+{
 }
 
 #endif

@@ -98,7 +98,7 @@ typedef struct
 
     uint16_t BytesPerSec;
     uint8_t SecPerClus;
-    uint16_t ResdSecCnt;
+    uint16_t RsvdSecCnt;
     uint8_t NumFATs;
     uint16_t RootEntCnt;
     uint16_t TotSec16;
@@ -130,6 +130,9 @@ typedef struct
 
     Disk_CardMBR_SectionInfo_TypeDef disk_section_table[DISK_CARD_SECTION_INFO_NUM];
     Disk_CardDBR_SectionInfo_TypeDef DBR_info;
+
+    uint32_t Fst_FATSector;
+    uint32_t Fst_DirSector;
 } Disk_FATFileSys_TypeDef;
 #pragma pack()
 
