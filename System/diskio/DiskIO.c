@@ -316,6 +316,31 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
         FATObj->Fst_FATSector = FATObj->disk_section_table[0].StartLBA + FATObj->DBR_info.RsvdSecCnt;
         FATObj->Fst_DirSector = FATObj->Fst_FATSector + FATObj->DBR_info.NumFATs * FATObj->DBR_info.FATSz32;
     }
+
+    memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
+}
+
+static DiskFATCluster_State_List Disk_GetCluster_State(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
+{
+    DiskFATCluster_State_List state;
+
+    return state;
+}
+
+static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
+{
+    uint32_t clu_sec = 0;
+    Disk_FAT_ItemTable_TypeDef *FAT_Table = NULL;
+    FATCluster_Addr FATAddr_Tmp = 0;
+
+    clu_sec = (cluster / DISK_FAT_CLUSTER_ITEM_SUM) + FATObj->Fst_FATSector;
+
+    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, clu_sec, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    FAT_Table = (Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff;
+    FATAddr_Tmp = &(FAT_Table->table_item[cluster % DISK_FAT_CLUSTER_ITEM_SUM]);
+
+    return LEndian2Word(FATAddr_Tmp);
 }
 
 bool Disk_Create_File()

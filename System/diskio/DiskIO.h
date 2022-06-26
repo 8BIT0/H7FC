@@ -17,7 +17,9 @@
 #define DISK_CARD_TERMINATION_BYTE_1 0x55
 #define DISK_CARD_TERMINATION_BYTE_2 0xAA
 #define DISK_CARD_DBR_OEM_OFFSET 3
+#define DISK_FAT_CLUSTER_ITEM_SUM 128
 
+typedef uint32_t FATCluster_Addr;
 typedef DevCard_Info_TypeDef Disk_Card_Info;
 typedef void (*Disk_Printf_Callback)(uint8_t *p_buff, uint16_t size);
 
@@ -43,6 +45,15 @@ typedef enum
     Card_FSType_Win95_FAT32_2 = 0x0C,
     Card_FSType_Hidden_FAT32 = 0x1B,
 } DiskCard_FAT_TypeList;
+
+typedef enum
+{
+    Disk_FATCluster_Idle = 1,
+    Disk_FATCluster_Alloc,
+    Disk_FATCluster_SysRes,
+    Disk_FATCluster_Bad,
+    Disk_FATCluster_End,
+} DiskFATCluster_State_List;
 
 #pragma pack(1)
 typedef union
@@ -72,6 +83,11 @@ typedef union
 
     uint32_t val;
 } StorageModule_Error_Reg;
+
+typedef struct
+{
+    FATCluster_Addr table_item[DISK_FAT_CLUSTER_ITEM_SUM];
+} Disk_FAT_ItemTable_TypeDef;
 
 typedef struct
 {
