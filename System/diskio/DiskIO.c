@@ -313,8 +313,13 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
         word_tmp = FATObj->DBR_info.VolID;
         FATObj->DBR_info.VolID = LEndian2Word(&word_tmp);
 
+        FATObj->DBR_SecNo = FATObj->disk_section_table[0].StartLBA;
+        FATObj->BytePerSection = FATObj->DBR_info.BytesPerSec;
+        FATObj->FAT_Sections = FATObj->DBR_info.FATSz32;
+        FATObj->SecPerCluster = FATObj->DBR_info.SecPerClus;
         FATObj->Fst_FATSector = FATObj->disk_section_table[0].StartLBA + FATObj->DBR_info.RsvdSecCnt;
         FATObj->Fst_DirSector = FATObj->Fst_FATSector + FATObj->DBR_info.NumFATs * FATObj->DBR_info.FATSz32;
+        FATObj->Total_KBSize = FATObj->DBR_info.TotSec32;
     }
 
     memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
@@ -326,7 +331,7 @@ static void Disk_Parse_FileDataInfo(Disk_FileInfo_TypeDef *FileInfo)
 
 static FATCluster_Addr Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
-    return (((cluster - 2) * FATObj->DBR_info.SecPerClus) + FATObj->Fst_FATSector);
+    return (((cluster - 2) * FATObj->SecPerClus) + FATObj->Fst_FATSector);
 }
 
 static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
