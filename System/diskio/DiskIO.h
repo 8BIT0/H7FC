@@ -64,6 +64,17 @@ typedef enum
 
 typedef enum
 {
+    Disk_File_RW = 0b00000000, /* file attribute read & write */
+    Disk_File_RO = 0b00000001, /* file attribute read only */
+    Disk_File_Hi = 0b00000010, /* file attribute hide */
+    Disk_File_Sy = 0b00000100, /* file attribute system file */
+    Disk_File_Vo = 0b00001000, /* file attribute volumn tag */
+    Disk_File_Sd = 0b00010000, /* file attribute subdirectory */
+    Disk_File_Pf = 0b00100000, /* file attribute palce on file */
+} Disk_FileAttr_List;
+
+typedef enum
+{
     Card_FSType_FAT32 = 0x01,
     Card_FSType_Win95_FAT32_1 = 0x0B,
     Card_FSType_Win95_FAT32_2 = 0x0C,
