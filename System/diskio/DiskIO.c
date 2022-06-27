@@ -320,11 +320,35 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
 }
 
-static DiskFATCluster_State_List Disk_GetCluster_State(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
+static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
 {
-    DiskFATCluster_State_List state;
+    if (cluster == DISK_FAT_CLUSTER_IDLE_WORLD)
+    {
+        return Disk_FATCluster_Idle;
+    }
 
-    return state;
+    if (cluster == DISK_FAT_CLUSTER_BAD_WORLD)
+    {
+        return Disk_FATCluster_Bad;
+    }
+
+    if ((cluster >= DISK_FAT_CLUSTER_ALLOC_MIN_WORLD) &&
+        (cluster <= DISK_FAT_CLUSTER_ALLOC_MAX_WORLD))
+    {
+        return Disk_FATCluster_Alloc;
+    }
+
+    if ((cluster >= DISK_FAT_CLUSTER_SYSRES_MIN_WORLD) &&
+        (cluster <= DISK_FAT_CLUSTER_SYSRES_MAX_WORLD))
+    {
+        return Disk_FATCluster_SysRes;
+    }
+
+    if ((cluster >= DISK_FAT_CLUSTER_END_MIN_WORLD) &&
+        (cluster <= DISK_FAT_CLUSTER_END_MAX_WORLD))
+    {
+        return Disk_FATCluster_End;
+    }
 }
 
 static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
