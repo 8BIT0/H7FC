@@ -320,6 +320,11 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
 }
 
+static FATCluster_Addr Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
+{
+    return (((cluster - 2) * FATObj->DBR_info.SecPerClus) + FATObj->Fst_FATSector);
+}
+
 static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
 {
     if (cluster == DISK_FAT_CLUSTER_IDLE_WORLD)
