@@ -28,6 +28,21 @@
 #define DISK_FAT_CLUSTER_END_MIN_WORLD 0x0FFFFFF8
 #define DISK_FAT_CLUSTER_END_MAX_WORLD 0x0FFFFFFF
 
+#define DISK_FILE_DATEBASE_YEAR 1980
+#define DISK_FILE_DATE_HOUR_MASK 0x001F
+#define DISK_FILE_DATE_MIN_MASK 0x002F
+#define DISK_FILE_DATE_SEC_MASK 0x001F
+#define DISK_FILE_DATE_YEAR_MASK 0x007F
+#define DISK_FILE_DATE_MONTH_MASK 0x000F
+#define DISK_FILE_DATE_DAY_MASK 0x001F
+
+#define DISK_FILE_DATE_HOUR_BITS 5
+#define DISK_FILE_DATE_MIN_BITS 6
+#define DISK_FILE_DATE_SEC_BITS 5
+#define DISK_FILE_DATE_YEAR_BITS 7
+#define DISK_FILE_DATE_MONTH_BITS 4
+#define DISK_FILE_DATE_DAY_BITS 5
+
 typedef uint32_t FATCluster_Addr;
 typedef DevCard_Info_TypeDef Disk_Card_Info;
 typedef void (*Disk_Printf_Callback)(uint8_t *p_buff, uint16_t size);
@@ -160,6 +175,37 @@ typedef struct
     uint32_t Fst_FATSector;
     uint32_t Fst_DirSector;
 } Disk_FATFileSys_TypeDef;
+
+typedef struct
+{
+    uint8_t hour;
+    uint8_t min;
+    uint8_t sec;
+} Disk_FileTime_TypeDef;
+
+typedef struct
+{
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+} Disk_FileDate_TypeDef;
+
+typedef struct
+{
+    char *name;
+    uint8_t prop;
+
+    Disk_FileTime_TypeDef ctreate_time;
+    Disk_FileDate_TypeDef create_date;
+
+    Disk_FileDate_TypeDef access_date;
+
+    Disk_FileTime_TypeDef modify_time;
+    Disk_FileDate_TypeDef modify_date;
+
+    uint32_t start_cluster;
+    uint32_t size;
+} Disk_FileInfo_TypeDef;
 #pragma pack()
 
 bool Disk_Init(Disk_Printf_Callback Callback);
