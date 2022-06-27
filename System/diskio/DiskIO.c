@@ -198,7 +198,7 @@ static Disk_Card_Info Disk_GetCard_Info(void)
 {
     return DevCard.Get_Info(&DevTFCard_Obj.SDMMC_Obj);
 }
-/******************************************************************************* Disk File Function ***************************************************************************/
+/************************************************************************** Disk File Alloc Table Function ***************************************************************************/
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
 {
@@ -323,32 +323,24 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
 static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
 {
     if (cluster == DISK_FAT_CLUSTER_IDLE_WORLD)
-    {
         return Disk_FATCluster_Idle;
-    }
 
     if (cluster == DISK_FAT_CLUSTER_BAD_WORLD)
-    {
         return Disk_FATCluster_Bad;
-    }
 
     if ((cluster >= DISK_FAT_CLUSTER_ALLOC_MIN_WORLD) &&
         (cluster <= DISK_FAT_CLUSTER_ALLOC_MAX_WORLD))
-    {
         return Disk_FATCluster_Alloc;
-    }
 
     if ((cluster >= DISK_FAT_CLUSTER_SYSRES_MIN_WORLD) &&
         (cluster <= DISK_FAT_CLUSTER_SYSRES_MAX_WORLD))
-    {
         return Disk_FATCluster_SysRes;
-    }
 
     if ((cluster >= DISK_FAT_CLUSTER_END_MIN_WORLD) &&
         (cluster <= DISK_FAT_CLUSTER_END_MAX_WORLD))
-    {
         return Disk_FATCluster_End;
-    }
+
+    return Disk_FATCluster_Unknow;
 }
 
 static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)

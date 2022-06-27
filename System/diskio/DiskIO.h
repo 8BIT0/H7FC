@@ -57,7 +57,8 @@ typedef enum
 
 typedef enum
 {
-    Disk_FATCluster_Idle = 1,
+    Disk_FATCluster_Unknow = 0,
+    Disk_FATCluster_Idle,
     Disk_FATCluster_Alloc,
     Disk_FATCluster_SysRes,
     Disk_FATCluster_Bad,
