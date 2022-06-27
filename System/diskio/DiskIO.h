@@ -226,6 +226,11 @@ typedef struct
 
 typedef struct
 {
+    Disk_FDI_TypeDef FDI[16];
+} Disk_CatSecFDI_TypeDef;
+
+typedef struct
+{
     char *name;
     uint8_t prop;
 
