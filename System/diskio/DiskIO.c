@@ -353,7 +353,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
 
 /* still in develop */
 /* parse file attribute */
-static void Disk_Parse_FileDataInfo(FATCluster_Addr cat_cluster, Disk_FileInfo_TypeDef *FileInfo)
+static void Disk_Parse_FileAttribute(FATCluster_Addr cat_cluster, Disk_FileInfo_TypeDef *FileInfo)
 {
     Disk_CSFAT_TypeDef FA_Table;
 
