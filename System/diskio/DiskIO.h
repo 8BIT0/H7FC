@@ -224,6 +224,14 @@ typedef struct
 } Disk_FileInfo_TypeDef;
 #pragma pack()
 
+typedef struct
+{
+    bool (*init)(Disk_Printf_Callback Callback);
+    bool (*mkdir)(const char *name);
+    bool (*touch)(const char *path, const char *name);
+    bool (*write)(const char *path, const char *name, uint8_t *p_data, uint16_t size);
+} DiskFS_TypeDef;
+
 bool Disk_Init(Disk_Printf_Callback Callback);
 
 #endif

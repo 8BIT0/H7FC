@@ -177,11 +177,6 @@ bool IntDisk_Init(void)
 }
 #endif
 
-void Disk_Set_Printf(Disk_Printf_Callback Callback)
-{
-    Disk_PrintOut = Callback;
-}
-
 bool Disk_Init(Disk_Printf_Callback Callback)
 {
     memset(&Disk_Info, NULL, sizeof(Disk_Info));
