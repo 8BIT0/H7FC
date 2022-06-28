@@ -7,6 +7,31 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#pragma pack(1)
+typedef struct
+{
+    char name[8];
+    char ext[3];
+
+    uint8_t attr;
+    uint8_t LowerCase;
+    uint8_t Time10Ms;
+    uint8_t CreateTime[2];
+    uint8_t CreateDate[2];
+    uint8_t AccessTime[2];
+    uint8_t HighCluster[2];
+    uint8_t ModifyTime[2];
+    uint8_t ModifyDate[2];
+    uint8_t LowCluster[2];
+    uint8_t FileSize[4];
+} Disk_FDI_TypeDef;
+
+typedef struct
+{
+    Disk_FDI_TypeDef FDI[16];
+} Disk_CatSecFDI_TypeDef;
+#pragma pack()
+
 static uint8_t Disk_Print_Buff[128] = {0};
 static Disk_Printf_Callback Disk_PrintOut = NULL;
 
@@ -325,6 +350,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
 }
 
+/* still in develop */
 static void Disk_Parse_FileDataInfo(FATCluster_Addr cat_cluster, Disk_FileInfo_TypeDef *FileInfo)
 {
     Disk_CatSecFDI_TypeDef FDI_Table;
@@ -367,7 +393,7 @@ static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
 
 static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
-    uint32_t clu_sec = 0;
+    FATCluster_Addr clu_sec = 0;
     Disk_FAT_ItemTable_TypeDef *FAT_Table = NULL;
     FATCluster_Addr FATAddr_Tmp = 0;
 

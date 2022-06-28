@@ -208,29 +208,6 @@ typedef struct
 
 typedef struct
 {
-    char name[8];
-    char ext[3];
-
-    uint8_t attr;
-    uint8_t LowerCase;
-    uint8_t Time10Ms;
-    uint8_t CreateTime[2];
-    uint8_t CreateDate[2];
-    uint8_t AccessTime[2];
-    uint8_t HighCluster[2];
-    uint8_t ModifyTime[2];
-    uint8_t ModifyDate[2];
-    uint8_t LowCluster[2];
-    uint8_t FileSize[4];
-} Disk_FDI_TypeDef;
-
-typedef struct
-{
-    Disk_FDI_TypeDef FDI[16];
-} Disk_CatSecFDI_TypeDef;
-
-typedef struct
-{
     char *name;
     uint8_t prop;
 
