@@ -48,7 +48,7 @@
 #define DISK_FILE_DEFAULT_DAY 28
 
 #define DISK_ROOT_FOLDER_NAME "root"
-#define DISK_FOLDER_TERMINATION '/'
+#define DISK_FOLDER_TERMINATION "/"
 #define DISK_FOLDER_MAX_DEPTH 8
 
 typedef uint32_t FATCluster_Addr;

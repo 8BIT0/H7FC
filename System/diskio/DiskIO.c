@@ -55,6 +55,7 @@ DevW25QxxObj_TypeDef W25Q64_Obj = {
 static Disk_Card_Info Disk_GetCard_Info(void);
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
+static char *Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index);
 
 /******************************************************************************** SDMMC Interface **************************************************************************/
 static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
@@ -362,7 +363,7 @@ static void Disk_Parse_FileAttribute(FATCluster_Addr cat_cluster, Disk_FileInfo_
 
 static FATCluster_Addr Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
-    return (((cluster - 2) * FATObj->SecPerClus) + FATObj->Fst_FATSector);
+    return (((cluster - 2) * FATObj->SecPerCluster) + FATObj->Fst_FATSector);
 }
 
 static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
@@ -408,7 +409,38 @@ static uint32_t Disk_GetPath_Layer(const char *fpath)
 {
     uint32_t layer = 0;
 
+    while (strchr(fpath, DISK_FOLDER_TERMINATION) != 0)
+    {
+        layer++;
+    }
+
     return layer;
+}
+
+static char *Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index)
+{
+    char fpath_tmp[128] = {'\0'};
+    char *token;
+    uint32_t layer = index;
+
+    if (strlen(fpath) > sizeof(fpath_tmp))
+        return NULL;
+
+    memcpy(fpath_tmp, fpath, strlen(fpath));
+
+    token = strtok(fpath_tmp, DISK_FOLDER_TERMINATION);
+
+    while (layer)
+    {
+        token = strtok(NULL, DISK_FOLDER_TERMINATION);
+
+        if (token == NULL)
+            return NULL;
+
+        layer--;
+    }
+
+    return token;
 }
 
 static bool Disk_Create_Path(const char *fpath, const char *name)
