@@ -355,12 +355,12 @@ static void Disk_Parse_FileDataInfo(FATCluster_Addr cat_cluster, Disk_FileInfo_T
 {
     Disk_CatSecFDI_TypeDef FDI_Table;
 
-    memset(Disk_Card_SectionBuff, NULL, sizeof(Disk_Card_SectionBuff));
+    memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
     memset(&FDI_Table, NULL, sizeof(FDI_Table));
 
     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, cat_cluster, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-    memccpy(&FDI_Table, Disk_Card_SectionBuff, sizeof(Disk_Card_SectionBuff));
+    memcpy(&FDI_Table, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE);
 }
 
 static FATCluster_Addr Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
