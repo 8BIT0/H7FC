@@ -404,7 +404,22 @@ static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FAT
     return LEndian2Word(&FATAddr_Tmp);
 }
 
-bool Disk_Create_File()
+static uint32_t Disk_GetPath_Layer(const char *fpath)
+{
+    uint32_t layer = 0;
+
+    return layer;
+}
+
+static bool Disk_Create_Path(const char *fpath, const char *name)
+{
+}
+
+static bool Disk_Create_File(const char *path, const char *name)
+{
+}
+
+static bool Disk_WriteToFile()
 {
 }
 

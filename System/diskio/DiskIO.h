@@ -43,6 +43,14 @@
 #define DISK_FILE_DATE_MONTH_BITS 4
 #define DISK_FILE_DATE_DAY_BITS 5
 
+#define DISK_FILE_DEFAULT_YEAR 2022
+#define DISK_FILE_DEFAULT_MONTH 6
+#define DISK_FILE_DEFAULT_DAY 28 =
+
+#define DISK_ROOT_FOLDER_NAME "root"
+#define DISK_FOLDER_TERMINATION '/'
+#define DISK_FOLDER_MAX_DEPTH 8
+
 typedef uint32_t FATCluster_Addr;
 typedef DevCard_Info_TypeDef Disk_Card_Info;
 typedef void (*Disk_Printf_Callback)(uint8_t *p_buff, uint16_t size);
@@ -227,7 +235,9 @@ typedef struct
 typedef struct
 {
     bool (*init)(Disk_Printf_Callback Callback);
-    bool (*mkdir)(const char *name);
+
+    /* File System API */
+    bool (*mkdir)(const char *fpath, const char *name);
     bool (*touch)(const char *path, const char *name);
     bool (*write)(const char *path, const char *name, uint8_t *p_data, uint16_t size);
 } DiskFS_TypeDef;
