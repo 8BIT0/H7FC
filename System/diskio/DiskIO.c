@@ -24,12 +24,13 @@ typedef struct
     uint8_t ModifyDate[2];
     uint8_t LowCluster[2];
     uint8_t FileSize[4];
-} Disk_FDI_TypeDef;
+} Disk_FileAttr_TypeDef;
 
+/* cluster section file attribute table */
 typedef struct
 {
-    Disk_FDI_TypeDef FDI[16];
-} Disk_CatSecFDI_TypeDef;
+    Disk_FileAttr_TypeDef FDI[16];
+} Disk_CSFAT_TypeDef;
 #pragma pack()
 
 static uint8_t Disk_Print_Buff[128] = {0};
@@ -351,16 +352,17 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
 }
 
 /* still in develop */
+/* parse file attribute */
 static void Disk_Parse_FileDataInfo(FATCluster_Addr cat_cluster, Disk_FileInfo_TypeDef *FileInfo)
 {
-    Disk_CatSecFDI_TypeDef FDI_Table;
+    Disk_CSFAT_TypeDef FA_Table;
 
     memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
-    memset(&FDI_Table, NULL, sizeof(FDI_Table));
+    memset(&FA_Table, NULL, sizeof(FA_Table));
 
     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, cat_cluster, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-    memcpy(&FDI_Table, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE);
+    memcpy(&FA_Table, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE);
 }
 
 static FATCluster_Addr Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
@@ -402,9 +404,9 @@ static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FAT
     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, clu_sec, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
     FAT_Table = (Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff;
-    FATAddr_Tmp = &(FAT_Table->table_item[cluster % DISK_FAT_CLUSTER_ITEM_SUM]);
+    FATAddr_Tmp = FAT_Table->table_item[cluster % DISK_FAT_CLUSTER_ITEM_SUM];
 
-    return LEndian2Word(FATAddr_Tmp);
+    return LEndian2Word(&FATAddr_Tmp);
 }
 
 bool Disk_Create_File()
