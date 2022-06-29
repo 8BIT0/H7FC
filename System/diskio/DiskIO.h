@@ -213,9 +213,10 @@ typedef struct
     uint8_t day;
 } Disk_FileDate_TypeDef;
 
+/* file folder info */
 typedef struct
 {
-    char *name;
+    char name[12];
     uint8_t prop;
 
     Disk_FileTime_TypeDef ctreate_time;
@@ -228,7 +229,13 @@ typedef struct
 
     uint32_t start_cluster;
     uint32_t size;
-} Disk_FileInfo_TypeDef;
+} Disk_FFInfo_TypeDef;
+
+/* file folder info table */
+typedef struct
+{
+    Disk_FFInfo_TypeDef Info[16];
+} Dis_FFInfoTable_TypeDef;
 #pragma pack()
 
 typedef struct

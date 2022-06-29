@@ -354,15 +354,14 @@ static uint32_t Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, 
     return (((cluster - 2) * FATObj->SecPerCluster) + FATObj->Fst_FATSector);
 }
 
-/* still in develop */
 /* parse file/folder attribute */
-static Disk_CCSSFFAT_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
+static Dis_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
-    Disk_CCSSFFAT_TypeDef Attri_Table;
+    Dis_FFInfoTable_TypeDef table_tmp;
     uint32_t disk_section_no = 0;
     char name[11] = {'\0'};
 
-    memset(&Attri_Table, NULL, sizeof(Attri_Table));
+    memset(&table_tmp, NULL, sizeof(Dis_FFInfoTable_TypeDef));
 
     if (cluster != 0)
     {
@@ -372,12 +371,16 @@ static Disk_CCSSFFAT_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FATOb
                      Disk_Get_StartSectionOfCluster(FATObj, cluster),
                      Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-        memcpy(&Attri_Table, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE);
+        for (uint8_t i = 0; i < 16; i++)
+        {
+            memcpy(table_tmp.Info[i].name, ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[i].name, 11);
+            table_tmp.Info[i].name[11] = '\0';
+        }
 
         memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
     }
 
-    return Attri_Table;
+    return table_tmp;
 }
 
 static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
