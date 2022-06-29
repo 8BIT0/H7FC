@@ -157,8 +157,8 @@ typedef struct
 
     uint16_t BytesPerSec;
     uint8_t SecPerClus;
-    uint16_t RsvdSecCnt;
-    uint8_t NumFATs;
+    uint16_t RsvdSecCnt; /* reserve section number between DBR section to FAT1 */
+    uint8_t NumFATs;     /* FAT table number */
     uint16_t RootEntCnt;
     uint16_t TotSec16;
     uint8_t Media;
@@ -166,11 +166,11 @@ typedef struct
     uint16_t SecPerTrk;
     uint16_t NumHeads;
     uint32_t HiddSec;
-    uint32_t TotSec32;
-    uint32_t FATSz32;
+    uint32_t TotSec32; /* total section number in Disk */
+    uint32_t FATSz32;  /* total section number in FAT table */
     uint16_t ExtFlags;
     uint16_t FSVer;
-    uint32_t RootClus;
+    uint32_t RootClus; /* root cluster number */
     uint16_t FSInfo;
     uint16_t BkBootSec;
     uint8_t Reserved[12];
