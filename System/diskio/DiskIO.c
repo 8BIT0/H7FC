@@ -366,7 +366,15 @@ static Disk_CCSSFFAT_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FATOb
 
     if (cluster != 0)
     {
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, );
+        memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
+
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj,
+                     Disk_Get_StartSectionOfCluster(FATObj, cluster),
+                     Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+        memcpy(&Attri_Table, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE);
+
+        memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
     }
 
     return Attri_Table;
