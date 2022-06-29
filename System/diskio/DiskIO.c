@@ -446,7 +446,7 @@ static Dis_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FAT
     return table_tmp;
 }
 
-static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
+static DiskFATCluster_State_List Disk_GetClusterState(FATCluster_Addr cluster)
 {
     if (cluster == DISK_FAT_CLUSTER_IDLE_WORLD)
         return Disk_FATCluster_Idle;
@@ -559,6 +559,22 @@ static bool Disk_Create_File(const char *path, const char *name)
 }
 
 static bool Disk_WriteToFile()
+{
+}
+
+static bool Disk_MoveFileCursor()
+{
+}
+
+static bool Disk_Check_SFN_Length()
+{
+}
+
+static bool Disk_Check_SFN_Frame()
+{
+}
+
+static bool Disk_Check_SFN_Case()
 {
 }
 
