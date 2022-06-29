@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #pragma pack(1)
+/* File and Folder Attribute definition */
 typedef struct
 {
     char name[8];
@@ -26,11 +27,11 @@ typedef struct
     uint8_t FileSize[4];
 } Disk_FFAttr_TypeDef;
 
-/* cluster section file/folder attribute table */
+/* catlog cluster single section file/folder attribute table */
 typedef struct
 {
     Disk_FFAttr_TypeDef attribute[16];
-} Disk_CSFFAT_TypeDef;
+} Disk_CCSSFFAT_TypeDef;
 #pragma pack()
 
 static uint8_t Disk_Print_Buff[128] = {0};
@@ -347,19 +348,28 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
 }
 
+/* cluster number to section number */
+static uint32_t Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
+{
+    return (((cluster - 2) * FATObj->SecPerCluster) + FATObj->Fst_FATSector);
+}
+
 /* still in develop */
 /* parse file/folder attribute */
-static void Disk_Parse_Attribute(Disk_FileInfo_TypeDef *FileInfo)
+static Disk_CCSSFFAT_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
-    Disk_CSFFAT_TypeDef Attri_Table;
+    Disk_CCSSFFAT_TypeDef Attri_Table;
+    uint32_t disk_section_no = 0;
     char name[11] = {'\0'};
 
     memset(&Attri_Table, NULL, sizeof(Attri_Table));
-}
 
-static FATCluster_Addr Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
-{
-    return (((cluster - 2) * FATObj->SecPerCluster) + FATObj->Fst_FATSector);
+    if (cluster != 0)
+    {
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, );
+    }
+
+    return Attri_Table;
 }
 
 static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
@@ -385,6 +395,8 @@ static DiskFATCluster_State_List Disk_GetCluster_State(FATCluster_Addr cluster)
     return Disk_FATCluster_Unknow;
 }
 
+/* it may has bug */
+/* get cluster number from FAT table */
 static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
     FATCluster_Addr clu_sec = 0;
