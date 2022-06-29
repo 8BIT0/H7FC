@@ -49,7 +49,6 @@
 
 #define DISK_ROOT_FOLDER_NAME "root"
 #define DISK_FOLDER_TERMINATION "/"
-#define DISK_FOLDER_MAX_DEPTH 8
 
 typedef uint32_t FATCluster_Addr;
 typedef DevCard_Info_TypeDef Disk_Card_Info;

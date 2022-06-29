@@ -445,10 +445,28 @@ static char *Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index)
 
 static bool Disk_Create_Path(const char *fpath, const char *name)
 {
+    char *folder_name = NULL;
+    char *folder_path_tmp = NULL;
+    uint32_t folder_depth = 0;
+
+    if (fpath == NULL)
+        return false;
+
+    folder_depth = Disk_GetPath_Layer(fpath);
+
+    for (uint32_t i = 0; i < folder_depth; i++)
+    {
+        folder_name = Disk_GetFolderName_ByIndex(fpath, i);
+
+        /* combine folder name to a path */
+
+        /* check correspond folder exist or not first */
+    }
 }
 
 static bool Disk_Create_File(const char *path, const char *name)
 {
+    /* check correspond file exist or not first */
 }
 
 static bool Disk_WriteToFile()
