@@ -219,7 +219,7 @@ typedef struct
     char name[12];
     uint8_t prop;
 
-    Disk_FileTime_TypeDef ctreate_time;
+    Disk_FileTime_TypeDef create_time;
     Disk_FileDate_TypeDef create_date;
 
     Disk_FileDate_TypeDef access_date;

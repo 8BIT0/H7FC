@@ -19,7 +19,7 @@ typedef struct
     uint8_t Time10Ms;
     uint8_t CreateTime[2];
     uint8_t CreateDate[2];
-    uint8_t AccessTime[2];
+    uint8_t AccessDate[2];
     uint8_t HighCluster[2];
     uint8_t ModifyTime[2];
     uint8_t ModifyDate[2];
@@ -358,6 +358,8 @@ static uint32_t Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, 
 static Dis_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
     Dis_FFInfoTable_TypeDef table_tmp;
+    Disk_CCSSFFAT_TypeDef *attr_tmp = NULL;
+    uint32_t date_tmp = 0;
     uint32_t disk_section_no = 0;
     char name[11] = {'\0'};
 
@@ -371,10 +373,71 @@ static Dis_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FAT
                      Disk_Get_StartSectionOfCluster(FATObj, cluster),
                      Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
+        attr_tmp = (Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff;
+
         for (uint8_t i = 0; i < 16; i++)
         {
-            memcpy(table_tmp.Info[i].name, ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[i].name, 11);
+            memcpy(table_tmp.Info[i].name, attr_tmp->attribute[i].name, 11);
             table_tmp.Info[i].name[11] = '\0';
+
+            table_tmp.Info[i].prop = attr_tmp->attribute[i].attr;
+            table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
+                                              (LEndian2HalfWord(attr_tmp->attribute[i].HighCluster) << 16);
+            table_tmp.Info[i].size = LEndian2Word(attr_tmp->attribute[i].FileSize);
+
+            /* parse create time */
+            date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].CreateTime);
+            table_tmp.Info[i].create_time.sec = (date_tmp & DISK_FILE_DATE_SEC_MASK) * 2;
+            date_tmp >>= DISK_FILE_DATE_SEC_BITS;
+
+            table_tmp.Info[i].create_time.min = date_tmp & DISK_FILE_DATE_MIN_MASK;
+            date_tmp >>= DISK_FILE_DATE_MIN_BITS;
+
+            table_tmp.Info[i].create_time.hour = date_tmp & DISK_FILE_DATE_HOUR_MASK;
+            table_tmp.Info[i].create_time.sec += (uint16_t)(attr_tmp->attribute[i].Time10Ms) / 100;
+
+            /* parse create date */
+            date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].CreateDate);
+            table_tmp.Info[i].create_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
+            date_tmp >>= DISK_FILE_DATE_DAY_BITS;
+
+            table_tmp.Info[i].create_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
+            date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
+
+            table_tmp.Info[i].create_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
+            table_tmp.Info[i].create_date.year += DISK_FILE_DATEBASE_YEAR;
+
+            /* parse modify time */
+            date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].ModifyTime);
+            table_tmp.Info[i].modify_time.sec = (date_tmp & DISK_FILE_DATE_SEC_MASK) * 2;
+            date_tmp >>= DISK_FILE_DATE_SEC_BITS;
+
+            table_tmp.Info[i].modify_time.min = date_tmp & DISK_FILE_DATE_MIN_MASK;
+            date_tmp >>= DISK_FILE_DATE_MIN_BITS;
+
+            table_tmp.Info[i].modify_time.hour = date_tmp & DISK_FILE_DATE_HOUR_MASK;
+
+            /* parse modify date */
+            date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].ModifyDate);
+            table_tmp.Info[i].modify_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
+            date_tmp >>= DISK_FILE_DATE_DAY_BITS;
+
+            table_tmp.Info[i].modify_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
+            date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
+
+            table_tmp.Info[i].modify_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
+            table_tmp.Info[i].modify_date.year += DISK_FILE_DATEBASE_YEAR;
+
+            /* parse access date */
+            date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].AccessDate);
+            table_tmp.Info[i].access_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
+            date_tmp >>= DISK_FILE_DATE_DAY_BITS;
+
+            table_tmp.Info[i].access_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
+            date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
+
+            table_tmp.Info[i].access_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
+            table_tmp.Info[i].access_date.year += DISK_FILE_DATEBASE_YEAR;
         }
 
         memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
