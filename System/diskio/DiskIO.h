@@ -237,7 +237,11 @@ typedef struct
 
     /* File System API */
     bool (*mkdir)(const char *fpath, const char *name);
+    bool (*cd)(const char *fpath);
+    bool (*ls)(const char *fpath);
     bool (*touch)(const char *path, const char *name);
+    bool (*open)(const char *path, const char *name);
+    bool (*close)(const char *path, const char *name);
     bool (*write)(const char *path, const char *name, uint8_t *p_data, uint16_t size);
 } DiskFS_TypeDef;
 

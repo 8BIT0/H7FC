@@ -347,6 +347,10 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
 }
 
+static void Disk_Parse_FolderAttribute(FATCluster_Addr cat_cluster)
+{
+}
+
 /* still in develop */
 /* parse file attribute */
 static void Disk_Parse_FileAttribute(FATCluster_Addr cat_cluster, Disk_FileInfo_TypeDef *FileInfo)
