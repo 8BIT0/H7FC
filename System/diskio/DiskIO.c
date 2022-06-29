@@ -469,7 +469,6 @@ static DiskFATCluster_State_List Disk_GetClusterState(FATCluster_Addr cluster)
     return Disk_FATCluster_Unknow;
 }
 
-/* it may has bug */
 /* get cluster number from FAT table */
 static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
