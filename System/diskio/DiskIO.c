@@ -459,6 +459,7 @@ static bool Disk_Create_Path(const char *fpath, const char *name)
         folder_name = Disk_GetFolderName_ByIndex(fpath, i);
 
         /* combine folder name to a path */
+        folder_path_tmp = (folder_path_tmp, strcat(folder_name, DISK_FOLDER_TERMINATION));
 
         /* check correspond folder exist or not first */
     }
