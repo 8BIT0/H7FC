@@ -50,6 +50,10 @@
 #define DISK_ROOT_FOLDER_NAME "root"
 #define DISK_FOLDER_TERMINATION "/"
 
+#define SFN_FILE_NAME_MAX_LENGTH 8
+#define SFN_EXTEND_NAME_MAX_LENGTH 3
+#define SFN_EXTEND_SPLIT_SYMBOL "."
+
 typedef uint32_t FATCluster_Addr;
 typedef DevCard_Info_TypeDef Disk_Card_Info;
 typedef void (*Disk_Printf_Callback)(uint8_t *p_buff, uint16_t size);

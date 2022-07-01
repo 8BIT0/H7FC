@@ -6,6 +6,7 @@
 #include "error_log.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #pragma pack(1)
 /* File and Folder Attribute definition */
@@ -565,16 +566,73 @@ static bool Disk_MoveFileCursor()
 {
 }
 
-static bool Disk_Check_SFN_Length()
+/*
+ *  check SFN frame legal or not
+ *   f_n SFN file name
+ *   e_n SFN extend file name
+ */
+static bool Disk_SFN_LegallyCheck(char *f_name)
 {
-}
+    char *f_n = NULL;
+    char *e_n = NULL;
+    uint8_t file_char_Ucase = 0;
+    uint8_t file_char_Lcase = 0;
+    uint8_t extend_char_Ucase = 0;
+    uint8_t extend_char_Lcase = 0;
+    const char illegal_letter_list[] = {'\\', '/', ':', '*', '?', '<', '>', '|', '"'};
 
-static bool Disk_Check_SFN_Frame()
-{
-}
+    if (f_name == NULL)
+        return false;
 
-static bool Disk_Check_SFN_Case()
-{
+    f_n = strtok(f_name, SFN_EXTEND_SPLIT_SYMBOL);
+
+    if (strchr(f_name, SFN_EXTEND_SPLIT_SYMBOL[0]) != NULL)
+        return false;
+
+    e_n = f_name;
+
+    /* step 1 file name size check 0 < f_n length <= 8 && 0 <= e_n length <= 3 */
+    if ((strlen(f_n) > 0) &&
+        (strlen(f_n) <= SFN_FILE_NAME_MAX_LENGTH) &&
+        (strlen(e_n) >= 0) &&
+        (strlen(e_n) <= SFN_EXTEND_NAME_MAX_LENGTH))
+    {
+        /* step 2 all Character legally check */
+        for (uint8_t i = 0; i < sizeof(illegal_letter_list); i++)
+        {
+            if (strchr(e_n, illegal_letter_list[i]) != NULL)
+                return false;
+
+            if (strchr(f_n, illegal_letter_list[i]) != NULL)
+                return false;
+        }
+
+        /* step 3 check Character case */
+        for (uint8_t i = 0; i < SFN_FILE_NAME_MAX_LENGTH; i++)
+        {
+            if (i < SFN_EXTEND_NAME_MAX_LENGTH)
+            {
+                if (isupper(e_n[i]))
+                    extend_char_Ucase++;
+
+                if (islower(e_n[i]))
+                    extend_char_Lcase++;
+            }
+
+            if (isupper(f_n[i]))
+                file_char_Ucase++;
+
+            if (islower(f_n[i]))
+                file_char_Lcase++;
+        }
+
+        if (((file_char_Lcase == 0) && (extend_char_Lcase == 0)) || ((extend_char_Ucase == 0) && (file_char_Ucase == 0)))
+            return true;
+
+        return false;
+    }
+
+    return false;
 }
 
 #endif
