@@ -655,11 +655,15 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
 
 static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_StorageData_TypeDef type)
 {
+    uint32_t sec_id = Disk_Get_StartSectionOfCluster(2);
+
     if ((name == NULL) || (type > Disk_DataType_Folder) || Disk_SFN_LegallyCheck(name))
         return false;
 
     for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
     {
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, );
+
         for (uint8_t j = 0; j < 16; j++)
         {
         }
