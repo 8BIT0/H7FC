@@ -470,6 +470,14 @@ static DiskFATCluster_State_List Disk_GetClusterState(FATCluster_Addr cluster)
     return Disk_FATCluster_Unknow;
 }
 
+static bool Disk_isFolder(const uint8_t type)
+{
+    if (type & Disk_File_Sd)
+        return true;
+
+    return false;
+}
+
 /* get cluster number from FAT table */
 static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
@@ -643,6 +651,19 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
     }
 
     return false;
+}
+
+static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_StorageData_TypeDef type)
+{
+    if ((name == NULL) || (type > Disk_DataType_Folder) || Disk_SFN_LegallyCheck(name))
+        return false;
+
+    for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
+    {
+        for (uint8_t j = 0; j < 16; j++)
+        {
+        }
+    }
 }
 
 #endif

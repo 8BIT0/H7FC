@@ -81,8 +81,14 @@ typedef enum
     Disk_File_Sy = 0b00000100, /* file attribute system file */
     Disk_File_Vo = 0b00001000, /* file attribute volumn tag */
     Disk_File_Sd = 0b00010000, /* file attribute subdirectory */
-    Disk_File_Pf = 0b00100000, /* file attribute palce on file */
+    Disk_File_Pf = 0b00100000, /* file attribute place on file */
 } Disk_FileAttr_List;
+
+typedef enum
+{
+    Disk_DataType_File = 0,
+    Disk_DataType_Folder,
+} Disk_StorageData_TypeDef;
 
 typedef enum
 {
