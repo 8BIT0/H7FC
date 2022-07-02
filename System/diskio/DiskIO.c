@@ -567,6 +567,18 @@ static bool Disk_MoveFileCursor()
 }
 
 /*
+ *   f_name: current file name
+ *   m_name: match target file name
+ */
+static bool Disk_SFN_Match(char *f_name, char *m_name)
+{
+    if ((strlen(f_name) != strlen(m_name)) || (stricmp(f_name, m_name) != 0))
+        return false;
+
+    return true;
+}
+
+/*
  *  check SFN frame legal or not
  *   f_n SFN file name
  *   e_n SFN extend file name
@@ -628,8 +640,6 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
 
         if (((file_char_Lcase == 0) && (extend_char_Lcase == 0)) || ((extend_char_Ucase == 0) && (file_char_Ucase == 0)))
             return true;
-
-        return false;
     }
 
     return false;
