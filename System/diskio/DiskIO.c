@@ -653,16 +653,18 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
     return false;
 }
 
-static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_StorageData_TypeDef type)
+static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, const char *name, Disk_StorageData_TypeDef type)
 {
-    uint32_t sec_id = Disk_Get_StartSectionOfCluster(2);
+    uint32_t sec_id = Disk_Get_StartSectionOfCluster(cluster);
 
     if ((name == NULL) || (type > Disk_DataType_Folder) || Disk_SFN_LegallyCheck(name))
         return false;
 
     for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
     {
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, );
+        memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
+
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id + i, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
         for (uint8_t j = 0; j < 16; j++)
         {
