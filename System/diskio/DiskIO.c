@@ -710,8 +710,9 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, c
 {
     uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster);
     Disk_FFInfoTable_TypeDef FFInfo;
+    char SFN_name_tmp[11];
 
-    if ((name == NULL) || (type > Disk_DataType_Folder) || Disk_SFN_LegallyCheck(name))
+    if ((name == NULL) || (type > Disk_DataType_Folder) || Disk_SFN_LegallyCheck(name) || !Disk_FileName_ConvertTo83Frame(name, SFN_name_tmp))
         return false;
 
     for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
@@ -727,7 +728,8 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, c
             if (Disk_isFolder(FFInfo.Info[j].attr) != type)
                 return false;
 
-            // Disk_SFN_Match();
+            if (Disk_SFN_Match(FFInfo.Info[j].name, SFN_name_tmp))
+                return true;
         }
     }
 }
