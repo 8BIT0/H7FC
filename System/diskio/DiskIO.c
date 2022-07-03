@@ -725,7 +725,7 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, c
         for (uint8_t j = 0; j < 16; j++)
         {
             /* match search type and short file name */
-            if (Disk_isFolder(FFInfo.Info[j].attr) != type)
+            if ((Disk_isFolder(FFInfo.Info[j].attr) != type) || (DISK_DELETED_MARK != FFInfo.Info[j].name[0]))
                 return false;
 
             if (Disk_SFN_Match(FFInfo.Info[j].name, SFN_name_tmp))
