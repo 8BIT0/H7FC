@@ -575,6 +575,60 @@ static bool Disk_MoveFileCursor()
 }
 
 /*
+ * convert input file name to 8 3 Frame Mode
+ */
+static bool Disk_FileName_ConvertTo83Frame(char *n_in, char *n_out)
+{
+    char *file_name_tmp = NULL;
+    char *ext_name_tmp = n_in;
+    char file_name[8] = {'\0'};
+    char ext_file_name[3] = {'\0'};
+
+    if ((n_in == NULL) || (n_out == NULL))
+        return false;
+
+    file_name_tmp = strtok(ext_name_tmp, SFN_EXTEND_SPLIT_SYMBOL);
+
+    if (file_name_tmp == NULL)
+        return false;
+
+    for (uint8_t i = 0; i < sizeof(file_name); i++)
+    {
+        if (i < strlen(file_name_tmp))
+        {
+            if ((file_name_tmp[i] >= 'a') || (file_name_tmp[i] <= 'z'))
+            {
+                file_name[i] = toupper(file_name_tmp[i]);
+            }
+            else
+                file_name[i] = file_name_tmp[i];
+        }
+        else
+            file_name[i] = 0x20;
+    }
+
+    for (uint8_t i = 0; i < sizeof(ext_file_name); i++)
+    {
+        if (i < strlen(ext_name_tmp))
+        {
+            if ((ext_name_tmp[i] >= 'a') || (ext_name_tmp[i] <= 'z'))
+            {
+                ext_file_name[i] = toupper(ext_name_tmp[i]);
+            }
+            else
+                ext_file_name[i] = ext_name_tmp[i];
+        }
+        else
+            ext_file_name[i] = 0x20;
+    }
+
+    memcpy(n_out, file_name, sizeof(file_name));
+    memcpy(n_out + sizeof(file_name), ext_file_name, sizeof(ext_file_name));
+
+    return true;
+}
+
+/*
  *   f_name: current file name
  *   m_name: match target file name
  */
@@ -655,7 +709,7 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
 
 static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, const char *name, Disk_StorageData_TypeDef type)
 {
-    uint32_t sec_id = Disk_Get_StartSectionOfCluster(cluster);
+    uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster);
 
     if ((name == NULL) || (type > Disk_DataType_Folder) || Disk_SFN_LegallyCheck(name))
         return false;
