@@ -227,7 +227,7 @@ typedef struct
 typedef struct
 {
     char name[12];
-    uint8_t prop;
+    uint8_t attr;
 
     Disk_FileTime_TypeDef create_time;
     Disk_FileDate_TypeDef create_date;
@@ -245,7 +245,7 @@ typedef struct
 typedef struct
 {
     Disk_FFInfo_TypeDef Info[16];
-} Dis_FFInfoTable_TypeDef;
+} Disk_FFInfoTable_TypeDef;
 #pragma pack()
 
 typedef struct

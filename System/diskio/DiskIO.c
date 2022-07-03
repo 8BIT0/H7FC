@@ -356,23 +356,22 @@ static uint32_t Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, 
 }
 
 /* parse file/folder attribute */
-static Dis_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
+static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FATObj, uint32_t sec)
 {
-    Dis_FFInfoTable_TypeDef table_tmp;
+    Disk_FFInfoTable_TypeDef table_tmp;
     Disk_CCSSFFAT_TypeDef *attr_tmp = NULL;
     uint32_t date_tmp = 0;
     uint32_t disk_section_no = 0;
     char name[11] = {'\0'};
 
-    memset(&table_tmp, NULL, sizeof(Dis_FFInfoTable_TypeDef));
+    memset(&table_tmp, NULL, sizeof(Disk_FFInfoTable_TypeDef));
 
-    if (cluster != 0)
+    if (sec != 0)
     {
         memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
 
         DevCard.read(&DevTFCard_Obj.SDMMC_Obj,
-                     Disk_Get_StartSectionOfCluster(FATObj, cluster),
-                     Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+                     sec, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
         attr_tmp = (Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff;
 
@@ -381,7 +380,7 @@ static Dis_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FAT
             memcpy(table_tmp.Info[i].name, attr_tmp->attribute[i].name, 11);
             table_tmp.Info[i].name[11] = '\0';
 
-            table_tmp.Info[i].prop = attr_tmp->attribute[i].attr;
+            table_tmp.Info[i].attr = attr_tmp->attribute[i].attr;
             table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
                                               (LEndian2HalfWord(attr_tmp->attribute[i].HighCluster) << 16);
             table_tmp.Info[i].size = LEndian2Word(attr_tmp->attribute[i].FileSize);
@@ -470,9 +469,9 @@ static DiskFATCluster_State_List Disk_GetClusterState(FATCluster_Addr cluster)
     return Disk_FATCluster_Unknow;
 }
 
-static bool Disk_isFolder(const uint8_t type)
+static bool Disk_isFolder(const uint8_t attr)
 {
-    if (type & Disk_File_Sd)
+    if (attr & Disk_File_Sd)
         return true;
 
     return false;
@@ -710,6 +709,7 @@ static bool Disk_FileName_ConvertTo83Frame(char *n_in, char *n_out)
 static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, const char *name, Disk_StorageData_TypeDef type)
 {
     uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster);
+    Disk_FFInfoTable_TypeDef FFInfo;
 
     if ((name == NULL) || (type > Disk_DataType_Folder) || Disk_SFN_LegallyCheck(name))
         return false;
@@ -717,11 +717,17 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, c
     for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
     {
         memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
+        memset(&FFInfo, NULL, sizeof(FFInfo));
 
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id + i, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+        FFInfo = Disk_Parse_Attribute(FATObj, sec_id + i);
 
         for (uint8_t j = 0; j < 16; j++)
         {
+            /* match search type and short file name */
+            if (Disk_isFolder(FFInfo.Info[j].attr) != type)
+                return false;
+
+            // Disk_SFN_Match();
         }
     }
 }
