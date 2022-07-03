@@ -226,7 +226,7 @@ typedef struct
 /* file folder info */
 typedef struct
 {
-    char name[12];
+    char name[11];
     uint8_t attr;
 
     Disk_FileTime_TypeDef create_time;

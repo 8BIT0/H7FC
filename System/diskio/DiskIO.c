@@ -378,8 +378,7 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
         for (uint8_t i = 0; i < 16; i++)
         {
             memcpy(table_tmp.Info[i].name, attr_tmp->attribute[i].name, 8);
-            table_tmp.Info[i].name[8] = SFN_EXTEND_SPLIT_SYMBOL;
-            memcpy(table_tmp.Info[i].name[9], attr_tmp->attribute[i].ext, 3);
+            memcpy(table_tmp.Info[i].name[8], attr_tmp->attribute[i].ext, 3);
 
             table_tmp.Info[i].attr = attr_tmp->attribute[i].attr;
             table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
