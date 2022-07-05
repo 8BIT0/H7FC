@@ -352,6 +352,9 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
 /* cluster number to section number */
 static uint32_t Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
+    if (cluster < 2)
+        return 0;
+
     return (((cluster - 2) * FATObj->SecPerCluster) + FATObj->Fst_FATSector);
 }
 
