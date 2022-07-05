@@ -708,30 +708,40 @@ static bool Disk_FileName_ConvertTo83Frame(char *n_in, char *n_out)
 
 static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, const char *name, Disk_StorageData_TypeDef type)
 {
-    uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster);
+    uint32_t cluster_tmp = cluster;
+    uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
+    DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(cluster_tmp);
     Disk_FFInfoTable_TypeDef FFInfo;
     char SFN_name_tmp[11];
 
     if ((name == NULL) || (type > Disk_DataType_Folder) || !Disk_SFN_LegallyCheck(name) || !Disk_FileName_ConvertTo83Frame(name, SFN_name_tmp))
         return false;
 
-    for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
+    while (Cluster_State == Disk_FATCluster_Alloc)
     {
-        memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
-        memset(&FFInfo, NULL, sizeof(FFInfo));
-
-        FFInfo = Disk_Parse_Attribute(FATObj, sec_id + i);
-
-        for (uint8_t j = 0; j < 16; j++)
+        for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
         {
-            /* match search type and short file name */
-            if ((Disk_isFolder(FFInfo.Info[j].attr) != type) || (DISK_DELETED_MARK != FFInfo.Info[j].name[0]))
-                return false;
+            memset(&FFInfo, NULL, sizeof(FFInfo));
 
-            if (Disk_SFN_Match(FFInfo.Info[j].name, SFN_name_tmp))
-                return true;
+            FFInfo = Disk_Parse_Attribute(FATObj, sec_id + i);
+
+            for (uint8_t j = 0; j < 16; j++)
+            {
+                /* match search type and short file name */
+                if ((Disk_isFolder(FFInfo.Info[j].attr) != type) || (DISK_DELETED_MARK != FFInfo.Info[j].name[0]))
+                    return false;
+
+                if (Disk_SFN_Match(FFInfo.Info[j].name, SFN_name_tmp))
+                    return true;
+            }
         }
+
+        cluster_tmp = Disk_Get_NextCluster(FATObj, cluster_tmp);
+        Cluster_State = Disk_GetClusterState(cluster_tmp);
+        sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     }
+
+    return false;
 }
 
 #endif
