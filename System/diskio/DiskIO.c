@@ -709,9 +709,9 @@ static bool Disk_FileName_ConvertTo83Frame(char *n_in, char *n_out)
     return true;
 }
 
-static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, const char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *FF_Info)
+static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *FF_Info)
 {
-    uint32_t cluster_tmp = cluster;
+    uint32_t cluster_tmp = 2;
     uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(cluster_tmp);
     Disk_FFInfoTable_TypeDef FFInfo;
@@ -746,6 +746,14 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, c
         Cluster_State = Disk_GetClusterState(cluster_tmp);
         sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     }
+
+    return false;
+}
+
+static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_FFInfo_TypeDef *FileObj)
+{
+    if (Disk_MatchTaget(FATObj, name, Disk_DataType_File, FileObj))
+        return true;
 
     return false;
 }
