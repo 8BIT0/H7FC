@@ -736,7 +736,7 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, c
 
                 if (Disk_SFN_Match(FFInfo.Info[j].name, SFN_name_tmp))
                 {
-                    FF_Info = FFInfo.Info[j];
+                    FF_Info = &(FFInfo.Info[j]);
                     return true;
                 }
             }
