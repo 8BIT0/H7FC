@@ -706,7 +706,7 @@ static bool Disk_FileName_ConvertTo83Frame(char *n_in, char *n_out)
     return true;
 }
 
-static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, const char *name, Disk_StorageData_TypeDef type)
+static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, const char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *FF_Info)
 {
     uint32_t cluster_tmp = cluster;
     uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
@@ -732,7 +732,10 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, c
                     return false;
 
                 if (Disk_SFN_Match(FFInfo.Info[j].name, SFN_name_tmp))
+                {
+                    FF_Info = FFInfo.Info[j];
                     return true;
+                }
             }
         }
 
