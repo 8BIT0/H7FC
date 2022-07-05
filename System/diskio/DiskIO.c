@@ -712,7 +712,7 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, uint32_t cluster, c
     Disk_FFInfoTable_TypeDef FFInfo;
     char SFN_name_tmp[11];
 
-    if ((name == NULL) || (type > Disk_DataType_Folder) || Disk_SFN_LegallyCheck(name) || !Disk_FileName_ConvertTo83Frame(name, SFN_name_tmp))
+    if ((name == NULL) || (type > Disk_DataType_Folder) || !Disk_SFN_LegallyCheck(name) || !Disk_FileName_ConvertTo83Frame(name, SFN_name_tmp))
         return false;
 
     for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
