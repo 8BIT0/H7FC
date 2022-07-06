@@ -197,7 +197,6 @@ typedef struct
 typedef struct
 {
     bool has_mbr;
-    bool has_dbr;
 
     Disk_CardMBR_SectionInfo_TypeDef disk_section_table[DISK_CARD_SECTION_INFO_NUM];
     Disk_CardDBR_SectionInfo_TypeDef DBR_info;

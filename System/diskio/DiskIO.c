@@ -6,6 +6,7 @@
 #include "error_log.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 #pragma pack(1)
@@ -58,6 +59,7 @@ static Disk_Card_Info Disk_GetCard_Info(void);
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
 static char *Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index);
+static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_FFInfo_TypeDef *FileObj);
 
 /******************************************************************************** SDMMC Interface **************************************************************************/
 static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
@@ -214,6 +216,15 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     /* Parse MBR Section Info */
     Disk_ParseMBR(&FATFs_Obj);
     Disk_ParseDBR(&FATFs_Obj);
+
+    /* test code */
+    Disk_FFInfo_TypeDef test_file;
+
+    memset(&test_file, NULL, sizeof(test_file));
+
+    Disk_OpenFile(&FATFs_Obj, "test.txt", &test_file);
+    /* test code */
+
 #endif
     return true;
 }
@@ -341,7 +352,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
         FATObj->BytePerSection = FATObj->DBR_info.BytesPerSec;
         FATObj->FAT_Sections = FATObj->DBR_info.FATSz32;
         FATObj->SecPerCluster = FATObj->DBR_info.SecPerClus;
-        FATObj->Fst_FATSector = FATObj->disk_section_table[0].StartLBA + FATObj->DBR_info.RsvdSecCnt;
+        FATObj->Fst_FATSector = FATObj->DBR_SecNo + FATObj->DBR_info.RsvdSecCnt;
         FATObj->Fst_DirSector = FATObj->Fst_FATSector + FATObj->DBR_info.NumFATs * FATObj->DBR_info.FATSz32;
         FATObj->Total_KBSize = FATObj->DBR_info.TotSec32;
     }
@@ -355,7 +366,7 @@ static uint32_t Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, 
     if (cluster < 2)
         return 0;
 
-    return (((cluster - 2) * FATObj->SecPerCluster) + FATObj->Fst_FATSector);
+    return (((cluster - 2) * FATObj->SecPerCluster) + FATObj->Fst_DirSector);
 }
 
 /* parse file/folder attribute */
@@ -381,7 +392,7 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
         for (uint8_t i = 0; i < 16; i++)
         {
             memcpy(table_tmp.Info[i].name, attr_tmp->attribute[i].name, 8);
-            memcpy(table_tmp.Info[i].name[8], attr_tmp->attribute[i].ext, 3);
+            memcpy(table_tmp.Info[i].name + 8, attr_tmp->attribute[i].ext, 3);
 
             table_tmp.Info[i].attr = attr_tmp->attribute[i].attr;
             table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
@@ -582,7 +593,13 @@ static bool Disk_MoveFileCursor()
  */
 static bool Disk_SFN_Match(char *f_name, char *m_name)
 {
-    if ((strlen(f_name) != strlen(m_name)) || (stricmp(f_name, m_name) != 0))
+    char fn_tmp[11] = {'\0'};
+    char mn_tmp[11] = {'\0'};
+
+    memcpy(fn_tmp, f_name, 11);
+    memcpy(mn_tmp, m_name, 11);
+
+    if (memcmp(fn_tmp, mn_tmp, 11) != 0)
         return false;
 
     return true;
@@ -595,6 +612,7 @@ static bool Disk_SFN_Match(char *f_name, char *m_name)
  */
 static bool Disk_SFN_LegallyCheck(char *f_name)
 {
+    char f_name_tmp[64] = {'\0'};
     char *f_n = NULL;
     char *e_n = NULL;
     uint8_t file_char_Ucase = 0;
@@ -603,15 +621,17 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
     uint8_t extend_char_Lcase = 0;
     const char illegal_letter_list[] = {'\\', '/', ':', '*', '?', '<', '>', '|', '"'};
 
-    if (f_name == NULL)
+    if ((f_name == NULL) || (strlen(f_name) > sizeof(f_name_tmp)))
         return false;
 
-    f_n = strtok(f_name, SFN_EXTEND_SPLIT_SYMBOL);
+    memcpy(f_name_tmp, f_name, strlen(f_name));
 
-    if (strchr(f_name, SFN_EXTEND_SPLIT_SYMBOL[0]) != NULL)
+    f_n = strtok(f_name_tmp, SFN_EXTEND_SPLIT_SYMBOL);
+
+    if (f_n == NULL)
         return false;
 
-    e_n = f_name;
+    e_n = strtok(NULL, SFN_EXTEND_SPLIT_SYMBOL);
 
     /* step 1 file name size check 0 < f_n length <= 8 && 0 <= e_n length <= 3 */
     if ((strlen(f_n) > 0) &&
@@ -660,15 +680,17 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
  */
 static bool Disk_FileName_ConvertTo83Frame(char *n_in, char *n_out)
 {
+    char *n_in_tmp = n_in;
     char *file_name_tmp = NULL;
-    char *ext_name_tmp = n_in;
+    char *ext_name_tmp = NULL;
     char file_name[8] = {'\0'};
     char ext_file_name[3] = {'\0'};
 
-    if ((n_in == NULL) || (n_out == NULL) || !Disk_SFN_LegallyCheck(n_in))
+    if ((n_in_tmp == NULL) || (n_out == NULL) || !Disk_SFN_LegallyCheck(n_in_tmp))
         return false;
 
-    file_name_tmp = strtok(ext_name_tmp, SFN_EXTEND_SPLIT_SYMBOL);
+    file_name_tmp = strtok(n_in_tmp, SFN_EXTEND_SPLIT_SYMBOL);
+    ext_name_tmp = strtok(NULL, SFN_EXTEND_SPLIT_SYMBOL);
 
     if (file_name_tmp == NULL)
         return false;
@@ -709,15 +731,15 @@ static bool Disk_FileName_ConvertTo83Frame(char *n_in, char *n_out)
     return true;
 }
 
-static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *FF_Info)
+static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *F_Info)
 {
     uint32_t cluster_tmp = 2;
     uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(cluster_tmp);
     Disk_FFInfoTable_TypeDef FFInfo;
-    char SFN_name_tmp[11];
+    char SFN_name_tmp[11] = {'\0'};
 
-    if ((name == NULL) || (type > Disk_DataType_Folder) || !Disk_SFN_LegallyCheck(name) || !Disk_FileName_ConvertTo83Frame(name, SFN_name_tmp))
+    if ((name == NULL) || (type > Disk_DataType_Folder) || !Disk_FileName_ConvertTo83Frame(name, SFN_name_tmp))
         return false;
 
     while (Cluster_State == Disk_FATCluster_Alloc)
@@ -731,12 +753,11 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, const char *name, D
             for (uint8_t j = 0; j < 16; j++)
             {
                 /* match search type and short file name */
-                if ((Disk_isFolder(FFInfo.Info[j].attr) != type) || (DISK_DELETED_MARK != FFInfo.Info[j].name[0]))
-                    return false;
-
-                if (Disk_SFN_Match(FFInfo.Info[j].name, SFN_name_tmp))
+                if ((Disk_isFolder(FFInfo.Info[j].attr) == type) &&
+                    (DISK_DELETED_MARK != FFInfo.Info[j].name[0]) &&
+                    Disk_SFN_Match(FFInfo.Info[j].name, SFN_name_tmp))
                 {
-                    FF_Info = &(FFInfo.Info[j]);
+                    memcpy(F_Info, &(FFInfo.Info[j]), sizeof(Disk_FFInfo_TypeDef));
                     return true;
                 }
             }
@@ -750,9 +771,16 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, const char *name, D
     return false;
 }
 
-static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_FFInfo_TypeDef *FileObj)
+static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_FFInfo_TypeDef *FileObj)
 {
-    if (Disk_MatchTaget(FATObj, name, Disk_DataType_File, FileObj))
+    char name_buff[64] = {'\0'};
+
+    if (strlen(name) > sizeof(name_buff))
+        return false;
+
+    memcpy(name_buff, name, strlen(name));
+
+    if (Disk_MatchTaget(FATObj, name_buff, Disk_DataType_File, FileObj))
         return true;
 
     return false;

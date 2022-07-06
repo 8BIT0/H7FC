@@ -56,7 +56,7 @@ bool TaskProtocol_Init(void)
     VCP_Queue_CreateState = true;
 
     usb_setrec_callback(TaskProtocol_Rec);
-    Shell_Init(TaskProtocol_TransBuff);
+    // Shell_Init(TaskProtocol_TransBuff);
 
     ErrorLog.set_callback(Error_Out_Callback, TaskProto_PushProtocolQueue);
 
