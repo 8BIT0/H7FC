@@ -608,6 +608,7 @@ static bool Disk_SFN_Match(char *f_name, char *m_name)
 static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *dir_name, uint32_t start_cluster)
 {
     DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(start_cluster);
+    Disk_CCSSFFAT_TypeDef *attr_tmp = NULL;
     uint32_t cluster_tmp = start_cluster;
     uint32_t sec_id = 0;
 
@@ -623,7 +624,18 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *
 
         for (uint8_t offset = 0; offset < FATObj->SecPerCluster; offset++)
         {
-            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id, );
+            memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
+            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+            attr_tmp = (Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff;
+
+            for (uint8_t i = 0; i < 16; i++)
+            {
+                if ()
+                {
+                }
+            }
+
+            memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
         }
 
         // if(Disk_isFolder())
