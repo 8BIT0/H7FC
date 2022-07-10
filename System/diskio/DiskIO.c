@@ -623,7 +623,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *
 
         for (uint8_t offset = 0; offset < FATObj->SecPerCluster; offset++)
         {
-            DevCard.read();
+            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id, );
         }
 
         // if(Disk_isFolder())
