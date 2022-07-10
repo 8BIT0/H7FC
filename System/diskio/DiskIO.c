@@ -605,51 +605,6 @@ static bool Disk_SFN_Match(char *f_name, char *m_name)
     return true;
 }
 
-static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *dir_name, uint32_t start_cluster)
-{
-    DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(start_cluster);
-    Disk_CCSSFFAT_TypeDef *attr_tmp = NULL;
-    uint32_t cluster_tmp = start_cluster;
-    uint32_t sec_id = 0;
-    char dir_name_tmp[64] = {'\0'};
-
-    if ((FATObj == NULL) || (start_cluster == 0) || (dir_name == NULL))
-        return 0;
-
-    memcpy(dir_name_tmp, dir_name, strlen(dir_name));
-
-    while (Cluster_State == Disk_FATCluster_Alloc)
-    {
-        sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
-
-        if (sec_id == 0)
-            return 0;
-
-        for (uint8_t offset = 0; offset < FATObj->SecPerCluster; offset++)
-        {
-            memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
-            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
-            attr_tmp = (Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff;
-
-            for (uint8_t i = 0; i < 16; i++)
-            {
-                /* if current info attribute is folder direction */
-                if (Disk_isFolder(attr_tmp->attribute[i].attr))
-                {
-                    /* then match folder name */
-                }
-            }
-
-            memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
-        }
-
-        cluster_tmp = Disk_Get_NextCluster(FATObj, cluster_tmp);
-        Cluster_State = Disk_GetClusterState(cluster_tmp);
-    }
-
-    return 0;
-}
-
 /*
  *  check SFN frame legal or not
  *   f_n SFN file name
@@ -723,7 +678,7 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
 /*
  * convert input file name to 8 3 Frame Mode
  */
-static bool Disk_FileName_ConvertTo83Frame(char *n_in, char *n_out)
+static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
 {
     char *n_in_tmp = n_in;
     char *file_name_tmp = NULL;
@@ -784,7 +739,7 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_St
     Disk_FFInfoTable_TypeDef FFInfo;
     char SFN_name_tmp[11] = {'\0'};
 
-    if ((name == NULL) || (type > Disk_DataType_Folder) || !Disk_FileName_ConvertTo83Frame(name, SFN_name_tmp))
+    if ((name == NULL) || (type > Disk_DataType_Folder) || !Disk_Name_ConvertTo83Frame(name, SFN_name_tmp))
         return false;
 
     while (Cluster_State == Disk_FATCluster_Alloc)
