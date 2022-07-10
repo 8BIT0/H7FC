@@ -611,9 +611,12 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *
     Disk_CCSSFFAT_TypeDef *attr_tmp = NULL;
     uint32_t cluster_tmp = start_cluster;
     uint32_t sec_id = 0;
+    char dir_name_tmp[64] = {'\0'};
 
     if ((FATObj == NULL) || (start_cluster == 0) || (dir_name == NULL))
         return 0;
+
+    memcpy(dir_name_tmp, dir_name, strlen(dir_name));
 
     while (Cluster_State == Disk_FATCluster_Alloc)
     {
