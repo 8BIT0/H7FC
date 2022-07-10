@@ -640,7 +640,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *
             memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
         }
 
-        cluster_tmp = Disk_Get_NextCluster(cluster_tmp);
+        cluster_tmp = Disk_Get_NextCluster(FATObj, cluster_tmp);
         Cluster_State = Disk_GetClusterState(cluster_tmp);
     }
 
