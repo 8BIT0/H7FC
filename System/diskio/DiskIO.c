@@ -605,6 +605,16 @@ static bool Disk_SFN_Match(char *f_name, char *m_name)
     return true;
 }
 
+static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *dir_name, uint32_t start_cluster)
+{
+    uint32_t cluster_tmp = 0;
+
+    if ((FATObj == NULL) || (start_cluster == 0) || (dir_name == NULL))
+        return 0;
+
+    // if(Disk_isFolder())
+}
+
 /*
  *  check SFN frame legal or not
  *   f_n SFN file name
