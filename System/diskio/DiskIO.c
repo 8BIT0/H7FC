@@ -630,15 +630,15 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *
 
             for (uint8_t i = 0; i < 16; i++)
             {
-                if ()
+                /* if current info attribute is folder direction */
+                if (Disk_isFolder(attr_tmp->attribute[i].attr))
                 {
+                    /* then match folder name */
                 }
             }
 
             memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
         }
-
-        // if(Disk_isFolder())
 
         cluster_tmp = Disk_Get_NextCluster(cluster_tmp);
         Cluster_State = Disk_GetClusterState(cluster_tmp);
