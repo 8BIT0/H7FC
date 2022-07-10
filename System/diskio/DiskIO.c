@@ -607,12 +607,30 @@ static bool Disk_SFN_Match(char *f_name, char *m_name)
 
 static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *dir_name, uint32_t start_cluster)
 {
-    uint32_t cluster_tmp = 0;
+    DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(start_cluster);
+    uint32_t cluster_tmp = start_cluster;
+    uint32_t sec_id = 0;
 
     if ((FATObj == NULL) || (start_cluster == 0) || (dir_name == NULL))
         return 0;
 
-    // if(Disk_isFolder())
+    while (Cluster_State == Disk_FATCluster_Alloc)
+    {
+        sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
+
+        if (sec_id == 0)
+            return 0;
+
+        for (uint8_t offset = 0; offset < FATObj->SecPerCluster; offset++)
+        {
+            DevCard.read();
+        }
+
+        // if(Disk_isFolder())
+
+        cluster_tmp = Disk_Get_NextCluster(cluster_tmp);
+        Cluster_State = Disk_GetClusterState(cluster_tmp);
+    }
 }
 
 /*
