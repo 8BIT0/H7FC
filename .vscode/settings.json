@@ -82,7 +82,10 @@
                 "sdcard_standard.h": "c",
                 "dev_card.h": "c",
                 "iterator": "c",
-                "cctype": "c"
+                "cctype": "c",
+                "shell_ext.h": "c",
+                "shell.h": "c",
+                "shell_cfg.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
