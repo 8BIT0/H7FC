@@ -775,7 +775,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *
 {
     Disk_FFInfo_TypeDef F_Info;
     uint16_t dir_layer = 0;
-    uint32_t cluster_tmp = 0;
+    uint32_t cluster_tmp = 2;
 
     memset(&F_Info, NULL, sizeof(F_Info));
 
@@ -786,14 +786,14 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *
     {
         for (uint32_t l = 0; l < dir_layer; l++)
         {
-            if (Disk_MatchTaget(FATObj, dir, Disk_DataType_Folder, &F_Info))
-            {
-                return F_Info.start_cluster;
-            }
+            if (Disk_MatchTaget(FATObj, dir, Disk_DataType_Folder, &F_Info, cluster_tmp))
+                cluster_tmp = F_Info.start_cluster;
         }
     }
+    else
+        cluster_tmp = 0;
 
-    return 0;
+    return cluster_tmp;
 }
 
 static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_FFInfo_TypeDef *FileObj, uint32_t cluster)
