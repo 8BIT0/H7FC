@@ -226,7 +226,6 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_FFInfo_TypeDef test_file;
 
     memset(&test_file, NULL, sizeof(test_file));
-
     Disk_OpenFile(&FATFs_Obj, "test.txt", &test_file);
     /* test code */
 
@@ -688,8 +687,11 @@ static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
     char *n_in_tmp = n_in;
     char *file_name_tmp = NULL;
     char *ext_name_tmp = NULL;
-    char file_name[8] = {'\0'};
-    char ext_file_name[3] = {'\0'};
+    char file_name[8];
+    char ext_file_name[3];
+
+    memset(file_name, NULL, sizeof(file_name));
+    memset(ext_file_name, NULL, sizeof(ext_file_name));
 
     if ((n_in_tmp == NULL) || (n_out == NULL) || !Disk_SFN_LegallyCheck(n_in_tmp))
         return false;
@@ -810,7 +812,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *
     return cluster_tmp;
 }
 
-static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_FFInfo_TypeDef *FileObj, uint32_t cluster)
+static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_FFInfo_TypeDef *FileObj)
 {
     char name_buff[64] = {'\0'};
 
@@ -819,7 +821,7 @@ static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *name, Dis
 
     memcpy(name_buff, name, strlen(name));
 
-    if (Disk_MatchTaget(FATObj, name_buff, Disk_DataType_File, FileObj, cluster))
+    if (Disk_MatchTaget(FATObj, name_buff, Disk_DataType_File, FileObj, 2))
         return true;
 
     return false;

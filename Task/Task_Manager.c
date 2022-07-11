@@ -57,8 +57,8 @@ void Task_Manager_Init(void)
 
 void Task_Manager_CreateTask(void)
 {
-    TaskInertial_Handle = Os_CreateTask("Inertial Sample", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_0, TaskInertical_Core, 2048);
-    TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 1024);
+    TaskInertial_Handle = Os_CreateTask("Inertial Sample", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_0, TaskInertical_Core, 8192);
+    TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 4096);
     Test2_Task = Os_CreateTask("test2", TASK_EXEC_1KHZ, Task_Group_0, Task_Group_2, Test2, 256);
 }
 
