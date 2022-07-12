@@ -841,7 +841,10 @@ static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path,
 
     name_buff = (char *)MMU_Malloc(strlen(name));
     if (name_buff == NULL)
+    {
+        MMU_Free(name_buff);
         return false;
+    }
 
     if (dir_path != NULL)
     {
