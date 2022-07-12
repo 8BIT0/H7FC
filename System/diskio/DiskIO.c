@@ -9,6 +9,7 @@
 #include "IO_Definition.h"
 #include "Data_Convert_Util.h"
 #include "error_log.h"
+#include "mmu.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -380,8 +381,9 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
     Disk_CCSSFFAT_TypeDef *attr_tmp = NULL;
     uint32_t date_tmp = 0;
     uint32_t disk_section_no = 0;
-    char name[11] = {'\0'};
+    char name[11];
 
+    memset(name, NULL, sizeof(name));
     memset(&table_tmp, NULL, sizeof(Disk_FFInfoTable_TypeDef));
 
     if (sec != 0)
@@ -530,12 +532,17 @@ static uint32_t Disk_GetPath_Layer(const char *fpath)
 
 static char *Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index)
 {
-    char fpath_tmp[128] = {'\0'};
+    char *fpath_tmp = NULL;
     char *token;
     uint32_t layer = index;
 
-    if (strlen(fpath) > sizeof(fpath_tmp))
+    fpath_tmp = (char *)MMU_Malloc(strlen(fpath));
+
+    if (fpath_tmp == NULL)
+    {
+        MMU_Free(fpath_tmp);
         return NULL;
+    }
 
     memcpy(fpath_tmp, fpath, strlen(fpath));
 
@@ -546,11 +553,15 @@ static char *Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index)
         token = strtok(NULL, DISK_FOLDER_TERMINATION);
 
         if (token == NULL)
+        {
+            MMU_Free(fpath_tmp);
             return NULL;
+        }
 
         layer--;
     }
 
+    MMU_Free(fpath_tmp);
     return token;
 }
 
@@ -778,14 +789,22 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_St
     return false;
 }
 
-static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *dir)
+static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const char *dir)
 {
     Disk_FFInfo_TypeDef F_Info;
     uint16_t dir_layer = 0;
     uint32_t cluster_tmp = 2;
     bool match = false;
+    char *dir_tmp = NULL;
 
+    dir_tmp = (char *)MMU_Malloc(strlen(dir));
     memset(&F_Info, NULL, sizeof(F_Info));
+
+    if ((dir == NULL) || (dir_tmp == NULL))
+    {
+        MMU_Free(dir_tmp);
+        return 0;
+    }
 
     /* direction break down first */
     dir_layer = Disk_GetPath_Layer(dir);
@@ -795,35 +814,48 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, char *
         for (uint32_t l = 0; l < dir_layer; l++)
         {
             match = false;
+            dir_tmp = Disk_GetFolderName_ByIndex(dir, l);
 
-            if (Disk_MatchTaget(FATObj, dir, Disk_DataType_Folder, &F_Info, cluster_tmp))
+            if (Disk_MatchTaget(FATObj, dir_tmp, Disk_DataType_Folder, &F_Info, cluster_tmp))
             {
                 match = true;
                 cluster_tmp = F_Info.start_cluster;
             }
+
+            memset(dir_tmp, NULL, strlen(dir_tmp));
         }
     }
-    else
+
+    if (!match || (dir_layer == 0))
         cluster_tmp = 0;
 
-    if (!match)
-        cluster_tmp = 0;
+    MMU_Free(dir_tmp);
 
     return cluster_tmp;
 }
 
-static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_FFInfo_TypeDef *FileObj)
+static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj)
 {
-    char name_buff[64] = {'\0'};
+    char *name_buff;
 
-    if (strlen(name) > sizeof(name_buff))
+    name_buff = (char *)MMU_Malloc(strlen(name));
+    if (name_buff == NULL)
         return false;
+
+    if (dir_path != NULL)
+    {
+        /* match dir first get path cluster */
+    }
 
     memcpy(name_buff, name, strlen(name));
 
     if (Disk_MatchTaget(FATObj, name_buff, Disk_DataType_File, FileObj, 2))
+    {
+        MMU_Free(name_buff);
         return true;
+    }
 
+    MMU_Free(name_buff);
     return false;
 }
 
