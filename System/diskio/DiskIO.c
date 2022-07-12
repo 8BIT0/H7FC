@@ -1,6 +1,6 @@
 /*
  *  coder: 8_B!T0
- *  bref: data storage interface
+ *  bref: TFCard data storage interface
  */
 
 #include "DiskIO.h"
