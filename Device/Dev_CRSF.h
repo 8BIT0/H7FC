@@ -22,6 +22,7 @@ typedef struct
 {
     uint16_t Val[CRSF_MAX_CHANNEL];
     uint16_t channel_cnt;
+    uint32_t Ms_Stamp;
 } DevCRSF_Pack_TypeDef;
 #pragma pack()
 
