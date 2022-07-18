@@ -65,7 +65,7 @@ static Disk_Card_Info Disk_GetCard_Info(void);
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
 static char *Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index);
-static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *name, Disk_FFInfo_TypeDef *FileObj);
+static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
 
 /******************************************************************************** SDMMC Interface **************************************************************************/
 static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
@@ -227,7 +227,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_FFInfo_TypeDef test_file;
 
     memset(&test_file, NULL, sizeof(test_file));
-    Disk_OpenFile(&FATFs_Obj, "test.txt", &test_file);
+    Disk_OpenFile(&FATFs_Obj, NULL, "test.txt", &test_file);
     /* test code */
 
 #endif
@@ -825,7 +825,8 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
             memset(dir_tmp, NULL, strlen(dir_tmp));
         }
     }
-    else if (!match || (dir_layer == 0))
+
+    if (!match || (dir_layer == 0))
         cluster_tmp = 0;
 
     MMU_Free(dir_tmp);
