@@ -64,7 +64,7 @@ DevW25QxxObj_TypeDef W25Q64_Obj = {
 static Disk_Card_Info Disk_GetCard_Info(void);
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
-static char *Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index);
+static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *token);
 static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
 
 /******************************************************************************** SDMMC Interface **************************************************************************/
@@ -227,7 +227,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_FFInfo_TypeDef test_file;
 
     memset(&test_file, NULL, sizeof(test_file));
-    Disk_OpenFile(&FATFs_Obj, NULL, "test.txt", &test_file);
+    Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test_file);
     /* test code */
 
 #endif
@@ -521,48 +521,72 @@ static FATCluster_Addr Disk_GetPath_StartCluster(const char *path, FATCluster_Ad
 static uint32_t Disk_GetPath_Layer(const char *fpath)
 {
     uint32_t layer = 0;
+    char *fpath_remain = fpath;
 
-    while (strchr(fpath, DISK_FOLDER_TERMINATION) != 0)
+    while (fpath_remain != 0)
     {
-        layer++;
+        fpath_remain = strchr(fpath_remain, DISK_FOLDER_TERMINATION);
+
+        if (fpath_remain == 0)
+        {
+            break;
+        }
+        else
+        {
+            layer++;
+            fpath_remain += 1;
+        }
     }
 
     return layer;
 }
 
-static char *Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index)
+static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *token)
 {
+    char *fpath_match = NULL;
     char *fpath_tmp = NULL;
-    char *token;
-    uint32_t layer = index;
 
     fpath_tmp = (char *)MMU_Malloc(strlen(fpath));
-
     if (fpath_tmp == NULL)
     {
         MMU_Free(fpath_tmp);
-        return NULL;
+        return false;
     }
 
+    fpath_match = (char *)MMU_Malloc(strlen(fpath));
+    if (fpath_match == NULL)
+    {
+        MMU_Free(fpath_match);
+        return false;
+    }
+
+    /* still bug inside */
+    memset(fpath_match, '\0', strlen(fpath));
+    memset(fpath_tmp, '\0', strlen(fpath));
     memcpy(fpath_tmp, fpath, strlen(fpath));
 
-    token = strtok(fpath_tmp, DISK_FOLDER_TERMINATION);
+    fpath_match = strtok(fpath_tmp, DISK_FOLDER_STRTOK_SYMBOL);
 
-    while (layer)
+    while (index)
     {
-        token = strtok(NULL, DISK_FOLDER_TERMINATION);
+        memset(fpath_match, '\0', strlen(fpath));
+        fpath_match = strtok(NULL, DISK_FOLDER_TERMINATION);
 
-        if (token == NULL)
+        if (fpath_match == NULL)
         {
             MMU_Free(fpath_tmp);
-            return NULL;
+            MMU_Free(fpath_match);
+            return false;
         }
 
-        layer--;
+        index--;
     }
 
+    memcpy(token, fpath_match, strlen(fpath_match));
+
     MMU_Free(fpath_tmp);
-    return token;
+    MMU_Free(fpath_match);
+    return true;
 }
 
 static bool Disk_Create_Path(const char *fpath, const char *name)
@@ -578,7 +602,7 @@ static bool Disk_Create_Path(const char *fpath, const char *name)
 
     for (uint32_t i = 0; i < folder_depth; i++)
     {
-        folder_name = Disk_GetFolderName_ByIndex(fpath, i);
+        Disk_GetFolderName_ByIndex(fpath, i, folder_name);
 
         /* combine folder name to a path */
         folder_path_tmp = (folder_path_tmp, strcat(folder_name, DISK_FOLDER_TERMINATION));
@@ -669,18 +693,24 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
         {
             if (i < SFN_EXTEND_NAME_MAX_LENGTH)
             {
-                if (isupper(e_n[i]))
-                    extend_char_Ucase++;
+                if (e_n != 0x00)
+                {
+                    if (isupper(e_n[i]))
+                        extend_char_Ucase++;
 
-                if (islower(e_n[i]))
-                    extend_char_Lcase++;
+                    if (islower(e_n[i]))
+                        extend_char_Lcase++;
+                }
             }
 
-            if (isupper(f_n[i]))
-                file_char_Ucase++;
+            if (f_n != 0x00)
+            {
+                if (isupper(f_n[i]))
+                    file_char_Ucase++;
 
-            if (islower(f_n[i]))
-                file_char_Lcase++;
+                if (islower(f_n[i]))
+                    file_char_Lcase++;
+            }
         }
 
         if (((file_char_Lcase == 0) && (extend_char_Lcase == 0)) || ((extend_char_Ucase == 0) && (file_char_Ucase == 0)))
@@ -797,6 +827,8 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
     bool match = false;
     char *dir_tmp = NULL;
 
+    volatile test_len = strlen(dir);
+
     dir_tmp = (char *)MMU_Malloc(strlen(dir));
     memset(&F_Info, NULL, sizeof(F_Info));
 
@@ -808,13 +840,14 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
 
     /* direction break down first */
     dir_layer = Disk_GetPath_Layer(dir);
+    memset(dir_tmp, NULL, strlen(dir));
 
     if (dir_layer)
     {
         for (uint32_t l = 0; l < dir_layer; l++)
         {
             match = false;
-            dir_tmp = Disk_GetFolderName_ByIndex(dir, l);
+            Disk_GetFolderName_ByIndex(dir, l, dir_tmp);
 
             if (Disk_MatchTaget(FATObj, dir_tmp, Disk_DataType_Folder, &F_Info, cluster_tmp))
             {

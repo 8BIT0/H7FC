@@ -49,7 +49,8 @@
 #define DISK_FILE_DEFAULT_MONTH 6
 #define DISK_FILE_DEFAULT_DAY 28
 
-#define DISK_FOLDER_TERMINATION "/"
+#define DISK_FOLDER_TERMINATION '/'
+#define DISK_FOLDER_STRTOK_SYMBOL "/"
 
 #define SFN_FILE_NAME_MAX_LENGTH 8
 #define SFN_EXTEND_NAME_MAX_LENGTH 3
@@ -110,8 +111,7 @@ typedef enum
 } DiskFATCluster_State_List;
 
 #pragma pack(1)
-typedef union
-{
+typedef union {
     struct
     {
         uint8_t internal_module_EN : 1;
@@ -125,8 +125,7 @@ typedef union
     uint8_t val;
 } StorageModule_TypeDef;
 
-typedef union
-{
+typedef union {
     struct
     {
         uint8_t internal_module_error_code : 8;
