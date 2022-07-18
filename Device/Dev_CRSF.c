@@ -8,8 +8,9 @@ static DevCRSF_Pack_TypeDef DevCRSF_Pack;
 
 typedef struct
 {
-    QueueObj_TypeDef *rec_queue_ptr; /* receive queue ptr */
-    QueueObj_TypeDef *dec_queue_ptr; /* decode queue ptr */
+    QueueObj_TypeDef *rec_queue_ptr;     /* current receive queue ptr */
+    QueueObj_TypeDef *cur_dec_queue_ptr; /* current decode queue ptr */
+    QueueObj_TypeDef *nxt_dec_queue_ptr; /* next decode queue ptr */
 } DevCRSF_Monitor_TypeDef;
 
 static DevCRSF_Monitor_TypeDef DevCRSF_Monitor;
@@ -94,4 +95,11 @@ static bool DevCrsf_Insert_BuffData(uint8_t *p_data, uint8_t size)
 
     DevCRSF_Monitor.rec_queue_ptr = NULL;
     return state;
+}
+
+static bool DevCRSF_Decode(void)
+{
+    if (DevCRSF_Monitor.dec_queue_ptr == NULL)
+    {
+    }
 }
