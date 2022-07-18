@@ -2,8 +2,17 @@
 #include "queue.h"
 
 /* internal variable */
-static QueueObj_TypeDef DevCRSF_Rec_Queue;
-static uint16_t DevCRSF_Payload[CRSF_MAX_CHANNEL] = {0};
+static QueueObj_TypeDef DevCRSF_Rec_Queue_1;
+static QueueObj_TypeDef DevCRSF_Rec_Queue_2;
+static DevCRSF_Pack_TypeDef DevCRSF_Pack;
+
+typedef struct
+{
+    QueueObj_TypeDef *rec_queue_ptr; /* receive queue ptr */
+    QueueObj_TypeDef *dec_queue_ptr; /* decode queue ptr */
+} DevCRSF_Monitor_TypeDef;
+
+static DevCRSF_Monitor_TypeDef DevCRSF_Monitor;
 
 // crc implementation from CRSF protocol document rev7
 static const uint8_t crsf_crc8tab[256] = {
@@ -37,7 +46,16 @@ static uint8_t crsf_crc8(const uint8_t *ptr, uint8_t len)
 static bool DevCrsf_Init(void)
 {
     /* create receive queue first */
-    return Queue.create(&DevCRSF_Rec_Queue, "CRSF Queue", CRSF_FRAME_SIZE_MAX * 2);
+    if (!Queue.create(&DevCRSF_Rec_Queue_1, "CRSF Queue 1", CRSF_FRAME_SIZE_MAX * 2))
+        return false;
+
+    if (!Queue.create(&DevCRSF_Rec_Queue_2, "CRSF Queue 2", CRSF_FRAME_SIZE_MAX * 2))
+        return false;
+
+    memset(&DevCRSF_Monitor, NULL, sizeof(DevCRSF_Monitor));
+    memset(&DevCRSF_Pack, NULL, sizeof(DevCRSF_Pack));
+
+    return true;
 }
 
 static uint16_t DevCrsf_Range_Check(uint16_t channel_val)
@@ -54,11 +72,26 @@ static uint16_t DevCrsf_Range_Check(uint16_t channel_val)
 /* receive crsf frame form serial port interrupt callback */
 static bool DevCrsf_Insert_BuffData(uint8_t *p_data, uint8_t size)
 {
+    bool state = false;
+
     if ((p_data == NULL) || (size == 0))
-        return false;
+        return state;
 
-    if (Queue.push(&DevCRSF_Rec_Queue, p_data, size) == Queue_ok)
-        return true;
+    if (DevCRSF_Monitor.dec_queue_ptr == &DevCRSF_Rec_Queue_2)
+    {
+        DevCRSF_Monitor.rec_queue_ptr = &DevCRSF_Rec_Queue_1;
 
-    return false;
+        if (Queue.push(&DevCRSF_Rec_Queue_1, p_data, size) == Queue_ok)
+            state = true;
+    }
+    else if (DevCRSF_Monitor.dec_queue_ptr == &DevCRSF_Rec_Queue_1)
+    {
+        DevCRSF_Monitor.rec_queue_ptr = &DevCRSF_Rec_Queue_2;
+
+        if (Queue.push(&DevCRSF_Rec_Queue_2, p_data, size) == Queue_ok)
+            state = true;
+    }
+
+    DevCRSF_Monitor.rec_queue_ptr = NULL;
+    return state;
 }

@@ -17,4 +17,12 @@
 #define CRSF_DIGITAL_CHANNEL_MIN 172
 #define CRSF_DIGITAL_CHANNEL_MAX 1811
 
+#pragma pack(1)
+typedef struct
+{
+    uint16_t Val[CRSF_MAX_CHANNEL];
+    uint16_t channel_cnt;
+} DevCRSF_Pack_TypeDef;
+#pragma pack()
+
 #endif
