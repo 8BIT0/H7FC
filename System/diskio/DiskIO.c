@@ -825,8 +825,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
             memset(dir_tmp, NULL, strlen(dir_tmp));
         }
     }
-
-    if (!match || (dir_layer == 0))
+    else if (!match || (dir_layer == 0))
         cluster_tmp = 0;
 
     MMU_Free(dir_tmp);
