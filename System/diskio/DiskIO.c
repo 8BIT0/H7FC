@@ -15,6 +15,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#define GEN_DATE(h, m, s) (((uint16_t)h) << 11) + (((uint16_t)m) << 5) + (((uint16_t)s) >> 1)
+#define GEN_TIME(y, m, d) ((((uint16_t)(y % 100) + 20) << 9) + (((uint16_t)m) << 5) + ((uint16_t)d))
+
 #pragma pack(1)
 /* File and Folder Attribute definition */
 typedef struct
@@ -617,9 +620,18 @@ static bool Disk_Create_Path(const char *fpath, const char *name)
     }
 }
 
-static bool Disk_Create_File(const char *path, const char *name)
+static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
 {
     /* check correspond file exist or not first */
+    if ((type != Disk_DataType_File) || (type != Disk_DataType_Folder) || (name == NULL))
+        return false;
+
+    if (type == Disk_DataType_File)
+    {
+        /* check file name */
+    }
+
+    return true;
 }
 
 static bool Disk_WriteToFile()
