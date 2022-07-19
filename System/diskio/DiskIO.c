@@ -521,10 +521,6 @@ static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FAT
     return LEndian2Word(&FATAddr_Tmp);
 }
 
-static FATCluster_Addr Disk_GetPath_StartCluster(const char *path, FATCluster_Addr cluster_in)
-{
-}
-
 static uint32_t Disk_GetPath_Layer(const char *fpath)
 {
     uint32_t layer = 0;
@@ -620,8 +616,33 @@ static bool Disk_Create_Path(const char *fpath, const char *name)
     }
 }
 
-static bool Disk_Fill_Attr(const char *name, Disk_FileTime_TypeDef time, Disk_FileDate_TypeDef date)
+static bool Disk_CreateNewFF_NameLegally_Check(const char *name)
 {
+    if (name == NULL)
+        return false;
+
+    return true;
+}
+
+static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FileTime_TypeDef time, Disk_FileDate_TypeDef date, Disk_FFAttr_TypeDef *Attr_Out)
+{
+    /* ptr check */
+    if ((name == NULL) || (Attr_Out == NULL))
+        return false;
+
+    /* file type check */
+    if ((type < Disk_DataType_File) || (type > Disk_DataType_Folder))
+        return false;
+
+    /* Date Payload check */
+    if ((date.year < DISK_FILE_DEFAULT_YEAR) || (date.month > 12) || (date.day > 31))
+        return false;
+
+    /* name legally check */
+    if (!Disk_CreateNewFF_NameLegally_Check(name))
+        return false;
+
+    return true;
 }
 
 static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
@@ -632,7 +653,9 @@ static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
 
     if (type == Disk_DataType_File)
     {
-        /* check file name */
+        /* name legally check */
+        if (!Disk_CreateNewFF_NameLegally_Check(name))
+            return false;
     }
 
     return true;
