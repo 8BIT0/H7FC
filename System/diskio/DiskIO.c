@@ -224,10 +224,14 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_ParseDBR(&FATFs_Obj);
 
     /* test code */
-    Disk_FFInfo_TypeDef test_file;
+    Disk_FFInfo_TypeDef test1_file;
+    Disk_FFInfo_TypeDef test2_file;
 
-    memset(&test_file, NULL, sizeof(test_file));
-    Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test_file);
+    memset(&test1_file, NULL, sizeof(test1_file));
+    memset(&test2_file, NULL, sizeof(test2_file));
+
+    Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test1_file);
+    Disk_OpenFile(&FATFs_Obj, "test3/", "file1.txt", &test2_file);
     /* test code */
 
 #endif
