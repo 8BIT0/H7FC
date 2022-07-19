@@ -529,7 +529,7 @@ static uint32_t Disk_GetPath_Layer(const char *fpath)
 
     while (fpath_remain != 0)
     {
-        fpath_remain = strchr(fpath_remain, DISK_FOLDER_TERMINATION);
+        fpath_remain = strchr(fpath_remain, DISK_FOLDER_STRTOK_MARK);
 
         if (fpath_remain == 0)
         {
@@ -609,7 +609,7 @@ static bool Disk_Create_Path(const char *fpath, const char *name)
         Disk_GetFolderName_ByIndex(fpath, i, folder_name);
 
         /* combine folder name to a path */
-        folder_path_tmp = (folder_path_tmp, strcat(folder_name, DISK_FOLDER_TERMINATION));
+        folder_path_tmp = (folder_path_tmp, strcat(folder_name, DISK_FOLDER_STRTOK_MARK));
 
         /* check corresponding folder exist or not in the first place */
 
