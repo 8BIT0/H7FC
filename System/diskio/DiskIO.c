@@ -546,21 +546,20 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
     char *fpath_match = NULL;
     char *fpath_tmp = NULL;
 
-    fpath_tmp = (char *)MMU_Malloc(strlen(fpath));
+    fpath_tmp = (char *)MMU_Malloc(strlen(fpath) + 1);
     if (fpath_tmp == NULL)
     {
         MMU_Free(fpath_tmp);
         return false;
     }
 
-    fpath_match = (char *)MMU_Malloc(strlen(fpath));
+    fpath_match = (char *)MMU_Malloc(strlen(fpath) + 1);
     if (fpath_match == NULL)
     {
         MMU_Free(fpath_match);
         return false;
     }
 
-    /* still bug inside */
     memset(fpath_match, '\0', strlen(fpath));
     memset(fpath_tmp, '\0', strlen(fpath));
     memcpy(fpath_tmp, fpath, strlen(fpath));
@@ -569,8 +568,9 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
 
     while (index)
     {
-        memset(fpath_match, '\0', strlen(fpath));
-        fpath_match = strtok(NULL, DISK_FOLDER_TERMINATION);
+        memcpy(fpath_tmp, fpath, strlen(fpath));
+
+        fpath_match = strtok(NULL, DISK_FOLDER_STRTOK_SYMBOL);
 
         if (fpath_match == NULL)
         {
@@ -829,7 +829,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
 
     volatile test_len = strlen(dir);
 
-    dir_tmp = (char *)MMU_Malloc(strlen(dir));
+    dir_tmp = (char *)MMU_Malloc(strlen(dir) + 1);
     memset(&F_Info, NULL, sizeof(F_Info));
 
     if ((dir == NULL) || (dir_tmp == NULL))
@@ -840,7 +840,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
 
     /* direction break down first */
     dir_layer = Disk_GetPath_Layer(dir);
-    memset(dir_tmp, NULL, strlen(dir));
+    memset(dir_tmp, '\0', strlen(dir));
 
     if (dir_layer)
     {
@@ -871,8 +871,9 @@ static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path,
 {
     char *name_buff;
     FATCluster_Addr file_cluster = 2;
+    uint16_t name_size = strlen(name);
 
-    name_buff = (char *)MMU_Malloc(strlen(name));
+    name_buff = (char *)MMU_Malloc(name_size + 1);
     if (name_buff == NULL)
     {
         MMU_Free(name_buff);
@@ -885,7 +886,8 @@ static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path,
         file_cluster = Disk_Get_DirStartCluster(FATObj, dir_path);
     }
 
-    memcpy(name_buff, name, strlen(name));
+    memset(name_buff, '\0', name_size);
+    memcpy(name_buff, name, name_size);
 
     if (Disk_MatchTaget(FATObj, name_buff, Disk_DataType_File, FileObj, file_cluster))
     {
