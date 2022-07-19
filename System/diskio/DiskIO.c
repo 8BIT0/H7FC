@@ -620,6 +620,10 @@ static bool Disk_Create_Path(const char *fpath, const char *name)
     }
 }
 
+static bool Disk_Fill_Attr(const char *name, Disk_FileTime_TypeDef time, Disk_FileDate_TypeDef date)
+{
+}
+
 static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
 {
     /* check correspond file exist or not first */
