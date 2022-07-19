@@ -617,10 +617,20 @@ static bool Disk_Create_Path(const char *fpath, const char *name)
     }
 }
 
-static bool Disk_CreateNewFF_NameLegally_Check(const char *name)
+static bool Disk_CreateNewFF_NameLegally_Check(const char *name, Disk_StorageData_TypeDef type)
 {
     if (name == NULL)
         return false;
+
+    if ((type < Disk_DataType_File) || (type > Disk_DataType_Folder))
+        return false;
+
+    if (type == Disk_DataType_File)
+    {
+    }
+    else if (type == Disk_DataType_Folder)
+    {
+    }
 
     return true;
 }
@@ -640,7 +650,7 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
         return false;
 
     /* name legally check */
-    if (!Disk_CreateNewFF_NameLegally_Check(name))
+    if (!Disk_CreateNewFF_NameLegally_Check(name, type))
         return false;
 
     return true;
@@ -652,12 +662,9 @@ static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
     if ((type != Disk_DataType_File) || (type != Disk_DataType_Folder) || (name == NULL))
         return false;
 
-    if (type == Disk_DataType_File)
-    {
-        /* name legally check */
-        if (!Disk_CreateNewFF_NameLegally_Check(name))
-            return false;
-    }
+    /* name legally check */
+    if (!Disk_CreateNewFF_NameLegally_Check(name, type))
+        return false;
 
     return true;
 }
