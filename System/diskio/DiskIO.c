@@ -1,7 +1,7 @@
 /*
  *  coder: 8_B!T0
  *  bref: TFCard data storage interface
- *  optmize from znFAT 
+ *  optmize from znFAT
  */
 
 #include "DiskIO.h"
@@ -593,108 +593,6 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
     return true;
 }
 
-static bool Disk_Create_Path(const char *fpath, const char *name)
-{
-    char *folder_name = NULL;
-    char *folder_path_tmp = NULL;
-    uint32_t folder_depth = 0;
-
-    if (fpath == NULL)
-        return false;
-
-    folder_depth = Disk_GetPath_Layer(fpath);
-
-    for (uint32_t i = 0; i < folder_depth; i++)
-    {
-        Disk_GetFolderName_ByIndex(fpath, i, folder_name);
-
-        /* combine folder name to a path */
-        folder_path_tmp = (folder_path_tmp, strcat(folder_name, DISK_FOLDER_STRTOK_MARK));
-
-        /* check corresponding folder exist or not in the first place */
-
-        folder_name = NULL;
-    }
-}
-
-static bool Disk_CreateNewFF_NameLegally_Check(const char *name, Disk_StorageData_TypeDef type)
-{
-    if (name == NULL)
-        return false;
-
-    if ((type < Disk_DataType_File) || (type > Disk_DataType_Folder))
-        return false;
-
-    if (type == Disk_DataType_File)
-    {
-    }
-    else if (type == Disk_DataType_Folder)
-    {
-    }
-
-    return true;
-}
-
-static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FileTime_TypeDef time, Disk_FileDate_TypeDef date, Disk_FFAttr_TypeDef *Attr_Out)
-{
-    /* ptr check */
-    if ((name == NULL) || (Attr_Out == NULL))
-        return false;
-
-    /* file type check */
-    if ((type < Disk_DataType_File) || (type > Disk_DataType_Folder))
-        return false;
-
-    /* Date Payload check */
-    if ((date.year < DISK_FILE_DEFAULT_YEAR) || (date.month > 12) || (date.day > 31))
-        return false;
-
-    /* name legally check */
-    if (!Disk_CreateNewFF_NameLegally_Check(name, type))
-        return false;
-
-    return true;
-}
-
-static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
-{
-    /* check correspond file exist or not first */
-    if ((type != Disk_DataType_File) || (type != Disk_DataType_Folder) || (name == NULL))
-        return false;
-
-    /* name legally check */
-    if (!Disk_CreateNewFF_NameLegally_Check(name, type))
-        return false;
-
-    return true;
-}
-
-static bool Disk_WriteToFile()
-{
-}
-
-static bool Disk_MoveFileCursor()
-{
-}
-
-/*
- *   f_name: current file name
- *   m_name: match target file name
- */
-static bool Disk_SFN_Match(char *f_name, char *m_name)
-{
-    char fn_tmp[11] = {'\0'};
-    char mn_tmp[11] = {'\0'};
-
-    memcpy(fn_tmp, f_name, 11);
-    memcpy(mn_tmp, m_name, 11);
-
-    if (memcmp(fn_tmp, mn_tmp, 11) != 0)
-        return false;
-
-    return true;
-}
-
 /*
  *  check SFN frame legal or not
  *   f_n SFN file name
@@ -826,6 +724,90 @@ static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
 
     memcpy(n_out, file_name, sizeof(file_name));
     memcpy(n_out + sizeof(file_name), ext_file_name, sizeof(ext_file_name));
+
+    return true;
+}
+
+static bool Disk_Create_Path(const char *fpath, const char *name)
+{
+    char *folder_name = NULL;
+    char *folder_path_tmp = NULL;
+    uint32_t folder_depth = 0;
+
+    if (fpath == NULL)
+        return false;
+
+    folder_depth = Disk_GetPath_Layer(fpath);
+
+    for (uint32_t i = 0; i < folder_depth; i++)
+    {
+        Disk_GetFolderName_ByIndex(fpath, i, folder_name);
+
+        /* combine folder name to a path */
+        folder_path_tmp = (folder_path_tmp, strcat(folder_name, DISK_FOLDER_STRTOK_MARK));
+
+        /* check corresponding folder exist or not in the first place */
+
+        folder_name = NULL;
+    }
+}
+
+static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FileTime_TypeDef time, Disk_FileDate_TypeDef date, Disk_FFAttr_TypeDef *Attr_Out)
+{
+    char Name_Frame83[11];
+
+    /* ptr check */
+    if ((name == NULL) || (Attr_Out == NULL) ||
+        /* file type check */
+        (type < Disk_DataType_File) || (type > Disk_DataType_Folder) ||
+        /* Date Payload check */
+        (date.year < DISK_FILE_DEFAULT_YEAR) || (date.month > 12) || (date.day > 31) ||
+        /* name legally check */
+        !Disk_SFN_LegallyCheck(name))
+        return false;
+
+    memset(Name_Frame83, '\0', sizeof(Name_Frame83));
+
+    Disk_Name_ConvertTo83Frame(name, Name_Frame83);
+
+    return true;
+}
+
+static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
+{
+    /* check correspond file exist or not first */
+    if ((type != Disk_DataType_File) || (type != Disk_DataType_Folder) || (name == NULL))
+        return false;
+
+    /* name legally check */
+    if (!Disk_SFN_LegallyCheck(name))
+        return false;
+
+    return true;
+}
+
+static bool Disk_WriteToFile()
+{
+}
+
+static bool Disk_MoveFileCursor()
+{
+}
+
+/*
+ *   f_name: current file name
+ *   m_name: match target file name
+ */
+static bool Disk_SFN_Match(char *f_name, char *m_name)
+{
+    char fn_tmp[11] = {'\0'};
+    char mn_tmp[11] = {'\0'};
+
+    memcpy(fn_tmp, f_name, 11);
+    memcpy(mn_tmp, m_name, 11);
+
+    if (memcmp(fn_tmp, mn_tmp, 11) != 0)
+        return false;
 
     return true;
 }
