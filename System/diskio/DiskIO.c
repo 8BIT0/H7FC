@@ -728,30 +728,6 @@ static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
     return true;
 }
 
-static bool Disk_Create_Path(const char *fpath, const char *name)
-{
-    char *folder_name = NULL;
-    char *folder_path_tmp = NULL;
-    uint32_t folder_depth = 0;
-
-    if (fpath == NULL)
-        return false;
-
-    folder_depth = Disk_GetPath_Layer(fpath);
-
-    for (uint32_t i = 0; i < folder_depth; i++)
-    {
-        Disk_GetFolderName_ByIndex(fpath, i, folder_name);
-
-        /* combine folder name to a path */
-        folder_path_tmp = (folder_path_tmp, strcat(folder_name, DISK_FOLDER_STRTOK_MARK));
-
-        /* check corresponding folder exist or not in the first place */
-
-        folder_name = NULL;
-    }
-}
-
 static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FileTime_TypeDef time, Disk_FileDate_TypeDef date, Disk_FFAttr_TypeDef *Attr_Out)
 {
     char Name_Frame83[11];
@@ -798,6 +774,8 @@ static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
 {
     char *name_tmp;
     uint32_t layer = 0;
+    FATCluster_Addr clu_id = 2;
+    uint32_t sec_id = Disk_Get_StartSectionOfCluster(clu_id);
 
     /* check correspond file exist or not first */
     if ((type != Disk_DataType_File) || (type != Disk_DataType_Folder) || (name == NULL))
@@ -822,6 +800,7 @@ static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
     for (uint32_t i = 0; i < layer; i++)
     {
         /* search any same name item has exist 2nd */
+        /* search from cluster 2 */
     }
 
     // Disk_GetClusterState
