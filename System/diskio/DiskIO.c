@@ -797,6 +797,7 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
 static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
 {
     char *name_tmp;
+    uint32_t layer = 0;
 
     /* check correspond file exist or not first */
     if ((type != Disk_DataType_File) || (type != Disk_DataType_Folder) || (name == NULL))
@@ -807,24 +808,25 @@ static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
         return false;
 
     name_tmp = (char *)MMU_Malloc(strlen(name) + 1);
-    memset(name_tmp, '\0', (strlen(name) + 1));
-
-    if (type == Disk_DataType_File)
+    if (name_tmp == NULL)
     {
-        /* name is folder path break it down 1st */
-        uint32_t layer = 0;
-
-        layer = Disk_GetPath_Layer(name);
-
-        for (uint32_t i = 0; i < layer; i++)
-        {
-        }
+        MMU_Free(name_tmp);
+        return false;
     }
 
-    /* search any same name item has exist 2nd */
+    memset(name_tmp, '\0', (strlen(name) + 1));
+
+    /* name is folder path break it down 1st */
+    layer = Disk_GetPath_Layer(name);
+
+    for (uint32_t i = 0; i < layer; i++)
+    {
+        /* search any same name item has exist 2nd */
+    }
 
     // Disk_GetClusterState
 
+    MMU_Free(name_tmp);
     return true;
 }
 
