@@ -47,7 +47,11 @@
 
 #define DISK_FILE_DEFAULT_YEAR 2022
 #define DISK_FILE_DEFAULT_MONTH 7
-#define DISK_FILE_DEFAULT_DAY 19
+#define DISK_FILE_DEFAULT_DAY 30
+
+#define DISK_FILE_DEFAULT_HOUR 9
+#define DISK_FILE_DEFAULT_MIN 23
+#define DISK_FILE_DEFAULT_SEC 00
 
 #define DISK_FOLDER_STRTOK_MARK '/'
 #define DISK_FOLDER_STRTOK_SYMBOL "/"
@@ -112,7 +116,8 @@ typedef enum
 } DiskFATCluster_State_List;
 
 #pragma pack(1)
-typedef union {
+typedef union
+{
     struct
     {
         uint8_t internal_module_EN : 1;
@@ -126,7 +131,8 @@ typedef union {
     uint8_t val;
 } StorageModule_TypeDef;
 
-typedef union {
+typedef union
+{
     struct
     {
         uint8_t internal_module_error_code : 8;

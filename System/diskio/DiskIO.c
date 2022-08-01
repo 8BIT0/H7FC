@@ -769,6 +769,27 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     memset(Name_Frame83, '\0', sizeof(Name_Frame83));
 
     Disk_Name_ConvertTo83Frame(name, Name_Frame83);
+    memcpy(Attr_Out->name, Name_Frame83, sizeof(Name_Frame83));
+
+    if (type == Disk_DataType_Folder)
+    {
+        Attr_Out->attr = Disk_File_Sd;
+    }
+    else
+        Attr_Out->attr = Disk_File_Pf;
+
+    uint16_t t_date = GEN_DATE(DISK_FILE_DEFAULT_YEAR, DISK_FILE_DEFAULT_MONTH, DISK_FILE_DEFAULT_DAY);
+    uint16_t t_time = GEN_TIME(DISK_FILE_DEFAULT_HOUR, DISK_FILE_DEFAULT_MIN, DISK_FILE_DEFAULT_SEC);
+
+    Attr_Out->CreateDate[0] = (uint8_t)(t_date & 0x00FF);
+    Attr_Out->CreateDate[1] = (uint8_t)((t_date & 0xFF00) >> 8);
+
+    Attr_Out->CreateTime[0] = (uint8_t)(t_time & 0x00FF);
+    Attr_Out->CreateTime[1] = (uint8_t)((t_time & 0xFF00) >> 8);
+
+    memset(Attr_Out->FileSize, 0, sizeof(Attr_Out->FileSize));
+    memset(Attr_Out->HighCluster, 0, sizeof(Attr_Out->HighCluster));
+    memset(Attr_Out->LowCluster, 0, sizeof(Attr_Out->LowCluster));
 
     return true;
 }
@@ -782,6 +803,8 @@ static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
     /* name legally check */
     if (!Disk_SFN_LegallyCheck(name))
         return false;
+
+    // Disk_GetClusterState
 
     return true;
 }
