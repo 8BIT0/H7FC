@@ -746,7 +746,7 @@ static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
     return true;
 }
 
-static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FFAttr_TypeDef *Attr_Out)
+static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FFAttr_TypeDef *Attr_Out, FATCluster_Addr cluster)
 {
     char Name_Frame83[11];
 
@@ -780,8 +780,12 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     Attr_Out->CreateTime[1] = (uint8_t)((t_time & 0xFF00) >> 8);
 
     memset(Attr_Out->FileSize, 0, sizeof(Attr_Out->FileSize));
-    memset(Attr_Out->HighCluster, 0, sizeof(Attr_Out->HighCluster));
-    memset(Attr_Out->LowCluster, 0, sizeof(Attr_Out->LowCluster));
+
+    /* set cluster */
+    Attr_Out->HighCluster[0] = ;
+    Attr_Out->HighCluster[1] = ;
+    Attr_Out->HighCluster[0] = ;
+    Attr_Out->HighCluster[1] = ;
 
     return true;
 }
@@ -849,7 +853,10 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name
                         {
                             /* unmatch same name target then create new one */
                             /* fill attribute */
-                            // Disk_Fill_Attr();
+                            Disk_FFAttr_TypeDef Attr_tmp;
+
+                            memset(&Attr_tmp, NULL, sizeof(Attr_tmp));
+                            Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &Attr_tmp);
                         }
                     }
 
