@@ -746,7 +746,7 @@ static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
     return true;
 }
 
-static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FileTime_TypeDef time, Disk_FileDate_TypeDef date, Disk_FFAttr_TypeDef *Attr_Out)
+static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FFAttr_TypeDef *Attr_Out)
 {
     char Name_Frame83[11];
 
@@ -754,8 +754,6 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     if ((name == NULL) || (Attr_Out == NULL) ||
         /* file type check */
         (type < Disk_DataType_File) || (type > Disk_DataType_Folder) ||
-        /* Date Payload check */
-        (date.year < DISK_FILE_DEFAULT_YEAR) || (date.month > 12) || (date.day > 31) ||
         /* name legally check */
         !Disk_SFN_LegallyCheck(name))
         return false;
@@ -788,14 +786,7 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     return true;
 }
 
-static bool Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
-{
-    /* enter dir first */
-
-    /* then create file */
-}
-
-static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name)
+static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name)
 {
     char *name_tmp;
     uint32_t layer = 0;
@@ -807,7 +798,7 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData
     bool matched = false;
 
     /* check correspond file exist or not first */
-    if ((type != Disk_DataType_File) || (type != Disk_DataType_Folder) || (name == NULL))
+    if (name == NULL)
         return false;
 
     name_tmp = (char *)MMU_Malloc(strlen(name) + 1);
@@ -834,7 +825,7 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData
 
             while (Cluster_State == Disk_FATCluster_Alloc)
             {
-                for (uint8_t section_index = 0; section_index < 8; section_index++)
+                for (uint8_t section_index = 0; section_index < FATObj->DBR_info.SecPerClus; section_index++)
                 {
                     memset(&FFInfo, NULL, sizeof(FFInfo));
 
@@ -858,6 +849,7 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData
                         {
                             /* unmatch same name target then create new one */
                             /* fill attribute */
+                            // Disk_Fill_Attr();
                         }
                     }
 
@@ -881,6 +873,13 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData
     MMU_Free(name_tmp);
 
     return true;
+}
+
+static bool Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
+{
+    /* enter dir first */
+
+    /* then create file */
 }
 
 static bool Disk_WriteToFile()
