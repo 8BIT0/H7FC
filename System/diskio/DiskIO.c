@@ -788,7 +788,14 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     return true;
 }
 
-static bool Disk_Create(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name)
+static bool Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
+{
+    /* enter dir first */
+
+    /* then create file */
+}
+
+static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name)
 {
     char *name_tmp;
     uint32_t layer = 0;
@@ -801,10 +808,6 @@ static bool Disk_Create(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDe
 
     /* check correspond file exist or not first */
     if ((type != Disk_DataType_File) || (type != Disk_DataType_Folder) || (name == NULL))
-        return false;
-
-    /* name legally check */
-    if (!Disk_SFN_LegallyCheck(name))
         return false;
 
     name_tmp = (char *)MMU_Malloc(strlen(name) + 1);
@@ -825,6 +828,10 @@ static bool Disk_Create(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDe
         /* search from cluster 2 */
         if (Disk_GetFolderName_ByIndex(name, name_index, name_tmp))
         {
+            /* name legally check */
+            if (!Disk_SFN_LegallyCheck(name_tmp))
+                return false;
+
             while (Cluster_State == Disk_FATCluster_Alloc)
             {
                 for (uint8_t section_index = 0; section_index < 8; section_index++)
@@ -841,7 +848,7 @@ static bool Disk_Create(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDe
                             {
                                 if (name_index == (layer - 1))
                                 {
-                                    /* name matched */
+                                    /* target name matched no need to create new one */
                                     matched = true;
                                     break;
                                 }
@@ -850,6 +857,7 @@ static bool Disk_Create(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDe
                         else
                         {
                             /* unmatch same name target then create new one */
+                            /* fill attribute */
                         }
                     }
 
