@@ -835,14 +835,21 @@ static bool Disk_Create(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDe
 
                     for (uint8_t FF_index = 0; FF_index < 16; FF_index++)
                     {
-                        if (Disk_SFN_Match(FFInfo.Info[FF_index].name, name_tmp))
+                        if (FFInfo.Info[FF_index].name[0] != '\0')
                         {
-                            if (name_index == (layer - 1))
+                            if (Disk_SFN_Match(FFInfo.Info[FF_index].name, name_tmp))
                             {
-                                /* name matched */
-                                matched = true;
-                                break;
+                                if (name_index == (layer - 1))
+                                {
+                                    /* name matched */
+                                    matched = true;
+                                    break;
+                                }
                             }
+                        }
+                        else
+                        {
+                            /* unmatch same name target then create new one */
                         }
                     }
 
@@ -864,9 +871,6 @@ static bool Disk_Create(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDe
     // Disk_GetClusterState
 
     MMU_Free(name_tmp);
-
-    if (matched)
-        return false;
 
     return true;
 }
