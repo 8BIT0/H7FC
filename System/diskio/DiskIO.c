@@ -594,6 +594,24 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
 }
 
 /*
+ *   f_name: current file name
+ *   m_name: match target file name
+ */
+static bool Disk_SFN_Match(char *f_name, char *m_name)
+{
+    char fn_tmp[11] = {'\0'};
+    char mn_tmp[11] = {'\0'};
+
+    memcpy(fn_tmp, f_name, 11);
+    memcpy(mn_tmp, m_name, 11);
+
+    if (memcmp(fn_tmp, mn_tmp, 11) != 0)
+        return false;
+
+    return true;
+}
+
+/*
  *  check SFN frame legal or not
  *   f_n SFN file name
  *   e_n SFN extend file name
@@ -770,12 +788,16 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     return true;
 }
 
-static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
+static bool Disk_Create(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name)
 {
     char *name_tmp;
     uint32_t layer = 0;
     FATCluster_Addr clu_id = 2;
-    uint32_t sec_id = Disk_Get_StartSectionOfCluster(clu_id);
+    FATCluster_Addr cluster_tmp;
+    DiskFATCluster_State_List Cluster_State;
+    uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, clu_id);
+    Disk_FFInfoTable_TypeDef FFInfo;
+    bool matched = false;
 
     /* check correspond file exist or not first */
     if ((type != Disk_DataType_File) || (type != Disk_DataType_Folder) || (name == NULL))
@@ -797,15 +819,55 @@ static bool Disk_Create(Disk_StorageData_TypeDef type, const char *name)
     /* name is folder path break it down 1st */
     layer = Disk_GetPath_Layer(name);
 
-    for (uint32_t i = 0; i < layer; i++)
+    for (uint32_t name_index = 0; name_index < layer; name_index++)
     {
         /* search any same name item has exist 2nd */
         /* search from cluster 2 */
+        if (Disk_GetFolderName_ByIndex(name, name_index, name_tmp))
+        {
+            while (Cluster_State == Disk_FATCluster_Alloc)
+            {
+                for (uint8_t section_index = 0; section_index < 8; section_index++)
+                {
+                    memset(&FFInfo, NULL, sizeof(FFInfo));
+
+                    FFInfo = Disk_Parse_Attribute(FATObj, sec_id + section_index);
+
+                    for (uint8_t FF_index = 0; FF_index < 16; FF_index++)
+                    {
+                        if (Disk_SFN_Match(FFInfo.Info[FF_index].name, name_tmp))
+                        {
+                            if (name_index == (layer - 1))
+                            {
+                                /* name matched */
+                                matched = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (matched)
+                        break;
+                }
+
+                if (matched)
+                    break;
+
+                cluster_tmp = Disk_Get_NextCluster(FATObj, cluster_tmp);
+                Cluster_State = Disk_GetClusterState(cluster_tmp);
+            }
+        }
+
+        memset(name_tmp, '\0', (strlen(name) + 1));
     }
 
     // Disk_GetClusterState
 
     MMU_Free(name_tmp);
+
+    if (matched)
+        return false;
+
     return true;
 }
 
@@ -817,27 +879,9 @@ static bool Disk_MoveFileCursor()
 {
 }
 
-/*
- *   f_name: current file name
- *   m_name: match target file name
- */
-static bool Disk_SFN_Match(char *f_name, char *m_name)
-{
-    char fn_tmp[11] = {'\0'};
-    char mn_tmp[11] = {'\0'};
-
-    memcpy(fn_tmp, f_name, 11);
-    memcpy(mn_tmp, m_name, 11);
-
-    if (memcmp(fn_tmp, mn_tmp, 11) != 0)
-        return false;
-
-    return true;
-}
-
 static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *F_Info, FATCluster_Addr start_cluster)
 {
-    uint32_t cluster_tmp = start_cluster;
+    FATCluster_Addr cluster_tmp = start_cluster;
     uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(cluster_tmp);
     Disk_FFInfoTable_TypeDef FFInfo;
