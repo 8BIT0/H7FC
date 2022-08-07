@@ -796,7 +796,7 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     return true;
 }
 
-static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name)
+static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name)
 {
     char *name_tmp;
     uint32_t layer = 0;
@@ -809,13 +809,13 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name
 
     /* check correspond file exist or not first */
     if (name == NULL)
-        return false;
+        return 0;
 
     name_tmp = (char *)MMU_Malloc(strlen(name) + 1);
     if (name_tmp == NULL)
     {
         MMU_Free(name_tmp);
-        return false;
+        return 0;
     }
 
     memset(name_tmp, '\0', (strlen(name) + 1));
@@ -831,7 +831,7 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name
         {
             /* name legally check */
             if (!Disk_SFN_LegallyCheck(name_tmp))
-                return false;
+                return 0;
 
             while (Cluster_State == Disk_FATCluster_Alloc)
             {
@@ -885,16 +885,14 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name
 
     MMU_Free(name_tmp);
 
-    return true;
+    return cluster_tmp;
 }
 
 static bool Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
 {
     /* enter dir first */
-    if (!Disk_Create_Folder(FATObj, dir))
-    {
+    if (Disk_Create_Folder(FATObj, dir) == 0)
         return false;
-    }
 
     /* then create file */
 }
