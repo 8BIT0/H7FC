@@ -51,6 +51,7 @@ typedef struct
     DevCard_Error_List (*Get_ErrorCode)(DevCard_Obj_TypeDef *Obj);
     DevCard_Info_TypeDef (*Get_Info)(DevCard_Obj_TypeDef *Obj);
     bool (*read)(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t data_size, uint16_t block_num);
+    bool (*write)(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint32_t data_sise, uint16_t block_num);
 } DevCard_TypeDef;
 
 extern DevCard_TypeDef DevCard;

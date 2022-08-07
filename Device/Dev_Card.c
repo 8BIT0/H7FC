@@ -6,12 +6,14 @@ static DevCard_Error_List DevCard_Init(DevCard_Obj_TypeDef *Instance);
 static DevCard_Error_List DevCard_GetError(DevCard_Obj_TypeDef *Instance);
 static DevCard_Info_TypeDef DevCard_GetInfo(DevCard_Obj_TypeDef *Instance);
 static bool DevCard_Read(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t data_size, uint16_t block_num);
+static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t data_size, uint16_t block_num);
 
 DevCard_TypeDef DevCard = {
     .Init = DevCard_Init,
     .Get_ErrorCode = DevCard_GetError,
     .Get_Info = DevCard_GetInfo,
     .read = DevCard_Read,
+    .write = DevCard_Write,
 };
 
 static DevCard_Error_List DevCard_Init(DevCard_Obj_TypeDef *Instance)
@@ -75,6 +77,8 @@ static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t
 {
     if ((Instance == NULL) || (p_data == NULL) || (block_num == 0) || (block == 0) || (block > Instance->info.BlockNbr) || (data_size < block_num * Instance->info.BlockSize))
         return false;
+
+    BspSDMMC.write(&(Instance->SDMMC_Obj), p_data, block, block_num);
 
     return true;
 }

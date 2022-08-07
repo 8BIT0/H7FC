@@ -859,10 +859,10 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                         {
                             /* unmatch same name target then create new one */
                             /* fill attribute */
-                            Disk_FFAttr_TypeDef Attr_tmp;
+                            memset(&FFInfo.Info[FF_index], NULL, sizeof(Disk_FFInfo_TypeDef));
+                            Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &FFInfo.Info[FF_index], cluster_tmp);
 
-                            memset(&Attr_tmp, NULL, sizeof(Attr_tmp));
-                            Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &Attr_tmp, cluster_tmp);
+                            /* write to tf section */
                         }
                     }
 
@@ -895,6 +895,7 @@ static bool Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, c
         return false;
 
     /* then create file */
+    Disk_Fill_Attr(name, Disk_DataType_File, );
 }
 
 static bool Disk_WriteToFile()
