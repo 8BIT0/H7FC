@@ -892,11 +892,16 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
 {
     uint32_t sec_id = 0;
-    FATCluster_Addr target_file_cluster = Disk_Create_Folder(FATObj, dir);
+    FATCluster_Addr target_file_cluster = 2;
 
-    /* enter dir first */
-    if (target_file_cluster == 0)
-        return 0;
+    if (dir != NULL)
+    {
+        target_file_cluster = Disk_Create_Folder(FATObj, dir);
+
+        /* enter dir first */
+        if (target_file_cluster == 0)
+            return 0;
+    }
 
     sec_id = Disk_Get_StartSectionOfCluster(FATObj, target_file_cluster);
 
