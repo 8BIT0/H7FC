@@ -891,6 +891,10 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name
 static bool Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
 {
     /* enter dir first */
+    if (!Disk_Create_Folder(FATObj, dir))
+    {
+        return false;
+    }
 
     /* then create file */
 }
