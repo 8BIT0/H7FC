@@ -863,6 +863,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                             Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &FFInfo.Info[FF_index], cluster_tmp);
 
                             /* write to tf section */
+                            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec + section_index, &FFInfo, sizeof(FFInfo), 1);
                         }
                     }
 
@@ -888,11 +889,13 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     return cluster_tmp;
 }
 
-static bool Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
+static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
 {
+    FATCluster_Addr target_file_cluster = Disk_Create_Folder(FATObj, dir);
+
     /* enter dir first */
-    if (Disk_Create_Folder(FATObj, dir) == 0)
-        return false;
+    if (target_file_cluster == 0)
+        return 0;
 
     /* then create file */
     Disk_Fill_Attr(name, Disk_DataType_File, );
