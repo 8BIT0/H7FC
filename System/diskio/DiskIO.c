@@ -781,11 +781,17 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
 
     memset(Attr_Out->FileSize, 0, sizeof(Attr_Out->FileSize));
 
+    uint16_t half_cluster = 0;
+
     /* set cluster */
-    Attr_Out->HighCluster[0] = ;
-    Attr_Out->HighCluster[1] = ;
-    Attr_Out->HighCluster[0] = ;
-    Attr_Out->HighCluster[1] = ;
+    half_cluster = cluster & 0x0000FFFF;
+    Attr_Out->HighCluster[0] = half_cluster;
+    Attr_Out->HighCluster[1] = half_cluster >> 8;
+
+    half_cluster = cluster & 0xFFFF0000;
+    half_cluster >>= 16;
+    Attr_Out->LowCluster[0] = half_cluster;
+    Attr_Out->LowCluster[1] = half_cluster >> 8;
 
     return true;
 }
@@ -856,7 +862,7 @@ static bool Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name
                             Disk_FFAttr_TypeDef Attr_tmp;
 
                             memset(&Attr_tmp, NULL, sizeof(Attr_tmp));
-                            Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &Attr_tmp);
+                            Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &Attr_tmp, cluster_tmp);
                         }
                     }
 
