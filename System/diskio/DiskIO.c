@@ -231,12 +231,15 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     /* test code */
     Disk_FFInfo_TypeDef test1_file;
     Disk_FFInfo_TypeDef test2_file;
+    volatile FATCluster_Addr test4_folder_cluster;
 
     memset(&test1_file, NULL, sizeof(test1_file));
     memset(&test2_file, NULL, sizeof(test2_file));
 
     Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test1_file);
     Disk_OpenFile(&FATFs_Obj, "test3/", "file1.txt", &test2_file);
+
+    test4_folder_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/");
     /* test code */
 
 #endif
@@ -802,7 +805,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     char *name_tmp;
     uint32_t layer = 0;
     FATCluster_Addr cluster_tmp = 2;
-    DiskFATCluster_State_List Cluster_State;
+    DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(cluster_tmp);
     uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     Disk_FFInfoTable_TypeDef FFInfo;
     bool matched = false;
@@ -864,8 +867,13 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                             memset(&FFInfo.Info[FF_index], NULL, sizeof(Disk_FFInfo_TypeDef));
                             Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &FFInfo.Info[FF_index], cluster_tmp);
 
+                            /* bug inside */
+                            /* can`t write FFInfo Into TFCard directly */
                             /* write to tf section */
-                            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, &FFInfo, sizeof(FFInfo), 1);
+                            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, FFInfo.Info, sizeof(FFInfo.Info), 1);
+
+                            matched = true;
+                            break;
                         }
                     }
 
