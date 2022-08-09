@@ -68,8 +68,9 @@ DevW25QxxObj_TypeDef W25Q64_Obj = {
 static Disk_Card_Info Disk_GetCard_Info(void);
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
-static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *token);
 static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
+static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name);
+static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name);
 
 /******************************************************************************** SDMMC Interface **************************************************************************/
 static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
@@ -800,10 +801,9 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
 {
     char *name_tmp;
     uint32_t layer = 0;
-    FATCluster_Addr clu_id = 2;
-    FATCluster_Addr cluster_tmp;
+    FATCluster_Addr cluster_tmp = 2;
     DiskFATCluster_State_List Cluster_State;
-    uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, clu_id);
+    uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     Disk_FFInfoTable_TypeDef FFInfo;
     bool matched = false;
 
@@ -835,6 +835,8 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
 
             while (Cluster_State == Disk_FATCluster_Alloc)
             {
+                sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
+
                 for (uint8_t section_index = 0; section_index < FATObj->DBR_info.SecPerClus; section_index++)
                 {
                     memset(&FFInfo, NULL, sizeof(FFInfo));
@@ -863,7 +865,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                             Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &FFInfo.Info[FF_index], cluster_tmp);
 
                             /* write to tf section */
-                            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec + section_index, &FFInfo, sizeof(FFInfo), 1);
+                            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, &FFInfo, sizeof(FFInfo), 1);
                         }
                     }
 
@@ -893,6 +895,8 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
 {
     uint32_t sec_id = 0;
     FATCluster_Addr target_file_cluster = 2;
+    DiskFATCluster_State_List Cluster_State;
+    Disk_FFInfoTable_TypeDef FFInfo;
 
     if (dir != NULL)
     {
@@ -903,14 +907,40 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
             return 0;
     }
 
-    sec_id = Disk_Get_StartSectionOfCluster(FATObj, target_file_cluster);
-
-    for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
+    while (Cluster_State == Disk_FATCluster_Alloc)
     {
-    }
+        sec_id = Disk_Get_StartSectionOfCluster(FATObj, target_file_cluster);
 
-    /* then create file */
-    Disk_Fill_Attr(name, Disk_DataType_File, );
+        for (uint8_t section_index = 0; section_index < FATObj->SecPerCluster; section_index++)
+        {
+            memset(&FFInfo, NULL, sizeof(FFInfo));
+
+            FFInfo = Disk_Parse_Attribute(FATObj, sec_id + section_index);
+
+            for (uint8_t FF_index = 0; FF_index < 16; FF_index++)
+            {
+                if (FFInfo.Info[FF_index].name[0] != '\0')
+                {
+                    if (Disk_SFN_Match(FFInfo.Info[FF_index].name, name))
+                        return target_file_cluster;
+                }
+                else
+                {
+                    memset(&FFInfo.Info[FF_index], NULL, sizeof(Disk_FFInfo_TypeDef));
+                    /* create file */
+                    Disk_Fill_Attr(name, Disk_DataType_File, &FFInfo.Info[FF_index], target_file_cluster);
+
+                    /* write to tf section */
+                    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, &FFInfo, sizeof(FFInfo), 1);
+
+                    return target_file_cluster;
+                }
+            }
+        }
+
+        target_file_cluster = Disk_Get_NextCluster(FATObj, target_file_cluster);
+        Cluster_State = Disk_GetClusterState(target_file_cluster);
+    }
 }
 
 static bool Disk_WriteToFile()
