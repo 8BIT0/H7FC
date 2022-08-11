@@ -1,7 +1,6 @@
 #ifndef __TASK_MANAGER_H
 #define __TASK_MANAGER_H
 
-#include "Task_Fusion.h"
 #include "Task_Protocol.h"
 #include "scheduler.h"
 

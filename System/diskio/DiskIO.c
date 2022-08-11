@@ -800,6 +800,7 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     return true;
 }
 
+/* bug still */
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name)
 {
     char *name_tmp;
