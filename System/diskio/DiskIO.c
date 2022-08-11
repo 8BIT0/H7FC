@@ -750,44 +750,6 @@ static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
     return true;
 }
 
-static Disk_CCSSFFAT_TypeDef Disk_Convert_FFInfoTable2CCSSFF(const Disk_FFInfoTable_TypeDef FFtable)
-{
-    Disk_CCSSFFAT_TypeDef CCSSFFAT_tamp;
-    uint8_t WordBuff[sizeof(uint32_t)] = {0};
-    uint8_t HalfWordBuff[sizeof(uint16_t)] = {0};
-    uint16_t date_time_tmp = 0;
-
-    memset(&CCSSFFAT_tamp, NULL, sizeof(CCSSFFAT_tamp));
-
-    for (uint8_t i = 0; i < 16; i++)
-    {
-        memcpy(CCSSFFAT_tamp->attribute[i].name, table_tmp.Info[i].name, 8);
-        memcpy(CCSSFFAT_tamp->attribute[i].ext, table_tmp.Info[i].name + 8, 3);
-
-        CCSSFFAT_tamp->attribute[i].attr = table_tmp.Info[i].attr;
-        LEndianWord2BytesArray(table_tmp.Info[i].start_cluster, WordBuff);
-
-        for (uint8_t j = 0; j < sizeof(uint32_t); j++)
-        {
-            if (j < 2)
-            {
-                CCSSFFAT_tamp->attribute[i].LowCluster[j] = WordBuff[j];
-            }
-            else
-            {
-                CCSSFFAT_tamp->attribute[i].HighCluster[j - 2] = WordBuff[j];
-            }
-
-            WordBuff[j] = 0;
-        }
-
-        LEndianWord2BytesArray(table_tmp.Info[i].size, WordBuff);
-        memcpy(CCSSFFAT_tamp->attribute[i].FileSize, WordBuff, sizeof(uint32_t));
-    }
-
-    return CCSSFFAT_tamp;
-}
-
 static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FFAttr_TypeDef *Attr_Out, FATCluster_Addr cluster)
 {
     char Name_Frame83[11];
