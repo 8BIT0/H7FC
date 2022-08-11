@@ -753,6 +753,8 @@ static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
 static Disk_CCSSFFAT_TypeDef Disk_Convert_FFInfoTable2CCSSFF(const Disk_FFInfoTable_TypeDef FFtable)
 {
     Disk_CCSSFFAT_TypeDef CCSSFFAT_tamp;
+    uint8_t WordBuff[sizeof(uint32_t)] = {0};
+    uint8_t HalfWordBuff[sizeof(uint16_t)] = {0};
 
     memset(&CCSSFFAT_tamp, NULL, sizeof(CCSSFFAT_tamp));
 
@@ -762,8 +764,8 @@ static Disk_CCSSFFAT_TypeDef Disk_Convert_FFInfoTable2CCSSFF(const Disk_FFInfoTa
         memcpy(CCSSFFAT_tamp->attribute[i].ext, table_tmp.Info[i].name + 8, 3);
 
         CCSSFFAT_tamp->attribute[i].attr = table_tmp.Info[i].attr;
-        // table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
-        //                                   (LEndian2HalfWord(attr_tmp->attribute[i].HighCluster) << 16);
+        table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
+                                          (LEndian2HalfWord(attr_tmp->attribute[i].HighCluster) << 16);
         // table_tmp.Info[i].size = LEndian2Word(attr_tmp->attribute[i].FileSize);
 
         // /* parse create time */
