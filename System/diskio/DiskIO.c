@@ -755,6 +755,7 @@ static Disk_CCSSFFAT_TypeDef Disk_Convert_FFInfoTable2CCSSFF(const Disk_FFInfoTa
     Disk_CCSSFFAT_TypeDef CCSSFFAT_tamp;
     uint8_t WordBuff[sizeof(uint32_t)] = {0};
     uint8_t HalfWordBuff[sizeof(uint16_t)] = {0};
+    uint16_t date_time_tmp = 0;
 
     memset(&CCSSFFAT_tamp, NULL, sizeof(CCSSFFAT_tamp));
 
@@ -782,60 +783,6 @@ static Disk_CCSSFFAT_TypeDef Disk_Convert_FFInfoTable2CCSSFF(const Disk_FFInfoTa
 
         LEndianWord2BytesArray(table_tmp.Info[i].size, WordBuff);
         memcpy(CCSSFFAT_tamp->attribute[i].FileSize, WordBuff, sizeof(uint32_t));
-
-        /* parse create time */
-        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].CreateTime);
-        // table_tmp.Info[i].create_time.sec = (date_tmp & DISK_FILE_DATE_SEC_MASK) * 2;
-        // date_tmp >>= DISK_FILE_DATE_SEC_BITS;
-
-        // table_tmp.Info[i].create_time.min = date_tmp & DISK_FILE_DATE_MIN_MASK;
-        // date_tmp >>= DISK_FILE_DATE_MIN_BITS;
-
-        // table_tmp.Info[i].create_time.hour = date_tmp & DISK_FILE_DATE_HOUR_MASK;
-        // table_tmp.Info[i].create_time.sec += (uint16_t)(attr_tmp->attribute[i].Time10Ms) / 100;
-
-        /* parse create date */
-        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].CreateDate);
-        // table_tmp.Info[i].create_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
-        // date_tmp >>= DISK_FILE_DATE_DAY_BITS;
-
-        // table_tmp.Info[i].create_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
-        // date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
-
-        // table_tmp.Info[i].create_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
-        // table_tmp.Info[i].create_date.year += DISK_FILE_DATEBASE_YEAR;
-
-        // /* parse modify time */
-        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].ModifyTime);
-        // table_tmp.Info[i].modify_time.sec = (date_tmp & DISK_FILE_DATE_SEC_MASK) * 2;
-        // date_tmp >>= DISK_FILE_DATE_SEC_BITS;
-
-        // table_tmp.Info[i].modify_time.min = date_tmp & DISK_FILE_DATE_MIN_MASK;
-        // date_tmp >>= DISK_FILE_DATE_MIN_BITS;
-
-        // table_tmp.Info[i].modify_time.hour = date_tmp & DISK_FILE_DATE_HOUR_MASK;
-
-        /* parse modify date */
-        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].ModifyDate);
-        // table_tmp.Info[i].modify_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
-        // date_tmp >>= DISK_FILE_DATE_DAY_BITS;
-
-        // table_tmp.Info[i].modify_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
-        // date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
-
-        // table_tmp.Info[i].modify_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
-        // table_tmp.Info[i].modify_date.year += DISK_FILE_DATEBASE_YEAR;
-
-        /* parse access date */
-        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].AccessDate);
-        // table_tmp.Info[i].access_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
-        // date_tmp >>= DISK_FILE_DATE_DAY_BITS;
-
-        // table_tmp.Info[i].access_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
-        // date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
-
-        // table_tmp.Info[i].access_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
-        // table_tmp.Info[i].access_date.year += DISK_FILE_DATEBASE_YEAR;
     }
 
     return CCSSFFAT_tamp;
@@ -955,8 +902,9 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                         {
                             /* unmatch same name target then create new one */
                             /* fill attribute */
-                            memset(&FFInfo.Info[FF_index], NULL, sizeof(Disk_FFInfo_TypeDef));
-                            Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &FFInfo.Info[FF_index], cluster_tmp);
+                            Disk_FFAttr_TypeDef attr_tmp;
+                            memset(&attr_tmp, NULL, sizeof(Disk_FFAttr_TypeDef));
+                            Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &attr_tmp, cluster_tmp);
 
                             /* bug inside */
                             /* can`t write FFInfo Into TFCard directly */
