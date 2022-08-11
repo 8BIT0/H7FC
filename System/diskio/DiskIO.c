@@ -750,6 +750,15 @@ static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
     return true;
 }
 
+static Disk_CCSSFFAT_TypeDef Disk_Convert_FFInfoTable2CCSSFF(const Disk_FFInfoTable_TypeDef FFtable)
+{
+    Disk_CCSSFFAT_TypeDef CCSSFFAT_tamp;
+
+    memset(&CCSSFFAT_tamp, NULL, sizeof(CCSSFFAT_tamp));
+
+    return CCSSFFAT_tamp;
+}
+
 static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FFAttr_TypeDef *Attr_Out, FATCluster_Addr cluster)
 {
     char Name_Frame83[11];
