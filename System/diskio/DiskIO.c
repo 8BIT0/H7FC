@@ -872,7 +872,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                             DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
                             /* corver current index of data */
-                            memcpy(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index], &attr_tmp, sizeof(attr_tmp));
+                            memcpy(&(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index]), &attr_tmp, sizeof(attr_tmp));
 
                             /* write to tf section */
                             DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
@@ -948,7 +948,7 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
                     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
                     /* corver current index of data */
-                    memcpy(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index], &attr_tmp, sizeof(attr_tmp));
+                    memcpy(&(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index]), &attr_tmp, sizeof(attr_tmp));
 
                     /* write back to tf section */
                     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);

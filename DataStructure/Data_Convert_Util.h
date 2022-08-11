@@ -2,6 +2,7 @@
 #define __DATA_CONVERT_UTIL_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 uint32_t LEndian2Word(const uint8_t *ptr);
 uint16_t LEndian2HalfWord(const uint8_t *ptr);
