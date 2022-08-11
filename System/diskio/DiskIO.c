@@ -868,10 +868,14 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                             memset(&attr_tmp, NULL, sizeof(Disk_FFAttr_TypeDef));
                             Disk_Fill_Attr(name_tmp, Disk_DataType_Folder, &attr_tmp, cluster_tmp);
 
-                            /* bug inside */
-                            /* can`t write FFInfo Into TFCard directly */
+                            /* read all section data first */
+                            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+                            /* corver current index of data */
+                            memcpy(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index], &attr_tmp, sizeof(attr_tmp));
+
                             /* write to tf section */
-                            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, FFInfo.Info, sizeof(FFInfo.Info), 1);
+                            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
                             matched = true;
                             break;
