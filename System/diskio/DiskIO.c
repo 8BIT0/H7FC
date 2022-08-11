@@ -766,21 +766,22 @@ static Disk_CCSSFFAT_TypeDef Disk_Convert_FFInfoTable2CCSSFF(const Disk_FFInfoTa
         CCSSFFAT_tamp->attribute[i].attr = table_tmp.Info[i].attr;
         LEndianWord2BytesArray(table_tmp.Info[i].start_cluster, WordBuff);
 
-        for (uint8_t i = 0; i < sizeof(uint32_t); i++)
+        for (uint8_t j = 0; j < sizeof(uint32_t); j++)
         {
-            if (i < 2)
+            if (j < 2)
             {
-                attr_tmp->attribute[i].LowCluster[i] = WordBuff[i];
+                CCSSFFAT_tamp->attribute[i].LowCluster[j] = WordBuff[j];
             }
             else
             {
-                attr_tmp->attribute[i].HighCluster[i - 2] = WordBuff[i];
+                CCSSFFAT_tamp->attribute[i].HighCluster[j - 2] = WordBuff[j];
             }
+
+            WordBuff[j] = 0;
         }
 
-        // table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
-        //                                   (LEndian2HalfWord(attr_tmp->attribute[i].HighCluster) << 16);
-        // table_tmp.Info[i].size = LEndian2Word(attr_tmp->attribute[i].FileSize);
+        LEndianWord2BytesArray(table_tmp.Info[i].size, WordBuff);
+        memcpy(CCSSFFAT_tamp->attribute[i].FileSize, WordBuff, sizeof(uint32_t));
 
         /* parse create time */
         // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].CreateTime);
