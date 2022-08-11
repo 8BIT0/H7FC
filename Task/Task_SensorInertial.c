@@ -23,8 +23,6 @@ void TaskInertial_Init(void)
         TaskInertial_State = Task_SensorInertial_Error;
 }
 
-extern void Disk_Test(void);
-
 void TaskInertical_Core(Task_Handle hdl)
 {
     DebugPin.ctl(Debug_PB5, true);
