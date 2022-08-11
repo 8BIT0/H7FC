@@ -85,7 +85,8 @@
                 "cctype": "c",
                 "shell_ext.h": "c",
                 "shell.h": "c",
-                "shell_cfg.h": "c"
+                "shell_cfg.h": "c",
+                "data_convert_util.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
