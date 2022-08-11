@@ -935,12 +935,19 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
                 }
                 else
                 {
-                    memset(&FFInfo.Info[FF_index], NULL, sizeof(Disk_FFInfo_TypeDef));
                     /* create file */
-                    Disk_Fill_Attr(name, Disk_DataType_File, &FFInfo.Info[FF_index], target_file_cluster);
+                    Disk_FFAttr_TypeDef attr_tmp;
+                    memset(&attr_tmp, NULL, sizeof(Disk_FFAttr_TypeDef));
+                    Disk_Fill_Attr(name, Disk_DataType_File, &attr_tmp, target_file_cluster);
 
-                    /* write to tf section */
-                    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, &FFInfo, sizeof(FFInfo), 1);
+                    /* read all section data first */
+                    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+                    /* corver current index of data */
+                    memcpy(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index], &attr_tmp, sizeof(attr_tmp));
+
+                    /* write back to tf section */
+                    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
                     return target_file_cluster;
                 }
