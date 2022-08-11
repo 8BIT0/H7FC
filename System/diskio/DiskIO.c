@@ -756,67 +756,70 @@ static Disk_CCSSFFAT_TypeDef Disk_Convert_FFInfoTable2CCSSFF(const Disk_FFInfoTa
 
     memset(&CCSSFFAT_tamp, NULL, sizeof(CCSSFFAT_tamp));
 
-    memcpy(attr_tmp->attribute[i].name, table_tmp.Info[i].name, 8);
-    memcpy(attr_tmp->attribute[i].ext, table_tmp.Info[i].name + 8, 3);
+    for (uint8_t i = 0; i < 16; i++)
+    {
+        memcpy(CCSSFFAT_tamp->attribute[i].name, table_tmp.Info[i].name, 8);
+        memcpy(CCSSFFAT_tamp->attribute[i].ext, table_tmp.Info[i].name + 8, 3);
 
-    attr_tmp->attribute[i].attr = table_tmp.Info[i].attr;
-    table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
-                                      (LEndian2HalfWord(attr_tmp->attribute[i].HighCluster) << 16);
-    table_tmp.Info[i].size = LEndian2Word(attr_tmp->attribute[i].FileSize);
+        CCSSFFAT_tamp->attribute[i].attr = table_tmp.Info[i].attr;
+        // table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
+        //                                   (LEndian2HalfWord(attr_tmp->attribute[i].HighCluster) << 16);
+        // table_tmp.Info[i].size = LEndian2Word(attr_tmp->attribute[i].FileSize);
 
-    /* parse create time */
-    date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].CreateTime);
-    table_tmp.Info[i].create_time.sec = (date_tmp & DISK_FILE_DATE_SEC_MASK) * 2;
-    date_tmp >>= DISK_FILE_DATE_SEC_BITS;
+        // /* parse create time */
+        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].CreateTime);
+        // table_tmp.Info[i].create_time.sec = (date_tmp & DISK_FILE_DATE_SEC_MASK) * 2;
+        // date_tmp >>= DISK_FILE_DATE_SEC_BITS;
 
-    table_tmp.Info[i].create_time.min = date_tmp & DISK_FILE_DATE_MIN_MASK;
-    date_tmp >>= DISK_FILE_DATE_MIN_BITS;
+        // table_tmp.Info[i].create_time.min = date_tmp & DISK_FILE_DATE_MIN_MASK;
+        // date_tmp >>= DISK_FILE_DATE_MIN_BITS;
 
-    table_tmp.Info[i].create_time.hour = date_tmp & DISK_FILE_DATE_HOUR_MASK;
-    table_tmp.Info[i].create_time.sec += (uint16_t)(attr_tmp->attribute[i].Time10Ms) / 100;
+        // table_tmp.Info[i].create_time.hour = date_tmp & DISK_FILE_DATE_HOUR_MASK;
+        // table_tmp.Info[i].create_time.sec += (uint16_t)(attr_tmp->attribute[i].Time10Ms) / 100;
 
-    /* parse create date */
-    date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].CreateDate);
-    table_tmp.Info[i].create_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
-    date_tmp >>= DISK_FILE_DATE_DAY_BITS;
+        // /* parse create date */
+        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].CreateDate);
+        // table_tmp.Info[i].create_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
+        // date_tmp >>= DISK_FILE_DATE_DAY_BITS;
 
-    table_tmp.Info[i].create_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
-    date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
+        // table_tmp.Info[i].create_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
+        // date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
 
-    table_tmp.Info[i].create_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
-    table_tmp.Info[i].create_date.year += DISK_FILE_DATEBASE_YEAR;
+        // table_tmp.Info[i].create_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
+        // table_tmp.Info[i].create_date.year += DISK_FILE_DATEBASE_YEAR;
 
-    /* parse modify time */
-    date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].ModifyTime);
-    table_tmp.Info[i].modify_time.sec = (date_tmp & DISK_FILE_DATE_SEC_MASK) * 2;
-    date_tmp >>= DISK_FILE_DATE_SEC_BITS;
+        // /* parse modify time */
+        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].ModifyTime);
+        // table_tmp.Info[i].modify_time.sec = (date_tmp & DISK_FILE_DATE_SEC_MASK) * 2;
+        // date_tmp >>= DISK_FILE_DATE_SEC_BITS;
 
-    table_tmp.Info[i].modify_time.min = date_tmp & DISK_FILE_DATE_MIN_MASK;
-    date_tmp >>= DISK_FILE_DATE_MIN_BITS;
+        // table_tmp.Info[i].modify_time.min = date_tmp & DISK_FILE_DATE_MIN_MASK;
+        // date_tmp >>= DISK_FILE_DATE_MIN_BITS;
 
-    table_tmp.Info[i].modify_time.hour = date_tmp & DISK_FILE_DATE_HOUR_MASK;
+        // table_tmp.Info[i].modify_time.hour = date_tmp & DISK_FILE_DATE_HOUR_MASK;
 
-    /* parse modify date */
-    date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].ModifyDate);
-    table_tmp.Info[i].modify_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
-    date_tmp >>= DISK_FILE_DATE_DAY_BITS;
+        // /* parse modify date */
+        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].ModifyDate);
+        // table_tmp.Info[i].modify_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
+        // date_tmp >>= DISK_FILE_DATE_DAY_BITS;
 
-    table_tmp.Info[i].modify_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
-    date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
+        // table_tmp.Info[i].modify_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
+        // date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
 
-    table_tmp.Info[i].modify_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
-    table_tmp.Info[i].modify_date.year += DISK_FILE_DATEBASE_YEAR;
+        // table_tmp.Info[i].modify_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
+        // table_tmp.Info[i].modify_date.year += DISK_FILE_DATEBASE_YEAR;
 
-    /* parse access date */
-    date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].AccessDate);
-    table_tmp.Info[i].access_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
-    date_tmp >>= DISK_FILE_DATE_DAY_BITS;
+        // /* parse access date */
+        // date_tmp = LEndian2HalfWord(attr_tmp->attribute[i].AccessDate);
+        // table_tmp.Info[i].access_date.day = date_tmp & DISK_FILE_DATE_DAY_MASK;
+        // date_tmp >>= DISK_FILE_DATE_DAY_BITS;
 
-    table_tmp.Info[i].access_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
-    date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
+        // table_tmp.Info[i].access_date.month = date_tmp & DISK_FILE_DATE_MONTH_MASK;
+        // date_tmp >>= DISK_FILE_DATE_MONTH_BITS;
 
-    table_tmp.Info[i].access_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
-    table_tmp.Info[i].access_date.year += DISK_FILE_DATEBASE_YEAR;
+        // table_tmp.Info[i].access_date.year = date_tmp & DISK_FILE_DATE_YEAR_MASK;
+        // table_tmp.Info[i].access_date.year += DISK_FILE_DATEBASE_YEAR;
+    }
 
     return CCSSFFAT_tamp;
 }
