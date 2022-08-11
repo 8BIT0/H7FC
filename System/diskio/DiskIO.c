@@ -764,7 +764,19 @@ static Disk_CCSSFFAT_TypeDef Disk_Convert_FFInfoTable2CCSSFF(const Disk_FFInfoTa
         memcpy(CCSSFFAT_tamp->attribute[i].ext, table_tmp.Info[i].name + 8, 3);
 
         CCSSFFAT_tamp->attribute[i].attr = table_tmp.Info[i].attr;
-        LEndianWord2BytesArray(table_tmp.Info[i].start_cluster, HalfWordBuff);
+        LEndianWord2BytesArray(table_tmp.Info[i].start_cluster, WordBuff);
+
+        for (uint8_t i = 0; i < sizeof(uint32_t); i++)
+        {
+            if (i < 2)
+            {
+                attr_tmp->attribute[i].LowCluster[i] = WordBuff[i];
+            }
+            else
+            {
+                attr_tmp->attribute[i].HighCluster[i - 2] = WordBuff[i];
+            }
+        }
 
         // table_tmp.Info[i].start_cluster = LEndian2HalfWord(attr_tmp->attribute[i].LowCluster) |
         //                                   (LEndian2HalfWord(attr_tmp->attribute[i].HighCluster) << 16);
