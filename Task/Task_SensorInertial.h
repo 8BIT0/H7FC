@@ -23,8 +23,8 @@ typedef struct
     int8_t org_tmp;
     float org_Cnv_tmp;
 
-    int16_t Org_Smp[Axis_Sum];
-    double Org_Cnv[Axis_Sum];
+    float Org_Smp[Axis_Sum];
+    float Org_Cnv[Axis_Sum];
 } InertialData_TypeDef;
 
 typedef struct

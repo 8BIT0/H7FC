@@ -21,8 +21,8 @@ typedef struct
     int16_t Org_Acc[3];
     int16_t Org_Gyr[3];
 
-    double Flt_Acc[3];
-    double Flt_Gyr[3];
+    float Flt_Acc[3];
+    float Flt_Gyr[3];
 
     int16_t Org_temp;
 

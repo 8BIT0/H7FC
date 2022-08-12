@@ -142,8 +142,8 @@ typedef struct
     uint8_t AccTrip;
     uint8_t GyrTrip;
 
-    double acc_scale;
-    double gyr_scale;
+    float acc_scale;
+    float gyr_scale;
 
     ICM20602_Error_List error;
     ICM20602_SampleRate_List rate;

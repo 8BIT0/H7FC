@@ -332,9 +332,9 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
             sensor_obj->OriData.acc_int[axis] = (int16_t)((Rx[axis * 2] << 8) | Rx[axis * 2 + 1]);
             sensor_obj->OriData.gyr_int[axis] = (int16_t)((Rx[axis * 2 + 8] << 8) | Rx[axis * 2 + 9]);
 
-            /* convert int data to double */
-            sensor_obj->OriData.acc_dou[axis] = ((double)sensor_obj->OriData.acc_int[axis] / sensor_obj->acc_scale);
-            sensor_obj->OriData.gyr_dou[axis] = ((double)sensor_obj->OriData.gyr_int[axis] / sensor_obj->gyr_scale);
+            /* convert int data to float */
+            sensor_obj->OriData.acc_dou[axis] = ((float)sensor_obj->OriData.acc_int[axis] / sensor_obj->acc_scale);
+            sensor_obj->OriData.gyr_dou[axis] = ((float)sensor_obj->OriData.gyr_int[axis] / sensor_obj->gyr_scale);
         }
 
         sensor_obj->drdy = false;

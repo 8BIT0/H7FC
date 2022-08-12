@@ -47,8 +47,8 @@ typedef struct
     uint64_t cycle_cnt;
 
     float tempera;
-    double gyr[Axis_Sum];
-    double acc[Axis_Sum];
+    float gyr[Axis_Sum];
+    float acc[Axis_Sum];
 } SrvIMU_Data_TypeDef;
 
 typedef struct

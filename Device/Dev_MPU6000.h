@@ -156,8 +156,8 @@ typedef struct
     uint8_t AccTrip;
     uint8_t GyrTrip;
 
-    double acc_scale;
-    double gyr_scale;
+    float acc_scale;
+    float gyr_scale;
 
     bool drdy;
     DevMPU6000_SampleRate_List rate;
