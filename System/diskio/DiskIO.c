@@ -16,8 +16,8 @@
 #include <string.h>
 #include <ctype.h>
 
-#define GEN_DATE(h, m, s) (((uint16_t)h) << 11) + (((uint16_t)m) << 5) + (((uint16_t)s) >> 1)
-#define GEN_TIME(y, m, d) ((((uint16_t)(y % 100) + 20) << 9) + (((uint16_t)m) << 5) + ((uint16_t)d))
+#define GEN_TIME(h, m, s) ((((uint16_t)h) << 11) + (((uint16_t)m) << 5) + (((uint16_t)s) >> 1))
+#define GEN_DATE(y, m, d) (((((uint16_t)(y % 100)) + 20) << 9) + (((uint16_t)m) << 5) + ((uint16_t)d))
 
 #pragma pack(1)
 /* File and Folder Attribute definition */
@@ -232,6 +232,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_FFInfo_TypeDef test1_file;
     Disk_FFInfo_TypeDef test2_file;
     volatile FATCluster_Addr test4_folder_cluster;
+    volatile FATCluster_Addr test5_file_cluster;
 
     memset(&test1_file, NULL, sizeof(test1_file));
     memset(&test2_file, NULL, sizeof(test2_file));
@@ -239,8 +240,9 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test1_file);
     Disk_OpenFile(&FATFs_Obj, "test3/", "file1.txt", &test2_file);
 
-    test4_folder_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/");
-    /* test code */
+    // test4_folder_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/");
+
+    test5_file_cluster = Disk_Create_File(&FATFs_Obj, NULL, "test.txt");
 
 #endif
     return true;
@@ -694,7 +696,7 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
 /*
  * convert input file name to 8 3 Frame Mode
  */
-static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
+static bool Disk_Name_ConvertTo83Frame(const char *n_in, char *n_out)
 {
     char *n_in_tmp = n_in;
     char *file_name_tmp = NULL;
@@ -753,6 +755,7 @@ static bool Disk_Name_ConvertTo83Frame(char *n_in, char *n_out)
 static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk_FFAttr_TypeDef *Attr_Out, FATCluster_Addr cluster)
 {
     char Name_Frame83[11];
+    uint16_t half_cluster = 0;
 
     /* ptr check */
     if ((name == NULL) || (Attr_Out == NULL) ||
@@ -769,7 +772,17 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
 
     if (type == Disk_DataType_Folder)
     {
-        Attr_Out->attr = Disk_File_Sd;
+        Attr_Out->attr = Disk_File_Sd | Disk_File_RW | Disk_File_Pf;
+
+        /* set cluster */
+        half_cluster = cluster & 0xFFFF0000;
+        half_cluster >>= 16;
+        Attr_Out->HighCluster[0] = half_cluster;
+        Attr_Out->HighCluster[1] = half_cluster >> 8;
+
+        half_cluster = cluster & 0x0000FFFF;
+        Attr_Out->LowCluster[0] = half_cluster;
+        Attr_Out->LowCluster[1] = half_cluster >> 8;
     }
     else
         Attr_Out->attr = Disk_File_Pf;
@@ -777,25 +790,23 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     uint16_t t_date = GEN_DATE(DISK_FILE_DEFAULT_YEAR, DISK_FILE_DEFAULT_MONTH, DISK_FILE_DEFAULT_DAY);
     uint16_t t_time = GEN_TIME(DISK_FILE_DEFAULT_HOUR, DISK_FILE_DEFAULT_MIN, DISK_FILE_DEFAULT_SEC);
 
-    Attr_Out->CreateDate[0] = (uint8_t)(t_date & 0x00FF);
-    Attr_Out->CreateDate[1] = (uint8_t)((t_date & 0xFF00) >> 8);
+    Attr_Out->Time10Ms = 0;
 
-    Attr_Out->CreateTime[0] = (uint8_t)(t_time & 0x00FF);
-    Attr_Out->CreateTime[1] = (uint8_t)((t_time & 0xFF00) >> 8);
+    Attr_Out->CreateDate[0] = (uint8_t)t_date;
+    Attr_Out->CreateDate[1] = (uint8_t)(t_date >> 8);
+
+    Attr_Out->CreateTime[0] = (uint8_t)t_time;
+    Attr_Out->CreateTime[1] = (uint8_t)(t_time >> 8);
+
+    Attr_Out->ModifyDate[0] = (uint8_t)t_date;
+    Attr_Out->ModifyDate[1] = (uint8_t)(t_date >> 8);
+
+    Attr_Out->ModifyTime[0] = (uint8_t)t_date;
+    Attr_Out->ModifyTime[1] = (uint8_t)(t_time >> 8);
+
+    Attr_Out->LowerCase = 0x18;
 
     memset(Attr_Out->FileSize, 0, sizeof(Attr_Out->FileSize));
-
-    uint16_t half_cluster = 0;
-
-    /* set cluster */
-    half_cluster = cluster & 0x0000FFFF;
-    Attr_Out->HighCluster[0] = half_cluster;
-    Attr_Out->HighCluster[1] = half_cluster >> 8;
-
-    half_cluster = cluster & 0xFFFF0000;
-    half_cluster >>= 16;
-    Attr_Out->LowCluster[0] = half_cluster;
-    Attr_Out->LowCluster[1] = half_cluster >> 8;
 
     return true;
 }
@@ -803,32 +814,28 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
 /* bug still */
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name)
 {
-    char *name_tmp;
+    char name_tmp[11];
     uint32_t layer = 0;
     FATCluster_Addr cluster_tmp = 2;
     DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(cluster_tmp);
     uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     Disk_FFInfoTable_TypeDef FFInfo;
+    uint32_t name_index = 0;
+    uint8_t section_index = 0;
+    uint8_t FF_index = 0;
     bool matched = false;
 
     /* check correspond file exist or not first */
-    if (name == NULL)
+    if ((name == NULL) || (strlen(name) > 11))
         return 0;
-
-    name_tmp = (char *)MMU_Malloc(strlen(name) + 1);
-    if (name_tmp == NULL)
-    {
-        MMU_Free(name_tmp);
-        return 0;
-    }
-
-    memset(name_tmp, '\0', (strlen(name) + 1));
 
     /* name is folder path break it down 1st */
     layer = Disk_GetPath_Layer(name);
 
-    for (uint32_t name_index = 0; name_index < layer; name_index++)
+    for (name_index = 0; name_index < layer; name_index++)
     {
+        memset(name_tmp, '\0', sizeof(name_tmp));
+
         /* search any same name item has exist 2nd */
         /* search from cluster 2 */
         if (Disk_GetFolderName_ByIndex(name, name_index, name_tmp))
@@ -837,17 +844,19 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
             if (!Disk_SFN_LegallyCheck(name_tmp))
                 return 0;
 
+            Disk_Name_ConvertTo83Frame(name_tmp, name_tmp);
+
             while (Cluster_State == Disk_FATCluster_Alloc)
             {
                 sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
 
-                for (uint8_t section_index = 0; section_index < FATObj->DBR_info.SecPerClus; section_index++)
+                for (section_index = 0; section_index < FATObj->DBR_info.SecPerClus; section_index++)
                 {
                     memset(&FFInfo, NULL, sizeof(FFInfo));
 
                     FFInfo = Disk_Parse_Attribute(FATObj, sec_id + section_index);
 
-                    for (uint8_t FF_index = 0; FF_index < 16; FF_index++)
+                    for (FF_index = 0; FF_index < 16; FF_index++)
                     {
                         if (FFInfo.Info[FF_index].name[0] != '\0')
                         {
@@ -875,6 +884,9 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                             /* corver current index of data */
                             memcpy(&(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index]), &attr_tmp, sizeof(attr_tmp));
 
+                            /* test code */
+                            /* test code */
+
                             /* write to tf section */
                             DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
@@ -898,8 +910,6 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
         memset(name_tmp, '\0', (strlen(name) + 1));
     }
 
-    MMU_Free(name_tmp);
-
     return cluster_tmp;
 }
 
@@ -907,8 +917,18 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
 {
     uint32_t sec_id = 0;
     FATCluster_Addr target_file_cluster = 2;
-    DiskFATCluster_State_List Cluster_State;
+    DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(target_file_cluster);
     Disk_FFInfoTable_TypeDef FFInfo;
+    char file_name_tmp[12];
+
+    if ((name == NULL) || (strlen(name) > 11))
+        return 0;
+
+    memset(file_name_tmp, '\0', 12);
+    memcpy(file_name_tmp, name, strlen(name));
+
+    if (!Disk_Name_ConvertTo83Frame(file_name_tmp, file_name_tmp))
+        return 0;
 
     if (dir != NULL)
     {
@@ -933,15 +953,18 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
             {
                 if (FFInfo.Info[FF_index].name[0] != '\0')
                 {
-                    if (Disk_SFN_Match(FFInfo.Info[FF_index].name, name))
+                    if (Disk_SFN_Match(FFInfo.Info[FF_index].name, file_name_tmp))
                         return target_file_cluster;
                 }
                 else
                 {
                     /* create file */
                     Disk_FFAttr_TypeDef attr_tmp;
+                    memset(file_name_tmp, '\0', 12);
+                    memcpy(file_name_tmp, name, strlen(name));
+
                     memset(&attr_tmp, NULL, sizeof(Disk_FFAttr_TypeDef));
-                    Disk_Fill_Attr(name, Disk_DataType_File, &attr_tmp, target_file_cluster);
+                    Disk_Fill_Attr(file_name_tmp, Disk_DataType_File, &attr_tmp, target_file_cluster);
 
                     /* read all section data first */
                     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
