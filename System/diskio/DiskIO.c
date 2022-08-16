@@ -983,6 +983,8 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
         target_file_cluster = Disk_Get_NextCluster(FATObj, target_file_cluster);
         Cluster_State = Disk_GetClusterState(target_file_cluster);
     }
+
+    return 0;
 }
 
 static bool Disk_WriteToFile()
