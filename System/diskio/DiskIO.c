@@ -144,12 +144,6 @@ static bool ExtDisk_Init(void)
 
     memset(&Disk_Info, NULL, sizeof(Disk_Info));
 
-    /* create error log handle */
-    DevCard_Error_Handle = ErrorLog.create("DevCard_Error");
-
-    /* regist all error to the error tree */
-    ErrorLog.registe(DevCard_Error_Handle, DevCard_ErrorList, sizeof(DevCard_ErrorList) / sizeof(DevCard_ErrorList[0]));
-
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
     Disk_Info.module_reg.section.FlashChip_module_EN = true;
     Disk_Info.module_error_reg.section.FlashChip_module_error_code = DevW25Q64.init(W25Q64_Obj);
@@ -208,6 +202,11 @@ bool Disk_Init(Disk_Printf_Callback Callback)
 #endif
 
 #if ((STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD) || (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH))
+    /* create error log handle */
+    DevCard_Error_Handle = ErrorLog.create("DevCard_Error");
+    /* regist all error to the error tree */
+    ErrorLog.registe(DevCard_Error_Handle, DevCard_ErrorList, sizeof(DevCard_ErrorList) / sizeof(DevCard_ErrorList[0]));
+
     if (!ExtDisk_Init())
         return false;
 #endif
