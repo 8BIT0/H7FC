@@ -235,7 +235,6 @@ typedef struct
     uint32_t Total_KBSize;
 
     uint32_t remain_cluster;
-    uint32_t free_cluster;
 } Disk_FATFileSys_TypeDef;
 
 typedef struct
