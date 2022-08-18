@@ -18,15 +18,8 @@
 #define DISK_CARD_DBR_OEM_OFFSET 3
 #define DISK_FAT_CLUSTER_ITEM_SUM 128
 
-#define DISK_CARD_FSINFO_HEADER \
-    {                           \
-        'R', 'R', 'a', 'A'      \
-    }
-
-#define DISK_CARD_FSINFO_ENDER \
-    {                          \
-        'r', 'r', 'A', 'a'     \
-    }
+#define DISK_CARD_FSINFO_HEADER "RRaA"
+#define DISK_CARD_FSINFO_ENDER "rrAa"
 
 #define DISK_CARD_TERMINATION_BYTE_1 0x55
 #define DISK_CARD_TERMINATION_BYTE_2 0xAA

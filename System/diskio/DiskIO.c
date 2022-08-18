@@ -389,7 +389,7 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
     if (FATObj == NULL)
         return;
 
-    memset(&FSInfo, NULL, sizoef(FSInfo));
+    memset(&FSInfo, NULL, sizeof(FSInfo));
 
     if (FATObj->has_mbr)
     {
@@ -404,13 +404,13 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
     memcpy(&FSInfo, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE);
 
     /* check fsinfo frame right or not */
-    if (memcmp(FSInfo.header, DISK_CARD_FSINFO_HEADER, sizeof(FSInfo.header) == 0) &&
-        (memcmy(FSInfo.ender, DISK_CARD_FSINFO_ENDER, sizeof(FSInfo.ender)) == 0) &&
+    if ((memcmp(FSInfo.header, DISK_CARD_FSINFO_HEADER, sizeof(FSInfo.header)) == 0) &&
+        (memcmp(FSInfo.ender, DISK_CARD_FSINFO_ENDER, sizeof(FSInfo.ender)) == 0) &&
         (FSInfo.check_end[0] == DISK_CARD_TERMINATION_BYTE_1) &&
         (FSInfo.check_end[1] == DISK_CARD_TERMINATION_BYTE_2))
     {
-        FATObj->remain_cluster = LEndian2Word(FSInfo->remain_cluster);
-        FATObj->free_cluster = LEndian2Word(FSInfo->nxt_free_cluster);
+        FATObj->remain_cluster = LEndian2Word(FSInfo.remain_cluster);
+        FATObj->free_cluster = LEndian2Word(FSInfo.nxt_free_cluster);
     }
 }
 
