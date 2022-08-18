@@ -69,6 +69,7 @@ static Disk_Card_Info Disk_GetCard_Info(void);
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj);
+static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name);
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name);
@@ -229,6 +230,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_ParseMBR(&FATFs_Obj);
     Disk_ParseDBR(&FATFs_Obj);
     Disk_ParseFSINFO(&FATFs_Obj);
+    Disk_Search_FreeCluster(&FATFs_Obj);
 
     /* test code */
     Disk_FFInfo_TypeDef test1_file;
@@ -544,10 +546,17 @@ static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
     {
         DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->Fst_FATSector + sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-        // for ()
-        // {
-        // }
+        for (uint8_t item_index = 0; item_index < DISK_FAT_CLUSTER_ITEM_SUM; item_index++)
+        {
+            if (((Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff)->table_item[item_index] == 0)
+            {
+                FATObj->free_cluster = sec_index * DISK_FAT_CLUSTER_ITEM_SUM + item_index;
+                return true;
+            }
+        }
     }
+
+    return false;
 }
 
 static DiskFATCluster_State_List Disk_GetClusterState(FATCluster_Addr cluster)
