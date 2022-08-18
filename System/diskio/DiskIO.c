@@ -970,6 +970,7 @@ static bool Disk_ClearCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr t
 
     sec_id = Disk_Get_StartSectionOfCluster(FATObj, target_cluster);
 
+    memset(Disk_Card_SectionBuff, NULL, sizeof(Disk_Card_SectionBuff));
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, FATObj->SecPerCluster);
 
     return true;
