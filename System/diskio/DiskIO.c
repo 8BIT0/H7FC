@@ -811,6 +811,43 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
     return true;
 }
 
+static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FATCluster_Addr cur_cluster, const FATCluster_Addr nxt_cluster)
+{
+    uint32_t sec_index = 0;
+    uint32_t sec_item_index = 0;
+
+    /* FAT1 equal to FAT2 */
+    if ((FATObj == NULL) || (cur_cluster < 2) || (nxt_cluster < 2))
+        return false;
+
+    sec_index = FATObj->Fst_FATSector + (cur_cluster * sizeof(FATCluster_Addr)) / FATObj->BytePerSection;
+    sec_item_index = (cur_cluster * sizeof(FATCluster_Addr)) % FATObj->BytePerSection;
+
+    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    /* Update FAT1 Table */
+    Disk_Card_SectionBuff[sec_item_index] = nxt_cluster;
+    Disk_Card_SectionBuff[sec_item_index + 1] = nxt_cluster >> 8;
+    Disk_Card_SectionBuff[sec_item_index + 2] = nxt_cluster >> 16;
+    Disk_Card_SectionBuff[sec_item_index + 3] = nxt_cluster >> 24;
+
+    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    /* Update FAT2 Table */
+    sec_index += FATObj->FAT_Sections;
+    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    /* Update FAT1 Table */
+    Disk_Card_SectionBuff[sec_item_index] = nxt_cluster;
+    Disk_Card_SectionBuff[sec_item_index + 1] = nxt_cluster >> 8;
+    Disk_Card_SectionBuff[sec_item_index + 2] = nxt_cluster >> 16;
+    Disk_Card_SectionBuff[sec_item_index + 3] = nxt_cluster >> 24;
+
+    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    return true;
+}
+
 /* bug still */
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name)
 {
@@ -823,7 +860,6 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     uint32_t name_index = 0;
     uint8_t section_index = 0;
     uint8_t FF_index = 0;
-    bool matched = false;
 
     /* check correspond file exist or not first */
     if ((name == NULL) || (strlen(name) > 11))
@@ -862,12 +898,9 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                         {
                             if (Disk_SFN_Match(FFInfo.Info[FF_index].name, name_tmp))
                             {
+                                /* target name matched no need to create new one */
                                 if (name_index == (layer - 1))
-                                {
-                                    /* target name matched no need to create new one */
-                                    matched = true;
-                                    break;
-                                }
+                                    return cluster_tmp;
                             }
                         }
                         else
@@ -884,23 +917,13 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                             /* corver current index of data */
                             memcpy(&(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index]), &attr_tmp, sizeof(attr_tmp));
 
-                            /* test code */
-                            /* test code */
-
                             /* write to tf section */
                             DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
-                            matched = true;
-                            break;
+                            return cluster_tmp;
                         }
                     }
-
-                    if (matched)
-                        break;
                 }
-
-                if (matched)
-                    break;
 
                 cluster_tmp = Disk_Get_NextCluster(FATObj, cluster_tmp);
                 Cluster_State = Disk_GetClusterState(cluster_tmp);
@@ -910,7 +933,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
         memset(name_tmp, '\0', (strlen(name) + 1));
     }
 
-    return cluster_tmp;
+    return 0;
 }
 
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
@@ -985,42 +1008,6 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
     }
 
     return 0;
-}
-
-static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FATCluster_Addr cur_cluster, const FATCluster_Addr nxt_cluster)
-{
-    uint32_t sec_index = 0;
-    uint32_t sec_item_index = 0;
-
-    if ((FATObj == NULL) || (cur_cluster < 2) || (nxt_cluster < 2))
-        return false;
-
-    sec_index = FATObj->Fst_FATSector + (cur_cluster * sizeof(FATCluster_Addr)) / FATObj->BytePerSection;
-    sec_item_index = (cur_cluster * sizeof(FATCluster_Addr)) % FATObj->BytePerSection;
-
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
-
-    /* Update FAT1 Table */
-    Disk_Card_SectionBuff[sec_item_index] = nxt_cluster;
-    Disk_Card_SectionBuff[sec_item_index + 1] = nxt_cluster >> 8;
-    Disk_Card_SectionBuff[sec_item_index + 2] = nxt_cluster >> 16;
-    Disk_Card_SectionBuff[sec_item_index + 3] = nxt_cluster >> 24;
-
-    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
-
-    /* Update FAT2 Table */
-    sec_index += FATObj->FAT_Sections;
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
-
-    /* Update FAT1 Table */
-    Disk_Card_SectionBuff[sec_item_index] = nxt_cluster;
-    Disk_Card_SectionBuff[sec_item_index + 1] = nxt_cluster >> 8;
-    Disk_Card_SectionBuff[sec_item_index + 2] = nxt_cluster >> 16;
-    Disk_Card_SectionBuff[sec_item_index + 3] = nxt_cluster >> 24;
-
-    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
-
-    return true;
 }
 
 static bool Disk_Update_FSINFO()
