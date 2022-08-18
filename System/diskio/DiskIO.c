@@ -460,8 +460,7 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
     {
         memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
 
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj,
-                     sec, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
         attr_tmp = (Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff;
 
@@ -534,6 +533,21 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
     }
 
     return table_tmp;
+}
+
+static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
+{
+    if (FATObj == NULL)
+        return false;
+
+    for (uint32_t sec_index = 0; sec_index < FATObj->FAT_Sections; sec_index++)
+    {
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->Fst_FATSector + sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+        // for ()
+        // {
+        // }
+    }
 }
 
 static DiskFATCluster_State_List Disk_GetClusterState(FATCluster_Addr cluster)
