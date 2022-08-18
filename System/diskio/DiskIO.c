@@ -721,6 +721,7 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
 }
 
 /*
+ *   match short file name funcution
  *   f_name: current file name
  *   m_name: match target file name
  */
@@ -740,6 +741,7 @@ static bool Disk_SFN_Match(char *f_name, char *m_name)
 
 /*
  *  check SFN frame legal or not
+ *  SFN short file name
  *   f_n SFN file name
  *   e_n SFN extend file name
  */
@@ -816,6 +818,9 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
 
 /*
  * convert input file name to 8 3 Frame Mode
+ * 8 is file or folder name max name len is 8byte
+ * 3 is extend file name max len is 3byte
+ * ALL letter will convert to captial
  */
 static bool Disk_Name_ConvertTo83Frame(const char *n_in, char *n_out)
 {
