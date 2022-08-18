@@ -987,18 +987,38 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
     return 0;
 }
 
-static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster_tmp)
+static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FATCluster_Addr cur_cluster, const FATCluster_Addr nxt_cluster)
 {
     uint32_t sec_index = 0;
     uint32_t sec_item_index = 0;
 
-    if ((FATObj == NULL) || (cluster_tmp < 2))
+    if ((FATObj == NULL) || (cur_cluster < 2) || (nxt_cluster < 2))
         return false;
 
-    sec_index = FATObj->Fst_FATSector + (cluster_tmp * sizeof(FATCluster_Addr)) / FATObj->BytePerSection;
-    sec_item_index = (cluster_tmp * sizeof(FATCluster_Addr)) % FATObj->BytePerSection;
+    sec_index = FATObj->Fst_FATSector + (cur_cluster * sizeof(FATCluster_Addr)) / FATObj->BytePerSection;
+    sec_item_index = (cur_cluster * sizeof(FATCluster_Addr)) % FATObj->BytePerSection;
 
     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    /* Update FAT1 Table */
+    Disk_Card_SectionBuff[sec_item_index] = nxt_cluster;
+    Disk_Card_SectionBuff[sec_item_index + 1] = nxt_cluster >> 8;
+    Disk_Card_SectionBuff[sec_item_index + 2] = nxt_cluster >> 16;
+    Disk_Card_SectionBuff[sec_item_index + 3] = nxt_cluster >> 24;
+
+    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    /* Update FAT2 Table */
+    sec_index += FATObj->FAT_Sections;
+    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    /* Update FAT1 Table */
+    Disk_Card_SectionBuff[sec_item_index] = nxt_cluster;
+    Disk_Card_SectionBuff[sec_item_index + 1] = nxt_cluster >> 8;
+    Disk_Card_SectionBuff[sec_item_index + 2] = nxt_cluster >> 16;
+    Disk_Card_SectionBuff[sec_item_index + 3] = nxt_cluster >> 24;
+
+    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
     return true;
 }
