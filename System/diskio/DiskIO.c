@@ -936,6 +936,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
 {
     uint32_t sec_index = 0;
     uint32_t sec_item_index = 0;
+    uint32_t *Data_Ptr = NULL;
 
     /* FAT1 equal to FAT2 */
     if ((FATObj == NULL) || (cur_cluster < 2) || (nxt_cluster < 2))
@@ -946,24 +947,16 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
 
     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-    /* Update FAT1 Table */
-    Disk_Card_SectionBuff[sec_item_index] = nxt_cluster;
-    Disk_Card_SectionBuff[sec_item_index + 1] = nxt_cluster >> 8;
-    Disk_Card_SectionBuff[sec_item_index + 2] = nxt_cluster >> 16;
-    Disk_Card_SectionBuff[sec_item_index + 3] = nxt_cluster >> 24;
+    Data_Ptr = &Disk_Card_SectionBuff[sec_item_index];
+    LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
 
+    /* Update FAT1 Table */
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
     /* Update FAT2 Table */
     sec_index += FATObj->FAT_Sections;
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-    /* Update FAT1 Table */
-    Disk_Card_SectionBuff[sec_item_index] = nxt_cluster;
-    Disk_Card_SectionBuff[sec_item_index + 1] = nxt_cluster >> 8;
-    Disk_Card_SectionBuff[sec_item_index + 2] = nxt_cluster >> 16;
-    Disk_Card_SectionBuff[sec_item_index + 3] = nxt_cluster >> 24;
-
+    /* Update FAT2 Table */
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
     return true;
