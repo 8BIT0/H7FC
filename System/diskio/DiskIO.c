@@ -423,6 +423,7 @@ static void Disk_UpdateFSINFO(Disk_FATFileSys_TypeDef *FATObj, uint32_t remain_c
 {
     if ((FATObj == NULL) ||
         (nxt_free_clus < 2) ||
+        (FATObj->FSInfo_SecNo == 0) ||
         (remain_clus > (FATObj->DBR_info.TotSec32 - FATObj->DBR_info.FATSz32 * FATObj->DBR_info.NumFATs) / FATObj->BytePerSection))
         return;
 }
