@@ -1062,10 +1062,6 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
     return Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, name);
 }
 
-static bool Disk_Update_FSINFO()
-{
-}
-
 static bool Disk_WriteToFile()
 {
 }
