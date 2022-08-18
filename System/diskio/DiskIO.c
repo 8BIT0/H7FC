@@ -74,6 +74,9 @@ static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path,
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name);
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name);
 
+/* Error Process Function */
+static void Disk_FreeCluster_SearchError(int16_t code, uint8_t *p_arg, uint16_t size);
+
 /******************************************************************************** SDMMC Interface **************************************************************************/
 static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
     .CK_Port = SDMMC_CLK_PORT,
@@ -130,6 +133,18 @@ static Error_Obj_Typedef DevCard_ErrorList[] = {
         .prc_callback = Disk_ExtModule_InitError,
         .code = DevCard_External_Module_Init_Error,
         .desc = "External Storage Init Error\r\n",
+        .proc_type = Error_Proc_Immd,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = Disk_FreeCluster_SearchError,
+        .code = DevCard_No_FreeCluster,
+        .desc = "External Storage No Free Cluster\r\n",
         .proc_type = Error_Proc_Immd,
         .prc_data_stream = {
             .p_data = NULL,
@@ -538,6 +553,8 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
 
 static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 {
+    uint8_t Error_Code = 0;
+
     if (FATObj == NULL)
         return false;
 
@@ -554,6 +571,10 @@ static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
             }
         }
     }
+
+    ErrorLog.trigger(DevCard_Error_Handle,
+                     DevCard_No_FreeCluster,
+                     NULL, 0);
 
     return false;
 }
@@ -1244,6 +1265,13 @@ static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size
     ErrorLog.add_desc("    TF Card Error Code: %d\r\n", *p_arg);
 #endif
 }
+
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+static void Disk_FreeCluster_SearchError(int16_t code, uint8_t *p_arg, uint16_t size)
+{
+    ErrorLog.add_desc("    No Free Cluster Be Found\r\n");
+}
+#endif
 
 /********************************************************************************* Printf Interface ***************************************************************************/
 static void Disk_Printf(char *str, ...)

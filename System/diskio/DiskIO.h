@@ -72,10 +72,12 @@ typedef void (*Disk_Printf_Callback)(uint8_t *p_buff, uint16_t size);
 
 typedef enum
 {
-    DevCard_Internal_Module_Init_Error = 0,
+    DevCard_Internal_Module_Init_Error = 1,
     DevCard_External_Module_Init_Error,
     DevCard_Read_MBR_Error,
     DevCard_Read_DBR_Error,
+    DevCard_Read_FSINFO_Error,
+    DevCard_No_FreeCluster,
 } DiskIO_Error_List;
 
 typedef enum
