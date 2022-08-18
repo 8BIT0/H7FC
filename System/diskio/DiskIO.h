@@ -14,10 +14,22 @@
 #define DISK_CARD_MBR_STARTUP_OFFSET 446
 #define DISK_CARD_SECTION_AREA_TABLE 16
 #define DISK_CARD_SECTION_INFO_NUM 4
-#define DISK_CARD_TERMINATION_BYTE_1 0x55
-#define DISK_CARD_TERMINATION_BYTE_2 0xAA
+
 #define DISK_CARD_DBR_OEM_OFFSET 3
 #define DISK_FAT_CLUSTER_ITEM_SUM 128
+
+#define DISK_CARD_FSINFO_HEADER \
+    {                           \
+        'R', 'R', 'a', 'A'      \
+    }
+
+#define DISK_CARD_FSINFO_ENDER \
+    {                          \
+        'r', 'r', 'A', 'a'     \
+    }
+
+#define DISK_CARD_TERMINATION_BYTE_1 0x55
+#define DISK_CARD_TERMINATION_BYTE_2 0xAA
 
 #define DISK_DELETED_MARK 0xE5
 
@@ -201,6 +213,19 @@ typedef struct
 
 typedef struct
 {
+    uint8_t header[4];
+    uint8_t reserve1[480];
+    uint8_t ender[4];
+
+    uint8_t remain_cluster[4];
+    uint8_t nxt_free_cluster[4];
+
+    uint8_t reserve2[14];
+    uint8_t check_end[2];
+} Disk_CardFSINFO_Typedef;
+
+typedef struct
+{
     bool has_mbr;
 
     Disk_CardMBR_SectionInfo_TypeDef disk_section_table[DISK_CARD_SECTION_INFO_NUM];
@@ -213,6 +238,9 @@ typedef struct
     uint32_t Fst_FATSector;
     uint32_t Fst_DirSector;
     uint32_t Total_KBSize;
+
+    uint32_t remain_cluster;
+    uint32_t free_cluster;
 } Disk_FATFileSys_TypeDef;
 
 typedef struct

@@ -68,6 +68,7 @@ DevW25QxxObj_TypeDef W25Q64_Obj = {
 static Disk_Card_Info Disk_GetCard_Info(void);
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
+static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name);
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name);
@@ -227,6 +228,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     /* Parse MBR Section Info */
     Disk_ParseMBR(&FATFs_Obj);
     Disk_ParseDBR(&FATFs_Obj);
+    Disk_ParseFSINFO(&FATFs_Obj);
 
     /* test code */
     Disk_FFInfo_TypeDef test1_file;
@@ -306,7 +308,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     }
     else
     {
-        /* if card has no MBR section then Read DBR info from the first section */
+        /* if card has no MBR section then DBR info in the first section */
         DevCard.read(&DevTFCard_Obj.SDMMC_Obj, 0, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
     }
 
@@ -377,6 +379,47 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
     }
 
     memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
+}
+
+static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
+{
+    Disk_CardFSINFO_Typedef FSInfo;
+
+    /* FSINFO section after DBR Section */
+    if (FATObj == NULL)
+        return;
+
+    memset(&FSInfo, NULL, sizoef(FSInfo));
+
+    if (FATObj->has_mbr)
+    {
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->disk_section_table[0].StartLBA + 1, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+    }
+    else
+    {
+        /* if card has no MBR section then FSInfo from the second section */
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, 1, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+    }
+
+    memcpy(&FSInfo, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE);
+
+    /*   */
+    if (memcmp(FSInfo.header, DISK_CARD_FSINFO_HEADER, sizeof(FSInfo.header) == 0) &&
+        (memcmy(FSInfo.ender, DISK_CARD_FSINFO_ENDER, sizeof(FSInfo.ender)) == 0) &&
+        (FSInfo.check_end[0] == DISK_CARD_TERMINATION_BYTE_1) &&
+        (FSInfo.check_end[1] == DISK_CARD_TERMINATION_BYTE_2))
+    {
+        FATObj->remain_cluster = LEndian2Word(FSInfo->remain_cluster);
+        FATObj->free_cluster = LEndian2Word(FSInfo->nxt_free_cluster);
+    }
+}
+
+static void Disk_UpdateFSINFO(Disk_FATFileSys_TypeDef *FATObj, uint32_t remain_clus, uint32_t nxt_free_clus)
+{
+    if ((FATObj == NULL) ||
+        (nxt_free_clus < 2) ||
+        (remain_clus > (FATObj->DBR_info.TotSec32 - FATObj->DBR_info.FATSz32 * FATObj->DBR_info.NumFATs) / FATObj->BytePerSection))
+        return;
 }
 
 /* cluster number to section number */
