@@ -76,6 +76,7 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
 
 /* Error Process Function */
 static void Disk_FreeCluster_SearchError(int16_t code, uint8_t *p_arg, uint16_t size);
+static void Disk_FSINFO_ReadError(int16_t code, uint8_t *p_arg, uint16_t size);
 
 /******************************************************************************** SDMMC Interface **************************************************************************/
 static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
@@ -133,6 +134,18 @@ static Error_Obj_Typedef DevCard_ErrorList[] = {
         .prc_callback = Disk_ExtModule_InitError,
         .code = DevCard_External_Module_Init_Error,
         .desc = "External Storage Init Error\r\n",
+        .proc_type = Error_Proc_Immd,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = Disk_FSINFO_ReadError,
+        .code = DevCard_Read_FSINFO_Error,
+        .desc = "External Storage FSINFO Read Error\r\n",
         .proc_type = Error_Proc_Immd,
         .prc_data_stream = {
             .p_data = NULL,
@@ -1271,6 +1284,12 @@ static void Disk_FreeCluster_SearchError(int16_t code, uint8_t *p_arg, uint16_t 
 {
     ErrorLog.add_desc("    No Free Cluster Be Found\r\n");
 }
+
+static void Disk_FSINFO_ReadError(int16_t code, uint8_t *p_arg, uint16_t size)
+{
+    ErrorLog.add_desc("    No FSINFO Section Be Found\r\n");
+}
+
 #endif
 
 /********************************************************************************* Printf Interface ***************************************************************************/
