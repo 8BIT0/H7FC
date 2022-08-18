@@ -399,7 +399,7 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
     }
     else
     {
-        /* if card has no MBR section then FSInfo from the second section */
+        /* if card has no MBR section then FSInfo in the second section */
         DevCard.read(&DevTFCard_Obj.SDMMC_Obj, 1, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
     }
 
@@ -415,6 +415,8 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
         FATObj->remain_cluster = LEndian2Word(FSInfo.remain_cluster);
         FATObj->free_cluster = LEndian2Word(FSInfo.nxt_free_cluster);
     }
+    else
+        FATObj->FSInfo_SecNo = 0;
 }
 
 static void Disk_UpdateFSINFO(Disk_FATFileSys_TypeDef *FATObj, uint32_t remain_clus, uint32_t nxt_free_clus)
