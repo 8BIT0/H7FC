@@ -412,6 +412,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
 
 static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
 {
+    bool error = true;
     Disk_CardFSINFO_Typedef FSInfo;
     uint32_t FSInfo_SecNo = 1;
 
@@ -442,9 +443,17 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
     {
         FATObj->FSInfo_SecNo = FSInfo_SecNo;
         FATObj->remain_cluster = LEndian2Word(FSInfo.remain_cluster);
+        error = false;
     }
     else
         FATObj->FSInfo_SecNo = 0;
+
+    if (error)
+    {
+        ErrorLog.trigger(DevCard_Error_Handle,
+                         DevCard_Read_FSINFO_Error,
+                         NULL, 0);
+    }
 }
 
 static void Disk_UpdateFSINFO(Disk_FATFileSys_TypeDef *FATObj, uint32_t remain_clus)
