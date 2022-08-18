@@ -245,7 +245,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     // test4_folder_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/");
 
     test5_file_cluster = Disk_Create_File(&FATFs_Obj, NULL, "test.txt");
-
+    /* test code */
 #endif
     return true;
 }
@@ -921,8 +921,8 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
 
                         return target_file_cluster;
                     }
-                    else
-                        return 0;
+
+                    return 0;
                 }
             }
         }
