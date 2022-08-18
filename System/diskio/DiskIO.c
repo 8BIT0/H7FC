@@ -403,7 +403,7 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
 
     memcpy(&FSInfo, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE);
 
-    /*   */
+    /* check fsinfo frame right or not */
     if (memcmp(FSInfo.header, DISK_CARD_FSINFO_HEADER, sizeof(FSInfo.header) == 0) &&
         (memcmy(FSInfo.ender, DISK_CARD_FSINFO_ENDER, sizeof(FSInfo.ender)) == 0) &&
         (FSInfo.check_end[0] == DISK_CARD_TERMINATION_BYTE_1) &&
