@@ -969,6 +969,14 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     return true;
 }
 
+static bool Disk_ClearCluster(FATCluster_Addr target_cluster)
+{
+    if (target_cluster < 2)
+        return false;
+
+    return true;
+}
+
 static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name)
 {
     uint32_t sec_id = 0;
