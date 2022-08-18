@@ -1043,6 +1043,22 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
         Disk_Establish_ClusterLink(FATObj, lst_cluster, FATObj->free_cluster);
         Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
         Disk_ClearCluster(FATObj, FATObj->free_cluster);
+
+        /* create file */
+        memset(name_tmp, '\0', 12);
+        memcpy(name_tmp, name, strlen(name));
+
+        memset(&attr_tmp, NULL, sizeof(Disk_FFAttr_TypeDef));
+        Disk_Fill_Attr(name_tmp, type, &attr_tmp, target_file_cluster);
+
+        /* read all section data first */
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+        /* corver current index of data */
+        memcpy(&(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index]), &attr_tmp, sizeof(attr_tmp));
+
+        /* write back to tf section */
+        DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
     }
 
     return 0;
