@@ -419,13 +419,21 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
         FATObj->FSInfo_SecNo = 0;
 }
 
-static void Disk_UpdateFSINFO(Disk_FATFileSys_TypeDef *FATObj, uint32_t remain_clus, uint32_t nxt_free_clus)
+static void Disk_UpdateFSINFO(Disk_FATFileSys_TypeDef *FATObj, uint32_t remain_clus)
 {
+    Disk_CardFSINFO_Typedef *FSInfo_Ptr = NULL;
+
     if ((FATObj == NULL) ||
-        (nxt_free_clus < 2) ||
         (FATObj->FSInfo_SecNo == 0) ||
         (remain_clus > (FATObj->DBR_info.TotSec32 - FATObj->DBR_info.FATSz32 * FATObj->DBR_info.NumFATs) / FATObj->BytePerSection))
         return;
+
+    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    FSInfo_Ptr = Disk_Card_SectionBuff;
+    LEndianWord2BytesArray(remain_clus, FSInfo_Ptr->remain_cluster);
+
+    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 }
 
 /* cluster number to section number */
