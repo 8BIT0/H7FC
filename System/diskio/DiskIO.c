@@ -384,6 +384,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
 static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
 {
     Disk_CardFSINFO_Typedef FSInfo;
+    uint32_t FSInfo_SecNo = 1;
 
     /* FSINFO section after DBR Section */
     if (FATObj == NULL)
@@ -393,6 +394,7 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
 
     if (FATObj->has_mbr)
     {
+        FSInfo_SecNo = FATObj->disk_section_table[0].StartLBA + 1;
         DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->disk_section_table[0].StartLBA + 1, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
     }
     else
@@ -409,6 +411,7 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
         (FSInfo.check_end[0] == DISK_CARD_TERMINATION_BYTE_1) &&
         (FSInfo.check_end[1] == DISK_CARD_TERMINATION_BYTE_2))
     {
+        FATObj->FSInfo_SecNo = FSInfo_SecNo;
         FATObj->remain_cluster = LEndian2Word(FSInfo.remain_cluster);
         FATObj->free_cluster = LEndian2Word(FSInfo.nxt_free_cluster);
     }

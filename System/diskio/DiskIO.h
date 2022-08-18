@@ -224,6 +224,8 @@ typedef struct
     Disk_CardMBR_SectionInfo_TypeDef disk_section_table[DISK_CARD_SECTION_INFO_NUM];
     Disk_CardDBR_SectionInfo_TypeDef DBR_info;
 
+    uint32_t FSInfo_SecNo;
+
     uint32_t DBR_SecNo;
     uint32_t BytePerSection;
     uint32_t FAT_Sections;
