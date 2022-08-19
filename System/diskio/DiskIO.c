@@ -1026,10 +1026,35 @@ static bool Disk_ClearCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr t
 
 static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 {
-    if ((FATObj == NULL) || (FATObj->remain_cluster == 0))
+    uint32_t sec_index = 0;
+    uint32_t cluster_tmp = 0;
+
+    if (FATObj == NULL)
         return;
 
-    FATObj->remain_cluster--;
+    if (FATObj->remain_cluster == 0)
+    {
+        FATObj->remain_cluster--;
+
+        sec_index = FATObj->free_cluster / DISK_FAT_CLUSTER_ITEM_SUM;
+
+        /* search new free cluster */
+        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index + FATObj->Fst_FATSector, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+        for (uint8_t free_index = FATObj->free_cluster % DISK_FAT_CLUSTER_ITEM_SUM; free_index < DISK_FAT_CLUSTER_ITEM_SUM; free_index++)
+        {
+            cluster_tmp = LEndian2Word(&(((Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff)->table_item[Disk_FAT_ItemTable_TypeDef]));
+
+            if (cluster_tmp == 0)
+            {
+                FATObj->free_cluster = (sec_index * DISK_FAT_CLUSTER_ITEM_SUM) + free_index;
+
+                /* update FSINFO section on TFCard */
+
+                return;
+            }
+        }
+    }
 }
 
 static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name)
