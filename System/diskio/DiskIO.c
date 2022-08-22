@@ -1008,7 +1008,7 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
                 FATObj->free_cluster = (sec_index * DISK_FAT_CLUSTER_ITEM_SUM) + free_index;
 
                 /* update FSINFO section on TFCard */
-
+                Disk_UpdateFSINFO(FATObj, FATObj->remain_cluster);
                 return;
             }
         }
@@ -1027,7 +1027,7 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
                     FATObj->free_cluster = (sec_index * DISK_FAT_CLUSTER_ITEM_SUM) + free_index;
 
                     /* update FSINFO section on TFCard */
-
+                    Disk_UpdateFSINFO(FATObj, FATObj->remain_cluster);
                     return;
                 }
             }
