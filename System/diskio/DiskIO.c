@@ -1207,14 +1207,6 @@ static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *
     return target_file_cluster;
 }
 
-static bool Disk_WriteToFile()
-{
-}
-
-static bool Disk_MoveFileCursor()
-{
-}
-
 static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *F_Info, FATCluster_Addr start_cluster)
 {
     FATCluster_Addr cluster_tmp = start_cluster;
