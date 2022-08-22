@@ -1055,9 +1055,14 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
             }
         }
 
-        for()
+        /* search free cluster from the behind */
+        for (uint32_t nxt_sec = nxt_sec + 1; nxt_sec < FATObj->FAT_Sections; nxt_sec++)
         {
+            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, nxt_sec + FATObj->Fst_FATSector, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
+            for ()
+            {
+            }
         }
     }
 }
