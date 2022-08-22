@@ -1028,6 +1028,7 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 {
     uint32_t sec_index = 0;
     uint32_t cluster_tmp = 0;
+    uint8_t free_index;
 
     if (FATObj == NULL)
         return;
@@ -1041,9 +1042,9 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
         /* search new free cluster */
         DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index + FATObj->Fst_FATSector, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-        for (uint8_t free_index = FATObj->free_cluster % DISK_FAT_CLUSTER_ITEM_SUM; free_index < DISK_FAT_CLUSTER_ITEM_SUM; free_index++)
+        for (free_index = FATObj->free_cluster % DISK_FAT_CLUSTER_ITEM_SUM; free_index < DISK_FAT_CLUSTER_ITEM_SUM; free_index++)
         {
-            cluster_tmp = LEndian2Word(&(((Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff)->table_item[Disk_FAT_ItemTable_TypeDef]));
+            cluster_tmp = LEndian2Word(&(((Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff)->table_item[free_index]));
 
             if (cluster_tmp == 0)
             {
@@ -1060,7 +1061,7 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
         {
             DevCard.read(&DevTFCard_Obj.SDMMC_Obj, nxt_sec + FATObj->Fst_FATSector, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-            for ()
+            for (free_index = 0; free_index < DISK_FAT_CLUSTER_ITEM_SUM; free_index++)
             {
             }
         }
