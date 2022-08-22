@@ -1169,9 +1169,17 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     return 0;
 }
 
+/*
+ *  if dir NULL but has file name input only create file
+ *  if file NULL but has dir name input only create folder & path
+ *  if nothing input then return 0
+ */
 static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *file)
 {
     FATCluster_Addr target_file_cluster = 2;
+
+    if ((dir == NULL) && (file == NULL))
+        return 0;
 
     /* create dir */
     if (dir != NULL)
