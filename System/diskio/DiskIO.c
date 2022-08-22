@@ -270,8 +270,6 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test1_file);
     Disk_OpenFile(&FATFs_Obj, "test3/", "file1.txt", &test2_file);
 
-    // test4_folder_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/");
-
     test5_file_cluster = Disk_Create(&FATFs_Obj, NULL, "test.txt");
     /* test code */
 #endif
@@ -1134,6 +1132,8 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     char name_tmp[12];
     uint32_t layer = 0;
     uint32_t name_index = 0;
+    uint32_t sec_id = 0;
+    FATCluster_Addr cluster_tmp = cluster;
 
     /* check correspond file exist or not first */
     if ((name == NULL) || (strlen(name) > 11))
@@ -1156,8 +1156,16 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
 
             Disk_Name_ConvertTo83Frame(name_tmp, name_tmp);
 
-            if (Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_Folder, name_tmp, cluster))
+            cluster_tmp = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_Folder, name_tmp, cluster_tmp);
+
+            if (cluster_tmp)
             {
+                sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
+
+                Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
+                Disk_ClearCluster(FATObj, FATObj->free_cluster);
+
+                /* create .. folder */
             }
             else
                 return 0;
