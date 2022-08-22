@@ -1085,6 +1085,10 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                     /* write back to tf section */
                     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
+                    if (type == Disk_DataType_Folder)
+                    {
+                    }
+
                     return target_file_cluster;
                 }
             }
@@ -1132,7 +1136,6 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     char name_tmp[12];
     uint32_t layer = 0;
     uint32_t name_index = 0;
-    uint32_t sec_id = 0;
     FATCluster_Addr cluster_tmp = cluster;
 
     /* check correspond file exist or not first */
@@ -1158,18 +1161,11 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
 
             cluster_tmp = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_Folder, name_tmp, cluster_tmp);
 
-            if (cluster_tmp)
-            {
-                sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
-
-                Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
-                Disk_ClearCluster(FATObj, FATObj->free_cluster);
-
-                /* create .. folder */
-            }
-            else
-                return 0;
+            if (name_index == layer - 1)
+                return cluster_tmp;
         }
+        else
+            return 0;
 
         memset(name_tmp, '\0', (strlen(name) + 1));
     }
