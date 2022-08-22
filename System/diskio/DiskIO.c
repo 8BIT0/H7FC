@@ -270,6 +270,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test1_file);
     Disk_OpenFile(&FATFs_Obj, "test3/", "file1.txt", &test2_file);
 
+    test4_folder_cluster = Disk_Create(&FATFs_Obj, "test4/", NULL);
     test5_file_cluster = Disk_Create(&FATFs_Obj, NULL, "test.txt");
     /* test code */
 #endif
@@ -1087,6 +1088,28 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
 
                     if (type == Disk_DataType_Folder)
                     {
+                        Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
+                        Disk_ClearCluster(FATObj, FATObj->free_cluster);
+
+                        memset(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].name, NULL, sizeof(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].name));
+                        memset(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].ext, NULL, sizeof(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].ext));
+                        ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].name[0] = '.';
+
+                        memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
+                        memcpy(Disk_Card_SectionBuff, &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index]), sizeof(Disk_FFAttr_TypeDef));
+
+                        ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].name[1] = '.';
+                        ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].HighCluster[0] = target_file_cluster >> 16;
+                        ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].HighCluster[1] = target_file_cluster >> 24;
+                        ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].LowCluster[0] = target_file_cluster;
+                        ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index].LowCluster[1] = target_file_cluster >> 8;
+                        memcpy(Disk_Card_SectionBuff + sizeof(Disk_FFAttr_TypeDef), &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index]), sizeof(Disk_FFAttr_TypeDef));
+
+                        sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
+                        DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
+
+                        target_file_cluster = FATObj->free_cluster;
+                        Disk_Update_FreeCluster(FATObj);
                     }
 
                     return target_file_cluster;
@@ -1122,6 +1145,31 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
 
         /* write back to tf section */
         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
+
+        if (type == Disk_DataType_Folder)
+        {
+            Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
+            Disk_ClearCluster(FATObj, FATObj->free_cluster);
+
+            memset(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name, NULL, sizeof(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name));
+            memset(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].ext, NULL, sizeof(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].ext));
+            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name[0] = '.';
+
+            memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
+            memcpy(Disk_Card_SectionBuff, &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0]), sizeof(Disk_FFAttr_TypeDef));
+
+            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name[1] = '.';
+            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[0] = target_file_cluster >> 16;
+            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[1] = target_file_cluster >> 24;
+            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[0] = target_file_cluster;
+            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[1] = target_file_cluster >> 8;
+            memcpy(Disk_Card_SectionBuff + sizeof(Disk_FFAttr_TypeDef), &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0]), sizeof(Disk_FFAttr_TypeDef));
+
+            sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
+            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
+
+            target_file_cluster = FATObj->free_cluster;
+        }
 
         // update new free cluster
         Disk_Update_FreeCluster(FATObj);
@@ -1160,6 +1208,9 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
             Disk_Name_ConvertTo83Frame(name_tmp, name_tmp);
 
             cluster_tmp = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_Folder, name_tmp, cluster_tmp);
+
+            if (cluster_tmp == 0)
+                return 0;
 
             if (name_index == layer - 1)
                 return cluster_tmp;
