@@ -71,8 +71,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
-static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name);
-static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name);
+static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *file);
 
 /* Error Process Function */
 static void Disk_FreeCluster_SearchError(int16_t code, uint8_t *p_arg, uint16_t size);
@@ -273,7 +272,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
 
     // test4_folder_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/");
 
-    test5_file_cluster = Disk_Create_File(&FATFs_Obj, NULL, "test.txt");
+    test5_file_cluster = Disk_Create(&FATFs_Obj, NULL, "test.txt");
     /* test code */
 #endif
     return true;
@@ -1037,10 +1036,10 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
     FATObj->free_cluster = 2;
 }
 
-static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name)
+static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name, FATCluster_Addr cluster)
 {
     uint32_t sec_id = 0;
-    FATCluster_Addr target_file_cluster = 2;
+    FATCluster_Addr target_file_cluster = cluster;
     FATCluster_Addr lst_cluster = 0;
     DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(target_file_cluster);
     Disk_FFInfoTable_TypeDef FFInfo;
@@ -1130,7 +1129,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
 }
 
 /* bug still */
-static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name)
+static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster)
 {
     char name_tmp[12];
     uint32_t layer = 0;
@@ -1157,7 +1156,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
 
             Disk_Name_ConvertTo83Frame(name_tmp, name_tmp);
 
-            if (Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_Folder, name_tmp))
+            if (Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_Folder, name_tmp, cluster))
             {
             }
             else
@@ -1170,21 +1169,34 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     return 0;
 }
 
-static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *name)
+static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *file)
 {
-    if ((name == NULL) || (strlen(name) > 11))
-        return 0;
+    FATCluster_Addr target_file_cluster = 2;
 
-    // if (dir != NULL)
-    // {
-    //     target_file_cluster = Disk_Create_Folder(FATObj, dir);
+    /* create dir */
+    if (dir != NULL)
+    {
+        target_file_cluster = Disk_Create_Folder(FATObj, dir, target_file_cluster);
 
-    //     /* enter dir first */
-    //     if (target_file_cluster == 0)
-    //         return 0;
-    // }
+        /* enter dir first */
+        if (target_file_cluster == 0)
+            return 0;
+    }
 
-    return Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, name);
+    /* create file */
+    if (file != NULL)
+    {
+        /* error file name size */
+        if (strlen(file) > 12)
+            return 0;
+
+        target_file_cluster = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, file, target_file_cluster);
+
+        if (target_file_cluster == 0)
+            return 0;
+    }
+
+    return target_file_cluster;
 }
 
 static bool Disk_WriteToFile()
