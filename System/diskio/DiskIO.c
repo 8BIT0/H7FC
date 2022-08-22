@@ -1032,7 +1032,7 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
     if (FATObj == NULL)
         return;
 
-    if (FATObj->remain_cluster == 0)
+    if (FATObj->remain_cluster != 0)
     {
         FATObj->remain_cluster--;
 
@@ -1053,6 +1053,11 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 
                 return;
             }
+        }
+
+        for()
+        {
+
         }
     }
 }
