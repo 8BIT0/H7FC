@@ -981,49 +981,6 @@ static bool Disk_ClearCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr t
     return true;
 }
 
-// UINT8 Update_Next_Free_Cluster(void)
-// {
-//     UINT32 clu_sec, iItem, iSec;
-//     struct FAT_Sec *pFAT_Sec;
-
-//     if (0 != pInit_Args->Free_nCluster) //磁盘仍有空间
-//     {
-//         pInit_Args->Free_nCluster--; //空闲簇数减1
-
-//         clu_sec = (pInit_Args->Next_Free_Cluster / NITEMSINFATSEC);                     //指定簇的簇项所在的扇区为其FAT区内的偏移量                                                                                 //FAT的首扇区
-//         znFAT_Device_Read_Sector(clu_sec + (pInit_Args->FirstFATSector), znFAT_Buffer); //将簇项所在的扇区数据读入缓冲区
-//         pFAT_Sec = (struct FAT_Sec *)znFAT_Buffer;                                      //将数据缓冲区首地址强转为FAT_Sec结构体的指针类型
-
-//         for (iItem = ((pInit_Args->Next_Free_Cluster) % NITEMSINFATSEC) + 1; iItem < NITEMSINFATSEC; iItem++) //检测在当前FAT扇区内当前簇项之后是否有空簇
-//         {
-//             if (0 == (((pFAT_Sec->items)[iItem]).Item)[0] && 0 == (((pFAT_Sec->items)[iItem]).Item)[1] && 0 == (((pFAT_Sec->items)[iItem]).Item)[2] && 0 == (((pFAT_Sec->items)[iItem]).Item)[3])
-//             {
-//                 pInit_Args->Next_Free_Cluster = (clu_sec * NITEMSINFATSEC) + iItem;
-//                 Update_FSINFO();
-//                 return ERR_SUCC;
-//             }
-//         }
-
-//         for (iSec = (clu_sec + 1); iSec < (pInit_Args->FATsectors); iSec++) //在后面的FAT扇区中继续查找
-//         {
-//             znFAT_Device_Read_Sector(iSec + (pInit_Args->FirstFATSector), znFAT_Buffer);
-//             pFAT_Sec = (struct FAT_Sec *)znFAT_Buffer;
-//             for (iItem = 0; iItem < NITEMSINFATSEC; iItem++) //检测在当前FAT扇区内当前簇项之后是否有空簇
-//             {
-//                 if (0 == (((pFAT_Sec->items)[iItem]).Item)[0] && 0 == (((pFAT_Sec->items)[iItem]).Item)[1] && 0 == (((pFAT_Sec->items)[iItem]).Item)[2] && 0 == (((pFAT_Sec->items)[iItem]).Item)[3])
-//                 {
-//                     pInit_Args->Next_Free_Cluster = (iSec * NITEMSINFATSEC) + iItem;
-//                     Update_FSINFO();
-//                     return ERR_SUCC;
-//                 }
-//             }
-//         }
-//     }
-//     pInit_Args->Next_Free_Cluster = 2; //如果已无空间，即nFreeCluster为0，则将下一空簇设为2
-//                                        // WINDOWS就是这样作的
-//     return ERR_NO_SPACE;
-// }
-
 static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 {
     uint32_t sec_index = 0;
@@ -1063,9 +1020,21 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 
             for (free_index = 0; free_index < DISK_FAT_CLUSTER_ITEM_SUM; free_index++)
             {
+                cluster_tmp = LEndian2Word(&(((Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff)->table_item[free_index]));
+
+                if (cluster_tmp == 0)
+                {
+                    FATObj->free_cluster = (sec_index * DISK_FAT_CLUSTER_ITEM_SUM) + free_index;
+
+                    /* update FSINFO section on TFCard */
+
+                    return;
+                }
             }
         }
     }
+
+    FATObj->free_cluster = 2;
 }
 
 static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name)
