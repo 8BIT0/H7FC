@@ -1190,6 +1190,9 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
         /* write back to tf section */
         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
+        // update new free cluster
+        Disk_Update_FreeCluster(FATObj);
+
         if (type == Disk_DataType_Folder)
         {
             Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
@@ -1225,10 +1228,10 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
             DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
             target_file_cluster = FATObj->free_cluster;
-        }
 
-        // update new free cluster
-        Disk_Update_FreeCluster(FATObj);
+            // update new free cluster
+            Disk_Update_FreeCluster(FATObj);
+        }
     }
 
     return 0;
