@@ -1082,9 +1082,10 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
 
         for (uint8_t section_index = 0; section_index < FATObj->SecPerCluster; section_index++)
         {
+            sec_id += section_index;
             memset(&FFInfo, NULL, sizeof(FFInfo));
 
-            FFInfo = Disk_Parse_Attribute(FATObj, sec_id + section_index);
+            FFInfo = Disk_Parse_Attribute(FATObj, sec_id);
 
             for (uint8_t FF_index = 0; FF_index < 16; FF_index++)
             {
@@ -1111,13 +1112,13 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                     Disk_Fill_Attr(name_tmp, type, &attr_tmp, target_file_cluster);
 
                     /* read all section data first */
-                    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+                    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
                     /* corver current index of data */
                     memcpy(&(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index]), &attr_tmp, sizeof(attr_tmp));
 
                     /* write back to tf section */
-                    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id + section_index, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
+                    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
                     if (type == Disk_DataType_Folder)
                     {
