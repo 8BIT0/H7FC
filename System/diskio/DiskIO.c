@@ -261,17 +261,22 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     /* test code */
     Disk_FFInfo_TypeDef test1_file;
     Disk_FFInfo_TypeDef test2_file;
-    volatile FATCluster_Addr test4_folder_cluster;
+    volatile FATCluster_Addr test_folder1_cluster;
+    volatile FATCluster_Addr test_folder2_cluster;
+    volatile FATCluster_Addr test_folder3_cluster;
     volatile FATCluster_Addr test5_file_cluster;
 
     memset(&test1_file, NULL, sizeof(test1_file));
     memset(&test2_file, NULL, sizeof(test2_file));
 
-    Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test1_file);
-    Disk_OpenFile(&FATFs_Obj, "test3/", "file1.txt", &test2_file);
+    // Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test1_file);
+    // Disk_OpenFile(&FATFs_Obj, "test3/", "file1.txt", &test2_file);
 
-    test4_folder_cluster = Disk_Create(&FATFs_Obj, "test4/", NULL);
-    test5_file_cluster = Disk_Create(&FATFs_Obj, NULL, "test.txt");
+    test_folder1_cluster = Disk_Create(&FATFs_Obj, "test4/", NULL);
+    test_folder2_cluster = Disk_Create(&FATFs_Obj, "test5/", NULL);
+    test_folder3_cluster = Disk_Create(&FATFs_Obj, "test6/", NULL);
+
+    // test5_file_cluster = Disk_Create(&FATFs_Obj, NULL, "test.txt");
     /* test code */
 #endif
     return true;
