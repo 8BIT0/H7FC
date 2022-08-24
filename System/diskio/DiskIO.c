@@ -1187,10 +1187,22 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
             memcpy(Disk_Card_SectionBuff, &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0]), sizeof(Disk_FFAttr_TypeDef));
 
             ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name[1] = '.';
-            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[0] = target_file_cluster >> 16;
-            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[1] = target_file_cluster >> 24;
-            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[0] = target_file_cluster;
-            ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[1] = target_file_cluster >> 8;
+
+            if (target_file_cluster > 2)
+            {
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[0] = target_file_cluster >> 16;
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[1] = target_file_cluster >> 24;
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[0] = target_file_cluster;
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[1] = target_file_cluster >> 8;
+            }
+            else
+            {
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[0] = 0;
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[1] = 0;
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[0] = 0;
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[1] = 0;
+            }
+
             memcpy(Disk_Card_SectionBuff + sizeof(Disk_FFAttr_TypeDef), &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0]), sizeof(Disk_FFAttr_TypeDef));
 
             sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
