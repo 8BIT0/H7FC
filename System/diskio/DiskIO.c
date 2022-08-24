@@ -1293,6 +1293,10 @@ static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *
     /* create dir */
     if (dir != NULL)
     {
+        /* error folder name size */
+        if (strlen(dir) > 9)
+            return 0;
+
         target_file_cluster = Disk_Create_Folder(FATObj, dir, target_file_cluster);
 
         /* enter dir first */
