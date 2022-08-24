@@ -964,9 +964,13 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     /* Update FAT1 Table */
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
-    sec_index += FATObj->FAT_Sections;
-
     /* Update FAT2 Table */
+    sec_index += FATObj->FAT_Sections;
+    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    Data_Ptr = &Disk_Card_SectionBuff[sec_item_index];
+    LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
+
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
 
     return true;
@@ -1127,10 +1131,21 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                         memcpy(Disk_Card_SectionBuff, &attr_tmp, sizeof(Disk_FFAttr_TypeDef));
 
                         attr_tmp.name[1] = '.';
-                        attr_tmp.HighCluster[0] = target_file_cluster >> 16;
-                        attr_tmp.HighCluster[1] = target_file_cluster >> 24;
-                        attr_tmp.LowCluster[0] = target_file_cluster;
-                        attr_tmp.LowCluster[1] = target_file_cluster >> 8;
+                        if (target_file_cluster > 2)
+                        {
+                            attr_tmp.HighCluster[0] = target_file_cluster >> 16;
+                            attr_tmp.HighCluster[1] = target_file_cluster >> 24;
+                            attr_tmp.LowCluster[0] = target_file_cluster;
+                            attr_tmp.LowCluster[1] = target_file_cluster >> 8;
+                        }
+                        else
+                        {
+                            attr_tmp.HighCluster[0] = 0;
+                            attr_tmp.HighCluster[1] = 0;
+                            attr_tmp.LowCluster[0] = 0;
+                            attr_tmp.LowCluster[1] = 0;
+                        }
+
                         memcpy(Disk_Card_SectionBuff + sizeof(Disk_FFAttr_TypeDef), &attr_tmp, sizeof(Disk_FFAttr_TypeDef));
 
                         sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
