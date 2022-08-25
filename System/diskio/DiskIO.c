@@ -264,6 +264,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     volatile FATCluster_Addr test_folder1_cluster;
     volatile FATCluster_Addr test_folder2_cluster;
     volatile FATCluster_Addr test_folder3_cluster;
+    volatile FATCluster_Addr test_folder4_cluster;
     volatile FATCluster_Addr test5_file_cluster;
 
     memset(&test1_file, NULL, sizeof(test1_file));
@@ -275,8 +276,9 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     test_folder1_cluster = Disk_Create(&FATFs_Obj, "test4/", NULL);
     test_folder2_cluster = Disk_Create(&FATFs_Obj, "test5/", NULL);
     test_folder3_cluster = Disk_Create(&FATFs_Obj, "test6/", NULL);
+    test_folder4_cluster = Disk_Create(&FATFs_Obj, "test1/test2/test3/", "test.txt");
 
-    // test5_file_cluster = Disk_Create(&FATFs_Obj, NULL, "test.txt");
+    test5_file_cluster = Disk_Create(&FATFs_Obj, NULL, "test.txt");
     /* test code */
 #endif
     return true;
@@ -1241,10 +1243,6 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     uint32_t name_index = 0;
     FATCluster_Addr cluster_tmp = cluster;
 
-    /* check correspond file exist or not first */
-    if ((name == NULL) || (strlen(name) > 11))
-        return 0;
-
     /* name is folder path break it down 1st */
     layer = Disk_GetPath_Layer(name);
 
@@ -1291,10 +1289,6 @@ static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *
     /* create dir */
     if (dir != NULL)
     {
-        /* error folder name size */
-        if (strlen(dir) > 9)
-            return 0;
-
         target_file_cluster = Disk_Create_Folder(FATObj, dir, target_file_cluster);
 
         /* enter dir first */
