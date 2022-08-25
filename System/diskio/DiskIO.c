@@ -1262,7 +1262,6 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
         memset(name_tmp, '\0', sizeof(name_tmp));
 
         /* search any same name item has exist 2nd */
-        /* search from cluster 2 */
         if (Disk_GetFolderName_ByIndex(name, name_index, name_tmp))
         {
             /* name legally check */
@@ -1293,7 +1292,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
  */
 static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *file)
 {
-    FATCluster_Addr target_file_cluster = 2;
+    FATCluster_Addr target_file_cluster = FATObj->free_cluster;
 
     if ((dir == NULL) && (file == NULL))
         return 0;
