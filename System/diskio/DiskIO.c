@@ -1292,7 +1292,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
  */
 static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *file)
 {
-    FATCluster_Addr target_file_cluster = FATObj->free_cluster;
+    FATCluster_Addr target_file_cluster = 2;
 
     if ((dir == NULL) && (file == NULL))
         return 0;
