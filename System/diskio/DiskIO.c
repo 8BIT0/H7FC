@@ -1114,7 +1114,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                     }
 
                     memset(&attr_tmp, NULL, sizeof(Disk_FFAttr_TypeDef));
-                    Disk_Fill_Attr(name_tmp, type, &attr_tmp, target_file_cluster);
+                    Disk_Fill_Attr(name_tmp, type, &attr_tmp, FATObj->free_cluster);
 
                     /* read all section data first */
                     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
@@ -1137,20 +1137,12 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                         memcpy(Disk_Card_SectionBuff, &attr_tmp, sizeof(Disk_FFAttr_TypeDef));
 
                         attr_tmp.name[1] = '.';
-                        if (target_file_cluster > 2)
-                        {
-                            attr_tmp.HighCluster[0] = target_file_cluster >> 16;
-                            attr_tmp.HighCluster[1] = target_file_cluster >> 24;
-                            attr_tmp.LowCluster[0] = target_file_cluster;
-                            attr_tmp.LowCluster[1] = target_file_cluster >> 8;
-                        }
-                        else
-                        {
-                            attr_tmp.HighCluster[0] = 0;
-                            attr_tmp.HighCluster[1] = 0;
-                            attr_tmp.LowCluster[0] = 0;
-                            attr_tmp.LowCluster[1] = 0;
-                        }
+                        target_file_cluster = FATObj->free_cluster;
+
+                        attr_tmp.HighCluster[0] = target_file_cluster >> 16;
+                        attr_tmp.HighCluster[1] = target_file_cluster >> 24;
+                        attr_tmp.LowCluster[0] = target_file_cluster;
+                        attr_tmp.LowCluster[1] = target_file_cluster >> 8;
 
                         memcpy(Disk_Card_SectionBuff + sizeof(Disk_FFAttr_TypeDef), &attr_tmp, sizeof(Disk_FFAttr_TypeDef));
 
