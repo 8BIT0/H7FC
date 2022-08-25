@@ -1157,7 +1157,6 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                         sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
                         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
-                        target_file_cluster = FATObj->free_cluster;
                         Disk_Update_FreeCluster(FATObj);
                     }
 
