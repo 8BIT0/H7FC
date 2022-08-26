@@ -16,6 +16,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#define ROOT_CLUSTER_ADDR 2
+
 #define GEN_TIME(h, m, s) ((((uint16_t)h) << 11) + (((uint16_t)m) << 5) + (((uint16_t)s) >> 1))
 #define GEN_DATE(y, m, d) (((((uint16_t)(y % 100)) + 20) << 9) + (((uint16_t)m) << 5) + ((uint16_t)d))
 
@@ -71,7 +73,8 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
-static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *file);
+static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
+static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 
 /* Error Process Function */
 static void Disk_FreeCluster_SearchError(int16_t code, uint8_t *p_arg, uint16_t size);
@@ -273,12 +276,14 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     // Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test1_file);
     // Disk_OpenFile(&FATFs_Obj, "test3/", "file1.txt", &test2_file);
 
-    test_folder1_cluster = Disk_Create(&FATFs_Obj, "test4/", NULL);
-    test_folder2_cluster = Disk_Create(&FATFs_Obj, "test5/", NULL);
-    test_folder3_cluster = Disk_Create(&FATFs_Obj, "test6/", NULL);
-    test_folder4_cluster = Disk_Create(&FATFs_Obj, "test1/test2/test3/", "test.txt");
+    test_folder1_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/", ROOT_CLUSTER_ADDR);
+    // test_folder2_cluster = Disk_Create_Folder(&FATFs_Obj, "test5/", test_folder1_cluster);
+    // test_folder3_cluster = Disk_Create_Folder(&FATFs_Obj, "test6/", test_folder2_cluster);
+    // test_folder4_cluster = Disk_Create_Folder(&FATFs_Obj, "test7/test8/test9/", test_folder3_cluster);
 
-    test5_file_cluster = Disk_Create(&FATFs_Obj, NULL, "test.txt");
+    test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
+    // test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder2_cluster);
+
     /* test code */
 #endif
     return true;
@@ -1235,7 +1240,10 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
     return 0;
 }
 
-/* bug still */
+/*
+ * max sub folder deepth 3 layer
+ * for exp "dir1/dir2/dir3/"
+ */
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster)
 {
     char name_tmp[9];
@@ -1274,42 +1282,12 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     return 0;
 }
 
-/*
- *  if dir NULL but has file name input only create file
- *  if file NULL but has dir name input only create folder & path
- *  if nothing input then return 0
- */
-static FATCluster_Addr Disk_Create(Disk_FATFileSys_TypeDef *FATObj, const char *dir, const char *file)
+static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster)
 {
-    FATCluster_Addr target_file_cluster = 2;
+    if ((file != NULL) && (strlen(file) < 12))
+        return Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, file, cluster);
 
-    if ((dir == NULL) && (file == NULL))
-        return 0;
-
-    /* create dir */
-    if (dir != NULL)
-    {
-        target_file_cluster = Disk_Create_Folder(FATObj, dir, target_file_cluster);
-
-        /* enter dir first */
-        if (target_file_cluster == 0)
-            return 0;
-    }
-
-    /* create file */
-    if (file != NULL)
-    {
-        /* error file name size */
-        if (strlen(file) > 12)
-            return 0;
-
-        target_file_cluster = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, file, target_file_cluster);
-
-        if (target_file_cluster == 0)
-            return 0;
-    }
-
-    return target_file_cluster;
+    return 0;
 }
 
 static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *F_Info, FATCluster_Addr start_cluster)
