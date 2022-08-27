@@ -1,7 +1,7 @@
 /*
  *  coder: 8_B!T0
  *  bref: TFCard data storage interface
- *  optmize from znFAT
+ *  still has bug inside but it already can create folder and file
  */
 
 #include "DiskIO.h"
@@ -72,7 +72,7 @@ static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
-static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
+static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 
@@ -1378,7 +1378,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
     return cluster_tmp;
 }
 
-static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj)
+static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj)
 {
     char *name_buff;
     FATCluster_Addr file_cluster = 2;
@@ -1388,7 +1388,7 @@ static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path,
     if (name_buff == NULL)
     {
         MMU_Free(name_buff);
-        return false;
+        return 0;
     }
 
     if (dir_path != NULL)
@@ -1403,11 +1403,11 @@ static bool Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path,
     if (Disk_MatchTaget(FATObj, name_buff, Disk_DataType_File, FileObj, file_cluster))
     {
         MMU_Free(name_buff);
-        return true;
+        return 0;
     }
 
     MMU_Free(name_buff);
-    return false;
+    return file_cluster;
 }
 
 #endif
