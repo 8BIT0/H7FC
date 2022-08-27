@@ -486,10 +486,10 @@ static void Disk_UpdateFSINFO(Disk_FATFileSys_TypeDef *FATObj, uint32_t remain_c
 /* cluster number to section number */
 static uint32_t Disk_Get_StartSectionOfCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
 {
-    if (cluster < 2)
+    if (cluster < ROOT_CLUSTER_ADDR)
         return 0;
 
-    return (((cluster - 2) * FATObj->SecPerCluster) + FATObj->Fst_DirSector);
+    return (((cluster - ROOT_CLUSTER_ADDR) * FATObj->SecPerCluster) + FATObj->Fst_DirSector);
 }
 
 /* parse file/folder attribute */
@@ -962,7 +962,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     uint32_t *Data_Ptr = NULL;
 
     /* FAT1 equal to FAT2 */
-    if ((FATObj == NULL) || (cur_cluster < 2) || (nxt_cluster < 2))
+    if ((FATObj == NULL) || (cur_cluster < ROOT_CLUSTER_ADDR) || (nxt_cluster < ROOT_CLUSTER_ADDR))
         return false;
 
     sec_index = FATObj->Fst_FATSector + (cur_cluster * sizeof(FATCluster_Addr)) / FATObj->BytePerSection;
@@ -992,7 +992,7 @@ static bool Disk_ClearCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr t
 {
     uint32_t sec_id = 0;
 
-    if (target_cluster < 2)
+    if (target_cluster < ROOT_CLUSTER_ADDR)
         return false;
 
     sec_id = Disk_Get_StartSectionOfCluster(FATObj, target_cluster);
@@ -1057,7 +1057,7 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
         }
     }
 
-    FATObj->free_cluster = 2;
+    FATObj->free_cluster = ROOT_CLUSTER_ADDR;
 }
 
 static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name, FATCluster_Addr cluster)
@@ -1210,7 +1210,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
 
             ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name[1] = '.';
 
-            if (target_file_cluster > 2)
+            if (target_file_cluster > ROOT_CLUSTER_ADDR)
             {
                 ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[0] = target_file_cluster >> 16;
                 ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[1] = target_file_cluster >> 24;
@@ -1378,10 +1378,18 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
     return cluster_tmp;
 }
 
+static bool Disk_Update_File_Cluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
+{
+    if ((FATObj == NULL) || (cluster < ROOT_CLUSTER_ADDR))
+        return false;
+
+    return true;
+}
+
 static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj)
 {
     char *name_buff;
-    FATCluster_Addr file_cluster = 2;
+    FATCluster_Addr file_cluster = ROOT_CLUSTER_ADDR;
     uint16_t name_size = strlen(name);
 
     name_buff = (char *)MMU_Malloc(name_size + 1);
