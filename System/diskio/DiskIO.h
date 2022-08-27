@@ -254,7 +254,7 @@ typedef struct
     uint8_t day;
 } Disk_FileDate_TypeDef;
 
-/* file folder info */
+/* general file folder info */
 typedef struct
 {
     char name[11];
@@ -277,6 +277,21 @@ typedef struct
 {
     Disk_FFInfo_TypeDef Info[16];
 } Disk_FFInfoTable_TypeDef;
+
+typedef struct
+{
+    Disk_FFInfo_TypeDef info;
+    uint32_t sec_index;
+    uint8_t info_index;
+} Disk_FileObj_TypeDef;
+
+typedef struct
+{
+    bool match;
+    uint32_t clu_index;
+    uint32_t sec_index;
+    uint8_t info_index;
+} Disk_TargetMatch_TypeDef;
 #pragma pack()
 
 typedef struct

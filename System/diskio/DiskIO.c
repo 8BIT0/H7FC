@@ -72,7 +72,7 @@ static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
-static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj);
+static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 
@@ -1290,16 +1290,19 @@ static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const c
     return 0;
 }
 
-static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *F_Info, FATCluster_Addr start_cluster)
+static Disk_TargetMatch_TypeDef Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *F_Info, FATCluster_Addr start_cluster)
 {
     FATCluster_Addr cluster_tmp = start_cluster;
+    Disk_TargetMatch_TypeDef match_state = {0};
     uint32_t sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(cluster_tmp);
     Disk_FFInfoTable_TypeDef FFInfo;
     char SFN_name_tmp[11] = {'\0'};
 
+    match_state.match = false;
+
     if ((name == NULL) || (type > Disk_DataType_Folder) || !Disk_Name_ConvertTo83Frame(name, SFN_name_tmp))
-        return false;
+        return match_state;
 
     while (Cluster_State == Disk_FATCluster_Alloc)
     {
@@ -1317,7 +1320,13 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_St
                     Disk_SFN_Match(FFInfo.Info[j].name, SFN_name_tmp))
                 {
                     memcpy(F_Info, &(FFInfo.Info[j]), sizeof(Disk_FFInfo_TypeDef));
-                    return true;
+
+                    match_state.match = true;
+                    match_state.clu_index = cluster_tmp;
+                    match_state.sec_index = sec_id + i;
+                    match_state.info_index = j;
+
+                    return match_state;
                 }
             }
         }
@@ -1327,7 +1336,8 @@ static bool Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_St
         sec_id = Disk_Get_StartSectionOfCluster(FATObj, cluster_tmp);
     }
 
-    return false;
+    match_state.match = false;
+    return match_state;
 }
 
 static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const char *dir)
@@ -1360,7 +1370,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
             match = false;
             Disk_GetFolderName_ByIndex(dir, l, dir_tmp);
 
-            if (Disk_MatchTaget(FATObj, dir_tmp, Disk_DataType_Folder, &F_Info, cluster_tmp))
+            if (Disk_MatchTaget(FATObj, dir_tmp, Disk_DataType_Folder, &F_Info, cluster_tmp).match)
             {
                 match = true;
                 cluster_tmp = F_Info.start_cluster;
@@ -1378,19 +1388,20 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
     return cluster_tmp;
 }
 
-static bool Disk_Update_File_Cluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr cluster)
+static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_Addr cluster)
 {
-    if ((FATObj == NULL) || (cluster < ROOT_CLUSTER_ADDR))
+    if ((FileObj == NULL) || (cluster < ROOT_CLUSTER_ADDR))
         return false;
 
     return true;
 }
 
-static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FFInfo_TypeDef *FileObj)
+static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj)
 {
     char *name_buff;
     FATCluster_Addr file_cluster = ROOT_CLUSTER_ADDR;
     uint16_t name_size = strlen(name);
+    Disk_TargetMatch_TypeDef match_state = {0};
 
     name_buff = (char *)MMU_Malloc(name_size + 1);
     if (name_buff == NULL)
@@ -1408,8 +1419,12 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
     memset(name_buff, '\0', name_size);
     memcpy(name_buff, name, name_size);
 
-    if (Disk_MatchTaget(FATObj, name_buff, Disk_DataType_File, FileObj, file_cluster))
+    match_state = Disk_MatchTaget(FATObj, name_buff, Disk_DataType_File, &(FileObj->info), file_cluster);
+    if (match_state.match)
     {
+        FileObj->info_index = match_state.info_index;
+        FileObj->sec_index = match_state.sec_index;
+
         MMU_Free(name_buff);
         return 0;
     }
