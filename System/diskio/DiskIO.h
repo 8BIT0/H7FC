@@ -7,6 +7,7 @@
 #include "system_cfg.h"
 #include "Dev_Card.h"
 
+#define DISK_CARD_BUFF_MAX_SIZE 4096
 #define DISK_CARD_SENCTION_SZIE 512
 #define DISK_CARD_MBR_TERMINATION_BYTE_1_OFFSET 510
 #define DISK_CARD_MBR_TERMINATION_BYTE_2_OFFSET 511
@@ -236,6 +237,7 @@ typedef struct
     uint32_t Fst_DirSector;
     uint32_t Total_KBSize;
 
+    uint32_t cluster_byte_size;
     uint32_t free_cluster;
     uint32_t remain_cluster;
 } Disk_FATFileSys_TypeDef;
@@ -291,6 +293,8 @@ typedef struct
     uint32_t clu_index;
     uint32_t sec_index;
     uint8_t info_index;
+    uint64_t selected_line;
+    uint64_t line_cursor;
 } Disk_TargetMatch_TypeDef;
 #pragma pack()
 

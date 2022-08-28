@@ -110,7 +110,7 @@ static Disk_FATFileSys_TypeDef FATFs_Obj;
 
 /* is not an appropriate data cache structure i think */
 /* still developing */
-static uint8_t Disk_Card_SectionBuff[DISK_CARD_SENCTION_SZIE * 2] = {0};
+static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] = {0};
 
 #endif
 
@@ -415,6 +415,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
         FATObj->Fst_FATSector = FATObj->DBR_SecNo + FATObj->DBR_info.RsvdSecCnt;
         FATObj->Fst_DirSector = FATObj->Fst_FATSector + FATObj->DBR_info.NumFATs * FATObj->DBR_info.FATSz32;
         FATObj->Total_KBSize = FATObj->DBR_info.TotSec32;
+        FATObj->cluster_byte_size = FATObj->SecPerCluster * FATObj->BytePerSection;
     }
 
     memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SENCTION_SZIE);
@@ -1348,8 +1349,6 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
     bool match = false;
     char *dir_tmp = NULL;
 
-    volatile test_len = strlen(dir);
-
     dir_tmp = (char *)MMU_Malloc(strlen(dir) + 1);
     memset(&F_Info, NULL, sizeof(F_Info));
 
@@ -1390,7 +1389,28 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
 
 static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_Addr cluster)
 {
+    Disk_FFAttr_TypeDef *attr_tmp = NULL;
+
     if ((FileObj == NULL) || (cluster < ROOT_CLUSTER_ADDR))
+        return false;
+
+    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FileObj->sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+
+    attr_tmp = &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index]);
+    attr_tmp->HighCluster[0] = cluster >> 16;
+    attr_tmp->HighCluster[1] = cluster >> 24;
+    attr_tmp->LowCluster[0] = cluster;
+    attr_tmp->LowCluster[1] = cluster >> 8;
+
+    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->sec_index, Disk_Card_SectionBuff, DISK_CARD_SENCTION_SZIE, 1);
+    FileObj->info.start_cluster = cluster;
+
+    return true;
+}
+
+static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, uint8_t *p_data, uint16_t len)
+{
+    if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
 
     return true;
@@ -1424,6 +1444,9 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
     {
         FileObj->info_index = match_state.info_index;
         FileObj->sec_index = match_state.sec_index;
+
+        FileObj->selected_line = 0;
+        FileObj->line_cursor = 0;
 
         MMU_Free(name_buff);
         return 0;
