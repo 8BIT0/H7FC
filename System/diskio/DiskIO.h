@@ -285,6 +285,8 @@ typedef struct
     Disk_FFInfo_TypeDef info;
     uint32_t sec_index;
     uint8_t info_index;
+    uint64_t selected_line;
+    uint64_t line_cursor;
 } Disk_FileObj_TypeDef;
 
 typedef struct
@@ -293,8 +295,6 @@ typedef struct
     uint32_t clu_index;
     uint32_t sec_index;
     uint8_t info_index;
-    uint64_t selected_line;
-    uint64_t line_cursor;
 } Disk_TargetMatch_TypeDef;
 #pragma pack()
 

@@ -1410,8 +1410,21 @@ static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_A
 
 static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, uint8_t *p_data, uint16_t len)
 {
+    uint16_t use_cluster = 0;
+    FATCluster_Addr lst_file_cluster = 0;
+
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
+
+    use_cluster = len / FATObj->cluster_byte_size;
+
+    Disk_Update_File_Cluster(FileObj, FATObj->free_cluster);
+
+    for (uint16_t i = 0; i < use_cluster; i++)
+    {
+        lst_file_cluster = FileObj->info.start_cluster;
+        FileObj->info.start_cluster = FATObj->free_cluster;
+    }
 
     return true;
 }
