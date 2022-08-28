@@ -1441,6 +1441,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 
         use_cluster = (len % FATObj->cluster_byte_size) / FATObj->BytePerSection;
 
+        /* developing */
         for (uint32_t sec_i = 0; sec_i < use_cluster; sec_i++)
         {
             memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
