@@ -1323,7 +1323,6 @@ static Disk_TargetMatch_TypeDef Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj,
                     memcpy(F_Info, &(FFInfo.Info[j]), sizeof(Disk_FFInfo_TypeDef));
 
                     match_state.match = true;
-                    match_state.clu_index = cluster_tmp;
                     match_state.sec_index = sec_id + i;
                     match_state.info_index = j;
 
@@ -1417,6 +1416,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
         return false;
 
     use_cluster = len / FATObj->cluster_byte_size;
+    FileObj->info_index = 0;
 
     Disk_Update_File_Cluster(FileObj, FATObj->free_cluster);
 
@@ -1424,6 +1424,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
     {
         lst_file_cluster = FileObj->info.start_cluster;
         FileObj->info.start_cluster = FATObj->free_cluster;
+        FileObj->sec_index = Disk_Get_StartSectionOfCluster(FileObj->info.start_cluster);
     }
 
     return true;

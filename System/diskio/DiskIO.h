@@ -292,7 +292,6 @@ typedef struct
 typedef struct
 {
     bool match;
-    uint32_t clu_index;
     uint32_t sec_index;
     uint8_t info_index;
 } Disk_TargetMatch_TypeDef;
