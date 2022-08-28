@@ -1437,8 +1437,12 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
         Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
     }
 
+    /* write remain data info target file cluster */
     if (len % FATObj->cluster_byte_size)
     {
+        lst_file_cluster = FileObj->info.start_cluster;
+        FileObj->info.start_cluster = FATObj->free_cluster;
+        FileObj->sec = Disk_Get_StartSectionOfCluster(FileObj->info.start_cluster);
     }
 
     return true;
