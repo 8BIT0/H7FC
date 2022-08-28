@@ -1430,7 +1430,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 
         for (uint32_t sec_i = 0; sec_i < FATObj->SecPerCluster; sec_i++)
         {
-            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->sec + sec_i, p_data, DISK_CARD_SECTION_SZIE * sec_i, 1);
+            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->sec + sec_i, p_data, DISK_CARD_SECTION_SZIE, 1);
             p_data += DISK_CARD_SECTION_SZIE;
         }
 
