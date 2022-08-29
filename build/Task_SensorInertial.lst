@@ -1,0 +1,237 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Task_SensorInertial.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.TaskInertial_Init,"ax",%progbits
+  17              		.align	1
+  18              		.global	TaskInertial_Init
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	TaskInertial_Init:
+  26              	.LFB147:
+  27              		.file 1 "Task/Task_SensorInertial.c"
+   1:Task/Task_SensorInertial.c **** #include "Task_SensorInertial.h"
+   2:Task/Task_SensorInertial.c **** #include "scheduler.h"
+   3:Task/Task_SensorInertial.c **** #include "debug_util.h"
+   4:Task/Task_SensorInertial.c **** #include "runtime.h"
+   5:Task/Task_SensorInertial.c **** #include "IO_Definition.h"
+   6:Task/Task_SensorInertial.c **** #include "SrvMPU_Sample.h"
+   7:Task/Task_SensorInertial.c **** #include "debug_util.h"
+   8:Task/Task_SensorInertial.c **** #include "error_log.h"
+   9:Task/Task_SensorInertial.c **** 
+  10:Task/Task_SensorInertial.c **** /* internal var */
+  11:Task/Task_SensorInertial.c **** static Task_SensorInertial_State TaskInertial_State = Task_SensorInertial_Core;
+  12:Task/Task_SensorInertial.c **** static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
+  13:Task/Task_SensorInertial.c **** 
+  14:Task/Task_SensorInertial.c **** /* internal function */
+  15:Task/Task_SensorInertial.c **** static void TaskInertical_Blink_Notification(uint16_t duration);
+  16:Task/Task_SensorInertial.c **** 
+  17:Task/Task_SensorInertial.c **** /* external function */
+  18:Task/Task_SensorInertial.c **** 
+  19:Task/Task_SensorInertial.c **** void TaskInertial_Init(void)
+  20:Task/Task_SensorInertial.c **** {
+  28              		.loc 1 20 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 08B5     		push	{r3, lr}
+  33              	.LCFI0:
+  34              		.cfi_def_cfa_offset 8
+  35              		.cfi_offset 3, -8
+  36              		.cfi_offset 14, -4
+  21:Task/Task_SensorInertial.c ****     /* regist error */
+  22:Task/Task_SensorInertial.c ****     if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s 			page 2
+
+
+  37              		.loc 1 22 5 view .LVU1
+  38              		.loc 1 22 15 is_stmt 0 view .LVU2
+  39 0002 054B     		ldr	r3, .L5
+  40 0004 1B68     		ldr	r3, [r3]
+  41              		.loc 1 22 9 view .LVU3
+  42 0006 9847     		blx	r3
+  43              	.LVL0:
+  44              		.loc 1 22 8 view .LVU4
+  45 0008 0128     		cmp	r0, #1
+  46 000a 00D0     		beq	.L4
+  47              	.L1:
+  23:Task/Task_SensorInertial.c ****         TaskInertial_State = Task_SensorInertial_Error;
+  24:Task/Task_SensorInertial.c **** }
+  48              		.loc 1 24 1 view .LVU5
+  49 000c 08BD     		pop	{r3, pc}
+  50              	.L4:
+  23:Task/Task_SensorInertial.c ****         TaskInertial_State = Task_SensorInertial_Error;
+  51              		.loc 1 23 9 is_stmt 1 view .LVU6
+  23:Task/Task_SensorInertial.c ****         TaskInertial_State = Task_SensorInertial_Error;
+  52              		.loc 1 23 28 is_stmt 0 view .LVU7
+  53 000e 034B     		ldr	r3, .L5+4
+  54 0010 0122     		movs	r2, #1
+  55 0012 1A70     		strb	r2, [r3]
+  56              		.loc 1 24 1 view .LVU8
+  57 0014 FAE7     		b	.L1
+  58              	.L6:
+  59 0016 00BF     		.align	2
+  60              	.L5:
+  61 0018 00000000 		.word	SrvIMU
+  62 001c 00000000 		.word	.LANCHOR0
+  63              		.cfi_endproc
+  64              	.LFE147:
+  66              		.section	.text.TaskInertical_Core,"ax",%progbits
+  67              		.align	1
+  68              		.global	TaskInertical_Core
+  69              		.syntax unified
+  70              		.thumb
+  71              		.thumb_func
+  72              		.fpu fpv5-d16
+  74              	TaskInertical_Core:
+  75              	.LVL1:
+  76              	.LFB148:
+  25:Task/Task_SensorInertial.c **** 
+  26:Task/Task_SensorInertial.c **** void TaskInertical_Core(Task_Handle hdl)
+  27:Task/Task_SensorInertial.c **** {
+  77              		.loc 1 27 1 is_stmt 1 view -0
+  78              		.cfi_startproc
+  79              		@ args = 0, pretend = 0, frame = 0
+  80              		@ frame_needed = 0, uses_anonymous_args = 0
+  81              		.loc 1 27 1 is_stmt 0 view .LVU10
+  82 0000 10B5     		push	{r4, lr}
+  83              	.LCFI1:
+  84              		.cfi_def_cfa_offset 8
+  85              		.cfi_offset 4, -8
+  86              		.cfi_offset 14, -4
+  28:Task/Task_SensorInertial.c ****     DebugPin.ctl(Debug_PB5, true);
+  87              		.loc 1 28 5 is_stmt 1 view .LVU11
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s 			page 3
+
+
+  88              		.loc 1 28 13 is_stmt 0 view .LVU12
+  89 0002 0C4B     		ldr	r3, .L10
+  90 0004 5C68     		ldr	r4, [r3, #4]
+  91              		.loc 1 28 5 view .LVU13
+  92 0006 0C4B     		ldr	r3, .L10+4
+  93 0008 0122     		movs	r2, #1
+  94 000a 93E80300 		ldm	r3, {r0, r1}
+  95              	.LVL2:
+  96              		.loc 1 28 5 view .LVU14
+  97 000e A047     		blx	r4
+  98              	.LVL3:
+  29:Task/Task_SensorInertial.c ****     switch ((uint8_t)TaskInertial_State)
+  99              		.loc 1 29 5 is_stmt 1 view .LVU15
+ 100              		.loc 1 29 13 is_stmt 0 view .LVU16
+ 101 0010 0A4B     		ldr	r3, .L10+8
+ 102 0012 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 103              		.loc 1 29 5 view .LVU17
+ 104 0014 13B9     		cbnz	r3, .L8
+  30:Task/Task_SensorInertial.c ****     {
+  31:Task/Task_SensorInertial.c ****     case Task_SensorInertial_Core:
+  32:Task/Task_SensorInertial.c ****         // TaskInertical_Blink_Notification(100);
+  33:Task/Task_SensorInertial.c ****         SrvIMU.sample();
+ 105              		.loc 1 33 9 is_stmt 1 view .LVU18
+ 106              		.loc 1 33 15 is_stmt 0 view .LVU19
+ 107 0016 0A4B     		ldr	r3, .L10+12
+ 108 0018 5B68     		ldr	r3, [r3, #4]
+ 109              		.loc 1 33 9 view .LVU20
+ 110 001a 9847     		blx	r3
+ 111              	.LVL4:
+  34:Task/Task_SensorInertial.c **** 
+  35:Task/Task_SensorInertial.c ****         /* then use dma m2m as data pipe to protocol data to target buff */
+  36:Task/Task_SensorInertial.c **** 
+  37:Task/Task_SensorInertial.c ****         break;
+ 112              		.loc 1 37 9 is_stmt 1 view .LVU21
+ 113              	.L8:
+  38:Task/Task_SensorInertial.c **** 
+  39:Task/Task_SensorInertial.c ****     case Task_SensorInertial_Error:
+  40:Task/Task_SensorInertial.c ****         break;
+  41:Task/Task_SensorInertial.c **** 
+  42:Task/Task_SensorInertial.c ****     default:
+  43:Task/Task_SensorInertial.c ****         break;
+  44:Task/Task_SensorInertial.c ****     }
+  45:Task/Task_SensorInertial.c **** 
+  46:Task/Task_SensorInertial.c ****     SrvIMU.error_proc();
+ 114              		.loc 1 46 5 view .LVU22
+ 115              		.loc 1 46 11 is_stmt 0 view .LVU23
+ 116 001c 084B     		ldr	r3, .L10+12
+ 117 001e DB68     		ldr	r3, [r3, #12]
+ 118              		.loc 1 46 5 view .LVU24
+ 119 0020 9847     		blx	r3
+ 120              	.LVL5:
+  47:Task/Task_SensorInertial.c ****     DebugPin.ctl(Debug_PB5, false);
+ 121              		.loc 1 47 5 is_stmt 1 view .LVU25
+ 122              		.loc 1 47 13 is_stmt 0 view .LVU26
+ 123 0022 044B     		ldr	r3, .L10
+ 124 0024 5C68     		ldr	r4, [r3, #4]
+ 125              		.loc 1 47 5 view .LVU27
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s 			page 4
+
+
+ 126 0026 044B     		ldr	r3, .L10+4
+ 127 0028 0022     		movs	r2, #0
+ 128 002a 93E80300 		ldm	r3, {r0, r1}
+ 129 002e A047     		blx	r4
+ 130              	.LVL6:
+  48:Task/Task_SensorInertial.c **** }
+ 131              		.loc 1 48 1 view .LVU28
+ 132 0030 10BD     		pop	{r4, pc}
+ 133              	.L11:
+ 134 0032 00BF     		.align	2
+ 135              	.L10:
+ 136 0034 00000000 		.word	DebugPin
+ 137 0038 00000000 		.word	Debug_PB5
+ 138 003c 00000000 		.word	.LANCHOR0
+ 139 0040 00000000 		.word	SrvIMU
+ 140              		.cfi_endproc
+ 141              	.LFE148:
+ 143              		.section	.bss.TaskInertial_State,"aw",%nobits
+ 144              		.set	.LANCHOR0,. + 0
+ 147              	TaskInertial_State:
+ 148 0000 00       		.space	1
+ 149              		.text
+ 150              	.Letext0:
+ 151              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 152              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 153              		.file 4 "System/runtime/runtime.h"
+ 154              		.file 5 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 155              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 156              		.file 7 "System/scheduler/scheduler.h"
+ 157              		.file 8 "Service/imu_data.h"
+ 158              		.file 9 "Task/Task_SensorInertial.h"
+ 159              		.file 10 "Bsp/Bsp_GPIO.h"
+ 160              		.file 11 "debug/debug_util.h"
+ 161              		.file 12 "IO_Def/IO_Definition.h"
+ 162              		.file 13 "Service/SrvMPU_Sample.h"
+ 163              		.file 14 "Common/error_log.h"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_SensorInertial.c
+C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s:17     .text.TaskInertial_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s:25     .text.TaskInertial_Init:00000000 TaskInertial_Init
+C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s:61     .text.TaskInertial_Init:00000018 $d
+C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s:67     .text.TaskInertical_Core:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s:74     .text.TaskInertical_Core:00000000 TaskInertical_Core
+C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s:136    .text.TaskInertical_Core:00000034 $d
+C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s:147    .bss.TaskInertial_State:00000000 TaskInertial_State
+C:\Users\huav\AppData\Local\Temp\ccp5zhzr.s:148    .bss.TaskInertial_State:00000000 $d
+
+UNDEFINED SYMBOLS
+SrvIMU
+DebugPin
+Debug_PB5

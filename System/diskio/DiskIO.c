@@ -107,9 +107,6 @@ static DevCard_Obj_TypeDef DevTFCard_Obj = {
 
 static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
 static Disk_FATFileSys_TypeDef FATFs_Obj;
-
-/* is not an appropriate data cache structure i think */
-/* still developing */
 static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] = {0};
 
 #endif

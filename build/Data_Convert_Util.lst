@@ -1,0 +1,337 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Data_Convert_Util.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.LEndian2Word,"ax",%progbits
+  17              		.align	1
+  18              		.global	LEndian2Word
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	LEndian2Word:
+  26              	.LVL0:
+  27              	.LFB0:
+  28              		.file 1 "DataStructure/Data_Convert_Util.c"
+   1:DataStructure/Data_Convert_Util.c **** #include "Data_Convert_Util.h"
+   2:DataStructure/Data_Convert_Util.c **** 
+   3:DataStructure/Data_Convert_Util.c **** /******************************************************* Small Endain Convert *********************
+   4:DataStructure/Data_Convert_Util.c **** 
+   5:DataStructure/Data_Convert_Util.c **** uint32_t LEndian2Word(const uint8_t *ptr)
+   6:DataStructure/Data_Convert_Util.c **** {
+  29              		.loc 1 6 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+   7:DataStructure/Data_Convert_Util.c ****     uint32_t tmp = 0;
+  34              		.loc 1 7 5 view .LVU1
+   8:DataStructure/Data_Convert_Util.c **** 
+   9:DataStructure/Data_Convert_Util.c ****     tmp |= ptr[0];
+  35              		.loc 1 9 5 view .LVU2
+  36              		.loc 1 9 15 is_stmt 0 view .LVU3
+  37 0000 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+  38              	.LVL1:
+  10:DataStructure/Data_Convert_Util.c ****     tmp |= ptr[1] << 8;
+  39              		.loc 1 10 5 is_stmt 1 view .LVU4
+  40              		.loc 1 10 15 is_stmt 0 view .LVU5
+  41 0002 4278     		ldrb	r2, [r0, #1]	@ zero_extendqisi2
+  42              		.loc 1 10 9 view .LVU6
+  43 0004 43EA0223 		orr	r3, r3, r2, lsl #8
+  44              	.LVL2:
+  11:DataStructure/Data_Convert_Util.c ****     tmp |= ptr[2] << 16;
+  45              		.loc 1 11 5 is_stmt 1 view .LVU7
+  46              		.loc 1 11 15 is_stmt 0 view .LVU8
+  47 0008 8278     		ldrb	r2, [r0, #2]	@ zero_extendqisi2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s 			page 2
+
+
+  48              		.loc 1 11 9 view .LVU9
+  49 000a 43EA0243 		orr	r3, r3, r2, lsl #16
+  50              	.LVL3:
+  12:DataStructure/Data_Convert_Util.c ****     tmp |= ptr[3] << 24;
+  51              		.loc 1 12 5 is_stmt 1 view .LVU10
+  52              		.loc 1 12 15 is_stmt 0 view .LVU11
+  53 000e C078     		ldrb	r0, [r0, #3]	@ zero_extendqisi2
+  54              	.LVL4:
+  13:DataStructure/Data_Convert_Util.c **** 
+  14:DataStructure/Data_Convert_Util.c ****     return tmp;
+  55              		.loc 1 14 5 is_stmt 1 view .LVU12
+  15:DataStructure/Data_Convert_Util.c **** }
+  56              		.loc 1 15 1 is_stmt 0 view .LVU13
+  57 0010 43EA0060 		orr	r0, r3, r0, lsl #24
+  58              	.LVL5:
+  59              		.loc 1 15 1 view .LVU14
+  60 0014 7047     		bx	lr
+  61              		.cfi_endproc
+  62              	.LFE0:
+  64              		.section	.text.LEndian2HalfWord,"ax",%progbits
+  65              		.align	1
+  66              		.global	LEndian2HalfWord
+  67              		.syntax unified
+  68              		.thumb
+  69              		.thumb_func
+  70              		.fpu fpv5-d16
+  72              	LEndian2HalfWord:
+  73              	.LVL6:
+  74              	.LFB1:
+  16:DataStructure/Data_Convert_Util.c **** 
+  17:DataStructure/Data_Convert_Util.c **** uint16_t LEndian2HalfWord(const uint8_t *ptr)
+  18:DataStructure/Data_Convert_Util.c **** {
+  75              		.loc 1 18 1 is_stmt 1 view -0
+  76              		.cfi_startproc
+  77              		@ args = 0, pretend = 0, frame = 0
+  78              		@ frame_needed = 0, uses_anonymous_args = 0
+  79              		@ link register save eliminated.
+  19:DataStructure/Data_Convert_Util.c ****     uint16_t tmp = 0;
+  80              		.loc 1 19 5 view .LVU16
+  20:DataStructure/Data_Convert_Util.c **** 
+  21:DataStructure/Data_Convert_Util.c ****     tmp |= ptr[0];
+  81              		.loc 1 21 5 view .LVU17
+  82              		.loc 1 21 15 is_stmt 0 view .LVU18
+  83 0000 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+  84              	.LVL7:
+  22:DataStructure/Data_Convert_Util.c ****     tmp |= ptr[1] << 8;
+  85              		.loc 1 22 5 is_stmt 1 view .LVU19
+  86              		.loc 1 22 15 is_stmt 0 view .LVU20
+  87 0002 4078     		ldrb	r0, [r0, #1]	@ zero_extendqisi2
+  88              	.LVL8:
+  23:DataStructure/Data_Convert_Util.c **** 
+  24:DataStructure/Data_Convert_Util.c ****     return tmp;
+  89              		.loc 1 24 5 is_stmt 1 view .LVU21
+  25:DataStructure/Data_Convert_Util.c **** }
+  90              		.loc 1 25 1 is_stmt 0 view .LVU22
+  91 0004 43EA0020 		orr	r0, r3, r0, lsl #8
+  92              	.LVL9:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s 			page 3
+
+
+  93              		.loc 1 25 1 view .LVU23
+  94 0008 7047     		bx	lr
+  95              		.cfi_endproc
+  96              	.LFE1:
+  98              		.section	.text.LEndianWord2BytesArray,"ax",%progbits
+  99              		.align	1
+ 100              		.global	LEndianWord2BytesArray
+ 101              		.syntax unified
+ 102              		.thumb
+ 103              		.thumb_func
+ 104              		.fpu fpv5-d16
+ 106              	LEndianWord2BytesArray:
+ 107              	.LVL10:
+ 108              	.LFB2:
+  26:DataStructure/Data_Convert_Util.c **** 
+  27:DataStructure/Data_Convert_Util.c **** bool LEndianWord2BytesArray(const uint32_t target, uint8_t *p_bytes)
+  28:DataStructure/Data_Convert_Util.c **** {
+ 109              		.loc 1 28 1 is_stmt 1 view -0
+ 110              		.cfi_startproc
+ 111              		@ args = 0, pretend = 0, frame = 0
+ 112              		@ frame_needed = 0, uses_anonymous_args = 0
+ 113              		@ link register save eliminated.
+  29:DataStructure/Data_Convert_Util.c ****     if (p_bytes)
+ 114              		.loc 1 29 5 view .LVU25
+ 115              		.loc 1 29 8 is_stmt 0 view .LVU26
+ 116 0000 59B1     		cbz	r1, .L5
+  30:DataStructure/Data_Convert_Util.c ****     {
+  31:DataStructure/Data_Convert_Util.c ****         p_bytes[0] = ((uint8_t *)&target)[0];
+ 117              		.loc 1 31 9 is_stmt 1 view .LVU27
+ 118              		.loc 1 31 20 is_stmt 0 view .LVU28
+ 119 0002 0870     		strb	r0, [r1]
+  32:DataStructure/Data_Convert_Util.c ****         p_bytes[1] = ((uint8_t *)&target)[1];
+ 120              		.loc 1 32 9 is_stmt 1 view .LVU29
+ 121              		.loc 1 32 20 is_stmt 0 view .LVU30
+ 122 0004 C0F30722 		ubfx	r2, r0, #8, #8
+ 123 0008 4A70     		strb	r2, [r1, #1]
+  33:DataStructure/Data_Convert_Util.c ****         p_bytes[2] = ((uint8_t *)&target)[2];
+ 124              		.loc 1 33 9 is_stmt 1 view .LVU31
+ 125              		.loc 1 33 20 is_stmt 0 view .LVU32
+ 126 000a C0F30742 		ubfx	r2, r0, #16, #8
+ 127 000e 8A70     		strb	r2, [r1, #2]
+  34:DataStructure/Data_Convert_Util.c ****         p_bytes[3] = ((uint8_t *)&target)[3];
+ 128              		.loc 1 34 9 is_stmt 1 view .LVU33
+ 129              		.loc 1 34 20 is_stmt 0 view .LVU34
+ 130 0010 C0F30760 		ubfx	r0, r0, #24, #8
+ 131              	.LVL11:
+ 132              		.loc 1 34 20 view .LVU35
+ 133 0014 C870     		strb	r0, [r1, #3]
+  35:DataStructure/Data_Convert_Util.c ****         return true;
+ 134              		.loc 1 35 9 is_stmt 1 view .LVU36
+ 135              		.loc 1 35 16 is_stmt 0 view .LVU37
+ 136 0016 0120     		movs	r0, #1
+ 137 0018 7047     		bx	lr
+ 138              	.LVL12:
+ 139              	.L5:
+  36:DataStructure/Data_Convert_Util.c ****     }
+  37:DataStructure/Data_Convert_Util.c **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s 			page 4
+
+
+  38:DataStructure/Data_Convert_Util.c ****     return false;
+ 140              		.loc 1 38 12 view .LVU38
+ 141 001a 0020     		movs	r0, #0
+ 142              	.LVL13:
+  39:DataStructure/Data_Convert_Util.c **** }
+ 143              		.loc 1 39 1 view .LVU39
+ 144 001c 7047     		bx	lr
+ 145              		.cfi_endproc
+ 146              	.LFE2:
+ 148              		.section	.text.LEndianHalfWord2BytesArray,"ax",%progbits
+ 149              		.align	1
+ 150              		.global	LEndianHalfWord2BytesArray
+ 151              		.syntax unified
+ 152              		.thumb
+ 153              		.thumb_func
+ 154              		.fpu fpv5-d16
+ 156              	LEndianHalfWord2BytesArray:
+ 157              	.LVL14:
+ 158              	.LFB3:
+  40:DataStructure/Data_Convert_Util.c **** 
+  41:DataStructure/Data_Convert_Util.c **** bool LEndianHalfWord2BytesArray(const uint16_t target, uint8_t *p_bytes)
+  42:DataStructure/Data_Convert_Util.c **** {
+ 159              		.loc 1 42 1 is_stmt 1 view -0
+ 160              		.cfi_startproc
+ 161              		@ args = 0, pretend = 0, frame = 0
+ 162              		@ frame_needed = 0, uses_anonymous_args = 0
+ 163              		@ link register save eliminated.
+  43:DataStructure/Data_Convert_Util.c ****     if (p_bytes)
+ 164              		.loc 1 43 5 view .LVU41
+ 165              		.loc 1 43 8 is_stmt 0 view .LVU42
+ 166 0000 29B1     		cbz	r1, .L8
+  44:DataStructure/Data_Convert_Util.c ****     {
+  45:DataStructure/Data_Convert_Util.c ****         p_bytes[0] = ((uint8_t *)&target)[0];
+ 167              		.loc 1 45 9 is_stmt 1 view .LVU43
+ 168              		.loc 1 45 20 is_stmt 0 view .LVU44
+ 169 0002 0870     		strb	r0, [r1]
+  46:DataStructure/Data_Convert_Util.c ****         p_bytes[1] = ((uint8_t *)&target)[1];
+ 170              		.loc 1 46 9 is_stmt 1 view .LVU45
+ 171              		.loc 1 46 20 is_stmt 0 view .LVU46
+ 172 0004 C0F30720 		ubfx	r0, r0, #8, #8
+ 173              	.LVL15:
+ 174              		.loc 1 46 20 view .LVU47
+ 175 0008 4870     		strb	r0, [r1, #1]
+  47:DataStructure/Data_Convert_Util.c ****         return true;
+ 176              		.loc 1 47 9 is_stmt 1 view .LVU48
+ 177              		.loc 1 47 16 is_stmt 0 view .LVU49
+ 178 000a 0120     		movs	r0, #1
+ 179 000c 7047     		bx	lr
+ 180              	.LVL16:
+ 181              	.L8:
+  48:DataStructure/Data_Convert_Util.c ****     }
+  49:DataStructure/Data_Convert_Util.c **** 
+  50:DataStructure/Data_Convert_Util.c ****     return false;
+ 182              		.loc 1 50 12 view .LVU50
+ 183 000e 0020     		movs	r0, #0
+ 184              	.LVL17:
+  51:DataStructure/Data_Convert_Util.c **** }
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s 			page 5
+
+
+ 185              		.loc 1 51 1 view .LVU51
+ 186 0010 7047     		bx	lr
+ 187              		.cfi_endproc
+ 188              	.LFE3:
+ 190              		.section	.text.BEndian2Word,"ax",%progbits
+ 191              		.align	1
+ 192              		.global	BEndian2Word
+ 193              		.syntax unified
+ 194              		.thumb
+ 195              		.thumb_func
+ 196              		.fpu fpv5-d16
+ 198              	BEndian2Word:
+ 199              	.LVL18:
+ 200              	.LFB4:
+  52:DataStructure/Data_Convert_Util.c **** 
+  53:DataStructure/Data_Convert_Util.c **** /******************************************************* Big Endain Convert ***********************
+  54:DataStructure/Data_Convert_Util.c **** 
+  55:DataStructure/Data_Convert_Util.c **** uint32_t BEndian2Word(const uint8_t *ptr)
+  56:DataStructure/Data_Convert_Util.c **** {
+ 201              		.loc 1 56 1 is_stmt 1 view -0
+ 202              		.cfi_startproc
+ 203              		@ args = 0, pretend = 0, frame = 0
+ 204              		@ frame_needed = 0, uses_anonymous_args = 0
+ 205              		@ link register save eliminated.
+  57:DataStructure/Data_Convert_Util.c ****     uint32_t tmp = 0;
+ 206              		.loc 1 57 5 view .LVU53
+  58:DataStructure/Data_Convert_Util.c **** 
+  59:DataStructure/Data_Convert_Util.c ****     return tmp;
+ 207              		.loc 1 59 5 view .LVU54
+  60:DataStructure/Data_Convert_Util.c **** }
+ 208              		.loc 1 60 1 is_stmt 0 view .LVU55
+ 209 0000 0020     		movs	r0, #0
+ 210              	.LVL19:
+ 211              		.loc 1 60 1 view .LVU56
+ 212 0002 7047     		bx	lr
+ 213              		.cfi_endproc
+ 214              	.LFE4:
+ 216              		.section	.text.BEndian2HalfWord,"ax",%progbits
+ 217              		.align	1
+ 218              		.global	BEndian2HalfWord
+ 219              		.syntax unified
+ 220              		.thumb
+ 221              		.thumb_func
+ 222              		.fpu fpv5-d16
+ 224              	BEndian2HalfWord:
+ 225              	.LVL20:
+ 226              	.LFB5:
+  61:DataStructure/Data_Convert_Util.c **** 
+  62:DataStructure/Data_Convert_Util.c **** uint16_t BEndian2HalfWord(const uint8_t *ptr)
+  63:DataStructure/Data_Convert_Util.c **** {
+ 227              		.loc 1 63 1 is_stmt 1 view -0
+ 228              		.cfi_startproc
+ 229              		@ args = 0, pretend = 0, frame = 0
+ 230              		@ frame_needed = 0, uses_anonymous_args = 0
+ 231              		@ link register save eliminated.
+  64:DataStructure/Data_Convert_Util.c ****     uint16_t tmp = 0;
+ 232              		.loc 1 64 5 view .LVU58
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s 			page 6
+
+
+  65:DataStructure/Data_Convert_Util.c **** 
+  66:DataStructure/Data_Convert_Util.c ****     return tmp;
+ 233              		.loc 1 66 5 view .LVU59
+  67:DataStructure/Data_Convert_Util.c **** }
+ 234              		.loc 1 67 1 is_stmt 0 view .LVU60
+ 235 0000 0020     		movs	r0, #0
+ 236              	.LVL21:
+ 237              		.loc 1 67 1 view .LVU61
+ 238 0002 7047     		bx	lr
+ 239              		.cfi_endproc
+ 240              	.LFE5:
+ 242              		.text
+ 243              	.Letext0:
+ 244              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 245              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ARM GAS  C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Data_Convert_Util.c
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:17     .text.LEndian2Word:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:25     .text.LEndian2Word:00000000 LEndian2Word
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:65     .text.LEndian2HalfWord:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:72     .text.LEndian2HalfWord:00000000 LEndian2HalfWord
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:99     .text.LEndianWord2BytesArray:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:106    .text.LEndianWord2BytesArray:00000000 LEndianWord2BytesArray
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:149    .text.LEndianHalfWord2BytesArray:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:156    .text.LEndianHalfWord2BytesArray:00000000 LEndianHalfWord2BytesArray
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:191    .text.BEndian2Word:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:198    .text.BEndian2Word:00000000 BEndian2Word
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:217    .text.BEndian2HalfWord:00000000 $t
+C:\Users\huav\AppData\Local\Temp\ccuF5lEk.s:224    .text.BEndian2HalfWord:00000000 BEndian2HalfWord
+
+NO UNDEFINED SYMBOLS

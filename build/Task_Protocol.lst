@@ -1,0 +1,996 @@
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Task_Protocol.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.TaskProto_PushProtocolQueue,"ax",%progbits
+  17              		.align	1
+  18              		.global	TaskProto_PushProtocolQueue
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	TaskProto_PushProtocolQueue:
+  26              	.LVL0:
+  27              	.LFB149:
+  28              		.file 1 "Task/Task_Protocol.c"
+   1:Task/Task_Protocol.c **** /*
+   2:Task/Task_Protocol.c ****  *  coder: 8_B!T0
+   3:Task/Task_Protocol.c ****  *  bref: use this task make FC communicate to computer configuration
+   4:Task/Task_Protocol.c ****  */
+   5:Task/Task_Protocol.c **** #include "Task_Protocol.h"
+   6:Task/Task_Protocol.c **** #include "scheduler.h"
+   7:Task/Task_Protocol.c **** #include "shell.h"
+   8:Task/Task_Protocol.c **** #include "shell_port.h"
+   9:Task/Task_Protocol.c **** #include "usb_device.h"
+  10:Task/Task_Protocol.c **** #include "usbd_cdc_if.h"
+  11:Task/Task_Protocol.c **** #include "debug_util.h"
+  12:Task/Task_Protocol.c **** #include <stdio.h>
+  13:Task/Task_Protocol.c **** #include "Dev_MPU6000.h"
+  14:Task/Task_Protocol.c **** #include "queue.h"
+  15:Task/Task_Protocol.c **** #include "Dev_Led.h"
+  16:Task/Task_Protocol.c **** #include "IO_Definition.h"
+  17:Task/Task_Protocol.c **** #include "Bsp_GPIO.h"
+  18:Task/Task_Protocol.c **** #include "error_log.h"
+  19:Task/Task_Protocol.c **** #include "mmu.h"
+  20:Task/Task_Protocol.c **** 
+  21:Task/Task_Protocol.c **** static bool test = false;
+  22:Task/Task_Protocol.c **** 
+  23:Task/Task_Protocol.c **** #define VCP_QUEUE_BUFF_SIZE 4096
+  24:Task/Task_Protocol.c **** 
+  25:Task/Task_Protocol.c **** /* internal vriable */
+  26:Task/Task_Protocol.c **** static QueueObj_TypeDef VCP_ProtoQueue; /* Send Queue */
+  27:Task/Task_Protocol.c **** static bool VCP_Queue_CreateState = false;
+  28:Task/Task_Protocol.c **** static ProtoQueue_State_List VCPQueue_State = ProtoQueue_Idle;
+  29:Task/Task_Protocol.c **** static bool VCP_Connect_State = false; /* USB connect state */
+  30:Task/Task_Protocol.c **** 
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 2
+
+
+  31:Task/Task_Protocol.c **** /* task state var */
+  32:Task/Task_Protocol.c **** static TaskProto_State_List task_state = TaskProto_Core;
+  33:Task/Task_Protocol.c **** static bool Shell_Mode = false;
+  34:Task/Task_Protocol.c **** 
+  35:Task/Task_Protocol.c **** /* internal function */
+  36:Task/Task_Protocol.c **** static void TaskProtocol_Main(uint8_t *data, uint16_t size);
+  37:Task/Task_Protocol.c **** static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
+  38:Task/Task_Protocol.c **** static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
+  39:Task/Task_Protocol.c **** static void TaskProtocol_PlugDetect_Callback(void);
+  40:Task/Task_Protocol.c **** ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
+  41:Task/Task_Protocol.c **** 
+  42:Task/Task_Protocol.c **** bool TaskProtocol_Init(void)
+  43:Task/Task_Protocol.c **** {
+  44:Task/Task_Protocol.c ****     if (!USB_DEVICE_Init())
+  45:Task/Task_Protocol.c ****     {
+  46:Task/Task_Protocol.c ****         task_state = TaskProto_Error_Proc;
+  47:Task/Task_Protocol.c ****         return false;
+  48:Task/Task_Protocol.c ****     }
+  49:Task/Task_Protocol.c **** 
+  50:Task/Task_Protocol.c ****     /* init USB connect detect pin */
+  51:Task/Task_Protocol.c ****     // BspGPIO.in_init(USB_DctPin);
+  52:Task/Task_Protocol.c **** 
+  53:Task/Task_Protocol.c ****     if (!Queue.create(&VCP_ProtoQueue, "VCP Send Queue", VCP_QUEUE_BUFF_SIZE))
+  54:Task/Task_Protocol.c ****         return false;
+  55:Task/Task_Protocol.c **** 
+  56:Task/Task_Protocol.c ****     VCP_Queue_CreateState = true;
+  57:Task/Task_Protocol.c **** 
+  58:Task/Task_Protocol.c ****     usb_setrec_callback(TaskProtocol_Rec);
+  59:Task/Task_Protocol.c ****     Shell_Init(TaskProtocol_TransBuff);
+  60:Task/Task_Protocol.c **** 
+  61:Task/Task_Protocol.c ****     ErrorLog.set_callback(Error_Out_Callback, TaskProto_PushProtocolQueue);
+  62:Task/Task_Protocol.c **** 
+  63:Task/Task_Protocol.c ****     task_state = TaskProto_Core;
+  64:Task/Task_Protocol.c ****     return true;
+  65:Task/Task_Protocol.c **** }
+  66:Task/Task_Protocol.c **** 
+  67:Task/Task_Protocol.c **** ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size)
+  68:Task/Task_Protocol.c **** {
+  29              		.loc 1 68 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 68 1 is_stmt 0 view .LVU1
+  34 0000 70B5     		push	{r4, r5, r6, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 16
+  37              		.cfi_offset 4, -16
+  38              		.cfi_offset 5, -12
+  39              		.cfi_offset 6, -8
+  40              		.cfi_offset 14, -4
+  41 0002 82B0     		sub	sp, sp, #8
+  42              	.LCFI1:
+  43              		.cfi_def_cfa_offset 24
+  69:Task/Task_Protocol.c ****     /* push into send queue */
+  70:Task/Task_Protocol.c ****     if (VCP_Queue_CreateState &&
+  44              		.loc 1 70 5 is_stmt 1 view .LVU2
+  45              		.loc 1 70 9 is_stmt 0 view .LVU3
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 3
+
+
+  46 0004 214B     		ldr	r3, .L11
+  47 0006 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  48              		.loc 1 70 8 view .LVU4
+  49 0008 2BB1     		cbz	r3, .L2
+  50 000a 0546     		mov	r5, r0
+  51 000c 0C46     		mov	r4, r1
+  71:Task/Task_Protocol.c ****         ((VCPQueue_State == ProtoQueue_Ok) ||
+  52              		.loc 1 71 44 discriminator 1 view .LVU5
+  53 000e 204B     		ldr	r3, .L11+4
+  54 0010 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  70:Task/Task_Protocol.c ****         ((VCPQueue_State == ProtoQueue_Ok) ||
+  55              		.loc 1 70 31 discriminator 1 view .LVU6
+  56 0012 012B     		cmp	r3, #1
+  57 0014 11D9     		bls	.L8
+  58              	.LVL1:
+  59              	.L2:
+  72:Task/Task_Protocol.c ****          (VCPQueue_State == ProtoQueue_Idle)) &&
+  73:Task/Task_Protocol.c ****         ((Queue.state(VCP_ProtoQueue) == Queue_empty) ||
+  74:Task/Task_Protocol.c ****          (Queue.state(VCP_ProtoQueue) == Queue_ok)))
+  75:Task/Task_Protocol.c ****     {
+  76:Task/Task_Protocol.c ****         VCPQueue_State = ProtoQueue_Busy;
+  77:Task/Task_Protocol.c **** 
+  78:Task/Task_Protocol.c ****         /* push send data into VCP queue */
+  79:Task/Task_Protocol.c ****         Queue.push(&VCP_ProtoQueue, p_data, size);
+  80:Task/Task_Protocol.c **** 
+  81:Task/Task_Protocol.c ****         VCPQueue_State = ProtoQueue_Ok;
+  82:Task/Task_Protocol.c **** 
+  83:Task/Task_Protocol.c ****         return ProtoQueue_Ok;
+  84:Task/Task_Protocol.c ****     }
+  85:Task/Task_Protocol.c ****     else if (!VCP_Queue_CreateState)
+  60              		.loc 1 85 10 is_stmt 1 view .LVU7
+  61              		.loc 1 85 14 is_stmt 0 view .LVU8
+  62 0016 1D4B     		ldr	r3, .L11
+  63 0018 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  64              		.loc 1 85 13 view .LVU9
+  65 001a 002B     		cmp	r3, #0
+  66 001c 2DD0     		beq	.L9
+  86:Task/Task_Protocol.c ****     {
+  87:Task/Task_Protocol.c ****         VCPQueue_State = ProtoQueeu_Error;
+  88:Task/Task_Protocol.c ****         return ProtoQueeu_Error;
+  89:Task/Task_Protocol.c ****     }
+  90:Task/Task_Protocol.c ****     else if (Queue.state(VCP_ProtoQueue) == Queue_full)
+  67              		.loc 1 90 10 is_stmt 1 view .LVU10
+  68              		.loc 1 90 19 is_stmt 0 view .LVU11
+  69 001e 1D4B     		ldr	r3, .L11+8
+  70 0020 9C69     		ldr	r4, [r3, #24]
+  71              		.loc 1 90 14 view .LVU12
+  72 0022 1D4B     		ldr	r3, .L11+12
+  73 0024 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+  74 0026 8DF80020 		strb	r2, [sp]
+  75 002a 0FCB     		ldm	r3, {r0, r1, r2, r3}
+  76 002c A047     		blx	r4
+  77              	.LVL2:
+  78              		.loc 1 90 13 view .LVU13
+  79 002e 0428     		cmp	r0, #4
+  80 0030 27D0     		beq	.L10
+  91:Task/Task_Protocol.c ****     {
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 4
+
+
+  92:Task/Task_Protocol.c ****         VCPQueue_State = ProtoQueue_Full;
+  93:Task/Task_Protocol.c ****         return ProtoQueue_Full;
+  94:Task/Task_Protocol.c ****     }
+  95:Task/Task_Protocol.c ****     else if ((VCPQueue_State != ProtoQueue_Ok) ||
+  81              		.loc 1 95 10 is_stmt 1 view .LVU14
+  96:Task/Task_Protocol.c ****              (VCPQueue_State != ProtoQueue_Idle))
+  97:Task/Task_Protocol.c ****     {
+  98:Task/Task_Protocol.c ****         return VCPQueue_State;
+  82              		.loc 1 98 9 view .LVU15
+  83              		.loc 1 98 16 is_stmt 0 view .LVU16
+  84 0032 174B     		ldr	r3, .L11+4
+  85 0034 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+  86              	.L4:
+  99:Task/Task_Protocol.c ****     }
+ 100:Task/Task_Protocol.c **** }
+  87              		.loc 1 100 1 view .LVU17
+  88 0036 02B0     		add	sp, sp, #8
+  89              	.LCFI2:
+  90              		.cfi_remember_state
+  91              		.cfi_def_cfa_offset 16
+  92              		@ sp needed
+  93 0038 70BD     		pop	{r4, r5, r6, pc}
+  94              	.LVL3:
+  95              	.L8:
+  96              	.LCFI3:
+  97              		.cfi_restore_state
+  73:Task/Task_Protocol.c ****          (Queue.state(VCP_ProtoQueue) == Queue_ok)))
+  98              		.loc 1 73 16 view .LVU18
+  99 003a 164B     		ldr	r3, .L11+8
+ 100 003c 9E69     		ldr	r6, [r3, #24]
+  73:Task/Task_Protocol.c ****          (Queue.state(VCP_ProtoQueue) == Queue_ok)))
+ 101              		.loc 1 73 11 view .LVU19
+ 102 003e 164B     		ldr	r3, .L11+12
+ 103 0040 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 104 0042 8DF80020 		strb	r2, [sp]
+ 105 0046 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 106              	.LVL4:
+  73:Task/Task_Protocol.c ****          (Queue.state(VCP_ProtoQueue) == Queue_ok)))
+ 107              		.loc 1 73 11 view .LVU20
+ 108 0048 B047     		blx	r6
+ 109              	.LVL5:
+  72:Task/Task_Protocol.c ****         ((Queue.state(VCP_ProtoQueue) == Queue_empty) ||
+ 110              		.loc 1 72 47 view .LVU21
+ 111 004a 0328     		cmp	r0, #3
+ 112 004c 09D0     		beq	.L3
+  74:Task/Task_Protocol.c ****     {
+ 113              		.loc 1 74 16 view .LVU22
+ 114 004e 114B     		ldr	r3, .L11+8
+ 115 0050 9E69     		ldr	r6, [r3, #24]
+  74:Task/Task_Protocol.c ****     {
+ 116              		.loc 1 74 11 view .LVU23
+ 117 0052 114B     		ldr	r3, .L11+12
+ 118 0054 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 119 0056 8DF80020 		strb	r2, [sp]
+ 120 005a 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 121 005c B047     		blx	r6
+ 122              	.LVL6:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 5
+
+
+  73:Task/Task_Protocol.c ****          (Queue.state(VCP_ProtoQueue) == Queue_ok)))
+ 123              		.loc 1 73 55 view .LVU24
+ 124 005e 0028     		cmp	r0, #0
+ 125 0060 D9D1     		bne	.L2
+ 126              	.L3:
+  76:Task/Task_Protocol.c **** 
+ 127              		.loc 1 76 9 is_stmt 1 view .LVU25
+  76:Task/Task_Protocol.c **** 
+ 128              		.loc 1 76 24 is_stmt 0 view .LVU26
+ 129 0062 0B4E     		ldr	r6, .L11+4
+ 130 0064 0223     		movs	r3, #2
+ 131 0066 3370     		strb	r3, [r6]
+  79:Task/Task_Protocol.c **** 
+ 132              		.loc 1 79 9 is_stmt 1 view .LVU27
+  79:Task/Task_Protocol.c **** 
+ 133              		.loc 1 79 14 is_stmt 0 view .LVU28
+ 134 0068 0A4B     		ldr	r3, .L11+8
+ 135 006a 1B69     		ldr	r3, [r3, #16]
+  79:Task/Task_Protocol.c **** 
+ 136              		.loc 1 79 9 view .LVU29
+ 137 006c 2246     		mov	r2, r4
+ 138 006e 2946     		mov	r1, r5
+ 139 0070 0948     		ldr	r0, .L11+12
+ 140 0072 9847     		blx	r3
+ 141              	.LVL7:
+  81:Task/Task_Protocol.c **** 
+ 142              		.loc 1 81 9 is_stmt 1 view .LVU30
+  81:Task/Task_Protocol.c **** 
+ 143              		.loc 1 81 24 is_stmt 0 view .LVU31
+ 144 0074 0120     		movs	r0, #1
+ 145 0076 3070     		strb	r0, [r6]
+  83:Task/Task_Protocol.c ****     }
+ 146              		.loc 1 83 9 is_stmt 1 view .LVU32
+  83:Task/Task_Protocol.c ****     }
+ 147              		.loc 1 83 16 is_stmt 0 view .LVU33
+ 148 0078 DDE7     		b	.L4
+ 149              	.LVL8:
+ 150              	.L9:
+  87:Task/Task_Protocol.c ****         return ProtoQueeu_Error;
+ 151              		.loc 1 87 9 is_stmt 1 view .LVU34
+  87:Task/Task_Protocol.c ****         return ProtoQueeu_Error;
+ 152              		.loc 1 87 24 is_stmt 0 view .LVU35
+ 153 007a 0420     		movs	r0, #4
+ 154 007c 044B     		ldr	r3, .L11+4
+ 155 007e 1870     		strb	r0, [r3]
+  88:Task/Task_Protocol.c ****     }
+ 156              		.loc 1 88 9 is_stmt 1 view .LVU36
+  88:Task/Task_Protocol.c ****     }
+ 157              		.loc 1 88 16 is_stmt 0 view .LVU37
+ 158 0080 D9E7     		b	.L4
+ 159              	.L10:
+  92:Task/Task_Protocol.c ****         return ProtoQueue_Full;
+ 160              		.loc 1 92 9 is_stmt 1 view .LVU38
+  92:Task/Task_Protocol.c ****         return ProtoQueue_Full;
+ 161              		.loc 1 92 24 is_stmt 0 view .LVU39
+ 162 0082 0320     		movs	r0, #3
+ 163 0084 024B     		ldr	r3, .L11+4
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 6
+
+
+ 164 0086 1870     		strb	r0, [r3]
+  93:Task/Task_Protocol.c ****     }
+ 165              		.loc 1 93 9 is_stmt 1 view .LVU40
+  93:Task/Task_Protocol.c ****     }
+ 166              		.loc 1 93 16 is_stmt 0 view .LVU41
+ 167 0088 D5E7     		b	.L4
+ 168              	.L12:
+ 169 008a 00BF     		.align	2
+ 170              	.L11:
+ 171 008c 00000000 		.word	.LANCHOR0
+ 172 0090 00000000 		.word	.LANCHOR1
+ 173 0094 00000000 		.word	Queue
+ 174 0098 00000000 		.word	.LANCHOR2
+ 175              		.cfi_endproc
+ 176              	.LFE149:
+ 178              		.section	.text.TaskProtocol_Rec,"ax",%progbits
+ 179              		.align	1
+ 180              		.syntax unified
+ 181              		.thumb
+ 182              		.thumb_func
+ 183              		.fpu fpv5-d16
+ 185              	TaskProtocol_Rec:
+ 186              	.LVL9:
+ 187              	.LFB153:
+ 101:Task/Task_Protocol.c **** 
+ 102:Task/Task_Protocol.c **** static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
+ 103:Task/Task_Protocol.c **** {
+ 104:Task/Task_Protocol.c ****     if (CDC_Transmit_FS(data, size) != USBD_OK)
+ 105:Task/Task_Protocol.c ****         return false;
+ 106:Task/Task_Protocol.c **** 
+ 107:Task/Task_Protocol.c ****     return true;
+ 108:Task/Task_Protocol.c **** }
+ 109:Task/Task_Protocol.c **** 
+ 110:Task/Task_Protocol.c **** void TaskProtocol_Core(Task_Handle hdl)
+ 111:Task/Task_Protocol.c **** {
+ 112:Task/Task_Protocol.c ****     uint8_t *p_buf = NULL;
+ 113:Task/Task_Protocol.c ****     uint16_t p_buf_size = 0;
+ 114:Task/Task_Protocol.c **** 
+ 115:Task/Task_Protocol.c ****     DebugPin.ctl(Debug_PC3, true);
+ 116:Task/Task_Protocol.c **** 
+ 117:Task/Task_Protocol.c ****     switch ((uint8_t)task_state)
+ 118:Task/Task_Protocol.c ****     {
+ 119:Task/Task_Protocol.c ****     case TaskProto_Core:
+ 120:Task/Task_Protocol.c ****         TaskProtocol_Main(NULL, 0);
+ 121:Task/Task_Protocol.c **** 
+ 122:Task/Task_Protocol.c ****         /* check vcp send queue state */
+ 123:Task/Task_Protocol.c ****         /* if it has any data then send them out */
+ 124:Task/Task_Protocol.c ****         if (test && ((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Q
+ 125:Task/Task_Protocol.c ****         {
+ 126:Task/Task_Protocol.c ****             p_buf = (uint8_t *)MMU_Malloc(Queue.size(VCP_ProtoQueue));
+ 127:Task/Task_Protocol.c **** 
+ 128:Task/Task_Protocol.c ****             if (p_buf)
+ 129:Task/Task_Protocol.c ****             {
+ 130:Task/Task_Protocol.c ****                 p_buf_size = Queue.size(VCP_ProtoQueue);
+ 131:Task/Task_Protocol.c ****                 Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
+ 132:Task/Task_Protocol.c **** 
+ 133:Task/Task_Protocol.c ****                 TaskProtocol_TransBuff(p_buf, p_buf_size);
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 7
+
+
+ 134:Task/Task_Protocol.c **** 
+ 135:Task/Task_Protocol.c ****                 MMU_Free(p_buf);
+ 136:Task/Task_Protocol.c ****             }
+ 137:Task/Task_Protocol.c ****         }
+ 138:Task/Task_Protocol.c ****         break;
+ 139:Task/Task_Protocol.c **** 
+ 140:Task/Task_Protocol.c ****     case TaskProto_Error_Proc:
+ 141:Task/Task_Protocol.c ****         break;
+ 142:Task/Task_Protocol.c **** 
+ 143:Task/Task_Protocol.c ****     default:
+ 144:Task/Task_Protocol.c ****         break;
+ 145:Task/Task_Protocol.c ****     }
+ 146:Task/Task_Protocol.c **** 
+ 147:Task/Task_Protocol.c ****     DebugPin.ctl(Debug_PC3, false);
+ 148:Task/Task_Protocol.c **** }
+ 149:Task/Task_Protocol.c **** 
+ 150:Task/Task_Protocol.c **** static void TaskProtocol_Main(uint8_t *data, uint16_t size)
+ 151:Task/Task_Protocol.c **** {
+ 152:Task/Task_Protocol.c **** }
+ 153:Task/Task_Protocol.c **** 
+ 154:Task/Task_Protocol.c **** static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
+ 155:Task/Task_Protocol.c **** {
+ 188              		.loc 1 155 1 is_stmt 1 view -0
+ 189              		.cfi_startproc
+ 190              		@ args = 0, pretend = 0, frame = 0
+ 191              		@ frame_needed = 0, uses_anonymous_args = 0
+ 192              		@ link register save eliminated.
+ 156:Task/Task_Protocol.c ****     // shellHandler(Shell_GetInstence(), data[i]);
+ 157:Task/Task_Protocol.c ****     // TaskProtocol_TransBuff(data, len);
+ 158:Task/Task_Protocol.c ****     test = true;
+ 193              		.loc 1 158 5 view .LVU43
+ 194              		.loc 1 158 10 is_stmt 0 view .LVU44
+ 195 0000 014B     		ldr	r3, .L14
+ 196 0002 0122     		movs	r2, #1
+ 197 0004 1A70     		strb	r2, [r3]
+ 159:Task/Task_Protocol.c **** }
+ 198              		.loc 1 159 1 view .LVU45
+ 199 0006 7047     		bx	lr
+ 200              	.L15:
+ 201              		.align	2
+ 202              	.L14:
+ 203 0008 00000000 		.word	.LANCHOR3
+ 204              		.cfi_endproc
+ 205              	.LFE153:
+ 207              		.section	.text.TaskProtocol_TransBuff,"ax",%progbits
+ 208              		.align	1
+ 209              		.syntax unified
+ 210              		.thumb
+ 211              		.thumb_func
+ 212              		.fpu fpv5-d16
+ 214              	TaskProtocol_TransBuff:
+ 215              	.LVL10:
+ 216              	.LFB150:
+ 103:Task/Task_Protocol.c ****     if (CDC_Transmit_FS(data, size) != USBD_OK)
+ 217              		.loc 1 103 1 is_stmt 1 view -0
+ 218              		.cfi_startproc
+ 219              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 8
+
+
+ 220              		@ frame_needed = 0, uses_anonymous_args = 0
+ 103:Task/Task_Protocol.c ****     if (CDC_Transmit_FS(data, size) != USBD_OK)
+ 221              		.loc 1 103 1 is_stmt 0 view .LVU47
+ 222 0000 08B5     		push	{r3, lr}
+ 223              	.LCFI4:
+ 224              		.cfi_def_cfa_offset 8
+ 225              		.cfi_offset 3, -8
+ 226              		.cfi_offset 14, -4
+ 104:Task/Task_Protocol.c ****         return false;
+ 227              		.loc 1 104 5 is_stmt 1 view .LVU48
+ 104:Task/Task_Protocol.c ****         return false;
+ 228              		.loc 1 104 9 is_stmt 0 view .LVU49
+ 229 0002 FFF7FEFF 		bl	CDC_Transmit_FS
+ 230              	.LVL11:
+ 104:Task/Task_Protocol.c ****         return false;
+ 231              		.loc 1 104 8 view .LVU50
+ 232 0006 08B9     		cbnz	r0, .L18
+ 107:Task/Task_Protocol.c **** }
+ 233              		.loc 1 107 12 view .LVU51
+ 234 0008 0120     		movs	r0, #1
+ 235              	.L17:
+ 108:Task/Task_Protocol.c **** 
+ 236              		.loc 1 108 1 view .LVU52
+ 237 000a 08BD     		pop	{r3, pc}
+ 238              	.L18:
+ 105:Task/Task_Protocol.c **** 
+ 239              		.loc 1 105 16 view .LVU53
+ 240 000c 0020     		movs	r0, #0
+ 241 000e FCE7     		b	.L17
+ 242              		.cfi_endproc
+ 243              	.LFE150:
+ 245              		.section	.rodata.shell_test.str1.4,"aMS",%progbits,1
+ 246              		.align	2
+ 247              	.LC0:
+ 248 0000 09385F42 		.ascii	"\0118_B!T0 Shell test\015\012\000"
+ 248      21543020 
+ 248      5368656C 
+ 248      6C207465 
+ 248      73740D0A 
+ 249              		.section	.text.shell_test,"ax",%progbits
+ 250              		.align	1
+ 251              		.syntax unified
+ 252              		.thumb
+ 253              		.thumb_func
+ 254              		.fpu fpv5-d16
+ 256              	shell_test:
+ 257              	.LFB155:
+ 160:Task/Task_Protocol.c **** 
+ 161:Task/Task_Protocol.c **** static void TaskProtocol_PlugDetect_Callback(void)
+ 162:Task/Task_Protocol.c **** {
+ 163:Task/Task_Protocol.c ****     static uint8_t a;
+ 164:Task/Task_Protocol.c **** 
+ 165:Task/Task_Protocol.c ****     a++;
+ 166:Task/Task_Protocol.c **** }
+ 167:Task/Task_Protocol.c **** 
+ 168:Task/Task_Protocol.c **** static void shell_test(void)
+ 169:Task/Task_Protocol.c **** {
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 9
+
+
+ 258              		.loc 1 169 1 is_stmt 1 view -0
+ 259              		.cfi_startproc
+ 260              		@ args = 0, pretend = 0, frame = 0
+ 261              		@ frame_needed = 0, uses_anonymous_args = 0
+ 262 0000 08B5     		push	{r3, lr}
+ 263              	.LCFI5:
+ 264              		.cfi_def_cfa_offset 8
+ 265              		.cfi_offset 3, -8
+ 266              		.cfi_offset 14, -4
+ 170:Task/Task_Protocol.c ****     usb_printf("\t8_B!T0 Shell test\r\n");
+ 267              		.loc 1 170 5 view .LVU55
+ 268 0002 0248     		ldr	r0, .L22
+ 269 0004 FFF7FEFF 		bl	usb_printf
+ 270              	.LVL12:
+ 171:Task/Task_Protocol.c **** }
+ 271              		.loc 1 171 1 is_stmt 0 view .LVU56
+ 272 0008 08BD     		pop	{r3, pc}
+ 273              	.L23:
+ 274 000a 00BF     		.align	2
+ 275              	.L22:
+ 276 000c 00000000 		.word	.LC0
+ 277              		.cfi_endproc
+ 278              	.LFE155:
+ 280              		.section	.rodata.TaskProtocol_Init.str1.4,"aMS",%progbits,1
+ 281              		.align	2
+ 282              	.LC1:
+ 283 0000 56435020 		.ascii	"VCP Send Queue\000"
+ 283      53656E64 
+ 283      20517565 
+ 283      756500
+ 284              		.section	.text.TaskProtocol_Init,"ax",%progbits
+ 285              		.align	1
+ 286              		.global	TaskProtocol_Init
+ 287              		.syntax unified
+ 288              		.thumb
+ 289              		.thumb_func
+ 290              		.fpu fpv5-d16
+ 292              	TaskProtocol_Init:
+ 293              	.LFB148:
+  43:Task/Task_Protocol.c ****     if (!USB_DEVICE_Init())
+ 294              		.loc 1 43 1 is_stmt 1 view -0
+ 295              		.cfi_startproc
+ 296              		@ args = 0, pretend = 0, frame = 0
+ 297              		@ frame_needed = 0, uses_anonymous_args = 0
+ 298 0000 38B5     		push	{r3, r4, r5, lr}
+ 299              	.LCFI6:
+ 300              		.cfi_def_cfa_offset 16
+ 301              		.cfi_offset 3, -16
+ 302              		.cfi_offset 4, -12
+ 303              		.cfi_offset 5, -8
+ 304              		.cfi_offset 14, -4
+  44:Task/Task_Protocol.c ****     {
+ 305              		.loc 1 44 5 view .LVU58
+  44:Task/Task_Protocol.c ****     {
+ 306              		.loc 1 44 10 is_stmt 0 view .LVU59
+ 307 0002 FFF7FEFF 		bl	USB_DEVICE_Init
+ 308              	.LVL13:
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 10
+
+
+  44:Task/Task_Protocol.c ****     {
+ 309              		.loc 1 44 8 view .LVU60
+ 310 0006 C8B1     		cbz	r0, .L28
+  53:Task/Task_Protocol.c ****         return false;
+ 311              		.loc 1 53 5 is_stmt 1 view .LVU61
+  53:Task/Task_Protocol.c ****         return false;
+ 312              		.loc 1 53 15 is_stmt 0 view .LVU62
+ 313 0008 0F4B     		ldr	r3, .L29
+ 314 000a 5B68     		ldr	r3, [r3, #4]
+  53:Task/Task_Protocol.c ****         return false;
+ 315              		.loc 1 53 10 view .LVU63
+ 316 000c 4FF48052 		mov	r2, #4096
+ 317 0010 0E49     		ldr	r1, .L29+4
+ 318 0012 0F48     		ldr	r0, .L29+8
+ 319 0014 9847     		blx	r3
+ 320              	.LVL14:
+  53:Task/Task_Protocol.c ****         return false;
+ 321              		.loc 1 53 8 view .LVU64
+ 322 0016 0446     		mov	r4, r0
+ 323 0018 A0B1     		cbz	r0, .L26
+  56:Task/Task_Protocol.c **** 
+ 324              		.loc 1 56 5 is_stmt 1 view .LVU65
+  56:Task/Task_Protocol.c **** 
+ 325              		.loc 1 56 27 is_stmt 0 view .LVU66
+ 326 001a 0125     		movs	r5, #1
+ 327 001c 0D4B     		ldr	r3, .L29+12
+ 328 001e 1D70     		strb	r5, [r3]
+  58:Task/Task_Protocol.c ****     Shell_Init(TaskProtocol_TransBuff);
+ 329              		.loc 1 58 5 is_stmt 1 view .LVU67
+ 330 0020 0D48     		ldr	r0, .L29+16
+ 331 0022 FFF7FEFF 		bl	usb_setrec_callback
+ 332              	.LVL15:
+  59:Task/Task_Protocol.c **** 
+ 333              		.loc 1 59 5 view .LVU68
+ 334 0026 0D48     		ldr	r0, .L29+20
+ 335 0028 FFF7FEFF 		bl	Shell_Init
+ 336              	.LVL16:
+  61:Task/Task_Protocol.c **** 
+ 337              		.loc 1 61 5 view .LVU69
+  61:Task/Task_Protocol.c **** 
+ 338              		.loc 1 61 13 is_stmt 0 view .LVU70
+ 339 002c 0C4B     		ldr	r3, .L29+24
+ 340 002e 1B69     		ldr	r3, [r3, #16]
+  61:Task/Task_Protocol.c **** 
+ 341              		.loc 1 61 5 view .LVU71
+ 342 0030 0C49     		ldr	r1, .L29+28
+ 343 0032 2846     		mov	r0, r5
+ 344 0034 9847     		blx	r3
+ 345              	.LVL17:
+  63:Task/Task_Protocol.c ****     return true;
+ 346              		.loc 1 63 5 is_stmt 1 view .LVU72
+  63:Task/Task_Protocol.c ****     return true;
+ 347              		.loc 1 63 16 is_stmt 0 view .LVU73
+ 348 0036 0C4B     		ldr	r3, .L29+32
+ 349 0038 1D70     		strb	r5, [r3]
+  64:Task/Task_Protocol.c **** }
+ 350              		.loc 1 64 5 is_stmt 1 view .LVU74
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 11
+
+
+  64:Task/Task_Protocol.c **** }
+ 351              		.loc 1 64 12 is_stmt 0 view .LVU75
+ 352 003a 03E0     		b	.L26
+ 353              	.L28:
+ 354 003c 0446     		mov	r4, r0
+  46:Task/Task_Protocol.c ****         return false;
+ 355              		.loc 1 46 9 is_stmt 1 view .LVU76
+  46:Task/Task_Protocol.c ****         return false;
+ 356              		.loc 1 46 20 is_stmt 0 view .LVU77
+ 357 003e 0A4B     		ldr	r3, .L29+32
+ 358 0040 0222     		movs	r2, #2
+ 359 0042 1A70     		strb	r2, [r3]
+  47:Task/Task_Protocol.c ****     }
+ 360              		.loc 1 47 9 is_stmt 1 view .LVU78
+ 361              	.L26:
+  65:Task/Task_Protocol.c **** 
+ 362              		.loc 1 65 1 is_stmt 0 view .LVU79
+ 363 0044 2046     		mov	r0, r4
+ 364 0046 38BD     		pop	{r3, r4, r5, pc}
+ 365              	.L30:
+ 366              		.align	2
+ 367              	.L29:
+ 368 0048 00000000 		.word	Queue
+ 369 004c 00000000 		.word	.LC1
+ 370 0050 00000000 		.word	.LANCHOR2
+ 371 0054 00000000 		.word	.LANCHOR0
+ 372 0058 00000000 		.word	TaskProtocol_Rec
+ 373 005c 00000000 		.word	TaskProtocol_TransBuff
+ 374 0060 00000000 		.word	ErrorLog
+ 375 0064 00000000 		.word	TaskProto_PushProtocolQueue
+ 376 0068 00000000 		.word	.LANCHOR4
+ 377              		.cfi_endproc
+ 378              	.LFE148:
+ 380              		.section	.text.TaskProtocol_Core,"ax",%progbits
+ 381              		.align	1
+ 382              		.global	TaskProtocol_Core
+ 383              		.syntax unified
+ 384              		.thumb
+ 385              		.thumb_func
+ 386              		.fpu fpv5-d16
+ 388              	TaskProtocol_Core:
+ 389              	.LVL18:
+ 390              	.LFB151:
+ 111:Task/Task_Protocol.c ****     uint8_t *p_buf = NULL;
+ 391              		.loc 1 111 1 is_stmt 1 view -0
+ 392              		.cfi_startproc
+ 393              		@ args = 0, pretend = 0, frame = 0
+ 394              		@ frame_needed = 0, uses_anonymous_args = 0
+ 111:Task/Task_Protocol.c ****     uint8_t *p_buf = NULL;
+ 395              		.loc 1 111 1 is_stmt 0 view .LVU81
+ 396 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 397              	.LCFI7:
+ 398              		.cfi_def_cfa_offset 20
+ 399              		.cfi_offset 4, -20
+ 400              		.cfi_offset 5, -16
+ 401              		.cfi_offset 6, -12
+ 402              		.cfi_offset 7, -8
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 12
+
+
+ 403              		.cfi_offset 14, -4
+ 404 0002 83B0     		sub	sp, sp, #12
+ 405              	.LCFI8:
+ 406              		.cfi_def_cfa_offset 32
+ 112:Task/Task_Protocol.c ****     uint16_t p_buf_size = 0;
+ 407              		.loc 1 112 5 is_stmt 1 view .LVU82
+ 408              	.LVL19:
+ 113:Task/Task_Protocol.c **** 
+ 409              		.loc 1 113 5 view .LVU83
+ 115:Task/Task_Protocol.c **** 
+ 410              		.loc 1 115 5 view .LVU84
+ 115:Task/Task_Protocol.c **** 
+ 411              		.loc 1 115 13 is_stmt 0 view .LVU85
+ 412 0004 2C4B     		ldr	r3, .L36
+ 413 0006 5C68     		ldr	r4, [r3, #4]
+ 115:Task/Task_Protocol.c **** 
+ 414              		.loc 1 115 5 view .LVU86
+ 415 0008 2C4B     		ldr	r3, .L36+4
+ 416 000a 0122     		movs	r2, #1
+ 417 000c 93E80300 		ldm	r3, {r0, r1}
+ 418              	.LVL20:
+ 115:Task/Task_Protocol.c **** 
+ 419              		.loc 1 115 5 view .LVU87
+ 420 0010 A047     		blx	r4
+ 421              	.LVL21:
+ 117:Task/Task_Protocol.c ****     {
+ 422              		.loc 1 117 5 is_stmt 1 view .LVU88
+ 117:Task/Task_Protocol.c ****     {
+ 423              		.loc 1 117 13 is_stmt 0 view .LVU89
+ 424 0012 2B4B     		ldr	r3, .L36+8
+ 425 0014 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 117:Task/Task_Protocol.c ****     {
+ 426              		.loc 1 117 5 view .LVU90
+ 427 0016 012B     		cmp	r3, #1
+ 428 0018 08D0     		beq	.L35
+ 429              	.LVL22:
+ 430              	.L32:
+ 147:Task/Task_Protocol.c **** }
+ 431              		.loc 1 147 5 is_stmt 1 view .LVU91
+ 147:Task/Task_Protocol.c **** }
+ 432              		.loc 1 147 13 is_stmt 0 view .LVU92
+ 433 001a 274B     		ldr	r3, .L36
+ 434 001c 5C68     		ldr	r4, [r3, #4]
+ 147:Task/Task_Protocol.c **** }
+ 435              		.loc 1 147 5 view .LVU93
+ 436 001e 274B     		ldr	r3, .L36+4
+ 437 0020 0022     		movs	r2, #0
+ 438 0022 93E80300 		ldm	r3, {r0, r1}
+ 439 0026 A047     		blx	r4
+ 440              	.LVL23:
+ 148:Task/Task_Protocol.c **** 
+ 441              		.loc 1 148 1 view .LVU94
+ 442 0028 03B0     		add	sp, sp, #12
+ 443              	.LCFI9:
+ 444              		.cfi_remember_state
+ 445              		.cfi_def_cfa_offset 20
+ 446              		@ sp needed
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 13
+
+
+ 447 002a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 448              	.LVL24:
+ 449              	.L35:
+ 450              	.LCFI10:
+ 451              		.cfi_restore_state
+ 120:Task/Task_Protocol.c **** 
+ 452              		.loc 1 120 9 is_stmt 1 view .LVU95
+ 124:Task/Task_Protocol.c ****         {
+ 453              		.loc 1 124 9 view .LVU96
+ 124:Task/Task_Protocol.c ****         {
+ 454              		.loc 1 124 13 is_stmt 0 view .LVU97
+ 455 002c 254B     		ldr	r3, .L36+12
+ 456 002e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 124:Task/Task_Protocol.c ****         {
+ 457              		.loc 1 124 12 view .LVU98
+ 458 0030 002B     		cmp	r3, #0
+ 459 0032 F2D0     		beq	.L32
+ 124:Task/Task_Protocol.c ****         {
+ 460              		.loc 1 124 28 discriminator 1 view .LVU99
+ 461 0034 244B     		ldr	r3, .L36+16
+ 462 0036 9C69     		ldr	r4, [r3, #24]
+ 124:Task/Task_Protocol.c ****         {
+ 463              		.loc 1 124 23 discriminator 1 view .LVU100
+ 464 0038 244B     		ldr	r3, .L36+20
+ 465 003a 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 466 003c 8DF80020 		strb	r2, [sp]
+ 467 0040 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 468 0042 A047     		blx	r4
+ 469              	.LVL25:
+ 124:Task/Task_Protocol.c ****         {
+ 470              		.loc 1 124 18 discriminator 1 view .LVU101
+ 471 0044 48B1     		cbz	r0, .L33
+ 124:Task/Task_Protocol.c ****         {
+ 472              		.loc 1 124 73 discriminator 3 view .LVU102
+ 473 0046 204B     		ldr	r3, .L36+16
+ 474 0048 9C69     		ldr	r4, [r3, #24]
+ 124:Task/Task_Protocol.c ****         {
+ 475              		.loc 1 124 68 discriminator 3 view .LVU103
+ 476 004a 204B     		ldr	r3, .L36+20
+ 477 004c 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 478 004e 8DF80020 		strb	r2, [sp]
+ 479 0052 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 480 0054 A047     		blx	r4
+ 481              	.LVL26:
+ 124:Task/Task_Protocol.c ****         {
+ 482              		.loc 1 124 64 discriminator 3 view .LVU104
+ 483 0056 0428     		cmp	r0, #4
+ 484 0058 DFD1     		bne	.L32
+ 485              	.L33:
+ 124:Task/Task_Protocol.c ****         {
+ 486              		.loc 1 124 120 discriminator 4 view .LVU105
+ 487 005a 1B4B     		ldr	r3, .L36+16
+ 488 005c 1C68     		ldr	r4, [r3]
+ 124:Task/Task_Protocol.c ****         {
+ 489              		.loc 1 124 115 discriminator 4 view .LVU106
+ 490 005e 1B4B     		ldr	r3, .L36+20
+ 491 0060 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 14
+
+
+ 492 0062 8DF80020 		strb	r2, [sp]
+ 493 0066 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 494 0068 A047     		blx	r4
+ 495              	.LVL27:
+ 124:Task/Task_Protocol.c ****         {
+ 496              		.loc 1 124 112 discriminator 4 view .LVU107
+ 497 006a 0028     		cmp	r0, #0
+ 498 006c D5D0     		beq	.L32
+ 126:Task/Task_Protocol.c **** 
+ 499              		.loc 1 126 13 is_stmt 1 view .LVU108
+ 126:Task/Task_Protocol.c **** 
+ 500              		.loc 1 126 48 is_stmt 0 view .LVU109
+ 501 006e 164B     		ldr	r3, .L36+16
+ 502 0070 1C68     		ldr	r4, [r3]
+ 126:Task/Task_Protocol.c **** 
+ 503              		.loc 1 126 32 view .LVU110
+ 504 0072 164B     		ldr	r3, .L36+20
+ 505 0074 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 506 0076 8DF80020 		strb	r2, [sp]
+ 507 007a 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 508 007c A047     		blx	r4
+ 509              	.LVL28:
+ 510 007e FFF7FEFF 		bl	MMU_Malloc
+ 511              	.LVL29:
+ 128:Task/Task_Protocol.c ****             {
+ 512              		.loc 1 128 13 is_stmt 1 view .LVU111
+ 128:Task/Task_Protocol.c ****             {
+ 513              		.loc 1 128 16 is_stmt 0 view .LVU112
+ 514 0082 0646     		mov	r6, r0
+ 515 0084 0028     		cmp	r0, #0
+ 516 0086 C8D0     		beq	.L32
+ 130:Task/Task_Protocol.c ****                 Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
+ 517              		.loc 1 130 17 is_stmt 1 view .LVU113
+ 130:Task/Task_Protocol.c ****                 Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
+ 518              		.loc 1 130 35 is_stmt 0 view .LVU114
+ 519 0088 0F4F     		ldr	r7, .L36+16
+ 520 008a 3D68     		ldr	r5, [r7]
+ 130:Task/Task_Protocol.c ****                 Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
+ 521              		.loc 1 130 30 view .LVU115
+ 522 008c 0F4C     		ldr	r4, .L36+20
+ 523 008e 237C     		ldrb	r3, [r4, #16]	@ zero_extendqisi2
+ 524 0090 8DF80030 		strb	r3, [sp]
+ 525 0094 94E80F00 		ldm	r4, {r0, r1, r2, r3}
+ 526              	.LVL30:
+ 130:Task/Task_Protocol.c ****                 Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
+ 527              		.loc 1 130 30 view .LVU116
+ 528 0098 A847     		blx	r5
+ 529              	.LVL31:
+ 530 009a 0546     		mov	r5, r0
+ 531              	.LVL32:
+ 131:Task/Task_Protocol.c **** 
+ 532              		.loc 1 131 17 is_stmt 1 view .LVU117
+ 131:Task/Task_Protocol.c **** 
+ 533              		.loc 1 131 22 is_stmt 0 view .LVU118
+ 534 009c 7B69     		ldr	r3, [r7, #20]
+ 131:Task/Task_Protocol.c **** 
+ 535              		.loc 1 131 17 view .LVU119
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 15
+
+
+ 536 009e 0246     		mov	r2, r0
+ 537 00a0 3146     		mov	r1, r6
+ 538 00a2 2046     		mov	r0, r4
+ 539              	.LVL33:
+ 131:Task/Task_Protocol.c **** 
+ 540              		.loc 1 131 17 view .LVU120
+ 541 00a4 9847     		blx	r3
+ 542              	.LVL34:
+ 133:Task/Task_Protocol.c **** 
+ 543              		.loc 1 133 17 is_stmt 1 view .LVU121
+ 544 00a6 2946     		mov	r1, r5
+ 545 00a8 3046     		mov	r0, r6
+ 546 00aa FFF7FEFF 		bl	TaskProtocol_TransBuff
+ 547              	.LVL35:
+ 135:Task/Task_Protocol.c ****             }
+ 548              		.loc 1 135 17 view .LVU122
+ 549 00ae 3046     		mov	r0, r6
+ 550 00b0 FFF7FEFF 		bl	MMU_Free
+ 551              	.LVL36:
+ 552 00b4 B1E7     		b	.L32
+ 553              	.L37:
+ 554 00b6 00BF     		.align	2
+ 555              	.L36:
+ 556 00b8 00000000 		.word	DebugPin
+ 557 00bc 00000000 		.word	Debug_PC3
+ 558 00c0 00000000 		.word	.LANCHOR4
+ 559 00c4 00000000 		.word	.LANCHOR3
+ 560 00c8 00000000 		.word	Queue
+ 561 00cc 00000000 		.word	.LANCHOR2
+ 562              		.cfi_endproc
+ 563              	.LFE151:
+ 565              		.global	shellCommandtest
+ 566              		.global	shellDesctest
+ 567              		.global	shellCmdtest
+ 568              		.section	.bss.VCPQueue_State,"aw",%nobits
+ 569              		.set	.LANCHOR1,. + 0
+ 572              	VCPQueue_State:
+ 573 0000 00       		.space	1
+ 574              		.section	.bss.VCP_ProtoQueue,"aw",%nobits
+ 575              		.align	2
+ 576              		.set	.LANCHOR2,. + 0
+ 579              	VCP_ProtoQueue:
+ 580 0000 00000000 		.space	17
+ 580      00000000 
+ 580      00000000 
+ 580      00000000 
+ 580      00
+ 581              		.section	.bss.VCP_Queue_CreateState,"aw",%nobits
+ 582              		.set	.LANCHOR0,. + 0
+ 585              	VCP_Queue_CreateState:
+ 586 0000 00       		.space	1
+ 587              		.section	.bss.test,"aw",%nobits
+ 588              		.set	.LANCHOR3,. + 0
+ 591              	test:
+ 592 0000 00       		.space	1
+ 593              		.section	.data.task_state,"aw"
+ 594              		.set	.LANCHOR4,. + 0
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 16
+
+
+ 597              	task_state:
+ 598 0000 01       		.byte	1
+ 599              		.section	.rodata.shellCmdtest,"a"
+ 600              		.align	2
+ 603              	shellCmdtest:
+ 604 0000 74657374 		.ascii	"test\000"
+ 604      00
+ 605              		.section	.rodata.shellDesctest,"a"
+ 606              		.align	2
+ 609              	shellDesctest:
+ 610 0000 5368656C 		.ascii	"Shell Test\000"
+ 610      6C205465 
+ 610      737400
+ 611              		.section	shellCommand,"a"
+ 612              		.align	2
+ 615              	shellCommandtest:
+ 616 0000 00210000 		.word	8448
+ 617 0004 00000000 		.word	shellCmdtest
+ 618 0008 00000000 		.word	shell_test
+ 619 000c 00000000 		.word	shellDesctest
+ 620              		.text
+ 621              	.Letext0:
+ 622              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 623              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2020-q4-major\\arm-none-eabi\\inc
+ 624              		.file 4 "DataStructure/linked_list.h"
+ 625              		.file 5 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 626              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 627              		.file 7 "System/scheduler/scheduler.h"
+ 628              		.file 8 "Task/Task_Protocol.h"
+ 629              		.file 9 "System/shell/shell.h"
+ 630              		.file 10 "USB/STM32_USB_Device_Library/Core/Inc/usbd_def.h"
+ 631              		.file 11 "Bsp/Bsp_GPIO.h"
+ 632              		.file 12 "debug/debug_util.h"
+ 633              		.file 13 "Service/imu_data.h"
+ 634              		.file 14 "DataStructure/queue.h"
+ 635              		.file 15 "IO_Def/IO_Definition.h"
+ 636              		.file 16 "Common/error_log.h"
+ 637              		.file 17 "USB/USB_DEVICE/App/usbd_cdc_if.h"
+ 638              		.file 18 "System/mmu/mmu.h"
+ 639              		.file 19 "USB/USB_DEVICE/App/usb_device.h"
+ 640              		.file 20 "System/shell/shell_port.h"
+ARM GAS  C:\Users\huav\AppData\Local\Temp\cct2l0A1.s 			page 17
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_Protocol.c
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:17     .text.TaskProto_PushProtocolQueue:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:25     .text.TaskProto_PushProtocolQueue:00000000 TaskProto_PushProtocolQueue
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:171    .text.TaskProto_PushProtocolQueue:0000008c $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:179    .text.TaskProtocol_Rec:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:185    .text.TaskProtocol_Rec:00000000 TaskProtocol_Rec
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:203    .text.TaskProtocol_Rec:00000008 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:208    .text.TaskProtocol_TransBuff:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:214    .text.TaskProtocol_TransBuff:00000000 TaskProtocol_TransBuff
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:246    .rodata.shell_test.str1.4:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:250    .text.shell_test:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:256    .text.shell_test:00000000 shell_test
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:276    .text.shell_test:0000000c $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:281    .rodata.TaskProtocol_Init.str1.4:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:285    .text.TaskProtocol_Init:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:292    .text.TaskProtocol_Init:00000000 TaskProtocol_Init
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:368    .text.TaskProtocol_Init:00000048 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:381    .text.TaskProtocol_Core:00000000 $t
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:388    .text.TaskProtocol_Core:00000000 TaskProtocol_Core
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:556    .text.TaskProtocol_Core:000000b8 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:615    shellCommand:00000000 shellCommandtest
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:609    .rodata.shellDesctest:00000000 shellDesctest
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:603    .rodata.shellCmdtest:00000000 shellCmdtest
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:572    .bss.VCPQueue_State:00000000 VCPQueue_State
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:573    .bss.VCPQueue_State:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:575    .bss.VCP_ProtoQueue:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:579    .bss.VCP_ProtoQueue:00000000 VCP_ProtoQueue
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:585    .bss.VCP_Queue_CreateState:00000000 VCP_Queue_CreateState
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:586    .bss.VCP_Queue_CreateState:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:591    .bss.test:00000000 test
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:592    .bss.test:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:597    .data.task_state:00000000 task_state
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:600    .rodata.shellCmdtest:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:606    .rodata.shellDesctest:00000000 $d
+C:\Users\huav\AppData\Local\Temp\cct2l0A1.s:612    shellCommand:00000000 $d
+
+UNDEFINED SYMBOLS
+Queue
+CDC_Transmit_FS
+usb_printf
+USB_DEVICE_Init
+usb_setrec_callback
+Shell_Init
+ErrorLog
+MMU_Malloc
+MMU_Free
+DebugPin
+Debug_PC3
