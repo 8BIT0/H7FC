@@ -283,7 +283,8 @@ typedef struct
 typedef struct
 {
     Disk_FFInfo_TypeDef info;
-    uint32_t sec;
+    uint32_t start_sec;
+    uint32_t end_sec;
     uint8_t info_index;
     uint64_t selected_line;
     uint64_t line_cursor;
