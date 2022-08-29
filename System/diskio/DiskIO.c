@@ -1441,6 +1441,14 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->sec, p_data, DISK_CARD_SECTION_SZIE, use_cluster);
     }
 
+    if (len % FATObj->BytePerSection)
+    {
+        memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
+        memcpy(Disk_Card_SectionBuff, p_data, (len % FATObj->BytePerSection));
+
+        DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    }
+
     return true;
 }
 
