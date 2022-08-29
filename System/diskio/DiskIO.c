@@ -286,12 +286,13 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     return true;
 }
 
+/************************************************************************** Disk File Alloc Table Function ***************************************************************************/
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
 static Disk_Card_Info Disk_GetCard_Info(void)
 {
     return DevCard.Get_Info(&DevTFCard_Obj.SDMMC_Obj);
 }
-/************************************************************************** Disk File Alloc Table Function ***************************************************************************/
-#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
+
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
 {
     if (FATObj == NULL)
