@@ -1406,7 +1406,8 @@ static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_A
 
 static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, uint8_t *p_data, uint16_t len)
 {
-    uint16_t use_cluster = 0;
+    uint32_t use_cluster = 0;
+    uint32_t use_sec = 0;
     FATCluster_Addr lst_file_cluster = 0;
 
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
@@ -1436,18 +1437,29 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
         FileObj->sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
         Disk_Update_FreeCluster(FATObj);
 
-        use_cluster = (len % FATObj->cluster_byte_size) / FATObj->BytePerSection;
+        use_sec = (len % FATObj->cluster_byte_size) / FATObj->BytePerSection;
 
-        DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->sec, p_data, DISK_CARD_SECTION_SZIE, use_cluster);
+        if (use_sec)
+        {
+            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->sec, p_data, DISK_CARD_SECTION_SZIE, use_sec);
+            FileObj->sec += use_sec;
+        }
+
+        if (len % FATObj->BytePerSection)
+        {
+            memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
+            memcpy(Disk_Card_SectionBuff, p_data, (len % FATObj->BytePerSection));
+
+            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        }
+
+        Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
     }
 
-    if (len % FATObj->BytePerSection)
-    {
-        memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
-        memcpy(Disk_Card_SectionBuff, p_data, (len % FATObj->BytePerSection));
+    Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
+    Disk_Update_FreeCluster(FATObj);
 
-        DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
-    }
+    FileObj->info.size += len;
 
     return true;
 }
