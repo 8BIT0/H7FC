@@ -1483,14 +1483,6 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
     return true;
 }
 
-static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint32_t size)
-{
-    if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (size == 0))
-        return false;
-
-    return true;
-}
-
 static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj)
 {
     char *name_buff;
@@ -1521,6 +1513,7 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
         FileObj->start_sec = match_state.sec_index;
         FileObj->end_sec = match_state.sec_index;
 
+        /* comput cursor pos */
         FileObj->cursor_pos = 0;
 
         MMU_Free(name_buff);
