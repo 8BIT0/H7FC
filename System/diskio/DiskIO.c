@@ -918,7 +918,7 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
         Attr_Out->attr = Disk_File_Sd | Disk_File_RW | Disk_File_Pf;
 
         /* set cluster */
-        /* can be optimzie */
+        /* can be optimize */
         half_cluster = cluster & 0xFFFF0000;
         half_cluster >>= 16;
         Attr_Out->HighCluster[0] = half_cluster;
