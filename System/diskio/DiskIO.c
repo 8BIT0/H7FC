@@ -1461,6 +1461,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
     Disk_Update_FreeCluster(FATObj);
 
     FileObj->info.size += len;
+    FileObj->cursor_pos += len;
 
     /* update file size */
     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FileObj->start_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
@@ -1500,8 +1501,7 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
         FileObj->start_sec = match_state.sec_index;
         FileObj->end_sec = match_state.sec_index;
 
-        FileObj->selected_line = 0;
-        FileObj->line_cursor = 0;
+        FileObj->cursor_pos = 0;
 
         MMU_Free(name_buff);
         return 0;
