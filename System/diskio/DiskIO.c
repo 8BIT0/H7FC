@@ -1419,6 +1419,7 @@ static void Disk_FileSize_Update(Disk_FileObj_TypeDef *FileObj)
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->start_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 }
 
+/* write into an empty file */
 static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
     uint32_t use_cluster = 0;
