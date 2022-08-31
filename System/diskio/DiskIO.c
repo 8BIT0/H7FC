@@ -75,6 +75,7 @@ static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
 static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
+static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
 
 /* Error Process Function */
 static void Disk_FreeCluster_SearchError(int16_t code, uint8_t *p_arg, uint16_t size);
@@ -280,6 +281,9 @@ bool Disk_Init(Disk_Printf_Callback Callback)
 
     test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
     // test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder2_cluster);
+    Disk_OpenFile(&FATFs_Obj, "test4/", "test.txt", &test2_file);
+
+    Disk_WriteFile_From_Head(&FATFs_Obj, &test2_file, "test\r\n", strlen("test\r\n"));
 
     /* test code */
 #endif
@@ -1347,10 +1351,11 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
     Disk_FFInfo_TypeDef F_Info;
     uint16_t dir_layer = 0;
     uint32_t cluster_tmp = 2;
+    volatile uint16_t dir_size = strlen(dir) + 1;
     bool match = false;
     char *dir_tmp = NULL;
 
-    dir_tmp = (char *)MMU_Malloc(strlen(dir) + 1);
+    dir_tmp = (char *)MMU_Malloc(dir_size);
     memset(&F_Info, NULL, sizeof(F_Info));
 
     if ((dir == NULL) || (dir_tmp == NULL))
@@ -1361,7 +1366,7 @@ static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const 
 
     /* direction break down first */
     dir_layer = Disk_GetPath_Layer(dir);
-    memset(dir_tmp, '\0', strlen(dir));
+    memset(dir_tmp, '\0', dir_size);
 
     if (dir_layer)
     {
@@ -1466,7 +1471,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
             memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
             memcpy(Disk_Card_SectionBuff, p_data, (len % FATObj->BytePerSection));
 
-            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
         }
 
         Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
@@ -1488,10 +1493,10 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
 {
     char *name_buff;
     FATCluster_Addr file_cluster = ROOT_CLUSTER_ADDR;
-    uint16_t name_size = strlen(name);
+    uint16_t name_size = strlen(name) + 1;
     Disk_TargetMatch_TypeDef match_state = {0};
 
-    name_buff = (char *)MMU_Malloc(name_size + 1);
+    name_buff = (char *)MMU_Malloc(name_size);
     if (name_buff == NULL)
     {
         MMU_Free(name_buff);
@@ -1502,6 +1507,9 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
     {
         /* match dir first get path cluster */
         file_cluster = Disk_Get_DirStartCluster(FATObj, dir_path);
+
+        if (file_cluster == 0)
+            return 0;
     }
 
     memset(name_buff, '\0', name_size);

@@ -101,7 +101,7 @@ typedef enum
 
 typedef enum
 {
-    Disk_DataType_File = 1,
+    Disk_DataType_File = 0,
     Disk_DataType_Folder,
 } Disk_StorageData_TypeDef;
 
