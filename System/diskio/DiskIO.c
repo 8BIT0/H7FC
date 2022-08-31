@@ -1477,8 +1477,9 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
     return true;
 }
 
-static bool Disk_WriteTo_TargetCluster(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint32_t size, const FATCluster_Addr cluster)
+static bool Disk_Fill_WholeCluster(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint32_t size, const FATCluster_Addr cluster)
 {
+    Disk_FileSize_Update(FileObj);
 }
 
 static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj)
