@@ -1464,6 +1464,10 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 
     /* update file size */
     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FileObj.start_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index].FileSize[0] = ;
+    ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index].FileSize[1] = ;
+    ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index].FileSize[2] = ;
+    ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index].FileSize[3] = ;
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj.start_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     return true;
