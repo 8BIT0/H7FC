@@ -1405,7 +1405,7 @@ static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_A
     return true;
 }
 
-static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, uint8_t *p_data, uint16_t len)
+static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
     uint32_t use_cluster = 0;
     uint32_t use_sec = 0;
@@ -1469,6 +1469,10 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->start_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     return true;
+}
+
+static bool Disk_WriteTo_TargetCluster(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint32_t size, const FATCluster_Addr cluster)
+{
 }
 
 static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj)
