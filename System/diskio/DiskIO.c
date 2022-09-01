@@ -1435,7 +1435,6 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
         return false;
 
     use_cluster = len / FATObj->cluster_byte_size;
-    FileObj->info_index = 0;
 
     Disk_Update_File_Cluster(FileObj, FATObj->free_cluster);
 
