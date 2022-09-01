@@ -1468,10 +1468,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 
         if (len % FATObj->BytePerSection)
         {
-            memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
-            memcpy(Disk_Card_SectionBuff, p_data, (len % FATObj->BytePerSection));
-
-            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, p_data, len % FATObj->BytePerSection, 1);
         }
 
         Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
