@@ -1420,7 +1420,7 @@ static void Disk_FileSize_Update(Disk_FileObj_TypeDef *FileObj)
 {
     /* update file size */
     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FileObj->start_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
-    LEndianWord2BytesArray(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index].FileSize, FileObj->info.size);
+    LEndianWord2BytesArray(FileObj->info.size, ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index].FileSize);
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->start_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 }
 
