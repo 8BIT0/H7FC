@@ -283,7 +283,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     // test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder2_cluster);
     Disk_OpenFile(&FATFs_Obj, "test4/", "test.txt", &test2_file);
 
-    Disk_WriteFile_From_Head(&FATFs_Obj, &test2_file, "test 8_B!T0\r\n", strlen("test 8_B!T0\r\n"));
+    Disk_WriteFile_From_Head(&FATFs_Obj, &test2_file, "test_8_B!T0\r\n", strlen("test 8_B!T0\r\n"));
 
     /* test code */
 #endif
