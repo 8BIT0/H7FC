@@ -922,17 +922,14 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
         Attr_Out->attr = Disk_File_Sd | Disk_File_RW | Disk_File_Pf;
 
         /* set cluster */
-        /* can be optimize */
         half_cluster = cluster & 0xFFFF0000;
         half_cluster >>= 16;
-        // Attr_Out->HighCluster[0] = half_cluster;
-        // Attr_Out->HighCluster[1] = half_cluster >> 8;
-        LEndianHalfWord2BytesArray(half_cluster, Attr_Out->HighCluster);
+        Attr_Out->HighCluster[0] = half_cluster;
+        Attr_Out->HighCluster[1] = half_cluster >> 8;
 
         half_cluster = cluster & 0x0000FFFF;
-        // Attr_Out->LowCluster[0] = half_cluster;
-        // Attr_Out->LowCluster[1] = half_cluster >> 8;
-        LEndianHalfWord2BytesArray(half_cluster, Attr_Out->LowCluster);
+        Attr_Out->LowCluster[0] = half_cluster;
+        Attr_Out->LowCluster[1] = half_cluster >> 8;
     }
     else
         Attr_Out->attr = Disk_File_Pf;
@@ -942,22 +939,17 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
 
     Attr_Out->Time10Ms = 0;
 
-    /* can be optimize */
-    // Attr_Out->CreateDate[0] = (uint8_t)t_date;
-    // Attr_Out->CreateDate[1] = (uint8_t)(t_date >> 8);
-    LEndianHalfWord2BytesArray(t_date, Attr_Out->CreateDate);
+    Attr_Out->CreateDate[0] = (uint8_t)t_date;
+    Attr_Out->CreateDate[1] = (uint8_t)(t_date >> 8);
 
-    // Attr_Out->CreateTime[0] = (uint8_t)t_time;
-    // Attr_Out->CreateTime[1] = (uint8_t)(t_time >> 8);
-    LEndianHalfWord2BytesArray(t_time, Attr_Out->CreateTime);
+    Attr_Out->CreateTime[0] = (uint8_t)t_time;
+    Attr_Out->CreateTime[1] = (uint8_t)(t_time >> 8);
 
-    // Attr_Out->ModifyDate[0] = (uint8_t)t_date;
-    // Attr_Out->ModifyDate[1] = (uint8_t)(t_date >> 8);
-    LEndianHalfWord2BytesArray(t_date, Attr_Out->ModifyDate);
+    Attr_Out->ModifyDate[0] = (uint8_t)t_date;
+    Attr_Out->ModifyDate[1] = (uint8_t)(t_date >> 8);
 
-    // Attr_Out->ModifyTime[0] = (uint8_t)t_date;
-    // Attr_Out->ModifyTime[1] = (uint8_t)(t_time >> 8);
-    LEndianHalfWord2BytesArray(t_date, Attr_Out->ModifyTime);
+    Attr_Out->ModifyTime[0] = (uint8_t)t_time;
+    Attr_Out->ModifyTime[1] = (uint8_t)(t_time >> 8);
 
     Attr_Out->LowerCase = 0x18;
 
@@ -1159,14 +1151,11 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                         attr_tmp.name[1] = '.';
                         target_file_cluster = FATObj->free_cluster;
 
-                        /* can be optimize */
-                        // attr_tmp.LowCluster[0] = target_file_cluster;
-                        // attr_tmp.LowCluster[1] = target_file_cluster >> 8;
-                        LEndianHalfWord2BytesArray(target_file_cluster, attr_tmp.LowCluster);
+                        attr_tmp.LowCluster[0] = target_file_cluster;
+                        attr_tmp.LowCluster[1] = target_file_cluster >> 8;
 
-                        // attr_tmp.HighCluster[0] = target_file_cluster >> 16;
-                        // attr_tmp.HighCluster[1] = target_file_cluster >> 24;
-                        LEndianHalfWord2BytesArray(target_file_cluster >> 16, attr_tmp.HighCluster);
+                        attr_tmp.HighCluster[0] = target_file_cluster >> 16;
+                        attr_tmp.HighCluster[1] = target_file_cluster >> 24;
 
                         memcpy(Disk_Card_SectionBuff + sizeof(Disk_FFAttr_TypeDef), &attr_tmp, sizeof(Disk_FFAttr_TypeDef));
 
@@ -1229,13 +1218,10 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
 
             if (target_file_cluster > ROOT_CLUSTER_ADDR)
             {
-                /* can be optimize */
-                // ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[0] = target_file_cluster >> 16;
-                // ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[1] = target_file_cluster >> 24;
-                // ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[0] = target_file_cluster;
-                // ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[1] = target_file_cluster >> 8;
-                LEndianHalfWord2BytesArray(target_file_cluster, ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster);
-                LEndianHalfWord2BytesArray(target_file_cluster >> 16, ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster);
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[0] = target_file_cluster >> 16;
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].HighCluster[1] = target_file_cluster >> 24;
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[0] = target_file_cluster;
+                ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].LowCluster[1] = target_file_cluster >> 8;
             }
             else
             {
@@ -1417,13 +1403,10 @@ static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_A
 
     attr_tmp = &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index]);
 
-    /* can be optimize */
-    // attr_tmp->HighCluster[0] = cluster >> 16;
-    // attr_tmp->HighCluster[1] = cluster >> 24;
-    // attr_tmp->LowCluster[0] = cluster;
-    // attr_tmp->LowCluster[1] = cluster >> 8;
-    LEndianHalfWord2BytesArray(cluster, attr_tmp->LowCluster);
-    LEndianHalfWord2BytesArray(cluster >> 16, attr_tmp->HighCluster);
+    attr_tmp->HighCluster[0] = cluster >> 16;
+    attr_tmp->HighCluster[1] = cluster >> 24;
+    attr_tmp->LowCluster[0] = cluster;
+    attr_tmp->LowCluster[1] = cluster >> 8;
 
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
     FileObj->info.start_cluster = cluster;
