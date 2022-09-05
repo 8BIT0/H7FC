@@ -1528,6 +1528,9 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
         /* comput cursor pos */
         FileObj->cursor_pos = 0;
 
+        /* update file data last data section to cache*/
+        // Disk_FileSection_DataCache;
+
         MMU_Free(name_buff);
         return 0;
     }
