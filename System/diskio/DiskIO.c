@@ -21,6 +21,25 @@
 #define GEN_TIME(h, m, s) ((((uint16_t)h) << 11) + (((uint16_t)m) << 5) + (((uint16_t)s) >> 1))
 #define GEN_DATE(y, m, d) (((((uint16_t)(y % 100)) + 20) << 9) + (((uint16_t)m) << 5) + ((uint16_t)d))
 
+static uint8_t Disk_Print_Buff[128] = {0};
+static Disk_Printf_Callback Disk_PrintOut = NULL;
+
+static Error_Handler DevCard_Error_Handle = NULL;
+static Disk_Info_TypeDef Disk_Info;
+
+/* Internal Function */
+static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
+static void Disk_Printf(char *str, ...);
+
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
+/******************************************************************************** SPI Interface **************************************************************************/
+DevW25QxxObj_TypeDef W25Q64_Obj = {
+    .bus_type = DevW25Qxx_Norm_SpiBus,
+    .BusPort = SPI1,
+};
+#endif
+
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
 #pragma pack(1)
 /* File and Folder Attribute definition */
 typedef struct
@@ -48,25 +67,6 @@ typedef struct
 } Disk_CCSSFFAT_TypeDef;
 #pragma pack()
 
-static uint8_t Disk_Print_Buff[128] = {0};
-static Disk_Printf_Callback Disk_PrintOut = NULL;
-
-static Error_Handler DevCard_Error_Handle = NULL;
-static Disk_Info_TypeDef Disk_Info;
-
-/* Internal Function */
-static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
-static void Disk_Printf(char *str, ...);
-
-#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
-/******************************************************************************** SPI Interface **************************************************************************/
-DevW25QxxObj_TypeDef W25Q64_Obj = {
-    .bus_type = DevW25Qxx_Norm_SpiBus,
-    .BusPort = SPI1,
-};
-#endif
-
-#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
 static Disk_Card_Info Disk_GetCard_Info(void);
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
@@ -109,6 +109,7 @@ static DevCard_Obj_TypeDef DevTFCard_Obj = {
 static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
 static Disk_FATFileSys_TypeDef FATFs_Obj;
 static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] = {0};
+static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] = {0};
 
 #endif
 
@@ -1474,8 +1475,8 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
     Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
     Disk_Update_FreeCluster(FATObj);
 
-    FileObj->info.size += len;
-    FileObj->cursor_pos += len;
+    FileObj->info.size = len;
+    FileObj->cursor_pos = len;
 
     /* update file size */
     Disk_FileSize_Update(FileObj);
