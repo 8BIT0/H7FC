@@ -1539,11 +1539,11 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
         }
 
         MMU_Free(name_buff);
-        return 0;
+        return FileObj->info.start_cluster;
     }
 
     MMU_Free(name_buff);
-    return file_cluster;
+    return 0;
 }
 
 #endif
