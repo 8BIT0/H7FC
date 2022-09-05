@@ -1498,6 +1498,7 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
     FATCluster_Addr file_cluster = ROOT_CLUSTER_ADDR;
     uint16_t name_size = strlen(name) + 1;
     Disk_TargetMatch_TypeDef match_state = {0};
+    uint32_t file_read_sec = 0;
 
     name_buff = (char *)MMU_Malloc(name_size);
     if (name_buff == NULL)
@@ -1526,10 +1527,16 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
         FileObj->end_sec = match_state.sec_index;
 
         /* comput cursor pos */
-        FileObj->cursor_pos = 0;
+        FileObj->cursor_pos = FileObj->info.size;
 
-        /* update file data last data section to cache*/
-        // Disk_FileSection_DataCache;
+        memset(Disk_FileSection_DataCache, NULL, sizeof(Disk_FileSection_DataCache));
+
+        if (FileObj->info.size)
+        {
+            /* update file data last data section to cache*/
+            file_read_sec = FileObj->info.size / FATObj->BytePerSection + FileObj->start_sec;
+            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, file_read_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
+        }
 
         MMU_Free(name_buff);
         return 0;
