@@ -1486,10 +1486,17 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
+    uint32_t cluster_cnt = 0;
+    uint32_t section_cnt = 0;
+    uint16_t cur_sec_remain = 0;
+
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
 
-    return true;
+    cur_sec_remain = FATObj->BytePerSection - FileObj->;
+
+    cluster_cnt = len / FATObj->cluster_byte_size;
+    section_cnt = len / FATObj->BytePerSection;
 }
 
 static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj)
