@@ -1543,6 +1543,7 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
             /* update file last data section to cache data */
             file_read_sec = FileObj->info.size / FATObj->BytePerSection + FileObj->start_sec;
             FileObj->end_sec = file_read_sec;
+            FileObj->remain_byte_in_sec = FATObj->BytePerSection - FileObj->info.size % FATObj->BytePerSection;
 
             DevCard.read(&DevTFCard_Obj.SDMMC_Obj, file_read_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
         }
