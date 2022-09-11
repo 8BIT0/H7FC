@@ -1493,7 +1493,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
 
-    cur_sec_remain = FATObj->BytePerSection - FileObj->;
+    // cur_sec_remain = FATObj->BytePerSection - FileObj->;
 
     cluster_cnt = len / FATObj->cluster_byte_size;
     section_cnt = len / FATObj->BytePerSection;
@@ -1542,8 +1542,12 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
         {
             /* update file last data section to cache data */
             file_read_sec = FileObj->info.size / FATObj->BytePerSection + FileObj->start_sec;
+            FileObj->end_sec = file_read_sec;
+
             DevCard.read(&DevTFCard_Obj.SDMMC_Obj, file_read_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
         }
+
+        FileObj->remain_sec_in_cluster = FATObj->SecPerCluster - FileObj->end_sec - Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
 
         MMU_Free(name_buff);
         return FileObj->info.start_cluster;
