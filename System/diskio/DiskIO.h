@@ -288,7 +288,6 @@ typedef struct
     uint8_t info_index;
     uint64_t cursor_pos;
 
-    uint32_t remain_sec_in_cluster;
     uint16_t remain_byte_in_sec;
 } Disk_FileObj_TypeDef;
 
