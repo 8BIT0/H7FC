@@ -1488,15 +1488,48 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 {
     uint32_t cluster_cnt = 0;
     uint32_t section_cnt = 0;
-    uint16_t cur_sec_remain = 0;
+    uint32_t write_offset = 0;
+    FATCluster_Addr lst_file_cluster = 0;
 
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
 
-    // cur_sec_remain = FATObj->BytePerSection - FileObj->;
-
     cluster_cnt = len / FATObj->cluster_byte_size;
     section_cnt = len / FATObj->BytePerSection;
+
+    if (FileObj->remain_byte_in_sec >= len)
+    {
+        FileObj->remain_byte_in_sec -= len;
+
+        if (FileObj->remain_byte_in_sec == 0)
+        {
+            if (FileObj->remain_sec_in_cluster)
+            {
+                FileObj->remain_sec_in_cluster--;
+            }
+            else
+            {
+                Disk_Update_FreeCluster(FATObj);
+                FileObj->remain_sec_in_cluster = FATObj->SecPerCluster;
+                FileObj->remain_byte_in_sec = FATObj->BytePerSection;
+            }
+        }
+    }
+
+    if (FileObj->remain_sec_in_cluster)
+    {
+    }
+
+    // for (uint16_t i = 0; i < cluster_cnt; i++)
+    // {
+    //     lst_file_cluster = FileObj->info.start_cluster;
+    //     FileObj->info.start_cluster = FATObj->free_cluster;
+    //     FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
+    //     Disk_Update_FreeCluster(FATObj);
+
+    //     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, p_data, DISK_CARD_SECTION_SZIE, FATObj->SecPerCluster);
+    //     Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
+    // }
 }
 
 static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj)
@@ -1544,6 +1577,7 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
             file_read_sec = FileObj->info.size / FATObj->BytePerSection + FileObj->start_sec;
             FileObj->end_sec = file_read_sec;
             FileObj->remain_byte_in_sec = FATObj->BytePerSection - FileObj->info.size % FATObj->BytePerSection;
+            FileObj->cursor_pos = FileObj->info.size % FATObj->BytePerSection;
 
             DevCard.read(&DevTFCard_Obj.SDMMC_Obj, file_read_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
         }
