@@ -1511,9 +1511,10 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
         if (FileObj->remain_byte_in_sec == 0)
         {
+            memset(Disk_FileSection_DataCache, NULL, DISK_CARD_SECTION_SZIE);
+
             if (FileObj->end_sec == Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster + (FileObj->info.size / FATObj->cluster_byte_size)) + FATObj->SecPerCluster)
             {
-
                 Disk_Update_FreeCluster(FATObj);
                 FileObj->remain_byte_in_sec = FATObj->BytePerSection;
 
