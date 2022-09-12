@@ -1542,7 +1542,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 /* update end section */
                 FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
             }
-            else if (FileObj->end_sec == cluster_section_index + FATObj->SecPerCluster)
+            else if (FileObj->end_sec < cluster_section_index + FATObj->SecPerCluster)
             {
                 /* update end section */
                 FileObj->end_sec++;
