@@ -75,7 +75,7 @@ static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
 static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
-static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
+static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
 
 /* Error Process Function */
 static void Disk_FreeCluster_SearchError(int16_t code, uint8_t *p_arg, uint16_t size);
@@ -284,7 +284,9 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     // test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder2_cluster);
     Disk_OpenFile(&FATFs_Obj, "test4/", "test.txt", &test2_file);
 
-    Disk_WriteFile_From_Head(&FATFs_Obj, &test2_file, "test_8_B!T0\r\n", strlen("test 8_B!T0\r\n"));
+    Disk_WriteData_ToFile(&FATFs_Obj, &test2_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
+    Disk_WriteData_ToFile(&FATFs_Obj, &test2_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
+    Disk_WriteData_ToFile(&FATFs_Obj, &test2_file, "test_8_B!T0 3\r\n", strlen("test 8_B!T0 3\r\n"));
 
     /* test code */
 #endif
