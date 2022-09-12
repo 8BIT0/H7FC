@@ -1489,6 +1489,8 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     uint32_t cluster_cnt = 0;
     uint32_t section_cnt = 0;
     FATCluster_Addr lst_file_cluster = 0;
+    uint16_t write_len = 0;
+    uint16_t remain_write = 0;
 
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
@@ -1499,15 +1501,26 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     cluster_cnt = len / FATObj->cluster_byte_size;
     section_cnt = len / FATObj->BytePerSection;
 
-    if (FileObj->remain_byte_in_sec >= len)
+    do
     {
-        memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, len);
+        if (FileObj->remain_byte_in_sec >= len)
+        {
+            write_len = len;
+            remain_write = 0;
+        }
+        else
+        {
+            write_len = FileObj->remain_byte_in_sec;
+            remain_write = len - FileObj->remain_byte_in_sec;
+        }
+
+        memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, write_len);
         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
 
-        FileObj->remain_byte_in_sec -= len;
-        FileObj->cursor_pos += len;
+        FileObj->remain_byte_in_sec -= write_len;
+        FileObj->cursor_pos += write_len;
         FileObj->cursor_pos %= FATObj->BytePerSection;
-        FileObj->info.size += len;
+        FileObj->info.size += write_len;
 
         if (FileObj->remain_byte_in_sec == 0)
         {
@@ -1535,9 +1548,9 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 FileObj->end_sec++;
             }
         }
-    }
 
-    Disk_FileSize_Update(FileObj);
+        Disk_FileSize_Update(FileObj);
+    } while (remain_write != 0);
 
     return true;
 }
