@@ -1488,7 +1488,6 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 {
     uint32_t cluster_cnt = 0;
     uint32_t section_cnt = 0;
-    uint32_t write_offset = 0;
     FATCluster_Addr lst_file_cluster = 0;
 
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
@@ -1502,19 +1501,20 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
     if (FileObj->remain_byte_in_sec >= len)
     {
-        write_offset = DISK_CARD_SECTION_SZIE - FileObj->remain_byte_in_sec;
-        memcpy(Disk_FileSection_DataCache + write_offset, p_data, len);
+        memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, len);
         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
 
         FileObj->remain_byte_in_sec -= len;
         FileObj->cursor_pos += len;
+        FileObj->cursor_pos %= FATObj->BytePerSection;
         FileObj->info.size += len;
 
         if (FileObj->remain_byte_in_sec == 0)
         {
+            uint32_t cluster_section_index = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster + (FileObj->info.size / FATObj->cluster_byte_size));
             memset(Disk_FileSection_DataCache, NULL, DISK_CARD_SECTION_SZIE);
 
-            if (FileObj->end_sec == Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster + (FileObj->info.size / FATObj->cluster_byte_size)) + FATObj->SecPerCluster)
+            if (FileObj->end_sec == cluster_section_index + FATObj->SecPerCluster)
             {
                 lst_file_cluster = FileObj->info.start_cluster;
                 FileObj->info.start_cluster = FATObj->free_cluster;
@@ -1524,22 +1524,18 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
                 /* establish cluster link */
                 Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
+                Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
 
                 /* update end section */
+                FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
+            }
+            else if (FileObj->end_sec == cluster_section_index + FATObj->SecPerCluster)
+            {
+                /* update end section */
+                FileObj->end_sec++;
             }
         }
     }
-
-    // for (uint16_t i = 0; i < cluster_cnt; i++)
-    // {
-    //     lst_file_cluster = FileObj->info.start_cluster;
-    //     FileObj->info.start_cluster = FATObj->free_cluster;
-    //     FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
-    //     Disk_Update_FreeCluster(FATObj);
-
-    //     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, p_data, DISK_CARD_SECTION_SZIE, FATObj->SecPerCluster);
-    //     Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
-    // }
 
     Disk_FileSize_Update(FileObj);
 
