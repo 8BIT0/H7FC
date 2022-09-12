@@ -261,8 +261,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_Search_FreeCluster(&FATFs_Obj);
 
     /* test code */
-    Disk_FFInfo_TypeDef test1_file;
-    Disk_FFInfo_TypeDef test2_file;
+    Disk_FileObj_TypeDef test1_file;
     volatile FATCluster_Addr test_folder1_cluster;
     volatile FATCluster_Addr test_folder2_cluster;
     volatile FATCluster_Addr test_folder3_cluster;
@@ -270,23 +269,17 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     volatile FATCluster_Addr test5_file_cluster;
 
     memset(&test1_file, NULL, sizeof(test1_file));
-    memset(&test2_file, NULL, sizeof(test2_file));
-
-    // Disk_OpenFile(&FATFs_Obj, "test1/test2/", "file.txt", &test1_file);
-    // Disk_OpenFile(&FATFs_Obj, "test3/", "file1.txt", &test2_file);
 
     test_folder1_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/", ROOT_CLUSTER_ADDR);
-    // test_folder2_cluster = Disk_Create_Folder(&FATFs_Obj, "test5/", test_folder1_cluster);
-    // test_folder3_cluster = Disk_Create_Folder(&FATFs_Obj, "test6/", test_folder2_cluster);
-    // test_folder4_cluster = Disk_Create_Folder(&FATFs_Obj, "test7/test8/test9/", test_folder3_cluster);
+    // test_folder2_cluster = Disk_Create_Folder(&FATFs_Obj, "test5/", ROOT_CLUSTER_ADDR);
+    // test_folder3_cluster = Disk_Create_Folder(&FATFs_Obj, "test6/", ROOT_CLUSTER_ADDR);
 
     test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
-    // test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder2_cluster);
-    Disk_OpenFile(&FATFs_Obj, "test4/", "test.txt", &test2_file);
+    Disk_OpenFile(&FATFs_Obj, "test4/", "test.txt", &test1_file);
 
-    Disk_WriteData_ToFile(&FATFs_Obj, &test2_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
-    Disk_WriteData_ToFile(&FATFs_Obj, &test2_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
-    Disk_WriteData_ToFile(&FATFs_Obj, &test2_file, "test_8_B!T0 3\r\n", strlen("test 8_B!T0 3\r\n"));
+    Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
+    Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
+    Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 3\r\n", strlen("test 8_B!T0 3\r\n"));
 
     /* test code */
 #endif
