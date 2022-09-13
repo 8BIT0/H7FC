@@ -74,7 +74,7 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
 static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
-static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
+static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
 
 /* Error Process Function */
@@ -274,7 +274,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     // test_folder2_cluster = Disk_Create_Folder(&FATFs_Obj, "test5/", ROOT_CLUSTER_ADDR);
     // test_folder3_cluster = Disk_Create_Folder(&FATFs_Obj, "test6/", ROOT_CLUSTER_ADDR);
 
-    test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
+    test1_file = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
     Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
 
     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
@@ -1242,59 +1242,6 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
     return 0;
 }
 
-/*
- * max sub folder deepth 3 layer
- * for exp "dir1/dir2/dir3/"
- */
-static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster)
-{
-    char name_tmp[9];
-    uint32_t layer = 0;
-    uint32_t name_index = 0;
-    FATCluster_Addr cluster_tmp = cluster;
-
-    /* name is folder path break it down 1st */
-    layer = Disk_GetPath_Layer(name);
-
-    for (name_index = 0; name_index < layer; name_index++)
-    {
-        memset(name_tmp, '\0', sizeof(name_tmp));
-
-        /* search any same name item has exist 2nd */
-        if (Disk_GetFolderName_ByIndex(name, name_index, name_tmp))
-        {
-            /* name legally check */
-            if (!Disk_SFN_LegallyCheck(name_tmp))
-                return 0;
-
-            cluster_tmp = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_Folder, name_tmp, cluster_tmp);
-
-            if (cluster_tmp == 0)
-                return 0;
-
-            /* check if created successful */
-
-            if (name_index == layer - 1)
-                return cluster_tmp;
-        }
-        else
-            return 0;
-
-        memset(name_tmp, '\0', (strlen(name) + 1));
-    }
-
-    return 0;
-}
-
-/* optimize return file object */
-static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster)
-{
-    if ((file != NULL) && (strlen(file) < 12))
-        return Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, file, cluster);
-
-    return 0;
-}
-
 static Disk_TargetMatch_TypeDef Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj, char *name, Disk_StorageData_TypeDef type, Disk_FFInfo_TypeDef *F_Info, FATCluster_Addr start_cluster)
 {
     FATCluster_Addr cluster_tmp = start_cluster;
@@ -1342,6 +1289,89 @@ static Disk_TargetMatch_TypeDef Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj,
 
     match_state.match = false;
     return match_state;
+}
+
+/*
+ * max sub folder deepth 3 layer
+ * for exp "dir1/dir2/dir3/"
+ */
+static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster)
+{
+    char name_tmp[9];
+    uint32_t layer = 0;
+    uint32_t name_index = 0;
+    FATCluster_Addr cluster_tmp = cluster;
+
+    /* name is folder path break it down 1st */
+    layer = Disk_GetPath_Layer(name);
+
+    for (name_index = 0; name_index < layer; name_index++)
+    {
+        memset(name_tmp, '\0', sizeof(name_tmp));
+
+        /* search any same name item has exist 2nd */
+        if (Disk_GetFolderName_ByIndex(name, name_index, name_tmp))
+        {
+            /* name legally check */
+            if (!Disk_SFN_LegallyCheck(name_tmp))
+                return 0;
+
+            cluster_tmp = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_Folder, name_tmp, cluster_tmp);
+
+            if (cluster_tmp == 0)
+                return 0;
+
+            /* check if created successful */
+
+            if (name_index == layer - 1)
+                return cluster_tmp;
+        }
+        else
+            return 0;
+
+        memset(name_tmp, '\0', (strlen(name) + 1));
+    }
+
+    return 0;
+}
+
+/* optimize return file object */
+static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster)
+{
+    Disk_FileObj_TypeDef file_tmp;
+    FATCluster_Addr file_cluster;
+    Disk_FFInfo_TypeDef F_Info;
+    Disk_TargetMatch_TypeDef match_state;
+
+    memset(&match_state, NULL, sizeof(match_state));
+    memset(&F_Info, NULL, sizeof(F_Info));
+    memset(&file_tmp, NULL, sizeof(file_tmp));
+
+    if ((file != NULL) && (strlen(file) < 12))
+    {
+        file_cluster = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, file, cluster);
+        
+        if (file_cluster)
+        {
+            match_state = Disk_MatchTaget(FATObj, file, Disk_DataType_File, &F_Info, cluster);
+            
+            if(match_state.match)
+            {
+                memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
+                DevCard.read(&DevTFCard_Obj.SDMMC_Obj, match_state.sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+                
+                memcpy(&file_tmp.info, &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[match_state.info_index]), sizeof(file_tmp.info));
+                
+                file_tmp.cursor_pos = 0;
+                file_tmp.info_index = match_state.info_index;
+                file_tmp.remain_byte_in_sec = DISK_CARD_SECTION_SZIE;
+                file_tmp.start_sec = match_state.sec_index;
+                file_tmp.end_sec = 0;
+            }
+        }
+    }
+
+    return file_tmp;
 }
 
 static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const char *dir)
