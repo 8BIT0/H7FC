@@ -1329,8 +1329,8 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
             /* check if created successful */
             match_state = Disk_MatchTaget(FATObj, name, Disk_DataType_Folder, &F_Info, cluster_tmp);
             
-            if(match_state.match)
-                cluster_tmp = match_state.sec_index;
+            if(!match_state.match || (cluster_tmp != match_state.sec_index))
+                return 0;
 
             if (name_index == layer - 1)
                 return cluster_tmp;
