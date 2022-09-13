@@ -1375,12 +1375,12 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
     return file_tmp;
 }
 
-static uint32_t Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const char *dir)
+static FATCluster_Addr Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj, const char *dir)
 {
     Disk_FFInfo_TypeDef F_Info;
     uint16_t dir_layer = 0;
-    uint32_t cluster_tmp = 2;
-    volatile uint16_t dir_size = strlen(dir) + 1;
+    FATCluster_Addr cluster_tmp = 2;
+    uint16_t dir_size = strlen(dir) + 1;
     bool match = false;
     char *dir_tmp = NULL;
 
