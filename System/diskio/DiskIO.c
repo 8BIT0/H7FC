@@ -1286,6 +1286,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     return 0;
 }
 
+/* optimize return file object */
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster)
 {
     if ((file != NULL) && (strlen(file) < 12))
