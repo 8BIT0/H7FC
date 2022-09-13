@@ -1490,6 +1490,9 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
 
+    if(memcmp(FileObj->info.name, NULL, sizeof(FileObj->info.name) == 0)
+        return false;
+
     if (FileObj->info.size == 0)
         return Disk_WriteFile_From_Head(FATObj, FileObj, p_data, len);
 
