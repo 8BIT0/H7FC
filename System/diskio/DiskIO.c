@@ -1341,7 +1341,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
         memset(name_tmp, '\0', (strlen(name) + 1));
     }
 
-    return 0;
+    return 0;`
 }
 
 /* optimize return file object */
