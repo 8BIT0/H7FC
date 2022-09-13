@@ -72,7 +72,7 @@ static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj);
 static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
-static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
+static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static FATCluster_Addr Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
@@ -275,7 +275,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     // test_folder3_cluster = Disk_Create_Folder(&FATFs_Obj, "test6/", ROOT_CLUSTER_ADDR);
 
     test5_file_cluster = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
-    Disk_OpenFile(&FATFs_Obj, "test4/", "test.txt", &test1_file);
+    Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
 
     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
@@ -1272,6 +1272,8 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
             if (cluster_tmp == 0)
                 return 0;
 
+            /* check if created successful */
+
             if (name_index == layer - 1)
                 return cluster_tmp;
         }
@@ -1553,7 +1555,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     return true;
 }
 
-static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj)
+static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj)
 {
     char *name_buff;
     FATCluster_Addr file_cluster = ROOT_CLUSTER_ADDR;
@@ -1576,6 +1578,9 @@ static FATCluster_Addr Disk_OpenFile(Disk_FATFileSys_TypeDef *FATObj, const char
         if (file_cluster == 0)
             return 0;
     }
+
+    if(name == NULL)
+        return file_cluster;
 
     memset(name_buff, '\0', name_size);
     memcpy(name_buff, name, name_size);
