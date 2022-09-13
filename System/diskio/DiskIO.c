@@ -1301,6 +1301,11 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     uint32_t layer = 0;
     uint32_t name_index = 0;
     FATCluster_Addr cluster_tmp = cluster;
+    Disk_TargetMatch_TypeDef match_state;
+    Disk_FFInfo_TypeDef F_Info;
+
+    memset(&F_Info, NULL, sizeof(F_Info));
+    memset(&match_state, NULL, sizeof(match_state));
 
     /* name is folder path break it down 1st */
     layer = Disk_GetPath_Layer(name);
@@ -1322,6 +1327,10 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                 return 0;
 
             /* check if created successful */
+            match_state = Disk_MatchTaget(FATObj, name, Disk_DataType_Folder, &F_Info, cluster_tmp);
+            
+            if(match_state.match)
+                cluster_tmp = match_state.sec_index;
 
             if (name_index == layer - 1)
                 return cluster_tmp;
