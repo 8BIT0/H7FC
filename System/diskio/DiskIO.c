@@ -1362,9 +1362,10 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                 
                 memcpy(&file_tmp.info, &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[match_state.info_index]), sizeof(file_tmp.info));
                 
+                /* set data to default */
                 file_tmp.cursor_pos = 0;
                 file_tmp.info_index = match_state.info_index;
-                file_tmp.remain_byte_in_sec = DISK_CARD_SECTION_SZIE;
+                file_tmp.remain_byte_in_sec = FATObj->BytePerSection;
                 file_tmp.start_sec = match_state.sec_index;
                 file_tmp.end_sec = 0;
             }
