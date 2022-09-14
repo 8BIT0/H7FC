@@ -277,7 +277,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     test1_file = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
     Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
 
-    for(uint8_t i = 0; i < 128; i++)
+    for (uint16_t i = 0; i < 256; i++)
     {
         Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
         Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
@@ -1009,14 +1009,14 @@ static bool Disk_ClearCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr t
     return true;
 }
 
-static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
+static bool Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 {
     uint32_t sec_index = 0;
     uint32_t cluster_tmp = 0;
     uint8_t free_index;
 
     if (FATObj == NULL)
-        return;
+        return false;
 
     if (FATObj->remain_cluster != 0)
     {
@@ -1037,7 +1037,7 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 
                 /* update FSINFO section on TFCard */
                 Disk_UpdateFSINFO(FATObj, FATObj->remain_cluster);
-                return;
+                return true;
             }
         }
 
@@ -1056,13 +1056,14 @@ static void Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 
                     /* update FSINFO section on TFCard */
                     Disk_UpdateFSINFO(FATObj, FATObj->remain_cluster);
-                    return;
+                    return true;
                 }
             }
         }
     }
 
     FATObj->free_cluster = ROOT_CLUSTER_ADDR;
+    return false;
 }
 
 static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATObj, Disk_StorageData_TypeDef type, const char *name, FATCluster_Addr cluster)
@@ -1336,8 +1337,8 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
 
             /* check if created successful */
             match_state = Disk_MatchTaget(FATObj, name_tmp, Disk_DataType_Folder, &F_Info, lst_cluster);
-            
-            if(!match_state.match || (lst_cluster != match_state.cluster_index))
+
+            if (!match_state.match || (lst_cluster != match_state.cluster_index))
                 return 0;
 
             if (name_index == layer - 1)
@@ -1369,18 +1370,18 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
     if ((file != NULL) && (strlen(file) < 12))
     {
         file_cluster = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, file, cluster);
-        
+
         if (file_cluster)
         {
             match_state = Disk_MatchTaget(FATObj, file, Disk_DataType_File, &F_Info, cluster);
-            
-            if(match_state.match)
+
+            if (match_state.match)
             {
                 memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
                 DevCard.read(&DevTFCard_Obj.SDMMC_Obj, match_state.sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
-                
+
                 memcpy(&file_tmp.info, &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[match_state.info_index]), sizeof(file_tmp.info));
-                
+
                 /* set data to default */
                 file_tmp.cursor_pos = 0;
                 file_tmp.info_index = match_state.info_index;
@@ -1549,7 +1550,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
 
-    if(memcmp(FileObj->info.name, NULL, sizeof(FileObj->info.name)) == 0)
+    if (memcmp(FileObj->info.name, NULL, sizeof(FileObj->info.name)) == 0)
         return false;
 
     if (FileObj->info.size == 0)
@@ -1564,7 +1565,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
         {
             write_len = len;
 
-            if(remain_write)
+            if (remain_write)
                 p_data += base_len - len;
 
             remain_write = 0;
@@ -1583,12 +1584,13 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
         FileObj->cursor_pos += write_len;
         FileObj->cursor_pos %= FATObj->BytePerSection;
         FileObj->info.size += write_len;
-        
+
         if (FileObj->remain_byte_in_sec == 0)
         {
             memset(Disk_FileSection_DataCache, '\0', DISK_CARD_SECTION_SZIE);
             FileObj->remain_byte_in_sec = FATObj->BytePerSection;
 
+            /* still bug here */
             if (FileObj->end_sec == cluster_end_section)
             {
                 lst_file_cluster = FileObj->info.start_cluster;
@@ -1604,11 +1606,9 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
                 cluster_end_section = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster) + FATObj->SecPerCluster;
             }
-            else if (FileObj->end_sec < cluster_end_section)
-            {
-                /* update end section */
-                FileObj->end_sec++;
-            }
+
+            /* update end section */
+            FileObj->end_sec++;
         }
 
         Disk_FileSize_Update(FileObj);
@@ -1641,7 +1641,7 @@ static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *di
             return 0;
     }
 
-    if(name == NULL)
+    if (name == NULL)
         return file_cluster;
 
     memset(name_buff, '\0', name_size);
