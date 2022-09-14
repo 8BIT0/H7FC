@@ -277,7 +277,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     test1_file = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
     Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
 
-    for(uint8_t i = 0; i < 16; i++)
+    for(uint8_t i = 0; i < 128; i++)
     {
         Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
         Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
@@ -1543,6 +1543,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     FATCluster_Addr lst_file_cluster = 0;
     uint16_t write_len = 0;
     uint16_t remain_write = 0;
+    uint16_t base_len = len;
 
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
@@ -1561,12 +1562,17 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
         if (FileObj->remain_byte_in_sec >= len)
         {
             write_len = len;
+
+            if(remain_write)
+                p_data += base_len - len;
+
             remain_write = 0;
         }
         else
         {
             write_len = FileObj->remain_byte_in_sec;
             remain_write = len - FileObj->remain_byte_in_sec;
+            len -= FileObj->remain_byte_in_sec;
         }
 
         memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, write_len);
@@ -1576,11 +1582,14 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
         FileObj->cursor_pos += write_len;
         FileObj->cursor_pos %= FATObj->BytePerSection;
         FileObj->info.size += write_len;
+        
+        /* bug here */
+        uint32_t cluster_section_index = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster + (FileObj->info.size / FATObj->cluster_byte_size));
 
         if (FileObj->remain_byte_in_sec == 0)
         {
-            uint32_t cluster_section_index = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster + (FileObj->info.size / FATObj->cluster_byte_size));
-            memset(Disk_FileSection_DataCache, NULL, DISK_CARD_SECTION_SZIE);
+            memset(Disk_FileSection_DataCache, '\0', DISK_CARD_SECTION_SZIE);
+            FileObj->remain_byte_in_sec = FATObj->BytePerSection;
 
             if (FileObj->end_sec == cluster_section_index + FATObj->SecPerCluster)
             {
@@ -1588,7 +1597,6 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 FileObj->info.start_cluster = FATObj->free_cluster;
 
                 Disk_Update_FreeCluster(FATObj);
-                FileObj->remain_byte_in_sec = FATObj->BytePerSection;
 
                 /* establish cluster link */
                 Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
