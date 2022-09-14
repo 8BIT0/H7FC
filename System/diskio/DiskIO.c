@@ -841,12 +841,13 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
  */
 static bool Disk_Name_ConvertTo83Frame(const char *n_in, char *n_out)
 {
-    char *n_in_tmp = n_in;
+    char n_in_tmp[12] = {'\0'};
     char *file_name_tmp = NULL;
     char *ext_name_tmp = NULL;
     char file_name[8];
     char ext_file_name[3];
 
+    memcpy(n_in_tmp, n_in, strlen(n_in));
     memset(file_name, NULL, sizeof(file_name));
     memset(ext_file_name, NULL, sizeof(ext_file_name));
 
@@ -872,6 +873,8 @@ static bool Disk_Name_ConvertTo83Frame(const char *n_in, char *n_out)
         }
         else
             file_name[i] = 0x20;
+
+        n_out[i] = file_name[i];
     }
 
     for (uint8_t i = 0; i < sizeof(ext_file_name); i++)
@@ -887,10 +890,9 @@ static bool Disk_Name_ConvertTo83Frame(const char *n_in, char *n_out)
         }
         else
             ext_file_name[i] = 0x20;
-    }
 
-    memcpy(n_out, file_name, sizeof(file_name));
-    memcpy(n_out + sizeof(file_name), ext_file_name, sizeof(ext_file_name));
+        n_out[i + sizeof(file_name)] = ext_file_name[i];
+    }
 
     return true;
 }
@@ -1276,6 +1278,7 @@ static Disk_TargetMatch_TypeDef Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj,
                     match_state.match = true;
                     match_state.sec_index = sec_id + i;
                     match_state.info_index = j;
+                    match_state.cluster_index = cluster_tmp;
 
                     return match_state;
                 }
@@ -1301,6 +1304,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     uint32_t layer = 0;
     uint32_t name_index = 0;
     FATCluster_Addr cluster_tmp = cluster;
+    FATCluster_Addr lst_cluster = cluster;
     Disk_TargetMatch_TypeDef match_state;
     Disk_FFInfo_TypeDef F_Info;
 
@@ -1327,13 +1331,15 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
                 return 0;
 
             /* check if created successful */
-            match_state = Disk_MatchTaget(FATObj, name, Disk_DataType_Folder, &F_Info, cluster_tmp);
+            match_state = Disk_MatchTaget(FATObj, name_tmp, Disk_DataType_Folder, &F_Info, lst_cluster);
             
-            if(!match_state.match || (cluster_tmp != match_state.sec_index))
+            if(!match_state.match || (lst_cluster != match_state.cluster_index))
                 return 0;
 
             if (name_index == layer - 1)
                 return cluster_tmp;
+
+            lst_cluster = cluster_tmp;
         }
         else
             return 0;
@@ -1341,7 +1347,7 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
         memset(name_tmp, '\0', (strlen(name) + 1));
     }
 
-    return 0;`
+    return 0;
 }
 
 /* optimize return file object */
@@ -1505,6 +1511,9 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
         if (len % FATObj->BytePerSection)
         {
             DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, p_data, len % FATObj->BytePerSection, 1);
+
+            /* update cache data */
+            memcpy(Disk_FileSection_DataCache, p_data, len % FATObj->BytePerSection);
         }
 
         Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
