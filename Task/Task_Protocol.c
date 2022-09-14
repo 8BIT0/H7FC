@@ -135,6 +135,7 @@ void TaskProtocol_Core(Task_Handle hdl)
                 MMU_Free(p_buf);
             }
         }
+
         break;
 
     case TaskProto_Error_Proc:

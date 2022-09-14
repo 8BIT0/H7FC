@@ -110,6 +110,7 @@ static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
 static Disk_FATFileSys_TypeDef FATFs_Obj;
 static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] = {0};
 static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] = {0};
+Disk_FileObj_TypeDef test1_file;
 
 #endif
 
@@ -261,7 +262,6 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_Search_FreeCluster(&FATFs_Obj);
 
     /* test code */
-    Disk_FileObj_TypeDef test1_file;
     volatile FATCluster_Addr test_folder1_cluster;
     volatile FATCluster_Addr test_folder2_cluster;
     volatile FATCluster_Addr test_folder3_cluster;
@@ -277,9 +277,13 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     test1_file = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
     Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
 
-    Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
-    Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
-    Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 3\r\n", strlen("test 8_B!T0 3\r\n"));
+    for(uint8_t i = 0; i < 16; i++)
+    {
+        Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
+        Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
+        Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 3\r\n", strlen("test 8_B!T0 3\r\n"));
+        Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "\r\n", strlen("\r\n"));
+    }
 
     /* test code */
 #endif
@@ -1524,6 +1528,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 
     FileObj->info.size = len;
     FileObj->cursor_pos = len;
+    FileObj->remain_byte_in_sec -= len;
 
     /* update file size */
     Disk_FileSize_Update(FileObj);
