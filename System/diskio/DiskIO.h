@@ -124,8 +124,7 @@ typedef enum
 } DiskFATCluster_State_List;
 
 #pragma pack(1)
-typedef union
-{
+typedef union {
     struct
     {
         uint8_t internal_module_EN : 1;
@@ -139,8 +138,7 @@ typedef union
     uint8_t val;
 } StorageModule_TypeDef;
 
-typedef union
-{
+typedef union {
     struct
     {
         uint8_t internal_module_error_code : 8;
@@ -306,5 +304,7 @@ typedef struct
 } DiskFS_TypeDef;
 
 bool Disk_Init(Disk_Printf_Callback Callback);
-
+/* test code */
+void FileWrite_Test(void);
+/* test code */
 #endif

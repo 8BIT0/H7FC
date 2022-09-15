@@ -110,8 +110,9 @@ static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
 static Disk_FATFileSys_TypeDef FATFs_Obj;
 static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] = {0};
 static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] = {0};
+/* test code */
 Disk_FileObj_TypeDef test1_file;
-
+/* test code */
 #endif
 
 /******************************************************************************* Error Proc Object **************************************************************************/
@@ -277,17 +278,22 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     test1_file = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
     Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
 
-    for (uint16_t i = 0; i < 1024; i++)
-    {
-        Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
-        Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
-        Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 3\r\n", strlen("test 8_B!T0 3\r\n"));
-        Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "\r\n", strlen("\r\n"));
-    }
+    // for (uint16_t i = 0; i < 1024; i++)
+    // {
+    //     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
+    //     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
+    //     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 3\r\n", strlen("test 8_B!T0 3\r\n"));
+    //     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "\r\n", strlen("\r\n"));
+    // }
 
     /* test code */
 #endif
     return true;
+}
+
+void FileWrite_Test(void)
+{
+    Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
 }
 
 /************************************************************************** Disk File Alloc Table Function ***************************************************************************/
