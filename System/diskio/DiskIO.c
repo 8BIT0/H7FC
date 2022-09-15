@@ -277,7 +277,7 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     test1_file = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
     Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
 
-    for (uint16_t i = 0; i < 256; i++)
+    for (uint16_t i = 0; i < 1024; i++)
     {
         Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
         Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
@@ -1594,9 +1594,9 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             if (FileObj->end_sec == cluster_end_section)
             {
                 lst_file_cluster = FileObj->info.start_cluster;
-                FileObj->info.start_cluster = FATObj->free_cluster;
 
                 Disk_Update_FreeCluster(FATObj);
+                FileObj->info.start_cluster = FATObj->free_cluster;
 
                 /* establish cluster link */
                 Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
