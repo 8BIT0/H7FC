@@ -1,0 +1,234 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc345psG.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"debug_util.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.DebugPin_Init,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	DebugPin_Init:
+  25              	.LFB144:
+  26              		.file 1 "debug/debug_util.c"
+   1:debug/debug_util.c **** #include "debug_util.h"
+   2:debug/debug_util.c **** #include "system_cfg.h"
+   3:debug/debug_util.c **** 
+   4:debug/debug_util.c **** static bool DebugPin_Init(DebugPinObj_TypeDef pin);
+   5:debug/debug_util.c **** static bool DebugPin_Ctl(DebugPinObj_TypeDef pin, bool state);
+   6:debug/debug_util.c **** 
+   7:debug/debug_util.c **** DebugPin_TypeDef DebugPin = {
+   8:debug/debug_util.c ****     .init = DebugPin_Init,
+   9:debug/debug_util.c ****     .ctl = DebugPin_Ctl,
+  10:debug/debug_util.c **** };
+  11:debug/debug_util.c **** 
+  12:debug/debug_util.c **** static bool DebugPin_Init(DebugPinObj_TypeDef debug_pin)
+  13:debug/debug_util.c **** {
+  27              		.loc 1 13 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31 0000 00B5     		push	{lr}
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 14, -4
+  35 0002 83B0     		sub	sp, sp, #12
+  36              	.LCFI1:
+  37              		.cfi_def_cfa_offset 16
+  38 0004 02AB     		add	r3, sp, #8
+  39 0006 03E90300 		stmdb	r3, {r0, r1}
+  14:debug/debug_util.c ****     if (BspGPIO.out_init == NULL)
+  40              		.loc 1 14 5 view .LVU1
+  41              		.loc 1 14 16 is_stmt 0 view .LVU2
+  42 000a 064B     		ldr	r3, .L5
+  43 000c 5B68     		ldr	r3, [r3, #4]
+  44              		.loc 1 14 8 view .LVU3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc345psG.s 			page 2
+
+
+  45 000e 33B1     		cbz	r3, .L3
+  15:debug/debug_util.c ****         return false;
+  16:debug/debug_util.c **** 
+  17:debug/debug_util.c ****     return BspGPIO.out_init(debug_pin);
+  46              		.loc 1 17 5 is_stmt 1 view .LVU4
+  47              		.loc 1 17 12 is_stmt 0 view .LVU5
+  48 0010 02AA     		add	r2, sp, #8
+  49 0012 12E90300 		ldmdb	r2, {r0, r1}
+  50 0016 9847     		blx	r3
+  51              	.LVL0:
+  52              	.L2:
+  18:debug/debug_util.c **** }
+  53              		.loc 1 18 1 view .LVU6
+  54 0018 03B0     		add	sp, sp, #12
+  55              	.LCFI2:
+  56              		.cfi_remember_state
+  57              		.cfi_def_cfa_offset 4
+  58              		@ sp needed
+  59 001a 5DF804FB 		ldr	pc, [sp], #4
+  60              	.L3:
+  61              	.LCFI3:
+  62              		.cfi_restore_state
+  15:debug/debug_util.c ****         return false;
+  63              		.loc 1 15 16 view .LVU7
+  64 001e 0020     		movs	r0, #0
+  65 0020 FAE7     		b	.L2
+  66              	.L6:
+  67 0022 00BF     		.align	2
+  68              	.L5:
+  69 0024 00000000 		.word	BspGPIO
+  70              		.cfi_endproc
+  71              	.LFE144:
+  73              		.section	.text.DebugPin_Ctl,"ax",%progbits
+  74              		.align	1
+  75              		.syntax unified
+  76              		.thumb
+  77              		.thumb_func
+  79              	DebugPin_Ctl:
+  80              	.LVL1:
+  81              	.LFB145:
+  19:debug/debug_util.c **** 
+  20:debug/debug_util.c **** static bool DebugPin_Ctl(DebugPinObj_TypeDef debug_pin, bool state)
+  21:debug/debug_util.c **** {
+  82              		.loc 1 21 1 is_stmt 1 view -0
+  83              		.cfi_startproc
+  84              		@ args = 0, pretend = 0, frame = 8
+  85              		@ frame_needed = 0, uses_anonymous_args = 0
+  86              		.loc 1 21 1 is_stmt 0 view .LVU9
+  87 0000 00B5     		push	{lr}
+  88              	.LCFI4:
+  89              		.cfi_def_cfa_offset 4
+  90              		.cfi_offset 14, -4
+  91 0002 83B0     		sub	sp, sp, #12
+  92              	.LCFI5:
+  93              		.cfi_def_cfa_offset 16
+  94 0004 02AB     		add	r3, sp, #8
+  95 0006 03E90300 		stmdb	r3, {r0, r1}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc345psG.s 			page 3
+
+
+  22:debug/debug_util.c ****     if (BspGPIO.write == NULL)
+  96              		.loc 1 22 5 is_stmt 1 view .LVU10
+  97              		.loc 1 22 16 is_stmt 0 view .LVU11
+  98 000a 064B     		ldr	r3, .L11
+  99 000c 9B69     		ldr	r3, [r3, #24]
+ 100              		.loc 1 22 8 view .LVU12
+ 101 000e 33B1     		cbz	r3, .L9
+  23:debug/debug_util.c ****         return false;
+  24:debug/debug_util.c **** 
+  25:debug/debug_util.c ****     BspGPIO.write(debug_pin.port, debug_pin.pin, state);
+ 102              		.loc 1 25 5 is_stmt 1 view .LVU13
+ 103 0010 BDF80410 		ldrh	r1, [sp, #4]
+ 104 0014 9847     		blx	r3
+ 105              	.LVL2:
+  26:debug/debug_util.c ****     return true;
+ 106              		.loc 1 26 5 view .LVU14
+ 107              		.loc 1 26 12 is_stmt 0 view .LVU15
+ 108 0016 0120     		movs	r0, #1
+ 109              	.L8:
+  27:debug/debug_util.c **** }
+ 110              		.loc 1 27 1 view .LVU16
+ 111 0018 03B0     		add	sp, sp, #12
+ 112              	.LCFI6:
+ 113              		.cfi_remember_state
+ 114              		.cfi_def_cfa_offset 4
+ 115              		@ sp needed
+ 116 001a 5DF804FB 		ldr	pc, [sp], #4
+ 117              	.LVL3:
+ 118              	.L9:
+ 119              	.LCFI7:
+ 120              		.cfi_restore_state
+  23:debug/debug_util.c ****         return false;
+ 121              		.loc 1 23 16 view .LVU17
+ 122 001e 0020     		movs	r0, #0
+ 123 0020 FAE7     		b	.L8
+ 124              	.L12:
+ 125 0022 00BF     		.align	2
+ 126              	.L11:
+ 127 0024 00000000 		.word	BspGPIO
+ 128              		.cfi_endproc
+ 129              	.LFE145:
+ 131              		.section	.text.assert,"ax",%progbits
+ 132              		.align	1
+ 133              		.global	assert
+ 134              		.syntax unified
+ 135              		.thumb
+ 136              		.thumb_func
+ 138              	assert:
+ 139              	.LVL4:
+ 140              	.LFB146:
+  28:debug/debug_util.c **** 
+  29:debug/debug_util.c **** void assert(bool state)
+  30:debug/debug_util.c **** {
+ 141              		.loc 1 30 1 is_stmt 1 view -0
+ 142              		.cfi_startproc
+ 143              		@ args = 0, pretend = 0, frame = 0
+ 144              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc345psG.s 			page 4
+
+
+ 145              		@ link register save eliminated.
+  31:debug/debug_util.c ****     if (state)
+ 146              		.loc 1 31 5 view .LVU19
+ 147              		.loc 1 31 8 is_stmt 0 view .LVU20
+ 148 0000 00B1     		cbz	r0, .L13
+ 149              	.L15:
+  32:debug/debug_util.c ****         while (true)
+ 150              		.loc 1 32 9 is_stmt 1 discriminator 1 view .LVU21
+  33:debug/debug_util.c ****             ;
+ 151              		.loc 1 33 13 discriminator 1 view .LVU22
+  32:debug/debug_util.c ****         while (true)
+ 152              		.loc 1 32 15 discriminator 1 view .LVU23
+ 153 0002 FEE7     		b	.L15
+ 154              	.L13:
+  34:debug/debug_util.c **** }
+ 155              		.loc 1 34 1 is_stmt 0 view .LVU24
+ 156 0004 7047     		bx	lr
+ 157              		.cfi_endproc
+ 158              	.LFE146:
+ 160              		.global	DebugPin
+ 161              		.section	.data.DebugPin,"aw"
+ 162              		.align	2
+ 165              	DebugPin:
+ 166 0000 00000000 		.word	DebugPin_Init
+ 167 0004 00000000 		.word	DebugPin_Ctl
+ 168              		.text
+ 169              	.Letext0:
+ 170              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 171              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 172              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 173              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 174              		.file 6 "Bsp/Bsp_GPIO.h"
+ 175              		.file 7 "debug/debug_util.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc345psG.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 debug_util.c
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:19     .text.DebugPin_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:24     .text.DebugPin_Init:00000000 DebugPin_Init
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:69     .text.DebugPin_Init:00000024 $d
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:74     .text.DebugPin_Ctl:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:79     .text.DebugPin_Ctl:00000000 DebugPin_Ctl
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:127    .text.DebugPin_Ctl:00000024 $d
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:132    .text.assert:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:138    .text.assert:00000000 assert
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:165    .data.DebugPin:00000000 DebugPin
+C:\Users\HUAV\AppData\Local\Temp\cc345psG.s:162    .data.DebugPin:00000000 $d
+
+UNDEFINED SYMBOLS
+BspGPIO

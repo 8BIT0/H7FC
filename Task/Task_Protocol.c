@@ -50,7 +50,7 @@ bool TaskProtocol_Init(void)
         return false;
     }
 
-    /* init USB connect detect pin */
+    /* init USB attach detect pin */
     // BspGPIO.in_init(USB_DctPin);
 
     if (!Queue.create(&VCP_ProtoQueue, "VCP Send Queue", VCP_QUEUE_BUFF_SIZE))

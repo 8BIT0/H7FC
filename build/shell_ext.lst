@@ -1,0 +1,1649 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"shell_ext.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.shellExtNumType,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	shellExtNumType:
+  25              	.LVL0:
+  26              	.LFB0:
+  27              		.file 1 "System/shell/shell_ext.c"
+   1:System/shell/shell_ext.c **** /**
+   2:System/shell/shell_ext.c ****  * @file shell_ext.c
+   3:System/shell/shell_ext.c ****  * @author Letter (NevermindZZT@gmail.com)
+   4:System/shell/shell_ext.c ****  * @brief shell extensions
+   5:System/shell/shell_ext.c ****  * @version 3.0.0
+   6:System/shell/shell_ext.c ****  * @date 2019-12-31
+   7:System/shell/shell_ext.c ****  * 
+   8:System/shell/shell_ext.c ****  * @copyright (c) 2019 Letter
+   9:System/shell/shell_ext.c ****  * 
+  10:System/shell/shell_ext.c ****  */
+  11:System/shell/shell_ext.c **** 
+  12:System/shell/shell_ext.c **** #include "shell_cfg.h"
+  13:System/shell/shell_ext.c **** #include "shell.h"
+  14:System/shell/shell_ext.c **** #include "shell_ext.h"
+  15:System/shell/shell_ext.c **** 
+  16:System/shell/shell_ext.c **** 
+  17:System/shell/shell_ext.c **** extern ShellCommand* shellSeekCommand(Shell *shell,
+  18:System/shell/shell_ext.c ****                                       const char *cmd,
+  19:System/shell/shell_ext.c ****                                       ShellCommand *base,
+  20:System/shell/shell_ext.c ****                                       unsigned short compareLength);
+  21:System/shell/shell_ext.c **** extern int shellGetVarValue(Shell *shell, ShellCommand *command);
+  22:System/shell/shell_ext.c **** 
+  23:System/shell/shell_ext.c **** /**
+  24:System/shell/shell_ext.c ****  * @brief 判断数字进制
+  25:System/shell/shell_ext.c ****  * 
+  26:System/shell/shell_ext.c ****  * @param string 参数字符串
+  27:System/shell/shell_ext.c ****  * @return ShellNumType 进制
+  28:System/shell/shell_ext.c ****  */
+  29:System/shell/shell_ext.c **** static ShellNumType shellExtNumType(char *string)
+  30:System/shell/shell_ext.c **** {
+  28              		.loc 1 30 1 view -0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 2
+
+
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              		.loc 1 30 1 is_stmt 0 view .LVU1
+  34 0000 0246     		mov	r2, r0
+  31:System/shell/shell_ext.c ****     char *p = string;
+  35              		.loc 1 31 5 is_stmt 1 view .LVU2
+  36              	.LVL1:
+  32:System/shell/shell_ext.c ****     ShellNumType type = NUM_TYPE_DEC;
+  37              		.loc 1 32 5 view .LVU3
+  33:System/shell/shell_ext.c **** 
+  34:System/shell/shell_ext.c ****     if ((*p == '0') && ((*(p + 1) == 'x') || (*(p + 1) == 'X')))
+  38              		.loc 1 34 5 view .LVU4
+  39              		.loc 1 34 10 is_stmt 0 view .LVU5
+  40 0002 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+  41              		.loc 1 34 8 view .LVU6
+  42 0004 302B     		cmp	r3, #48
+  43 0006 05D0     		beq	.L13
+  44              	.L2:
+  35:System/shell/shell_ext.c ****     {
+  36:System/shell/shell_ext.c ****         type = NUM_TYPE_HEX;
+  37:System/shell/shell_ext.c ****     }
+  38:System/shell/shell_ext.c ****     else if ((*p == '0') && ((*(p + 1) == 'b') || (*(p + 1) == 'B')))
+  45              		.loc 1 38 10 is_stmt 1 view .LVU7
+  46              		.loc 1 38 13 is_stmt 0 view .LVU8
+  47 0008 302B     		cmp	r3, #48
+  48 000a 0AD0     		beq	.L14
+  49              	.L4:
+  39:System/shell/shell_ext.c ****     {
+  40:System/shell/shell_ext.c ****         type = NUM_TYPE_BIN;
+  41:System/shell/shell_ext.c ****     }
+  42:System/shell/shell_ext.c ****     else if (*p == '0')
+  50              		.loc 1 42 10 is_stmt 1 view .LVU9
+  51              		.loc 1 42 13 is_stmt 0 view .LVU10
+  52 000c 302B     		cmp	r3, #48
+  53 000e 0FD0     		beq	.L11
+  32:System/shell/shell_ext.c **** 
+  54              		.loc 1 32 18 view .LVU11
+  55 0010 0020     		movs	r0, #0
+  56              	.LVL2:
+  32:System/shell/shell_ext.c **** 
+  57              		.loc 1 32 18 view .LVU12
+  58 0012 10E0     		b	.L7
+  59              	.LVL3:
+  60              	.L13:
+  34:System/shell/shell_ext.c ****     {
+  61              		.loc 1 34 26 discriminator 1 view .LVU13
+  62 0014 4178     		ldrb	r1, [r0, #1]	@ zero_extendqisi2
+  34:System/shell/shell_ext.c ****     {
+  63              		.loc 1 34 21 discriminator 1 view .LVU14
+  64 0016 5829     		cmp	r1, #88
+  65 0018 18BF     		it	ne
+  66 001a 7829     		cmpne	r1, #120
+  67 001c F4D1     		bne	.L2
+  36:System/shell/shell_ext.c ****     }
+  68              		.loc 1 36 14 view .LVU15
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 3
+
+
+  69 001e 0320     		movs	r0, #3
+  70              	.LVL4:
+  36:System/shell/shell_ext.c ****     }
+  71              		.loc 1 36 14 view .LVU16
+  72 0020 09E0     		b	.L7
+  73              	.LVL5:
+  74              	.L14:
+  38:System/shell/shell_ext.c ****     {
+  75              		.loc 1 38 31 discriminator 1 view .LVU17
+  76 0022 5178     		ldrb	r1, [r2, #1]	@ zero_extendqisi2
+  38:System/shell/shell_ext.c ****     {
+  77              		.loc 1 38 26 discriminator 1 view .LVU18
+  78 0024 4229     		cmp	r1, #66
+  79 0026 18BF     		it	ne
+  80 0028 6229     		cmpne	r1, #98
+  81 002a EFD1     		bne	.L4
+  40:System/shell/shell_ext.c ****     }
+  82              		.loc 1 40 14 view .LVU19
+  83 002c 0120     		movs	r0, #1
+  84              	.LVL6:
+  40:System/shell/shell_ext.c ****     }
+  85              		.loc 1 40 14 view .LVU20
+  86 002e 02E0     		b	.L7
+  87              	.LVL7:
+  88              	.L11:
+  43:System/shell/shell_ext.c ****     {
+  44:System/shell/shell_ext.c ****         type = NUM_TYPE_OCT;
+  89              		.loc 1 44 14 view .LVU21
+  90 0030 0220     		movs	r0, #2
+  91              	.LVL8:
+  92              		.loc 1 44 14 view .LVU22
+  93 0032 00E0     		b	.L7
+  94              	.LVL9:
+  95              	.L5:
+  32:System/shell/shell_ext.c **** 
+  96              		.loc 1 32 18 view .LVU23
+  97 0034 1A46     		mov	r2, r3
+  98              	.LVL10:
+  99              	.L7:
+  45:System/shell/shell_ext.c ****     }
+  46:System/shell/shell_ext.c ****     
+  47:System/shell/shell_ext.c ****     while (*p++)
+ 100              		.loc 1 47 11 is_stmt 1 view .LVU24
+ 101              		.loc 1 47 14 is_stmt 0 view .LVU25
+ 102 0036 1346     		mov	r3, r2
+ 103              	.LVL11:
+ 104              		.loc 1 47 12 view .LVU26
+ 105 0038 13F8011B 		ldrb	r1, [r3], #1	@ zero_extendqisi2
+ 106              	.LVL12:
+ 107              		.loc 1 47 11 view .LVU27
+ 108 003c 39B1     		cbz	r1, .L15
+  48:System/shell/shell_ext.c ****     {
+  49:System/shell/shell_ext.c ****         if (*p == '.' && *(p + 1) != 0)
+ 109              		.loc 1 49 9 is_stmt 1 view .LVU28
+ 110              		.loc 1 49 13 is_stmt 0 view .LVU29
+ 111 003e 5278     		ldrb	r2, [r2, #1]	@ zero_extendqisi2
+ 112              		.loc 1 49 12 view .LVU30
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 4
+
+
+ 113 0040 2E2A     		cmp	r2, #46
+ 114 0042 F7D1     		bne	.L5
+ 115              		.loc 1 49 26 discriminator 1 view .LVU31
+ 116 0044 5A78     		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 117              		.loc 1 49 23 discriminator 1 view .LVU32
+ 118 0046 002A     		cmp	r2, #0
+ 119 0048 F4D0     		beq	.L5
+  50:System/shell/shell_ext.c ****         {
+  51:System/shell/shell_ext.c ****             type = NUM_TYPE_FLOAT;
+ 120              		.loc 1 51 18 view .LVU33
+ 121 004a 0420     		movs	r0, #4
+ 122              	.LVL13:
+  52:System/shell/shell_ext.c ****             break;
+  53:System/shell/shell_ext.c ****         }
+  54:System/shell/shell_ext.c ****     }
+  55:System/shell/shell_ext.c **** 
+  56:System/shell/shell_ext.c ****     return type;
+ 123              		.loc 1 56 5 is_stmt 1 view .LVU34
+  57:System/shell/shell_ext.c **** }
+ 124              		.loc 1 57 1 is_stmt 0 view .LVU35
+ 125 004c 7047     		bx	lr
+ 126              	.L15:
+ 127              		.loc 1 57 1 view .LVU36
+ 128 004e 7047     		bx	lr
+ 129              		.cfi_endproc
+ 130              	.LFE0:
+ 132              		.section	.text.shellExtToNum,"ax",%progbits
+ 133              		.align	1
+ 134              		.syntax unified
+ 135              		.thumb
+ 136              		.thumb_func
+ 138              	shellExtToNum:
+ 139              	.LVL14:
+ 140              	.LFB1:
+  58:System/shell/shell_ext.c **** 
+  59:System/shell/shell_ext.c **** 
+  60:System/shell/shell_ext.c **** /**
+  61:System/shell/shell_ext.c ****  * @brief 字符转数字
+  62:System/shell/shell_ext.c ****  * 
+  63:System/shell/shell_ext.c ****  * @param code 字符
+  64:System/shell/shell_ext.c ****  * @return char 数字
+  65:System/shell/shell_ext.c ****  */
+  66:System/shell/shell_ext.c **** static char shellExtToNum(char code)
+  67:System/shell/shell_ext.c **** {
+ 141              		.loc 1 67 1 is_stmt 1 view -0
+ 142              		.cfi_startproc
+ 143              		@ args = 0, pretend = 0, frame = 0
+ 144              		@ frame_needed = 0, uses_anonymous_args = 0
+ 145              		@ link register save eliminated.
+ 146              		.loc 1 67 1 is_stmt 0 view .LVU38
+ 147 0000 0346     		mov	r3, r0
+  68:System/shell/shell_ext.c ****     if ((code >= '0') && (code <= '9'))
+ 148              		.loc 1 68 5 is_stmt 1 view .LVU39
+ 149              		.loc 1 68 23 is_stmt 0 view .LVU40
+ 150 0002 3038     		subs	r0, r0, #48
+ 151              	.LVL15:
+ 152              		.loc 1 68 23 view .LVU41
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 5
+
+
+ 153 0004 C0B2     		uxtb	r0, r0
+ 154              		.loc 1 68 8 view .LVU42
+ 155 0006 0928     		cmp	r0, #9
+ 156 0008 10D9     		bls	.L17
+  69:System/shell/shell_ext.c ****     {
+  70:System/shell/shell_ext.c ****         return code -'0';
+  71:System/shell/shell_ext.c ****     }
+  72:System/shell/shell_ext.c ****     else if ((code >= 'a') && (code <= 'f'))
+ 157              		.loc 1 72 10 is_stmt 1 view .LVU43
+ 158              		.loc 1 72 28 is_stmt 0 view .LVU44
+ 159 000a A3F16102 		sub	r2, r3, #97
+ 160 000e D2B2     		uxtb	r2, r2
+ 161              		.loc 1 72 13 view .LVU45
+ 162 0010 052A     		cmp	r2, #5
+ 163 0012 07D9     		bls	.L20
+  73:System/shell/shell_ext.c ****     {
+  74:System/shell/shell_ext.c ****         return code - 'a' + 10;
+  75:System/shell/shell_ext.c ****     }
+  76:System/shell/shell_ext.c ****     else if ((code >= 'A') && (code <= 'F'))
+ 164              		.loc 1 76 10 is_stmt 1 view .LVU46
+ 165              		.loc 1 76 28 is_stmt 0 view .LVU47
+ 166 0014 A3F14102 		sub	r2, r3, #65
+ 167 0018 D2B2     		uxtb	r2, r2
+ 168              		.loc 1 76 13 view .LVU48
+ 169 001a 052A     		cmp	r2, #5
+ 170 001c 05D8     		bhi	.L19
+  77:System/shell/shell_ext.c ****     {
+  78:System/shell/shell_ext.c ****         return code - 'A' + 10;
+ 171              		.loc 1 78 9 is_stmt 1 view .LVU49
+ 172              		.loc 1 78 27 is_stmt 0 view .LVU50
+ 173 001e 373B     		subs	r3, r3, #55
+ 174 0020 D8B2     		uxtb	r0, r3
+ 175 0022 7047     		bx	lr
+ 176              	.L20:
+  74:System/shell/shell_ext.c ****     }
+ 177              		.loc 1 74 9 is_stmt 1 view .LVU51
+  74:System/shell/shell_ext.c ****     }
+ 178              		.loc 1 74 27 is_stmt 0 view .LVU52
+ 179 0024 573B     		subs	r3, r3, #87
+ 180 0026 D8B2     		uxtb	r0, r3
+ 181 0028 7047     		bx	lr
+ 182              	.L19:
+  79:System/shell/shell_ext.c ****     }
+  80:System/shell/shell_ext.c ****     else
+  81:System/shell/shell_ext.c ****     {
+  82:System/shell/shell_ext.c ****         return 0;
+ 183              		.loc 1 82 16 view .LVU53
+ 184 002a 0020     		movs	r0, #0
+ 185              	.L17:
+  83:System/shell/shell_ext.c ****     }
+  84:System/shell/shell_ext.c **** }
+ 186              		.loc 1 84 1 view .LVU54
+ 187 002c 7047     		bx	lr
+ 188              		.cfi_endproc
+ 189              	.LFE1:
+ 191              		.section	.text.shellExtParseChar,"ax",%progbits
+ 192              		.align	1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 6
+
+
+ 193              		.syntax unified
+ 194              		.thumb
+ 195              		.thumb_func
+ 197              	shellExtParseChar:
+ 198              	.LVL16:
+ 199              	.LFB2:
+  85:System/shell/shell_ext.c **** 
+  86:System/shell/shell_ext.c **** 
+  87:System/shell/shell_ext.c **** /**
+  88:System/shell/shell_ext.c ****  * @brief 解析字符参数
+  89:System/shell/shell_ext.c ****  * 
+  90:System/shell/shell_ext.c ****  * @param string 字符串参数
+  91:System/shell/shell_ext.c ****  * @return char 解析出的字符
+  92:System/shell/shell_ext.c ****  */
+  93:System/shell/shell_ext.c **** static char shellExtParseChar(char *string)
+  94:System/shell/shell_ext.c **** {
+ 200              		.loc 1 94 1 is_stmt 1 view -0
+ 201              		.cfi_startproc
+ 202              		@ args = 0, pretend = 0, frame = 0
+ 203              		@ frame_needed = 0, uses_anonymous_args = 0
+ 204              		@ link register save eliminated.
+ 205              		.loc 1 94 1 is_stmt 0 view .LVU56
+ 206 0000 0346     		mov	r3, r0
+  95:System/shell/shell_ext.c ****     char *p = string + 1;
+ 207              		.loc 1 95 5 is_stmt 1 view .LVU57
+ 208              	.LVL17:
+  96:System/shell/shell_ext.c ****     char value = 0;
+ 209              		.loc 1 96 5 view .LVU58
+  97:System/shell/shell_ext.c **** 
+  98:System/shell/shell_ext.c ****     if (*p == '\\')
+ 210              		.loc 1 98 5 view .LVU59
+ 211              		.loc 1 98 9 is_stmt 0 view .LVU60
+ 212 0002 4078     		ldrb	r0, [r0, #1]	@ zero_extendqisi2
+ 213              	.LVL18:
+ 214              		.loc 1 98 8 view .LVU61
+ 215 0004 5C28     		cmp	r0, #92
+ 216 0006 00D0     		beq	.L30
+ 217              	.LVL19:
+ 218              	.L22:
+  99:System/shell/shell_ext.c ****     {
+ 100:System/shell/shell_ext.c ****         switch (*(p + 1))
+ 101:System/shell/shell_ext.c ****         {
+ 102:System/shell/shell_ext.c ****         case 'b':
+ 103:System/shell/shell_ext.c ****             value = '\b';
+ 104:System/shell/shell_ext.c ****             break;
+ 105:System/shell/shell_ext.c ****         case 'r':
+ 106:System/shell/shell_ext.c ****             value = '\r';
+ 107:System/shell/shell_ext.c ****             break;
+ 108:System/shell/shell_ext.c ****         case 'n':
+ 109:System/shell/shell_ext.c ****             value = '\n';
+ 110:System/shell/shell_ext.c ****             break;
+ 111:System/shell/shell_ext.c ****         case 't':
+ 112:System/shell/shell_ext.c ****             value = '\t';
+ 113:System/shell/shell_ext.c ****             break;
+ 114:System/shell/shell_ext.c ****         case '0':
+ 115:System/shell/shell_ext.c ****             value = 0;
+ 116:System/shell/shell_ext.c ****             break;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 7
+
+
+ 117:System/shell/shell_ext.c ****         default:
+ 118:System/shell/shell_ext.c ****             value = *(p + 1);
+ 119:System/shell/shell_ext.c ****             break;
+ 120:System/shell/shell_ext.c ****         }
+ 121:System/shell/shell_ext.c ****     }
+ 122:System/shell/shell_ext.c ****     else
+ 123:System/shell/shell_ext.c ****     {
+ 124:System/shell/shell_ext.c ****         value = *p;
+ 125:System/shell/shell_ext.c ****     }
+ 126:System/shell/shell_ext.c ****     return value;
+ 219              		.loc 1 126 5 is_stmt 1 view .LVU62
+ 127:System/shell/shell_ext.c **** }
+ 220              		.loc 1 127 1 is_stmt 0 view .LVU63
+ 221 0008 7047     		bx	lr
+ 222              	.LVL20:
+ 223              	.L30:
+ 100:System/shell/shell_ext.c ****         {
+ 224              		.loc 1 100 9 is_stmt 1 view .LVU64
+ 100:System/shell/shell_ext.c ****         {
+ 225              		.loc 1 100 17 is_stmt 0 view .LVU65
+ 226 000a 9878     		ldrb	r0, [r3, #2]	@ zero_extendqisi2
+ 100:System/shell/shell_ext.c ****         {
+ 227              		.loc 1 100 9 view .LVU66
+ 228 000c 3028     		cmp	r0, #48
+ 229 000e 37D0     		beq	.L28
+ 230 0010 FAD3     		bcc	.L22
+ 231 0012 7428     		cmp	r0, #116
+ 232 0014 F8D8     		bhi	.L22
+ 233 0016 6228     		cmp	r0, #98
+ 234 0018 F6D3     		bcc	.L22
+ 235 001a A0F16203 		sub	r3, r0, #98
+ 236              	.LVL21:
+ 100:System/shell/shell_ext.c ****         {
+ 237              		.loc 1 100 9 view .LVU67
+ 238 001e 122B     		cmp	r3, #18
+ 239 0020 F2D8     		bhi	.L22
+ 240 0022 01A2     		adr	r2, .L25
+ 241 0024 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 242              		.p2align 2
+ 243              	.L25:
+ 244 0028 75000000 		.word	.L27+1
+ 245 002c 09000000 		.word	.L22+1
+ 246 0030 09000000 		.word	.L22+1
+ 247 0034 09000000 		.word	.L22+1
+ 248 0038 09000000 		.word	.L22+1
+ 249 003c 09000000 		.word	.L22+1
+ 250 0040 09000000 		.word	.L22+1
+ 251 0044 09000000 		.word	.L22+1
+ 252 0048 09000000 		.word	.L22+1
+ 253 004c 09000000 		.word	.L22+1
+ 254 0050 09000000 		.word	.L22+1
+ 255 0054 09000000 		.word	.L22+1
+ 256 0058 79000000 		.word	.L26+1
+ 257 005c 09000000 		.word	.L22+1
+ 258 0060 09000000 		.word	.L22+1
+ 259 0064 09000000 		.word	.L22+1
+ 260 0068 85000000 		.word	.L29+1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 8
+
+
+ 261 006c 09000000 		.word	.L22+1
+ 262 0070 7D000000 		.word	.L24+1
+ 263              		.p2align 1
+ 264              	.L27:
+ 265 0074 0820     		movs	r0, #8
+ 266 0076 7047     		bx	lr
+ 267              	.L26:
+ 109:System/shell/shell_ext.c ****             break;
+ 268              		.loc 1 109 13 is_stmt 1 view .LVU68
+ 269              	.LVL22:
+ 110:System/shell/shell_ext.c ****         case 't':
+ 270              		.loc 1 110 13 view .LVU69
+ 109:System/shell/shell_ext.c ****             break;
+ 271              		.loc 1 109 19 is_stmt 0 view .LVU70
+ 272 0078 0A20     		movs	r0, #10
+ 110:System/shell/shell_ext.c ****         case 't':
+ 273              		.loc 1 110 13 view .LVU71
+ 274 007a 7047     		bx	lr
+ 275              	.LVL23:
+ 276              	.L24:
+ 112:System/shell/shell_ext.c ****             break;
+ 277              		.loc 1 112 13 is_stmt 1 view .LVU72
+ 113:System/shell/shell_ext.c ****         case '0':
+ 278              		.loc 1 113 13 view .LVU73
+ 112:System/shell/shell_ext.c ****             break;
+ 279              		.loc 1 112 19 is_stmt 0 view .LVU74
+ 280 007c 0920     		movs	r0, #9
+ 113:System/shell/shell_ext.c ****         case '0':
+ 281              		.loc 1 113 13 view .LVU75
+ 282 007e 7047     		bx	lr
+ 283              	.LVL24:
+ 284              	.L28:
+ 115:System/shell/shell_ext.c ****             break;
+ 285              		.loc 1 115 19 view .LVU76
+ 286 0080 0020     		movs	r0, #0
+ 287 0082 7047     		bx	lr
+ 288              	.LVL25:
+ 289              	.L29:
+ 106:System/shell/shell_ext.c ****             break;
+ 290              		.loc 1 106 19 view .LVU77
+ 291 0084 0D20     		movs	r0, #13
+ 292 0086 BFE7     		b	.L22
+ 293              		.cfi_endproc
+ 294              	.LFE2:
+ 296              		.section	.text.shellExtParseString,"ax",%progbits
+ 297              		.align	1
+ 298              		.syntax unified
+ 299              		.thumb
+ 300              		.thumb_func
+ 302              	shellExtParseString:
+ 303              	.LVL26:
+ 304              	.LFB3:
+ 128:System/shell/shell_ext.c **** 
+ 129:System/shell/shell_ext.c **** 
+ 130:System/shell/shell_ext.c **** /**
+ 131:System/shell/shell_ext.c ****  * @brief 解析字符串参数
+ 132:System/shell/shell_ext.c ****  * 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 9
+
+
+ 133:System/shell/shell_ext.c ****  * @param string 字符串参数
+ 134:System/shell/shell_ext.c ****  * @return char* 解析出的字符串
+ 135:System/shell/shell_ext.c ****  */
+ 136:System/shell/shell_ext.c **** static char* shellExtParseString(char *string)
+ 137:System/shell/shell_ext.c **** {
+ 305              		.loc 1 137 1 is_stmt 1 view -0
+ 306              		.cfi_startproc
+ 307              		@ args = 0, pretend = 0, frame = 0
+ 308              		@ frame_needed = 0, uses_anonymous_args = 0
+ 309              		.loc 1 137 1 is_stmt 0 view .LVU79
+ 310 0000 70B5     		push	{r4, r5, r6, lr}
+ 311              	.LCFI0:
+ 312              		.cfi_def_cfa_offset 16
+ 313              		.cfi_offset 4, -16
+ 314              		.cfi_offset 5, -12
+ 315              		.cfi_offset 6, -8
+ 316              		.cfi_offset 14, -4
+ 317 0002 0646     		mov	r6, r0
+ 138:System/shell/shell_ext.c ****     char *p = string;
+ 318              		.loc 1 138 5 is_stmt 1 view .LVU80
+ 319              	.LVL27:
+ 139:System/shell/shell_ext.c ****     unsigned short index = 0;
+ 320              		.loc 1 139 5 view .LVU81
+ 140:System/shell/shell_ext.c **** 
+ 141:System/shell/shell_ext.c ****     if (*string == '\"')
+ 321              		.loc 1 141 5 view .LVU82
+ 322              		.loc 1 141 9 is_stmt 0 view .LVU83
+ 323 0004 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+ 324              		.loc 1 141 8 view .LVU84
+ 325 0006 222B     		cmp	r3, #34
+ 326 0008 02D0     		beq	.L39
+ 327              	.LVL28:
+ 328              	.L32:
+ 137:System/shell/shell_ext.c ****     char *p = string;
+ 329              		.loc 1 137 1 view .LVU85
+ 330 000a 3546     		mov	r5, r6
+ 331 000c 0024     		movs	r4, #0
+ 332 000e 09E0     		b	.L36
+ 333              	.LVL29:
+ 334              	.L39:
+ 142:System/shell/shell_ext.c ****     {
+ 143:System/shell/shell_ext.c ****         p = ++string;
+ 335              		.loc 1 143 9 is_stmt 1 view .LVU86
+ 336              		.loc 1 143 11 is_stmt 0 view .LVU87
+ 337 0010 0136     		adds	r6, r6, #1
+ 338              	.LVL30:
+ 339              		.loc 1 143 11 view .LVU88
+ 340 0012 FAE7     		b	.L32
+ 341              	.LVL31:
+ 342              	.L41:
+ 144:System/shell/shell_ext.c ****     }
+ 145:System/shell/shell_ext.c **** 
+ 146:System/shell/shell_ext.c ****     while (*p)
+ 147:System/shell/shell_ext.c ****     {
+ 148:System/shell/shell_ext.c ****         if (*p == '\\')
+ 149:System/shell/shell_ext.c ****         {
+ 150:System/shell/shell_ext.c ****             *(string + index) = shellExtParseChar(p - 1);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 10
+
+
+ 343              		.loc 1 150 13 is_stmt 1 view .LVU89
+ 344              		.loc 1 150 33 is_stmt 0 view .LVU90
+ 345 0014 681E     		subs	r0, r5, #1
+ 346 0016 FFF7FEFF 		bl	shellExtParseChar
+ 347              	.LVL32:
+ 348              		.loc 1 150 31 view .LVU91
+ 349 001a 3055     		strb	r0, [r6, r4]
+ 151:System/shell/shell_ext.c ****             p++;
+ 350              		.loc 1 151 13 is_stmt 1 view .LVU92
+ 351              		.loc 1 151 14 is_stmt 0 view .LVU93
+ 352 001c 0135     		adds	r5, r5, #1
+ 353              	.LVL33:
+ 354              	.L34:
+ 152:System/shell/shell_ext.c ****         }
+ 153:System/shell/shell_ext.c ****         else if (*p == '\"')
+ 154:System/shell/shell_ext.c ****         {
+ 155:System/shell/shell_ext.c ****             *(string + index) = 0;
+ 156:System/shell/shell_ext.c ****         }
+ 157:System/shell/shell_ext.c ****         else
+ 158:System/shell/shell_ext.c ****         {
+ 159:System/shell/shell_ext.c ****             *(string + index) = *p;
+ 160:System/shell/shell_ext.c ****         }
+ 161:System/shell/shell_ext.c ****         p++;
+ 355              		.loc 1 161 9 is_stmt 1 view .LVU94
+ 356              		.loc 1 161 10 is_stmt 0 view .LVU95
+ 357 001e 0135     		adds	r5, r5, #1
+ 358              	.LVL34:
+ 162:System/shell/shell_ext.c ****         index ++;
+ 359              		.loc 1 162 9 is_stmt 1 view .LVU96
+ 360              		.loc 1 162 15 is_stmt 0 view .LVU97
+ 361 0020 0134     		adds	r4, r4, #1
+ 362              	.LVL35:
+ 363              		.loc 1 162 15 view .LVU98
+ 364 0022 A4B2     		uxth	r4, r4
+ 365              	.LVL36:
+ 366              	.L36:
+ 146:System/shell/shell_ext.c ****     {
+ 367              		.loc 1 146 11 is_stmt 1 view .LVU99
+ 146:System/shell/shell_ext.c ****     {
+ 368              		.loc 1 146 12 is_stmt 0 view .LVU100
+ 369 0024 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 146:System/shell/shell_ext.c ****     {
+ 370              		.loc 1 146 11 view .LVU101
+ 371 0026 43B1     		cbz	r3, .L40
+ 148:System/shell/shell_ext.c ****         {
+ 372              		.loc 1 148 9 is_stmt 1 view .LVU102
+ 148:System/shell/shell_ext.c ****         {
+ 373              		.loc 1 148 12 is_stmt 0 view .LVU103
+ 374 0028 5C2B     		cmp	r3, #92
+ 375 002a F3D0     		beq	.L41
+ 153:System/shell/shell_ext.c ****         {
+ 376              		.loc 1 153 14 is_stmt 1 view .LVU104
+ 153:System/shell/shell_ext.c ****         {
+ 377              		.loc 1 153 17 is_stmt 0 view .LVU105
+ 378 002c 222B     		cmp	r3, #34
+ 379 002e 01D0     		beq	.L42
+ 159:System/shell/shell_ext.c ****         }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 11
+
+
+ 380              		.loc 1 159 13 is_stmt 1 view .LVU106
+ 159:System/shell/shell_ext.c ****         }
+ 381              		.loc 1 159 31 is_stmt 0 view .LVU107
+ 382 0030 3355     		strb	r3, [r6, r4]
+ 383 0032 F4E7     		b	.L34
+ 384              	.L42:
+ 155:System/shell/shell_ext.c ****         }
+ 385              		.loc 1 155 13 is_stmt 1 view .LVU108
+ 155:System/shell/shell_ext.c ****         }
+ 386              		.loc 1 155 31 is_stmt 0 view .LVU109
+ 387 0034 0023     		movs	r3, #0
+ 388 0036 3355     		strb	r3, [r6, r4]
+ 389 0038 F1E7     		b	.L34
+ 390              	.L40:
+ 163:System/shell/shell_ext.c ****     }
+ 164:System/shell/shell_ext.c ****     *(string + index) = 0;
+ 391              		.loc 1 164 5 is_stmt 1 view .LVU110
+ 392              		.loc 1 164 23 is_stmt 0 view .LVU111
+ 393 003a 3355     		strb	r3, [r6, r4]
+ 165:System/shell/shell_ext.c ****     return string;
+ 394              		.loc 1 165 5 is_stmt 1 view .LVU112
+ 166:System/shell/shell_ext.c **** }
+ 395              		.loc 1 166 1 is_stmt 0 view .LVU113
+ 396 003c 3046     		mov	r0, r6
+ 397 003e 70BD     		pop	{r4, r5, r6, pc}
+ 398              		.loc 1 166 1 view .LVU114
+ 399              		.cfi_endproc
+ 400              	.LFE3:
+ 402              		.section	.text.shellExtParseNumber,"ax",%progbits
+ 403              		.align	1
+ 404              		.syntax unified
+ 405              		.thumb
+ 406              		.thumb_func
+ 408              	shellExtParseNumber:
+ 409              	.LVL37:
+ 410              	.LFB4:
+ 167:System/shell/shell_ext.c **** 
+ 168:System/shell/shell_ext.c **** 
+ 169:System/shell/shell_ext.c **** /**
+ 170:System/shell/shell_ext.c ****  * @brief 解析数字参数
+ 171:System/shell/shell_ext.c ****  * 
+ 172:System/shell/shell_ext.c ****  * @param string 字符串参数
+ 173:System/shell/shell_ext.c ****  * @return unsigned int 解析出的数字
+ 174:System/shell/shell_ext.c ****  */
+ 175:System/shell/shell_ext.c **** static unsigned int shellExtParseNumber(char *string)
+ 176:System/shell/shell_ext.c **** {
+ 411              		.loc 1 176 1 is_stmt 1 view -0
+ 412              		.cfi_startproc
+ 413              		@ args = 0, pretend = 0, frame = 0
+ 414              		@ frame_needed = 0, uses_anonymous_args = 0
+ 415              		.loc 1 176 1 is_stmt 0 view .LVU116
+ 416 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 417              	.LCFI1:
+ 418              		.cfi_def_cfa_offset 32
+ 419              		.cfi_offset 3, -32
+ 420              		.cfi_offset 4, -28
+ 421              		.cfi_offset 5, -24
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 12
+
+
+ 422              		.cfi_offset 6, -20
+ 423              		.cfi_offset 7, -16
+ 424              		.cfi_offset 8, -12
+ 425              		.cfi_offset 9, -8
+ 426              		.cfi_offset 14, -4
+ 427 0004 0646     		mov	r6, r0
+ 177:System/shell/shell_ext.c ****     ShellNumType type = NUM_TYPE_DEC;
+ 428              		.loc 1 177 5 is_stmt 1 view .LVU117
+ 429              	.LVL38:
+ 178:System/shell/shell_ext.c ****     char radix = 10;
+ 430              		.loc 1 178 5 view .LVU118
+ 179:System/shell/shell_ext.c ****     char *p = string;
+ 431              		.loc 1 179 5 view .LVU119
+ 180:System/shell/shell_ext.c ****     char offset = 0;
+ 432              		.loc 1 180 5 view .LVU120
+ 181:System/shell/shell_ext.c ****     signed char sign = 1;
+ 433              		.loc 1 181 5 view .LVU121
+ 182:System/shell/shell_ext.c ****     unsigned int valueInt = 0;
+ 434              		.loc 1 182 5 view .LVU122
+ 183:System/shell/shell_ext.c ****     float valueFloat = 0.0;
+ 435              		.loc 1 183 5 view .LVU123
+ 184:System/shell/shell_ext.c ****     unsigned int devide = 0;
+ 436              		.loc 1 184 5 view .LVU124
+ 185:System/shell/shell_ext.c **** 
+ 186:System/shell/shell_ext.c ****     if (*string == '-')
+ 437              		.loc 1 186 5 view .LVU125
+ 438              		.loc 1 186 9 is_stmt 0 view .LVU126
+ 439 0006 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+ 440              		.loc 1 186 8 view .LVU127
+ 441 0008 2D2B     		cmp	r3, #45
+ 442 000a 18D0     		beq	.L53
+ 181:System/shell/shell_ext.c ****     unsigned int valueInt = 0;
+ 443              		.loc 1 181 17 view .LVU128
+ 444 000c 4FF00109 		mov	r9, #1
+ 187:System/shell/shell_ext.c ****     {
+ 188:System/shell/shell_ext.c ****         sign = -1;
+ 189:System/shell/shell_ext.c ****     }
+ 190:System/shell/shell_ext.c **** 
+ 191:System/shell/shell_ext.c ****     type = shellExtNumType(string + ((sign == -1) ? 1 : 0));
+ 445              		.loc 1 191 55 view .LVU129
+ 446 0010 0020     		movs	r0, #0
+ 447              	.LVL39:
+ 448              	.L44:
+ 449              		.loc 1 191 12 discriminator 4 view .LVU130
+ 450 0012 3044     		add	r0, r0, r6
+ 451 0014 FFF7FEFF 		bl	shellExtNumType
+ 452              	.LVL40:
+ 453 0018 0746     		mov	r7, r0
+ 454              	.LVL41:
+ 192:System/shell/shell_ext.c **** 
+ 193:System/shell/shell_ext.c ****     switch ((char)type)
+ 455              		.loc 1 193 5 is_stmt 1 discriminator 4 view .LVU131
+ 456 001a 0228     		cmp	r0, #2
+ 457 001c 16D0     		beq	.L54
+ 458              		.loc 1 193 5 is_stmt 0 view .LVU132
+ 459 001e 0328     		cmp	r0, #3
+ 460 0020 18D0     		beq	.L55
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 13
+
+
+ 461 0022 0128     		cmp	r0, #1
+ 462 0024 0FD0     		beq	.L59
+ 463 0026 0023     		movs	r3, #0
+ 464 0028 4FF00A08 		mov	r8, #10
+ 465              	.L45:
+ 466              	.LVL42:
+ 194:System/shell/shell_ext.c ****     {
+ 195:System/shell/shell_ext.c ****     case NUM_TYPE_HEX:
+ 196:System/shell/shell_ext.c ****         radix = 16;
+ 197:System/shell/shell_ext.c ****         offset = 2;
+ 198:System/shell/shell_ext.c ****         break;
+ 199:System/shell/shell_ext.c ****     
+ 200:System/shell/shell_ext.c ****     case NUM_TYPE_OCT:
+ 201:System/shell/shell_ext.c ****         radix = 8;
+ 202:System/shell/shell_ext.c ****         offset = 1;
+ 203:System/shell/shell_ext.c ****         break;
+ 204:System/shell/shell_ext.c **** 
+ 205:System/shell/shell_ext.c ****     case NUM_TYPE_BIN:
+ 206:System/shell/shell_ext.c ****         radix = 2;
+ 207:System/shell/shell_ext.c ****         offset = 2;
+ 208:System/shell/shell_ext.c ****         break;
+ 209:System/shell/shell_ext.c ****     
+ 210:System/shell/shell_ext.c ****     default:
+ 211:System/shell/shell_ext.c ****         break;
+ 212:System/shell/shell_ext.c ****     }
+ 213:System/shell/shell_ext.c **** 
+ 214:System/shell/shell_ext.c ****     p = string + offset + ((sign == -1) ? 1 : 0);
+ 467              		.loc 1 214 5 is_stmt 1 view .LVU133
+ 468              		.loc 1 214 45 is_stmt 0 view .LVU134
+ 469 002c B9F1FF3F 		cmp	r9, #-1
+ 470 0030 14D0     		beq	.L60
+ 471 0032 0022     		movs	r2, #0
+ 472              	.L46:
+ 473              		.loc 1 214 25 discriminator 4 view .LVU135
+ 474 0034 1344     		add	r3, r3, r2
+ 475              	.LVL43:
+ 476              		.loc 1 214 7 discriminator 4 view .LVU136
+ 477 0036 1E44     		add	r6, r6, r3
+ 478              	.LVL44:
+ 215:System/shell/shell_ext.c **** 
+ 216:System/shell/shell_ext.c ****     while (*p)
+ 479              		.loc 1 216 5 is_stmt 1 discriminator 4 view .LVU137
+ 184:System/shell/shell_ext.c **** 
+ 480              		.loc 1 184 18 is_stmt 0 discriminator 4 view .LVU138
+ 481 0038 0024     		movs	r4, #0
+ 182:System/shell/shell_ext.c ****     float valueFloat = 0.0;
+ 482              		.loc 1 182 18 discriminator 4 view .LVU139
+ 483 003a 2346     		mov	r3, r4
+ 484              		.loc 1 216 11 discriminator 4 view .LVU140
+ 485 003c 12E0     		b	.L47
+ 486              	.LVL45:
+ 487              	.L53:
+ 188:System/shell/shell_ext.c ****     }
+ 488              		.loc 1 188 14 view .LVU141
+ 489 003e 4FF0FF39 		mov	r9, #-1
+ 191:System/shell/shell_ext.c **** 
+ 490              		.loc 1 191 55 view .LVU142
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 14
+
+
+ 491 0042 0120     		movs	r0, #1
+ 492              	.LVL46:
+ 191:System/shell/shell_ext.c **** 
+ 493              		.loc 1 191 55 view .LVU143
+ 494 0044 E5E7     		b	.L44
+ 495              	.LVL47:
+ 496              	.L59:
+ 207:System/shell/shell_ext.c ****         break;
+ 497              		.loc 1 207 16 view .LVU144
+ 498 0046 0223     		movs	r3, #2
+ 206:System/shell/shell_ext.c ****         offset = 2;
+ 499              		.loc 1 206 15 view .LVU145
+ 500 0048 9846     		mov	r8, r3
+ 501 004a EFE7     		b	.L45
+ 502              	.L54:
+ 202:System/shell/shell_ext.c ****         break;
+ 503              		.loc 1 202 16 view .LVU146
+ 504 004c 0123     		movs	r3, #1
+ 201:System/shell/shell_ext.c ****         offset = 1;
+ 505              		.loc 1 201 15 view .LVU147
+ 506 004e 4FF00808 		mov	r8, #8
+ 507 0052 EBE7     		b	.L45
+ 508              	.L55:
+ 197:System/shell/shell_ext.c ****         break;
+ 509              		.loc 1 197 16 view .LVU148
+ 510 0054 0223     		movs	r3, #2
+ 196:System/shell/shell_ext.c ****         offset = 2;
+ 511              		.loc 1 196 15 view .LVU149
+ 512 0056 4FF01008 		mov	r8, #16
+ 513 005a E7E7     		b	.L45
+ 514              	.LVL48:
+ 515              	.L60:
+ 214:System/shell/shell_ext.c **** 
+ 516              		.loc 1 214 45 view .LVU150
+ 517 005c 0122     		movs	r2, #1
+ 518 005e E9E7     		b	.L46
+ 519              	.LVL49:
+ 520              	.L62:
+ 217:System/shell/shell_ext.c ****     {
+ 218:System/shell/shell_ext.c ****         if (*p == '.')
+ 219:System/shell/shell_ext.c ****         {
+ 220:System/shell/shell_ext.c ****             devide = 1;
+ 521              		.loc 1 220 13 is_stmt 1 view .LVU151
+ 221:System/shell/shell_ext.c ****             p++;
+ 522              		.loc 1 221 13 view .LVU152
+ 523              		.loc 1 221 14 is_stmt 0 view .LVU153
+ 524 0060 0136     		adds	r6, r6, #1
+ 525              	.LVL50:
+ 222:System/shell/shell_ext.c ****             continue;
+ 526              		.loc 1 222 13 is_stmt 1 view .LVU154
+ 220:System/shell/shell_ext.c ****             p++;
+ 527              		.loc 1 220 20 is_stmt 0 view .LVU155
+ 528 0062 0124     		movs	r4, #1
+ 529              	.LVL51:
+ 530              	.L47:
+ 216:System/shell/shell_ext.c ****     {
+ 531              		.loc 1 216 11 is_stmt 1 view .LVU156
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 15
+
+
+ 216:System/shell/shell_ext.c ****     {
+ 532              		.loc 1 216 12 is_stmt 0 view .LVU157
+ 533 0064 3078     		ldrb	r0, [r6]	@ zero_extendqisi2
+ 216:System/shell/shell_ext.c ****     {
+ 534              		.loc 1 216 11 view .LVU158
+ 535 0066 58B1     		cbz	r0, .L61
+ 218:System/shell/shell_ext.c ****         {
+ 536              		.loc 1 218 9 is_stmt 1 view .LVU159
+ 218:System/shell/shell_ext.c ****         {
+ 537              		.loc 1 218 12 is_stmt 0 view .LVU160
+ 538 0068 2E28     		cmp	r0, #46
+ 539 006a F9D0     		beq	.L62
+ 223:System/shell/shell_ext.c ****         }
+ 224:System/shell/shell_ext.c ****         valueInt = valueInt * radix + shellExtToNum(*p);
+ 540              		.loc 1 224 9 is_stmt 1 view .LVU161
+ 541              		.loc 1 224 29 is_stmt 0 view .LVU162
+ 542 006c 03FB08F5 		mul	r5, r3, r8
+ 543              		.loc 1 224 39 view .LVU163
+ 544 0070 FFF7FEFF 		bl	shellExtToNum
+ 545              	.LVL52:
+ 546              		.loc 1 224 18 view .LVU164
+ 547 0074 2B18     		adds	r3, r5, r0
+ 548              	.LVL53:
+ 225:System/shell/shell_ext.c ****         devide *= 10;
+ 549              		.loc 1 225 9 is_stmt 1 view .LVU165
+ 550              		.loc 1 225 16 is_stmt 0 view .LVU166
+ 551 0076 04EB8404 		add	r4, r4, r4, lsl #2
+ 552              	.LVL54:
+ 553              		.loc 1 225 16 view .LVU167
+ 554 007a 6400     		lsls	r4, r4, #1
+ 555              	.LVL55:
+ 226:System/shell/shell_ext.c ****         p++;
+ 556              		.loc 1 226 9 is_stmt 1 view .LVU168
+ 557              		.loc 1 226 10 is_stmt 0 view .LVU169
+ 558 007c 0136     		adds	r6, r6, #1
+ 559              	.LVL56:
+ 560              		.loc 1 226 10 view .LVU170
+ 561 007e F1E7     		b	.L47
+ 562              	.L61:
+ 227:System/shell/shell_ext.c ****     }
+ 228:System/shell/shell_ext.c ****     if (type == NUM_TYPE_FLOAT && devide != 0)
+ 563              		.loc 1 228 5 is_stmt 1 view .LVU171
+ 564              		.loc 1 228 32 is_stmt 0 view .LVU172
+ 565 0080 042F     		cmp	r7, #4
+ 566 0082 14BF     		ite	ne
+ 567 0084 0027     		movne	r7, #0
+ 568 0086 0127     		moveq	r7, #1
+ 569 0088 002C     		cmp	r4, #0
+ 570 008a 08BF     		it	eq
+ 571 008c 0027     		moveq	r7, #0
+ 572              		.loc 1 228 8 view .LVU173
+ 573 008e 9FB1     		cbz	r7, .L51
+ 229:System/shell/shell_ext.c ****     {
+ 230:System/shell/shell_ext.c ****         valueFloat = (float)valueInt / devide * sign;
+ 574              		.loc 1 230 9 is_stmt 1 view .LVU174
+ 575              		.loc 1 230 22 is_stmt 0 view .LVU175
+ 576 0090 07EE903A 		vmov	s15, r3	@ int
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 16
+
+
+ 577 0094 F8EE677A 		vcvt.f32.u32	s15, s15
+ 578              		.loc 1 230 38 view .LVU176
+ 579 0098 07EE104A 		vmov	s14, r4	@ int
+ 580 009c B8EE477A 		vcvt.f32.u32	s14, s14
+ 581 00a0 C7EE876A 		vdiv.f32	s13, s15, s14
+ 582              		.loc 1 230 47 view .LVU177
+ 583 00a4 07EE909A 		vmov	s15, r9	@ int
+ 584 00a8 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 585              	.LVL57:
+ 231:System/shell/shell_ext.c ****         return *(unsigned int *)(&valueFloat);
+ 586              		.loc 1 231 9 is_stmt 1 view .LVU178
+ 587              		.loc 1 231 16 is_stmt 0 view .LVU179
+ 588 00ac 67EEA67A 		vmul.f32	s15, s15, s13
+ 589              	.LVL58:
+ 590              		.loc 1 231 16 view .LVU180
+ 591 00b0 17EE900A 		vmov	r0, s15
+ 592              	.LVL59:
+ 593              	.L43:
+ 232:System/shell/shell_ext.c ****     }
+ 233:System/shell/shell_ext.c ****     else
+ 234:System/shell/shell_ext.c ****     {
+ 235:System/shell/shell_ext.c ****         return valueInt * sign;
+ 236:System/shell/shell_ext.c ****     }
+ 237:System/shell/shell_ext.c **** }
+ 594              		.loc 1 237 1 view .LVU181
+ 595 00b4 BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 596              	.LVL60:
+ 597              	.L51:
+ 235:System/shell/shell_ext.c ****     }
+ 598              		.loc 1 235 9 is_stmt 1 view .LVU182
+ 235:System/shell/shell_ext.c ****     }
+ 599              		.loc 1 235 25 is_stmt 0 view .LVU183
+ 600 00b8 03FB09F0 		mul	r0, r3, r9
+ 601              	.LVL61:
+ 235:System/shell/shell_ext.c ****     }
+ 602              		.loc 1 235 25 view .LVU184
+ 603 00bc FAE7     		b	.L43
+ 604              		.cfi_endproc
+ 605              	.LFE4:
+ 607              		.section	.text.shellExtParseVar,"ax",%progbits
+ 608              		.align	1
+ 609              		.syntax unified
+ 610              		.thumb
+ 611              		.thumb_func
+ 613              	shellExtParseVar:
+ 614              	.LVL62:
+ 615              	.LFB5:
+ 238:System/shell/shell_ext.c **** 
+ 239:System/shell/shell_ext.c **** 
+ 240:System/shell/shell_ext.c **** /**
+ 241:System/shell/shell_ext.c ****  * @brief 解析变量参数
+ 242:System/shell/shell_ext.c ****  * 
+ 243:System/shell/shell_ext.c ****  * @param shell shell对象
+ 244:System/shell/shell_ext.c ****  * @param var 变量
+ 245:System/shell/shell_ext.c ****  * @return unsigned int 变量值
+ 246:System/shell/shell_ext.c ****  */
+ 247:System/shell/shell_ext.c **** static unsigned int shellExtParseVar(Shell *shell, char *var)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 17
+
+
+ 248:System/shell/shell_ext.c **** {
+ 616              		.loc 1 248 1 is_stmt 1 view -0
+ 617              		.cfi_startproc
+ 618              		@ args = 0, pretend = 0, frame = 0
+ 619              		@ frame_needed = 0, uses_anonymous_args = 0
+ 620              		.loc 1 248 1 is_stmt 0 view .LVU186
+ 621 0000 10B5     		push	{r4, lr}
+ 622              	.LCFI2:
+ 623              		.cfi_def_cfa_offset 8
+ 624              		.cfi_offset 4, -8
+ 625              		.cfi_offset 14, -4
+ 626 0002 0446     		mov	r4, r0
+ 249:System/shell/shell_ext.c ****     ShellCommand *command = shellSeekCommand(shell,
+ 627              		.loc 1 249 5 is_stmt 1 view .LVU187
+ 628              		.loc 1 249 29 is_stmt 0 view .LVU188
+ 629 0004 0023     		movs	r3, #0
+ 630 0006 826D     		ldr	r2, [r0, #88]
+ 631 0008 0131     		adds	r1, r1, #1
+ 632              	.LVL63:
+ 633              		.loc 1 249 29 view .LVU189
+ 634 000a FFF7FEFF 		bl	shellSeekCommand
+ 635              	.LVL64:
+ 250:System/shell/shell_ext.c ****                                              var + 1,
+ 251:System/shell/shell_ext.c ****                                              shell->commandList.base,
+ 252:System/shell/shell_ext.c ****                                              0);
+ 253:System/shell/shell_ext.c ****     if (command)
+ 636              		.loc 1 253 5 is_stmt 1 view .LVU190
+ 637              		.loc 1 253 8 is_stmt 0 view .LVU191
+ 638 000e 20B1     		cbz	r0, .L65
+ 639 0010 0146     		mov	r1, r0
+ 254:System/shell/shell_ext.c ****     {
+ 255:System/shell/shell_ext.c ****         return shellGetVarValue(shell, command);
+ 640              		.loc 1 255 9 is_stmt 1 view .LVU192
+ 641              		.loc 1 255 16 is_stmt 0 view .LVU193
+ 642 0012 2046     		mov	r0, r4
+ 643              	.LVL65:
+ 644              		.loc 1 255 16 view .LVU194
+ 645 0014 FFF7FEFF 		bl	shellGetVarValue
+ 646              	.LVL66:
+ 647              	.L63:
+ 256:System/shell/shell_ext.c ****     }
+ 257:System/shell/shell_ext.c ****     else
+ 258:System/shell/shell_ext.c ****     {
+ 259:System/shell/shell_ext.c ****         return 0;
+ 260:System/shell/shell_ext.c ****     }
+ 261:System/shell/shell_ext.c **** }
+ 648              		.loc 1 261 1 view .LVU195
+ 649 0018 10BD     		pop	{r4, pc}
+ 650              	.LVL67:
+ 651              	.L65:
+ 259:System/shell/shell_ext.c ****     }
+ 652              		.loc 1 259 16 view .LVU196
+ 653 001a 0020     		movs	r0, #0
+ 654              	.LVL68:
+ 259:System/shell/shell_ext.c ****     }
+ 655              		.loc 1 259 16 view .LVU197
+ 656 001c FCE7     		b	.L63
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 18
+
+
+ 657              		.cfi_endproc
+ 658              	.LFE5:
+ 660              		.section	.text.shellExtParsePara,"ax",%progbits
+ 661              		.align	1
+ 662              		.global	shellExtParsePara
+ 663              		.syntax unified
+ 664              		.thumb
+ 665              		.thumb_func
+ 667              	shellExtParsePara:
+ 668              	.LVL69:
+ 669              	.LFB6:
+ 262:System/shell/shell_ext.c **** 
+ 263:System/shell/shell_ext.c **** 
+ 264:System/shell/shell_ext.c **** /**
+ 265:System/shell/shell_ext.c ****  * @brief 解析参数
+ 266:System/shell/shell_ext.c ****  * 
+ 267:System/shell/shell_ext.c ****  * @param shell shell对象
+ 268:System/shell/shell_ext.c ****  * @param string 参数
+ 269:System/shell/shell_ext.c ****  * @return unsigned int 解析结果
+ 270:System/shell/shell_ext.c ****  */
+ 271:System/shell/shell_ext.c **** unsigned int shellExtParsePara(Shell *shell, char *string)
+ 272:System/shell/shell_ext.c **** {
+ 670              		.loc 1 272 1 is_stmt 1 view -0
+ 671              		.cfi_startproc
+ 672              		@ args = 0, pretend = 0, frame = 0
+ 673              		@ frame_needed = 0, uses_anonymous_args = 0
+ 674              		.loc 1 272 1 is_stmt 0 view .LVU199
+ 675 0000 08B5     		push	{r3, lr}
+ 676              	.LCFI3:
+ 677              		.cfi_def_cfa_offset 8
+ 678              		.cfi_offset 3, -8
+ 679              		.cfi_offset 14, -4
+ 273:System/shell/shell_ext.c ****     if (*string == '\'' && *(string + 1))
+ 680              		.loc 1 273 5 is_stmt 1 view .LVU200
+ 681              		.loc 1 273 9 is_stmt 0 view .LVU201
+ 682 0002 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+ 683              		.loc 1 273 8 view .LVU202
+ 684 0004 272B     		cmp	r3, #39
+ 685 0006 0BD0     		beq	.L74
+ 686              	.L68:
+ 274:System/shell/shell_ext.c ****     {
+ 275:System/shell/shell_ext.c ****         return (unsigned int)shellExtParseChar(string);
+ 276:System/shell/shell_ext.c ****     }
+ 277:System/shell/shell_ext.c ****     else if (*string == '-' || (*string >= '0' && *string <= '9'))
+ 687              		.loc 1 277 10 is_stmt 1 view .LVU203
+ 688              		.loc 1 277 29 is_stmt 0 view .LVU204
+ 689 0008 A3F13002 		sub	r2, r3, #48
+ 690 000c D2B2     		uxtb	r2, r2
+ 691              		.loc 1 277 13 view .LVU205
+ 692 000e 2D2B     		cmp	r3, #45
+ 693 0010 18BF     		it	ne
+ 694 0012 092A     		cmpne	r2, #9
+ 695 0014 0BD9     		bls	.L75
+ 278:System/shell/shell_ext.c ****     {
+ 279:System/shell/shell_ext.c ****         return (unsigned int)shellExtParseNumber(string);
+ 280:System/shell/shell_ext.c ****     }
+ 281:System/shell/shell_ext.c ****     else if (*string == '$' && *(string + 1))
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 19
+
+
+ 696              		.loc 1 281 10 is_stmt 1 view .LVU206
+ 697              		.loc 1 281 13 is_stmt 0 view .LVU207
+ 698 0016 242B     		cmp	r3, #36
+ 699 0018 0DD0     		beq	.L76
+ 700              	.L71:
+ 282:System/shell/shell_ext.c ****     {
+ 283:System/shell/shell_ext.c ****         return shellExtParseVar(shell, string);
+ 284:System/shell/shell_ext.c ****     }
+ 285:System/shell/shell_ext.c ****     else if (*string)
+ 701              		.loc 1 285 10 is_stmt 1 view .LVU208
+ 702              		.loc 1 285 13 is_stmt 0 view .LVU209
+ 703 001a 93B9     		cbnz	r3, .L77
+ 286:System/shell/shell_ext.c ****     {
+ 287:System/shell/shell_ext.c ****         return (unsigned int)shellExtParseString(string);
+ 288:System/shell/shell_ext.c ****     }
+ 289:System/shell/shell_ext.c ****     return 0;
+ 704              		.loc 1 289 12 view .LVU210
+ 705 001c 0020     		movs	r0, #0
+ 706              	.LVL70:
+ 707              	.L67:
+ 290:System/shell/shell_ext.c **** }
+ 708              		.loc 1 290 1 view .LVU211
+ 709 001e 08BD     		pop	{r3, pc}
+ 710              	.LVL71:
+ 711              	.L74:
+ 273:System/shell/shell_ext.c ****     {
+ 712              		.loc 1 273 28 discriminator 1 view .LVU212
+ 713 0020 4A78     		ldrb	r2, [r1, #1]	@ zero_extendqisi2
+ 273:System/shell/shell_ext.c ****     {
+ 714              		.loc 1 273 25 discriminator 1 view .LVU213
+ 715 0022 002A     		cmp	r2, #0
+ 716 0024 F0D0     		beq	.L68
+ 275:System/shell/shell_ext.c ****     }
+ 717              		.loc 1 275 9 is_stmt 1 view .LVU214
+ 275:System/shell/shell_ext.c ****     }
+ 718              		.loc 1 275 30 is_stmt 0 view .LVU215
+ 719 0026 0846     		mov	r0, r1
+ 720              	.LVL72:
+ 275:System/shell/shell_ext.c ****     }
+ 721              		.loc 1 275 30 view .LVU216
+ 722 0028 FFF7FEFF 		bl	shellExtParseChar
+ 723              	.LVL73:
+ 275:System/shell/shell_ext.c ****     }
+ 724              		.loc 1 275 16 view .LVU217
+ 725 002c F7E7     		b	.L67
+ 726              	.LVL74:
+ 727              	.L75:
+ 279:System/shell/shell_ext.c ****     }
+ 728              		.loc 1 279 9 is_stmt 1 view .LVU218
+ 279:System/shell/shell_ext.c ****     }
+ 729              		.loc 1 279 16 is_stmt 0 view .LVU219
+ 730 002e 0846     		mov	r0, r1
+ 731              	.LVL75:
+ 279:System/shell/shell_ext.c ****     }
+ 732              		.loc 1 279 16 view .LVU220
+ 733 0030 FFF7FEFF 		bl	shellExtParseNumber
+ 734              	.LVL76:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 20
+
+
+ 279:System/shell/shell_ext.c ****     }
+ 735              		.loc 1 279 16 view .LVU221
+ 736 0034 F3E7     		b	.L67
+ 737              	.LVL77:
+ 738              	.L76:
+ 281:System/shell/shell_ext.c ****     {
+ 739              		.loc 1 281 32 discriminator 1 view .LVU222
+ 740 0036 4A78     		ldrb	r2, [r1, #1]	@ zero_extendqisi2
+ 281:System/shell/shell_ext.c ****     {
+ 741              		.loc 1 281 29 discriminator 1 view .LVU223
+ 742 0038 002A     		cmp	r2, #0
+ 743 003a EED0     		beq	.L71
+ 283:System/shell/shell_ext.c ****     }
+ 744              		.loc 1 283 9 is_stmt 1 view .LVU224
+ 283:System/shell/shell_ext.c ****     }
+ 745              		.loc 1 283 16 is_stmt 0 view .LVU225
+ 746 003c FFF7FEFF 		bl	shellExtParseVar
+ 747              	.LVL78:
+ 283:System/shell/shell_ext.c ****     }
+ 748              		.loc 1 283 16 view .LVU226
+ 749 0040 EDE7     		b	.L67
+ 750              	.LVL79:
+ 751              	.L77:
+ 287:System/shell/shell_ext.c ****     }
+ 752              		.loc 1 287 9 is_stmt 1 view .LVU227
+ 287:System/shell/shell_ext.c ****     }
+ 753              		.loc 1 287 30 is_stmt 0 view .LVU228
+ 754 0042 0846     		mov	r0, r1
+ 755              	.LVL80:
+ 287:System/shell/shell_ext.c ****     }
+ 756              		.loc 1 287 30 view .LVU229
+ 757 0044 FFF7FEFF 		bl	shellExtParseString
+ 758              	.LVL81:
+ 287:System/shell/shell_ext.c ****     }
+ 759              		.loc 1 287 16 view .LVU230
+ 760 0048 E9E7     		b	.L67
+ 761              		.cfi_endproc
+ 762              	.LFE6:
+ 764              		.section	.text.shellExtRun,"ax",%progbits
+ 765              		.align	1
+ 766              		.global	shellExtRun
+ 767              		.syntax unified
+ 768              		.thumb
+ 769              		.thumb_func
+ 771              	shellExtRun:
+ 772              	.LVL82:
+ 773              	.LFB7:
+ 291:System/shell/shell_ext.c **** 
+ 292:System/shell/shell_ext.c **** 
+ 293:System/shell/shell_ext.c **** /**
+ 294:System/shell/shell_ext.c ****  * @brief 执行命令
+ 295:System/shell/shell_ext.c ****  * 
+ 296:System/shell/shell_ext.c ****  * @param shell shell对象
+ 297:System/shell/shell_ext.c ****  * @param command 命令
+ 298:System/shell/shell_ext.c ****  * @param argc 参数个数
+ 299:System/shell/shell_ext.c ****  * @param argv 参数
+ 300:System/shell/shell_ext.c ****  * @return int 返回值
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 21
+
+
+ 301:System/shell/shell_ext.c ****  */
+ 302:System/shell/shell_ext.c **** int shellExtRun(Shell *shell, ShellCommand *command, int argc, char *argv[])
+ 303:System/shell/shell_ext.c **** {
+ 774              		.loc 1 303 1 is_stmt 1 view -0
+ 775              		.cfi_startproc
+ 776              		@ args = 0, pretend = 0, frame = 32
+ 777              		@ frame_needed = 0, uses_anonymous_args = 0
+ 778              		.loc 1 303 1 is_stmt 0 view .LVU232
+ 779 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 780              	.LCFI4:
+ 781              		.cfi_def_cfa_offset 32
+ 782              		.cfi_offset 4, -32
+ 783              		.cfi_offset 5, -28
+ 784              		.cfi_offset 6, -24
+ 785              		.cfi_offset 7, -20
+ 786              		.cfi_offset 8, -16
+ 787              		.cfi_offset 9, -12
+ 788              		.cfi_offset 10, -8
+ 789              		.cfi_offset 14, -4
+ 790 0004 8CB0     		sub	sp, sp, #48
+ 791              	.LCFI5:
+ 792              		.cfi_def_cfa_offset 80
+ 793 0006 0646     		mov	r6, r0
+ 794 0008 8946     		mov	r9, r1
+ 795 000a 1546     		mov	r5, r2
+ 796 000c 1F46     		mov	r7, r3
+ 304:System/shell/shell_ext.c ****     unsigned int params[SHELL_PARAMETER_MAX_NUMBER] = {0};
+ 797              		.loc 1 304 5 is_stmt 1 view .LVU233
+ 798              		.loc 1 304 18 is_stmt 0 view .LVU234
+ 799 000e 2022     		movs	r2, #32
+ 800              	.LVL83:
+ 801              		.loc 1 304 18 view .LVU235
+ 802 0010 0021     		movs	r1, #0
+ 803              	.LVL84:
+ 804              		.loc 1 304 18 view .LVU236
+ 805 0012 04A8     		add	r0, sp, #16
+ 806              	.LVL85:
+ 807              		.loc 1 304 18 view .LVU237
+ 808 0014 FFF7FEFF 		bl	memset
+ 809              	.LVL86:
+ 305:System/shell/shell_ext.c ****     int paramNum = command->attr.attrs.paramNum > (argc - 1) ? 
+ 810              		.loc 1 305 5 is_stmt 1 view .LVU238
+ 811              		.loc 1 305 39 is_stmt 0 view .LVU239
+ 812 0018 99F80280 		ldrb	r8, [r9, #2]	@ zero_extendqisi2
+ 813 001c 08F00F08 		and	r8, r8, #15
+ 306:System/shell/shell_ext.c ****         command->attr.attrs.paramNum : (argc - 1);
+ 814              		.loc 1 306 38 view .LVU240
+ 815 0020 A845     		cmp	r8, r5
+ 816 0022 01DA     		bge	.L79
+ 817              		.loc 1 306 38 discriminator 2 view .LVU241
+ 818 0024 05F1FF38 		add	r8, r5, #-1
+ 819              	.L79:
+ 820              	.LVL87:
+ 307:System/shell/shell_ext.c ****     for (int i = 0; i < argc - 1; i++)
+ 821              		.loc 1 307 5 is_stmt 1 view .LVU242
+ 822              	.LBB2:
+ 823              		.loc 1 307 10 view .LVU243
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 22
+
+
+ 824              		.loc 1 307 14 is_stmt 0 view .LVU244
+ 825 0028 0024     		movs	r4, #0
+ 826              		.loc 1 307 5 view .LVU245
+ 827 002a 0CE0     		b	.L80
+ 828              	.LVL88:
+ 829              	.L81:
+ 308:System/shell/shell_ext.c ****     {
+ 309:System/shell/shell_ext.c ****         params[i] = shellExtParsePara(shell, argv[i + 1]);
+ 830              		.loc 1 309 9 is_stmt 1 discriminator 3 view .LVU246
+ 831              		.loc 1 309 50 is_stmt 0 discriminator 3 view .LVU247
+ 832 002c 04F1010A 		add	r10, r4, #1
+ 833              		.loc 1 309 21 discriminator 3 view .LVU248
+ 834 0030 57F82A10 		ldr	r1, [r7, r10, lsl #2]
+ 835 0034 3046     		mov	r0, r6
+ 836 0036 FFF7FEFF 		bl	shellExtParsePara
+ 837              	.LVL89:
+ 838              		.loc 1 309 19 discriminator 3 view .LVU249
+ 839 003a 0CAB     		add	r3, sp, #48
+ 840 003c 03EB8404 		add	r4, r3, r4, lsl #2
+ 841              	.LVL90:
+ 842              		.loc 1 309 19 discriminator 3 view .LVU250
+ 843 0040 44F8200C 		str	r0, [r4, #-32]
+ 307:System/shell/shell_ext.c ****     for (int i = 0; i < argc - 1; i++)
+ 844              		.loc 1 307 35 is_stmt 1 discriminator 3 view .LVU251
+ 307:System/shell/shell_ext.c ****     for (int i = 0; i < argc - 1; i++)
+ 845              		.loc 1 307 36 is_stmt 0 discriminator 3 view .LVU252
+ 846 0044 5446     		mov	r4, r10
+ 847              	.LVL91:
+ 848              	.L80:
+ 307:System/shell/shell_ext.c ****     for (int i = 0; i < argc - 1; i++)
+ 849              		.loc 1 307 21 is_stmt 1 discriminator 1 view .LVU253
+ 307:System/shell/shell_ext.c ****     for (int i = 0; i < argc - 1; i++)
+ 850              		.loc 1 307 30 is_stmt 0 discriminator 1 view .LVU254
+ 851 0046 05F1FF3C 		add	ip, r5, #-1
+ 307:System/shell/shell_ext.c ****     for (int i = 0; i < argc - 1; i++)
+ 852              		.loc 1 307 5 discriminator 1 view .LVU255
+ 853 004a A445     		cmp	ip, r4
+ 854 004c EEDC     		bgt	.L81
+ 855              	.LBE2:
+ 310:System/shell/shell_ext.c ****     }
+ 311:System/shell/shell_ext.c ****     switch (paramNum)
+ 856              		.loc 1 311 5 is_stmt 1 view .LVU256
+ 857 004e B8F1070F 		cmp	r8, #7
+ 858 0052 49D8     		bhi	.L92
+ 859 0054 DFE808F0 		tbb	[pc, r8]
+ 860              	.L84:
+ 861 0058 04       		.byte	(.L91-.L84)/2
+ 862 0059 0A       		.byte	(.L90-.L84)/2
+ 863 005a 0F       		.byte	(.L89-.L84)/2
+ 864 005b 15       		.byte	(.L88-.L84)/2
+ 865 005c 1C       		.byte	(.L87-.L84)/2
+ 866 005d 24       		.byte	(.L86-.L84)/2
+ 867 005e 2E       		.byte	(.L85-.L84)/2
+ 868 005f 3A       		.byte	(.L83-.L84)/2
+ 869              		.p2align 1
+ 870              	.L91:
+ 312:System/shell/shell_ext.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 23
+
+
+ 313:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 1
+ 314:System/shell/shell_ext.c ****     case 0:
+ 315:System/shell/shell_ext.c ****         return command->data.cmd.function();
+ 871              		.loc 1 315 9 view .LVU257
+ 872              		.loc 1 315 33 is_stmt 0 view .LVU258
+ 873 0060 D9F80830 		ldr	r3, [r9, #8]
+ 874              		.loc 1 315 16 view .LVU259
+ 875 0064 9847     		blx	r3
+ 876              	.LVL92:
+ 877              	.L78:
+ 316:System/shell/shell_ext.c ****         // break;
+ 317:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 1 */
+ 318:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 2
+ 319:System/shell/shell_ext.c ****     case 1:
+ 320:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0]);
+ 321:System/shell/shell_ext.c ****         // break;
+ 322:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 2 */
+ 323:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 3
+ 324:System/shell/shell_ext.c ****     case 2:
+ 325:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1]);
+ 326:System/shell/shell_ext.c ****         // break;
+ 327:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 3 */
+ 328:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 4
+ 329:System/shell/shell_ext.c ****     case 3:
+ 330:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 331:System/shell/shell_ext.c ****                                           params[2]);
+ 332:System/shell/shell_ext.c ****         // break;
+ 333:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 4 */
+ 334:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 5
+ 335:System/shell/shell_ext.c ****     case 4:
+ 336:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 337:System/shell/shell_ext.c ****                                           params[2], params[3]);
+ 338:System/shell/shell_ext.c ****         // break;
+ 339:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 5 */
+ 340:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 6
+ 341:System/shell/shell_ext.c ****     case 5:
+ 342:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 343:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 344:System/shell/shell_ext.c ****                                           params[4]);
+ 345:System/shell/shell_ext.c ****         // break;
+ 346:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 6 */
+ 347:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 7
+ 348:System/shell/shell_ext.c ****     case 6:
+ 349:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 350:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 351:System/shell/shell_ext.c ****                                           params[4], params[5]);
+ 352:System/shell/shell_ext.c ****         // break;
+ 353:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 7 */
+ 354:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 8
+ 355:System/shell/shell_ext.c ****     case 7:
+ 356:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 357:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 358:System/shell/shell_ext.c ****                                           params[4], params[5],
+ 359:System/shell/shell_ext.c ****                                           params[6]);
+ 360:System/shell/shell_ext.c ****         // break;
+ 361:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 8 */
+ 362:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 9
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 24
+
+
+ 363:System/shell/shell_ext.c ****     case 8:
+ 364:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 365:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 366:System/shell/shell_ext.c ****                                           params[4], params[5],
+ 367:System/shell/shell_ext.c ****                                           params[6], params[7]);
+ 368:System/shell/shell_ext.c ****         // break;
+ 369:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 9 */
+ 370:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 10
+ 371:System/shell/shell_ext.c ****     case 9:
+ 372:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 373:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 374:System/shell/shell_ext.c ****                                           params[4], params[5],
+ 375:System/shell/shell_ext.c ****                                           params[6], params[7],
+ 376:System/shell/shell_ext.c ****                                           params[8]);
+ 377:System/shell/shell_ext.c ****         // break;
+ 378:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 10 */
+ 379:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 11
+ 380:System/shell/shell_ext.c ****     case 10:
+ 381:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 382:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 383:System/shell/shell_ext.c ****                                           params[4], params[5],
+ 384:System/shell/shell_ext.c ****                                           params[6], params[7],
+ 385:System/shell/shell_ext.c ****                                           params[8], params[9]);
+ 386:System/shell/shell_ext.c ****         // break;
+ 387:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 11 */
+ 388:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 12
+ 389:System/shell/shell_ext.c ****     case 11:
+ 390:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 391:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 392:System/shell/shell_ext.c ****                                           params[4], params[5],
+ 393:System/shell/shell_ext.c ****                                           params[6], params[7],
+ 394:System/shell/shell_ext.c ****                                           params[8], params[9],
+ 395:System/shell/shell_ext.c ****                                           params[10]);
+ 396:System/shell/shell_ext.c ****         // break;
+ 397:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 12 */
+ 398:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 13
+ 399:System/shell/shell_ext.c ****     case 12:
+ 400:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 401:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 402:System/shell/shell_ext.c ****                                           params[4], params[5],
+ 403:System/shell/shell_ext.c ****                                           params[6], params[7],
+ 404:System/shell/shell_ext.c ****                                           params[8], params[9],
+ 405:System/shell/shell_ext.c ****                                           params[10], params[11]);
+ 406:System/shell/shell_ext.c ****         // break;
+ 407:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 13 */
+ 408:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 14
+ 409:System/shell/shell_ext.c ****     case 13:
+ 410:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 411:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 412:System/shell/shell_ext.c ****                                           params[4], params[5],
+ 413:System/shell/shell_ext.c ****                                           params[6], params[7],
+ 414:System/shell/shell_ext.c ****                                           params[8], params[9],
+ 415:System/shell/shell_ext.c ****                                           params[10], params[11],
+ 416:System/shell/shell_ext.c ****                                           params[12]);
+ 417:System/shell/shell_ext.c ****         // break;
+ 418:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 14 */
+ 419:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 15
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 25
+
+
+ 420:System/shell/shell_ext.c ****     case 14:
+ 421:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 422:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 423:System/shell/shell_ext.c ****                                           params[4], params[5],
+ 424:System/shell/shell_ext.c ****                                           params[6], params[7],
+ 425:System/shell/shell_ext.c ****                                           params[8], params[9],
+ 426:System/shell/shell_ext.c ****                                           params[10], params[11],
+ 427:System/shell/shell_ext.c ****                                           params[12], params[13]);
+ 428:System/shell/shell_ext.c ****         // break;
+ 429:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 15 */
+ 430:System/shell/shell_ext.c **** #if SHELL_PARAMETER_MAX_NUMBER >= 16
+ 431:System/shell/shell_ext.c ****     case 15:
+ 432:System/shell/shell_ext.c ****         return command->data.cmd.function(params[0], params[1],
+ 433:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 434:System/shell/shell_ext.c ****                                           params[4], params[5],
+ 435:System/shell/shell_ext.c ****                                           params[6], params[7],
+ 436:System/shell/shell_ext.c ****                                           params[8], params[9],
+ 437:System/shell/shell_ext.c ****                                           params[10], params[11],
+ 438:System/shell/shell_ext.c ****                                           params[12], params[13],
+ 439:System/shell/shell_ext.c ****                                           params[14]);
+ 440:System/shell/shell_ext.c ****         // break;
+ 441:System/shell/shell_ext.c **** #endif /** SHELL_PARAMETER_MAX_NUMBER >= 16 */
+ 442:System/shell/shell_ext.c ****     default:
+ 443:System/shell/shell_ext.c ****         return -1;
+ 444:System/shell/shell_ext.c ****         // break;
+ 445:System/shell/shell_ext.c ****     }
+ 446:System/shell/shell_ext.c **** }
+ 878              		.loc 1 446 1 view .LVU260
+ 879 0066 0CB0     		add	sp, sp, #48
+ 880              	.LCFI6:
+ 881              		.cfi_remember_state
+ 882              		.cfi_def_cfa_offset 32
+ 883              		@ sp needed
+ 884 0068 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 885              	.LVL93:
+ 886              	.L90:
+ 887              	.LCFI7:
+ 888              		.cfi_restore_state
+ 320:System/shell/shell_ext.c ****         // break;
+ 889              		.loc 1 320 9 is_stmt 1 view .LVU261
+ 320:System/shell/shell_ext.c ****         // break;
+ 890              		.loc 1 320 33 is_stmt 0 view .LVU262
+ 891 006c D9F80830 		ldr	r3, [r9, #8]
+ 320:System/shell/shell_ext.c ****         // break;
+ 892              		.loc 1 320 16 view .LVU263
+ 893 0070 0498     		ldr	r0, [sp, #16]
+ 894 0072 9847     		blx	r3
+ 895              	.LVL94:
+ 896 0074 F7E7     		b	.L78
+ 897              	.L89:
+ 325:System/shell/shell_ext.c ****         // break;
+ 898              		.loc 1 325 9 is_stmt 1 view .LVU264
+ 325:System/shell/shell_ext.c ****         // break;
+ 899              		.loc 1 325 33 is_stmt 0 view .LVU265
+ 900 0076 D9F80830 		ldr	r3, [r9, #8]
+ 325:System/shell/shell_ext.c ****         // break;
+ 901              		.loc 1 325 16 view .LVU266
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 26
+
+
+ 902 007a 0599     		ldr	r1, [sp, #20]
+ 903 007c 0498     		ldr	r0, [sp, #16]
+ 904 007e 9847     		blx	r3
+ 905              	.LVL95:
+ 906 0080 F1E7     		b	.L78
+ 907              	.L88:
+ 330:System/shell/shell_ext.c ****                                           params[2]);
+ 908              		.loc 1 330 9 is_stmt 1 view .LVU267
+ 330:System/shell/shell_ext.c ****                                           params[2]);
+ 909              		.loc 1 330 33 is_stmt 0 view .LVU268
+ 910 0082 D9F80830 		ldr	r3, [r9, #8]
+ 330:System/shell/shell_ext.c ****                                           params[2]);
+ 911              		.loc 1 330 16 view .LVU269
+ 912 0086 069A     		ldr	r2, [sp, #24]
+ 913 0088 0599     		ldr	r1, [sp, #20]
+ 914 008a 0498     		ldr	r0, [sp, #16]
+ 915 008c 9847     		blx	r3
+ 916              	.LVL96:
+ 917 008e EAE7     		b	.L78
+ 918              	.L87:
+ 336:System/shell/shell_ext.c ****                                           params[2], params[3]);
+ 919              		.loc 1 336 9 is_stmt 1 view .LVU270
+ 336:System/shell/shell_ext.c ****                                           params[2], params[3]);
+ 920              		.loc 1 336 33 is_stmt 0 view .LVU271
+ 921 0090 D9F80840 		ldr	r4, [r9, #8]
+ 922              	.LVL97:
+ 336:System/shell/shell_ext.c ****                                           params[2], params[3]);
+ 923              		.loc 1 336 16 view .LVU272
+ 924 0094 079B     		ldr	r3, [sp, #28]
+ 925 0096 069A     		ldr	r2, [sp, #24]
+ 926 0098 0599     		ldr	r1, [sp, #20]
+ 927 009a 0498     		ldr	r0, [sp, #16]
+ 928 009c A047     		blx	r4
+ 929              	.LVL98:
+ 930 009e E2E7     		b	.L78
+ 931              	.LVL99:
+ 932              	.L86:
+ 342:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 933              		.loc 1 342 9 is_stmt 1 view .LVU273
+ 342:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 934              		.loc 1 342 33 is_stmt 0 view .LVU274
+ 935 00a0 D9F80840 		ldr	r4, [r9, #8]
+ 936              	.LVL100:
+ 342:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 937              		.loc 1 342 16 view .LVU275
+ 938 00a4 089B     		ldr	r3, [sp, #32]
+ 939 00a6 0093     		str	r3, [sp]
+ 940 00a8 079B     		ldr	r3, [sp, #28]
+ 941 00aa 069A     		ldr	r2, [sp, #24]
+ 942 00ac 0599     		ldr	r1, [sp, #20]
+ 943 00ae 0498     		ldr	r0, [sp, #16]
+ 944 00b0 A047     		blx	r4
+ 945              	.LVL101:
+ 946 00b2 D8E7     		b	.L78
+ 947              	.LVL102:
+ 948              	.L85:
+ 349:System/shell/shell_ext.c ****                                           params[2], params[3],
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 27
+
+
+ 949              		.loc 1 349 9 is_stmt 1 view .LVU276
+ 349:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 950              		.loc 1 349 33 is_stmt 0 view .LVU277
+ 951 00b4 D9F80840 		ldr	r4, [r9, #8]
+ 952              	.LVL103:
+ 349:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 953              		.loc 1 349 16 view .LVU278
+ 954 00b8 099B     		ldr	r3, [sp, #36]
+ 955 00ba 0193     		str	r3, [sp, #4]
+ 956 00bc 089B     		ldr	r3, [sp, #32]
+ 957 00be 0093     		str	r3, [sp]
+ 958 00c0 079B     		ldr	r3, [sp, #28]
+ 959 00c2 069A     		ldr	r2, [sp, #24]
+ 960 00c4 0599     		ldr	r1, [sp, #20]
+ 961 00c6 0498     		ldr	r0, [sp, #16]
+ 962 00c8 A047     		blx	r4
+ 963              	.LVL104:
+ 964 00ca CCE7     		b	.L78
+ 965              	.LVL105:
+ 966              	.L83:
+ 356:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 967              		.loc 1 356 9 is_stmt 1 view .LVU279
+ 356:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 968              		.loc 1 356 33 is_stmt 0 view .LVU280
+ 969 00cc D9F80840 		ldr	r4, [r9, #8]
+ 970              	.LVL106:
+ 356:System/shell/shell_ext.c ****                                           params[2], params[3],
+ 971              		.loc 1 356 16 view .LVU281
+ 972 00d0 0A9B     		ldr	r3, [sp, #40]
+ 973 00d2 0293     		str	r3, [sp, #8]
+ 974 00d4 099B     		ldr	r3, [sp, #36]
+ 975 00d6 0193     		str	r3, [sp, #4]
+ 976 00d8 089B     		ldr	r3, [sp, #32]
+ 977 00da 0093     		str	r3, [sp]
+ 978 00dc 079B     		ldr	r3, [sp, #28]
+ 979 00de 069A     		ldr	r2, [sp, #24]
+ 980 00e0 0599     		ldr	r1, [sp, #20]
+ 981 00e2 0498     		ldr	r0, [sp, #16]
+ 982 00e4 A047     		blx	r4
+ 983              	.LVL107:
+ 984 00e6 BEE7     		b	.L78
+ 985              	.LVL108:
+ 986              	.L92:
+ 311:System/shell/shell_ext.c ****     {
+ 987              		.loc 1 311 5 view .LVU282
+ 988 00e8 4FF0FF30 		mov	r0, #-1
+ 989 00ec BBE7     		b	.L78
+ 990              		.cfi_endproc
+ 991              	.LFE7:
+ 993              		.text
+ 994              	.Letext0:
+ 995              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 996              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 997              		.file 4 "System/shell/shell.h"
+ 998              		.file 5 "System/shell/shell_ext.h"
+ 999              		.file 6 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 shell_ext.c
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:19     .text.shellExtNumType:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:24     .text.shellExtNumType:00000000 shellExtNumType
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:133    .text.shellExtToNum:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:138    .text.shellExtToNum:00000000 shellExtToNum
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:192    .text.shellExtParseChar:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:197    .text.shellExtParseChar:00000000 shellExtParseChar
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:244    .text.shellExtParseChar:00000028 $d
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:263    .text.shellExtParseChar:00000074 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:297    .text.shellExtParseString:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:302    .text.shellExtParseString:00000000 shellExtParseString
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:403    .text.shellExtParseNumber:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:408    .text.shellExtParseNumber:00000000 shellExtParseNumber
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:608    .text.shellExtParseVar:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:613    .text.shellExtParseVar:00000000 shellExtParseVar
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:661    .text.shellExtParsePara:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:667    .text.shellExtParsePara:00000000 shellExtParsePara
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:765    .text.shellExtRun:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:771    .text.shellExtRun:00000000 shellExtRun
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:861    .text.shellExtRun:00000058 $d
+C:\Users\HUAV\AppData\Local\Temp\ccSnJ2rG.s:869    .text.shellExtRun:00000060 $t
+
+UNDEFINED SYMBOLS
+shellSeekCommand
+shellGetVarValue
+memset

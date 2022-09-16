@@ -1,0 +1,1100 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"queue.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.Queue_UpdateState,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	Queue_UpdateState:
+  25              	.LVL0:
+  26              	.LFB5:
+  27              		.file 1 "DataStructure/queue.c"
+   1:DataStructure/queue.c **** #include "queue.h"
+   2:DataStructure/queue.c **** #include <stdio.h>
+   3:DataStructure/queue.c **** #include <string.h>
+   4:DataStructure/queue.c **** #include <stdlib.h>
+   5:DataStructure/queue.c **** #include <stddef.h>
+   6:DataStructure/queue.c **** #include <stdio.h>
+   7:DataStructure/queue.c **** #include "mmu.h"
+   8:DataStructure/queue.c **** 
+   9:DataStructure/queue.c **** #define Queue_Mem_Malloc(x) MMU_Malloc(x)
+  10:DataStructure/queue.c **** #define Queue_Mem_Free(x) MMU_Free(x)
+  11:DataStructure/queue.c **** 
+  12:DataStructure/queue.c **** /* internal function */
+  13:DataStructure/queue.c **** static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj);
+  14:DataStructure/queue.c **** 
+  15:DataStructure/queue.c **** /* external function */
+  16:DataStructure/queue.c **** static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len);
+  17:DataStructure/queue.c **** static bool Queue_Reset(QueueObj_TypeDef *obj);
+  18:DataStructure/queue.c **** static Queue_state Queue_GetState(QueueObj_TypeDef obj);
+  19:DataStructure/queue.c **** static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
+  20:DataStructure/queue.c **** static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
+  21:DataStructure/queue.c **** static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, uint16_t size);
+  22:DataStructure/queue.c **** static uint16_t Queue_GetSize(QueueObj_TypeDef obj);
+  23:DataStructure/queue.c **** 
+  24:DataStructure/queue.c **** /* extern virable */
+  25:DataStructure/queue.c **** Queue_TypeDef Queue = {
+  26:DataStructure/queue.c ****     .create = Queue_Create,
+  27:DataStructure/queue.c ****     .reset = Queue_Reset,
+  28:DataStructure/queue.c ****     .push = Queue_Push,
+  29:DataStructure/queue.c ****     .pop = Queue_Pop,
+  30:DataStructure/queue.c ****     .check = Queue_Check,
+  31:DataStructure/queue.c ****     .state = Queue_GetState,
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 2
+
+
+  32:DataStructure/queue.c ****     .size = Queue_GetSize,
+  33:DataStructure/queue.c **** };
+  34:DataStructure/queue.c **** 
+  35:DataStructure/queue.c **** static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len)
+  36:DataStructure/queue.c **** {
+  37:DataStructure/queue.c ****     if ((obj == NULL) || (len == 0))
+  38:DataStructure/queue.c ****         return false;
+  39:DataStructure/queue.c **** 
+  40:DataStructure/queue.c ****     obj->name = name;
+  41:DataStructure/queue.c ****     obj->end_pos = 0;
+  42:DataStructure/queue.c ****     obj->head_pos = 0;
+  43:DataStructure/queue.c ****     obj->size = 0;
+  44:DataStructure/queue.c ****     obj->lenth = len;
+  45:DataStructure/queue.c **** 
+  46:DataStructure/queue.c ****     obj->buff = (uint8_t *)Queue_Mem_Malloc(len);
+  47:DataStructure/queue.c ****     memset(obj->buff, NULL, obj->lenth);
+  48:DataStructure/queue.c **** 
+  49:DataStructure/queue.c ****     if (obj->buff == NULL)
+  50:DataStructure/queue.c ****         return false;
+  51:DataStructure/queue.c **** 
+  52:DataStructure/queue.c ****     obj->state = Queue_empty;
+  53:DataStructure/queue.c **** 
+  54:DataStructure/queue.c ****     return true;
+  55:DataStructure/queue.c **** }
+  56:DataStructure/queue.c **** 
+  57:DataStructure/queue.c **** static bool Queue_Reset(QueueObj_TypeDef *obj)
+  58:DataStructure/queue.c **** {
+  59:DataStructure/queue.c ****     if ((obj == NULL) || (obj->buff == NULL) || (obj->lenth == 0))
+  60:DataStructure/queue.c ****         return false;
+  61:DataStructure/queue.c **** 
+  62:DataStructure/queue.c ****     obj->end_pos = 0;
+  63:DataStructure/queue.c ****     obj->head_pos = 0;
+  64:DataStructure/queue.c ****     obj->size = 0;
+  65:DataStructure/queue.c **** 
+  66:DataStructure/queue.c ****     obj->state = Queue_empty;
+  67:DataStructure/queue.c ****     memset(obj->buff, NULL, obj->lenth);
+  68:DataStructure/queue.c **** 
+  69:DataStructure/queue.c ****     return true;
+  70:DataStructure/queue.c **** }
+  71:DataStructure/queue.c **** 
+  72:DataStructure/queue.c **** static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj)
+  73:DataStructure/queue.c **** {
+  28              		.loc 1 73 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  74:DataStructure/queue.c ****     if ((obj->head_pos == obj->end_pos) || (obj->size == 0))
+  33              		.loc 1 74 5 view .LVU1
+  34              		.loc 1 74 13 is_stmt 0 view .LVU2
+  35 0000 B0F80920 		ldrh	r2, [r0, #9]	@ unaligned
+  36              		.loc 1 74 30 view .LVU3
+  37 0004 B0F80B30 		ldrh	r3, [r0, #11]	@ unaligned
+  38              		.loc 1 74 8 view .LVU4
+  39 0008 9A42     		cmp	r2, r3
+  40 000a 0DD0     		beq	.L2
+  41              		.loc 1 74 48 discriminator 1 view .LVU5
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 3
+
+
+  42 000c C188     		ldrh	r1, [r0, #6]	@ unaligned
+  43              		.loc 1 74 41 discriminator 1 view .LVU6
+  44 000e 59B1     		cbz	r1, .L2
+  75:DataStructure/queue.c ****     {
+  76:DataStructure/queue.c ****         obj->state = Queue_empty;
+  77:DataStructure/queue.c ****         return Queue_empty;
+  78:DataStructure/queue.c ****     }
+  79:DataStructure/queue.c **** 
+  80:DataStructure/queue.c ****     if (((obj->end_pos + 1) % obj->lenth) == obj->head_pos)
+  45              		.loc 1 80 5 is_stmt 1 view .LVU7
+  46              		.loc 1 80 24 is_stmt 0 view .LVU8
+  47 0010 0133     		adds	r3, r3, #1
+  48              		.loc 1 80 34 view .LVU9
+  49 0012 8188     		ldrh	r1, [r0, #4]	@ unaligned
+  50              		.loc 1 80 29 view .LVU10
+  51 0014 93FBF1FC 		sdiv	ip, r3, r1
+  52 0018 01FB1C33 		mls	r3, r1, ip, r3
+  53              		.loc 1 80 8 view .LVU11
+  54 001c 9342     		cmp	r3, r2
+  55 001e 07D0     		beq	.L6
+  81:DataStructure/queue.c ****     {
+  82:DataStructure/queue.c ****         obj->state = Queue_full;
+  83:DataStructure/queue.c ****         return Queue_full;
+  84:DataStructure/queue.c ****     }
+  85:DataStructure/queue.c **** 
+  86:DataStructure/queue.c ****     obj->state = Queue_ok;
+  56              		.loc 1 86 5 is_stmt 1 view .LVU12
+  57              		.loc 1 86 16 is_stmt 0 view .LVU13
+  58 0020 0023     		movs	r3, #0
+  59 0022 0372     		strb	r3, [r0, #8]
+  87:DataStructure/queue.c ****     return obj->state;
+  60              		.loc 1 87 5 is_stmt 1 view .LVU14
+  61              		.loc 1 87 15 is_stmt 0 view .LVU15
+  62 0024 1846     		mov	r0, r3
+  63              	.LVL1:
+  88:DataStructure/queue.c **** }
+  64              		.loc 1 88 1 view .LVU16
+  65 0026 7047     		bx	lr
+  66              	.LVL2:
+  67              	.L2:
+  76:DataStructure/queue.c ****         return Queue_empty;
+  68              		.loc 1 76 9 is_stmt 1 view .LVU17
+  76:DataStructure/queue.c ****         return Queue_empty;
+  69              		.loc 1 76 20 is_stmt 0 view .LVU18
+  70 0028 0323     		movs	r3, #3
+  71 002a 0372     		strb	r3, [r0, #8]
+  77:DataStructure/queue.c ****     }
+  72              		.loc 1 77 9 is_stmt 1 view .LVU19
+  77:DataStructure/queue.c ****     }
+  73              		.loc 1 77 16 is_stmt 0 view .LVU20
+  74 002c 1846     		mov	r0, r3
+  75              	.LVL3:
+  77:DataStructure/queue.c ****     }
+  76              		.loc 1 77 16 view .LVU21
+  77 002e 7047     		bx	lr
+  78              	.LVL4:
+  79              	.L6:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 4
+
+
+  82:DataStructure/queue.c ****         return Queue_full;
+  80              		.loc 1 82 9 is_stmt 1 view .LVU22
+  82:DataStructure/queue.c ****         return Queue_full;
+  81              		.loc 1 82 20 is_stmt 0 view .LVU23
+  82 0030 0423     		movs	r3, #4
+  83 0032 0372     		strb	r3, [r0, #8]
+  83:DataStructure/queue.c ****     }
+  84              		.loc 1 83 9 is_stmt 1 view .LVU24
+  83:DataStructure/queue.c ****     }
+  85              		.loc 1 83 16 is_stmt 0 view .LVU25
+  86 0034 1846     		mov	r0, r3
+  87              	.LVL5:
+  83:DataStructure/queue.c ****     }
+  88              		.loc 1 83 16 view .LVU26
+  89 0036 7047     		bx	lr
+  90              		.cfi_endproc
+  91              	.LFE5:
+  93              		.section	.text.Queue_Push,"ax",%progbits
+  94              		.align	1
+  95              		.syntax unified
+  96              		.thumb
+  97              		.thumb_func
+  99              	Queue_Push:
+ 100              	.LVL6:
+ 101              	.LFB6:
+  89:DataStructure/queue.c **** 
+  90:DataStructure/queue.c **** static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size)
+  91:DataStructure/queue.c **** {
+ 102              		.loc 1 91 1 is_stmt 1 view -0
+ 103              		.cfi_startproc
+ 104              		@ args = 0, pretend = 0, frame = 0
+ 105              		@ frame_needed = 0, uses_anonymous_args = 0
+  92:DataStructure/queue.c ****     if ((obj == NULL) || (obj->lenth == 0))
+ 106              		.loc 1 92 5 view .LVU28
+ 107              		.loc 1 92 8 is_stmt 0 view .LVU29
+ 108 0000 88B3     		cbz	r0, .L12
+  91:DataStructure/queue.c ****     if ((obj == NULL) || (obj->lenth == 0))
+ 109              		.loc 1 91 1 discriminator 1 view .LVU30
+ 110 0002 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 111              	.LCFI0:
+ 112              		.cfi_def_cfa_offset 24
+ 113              		.cfi_offset 3, -24
+ 114              		.cfi_offset 4, -20
+ 115              		.cfi_offset 5, -16
+ 116              		.cfi_offset 6, -12
+ 117              		.cfi_offset 7, -8
+ 118              		.cfi_offset 14, -4
+ 119 0004 0F46     		mov	r7, r1
+ 120 0006 1646     		mov	r6, r2
+ 121 0008 0446     		mov	r4, r0
+ 122              		.loc 1 92 30 discriminator 1 view .LVU31
+ 123 000a 8388     		ldrh	r3, [r0, #4]	@ unaligned
+ 124              		.loc 1 92 23 discriminator 1 view .LVU32
+ 125 000c 6BB3     		cbz	r3, .L13
+  93:DataStructure/queue.c ****         return Queue_obj_error;
+  94:DataStructure/queue.c **** 
+  95:DataStructure/queue.c ****     if ((obj->state == Queue_ok) || (obj->state == Queue_empty))
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 5
+
+
+ 126              		.loc 1 95 5 is_stmt 1 view .LVU33
+ 127              		.loc 1 95 13 is_stmt 0 view .LVU34
+ 128 000e 027A     		ldrb	r2, [r0, #8]	@ zero_extendqisi2
+ 129              	.LVL7:
+ 130              		.loc 1 95 8 view .LVU35
+ 131 0010 032A     		cmp	r2, #3
+ 132 0012 18BF     		it	ne
+ 133 0014 002A     		cmpne	r2, #0
+ 134 0016 24D1     		bne	.L9
+  96:DataStructure/queue.c ****     {
+  97:DataStructure/queue.c ****         if (size <= (obj->lenth - obj->size))
+ 135              		.loc 1 97 9 is_stmt 1 view .LVU36
+ 136              		.loc 1 97 38 is_stmt 0 view .LVU37
+ 137 0018 C288     		ldrh	r2, [r0, #6]	@ unaligned
+ 138              		.loc 1 97 33 view .LVU38
+ 139 001a 9B1A     		subs	r3, r3, r2
+ 140              		.loc 1 97 12 view .LVU39
+ 141 001c 9E42     		cmp	r6, r3
+ 142 001e 01DC     		bgt	.L19
+ 143              	.LBB2:
+  98:DataStructure/queue.c ****         {
+  99:DataStructure/queue.c ****             for (uint16_t i = 0; i < size; i++)
+ 144              		.loc 1 99 27 view .LVU40
+ 145 0020 0025     		movs	r5, #0
+ 146 0022 1CE0     		b	.L10
+ 147              	.L19:
+ 148              	.LBE2:
+ 100:DataStructure/queue.c ****             {
+ 101:DataStructure/queue.c ****                 obj->end_pos %= obj->lenth;
+ 102:DataStructure/queue.c ****                 obj->buff[obj->end_pos] = data[i];
+ 103:DataStructure/queue.c ****                 obj->end_pos++;
+ 104:DataStructure/queue.c **** 
+ 105:DataStructure/queue.c ****                 obj->size++;
+ 106:DataStructure/queue.c **** 
+ 107:DataStructure/queue.c ****                 Queue_UpdateState(obj);
+ 108:DataStructure/queue.c ****             }
+ 109:DataStructure/queue.c ****         }
+ 110:DataStructure/queue.c ****         else
+ 111:DataStructure/queue.c ****             return Queue_overflow_w;
+ 149              		.loc 1 111 20 view .LVU41
+ 150 0024 0120     		movs	r0, #1
+ 151              	.LVL8:
+ 152              		.loc 1 111 20 view .LVU42
+ 153 0026 1DE0     		b	.L8
+ 154              	.LVL9:
+ 155              	.L11:
+ 156              	.LBB3:
+ 101:DataStructure/queue.c ****                 obj->buff[obj->end_pos] = data[i];
+ 157              		.loc 1 101 17 is_stmt 1 discriminator 3 view .LVU43
+ 101:DataStructure/queue.c ****                 obj->buff[obj->end_pos] = data[i];
+ 158              		.loc 1 101 36 is_stmt 0 discriminator 3 view .LVU44
+ 159 0028 A288     		ldrh	r2, [r4, #4]	@ unaligned
+ 101:DataStructure/queue.c ****                 obj->buff[obj->end_pos] = data[i];
+ 160              		.loc 1 101 30 discriminator 3 view .LVU45
+ 161 002a B4F80B30 		ldrh	r3, [r4, #11]	@ unaligned
+ 162 002e B3FBF2F1 		udiv	r1, r3, r2
+ 163 0032 02FB1133 		mls	r3, r2, r1, r3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 6
+
+
+ 164 0036 9AB2     		uxth	r2, r3
+ 165 0038 A4F80B30 		strh	r3, [r4, #11]	@ unaligned
+ 102:DataStructure/queue.c ****                 obj->end_pos++;
+ 166              		.loc 1 102 17 is_stmt 1 discriminator 3 view .LVU46
+ 102:DataStructure/queue.c ****                 obj->end_pos++;
+ 167              		.loc 1 102 20 is_stmt 0 discriminator 3 view .LVU47
+ 168 003c D4F80D30 		ldr	r3, [r4, #13]	@ unaligned
+ 102:DataStructure/queue.c ****                 obj->end_pos++;
+ 169              		.loc 1 102 47 discriminator 3 view .LVU48
+ 170 0040 795D     		ldrb	r1, [r7, r5]	@ zero_extendqisi2
+ 102:DataStructure/queue.c ****                 obj->end_pos++;
+ 171              		.loc 1 102 41 discriminator 3 view .LVU49
+ 172 0042 9954     		strb	r1, [r3, r2]
+ 103:DataStructure/queue.c **** 
+ 173              		.loc 1 103 17 is_stmt 1 discriminator 3 view .LVU50
+ 103:DataStructure/queue.c **** 
+ 174              		.loc 1 103 20 is_stmt 0 discriminator 3 view .LVU51
+ 175 0044 B4F80B30 		ldrh	r3, [r4, #11]	@ unaligned
+ 103:DataStructure/queue.c **** 
+ 176              		.loc 1 103 29 discriminator 3 view .LVU52
+ 177 0048 0133     		adds	r3, r3, #1
+ 178 004a A4F80B30 		strh	r3, [r4, #11]	@ unaligned
+ 105:DataStructure/queue.c **** 
+ 179              		.loc 1 105 17 is_stmt 1 discriminator 3 view .LVU53
+ 105:DataStructure/queue.c **** 
+ 180              		.loc 1 105 20 is_stmt 0 discriminator 3 view .LVU54
+ 181 004e E388     		ldrh	r3, [r4, #6]	@ unaligned
+ 105:DataStructure/queue.c **** 
+ 182              		.loc 1 105 26 discriminator 3 view .LVU55
+ 183 0050 0133     		adds	r3, r3, #1
+ 184 0052 E380     		strh	r3, [r4, #6]	@ unaligned
+ 107:DataStructure/queue.c ****             }
+ 185              		.loc 1 107 17 is_stmt 1 discriminator 3 view .LVU56
+ 186 0054 2046     		mov	r0, r4
+ 187 0056 FFF7FEFF 		bl	Queue_UpdateState
+ 188              	.LVL10:
+  99:DataStructure/queue.c ****             {
+ 189              		.loc 1 99 44 discriminator 3 view .LVU57
+  99:DataStructure/queue.c ****             {
+ 190              		.loc 1 99 45 is_stmt 0 discriminator 3 view .LVU58
+ 191 005a 0135     		adds	r5, r5, #1
+ 192              	.LVL11:
+  99:DataStructure/queue.c ****             {
+ 193              		.loc 1 99 45 discriminator 3 view .LVU59
+ 194 005c ADB2     		uxth	r5, r5
+ 195              	.LVL12:
+ 196              	.L10:
+  99:DataStructure/queue.c ****             {
+ 197              		.loc 1 99 34 is_stmt 1 discriminator 1 view .LVU60
+  99:DataStructure/queue.c ****             {
+ 198              		.loc 1 99 13 is_stmt 0 discriminator 1 view .LVU61
+ 199 005e B542     		cmp	r5, r6
+ 200 0060 E2D3     		bcc	.L11
+ 201              	.LVL13:
+ 202              	.L9:
+  99:DataStructure/queue.c ****             {
+ 203              		.loc 1 99 13 discriminator 1 view .LVU62
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 7
+
+
+ 204              	.LBE3:
+ 112:DataStructure/queue.c ****     }
+ 113:DataStructure/queue.c **** 
+ 114:DataStructure/queue.c ****     return obj->state;
+ 205              		.loc 1 114 5 is_stmt 1 view .LVU63
+ 206              		.loc 1 114 15 is_stmt 0 view .LVU64
+ 207 0062 207A     		ldrb	r0, [r4, #8]	@ zero_extendqisi2
+ 208              	.L8:
+ 115:DataStructure/queue.c **** }
+ 209              		.loc 1 115 1 view .LVU65
+ 210 0064 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 211              	.LVL14:
+ 212              	.L12:
+ 213              	.LCFI1:
+ 214              		.cfi_def_cfa_offset 0
+ 215              		.cfi_restore 3
+ 216              		.cfi_restore 4
+ 217              		.cfi_restore 5
+ 218              		.cfi_restore 6
+ 219              		.cfi_restore 7
+ 220              		.cfi_restore 14
+  93:DataStructure/queue.c **** 
+ 221              		.loc 1 93 16 view .LVU66
+ 222 0066 0520     		movs	r0, #5
+ 223              	.LVL15:
+ 224              		.loc 1 115 1 view .LVU67
+ 225 0068 7047     		bx	lr
+ 226              	.LVL16:
+ 227              	.L13:
+ 228              	.LCFI2:
+ 229              		.cfi_def_cfa_offset 24
+ 230              		.cfi_offset 3, -24
+ 231              		.cfi_offset 4, -20
+ 232              		.cfi_offset 5, -16
+ 233              		.cfi_offset 6, -12
+ 234              		.cfi_offset 7, -8
+ 235              		.cfi_offset 14, -4
+  93:DataStructure/queue.c **** 
+ 236              		.loc 1 93 16 view .LVU68
+ 237 006a 0520     		movs	r0, #5
+ 238              	.LVL17:
+  93:DataStructure/queue.c **** 
+ 239              		.loc 1 93 16 view .LVU69
+ 240 006c FAE7     		b	.L8
+ 241              		.cfi_endproc
+ 242              	.LFE6:
+ 244              		.section	.text.Queue_Pop,"ax",%progbits
+ 245              		.align	1
+ 246              		.syntax unified
+ 247              		.thumb
+ 248              		.thumb_func
+ 250              	Queue_Pop:
+ 251              	.LVL18:
+ 252              	.LFB7:
+ 116:DataStructure/queue.c **** 
+ 117:DataStructure/queue.c **** static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size)
+ 118:DataStructure/queue.c **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 8
+
+
+ 253              		.loc 1 118 1 is_stmt 1 view -0
+ 254              		.cfi_startproc
+ 255              		@ args = 0, pretend = 0, frame = 0
+ 256              		@ frame_needed = 0, uses_anonymous_args = 0
+ 119:DataStructure/queue.c ****     if ((obj == NULL) || (obj->lenth == 0))
+ 257              		.loc 1 119 5 view .LVU71
+ 258              		.loc 1 119 8 is_stmt 0 view .LVU72
+ 259 0000 B0B3     		cbz	r0, .L25
+ 118:DataStructure/queue.c ****     if ((obj == NULL) || (obj->lenth == 0))
+ 260              		.loc 1 118 1 discriminator 1 view .LVU73
+ 261 0002 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 262              	.LCFI3:
+ 263              		.cfi_def_cfa_offset 24
+ 264              		.cfi_offset 3, -24
+ 265              		.cfi_offset 4, -20
+ 266              		.cfi_offset 5, -16
+ 267              		.cfi_offset 6, -12
+ 268              		.cfi_offset 7, -8
+ 269              		.cfi_offset 14, -4
+ 270 0004 0F46     		mov	r7, r1
+ 271 0006 1646     		mov	r6, r2
+ 272 0008 0446     		mov	r4, r0
+ 273              		.loc 1 119 30 discriminator 1 view .LVU74
+ 274 000a 8388     		ldrh	r3, [r0, #4]	@ unaligned
+ 275              		.loc 1 119 23 discriminator 1 view .LVU75
+ 276 000c 93B3     		cbz	r3, .L26
+ 120:DataStructure/queue.c ****         return Queue_obj_error;
+ 121:DataStructure/queue.c **** 
+ 122:DataStructure/queue.c ****     if ((obj->state == Queue_ok) || (obj->state == Queue_full))
+ 277              		.loc 1 122 5 is_stmt 1 view .LVU76
+ 278              		.loc 1 122 13 is_stmt 0 view .LVU77
+ 279 000e 037A     		ldrb	r3, [r0, #8]	@ zero_extendqisi2
+ 280              		.loc 1 122 8 view .LVU78
+ 281 0010 042B     		cmp	r3, #4
+ 282 0012 18BF     		it	ne
+ 283 0014 002B     		cmpne	r3, #0
+ 284 0016 29D1     		bne	.L22
+ 123:DataStructure/queue.c ****     {
+ 124:DataStructure/queue.c ****         if (size <= obj->size)
+ 285              		.loc 1 124 9 is_stmt 1 view .LVU79
+ 286              		.loc 1 124 24 is_stmt 0 view .LVU80
+ 287 0018 C388     		ldrh	r3, [r0, #6]	@ unaligned
+ 288              		.loc 1 124 12 view .LVU81
+ 289 001a 9342     		cmp	r3, r2
+ 290 001c 01D3     		bcc	.L32
+ 291              	.LBB4:
+ 125:DataStructure/queue.c ****         {
+ 126:DataStructure/queue.c ****             for (uint16_t i = 0; i < size; i++)
+ 292              		.loc 1 126 27 view .LVU82
+ 293 001e 0025     		movs	r5, #0
+ 294 0020 22E0     		b	.L23
+ 295              	.L32:
+ 296              	.LBE4:
+ 127:DataStructure/queue.c ****             {
+ 128:DataStructure/queue.c ****                 obj->head_pos %= obj->lenth;
+ 129:DataStructure/queue.c ****                 data[i] = obj->buff[obj->head_pos];
+ 130:DataStructure/queue.c ****                 obj->buff[obj->head_pos] = NULL;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 9
+
+
+ 131:DataStructure/queue.c ****                 obj->head_pos++;
+ 132:DataStructure/queue.c **** 
+ 133:DataStructure/queue.c ****                 obj->size--;
+ 134:DataStructure/queue.c **** 
+ 135:DataStructure/queue.c ****                 Queue_UpdateState(obj);
+ 136:DataStructure/queue.c ****             }
+ 137:DataStructure/queue.c ****         }
+ 138:DataStructure/queue.c ****         else
+ 139:DataStructure/queue.c ****             return Queue_overflow_r;
+ 297              		.loc 1 139 20 view .LVU83
+ 298 0022 0220     		movs	r0, #2
+ 299              	.LVL19:
+ 300              		.loc 1 139 20 view .LVU84
+ 301 0024 23E0     		b	.L21
+ 302              	.LVL20:
+ 303              	.L24:
+ 304              	.LBB5:
+ 128:DataStructure/queue.c ****                 data[i] = obj->buff[obj->head_pos];
+ 305              		.loc 1 128 17 is_stmt 1 discriminator 3 view .LVU85
+ 128:DataStructure/queue.c ****                 data[i] = obj->buff[obj->head_pos];
+ 306              		.loc 1 128 37 is_stmt 0 discriminator 3 view .LVU86
+ 307 0026 A288     		ldrh	r2, [r4, #4]	@ unaligned
+ 128:DataStructure/queue.c ****                 data[i] = obj->buff[obj->head_pos];
+ 308              		.loc 1 128 31 discriminator 3 view .LVU87
+ 309 0028 B4F80930 		ldrh	r3, [r4, #9]	@ unaligned
+ 310 002c B3FBF2F1 		udiv	r1, r3, r2
+ 311 0030 02FB1133 		mls	r3, r2, r1, r3
+ 312 0034 9AB2     		uxth	r2, r3
+ 313 0036 A4F80930 		strh	r3, [r4, #9]	@ unaligned
+ 129:DataStructure/queue.c ****                 obj->buff[obj->head_pos] = NULL;
+ 314              		.loc 1 129 17 is_stmt 1 discriminator 3 view .LVU88
+ 129:DataStructure/queue.c ****                 obj->buff[obj->head_pos] = NULL;
+ 315              		.loc 1 129 30 is_stmt 0 discriminator 3 view .LVU89
+ 316 003a D4F80D30 		ldr	r3, [r4, #13]	@ unaligned
+ 129:DataStructure/queue.c ****                 obj->buff[obj->head_pos] = NULL;
+ 317              		.loc 1 129 36 discriminator 3 view .LVU90
+ 318 003e 9B5C     		ldrb	r3, [r3, r2]	@ zero_extendqisi2
+ 129:DataStructure/queue.c ****                 obj->buff[obj->head_pos] = NULL;
+ 319              		.loc 1 129 25 discriminator 3 view .LVU91
+ 320 0040 7B55     		strb	r3, [r7, r5]
+ 130:DataStructure/queue.c ****                 obj->head_pos++;
+ 321              		.loc 1 130 17 is_stmt 1 discriminator 3 view .LVU92
+ 130:DataStructure/queue.c ****                 obj->head_pos++;
+ 322              		.loc 1 130 20 is_stmt 0 discriminator 3 view .LVU93
+ 323 0042 D4F80D20 		ldr	r2, [r4, #13]	@ unaligned
+ 130:DataStructure/queue.c ****                 obj->head_pos++;
+ 324              		.loc 1 130 30 discriminator 3 view .LVU94
+ 325 0046 B4F80930 		ldrh	r3, [r4, #9]	@ unaligned
+ 130:DataStructure/queue.c ****                 obj->head_pos++;
+ 326              		.loc 1 130 42 discriminator 3 view .LVU95
+ 327 004a 0021     		movs	r1, #0
+ 328 004c D154     		strb	r1, [r2, r3]
+ 131:DataStructure/queue.c **** 
+ 329              		.loc 1 131 17 is_stmt 1 discriminator 3 view .LVU96
+ 131:DataStructure/queue.c **** 
+ 330              		.loc 1 131 20 is_stmt 0 discriminator 3 view .LVU97
+ 331 004e B4F80930 		ldrh	r3, [r4, #9]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 10
+
+
+ 131:DataStructure/queue.c **** 
+ 332              		.loc 1 131 30 discriminator 3 view .LVU98
+ 333 0052 0133     		adds	r3, r3, #1
+ 334 0054 A4F80930 		strh	r3, [r4, #9]	@ unaligned
+ 133:DataStructure/queue.c **** 
+ 335              		.loc 1 133 17 is_stmt 1 discriminator 3 view .LVU99
+ 133:DataStructure/queue.c **** 
+ 336              		.loc 1 133 20 is_stmt 0 discriminator 3 view .LVU100
+ 337 0058 E388     		ldrh	r3, [r4, #6]	@ unaligned
+ 133:DataStructure/queue.c **** 
+ 338              		.loc 1 133 26 discriminator 3 view .LVU101
+ 339 005a 013B     		subs	r3, r3, #1
+ 340 005c E380     		strh	r3, [r4, #6]	@ unaligned
+ 135:DataStructure/queue.c ****             }
+ 341              		.loc 1 135 17 is_stmt 1 discriminator 3 view .LVU102
+ 342 005e 2046     		mov	r0, r4
+ 343 0060 FFF7FEFF 		bl	Queue_UpdateState
+ 344              	.LVL21:
+ 126:DataStructure/queue.c ****             {
+ 345              		.loc 1 126 44 discriminator 3 view .LVU103
+ 126:DataStructure/queue.c ****             {
+ 346              		.loc 1 126 45 is_stmt 0 discriminator 3 view .LVU104
+ 347 0064 0135     		adds	r5, r5, #1
+ 348              	.LVL22:
+ 126:DataStructure/queue.c ****             {
+ 349              		.loc 1 126 45 discriminator 3 view .LVU105
+ 350 0066 ADB2     		uxth	r5, r5
+ 351              	.LVL23:
+ 352              	.L23:
+ 126:DataStructure/queue.c ****             {
+ 353              		.loc 1 126 34 is_stmt 1 discriminator 1 view .LVU106
+ 126:DataStructure/queue.c ****             {
+ 354              		.loc 1 126 13 is_stmt 0 discriminator 1 view .LVU107
+ 355 0068 B542     		cmp	r5, r6
+ 356 006a DCD3     		bcc	.L24
+ 357              	.LVL24:
+ 358              	.L22:
+ 126:DataStructure/queue.c ****             {
+ 359              		.loc 1 126 13 discriminator 1 view .LVU108
+ 360              	.LBE5:
+ 140:DataStructure/queue.c ****     }
+ 141:DataStructure/queue.c **** 
+ 142:DataStructure/queue.c ****     return obj->state;
+ 361              		.loc 1 142 5 is_stmt 1 view .LVU109
+ 362              		.loc 1 142 15 is_stmt 0 view .LVU110
+ 363 006c 207A     		ldrb	r0, [r4, #8]	@ zero_extendqisi2
+ 364              	.L21:
+ 143:DataStructure/queue.c **** }
+ 365              		.loc 1 143 1 view .LVU111
+ 366 006e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 367              	.LVL25:
+ 368              	.L25:
+ 369              	.LCFI4:
+ 370              		.cfi_def_cfa_offset 0
+ 371              		.cfi_restore 3
+ 372              		.cfi_restore 4
+ 373              		.cfi_restore 5
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 11
+
+
+ 374              		.cfi_restore 6
+ 375              		.cfi_restore 7
+ 376              		.cfi_restore 14
+ 120:DataStructure/queue.c **** 
+ 377              		.loc 1 120 16 view .LVU112
+ 378 0070 0520     		movs	r0, #5
+ 379              	.LVL26:
+ 380              		.loc 1 143 1 view .LVU113
+ 381 0072 7047     		bx	lr
+ 382              	.LVL27:
+ 383              	.L26:
+ 384              	.LCFI5:
+ 385              		.cfi_def_cfa_offset 24
+ 386              		.cfi_offset 3, -24
+ 387              		.cfi_offset 4, -20
+ 388              		.cfi_offset 5, -16
+ 389              		.cfi_offset 6, -12
+ 390              		.cfi_offset 7, -8
+ 391              		.cfi_offset 14, -4
+ 120:DataStructure/queue.c **** 
+ 392              		.loc 1 120 16 view .LVU114
+ 393 0074 0520     		movs	r0, #5
+ 394              	.LVL28:
+ 120:DataStructure/queue.c **** 
+ 395              		.loc 1 120 16 view .LVU115
+ 396 0076 FAE7     		b	.L21
+ 397              		.cfi_endproc
+ 398              	.LFE7:
+ 400              		.section	.text.Queue_Check,"ax",%progbits
+ 401              		.align	1
+ 402              		.syntax unified
+ 403              		.thumb
+ 404              		.thumb_func
+ 406              	Queue_Check:
+ 407              	.LVL29:
+ 408              	.LFB8:
+ 144:DataStructure/queue.c **** 
+ 145:DataStructure/queue.c **** static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, uint16_t size)
+ 146:DataStructure/queue.c **** {
+ 409              		.loc 1 146 1 is_stmt 1 view -0
+ 410              		.cfi_startproc
+ 411              		@ args = 0, pretend = 0, frame = 0
+ 412              		@ frame_needed = 0, uses_anonymous_args = 0
+ 147:DataStructure/queue.c ****     if (obj == NULL || (size == 0) || (data == NULL))
+ 413              		.loc 1 147 5 view .LVU117
+ 414              		.loc 1 147 13 is_stmt 0 view .LVU118
+ 415 0000 8446     		mov	ip, r0
+ 416              		.loc 1 147 8 view .LVU119
+ 417 0002 002B     		cmp	r3, #0
+ 418 0004 18BF     		it	ne
+ 419 0006 0028     		cmpne	r0, #0
+ 420 0008 0CBF     		ite	eq
+ 421 000a 0120     		moveq	r0, #1
+ 422              	.LVL30:
+ 423              		.loc 1 147 8 view .LVU120
+ 424 000c 0020     		movne	r0, #0
+ 425 000e 19D0     		beq	.L37
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 12
+
+
+ 146:DataStructure/queue.c ****     if (obj == NULL || (size == 0) || (data == NULL))
+ 426              		.loc 1 146 1 discriminator 1 view .LVU121
+ 427 0010 70B5     		push	{r4, r5, r6, lr}
+ 428              	.LCFI6:
+ 429              		.cfi_def_cfa_offset 16
+ 430              		.cfi_offset 4, -16
+ 431              		.cfi_offset 5, -12
+ 432              		.cfi_offset 6, -8
+ 433              		.cfi_offset 14, -4
+ 434 0012 1D46     		mov	r5, r3
+ 435              		.loc 1 147 36 discriminator 1 view .LVU122
+ 436 0014 AAB1     		cbz	r2, .L34
+ 437              	.LBB6:
+ 148:DataStructure/queue.c ****         return false;
+ 149:DataStructure/queue.c **** 
+ 150:DataStructure/queue.c ****     for (uint8_t i = 0; i < size; i++)
+ 438              		.loc 1 150 18 view .LVU123
+ 439 0016 0020     		movs	r0, #0
+ 440 0018 0FE0     		b	.L35
+ 441              	.LVL31:
+ 442              	.L36:
+ 151:DataStructure/queue.c ****     {
+ 152:DataStructure/queue.c ****         data[i] = obj->buff[(obj->head_pos + index + i) % obj->lenth];
+ 443              		.loc 1 152 9 is_stmt 1 discriminator 3 view .LVU124
+ 444              		.loc 1 152 22 is_stmt 0 discriminator 3 view .LVU125
+ 445 001a DCF80D40 		ldr	r4, [ip, #13]	@ unaligned
+ 446              		.loc 1 152 33 discriminator 3 view .LVU126
+ 447 001e BCF80930 		ldrh	r3, [ip, #9]	@ unaligned
+ 448              		.loc 1 152 44 discriminator 3 view .LVU127
+ 449 0022 0B44     		add	r3, r3, r1
+ 450              		.loc 1 152 52 discriminator 3 view .LVU128
+ 451 0024 0344     		add	r3, r3, r0
+ 452              		.loc 1 152 62 discriminator 3 view .LVU129
+ 453 0026 BCF804E0 		ldrh	lr, [ip, #4]	@ unaligned
+ 454              		.loc 1 152 57 discriminator 3 view .LVU130
+ 455 002a 93FBFEF6 		sdiv	r6, r3, lr
+ 456 002e 0EFB1633 		mls	r3, lr, r6, r3
+ 457              		.loc 1 152 28 discriminator 3 view .LVU131
+ 458 0032 E35C     		ldrb	r3, [r4, r3]	@ zero_extendqisi2
+ 459              		.loc 1 152 17 discriminator 3 view .LVU132
+ 460 0034 1354     		strb	r3, [r2, r0]
+ 150:DataStructure/queue.c ****     {
+ 461              		.loc 1 150 35 is_stmt 1 discriminator 3 view .LVU133
+ 150:DataStructure/queue.c ****     {
+ 462              		.loc 1 150 36 is_stmt 0 discriminator 3 view .LVU134
+ 463 0036 0130     		adds	r0, r0, #1
+ 464              	.LVL32:
+ 150:DataStructure/queue.c ****     {
+ 465              		.loc 1 150 36 discriminator 3 view .LVU135
+ 466 0038 C0B2     		uxtb	r0, r0
+ 467              	.LVL33:
+ 468              	.L35:
+ 150:DataStructure/queue.c ****     {
+ 469              		.loc 1 150 25 is_stmt 1 discriminator 1 view .LVU136
+ 150:DataStructure/queue.c ****     {
+ 470              		.loc 1 150 27 is_stmt 0 discriminator 1 view .LVU137
+ 471 003a 83B2     		uxth	r3, r0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 13
+
+
+ 150:DataStructure/queue.c ****     {
+ 472              		.loc 1 150 5 discriminator 1 view .LVU138
+ 473 003c AB42     		cmp	r3, r5
+ 474 003e ECD3     		bcc	.L36
+ 475              	.LBE6:
+ 153:DataStructure/queue.c ****     }
+ 154:DataStructure/queue.c **** 
+ 155:DataStructure/queue.c ****     return true;
+ 476              		.loc 1 155 12 view .LVU139
+ 477 0040 0120     		movs	r0, #1
+ 478              	.LVL34:
+ 479              	.L34:
+ 156:DataStructure/queue.c **** }
+ 480              		.loc 1 156 1 view .LVU140
+ 481 0042 70BD     		pop	{r4, r5, r6, pc}
+ 482              	.LVL35:
+ 483              	.L37:
+ 484              	.LCFI7:
+ 485              		.cfi_def_cfa_offset 0
+ 486              		.cfi_restore 4
+ 487              		.cfi_restore 5
+ 488              		.cfi_restore 6
+ 489              		.cfi_restore 14
+ 148:DataStructure/queue.c **** 
+ 490              		.loc 1 148 16 view .LVU141
+ 491 0044 0020     		movs	r0, #0
+ 492              		.loc 1 156 1 view .LVU142
+ 493 0046 7047     		bx	lr
+ 494              		.cfi_endproc
+ 495              	.LFE8:
+ 497              		.section	.text.Queue_GetState,"ax",%progbits
+ 498              		.align	1
+ 499              		.syntax unified
+ 500              		.thumb
+ 501              		.thumb_func
+ 503              	Queue_GetState:
+ 504              	.LFB9:
+ 157:DataStructure/queue.c **** 
+ 158:DataStructure/queue.c **** static Queue_state Queue_GetState(QueueObj_TypeDef obj)
+ 159:DataStructure/queue.c **** {
+ 505              		.loc 1 159 1 is_stmt 1 view -0
+ 506              		.cfi_startproc
+ 507              		@ args = 20, pretend = 16, frame = 0
+ 508              		@ frame_needed = 0, uses_anonymous_args = 0
+ 509              		@ link register save eliminated.
+ 510 0000 84B0     		sub	sp, sp, #16
+ 511              	.LCFI8:
+ 512              		.cfi_def_cfa_offset 16
+ 513 0002 8DE80F00 		stm	sp, {r0, r1, r2, r3}
+ 160:DataStructure/queue.c ****     return obj.state;
+ 514              		.loc 1 160 5 view .LVU144
+ 161:DataStructure/queue.c **** }
+ 515              		.loc 1 161 1 is_stmt 0 view .LVU145
+ 516 0006 9DF80800 		ldrb	r0, [sp, #8]	@ zero_extendqisi2
+ 517 000a 04B0     		add	sp, sp, #16
+ 518              	.LCFI9:
+ 519              		.cfi_def_cfa_offset 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 14
+
+
+ 520 000c 7047     		bx	lr
+ 521              		.cfi_endproc
+ 522              	.LFE9:
+ 524              		.section	.text.Queue_GetSize,"ax",%progbits
+ 525              		.align	1
+ 526              		.syntax unified
+ 527              		.thumb
+ 528              		.thumb_func
+ 530              	Queue_GetSize:
+ 531              	.LFB10:
+ 162:DataStructure/queue.c **** 
+ 163:DataStructure/queue.c **** static uint16_t Queue_GetSize(QueueObj_TypeDef obj)
+ 164:DataStructure/queue.c **** {
+ 532              		.loc 1 164 1 is_stmt 1 view -0
+ 533              		.cfi_startproc
+ 534              		@ args = 20, pretend = 16, frame = 0
+ 535              		@ frame_needed = 0, uses_anonymous_args = 0
+ 536              		@ link register save eliminated.
+ 537 0000 84B0     		sub	sp, sp, #16
+ 538              	.LCFI10:
+ 539              		.cfi_def_cfa_offset 16
+ 540 0002 8DE80F00 		stm	sp, {r0, r1, r2, r3}
+ 165:DataStructure/queue.c ****     return obj.size;
+ 541              		.loc 1 165 5 view .LVU147
+ 166:DataStructure/queue.c **** }
+ 542              		.loc 1 166 1 is_stmt 0 view .LVU148
+ 543 0006 BDF80600 		ldrh	r0, [sp, #6]
+ 544 000a 04B0     		add	sp, sp, #16
+ 545              	.LCFI11:
+ 546              		.cfi_def_cfa_offset 0
+ 547 000c 7047     		bx	lr
+ 548              		.cfi_endproc
+ 549              	.LFE10:
+ 551              		.section	.text.Queue_Reset,"ax",%progbits
+ 552              		.align	1
+ 553              		.syntax unified
+ 554              		.thumb
+ 555              		.thumb_func
+ 557              	Queue_Reset:
+ 558              	.LVL36:
+ 559              	.LFB4:
+  58:DataStructure/queue.c ****     if ((obj == NULL) || (obj->buff == NULL) || (obj->lenth == 0))
+ 560              		.loc 1 58 1 is_stmt 1 view -0
+ 561              		.cfi_startproc
+ 562              		@ args = 0, pretend = 0, frame = 0
+ 563              		@ frame_needed = 0, uses_anonymous_args = 0
+  59:DataStructure/queue.c ****         return false;
+ 564              		.loc 1 59 5 view .LVU150
+  59:DataStructure/queue.c ****         return false;
+ 565              		.loc 1 59 8 is_stmt 0 view .LVU151
+ 566 0000 B8B1     		cbz	r0, .L48
+  58:DataStructure/queue.c ****     if ((obj == NULL) || (obj->buff == NULL) || (obj->lenth == 0))
+ 567              		.loc 1 58 1 discriminator 1 view .LVU152
+ 568 0002 08B5     		push	{r3, lr}
+ 569              	.LCFI12:
+ 570              		.cfi_def_cfa_offset 8
+ 571              		.cfi_offset 3, -8
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 15
+
+
+ 572              		.cfi_offset 14, -4
+ 573 0004 0346     		mov	r3, r0
+  59:DataStructure/queue.c ****         return false;
+ 574              		.loc 1 59 30 discriminator 1 view .LVU153
+ 575 0006 D0F80D00 		ldr	r0, [r0, #13]	@ unaligned
+ 576              	.LVL37:
+  59:DataStructure/queue.c ****         return false;
+ 577              		.loc 1 59 23 discriminator 1 view .LVU154
+ 578 000a A0B1     		cbz	r0, .L49
+  59:DataStructure/queue.c ****         return false;
+ 579              		.loc 1 59 53 discriminator 2 view .LVU155
+ 580 000c 9A88     		ldrh	r2, [r3, #4]	@ unaligned
+  59:DataStructure/queue.c ****         return false;
+ 581              		.loc 1 59 46 discriminator 2 view .LVU156
+ 582 000e 0AB9     		cbnz	r2, .L55
+  60:DataStructure/queue.c **** 
+ 583              		.loc 1 60 16 view .LVU157
+ 584 0010 0020     		movs	r0, #0
+ 585              	.LVL38:
+ 586              	.L47:
+  70:DataStructure/queue.c **** 
+ 587              		.loc 1 70 1 view .LVU158
+ 588 0012 08BD     		pop	{r3, pc}
+ 589              	.LVL39:
+ 590              	.L55:
+  62:DataStructure/queue.c ****     obj->head_pos = 0;
+ 591              		.loc 1 62 5 is_stmt 1 view .LVU159
+  62:DataStructure/queue.c ****     obj->head_pos = 0;
+ 592              		.loc 1 62 18 is_stmt 0 view .LVU160
+ 593 0014 0021     		movs	r1, #0
+ 594 0016 D972     		strb	r1, [r3, #11]
+ 595 0018 1973     		strb	r1, [r3, #12]
+  63:DataStructure/queue.c ****     obj->size = 0;
+ 596              		.loc 1 63 5 is_stmt 1 view .LVU161
+  63:DataStructure/queue.c ****     obj->size = 0;
+ 597              		.loc 1 63 19 is_stmt 0 view .LVU162
+ 598 001a 5972     		strb	r1, [r3, #9]
+ 599 001c 9972     		strb	r1, [r3, #10]
+  64:DataStructure/queue.c **** 
+ 600              		.loc 1 64 5 is_stmt 1 view .LVU163
+  64:DataStructure/queue.c **** 
+ 601              		.loc 1 64 15 is_stmt 0 view .LVU164
+ 602 001e 9971     		strb	r1, [r3, #6]
+ 603 0020 D971     		strb	r1, [r3, #7]
+  66:DataStructure/queue.c ****     memset(obj->buff, NULL, obj->lenth);
+ 604              		.loc 1 66 5 is_stmt 1 view .LVU165
+  66:DataStructure/queue.c ****     memset(obj->buff, NULL, obj->lenth);
+ 605              		.loc 1 66 16 is_stmt 0 view .LVU166
+ 606 0022 4FF0030C 		mov	ip, #3
+ 607 0026 83F808C0 		strb	ip, [r3, #8]
+  67:DataStructure/queue.c **** 
+ 608              		.loc 1 67 5 is_stmt 1 view .LVU167
+ 609 002a FFF7FEFF 		bl	memset
+ 610              	.LVL40:
+  69:DataStructure/queue.c **** }
+ 611              		.loc 1 69 5 view .LVU168
+  69:DataStructure/queue.c **** }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 16
+
+
+ 612              		.loc 1 69 12 is_stmt 0 view .LVU169
+ 613 002e 0120     		movs	r0, #1
+ 614 0030 EFE7     		b	.L47
+ 615              	.LVL41:
+ 616              	.L48:
+ 617              	.LCFI13:
+ 618              		.cfi_def_cfa_offset 0
+ 619              		.cfi_restore 3
+ 620              		.cfi_restore 14
+  60:DataStructure/queue.c **** 
+ 621              		.loc 1 60 16 view .LVU170
+ 622 0032 0020     		movs	r0, #0
+ 623              	.LVL42:
+  70:DataStructure/queue.c **** 
+ 624              		.loc 1 70 1 view .LVU171
+ 625 0034 7047     		bx	lr
+ 626              	.LVL43:
+ 627              	.L49:
+ 628              	.LCFI14:
+ 629              		.cfi_def_cfa_offset 8
+ 630              		.cfi_offset 3, -8
+ 631              		.cfi_offset 14, -4
+  60:DataStructure/queue.c **** 
+ 632              		.loc 1 60 16 view .LVU172
+ 633 0036 0020     		movs	r0, #0
+ 634 0038 EBE7     		b	.L47
+ 635              		.cfi_endproc
+ 636              	.LFE4:
+ 638              		.section	.text.Queue_Create,"ax",%progbits
+ 639              		.align	1
+ 640              		.syntax unified
+ 641              		.thumb
+ 642              		.thumb_func
+ 644              	Queue_Create:
+ 645              	.LVL44:
+ 646              	.LFB3:
+  36:DataStructure/queue.c ****     if ((obj == NULL) || (len == 0))
+ 647              		.loc 1 36 1 is_stmt 1 view -0
+ 648              		.cfi_startproc
+ 649              		@ args = 0, pretend = 0, frame = 0
+ 650              		@ frame_needed = 0, uses_anonymous_args = 0
+  36:DataStructure/queue.c ****     if ((obj == NULL) || (len == 0))
+ 651              		.loc 1 36 1 is_stmt 0 view .LVU174
+ 652 0000 70B5     		push	{r4, r5, r6, lr}
+ 653              	.LCFI15:
+ 654              		.cfi_def_cfa_offset 16
+ 655              		.cfi_offset 4, -16
+ 656              		.cfi_offset 5, -12
+ 657              		.cfi_offset 6, -8
+ 658              		.cfi_offset 14, -4
+  37:DataStructure/queue.c ****         return false;
+ 659              		.loc 1 37 5 is_stmt 1 view .LVU175
+  37:DataStructure/queue.c ****         return false;
+ 660              		.loc 1 37 8 is_stmt 0 view .LVU176
+ 661 0002 002A     		cmp	r2, #0
+ 662 0004 18BF     		it	ne
+ 663 0006 0028     		cmpne	r0, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 17
+
+
+ 664 0008 0CBF     		ite	eq
+ 665 000a 0124     		moveq	r4, #1
+ 666 000c 0024     		movne	r4, #0
+ 667 000e 02D1     		bne	.L60
+  38:DataStructure/queue.c **** 
+ 668              		.loc 1 38 16 view .LVU177
+ 669 0010 0024     		movs	r4, #0
+ 670              	.LVL45:
+ 671              	.L57:
+  55:DataStructure/queue.c **** 
+ 672              		.loc 1 55 1 view .LVU178
+ 673 0012 2046     		mov	r0, r4
+ 674 0014 70BD     		pop	{r4, r5, r6, pc}
+ 675              	.LVL46:
+ 676              	.L60:
+  55:DataStructure/queue.c **** 
+ 677              		.loc 1 55 1 view .LVU179
+ 678 0016 0546     		mov	r5, r0
+  40:DataStructure/queue.c ****     obj->end_pos = 0;
+ 679              		.loc 1 40 5 is_stmt 1 view .LVU180
+  40:DataStructure/queue.c ****     obj->end_pos = 0;
+ 680              		.loc 1 40 15 is_stmt 0 view .LVU181
+ 681 0018 0160     		str	r1, [r0]	@ unaligned
+  41:DataStructure/queue.c ****     obj->head_pos = 0;
+ 682              		.loc 1 41 5 is_stmt 1 view .LVU182
+  41:DataStructure/queue.c ****     obj->head_pos = 0;
+ 683              		.loc 1 41 18 is_stmt 0 view .LVU183
+ 684 001a 0026     		movs	r6, #0
+ 685 001c C672     		strb	r6, [r0, #11]
+ 686 001e 0673     		strb	r6, [r0, #12]
+  42:DataStructure/queue.c ****     obj->size = 0;
+ 687              		.loc 1 42 5 is_stmt 1 view .LVU184
+  42:DataStructure/queue.c ****     obj->size = 0;
+ 688              		.loc 1 42 19 is_stmt 0 view .LVU185
+ 689 0020 4672     		strb	r6, [r0, #9]
+ 690 0022 8672     		strb	r6, [r0, #10]
+  43:DataStructure/queue.c ****     obj->lenth = len;
+ 691              		.loc 1 43 5 is_stmt 1 view .LVU186
+  43:DataStructure/queue.c ****     obj->lenth = len;
+ 692              		.loc 1 43 15 is_stmt 0 view .LVU187
+ 693 0024 8671     		strb	r6, [r0, #6]
+ 694 0026 C671     		strb	r6, [r0, #7]
+  44:DataStructure/queue.c **** 
+ 695              		.loc 1 44 5 is_stmt 1 view .LVU188
+  44:DataStructure/queue.c **** 
+ 696              		.loc 1 44 16 is_stmt 0 view .LVU189
+ 697 0028 8280     		strh	r2, [r0, #4]	@ unaligned
+  46:DataStructure/queue.c ****     memset(obj->buff, NULL, obj->lenth);
+ 698              		.loc 1 46 5 is_stmt 1 view .LVU190
+  46:DataStructure/queue.c ****     memset(obj->buff, NULL, obj->lenth);
+ 699              		.loc 1 46 28 is_stmt 0 view .LVU191
+ 700 002a 1046     		mov	r0, r2
+ 701              	.LVL47:
+  46:DataStructure/queue.c ****     memset(obj->buff, NULL, obj->lenth);
+ 702              		.loc 1 46 28 view .LVU192
+ 703 002c FFF7FEFF 		bl	MMU_Malloc
+ 704              	.LVL48:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 18
+
+
+  46:DataStructure/queue.c ****     memset(obj->buff, NULL, obj->lenth);
+ 705              		.loc 1 46 15 view .LVU193
+ 706 0030 C5F80D00 		str	r0, [r5, #13]	@ unaligned
+  47:DataStructure/queue.c **** 
+ 707              		.loc 1 47 5 is_stmt 1 view .LVU194
+ 708 0034 AA88     		ldrh	r2, [r5, #4]	@ unaligned
+ 709 0036 3146     		mov	r1, r6
+ 710 0038 FFF7FEFF 		bl	memset
+ 711              	.LVL49:
+  49:DataStructure/queue.c ****         return false;
+ 712              		.loc 1 49 5 view .LVU195
+  49:DataStructure/queue.c ****         return false;
+ 713              		.loc 1 49 12 is_stmt 0 view .LVU196
+ 714 003c D5F80D30 		ldr	r3, [r5, #13]	@ unaligned
+  49:DataStructure/queue.c ****         return false;
+ 715              		.loc 1 49 8 view .LVU197
+ 716 0040 002B     		cmp	r3, #0
+ 717 0042 E6D0     		beq	.L57
+  52:DataStructure/queue.c **** 
+ 718              		.loc 1 52 5 is_stmt 1 view .LVU198
+  52:DataStructure/queue.c **** 
+ 719              		.loc 1 52 16 is_stmt 0 view .LVU199
+ 720 0044 0323     		movs	r3, #3
+ 721 0046 2B72     		strb	r3, [r5, #8]
+  54:DataStructure/queue.c **** }
+ 722              		.loc 1 54 5 is_stmt 1 view .LVU200
+  54:DataStructure/queue.c **** }
+ 723              		.loc 1 54 12 is_stmt 0 view .LVU201
+ 724 0048 0124     		movs	r4, #1
+ 725 004a E2E7     		b	.L57
+ 726              		.cfi_endproc
+ 727              	.LFE3:
+ 729              		.global	Queue
+ 730              		.section	.data.Queue,"aw"
+ 731              		.align	2
+ 734              	Queue:
+ 735 0000 00000000 		.word	Queue_GetSize
+ 736 0004 00000000 		.word	Queue_Create
+ 737 0008 00000000 		.word	Queue_Reset
+ 738 000c 00000000 		.word	Queue_Check
+ 739 0010 00000000 		.word	Queue_Push
+ 740 0014 00000000 		.word	Queue_Pop
+ 741 0018 00000000 		.word	Queue_GetState
+ 742              		.text
+ 743              	.Letext0:
+ 744              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 745              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 746              		.file 4 "DataStructure/queue.h"
+ 747              		.file 5 "<built-in>"
+ 748              		.file 6 "System/mmu/mmu.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s 			page 19
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 queue.c
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:19     .text.Queue_UpdateState:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:24     .text.Queue_UpdateState:00000000 Queue_UpdateState
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:94     .text.Queue_Push:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:99     .text.Queue_Push:00000000 Queue_Push
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:245    .text.Queue_Pop:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:250    .text.Queue_Pop:00000000 Queue_Pop
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:401    .text.Queue_Check:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:406    .text.Queue_Check:00000000 Queue_Check
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:498    .text.Queue_GetState:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:503    .text.Queue_GetState:00000000 Queue_GetState
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:525    .text.Queue_GetSize:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:530    .text.Queue_GetSize:00000000 Queue_GetSize
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:552    .text.Queue_Reset:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:557    .text.Queue_Reset:00000000 Queue_Reset
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:639    .text.Queue_Create:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:644    .text.Queue_Create:00000000 Queue_Create
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:734    .data.Queue:00000000 Queue
+C:\Users\HUAV\AppData\Local\Temp\ccUWVz5F.s:731    .data.Queue:00000000 $d
+
+UNDEFINED SYMBOLS
+memset
+MMU_Malloc

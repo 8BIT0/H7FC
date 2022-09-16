@@ -1,0 +1,1669 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"error_log.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.Error_InsertPriority_Compare,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	Error_InsertPriority_Compare:
+  25              	.LVL0:
+  26              	.LFB3:
+  27              		.file 1 "Common/error_log.c"
+   1:Common/error_log.c **** #include "error_log.h"
+   2:Common/error_log.c **** #include "queue.h"
+   3:Common/error_log.c **** #include "mmu.h"
+   4:Common/error_log.c **** #include <stdarg.h>
+   5:Common/error_log.c **** 
+   6:Common/error_log.c **** /*
+   7:Common/error_log.c **** error data in queue
+   8:Common/error_log.c **** --------------------------------------------------------------------------------------------
+   9:Common/error_log.c **** | out state | log state | info size |                    error describe                    |
+  10:Common/error_log.c **** --------------------------------------------------------------------------------------------
+  11:Common/error_log.c **** */
+  12:Common/error_log.c **** 
+  13:Common/error_log.c **** /* internal vriable */
+  14:Common/error_log.c **** static bool ErrorQueue_Init = false;
+  15:Common/error_log.c **** static bool ErrorQueue_CreateState = false;
+  16:Common/error_log.c **** static QueueObj_TypeDef ErrorQueue;
+  17:Common/error_log.c **** static Error_OutState_List ErrorOut_State = Error_OutFree;
+  18:Common/error_log.c **** static Error_LogState_List ErrorLog_State = Error_LogFree;
+  19:Common/error_log.c **** static error_port_callback out_callback = NULL;
+  20:Common/error_log.c **** static error_port_callback log_callback = NULL;
+  21:Common/error_log.c **** static Error_Port_Reg port_reg;
+  22:Common/error_log.c **** 
+  23:Common/error_log.c **** /* internal function */
+  24:Common/error_log.c **** static bool Error_Out(void);
+  25:Common/error_log.c **** static bool Error_Log(void);
+  26:Common/error_log.c **** 
+  27:Common/error_log.c **** /* external function */
+  28:Common/error_log.c **** static Error_Handler ErrorTree_Create(char *name);
+  29:Common/error_log.c **** static bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *obj, uint16_t num);
+  30:Common/error_log.c **** static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size);
+  31:Common/error_log.c **** static bool Error_Proc(Error_Handler hdl);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 2
+
+
+  32:Common/error_log.c **** static void Error_Set_Callback(ErrorLog_Callback_Type_List type, error_port_callback callback);
+  33:Common/error_log.c **** static uint32_t Error_DescToQueue(const char *str, ...);
+  34:Common/error_log.c **** 
+  35:Common/error_log.c **** ErrorLog_TypeDef ErrorLog = {
+  36:Common/error_log.c ****     .create = ErrorTree_Create,
+  37:Common/error_log.c ****     .proc = Error_Proc,
+  38:Common/error_log.c ****     .registe = Error_Register,
+  39:Common/error_log.c ****     .trigger = Error_Trigger,
+  40:Common/error_log.c ****     .set_callback = Error_Set_Callback,
+  41:Common/error_log.c ****     .add_desc = Error_DescToQueue,
+  42:Common/error_log.c **** };
+  43:Common/error_log.c **** 
+  44:Common/error_log.c **** static data_handle Error_InsertPriority_Compare(data_handle l_addr, data_handle r_addr)
+  45:Common/error_log.c **** {
+  28              		.loc 1 45 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 8
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              		.loc 1 45 1 is_stmt 0 view .LVU1
+  34 0000 82B0     		sub	sp, sp, #8
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 8
+  37 0002 0346     		mov	r3, r0
+  46:Common/error_log.c ****     volatile int16_t l_code = 0;
+  38              		.loc 1 46 5 is_stmt 1 view .LVU2
+  39              		.loc 1 46 22 is_stmt 0 view .LVU3
+  40 0004 0022     		movs	r2, #0
+  41 0006 ADF80620 		strh	r2, [sp, #6]	@ movhi
+  47:Common/error_log.c ****     volatile int16_t r_code = 0;
+  42              		.loc 1 47 5 is_stmt 1 view .LVU4
+  43              		.loc 1 47 22 is_stmt 0 view .LVU5
+  44 000a ADF80420 		strh	r2, [sp, #4]	@ movhi
+  48:Common/error_log.c **** 
+  49:Common/error_log.c ****     if ((l_addr == 0) && (r_addr == 0) && (l_addr != r_addr))
+  45              		.loc 1 49 5 is_stmt 1 view .LVU6
+  46              		.loc 1 49 8 is_stmt 0 view .LVU7
+  47 000e 0843     		orrs	r0, r0, r1
+  48              	.LVL1:
+  49              		.loc 1 49 8 view .LVU8
+  50 0010 01D1     		bne	.L2
+  51              		.loc 1 49 40 discriminator 1 view .LVU9
+  52 0012 8B42     		cmp	r3, r1
+  53 0014 0ED1     		bne	.L1
+  54              	.L2:
+  50:Common/error_log.c ****         return 0;
+  51:Common/error_log.c **** 
+  52:Common/error_log.c ****     l_code = ErrorTreeDataToObj(l_addr)->code;
+  55              		.loc 1 52 5 is_stmt 1 view .LVU10
+  56              		.loc 1 52 40 is_stmt 0 view .LVU11
+  57 0016 B3F90020 		ldrsh	r2, [r3]	@ unaligned
+  58 001a 0FFA82FC 		sxth	ip, r2
+  59              		.loc 1 52 12 view .LVU12
+  60 001e ADF80620 		strh	r2, [sp, #6]	@ movhi
+  53:Common/error_log.c ****     r_code = ErrorTreeDataToObj(r_addr)->code;
+  61              		.loc 1 53 5 is_stmt 1 view .LVU13
+  62              		.loc 1 53 40 is_stmt 0 view .LVU14
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 3
+
+
+  63 0022 B1F90020 		ldrsh	r2, [r1]	@ unaligned
+  64 0026 10B2     		sxth	r0, r2
+  65              		.loc 1 53 12 view .LVU15
+  66 0028 ADF80420 		strh	r2, [sp, #4]	@ movhi
+  54:Common/error_log.c **** 
+  55:Common/error_log.c ****     if (ErrorTreeDataToObj(l_addr)->code > ErrorTreeDataToObj(r_addr)->code)
+  67              		.loc 1 55 5 is_stmt 1 view .LVU16
+  68              		.loc 1 55 8 is_stmt 0 view .LVU17
+  69 002c 8445     		cmp	ip, r0
+  70 002e 03DC     		bgt	.L4
+  56:Common/error_log.c ****         return r_addr;
+  57:Common/error_log.c **** 
+  58:Common/error_log.c ****     if (ErrorTreeDataToObj(l_addr)->code < ErrorTreeDataToObj(r_addr)->code)
+  71              		.loc 1 58 5 is_stmt 1 view .LVU18
+  72              		.loc 1 58 8 is_stmt 0 view .LVU19
+  73 0030 04DB     		blt	.L5
+  59:Common/error_log.c ****         return l_addr;
+  60:Common/error_log.c **** 
+  61:Common/error_log.c ****     return 0;
+  74              		.loc 1 61 12 view .LVU20
+  75 0032 0020     		movs	r0, #0
+  76              	.L1:
+  62:Common/error_log.c **** }
+  77              		.loc 1 62 1 view .LVU21
+  78 0034 02B0     		add	sp, sp, #8
+  79              	.LCFI1:
+  80              		.cfi_remember_state
+  81              		.cfi_def_cfa_offset 0
+  82              		@ sp needed
+  83 0036 7047     		bx	lr
+  84              	.L4:
+  85              	.LCFI2:
+  86              		.cfi_restore_state
+  56:Common/error_log.c ****         return r_addr;
+  87              		.loc 1 56 16 view .LVU22
+  88 0038 0846     		mov	r0, r1
+  89 003a FBE7     		b	.L1
+  90              	.L5:
+  59:Common/error_log.c ****         return l_addr;
+  91              		.loc 1 59 16 view .LVU23
+  92 003c 1846     		mov	r0, r3
+  93 003e F9E7     		b	.L1
+  94              		.cfi_endproc
+  95              	.LFE3:
+  97              		.section	.text.Error_Search,"ax",%progbits
+  98              		.align	1
+  99              		.syntax unified
+ 100              		.thumb
+ 101              		.thumb_func
+ 103              	Error_Search:
+ 104              	.LVL2:
+ 105              	.LFB4:
+  63:Common/error_log.c **** 
+  64:Common/error_log.c **** static uint8_t Error_Search(data_handle l_addr, data_handle r_addr)
+  65:Common/error_log.c **** {
+ 106              		.loc 1 65 1 is_stmt 1 view -0
+ 107              		.cfi_startproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 4
+
+
+ 108              		@ args = 0, pretend = 0, frame = 8
+ 109              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110              		@ link register save eliminated.
+ 111              		.loc 1 65 1 is_stmt 0 view .LVU25
+ 112 0000 82B0     		sub	sp, sp, #8
+ 113              	.LCFI3:
+ 114              		.cfi_def_cfa_offset 8
+  66:Common/error_log.c ****     volatile int16_t node_code = ErrorTreeDataToObj(l_addr)->code;
+ 115              		.loc 1 66 5 is_stmt 1 view .LVU26
+ 116              		.loc 1 66 60 is_stmt 0 view .LVU27
+ 117 0002 B0F90030 		ldrsh	r3, [r0]	@ unaligned
+ 118              		.loc 1 66 22 view .LVU28
+ 119 0006 ADF80630 		strh	r3, [sp, #6]	@ movhi
+  67:Common/error_log.c ****     volatile int16_t code = *((int16_t *)((uint32_t)r_addr));
+ 120              		.loc 1 67 5 is_stmt 1 view .LVU29
+ 121              		.loc 1 67 29 is_stmt 0 view .LVU30
+ 122 000a B1F90030 		ldrsh	r3, [r1]
+ 123              		.loc 1 67 22 view .LVU31
+ 124 000e ADF80430 		strh	r3, [sp, #4]	@ movhi
+  68:Common/error_log.c **** 
+  69:Common/error_log.c ****     if (node_code > code)
+ 125              		.loc 1 69 5 is_stmt 1 view .LVU32
+ 126              		.loc 1 69 19 is_stmt 0 view .LVU33
+ 127 0012 BDF80620 		ldrh	r2, [sp, #6]
+ 128 0016 12B2     		sxth	r2, r2
+ 129 0018 BDF80430 		ldrh	r3, [sp, #4]
+ 130 001c 1BB2     		sxth	r3, r3
+ 131              		.loc 1 69 8 view .LVU34
+ 132 001e 9A42     		cmp	r2, r3
+ 133 0020 11DC     		bgt	.L9
+  70:Common/error_log.c ****         return Tree_Search_L;
+  71:Common/error_log.c **** 
+  72:Common/error_log.c ****     if (node_code < code)
+ 134              		.loc 1 72 5 is_stmt 1 view .LVU35
+ 135              		.loc 1 72 19 is_stmt 0 view .LVU36
+ 136 0022 BDF80620 		ldrh	r2, [sp, #6]
+ 137 0026 12B2     		sxth	r2, r2
+ 138 0028 BDF80430 		ldrh	r3, [sp, #4]
+ 139 002c 1BB2     		sxth	r3, r3
+ 140              		.loc 1 72 8 view .LVU37
+ 141 002e 9A42     		cmp	r2, r3
+ 142 0030 0BDB     		blt	.L10
+  73:Common/error_log.c ****         return Tree_Search_R;
+  74:Common/error_log.c **** 
+  75:Common/error_log.c ****     if (node_code == code)
+ 143              		.loc 1 75 5 is_stmt 1 view .LVU38
+ 144              		.loc 1 75 19 is_stmt 0 view .LVU39
+ 145 0032 BDF80620 		ldrh	r2, [sp, #6]
+ 146 0036 12B2     		sxth	r2, r2
+ 147 0038 BDF80430 		ldrh	r3, [sp, #4]
+ 148 003c 1BB2     		sxth	r3, r3
+ 149              		.loc 1 75 8 view .LVU40
+ 150 003e 9A42     		cmp	r2, r3
+ 151 0040 05D0     		beq	.L11
+ 152              	.LVL3:
+ 153              	.L7:
+  76:Common/error_log.c ****         return Tree_Search_D;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 5
+
+
+  77:Common/error_log.c **** }
+ 154              		.loc 1 77 1 view .LVU41
+ 155 0042 02B0     		add	sp, sp, #8
+ 156              	.LCFI4:
+ 157              		.cfi_remember_state
+ 158              		.cfi_def_cfa_offset 0
+ 159              		@ sp needed
+ 160 0044 7047     		bx	lr
+ 161              	.LVL4:
+ 162              	.L9:
+ 163              	.LCFI5:
+ 164              		.cfi_restore_state
+  70:Common/error_log.c **** 
+ 165              		.loc 1 70 16 view .LVU42
+ 166 0046 0120     		movs	r0, #1
+ 167              	.LVL5:
+  70:Common/error_log.c **** 
+ 168              		.loc 1 70 16 view .LVU43
+ 169 0048 FBE7     		b	.L7
+ 170              	.LVL6:
+ 171              	.L10:
+  73:Common/error_log.c ****         return Tree_Search_R;
+ 172              		.loc 1 73 16 view .LVU44
+ 173 004a 0220     		movs	r0, #2
+ 174              	.LVL7:
+  73:Common/error_log.c ****         return Tree_Search_R;
+ 175              		.loc 1 73 16 view .LVU45
+ 176 004c F9E7     		b	.L7
+ 177              	.LVL8:
+ 178              	.L11:
+  76:Common/error_log.c ****         return Tree_Search_D;
+ 179              		.loc 1 76 16 view .LVU46
+ 180 004e 0320     		movs	r0, #3
+ 181              	.LVL9:
+  76:Common/error_log.c ****         return Tree_Search_D;
+ 182              		.loc 1 76 16 view .LVU47
+ 183 0050 F7E7     		b	.L7
+ 184              		.cfi_endproc
+ 185              	.LFE4:
+ 187              		.section	.text.Error_Register,"ax",%progbits
+ 188              		.align	1
+ 189              		.syntax unified
+ 190              		.thumb
+ 191              		.thumb_func
+ 193              	Error_Register:
+ 194              	.LVL10:
+ 195              	.LFB6:
+  78:Common/error_log.c **** 
+  79:Common/error_log.c **** static Error_Handler ErrorTree_Create(char *name)
+  80:Common/error_log.c **** {
+  81:Common/error_log.c ****     volatile ErrorTree_TypeDef *Error_Tmp = NULL;
+  82:Common/error_log.c **** 
+  83:Common/error_log.c ****     if (!ErrorQueue_Init)
+  84:Common/error_log.c ****     {
+  85:Common/error_log.c ****         ErrorQueue_CreateState = Queue.create(&ErrorQueue, "ErrorQueue", ERROR_DESC_BUFFSIZE);
+  86:Common/error_log.c ****         ErrorQueue_Init = true;
+  87:Common/error_log.c ****     }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 6
+
+
+  88:Common/error_log.c **** 
+  89:Common/error_log.c ****     Error_Tmp = (ErrorTree_TypeDef *)MMU_Malloc(sizeof(ErrorTree_TypeDef));
+  90:Common/error_log.c **** 
+  91:Common/error_log.c ****     if (Error_Tmp == NULL)
+  92:Common/error_log.c ****         return NULL;
+  93:Common/error_log.c **** 
+  94:Common/error_log.c ****     Error_Tmp->tree = BalanceTree.Create(name, Error_InsertPriority_Compare, Error_Search, Error_In
+  95:Common/error_log.c **** 
+  96:Common/error_log.c ****     if (Error_Tmp == NULL)
+  97:Common/error_log.c ****         return 0;
+  98:Common/error_log.c **** 
+  99:Common/error_log.c ****     Error_Tmp->reg_num = 0;
+ 100:Common/error_log.c ****     Error_Tmp->link_node = NULL;
+ 101:Common/error_log.c **** 
+ 102:Common/error_log.c ****     return (Error_Handler)Error_Tmp;
+ 103:Common/error_log.c **** }
+ 104:Common/error_log.c **** 
+ 105:Common/error_log.c **** static bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num)
+ 106:Common/error_log.c **** {
+ 196              		.loc 1 106 1 is_stmt 1 view -0
+ 197              		.cfi_startproc
+ 198              		@ args = 0, pretend = 0, frame = 0
+ 199              		@ frame_needed = 0, uses_anonymous_args = 0
+ 107:Common/error_log.c ****     item_obj *linked_item = NULL;
+ 200              		.loc 1 107 5 view .LVU49
+ 108:Common/error_log.c **** 
+ 109:Common/error_log.c ****     if (hdl == 0)
+ 201              		.loc 1 109 5 view .LVU50
+ 202              		.loc 1 109 8 is_stmt 0 view .LVU51
+ 203 0000 B0B1     		cbz	r0, .L17
+ 106:Common/error_log.c ****     item_obj *linked_item = NULL;
+ 204              		.loc 1 106 1 view .LVU52
+ 205 0002 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 206              	.LCFI6:
+ 207              		.cfi_def_cfa_offset 24
+ 208              		.cfi_offset 3, -24
+ 209              		.cfi_offset 4, -20
+ 210              		.cfi_offset 5, -16
+ 211              		.cfi_offset 6, -12
+ 212              		.cfi_offset 7, -8
+ 213              		.cfi_offset 14, -4
+ 214 0004 0E46     		mov	r6, r1
+ 215 0006 1546     		mov	r5, r2
+ 216 0008 0746     		mov	r7, r0
+ 217              	.LBB2:
+ 110:Common/error_log.c ****         return false;
+ 111:Common/error_log.c **** 
+ 112:Common/error_log.c ****     for (uint16_t i = 0; i < num; i++)
+ 218              		.loc 1 112 19 view .LVU53
+ 219 000a 0024     		movs	r4, #0
+ 220 000c 0BE0     		b	.L15
+ 221              	.LVL11:
+ 222              	.L16:
+ 113:Common/error_log.c ****     {
+ 114:Common/error_log.c ****         BalanceTree.Insert(ErrorHandleToObj(hdl)->tree, Obj_List[i].desc, (data_handle)(&Obj_List[i
+ 223              		.loc 1 114 9 is_stmt 1 discriminator 3 view .LVU54
+ 224              		.loc 1 114 20 is_stmt 0 discriminator 3 view .LVU55
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 7
+
+
+ 225 000e 094B     		ldr	r3, .L22
+ 226 0010 5B68     		ldr	r3, [r3, #4]
+ 227              		.loc 1 114 65 discriminator 3 view .LVU56
+ 228 0012 04EB4402 		add	r2, r4, r4, lsl #1
+ 229 0016 06EBC202 		add	r2, r6, r2, lsl #3
+ 230              		.loc 1 114 9 discriminator 3 view .LVU57
+ 231 001a 5168     		ldr	r1, [r2, #4]	@ unaligned
+ 232 001c D7F80200 		ldr	r0, [r7, #2]	@ unaligned
+ 233 0020 9847     		blx	r3
+ 234              	.LVL12:
+ 112:Common/error_log.c ****     {
+ 235              		.loc 1 112 35 is_stmt 1 discriminator 3 view .LVU58
+ 112:Common/error_log.c ****     {
+ 236              		.loc 1 112 36 is_stmt 0 discriminator 3 view .LVU59
+ 237 0022 0134     		adds	r4, r4, #1
+ 238              	.LVL13:
+ 112:Common/error_log.c ****     {
+ 239              		.loc 1 112 36 discriminator 3 view .LVU60
+ 240 0024 A4B2     		uxth	r4, r4
+ 241              	.LVL14:
+ 242              	.L15:
+ 112:Common/error_log.c ****     {
+ 243              		.loc 1 112 26 is_stmt 1 discriminator 1 view .LVU61
+ 112:Common/error_log.c ****     {
+ 244              		.loc 1 112 5 is_stmt 0 discriminator 1 view .LVU62
+ 245 0026 AC42     		cmp	r4, r5
+ 246 0028 F1D3     		bcc	.L16
+ 247              	.LBE2:
+ 115:Common/error_log.c ****     }
+ 116:Common/error_log.c **** 
+ 117:Common/error_log.c ****     ErrorHandleToObj(hdl)->reg_num = num;
+ 248              		.loc 1 117 5 is_stmt 1 view .LVU63
+ 249              		.loc 1 117 36 is_stmt 0 view .LVU64
+ 250 002a 3D80     		strh	r5, [r7]	@ unaligned
+ 118:Common/error_log.c ****     return true;
+ 251              		.loc 1 118 5 is_stmt 1 view .LVU65
+ 252              		.loc 1 118 12 is_stmt 0 view .LVU66
+ 253 002c 0120     		movs	r0, #1
+ 119:Common/error_log.c **** }
+ 254              		.loc 1 119 1 view .LVU67
+ 255 002e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 256              	.LVL15:
+ 257              	.L17:
+ 258              	.LCFI7:
+ 259              		.cfi_def_cfa_offset 0
+ 260              		.cfi_restore 3
+ 261              		.cfi_restore 4
+ 262              		.cfi_restore 5
+ 263              		.cfi_restore 6
+ 264              		.cfi_restore 7
+ 265              		.cfi_restore 14
+ 110:Common/error_log.c **** 
+ 266              		.loc 1 110 16 view .LVU68
+ 267 0030 0020     		movs	r0, #0
+ 268              	.LVL16:
+ 269              		.loc 1 119 1 view .LVU69
+ 270 0032 7047     		bx	lr
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 8
+
+
+ 271              	.L23:
+ 272              		.align	2
+ 273              	.L22:
+ 274 0034 00000000 		.word	BalanceTree
+ 275              		.cfi_endproc
+ 276              	.LFE6:
+ 278              		.section	.text.Error_Set_Callback,"ax",%progbits
+ 279              		.align	1
+ 280              		.syntax unified
+ 281              		.thumb
+ 282              		.thumb_func
+ 284              	Error_Set_Callback:
+ 285              	.LVL17:
+ 286              	.LFB9:
+ 120:Common/error_log.c **** 
+ 121:Common/error_log.c **** static uint32_t Error_DescToQueue(const char *str, ...)
+ 122:Common/error_log.c **** {
+ 123:Common/error_log.c ****     uint32_t length = 0;
+ 124:Common/error_log.c ****     char p_data[128] = {0};
+ 125:Common/error_log.c ****     va_list arp;
+ 126:Common/error_log.c ****     va_start(arp, str);
+ 127:Common/error_log.c **** 
+ 128:Common/error_log.c ****     if (ErrorQueue_CreateState)
+ 129:Common/error_log.c ****     {
+ 130:Common/error_log.c ****         length = vsnprintf((char *)p_data, sizeof(p_data), (char *)str, arp);
+ 131:Common/error_log.c **** 
+ 132:Common/error_log.c ****         port_reg.section.len = length;
+ 133:Common/error_log.c ****         Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
+ 134:Common/error_log.c ****         Queue.push(&ErrorQueue, p_data, length);
+ 135:Common/error_log.c ****     }
+ 136:Common/error_log.c **** 
+ 137:Common/error_log.c ****     va_end(arp);
+ 138:Common/error_log.c ****     return length;
+ 139:Common/error_log.c **** }
+ 140:Common/error_log.c **** 
+ 141:Common/error_log.c **** /* still in half way */
+ 142:Common/error_log.c **** static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
+ 143:Common/error_log.c **** {
+ 144:Common/error_log.c ****     int16_t code_tmp = code;
+ 145:Common/error_log.c ****     data_handle match_data = 0;
+ 146:Common/error_log.c ****     ErrorStream_TypeDef data_stream;
+ 147:Common/error_log.c ****     char *letter = NULL;
+ 148:Common/error_log.c **** 
+ 149:Common/error_log.c ****     port_reg.val = 0;
+ 150:Common/error_log.c **** 
+ 151:Common/error_log.c ****     if (hdl == 0)
+ 152:Common/error_log.c ****         return false;
+ 153:Common/error_log.c **** 
+ 154:Common/error_log.c ****     TreeNode_Handle search_handle = BalanceTree.Search(ErrorHandleToObj(hdl)->tree, (data_handle)&c
+ 155:Common/error_log.c **** 
+ 156:Common/error_log.c ****     data_stream.p_data = p_arg;
+ 157:Common/error_log.c ****     data_stream.size = size;
+ 158:Common/error_log.c **** 
+ 159:Common/error_log.c ****     (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_data_stream).p_data = p_arg;
+ 160:Common/error_log.c ****     (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_data_stream).size = size;
+ 161:Common/error_log.c **** 
+ 162:Common/error_log.c ****     /* find target node */
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 9
+
+
+ 163:Common/error_log.c ****     if (search_handle)
+ 164:Common/error_log.c ****     {
+ 165:Common/error_log.c ****         if (TreeNodeHandleToObj(search_handle)->data)
+ 166:Common/error_log.c ****         {
+ 167:Common/error_log.c ****             port_reg.section.log_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)
+ 168:Common/error_log.c ****             port_reg.section.out_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)
+ 169:Common/error_log.c ****             port_reg.section.len = strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->da
+ 170:Common/error_log.c **** 
+ 171:Common/error_log.c ****             if (ErrorQueue_CreateState && port_reg.val)
+ 172:Common/error_log.c ****             {
+ 173:Common/error_log.c ****                 /* Push Error describe into Error_Queue */
+ 174:Common/error_log.c ****                 /* push out or log state */
+ 175:Common/error_log.c ****                 Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
+ 176:Common/error_log.c ****                 /* push error tree name */
+ 177:Common/error_log.c ****                 letter = "[ ";
+ 178:Common/error_log.c ****                 Queue.push(&ErrorQueue, letter, strlen(letter));
+ 179:Common/error_log.c **** 
+ 180:Common/error_log.c ****                 Queue.push(&ErrorQueue, ErrorHandleToObj(hdl)->tree->name, strlen(ErrorHandleToObj(
+ 181:Common/error_log.c **** 
+ 182:Common/error_log.c ****                 letter = " ] ";
+ 183:Common/error_log.c ****                 Queue.push(&ErrorQueue, letter, strlen(letter));
+ 184:Common/error_log.c **** 
+ 185:Common/error_log.c ****                 /* push error decribe */
+ 186:Common/error_log.c ****                 Queue.push(&ErrorQueue, ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data
+ 187:Common/error_log.c ****             }
+ 188:Common/error_log.c **** 
+ 189:Common/error_log.c ****             if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Pr
+ 190:Common/error_log.c ****             {
+ 191:Common/error_log.c ****                 /* trigger process callback */
+ 192:Common/error_log.c ****                 if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback)
+ 193:Common/error_log.c ****                 {
+ 194:Common/error_log.c ****                     ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_callback(code
+ 195:Common/error_log.c ****                 }
+ 196:Common/error_log.c ****             }
+ 197:Common/error_log.c ****             else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Err
+ 198:Common/error_log.c ****             {
+ 199:Common/error_log.c ****                 /* add error into linked list */
+ 200:Common/error_log.c ****                 /* reserve */
+ 201:Common/error_log.c ****             }
+ 202:Common/error_log.c ****             else if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Err
+ 203:Common/error_log.c ****             {
+ 204:Common/error_log.c ****                 /* reserve */
+ 205:Common/error_log.c ****             }
+ 206:Common/error_log.c ****         }
+ 207:Common/error_log.c ****     }
+ 208:Common/error_log.c **** 
+ 209:Common/error_log.c ****     port_reg.val = 0;
+ 210:Common/error_log.c **** 
+ 211:Common/error_log.c ****     return true;
+ 212:Common/error_log.c **** }
+ 213:Common/error_log.c **** 
+ 214:Common/error_log.c **** static void Error_Set_Callback(ErrorLog_Callback_Type_List type, error_port_callback callback)
+ 215:Common/error_log.c **** {
+ 287              		.loc 1 215 1 is_stmt 1 view -0
+ 288              		.cfi_startproc
+ 289              		@ args = 0, pretend = 0, frame = 0
+ 290              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 10
+
+
+ 291              		@ link register save eliminated.
+ 216:Common/error_log.c ****     switch (type)
+ 292              		.loc 1 216 5 view .LVU71
+ 293 0000 0128     		cmp	r0, #1
+ 294 0002 02D0     		beq	.L25
+ 295 0004 0228     		cmp	r0, #2
+ 296 0006 03D0     		beq	.L26
+ 297 0008 7047     		bx	lr
+ 298              	.L25:
+ 217:Common/error_log.c ****     {
+ 218:Common/error_log.c ****     case Error_Out_Callback:
+ 219:Common/error_log.c ****         out_callback = callback;
+ 299              		.loc 1 219 9 view .LVU72
+ 300              		.loc 1 219 22 is_stmt 0 view .LVU73
+ 301 000a 034B     		ldr	r3, .L28
+ 302 000c 1960     		str	r1, [r3]
+ 220:Common/error_log.c ****         break;
+ 303              		.loc 1 220 9 is_stmt 1 view .LVU74
+ 304 000e 7047     		bx	lr
+ 305              	.L26:
+ 221:Common/error_log.c **** 
+ 222:Common/error_log.c ****     case Error_Log_Callback:
+ 223:Common/error_log.c ****         log_callback = callback;
+ 306              		.loc 1 223 9 view .LVU75
+ 307              		.loc 1 223 22 is_stmt 0 view .LVU76
+ 308 0010 024B     		ldr	r3, .L28+4
+ 309 0012 1960     		str	r1, [r3]
+ 224:Common/error_log.c ****         break;
+ 310              		.loc 1 224 9 is_stmt 1 view .LVU77
+ 225:Common/error_log.c **** 
+ 226:Common/error_log.c ****     default:
+ 227:Common/error_log.c ****         break;
+ 228:Common/error_log.c ****     }
+ 229:Common/error_log.c **** }
+ 311              		.loc 1 229 1 is_stmt 0 view .LVU78
+ 312 0014 7047     		bx	lr
+ 313              	.L29:
+ 314 0016 00BF     		.align	2
+ 315              	.L28:
+ 316 0018 00000000 		.word	.LANCHOR0
+ 317 001c 00000000 		.word	.LANCHOR1
+ 318              		.cfi_endproc
+ 319              	.LFE9:
+ 321              		.section	.text.Error_DescToQueue,"ax",%progbits
+ 322              		.align	1
+ 323              		.syntax unified
+ 324              		.thumb
+ 325              		.thumb_func
+ 327              	Error_DescToQueue:
+ 328              	.LVL18:
+ 329              	.LFB7:
+ 122:Common/error_log.c ****     uint32_t length = 0;
+ 330              		.loc 1 122 1 is_stmt 1 view -0
+ 331              		.cfi_startproc
+ 332              		@ args = 4, pretend = 16, frame = 136
+ 333              		@ frame_needed = 0, uses_anonymous_args = 1
+ 122:Common/error_log.c ****     uint32_t length = 0;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 11
+
+
+ 334              		.loc 1 122 1 is_stmt 0 view .LVU80
+ 335 0000 0FB4     		push	{r0, r1, r2, r3}
+ 336              	.LCFI8:
+ 337              		.cfi_def_cfa_offset 16
+ 338              		.cfi_offset 0, -16
+ 339              		.cfi_offset 1, -12
+ 340              		.cfi_offset 2, -8
+ 341              		.cfi_offset 3, -4
+ 342 0002 F0B5     		push	{r4, r5, r6, r7, lr}
+ 343              	.LCFI9:
+ 344              		.cfi_def_cfa_offset 36
+ 345              		.cfi_offset 4, -36
+ 346              		.cfi_offset 5, -32
+ 347              		.cfi_offset 6, -28
+ 348              		.cfi_offset 7, -24
+ 349              		.cfi_offset 14, -20
+ 350 0004 A3B0     		sub	sp, sp, #140
+ 351              	.LCFI10:
+ 352              		.cfi_def_cfa_offset 176
+ 353 0006 28AC     		add	r4, sp, #160
+ 354 0008 54F8045B 		ldr	r5, [r4], #4
+ 123:Common/error_log.c ****     char p_data[128] = {0};
+ 355              		.loc 1 123 5 is_stmt 1 view .LVU81
+ 356              	.LVL19:
+ 124:Common/error_log.c ****     va_list arp;
+ 357              		.loc 1 124 5 view .LVU82
+ 124:Common/error_log.c ****     va_list arp;
+ 358              		.loc 1 124 10 is_stmt 0 view .LVU83
+ 359 000c 0021     		movs	r1, #0
+ 360 000e 0291     		str	r1, [sp, #8]
+ 361 0010 7C22     		movs	r2, #124
+ 362 0012 03A8     		add	r0, sp, #12
+ 363 0014 FFF7FEFF 		bl	memset
+ 364              	.LVL20:
+ 125:Common/error_log.c ****     va_start(arp, str);
+ 365              		.loc 1 125 5 is_stmt 1 view .LVU84
+ 126:Common/error_log.c **** 
+ 366              		.loc 1 126 5 view .LVU85
+ 367 0018 0194     		str	r4, [sp, #4]
+ 128:Common/error_log.c ****     {
+ 368              		.loc 1 128 5 view .LVU86
+ 128:Common/error_log.c ****     {
+ 369              		.loc 1 128 9 is_stmt 0 view .LVU87
+ 370 001a 104B     		ldr	r3, .L35
+ 371 001c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 128:Common/error_log.c ****     {
+ 372              		.loc 1 128 8 view .LVU88
+ 373 001e 33B9     		cbnz	r3, .L34
+ 123:Common/error_log.c ****     char p_data[128] = {0};
+ 374              		.loc 1 123 14 view .LVU89
+ 375 0020 0024     		movs	r4, #0
+ 137:Common/error_log.c ****     return length;
+ 376              		.loc 1 137 5 is_stmt 1 view .LVU90
+ 138:Common/error_log.c **** }
+ 377              		.loc 1 138 5 view .LVU91
+ 378              	.LVL21:
+ 379              	.L30:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 12
+
+
+ 139:Common/error_log.c **** 
+ 380              		.loc 1 139 1 is_stmt 0 view .LVU92
+ 381 0022 2046     		mov	r0, r4
+ 382 0024 23B0     		add	sp, sp, #140
+ 383              	.LCFI11:
+ 384              		.cfi_remember_state
+ 385              		.cfi_def_cfa_offset 36
+ 386              		@ sp needed
+ 387 0026 BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 388              	.LCFI12:
+ 389              		.cfi_restore 14
+ 390              		.cfi_restore 7
+ 391              		.cfi_restore 6
+ 392              		.cfi_restore 5
+ 393              		.cfi_restore 4
+ 394              		.cfi_def_cfa_offset 16
+ 395 002a 04B0     		add	sp, sp, #16
+ 396              	.LCFI13:
+ 397              		.cfi_restore 3
+ 398              		.cfi_restore 2
+ 399              		.cfi_restore 1
+ 400              		.cfi_restore 0
+ 401              		.cfi_def_cfa_offset 0
+ 402 002c 7047     		bx	lr
+ 403              	.LVL22:
+ 404              	.L34:
+ 405              	.LCFI14:
+ 406              		.cfi_restore_state
+ 130:Common/error_log.c **** 
+ 407              		.loc 1 130 9 is_stmt 1 view .LVU93
+ 130:Common/error_log.c **** 
+ 408              		.loc 1 130 18 is_stmt 0 view .LVU94
+ 409 002e 2346     		mov	r3, r4
+ 410 0030 2A46     		mov	r2, r5
+ 411 0032 8021     		movs	r1, #128
+ 412 0034 02A8     		add	r0, sp, #8
+ 413 0036 FFF7FEFF 		bl	vsnprintf
+ 414              	.LVL23:
+ 415 003a 0446     		mov	r4, r0
+ 416              	.LVL24:
+ 132:Common/error_log.c ****         Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
+ 417              		.loc 1 132 9 is_stmt 1 view .LVU95
+ 132:Common/error_log.c ****         Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
+ 418              		.loc 1 132 30 is_stmt 0 view .LVU96
+ 419 003c 87B2     		uxth	r7, r0
+ 420 003e 0849     		ldr	r1, .L35+4
+ 421 0040 A1F80100 		strh	r0, [r1, #1]	@ unaligned
+ 133:Common/error_log.c ****         Queue.push(&ErrorQueue, p_data, length);
+ 422              		.loc 1 133 9 is_stmt 1 view .LVU97
+ 133:Common/error_log.c ****         Queue.push(&ErrorQueue, p_data, length);
+ 423              		.loc 1 133 14 is_stmt 0 view .LVU98
+ 424 0044 074E     		ldr	r6, .L35+8
+ 425 0046 3369     		ldr	r3, [r6, #16]
+ 133:Common/error_log.c ****         Queue.push(&ErrorQueue, p_data, length);
+ 426              		.loc 1 133 9 view .LVU99
+ 427 0048 074D     		ldr	r5, .L35+12
+ 428 004a 0422     		movs	r2, #4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 13
+
+
+ 429 004c 2846     		mov	r0, r5
+ 430              	.LVL25:
+ 133:Common/error_log.c ****         Queue.push(&ErrorQueue, p_data, length);
+ 431              		.loc 1 133 9 view .LVU100
+ 432 004e 9847     		blx	r3
+ 433              	.LVL26:
+ 134:Common/error_log.c ****     }
+ 434              		.loc 1 134 9 is_stmt 1 view .LVU101
+ 134:Common/error_log.c ****     }
+ 435              		.loc 1 134 14 is_stmt 0 view .LVU102
+ 436 0050 3369     		ldr	r3, [r6, #16]
+ 134:Common/error_log.c ****     }
+ 437              		.loc 1 134 9 view .LVU103
+ 438 0052 3A46     		mov	r2, r7
+ 439 0054 02A9     		add	r1, sp, #8
+ 440 0056 2846     		mov	r0, r5
+ 441 0058 9847     		blx	r3
+ 442              	.LVL27:
+ 443 005a E2E7     		b	.L30
+ 444              	.L36:
+ 445              		.align	2
+ 446              	.L35:
+ 447 005c 00000000 		.word	.LANCHOR2
+ 448 0060 00000000 		.word	.LANCHOR3
+ 449 0064 00000000 		.word	Queue
+ 450 0068 00000000 		.word	.LANCHOR4
+ 451              		.cfi_endproc
+ 452              	.LFE7:
+ 454              		.section	.rodata.ErrorTree_Create.str1.4,"aMS",%progbits,1
+ 455              		.align	2
+ 456              	.LC0:
+ 457 0000 4572726F 		.ascii	"ErrorQueue\000"
+ 457      72517565 
+ 457      756500
+ 458              		.section	.text.ErrorTree_Create,"ax",%progbits
+ 459              		.align	1
+ 460              		.syntax unified
+ 461              		.thumb
+ 462              		.thumb_func
+ 464              	ErrorTree_Create:
+ 465              	.LVL28:
+ 466              	.LFB5:
+  80:Common/error_log.c ****     volatile ErrorTree_TypeDef *Error_Tmp = NULL;
+ 467              		.loc 1 80 1 is_stmt 1 view -0
+ 468              		.cfi_startproc
+ 469              		@ args = 0, pretend = 0, frame = 0
+ 470              		@ frame_needed = 0, uses_anonymous_args = 0
+  80:Common/error_log.c ****     volatile ErrorTree_TypeDef *Error_Tmp = NULL;
+ 471              		.loc 1 80 1 is_stmt 0 view .LVU105
+ 472 0000 70B5     		push	{r4, r5, r6, lr}
+ 473              	.LCFI15:
+ 474              		.cfi_def_cfa_offset 16
+ 475              		.cfi_offset 4, -16
+ 476              		.cfi_offset 5, -12
+ 477              		.cfi_offset 6, -8
+ 478              		.cfi_offset 14, -4
+ 479 0002 0546     		mov	r5, r0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 14
+
+
+  81:Common/error_log.c **** 
+ 480              		.loc 1 81 5 is_stmt 1 view .LVU106
+ 481              	.LVL29:
+  83:Common/error_log.c ****     {
+ 482              		.loc 1 83 5 view .LVU107
+  83:Common/error_log.c ****     {
+ 483              		.loc 1 83 9 is_stmt 0 view .LVU108
+ 484 0004 164B     		ldr	r3, .L42
+ 485 0006 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  83:Common/error_log.c ****     {
+ 486              		.loc 1 83 8 view .LVU109
+ 487 0008 5BB9     		cbnz	r3, .L38
+  85:Common/error_log.c ****         ErrorQueue_Init = true;
+ 488              		.loc 1 85 9 is_stmt 1 view .LVU110
+  85:Common/error_log.c ****         ErrorQueue_Init = true;
+ 489              		.loc 1 85 39 is_stmt 0 view .LVU111
+ 490 000a 164B     		ldr	r3, .L42+4
+ 491 000c 5B68     		ldr	r3, [r3, #4]
+  85:Common/error_log.c ****         ErrorQueue_Init = true;
+ 492              		.loc 1 85 34 view .LVU112
+ 493 000e 4FF48062 		mov	r2, #1024
+ 494 0012 1549     		ldr	r1, .L42+8
+ 495 0014 1548     		ldr	r0, .L42+12
+ 496              	.LVL30:
+  85:Common/error_log.c ****         ErrorQueue_Init = true;
+ 497              		.loc 1 85 34 view .LVU113
+ 498 0016 9847     		blx	r3
+ 499              	.LVL31:
+  85:Common/error_log.c ****         ErrorQueue_Init = true;
+ 500              		.loc 1 85 32 view .LVU114
+ 501 0018 154B     		ldr	r3, .L42+16
+ 502 001a 1870     		strb	r0, [r3]
+  86:Common/error_log.c ****     }
+ 503              		.loc 1 86 9 is_stmt 1 view .LVU115
+  86:Common/error_log.c ****     }
+ 504              		.loc 1 86 25 is_stmt 0 view .LVU116
+ 505 001c 104B     		ldr	r3, .L42
+ 506 001e 0122     		movs	r2, #1
+ 507 0020 1A70     		strb	r2, [r3]
+ 508              	.L38:
+  89:Common/error_log.c **** 
+ 509              		.loc 1 89 5 is_stmt 1 view .LVU117
+  89:Common/error_log.c **** 
+ 510              		.loc 1 89 38 is_stmt 0 view .LVU118
+ 511 0022 0A20     		movs	r0, #10
+ 512 0024 FFF7FEFF 		bl	MMU_Malloc
+ 513              	.LVL32:
+  91:Common/error_log.c ****         return NULL;
+ 514              		.loc 1 91 5 is_stmt 1 view .LVU119
+  91:Common/error_log.c ****         return NULL;
+ 515              		.loc 1 91 8 is_stmt 0 view .LVU120
+ 516 0028 0446     		mov	r4, r0
+ 517 002a B8B1     		cbz	r0, .L40
+  94:Common/error_log.c **** 
+ 518              		.loc 1 94 5 is_stmt 1 view .LVU121
+  94:Common/error_log.c **** 
+ 519              		.loc 1 94 34 is_stmt 0 view .LVU122
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 15
+
+
+ 520 002c 114B     		ldr	r3, .L42+20
+ 521 002e 1E68     		ldr	r6, [r3]
+  94:Common/error_log.c **** 
+ 522              		.loc 1 94 23 view .LVU123
+ 523 0030 1149     		ldr	r1, .L42+24
+ 524 0032 0B46     		mov	r3, r1
+ 525 0034 114A     		ldr	r2, .L42+28
+ 526 0036 2846     		mov	r0, r5
+ 527              	.LVL33:
+  94:Common/error_log.c **** 
+ 528              		.loc 1 94 23 view .LVU124
+ 529 0038 B047     		blx	r6
+ 530              	.LVL34:
+  94:Common/error_log.c **** 
+ 531              		.loc 1 94 21 view .LVU125
+ 532 003a C4F80200 		str	r0, [r4, #2]	@ unaligned
+  96:Common/error_log.c ****         return 0;
+ 533              		.loc 1 96 5 is_stmt 1 view .LVU126
+  99:Common/error_log.c ****     Error_Tmp->link_node = NULL;
+ 534              		.loc 1 99 5 view .LVU127
+  99:Common/error_log.c ****     Error_Tmp->link_node = NULL;
+ 535              		.loc 1 99 24 is_stmt 0 view .LVU128
+ 536 003e 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 537 0040 0023     		movs	r3, #0
+ 538 0042 2370     		strb	r3, [r4]
+ 539 0044 6278     		ldrb	r2, [r4, #1]	@ zero_extendqisi2
+ 540 0046 6370     		strb	r3, [r4, #1]
+ 100:Common/error_log.c **** 
+ 541              		.loc 1 100 5 is_stmt 1 view .LVU129
+ 100:Common/error_log.c **** 
+ 542              		.loc 1 100 26 is_stmt 0 view .LVU130
+ 543 0048 A279     		ldrb	r2, [r4, #6]	@ zero_extendqisi2
+ 544 004a A371     		strb	r3, [r4, #6]
+ 545 004c E279     		ldrb	r2, [r4, #7]	@ zero_extendqisi2
+ 546 004e E371     		strb	r3, [r4, #7]
+ 547 0050 227A     		ldrb	r2, [r4, #8]	@ zero_extendqisi2
+ 548 0052 2372     		strb	r3, [r4, #8]
+ 549 0054 627A     		ldrb	r2, [r4, #9]	@ zero_extendqisi2
+ 550 0056 6372     		strb	r3, [r4, #9]
+ 102:Common/error_log.c **** }
+ 551              		.loc 1 102 5 is_stmt 1 view .LVU131
+ 102:Common/error_log.c **** }
+ 552              		.loc 1 102 12 is_stmt 0 view .LVU132
+ 553 0058 2046     		mov	r0, r4
+ 554              	.L37:
+ 103:Common/error_log.c **** 
+ 555              		.loc 1 103 1 view .LVU133
+ 556 005a 70BD     		pop	{r4, r5, r6, pc}
+ 557              	.LVL35:
+ 558              	.L40:
+  92:Common/error_log.c **** 
+ 559              		.loc 1 92 16 view .LVU134
+ 560 005c 0020     		movs	r0, #0
+ 561              	.LVL36:
+  92:Common/error_log.c **** 
+ 562              		.loc 1 92 16 view .LVU135
+ 563 005e FCE7     		b	.L37
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 16
+
+
+ 564              	.L43:
+ 565              		.align	2
+ 566              	.L42:
+ 567 0060 00000000 		.word	.LANCHOR5
+ 568 0064 00000000 		.word	Queue
+ 569 0068 00000000 		.word	.LC0
+ 570 006c 00000000 		.word	.LANCHOR4
+ 571 0070 00000000 		.word	.LANCHOR2
+ 572 0074 00000000 		.word	BalanceTree
+ 573 0078 00000000 		.word	Error_InsertPriority_Compare
+ 574 007c 00000000 		.word	Error_Search
+ 575              		.cfi_endproc
+ 576              	.LFE5:
+ 578              		.section	.text.Error_Proc,"ax",%progbits
+ 579              		.align	1
+ 580              		.syntax unified
+ 581              		.thumb
+ 582              		.thumb_func
+ 584              	Error_Proc:
+ 585              	.LVL37:
+ 586              	.LFB10:
+ 230:Common/error_log.c **** /* still in half way */
+ 231:Common/error_log.c **** static bool Error_Proc(Error_Handler hdl)
+ 232:Common/error_log.c **** {
+ 587              		.loc 1 232 1 is_stmt 1 view -0
+ 588              		.cfi_startproc
+ 589              		@ args = 0, pretend = 0, frame = 16
+ 590              		@ frame_needed = 0, uses_anonymous_args = 0
+ 591              		.loc 1 232 1 is_stmt 0 view .LVU137
+ 592 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 593              	.LCFI16:
+ 594              		.cfi_def_cfa_offset 20
+ 595              		.cfi_offset 4, -20
+ 596              		.cfi_offset 5, -16
+ 597              		.cfi_offset 6, -12
+ 598              		.cfi_offset 7, -8
+ 599              		.cfi_offset 14, -4
+ 600 0002 87B0     		sub	sp, sp, #28
+ 601              	.LCFI17:
+ 602              		.cfi_def_cfa_offset 48
+ 233:Common/error_log.c ****     ErrorStream_TypeDef stream;
+ 603              		.loc 1 233 5 is_stmt 1 view .LVU138
+ 234:Common/error_log.c ****     Error_Port_Reg ErrorQueue_Head_State;
+ 604              		.loc 1 234 5 view .LVU139
+ 235:Common/error_log.c ****     uint8_t *p_data = NULL;
+ 605              		.loc 1 235 5 view .LVU140
+ 606              	.LVL38:
+ 236:Common/error_log.c **** 
+ 237:Common/error_log.c ****     memset(&ErrorQueue_Head_State, NULL, sizeof(Error_Port_Reg));
+ 607              		.loc 1 237 5 view .LVU141
+ 608 0004 0023     		movs	r3, #0
+ 609 0006 0393     		str	r3, [sp, #12]
+ 238:Common/error_log.c ****     memset(&stream, NULL, sizeof(ErrorStream_TypeDef));
+ 610              		.loc 1 238 5 view .LVU142
+ 611 0008 0493     		str	r3, [sp, #16]
+ 612 000a ADF81430 		strh	r3, [sp, #20]	@ movhi
+ 239:Common/error_log.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 17
+
+
+ 240:Common/error_log.c ****     if (hdl == 0 || !ErrorQueue_CreateState)
+ 613              		.loc 1 240 5 view .LVU143
+ 614              		.loc 1 240 8 is_stmt 0 view .LVU144
+ 615 000e 0028     		cmp	r0, #0
+ 616 0010 5AD0     		beq	.L50
+ 617              		.loc 1 240 21 discriminator 1 view .LVU145
+ 618 0012 2F4B     		ldr	r3, .L53
+ 619 0014 1C78     		ldrb	r4, [r3]	@ zero_extendqisi2
+ 620              		.loc 1 240 18 discriminator 1 view .LVU146
+ 621 0016 002C     		cmp	r4, #0
+ 622 0018 57D0     		beq	.L45
+ 241:Common/error_log.c ****         return false;
+ 242:Common/error_log.c **** 
+ 243:Common/error_log.c ****     /* reserved still developing */
+ 244:Common/error_log.c ****     if (ErrorHandleToObj(hdl)->link_node)
+ 623              		.loc 1 244 5 is_stmt 1 view .LVU147
+ 245:Common/error_log.c ****     {
+ 246:Common/error_log.c ****     }
+ 624              		.loc 1 246 5 view .LVU148
+ 247:Common/error_log.c **** 
+ 248:Common/error_log.c ****     Queue.check(&ErrorQueue, 0, &ErrorQueue_Head_State.val, sizeof(ErrorQueue_Head_State.val));
+ 625              		.loc 1 248 5 view .LVU149
+ 626              		.loc 1 248 10 is_stmt 0 view .LVU150
+ 627 001a 2E4B     		ldr	r3, .L53+4
+ 628 001c DD68     		ldr	r5, [r3, #12]
+ 629              		.loc 1 248 5 view .LVU151
+ 630 001e 0423     		movs	r3, #4
+ 631 0020 03AA     		add	r2, sp, #12
+ 632 0022 0021     		movs	r1, #0
+ 633 0024 2C48     		ldr	r0, .L53+8
+ 634              	.LVL39:
+ 635              		.loc 1 248 5 view .LVU152
+ 636 0026 A847     		blx	r5
+ 637              	.LVL40:
+ 249:Common/error_log.c **** 
+ 250:Common/error_log.c ****     if ((ErrorQueue_Head_State.section.out_reg || ErrorQueue_Head_State.section.log_reg) && (out_ca
+ 638              		.loc 1 250 5 is_stmt 1 view .LVU153
+ 639              		.loc 1 250 48 is_stmt 0 view .LVU154
+ 640 0028 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+ 641              		.loc 1 250 8 view .LVU155
+ 642 002c 002B     		cmp	r3, #0
+ 643 002e 4CD0     		beq	.L45
+ 644              		.loc 1 250 94 discriminator 1 view .LVU156
+ 645 0030 2A4B     		ldr	r3, .L53+12
+ 646 0032 1B68     		ldr	r3, [r3]
+ 647              		.loc 1 250 90 discriminator 1 view .LVU157
+ 648 0034 002B     		cmp	r3, #0
+ 649 0036 42D0     		beq	.L52
+ 650              	.L46:
+ 251:Common/error_log.c ****     {
+ 252:Common/error_log.c ****         p_data = (uint8_t *)MMU_Malloc(ErrorQueue_Head_State.section.len);
+ 651              		.loc 1 252 9 is_stmt 1 view .LVU158
+ 652              		.loc 1 252 29 is_stmt 0 view .LVU159
+ 653 0038 BDF80D00 		ldrh	r0, [sp, #13]	@ unaligned
+ 654 003c FFF7FEFF 		bl	MMU_Malloc
+ 655              	.LVL41:
+ 253:Common/error_log.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 18
+
+
+ 254:Common/error_log.c ****         if (p_data)
+ 656              		.loc 1 254 9 is_stmt 1 view .LVU160
+ 657              		.loc 1 254 12 is_stmt 0 view .LVU161
+ 658 0040 0546     		mov	r5, r0
+ 659 0042 0028     		cmp	r0, #0
+ 660 0044 41D0     		beq	.L45
+ 255:Common/error_log.c ****         {
+ 256:Common/error_log.c ****             if ((Queue.state(ErrorQueue) == Queue_full) || (Queue.state(ErrorQueue) == Queue_ok))
+ 661              		.loc 1 256 13 is_stmt 1 view .LVU162
+ 662              		.loc 1 256 23 is_stmt 0 view .LVU163
+ 663 0046 234B     		ldr	r3, .L53+4
+ 664 0048 9E69     		ldr	r6, [r3, #24]
+ 665              		.loc 1 256 18 view .LVU164
+ 666 004a 234B     		ldr	r3, .L53+8
+ 667 004c 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 668 004e 8DF80020 		strb	r2, [sp]
+ 669 0052 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 670              	.LVL42:
+ 671              		.loc 1 256 18 view .LVU165
+ 672 0054 B047     		blx	r6
+ 673              	.LVL43:
+ 674              		.loc 1 256 16 view .LVU166
+ 675 0056 0428     		cmp	r0, #4
+ 676 0058 08D0     		beq	.L47
+ 677              		.loc 1 256 66 discriminator 1 view .LVU167
+ 678 005a 1E4B     		ldr	r3, .L53+4
+ 679 005c 9E69     		ldr	r6, [r3, #24]
+ 680              		.loc 1 256 61 discriminator 1 view .LVU168
+ 681 005e 1E4B     		ldr	r3, .L53+8
+ 682 0060 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 683 0062 8DF80020 		strb	r2, [sp]
+ 684 0066 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 685 0068 B047     		blx	r6
+ 686              	.LVL44:
+ 687              		.loc 1 256 57 discriminator 1 view .LVU169
+ 688 006a 20BB     		cbnz	r0, .L48
+ 689              	.L47:
+ 257:Common/error_log.c ****             {
+ 258:Common/error_log.c ****                 Queue.pop(&ErrorQueue, &ErrorQueue_Head_State.val, sizeof(ErrorQueue_Head_State.val
+ 690              		.loc 1 258 17 is_stmt 1 view .LVU170
+ 691              		.loc 1 258 22 is_stmt 0 view .LVU171
+ 692 006c 194F     		ldr	r7, .L53+4
+ 693 006e 7B69     		ldr	r3, [r7, #20]
+ 694              		.loc 1 258 17 view .LVU172
+ 695 0070 194E     		ldr	r6, .L53+8
+ 696 0072 0422     		movs	r2, #4
+ 697 0074 03A9     		add	r1, sp, #12
+ 698 0076 3046     		mov	r0, r6
+ 699 0078 9847     		blx	r3
+ 700              	.LVL45:
+ 259:Common/error_log.c ****                 Queue.pop(&ErrorQueue, p_data, ErrorQueue_Head_State.section.len);
+ 701              		.loc 1 259 17 is_stmt 1 view .LVU173
+ 702              		.loc 1 259 22 is_stmt 0 view .LVU174
+ 703 007a 7B69     		ldr	r3, [r7, #20]
+ 704              		.loc 1 259 17 view .LVU175
+ 705 007c BDF80D20 		ldrh	r2, [sp, #13]	@ unaligned
+ 706 0080 2946     		mov	r1, r5
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 19
+
+
+ 707 0082 3046     		mov	r0, r6
+ 708 0084 9847     		blx	r3
+ 709              	.LVL46:
+ 260:Common/error_log.c **** 
+ 261:Common/error_log.c ****                 if (ErrorQueue_Head_State.section.out_reg && out_callback && p_data)
+ 710              		.loc 1 261 17 is_stmt 1 view .LVU176
+ 711              		.loc 1 261 21 is_stmt 0 view .LVU177
+ 712 0086 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+ 713              		.loc 1 261 20 view .LVU178
+ 714 008a 13F00F0F 		tst	r3, #15
+ 715 008e 06D0     		beq	.L49
+ 716              		.loc 1 261 59 discriminator 1 view .LVU179
+ 717 0090 124B     		ldr	r3, .L53+12
+ 718 0092 1B68     		ldr	r3, [r3]
+ 719 0094 1BB1     		cbz	r3, .L49
+ 262:Common/error_log.c ****                 {
+ 263:Common/error_log.c ****                     out_callback(p_data, ErrorQueue_Head_State.section.len);
+ 720              		.loc 1 263 21 is_stmt 1 view .LVU180
+ 721 0096 BDF80D10 		ldrh	r1, [sp, #13]	@ unaligned
+ 722 009a 2846     		mov	r0, r5
+ 723 009c 9847     		blx	r3
+ 724              	.LVL47:
+ 725              	.L49:
+ 264:Common/error_log.c ****                 }
+ 265:Common/error_log.c **** 
+ 266:Common/error_log.c ****                 if (ErrorQueue_Head_State.section.log_reg && log_callback && p_data)
+ 726              		.loc 1 266 17 view .LVU181
+ 727              		.loc 1 266 21 is_stmt 0 view .LVU182
+ 728 009e 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+ 729              		.loc 1 266 20 view .LVU183
+ 730 00a2 13F0F00F 		tst	r3, #240
+ 731 00a6 06D0     		beq	.L48
+ 732              		.loc 1 266 59 discriminator 1 view .LVU184
+ 733 00a8 0D4B     		ldr	r3, .L53+16
+ 734 00aa 1B68     		ldr	r3, [r3]
+ 735 00ac 1BB1     		cbz	r3, .L48
+ 267:Common/error_log.c ****                 {
+ 268:Common/error_log.c ****                     log_callback(p_data, ErrorQueue_Head_State.section.len);
+ 736              		.loc 1 268 21 is_stmt 1 view .LVU185
+ 737 00ae BDF80D10 		ldrh	r1, [sp, #13]	@ unaligned
+ 738 00b2 2846     		mov	r0, r5
+ 739 00b4 9847     		blx	r3
+ 740              	.LVL48:
+ 741              	.L48:
+ 269:Common/error_log.c ****                 }
+ 270:Common/error_log.c ****             }
+ 271:Common/error_log.c **** 
+ 272:Common/error_log.c ****             MMU_Free(p_data);
+ 742              		.loc 1 272 13 view .LVU186
+ 743 00b6 2846     		mov	r0, r5
+ 744 00b8 FFF7FEFF 		bl	MMU_Free
+ 745              	.LVL49:
+ 746 00bc 05E0     		b	.L45
+ 747              	.LVL50:
+ 748              	.L52:
+ 250:Common/error_log.c ****     {
+ 749              		.loc 1 250 107 is_stmt 0 discriminator 2 view .LVU187
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 20
+
+
+ 750 00be 084B     		ldr	r3, .L53+16
+ 751 00c0 1B68     		ldr	r3, [r3]
+ 752 00c2 002B     		cmp	r3, #0
+ 753 00c4 B8D1     		bne	.L46
+ 754 00c6 00E0     		b	.L45
+ 755              	.LVL51:
+ 756              	.L50:
+ 241:Common/error_log.c **** 
+ 757              		.loc 1 241 16 view .LVU188
+ 758 00c8 0024     		movs	r4, #0
+ 759              	.LVL52:
+ 760              	.L45:
+ 273:Common/error_log.c ****         }
+ 274:Common/error_log.c ****     }
+ 275:Common/error_log.c **** 
+ 276:Common/error_log.c ****     return true;
+ 277:Common/error_log.c **** }
+ 761              		.loc 1 277 1 view .LVU189
+ 762 00ca 2046     		mov	r0, r4
+ 763 00cc 07B0     		add	sp, sp, #28
+ 764              	.LCFI18:
+ 765              		.cfi_def_cfa_offset 20
+ 766              		@ sp needed
+ 767 00ce F0BD     		pop	{r4, r5, r6, r7, pc}
+ 768              	.L54:
+ 769              		.align	2
+ 770              	.L53:
+ 771 00d0 00000000 		.word	.LANCHOR2
+ 772 00d4 00000000 		.word	Queue
+ 773 00d8 00000000 		.word	.LANCHOR4
+ 774 00dc 00000000 		.word	.LANCHOR0
+ 775 00e0 00000000 		.word	.LANCHOR1
+ 776              		.cfi_endproc
+ 777              	.LFE10:
+ 779              		.section	.rodata.Error_Trigger.str1.4,"aMS",%progbits,1
+ 780              		.align	2
+ 781              	.LC1:
+ 782 0000 5B2000   		.ascii	"[ \000"
+ 783 0003 00       		.align	2
+ 784              	.LC2:
+ 785 0004 205D2000 		.ascii	" ] \000"
+ 786              		.section	.text.Error_Trigger,"ax",%progbits
+ 787              		.align	1
+ 788              		.syntax unified
+ 789              		.thumb
+ 790              		.thumb_func
+ 792              	Error_Trigger:
+ 793              	.LVL53:
+ 794              	.LFB8:
+ 143:Common/error_log.c ****     int16_t code_tmp = code;
+ 795              		.loc 1 143 1 is_stmt 1 view -0
+ 796              		.cfi_startproc
+ 797              		@ args = 0, pretend = 0, frame = 8
+ 798              		@ frame_needed = 0, uses_anonymous_args = 0
+ 143:Common/error_log.c ****     int16_t code_tmp = code;
+ 799              		.loc 1 143 1 is_stmt 0 view .LVU191
+ 800 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 21
+
+
+ 801              	.LCFI19:
+ 802              		.cfi_def_cfa_offset 36
+ 803              		.cfi_offset 4, -36
+ 804              		.cfi_offset 5, -32
+ 805              		.cfi_offset 6, -28
+ 806              		.cfi_offset 7, -24
+ 807              		.cfi_offset 8, -20
+ 808              		.cfi_offset 9, -16
+ 809              		.cfi_offset 10, -12
+ 810              		.cfi_offset 11, -8
+ 811              		.cfi_offset 14, -4
+ 812 0004 83B0     		sub	sp, sp, #12
+ 813              	.LCFI20:
+ 814              		.cfi_def_cfa_offset 48
+ 815 0006 1546     		mov	r5, r2
+ 816 0008 1E46     		mov	r6, r3
+ 144:Common/error_log.c ****     data_handle match_data = 0;
+ 817              		.loc 1 144 5 is_stmt 1 view .LVU192
+ 144:Common/error_log.c ****     data_handle match_data = 0;
+ 818              		.loc 1 144 13 is_stmt 0 view .LVU193
+ 819 000a ADF80610 		strh	r1, [sp, #6]	@ movhi
+ 145:Common/error_log.c ****     ErrorStream_TypeDef data_stream;
+ 820              		.loc 1 145 5 is_stmt 1 view .LVU194
+ 821              	.LVL54:
+ 146:Common/error_log.c ****     char *letter = NULL;
+ 822              		.loc 1 146 5 view .LVU195
+ 147:Common/error_log.c **** 
+ 823              		.loc 1 147 5 view .LVU196
+ 149:Common/error_log.c **** 
+ 824              		.loc 1 149 5 view .LVU197
+ 149:Common/error_log.c **** 
+ 825              		.loc 1 149 18 is_stmt 0 view .LVU198
+ 826 000e 414B     		ldr	r3, .L61
+ 827              	.LVL55:
+ 149:Common/error_log.c **** 
+ 828              		.loc 1 149 18 view .LVU199
+ 829 0010 0022     		movs	r2, #0
+ 830              	.LVL56:
+ 149:Common/error_log.c **** 
+ 831              		.loc 1 149 18 view .LVU200
+ 832 0012 1A60     		str	r2, [r3]
+ 151:Common/error_log.c ****         return false;
+ 833              		.loc 1 151 5 is_stmt 1 view .LVU201
+ 151:Common/error_log.c ****         return false;
+ 834              		.loc 1 151 8 is_stmt 0 view .LVU202
+ 835 0014 0028     		cmp	r0, #0
+ 836 0016 7BD0     		beq	.L59
+ 837 0018 0F46     		mov	r7, r1
+ 838 001a 8046     		mov	r8, r0
+ 154:Common/error_log.c **** 
+ 839              		.loc 1 154 5 is_stmt 1 view .LVU203
+ 154:Common/error_log.c **** 
+ 840              		.loc 1 154 48 is_stmt 0 view .LVU204
+ 841 001c 3E4B     		ldr	r3, .L61+4
+ 842 001e 9B68     		ldr	r3, [r3, #8]
+ 154:Common/error_log.c **** 
+ 843              		.loc 1 154 37 view .LVU205
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 22
+
+
+ 844 0020 0DF10601 		add	r1, sp, #6
+ 845              	.LVL57:
+ 154:Common/error_log.c **** 
+ 846              		.loc 1 154 37 view .LVU206
+ 847 0024 D0F80200 		ldr	r0, [r0, #2]	@ unaligned
+ 848              	.LVL58:
+ 154:Common/error_log.c **** 
+ 849              		.loc 1 154 37 view .LVU207
+ 850 0028 9847     		blx	r3
+ 851              	.LVL59:
+ 154:Common/error_log.c **** 
+ 852              		.loc 1 154 37 view .LVU208
+ 853 002a 0446     		mov	r4, r0
+ 854              	.LVL60:
+ 156:Common/error_log.c ****     data_stream.size = size;
+ 855              		.loc 1 156 5 is_stmt 1 view .LVU209
+ 156:Common/error_log.c ****     data_stream.size = size;
+ 856              		.loc 1 156 24 is_stmt 0 view .LVU210
+ 857 002c 0095     		str	r5, [sp]
+ 157:Common/error_log.c **** 
+ 858              		.loc 1 157 5 is_stmt 1 view .LVU211
+ 157:Common/error_log.c **** 
+ 859              		.loc 1 157 22 is_stmt 0 view .LVU212
+ 860 002e ADF80460 		strh	r6, [sp, #4]	@ movhi
+ 159:Common/error_log.c ****     (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_data_stream).size = size;
+ 861              		.loc 1 159 5 is_stmt 1 view .LVU213
+ 159:Common/error_log.c ****     (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_data_stream).size = size;
+ 862              		.loc 1 159 6 is_stmt 0 view .LVU214
+ 863 0032 4368     		ldr	r3, [r0, #4]	@ unaligned
+ 159:Common/error_log.c ****     (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->prc_data_stream).size = size;
+ 864              		.loc 1 159 92 view .LVU215
+ 865 0034 C3F80E50 		str	r5, [r3, #14]	@ unaligned
+ 160:Common/error_log.c **** 
+ 866              		.loc 1 160 5 is_stmt 1 view .LVU216
+ 160:Common/error_log.c **** 
+ 867              		.loc 1 160 6 is_stmt 0 view .LVU217
+ 868 0038 4368     		ldr	r3, [r0, #4]	@ unaligned
+ 160:Common/error_log.c **** 
+ 869              		.loc 1 160 90 view .LVU218
+ 870 003a 5E82     		strh	r6, [r3, #18]	@ unaligned
+ 163:Common/error_log.c ****     {
+ 871              		.loc 1 163 5 is_stmt 1 view .LVU219
+ 163:Common/error_log.c ****     {
+ 872              		.loc 1 163 8 is_stmt 0 view .LVU220
+ 873 003c 0028     		cmp	r0, #0
+ 874 003e 60D0     		beq	.L57
+ 165:Common/error_log.c ****         {
+ 875              		.loc 1 165 9 is_stmt 1 view .LVU221
+ 165:Common/error_log.c ****         {
+ 876              		.loc 1 165 47 is_stmt 0 view .LVU222
+ 877 0040 4368     		ldr	r3, [r0, #4]	@ unaligned
+ 165:Common/error_log.c ****         {
+ 878              		.loc 1 165 12 view .LVU223
+ 879 0042 002B     		cmp	r3, #0
+ 880 0044 5DD0     		beq	.L57
+ 167:Common/error_log.c ****             port_reg.section.out_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)
+ 881              		.loc 1 167 13 is_stmt 1 view .LVU224
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 23
+
+
+ 167:Common/error_log.c ****             port_reg.section.out_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)
+ 882              		.loc 1 167 100 is_stmt 0 view .LVU225
+ 883 0046 597A     		ldrb	r1, [r3, #9]	@ zero_extendqisi2
+ 167:Common/error_log.c ****             port_reg.section.out_reg = ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)
+ 884              		.loc 1 167 38 view .LVU226
+ 885 0048 DFF8C8A0 		ldr	r10, .L61
+ 886 004c 9AF80020 		ldrb	r2, [r10]	@ zero_extendqisi2
+ 887 0050 61F30712 		bfi	r2, r1, #4, #4
+ 888 0054 8AF80020 		strb	r2, [r10]
+ 168:Common/error_log.c ****             port_reg.section.len = strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->da
+ 889              		.loc 1 168 13 is_stmt 1 view .LVU227
+ 168:Common/error_log.c ****             port_reg.section.len = strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->da
+ 890              		.loc 1 168 100 is_stmt 0 view .LVU228
+ 891 0058 197A     		ldrb	r1, [r3, #8]	@ zero_extendqisi2
+ 168:Common/error_log.c ****             port_reg.section.len = strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->da
+ 892              		.loc 1 168 38 view .LVU229
+ 893 005a D2B2     		uxtb	r2, r2
+ 894 005c 61F30302 		bfi	r2, r1, #0, #4
+ 895 0060 8AF80020 		strb	r2, [r10]
+ 169:Common/error_log.c **** 
+ 896              		.loc 1 169 13 is_stmt 1 view .LVU230
+ 169:Common/error_log.c **** 
+ 897              		.loc 1 169 36 is_stmt 0 view .LVU231
+ 898 0064 5868     		ldr	r0, [r3, #4]	@ unaligned
+ 899              	.LVL61:
+ 169:Common/error_log.c **** 
+ 900              		.loc 1 169 36 view .LVU232
+ 901 0066 FFF7FEFF 		bl	strlen
+ 902              	.LVL62:
+ 903 006a 8146     		mov	r9, r0
+ 169:Common/error_log.c **** 
+ 904              		.loc 1 169 141 view .LVU233
+ 905 006c D8F80230 		ldr	r3, [r8, #2]	@ unaligned
+ 169:Common/error_log.c **** 
+ 906              		.loc 1 169 113 view .LVU234
+ 907 0070 1868     		ldr	r0, [r3]	@ unaligned
+ 908 0072 FFF7FEFF 		bl	strlen
+ 909              	.LVL63:
+ 169:Common/error_log.c **** 
+ 910              		.loc 1 169 111 view .LVU235
+ 911 0076 8144     		add	r9, r9, r0
+ 912 0078 1FFA89F9 		uxth	r9, r9
+ 169:Common/error_log.c **** 
+ 913              		.loc 1 169 155 view .LVU236
+ 914 007c 09F10509 		add	r9, r9, #5
+ 169:Common/error_log.c **** 
+ 915              		.loc 1 169 34 view .LVU237
+ 916 0080 AAF80190 		strh	r9, [r10, #1]	@ unaligned
+ 171:Common/error_log.c ****             {
+ 917              		.loc 1 171 13 is_stmt 1 view .LVU238
+ 171:Common/error_log.c ****             {
+ 918              		.loc 1 171 17 is_stmt 0 view .LVU239
+ 919 0084 254B     		ldr	r3, .L61+8
+ 920 0086 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 171:Common/error_log.c ****             {
+ 921              		.loc 1 171 16 view .LVU240
+ 922 0088 8BB3     		cbz	r3, .L58
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 24
+
+
+ 171:Common/error_log.c ****             {
+ 923              		.loc 1 171 51 discriminator 1 view .LVU241
+ 924 008a DAF80030 		ldr	r3, [r10]
+ 171:Common/error_log.c ****             {
+ 925              		.loc 1 171 40 discriminator 1 view .LVU242
+ 926 008e 73B3     		cbz	r3, .L58
+ 175:Common/error_log.c ****                 /* push error tree name */
+ 927              		.loc 1 175 17 is_stmt 1 view .LVU243
+ 175:Common/error_log.c ****                 /* push error tree name */
+ 928              		.loc 1 175 22 is_stmt 0 view .LVU244
+ 929 0090 DFF894A0 		ldr	r10, .L61+20
+ 930 0094 DAF81030 		ldr	r3, [r10, #16]
+ 175:Common/error_log.c ****                 /* push error tree name */
+ 931              		.loc 1 175 17 view .LVU245
+ 932 0098 DFF89090 		ldr	r9, .L61+24
+ 933 009c 0422     		movs	r2, #4
+ 934 009e 1D49     		ldr	r1, .L61
+ 935 00a0 4846     		mov	r0, r9
+ 936 00a2 9847     		blx	r3
+ 937              	.LVL64:
+ 177:Common/error_log.c ****                 Queue.push(&ErrorQueue, letter, strlen(letter));
+ 938              		.loc 1 177 17 is_stmt 1 view .LVU246
+ 178:Common/error_log.c **** 
+ 939              		.loc 1 178 17 view .LVU247
+ 178:Common/error_log.c **** 
+ 940              		.loc 1 178 22 is_stmt 0 view .LVU248
+ 941 00a4 DAF81030 		ldr	r3, [r10, #16]
+ 178:Common/error_log.c **** 
+ 942              		.loc 1 178 17 view .LVU249
+ 943 00a8 0222     		movs	r2, #2
+ 944 00aa 1D49     		ldr	r1, .L61+12
+ 945 00ac 4846     		mov	r0, r9
+ 946 00ae 9847     		blx	r3
+ 947              	.LVL65:
+ 180:Common/error_log.c **** 
+ 948              		.loc 1 180 17 is_stmt 1 view .LVU250
+ 180:Common/error_log.c **** 
+ 949              		.loc 1 180 22 is_stmt 0 view .LVU251
+ 950 00b0 DAF810B0 		ldr	fp, [r10, #16]
+ 180:Common/error_log.c **** 
+ 951              		.loc 1 180 62 view .LVU252
+ 952 00b4 D8F80230 		ldr	r3, [r8, #2]	@ unaligned
+ 180:Common/error_log.c **** 
+ 953              		.loc 1 180 68 view .LVU253
+ 954 00b8 D3F80080 		ldr	r8, [r3]	@ unaligned
+ 955              	.LVL66:
+ 180:Common/error_log.c **** 
+ 956              		.loc 1 180 76 view .LVU254
+ 957 00bc 4046     		mov	r0, r8
+ 958 00be FFF7FEFF 		bl	strlen
+ 959              	.LVL67:
+ 180:Common/error_log.c **** 
+ 960              		.loc 1 180 17 view .LVU255
+ 961 00c2 82B2     		uxth	r2, r0
+ 962 00c4 4146     		mov	r1, r8
+ 963 00c6 4846     		mov	r0, r9
+ 964 00c8 D847     		blx	fp
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 25
+
+
+ 965              	.LVL68:
+ 182:Common/error_log.c ****                 Queue.push(&ErrorQueue, letter, strlen(letter));
+ 966              		.loc 1 182 17 is_stmt 1 view .LVU256
+ 183:Common/error_log.c **** 
+ 967              		.loc 1 183 17 view .LVU257
+ 183:Common/error_log.c **** 
+ 968              		.loc 1 183 22 is_stmt 0 view .LVU258
+ 969 00ca DAF81030 		ldr	r3, [r10, #16]
+ 183:Common/error_log.c **** 
+ 970              		.loc 1 183 17 view .LVU259
+ 971 00ce 0322     		movs	r2, #3
+ 972 00d0 1449     		ldr	r1, .L61+16
+ 973 00d2 4846     		mov	r0, r9
+ 974 00d4 9847     		blx	r3
+ 975              	.LVL69:
+ 186:Common/error_log.c ****             }
+ 976              		.loc 1 186 17 is_stmt 1 view .LVU260
+ 186:Common/error_log.c ****             }
+ 977              		.loc 1 186 22 is_stmt 0 view .LVU261
+ 978 00d6 DAF810A0 		ldr	r10, [r10, #16]
+ 186:Common/error_log.c ****             }
+ 979              		.loc 1 186 41 view .LVU262
+ 980 00da 6368     		ldr	r3, [r4, #4]	@ unaligned
+ 186:Common/error_log.c ****             }
+ 981              		.loc 1 186 101 view .LVU263
+ 982 00dc D3F80480 		ldr	r8, [r3, #4]	@ unaligned
+ 186:Common/error_log.c ****             }
+ 983              		.loc 1 186 109 view .LVU264
+ 984 00e0 4046     		mov	r0, r8
+ 985 00e2 FFF7FEFF 		bl	strlen
+ 986              	.LVL70:
+ 186:Common/error_log.c ****             }
+ 987              		.loc 1 186 17 view .LVU265
+ 988 00e6 82B2     		uxth	r2, r0
+ 989 00e8 4146     		mov	r1, r8
+ 990 00ea 4846     		mov	r0, r9
+ 991 00ec D047     		blx	r10
+ 992              	.LVL71:
+ 993              	.L58:
+ 189:Common/error_log.c ****             {
+ 994              		.loc 1 189 13 is_stmt 1 view .LVU266
+ 189:Common/error_log.c ****             {
+ 995              		.loc 1 189 17 is_stmt 0 view .LVU267
+ 996 00ee 6368     		ldr	r3, [r4, #4]	@ unaligned
+ 189:Common/error_log.c ****             {
+ 997              		.loc 1 189 77 view .LVU268
+ 998 00f0 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 189:Common/error_log.c ****             {
+ 999              		.loc 1 189 16 view .LVU269
+ 1000 00f2 32B9     		cbnz	r2, .L57
+ 192:Common/error_log.c ****                 {
+ 1001              		.loc 1 192 17 is_stmt 1 view .LVU270
+ 192:Common/error_log.c ****                 {
+ 1002              		.loc 1 192 81 is_stmt 0 view .LVU271
+ 1003 00f4 D3F80A30 		ldr	r3, [r3, #10]	@ unaligned
+ 192:Common/error_log.c ****                 {
+ 1004              		.loc 1 192 20 view .LVU272
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 26
+
+
+ 1005 00f8 1BB1     		cbz	r3, .L57
+ 194:Common/error_log.c ****                 }
+ 1006              		.loc 1 194 21 is_stmt 1 view .LVU273
+ 1007 00fa 3246     		mov	r2, r6
+ 1008 00fc 2946     		mov	r1, r5
+ 1009 00fe 3846     		mov	r0, r7
+ 1010 0100 9847     		blx	r3
+ 1011              	.LVL72:
+ 1012              	.L57:
+ 205:Common/error_log.c ****         }
+ 1013              		.loc 1 205 13 view .LVU274
+ 209:Common/error_log.c **** 
+ 1014              		.loc 1 209 5 view .LVU275
+ 209:Common/error_log.c **** 
+ 1015              		.loc 1 209 18 is_stmt 0 view .LVU276
+ 1016 0102 044B     		ldr	r3, .L61
+ 1017 0104 0022     		movs	r2, #0
+ 1018 0106 1A60     		str	r2, [r3]
+ 211:Common/error_log.c **** }
+ 1019              		.loc 1 211 5 is_stmt 1 view .LVU277
+ 211:Common/error_log.c **** }
+ 1020              		.loc 1 211 12 is_stmt 0 view .LVU278
+ 1021 0108 0120     		movs	r0, #1
+ 1022              	.LVL73:
+ 1023              	.L56:
+ 212:Common/error_log.c **** 
+ 1024              		.loc 1 212 1 view .LVU279
+ 1025 010a 03B0     		add	sp, sp, #12
+ 1026              	.LCFI21:
+ 1027              		.cfi_remember_state
+ 1028              		.cfi_def_cfa_offset 36
+ 1029              		@ sp needed
+ 1030 010c BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 1031              	.LVL74:
+ 1032              	.L59:
+ 1033              	.LCFI22:
+ 1034              		.cfi_restore_state
+ 152:Common/error_log.c **** 
+ 1035              		.loc 1 152 16 view .LVU280
+ 1036 0110 0020     		movs	r0, #0
+ 1037              	.LVL75:
+ 152:Common/error_log.c **** 
+ 1038              		.loc 1 152 16 view .LVU281
+ 1039 0112 FAE7     		b	.L56
+ 1040              	.L62:
+ 1041              		.align	2
+ 1042              	.L61:
+ 1043 0114 00000000 		.word	.LANCHOR3
+ 1044 0118 00000000 		.word	BalanceTree
+ 1045 011c 00000000 		.word	.LANCHOR2
+ 1046 0120 00000000 		.word	.LC1
+ 1047 0124 04000000 		.word	.LC2
+ 1048 0128 00000000 		.word	Queue
+ 1049 012c 00000000 		.word	.LANCHOR4
+ 1050              		.cfi_endproc
+ 1051              	.LFE8:
+ 1053              		.global	ErrorLog
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 27
+
+
+ 1054              		.section	.bss.ErrorQueue,"aw",%nobits
+ 1055              		.align	2
+ 1056              		.set	.LANCHOR4,. + 0
+ 1059              	ErrorQueue:
+ 1060 0000 00000000 		.space	17
+ 1060      00000000 
+ 1060      00000000 
+ 1060      00000000 
+ 1060      00
+ 1061              		.section	.bss.ErrorQueue_CreateState,"aw",%nobits
+ 1062              		.set	.LANCHOR2,. + 0
+ 1065              	ErrorQueue_CreateState:
+ 1066 0000 00       		.space	1
+ 1067              		.section	.bss.ErrorQueue_Init,"aw",%nobits
+ 1068              		.set	.LANCHOR5,. + 0
+ 1071              	ErrorQueue_Init:
+ 1072 0000 00       		.space	1
+ 1073              		.section	.bss.log_callback,"aw",%nobits
+ 1074              		.align	2
+ 1075              		.set	.LANCHOR1,. + 0
+ 1078              	log_callback:
+ 1079 0000 00000000 		.space	4
+ 1080              		.section	.bss.out_callback,"aw",%nobits
+ 1081              		.align	2
+ 1082              		.set	.LANCHOR0,. + 0
+ 1085              	out_callback:
+ 1086 0000 00000000 		.space	4
+ 1087              		.section	.bss.port_reg,"aw",%nobits
+ 1088              		.align	2
+ 1089              		.set	.LANCHOR3,. + 0
+ 1092              	port_reg:
+ 1093 0000 00000000 		.space	4
+ 1094              		.section	.data.ErrorLog,"aw"
+ 1095              		.align	2
+ 1098              	ErrorLog:
+ 1099 0000 00000000 		.word	ErrorTree_Create
+ 1100 0004 00000000 		.word	Error_Register
+ 1101 0008 00000000 		.word	Error_Trigger
+ 1102 000c 00000000 		.word	Error_Proc
+ 1103 0010 00000000 		.word	Error_Set_Callback
+ 1104 0014 00000000 		.word	Error_DescToQueue
+ 1105              		.text
+ 1106              	.Letext0:
+ 1107              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1108              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1109              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
+ 1110              		.file 5 "DataStructure/binary_tree.h"
+ 1111              		.file 6 "DataStructure/linked_list.h"
+ 1112              		.file 7 "Common/error_log.h"
+ 1113              		.file 8 "DataStructure/queue.h"
+ 1114              		.file 9 "System/mmu/mmu.h"
+ 1115              		.file 10 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 1116              		.file 11 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 1117              		.file 12 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 error_log.c
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:19     .text.Error_InsertPriority_Compare:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:24     .text.Error_InsertPriority_Compare:00000000 Error_InsertPriority_Compare
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:98     .text.Error_Search:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:103    .text.Error_Search:00000000 Error_Search
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:188    .text.Error_Register:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:193    .text.Error_Register:00000000 Error_Register
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:274    .text.Error_Register:00000034 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:279    .text.Error_Set_Callback:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:284    .text.Error_Set_Callback:00000000 Error_Set_Callback
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:316    .text.Error_Set_Callback:00000018 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:322    .text.Error_DescToQueue:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:327    .text.Error_DescToQueue:00000000 Error_DescToQueue
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:447    .text.Error_DescToQueue:0000005c $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:455    .rodata.ErrorTree_Create.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:459    .text.ErrorTree_Create:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:464    .text.ErrorTree_Create:00000000 ErrorTree_Create
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:567    .text.ErrorTree_Create:00000060 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:579    .text.Error_Proc:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:584    .text.Error_Proc:00000000 Error_Proc
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:771    .text.Error_Proc:000000d0 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:780    .rodata.Error_Trigger.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:787    .text.Error_Trigger:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:792    .text.Error_Trigger:00000000 Error_Trigger
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1043   .text.Error_Trigger:00000114 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1098   .data.ErrorLog:00000000 ErrorLog
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1055   .bss.ErrorQueue:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1059   .bss.ErrorQueue:00000000 ErrorQueue
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1065   .bss.ErrorQueue_CreateState:00000000 ErrorQueue_CreateState
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1066   .bss.ErrorQueue_CreateState:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1071   .bss.ErrorQueue_Init:00000000 ErrorQueue_Init
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1072   .bss.ErrorQueue_Init:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1074   .bss.log_callback:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1078   .bss.log_callback:00000000 log_callback
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1081   .bss.out_callback:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1085   .bss.out_callback:00000000 out_callback
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1088   .bss.port_reg:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1092   .bss.port_reg:00000000 port_reg
+C:\Users\HUAV\AppData\Local\Temp\cctSIu1e.s:1095   .data.ErrorLog:00000000 $d
+
+UNDEFINED SYMBOLS
+BalanceTree
+memset
+vsnprintf
+Queue
+MMU_Malloc
+MMU_Free
+strlen

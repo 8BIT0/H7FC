@@ -1,0 +1,1628 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"Bsp_GPIO.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.BspGPIO_GetEXTI_Index,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	BspGPIO_GetEXTI_Index:
+  25              	.LVL0:
+  26              	.LFB144:
+  27              		.file 1 "Bsp/Bsp_GPIO.c"
+   1:Bsp/Bsp_GPIO.c **** #include "Bsp_GPIO.h"
+   2:Bsp/Bsp_GPIO.c **** #include "system_cfg.h"
+   3:Bsp/Bsp_GPIO.c **** #include "debug_util.h"
+   4:Bsp/Bsp_GPIO.c **** 
+   5:Bsp/Bsp_GPIO.c **** /* interbal function */
+   6:Bsp/Bsp_GPIO.c **** static EXTI_Callback EXTI_CallBack_List[GPIO_EXTI_SUM] = {NULL};
+   7:Bsp/Bsp_GPIO.c **** 
+   8:Bsp/Bsp_GPIO.c **** /* internal function */
+   9:Bsp/Bsp_GPIO.c **** static void BspGPIO_CLK_Enable(GPIO_TypeDef *port);
+  10:Bsp/Bsp_GPIO.c **** static uint8_t BspGPIO_GetEXTI_Index(uint16_t exti_id);
+  11:Bsp/Bsp_GPIO.c **** static IRQn_Type BspGPIO_GetExti_IRQnID(BspGPIO_Obj_TypeDef IO_Obj);
+  12:Bsp/Bsp_GPIO.c **** 
+  13:Bsp/Bsp_GPIO.c **** /* external function */
+  14:Bsp/Bsp_GPIO.c **** static bool BspGPIO_Output_Init(BspGPIO_Obj_TypeDef IO_Obj);
+  15:Bsp/Bsp_GPIO.c **** static bool BspGPIO_Input_Init(BspGPIO_Obj_TypeDef IO_Obj);
+  16:Bsp/Bsp_GPIO.c **** static bool BspGPIO_Read(BspGPIO_Obj_TypeDef IO_Obj);
+  17:Bsp/Bsp_GPIO.c **** static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state);
+  18:Bsp/Bsp_GPIO.c **** static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
+  19:Bsp/Bsp_GPIO.c **** static bool BspGPIO_ResetExtiCallback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
+  20:Bsp/Bsp_GPIO.c **** static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode);
+  21:Bsp/Bsp_GPIO.c **** 
+  22:Bsp/Bsp_GPIO.c **** BspGPIO_TypeDef BspGPIO = {
+  23:Bsp/Bsp_GPIO.c ****     .exti_init = BspGPIO_ExtiInit,
+  24:Bsp/Bsp_GPIO.c ****     .in_init = BspGPIO_Input_Init,
+  25:Bsp/Bsp_GPIO.c ****     .out_init = BspGPIO_Output_Init,
+  26:Bsp/Bsp_GPIO.c ****     .read = BspGPIO_Read,
+  27:Bsp/Bsp_GPIO.c ****     .write = BspGPIO_Write,
+  28:Bsp/Bsp_GPIO.c ****     .set_exti_callback = BspGPIO_ResetExtiCallback,
+  29:Bsp/Bsp_GPIO.c ****     .set_exti_mode = BspGPIO_ExtiSetMode,
+  30:Bsp/Bsp_GPIO.c **** };
+  31:Bsp/Bsp_GPIO.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 2
+
+
+  32:Bsp/Bsp_GPIO.c **** static uint8_t BspGPIO_GetEXTI_Index(uint16_t exti_id)
+  33:Bsp/Bsp_GPIO.c **** {
+  28              		.loc 1 33 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              		.loc 1 33 1 is_stmt 0 view .LVU1
+  34 0000 07EE900A 		vmov	s15, r0	@ int
+  34:Bsp/Bsp_GPIO.c ****     float f_exti_id = (float)exti_id;
+  35              		.loc 1 34 5 is_stmt 1 view .LVU2
+  36              	.LVL1:
+  35:Bsp/Bsp_GPIO.c ****     uint32_t u32_exti_id = 0;
+  37              		.loc 1 35 5 view .LVU3
+  36:Bsp/Bsp_GPIO.c ****     uint8_t exp = 0;
+  38              		.loc 1 36 5 view .LVU4
+  37:Bsp/Bsp_GPIO.c **** 
+  38:Bsp/Bsp_GPIO.c ****     u32_exti_id = *((unsigned long *)(&f_exti_id));
+  39              		.loc 1 38 5 view .LVU5
+  40              		.loc 1 38 17 is_stmt 0 view .LVU6
+  41 0004 F8EE677A 		vcvt.f32.u32	s15, s15
+  42              	.LVL2:
+  43              		.loc 1 38 17 view .LVU7
+  44 0008 17EE900A 		vmov	r0, s15
+  45              	.LVL3:
+  39:Bsp/Bsp_GPIO.c **** 
+  40:Bsp/Bsp_GPIO.c ****     exp = (u32_exti_id >> 23) & 0xFF;
+  46              		.loc 1 40 5 is_stmt 1 view .LVU8
+  47              		.loc 1 40 9 is_stmt 0 view .LVU9
+  48 000c C0F3C750 		ubfx	r0, r0, #23, #8
+  49              	.LVL4:
+  41:Bsp/Bsp_GPIO.c ****     exp -= 127;
+  50              		.loc 1 41 5 is_stmt 1 view .LVU10
+  51              		.loc 1 41 9 is_stmt 0 view .LVU11
+  52 0010 7F38     		subs	r0, r0, #127
+  53              	.LVL5:
+  42:Bsp/Bsp_GPIO.c **** 
+  43:Bsp/Bsp_GPIO.c ****     return exp;
+  54              		.loc 1 43 5 is_stmt 1 view .LVU12
+  44:Bsp/Bsp_GPIO.c **** }
+  55              		.loc 1 44 1 is_stmt 0 view .LVU13
+  56 0012 C0B2     		uxtb	r0, r0
+  57              		.loc 1 44 1 view .LVU14
+  58 0014 7047     		bx	lr
+  59              		.cfi_endproc
+  60              	.LFE144:
+  62              		.section	.text.BspGPIO_CLK_Enable,"ax",%progbits
+  63              		.align	1
+  64              		.syntax unified
+  65              		.thumb
+  66              		.thumb_func
+  68              	BspGPIO_CLK_Enable:
+  69              	.LVL6:
+  70              	.LFB145:
+  45:Bsp/Bsp_GPIO.c **** 
+  46:Bsp/Bsp_GPIO.c **** static void BspGPIO_CLK_Enable(GPIO_TypeDef *port)
+  47:Bsp/Bsp_GPIO.c **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 3
+
+
+  71              		.loc 1 47 1 is_stmt 1 view -0
+  72              		.cfi_startproc
+  73              		@ args = 0, pretend = 0, frame = 48
+  74              		@ frame_needed = 0, uses_anonymous_args = 0
+  75              		@ link register save eliminated.
+  76              		.loc 1 47 1 is_stmt 0 view .LVU16
+  77 0000 8CB0     		sub	sp, sp, #48
+  78              	.LCFI0:
+  79              		.cfi_def_cfa_offset 48
+  48:Bsp/Bsp_GPIO.c ****     if (port == GPIOA)
+  80              		.loc 1 48 5 is_stmt 1 view .LVU17
+  81              		.loc 1 48 8 is_stmt 0 view .LVU18
+  82 0002 654B     		ldr	r3, .L25
+  83 0004 9842     		cmp	r0, r3
+  84 0006 2FD0     		beq	.L15
+  49:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOA_CLK_ENABLE();
+  50:Bsp/Bsp_GPIO.c ****     else if (port == GPIOB)
+  85              		.loc 1 50 10 is_stmt 1 view .LVU19
+  86              		.loc 1 50 13 is_stmt 0 view .LVU20
+  87 0008 644B     		ldr	r3, .L25+4
+  88 000a 9842     		cmp	r0, r3
+  89 000c 3CD0     		beq	.L16
+  51:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOB_CLK_ENABLE();
+  52:Bsp/Bsp_GPIO.c ****     else if (port == GPIOC)
+  90              		.loc 1 52 10 is_stmt 1 view .LVU21
+  91              		.loc 1 52 13 is_stmt 0 view .LVU22
+  92 000e 644B     		ldr	r3, .L25+8
+  93 0010 9842     		cmp	r0, r3
+  94 0012 48D0     		beq	.L17
+  53:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOC_CLK_ENABLE();
+  54:Bsp/Bsp_GPIO.c ****     else if (port == GPIOD)
+  95              		.loc 1 54 10 is_stmt 1 view .LVU23
+  96              		.loc 1 54 13 is_stmt 0 view .LVU24
+  97 0014 634B     		ldr	r3, .L25+12
+  98 0016 9842     		cmp	r0, r3
+  99 0018 54D0     		beq	.L18
+  55:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOD_CLK_ENABLE();
+  56:Bsp/Bsp_GPIO.c ****     else if (port == GPIOE)
+ 100              		.loc 1 56 10 is_stmt 1 view .LVU25
+ 101              		.loc 1 56 13 is_stmt 0 view .LVU26
+ 102 001a 634B     		ldr	r3, .L25+16
+ 103 001c 9842     		cmp	r0, r3
+ 104 001e 60D0     		beq	.L19
+  57:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOE_CLK_ENABLE();
+  58:Bsp/Bsp_GPIO.c ****     else if (port == GPIOF)
+ 105              		.loc 1 58 10 is_stmt 1 view .LVU27
+ 106              		.loc 1 58 13 is_stmt 0 view .LVU28
+ 107 0020 624B     		ldr	r3, .L25+20
+ 108 0022 9842     		cmp	r0, r3
+ 109 0024 6CD0     		beq	.L20
+  59:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOF_CLK_ENABLE();
+  60:Bsp/Bsp_GPIO.c ****     else if (port == GPIOG)
+ 110              		.loc 1 60 10 is_stmt 1 view .LVU29
+ 111              		.loc 1 60 13 is_stmt 0 view .LVU30
+ 112 0026 624B     		ldr	r3, .L25+24
+ 113 0028 9842     		cmp	r0, r3
+ 114 002a 78D0     		beq	.L21
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 4
+
+
+  61:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOG_CLK_ENABLE();
+  62:Bsp/Bsp_GPIO.c ****     else if (port == GPIOH)
+ 115              		.loc 1 62 10 is_stmt 1 view .LVU31
+ 116              		.loc 1 62 13 is_stmt 0 view .LVU32
+ 117 002c 614B     		ldr	r3, .L25+28
+ 118 002e 9842     		cmp	r0, r3
+ 119 0030 00F08480 		beq	.L22
+  63:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOH_CLK_ENABLE();
+  64:Bsp/Bsp_GPIO.c **** #if defined(GPIOI)
+  65:Bsp/Bsp_GPIO.c ****     else if (port == GPIOI)
+ 120              		.loc 1 65 10 is_stmt 1 view .LVU33
+ 121              		.loc 1 65 13 is_stmt 0 view .LVU34
+ 122 0034 604B     		ldr	r3, .L25+32
+ 123 0036 9842     		cmp	r0, r3
+ 124 0038 00F08F80 		beq	.L23
+  66:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOI_CLK_ENABLE();
+  67:Bsp/Bsp_GPIO.c **** #endif
+  68:Bsp/Bsp_GPIO.c ****     else if (port == GPIOJ)
+ 125              		.loc 1 68 10 is_stmt 1 view .LVU35
+ 126              		.loc 1 68 13 is_stmt 0 view .LVU36
+ 127 003c 5F4B     		ldr	r3, .L25+36
+ 128 003e 9842     		cmp	r0, r3
+ 129 0040 00F09A80 		beq	.L24
+  69:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOJ_CLK_ENABLE();
+  70:Bsp/Bsp_GPIO.c ****     else if (port == GPIOK)
+ 130              		.loc 1 70 10 is_stmt 1 view .LVU37
+ 131              		.loc 1 70 13 is_stmt 0 view .LVU38
+ 132 0044 5E4B     		ldr	r3, .L25+40
+ 133 0046 9842     		cmp	r0, r3
+ 134 0048 1CD1     		bne	.L2
+  71:Bsp/Bsp_GPIO.c ****         __HAL_RCC_GPIOK_CLK_ENABLE();
+ 135              		.loc 1 71 9 is_stmt 1 view .LVU39
+ 136              	.LBB2:
+ 137              		.loc 1 71 9 view .LVU40
+ 138              		.loc 1 71 9 view .LVU41
+ 139 004a 03F5E053 		add	r3, r3, #7168
+ 140 004e D3F8E020 		ldr	r2, [r3, #224]
+ 141 0052 42F48062 		orr	r2, r2, #1024
+ 142 0056 C3F8E020 		str	r2, [r3, #224]
+ 143              		.loc 1 71 9 view .LVU42
+ 144 005a D3F8E030 		ldr	r3, [r3, #224]
+ 145 005e 03F48063 		and	r3, r3, #1024
+ 146 0062 0B93     		str	r3, [sp, #44]
+ 147              		.loc 1 71 9 view .LVU43
+ 148 0064 0B9B     		ldr	r3, [sp, #44]
+ 149              	.LBE2:
+ 150              		.loc 1 71 9 view .LVU44
+  72:Bsp/Bsp_GPIO.c **** }
+ 151              		.loc 1 72 1 is_stmt 0 view .LVU45
+ 152 0066 0DE0     		b	.L2
+ 153              	.L15:
+  49:Bsp/Bsp_GPIO.c ****     else if (port == GPIOB)
+ 154              		.loc 1 49 9 is_stmt 1 view .LVU46
+ 155              	.LBB3:
+  49:Bsp/Bsp_GPIO.c ****     else if (port == GPIOB)
+ 156              		.loc 1 49 9 view .LVU47
+  49:Bsp/Bsp_GPIO.c ****     else if (port == GPIOB)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 5
+
+
+ 157              		.loc 1 49 9 view .LVU48
+ 158 0068 03F58843 		add	r3, r3, #17408
+ 159 006c D3F8E020 		ldr	r2, [r3, #224]
+ 160 0070 42F00102 		orr	r2, r2, #1
+ 161 0074 C3F8E020 		str	r2, [r3, #224]
+  49:Bsp/Bsp_GPIO.c ****     else if (port == GPIOB)
+ 162              		.loc 1 49 9 view .LVU49
+ 163 0078 D3F8E030 		ldr	r3, [r3, #224]
+ 164 007c 03F00103 		and	r3, r3, #1
+ 165 0080 0193     		str	r3, [sp, #4]
+  49:Bsp/Bsp_GPIO.c ****     else if (port == GPIOB)
+ 166              		.loc 1 49 9 view .LVU50
+ 167 0082 019B     		ldr	r3, [sp, #4]
+ 168              	.LBE3:
+  49:Bsp/Bsp_GPIO.c ****     else if (port == GPIOB)
+ 169              		.loc 1 49 9 view .LVU51
+ 170              	.L2:
+ 171              		.loc 1 72 1 is_stmt 0 view .LVU52
+ 172 0084 0CB0     		add	sp, sp, #48
+ 173              	.LCFI1:
+ 174              		.cfi_remember_state
+ 175              		.cfi_def_cfa_offset 0
+ 176              		@ sp needed
+ 177 0086 7047     		bx	lr
+ 178              	.L16:
+ 179              	.LCFI2:
+ 180              		.cfi_restore_state
+  51:Bsp/Bsp_GPIO.c ****     else if (port == GPIOC)
+ 181              		.loc 1 51 9 is_stmt 1 view .LVU53
+ 182              	.LBB4:
+  51:Bsp/Bsp_GPIO.c ****     else if (port == GPIOC)
+ 183              		.loc 1 51 9 view .LVU54
+  51:Bsp/Bsp_GPIO.c ****     else if (port == GPIOC)
+ 184              		.loc 1 51 9 view .LVU55
+ 185 0088 03F58043 		add	r3, r3, #16384
+ 186 008c D3F8E020 		ldr	r2, [r3, #224]
+ 187 0090 42F00202 		orr	r2, r2, #2
+ 188 0094 C3F8E020 		str	r2, [r3, #224]
+  51:Bsp/Bsp_GPIO.c ****     else if (port == GPIOC)
+ 189              		.loc 1 51 9 view .LVU56
+ 190 0098 D3F8E030 		ldr	r3, [r3, #224]
+ 191 009c 03F00203 		and	r3, r3, #2
+ 192 00a0 0293     		str	r3, [sp, #8]
+  51:Bsp/Bsp_GPIO.c ****     else if (port == GPIOC)
+ 193              		.loc 1 51 9 view .LVU57
+ 194 00a2 029B     		ldr	r3, [sp, #8]
+ 195              	.LBE4:
+  51:Bsp/Bsp_GPIO.c ****     else if (port == GPIOC)
+ 196              		.loc 1 51 9 view .LVU58
+ 197 00a4 EEE7     		b	.L2
+ 198              	.L17:
+  53:Bsp/Bsp_GPIO.c ****     else if (port == GPIOD)
+ 199              		.loc 1 53 9 view .LVU59
+ 200              	.LBB5:
+  53:Bsp/Bsp_GPIO.c ****     else if (port == GPIOD)
+ 201              		.loc 1 53 9 view .LVU60
+  53:Bsp/Bsp_GPIO.c ****     else if (port == GPIOD)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 6
+
+
+ 202              		.loc 1 53 9 view .LVU61
+ 203 00a6 03F57053 		add	r3, r3, #15360
+ 204 00aa D3F8E020 		ldr	r2, [r3, #224]
+ 205 00ae 42F00402 		orr	r2, r2, #4
+ 206 00b2 C3F8E020 		str	r2, [r3, #224]
+  53:Bsp/Bsp_GPIO.c ****     else if (port == GPIOD)
+ 207              		.loc 1 53 9 view .LVU62
+ 208 00b6 D3F8E030 		ldr	r3, [r3, #224]
+ 209 00ba 03F00403 		and	r3, r3, #4
+ 210 00be 0393     		str	r3, [sp, #12]
+  53:Bsp/Bsp_GPIO.c ****     else if (port == GPIOD)
+ 211              		.loc 1 53 9 view .LVU63
+ 212 00c0 039B     		ldr	r3, [sp, #12]
+ 213              	.LBE5:
+  53:Bsp/Bsp_GPIO.c ****     else if (port == GPIOD)
+ 214              		.loc 1 53 9 view .LVU64
+ 215 00c2 DFE7     		b	.L2
+ 216              	.L18:
+  55:Bsp/Bsp_GPIO.c ****     else if (port == GPIOE)
+ 217              		.loc 1 55 9 view .LVU65
+ 218              	.LBB6:
+  55:Bsp/Bsp_GPIO.c ****     else if (port == GPIOE)
+ 219              		.loc 1 55 9 view .LVU66
+  55:Bsp/Bsp_GPIO.c ****     else if (port == GPIOE)
+ 220              		.loc 1 55 9 view .LVU67
+ 221 00c4 03F56053 		add	r3, r3, #14336
+ 222 00c8 D3F8E020 		ldr	r2, [r3, #224]
+ 223 00cc 42F00802 		orr	r2, r2, #8
+ 224 00d0 C3F8E020 		str	r2, [r3, #224]
+  55:Bsp/Bsp_GPIO.c ****     else if (port == GPIOE)
+ 225              		.loc 1 55 9 view .LVU68
+ 226 00d4 D3F8E030 		ldr	r3, [r3, #224]
+ 227 00d8 03F00803 		and	r3, r3, #8
+ 228 00dc 0493     		str	r3, [sp, #16]
+  55:Bsp/Bsp_GPIO.c ****     else if (port == GPIOE)
+ 229              		.loc 1 55 9 view .LVU69
+ 230 00de 049B     		ldr	r3, [sp, #16]
+ 231              	.LBE6:
+  55:Bsp/Bsp_GPIO.c ****     else if (port == GPIOE)
+ 232              		.loc 1 55 9 view .LVU70
+ 233 00e0 D0E7     		b	.L2
+ 234              	.L19:
+  57:Bsp/Bsp_GPIO.c ****     else if (port == GPIOF)
+ 235              		.loc 1 57 9 view .LVU71
+ 236              	.LBB7:
+  57:Bsp/Bsp_GPIO.c ****     else if (port == GPIOF)
+ 237              		.loc 1 57 9 view .LVU72
+  57:Bsp/Bsp_GPIO.c ****     else if (port == GPIOF)
+ 238              		.loc 1 57 9 view .LVU73
+ 239 00e2 03F55053 		add	r3, r3, #13312
+ 240 00e6 D3F8E020 		ldr	r2, [r3, #224]
+ 241 00ea 42F01002 		orr	r2, r2, #16
+ 242 00ee C3F8E020 		str	r2, [r3, #224]
+  57:Bsp/Bsp_GPIO.c ****     else if (port == GPIOF)
+ 243              		.loc 1 57 9 view .LVU74
+ 244 00f2 D3F8E030 		ldr	r3, [r3, #224]
+ 245 00f6 03F01003 		and	r3, r3, #16
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 7
+
+
+ 246 00fa 0593     		str	r3, [sp, #20]
+  57:Bsp/Bsp_GPIO.c ****     else if (port == GPIOF)
+ 247              		.loc 1 57 9 view .LVU75
+ 248 00fc 059B     		ldr	r3, [sp, #20]
+ 249              	.LBE7:
+  57:Bsp/Bsp_GPIO.c ****     else if (port == GPIOF)
+ 250              		.loc 1 57 9 view .LVU76
+ 251 00fe C1E7     		b	.L2
+ 252              	.L20:
+  59:Bsp/Bsp_GPIO.c ****     else if (port == GPIOG)
+ 253              		.loc 1 59 9 view .LVU77
+ 254              	.LBB8:
+  59:Bsp/Bsp_GPIO.c ****     else if (port == GPIOG)
+ 255              		.loc 1 59 9 view .LVU78
+  59:Bsp/Bsp_GPIO.c ****     else if (port == GPIOG)
+ 256              		.loc 1 59 9 view .LVU79
+ 257 0100 03F54053 		add	r3, r3, #12288
+ 258 0104 D3F8E020 		ldr	r2, [r3, #224]
+ 259 0108 42F02002 		orr	r2, r2, #32
+ 260 010c C3F8E020 		str	r2, [r3, #224]
+  59:Bsp/Bsp_GPIO.c ****     else if (port == GPIOG)
+ 261              		.loc 1 59 9 view .LVU80
+ 262 0110 D3F8E030 		ldr	r3, [r3, #224]
+ 263 0114 03F02003 		and	r3, r3, #32
+ 264 0118 0693     		str	r3, [sp, #24]
+  59:Bsp/Bsp_GPIO.c ****     else if (port == GPIOG)
+ 265              		.loc 1 59 9 view .LVU81
+ 266 011a 069B     		ldr	r3, [sp, #24]
+ 267              	.LBE8:
+  59:Bsp/Bsp_GPIO.c ****     else if (port == GPIOG)
+ 268              		.loc 1 59 9 view .LVU82
+ 269 011c B2E7     		b	.L2
+ 270              	.L21:
+  61:Bsp/Bsp_GPIO.c ****     else if (port == GPIOH)
+ 271              		.loc 1 61 9 view .LVU83
+ 272              	.LBB9:
+  61:Bsp/Bsp_GPIO.c ****     else if (port == GPIOH)
+ 273              		.loc 1 61 9 view .LVU84
+  61:Bsp/Bsp_GPIO.c ****     else if (port == GPIOH)
+ 274              		.loc 1 61 9 view .LVU85
+ 275 011e 03F53053 		add	r3, r3, #11264
+ 276 0122 D3F8E020 		ldr	r2, [r3, #224]
+ 277 0126 42F04002 		orr	r2, r2, #64
+ 278 012a C3F8E020 		str	r2, [r3, #224]
+  61:Bsp/Bsp_GPIO.c ****     else if (port == GPIOH)
+ 279              		.loc 1 61 9 view .LVU86
+ 280 012e D3F8E030 		ldr	r3, [r3, #224]
+ 281 0132 03F04003 		and	r3, r3, #64
+ 282 0136 0793     		str	r3, [sp, #28]
+  61:Bsp/Bsp_GPIO.c ****     else if (port == GPIOH)
+ 283              		.loc 1 61 9 view .LVU87
+ 284 0138 079B     		ldr	r3, [sp, #28]
+ 285              	.LBE9:
+  61:Bsp/Bsp_GPIO.c ****     else if (port == GPIOH)
+ 286              		.loc 1 61 9 view .LVU88
+ 287 013a A3E7     		b	.L2
+ 288              	.L22:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 8
+
+
+  63:Bsp/Bsp_GPIO.c **** #if defined(GPIOI)
+ 289              		.loc 1 63 9 view .LVU89
+ 290              	.LBB10:
+  63:Bsp/Bsp_GPIO.c **** #if defined(GPIOI)
+ 291              		.loc 1 63 9 view .LVU90
+  63:Bsp/Bsp_GPIO.c **** #if defined(GPIOI)
+ 292              		.loc 1 63 9 view .LVU91
+ 293 013c 03F52053 		add	r3, r3, #10240
+ 294 0140 D3F8E020 		ldr	r2, [r3, #224]
+ 295 0144 42F08002 		orr	r2, r2, #128
+ 296 0148 C3F8E020 		str	r2, [r3, #224]
+  63:Bsp/Bsp_GPIO.c **** #if defined(GPIOI)
+ 297              		.loc 1 63 9 view .LVU92
+ 298 014c D3F8E030 		ldr	r3, [r3, #224]
+ 299 0150 03F08003 		and	r3, r3, #128
+ 300 0154 0893     		str	r3, [sp, #32]
+  63:Bsp/Bsp_GPIO.c **** #if defined(GPIOI)
+ 301              		.loc 1 63 9 view .LVU93
+ 302 0156 089B     		ldr	r3, [sp, #32]
+ 303              	.LBE10:
+  63:Bsp/Bsp_GPIO.c **** #if defined(GPIOI)
+ 304              		.loc 1 63 9 view .LVU94
+ 305 0158 94E7     		b	.L2
+ 306              	.L23:
+  66:Bsp/Bsp_GPIO.c **** #endif
+ 307              		.loc 1 66 9 view .LVU95
+ 308              	.LBB11:
+  66:Bsp/Bsp_GPIO.c **** #endif
+ 309              		.loc 1 66 9 view .LVU96
+  66:Bsp/Bsp_GPIO.c **** #endif
+ 310              		.loc 1 66 9 view .LVU97
+ 311 015a 03F51053 		add	r3, r3, #9216
+ 312 015e D3F8E020 		ldr	r2, [r3, #224]
+ 313 0162 42F48072 		orr	r2, r2, #256
+ 314 0166 C3F8E020 		str	r2, [r3, #224]
+  66:Bsp/Bsp_GPIO.c **** #endif
+ 315              		.loc 1 66 9 view .LVU98
+ 316 016a D3F8E030 		ldr	r3, [r3, #224]
+ 317 016e 03F48073 		and	r3, r3, #256
+ 318 0172 0993     		str	r3, [sp, #36]
+  66:Bsp/Bsp_GPIO.c **** #endif
+ 319              		.loc 1 66 9 view .LVU99
+ 320 0174 099B     		ldr	r3, [sp, #36]
+ 321              	.LBE11:
+  66:Bsp/Bsp_GPIO.c **** #endif
+ 322              		.loc 1 66 9 view .LVU100
+ 323 0176 85E7     		b	.L2
+ 324              	.L24:
+  69:Bsp/Bsp_GPIO.c ****     else if (port == GPIOK)
+ 325              		.loc 1 69 9 view .LVU101
+ 326              	.LBB12:
+  69:Bsp/Bsp_GPIO.c ****     else if (port == GPIOK)
+ 327              		.loc 1 69 9 view .LVU102
+  69:Bsp/Bsp_GPIO.c ****     else if (port == GPIOK)
+ 328              		.loc 1 69 9 view .LVU103
+ 329 0178 03F50053 		add	r3, r3, #8192
+ 330 017c D3F8E020 		ldr	r2, [r3, #224]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 9
+
+
+ 331 0180 42F40072 		orr	r2, r2, #512
+ 332 0184 C3F8E020 		str	r2, [r3, #224]
+  69:Bsp/Bsp_GPIO.c ****     else if (port == GPIOK)
+ 333              		.loc 1 69 9 view .LVU104
+ 334 0188 D3F8E030 		ldr	r3, [r3, #224]
+ 335 018c 03F40073 		and	r3, r3, #512
+ 336 0190 0A93     		str	r3, [sp, #40]
+  69:Bsp/Bsp_GPIO.c ****     else if (port == GPIOK)
+ 337              		.loc 1 69 9 view .LVU105
+ 338 0192 0A9B     		ldr	r3, [sp, #40]
+ 339              	.LBE12:
+  69:Bsp/Bsp_GPIO.c ****     else if (port == GPIOK)
+ 340              		.loc 1 69 9 view .LVU106
+ 341 0194 76E7     		b	.L2
+ 342              	.L26:
+ 343 0196 00BF     		.align	2
+ 344              	.L25:
+ 345 0198 00000258 		.word	1476526080
+ 346 019c 00040258 		.word	1476527104
+ 347 01a0 00080258 		.word	1476528128
+ 348 01a4 000C0258 		.word	1476529152
+ 349 01a8 00100258 		.word	1476530176
+ 350 01ac 00140258 		.word	1476531200
+ 351 01b0 00180258 		.word	1476532224
+ 352 01b4 001C0258 		.word	1476533248
+ 353 01b8 00200258 		.word	1476534272
+ 354 01bc 00240258 		.word	1476535296
+ 355 01c0 00280258 		.word	1476536320
+ 356              		.cfi_endproc
+ 357              	.LFE145:
+ 359              		.section	.text.BspGPIO_ResetExtiCallback,"ax",%progbits
+ 360              		.align	1
+ 361              		.syntax unified
+ 362              		.thumb
+ 363              		.thumb_func
+ 365              	BspGPIO_ResetExtiCallback:
+ 366              	.LVL7:
+ 367              	.LFB148:
+  73:Bsp/Bsp_GPIO.c **** 
+  74:Bsp/Bsp_GPIO.c **** static IRQn_Type BspGPIO_GetExti_IRQnID(BspGPIO_Obj_TypeDef IO_Obj)
+  75:Bsp/Bsp_GPIO.c **** {
+  76:Bsp/Bsp_GPIO.c ****     switch ((uint16_t)IO_Obj.pin)
+  77:Bsp/Bsp_GPIO.c ****     {
+  78:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_0:
+  79:Bsp/Bsp_GPIO.c ****         return EXTI0_IRQn;
+  80:Bsp/Bsp_GPIO.c **** 
+  81:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_1:
+  82:Bsp/Bsp_GPIO.c ****         return EXTI1_IRQn;
+  83:Bsp/Bsp_GPIO.c **** 
+  84:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_2:
+  85:Bsp/Bsp_GPIO.c ****         return EXTI2_IRQn;
+  86:Bsp/Bsp_GPIO.c **** 
+  87:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_3:
+  88:Bsp/Bsp_GPIO.c ****         return EXTI3_IRQn;
+  89:Bsp/Bsp_GPIO.c **** 
+  90:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_4:
+  91:Bsp/Bsp_GPIO.c ****         return EXTI4_IRQn;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 10
+
+
+  92:Bsp/Bsp_GPIO.c **** 
+  93:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_5:
+  94:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_6:
+  95:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_7:
+  96:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_8:
+  97:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_9:
+  98:Bsp/Bsp_GPIO.c ****         return EXTI9_5_IRQn;
+  99:Bsp/Bsp_GPIO.c **** 
+ 100:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_10:
+ 101:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_11:
+ 102:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_12:
+ 103:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_13:
+ 104:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_14:
+ 105:Bsp/Bsp_GPIO.c ****     case GPIO_PIN_15:
+ 106:Bsp/Bsp_GPIO.c ****         return EXTI15_10_IRQn;
+ 107:Bsp/Bsp_GPIO.c **** 
+ 108:Bsp/Bsp_GPIO.c ****     default:
+ 109:Bsp/Bsp_GPIO.c ****         assert(true);
+ 110:Bsp/Bsp_GPIO.c ****         break;
+ 111:Bsp/Bsp_GPIO.c ****     }
+ 112:Bsp/Bsp_GPIO.c **** }
+ 113:Bsp/Bsp_GPIO.c **** 
+ 114:Bsp/Bsp_GPIO.c **** static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode)
+ 115:Bsp/Bsp_GPIO.c **** {
+ 116:Bsp/Bsp_GPIO.c ****     uint32_t mode_val;
+ 117:Bsp/Bsp_GPIO.c ****     GPIO_InitTypeDef cfg_structure;
+ 118:Bsp/Bsp_GPIO.c **** 
+ 119:Bsp/Bsp_GPIO.c ****     if (IO_Obj.port == NULL)
+ 120:Bsp/Bsp_GPIO.c ****         return false;
+ 121:Bsp/Bsp_GPIO.c **** 
+ 122:Bsp/Bsp_GPIO.c ****     HAL_NVIC_DisableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
+ 123:Bsp/Bsp_GPIO.c **** 
+ 124:Bsp/Bsp_GPIO.c ****     switch ((uint8_t)mode)
+ 125:Bsp/Bsp_GPIO.c ****     {
+ 126:Bsp/Bsp_GPIO.c ****     case GPIO_Exti_Rasing:
+ 127:Bsp/Bsp_GPIO.c ****         mode_val = GPIO_MODE_IT_RISING;
+ 128:Bsp/Bsp_GPIO.c ****         break;
+ 129:Bsp/Bsp_GPIO.c **** 
+ 130:Bsp/Bsp_GPIO.c ****     case GPIO_Exti_Falling:
+ 131:Bsp/Bsp_GPIO.c ****         mode_val = GPIO_MODE_IT_FALLING;
+ 132:Bsp/Bsp_GPIO.c ****         break;
+ 133:Bsp/Bsp_GPIO.c **** 
+ 134:Bsp/Bsp_GPIO.c ****     case GPIO_Exti_TwoEdge:
+ 135:Bsp/Bsp_GPIO.c ****         mode_val = GPIO_MODE_IT_RISING_FALLING;
+ 136:Bsp/Bsp_GPIO.c ****         break;
+ 137:Bsp/Bsp_GPIO.c **** 
+ 138:Bsp/Bsp_GPIO.c ****     default:
+ 139:Bsp/Bsp_GPIO.c ****         mode_val = GPIO_MODE_IT_FALLING;
+ 140:Bsp/Bsp_GPIO.c ****         break;
+ 141:Bsp/Bsp_GPIO.c ****     }
+ 142:Bsp/Bsp_GPIO.c **** 
+ 143:Bsp/Bsp_GPIO.c ****     BspGPIO_CLK_Enable(IO_Obj.port);
+ 144:Bsp/Bsp_GPIO.c **** 
+ 145:Bsp/Bsp_GPIO.c ****     cfg_structure.Pin = IO_Obj.pin;
+ 146:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = mode_val;
+ 147:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_NOPULL;
+ 148:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 11
+
+
+ 149:Bsp/Bsp_GPIO.c **** 
+ 150:Bsp/Bsp_GPIO.c ****     HAL_GPIO_WritePin(IO_Obj.port, IO_Obj.pin, IO_Obj.init_state);
+ 151:Bsp/Bsp_GPIO.c ****     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
+ 152:Bsp/Bsp_GPIO.c **** 
+ 153:Bsp/Bsp_GPIO.c ****     HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 3, 0);
+ 154:Bsp/Bsp_GPIO.c ****     HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
+ 155:Bsp/Bsp_GPIO.c **** }
+ 156:Bsp/Bsp_GPIO.c **** 
+ 157:Bsp/Bsp_GPIO.c **** static bool BspGPIO_ResetExtiCallback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
+ 158:Bsp/Bsp_GPIO.c **** {
+ 368              		.loc 1 158 1 view -0
+ 369              		.cfi_startproc
+ 370              		@ args = 0, pretend = 0, frame = 8
+ 371              		@ frame_needed = 0, uses_anonymous_args = 0
+ 372              		.loc 1 158 1 is_stmt 0 view .LVU108
+ 373 0000 10B5     		push	{r4, lr}
+ 374              	.LCFI3:
+ 375              		.cfi_def_cfa_offset 8
+ 376              		.cfi_offset 4, -8
+ 377              		.cfi_offset 14, -4
+ 378 0002 82B0     		sub	sp, sp, #8
+ 379              	.LCFI4:
+ 380              		.cfi_def_cfa_offset 16
+ 381 0004 02AB     		add	r3, sp, #8
+ 382 0006 03E90300 		stmdb	r3, {r0, r1}
+ 383 000a 1446     		mov	r4, r2
+ 159:Bsp/Bsp_GPIO.c ****     /* set exti callback */
+ 160:Bsp/Bsp_GPIO.c ****     EXTI_CallBack_List[BspGPIO_GetEXTI_Index(IO_Obj.pin)] = callback;
+ 384              		.loc 1 160 5 is_stmt 1 view .LVU109
+ 385              		.loc 1 160 24 is_stmt 0 view .LVU110
+ 386 000c BDF80400 		ldrh	r0, [sp, #4]
+ 387 0010 FFF7FEFF 		bl	BspGPIO_GetEXTI_Index
+ 388              	.LVL8:
+ 389              		.loc 1 160 59 view .LVU111
+ 390 0014 024B     		ldr	r3, .L29
+ 391 0016 43F82040 		str	r4, [r3, r0, lsl #2]
+ 161:Bsp/Bsp_GPIO.c **** }
+ 392              		.loc 1 161 1 view .LVU112
+ 393 001a 02B0     		add	sp, sp, #8
+ 394              	.LCFI5:
+ 395              		.cfi_def_cfa_offset 8
+ 396              		@ sp needed
+ 397 001c 10BD     		pop	{r4, pc}
+ 398              	.LVL9:
+ 399              	.L30:
+ 400              		.loc 1 161 1 view .LVU113
+ 401 001e 00BF     		.align	2
+ 402              	.L29:
+ 403 0020 00000000 		.word	.LANCHOR0
+ 404              		.cfi_endproc
+ 405              	.LFE148:
+ 407              		.section	.text.BspGPIO_Write,"ax",%progbits
+ 408              		.align	1
+ 409              		.syntax unified
+ 410              		.thumb
+ 411              		.thumb_func
+ 413              	BspGPIO_Write:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 12
+
+
+ 414              	.LVL10:
+ 415              	.LFB153:
+ 162:Bsp/Bsp_GPIO.c **** 
+ 163:Bsp/Bsp_GPIO.c **** static bool BspGPIO_Input_Init(BspGPIO_Obj_TypeDef IO_Obj)
+ 164:Bsp/Bsp_GPIO.c **** {
+ 165:Bsp/Bsp_GPIO.c ****     GPIO_InitTypeDef cfg_structure;
+ 166:Bsp/Bsp_GPIO.c **** 
+ 167:Bsp/Bsp_GPIO.c ****     BspGPIO_CLK_Enable(IO_Obj.port);
+ 168:Bsp/Bsp_GPIO.c **** 
+ 169:Bsp/Bsp_GPIO.c ****     cfg_structure.Pin = IO_Obj.pin;
+ 170:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_INPUT;
+ 171:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_PULLDOWN;
+ 172:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_HIGH;
+ 173:Bsp/Bsp_GPIO.c **** 
+ 174:Bsp/Bsp_GPIO.c ****     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
+ 175:Bsp/Bsp_GPIO.c **** 
+ 176:Bsp/Bsp_GPIO.c ****     return true;
+ 177:Bsp/Bsp_GPIO.c **** }
+ 178:Bsp/Bsp_GPIO.c **** 
+ 179:Bsp/Bsp_GPIO.c **** static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
+ 180:Bsp/Bsp_GPIO.c **** {
+ 181:Bsp/Bsp_GPIO.c ****     GPIO_InitTypeDef cfg_structure;
+ 182:Bsp/Bsp_GPIO.c **** 
+ 183:Bsp/Bsp_GPIO.c ****     if (IO_Obj.port == NULL)
+ 184:Bsp/Bsp_GPIO.c ****         return false;
+ 185:Bsp/Bsp_GPIO.c **** 
+ 186:Bsp/Bsp_GPIO.c ****     BspGPIO_CLK_Enable(IO_Obj.port);
+ 187:Bsp/Bsp_GPIO.c **** 
+ 188:Bsp/Bsp_GPIO.c ****     cfg_structure.Pin = IO_Obj.pin;
+ 189:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_IT_FALLING;
+ 190:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_NOPULL;
+ 191:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+ 192:Bsp/Bsp_GPIO.c **** 
+ 193:Bsp/Bsp_GPIO.c ****     HAL_GPIO_WritePin(IO_Obj.port, IO_Obj.pin, IO_Obj.init_state);
+ 194:Bsp/Bsp_GPIO.c ****     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
+ 195:Bsp/Bsp_GPIO.c **** 
+ 196:Bsp/Bsp_GPIO.c ****     /* set exti callback */
+ 197:Bsp/Bsp_GPIO.c ****     EXTI_CallBack_List[BspGPIO_GetEXTI_Index(IO_Obj.pin)] = callback;
+ 198:Bsp/Bsp_GPIO.c **** 
+ 199:Bsp/Bsp_GPIO.c ****     HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 4, 0);
+ 200:Bsp/Bsp_GPIO.c ****     HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
+ 201:Bsp/Bsp_GPIO.c **** 
+ 202:Bsp/Bsp_GPIO.c ****     return true;
+ 203:Bsp/Bsp_GPIO.c **** }
+ 204:Bsp/Bsp_GPIO.c **** 
+ 205:Bsp/Bsp_GPIO.c **** static bool BspGPIO_Output_Init(BspGPIO_Obj_TypeDef IO_Obj)
+ 206:Bsp/Bsp_GPIO.c **** {
+ 207:Bsp/Bsp_GPIO.c ****     GPIO_InitTypeDef cfg_structure;
+ 208:Bsp/Bsp_GPIO.c **** 
+ 209:Bsp/Bsp_GPIO.c ****     if (IO_Obj.port == NULL)
+ 210:Bsp/Bsp_GPIO.c ****         return false;
+ 211:Bsp/Bsp_GPIO.c **** 
+ 212:Bsp/Bsp_GPIO.c ****     BspGPIO_CLK_Enable(IO_Obj.port);
+ 213:Bsp/Bsp_GPIO.c **** 
+ 214:Bsp/Bsp_GPIO.c ****     cfg_structure.Pin = IO_Obj.pin;
+ 215:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_OUTPUT_PP;
+ 216:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_PULLUP;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 13
+
+
+ 217:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_LOW;
+ 218:Bsp/Bsp_GPIO.c **** 
+ 219:Bsp/Bsp_GPIO.c ****     HAL_GPIO_WritePin(IO_Obj.port, IO_Obj.pin, IO_Obj.init_state);
+ 220:Bsp/Bsp_GPIO.c ****     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
+ 221:Bsp/Bsp_GPIO.c **** 
+ 222:Bsp/Bsp_GPIO.c ****     return true;
+ 223:Bsp/Bsp_GPIO.c **** }
+ 224:Bsp/Bsp_GPIO.c **** 
+ 225:Bsp/Bsp_GPIO.c **** static bool BspGPIO_Read(BspGPIO_Obj_TypeDef IO_Obj)
+ 226:Bsp/Bsp_GPIO.c **** {
+ 227:Bsp/Bsp_GPIO.c ****     return HAL_GPIO_ReadPin(IO_Obj.port, IO_Obj.pin);
+ 228:Bsp/Bsp_GPIO.c **** }
+ 229:Bsp/Bsp_GPIO.c **** 
+ 230:Bsp/Bsp_GPIO.c **** static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state)
+ 231:Bsp/Bsp_GPIO.c **** {
+ 416              		.loc 1 231 1 is_stmt 1 view -0
+ 417              		.cfi_startproc
+ 418              		@ args = 0, pretend = 0, frame = 0
+ 419              		@ frame_needed = 0, uses_anonymous_args = 0
+ 420              		.loc 1 231 1 is_stmt 0 view .LVU115
+ 421 0000 08B5     		push	{r3, lr}
+ 422              	.LCFI6:
+ 423              		.cfi_def_cfa_offset 8
+ 424              		.cfi_offset 3, -8
+ 425              		.cfi_offset 14, -4
+ 232:Bsp/Bsp_GPIO.c ****     HAL_GPIO_WritePin(port, pin, state);
+ 426              		.loc 1 232 5 is_stmt 1 view .LVU116
+ 427 0002 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 428              	.LVL11:
+ 233:Bsp/Bsp_GPIO.c **** }
+ 429              		.loc 1 233 1 is_stmt 0 view .LVU117
+ 430 0006 08BD     		pop	{r3, pc}
+ 431              		.cfi_endproc
+ 432              	.LFE153:
+ 434              		.section	.text.BspGPIO_Input_Init,"ax",%progbits
+ 435              		.align	1
+ 436              		.syntax unified
+ 437              		.thumb
+ 438              		.thumb_func
+ 440              	BspGPIO_Input_Init:
+ 441              	.LFB149:
+ 164:Bsp/Bsp_GPIO.c ****     GPIO_InitTypeDef cfg_structure;
+ 442              		.loc 1 164 1 is_stmt 1 view -0
+ 443              		.cfi_startproc
+ 444              		@ args = 0, pretend = 0, frame = 32
+ 445              		@ frame_needed = 0, uses_anonymous_args = 0
+ 446 0000 10B5     		push	{r4, lr}
+ 447              	.LCFI7:
+ 448              		.cfi_def_cfa_offset 8
+ 449              		.cfi_offset 4, -8
+ 450              		.cfi_offset 14, -4
+ 451 0002 88B0     		sub	sp, sp, #32
+ 452              	.LCFI8:
+ 453              		.cfi_def_cfa_offset 40
+ 454 0004 6B46     		mov	r3, sp
+ 455 0006 83E80300 		stm	r3, {r0, r1}
+ 165:Bsp/Bsp_GPIO.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 14
+
+
+ 456              		.loc 1 165 5 view .LVU119
+ 167:Bsp/Bsp_GPIO.c **** 
+ 457              		.loc 1 167 5 view .LVU120
+ 458 000a 0446     		mov	r4, r0
+ 459 000c FFF7FEFF 		bl	BspGPIO_CLK_Enable
+ 460              	.LVL12:
+ 169:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_INPUT;
+ 461              		.loc 1 169 5 view .LVU121
+ 169:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_INPUT;
+ 462              		.loc 1 169 31 is_stmt 0 view .LVU122
+ 463 0010 BDF80430 		ldrh	r3, [sp, #4]
+ 169:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_INPUT;
+ 464              		.loc 1 169 23 view .LVU123
+ 465 0014 0393     		str	r3, [sp, #12]
+ 170:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_PULLDOWN;
+ 466              		.loc 1 170 5 is_stmt 1 view .LVU124
+ 170:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_PULLDOWN;
+ 467              		.loc 1 170 24 is_stmt 0 view .LVU125
+ 468 0016 0023     		movs	r3, #0
+ 469 0018 0493     		str	r3, [sp, #16]
+ 171:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_HIGH;
+ 470              		.loc 1 171 5 is_stmt 1 view .LVU126
+ 171:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_HIGH;
+ 471              		.loc 1 171 24 is_stmt 0 view .LVU127
+ 472 001a 0223     		movs	r3, #2
+ 473 001c 0593     		str	r3, [sp, #20]
+ 172:Bsp/Bsp_GPIO.c **** 
+ 474              		.loc 1 172 5 is_stmt 1 view .LVU128
+ 172:Bsp/Bsp_GPIO.c **** 
+ 475              		.loc 1 172 25 is_stmt 0 view .LVU129
+ 476 001e 0693     		str	r3, [sp, #24]
+ 174:Bsp/Bsp_GPIO.c **** 
+ 477              		.loc 1 174 5 is_stmt 1 view .LVU130
+ 478 0020 03A9     		add	r1, sp, #12
+ 479 0022 2046     		mov	r0, r4
+ 480 0024 FFF7FEFF 		bl	HAL_GPIO_Init
+ 481              	.LVL13:
+ 176:Bsp/Bsp_GPIO.c **** }
+ 482              		.loc 1 176 5 view .LVU131
+ 177:Bsp/Bsp_GPIO.c **** 
+ 483              		.loc 1 177 1 is_stmt 0 view .LVU132
+ 484 0028 0120     		movs	r0, #1
+ 485 002a 08B0     		add	sp, sp, #32
+ 486              	.LCFI9:
+ 487              		.cfi_def_cfa_offset 8
+ 488              		@ sp needed
+ 489 002c 10BD     		pop	{r4, pc}
+ 490              		.cfi_endproc
+ 491              	.LFE149:
+ 493              		.section	.text.BspGPIO_Output_Init,"ax",%progbits
+ 494              		.align	1
+ 495              		.syntax unified
+ 496              		.thumb
+ 497              		.thumb_func
+ 499              	BspGPIO_Output_Init:
+ 500              	.LFB151:
+ 206:Bsp/Bsp_GPIO.c ****     GPIO_InitTypeDef cfg_structure;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 15
+
+
+ 501              		.loc 1 206 1 is_stmt 1 view -0
+ 502              		.cfi_startproc
+ 503              		@ args = 0, pretend = 0, frame = 32
+ 504              		@ frame_needed = 0, uses_anonymous_args = 0
+ 505 0000 30B5     		push	{r4, r5, lr}
+ 506              	.LCFI10:
+ 507              		.cfi_def_cfa_offset 12
+ 508              		.cfi_offset 4, -12
+ 509              		.cfi_offset 5, -8
+ 510              		.cfi_offset 14, -4
+ 511 0002 89B0     		sub	sp, sp, #36
+ 512              	.LCFI11:
+ 513              		.cfi_def_cfa_offset 48
+ 514 0004 6B46     		mov	r3, sp
+ 515 0006 83E80300 		stm	r3, {r0, r1}
+ 207:Bsp/Bsp_GPIO.c **** 
+ 516              		.loc 1 207 5 view .LVU134
+ 209:Bsp/Bsp_GPIO.c ****         return false;
+ 517              		.loc 1 209 5 view .LVU135
+ 209:Bsp/Bsp_GPIO.c ****         return false;
+ 518              		.loc 1 209 8 is_stmt 0 view .LVU136
+ 519 000a B0B1     		cbz	r0, .L37
+ 520 000c 0546     		mov	r5, r0
+ 212:Bsp/Bsp_GPIO.c **** 
+ 521              		.loc 1 212 5 is_stmt 1 view .LVU137
+ 522 000e FFF7FEFF 		bl	BspGPIO_CLK_Enable
+ 523              	.LVL14:
+ 214:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_OUTPUT_PP;
+ 524              		.loc 1 214 5 view .LVU138
+ 214:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_OUTPUT_PP;
+ 525              		.loc 1 214 31 is_stmt 0 view .LVU139
+ 526 0012 BDF80410 		ldrh	r1, [sp, #4]
+ 214:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_OUTPUT_PP;
+ 527              		.loc 1 214 23 view .LVU140
+ 528 0016 0391     		str	r1, [sp, #12]
+ 215:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_PULLUP;
+ 529              		.loc 1 215 5 is_stmt 1 view .LVU141
+ 215:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_PULLUP;
+ 530              		.loc 1 215 24 is_stmt 0 view .LVU142
+ 531 0018 0124     		movs	r4, #1
+ 532 001a 0494     		str	r4, [sp, #16]
+ 216:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_LOW;
+ 533              		.loc 1 216 5 is_stmt 1 view .LVU143
+ 216:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_LOW;
+ 534              		.loc 1 216 24 is_stmt 0 view .LVU144
+ 535 001c 0594     		str	r4, [sp, #20]
+ 217:Bsp/Bsp_GPIO.c **** 
+ 536              		.loc 1 217 5 is_stmt 1 view .LVU145
+ 217:Bsp/Bsp_GPIO.c **** 
+ 537              		.loc 1 217 25 is_stmt 0 view .LVU146
+ 538 001e 0023     		movs	r3, #0
+ 539 0020 0693     		str	r3, [sp, #24]
+ 219:Bsp/Bsp_GPIO.c ****     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
+ 540              		.loc 1 219 5 is_stmt 1 view .LVU147
+ 541 0022 9DF80620 		ldrb	r2, [sp, #6]	@ zero_extendqisi2
+ 542 0026 2846     		mov	r0, r5
+ 543 0028 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 16
+
+
+ 544              	.LVL15:
+ 220:Bsp/Bsp_GPIO.c **** 
+ 545              		.loc 1 220 5 view .LVU148
+ 546 002c 03A9     		add	r1, sp, #12
+ 547 002e 2846     		mov	r0, r5
+ 548 0030 FFF7FEFF 		bl	HAL_GPIO_Init
+ 549              	.LVL16:
+ 222:Bsp/Bsp_GPIO.c **** }
+ 550              		.loc 1 222 5 view .LVU149
+ 222:Bsp/Bsp_GPIO.c **** }
+ 551              		.loc 1 222 12 is_stmt 0 view .LVU150
+ 552 0034 2046     		mov	r0, r4
+ 553              	.L36:
+ 223:Bsp/Bsp_GPIO.c **** 
+ 554              		.loc 1 223 1 view .LVU151
+ 555 0036 09B0     		add	sp, sp, #36
+ 556              	.LCFI12:
+ 557              		.cfi_remember_state
+ 558              		.cfi_def_cfa_offset 12
+ 559              		@ sp needed
+ 560 0038 30BD     		pop	{r4, r5, pc}
+ 561              	.L37:
+ 562              	.LCFI13:
+ 563              		.cfi_restore_state
+ 210:Bsp/Bsp_GPIO.c **** 
+ 564              		.loc 1 210 16 view .LVU152
+ 565 003a 0020     		movs	r0, #0
+ 566 003c FBE7     		b	.L36
+ 567              		.cfi_endproc
+ 568              	.LFE151:
+ 570              		.section	.text.BspGPIO_GetExti_IRQnID,"ax",%progbits
+ 571              		.align	1
+ 572              		.syntax unified
+ 573              		.thumb
+ 574              		.thumb_func
+ 576              	BspGPIO_GetExti_IRQnID:
+ 577              	.LFB146:
+  75:Bsp/Bsp_GPIO.c ****     switch ((uint16_t)IO_Obj.pin)
+ 578              		.loc 1 75 1 is_stmt 1 view -0
+ 579              		.cfi_startproc
+ 580              		@ args = 0, pretend = 0, frame = 8
+ 581              		@ frame_needed = 0, uses_anonymous_args = 0
+ 582 0000 00B5     		push	{lr}
+ 583              	.LCFI14:
+ 584              		.cfi_def_cfa_offset 4
+ 585              		.cfi_offset 14, -4
+ 586 0002 83B0     		sub	sp, sp, #12
+ 587              	.LCFI15:
+ 588              		.cfi_def_cfa_offset 16
+ 589 0004 02AB     		add	r3, sp, #8
+ 590 0006 03E90300 		stmdb	r3, {r0, r1}
+  76:Bsp/Bsp_GPIO.c ****     {
+ 591              		.loc 1 76 5 view .LVU154
+  76:Bsp/Bsp_GPIO.c ****     {
+ 592              		.loc 1 76 29 is_stmt 0 view .LVU155
+ 593 000a BDF80430 		ldrh	r3, [sp, #4]
+  76:Bsp/Bsp_GPIO.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 17
+
+
+ 594              		.loc 1 76 5 view .LVU156
+ 595 000e 202B     		cmp	r3, #32
+ 596 0010 17D8     		bhi	.L40
+ 597 0012 1AB2     		sxth	r2, r3
+ 598 0014 002A     		cmp	r2, #0
+ 599 0016 45D0     		beq	.L41
+ 600 0018 013B     		subs	r3, r3, #1
+ 601 001a 1F2B     		cmp	r3, #31
+ 602 001c 42D8     		bhi	.L41
+ 603 001e DFE803F0 		tbb	[pc, r3]
+ 604              	.L43:
+ 605 0022 45       		.byte	(.L48-.L43)/2
+ 606 0023 47       		.byte	(.L52-.L43)/2
+ 607 0024 41       		.byte	(.L41-.L43)/2
+ 608 0025 39       		.byte	(.L46-.L43)/2
+ 609 0026 41       		.byte	(.L41-.L43)/2
+ 610 0027 41       		.byte	(.L41-.L43)/2
+ 611 0028 41       		.byte	(.L41-.L43)/2
+ 612 0029 3B       		.byte	(.L45-.L43)/2
+ 613 002a 41       		.byte	(.L41-.L43)/2
+ 614 002b 41       		.byte	(.L41-.L43)/2
+ 615 002c 41       		.byte	(.L41-.L43)/2
+ 616 002d 41       		.byte	(.L41-.L43)/2
+ 617 002e 41       		.byte	(.L41-.L43)/2
+ 618 002f 41       		.byte	(.L41-.L43)/2
+ 619 0030 41       		.byte	(.L41-.L43)/2
+ 620 0031 3D       		.byte	(.L44-.L43)/2
+ 621 0032 41       		.byte	(.L41-.L43)/2
+ 622 0033 41       		.byte	(.L41-.L43)/2
+ 623 0034 41       		.byte	(.L41-.L43)/2
+ 624 0035 41       		.byte	(.L41-.L43)/2
+ 625 0036 41       		.byte	(.L41-.L43)/2
+ 626 0037 41       		.byte	(.L41-.L43)/2
+ 627 0038 41       		.byte	(.L41-.L43)/2
+ 628 0039 41       		.byte	(.L41-.L43)/2
+ 629 003a 41       		.byte	(.L41-.L43)/2
+ 630 003b 41       		.byte	(.L41-.L43)/2
+ 631 003c 41       		.byte	(.L41-.L43)/2
+ 632 003d 41       		.byte	(.L41-.L43)/2
+ 633 003e 41       		.byte	(.L41-.L43)/2
+ 634 003f 41       		.byte	(.L41-.L43)/2
+ 635 0040 41       		.byte	(.L41-.L43)/2
+ 636 0041 3F       		.byte	(.L42-.L43)/2
+ 637              		.p2align 1
+ 638              	.L40:
+ 639 0042 B3F5806F 		cmp	r3, #1024
+ 640 0046 35D0     		beq	.L53
+ 641 0048 0BD9     		bls	.L64
+ 642 004a B3F5005F 		cmp	r3, #8192
+ 643 004e 37D0     		beq	.L58
+ 644 0050 18D9     		bls	.L65
+ 645 0052 B3F5804F 		cmp	r3, #16384
+ 646 0056 37D0     		beq	.L61
+ 647 0058 B3F5004F 		cmp	r3, #32768
+ 648 005c 22D1     		bne	.L41
+ 106:Bsp/Bsp_GPIO.c **** 
+ 649              		.loc 1 106 16 view .LVU157
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 18
+
+
+ 650 005e 2820     		movs	r0, #40
+ 651 0060 0DE0     		b	.L39
+ 652              	.L64:
+  76:Bsp/Bsp_GPIO.c ****     {
+ 653              		.loc 1 76 5 view .LVU158
+ 654 0062 B3F5807F 		cmp	r3, #256
+ 655 0066 27D0     		beq	.L54
+ 656 0068 04D9     		bls	.L66
+ 657 006a B3F5007F 		cmp	r3, #512
+ 658 006e 19D1     		bne	.L41
+  98:Bsp/Bsp_GPIO.c **** 
+ 659              		.loc 1 98 16 view .LVU159
+ 660 0070 1720     		movs	r0, #23
+ 661 0072 04E0     		b	.L39
+ 662              	.L66:
+  76:Bsp/Bsp_GPIO.c ****     {
+ 663              		.loc 1 76 5 view .LVU160
+ 664 0074 402B     		cmp	r3, #64
+ 665 0076 21D0     		beq	.L55
+ 666 0078 802B     		cmp	r3, #128
+ 667 007a 13D1     		bne	.L41
+  98:Bsp/Bsp_GPIO.c **** 
+ 668              		.loc 1 98 16 view .LVU161
+ 669 007c 1720     		movs	r0, #23
+ 670              	.L39:
+ 112:Bsp/Bsp_GPIO.c **** 
+ 671              		.loc 1 112 1 view .LVU162
+ 672 007e 03B0     		add	sp, sp, #12
+ 673              	.LCFI16:
+ 674              		.cfi_remember_state
+ 675              		.cfi_def_cfa_offset 4
+ 676              		@ sp needed
+ 677 0080 5DF804FB 		ldr	pc, [sp], #4
+ 678              	.L65:
+ 679              	.LCFI17:
+ 680              		.cfi_restore_state
+  76:Bsp/Bsp_GPIO.c ****     {
+ 681              		.loc 1 76 5 view .LVU163
+ 682 0084 B3F5006F 		cmp	r3, #2048
+ 683 0088 1CD0     		beq	.L59
+ 684 008a B3F5805F 		cmp	r3, #4096
+ 685 008e 09D1     		bne	.L41
+ 106:Bsp/Bsp_GPIO.c **** 
+ 686              		.loc 1 106 16 view .LVU164
+ 687 0090 2820     		movs	r0, #40
+ 688 0092 F4E7     		b	.L39
+ 689              	.L46:
+  85:Bsp/Bsp_GPIO.c **** 
+ 690              		.loc 1 85 9 is_stmt 1 view .LVU165
+  85:Bsp/Bsp_GPIO.c **** 
+ 691              		.loc 1 85 16 is_stmt 0 view .LVU166
+ 692 0094 0820     		movs	r0, #8
+ 693 0096 F2E7     		b	.L39
+ 694              	.L45:
+  88:Bsp/Bsp_GPIO.c **** 
+ 695              		.loc 1 88 9 is_stmt 1 view .LVU167
+  88:Bsp/Bsp_GPIO.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 19
+
+
+ 696              		.loc 1 88 16 is_stmt 0 view .LVU168
+ 697 0098 0920     		movs	r0, #9
+ 698 009a F0E7     		b	.L39
+ 699              	.L44:
+  91:Bsp/Bsp_GPIO.c **** 
+ 700              		.loc 1 91 9 is_stmt 1 view .LVU169
+  91:Bsp/Bsp_GPIO.c **** 
+ 701              		.loc 1 91 16 is_stmt 0 view .LVU170
+ 702 009c 0A20     		movs	r0, #10
+ 703 009e EEE7     		b	.L39
+ 704              	.L42:
+  98:Bsp/Bsp_GPIO.c **** 
+ 705              		.loc 1 98 16 view .LVU171
+ 706 00a0 1720     		movs	r0, #23
+ 707 00a2 ECE7     		b	.L39
+ 708              	.L41:
+ 109:Bsp/Bsp_GPIO.c ****         break;
+ 709              		.loc 1 109 9 is_stmt 1 view .LVU172
+ 710 00a4 0120     		movs	r0, #1
+ 711 00a6 FFF7FEFF 		bl	assert
+ 712              	.LVL17:
+ 110:Bsp/Bsp_GPIO.c ****     }
+ 713              		.loc 1 110 9 view .LVU173
+ 112:Bsp/Bsp_GPIO.c **** 
+ 714              		.loc 1 112 1 is_stmt 0 view .LVU174
+ 715 00aa E8E7     		b	.L39
+ 716              	.L48:
+  76:Bsp/Bsp_GPIO.c ****     {
+ 717              		.loc 1 76 5 view .LVU175
+ 718 00ac 0620     		movs	r0, #6
+ 719 00ae E6E7     		b	.L39
+ 720              	.L52:
+  82:Bsp/Bsp_GPIO.c **** 
+ 721              		.loc 1 82 16 view .LVU176
+ 722 00b0 0720     		movs	r0, #7
+ 723 00b2 E4E7     		b	.L39
+ 724              	.L53:
+ 106:Bsp/Bsp_GPIO.c **** 
+ 725              		.loc 1 106 16 view .LVU177
+ 726 00b4 2820     		movs	r0, #40
+ 727 00b6 E2E7     		b	.L39
+ 728              	.L54:
+  98:Bsp/Bsp_GPIO.c **** 
+ 729              		.loc 1 98 16 view .LVU178
+ 730 00b8 1720     		movs	r0, #23
+ 731 00ba E0E7     		b	.L39
+ 732              	.L55:
+ 733 00bc 1720     		movs	r0, #23
+ 734 00be DEE7     		b	.L39
+ 735              	.L58:
+ 106:Bsp/Bsp_GPIO.c **** 
+ 736              		.loc 1 106 16 view .LVU179
+ 737 00c0 2820     		movs	r0, #40
+ 738 00c2 DCE7     		b	.L39
+ 739              	.L59:
+ 740 00c4 2820     		movs	r0, #40
+ 741 00c6 DAE7     		b	.L39
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 20
+
+
+ 742              	.L61:
+ 743 00c8 2820     		movs	r0, #40
+ 744 00ca D8E7     		b	.L39
+ 745              		.cfi_endproc
+ 746              	.LFE146:
+ 748              		.section	.text.BspGPIO_ExtiSetMode,"ax",%progbits
+ 749              		.align	1
+ 750              		.syntax unified
+ 751              		.thumb
+ 752              		.thumb_func
+ 754              	BspGPIO_ExtiSetMode:
+ 755              	.LVL18:
+ 756              	.LFB147:
+ 115:Bsp/Bsp_GPIO.c ****     uint32_t mode_val;
+ 757              		.loc 1 115 1 is_stmt 1 view -0
+ 758              		.cfi_startproc
+ 759              		@ args = 0, pretend = 0, frame = 32
+ 760              		@ frame_needed = 0, uses_anonymous_args = 0
+ 115:Bsp/Bsp_GPIO.c ****     uint32_t mode_val;
+ 761              		.loc 1 115 1 is_stmt 0 view .LVU181
+ 762 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 763              	.LCFI18:
+ 764              		.cfi_def_cfa_offset 20
+ 765              		.cfi_offset 4, -20
+ 766              		.cfi_offset 5, -16
+ 767              		.cfi_offset 6, -12
+ 768              		.cfi_offset 7, -8
+ 769              		.cfi_offset 14, -4
+ 770 0002 89B0     		sub	sp, sp, #36
+ 771              	.LCFI19:
+ 772              		.cfi_def_cfa_offset 56
+ 773 0004 6B46     		mov	r3, sp
+ 774 0006 83E80300 		stm	r3, {r0, r1}
+ 116:Bsp/Bsp_GPIO.c ****     GPIO_InitTypeDef cfg_structure;
+ 775              		.loc 1 116 5 is_stmt 1 view .LVU182
+ 117:Bsp/Bsp_GPIO.c **** 
+ 776              		.loc 1 117 5 view .LVU183
+ 119:Bsp/Bsp_GPIO.c ****         return false;
+ 777              		.loc 1 119 5 view .LVU184
+ 119:Bsp/Bsp_GPIO.c ****         return false;
+ 778              		.loc 1 119 8 is_stmt 0 view .LVU185
+ 779 000a A8B3     		cbz	r0, .L74
+ 780 000c 1446     		mov	r4, r2
+ 781 000e 0546     		mov	r5, r0
+ 122:Bsp/Bsp_GPIO.c **** 
+ 782              		.loc 1 122 5 is_stmt 1 view .LVU186
+ 783 0010 6B46     		mov	r3, sp
+ 784 0012 93E80300 		ldm	r3, {r0, r1}
+ 785 0016 FFF7FEFF 		bl	BspGPIO_GetExti_IRQnID
+ 786              	.LVL19:
+ 122:Bsp/Bsp_GPIO.c **** 
+ 787              		.loc 1 122 5 is_stmt 0 view .LVU187
+ 788 001a FFF7FEFF 		bl	HAL_NVIC_DisableIRQ
+ 789              	.LVL20:
+ 124:Bsp/Bsp_GPIO.c ****     {
+ 790              		.loc 1 124 5 is_stmt 1 view .LVU188
+ 791 001e 022C     		cmp	r4, #2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 21
+
+
+ 792 0020 2FD0     		beq	.L70
+ 793 0022 032C     		cmp	r4, #3
+ 794 0024 30D0     		beq	.L71
+ 795 0026 012C     		cmp	r4, #1
+ 796 0028 28D0     		beq	.L75
+ 139:Bsp/Bsp_GPIO.c ****         break;
+ 797              		.loc 1 139 18 is_stmt 0 view .LVU189
+ 798 002a 4FF40414 		mov	r4, #2162688
+ 799              	.L69:
+ 800              	.LVL21:
+ 143:Bsp/Bsp_GPIO.c **** 
+ 801              		.loc 1 143 5 is_stmt 1 view .LVU190
+ 802 002e 2846     		mov	r0, r5
+ 803 0030 FFF7FEFF 		bl	BspGPIO_CLK_Enable
+ 804              	.LVL22:
+ 145:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = mode_val;
+ 805              		.loc 1 145 5 view .LVU191
+ 145:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = mode_val;
+ 806              		.loc 1 145 31 is_stmt 0 view .LVU192
+ 807 0034 BDF80410 		ldrh	r1, [sp, #4]
+ 145:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = mode_val;
+ 808              		.loc 1 145 23 view .LVU193
+ 809 0038 0391     		str	r1, [sp, #12]
+ 146:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_NOPULL;
+ 810              		.loc 1 146 5 is_stmt 1 view .LVU194
+ 146:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_NOPULL;
+ 811              		.loc 1 146 24 is_stmt 0 view .LVU195
+ 812 003a 0494     		str	r4, [sp, #16]
+ 147:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+ 813              		.loc 1 147 5 is_stmt 1 view .LVU196
+ 147:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+ 814              		.loc 1 147 24 is_stmt 0 view .LVU197
+ 815 003c 0027     		movs	r7, #0
+ 816 003e 0597     		str	r7, [sp, #20]
+ 148:Bsp/Bsp_GPIO.c **** 
+ 817              		.loc 1 148 5 is_stmt 1 view .LVU198
+ 148:Bsp/Bsp_GPIO.c **** 
+ 818              		.loc 1 148 25 is_stmt 0 view .LVU199
+ 819 0040 0326     		movs	r6, #3
+ 820 0042 0696     		str	r6, [sp, #24]
+ 150:Bsp/Bsp_GPIO.c ****     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
+ 821              		.loc 1 150 5 is_stmt 1 view .LVU200
+ 822 0044 9DF80620 		ldrb	r2, [sp, #6]	@ zero_extendqisi2
+ 823 0048 2846     		mov	r0, r5
+ 824 004a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 825              	.LVL23:
+ 151:Bsp/Bsp_GPIO.c **** 
+ 826              		.loc 1 151 5 view .LVU201
+ 827 004e 03A9     		add	r1, sp, #12
+ 828 0050 2846     		mov	r0, r5
+ 829 0052 FFF7FEFF 		bl	HAL_GPIO_Init
+ 830              	.LVL24:
+ 153:Bsp/Bsp_GPIO.c ****     HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
+ 831              		.loc 1 153 5 view .LVU202
+ 832 0056 6C46     		mov	r4, sp
+ 833              	.LVL25:
+ 153:Bsp/Bsp_GPIO.c ****     HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 22
+
+
+ 834              		.loc 1 153 5 is_stmt 0 view .LVU203
+ 835 0058 94E80300 		ldm	r4, {r0, r1}
+ 836 005c FFF7FEFF 		bl	BspGPIO_GetExti_IRQnID
+ 837              	.LVL26:
+ 838 0060 3A46     		mov	r2, r7
+ 839 0062 3146     		mov	r1, r6
+ 840 0064 FFF7FEFF 		bl	HAL_NVIC_SetPriority
+ 841              	.LVL27:
+ 154:Bsp/Bsp_GPIO.c **** }
+ 842              		.loc 1 154 5 is_stmt 1 view .LVU204
+ 843 0068 94E80300 		ldm	r4, {r0, r1}
+ 844 006c FFF7FEFF 		bl	BspGPIO_GetExti_IRQnID
+ 845              	.LVL28:
+ 846 0070 FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 847              	.LVL29:
+ 848              	.L67:
+ 155:Bsp/Bsp_GPIO.c **** 
+ 849              		.loc 1 155 1 is_stmt 0 view .LVU205
+ 850 0074 09B0     		add	sp, sp, #36
+ 851              	.LCFI20:
+ 852              		.cfi_remember_state
+ 853              		.cfi_def_cfa_offset 20
+ 854              		@ sp needed
+ 855 0076 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 856              	.LVL30:
+ 857              	.L74:
+ 858              	.LCFI21:
+ 859              		.cfi_restore_state
+ 120:Bsp/Bsp_GPIO.c **** 
+ 860              		.loc 1 120 9 is_stmt 1 view .LVU206
+ 120:Bsp/Bsp_GPIO.c **** 
+ 861              		.loc 1 120 16 is_stmt 0 view .LVU207
+ 862 0078 0020     		movs	r0, #0
+ 863 007a FBE7     		b	.L67
+ 864              	.LVL31:
+ 865              	.L75:
+ 124:Bsp/Bsp_GPIO.c ****     {
+ 866              		.loc 1 124 5 view .LVU208
+ 867 007c 4FF48814 		mov	r4, #1114112
+ 868 0080 D5E7     		b	.L69
+ 869              	.L70:
+ 131:Bsp/Bsp_GPIO.c ****         break;
+ 870              		.loc 1 131 18 view .LVU209
+ 871 0082 4FF40414 		mov	r4, #2162688
+ 872 0086 D2E7     		b	.L69
+ 873              	.L71:
+ 135:Bsp/Bsp_GPIO.c ****         break;
+ 874              		.loc 1 135 18 view .LVU210
+ 875 0088 4FF44414 		mov	r4, #3211264
+ 876 008c CFE7     		b	.L69
+ 877              		.cfi_endproc
+ 878              	.LFE147:
+ 880              		.section	.text.BspGPIO_ExtiInit,"ax",%progbits
+ 881              		.align	1
+ 882              		.syntax unified
+ 883              		.thumb
+ 884              		.thumb_func
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 23
+
+
+ 886              	BspGPIO_ExtiInit:
+ 887              	.LVL32:
+ 888              	.LFB150:
+ 180:Bsp/Bsp_GPIO.c ****     GPIO_InitTypeDef cfg_structure;
+ 889              		.loc 1 180 1 is_stmt 1 view -0
+ 890              		.cfi_startproc
+ 891              		@ args = 0, pretend = 0, frame = 32
+ 892              		@ frame_needed = 0, uses_anonymous_args = 0
+ 180:Bsp/Bsp_GPIO.c ****     GPIO_InitTypeDef cfg_structure;
+ 893              		.loc 1 180 1 is_stmt 0 view .LVU212
+ 894 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 895              	.LCFI22:
+ 896              		.cfi_def_cfa_offset 20
+ 897              		.cfi_offset 4, -20
+ 898              		.cfi_offset 5, -16
+ 899              		.cfi_offset 6, -12
+ 900              		.cfi_offset 7, -8
+ 901              		.cfi_offset 14, -4
+ 902 0002 89B0     		sub	sp, sp, #36
+ 903              	.LCFI23:
+ 904              		.cfi_def_cfa_offset 56
+ 905 0004 6B46     		mov	r3, sp
+ 906 0006 83E80300 		stm	r3, {r0, r1}
+ 181:Bsp/Bsp_GPIO.c **** 
+ 907              		.loc 1 181 5 is_stmt 1 view .LVU213
+ 183:Bsp/Bsp_GPIO.c ****         return false;
+ 908              		.loc 1 183 5 view .LVU214
+ 183:Bsp/Bsp_GPIO.c ****         return false;
+ 909              		.loc 1 183 8 is_stmt 0 view .LVU215
+ 910 000a 78B3     		cbz	r0, .L78
+ 911 000c 1546     		mov	r5, r2
+ 912 000e 0446     		mov	r4, r0
+ 186:Bsp/Bsp_GPIO.c **** 
+ 913              		.loc 1 186 5 is_stmt 1 view .LVU216
+ 914 0010 FFF7FEFF 		bl	BspGPIO_CLK_Enable
+ 915              	.LVL33:
+ 188:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_IT_FALLING;
+ 916              		.loc 1 188 5 view .LVU217
+ 188:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_IT_FALLING;
+ 917              		.loc 1 188 31 is_stmt 0 view .LVU218
+ 918 0014 BDF80460 		ldrh	r6, [sp, #4]
+ 188:Bsp/Bsp_GPIO.c ****     cfg_structure.Mode = GPIO_MODE_IT_FALLING;
+ 919              		.loc 1 188 23 view .LVU219
+ 920 0018 0396     		str	r6, [sp, #12]
+ 189:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_NOPULL;
+ 921              		.loc 1 189 5 is_stmt 1 view .LVU220
+ 189:Bsp/Bsp_GPIO.c ****     cfg_structure.Pull = GPIO_NOPULL;
+ 922              		.loc 1 189 24 is_stmt 0 view .LVU221
+ 923 001a 4FF40413 		mov	r3, #2162688
+ 924 001e 0493     		str	r3, [sp, #16]
+ 190:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+ 925              		.loc 1 190 5 is_stmt 1 view .LVU222
+ 190:Bsp/Bsp_GPIO.c ****     cfg_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+ 926              		.loc 1 190 24 is_stmt 0 view .LVU223
+ 927 0020 0027     		movs	r7, #0
+ 928 0022 0597     		str	r7, [sp, #20]
+ 191:Bsp/Bsp_GPIO.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 24
+
+
+ 929              		.loc 1 191 5 is_stmt 1 view .LVU224
+ 191:Bsp/Bsp_GPIO.c **** 
+ 930              		.loc 1 191 25 is_stmt 0 view .LVU225
+ 931 0024 0323     		movs	r3, #3
+ 932 0026 0693     		str	r3, [sp, #24]
+ 193:Bsp/Bsp_GPIO.c ****     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
+ 933              		.loc 1 193 5 is_stmt 1 view .LVU226
+ 934 0028 9DF80620 		ldrb	r2, [sp, #6]	@ zero_extendqisi2
+ 935 002c 3146     		mov	r1, r6
+ 936 002e 2046     		mov	r0, r4
+ 937 0030 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 938              	.LVL34:
+ 194:Bsp/Bsp_GPIO.c **** 
+ 939              		.loc 1 194 5 view .LVU227
+ 940 0034 03A9     		add	r1, sp, #12
+ 941 0036 2046     		mov	r0, r4
+ 942 0038 FFF7FEFF 		bl	HAL_GPIO_Init
+ 943              	.LVL35:
+ 197:Bsp/Bsp_GPIO.c **** 
+ 944              		.loc 1 197 5 view .LVU228
+ 197:Bsp/Bsp_GPIO.c **** 
+ 945              		.loc 1 197 24 is_stmt 0 view .LVU229
+ 946 003c 3046     		mov	r0, r6
+ 947 003e FFF7FEFF 		bl	BspGPIO_GetEXTI_Index
+ 948              	.LVL36:
+ 197:Bsp/Bsp_GPIO.c **** 
+ 949              		.loc 1 197 59 view .LVU230
+ 950 0042 0B4B     		ldr	r3, .L80
+ 951 0044 43F82050 		str	r5, [r3, r0, lsl #2]
+ 199:Bsp/Bsp_GPIO.c ****     HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
+ 952              		.loc 1 199 5 is_stmt 1 view .LVU231
+ 953 0048 6C46     		mov	r4, sp
+ 954 004a 94E80300 		ldm	r4, {r0, r1}
+ 955 004e FFF7FEFF 		bl	BspGPIO_GetExti_IRQnID
+ 956              	.LVL37:
+ 957 0052 3A46     		mov	r2, r7
+ 958 0054 0421     		movs	r1, #4
+ 959 0056 FFF7FEFF 		bl	HAL_NVIC_SetPriority
+ 960              	.LVL38:
+ 200:Bsp/Bsp_GPIO.c **** 
+ 961              		.loc 1 200 5 view .LVU232
+ 962 005a 94E80300 		ldm	r4, {r0, r1}
+ 963 005e FFF7FEFF 		bl	BspGPIO_GetExti_IRQnID
+ 964              	.LVL39:
+ 965 0062 FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 966              	.LVL40:
+ 202:Bsp/Bsp_GPIO.c **** }
+ 967              		.loc 1 202 5 view .LVU233
+ 202:Bsp/Bsp_GPIO.c **** }
+ 968              		.loc 1 202 12 is_stmt 0 view .LVU234
+ 969 0066 0120     		movs	r0, #1
+ 970              	.LVL41:
+ 971              	.L77:
+ 203:Bsp/Bsp_GPIO.c **** 
+ 972              		.loc 1 203 1 view .LVU235
+ 973 0068 09B0     		add	sp, sp, #36
+ 974              	.LCFI24:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 25
+
+
+ 975              		.cfi_remember_state
+ 976              		.cfi_def_cfa_offset 20
+ 977              		@ sp needed
+ 978 006a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 979              	.LVL42:
+ 980              	.L78:
+ 981              	.LCFI25:
+ 982              		.cfi_restore_state
+ 184:Bsp/Bsp_GPIO.c **** 
+ 983              		.loc 1 184 16 view .LVU236
+ 984 006c 0020     		movs	r0, #0
+ 985 006e FBE7     		b	.L77
+ 986              	.L81:
+ 987              		.align	2
+ 988              	.L80:
+ 989 0070 00000000 		.word	.LANCHOR0
+ 990              		.cfi_endproc
+ 991              	.LFE150:
+ 993              		.section	.text.BspGPIO_Read,"ax",%progbits
+ 994              		.align	1
+ 995              		.syntax unified
+ 996              		.thumb
+ 997              		.thumb_func
+ 999              	BspGPIO_Read:
+ 1000              	.LFB152:
+ 226:Bsp/Bsp_GPIO.c ****     return HAL_GPIO_ReadPin(IO_Obj.port, IO_Obj.pin);
+ 1001              		.loc 1 226 1 is_stmt 1 view -0
+ 1002              		.cfi_startproc
+ 1003              		@ args = 0, pretend = 0, frame = 8
+ 1004              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1005 0000 00B5     		push	{lr}
+ 1006              	.LCFI26:
+ 1007              		.cfi_def_cfa_offset 4
+ 1008              		.cfi_offset 14, -4
+ 1009 0002 83B0     		sub	sp, sp, #12
+ 1010              	.LCFI27:
+ 1011              		.cfi_def_cfa_offset 16
+ 1012 0004 02AB     		add	r3, sp, #8
+ 1013 0006 03E90300 		stmdb	r3, {r0, r1}
+ 227:Bsp/Bsp_GPIO.c **** }
+ 1014              		.loc 1 227 5 view .LVU238
+ 227:Bsp/Bsp_GPIO.c **** }
+ 1015              		.loc 1 227 12 is_stmt 0 view .LVU239
+ 1016 000a BDF80410 		ldrh	r1, [sp, #4]
+ 1017 000e FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 1018              	.LVL43:
+ 228:Bsp/Bsp_GPIO.c **** 
+ 1019              		.loc 1 228 1 view .LVU240
+ 1020 0012 0038     		subs	r0, r0, #0
+ 1021 0014 18BF     		it	ne
+ 1022 0016 0120     		movne	r0, #1
+ 1023 0018 03B0     		add	sp, sp, #12
+ 1024              	.LCFI28:
+ 1025              		.cfi_def_cfa_offset 4
+ 1026              		@ sp needed
+ 1027 001a 5DF804FB 		ldr	pc, [sp], #4
+ 1028              		.cfi_endproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 26
+
+
+ 1029              	.LFE152:
+ 1031              		.section	.text.HAL_GPIO_EXTI_Callback,"ax",%progbits
+ 1032              		.align	1
+ 1033              		.global	HAL_GPIO_EXTI_Callback
+ 1034              		.syntax unified
+ 1035              		.thumb
+ 1036              		.thumb_func
+ 1038              	HAL_GPIO_EXTI_Callback:
+ 1039              	.LVL44:
+ 1040              	.LFB154:
+ 234:Bsp/Bsp_GPIO.c **** 
+ 235:Bsp/Bsp_GPIO.c **** void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+ 236:Bsp/Bsp_GPIO.c **** {
+ 1041              		.loc 1 236 1 is_stmt 1 view -0
+ 1042              		.cfi_startproc
+ 1043              		@ args = 0, pretend = 0, frame = 0
+ 1044              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1045              		.loc 1 236 1 is_stmt 0 view .LVU242
+ 1046 0000 08B5     		push	{r3, lr}
+ 1047              	.LCFI29:
+ 1048              		.cfi_def_cfa_offset 8
+ 1049              		.cfi_offset 3, -8
+ 1050              		.cfi_offset 14, -4
+ 237:Bsp/Bsp_GPIO.c ****     if ((BspGPIO_GetEXTI_Index(GPIO_Pin) >= 0) && (EXTI_CallBack_List[BspGPIO_GetEXTI_Index(GPIO_Pi
+ 1051              		.loc 1 237 5 is_stmt 1 view .LVU243
+ 1052              		.loc 1 237 71 is_stmt 0 view .LVU244
+ 1053 0002 FFF7FEFF 		bl	BspGPIO_GetEXTI_Index
+ 1054              	.LVL45:
+ 1055              		.loc 1 237 70 view .LVU245
+ 1056 0006 034B     		ldr	r3, .L87
+ 1057 0008 53F82030 		ldr	r3, [r3, r0, lsl #2]
+ 1058              		.loc 1 237 48 view .LVU246
+ 1059 000c 03B1     		cbz	r3, .L84
+ 238:Bsp/Bsp_GPIO.c ****         EXTI_CallBack_List[BspGPIO_GetEXTI_Index(GPIO_Pin)]();
+ 1060              		.loc 1 238 9 is_stmt 1 view .LVU247
+ 1061 000e 9847     		blx	r3
+ 1062              	.LVL46:
+ 1063              	.L84:
+ 239:Bsp/Bsp_GPIO.c **** }
+ 1064              		.loc 1 239 1 is_stmt 0 view .LVU248
+ 1065 0010 08BD     		pop	{r3, pc}
+ 1066              	.L88:
+ 1067 0012 00BF     		.align	2
+ 1068              	.L87:
+ 1069 0014 00000000 		.word	.LANCHOR0
+ 1070              		.cfi_endproc
+ 1071              	.LFE154:
+ 1073              		.global	BspGPIO
+ 1074              		.section	.bss.EXTI_CallBack_List,"aw",%nobits
+ 1075              		.align	2
+ 1076              		.set	.LANCHOR0,. + 0
+ 1079              	EXTI_CallBack_List:
+ 1080 0000 00000000 		.space	64
+ 1080      00000000 
+ 1080      00000000 
+ 1080      00000000 
+ 1080      00000000 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 27
+
+
+ 1081              		.section	.data.BspGPIO,"aw"
+ 1082              		.align	2
+ 1085              	BspGPIO:
+ 1086 0000 00000000 		.word	BspGPIO_ExtiInit
+ 1087 0004 00000000 		.word	BspGPIO_Output_Init
+ 1088 0008 00000000 		.word	BspGPIO_Input_Init
+ 1089 000c 00000000 		.word	BspGPIO_Read
+ 1090 0010 00000000 		.word	BspGPIO_ResetExtiCallback
+ 1091 0014 00000000 		.word	BspGPIO_ExtiSetMode
+ 1092 0018 00000000 		.word	BspGPIO_Write
+ 1093              		.text
+ 1094              	.Letext0:
+ 1095              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1096              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1097              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1098              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1099              		.file 6 "Bsp/Bsp_GPIO.h"
+ 1100              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cortex.h"
+ 1101              		.file 8 "debug/debug_util.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Bsp_GPIO.c
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:19     .text.BspGPIO_GetEXTI_Index:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:24     .text.BspGPIO_GetEXTI_Index:00000000 BspGPIO_GetEXTI_Index
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:63     .text.BspGPIO_CLK_Enable:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:68     .text.BspGPIO_CLK_Enable:00000000 BspGPIO_CLK_Enable
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:345    .text.BspGPIO_CLK_Enable:00000198 $d
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:360    .text.BspGPIO_ResetExtiCallback:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:365    .text.BspGPIO_ResetExtiCallback:00000000 BspGPIO_ResetExtiCallback
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:403    .text.BspGPIO_ResetExtiCallback:00000020 $d
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:408    .text.BspGPIO_Write:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:413    .text.BspGPIO_Write:00000000 BspGPIO_Write
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:435    .text.BspGPIO_Input_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:440    .text.BspGPIO_Input_Init:00000000 BspGPIO_Input_Init
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:494    .text.BspGPIO_Output_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:499    .text.BspGPIO_Output_Init:00000000 BspGPIO_Output_Init
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:571    .text.BspGPIO_GetExti_IRQnID:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:576    .text.BspGPIO_GetExti_IRQnID:00000000 BspGPIO_GetExti_IRQnID
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:605    .text.BspGPIO_GetExti_IRQnID:00000022 $d
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:637    .text.BspGPIO_GetExti_IRQnID:00000042 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:749    .text.BspGPIO_ExtiSetMode:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:754    .text.BspGPIO_ExtiSetMode:00000000 BspGPIO_ExtiSetMode
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:881    .text.BspGPIO_ExtiInit:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:886    .text.BspGPIO_ExtiInit:00000000 BspGPIO_ExtiInit
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:989    .text.BspGPIO_ExtiInit:00000070 $d
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:994    .text.BspGPIO_Read:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:999    .text.BspGPIO_Read:00000000 BspGPIO_Read
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:1032   .text.HAL_GPIO_EXTI_Callback:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:1038   .text.HAL_GPIO_EXTI_Callback:00000000 HAL_GPIO_EXTI_Callback
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:1069   .text.HAL_GPIO_EXTI_Callback:00000014 $d
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:1085   .data.BspGPIO:00000000 BspGPIO
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:1075   .bss.EXTI_CallBack_List:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:1079   .bss.EXTI_CallBack_List:00000000 EXTI_CallBack_List
+C:\Users\HUAV\AppData\Local\Temp\ccYdWdvE.s:1082   .data.BspGPIO:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin
+HAL_GPIO_Init
+assert
+HAL_NVIC_DisableIRQ
+HAL_NVIC_SetPriority
+HAL_NVIC_EnableIRQ
+HAL_GPIO_ReadPin

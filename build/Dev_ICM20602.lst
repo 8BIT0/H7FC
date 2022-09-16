@@ -1,0 +1,1601 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"Dev_ICM20602.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.DevICM20602_Reg_Read,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	DevICM20602_Reg_Read:
+  25              	.LVL0:
+  26              	.LFB1:
+  27              		.file 1 "Device/Dev_ICM20602.c"
+   1:Device/Dev_ICM20602.c **** #include "Dev_ICM20602.h"
+   2:Device/Dev_ICM20602.c **** 
+   3:Device/Dev_ICM20602.c **** /* internal function */
+   4:Device/Dev_ICM20602.c **** static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t 
+   5:Device/Dev_ICM20602.c **** static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t *rx);
+   6:Device/Dev_ICM20602.c **** static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t tx);
+   7:Device/Dev_ICM20602.c **** 
+   8:Device/Dev_ICM20602.c **** /* external function */
+   9:Device/Dev_ICM20602.c **** static void DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate, ICM20602
+  10:Device/Dev_ICM20602.c **** static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
+  11:Device/Dev_ICM20602.c ****                                 cs_ctl_callback cs_ctl,
+  12:Device/Dev_ICM20602.c ****                                 bus_trans_callback bus_trans,
+  13:Device/Dev_ICM20602.c ****                                 delay_callback delay,
+  14:Device/Dev_ICM20602.c ****                                 get_time_stamp_callback get_time_stamp);
+  15:Device/Dev_ICM20602.c **** static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj);
+  16:Device/Dev_ICM20602.c **** static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj);
+  17:Device/Dev_ICM20602.c **** static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj);
+  18:Device/Dev_ICM20602.c **** static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj);
+  19:Device/Dev_ICM20602.c **** static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj);
+  20:Device/Dev_ICM20602.c **** static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj);
+  21:Device/Dev_ICM20602.c **** static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj);
+  22:Device/Dev_ICM20602.c **** 
+  23:Device/Dev_ICM20602.c **** /* external variable */
+  24:Device/Dev_ICM20602.c **** DevICM20602_TypeDef DevICM20602 = {
+  25:Device/Dev_ICM20602.c ****     .config = DevICM20602_Config,
+  26:Device/Dev_ICM20602.c ****     .init = DevICM20602_Init,
+  27:Device/Dev_ICM20602.c ****     .pre_init = DevICM20602_PreInit,
+  28:Device/Dev_ICM20602.c ****     .reset = DevICM20602_SwReset,
+  29:Device/Dev_ICM20602.c ****     .set_ready = DevICM20602_SetDRDY,
+  30:Device/Dev_ICM20602.c ****     .get_ready = DevICM20602_GetReady,
+  31:Device/Dev_ICM20602.c ****     .sample = DevICM20602_Sample,
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 2
+
+
+  32:Device/Dev_ICM20602.c ****     .get_error = DevICM20602_Get_InitError,
+  33:Device/Dev_ICM20602.c ****     .get_data = DevICM20602_Get_Data,
+  34:Device/Dev_ICM20602.c **** };
+  35:Device/Dev_ICM20602.c **** 
+  36:Device/Dev_ICM20602.c **** static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t 
+  37:Device/Dev_ICM20602.c **** {
+  38:Device/Dev_ICM20602.c ****     bool state = false;
+  39:Device/Dev_ICM20602.c ****     uint8_t addr_tmp = addr | ICM20602_READ_MASK;
+  40:Device/Dev_ICM20602.c ****     uint8_t read_tmp = 0;
+  41:Device/Dev_ICM20602.c **** 
+  42:Device/Dev_ICM20602.c ****     if (Obj == NULL || Obj->cs_ctl == NULL || Obj->bus_trans == NULL)
+  43:Device/Dev_ICM20602.c ****         return false;
+  44:Device/Dev_ICM20602.c **** 
+  45:Device/Dev_ICM20602.c ****     /* CS Low */
+  46:Device/Dev_ICM20602.c ****     Obj->cs_ctl(false);
+  47:Device/Dev_ICM20602.c **** 
+  48:Device/Dev_ICM20602.c ****     state = Obj->bus_trans(&addr_tmp, &read_tmp, 1);
+  49:Device/Dev_ICM20602.c ****     state = Obj->bus_trans(tx, rx, size);
+  50:Device/Dev_ICM20602.c **** 
+  51:Device/Dev_ICM20602.c ****     /* CS High */
+  52:Device/Dev_ICM20602.c ****     Obj->cs_ctl(true);
+  53:Device/Dev_ICM20602.c **** 
+  54:Device/Dev_ICM20602.c ****     return state;
+  55:Device/Dev_ICM20602.c **** }
+  56:Device/Dev_ICM20602.c **** 
+  57:Device/Dev_ICM20602.c **** static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t *rx)
+  58:Device/Dev_ICM20602.c **** {
+  28              		.loc 1 58 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 8
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 58 1 is_stmt 0 view .LVU1
+  33 0000 70B5     		push	{r4, r5, r6, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 4, -16
+  37              		.cfi_offset 5, -12
+  38              		.cfi_offset 6, -8
+  39              		.cfi_offset 14, -4
+  40 0002 82B0     		sub	sp, sp, #8
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 24
+  59:Device/Dev_ICM20602.c ****     uint8_t Rx_Tmp[2] = {0};
+  43              		.loc 1 59 5 is_stmt 1 view .LVU2
+  44              		.loc 1 59 13 is_stmt 0 view .LVU3
+  45 0004 0023     		movs	r3, #0
+  46 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+  60:Device/Dev_ICM20602.c ****     uint8_t Tx_Tmp[2] = {0};
+  47              		.loc 1 60 5 is_stmt 1 view .LVU4
+  48              		.loc 1 60 13 is_stmt 0 view .LVU5
+  49 000a ADF80030 		strh	r3, [sp]	@ movhi
+  61:Device/Dev_ICM20602.c ****     bool state = false;
+  50              		.loc 1 61 5 is_stmt 1 view .LVU6
+  51              	.LVL1:
+  62:Device/Dev_ICM20602.c **** 
+  63:Device/Dev_ICM20602.c ****     if (Obj == NULL || Obj->cs_ctl == NULL || Obj->bus_trans == NULL)
+  52              		.loc 1 63 5 view .LVU7
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 3
+
+
+  53              		.loc 1 63 8 is_stmt 0 view .LVU8
+  54 000e D8B1     		cbz	r0, .L3
+  55 0010 1646     		mov	r6, r2
+  56 0012 0446     		mov	r4, r0
+  57              		.loc 1 63 27 discriminator 1 view .LVU9
+  58 0014 0368     		ldr	r3, [r0]
+  59              		.loc 1 63 21 discriminator 1 view .LVU10
+  60 0016 CBB1     		cbz	r3, .L4
+  61              		.loc 1 63 50 discriminator 2 view .LVU11
+  62 0018 4368     		ldr	r3, [r0, #4]
+  63              		.loc 1 63 44 discriminator 2 view .LVU12
+  64 001a CBB1     		cbz	r3, .L5
+  64:Device/Dev_ICM20602.c ****         return false;
+  65:Device/Dev_ICM20602.c **** 
+  66:Device/Dev_ICM20602.c ****     Tx_Tmp[0] = addr | ICM20602_READ_MASK;
+  65              		.loc 1 66 5 is_stmt 1 view .LVU13
+  66              		.loc 1 66 15 is_stmt 0 view .LVU14
+  67 001c 61F07F01 		orn	r1, r1, #127
+  68              	.LVL2:
+  69              		.loc 1 66 15 view .LVU15
+  70 0020 8DF80010 		strb	r1, [sp]
+  67:Device/Dev_ICM20602.c **** 
+  68:Device/Dev_ICM20602.c ****     /* cs low */
+  69:Device/Dev_ICM20602.c ****     Obj->cs_ctl(false);
+  71              		.loc 1 69 5 is_stmt 1 view .LVU16
+  72              		.loc 1 69 8 is_stmt 0 view .LVU17
+  73 0024 0368     		ldr	r3, [r0]
+  74              		.loc 1 69 5 view .LVU18
+  75 0026 0020     		movs	r0, #0
+  76              	.LVL3:
+  77              		.loc 1 69 5 view .LVU19
+  78 0028 9847     		blx	r3
+  79              	.LVL4:
+  70:Device/Dev_ICM20602.c **** 
+  71:Device/Dev_ICM20602.c ****     state = Obj->bus_trans(Tx_Tmp, Rx_Tmp, 2);
+  80              		.loc 1 71 5 is_stmt 1 view .LVU20
+  81              		.loc 1 71 16 is_stmt 0 view .LVU21
+  82 002a 6368     		ldr	r3, [r4, #4]
+  83              		.loc 1 71 13 view .LVU22
+  84 002c 0222     		movs	r2, #2
+  85 002e 01A9     		add	r1, sp, #4
+  86 0030 6846     		mov	r0, sp
+  87 0032 9847     		blx	r3
+  88              	.LVL5:
+  89 0034 0546     		mov	r5, r0
+  90              	.LVL6:
+  72:Device/Dev_ICM20602.c **** 
+  73:Device/Dev_ICM20602.c ****     /* cs high */
+  74:Device/Dev_ICM20602.c ****     Obj->cs_ctl(true);
+  91              		.loc 1 74 5 is_stmt 1 view .LVU23
+  92              		.loc 1 74 8 is_stmt 0 view .LVU24
+  93 0036 2368     		ldr	r3, [r4]
+  94              		.loc 1 74 5 view .LVU25
+  95 0038 0120     		movs	r0, #1
+  96 003a 9847     		blx	r3
+  97              	.LVL7:
+  75:Device/Dev_ICM20602.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 4
+
+
+  76:Device/Dev_ICM20602.c ****     *rx = Rx_Tmp[1];
+  98              		.loc 1 76 5 is_stmt 1 view .LVU26
+  99              		.loc 1 76 17 is_stmt 0 view .LVU27
+ 100 003c 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 101              		.loc 1 76 9 view .LVU28
+ 102 0040 3370     		strb	r3, [r6]
+  77:Device/Dev_ICM20602.c **** 
+  78:Device/Dev_ICM20602.c ****     return state;
+ 103              		.loc 1 78 5 is_stmt 1 view .LVU29
+ 104              	.LVL8:
+ 105              	.L2:
+  79:Device/Dev_ICM20602.c **** }
+ 106              		.loc 1 79 1 is_stmt 0 view .LVU30
+ 107 0042 2846     		mov	r0, r5
+ 108 0044 02B0     		add	sp, sp, #8
+ 109              	.LCFI2:
+ 110              		.cfi_remember_state
+ 111              		.cfi_def_cfa_offset 16
+ 112              		@ sp needed
+ 113 0046 70BD     		pop	{r4, r5, r6, pc}
+ 114              	.LVL9:
+ 115              	.L3:
+ 116              	.LCFI3:
+ 117              		.cfi_restore_state
+  64:Device/Dev_ICM20602.c **** 
+ 118              		.loc 1 64 16 view .LVU31
+ 119 0048 0025     		movs	r5, #0
+ 120 004a FAE7     		b	.L2
+ 121              	.L4:
+  64:Device/Dev_ICM20602.c **** 
+ 122              		.loc 1 64 16 view .LVU32
+ 123 004c 0025     		movs	r5, #0
+ 124 004e F8E7     		b	.L2
+ 125              	.L5:
+ 126 0050 0025     		movs	r5, #0
+ 127 0052 F6E7     		b	.L2
+ 128              		.cfi_endproc
+ 129              	.LFE1:
+ 131              		.section	.text.DevICM20602_Reg_Write,"ax",%progbits
+ 132              		.align	1
+ 133              		.syntax unified
+ 134              		.thumb
+ 135              		.thumb_func
+ 137              	DevICM20602_Reg_Write:
+ 138              	.LVL10:
+ 139              	.LFB2:
+  80:Device/Dev_ICM20602.c **** 
+  81:Device/Dev_ICM20602.c **** static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t tx)
+  82:Device/Dev_ICM20602.c **** {
+ 140              		.loc 1 82 1 is_stmt 1 view -0
+ 141              		.cfi_startproc
+ 142              		@ args = 0, pretend = 0, frame = 8
+ 143              		@ frame_needed = 0, uses_anonymous_args = 0
+ 144              		.loc 1 82 1 is_stmt 0 view .LVU34
+ 145 0000 30B5     		push	{r4, r5, lr}
+ 146              	.LCFI4:
+ 147              		.cfi_def_cfa_offset 12
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 5
+
+
+ 148              		.cfi_offset 4, -12
+ 149              		.cfi_offset 5, -8
+ 150              		.cfi_offset 14, -4
+ 151 0002 83B0     		sub	sp, sp, #12
+ 152              	.LCFI5:
+ 153              		.cfi_def_cfa_offset 24
+  83:Device/Dev_ICM20602.c ****     uint8_t Rx_Tmp[2] = {0};
+ 154              		.loc 1 83 5 is_stmt 1 view .LVU35
+ 155              		.loc 1 83 13 is_stmt 0 view .LVU36
+ 156 0004 0023     		movs	r3, #0
+ 157 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+  84:Device/Dev_ICM20602.c ****     uint8_t Tx_Tmp[2] = {0};
+ 158              		.loc 1 84 5 is_stmt 1 view .LVU37
+ 159              		.loc 1 84 13 is_stmt 0 view .LVU38
+ 160 000a ADF80030 		strh	r3, [sp]	@ movhi
+  85:Device/Dev_ICM20602.c ****     bool state = false;
+ 161              		.loc 1 85 5 is_stmt 1 view .LVU39
+ 162              	.LVL11:
+  86:Device/Dev_ICM20602.c **** 
+  87:Device/Dev_ICM20602.c ****     if (Obj == NULL || Obj->cs_ctl == NULL || Obj->bus_trans == NULL)
+ 163              		.loc 1 87 5 view .LVU40
+ 164              		.loc 1 87 8 is_stmt 0 view .LVU41
+ 165 000e B8B1     		cbz	r0, .L9
+ 166 0010 0446     		mov	r4, r0
+ 167              		.loc 1 87 27 discriminator 1 view .LVU42
+ 168 0012 0368     		ldr	r3, [r0]
+ 169              		.loc 1 87 21 discriminator 1 view .LVU43
+ 170 0014 B3B1     		cbz	r3, .L10
+ 171              		.loc 1 87 50 discriminator 2 view .LVU44
+ 172 0016 4368     		ldr	r3, [r0, #4]
+ 173              		.loc 1 87 44 discriminator 2 view .LVU45
+ 174 0018 B3B1     		cbz	r3, .L11
+  88:Device/Dev_ICM20602.c ****         return false;
+  89:Device/Dev_ICM20602.c **** 
+  90:Device/Dev_ICM20602.c ****     Tx_Tmp[0] = addr;
+ 175              		.loc 1 90 5 is_stmt 1 view .LVU46
+ 176              		.loc 1 90 15 is_stmt 0 view .LVU47
+ 177 001a 8DF80010 		strb	r1, [sp]
+  91:Device/Dev_ICM20602.c ****     Tx_Tmp[1] = tx;
+ 178              		.loc 1 91 5 is_stmt 1 view .LVU48
+ 179              		.loc 1 91 15 is_stmt 0 view .LVU49
+ 180 001e 8DF80120 		strb	r2, [sp, #1]
+  92:Device/Dev_ICM20602.c **** 
+  93:Device/Dev_ICM20602.c ****     /* cs low */
+  94:Device/Dev_ICM20602.c ****     Obj->cs_ctl(false);
+ 181              		.loc 1 94 5 is_stmt 1 view .LVU50
+ 182              		.loc 1 94 8 is_stmt 0 view .LVU51
+ 183 0022 0368     		ldr	r3, [r0]
+ 184              		.loc 1 94 5 view .LVU52
+ 185 0024 0020     		movs	r0, #0
+ 186              	.LVL12:
+ 187              		.loc 1 94 5 view .LVU53
+ 188 0026 9847     		blx	r3
+ 189              	.LVL13:
+  95:Device/Dev_ICM20602.c **** 
+  96:Device/Dev_ICM20602.c ****     state = Obj->bus_trans(Tx_Tmp, Rx_Tmp, 2);
+ 190              		.loc 1 96 5 is_stmt 1 view .LVU54
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 6
+
+
+ 191              		.loc 1 96 16 is_stmt 0 view .LVU55
+ 192 0028 6368     		ldr	r3, [r4, #4]
+ 193              		.loc 1 96 13 view .LVU56
+ 194 002a 0222     		movs	r2, #2
+ 195 002c 01A9     		add	r1, sp, #4
+ 196 002e 6846     		mov	r0, sp
+ 197 0030 9847     		blx	r3
+ 198              	.LVL14:
+ 199 0032 0546     		mov	r5, r0
+ 200              	.LVL15:
+  97:Device/Dev_ICM20602.c **** 
+  98:Device/Dev_ICM20602.c ****     /* cs high */
+  99:Device/Dev_ICM20602.c ****     Obj->cs_ctl(true);
+ 201              		.loc 1 99 5 is_stmt 1 view .LVU57
+ 202              		.loc 1 99 8 is_stmt 0 view .LVU58
+ 203 0034 2368     		ldr	r3, [r4]
+ 204              		.loc 1 99 5 view .LVU59
+ 205 0036 0120     		movs	r0, #1
+ 206 0038 9847     		blx	r3
+ 207              	.LVL16:
+ 100:Device/Dev_ICM20602.c **** 
+ 101:Device/Dev_ICM20602.c ****     return state;
+ 208              		.loc 1 101 5 is_stmt 1 view .LVU60
+ 209              	.L8:
+ 102:Device/Dev_ICM20602.c **** }
+ 210              		.loc 1 102 1 is_stmt 0 view .LVU61
+ 211 003a 2846     		mov	r0, r5
+ 212 003c 03B0     		add	sp, sp, #12
+ 213              	.LCFI6:
+ 214              		.cfi_remember_state
+ 215              		.cfi_def_cfa_offset 12
+ 216              		@ sp needed
+ 217 003e 30BD     		pop	{r4, r5, pc}
+ 218              	.LVL17:
+ 219              	.L9:
+ 220              	.LCFI7:
+ 221              		.cfi_restore_state
+  88:Device/Dev_ICM20602.c **** 
+ 222              		.loc 1 88 16 view .LVU62
+ 223 0040 0025     		movs	r5, #0
+ 224 0042 FAE7     		b	.L8
+ 225              	.L10:
+  88:Device/Dev_ICM20602.c **** 
+ 226              		.loc 1 88 16 view .LVU63
+ 227 0044 0025     		movs	r5, #0
+ 228 0046 F8E7     		b	.L8
+ 229              	.L11:
+ 230 0048 0025     		movs	r5, #0
+ 231 004a F6E7     		b	.L8
+ 232              		.cfi_endproc
+ 233              	.LFE2:
+ 235              		.section	.text.DevICM20602_Config,"ax",%progbits
+ 236              		.align	1
+ 237              		.syntax unified
+ 238              		.thumb
+ 239              		.thumb_func
+ 241              	DevICM20602_Config:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 7
+
+
+ 242              	.LVL18:
+ 243              	.LFB3:
+ 103:Device/Dev_ICM20602.c **** 
+ 104:Device/Dev_ICM20602.c **** static void DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate, ICM20602
+ 105:Device/Dev_ICM20602.c **** {
+ 244              		.loc 1 105 1 is_stmt 1 view -0
+ 245              		.cfi_startproc
+ 246              		@ args = 0, pretend = 0, frame = 0
+ 247              		@ frame_needed = 0, uses_anonymous_args = 0
+ 248              		.loc 1 105 1 is_stmt 0 view .LVU65
+ 249 0000 00B5     		push	{lr}
+ 250              	.LCFI8:
+ 251              		.cfi_def_cfa_offset 4
+ 252              		.cfi_offset 14, -4
+ 106:Device/Dev_ICM20602.c ****     switch ((uint8_t)Obj->rate)
+ 253              		.loc 1 106 5 is_stmt 1 view .LVU66
+ 254              		.loc 1 106 25 is_stmt 0 view .LVU67
+ 255 0002 90F81DE0 		ldrb	lr, [r0, #29]	@ zero_extendqisi2
+ 256 0006 BEF1070F 		cmp	lr, #7
+ 257 000a 28D8     		bhi	.L13
+ 258 000c 4FF0010C 		mov	ip, #1
+ 259 0010 0CFA0EFC 		lsl	ip, ip, lr
+ 260 0014 1CF08B0F 		tst	ip, #139
+ 261 0018 21D0     		beq	.L13
+ 107:Device/Dev_ICM20602.c ****     {
+ 108:Device/Dev_ICM20602.c ****     case ICM20602_SampleRate_8K:
+ 109:Device/Dev_ICM20602.c ****     case ICM20602_SampleRate_4K:
+ 110:Device/Dev_ICM20602.c ****     case ICM20602_SampleRate_2K:
+ 111:Device/Dev_ICM20602.c ****     case ICM20602_SampleRate_1K:
+ 112:Device/Dev_ICM20602.c ****         break;
+ 262              		.loc 1 112 9 is_stmt 1 view .LVU68
+ 113:Device/Dev_ICM20602.c **** 
+ 114:Device/Dev_ICM20602.c ****     default:
+ 115:Device/Dev_ICM20602.c ****         return false;
+ 116:Device/Dev_ICM20602.c ****     }
+ 117:Device/Dev_ICM20602.c **** 
+ 118:Device/Dev_ICM20602.c ****     Obj->rate = rate;
+ 263              		.loc 1 118 5 view .LVU69
+ 264              		.loc 1 118 15 is_stmt 0 view .LVU70
+ 265 001a 4177     		strb	r1, [r0, #29]
+ 119:Device/Dev_ICM20602.c **** 
+ 120:Device/Dev_ICM20602.c ****     switch ((uint8_t)AccTrip)
+ 266              		.loc 1 120 5 is_stmt 1 view .LVU71
+ 267 001c 032B     		cmp	r3, #3
+ 268 001e 1ED8     		bhi	.L13
+ 269 0020 DFE803F0 		tbb	[pc, r3]
+ 270              	.LVL19:
+ 271              	.L16:
+ 272 0024 02       		.byte	(.L19-.L16)/2
+ 273 0025 0B       		.byte	(.L18-.L16)/2
+ 274 0026 0F       		.byte	(.L17-.L16)/2
+ 275 0027 13       		.byte	(.L15-.L16)/2
+ 276              		.p2align 1
+ 277              	.L19:
+ 121:Device/Dev_ICM20602.c ****     {
+ 122:Device/Dev_ICM20602.c ****     case ICM20602_Acc_2G:
+ 123:Device/Dev_ICM20602.c ****         Obj->acc_scale = ICM20602_ACC_2G_SCALE;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 8
+
+
+ 278              		.loc 1 123 9 view .LVU72
+ 279              		.loc 1 123 24 is_stmt 0 view .LVU73
+ 280 0028 4FF08D41 		mov	r1, #1182793728
+ 281 002c 4161     		str	r1, [r0, #20]	@ float
+ 124:Device/Dev_ICM20602.c ****         break;
+ 282              		.loc 1 124 9 is_stmt 1 view .LVU74
+ 283              	.L20:
+ 125:Device/Dev_ICM20602.c **** 
+ 126:Device/Dev_ICM20602.c ****     case ICM20602_Acc_4G:
+ 127:Device/Dev_ICM20602.c ****         Obj->acc_scale = ICM20602_ACC_4G_SCALE;
+ 128:Device/Dev_ICM20602.c ****         break;
+ 129:Device/Dev_ICM20602.c **** 
+ 130:Device/Dev_ICM20602.c ****     case ICM20602_Acc_8G:
+ 131:Device/Dev_ICM20602.c ****         Obj->acc_scale = ICM20602_ACC_8G_SCALE;
+ 132:Device/Dev_ICM20602.c ****         break;
+ 133:Device/Dev_ICM20602.c **** 
+ 134:Device/Dev_ICM20602.c ****     case ICM20602_Acc_16G:
+ 135:Device/Dev_ICM20602.c ****         Obj->acc_scale = ICM20602_ACC_16G_SCALE;
+ 136:Device/Dev_ICM20602.c ****         break;
+ 137:Device/Dev_ICM20602.c **** 
+ 138:Device/Dev_ICM20602.c ****     default:
+ 139:Device/Dev_ICM20602.c ****         return false;
+ 140:Device/Dev_ICM20602.c ****     }
+ 141:Device/Dev_ICM20602.c **** 
+ 142:Device/Dev_ICM20602.c ****     switch ((uint8_t)GyrTrip)
+ 284              		.loc 1 142 5 view .LVU75
+ 285 002e 032A     		cmp	r2, #3
+ 286 0030 15D8     		bhi	.L13
+ 287 0032 DFE802F0 		tbb	[pc, r2]
+ 288              	.L22:
+ 289 0036 0E       		.byte	(.L25-.L22)/2
+ 290 0037 16       		.byte	(.L24-.L22)/2
+ 291 0038 19       		.byte	(.L23-.L22)/2
+ 292 0039 1C       		.byte	(.L21-.L22)/2
+ 293              		.p2align 1
+ 294              	.L18:
+ 127:Device/Dev_ICM20602.c ****         break;
+ 295              		.loc 1 127 9 view .LVU76
+ 127:Device/Dev_ICM20602.c ****         break;
+ 296              		.loc 1 127 24 is_stmt 0 view .LVU77
+ 297 003a 4FF08C41 		mov	r1, #1174405120
+ 298 003e 4161     		str	r1, [r0, #20]	@ float
+ 128:Device/Dev_ICM20602.c **** 
+ 299              		.loc 1 128 9 is_stmt 1 view .LVU78
+ 300 0040 F5E7     		b	.L20
+ 301              	.L17:
+ 131:Device/Dev_ICM20602.c ****         break;
+ 302              		.loc 1 131 9 view .LVU79
+ 131:Device/Dev_ICM20602.c ****         break;
+ 303              		.loc 1 131 24 is_stmt 0 view .LVU80
+ 304 0042 4FF08B41 		mov	r1, #1166016512
+ 305 0046 4161     		str	r1, [r0, #20]	@ float
+ 132:Device/Dev_ICM20602.c **** 
+ 306              		.loc 1 132 9 is_stmt 1 view .LVU81
+ 307 0048 F1E7     		b	.L20
+ 308              	.L15:
+ 135:Device/Dev_ICM20602.c ****         break;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 9
+
+
+ 309              		.loc 1 135 9 view .LVU82
+ 135:Device/Dev_ICM20602.c ****         break;
+ 310              		.loc 1 135 24 is_stmt 0 view .LVU83
+ 311 004a 4FF08A41 		mov	r1, #1157627904
+ 312 004e 4161     		str	r1, [r0, #20]	@ float
+ 136:Device/Dev_ICM20602.c **** 
+ 313              		.loc 1 136 9 is_stmt 1 view .LVU84
+ 314 0050 EDE7     		b	.L20
+ 315              	.L25:
+ 143:Device/Dev_ICM20602.c ****     {
+ 144:Device/Dev_ICM20602.c ****     case ICM20602_Gyr_250DPS:
+ 145:Device/Dev_ICM20602.c ****         Obj->gyr_scale = ICM20602_GYR_250DPS_SCALE;
+ 316              		.loc 1 145 9 view .LVU85
+ 317              		.loc 1 145 24 is_stmt 0 view .LVU86
+ 318 0052 0849     		ldr	r1, .L28
+ 319 0054 8161     		str	r1, [r0, #24]	@ float
+ 146:Device/Dev_ICM20602.c ****         break;
+ 320              		.loc 1 146 9 is_stmt 1 view .LVU87
+ 321              	.L26:
+ 147:Device/Dev_ICM20602.c **** 
+ 148:Device/Dev_ICM20602.c ****     case ICM20602_Gyr_500DPS:
+ 149:Device/Dev_ICM20602.c ****         Obj->gyr_scale = ICM20602_GYR_500DPS_SCALE;
+ 150:Device/Dev_ICM20602.c ****         break;
+ 151:Device/Dev_ICM20602.c **** 
+ 152:Device/Dev_ICM20602.c ****     case ICM20602_Gyr_1000DPS:
+ 153:Device/Dev_ICM20602.c ****         Obj->gyr_scale = ICM20602_GYR_1000DPS_SCALE;
+ 154:Device/Dev_ICM20602.c ****         break;
+ 155:Device/Dev_ICM20602.c **** 
+ 156:Device/Dev_ICM20602.c ****     case ICM20602_Gyr_2000DPS:
+ 157:Device/Dev_ICM20602.c ****         Obj->gyr_scale = ICM20602_GYR_2000DPS_SCALE;
+ 158:Device/Dev_ICM20602.c ****         break;
+ 159:Device/Dev_ICM20602.c **** 
+ 160:Device/Dev_ICM20602.c ****     default:
+ 161:Device/Dev_ICM20602.c ****         return false;
+ 162:Device/Dev_ICM20602.c ****     }
+ 163:Device/Dev_ICM20602.c **** 
+ 164:Device/Dev_ICM20602.c ****     // set Trip Reg val
+ 165:Device/Dev_ICM20602.c ****     Obj->AccTrip = ConvertToTrip_Reg(AccTrip);
+ 322              		.loc 1 165 5 view .LVU88
+ 323              		.loc 1 165 20 is_stmt 0 view .LVU89
+ 324 0056 DB00     		lsls	r3, r3, #3
+ 325              	.LVL20:
+ 326              		.loc 1 165 18 view .LVU90
+ 327 0058 8374     		strb	r3, [r0, #18]
+ 166:Device/Dev_ICM20602.c ****     Obj->GyrTrip = ConvertToTrip_Reg(GyrTrip);
+ 328              		.loc 1 166 5 is_stmt 1 view .LVU91
+ 329              		.loc 1 166 20 is_stmt 0 view .LVU92
+ 330 005a D200     		lsls	r2, r2, #3
+ 331              	.LVL21:
+ 332              		.loc 1 166 18 view .LVU93
+ 333 005c C274     		strb	r2, [r0, #19]
+ 167:Device/Dev_ICM20602.c **** 
+ 168:Device/Dev_ICM20602.c ****     return true;
+ 334              		.loc 1 168 5 is_stmt 1 view .LVU94
+ 335              	.LVL22:
+ 336              	.L13:
+ 169:Device/Dev_ICM20602.c **** }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 10
+
+
+ 337              		.loc 1 169 1 is_stmt 0 view .LVU95
+ 338 005e 5DF804FB 		ldr	pc, [sp], #4
+ 339              	.LVL23:
+ 340              	.L24:
+ 149:Device/Dev_ICM20602.c ****         break;
+ 341              		.loc 1 149 9 is_stmt 1 view .LVU96
+ 149:Device/Dev_ICM20602.c ****         break;
+ 342              		.loc 1 149 24 is_stmt 0 view .LVU97
+ 343 0062 0549     		ldr	r1, .L28+4
+ 344 0064 8161     		str	r1, [r0, #24]	@ float
+ 150:Device/Dev_ICM20602.c **** 
+ 345              		.loc 1 150 9 is_stmt 1 view .LVU98
+ 346 0066 F6E7     		b	.L26
+ 347              	.L23:
+ 153:Device/Dev_ICM20602.c ****         break;
+ 348              		.loc 1 153 9 view .LVU99
+ 153:Device/Dev_ICM20602.c ****         break;
+ 349              		.loc 1 153 24 is_stmt 0 view .LVU100
+ 350 0068 0449     		ldr	r1, .L28+8
+ 351 006a 8161     		str	r1, [r0, #24]	@ float
+ 154:Device/Dev_ICM20602.c **** 
+ 352              		.loc 1 154 9 is_stmt 1 view .LVU101
+ 353 006c F3E7     		b	.L26
+ 354              	.L21:
+ 157:Device/Dev_ICM20602.c ****         break;
+ 355              		.loc 1 157 9 view .LVU102
+ 157:Device/Dev_ICM20602.c ****         break;
+ 356              		.loc 1 157 24 is_stmt 0 view .LVU103
+ 357 006e 0449     		ldr	r1, .L28+12
+ 358 0070 8161     		str	r1, [r0, #24]	@ float
+ 158:Device/Dev_ICM20602.c **** 
+ 359              		.loc 1 158 9 is_stmt 1 view .LVU104
+ 360 0072 F0E7     		b	.L26
+ 361              	.L29:
+ 362              		.align	2
+ 363              	.L28:
+ 364 0074 00000343 		.word	1124270080
+ 365 0078 00008342 		.word	1115881472
+ 366 007c 33330342 		.word	1107505971
+ 367 0080 33338341 		.word	1099117363
+ 368              		.cfi_endproc
+ 369              	.LFE3:
+ 371              		.section	.text.DevICM20602_PreInit,"ax",%progbits
+ 372              		.align	1
+ 373              		.syntax unified
+ 374              		.thumb
+ 375              		.thumb_func
+ 377              	DevICM20602_PreInit:
+ 378              	.LVL24:
+ 379              	.LFB4:
+ 170:Device/Dev_ICM20602.c **** 
+ 171:Device/Dev_ICM20602.c **** static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
+ 172:Device/Dev_ICM20602.c ****                                 cs_ctl_callback cs_ctl,
+ 173:Device/Dev_ICM20602.c ****                                 bus_trans_callback bus_trans,
+ 174:Device/Dev_ICM20602.c ****                                 delay_callback delay,
+ 175:Device/Dev_ICM20602.c ****                                 get_time_stamp_callback get_time_stamp)
+ 176:Device/Dev_ICM20602.c **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 11
+
+
+ 380              		.loc 1 176 1 view -0
+ 381              		.cfi_startproc
+ 382              		@ args = 4, pretend = 0, frame = 0
+ 383              		@ frame_needed = 0, uses_anonymous_args = 0
+ 384              		@ link register save eliminated.
+ 177:Device/Dev_ICM20602.c ****     Obj->cs_ctl = cs_ctl;
+ 385              		.loc 1 177 5 view .LVU106
+ 386              		.loc 1 177 17 is_stmt 0 view .LVU107
+ 387 0000 0160     		str	r1, [r0]
+ 178:Device/Dev_ICM20602.c ****     Obj->bus_trans = bus_trans;
+ 388              		.loc 1 178 5 is_stmt 1 view .LVU108
+ 389              		.loc 1 178 20 is_stmt 0 view .LVU109
+ 390 0002 4260     		str	r2, [r0, #4]
+ 179:Device/Dev_ICM20602.c ****     Obj->delay = delay;
+ 391              		.loc 1 179 5 is_stmt 1 view .LVU110
+ 392              		.loc 1 179 16 is_stmt 0 view .LVU111
+ 393 0004 8360     		str	r3, [r0, #8]
+ 180:Device/Dev_ICM20602.c ****     Obj->get_timestamp = get_time_stamp;
+ 394              		.loc 1 180 5 is_stmt 1 view .LVU112
+ 395              		.loc 1 180 24 is_stmt 0 view .LVU113
+ 396 0006 009B     		ldr	r3, [sp]
+ 397              	.LVL25:
+ 398              		.loc 1 180 24 view .LVU114
+ 399 0008 C360     		str	r3, [r0, #12]
+ 181:Device/Dev_ICM20602.c **** }
+ 400              		.loc 1 181 1 view .LVU115
+ 401 000a 7047     		bx	lr
+ 402              		.cfi_endproc
+ 403              	.LFE4:
+ 405              		.section	.text.DevICM20602_SetDRDY,"ax",%progbits
+ 406              		.align	1
+ 407              		.syntax unified
+ 408              		.thumb
+ 409              		.thumb_func
+ 411              	DevICM20602_SetDRDY:
+ 412              	.LVL26:
+ 413              	.LFB6:
+ 182:Device/Dev_ICM20602.c **** 
+ 183:Device/Dev_ICM20602.c **** static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
+ 184:Device/Dev_ICM20602.c **** {
+ 185:Device/Dev_ICM20602.c ****     uint8_t read_out = 0;
+ 186:Device/Dev_ICM20602.c **** 
+ 187:Device/Dev_ICM20602.c ****     if ((Obj == NULL) ||
+ 188:Device/Dev_ICM20602.c ****         (Obj->bus_trans == NULL) ||
+ 189:Device/Dev_ICM20602.c ****         (Obj->cs_ctl == NULL))
+ 190:Device/Dev_ICM20602.c ****     {
+ 191:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_Obj_Error;
+ 192:Device/Dev_ICM20602.c ****         return false;
+ 193:Device/Dev_ICM20602.c ****     }
+ 194:Device/Dev_ICM20602.c **** 
+ 195:Device/Dev_ICM20602.c ****     /* reset device */
+ 196:Device/Dev_ICM20602.c ****     if (!DevICM20602_SwReset(Obj))
+ 197:Device/Dev_ICM20602.c ****     {
+ 198:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_Reset_Error;
+ 199:Device/Dev_ICM20602.c ****         return false;
+ 200:Device/Dev_ICM20602.c ****     }
+ 201:Device/Dev_ICM20602.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 12
+
+
+ 202:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_WHO_AM_I, &read_out);
+ 203:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 204:Device/Dev_ICM20602.c **** 
+ 205:Device/Dev_ICM20602.c ****     if (read_out != ICM20602_DEV_ID)
+ 206:Device/Dev_ICM20602.c ****     {
+ 207:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_DevID_Error;
+ 208:Device/Dev_ICM20602.c ****         return false;
+ 209:Device/Dev_ICM20602.c ****     }
+ 210:Device/Dev_ICM20602.c **** 
+ 211:Device/Dev_ICM20602.c ****     /* set oscillator clock */
+ 212:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_1, 0x01);
+ 213:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 214:Device/Dev_ICM20602.c **** 
+ 215:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_1, &read_out);
+ 216:Device/Dev_ICM20602.c ****     if (read_out != 0x01)
+ 217:Device/Dev_ICM20602.c ****     {
+ 218:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_OSC_Error;
+ 219:Device/Dev_ICM20602.c ****         return false;
+ 220:Device/Dev_ICM20602.c ****     }
+ 221:Device/Dev_ICM20602.c **** 
+ 222:Device/Dev_ICM20602.c ****     /* enable gyro and acc */
+ 223:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_2, 0x00);
+ 224:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 225:Device/Dev_ICM20602.c **** 
+ 226:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_2, &read_out);
+ 227:Device/Dev_ICM20602.c ****     if (read_out != 0x00)
+ 228:Device/Dev_ICM20602.c ****     {
+ 229:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_InertialEnable_Error;
+ 230:Device/Dev_ICM20602.c ****         return false;
+ 231:Device/Dev_ICM20602.c ****     }
+ 232:Device/Dev_ICM20602.c **** 
+ 233:Device/Dev_ICM20602.c ****     /* disable iic interface */
+ 234:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_I2C_IF, 0x40);
+ 235:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 236:Device/Dev_ICM20602.c **** 
+ 237:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_I2C_IF, &read_out);
+ 238:Device/Dev_ICM20602.c ****     if (read_out != 0x40)
+ 239:Device/Dev_ICM20602.c ****     {
+ 240:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_InterfaceSet_Error;
+ 241:Device/Dev_ICM20602.c ****         return false;
+ 242:Device/Dev_ICM20602.c ****     }
+ 243:Device/Dev_ICM20602.c **** 
+ 244:Device/Dev_ICM20602.c ****     /* set sample rate */
+ 245:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_SMPLRT_DIV, Obj->rate);
+ 246:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 247:Device/Dev_ICM20602.c **** 
+ 248:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_SMPLRT_DIV, &read_out);
+ 249:Device/Dev_ICM20602.c ****     if (read_out != Obj->rate)
+ 250:Device/Dev_ICM20602.c ****     {
+ 251:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_RateSet_Error;
+ 252:Device/Dev_ICM20602.c ****         return false;
+ 253:Device/Dev_ICM20602.c ****     }
+ 254:Device/Dev_ICM20602.c **** 
+ 255:Device/Dev_ICM20602.c ****     /* set acc trip */
+ 256:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_ACCEL_CONFIG, Obj->AccTrip);
+ 257:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 258:Device/Dev_ICM20602.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 13
+
+
+ 259:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_ACCEL_CONFIG, &read_out);
+ 260:Device/Dev_ICM20602.c ****     if (read_out != Obj->AccTrip)
+ 261:Device/Dev_ICM20602.c ****     {
+ 262:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_AccSet_Error;
+ 263:Device/Dev_ICM20602.c ****         return false;
+ 264:Device/Dev_ICM20602.c ****     }
+ 265:Device/Dev_ICM20602.c **** 
+ 266:Device/Dev_ICM20602.c ****     /* set gyr trip */
+ 267:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_GYRO_CONFIG, Obj->GyrTrip);
+ 268:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 269:Device/Dev_ICM20602.c **** 
+ 270:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_GYRO_CONFIG, &read_out);
+ 271:Device/Dev_ICM20602.c ****     if (read_out != Obj->GyrTrip)
+ 272:Device/Dev_ICM20602.c ****     {
+ 273:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_GyrSet_Error;
+ 274:Device/Dev_ICM20602.c ****         return false;
+ 275:Device/Dev_ICM20602.c ****     }
+ 276:Device/Dev_ICM20602.c **** 
+ 277:Device/Dev_ICM20602.c ****     /* enable odr int output */
+ 278:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_INT_PIN_CFG, 0x60);
+ 279:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 280:Device/Dev_ICM20602.c **** 
+ 281:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_INT_PIN_CFG, &read_out);
+ 282:Device/Dev_ICM20602.c ****     if (read_out != 0x60)
+ 283:Device/Dev_ICM20602.c ****     {
+ 284:Device/Dev_ICM20602.c ****         Obj->error = ICM20602_GyrSet_Error;
+ 285:Device/Dev_ICM20602.c ****         return false;
+ 286:Device/Dev_ICM20602.c ****     }
+ 287:Device/Dev_ICM20602.c **** 
+ 288:Device/Dev_ICM20602.c ****     return true;
+ 289:Device/Dev_ICM20602.c **** }
+ 290:Device/Dev_ICM20602.c **** 
+ 291:Device/Dev_ICM20602.c **** static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj)
+ 292:Device/Dev_ICM20602.c **** {
+ 414              		.loc 1 292 1 is_stmt 1 view -0
+ 415              		.cfi_startproc
+ 416              		@ args = 0, pretend = 0, frame = 0
+ 417              		@ frame_needed = 0, uses_anonymous_args = 0
+ 418              		@ link register save eliminated.
+ 293:Device/Dev_ICM20602.c ****     Obj->drdy = true;
+ 419              		.loc 1 293 5 view .LVU117
+ 420              		.loc 1 293 15 is_stmt 0 view .LVU118
+ 421 0000 0123     		movs	r3, #1
+ 422 0002 0374     		strb	r3, [r0, #16]
+ 294:Device/Dev_ICM20602.c **** }
+ 423              		.loc 1 294 1 view .LVU119
+ 424 0004 7047     		bx	lr
+ 425              		.cfi_endproc
+ 426              	.LFE6:
+ 428              		.section	.text.DevICM20602_SwReset,"ax",%progbits
+ 429              		.align	1
+ 430              		.syntax unified
+ 431              		.thumb
+ 432              		.thumb_func
+ 434              	DevICM20602_SwReset:
+ 435              	.LVL27:
+ 436              	.LFB7:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 14
+
+
+ 295:Device/Dev_ICM20602.c **** 
+ 296:Device/Dev_ICM20602.c **** static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj)
+ 297:Device/Dev_ICM20602.c **** {
+ 437              		.loc 1 297 1 is_stmt 1 view -0
+ 438              		.cfi_startproc
+ 439              		@ args = 0, pretend = 0, frame = 0
+ 440              		@ frame_needed = 0, uses_anonymous_args = 0
+ 441              		.loc 1 297 1 is_stmt 0 view .LVU121
+ 442 0000 10B5     		push	{r4, lr}
+ 443              	.LCFI9:
+ 444              		.cfi_def_cfa_offset 8
+ 445              		.cfi_offset 4, -8
+ 446              		.cfi_offset 14, -4
+ 447 0002 0446     		mov	r4, r0
+ 298:Device/Dev_ICM20602.c ****     uint8_t read_out = 0;
+ 448              		.loc 1 298 5 is_stmt 1 view .LVU122
+ 449              	.LVL28:
+ 299:Device/Dev_ICM20602.c ****     uint64_t reset_UsRt = 0;
+ 450              		.loc 1 299 5 view .LVU123
+ 300:Device/Dev_ICM20602.c **** 
+ 301:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_1, ICM20602_RESET_CMD);
+ 451              		.loc 1 301 5 view .LVU124
+ 452 0004 8022     		movs	r2, #128
+ 453 0006 6B21     		movs	r1, #107
+ 454 0008 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 455              	.LVL29:
+ 302:Device/Dev_ICM20602.c ****     Obj->delay(20);
+ 456              		.loc 1 302 5 view .LVU125
+ 457              		.loc 1 302 8 is_stmt 0 view .LVU126
+ 458 000c A368     		ldr	r3, [r4, #8]
+ 459              		.loc 1 302 5 view .LVU127
+ 460 000e 1420     		movs	r0, #20
+ 461 0010 9847     		blx	r3
+ 462              	.LVL30:
+ 303:Device/Dev_ICM20602.c ****     reset_UsRt = Obj->get_timestamp();
+ 463              		.loc 1 303 5 is_stmt 1 view .LVU128
+ 464              		.loc 1 303 21 is_stmt 0 view .LVU129
+ 465 0012 E368     		ldr	r3, [r4, #12]
+ 466              		.loc 1 303 18 view .LVU130
+ 467 0014 9847     		blx	r3
+ 468              	.LVL31:
+ 304:Device/Dev_ICM20602.c **** 
+ 305:Device/Dev_ICM20602.c ****     // do
+ 306:Device/Dev_ICM20602.c ****     // {
+ 307:Device/Dev_ICM20602.c ****     //     if ((Obj->get_timestamp() - reset_UsRt) >= ICM20602_RESET_TIMEOUT)
+ 308:Device/Dev_ICM20602.c ****     //         return false;
+ 309:Device/Dev_ICM20602.c **** 
+ 310:Device/Dev_ICM20602.c ****     //     DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_1, &read_out);
+ 311:Device/Dev_ICM20602.c ****     // } while (ICM20602_RESET_SUCCESS != read_out);
+ 312:Device/Dev_ICM20602.c **** 
+ 313:Device/Dev_ICM20602.c ****     return true;
+ 469              		.loc 1 313 5 is_stmt 1 view .LVU131
+ 314:Device/Dev_ICM20602.c **** }
+ 470              		.loc 1 314 1 is_stmt 0 view .LVU132
+ 471 0016 0120     		movs	r0, #1
+ 472 0018 10BD     		pop	{r4, pc}
+ 473              		.loc 1 314 1 view .LVU133
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 15
+
+
+ 474              		.cfi_endproc
+ 475              	.LFE7:
+ 477              		.section	.text.DevICM20602_Init,"ax",%progbits
+ 478              		.align	1
+ 479              		.syntax unified
+ 480              		.thumb
+ 481              		.thumb_func
+ 483              	DevICM20602_Init:
+ 484              	.LVL32:
+ 485              	.LFB5:
+ 184:Device/Dev_ICM20602.c ****     uint8_t read_out = 0;
+ 486              		.loc 1 184 1 is_stmt 1 view -0
+ 487              		.cfi_startproc
+ 488              		@ args = 0, pretend = 0, frame = 8
+ 489              		@ frame_needed = 0, uses_anonymous_args = 0
+ 184:Device/Dev_ICM20602.c ****     uint8_t read_out = 0;
+ 490              		.loc 1 184 1 is_stmt 0 view .LVU135
+ 491 0000 70B5     		push	{r4, r5, r6, lr}
+ 492              	.LCFI10:
+ 493              		.cfi_def_cfa_offset 16
+ 494              		.cfi_offset 4, -16
+ 495              		.cfi_offset 5, -12
+ 496              		.cfi_offset 6, -8
+ 497              		.cfi_offset 14, -4
+ 498 0002 82B0     		sub	sp, sp, #8
+ 499              	.LCFI11:
+ 500              		.cfi_def_cfa_offset 24
+ 185:Device/Dev_ICM20602.c **** 
+ 501              		.loc 1 185 5 is_stmt 1 view .LVU136
+ 185:Device/Dev_ICM20602.c **** 
+ 502              		.loc 1 185 13 is_stmt 0 view .LVU137
+ 503 0004 0023     		movs	r3, #0
+ 504 0006 8DF80730 		strb	r3, [sp, #7]
+ 187:Device/Dev_ICM20602.c ****         (Obj->bus_trans == NULL) ||
+ 505              		.loc 1 187 5 is_stmt 1 view .LVU138
+ 187:Device/Dev_ICM20602.c ****         (Obj->bus_trans == NULL) ||
+ 506              		.loc 1 187 8 is_stmt 0 view .LVU139
+ 507 000a 0446     		mov	r4, r0
+ 508 000c 50B1     		cbz	r0, .L35
+ 188:Device/Dev_ICM20602.c ****         (Obj->cs_ctl == NULL))
+ 509              		.loc 1 188 13 discriminator 1 view .LVU140
+ 510 000e 4368     		ldr	r3, [r0, #4]
+ 187:Device/Dev_ICM20602.c ****         (Obj->bus_trans == NULL) ||
+ 511              		.loc 1 187 23 discriminator 1 view .LVU141
+ 512 0010 43B1     		cbz	r3, .L35
+ 189:Device/Dev_ICM20602.c ****     {
+ 513              		.loc 1 189 13 view .LVU142
+ 514 0012 0368     		ldr	r3, [r0]
+ 188:Device/Dev_ICM20602.c ****         (Obj->cs_ctl == NULL))
+ 515              		.loc 1 188 34 view .LVU143
+ 516 0014 33B1     		cbz	r3, .L35
+ 196:Device/Dev_ICM20602.c ****     {
+ 517              		.loc 1 196 5 is_stmt 1 view .LVU144
+ 196:Device/Dev_ICM20602.c ****     {
+ 518              		.loc 1 196 10 is_stmt 0 view .LVU145
+ 519 0016 FFF7FEFF 		bl	DevICM20602_SwReset
+ 520              	.LVL33:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 16
+
+
+ 196:Device/Dev_ICM20602.c ****     {
+ 521              		.loc 1 196 8 view .LVU146
+ 522 001a 48B9     		cbnz	r0, .L38
+ 198:Device/Dev_ICM20602.c ****         return false;
+ 523              		.loc 1 198 9 is_stmt 1 view .LVU147
+ 198:Device/Dev_ICM20602.c ****         return false;
+ 524              		.loc 1 198 20 is_stmt 0 view .LVU148
+ 525 001c 0323     		movs	r3, #3
+ 526 001e 2377     		strb	r3, [r4, #28]
+ 199:Device/Dev_ICM20602.c ****     }
+ 527              		.loc 1 199 9 is_stmt 1 view .LVU149
+ 199:Device/Dev_ICM20602.c ****     }
+ 528              		.loc 1 199 16 is_stmt 0 view .LVU150
+ 529 0020 0025     		movs	r5, #0
+ 530 0022 02E0     		b	.L37
+ 531              	.LVL34:
+ 532              	.L35:
+ 191:Device/Dev_ICM20602.c ****         return false;
+ 533              		.loc 1 191 9 is_stmt 1 view .LVU151
+ 191:Device/Dev_ICM20602.c ****         return false;
+ 534              		.loc 1 191 20 is_stmt 0 view .LVU152
+ 535 0024 0123     		movs	r3, #1
+ 536 0026 2377     		strb	r3, [r4, #28]
+ 192:Device/Dev_ICM20602.c ****     }
+ 537              		.loc 1 192 9 is_stmt 1 view .LVU153
+ 192:Device/Dev_ICM20602.c ****     }
+ 538              		.loc 1 192 16 is_stmt 0 view .LVU154
+ 539 0028 0025     		movs	r5, #0
+ 540              	.LVL35:
+ 541              	.L37:
+ 289:Device/Dev_ICM20602.c **** 
+ 542              		.loc 1 289 1 view .LVU155
+ 543 002a 2846     		mov	r0, r5
+ 544 002c 02B0     		add	sp, sp, #8
+ 545              	.LCFI12:
+ 546              		.cfi_remember_state
+ 547              		.cfi_def_cfa_offset 16
+ 548              		@ sp needed
+ 549 002e 70BD     		pop	{r4, r5, r6, pc}
+ 550              	.LVL36:
+ 551              	.L38:
+ 552              	.LCFI13:
+ 553              		.cfi_restore_state
+ 202:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 554              		.loc 1 202 5 is_stmt 1 view .LVU156
+ 555 0030 0DF10702 		add	r2, sp, #7
+ 556 0034 7521     		movs	r1, #117
+ 557 0036 2046     		mov	r0, r4
+ 558 0038 FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 559              	.LVL37:
+ 203:Device/Dev_ICM20602.c **** 
+ 560              		.loc 1 203 5 view .LVU157
+ 203:Device/Dev_ICM20602.c **** 
+ 561              		.loc 1 203 8 is_stmt 0 view .LVU158
+ 562 003c A368     		ldr	r3, [r4, #8]
+ 203:Device/Dev_ICM20602.c **** 
+ 563              		.loc 1 203 5 view .LVU159
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 17
+
+
+ 564 003e 0A20     		movs	r0, #10
+ 565 0040 9847     		blx	r3
+ 566              	.LVL38:
+ 205:Device/Dev_ICM20602.c ****     {
+ 567              		.loc 1 205 5 is_stmt 1 view .LVU160
+ 205:Device/Dev_ICM20602.c ****     {
+ 568              		.loc 1 205 18 is_stmt 0 view .LVU161
+ 569 0042 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 205:Device/Dev_ICM20602.c ****     {
+ 570              		.loc 1 205 8 view .LVU162
+ 571 0046 122B     		cmp	r3, #18
+ 572 0048 03D0     		beq	.L39
+ 207:Device/Dev_ICM20602.c ****         return false;
+ 573              		.loc 1 207 9 is_stmt 1 view .LVU163
+ 207:Device/Dev_ICM20602.c ****         return false;
+ 574              		.loc 1 207 20 is_stmt 0 view .LVU164
+ 575 004a 0223     		movs	r3, #2
+ 576 004c 2377     		strb	r3, [r4, #28]
+ 208:Device/Dev_ICM20602.c ****     }
+ 577              		.loc 1 208 9 is_stmt 1 view .LVU165
+ 208:Device/Dev_ICM20602.c ****     }
+ 578              		.loc 1 208 16 is_stmt 0 view .LVU166
+ 579 004e 0025     		movs	r5, #0
+ 580 0050 EBE7     		b	.L37
+ 581              	.L39:
+ 212:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 582              		.loc 1 212 5 is_stmt 1 view .LVU167
+ 583 0052 0122     		movs	r2, #1
+ 584 0054 6B21     		movs	r1, #107
+ 585 0056 2046     		mov	r0, r4
+ 586 0058 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 587              	.LVL39:
+ 213:Device/Dev_ICM20602.c **** 
+ 588              		.loc 1 213 5 view .LVU168
+ 213:Device/Dev_ICM20602.c **** 
+ 589              		.loc 1 213 8 is_stmt 0 view .LVU169
+ 590 005c A368     		ldr	r3, [r4, #8]
+ 213:Device/Dev_ICM20602.c **** 
+ 591              		.loc 1 213 5 view .LVU170
+ 592 005e 0A20     		movs	r0, #10
+ 593 0060 9847     		blx	r3
+ 594              	.LVL40:
+ 215:Device/Dev_ICM20602.c ****     if (read_out != 0x01)
+ 595              		.loc 1 215 5 is_stmt 1 view .LVU171
+ 596 0062 0DF10702 		add	r2, sp, #7
+ 597 0066 6B21     		movs	r1, #107
+ 598 0068 2046     		mov	r0, r4
+ 599 006a FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 600              	.LVL41:
+ 216:Device/Dev_ICM20602.c ****     {
+ 601              		.loc 1 216 5 view .LVU172
+ 216:Device/Dev_ICM20602.c ****     {
+ 602              		.loc 1 216 18 is_stmt 0 view .LVU173
+ 603 006e 9DF80760 		ldrb	r6, [sp, #7]	@ zero_extendqisi2
+ 216:Device/Dev_ICM20602.c ****     {
+ 604              		.loc 1 216 8 view .LVU174
+ 605 0072 012E     		cmp	r6, #1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 18
+
+
+ 606 0074 03D0     		beq	.L40
+ 218:Device/Dev_ICM20602.c ****         return false;
+ 607              		.loc 1 218 9 is_stmt 1 view .LVU175
+ 218:Device/Dev_ICM20602.c ****         return false;
+ 608              		.loc 1 218 20 is_stmt 0 view .LVU176
+ 609 0076 0423     		movs	r3, #4
+ 610 0078 2377     		strb	r3, [r4, #28]
+ 219:Device/Dev_ICM20602.c ****     }
+ 611              		.loc 1 219 9 is_stmt 1 view .LVU177
+ 219:Device/Dev_ICM20602.c ****     }
+ 612              		.loc 1 219 16 is_stmt 0 view .LVU178
+ 613 007a 0025     		movs	r5, #0
+ 614 007c D5E7     		b	.L37
+ 615              	.L40:
+ 223:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 616              		.loc 1 223 5 is_stmt 1 view .LVU179
+ 617 007e 0022     		movs	r2, #0
+ 618 0080 6C21     		movs	r1, #108
+ 619 0082 2046     		mov	r0, r4
+ 620 0084 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 621              	.LVL42:
+ 224:Device/Dev_ICM20602.c **** 
+ 622              		.loc 1 224 5 view .LVU180
+ 224:Device/Dev_ICM20602.c **** 
+ 623              		.loc 1 224 8 is_stmt 0 view .LVU181
+ 624 0088 A368     		ldr	r3, [r4, #8]
+ 224:Device/Dev_ICM20602.c **** 
+ 625              		.loc 1 224 5 view .LVU182
+ 626 008a 0A20     		movs	r0, #10
+ 627 008c 9847     		blx	r3
+ 628              	.LVL43:
+ 226:Device/Dev_ICM20602.c ****     if (read_out != 0x00)
+ 629              		.loc 1 226 5 is_stmt 1 view .LVU183
+ 630 008e 0DF10702 		add	r2, sp, #7
+ 631 0092 6C21     		movs	r1, #108
+ 632 0094 2046     		mov	r0, r4
+ 633 0096 FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 634              	.LVL44:
+ 227:Device/Dev_ICM20602.c ****     {
+ 635              		.loc 1 227 5 view .LVU184
+ 227:Device/Dev_ICM20602.c ****     {
+ 636              		.loc 1 227 18 is_stmt 0 view .LVU185
+ 637 009a 9DF80750 		ldrb	r5, [sp, #7]	@ zero_extendqisi2
+ 227:Device/Dev_ICM20602.c ****     {
+ 638              		.loc 1 227 8 view .LVU186
+ 639 009e 1DB1     		cbz	r5, .L41
+ 229:Device/Dev_ICM20602.c ****         return false;
+ 640              		.loc 1 229 9 is_stmt 1 view .LVU187
+ 229:Device/Dev_ICM20602.c ****         return false;
+ 641              		.loc 1 229 20 is_stmt 0 view .LVU188
+ 642 00a0 0523     		movs	r3, #5
+ 643 00a2 2377     		strb	r3, [r4, #28]
+ 230:Device/Dev_ICM20602.c ****     }
+ 644              		.loc 1 230 9 is_stmt 1 view .LVU189
+ 230:Device/Dev_ICM20602.c ****     }
+ 645              		.loc 1 230 16 is_stmt 0 view .LVU190
+ 646 00a4 0025     		movs	r5, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 19
+
+
+ 647 00a6 C0E7     		b	.L37
+ 648              	.L41:
+ 234:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 649              		.loc 1 234 5 is_stmt 1 view .LVU191
+ 650 00a8 4022     		movs	r2, #64
+ 651 00aa 7021     		movs	r1, #112
+ 652 00ac 2046     		mov	r0, r4
+ 653 00ae FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 654              	.LVL45:
+ 235:Device/Dev_ICM20602.c **** 
+ 655              		.loc 1 235 5 view .LVU192
+ 235:Device/Dev_ICM20602.c **** 
+ 656              		.loc 1 235 8 is_stmt 0 view .LVU193
+ 657 00b2 A368     		ldr	r3, [r4, #8]
+ 235:Device/Dev_ICM20602.c **** 
+ 658              		.loc 1 235 5 view .LVU194
+ 659 00b4 0A20     		movs	r0, #10
+ 660 00b6 9847     		blx	r3
+ 661              	.LVL46:
+ 237:Device/Dev_ICM20602.c ****     if (read_out != 0x40)
+ 662              		.loc 1 237 5 is_stmt 1 view .LVU195
+ 663 00b8 0DF10702 		add	r2, sp, #7
+ 664 00bc 7021     		movs	r1, #112
+ 665 00be 2046     		mov	r0, r4
+ 666 00c0 FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 667              	.LVL47:
+ 238:Device/Dev_ICM20602.c ****     {
+ 668              		.loc 1 238 5 view .LVU196
+ 238:Device/Dev_ICM20602.c ****     {
+ 669              		.loc 1 238 18 is_stmt 0 view .LVU197
+ 670 00c4 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 238:Device/Dev_ICM20602.c ****     {
+ 671              		.loc 1 238 8 view .LVU198
+ 672 00c8 402B     		cmp	r3, #64
+ 673 00ca 02D0     		beq	.L42
+ 240:Device/Dev_ICM20602.c ****         return false;
+ 674              		.loc 1 240 9 is_stmt 1 view .LVU199
+ 240:Device/Dev_ICM20602.c ****         return false;
+ 675              		.loc 1 240 20 is_stmt 0 view .LVU200
+ 676 00cc 0623     		movs	r3, #6
+ 677 00ce 2377     		strb	r3, [r4, #28]
+ 241:Device/Dev_ICM20602.c ****     }
+ 678              		.loc 1 241 9 is_stmt 1 view .LVU201
+ 241:Device/Dev_ICM20602.c ****     }
+ 679              		.loc 1 241 16 is_stmt 0 view .LVU202
+ 680 00d0 ABE7     		b	.L37
+ 681              	.L42:
+ 245:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 682              		.loc 1 245 5 is_stmt 1 view .LVU203
+ 683 00d2 627F     		ldrb	r2, [r4, #29]	@ zero_extendqisi2
+ 684 00d4 1921     		movs	r1, #25
+ 685 00d6 2046     		mov	r0, r4
+ 686 00d8 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 687              	.LVL48:
+ 246:Device/Dev_ICM20602.c **** 
+ 688              		.loc 1 246 5 view .LVU204
+ 246:Device/Dev_ICM20602.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 20
+
+
+ 689              		.loc 1 246 8 is_stmt 0 view .LVU205
+ 690 00dc A368     		ldr	r3, [r4, #8]
+ 246:Device/Dev_ICM20602.c **** 
+ 691              		.loc 1 246 5 view .LVU206
+ 692 00de 0A20     		movs	r0, #10
+ 693 00e0 9847     		blx	r3
+ 694              	.LVL49:
+ 248:Device/Dev_ICM20602.c ****     if (read_out != Obj->rate)
+ 695              		.loc 1 248 5 is_stmt 1 view .LVU207
+ 696 00e2 0DF10702 		add	r2, sp, #7
+ 697 00e6 1921     		movs	r1, #25
+ 698 00e8 2046     		mov	r0, r4
+ 699 00ea FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 700              	.LVL50:
+ 249:Device/Dev_ICM20602.c ****     {
+ 701              		.loc 1 249 5 view .LVU208
+ 249:Device/Dev_ICM20602.c ****     {
+ 702              		.loc 1 249 24 is_stmt 0 view .LVU209
+ 703 00ee 627F     		ldrb	r2, [r4, #29]	@ zero_extendqisi2
+ 249:Device/Dev_ICM20602.c ****     {
+ 704              		.loc 1 249 18 view .LVU210
+ 705 00f0 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 249:Device/Dev_ICM20602.c ****     {
+ 706              		.loc 1 249 8 view .LVU211
+ 707 00f4 9A42     		cmp	r2, r3
+ 708 00f6 02D0     		beq	.L43
+ 251:Device/Dev_ICM20602.c ****         return false;
+ 709              		.loc 1 251 9 is_stmt 1 view .LVU212
+ 251:Device/Dev_ICM20602.c ****         return false;
+ 710              		.loc 1 251 20 is_stmt 0 view .LVU213
+ 711 00f8 0923     		movs	r3, #9
+ 712 00fa 2377     		strb	r3, [r4, #28]
+ 252:Device/Dev_ICM20602.c ****     }
+ 713              		.loc 1 252 9 is_stmt 1 view .LVU214
+ 252:Device/Dev_ICM20602.c ****     }
+ 714              		.loc 1 252 16 is_stmt 0 view .LVU215
+ 715 00fc 95E7     		b	.L37
+ 716              	.L43:
+ 256:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 717              		.loc 1 256 5 is_stmt 1 view .LVU216
+ 718 00fe A27C     		ldrb	r2, [r4, #18]	@ zero_extendqisi2
+ 719 0100 1C21     		movs	r1, #28
+ 720 0102 2046     		mov	r0, r4
+ 721 0104 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 722              	.LVL51:
+ 257:Device/Dev_ICM20602.c **** 
+ 723              		.loc 1 257 5 view .LVU217
+ 257:Device/Dev_ICM20602.c **** 
+ 724              		.loc 1 257 8 is_stmt 0 view .LVU218
+ 725 0108 A368     		ldr	r3, [r4, #8]
+ 257:Device/Dev_ICM20602.c **** 
+ 726              		.loc 1 257 5 view .LVU219
+ 727 010a 0A20     		movs	r0, #10
+ 728 010c 9847     		blx	r3
+ 729              	.LVL52:
+ 259:Device/Dev_ICM20602.c ****     if (read_out != Obj->AccTrip)
+ 730              		.loc 1 259 5 is_stmt 1 view .LVU220
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 21
+
+
+ 731 010e 0DF10702 		add	r2, sp, #7
+ 732 0112 1C21     		movs	r1, #28
+ 733 0114 2046     		mov	r0, r4
+ 734 0116 FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 735              	.LVL53:
+ 260:Device/Dev_ICM20602.c ****     {
+ 736              		.loc 1 260 5 view .LVU221
+ 260:Device/Dev_ICM20602.c ****     {
+ 737              		.loc 1 260 24 is_stmt 0 view .LVU222
+ 738 011a A27C     		ldrb	r2, [r4, #18]	@ zero_extendqisi2
+ 260:Device/Dev_ICM20602.c ****     {
+ 739              		.loc 1 260 18 view .LVU223
+ 740 011c 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 260:Device/Dev_ICM20602.c ****     {
+ 741              		.loc 1 260 8 view .LVU224
+ 742 0120 9A42     		cmp	r2, r3
+ 743 0122 02D0     		beq	.L44
+ 262:Device/Dev_ICM20602.c ****         return false;
+ 744              		.loc 1 262 9 is_stmt 1 view .LVU225
+ 262:Device/Dev_ICM20602.c ****         return false;
+ 745              		.loc 1 262 20 is_stmt 0 view .LVU226
+ 746 0124 0723     		movs	r3, #7
+ 747 0126 2377     		strb	r3, [r4, #28]
+ 263:Device/Dev_ICM20602.c ****     }
+ 748              		.loc 1 263 9 is_stmt 1 view .LVU227
+ 263:Device/Dev_ICM20602.c ****     }
+ 749              		.loc 1 263 16 is_stmt 0 view .LVU228
+ 750 0128 7FE7     		b	.L37
+ 751              	.L44:
+ 267:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 752              		.loc 1 267 5 is_stmt 1 view .LVU229
+ 753 012a E27C     		ldrb	r2, [r4, #19]	@ zero_extendqisi2
+ 754 012c 1B21     		movs	r1, #27
+ 755 012e 2046     		mov	r0, r4
+ 756 0130 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 757              	.LVL54:
+ 268:Device/Dev_ICM20602.c **** 
+ 758              		.loc 1 268 5 view .LVU230
+ 268:Device/Dev_ICM20602.c **** 
+ 759              		.loc 1 268 8 is_stmt 0 view .LVU231
+ 760 0134 A368     		ldr	r3, [r4, #8]
+ 268:Device/Dev_ICM20602.c **** 
+ 761              		.loc 1 268 5 view .LVU232
+ 762 0136 0A20     		movs	r0, #10
+ 763 0138 9847     		blx	r3
+ 764              	.LVL55:
+ 270:Device/Dev_ICM20602.c ****     if (read_out != Obj->GyrTrip)
+ 765              		.loc 1 270 5 is_stmt 1 view .LVU233
+ 766 013a 0DF10702 		add	r2, sp, #7
+ 767 013e 1B21     		movs	r1, #27
+ 768 0140 2046     		mov	r0, r4
+ 769 0142 FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 770              	.LVL56:
+ 271:Device/Dev_ICM20602.c ****     {
+ 771              		.loc 1 271 5 view .LVU234
+ 271:Device/Dev_ICM20602.c ****     {
+ 772              		.loc 1 271 24 is_stmt 0 view .LVU235
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 22
+
+
+ 773 0146 E27C     		ldrb	r2, [r4, #19]	@ zero_extendqisi2
+ 271:Device/Dev_ICM20602.c ****     {
+ 774              		.loc 1 271 18 view .LVU236
+ 775 0148 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 271:Device/Dev_ICM20602.c ****     {
+ 776              		.loc 1 271 8 view .LVU237
+ 777 014c 9A42     		cmp	r2, r3
+ 778 014e 02D0     		beq	.L45
+ 273:Device/Dev_ICM20602.c ****         return false;
+ 779              		.loc 1 273 9 is_stmt 1 view .LVU238
+ 273:Device/Dev_ICM20602.c ****         return false;
+ 780              		.loc 1 273 20 is_stmt 0 view .LVU239
+ 781 0150 0823     		movs	r3, #8
+ 782 0152 2377     		strb	r3, [r4, #28]
+ 274:Device/Dev_ICM20602.c ****     }
+ 783              		.loc 1 274 9 is_stmt 1 view .LVU240
+ 274:Device/Dev_ICM20602.c ****     }
+ 784              		.loc 1 274 16 is_stmt 0 view .LVU241
+ 785 0154 69E7     		b	.L37
+ 786              	.L45:
+ 278:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 787              		.loc 1 278 5 is_stmt 1 view .LVU242
+ 788 0156 6022     		movs	r2, #96
+ 789 0158 3721     		movs	r1, #55
+ 790 015a 2046     		mov	r0, r4
+ 791 015c FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 792              	.LVL57:
+ 279:Device/Dev_ICM20602.c **** 
+ 793              		.loc 1 279 5 view .LVU243
+ 279:Device/Dev_ICM20602.c **** 
+ 794              		.loc 1 279 8 is_stmt 0 view .LVU244
+ 795 0160 A368     		ldr	r3, [r4, #8]
+ 279:Device/Dev_ICM20602.c **** 
+ 796              		.loc 1 279 5 view .LVU245
+ 797 0162 0A20     		movs	r0, #10
+ 798 0164 9847     		blx	r3
+ 799              	.LVL58:
+ 281:Device/Dev_ICM20602.c ****     if (read_out != 0x60)
+ 800              		.loc 1 281 5 is_stmt 1 view .LVU246
+ 801 0166 0DF10702 		add	r2, sp, #7
+ 802 016a 3721     		movs	r1, #55
+ 803 016c 2046     		mov	r0, r4
+ 804 016e FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 805              	.LVL59:
+ 282:Device/Dev_ICM20602.c ****     {
+ 806              		.loc 1 282 5 view .LVU247
+ 282:Device/Dev_ICM20602.c ****     {
+ 807              		.loc 1 282 18 is_stmt 0 view .LVU248
+ 808 0172 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 282:Device/Dev_ICM20602.c ****     {
+ 809              		.loc 1 282 8 view .LVU249
+ 810 0176 602B     		cmp	r3, #96
+ 811 0178 02D0     		beq	.L46
+ 284:Device/Dev_ICM20602.c ****         return false;
+ 812              		.loc 1 284 9 is_stmt 1 view .LVU250
+ 284:Device/Dev_ICM20602.c ****         return false;
+ 813              		.loc 1 284 20 is_stmt 0 view .LVU251
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 23
+
+
+ 814 017a 0823     		movs	r3, #8
+ 815 017c 2377     		strb	r3, [r4, #28]
+ 285:Device/Dev_ICM20602.c ****     }
+ 816              		.loc 1 285 9 is_stmt 1 view .LVU252
+ 285:Device/Dev_ICM20602.c ****     }
+ 817              		.loc 1 285 16 is_stmt 0 view .LVU253
+ 818 017e 54E7     		b	.L37
+ 819              	.L46:
+ 288:Device/Dev_ICM20602.c **** }
+ 820              		.loc 1 288 12 view .LVU254
+ 821 0180 3546     		mov	r5, r6
+ 822 0182 52E7     		b	.L37
+ 823              		.cfi_endproc
+ 824              	.LFE5:
+ 826              		.section	.text.DevICM20602_GetReady,"ax",%progbits
+ 827              		.align	1
+ 828              		.syntax unified
+ 829              		.thumb
+ 830              		.thumb_func
+ 832              	DevICM20602_GetReady:
+ 833              	.LVL60:
+ 834              	.LFB8:
+ 315:Device/Dev_ICM20602.c **** 
+ 316:Device/Dev_ICM20602.c **** static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj)
+ 317:Device/Dev_ICM20602.c **** {
+ 835              		.loc 1 317 1 is_stmt 1 view -0
+ 836              		.cfi_startproc
+ 837              		@ args = 0, pretend = 0, frame = 0
+ 838              		@ frame_needed = 0, uses_anonymous_args = 0
+ 839              		@ link register save eliminated.
+ 318:Device/Dev_ICM20602.c ****     return Obj->drdy;
+ 840              		.loc 1 318 5 view .LVU256
+ 319:Device/Dev_ICM20602.c **** }
+ 841              		.loc 1 319 1 is_stmt 0 view .LVU257
+ 842 0000 007C     		ldrb	r0, [r0, #16]	@ zero_extendqisi2
+ 843              	.LVL61:
+ 844              		.loc 1 319 1 view .LVU258
+ 845 0002 7047     		bx	lr
+ 846              		.cfi_endproc
+ 847              	.LFE8:
+ 849              		.section	.text.DevICM20602_Sample,"ax",%progbits
+ 850              		.align	1
+ 851              		.syntax unified
+ 852              		.thumb
+ 853              		.thumb_func
+ 855              	DevICM20602_Sample:
+ 856              	.LVL62:
+ 857              	.LFB9:
+ 320:Device/Dev_ICM20602.c **** 
+ 321:Device/Dev_ICM20602.c **** static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj)
+ 322:Device/Dev_ICM20602.c **** {
+ 858              		.loc 1 322 1 is_stmt 1 view -0
+ 859              		.cfi_startproc
+ 860              		@ args = 0, pretend = 0, frame = 0
+ 861              		@ frame_needed = 0, uses_anonymous_args = 0
+ 862              		@ link register save eliminated.
+ 323:Device/Dev_ICM20602.c ****     if (Obj == NULL)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 24
+
+
+ 863              		.loc 1 323 5 view .LVU260
+ 864              		.loc 1 323 8 is_stmt 0 view .LVU261
+ 865 0000 08B1     		cbz	r0, .L51
+ 324:Device/Dev_ICM20602.c ****         return false;
+ 325:Device/Dev_ICM20602.c **** 
+ 326:Device/Dev_ICM20602.c ****     return true;
+ 866              		.loc 1 326 12 view .LVU262
+ 867 0002 0120     		movs	r0, #1
+ 868              	.LVL63:
+ 869              		.loc 1 326 12 view .LVU263
+ 870 0004 7047     		bx	lr
+ 871              	.LVL64:
+ 872              	.L51:
+ 324:Device/Dev_ICM20602.c ****         return false;
+ 873              		.loc 1 324 16 view .LVU264
+ 874 0006 0020     		movs	r0, #0
+ 875              	.LVL65:
+ 327:Device/Dev_ICM20602.c **** }
+ 876              		.loc 1 327 1 view .LVU265
+ 877 0008 7047     		bx	lr
+ 878              		.cfi_endproc
+ 879              	.LFE9:
+ 881              		.section	.text.DevICM20602_Get_Data,"ax",%progbits
+ 882              		.align	1
+ 883              		.syntax unified
+ 884              		.thumb
+ 885              		.thumb_func
+ 887              	DevICM20602_Get_Data:
+ 888              	.LVL66:
+ 889              	.LFB10:
+ 328:Device/Dev_ICM20602.c **** 
+ 329:Device/Dev_ICM20602.c **** static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj)
+ 330:Device/Dev_ICM20602.c **** {
+ 890              		.loc 1 330 1 is_stmt 1 view -0
+ 891              		.cfi_startproc
+ 892              		@ args = 0, pretend = 0, frame = 0
+ 893              		@ frame_needed = 0, uses_anonymous_args = 0
+ 894              		.loc 1 330 1 is_stmt 0 view .LVU267
+ 895 0000 70B5     		push	{r4, r5, r6, lr}
+ 896              	.LCFI14:
+ 897              		.cfi_def_cfa_offset 16
+ 898              		.cfi_offset 4, -16
+ 899              		.cfi_offset 5, -12
+ 900              		.cfi_offset 6, -8
+ 901              		.cfi_offset 14, -4
+ 902 0002 0546     		mov	r5, r0
+ 331:Device/Dev_ICM20602.c ****     if ((Obj->error == ICM20602_No_Error) && !Obj->update)
+ 903              		.loc 1 331 5 is_stmt 1 view .LVU268
+ 904              		.loc 1 331 13 is_stmt 0 view .LVU269
+ 905 0004 0B7F     		ldrb	r3, [r1, #28]	@ zero_extendqisi2
+ 906              		.loc 1 331 8 view .LVU270
+ 907 0006 DBB9     		cbnz	r3, .L53
+ 908              		.loc 1 331 50 discriminator 1 view .LVU271
+ 909 0008 4B7C     		ldrb	r3, [r1, #17]	@ zero_extendqisi2
+ 910              		.loc 1 331 43 discriminator 1 view .LVU272
+ 911 000a CBB9     		cbnz	r3, .L53
+ 332:Device/Dev_ICM20602.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 25
+
+
+ 333:Device/Dev_ICM20602.c ****         Obj->drdy = false;
+ 912              		.loc 1 333 9 is_stmt 1 view .LVU273
+ 913              		.loc 1 333 19 is_stmt 0 view .LVU274
+ 914 000c 0B74     		strb	r3, [r1, #16]
+ 334:Device/Dev_ICM20602.c ****         return Obj->OriData;
+ 915              		.loc 1 334 9 is_stmt 1 view .LVU275
+ 916              		.loc 1 334 19 is_stmt 0 view .LVU276
+ 917 000e 01F11E03 		add	r3, r1, #30
+ 918 0012 0246     		mov	r2, r0
+ 919 0014 4E31     		adds	r1, r1, #78
+ 920              	.LVL67:
+ 921              	.L54:
+ 922              		.loc 1 334 19 view .LVU277
+ 923 0016 D3F800C0 		ldr	ip, [r3]	@ unaligned
+ 924 001a 5E68     		ldr	r6, [r3, #4]	@ unaligned
+ 925 001c 9C68     		ldr	r4, [r3, #8]	@ unaligned
+ 926 001e D868     		ldr	r0, [r3, #12]	@ unaligned
+ 927 0020 C2F800C0 		str	ip, [r2]	@ unaligned
+ 928 0024 5660     		str	r6, [r2, #4]	@ unaligned
+ 929 0026 9460     		str	r4, [r2, #8]	@ unaligned
+ 930 0028 D060     		str	r0, [r2, #12]	@ unaligned
+ 931 002a 1033     		adds	r3, r3, #16
+ 932 002c 1032     		adds	r2, r2, #16
+ 933 002e 8B42     		cmp	r3, r1
+ 934 0030 F1D1     		bne	.L54
+ 935 0032 1868     		ldr	r0, [r3]	@ unaligned
+ 936 0034 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 937              	.LVL68:
+ 938              		.loc 1 334 19 view .LVU278
+ 939 0036 1060     		str	r0, [r2]	@ unaligned
+ 940 0038 5160     		str	r1, [r2, #4]	@ unaligned
+ 941 003a 1B89     		ldrh	r3, [r3, #8]	@ unaligned
+ 942 003c 1381     		strh	r3, [r2, #8]	@ unaligned
+ 943 003e 15E0     		b	.L52
+ 944              	.LVL69:
+ 945              	.L53:
+ 335:Device/Dev_ICM20602.c ****     }
+ 336:Device/Dev_ICM20602.c ****     else
+ 337:Device/Dev_ICM20602.c ****         return Obj->OriData_Lst;
+ 946              		.loc 1 337 9 is_stmt 1 view .LVU279
+ 947              		.loc 1 337 19 is_stmt 0 view .LVU280
+ 948 0040 01F1580E 		add	lr, r1, #88
+ 949 0044 2C46     		mov	r4, r5
+ 950 0046 01F1880C 		add	ip, r1, #136
+ 951              	.LVL70:
+ 952              	.L56:
+ 953              		.loc 1 337 19 view .LVU281
+ 954 004a 7646     		mov	r6, lr
+ 955 004c 0FCE     		ldmia	r6!, {r0, r1, r2, r3}
+ 956 004e 2060     		str	r0, [r4]	@ unaligned
+ 957 0050 6160     		str	r1, [r4, #4]	@ unaligned
+ 958 0052 A260     		str	r2, [r4, #8]	@ unaligned
+ 959 0054 E360     		str	r3, [r4, #12]	@ unaligned
+ 960 0056 B646     		mov	lr, r6
+ 961 0058 1034     		adds	r4, r4, #16
+ 962 005a 6645     		cmp	r6, ip
+ 963 005c F5D1     		bne	.L56
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 26
+
+
+ 964 005e BEE80300 		ldmia	lr!, {r0, r1}
+ 965 0062 2060     		str	r0, [r4]	@ unaligned
+ 966 0064 6160     		str	r1, [r4, #4]	@ unaligned
+ 967 0066 BEF80030 		ldrh	r3, [lr]	@ unaligned
+ 968 006a 2381     		strh	r3, [r4, #8]	@ unaligned
+ 969              	.LVL71:
+ 970              	.L52:
+ 338:Device/Dev_ICM20602.c **** }
+ 971              		.loc 1 338 1 view .LVU282
+ 972 006c 2846     		mov	r0, r5
+ 973 006e 70BD     		pop	{r4, r5, r6, pc}
+ 974              		.loc 1 338 1 view .LVU283
+ 975              		.cfi_endproc
+ 976              	.LFE10:
+ 978              		.section	.text.DevICM20602_Get_InitError,"ax",%progbits
+ 979              		.align	1
+ 980              		.syntax unified
+ 981              		.thumb
+ 982              		.thumb_func
+ 984              	DevICM20602_Get_InitError:
+ 985              	.LVL72:
+ 986              	.LFB11:
+ 339:Device/Dev_ICM20602.c **** 
+ 340:Device/Dev_ICM20602.c **** static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj)
+ 341:Device/Dev_ICM20602.c **** {
+ 987              		.loc 1 341 1 is_stmt 1 view -0
+ 988              		.cfi_startproc
+ 989              		@ args = 0, pretend = 0, frame = 0
+ 990              		@ frame_needed = 0, uses_anonymous_args = 0
+ 991              		@ link register save eliminated.
+ 342:Device/Dev_ICM20602.c ****     return Obj->error;
+ 992              		.loc 1 342 5 view .LVU285
+ 343:Device/Dev_ICM20602.c **** }
+ 993              		.loc 1 343 1 is_stmt 0 view .LVU286
+ 994 0000 007F     		ldrb	r0, [r0, #28]	@ zero_extendqisi2
+ 995              	.LVL73:
+ 996              		.loc 1 343 1 view .LVU287
+ 997 0002 7047     		bx	lr
+ 998              		.cfi_endproc
+ 999              	.LFE11:
+ 1001              		.global	DevICM20602
+ 1002              		.section	.data.DevICM20602,"aw"
+ 1003              		.align	2
+ 1006              	DevICM20602:
+ 1007 0000 00000000 		.word	DevICM20602_Config
+ 1008 0004 00000000 		.word	DevICM20602_PreInit
+ 1009 0008 00000000 		.word	DevICM20602_Init
+ 1010 000c 00000000 		.word	DevICM20602_SetDRDY
+ 1011 0010 00000000 		.word	DevICM20602_GetReady
+ 1012 0014 00000000 		.word	DevICM20602_SwReset
+ 1013 0018 00000000 		.word	DevICM20602_Sample
+ 1014 001c 00000000 		.word	DevICM20602_Get_Data
+ 1015 0020 00000000 		.word	DevICM20602_Get_InitError
+ 1016              		.text
+ 1017              	.Letext0:
+ 1018              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1019              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 27
+
+
+ 1020              		.file 4 "Service/imu_data.h"
+ 1021              		.file 5 "Device/Dev_ICM20602.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_ICM20602.c
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:19     .text.DevICM20602_Reg_Read:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:24     .text.DevICM20602_Reg_Read:00000000 DevICM20602_Reg_Read
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:132    .text.DevICM20602_Reg_Write:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:137    .text.DevICM20602_Reg_Write:00000000 DevICM20602_Reg_Write
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:236    .text.DevICM20602_Config:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:241    .text.DevICM20602_Config:00000000 DevICM20602_Config
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:272    .text.DevICM20602_Config:00000024 $d
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:276    .text.DevICM20602_Config:00000028 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:289    .text.DevICM20602_Config:00000036 $d
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:293    .text.DevICM20602_Config:0000003a $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:364    .text.DevICM20602_Config:00000074 $d
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:372    .text.DevICM20602_PreInit:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:377    .text.DevICM20602_PreInit:00000000 DevICM20602_PreInit
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:406    .text.DevICM20602_SetDRDY:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:411    .text.DevICM20602_SetDRDY:00000000 DevICM20602_SetDRDY
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:429    .text.DevICM20602_SwReset:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:434    .text.DevICM20602_SwReset:00000000 DevICM20602_SwReset
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:478    .text.DevICM20602_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:483    .text.DevICM20602_Init:00000000 DevICM20602_Init
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:827    .text.DevICM20602_GetReady:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:832    .text.DevICM20602_GetReady:00000000 DevICM20602_GetReady
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:850    .text.DevICM20602_Sample:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:855    .text.DevICM20602_Sample:00000000 DevICM20602_Sample
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:882    .text.DevICM20602_Get_Data:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:887    .text.DevICM20602_Get_Data:00000000 DevICM20602_Get_Data
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:979    .text.DevICM20602_Get_InitError:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:984    .text.DevICM20602_Get_InitError:00000000 DevICM20602_Get_InitError
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:1006   .data.DevICM20602:00000000 DevICM20602
+C:\Users\HUAV\AppData\Local\Temp\ccdzpwBs.s:1003   .data.DevICM20602:00000000 $d
+
+NO UNDEFINED SYMBOLS
