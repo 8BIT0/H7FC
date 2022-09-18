@@ -25,6 +25,9 @@ static Disk_Printf_Callback Disk_PrintOut = NULL;
 static Error_Handler DevCard_Error_Handle = NULL;
 static Disk_Info_TypeDef Disk_Info;
 
+/* eExternal Function */
+static bool Disk_Init(Disk_Printf_Callback Callback);
+
 /* Internal Function */
 static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void Disk_Printf(char *str, ...);
@@ -108,27 +111,20 @@ static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
 static Disk_FATFileSys_TypeDef FATFs_Obj;
 static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] = {0};
 static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] = {0};
-/* test code */
-// Disk_FileObj_TypeDef test1_file;
-/* test code */
+
 #endif
+
+DiskFS_TypeDef Disk = {
+    .init = Disk_Init,
+    .create_folder =,
+    .create_file =,
+    .open_folde =,
+    .open_file =,
+    .write =,
+};
 
 /******************************************************************************* Error Proc Object **************************************************************************/
 static Error_Obj_Typedef DevCard_ErrorList[] = {
-#if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
-    {
-        .out = true,
-        .log = false,
-        .prc_callback = NULL,
-        .code = DevCard_Internal_Module_Init_Error,
-        .desc = "internal Storage Init Error\r\n",
-        .proc_type = Error_Proc_Immd,
-        .prc_data_stream = {
-            .p_data = NULL,
-            .size = 0,
-        },
-    },
-#endif
     {
         .out = true,
         .log = false,
@@ -209,26 +205,12 @@ static bool ExtDisk_Init(void)
     return init_state;
 }
 
-#if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
-bool IntDisk_Init(void)
-{
-    bool init_state = false;
-
-    return init_state;
-}
-#endif
-
-bool Disk_Init(Disk_Printf_Callback Callback)
+static bool Disk_Init(Disk_Printf_Callback Callback)
 {
     memset(&Disk_Info, NULL, sizeof(Disk_Info));
 
     /* set printf callback */
     Disk_PrintOut = Callback;
-
-#if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
-    if (!IntDisk_Init())
-        return false;
-#endif
 
 #if ((STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD) || (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH))
     /* create error log handle */
@@ -1675,11 +1657,6 @@ static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *di
 
 #endif
 /******************************************************************************* Error Proc Function **************************************************************************/
-#if (STORAGE_MODULE & INTERNAL_INTERFACE_TYPE)
-static void Disk_Internal_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
-{
-}
-#endif
 
 static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {

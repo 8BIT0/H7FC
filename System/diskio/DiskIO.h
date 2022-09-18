@@ -305,7 +305,6 @@ typedef struct
 typedef struct
 {
     bool (*init)(Disk_Printf_Callback Callback);
-    uint8_t (*disk_type)(void);
     bool (*create_folder)(const char *name);
     bool (*create_file)(const char *name);
     uint32_t (*open_folder)(const char *path);
@@ -313,6 +312,5 @@ typedef struct
     bool (*write)(void *p_file, uint8_t *p_data, uint16_t size);
 } DiskFS_TypeDef;
 
-bool Disk_Init(Disk_Printf_Callback Callback);
-
+extern DiskFS_TypeDef Disk;
 #endif
