@@ -87,7 +87,11 @@
                 "shell.h": "c",
                 "shell_cfg.h": "c",
                 "data_convert_util.h": "c",
-                "task_log.h": "c"
+                "task_log.h": "c",
+                "datapool.h": "c",
+                "fstream": "c",
+                "locale": "c",
+                "sstream": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

@@ -7,8 +7,9 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include "scheduler.h"
 
 void TaskLog_Init(void);
-void TaskLog_Core(void);
+void TaskLog_Core(Task_Handle hdl);
 
 #endif

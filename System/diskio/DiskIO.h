@@ -304,12 +304,11 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(Disk_Printf_Callback Callback);
-    bool (*create_folder)(const char *name);
-    bool (*create_file)(const char *name);
-    uint32_t (*open_folder)(const char *path);
-    bool (*open_file)(const char *file_name, void *p_file);
-    bool (*write)(void *p_file, uint8_t *p_data, uint16_t size);
+    bool (*init)(Disk_FATFileSys_TypeDef *FATObj, Disk_Printf_Callback Callback);
+    uint32_t (*create_folder)(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
+    Disk_FileObj_TypeDef (*create_file)(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster);
+    uint32_t (*open)(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
+    bool (*write)(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
 } DiskFS_TypeDef;
 
 extern DiskFS_TypeDef Disk;

@@ -26,7 +26,7 @@ static Error_Handler DevCard_Error_Handle = NULL;
 static Disk_Info_TypeDef Disk_Info;
 
 /* eExternal Function */
-static bool Disk_Init(Disk_Printf_Callback Callback);
+static bool Disk_Init(Disk_FATFileSys_TypeDef *FATObj, Disk_Printf_Callback Callback);
 
 /* Internal Function */
 static void Disk_ExtModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
@@ -108,7 +108,6 @@ static DevCard_Obj_TypeDef DevTFCard_Obj = {
 };
 
 static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
-static Disk_FATFileSys_TypeDef FATFs_Obj;
 static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] = {0};
 static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] = {0};
 
@@ -116,11 +115,10 @@ static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] = {0};
 
 DiskFS_TypeDef Disk = {
     .init = Disk_Init,
-    .create_folder =,
-    .create_file =,
-    .open_folde =,
-    .open_file =,
-    .write =,
+    .create_folder = Disk_Create_Folder,
+    .create_file = Disk_Create_File,
+    .open = Disk_Open,
+    .write = Disk_WriteData_ToFile,
 };
 
 /******************************************************************************* Error Proc Object **************************************************************************/
@@ -163,7 +161,7 @@ static Error_Obj_Typedef DevCard_ErrorList[] = {
     },
 };
 
-static bool ExtDisk_Init(void)
+static bool ExtDisk_Init(Disk_FATFileSys_TypeDef *FATObj)
 {
     bool init_state = true;
 
@@ -181,7 +179,7 @@ static bool ExtDisk_Init(void)
 #endif
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
-    memset(&FATFs_Obj, NULL, sizeof(FATFs_Obj));
+    memset(FATObj, NULL, sizeof(FATObj));
 
     DevTFCard_Obj.SDMMC_Obj.pin = &SDMMC_Pin;
 
@@ -205,7 +203,7 @@ static bool ExtDisk_Init(void)
     return init_state;
 }
 
-static bool Disk_Init(Disk_Printf_Callback Callback)
+static bool Disk_Init(Disk_FATFileSys_TypeDef *FATObj, Disk_Printf_Callback Callback)
 {
     memset(&Disk_Info, NULL, sizeof(Disk_Info));
 
@@ -218,7 +216,7 @@ static bool Disk_Init(Disk_Printf_Callback Callback)
     /* regist all error to the error tree */
     ErrorLog.registe(DevCard_Error_Handle, DevCard_ErrorList, sizeof(DevCard_ErrorList) / sizeof(DevCard_ErrorList[0]));
 
-    if (!ExtDisk_Init())
+    if (!ExtDisk_Init(FATObj))
         return false;
 #endif
 
@@ -237,10 +235,10 @@ static bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_Printf("\r\n");
 
     /* Parse MBR Section Info */
-    Disk_ParseMBR(&FATFs_Obj);
-    Disk_ParseDBR(&FATFs_Obj);
-    Disk_ParseFSINFO(&FATFs_Obj);
-    Disk_Search_FreeCluster(&FATFs_Obj);
+    Disk_ParseMBR(FATObj);
+    Disk_ParseDBR(FATObj);
+    Disk_ParseFSINFO(FATObj);
+    Disk_Search_FreeCluster(FATObj);
 
     /* test code */
     // volatile FATCluster_Addr test_folder1_cluster;
