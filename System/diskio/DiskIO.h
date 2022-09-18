@@ -7,6 +7,8 @@
 #include "system_cfg.h"
 #include "Dev_Card.h"
 
+#define ROOT_CLUSTER_ADDR 2
+
 #define DISK_CARD_BUFF_MAX_SIZE 1024
 #define DISK_CARD_SECTION_SZIE 512
 #define DISK_CARD_MBR_TERMINATION_BYTE_1_OFFSET 510
@@ -124,7 +126,8 @@ typedef enum
 } DiskFATCluster_State_List;
 
 #pragma pack(1)
-typedef union {
+typedef union
+{
     struct
     {
         uint8_t internal_module_EN : 1;
@@ -138,7 +141,8 @@ typedef union {
     uint8_t val;
 } StorageModule_TypeDef;
 
-typedef union {
+typedef union
+{
     struct
     {
         uint8_t internal_module_error_code : 8;
@@ -301,10 +305,14 @@ typedef struct
 typedef struct
 {
     bool (*init)(Disk_Printf_Callback Callback);
+    uint8_t (*disk_type)(void);
+    bool (*create_folder)(const char *name);
+    bool (*create_file)(const char *name);
+    uint32_t (*open_folder)(const char *path);
+    bool (*open_file)(const char *file_name, void *p_file);
+    bool (*write)(void *p_file, uint8_t *p_data, uint16_t size);
 } DiskFS_TypeDef;
 
 bool Disk_Init(Disk_Printf_Callback Callback);
-/* test code */
-void FileWrite_Test(void);
-/* test code */
+
 #endif

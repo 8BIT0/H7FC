@@ -16,8 +16,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#define ROOT_CLUSTER_ADDR 2
-
 #define GEN_TIME(h, m, s) ((((uint16_t)h) << 11) + (((uint16_t)m) << 5) + (((uint16_t)s) >> 1))
 #define GEN_DATE(y, m, d) (((((uint16_t)(y % 100)) + 20) << 9) + (((uint16_t)m) << 5) + ((uint16_t)d))
 
@@ -111,7 +109,7 @@ static Disk_FATFileSys_TypeDef FATFs_Obj;
 static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] = {0};
 static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] = {0};
 /* test code */
-Disk_FileObj_TypeDef test1_file;
+// Disk_FileObj_TypeDef test1_file;
 /* test code */
 #endif
 
@@ -263,20 +261,15 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     Disk_Search_FreeCluster(&FATFs_Obj);
 
     /* test code */
-    volatile FATCluster_Addr test_folder1_cluster;
-    volatile FATCluster_Addr test_folder2_cluster;
-    volatile FATCluster_Addr test_folder3_cluster;
-    volatile FATCluster_Addr test_folder4_cluster;
-    volatile FATCluster_Addr test5_file_cluster;
+    // volatile FATCluster_Addr test_folder1_cluster;
 
-    memset(&test1_file, NULL, sizeof(test1_file));
+    // memset(&test1_file, NULL, sizeof(test1_file));
+    // test_folder1_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/", ROOT_CLUSTER_ADDR);
+    // // test_folder2_cluster = Disk_Create_Folder(&FATFs_Obj, "test5/", ROOT_CLUSTER_ADDR);
+    // // test_folder3_cluster = Disk_Create_Folder(&FATFs_Obj, "test6/", ROOT_CLUSTER_ADDR);
 
-    test_folder1_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/", ROOT_CLUSTER_ADDR);
-    // test_folder2_cluster = Disk_Create_Folder(&FATFs_Obj, "test5/", ROOT_CLUSTER_ADDR);
-    // test_folder3_cluster = Disk_Create_Folder(&FATFs_Obj, "test6/", ROOT_CLUSTER_ADDR);
-
-    test1_file = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
-    Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
+    // test1_file = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
+    // Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
 
     // for (uint16_t i = 0; i < 1024; i++)
     // {
@@ -289,11 +282,6 @@ bool Disk_Init(Disk_Printf_Callback Callback)
     /* test code */
 #endif
     return true;
-}
-
-void FileWrite_Test(void)
-{
-    Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
 }
 
 /************************************************************************** Disk File Alloc Table Function ***************************************************************************/
@@ -1543,6 +1531,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
     return true;
 }
 
+/* need measure the cast of operation down below */
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
     uint32_t cluster_cnt = 0;

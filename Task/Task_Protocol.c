@@ -10,16 +10,12 @@
 #include "usbd_cdc_if.h"
 #include "debug_util.h"
 #include <stdio.h>
-#include "Dev_MPU6000.h"
 #include "queue.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
 #include "Bsp_GPIO.h"
 #include "error_log.h"
 #include "mmu.h"
-/* test code */
-#include "DiskIO.h"
-/* test code */
 
 static bool test = false;
 
@@ -115,11 +111,6 @@ void TaskProtocol_Core(Task_Handle hdl)
     uint8_t *p_buf = NULL;
     uint16_t p_buf_size = 0;
 
-    /* test code */
-    static bool led_state = false;
-    static uint8_t cnt = 0;
-    /* test code */
-
     DebugPin.ctl(Debug_PC3, true);
 
     switch ((uint8_t)task_state)
@@ -143,21 +134,6 @@ void TaskProtocol_Core(Task_Handle hdl)
                 MMU_Free(p_buf);
             }
         }
-
-        /* test code */
-        if (cnt < 5)
-        {
-            cnt++;
-        }
-        else
-        {
-            cnt = 0;
-            led_state = !led_state;
-
-            DevLED.ctl(Led2, led_state);
-            FileWrite_Test();
-        }
-        /* test code */
 
         break;
 

@@ -41,6 +41,7 @@ debug/debug_util.c \
 Task/Task_Protocol.c \
 Task/Task_Manager.c \
 Task/Task_SensorInertial.c \
+Task/Task_Log.c \
 IO_Def/IO_Definition.c \
 Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \
@@ -51,6 +52,7 @@ Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 Device/Dev_Card.c \
 Service/SrvMPU_Sample.c \
+Global_DataPool/DataPool.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
@@ -169,6 +171,7 @@ C_INCLUDES =  \
 -ISystem/shell \
 -ISystem/diskio \
 -Idebug/ \
+-IGlobal_DataPool \
 -IDataStructure/ \
 -ISystem/runtime/ \
 -ISystem/scheduler/ \

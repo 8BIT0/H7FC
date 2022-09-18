@@ -1,4 +1,5 @@
 #include "Task_Manager.h"
+#include "Task_Log.h"
 #include "Task_Protocol.h"
 #include "Task_SensorInertial.h"
 #include "scheduler.h"
@@ -10,6 +11,7 @@
 
 Task_Handle TaskProtocol_Handle = NULL;
 Task_Handle TaskInertial_Handle = NULL;
+Task_Handle TaskLog_Handle = NULL;
 Task_Handle Test_Task = NULL;
 Task_Handle Test2_Task = NULL;
 
@@ -49,16 +51,18 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PB6);
     DebugPin.init(Debug_PB10);
 
+    /* init module first then init task */
+    Disk_Init(TaskProto_PushProtocolQueue);
+
     TaskProtocol_Init();
     TaskInertial_Init();
-
-    Disk_Init(TaskProto_PushProtocolQueue);
 }
 
 void Task_Manager_CreateTask(void)
 {
     TaskInertial_Handle = Os_CreateTask("Inertial Sample", TASK_EXEC_2KHZ, Task_Group_0, Task_Group_0, TaskInertical_Core, 8192);
     TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_20HZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 4096);
+    TaskLog_Handle = Os_CreateTask("Data Log", TASK_EXEC_100HZ, Task_Group_7, Task_Priority_0, TaskLog_Core, 8192);
     Test2_Task = Os_CreateTask("test2", TASK_EXEC_1KHZ, Task_Group_0, Task_Group_2, Test2, 256);
 }
 

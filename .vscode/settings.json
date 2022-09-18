@@ -86,7 +86,8 @@
                 "shell_ext.h": "c",
                 "shell.h": "c",
                 "shell_cfg.h": "c",
-                "data_convert_util.h": "c"
+                "data_convert_util.h": "c",
+                "task_log.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
