@@ -142,7 +142,7 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     obj->hdl.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
     obj->hdl.Init.BusWide = SDMMC_BUS_WIDE_4B;
     obj->hdl.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-    obj->hdl.Init.ClockDiv = 0;
+    obj->hdl.Init.ClockDiv = 2;
     obj->hdl.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
 
     if (HAL_SD_Init(&(obj->hdl)) != HAL_OK)

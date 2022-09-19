@@ -46,7 +46,7 @@ void TaskLog_Core(Task_Handle hdl)
     static uint32_t t;
 
     t = Get_CurrentRunningMs();
-    
+
     // DebugPin.ctl(Debug_PB4, true);
     if (i < 10)
     {
