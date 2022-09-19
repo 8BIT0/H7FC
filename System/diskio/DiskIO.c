@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include "IO_Definition.h"
+#include "debug_util.h"
 
 #define GEN_TIME(h, m, s) ((((uint16_t)h) << 11) + (((uint16_t)m) << 5) + (((uint16_t)s) >> 1))
 #define GEN_DATE(y, m, d) (((((uint16_t)(y % 100)) + 20) << 9) + (((uint16_t)m) << 5) + ((uint16_t)d))
@@ -199,6 +201,8 @@ static bool ExtDisk_Init(Disk_FATFileSys_TypeDef *FATObj)
 
     if (Disk_Info.module_error_reg.val != 0)
         init_state = false;
+
+    FATObj->init = init_state;
 
     return init_state;
 }
@@ -1522,7 +1526,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     uint16_t base_len = len;
     uint32_t cluster_end_section = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster) + FATObj->SecPerCluster;
 
-    if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
+    if ((FATObj == NULL) || (!FATObj->init) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
 
     if (memcmp(FileObj->info.name, NULL, sizeof(FileObj->info.name)) == 0)
@@ -1551,9 +1555,11 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             remain_write = len - FileObj->remain_byte_in_sec;
             len -= FileObj->remain_byte_in_sec;
         }
-
+        
+        DebugPin.ctl(Debug_PB4, true);
         memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, write_len);
         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
+        DebugPin.ctl(Debug_PB4, false);
 
         FileObj->remain_byte_in_sec -= write_len;
         FileObj->cursor_pos += write_len;
@@ -1565,7 +1571,6 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             memset(Disk_FileSection_DataCache, '\0', DISK_CARD_SECTION_SZIE);
             FileObj->remain_byte_in_sec = FATObj->BytePerSection;
 
-            /* still bug here */
             if (FileObj->end_sec == cluster_end_section)
             {
                 lst_file_cluster = FileObj->info.start_cluster;

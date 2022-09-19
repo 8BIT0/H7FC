@@ -46,7 +46,8 @@ void TaskLog_Core(Task_Handle hdl)
     static uint32_t t;
 
     t = Get_CurrentRunningMs();
-
+    
+    // DebugPin.ctl(Debug_PB4, true);
     if (i < 10)
     {
         i++;
@@ -59,6 +60,7 @@ void TaskLog_Core(Task_Handle hdl)
     }
 
     TaskLog_DataFormat_Write("%ld\r\n", t);
+    // DebugPin.ctl(Debug_PB4, false);
 }
 
 static void TaskLog_DataFormat_Write(const char *format, ...)

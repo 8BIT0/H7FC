@@ -224,6 +224,7 @@ typedef struct
 
 typedef struct
 {
+    bool init;
     bool has_mbr;
 
     Disk_CardMBR_SectionInfo_TypeDef disk_section_table[DISK_CARD_SECTION_INFO_NUM];
