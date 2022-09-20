@@ -21,7 +21,7 @@
 static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static Disk_FileObj_TypeDef LogFile_Obj;
 static Disk_FATFileSys_TypeDef FATFS_Obj;
-static uint8_t test[512] = {0};
+static uint8_t test[512] __attribute__((section(".Perph_Section"))) = {0};
 
 /* internal function */
 static void TaskLog_DataFormat_Write(const char *format, ...);
@@ -44,10 +44,11 @@ void TaskLog_Core(Task_Handle hdl)
     static uint8_t i = 0;
     static bool led_state = false;
     static uint32_t t;
+    static uint16_t tx_cnt = 0;
 
     t = Get_CurrentRunningMs();
 
-    // DebugPin.ctl(Debug_PB4, true);
+    DebugPin.ctl(Debug_PB4, true);
     if (i < 10)
     {
         i++;
@@ -58,21 +59,25 @@ void TaskLog_Core(Task_Handle hdl)
         led_state = !led_state;
         DevLED.ctl(Led2, led_state);
     }
+    
+    if(tx_cnt < 500)
+    {
+        tx_cnt ++;
+        // TaskLog_DataFormat_Write("%ld\r\n", t);
+        TaskLog_DataFormat_Write("test 8_B!T0\r\n");
+    }
 
-    TaskLog_DataFormat_Write("%ld\r\n", t);
-    // DebugPin.ctl(Debug_PB4, false);
+    DebugPin.ctl(Debug_PB4, false);
 }
 
 static void TaskLog_DataFormat_Write(const char *format, ...)
 {
     va_list arp;
 
-    Kernel_EnterCritical();
     va_start(arp, format);
 
     volatile uint32_t length = vsnprintf((char *)test, sizeof(test), (char *)format, arp);
     Disk.write(&FATFS_Obj, &LogFile_Obj, test, length);
-    Kernel_ExitCritical();
 
     memset(test, NULL, sizeof(test));
 

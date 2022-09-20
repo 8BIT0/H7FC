@@ -12,6 +12,8 @@
 #include "stm32h7xx_ll_sdmmc.h"
 #include "stm32h7xx_hal_mdma.h"
 
+#define SDMMC_OPR_RETRY_MAX_CNT 0xFFFFFFFF
+
 // #define SDIO_USE_4BIT true
 // #define SDIO_CK_PIN PC12
 // #define SDIO_CMD_PIN PD2

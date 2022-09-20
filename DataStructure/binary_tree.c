@@ -400,7 +400,7 @@ static TreeSearch_Out_TypeDef TreeNode_Search(TreeNode_TypeDef *node, data_handl
     search_out.state = Tree_Search_E;
     search_out.node_hdl = 0;
 
-    if (node != NULL || node->search_callback != NULL)
+    if (node != NULL && node->search_callback != NULL)
     {
         search_out.state = node->search_callback(node->data, data);
 

@@ -38,6 +38,17 @@ SECTIONS
     
     . = ALIGN(4);
     MMU_e = .;
+  } >DTCMRAM AT>FLASH
+
+   .Perph_Section :
+  {
+    . = ALIGN(4);
+    Perph_s = .;
+    *(.Perph_Section)
+    *(.Perph_Section*)
+    
+    . = ALIGN(4);
+    Perph_e = .;
   } >RAM_D1 AT>FLASH
 
   /* The program code and other data goes into FLASH */

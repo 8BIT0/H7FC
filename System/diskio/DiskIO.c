@@ -4,6 +4,10 @@
  *  still has bug inside but it already can create folder and file
  */
 
+/*
+ *  error log still has some bug......wtf!?!
+ */
+
 #include "DiskIO.h"
 #include "Dev_W25Qxx.h"
 #include "Dev_Card.h"
@@ -110,8 +114,8 @@ DevCard_Obj_TypeDef DevTFCard_Obj = {
 };
 
 static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
-static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] = {0};
-static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] = {0};
+static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] __attribute__((section(".Perph_Section"))) = {0};
+static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] __attribute__((section(".Perph_Section"))) = {0};
 
 #endif
 
@@ -282,7 +286,8 @@ static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
 
     DevCard.read(&DevTFCard_Obj.SDMMC_Obj, DISK_CARD_MBR_SECTION, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
-    if (memcmp(DiskCard_NoneMBR_Label, Disk_Card_SectionBuff, sizeof(DiskCard_NoneMBR_Label)) == 0)
+    if ((memcmp(DiskCard_NoneMBR_Label, Disk_Card_SectionBuff, sizeof(DiskCard_NoneMBR_Label)) == 0) || 
+        (memcmp(Disk_Card_SectionBuff, NULL, sizeof(DiskCard_NoneMBR_Label)) == 0))
     {
         FATObj->has_mbr = false;
     }
@@ -1090,6 +1095,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                     if (Disk_SFN_Match(FFInfo.Info[FF_index].name, name_tmp))
                     {
                         return FFInfo.Info[FF_index].start_cluster;
+                        // return target_file_cluster;
                     }
                 }
                 else
@@ -1451,6 +1457,7 @@ static void Disk_FileSize_Update(Disk_FileObj_TypeDef *FileObj)
 }
 
 /* write into an empty file */
+/* need to modify */
 static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
     uint32_t use_cluster = 0;
@@ -1471,6 +1478,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
         FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
         Disk_Update_FreeCluster(FATObj);
 
+        /* modify pos */
         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, p_data, DISK_CARD_SECTION_SZIE, FATObj->SecPerCluster);
         Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
     }
@@ -1556,10 +1564,10 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             len -= FileObj->remain_byte_in_sec;
         }
 
-        DebugPin.ctl(Debug_PB4, true);
+        // DebugPin.ctl(Debug_PB4, true);
         memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, write_len);
         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
-        DebugPin.ctl(Debug_PB4, false);
+        // DebugPin.ctl(Debug_PB4, false);
 
         FileObj->remain_byte_in_sec -= write_len;
         FileObj->cursor_pos += write_len;

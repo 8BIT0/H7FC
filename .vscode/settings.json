@@ -91,7 +91,8 @@
                 "datapool.h": "c",
                 "fstream": "c",
                 "locale": "c",
-                "sstream": "c"
+                "sstream": "c",
+                "stm32h7xx_hal_sd.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

@@ -6,6 +6,10 @@ static const GPIO_InitTypeDef BspSDMMC_PinCfg = {
     .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
 };
 
+/* internal variable */
+static bool SD_Tx_Cplt = false;
+static bool SD_Rx_Cplt = false;
+
 /* internal function */
 static bool BspSDMMC_PortCLK_Init(SDMMC_TypeDef *instance);
 static void BspSDMMC_PinCLK_Enable(GPIO_TypeDef *port);
@@ -132,28 +136,28 @@ static bool BspSDMMC_Pin_Init(SD_TypeDef *type, BspSDMMC_PinConfig_TypeDef *obj)
     return false;
 }
 
-static bool BspSDMMC_MDMA_Init(BspSDMMC_Obj_TypeDef *obj)
+static bool BspSDMMC_MDMA_Init(MDMA_HandleTypeDef *mdma)
 {
-    if(obj == NULL)
+    if(mdma == NULL)
         return false;
 
     __HAL_RCC_MDMA_CLK_ENABLE();
 
-    obj->mdma.Instance = MDMA_Channel0;
-    obj->mdma.Init.TransferTriggerMode = MDMA_BUFFER_TRANSFER;
-    obj->mdma.Init.Priority = MDMA_PRIORITY_LOW;
-    obj->mdma.Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
-    obj->mdma.Init.SourceInc = MDMA_SRC_INC_BYTE;
-    obj->mdma.Init.DestinationInc = MDMA_DEST_INC_BYTE;
-    obj->mdma.Init.SourceDataSize = MDMA_SRC_DATASIZE_BYTE;
-    obj->mdma.Init.DestDataSize = MDMA_DEST_DATASIZE_BYTE;
-    obj->mdma.Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
-    obj->mdma.Init.BufferTransferLength = 512;
-    obj->mdma.Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
-    obj->mdma.Init.DestBurst = MDMA_DEST_BURST_SINGLE;
-    obj->mdma.Init.SourceBlockAddressOffset = 0;
-    obj->mdma.Init.DestBlockAddressOffset = 0;
-    if (HAL_MDMA_Init(&(obj->mdma)) != HAL_OK)
+    mdma->Instance = MDMA_Channel0;
+    mdma->Init.TransferTriggerMode = MDMA_BLOCK_TRANSFER;
+    mdma->Init.Priority = MDMA_PRIORITY_LOW;
+    mdma->Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
+    mdma->Init.SourceInc = MDMA_SRC_INC_BYTE;
+    mdma->Init.DestinationInc = MDMA_DEST_INC_BYTE;
+    mdma->Init.SourceDataSize = MDMA_SRC_DATASIZE_BYTE;
+    mdma->Init.DestDataSize = MDMA_DEST_DATASIZE_BYTE;
+    mdma->Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
+    mdma->Init.BufferTransferLength = 1;
+    mdma->Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
+    mdma->Init.DestBurst = MDMA_DEST_BURST_SINGLE;
+    mdma->Init.SourceBlockAddressOffset = 0;
+    mdma->Init.DestBlockAddressOffset = 0;
+    if (HAL_MDMA_Init(mdma) != HAL_OK)
         return false;
 
     HAL_NVIC_SetPriority(MDMA_IRQn, 10, 0);
@@ -183,41 +187,80 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     else
         return false;
 
-    HAL_NVIC_SetPriority(irq, 10, 0);
-    HAL_NVIC_EnableIRQ(irq);
-
     obj->hdl.Instance = obj->instance; // SDMMC1;
     obj->hdl.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
     obj->hdl.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
     obj->hdl.Init.BusWide = SDMMC_BUS_WIDE_4B;
-    obj->hdl.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
+    obj->hdl.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
     obj->hdl.Init.ClockDiv = 2;
     obj->hdl.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
 
-    if (HAL_SD_Init(&(obj->hdl)) != HAL_OK)
+    if (!BspSDMMC_MDMA_Init(&(obj->mdma)) || (HAL_SD_Init(&(obj->hdl)) != HAL_OK))
         return false;
+
+    HAL_NVIC_SetPriority(irq, 4, 0);
+    HAL_NVIC_EnableIRQ(irq);
+
 
     return true;
 }
 
 static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
 {
-    bool sd_state = true;
+    uint32_t retry_cnt = SDMMC_OPR_RETRY_MAX_CNT;
 
-    if (HAL_SD_ReadBlocks(&(obj->hdl), (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) != HAL_OK)
-        sd_state = false;
+    // if (HAL_SD_ReadBlocks(&(obj->hdl), (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
+    //     return true;
 
-    return sd_state;
+    // Kernel_EnterCritical();
+    HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
+    // Kernel_ExitCritical();
+
+    if (state == HAL_OK)
+    {
+        while(retry_cnt)
+        {
+            if(SD_Rx_Cplt)
+            {
+                SD_Rx_Cplt = false;
+                return true;
+            }
+            __DSB();
+
+            retry_cnt --;
+        }
+    }
+
+    return false;
 }
 
 static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
-    bool sd_state = true;
+    uint32_t retry_cnt = SDMMC_OPR_RETRY_MAX_CNT;
 
-    if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) != HAL_OK)
-        sd_state = false;
+    // if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
+    //     return true;
 
-    return sd_state;
+    // Kernel_EnterCritical();
+    HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
+    // Kernel_ExitCritical();
+
+    if (state == HAL_OK)
+    {
+        while(retry_cnt)
+        {
+            if(SD_Tx_Cplt)
+            {
+                SD_Tx_Cplt = false;
+                return true;
+            }
+            __DSB();
+
+            retry_cnt --;
+        }
+    }
+
+    return false;
 }
 
 static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr)
@@ -249,3 +292,33 @@ static bool BspSDMMC_GetInfo(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *
 
     return true;
 }
+
+void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
+{
+    if(hsd->Instance == SDMMC1)
+    {
+        SD_Tx_Cplt = true;
+        __DSB();
+    }
+}
+
+void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
+{
+    if(hsd->Instance == SDMMC1)
+    {
+        SD_Rx_Cplt = true;
+        __DSB();
+    }
+}
+
+void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
+{
+    if(hsd->Instance == SDMMC1)
+    {
+        if(hsd->ErrorCode & HAL_SD_ERROR_TX_UNDERRUN)
+        {
+            HAL_SD_Abort(&hsd);
+        }
+    }
+}
+
