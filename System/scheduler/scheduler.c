@@ -741,7 +741,9 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
 
 static void Os_TaskExec(Task *tsk_ptr)
 {
-    SYSTEM_RunTime time_diff;
+    volatile SYSTEM_RunTime time_diff;
+    volatile SYSTEM_RunTime interval;
+    volatile SYSTEM_RunTime func_cast;
     RuntimeObj_Reset(&time_diff);
 
     if (tsk_ptr->State == Task_Ready)
@@ -763,10 +765,21 @@ static void Os_TaskExec(Task *tsk_ptr)
 
         if (tsk_ptr->Exec_Func != NULL)
         {
+            interval = tsk_ptr->exec_interval_us;
+
             tsk_ptr->State = Task_Running;
 
+            func_cast = Get_CurrentRunningUs();
             // execute task funtion
             tsk_ptr->Exec_Func(*&tsk_ptr);
+            func_cast = Get_CurrentRunningUs() - func_cast;
+
+            interval -= func_cast;
+
+            if (interval <= 0)
+            {
+                interval = tsk_ptr->exec_interval_us;
+            }
         }
         else
         {
@@ -783,7 +796,8 @@ static void Os_TaskExec(Task *tsk_ptr)
         // get task total execute time unit in us
         tsk_ptr->Exec_status.Running_Time += tsk_ptr->TskFuncUing_US;
         time_diff = Get_TimeDifference_Between(tsk_ptr->Exec_status.Start_Time, tsk_ptr->Exec_status.Exec_Time);
-        tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(tsk_ptr->exec_interval_us);
+        // tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(tsk_ptr->exec_interval_us);
+        tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(interval);
 
         tsk_ptr->Exec_status.cpu_opy = tsk_ptr->Exec_status.Running_Time / (float)time_diff;
         tsk_ptr->Exec_status.cpu_opy *= 100;
@@ -793,6 +807,8 @@ static void Os_TaskExec(Task *tsk_ptr)
         {
             tsk_ptr->Exec_status.detect_exec_frq = (uint32_t)(tsk_ptr->Exec_status.Exec_cnt / (float)(Get_CurrentRunningS()));
         }
+
+        __DSB();
 
         tsk_ptr->State = Task_Stop;
     }

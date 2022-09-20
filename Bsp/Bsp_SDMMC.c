@@ -138,7 +138,7 @@ static bool BspSDMMC_Pin_Init(SD_TypeDef *type, BspSDMMC_PinConfig_TypeDef *obj)
 
 static bool BspSDMMC_MDMA_Init(MDMA_HandleTypeDef *mdma)
 {
-    if(mdma == NULL)
+    if (mdma == NULL)
         return false;
 
     __HAL_RCC_MDMA_CLK_ENABLE();
@@ -173,14 +173,14 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     BspSDMMC_PortCLK_Init(obj->instance);
     BspSDMMC_Pin_Init(obj->instance, obj->pin);
 
-    if( obj == NULL)
+    if (obj == NULL)
         return false;
 
-    if( obj->instance == SDMMC1)
+    if (obj->instance == SDMMC1)
     {
         irq = SDMMC1_IRQn;
     }
-    else if( obj->instance == SDMMC2)
+    else if (obj->instance == SDMMC2)
     {
         irq = SDMMC2_IRQn;
     }
@@ -201,7 +201,6 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     HAL_NVIC_SetPriority(irq, 4, 0);
     HAL_NVIC_EnableIRQ(irq);
 
-
     return true;
 }
 
@@ -212,18 +211,22 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
     // if (HAL_SD_ReadBlocks(&(obj->hdl), (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    if (HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks) == HAL_OK)
+    Kernel_EnterCritical();
+    HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
+    Kernel_ExitCritical();
+
+    if (state == HAL_OK)
     {
-        while(retry_cnt)
+        while (retry_cnt)
         {
-            if(SD_Rx_Cplt)
+            if (SD_Rx_Cplt)
             {
                 SD_Rx_Cplt = false;
                 return true;
             }
             __DSB();
 
-            retry_cnt --;
+            retry_cnt--;
         }
     }
 
@@ -237,18 +240,22 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
     // if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    if (HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks) == HAL_OK)
+    Kernel_EnterCritical();
+    HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
+    Kernel_ExitCritical();
+
+    if (state == HAL_OK)
     {
-        while(retry_cnt)
+        while (retry_cnt)
         {
-            if(SD_Tx_Cplt)
+            if (SD_Tx_Cplt)
             {
                 SD_Tx_Cplt = false;
                 return true;
             }
             __DSB();
 
-            retry_cnt --;
+            retry_cnt--;
         }
     }
 
@@ -287,7 +294,7 @@ static bool BspSDMMC_GetInfo(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *
 
 void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
 {
-    if(hsd->Instance == SDMMC1)
+    if (hsd->Instance == SDMMC1)
     {
         SD_Tx_Cplt = true;
         __DSB();
@@ -296,7 +303,7 @@ void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
 
 void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
 {
-    if(hsd->Instance == SDMMC1)
+    if (hsd->Instance == SDMMC1)
     {
         SD_Rx_Cplt = true;
         __DSB();
@@ -305,12 +312,11 @@ void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
 
 void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
 {
-    if(hsd->Instance == SDMMC1)
+    if (hsd->Instance == SDMMC1)
     {
-        if(hsd->ErrorCode & HAL_SD_ERROR_TX_UNDERRUN)
+        if (hsd->ErrorCode & HAL_SD_ERROR_TX_UNDERRUN)
         {
             HAL_SD_Abort(&hsd);
         }
     }
 }
-

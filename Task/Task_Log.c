@@ -21,7 +21,7 @@
 static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static Disk_FileObj_TypeDef LogFile_Obj;
 static Disk_FATFileSys_TypeDef FATFS_Obj;
-static uint8_t test[512] __attribute__((section(".Perph_Section"))) = {0};
+static uint8_t test[512] = {0};
 
 /* internal function */
 static void TaskLog_DataFormat_Write(const char *format, ...);
@@ -39,14 +39,17 @@ void TaskLog_Init(void)
     Disk.open(&FATFS_Obj, "log/", "log.txt", &LogFile_Obj);
 }
 
+Task *test_task;
+
 void TaskLog_Core(Task_Handle hdl)
 {
     static uint8_t i = 0;
     static bool led_state = false;
     static uint32_t t;
-    static uint16_t tx_cnt = 0;
 
     t = Get_CurrentRunningMs();
+
+    test_task = (Task *)hdl;
 
     DebugPin.ctl(Debug_PB4, true);
     if (i < 10)
@@ -59,13 +62,9 @@ void TaskLog_Core(Task_Handle hdl)
         led_state = !led_state;
         DevLED.ctl(Led2, led_state);
     }
-    
-    if(tx_cnt < 500)
-    {
-        tx_cnt ++;
-        // TaskLog_DataFormat_Write("%ld\r\n", t);
-        TaskLog_DataFormat_Write("test 8_B!T0\r\n");
-    }
+
+    // TaskLog_DataFormat_Write("%ld\r\n", t);
+    TaskLog_DataFormat_Write("test 8_B!T0\r\n");
 
     DebugPin.ctl(Debug_PB4, false);
 }
