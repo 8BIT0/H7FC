@@ -6,8 +6,10 @@
 #include "stm32h7xx_hal_gpio.h"
 #include "IO_Definition.h"
 #include "debug_util.h"
+#include "DIskIO.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+extern DevCard_Obj_TypeDef DevTFCard_Obj;
 
 void NMI_Handler(void)
 {
@@ -133,12 +135,12 @@ void EXTI15_10_IRQHandler(void)
 
 void SDMMC1_IRQHandler(void)
 {
-  // HAL_SD_IRQHandler(&hsd1);
+  HAL_SD_IRQHandler(&DevTFCard_Obj.SDMMC_Obj.hdl);
 }
 
 void MDMA_IRQHandler(void)
 {
-  // HAL_MDMA_IRQHandler(&hmdma_mdma_channel40_sdmmc1_end_data_0);
+  HAL_MDMA_IRQHandler(&DevTFCard_Obj.SDMMC_Obj.mdma);
 }
 
 

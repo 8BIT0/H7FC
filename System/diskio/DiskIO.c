@@ -103,7 +103,7 @@ static const BspSDMMC_PinConfig_TypeDef SDMMC_Pin = {
     .Alternate = GPIO_AF12_SDIO1,
 };
 
-static DevCard_Obj_TypeDef DevTFCard_Obj = {
+DevCard_Obj_TypeDef DevTFCard_Obj = {
     .SDMMC_Obj = {
         .instance = SDMMC1,
     },
