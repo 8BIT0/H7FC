@@ -132,10 +132,59 @@ static bool BspSDMMC_Pin_Init(SD_TypeDef *type, BspSDMMC_PinConfig_TypeDef *obj)
     return false;
 }
 
+static bool BspSDMMC_MDMA_Init(BspSDMMC_Obj_TypeDef *obj)
+{
+    if(obj == NULL)
+        return false;
+
+    __HAL_RCC_MDMA_CLK_ENABLE();
+
+    obj->mdma.Instance = MDMA_Channel0;
+    obj->mdma.Init.TransferTriggerMode = MDMA_BUFFER_TRANSFER;
+    obj->mdma.Init.Priority = MDMA_PRIORITY_LOW;
+    obj->mdma.Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
+    obj->mdma.Init.SourceInc = MDMA_SRC_INC_BYTE;
+    obj->mdma.Init.DestinationInc = MDMA_DEST_INC_BYTE;
+    obj->mdma.Init.SourceDataSize = MDMA_SRC_DATASIZE_BYTE;
+    obj->mdma.Init.DestDataSize = MDMA_DEST_DATASIZE_BYTE;
+    obj->mdma.Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
+    obj->mdma.Init.BufferTransferLength = 512;
+    obj->mdma.Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
+    obj->mdma.Init.DestBurst = MDMA_DEST_BURST_SINGLE;
+    obj->mdma.Init.SourceBlockAddressOffset = 0;
+    obj->mdma.Init.DestBlockAddressOffset = 0;
+    if (HAL_MDMA_Init(&(obj->mdma)) != HAL_OK)
+        return false;
+
+    HAL_NVIC_SetPriority(MDMA_IRQn, 10, 0);
+    HAL_NVIC_EnableIRQ(MDMA_IRQn);
+
+    return true;
+}
+
 static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
 {
+    IRQn_Type irq = SDMMC1_IRQn;
+
     BspSDMMC_PortCLK_Init(obj->instance);
     BspSDMMC_Pin_Init(obj->instance, obj->pin);
+
+    if( obj == NULL)
+        return false;
+
+    if( obj->instance == SDMMC1)
+    {
+        irq = SDMMC1_IRQn;
+    }
+    else if( obj->instance == SDMMC2)
+    {
+        irq = SDMMC2_IRQn;
+    }
+    else
+        return false;
+
+    HAL_NVIC_SetPriority(irq, 10, 0);
+    HAL_NVIC_EnableIRQ(irq);
 
     obj->hdl.Instance = obj->instance; // SDMMC1;
     obj->hdl.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;

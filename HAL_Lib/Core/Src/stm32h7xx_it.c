@@ -130,3 +130,15 @@ void EXTI15_10_IRQHandler(void)
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
 }
+
+void SDMMC1_IRQHandler(void)
+{
+  // HAL_SD_IRQHandler(&hsd1);
+}
+
+void MDMA_IRQHandler(void)
+{
+  // HAL_MDMA_IRQHandler(&hmdma_mdma_channel40_sdmmc1_end_data_0);
+}
+
+

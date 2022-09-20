@@ -10,6 +10,7 @@
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_gpio.h"
 #include "stm32h7xx_ll_sdmmc.h"
+#include "stm32h7xx_hal_mdma.h"
 
 // #define SDIO_USE_4BIT true
 // #define SDIO_CK_PIN PC12
@@ -43,6 +44,7 @@ typedef struct
 {
     BspSDMMC_PinConfig_TypeDef *pin;
     SD_HandleTypeDef hdl;
+    MDMA_HandleTypeDef mdma;
     SD_TypeDef *instance;
     HAL_SD_CardInfoTypeDef info;
 } BspSDMMC_Obj_TypeDef;
