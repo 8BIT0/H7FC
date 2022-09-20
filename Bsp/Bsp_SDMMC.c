@@ -212,11 +212,7 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
     // if (HAL_SD_ReadBlocks(&(obj->hdl), (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    // Kernel_EnterCritical();
-    HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
-    // Kernel_ExitCritical();
-
-    if (state == HAL_OK)
+    if (HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks) == HAL_OK)
     {
         while(retry_cnt)
         {
@@ -241,11 +237,7 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
     // if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    // Kernel_EnterCritical();
-    HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
-    // Kernel_ExitCritical();
-
-    if (state == HAL_OK)
+    if (HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks) == HAL_OK)
     {
         while(retry_cnt)
         {
