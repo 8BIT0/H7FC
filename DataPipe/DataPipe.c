@@ -1,4 +1,4 @@
-#include "DataPool.h"
+#include "DataPipe.h"
 #include "kernel.h"
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal_dma.h"
@@ -46,13 +46,12 @@ static bool DataPipe_Init(void)
 
 static DataPipe_Handle DataPipe_Create()
 {
-
 }
 
 static bool DataPipe_SendTo()
 {
-    if((p_org == NULL) || (p_dst == NULL) || (size == 0))
-        return false;
+    // if ((p_org == NULL) || (p_dst == NULL) || (size == 0))
+    //     return false;
 
     Kernel_EnterCritical();
 
@@ -64,18 +63,16 @@ static bool DataPipe_SendTo()
 /* transmit completely callback */
 static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl)
 {
-    if(dma_hdl == &DataPipe_DMA)
+    if (dma_hdl == &DataPipe_DMA)
     {
-
     }
 }
 
 /* transmit error callback */
 static void DataPipe_TransError_Callback(DMA_HandleTypeDef *dma_hdl)
 {
-    if(dma_hdl == &DataPipe_DMA)
+    if (dma_hdl == &DataPipe_DMA)
     {
-
     }
 }
 

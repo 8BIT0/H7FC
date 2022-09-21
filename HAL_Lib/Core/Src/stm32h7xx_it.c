@@ -7,9 +7,11 @@
 #include "IO_Definition.h"
 #include "debug_util.h"
 #include "DIskIO.h"
+#include "DataPipe.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern DevCard_Obj_TypeDef DevTFCard_Obj;
+extern DMA_HandleTypeDef DataPipe_DMA;
 
 void NMI_Handler(void)
 {
@@ -145,6 +147,5 @@ void MDMA_IRQHandler(void)
 
 void DMA2_Stream7_IRQHandler(void)
 {
-  HAL_DMA_IRQHandler(&hdma_memtomem_dma2_stream7);
+  HAL_DMA_IRQHandler(&DataPipe_DMA);
 }
-

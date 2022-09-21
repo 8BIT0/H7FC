@@ -52,7 +52,7 @@ Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 Device/Dev_Card.c \
 Service/SrvMPU_Sample.c \
-Global_DataPool/DataPool.c \
+DataPipe/DataPipe.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
@@ -171,7 +171,7 @@ C_INCLUDES =  \
 -ISystem/shell \
 -ISystem/diskio \
 -Idebug/ \
--IGlobal_DataPool \
+-IDataPipe \
 -IDataStructure/ \
 -ISystem/runtime/ \
 -ISystem/scheduler/ \

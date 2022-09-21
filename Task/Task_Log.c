@@ -11,7 +11,7 @@
 #include "error_log.h"
 #include "mmu.h"
 #include "DiskIO.h"
-#include "DataPool.h"
+// #include "DataPool.h"
 #include "Task_Protocol.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
@@ -63,8 +63,16 @@ void TaskLog_Core(Task_Handle hdl)
         DevLED.ctl(Led2, led_state);
     }
 
-    // TaskLog_DataFormat_Write("%ld\r\n", t);
-    TaskLog_DataFormat_Write("test 8_B!T0\r\n");
+    if (LogFile_Obj.info.size / 1024 < 32)
+    {
+        // TaskLog_DataFormat_Write("%ld\r\n", t);
+        TaskLog_DataFormat_Write("test 8_B!T0\r\n");
+    }
+    else
+    {
+        i = 0;
+        DevLED.ctl(Led2, false);
+    }
 
     DebugPin.ctl(Debug_PB4, false);
 }

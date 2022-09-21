@@ -25,7 +25,7 @@ void TaskInertial_Init(void)
 
 void TaskInertical_Core(Task_Handle hdl)
 {
-    DebugPin.ctl(Debug_PB5, true);
+    // DebugPin.ctl(Debug_PB5, true);
     switch ((uint8_t)TaskInertial_State)
     {
     case Task_SensorInertial_Core:
@@ -44,7 +44,7 @@ void TaskInertical_Core(Task_Handle hdl)
     }
 
     SrvIMU.error_proc();
-    DebugPin.ctl(Debug_PB5, false);
+    // DebugPin.ctl(Debug_PB5, false);
 }
 
 static void TaskInertical_Blink_Notification(uint16_t duration)

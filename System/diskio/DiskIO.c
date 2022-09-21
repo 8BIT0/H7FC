@@ -966,8 +966,6 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
 
     /* Update FAT2 Table */
     sec_index += FATObj->FAT_Sections;
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
-
     Data_Ptr = &Disk_Card_SectionBuff[sec_item_index];
     LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
 
@@ -1584,6 +1582,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             if (FileObj->end_sec == cluster_end_section)
             {
                 lst_file_cluster = FileObj->info.start_cluster;
+                DebugPin.ctl(Debug_PB5, true);
 
                 Disk_Update_FreeCluster(FATObj);
                 FileObj->info.start_cluster = FATObj->free_cluster;
@@ -1595,6 +1594,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 /* update end section */
                 FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
                 cluster_end_section = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster) + FATObj->SecPerCluster;
+                DebugPin.ctl(Debug_PB5, false);
             }
 
             /* update end section */

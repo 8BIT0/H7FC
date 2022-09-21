@@ -742,7 +742,7 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
 static void Os_TaskExec(Task *tsk_ptr)
 {
     volatile SYSTEM_RunTime time_diff;
-    volatile SYSTEM_RunTime interval;
+    volatile int64_t interval;
     volatile SYSTEM_RunTime func_cast;
     RuntimeObj_Reset(&time_diff);
 
