@@ -143,4 +143,8 @@ void MDMA_IRQHandler(void)
   HAL_MDMA_IRQHandler(&DevTFCard_Obj.SDMMC_Obj.mdma);
 }
 
+void DMA2_Stream7_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_memtomem_dma2_stream7);
+}
 
