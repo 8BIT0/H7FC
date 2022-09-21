@@ -5,4 +5,6 @@
 #include <string.h>
 #include <stdbool.h>
 
+typedef uint32_t DataPipe_Handle;
+
 #endif
