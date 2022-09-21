@@ -7,4 +7,9 @@
 
 typedef uint32_t DataPipe_Handle;
 
+typedef struct
+{
+    
+}DataPipeObj_TypeDef;
+
 #endif
