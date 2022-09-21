@@ -1,4 +1,5 @@
 #include "DataPool.h"
+#include "kernel.h"
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal_dma.h"
 
@@ -29,8 +30,8 @@ static bool DataPipe_Init(void)
     DataPipe_DMA.Init.PeriphBurst = DMA_PBURST_SINGLE;
 
     /* set transmit process callback */
-    DataPipe_DMA.XferCpltCallback = DataPipe_TransFinish_Callback;
-    DataPipe_DMA.XferErrorCallback = DataPipe_TransError_Callback;
+    HAL_DMA_RegisterCallback(&DataPipe_DMA, HAL_DMA_XFER_CPLT_CB_ID, DataPipe_TransFinish_Callback);
+    HAL_DMA_RegisterCallback(&DataPipe_DMA, HAL_DMA_XFER_ERROR_CB_ID, DataPipe_TransError_Callback);
 
     if (HAL_DMA_Init(&DataPipe_DMA) != HAL_OK)
         return false;
@@ -53,6 +54,10 @@ static bool DataPipe_SendTo()
     if((p_org == NULL) || (p_dst == NULL) || (size == 0))
         return false;
 
+    Kernel_EnterCritical();
+
+    Kernel_ExitCritical();
+
     return true;
 }
 
@@ -74,15 +79,11 @@ static void DataPipe_TransError_Callback(DMA_HandleTypeDef *dma_hdl)
     }
 }
 
-// HAL_StatusTypeDef HAL_DMA_Init(DMA_HandleTypeDef *hdma);
-// HAL_StatusTypeDef HAL_DMA_DeInit(DMA_HandleTypeDef *hdma);
 // HAL_StatusTypeDef HAL_DMA_Start (DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength);
 // HAL_StatusTypeDef HAL_DMA_Start_IT(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength);
 // HAL_StatusTypeDef HAL_DMA_Abort(DMA_HandleTypeDef *hdma);
 // HAL_StatusTypeDef HAL_DMA_Abort_IT(DMA_HandleTypeDef *hdma);
 // HAL_StatusTypeDef HAL_DMA_PollForTransfer(DMA_HandleTypeDef *hdma, HAL_DMA_LevelCompleteTypeDef CompleteLevel, uint32_t Timeout);
 // void              HAL_DMA_IRQHandler(DMA_HandleTypeDef *hdma);
-// HAL_StatusTypeDef HAL_DMA_RegisterCallback(DMA_HandleTypeDef *hdma, HAL_DMA_CallbackIDTypeDef CallbackID, void (* pCallback)(DMA_HandleTypeDef *_hdma));
-// HAL_StatusTypeDef HAL_DMA_UnRegisterCallback(DMA_HandleTypeDef *hdma, HAL_DMA_CallbackIDTypeDef CallbackID);
 // HAL_DMA_StateTypeDef HAL_DMA_GetState(DMA_HandleTypeDef *hdma);
 // uint32_t             HAL_DMA_GetError(DMA_HandleTypeDef *hdma);
