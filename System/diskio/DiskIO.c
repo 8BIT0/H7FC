@@ -1529,7 +1529,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
     FATCluster_Addr lst_file_cluster = 0;
-    uint16_t write_len = 0;
+    volatile uint16_t write_len = 0;
     uint16_t remain_write = 0;
     uint16_t base_len = len;
     uint32_t cluster_end_section = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster) + FATObj->SecPerCluster;
@@ -1551,13 +1551,13 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
             if (remain_write)
             {
-                p_data += base_len - remain_write;
-                memcpy(Disk_FileSection_DataCache, p_data, remain_write);
+                // p_data += base_len - remain_write;
+                // memcpy(Disk_FileSection_DataCache, p_data, remain_write);
 
-                FileObj->remain_byte_in_sec -= remain_write;
-                FileObj->cursor_pos += remain_write;
-                FileObj->cursor_pos %= FATObj->BytePerSection;
-                FileObj->info.size += remain_write;
+                // FileObj->remain_byte_in_sec -= remain_write;
+                // FileObj->cursor_pos += remain_write;
+                // FileObj->cursor_pos %= FATObj->BytePerSection;
+                // FileObj->info.size += remain_write;
 
                 remain_write = 0;
 
@@ -1572,7 +1572,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
         }
 
         memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, write_len);
-        // DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
 
         FileObj->remain_byte_in_sec -= write_len;
         FileObj->cursor_pos += write_len;
@@ -1581,8 +1581,6 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
         if (FileObj->remain_byte_in_sec == 0)
         {
-            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
-
             memset(Disk_FileSection_DataCache, '\0', DISK_CARD_SECTION_SZIE);
             FileObj->remain_byte_in_sec = FATObj->BytePerSection;
 
