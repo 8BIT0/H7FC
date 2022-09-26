@@ -63,10 +63,10 @@ void TaskLog_Core(Task_Handle hdl)
         DevLED.ctl(Led2, led_state);
     }
 
-    if (LogFile_Obj.info.size / 1024 < 32)
+    if (LogFile_Obj.info.size / 1024 < 128)
     {
         // TaskLog_DataFormat_Write("%ld\r\n", t);
-        TaskLog_DataFormat_Write("test 8_B!T0\r\n");
+        TaskLog_DataFormat_Write("test!! test\r\n");
     }
     else
     {

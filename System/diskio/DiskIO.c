@@ -953,6 +953,8 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     if ((FATObj == NULL) || (cur_cluster < ROOT_CLUSTER_ADDR) || (nxt_cluster < ROOT_CLUSTER_ADDR))
         return false;
 
+    memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
+
     sec_index = FATObj->Fst_FATSector + (cur_cluster * sizeof(FATCluster_Addr)) / FATObj->BytePerSection;
     sec_item_index = (cur_cluster * sizeof(FATCluster_Addr)) % FATObj->BytePerSection;
 
@@ -1526,8 +1528,6 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 /* need measure the cast of operation down below */
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
-    uint32_t cluster_cnt = 0;
-    uint32_t section_cnt = 0;
     FATCluster_Addr lst_file_cluster = 0;
     uint16_t write_len = 0;
     uint16_t remain_write = 0;
@@ -1543,9 +1543,6 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     if (FileObj->info.size == 0)
         return Disk_WriteFile_From_Head(FATObj, FileObj, p_data, len);
 
-    cluster_cnt = len / FATObj->cluster_byte_size;
-    section_cnt = len / FATObj->BytePerSection;
-
     do
     {
         if (FileObj->remain_byte_in_sec >= len)
@@ -1553,9 +1550,20 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             write_len = len;
 
             if (remain_write)
+            {
                 p_data += base_len - len;
+                memcpy(Disk_FileSection_DataCache, p_data, write_len);
 
-            remain_write = 0;
+                FileObj->remain_byte_in_sec -= write_len;
+                FileObj->cursor_pos += write_len;
+                FileObj->cursor_pos %= FATObj->BytePerSection;
+                FileObj->info.size += write_len;
+
+                remain_write = 0;
+                Disk_FileSize_Update(FileObj);
+
+                return true;
+            }
         }
         else
         {
@@ -1582,9 +1590,12 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             if (FileObj->end_sec == cluster_end_section)
             {
                 lst_file_cluster = FileObj->info.start_cluster;
-                DebugPin.ctl(Debug_PB5, true);
+                // DebugPin.ctl(Debug_PB5, true);
 
                 Disk_Update_FreeCluster(FATObj);
+                if (FileObj->info.start_cluster == FATObj->free_cluster)
+                    return false;
+
                 FileObj->info.start_cluster = FATObj->free_cluster;
 
                 /* establish cluster link */
@@ -1593,8 +1604,9 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
                 /* update end section */
                 FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
-                cluster_end_section = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster) + FATObj->SecPerCluster;
-                DebugPin.ctl(Debug_PB5, false);
+                cluster_end_section = FileObj->end_sec + FATObj->SecPerCluster;
+
+                // DebugPin.ctl(Debug_PB5, false);
             }
 
             /* update end section */
@@ -1602,6 +1614,8 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
         }
 
         Disk_FileSize_Update(FileObj);
+
+        __DSB();
     } while (remain_write != 0);
 
     return true;
