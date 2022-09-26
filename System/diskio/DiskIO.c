@@ -1549,32 +1549,38 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
         {
             write_len = len;
 
+            // if (remain_write)
+            // {
+            /* bug inside */
+            //     p_data += base_len - len;
+            //     memcpy(Disk_FileSection_DataCache, p_data, write_len);
+
+            //     FileObj->remain_byte_in_sec -= write_len;
+            //     FileObj->cursor_pos += write_len;
+            //     FileObj->cursor_pos %= FATObj->BytePerSection;
+            //     FileObj->info.size += write_len;
+
+            //     remain_write = 0;
+
+            //     return true;
+            // }
+
             if (remain_write)
             {
-                p_data += base_len - len;
-                memcpy(Disk_FileSection_DataCache, p_data, write_len);
-
-                FileObj->remain_byte_in_sec -= write_len;
-                FileObj->cursor_pos += write_len;
-                FileObj->cursor_pos %= FATObj->BytePerSection;
-                FileObj->info.size += write_len;
-
-                remain_write = 0;
-
                 return true;
             }
+
+            remain_write = 0;
         }
         else
         {
             write_len = FileObj->remain_byte_in_sec;
-            remain_write = len - FileObj->remain_byte_in_sec;
+            remain_write = base_len - FileObj->remain_byte_in_sec;
             len -= FileObj->remain_byte_in_sec;
         }
 
-        // DebugPin.ctl(Debug_PB4, true);
         memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, write_len);
         // DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
-        // DebugPin.ctl(Debug_PB4, false);
 
         FileObj->remain_byte_in_sec -= write_len;
         FileObj->cursor_pos += write_len;
