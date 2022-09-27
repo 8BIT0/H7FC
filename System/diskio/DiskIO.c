@@ -968,8 +968,8 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
 
     /* Update FAT2 Table */
     sec_index += FATObj->FAT_Sections;
-    Data_Ptr = &Disk_Card_SectionBuff[sec_item_index];
-    LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
+    // Data_Ptr = &Disk_Card_SectionBuff[sec_item_index];
+    // LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
 
     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
@@ -1551,13 +1551,13 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
             if (remain_write)
             {
-                // p_data += base_len - remain_write;
-                // memcpy(Disk_FileSection_DataCache, p_data, remain_write);
+                p_data += base_len - remain_write;
+                memcpy(Disk_FileSection_DataCache, p_data, remain_write);
 
-                // FileObj->remain_byte_in_sec -= remain_write;
-                // FileObj->cursor_pos += remain_write;
-                // FileObj->cursor_pos %= FATObj->BytePerSection;
-                // FileObj->info.size += remain_write;
+                FileObj->remain_byte_in_sec -= remain_write;
+                FileObj->cursor_pos += remain_write;
+                FileObj->cursor_pos %= FATObj->BytePerSection;
+                FileObj->info.size += remain_write;
 
                 remain_write = 0;
 
@@ -1572,7 +1572,6 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
         }
 
         memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, write_len);
-        DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
 
         FileObj->remain_byte_in_sec -= write_len;
         FileObj->cursor_pos += write_len;
@@ -1581,13 +1580,13 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
         if (FileObj->remain_byte_in_sec == 0)
         {
+            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
             memset(Disk_FileSection_DataCache, '\0', DISK_CARD_SECTION_SZIE);
             FileObj->remain_byte_in_sec = FATObj->BytePerSection;
 
             if (FileObj->end_sec == cluster_end_section)
             {
                 lst_file_cluster = FileObj->info.start_cluster;
-                // DebugPin.ctl(Debug_PB5, true);
 
                 Disk_Update_FreeCluster(FATObj);
                 if (FileObj->info.start_cluster == FATObj->free_cluster)
@@ -1597,19 +1596,17 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
                 /* establish cluster link */
                 Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
-                Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
 
                 /* update end section */
                 FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
                 cluster_end_section = FileObj->end_sec + FATObj->SecPerCluster;
-
-                // DebugPin.ctl(Debug_PB5, false);
             }
 
             /* update end section */
             FileObj->end_sec++;
         }
 
+        Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
         Disk_FileSize_Update(FileObj);
 
         __DSB();

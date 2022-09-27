@@ -63,10 +63,11 @@ void TaskLog_Core(Task_Handle hdl)
         DevLED.ctl(Led2, led_state);
     }
 
-    if (LogFile_Obj.info.size / 1024 < 64)
+    if (LogFile_Obj.info.size / 1024 < 1024)
     {
         // TaskLog_DataFormat_Write("%ld\r\n", t);
-        TaskLog_DataFormat_Write("test!! test\r\n");
+        // TaskLog_DataFormat_Write("test!! test!!\r\n");
+        Disk.write(&FATFS_Obj, &LogFile_Obj, "test  test  test  test\r\n", strlen("test  test  test  test\r\n"));
     }
     else
     {
@@ -82,10 +83,9 @@ static void TaskLog_DataFormat_Write(const char *format, ...)
     va_list arp;
 
     va_start(arp, format);
-
     volatile uint32_t length = vsnprintf((char *)test, sizeof(test), (char *)format, arp);
+    length += 1;
     Disk.write(&FATFS_Obj, &LogFile_Obj, test, length);
-
     memset(test, NULL, sizeof(test));
 
     va_end(arp);
