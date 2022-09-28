@@ -190,7 +190,7 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     obj->hdl.Instance = obj->instance; // SDMMC1;
     obj->hdl.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
     obj->hdl.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
-    obj->hdl.Init.BusWide = SDMMC_BUS_WIDE_4B;
+    obj->hdl.Init.BusWide = SDMMC_BUS_WIDE_1B;
     obj->hdl.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
     obj->hdl.Init.ClockDiv = 2;
     obj->hdl.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;

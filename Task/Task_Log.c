@@ -63,11 +63,11 @@ void TaskLog_Core(Task_Handle hdl)
         DevLED.ctl(Led2, led_state);
     }
 
-    if (LogFile_Obj.info.size / 1024 < 1024)
+    if (LogFile_Obj.info.size / 1024 < 512)
     {
         // TaskLog_DataFormat_Write("%ld\r\n", t);
         // TaskLog_DataFormat_Write("test!! test!!\r\n");
-        Disk.write(&FATFS_Obj, &LogFile_Obj, "test  test  test  test\r\n", strlen("test  test  test  test\r\n"));
+        Disk.write(&FATFS_Obj, &LogFile_Obj, "test test test test\r\n", strlen("test test test test\r\n"));
     }
     else
     {

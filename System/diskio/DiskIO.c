@@ -1487,6 +1487,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
     {
         lst_file_cluster = FileObj->info.start_cluster;
         FileObj->info.start_cluster = FATObj->free_cluster;
+        FileObj->start_sec = FileObj->end_sec;
         FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
         Disk_Update_FreeCluster(FATObj);
 
@@ -1596,6 +1597,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
                 /* establish cluster link */
                 Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
+                Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
 
                 /* update end section */
                 FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
@@ -1606,10 +1608,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             FileObj->end_sec++;
         }
 
-        Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
         Disk_FileSize_Update(FileObj);
-
-        __DSB();
     } while (remain_write != 0);
 
     return true;
@@ -1621,7 +1620,7 @@ static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *di
     FATCluster_Addr file_cluster = ROOT_CLUSTER_ADDR;
     uint16_t name_size = strlen(name) + 1;
     Disk_TargetMatch_TypeDef match_state = {0};
-    uint32_t file_read_sec = 0;
+    // uint32_t file_read_sec = 0;
 
     name_buff = (char *)MMU_Malloc(name_size);
     if (name_buff == NULL)
@@ -1660,12 +1659,12 @@ static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *di
         if (FileObj->info.size)
         {
             /* update file last data section to cache data */
-            file_read_sec = FileObj->info.size / FATObj->BytePerSection + FileObj->start_sec;
-            FileObj->end_sec = file_read_sec;
+            // file_read_sec = FileObj->info.size / FATObj->BytePerSection + FileObj->start_sec;
+            // FileObj->end_sec = file_read_sec;
             FileObj->remain_byte_in_sec = FATObj->BytePerSection - FileObj->info.size % FATObj->BytePerSection;
             FileObj->cursor_pos = FileObj->info.size % FATObj->BytePerSection;
 
-            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, file_read_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
+            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FileObj->start_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
         }
 
         MMU_Free(name_buff);
