@@ -33,16 +33,13 @@ void TaskLog_Init(void)
 
     /* init module first then init task */
     Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue);
-
-    LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, "log/", ROOT_CLUSTER_ADDR);
-    LogFile_Obj = Disk.create_file(&FATFS_Obj, "log.txt", LogFolder_Cluster);
-    Disk.open(&FATFS_Obj, "log/", "log.txt", &LogFile_Obj);
 }
 
 Task *test_task;
 
 void TaskLog_Core(Task_Handle hdl)
 {
+    static bool crt_file = false;
     static uint8_t i = 0;
     static bool led_state = false;
     static uint32_t t;
@@ -51,31 +48,43 @@ void TaskLog_Core(Task_Handle hdl)
 
     test_task = (Task *)hdl;
 
-    DebugPin.ctl(Debug_PB4, true);
-    if (i < 10)
+    if(!crt_file)
     {
-        i++;
+        LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, "log/", ROOT_CLUSTER_ADDR);
+        LogFile_Obj = Disk.create_file(&FATFS_Obj, "log.txt", LogFolder_Cluster);
+        Disk.open(&FATFS_Obj, "log/", "log.txt", &LogFile_Obj);
+
+        crt_file = true;
     }
     else
     {
-        i = 0;
-        led_state = !led_state;
-        DevLED.ctl(Led2, led_state);
-    }
+        DebugPin.ctl(Debug_PB4, true);
+        if (i < 10)
+        {
+            i++;
+        }
+        else
+        {
+            i = 0;
+            led_state = !led_state;
+            DevLED.ctl(Led2, led_state);
+        }
 
-    if (LogFile_Obj.info.size / 1024 < 512)
-    {
-        // TaskLog_DataFormat_Write("%ld\r\n", t);
-        // TaskLog_DataFormat_Write("test!! test!!\r\n");
-        Disk.write(&FATFS_Obj, &LogFile_Obj, "test test test test\r\n", strlen("test test test test\r\n"));
-    }
-    else
-    {
-        i = 0;
-        DevLED.ctl(Led2, false);
-    }
+        // if (LogFile_Obj.info.size < 512 * 1024)
+        // {
+            // TaskLog_DataFormat_Write("%ld\r\n", t);
+            Disk.write(&FATFS_Obj, &LogFile_Obj, 
+            "test test test test test test test test test test test test test test test test\r\n", 
+            strlen("test test test test test test test test test test test test test test test test\r\n"));
+        // }
+        // else
+        // {
+        //     i = 0;
+        //     DevLED.ctl(Led2, false);
+        // }
 
-    DebugPin.ctl(Debug_PB4, false);
+        DebugPin.ctl(Debug_PB4, false);
+    }
 }
 
 static void TaskLog_DataFormat_Write(const char *format, ...)

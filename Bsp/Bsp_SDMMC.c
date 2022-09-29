@@ -222,7 +222,11 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
             if (SD_Rx_Cplt)
             {
                 SD_Rx_Cplt = false;
-                return true;
+
+                if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) 
+                    return true;
+
+                return false;
             }
             __DSB();
 
@@ -230,11 +234,13 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
         }
     }
 
+    SD_Rx_Cplt = false;
     return false;
 }
 
 static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
+    volatile HAL_SD_StateTypeDef opr_state;
     uint32_t retry_cnt = SDMMC_OPR_RETRY_MAX_CNT;
 
     // if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
@@ -249,9 +255,13 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
         while (retry_cnt)
         {
             if (SD_Tx_Cplt)
-            {
+            {                
                 SD_Tx_Cplt = false;
-                return true;
+                
+                if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) //HAL_SD_STATE_RESET
+                    return true;
+
+                return false;
             }
             __DSB();
 
@@ -259,6 +269,7 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
         }
     }
 
+    SD_Tx_Cplt = false;
     return false;
 }
 
