@@ -1585,7 +1585,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             if (remain_write)
             {
                 p_data += base_len - remain_write;
-                memcpy(Disk_FileSection_DataCache, p_data, remain_write);
+                memcpy(Disk_FileSection_DataCache + FileObj->cursor_pos, p_data, remain_write);
 
                 FileObj->remain_byte_in_sec -= remain_write;
                 FileObj->cursor_pos += remain_write;
@@ -1623,6 +1623,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
                 Disk_Update_FreeCluster(FATObj);
                 Disk_ClearCluster(FATObj, FATObj->free_cluster);
+                
                 if ((FileObj->info.start_cluster == FATObj->free_cluster) || (FATObj->free_cluster <= ROOT_CLUSTER_ADDR))
                     while(1);
 
