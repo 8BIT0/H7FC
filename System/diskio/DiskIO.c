@@ -114,7 +114,7 @@ DevCard_Obj_TypeDef DevTFCard_Obj = {
 };
 
 static const uint8_t DiskCard_NoneMBR_Label[] = {0xEB, 0x58, 0x90};
-static uint8_t Disk_Card_SectionBuff[DISK_CARD_BUFF_MAX_SIZE] __attribute__((section(".Perph_Section"))) = {0};
+static uint8_t Disk_Card_SectionBuff[DISK_CARD_SECTION_SZIE] __attribute__((section(".Perph_Section"))) = {0};
 static uint8_t Disk_FileSection_DataCache[DISK_CARD_SECTION_SZIE] __attribute__((section(".Perph_Section"))) = {0};
 
 #endif
@@ -1050,7 +1050,7 @@ static bool Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 
                 if (cluster_tmp == 0)
                 {
-                    FATObj->free_cluster = (sec_index * DISK_FAT_CLUSTER_ITEM_SUM) + free_index;
+                    FATObj->free_cluster = (nxt_sec * DISK_FAT_CLUSTER_ITEM_SUM) + free_index;
 
                     /* update FSINFO section on TFCard */
                     Disk_UpdateFSINFO(FATObj, FATObj->remain_cluster);
@@ -1489,14 +1489,16 @@ static void Disk_FileSize_Update(Disk_FileObj_TypeDef *FileObj)
 /* write into an empty file */
 static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
-    uint32_t use_cluster = 0;
+    // uint32_t use_cluster = 0;
     uint32_t use_sec = 0;
     FATCluster_Addr lst_file_cluster = 0;
 
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
 
-    use_cluster = len / FATObj->cluster_byte_size;
+    Disk_Update_File_Cluster(FileObj, FATObj->free_cluster);
+
+    // use_cluster = len / FATObj->cluster_byte_size;
 
     /* has bug in write in cluster */
     // for (uint16_t i = 0; i < use_cluster; i++)
@@ -1558,10 +1560,10 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
     FATCluster_Addr lst_file_cluster = 0;
-    volatile uint16_t write_len = 0;
+    uint16_t write_len = 0;
     uint16_t remain_write = 0;
     uint16_t base_len = len;
-    uint32_t cluster_end_section = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster) + FATObj->SecPerCluster;
+    uint32_t cluster_end_section = 0;
 
     if ((FATObj == NULL) || (!FATObj->init) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
@@ -1571,6 +1573,8 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
     if (FileObj->info.size == 0)
         return Disk_WriteFile_From_Head(FATObj, FileObj, p_data, len);
+
+    cluster_end_section = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster) + FATObj->SecPerCluster;
 
     do
     {
@@ -1619,7 +1623,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
                 Disk_Update_FreeCluster(FATObj);
                 Disk_ClearCluster(FATObj, FATObj->free_cluster);
-                if (FileObj->info.start_cluster == FATObj->free_cluster)
+                if ((FileObj->info.start_cluster == FATObj->free_cluster) || (FATObj->free_cluster <= ROOT_CLUSTER_ADDR))
                     while(1);
 
                 FileObj->info.start_cluster = FATObj->free_cluster;
@@ -1628,13 +1632,8 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
                 Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD);
 
-                if(FileObj->info.size >= 64 * 1024)
-                {
-                    while(1);
-                }
-
                 /* update end section */
-                // FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
+                FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
                 cluster_end_section = FileObj->end_sec + FATObj->SecPerCluster;
             }
 
@@ -1681,8 +1680,6 @@ static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *di
     match_state = Disk_MatchTaget(FATObj, name_buff, Disk_DataType_File, &(FileObj->info), file_cluster);
     if (match_state.match)
     {
-        Disk_Update_File_Cluster(FileObj, FATObj->free_cluster);
-
         FileObj->info_index = match_state.info_index;
         // FileObj->start_sec = match_state.sec_index;
         FileObj->end_sec = match_state.sec_index;

@@ -70,18 +70,18 @@ void TaskLog_Core(Task_Handle hdl)
             DevLED.ctl(Led2, led_state);
         }
 
-        // if (LogFile_Obj.info.size < 512 * 1024)
-        // {
+        if (LogFile_Obj.info.size < 16 * 1024 * 1024)
+        {
             // TaskLog_DataFormat_Write("%ld\r\n", t);
             Disk.write(&FATFS_Obj, &LogFile_Obj, 
             "test test test test test test test test test test test test test test test test\r\n", 
             strlen("test test test test test test test test test test test test test test test test\r\n"));
-        // }
-        // else
-        // {
-        //     i = 0;
-        //     DevLED.ctl(Led2, false);
-        // }
+        }
+        else
+        {
+            i = 0;
+            DevLED.ctl(Led2, false);
+        }
 
         DebugPin.ctl(Debug_PB4, false);
     }
