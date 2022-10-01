@@ -1622,7 +1622,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 lst_file_cluster = FileObj->info.start_cluster;
 
                 Disk_Update_FreeCluster(FATObj);
-                Disk_ClearCluster(FATObj, FATObj->free_cluster);
+                // Disk_ClearCluster(FATObj, FATObj->free_cluster);
                 
                 if ((FileObj->info.start_cluster == FATObj->free_cluster) || (FATObj->free_cluster <= ROOT_CLUSTER_ADDR))
                     while(1);
