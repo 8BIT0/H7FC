@@ -1,7 +1,9 @@
 #include "DataPipe.h"
+#include "mmu.h"
 #include "kernel.h"
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal_dma.h"
+#include "queue.h"
 
 DMA_HandleTypeDef DataPipe_DMA;
 

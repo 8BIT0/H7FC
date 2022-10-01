@@ -92,7 +92,8 @@
                 "fstream": "c",
                 "locale": "c",
                 "sstream": "c",
-                "stm32h7xx_hal_sd.h": "c"
+                "stm32h7xx_hal_sd.h": "c",
+                "datapipe.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
