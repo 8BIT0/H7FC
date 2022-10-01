@@ -32,9 +32,9 @@ typedef struct
     Pipe_TransError_Callback trans_error_cb;
     Pipe_TimeOutProc_Callback trans_timeout_cb;
 
-    uint64_t tx_cnt;
-    uint64_t rx_cnt;
-    uint64_t er_cnt;
+    uint32_t tx_cnt;
+    uint32_t rx_cnt;
+    uint32_t er_cnt;
 } DataPipeObj_TypeDef;
 #pragma pack()
 
