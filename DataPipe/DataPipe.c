@@ -7,6 +7,10 @@
 
 DMA_HandleTypeDef DataPipe_DMA;
 
+/* internal variable */
+static Data_PlugedPipeObj_TypeDef Cur_Pluged_PipeObj = {.origin = NULL, .target = NULL};
+static DataPipe_State_List Pipe_State = Pipe_UnReady;
+
 /* internal function */
 static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl);
 static void DataPipe_TransError_Callback(DMA_HandleTypeDef *dma_hdl);
@@ -46,8 +50,14 @@ static bool DataPipe_Init(void)
     return true;
 }
 
-static DataPipe_Handle DataPipe_Create()
+static bool DataPipe_ConfigObj()
 {
+    return true;
+}
+
+static bool DataPipe_ResetObj()
+{
+    return true;
 }
 
 static bool DataPipe_SendTo()
