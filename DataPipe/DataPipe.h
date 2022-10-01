@@ -15,7 +15,6 @@ typedef void (*Pipe_TimeOutProc_Callback)(void);
 typedef enum
 {
     Pipe_UnReady = 0,
-    Pipe_Idle,
     Pipe_Ready,
     Pipe_Busy,
     Pipe_Error,
@@ -41,8 +40,8 @@ typedef struct
 
 typedef struct
 {
-    DataPipeObj_TypeDef *origin;
-    DataPipeObj_TypeDef *target;
+    DataPipeObj_TypeDef *org;
+    DataPipeObj_TypeDef *dst;
 }Data_PlugedPipeObj_TypeDef;
 
 #endif

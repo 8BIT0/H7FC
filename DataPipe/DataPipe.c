@@ -50,20 +50,10 @@ static bool DataPipe_Init(void)
     return true;
 }
 
-static bool DataPipe_ConfigObj()
+static bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
 {
-    return true;
-}
-
-static bool DataPipe_ResetObj()
-{
-    return true;
-}
-
-static bool DataPipe_SendTo()
-{
-    // if ((p_org == NULL) || (p_dst == NULL) || (size == 0))
-    //     return false;
+    if ((p_org == NULL) || (p_dst == NULL) || (Pipe_State != Pipe_Ready))
+        return false;
 
     Kernel_EnterCritical();
 
