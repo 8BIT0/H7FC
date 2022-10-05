@@ -23,10 +23,8 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    volatile uint32_t data_addr;
+    uint32_t data_addr;
     uint16_t data_size;
-
-    uint32_t time_out;
 
     Pipe_TransFinish_Callback trans_finish_cb;
     Pipe_TransError_Callback trans_error_cb;
@@ -43,5 +41,12 @@ typedef struct
     DataPipeObj_TypeDef *org;
     DataPipeObj_TypeDef *dst;
 }Data_PlugedPipeObj_TypeDef;
+
+bool DataPipe_Init(void);
+bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst);
+bool DataPipe_DealError(void);
+
+extern DataPipeObj_TypeDef IMU_Smp_DataPipe;
+extern DataPipeObj_TypeDef IMU_Log_DataPipe;
 
 #endif

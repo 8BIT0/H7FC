@@ -11,8 +11,9 @@
 #include "error_log.h"
 #include "mmu.h"
 #include "DiskIO.h"
-// #include "DataPool.h"
+#include "DataPipe/DataPipe.h"
 #include "Task_Protocol.h"
+#include "Task_SensorInertial.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
 #include <stdio.h>
@@ -22,14 +23,21 @@ static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static Disk_FileObj_TypeDef LogFile_Obj;
 static Disk_FATFileSys_TypeDef FATFS_Obj;
 static uint8_t test[512] = {0};
+static SrvIMU_Data_TypeDef LogPriIMU_Data __attribute__((section(".Perph_Section")));
+static SrvIMU_Data_TypeDef LogSecIMU_Data __attribute__((section(".Perph_Section")));
+DataPipeObj_TypeDef IMU_Log_DataPipe;
 
 /* internal function */
 static void TaskLog_DataFormat_Write(const char *format, ...);
 
 void TaskLog_Init(void)
 {
+    memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
     memset(&FATFS_Obj, NULL, sizeof(FATFS_Obj));
+
+    IMU_Log_DataPipe.data_addr = (uint32_t)&LogPriIMU_Data;
+    IMU_Log_DataPipe.data_size = sizeof(LogPriIMU_Data);
 
     /* init module first then init task */
     Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue);
@@ -58,7 +66,7 @@ void TaskLog_Core(Task_Handle hdl)
     }
     else
     {
-        DebugPin.ctl(Debug_PB4, true);
+        // DebugPin.ctl(Debug_PB4, true);
         if (i < 10)
         {
             i++;
@@ -83,7 +91,7 @@ void TaskLog_Core(Task_Handle hdl)
             DevLED.ctl(Led2, false);
         }
 
-        DebugPin.ctl(Debug_PB4, false);
+        // DebugPin.ctl(Debug_PB4, false);
     }
 }
 

@@ -7,6 +7,7 @@
 #include "scheduler.h"
 #include "runtime.h"
 #include "imu_data.h"
+#include "SrvMPU_Sample.h"
 
 /* task state */
 typedef enum

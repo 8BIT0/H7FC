@@ -362,8 +362,8 @@ static void SrvIMU_Sample(void)
 
             for (i = Axis_X; i < Axis_Sum; i++)
             {
-                PriIMU_Data.acc[i] = MPU6000Obj.OriData.acc_dou[i];
-                PriIMU_Data.gyr[i] = MPU6000Obj.OriData.gyr_dou[i];
+                PriIMU_Data.acc[i] = MPU6000Obj.OriData.acc_flt[i];
+                PriIMU_Data.gyr[i] = MPU6000Obj.OriData.gyr_flt[i];
             }
 
             /* filter Pri IMU Module data */
@@ -393,8 +393,8 @@ static void SrvIMU_Sample(void)
 
             for (i = Axis_X; i < Axis_Sum; i++)
             {
-                SecIMU_Data.acc[i] = ICM20602Obj.OriData.acc_dou[i];
-                SecIMU_Data.gyr[i] = ICM20602Obj.OriData.gyr_dou[i];
+                SecIMU_Data.acc[i] = ICM20602Obj.OriData.acc_flt[i];
+                SecIMU_Data.gyr[i] = ICM20602Obj.OriData.gyr_flt[i];
             }
 
             /* filter Sec IMU Module data */

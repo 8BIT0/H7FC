@@ -8,6 +8,7 @@
 #include "runtime.h"
 #include "Dev_Led.h"
 #include "DiskIO.h"
+#include "DataPipe/DataPipe.h"
 
 Task_Handle TaskProtocol_Handle = NULL;
 Task_Handle TaskInertial_Handle = NULL;
@@ -50,6 +51,8 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PB5);
     DebugPin.init(Debug_PB6);
     DebugPin.init(Debug_PB10);
+
+    DataPipe_Init();
 
     TaskProtocol_Init();
     TaskInertial_Init();

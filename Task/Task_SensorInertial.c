@@ -3,13 +3,18 @@
 #include "debug_util.h"
 #include "runtime.h"
 #include "IO_Definition.h"
-#include "SrvMPU_Sample.h"
 #include "debug_util.h"
 #include "error_log.h"
+#include "DataPipe/DataPipe.h"
+
+#define DATAPIPE_TRANS_TIMEOUT_100Ms 100
 
 /* internal var */
+DataPipeObj_TypeDef IMU_Smp_DataPipe;
 static Task_SensorInertial_State TaskInertial_State = Task_SensorInertial_Core;
 static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
+static SrvIMU_Data_TypeDef PriIMU_Data __attribute__((section(".Perph_Section")));
+static SrvIMU_Data_TypeDef SecIMU_Data __attribute__((section(".Perph_Section")));
 
 /* internal function */
 static void TaskInertical_Blink_Notification(uint16_t duration);
@@ -18,6 +23,13 @@ static void TaskInertical_Blink_Notification(uint16_t duration);
 
 void TaskInertial_Init(void)
 {
+    memset(&IMU_Smp_DataPipe, NULL, sizeof(IMU_Smp_DataPipe));
+    memset(&PriIMU_Data, NULL, sizeof(PriIMU_Data));
+    memset(&SecIMU_Data, NULL, sizeof(SecIMU_Data));
+
+    IMU_Smp_DataPipe.data_addr = (uint32_t)&PriIMU_Data;
+    IMU_Smp_DataPipe.data_size = sizeof(PriIMU_Data);
+
     /* regist error */
     if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
         TaskInertial_State = Task_SensorInertial_Error;
@@ -33,6 +45,10 @@ void TaskInertical_Core(Task_Handle hdl)
         SrvIMU.sample();
 
         /* then use dma m2m as data pipe to protocol data to target buff */
+        PriIMU_Data = SrvIMU.get_data(SrvIMU_PriModule);
+        SecIMU_Data = SrvIMU.get_data(SrvIMU_SecModule);
+
+        DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);
 
         break;
 

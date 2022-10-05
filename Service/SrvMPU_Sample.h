@@ -50,11 +50,6 @@ typedef struct
     float gyr[Axis_Sum];
     float acc[Axis_Sum];
 } SrvIMU_Data_TypeDef;
-
-typedef struct
-{
-
-} SrvIMU_ErrorOut_TypeDef;
 #pragma pack()
 
 typedef struct
