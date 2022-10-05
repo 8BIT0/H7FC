@@ -50,6 +50,12 @@ typedef struct
     float gyr[Axis_Sum];
     float acc[Axis_Sum];
 } SrvIMU_Data_TypeDef;
+
+typedef union
+{
+    uint8_t buff[sizeof(SrvIMU_Data_TypeDef)];
+    SrvIMU_Data_TypeDef data;
+} SrvIMU_UnionData_TypeDef;
 #pragma pack()
 
 typedef struct

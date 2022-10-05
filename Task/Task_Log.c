@@ -23,8 +23,8 @@ static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static Disk_FileObj_TypeDef LogFile_Obj;
 static Disk_FATFileSys_TypeDef FATFS_Obj;
 static uint8_t test[512] = {0};
-static SrvIMU_Data_TypeDef LogPriIMU_Data __attribute__((section(".Perph_Section")));
-static SrvIMU_Data_TypeDef LogSecIMU_Data __attribute__((section(".Perph_Section")));
+static SrvIMU_UnionData_TypeDef LogPriIMU_Data __attribute__((section(".Perph_Section")));
+static SrvIMU_UnionData_TypeDef LogSecIMU_Data __attribute__((section(".Perph_Section")));
 DataPipeObj_TypeDef IMU_Log_DataPipe;
 
 /* internal function */
@@ -56,7 +56,7 @@ void TaskLog_Core(Task_Handle hdl)
 
     test_task = (Task *)hdl;
 
-    if(!crt_file)
+    if (!crt_file)
     {
         LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, "log/", ROOT_CLUSTER_ADDR);
         LogFile_Obj = Disk.create_file(&FATFS_Obj, "log.txt", LogFolder_Cluster);
@@ -81,8 +81,8 @@ void TaskLog_Core(Task_Handle hdl)
         if (LogFile_Obj.info.size < 4 * 1024 * 1024)
         {
             TaskLog_DataFormat_Write("%ld\r\n", t);
-            // Disk.write(&FATFS_Obj, &LogFile_Obj, 
-            // "test test test test test test test test test test test test test test test test\r\n", 
+            // Disk.write(&FATFS_Obj, &LogFile_Obj,
+            // "test test test test test test test test test test test test test test test test\r\n",
             // strlen("test test test test test test test test test test test test test test test test\r\n"));
         }
         else
