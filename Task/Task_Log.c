@@ -21,6 +21,9 @@
 #include "IO_Definition.h"
 #include <stdio.h>
 
+#define LOG_FOLDER "log/"
+#define IMU_LOG_FILE "imu.log"
+
 #define M_BYTE 1024 * 1024
 #define MAX_FILE_SIZE_M(x) x * M_BYTE
 
@@ -57,9 +60,9 @@ void TaskLog_Init(void)
     /* init module first then init task */
     if(Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
     {
-        LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, "log/", ROOT_CLUSTER_ADDR);
-        LogFile_Obj = Disk.create_file(&FATFS_Obj, "data.log", LogFolder_Cluster);
-        Disk.open(&FATFS_Obj, "log/", "data.log", &LogFile_Obj);
+        LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, LOG_FOLDER, ROOT_CLUSTER_ADDR);
+        LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster);
+        Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
         /* create cache */
         if(TaskLog_CreateCache(&IMU_LogMonitor, 2, FATFS_Obj.BytePerSection, LogIMU_Header))
