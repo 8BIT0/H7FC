@@ -184,7 +184,7 @@ static void TaskLog_IMUData_Update(Log_Monitor_TypeDef *log_obj, DataPipeObj_Typ
     {
         log_obj->store_page = log_obj->inuse_cache_page;
 
-        /* switch page */
+        /* switch cache page */
         if(log_obj->cache_page_sum > 1)
         {
             log_obj->inuse_page_id ++;
