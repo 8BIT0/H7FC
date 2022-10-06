@@ -160,7 +160,7 @@ static void TaskLog_IMU_ToFile(Log_Monitor_TypeDef *log_obj)
 {
     if(log_obj == NULL)
         return;
-        
+
 }
 
 static void TaskLog_IMUData_Update(Log_Monitor_TypeDef *log_obj, DataPipeObj_TypeDef *pipe_obj)
@@ -179,6 +179,8 @@ static void TaskLog_IMUData_Update(Log_Monitor_TypeDef *log_obj, DataPipeObj_Typ
     }
     else
     {
+        log_obj->store_page = log_obj->inuse_cache_page;
+
         /* switch page */
         if(log_obj->cache_page_sum > 1)
         {
@@ -187,8 +189,8 @@ static void TaskLog_IMUData_Update(Log_Monitor_TypeDef *log_obj, DataPipeObj_Typ
 
             log_obj->inuse_cache_page = log_obj->cache_obj + (log_obj->inuse_page_id * sizeof(LogCache_TypeDef));
         }
-
-        log_obj->store_page = log_obj->inuse_cache_page;
+        else
+            log_obj->inuse_cache_page = NULL;
     }
 }
 
