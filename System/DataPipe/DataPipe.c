@@ -32,7 +32,7 @@ bool DataPipe_Init(void)
     DataPipe_DMA.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     DataPipe_DMA.Init.Mode = DMA_NORMAL;
     DataPipe_DMA.Init.Priority = DMA_PRIORITY_VERY_HIGH;
-    DataPipe_DMA.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    DataPipe_DMA.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
 
     if (HAL_DMA_Init(&DataPipe_DMA) != HAL_OK)
         return false;
@@ -68,24 +68,24 @@ bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
     Kernel_EnterCritical();
 
 retry:
-    Pipe_State = Pipe_Busy;    
-    if(HAL_DMA_Start_IT(&DataPipe_DMA, p_org->data_addr, p_dst->data_addr, p_org->data_size) != HAL_OK)
+    Pipe_State = Pipe_Busy;
+    if (HAL_DMA_Start_IT(&DataPipe_DMA, p_org->data_addr, p_dst->data_addr, p_org->data_size) != HAL_OK)
     {
         Pipe_State = Pipe_Error;
-        p_org->er_cnt ++;
-        p_dst->er_cnt ++;
+        p_org->er_cnt++;
+        p_dst->er_cnt++;
         retry_cnt--;
-        
-        if(HAL_DMA_Abort_IT(&DataPipe_DMA) != HAL_OK)
+
+        if (HAL_DMA_Abort_IT(&DataPipe_DMA) != HAL_OK)
         {
-            if(retry_cnt)
+            if (retry_cnt)
                 goto retry;
         }
     }
 
     Kernel_ExitCritical();
 
-    if(Pipe_State != Pipe_Error)
+    if (Pipe_State != Pipe_Error)
         return true;
 
     return false;
@@ -93,9 +93,8 @@ retry:
 
 bool DataPipe_DealError(void)
 {
-    if(Pipe_State == Pipe_Error)
+    if (Pipe_State == Pipe_Error)
     {
-
     }
 
     return true;
@@ -108,13 +107,13 @@ static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl)
     {
         Pipe_State = Pipe_Ready;
 
-        Cur_Pluged_PipeObj.dst->rx_cnt ++;
-        Cur_Pluged_PipeObj.org->tx_cnt ++;
+        Cur_Pluged_PipeObj.dst->rx_cnt++;
+        Cur_Pluged_PipeObj.org->tx_cnt++;
 
-        if(Cur_Pluged_PipeObj.org->trans_finish_cb)
+        if (Cur_Pluged_PipeObj.org->trans_finish_cb)
             Cur_Pluged_PipeObj.org->trans_finish_cb();
 
-        if(Cur_Pluged_PipeObj.dst->trans_finish_cb)
+        if (Cur_Pluged_PipeObj.dst->trans_finish_cb)
             Cur_Pluged_PipeObj.dst->trans_finish_cb();
 
         Cur_Pluged_PipeObj.dst = NULL;
@@ -129,69 +128,68 @@ static void DataPipe_TransError_Callback(DMA_HandleTypeDef *dma_hdl)
     {
         Pipe_State = Pipe_Error;
 
-        Cur_Pluged_PipeObj.dst->er_cnt ++;
-        Cur_Pluged_PipeObj.org->er_cnt ++;
+        Cur_Pluged_PipeObj.dst->er_cnt++;
+        Cur_Pluged_PipeObj.org->er_cnt++;
 
-        if(Cur_Pluged_PipeObj.org->trans_error_cb)
+        if (Cur_Pluged_PipeObj.org->trans_error_cb)
             Cur_Pluged_PipeObj.org->trans_error_cb();
 
-        if(Cur_Pluged_PipeObj.dst->trans_error_cb)
+        if (Cur_Pluged_PipeObj.dst->trans_error_cb)
             Cur_Pluged_PipeObj.dst->trans_error_cb();
 
         Cur_Pluged_PipeObj.dst = NULL;
         Cur_Pluged_PipeObj.org = NULL;
 
         /*!< Transfer error */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_TE)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_TE)
         {
         }
 
         /*!< FIFO error */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_FE)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_FE)
         {
         }
 
         /*!< Direct Mode error */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_DME)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_DME)
         {
         }
 
         /*!< Timeout error */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_TIMEOUT)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_TIMEOUT)
         {
         }
 
         /*!< Parameter error */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_PARAM)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_PARAM)
         {
         }
 
         /*!< Abort requested with no Xfer ongoing */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_PARAM)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_PARAM)
         {
         }
 
         /*!< Not supported mode */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_NOT_SUPPORTED)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_NOT_SUPPORTED)
         {
         }
 
         /*!< DMAMUX sync overrun  error */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_SYNC)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_SYNC)
         {
         }
 
         /*!< DMAMUX request generator overrun  error */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_REQGEN)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_REQGEN)
         {
         }
 
         /*!< DMA Busy error */
-        if(dma_hdl->ErrorCode & HAL_DMA_ERROR_BUSY)
+        if (dma_hdl->ErrorCode & HAL_DMA_ERROR_BUSY)
         {
         }
 
         /* recover from error */
     }
 }
-
