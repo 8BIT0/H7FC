@@ -15,6 +15,8 @@
 #include "IO_Definition.h"
 #include "Bsp_GPIO.h"
 #include "error_log.h"
+#include "DataPipe/DataPipe.h"
+#include "Task_SensorInertial.h"
 #include "mmu.h"
 
 static bool test = false;
@@ -26,10 +28,11 @@ static QueueObj_TypeDef VCP_ProtoQueue; /* Send Queue */
 static bool VCP_Queue_CreateState = false;
 static ProtoQueue_State_List VCPQueue_State = ProtoQueue_Idle;
 static bool VCP_Connect_State = false; /* USB connect state */
-
-/* task state var */
+DataPipeObj_TypeDef IMU_Ptl_DataPipe;
 static TaskProto_State_List task_state = TaskProto_Core;
 static bool Shell_Mode = false;
+static SrvIMU_UnionData_TypeDef PtlPriIMU_Data __attribute__((section(".Perph_Section")));
+static SrvIMU_UnionData_TypeDef PtlSecIMU_Data __attribute__((section(".Perph_Section")));
 
 /* internal function */
 static void TaskProtocol_Main(uint8_t *data, uint16_t size);
@@ -40,6 +43,12 @@ ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size
 
 bool TaskProtocol_Init(void)
 {
+    memset(&IMU_Ptl_DataPipe, NULL, sizeof(IMU_Ptl_DataPipe));
+    memset(&PtlPriIMU_Data, NULL, sizeof(PtlPriIMU_Data));
+    
+    IMU_Ptl_DataPipe.data_addr = (uint32_t)&PtlPriIMU_Data;
+    IMU_Ptl_DataPipe.data_size = sizeof(PtlPriIMU_Data);
+
     if (!USB_DEVICE_Init())
     {
         task_state = TaskProto_Error_Proc;

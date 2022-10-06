@@ -44,11 +44,17 @@ void TaskInertical_Core(Task_Handle hdl)
         // TaskInertical_Blink_Notification(100);
         SrvIMU.sample();
 
-        /* then use dma m2m as data pipe to protocol data to target buff */
         PriIMU_Data.data = SrvIMU.get_data(SrvIMU_PriModule);
         SecIMU_Data.data = SrvIMU.get_data(SrvIMU_SecModule);
 
+        for(uint8_t chk = 0; chk < sizeof(PriIMU_Data) - sizeof(uint16_t); chk++)
+        {
+            PriIMU_Data.data.chk_sum += PriIMU_Data.buff[chk];
+            SecIMU_Data.data.chk_sum += SecIMU_Data.buff[chk];
+        }
+
         DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);
+        DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ptl_DataPipe);
 
         break;
 

@@ -7,6 +7,8 @@
 #include "queue.h"
 #include "runtime.h"
 
+#define MAX_RETRY_CNT 200
+
 DMA_HandleTypeDef DataPipe_DMA;
 
 /* internal variable */
@@ -26,7 +28,7 @@ bool DataPipe_Init(void)
     DataPipe_DMA.Instance = DMA2_Stream7;
     DataPipe_DMA.Init.Request = DMA_REQUEST_MEM2MEM;
     DataPipe_DMA.Init.Direction = DMA_MEMORY_TO_MEMORY;
-    DataPipe_DMA.Init.PeriphInc = DMA_PINC_DISABLE;
+    DataPipe_DMA.Init.PeriphInc = DMA_PINC_ENABLE;
     DataPipe_DMA.Init.MemInc = DMA_MINC_ENABLE;
     DataPipe_DMA.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
     DataPipe_DMA.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
@@ -43,7 +45,7 @@ bool DataPipe_Init(void)
 
     /* DMA interrupt init */
     /* DMA2_Stream7_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
     Pipe_State = Pipe_Ready;
@@ -85,10 +87,16 @@ retry:
 
     Kernel_ExitCritical();
 
-    if (Pipe_State != Pipe_Error)
-        return true;
+    retry_cnt = MAX_RETRY_CNT;
+    while (Pipe_State != Pipe_Ready)
+    {
+        retry_cnt --;
 
-    return false;
+        if(retry_cnt == 0)
+            return false;
+    }
+
+    return true;
 }
 
 bool DataPipe_DealError(void)
@@ -111,10 +119,10 @@ static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl)
         Cur_Pluged_PipeObj.org->tx_cnt++;
 
         if (Cur_Pluged_PipeObj.org->trans_finish_cb)
-            Cur_Pluged_PipeObj.org->trans_finish_cb();
+            Cur_Pluged_PipeObj.org->trans_finish_cb(Cur_Pluged_PipeObj.org);
 
         if (Cur_Pluged_PipeObj.dst->trans_finish_cb)
-            Cur_Pluged_PipeObj.dst->trans_finish_cb();
+            Cur_Pluged_PipeObj.dst->trans_finish_cb(Cur_Pluged_PipeObj.dst);
 
         Cur_Pluged_PipeObj.dst = NULL;
         Cur_Pluged_PipeObj.org = NULL;
@@ -132,10 +140,10 @@ static void DataPipe_TransError_Callback(DMA_HandleTypeDef *dma_hdl)
         Cur_Pluged_PipeObj.org->er_cnt++;
 
         if (Cur_Pluged_PipeObj.org->trans_error_cb)
-            Cur_Pluged_PipeObj.org->trans_error_cb();
+            Cur_Pluged_PipeObj.org->trans_error_cb(Cur_Pluged_PipeObj.org);
 
         if (Cur_Pluged_PipeObj.dst->trans_error_cb)
-            Cur_Pluged_PipeObj.dst->trans_error_cb();
+            Cur_Pluged_PipeObj.dst->trans_error_cb(Cur_Pluged_PipeObj.dst);
 
         Cur_Pluged_PipeObj.dst = NULL;
         Cur_Pluged_PipeObj.org = NULL;

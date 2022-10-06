@@ -5,10 +5,9 @@
 #include <string.h>
 #include <stdbool.h>
 
-typedef uint32_t DataPipe_Handle;
-typedef void (*Pipe_TransFinish_Callback)(void);
-typedef void (*Pipe_TransError_Callback)(void);
-typedef void (*Pipe_TimeOutProc_Callback)(void);
+typedef void (*Pipe_TransFinish_Callback)(void *pipe_obj);
+typedef void (*Pipe_TransError_Callback)(void *pipe_obj);
+typedef void (*Pipe_TimeOutProc_Callback)(void *pipe_obj);
 
 #define DataPipeHandleToObj(x) ((DataPipeObj_TypeDef *)x)
 
@@ -28,7 +27,6 @@ typedef struct
 
     Pipe_TransFinish_Callback trans_finish_cb;
     Pipe_TransError_Callback trans_error_cb;
-    Pipe_TimeOutProc_Callback trans_timeout_cb;
 
     uint32_t tx_cnt;
     uint32_t rx_cnt;
@@ -48,5 +46,6 @@ bool DataPipe_DealError(void);
 
 extern DataPipeObj_TypeDef IMU_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_Log_DataPipe;
+extern DataPipeObj_TypeDef IMU_Ptl_DataPipe;
 
 #endif

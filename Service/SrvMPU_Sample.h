@@ -49,6 +49,8 @@ typedef struct
     float tempera;
     float gyr[Axis_Sum];
     float acc[Axis_Sum];
+
+    uint16_t chk_sum;
 } SrvIMU_Data_TypeDef;
 
 typedef union
