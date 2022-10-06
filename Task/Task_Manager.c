@@ -52,6 +52,14 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PB6);
     DebugPin.init(Debug_PB10);
 
+    /* receiver port init */
+
+    /* ESC port init */
+
+    /* vol ADC init */
+
+    /* cur ADC init */
+
     DataPipe_Init();
 
     TaskProtocol_Init();
