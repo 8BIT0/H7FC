@@ -27,6 +27,7 @@ typedef struct
     uint8_t *p_buf;
     uint16_t rem_size; /* remain size */
     uint16_t ocp_size; /* occupy size */
+    uint16_t tot_size; /* total  size */
 
     uint8_t page;
     uint8_t id;

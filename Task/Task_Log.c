@@ -26,6 +26,7 @@
 
 #define M_BYTE 1024 * 1024
 #define MAX_FILE_SIZE_M(x) x * M_BYTE
+#define MIN_CACHE_NUM 2
 
 /* internal variable */
 static const LogData_Header_TypeDef LogIMU_Header = {
@@ -65,7 +66,7 @@ void TaskLog_Init(void)
         Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
         /* create cache */
-        if(TaskLog_CreateCache(&IMU_LogMonitor, 2, FATFS_Obj.BytePerSection, LogIMU_Header))
+        if(TaskLog_CreateCache(&IMU_LogMonitor, MIN_CACHE_NUM, FATFS_Obj.BytePerSection, LogIMU_Header))
             LogFile_Ready = true;
     }
 }
@@ -112,7 +113,7 @@ static bool TaskLog_CreateCache(Log_Monitor_TypeDef *obj, uint8_t cache_sum, uin
 {
     uint16_t init_cnt = 0;
 
-    if((obj == NULL) || (cache_sum == 0) || (cache_buff_size == 0))
+    if((obj == NULL) || (cache_sum <= 1) || (cache_buff_size == 0))
         return false;
 
     obj->cache_obj = (LogCache_TypeDef *)MMU_Malloc(sizeof(LogCache_TypeDef) * cache_sum);
@@ -141,6 +142,7 @@ static bool TaskLog_CreateCache(Log_Monitor_TypeDef *obj, uint8_t cache_sum, uin
         
         memset(obj->cache_obj[i].p_buf, NULL, cache_buff_size);
         obj->cache_obj[i].rem_size = cache_buff_size;
+        obj->cache_obj[i].tot_size = cache_buff_size;
         obj->cache_obj[i].ocp_size = 0;
     
         obj->cache_obj[i].page = cache_sum;
@@ -185,15 +187,10 @@ static void TaskLog_IMUData_Update(Log_Monitor_TypeDef *log_obj, DataPipeObj_Typ
         log_obj->store_page = log_obj->inuse_cache_page;
 
         /* switch cache page */
-        if(log_obj->cache_page_sum > 1)
-        {
-            log_obj->inuse_page_id ++;
-            log_obj->inuse_page_id %= log_obj->cache_page_sum;
+        log_obj->inuse_page_id ++;
+        log_obj->inuse_page_id %= log_obj->cache_page_sum;
 
-            log_obj->inuse_cache_page = log_obj->cache_obj + (log_obj->inuse_page_id * sizeof(LogCache_TypeDef));
-        }
-        else
-            log_obj->inuse_cache_page = NULL;
+        log_obj->inuse_cache_page = log_obj->cache_obj + (log_obj->inuse_page_id * sizeof(LogCache_TypeDef));
     }
 }
 
