@@ -177,6 +177,11 @@ static void TaskLog_IMU_ToFile(Log_Monitor_TypeDef *log_obj)
     {
         memcpy(&log_obj->store_page->p_buf[init_index * log_obj->single_log_size], &log_obj->log_header, sizeof(log_obj->log_header));
     }
+
+    log_obj->store_page->ocp_size = 0;
+    log_obj->store_page->rem_size = log_obj->store_page->tot_size;
+
+    log_obj->store_page = NULL;
 }
 
 static void TaskLog_IMUData_Update(Log_Monitor_TypeDef *log_obj, DataPipeObj_TypeDef *pipe_obj)
