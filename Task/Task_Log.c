@@ -95,9 +95,7 @@ void TaskLog_Core(Task_Handle hdl)
 
         if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(1))
         {
-            // Disk.write(&FATFS_Obj, &LogFile_Obj,
-            // "test test test test test test test test test test test test test test test test\r\n",
-            // strlen("test test test test test test test test test test test test test test test test\r\n"));
+            TaskLog_IMU_ToFile(&IMU_LogMonitor);
         }
         else
         {
