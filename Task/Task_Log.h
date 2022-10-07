@@ -20,7 +20,7 @@ typedef struct
     uint8_t header;
     uint8_t type;
     uint8_t size;
-}LogData_Header_TypeDef;
+} LogData_Header_TypeDef;
 
 typedef struct
 {
@@ -31,11 +31,12 @@ typedef struct
 
     uint8_t page;
     uint8_t id;
-}LogCache_TypeDef;
+} LogCache_TypeDef;
 #pragma pack()
 
 typedef struct
 {
+    LogData_Header_TypeDef log_header;
     LogCache_TypeDef *cache_obj;
     LogCache_TypeDef *inuse_cache_page;
     LogCache_TypeDef *store_page;
@@ -45,7 +46,7 @@ typedef struct
 
     uint8_t inuse_page_id;
     uint8_t cache_page_sum;
-}Log_Monitor_TypeDef;
+} Log_Monitor_TypeDef;
 
 void TaskLog_Init(void);
 void TaskLog_Core(Task_Handle hdl);
