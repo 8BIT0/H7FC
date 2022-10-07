@@ -150,7 +150,7 @@ static bool TaskLog_CreateCache(Log_Monitor_TypeDef *obj, uint8_t cache_sum, uin
 
         for (uint8_t init_index = 0; init_index < init_cnt; init_index++)
         {
-            memset(&obj->cache_obj[i].p_buf[init_index * obj->single_log_size], &header, sizeof(header));
+            memcpy(&obj->cache_obj[i].p_buf[init_index * obj->single_log_size], &header, sizeof(header));
         }
     }
 
@@ -165,6 +165,10 @@ static void TaskLog_IMU_ToFile(Log_Monitor_TypeDef *log_obj)
 {
     if (log_obj == NULL || log_obj->store_page == NULL)
         return;
+
+    Disk.write(&FATFS_Obj, &LogFile_Obj, log_obj->store_page->p_buf, log_obj->store_page->ocp_size);
+
+    memset(log_obj->store_page->p_buf, NULL, log_obj->store_page->tot_size);
 }
 
 static void TaskLog_IMUData_Update(Log_Monitor_TypeDef *log_obj, DataPipeObj_TypeDef *pipe_obj)
