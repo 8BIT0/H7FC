@@ -1,7 +1,7 @@
 /*
  *  coder: 8_B!T0
  *  bref: use this task Log Gyro and Acc Data
- *  
+ *
  *  this task and module can be improved and optimized in a big but way we use it in short time temporary
  *  after when the main fundamental ability was accomplished we go back in this file and do improve and optimize to it
  */
@@ -25,7 +25,7 @@
 #define IMU_LOG_FILE "imu.log"
 
 #define M_BYTE 1024 * 1024
-#define MAX_FILE_SIZE_M(x) x * M_BYTE
+#define MAX_FILE_SIZE_M(x) x *M_BYTE
 #define MIN_CACHE_NUM 2
 
 /* internal variable */
@@ -48,7 +48,6 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
 static bool TaskLog_CreateCache(Log_Monitor_TypeDef *obj, uint8_t cache_sum, uint16_t cache_buff_size, LogData_Header_TypeDef header);
 static void TaskLog_IMU_ToFile(Log_Monitor_TypeDef *log_obj);
 
-
 void TaskLog_Init(void)
 {
     memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
@@ -60,14 +59,14 @@ void TaskLog_Init(void)
     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
 
     /* init module first then init task */
-    if(Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
+    if (Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
     {
         LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, LOG_FOLDER, ROOT_CLUSTER_ADDR);
         LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster);
         Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
         /* create cache */
-        if(TaskLog_CreateCache(&IMU_LogMonitor, MIN_CACHE_NUM, FATFS_Obj.BytePerSection, LogIMU_Header))
+        if (TaskLog_CreateCache(&IMU_LogMonitor, MIN_CACHE_NUM, FATFS_Obj.BytePerSection, LogIMU_Header))
             LogFile_Ready = true;
     }
 }
@@ -80,7 +79,7 @@ void TaskLog_Core(Task_Handle hdl)
 
     t = Get_CurrentRunningMs();
 
-    if(LogFile_Ready)
+    if (LogFile_Ready)
     {
         // DebugPin.ctl(Debug_PB4, true);
         if (i < 10)
@@ -114,11 +113,11 @@ static bool TaskLog_CreateCache(Log_Monitor_TypeDef *obj, uint8_t cache_sum, uin
 {
     uint16_t init_cnt = 0;
 
-    if((obj == NULL) || (cache_sum <= 1) || (cache_buff_size == 0))
+    if ((obj == NULL) || (cache_sum <= 1) || (cache_buff_size == 0))
         return false;
 
     obj->cache_obj = (LogCache_TypeDef *)MMU_Malloc(sizeof(LogCache_TypeDef) * cache_sum);
-    if(obj->cache_obj == NULL)
+    if (obj->cache_obj == NULL)
     {
         MMU_Free(obj->cache_obj);
         return false;
@@ -129,27 +128,27 @@ static bool TaskLog_CreateCache(Log_Monitor_TypeDef *obj, uint8_t cache_sum, uin
 
     init_cnt = cache_buff_size / obj->single_log_size;
 
-    for(uint8_t i = 0; i < cache_sum; i++)
+    for (uint8_t i = 0; i < cache_sum; i++)
     {
         memset(&(obj->cache_obj)[i], NULL, sizeof(LogCache_TypeDef));
 
         obj->cache_obj[i].p_buf = MMU_Malloc(cache_buff_size);
-        if(obj->cache_obj[i].p_buf == NULL)
+        if (obj->cache_obj[i].p_buf == NULL)
         {
             MMU_Free(obj->cache_obj[i].p_buf);
             MMU_Free(obj->cache_obj);
             return false;
         }
-        
+
         memset(obj->cache_obj[i].p_buf, NULL, cache_buff_size);
         obj->cache_obj[i].rem_size = cache_buff_size;
         obj->cache_obj[i].tot_size = cache_buff_size;
         obj->cache_obj[i].ocp_size = 0;
-    
+
         obj->cache_obj[i].page = cache_sum;
         obj->cache_obj[i].id = i;
 
-        for(uint8_t init_index = 0; init_index < init_cnt; init_index ++)
+        for (uint8_t init_index = 0; init_index < init_cnt; init_index++)
         {
             memset(&obj->cache_obj[i].p_buf[init_index * obj->single_log_size], &header, sizeof(header));
         }
@@ -164,44 +163,40 @@ static bool TaskLog_CreateCache(Log_Monitor_TypeDef *obj, uint8_t cache_sum, uin
 
 static void TaskLog_IMU_ToFile(Log_Monitor_TypeDef *log_obj)
 {
-    if(log_obj == NULL || log_obj->store_page == NULL)
+    if (log_obj == NULL || log_obj->store_page == NULL)
         return;
-
-    
 }
 
 static void TaskLog_IMUData_Update(Log_Monitor_TypeDef *log_obj, DataPipeObj_TypeDef *pipe_obj)
 {
-    if((log_obj == NULL) || (log_obj->inuse_cache_page == NULL))
+    if ((log_obj == NULL) || (log_obj->inuse_cache_page == NULL))
         return;
 
-    if(log_obj->inuse_cache_page->rem_size >= log_obj->single_log_size)
-    {
-        memcpy( log_obj->inuse_cache_page->p_buf + log_obj->single_log_offset + log_obj->inuse_cache_page->ocp_size, 
-                (uint8_t *)(pipe_obj->data_addr), 
-                pipe_obj->data_size);
-        
-        log_obj->inuse_cache_page->rem_size -= log_obj->single_log_size;
-        log_obj->inuse_cache_page->ocp_size += log_obj->single_log_size;
-    }
-    else
+    if (log_obj->inuse_cache_page->rem_size < log_obj->single_log_size)
     {
         log_obj->store_page = log_obj->inuse_cache_page;
 
         /* switch cache page */
-        log_obj->inuse_page_id ++;
+        log_obj->inuse_page_id++;
         log_obj->inuse_page_id %= log_obj->cache_page_sum;
 
-        log_obj->inuse_cache_page = log_obj->cache_obj + (log_obj->inuse_page_id * sizeof(LogCache_TypeDef));
+        log_obj->inuse_cache_page = &(log_obj->cache_obj[log_obj->inuse_page_id]);
     }
+
+    memcpy(log_obj->inuse_cache_page->p_buf + log_obj->single_log_offset + log_obj->inuse_cache_page->ocp_size,
+           (uint8_t *)(pipe_obj->data_addr),
+           pipe_obj->data_size);
+
+    log_obj->inuse_cache_page->rem_size -= log_obj->single_log_size;
+    log_obj->inuse_cache_page->ocp_size += log_obj->single_log_size;
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
-    if(obj == NULL)
+    if (obj == NULL)
         return;
 
-    if(obj == &IMU_Log_DataPipe)
+    if (obj == &IMU_Log_DataPipe)
     {
         TaskLog_IMUData_Update(&IMU_LogMonitor, &IMU_Log_DataPipe);
     }
