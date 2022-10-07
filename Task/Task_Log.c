@@ -46,6 +46,7 @@ Log_Monitor_TypeDef IMU_LogMonitor;
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
 static bool TaskLog_CreateCache(Log_Monitor_TypeDef *obj, uint8_t cache_sum, uint16_t cache_buff_size, LogData_Header_TypeDef header);
+static void TaskLog_IMU_ToFile(Log_Monitor_TypeDef *log_obj);
 
 
 void TaskLog_Init(void)
@@ -163,9 +164,10 @@ static bool TaskLog_CreateCache(Log_Monitor_TypeDef *obj, uint8_t cache_sum, uin
 
 static void TaskLog_IMU_ToFile(Log_Monitor_TypeDef *log_obj)
 {
-    if(log_obj == NULL)
+    if(log_obj == NULL || log_obj->store_page == NULL)
         return;
 
+    
 }
 
 static void TaskLog_IMUData_Update(Log_Monitor_TypeDef *log_obj, DataPipeObj_TypeDef *pipe_obj)
