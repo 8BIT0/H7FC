@@ -337,6 +337,7 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
             sensor_obj->OriData.gyr_flt[axis] = ((float)sensor_obj->OriData.gyr_int[axis] / sensor_obj->gyr_scale);
         }
 
+        sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
         sensor_obj->drdy = false;
         return true;
     }

@@ -339,7 +339,8 @@ int8_t SrvIMU_GetSec_InitError(void)
 /************************************************************ Module Sample API Function *****************************************************************************/
 static void SrvIMU_Sample(void)
 {
-    SYSTEM_RunTime Rt = Get_CurrentRunningUs();
+    static SYSTEM_RunTime PriSample_Rt_Lst = 0;
+    static SYSTEM_RunTime SecSample_Rt_Lst = 0;
     uint8_t i = Axis_X;
 
     /* don`t use error tree down below it may decrease code efficient */
@@ -355,7 +356,19 @@ static void SrvIMU_Sample(void)
             SrvMpu_Update_Reg.sec.Pri_State = true;
 
             PriIMU_Data.cycle_cnt++;
-            PriIMU_Data.time_stamp = Rt;
+            PriIMU_Data.time_stamp = MPU6000Obj.OriData.time_stamp;
+
+            /* check Primary IMU module Sample is correct or not */
+            if (PriSample_Rt_Lst)
+            {
+                if (PriIMU_Data.time_stamp < PriSample_Rt_Lst)
+                {
+                    while (1)
+                        ;
+                }
+                else if (PriIMU_Data.time_stamp < PriSample_Rt_Lst)
+                    return;
+            }
 
             /* update pri imu data */
             PriIMU_Data.tempera = MPU6000Obj.OriData.temp_flt;
@@ -374,6 +387,8 @@ static void SrvIMU_Sample(void)
         }
         else
             SrvIMU_PriSample_Undrdy(NULL, 0);
+
+        PriSample_Rt_Lst = PriIMU_Data.time_stamp;
     }
 
     /* sec imu init successed */
@@ -386,7 +401,19 @@ static void SrvIMU_Sample(void)
             SrvMpu_Update_Reg.sec.Sec_State = true;
 
             SecIMU_Data.cycle_cnt++;
-            SecIMU_Data.time_stamp = Rt;
+            SecIMU_Data.time_stamp = ICM20602Obj.OriData.time_stamp;
+
+            /* check Secondry IMU module Sample is correct or not */
+            if (SecSample_Rt_Lst)
+            {
+                if (SecIMU_Data.time_stamp < SecSample_Rt_Lst)
+                {
+                    while (1)
+                        ;
+                }
+                else if (SecIMU_Data.time_stamp == SecSample_Rt_Lst)
+                    return;
+            }
 
             /* update sec imu data */
             SecIMU_Data.tempera = ICM20602Obj.OriData.temp_flt;
@@ -405,6 +432,8 @@ static void SrvIMU_Sample(void)
         }
         else
             SrvIMU_SecSample_Undrdy(NULL, 0);
+
+        SecSample_Rt_Lst = SecIMU_Data.time_stamp;
     }
 }
 
