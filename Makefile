@@ -257,7 +257,7 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
-OPENOCD := openocd -f interface/stlink-v2.cfg \
+OPENOCD := openocd -f interface/stlink.cfg \
         -f target/stm32h7x.cfg \
 
 # download your program

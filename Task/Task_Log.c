@@ -95,7 +95,7 @@ void TaskLog_Core(Task_Handle hdl)
             DevLED.ctl(Led2, led_state);
         }
 
-        if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(8))
+        if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(4))
         {
             TaskLog_IMU_ToFile(&IMU_LogMonitor);
         }

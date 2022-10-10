@@ -42,20 +42,20 @@ void TaskInertical_Core(Task_Handle hdl)
     {
     case Task_SensorInertial_Core:
         // TaskInertical_Blink_Notification(100);
-        SrvIMU.sample();
-
-        PriIMU_Data.data = SrvIMU.get_data(SrvIMU_PriModule);
-        SecIMU_Data.data = SrvIMU.get_data(SrvIMU_SecModule);
-
-        for(uint8_t chk = 0; chk < sizeof(PriIMU_Data) - sizeof(uint16_t); chk++)
+        if(SrvIMU.sample())
         {
-            PriIMU_Data.data.chk_sum += PriIMU_Data.buff[chk];
-            SecIMU_Data.data.chk_sum += SecIMU_Data.buff[chk];
+            PriIMU_Data.data = SrvIMU.get_data(SrvIMU_PriModule);
+            SecIMU_Data.data = SrvIMU.get_data(SrvIMU_SecModule);
+
+            for(uint8_t chk = 0; chk < sizeof(PriIMU_Data) - sizeof(uint16_t); chk++)
+            {
+                PriIMU_Data.data.chk_sum += PriIMU_Data.buff[chk];
+                SecIMU_Data.data.chk_sum += SecIMU_Data.buff[chk];
+            }
+
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ptl_DataPipe);
         }
-
-        DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);
-        DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ptl_DataPipe);
-
         break;
 
     case Task_SensorInertial_Error:
