@@ -61,6 +61,9 @@ void TaskLog_Init(void)
     IMU_Log_DataPipe.data_size = sizeof(LogPriIMU_Data);
     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
 
+    LogObj_Set_Reg.reg_val = 0;
+    LogObj_State_Reg.reg_val = 0;
+
     /* init module first then init task */
     if (Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
     {
@@ -73,7 +76,6 @@ void TaskLog_Init(void)
         {
             LogFile_Ready = true;
 
-            LogObj_Set_Reg.reg_val = 0;
             LogObj_Set_Reg._sec.IMU_Sec = true;
 
             LogObj_State_Reg.reg_val = 0;
@@ -130,20 +132,21 @@ static void TaskLog_ToFile(QueueObj_TypeDef *queue)
 
     for (uint16_t i = 0; i < Disk.get_min_write_unit(); i++)
     {
-        data_tmp = Queue.pop(queue, &data_tmp, 1);
-        Disk.write(&FATFS_Obj, &LogFile_Obj, &data_tmp, 1);
+        if (Queue.pop(queue, &data_tmp, 1) == Queue_ok)
+            Disk.write(&FATFS_Obj, &LogFile_Obj, &data_tmp, 1);
     }
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
-    if (obj == NULL)
+    if ((obj == NULL) || !LogFile_Ready)
         return;
 
-    if (obj == &IMU_Log_DataPipe)
+    if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe))
     {
         if ((Queue.state(LogQueue_IMU) == Queue_ok) || (Queue.state(LogQueue_IMU) == Queue_empty))
         {
+            Queue.push(&LogQueue_IMU, &LogIMU_Header, LOG_HEADER_SIZE);
             Queue.push(&LogQueue_IMU, (uint8_t *)(IMU_Log_DataPipe.data_addr), IMU_Log_DataPipe.data_size);
 
             if (Queue.size(LogQueue_IMU) >= Disk.get_min_write_unit())

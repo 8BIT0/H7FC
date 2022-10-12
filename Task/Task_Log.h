@@ -14,6 +14,8 @@
 #define LOG_HEADER 0xBA
 #define LOG_DATATYPE_IMU 0x00
 
+#define LOG_HEADER_SIZE sizeof(LogData_Header_TypeDef)
+
 typedef union
 {
     struct
@@ -32,16 +34,6 @@ typedef struct
     uint8_t type;
     uint8_t size;
 } LogData_Header_TypeDef;
-
-struct LogCache_TypeDef
-{
-    uint8_t *p_buf;
-    int16_t rem_size;  /* remain size */
-    int16_t ocp_size;  /* occupy size */
-    uint16_t tot_size; /* total  size */
-
-    struct LogCache_TypeDef *nxt;
-};
 #pragma pack()
 
 void TaskLog_Init(void);
