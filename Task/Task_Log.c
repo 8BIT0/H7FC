@@ -105,10 +105,7 @@ void TaskLog_Core(Task_Handle hdl)
         if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(4))
         {
             if (LogObj_Set_Reg._sec.IMU_Sec)
-            {
                 TaskLog_ToFile(&LogQueue_IMU);
-                LogObj_State_Reg._sec.IMU_Sec = false;
-            }
         }
         else
         {
