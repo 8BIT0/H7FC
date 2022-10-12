@@ -61,7 +61,6 @@ void TaskLog_Init(void)
     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
 
     LogObj_Set_Reg.reg_val = 0;
-    LogObj_State_Reg.reg_val = 0;
 
     /* init module first then init task */
     if (Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
