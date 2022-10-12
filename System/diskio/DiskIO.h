@@ -310,6 +310,7 @@ typedef struct
     Disk_FileObj_TypeDef (*create_file)(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster);
     uint32_t (*open)(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
     bool (*write)(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
+    uint32_t (*get_min_write_unit)(void);
 } DiskFS_TypeDef;
 
 extern DiskFS_TypeDef Disk;

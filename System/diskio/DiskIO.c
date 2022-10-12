@@ -31,6 +31,8 @@ static Disk_Printf_Callback Disk_PrintOut = NULL;
 static Error_Handler DevCard_Error_Handle = NULL;
 static Disk_Info_TypeDef Disk_Info;
 
+static uint32_t MIN_write_unit = 0;
+
 /* eExternal Function */
 static bool Disk_Init(Disk_FATFileSys_TypeDef *FATObj, Disk_Printf_Callback Callback);
 
@@ -83,6 +85,7 @@ static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *di
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
+static uint32_t Disk_Get_MinWriteByte(void);
 
 /* Error Process Function */
 static void Disk_FreeCluster_SearchError(int16_t code, uint8_t *p_arg, uint16_t size);
@@ -125,6 +128,7 @@ DiskFS_TypeDef Disk = {
     .create_file = Disk_Create_File,
     .open = Disk_Open,
     .write = Disk_WriteData_ToFile,
+    .get_min_write_unit = Disk_Get_MinWriteByte,
 };
 
 /******************************************************************************* Error Proc Object **************************************************************************/
@@ -173,17 +177,6 @@ static bool ExtDisk_Init(Disk_FATFileSys_TypeDef *FATObj)
 
     memset(&Disk_Info, NULL, sizeof(Disk_Info));
 
-#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
-    Disk_Info.module_reg.section.FlashChip_module_EN = true;
-    Disk_Info.module_error_reg.section.FlashChip_module_error_code = DevW25Q64.init(W25Q64_Obj);
-
-    /* trigger error */
-    if (Disk_Info.module_error_reg.section.FlashChip_module_error_code)
-    {
-        // ErrorLog.trigger(DevCard_Error_Handle, );
-    }
-#endif
-
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
     memset(FATObj, NULL, sizeof(FATObj));
 
@@ -200,6 +193,17 @@ static bool ExtDisk_Init(Disk_FATFileSys_TypeDef *FATObj)
         ErrorLog.trigger(DevCard_Error_Handle,
                          DevCard_External_Module_Init_Error,
                          &Error_Code, sizeof(uint8_t));
+    }
+#endif
+
+#if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_SPI_FLASH)
+    Disk_Info.module_reg.section.FlashChip_module_EN = true;
+    Disk_Info.module_error_reg.section.FlashChip_module_error_code = DevW25Q64.init(W25Q64_Obj);
+
+    /* trigger error */
+    if (Disk_Info.module_error_reg.section.FlashChip_module_error_code)
+    {
+        // ErrorLog.trigger(DevCard_Error_Handle, );
     }
 #endif
 
@@ -268,8 +272,15 @@ static bool Disk_Init(Disk_FATFileSys_TypeDef *FATObj, Disk_Printf_Callback Call
     // }
 
     /* test code */
+
+    MIN_write_unit = Disk_GetCard_Info().BlockSize;
 #endif
     return true;
+}
+
+static uint32_t Disk_Get_MinWriteByte(void)
+{
+    return MIN_write_unit;
 }
 
 /************************************************************************** Disk File Alloc Table Function ***************************************************************************/
@@ -961,7 +972,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
 
     state = DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
-    if(!state)
+    if (!state)
         return false;
 
     Data_Ptr = &Disk_Card_SectionBuff[sec_item_index];
@@ -970,7 +981,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     /* Update FAT1 Table */
     state = DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
-    if(!state)
+    if (!state)
         return false;
 
     /* Update FAT2 Table */
@@ -982,7 +993,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
 
     state = DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
-    if(!state)
+    if (!state)
         return false;
 
     return true;
@@ -999,10 +1010,10 @@ static bool Disk_ClearCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr t
 
     memset(Disk_Card_SectionBuff, NULL, sizeof(Disk_Card_SectionBuff));
 
-    for(uint8_t i = 0; i < FATObj->SecPerCluster; i++)
+    for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
     {
         DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
-        sec_id ++;
+        sec_id++;
     }
     return true;
 }
@@ -1144,11 +1155,11 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                     if (type == Disk_DataType_Folder)
                     {
                         state = Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD);
-                        while(!state)
+                        while (!state)
                         {
                             state = false;
                         }
-                        
+
                         Disk_ClearCluster(FATObj, FATObj->free_cluster);
 
                         memset(attr_tmp.name, ' ', 8);
@@ -1156,7 +1167,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                         attr_tmp.name[0] = '.';
 
                         memcpy(Disk_Card_SectionBuff, &attr_tmp, sizeof(Disk_FFAttr_TypeDef));
-                        
+
                         attr_tmp.name[1] = '.';
                         target_file_cluster = FATObj->free_cluster;
 
@@ -1171,7 +1182,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                         sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
                         state = DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_Card_SectionBuff), 1);
 
-                        while(!state)
+                        while (!state)
                         {
                             state = false;
                         }
@@ -1179,7 +1190,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                         Disk_Update_FreeCluster(FATObj);
                         Disk_ClearCluster(FATObj, FATObj->free_cluster);
                     }
-                    
+
                     return target_file_cluster;
                 }
             }
@@ -1624,9 +1635,10 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
                 Disk_Update_FreeCluster(FATObj);
                 // Disk_ClearCluster(FATObj, FATObj->free_cluster);
-                
+
                 if ((FileObj->info.start_cluster == FATObj->free_cluster) || (FATObj->free_cluster <= ROOT_CLUSTER_ADDR))
-                    while(1);
+                    while (1)
+                        ;
 
                 FileObj->info.start_cluster = FATObj->free_cluster;
 
@@ -1639,7 +1651,6 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 cluster_end_section = FileObj->end_sec + FATObj->SecPerCluster;
             }
             DebugPin.ctl(Debug_PB4, false);
-
 
             /* update end section */
             FileObj->end_sec++;

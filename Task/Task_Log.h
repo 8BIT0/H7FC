@@ -14,6 +14,17 @@
 #define LOG_HEADER 0xBA
 #define LOG_DATATYPE_IMU 0x00
 
+typedef union
+{
+    struct
+    {
+        uint16_t IMU_Sec : 1;
+        uint16_t Res_Sec : 15;
+    } _sec;
+
+    uint16_t reg_val;
+} LogData_Reg_TypeDef;
+
 #pragma pack(1)
 typedef struct
 {
@@ -25,24 +36,13 @@ typedef struct
 struct LogCache_TypeDef
 {
     uint8_t *p_buf;
-    int16_t rem_size; /* remain size */
-    int16_t ocp_size; /* occupy size */
+    int16_t rem_size;  /* remain size */
+    int16_t ocp_size;  /* occupy size */
     uint16_t tot_size; /* total  size */
 
     struct LogCache_TypeDef *nxt;
 };
 #pragma pack()
-
-typedef struct
-{
-    LogData_Header_TypeDef log_header;
-    struct LogCache_TypeDef *cache_obj;
-    struct LogCache_TypeDef *inuse_cache_page;
-    struct LogCache_TypeDef *store_page;
-
-    uint16_t single_log_size;
-    uint16_t single_log_offset;
-} Log_Monitor_TypeDef;
 
 void TaskLog_Init(void);
 void TaskLog_Core(Task_Handle hdl);
