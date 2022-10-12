@@ -44,7 +44,6 @@ static SrvIMU_UnionData_TypeDef LogPriIMU_Data __attribute__((section(".Perph_Se
 static SrvIMU_UnionData_TypeDef LogSecIMU_Data __attribute__((section(".Perph_Section")));
 static QueueObj_TypeDef LogQueue_IMU;
 static LogData_Reg_TypeDef LogObj_Set_Reg;
-static LogData_Reg_TypeDef LogObj_State_Reg;
 DataPipeObj_TypeDef IMU_Log_DataPipe;
 
 /* internal function */
@@ -77,8 +76,6 @@ void TaskLog_Init(void)
             LogFile_Ready = true;
 
             LogObj_Set_Reg._sec.IMU_Sec = true;
-
-            LogObj_State_Reg.reg_val = 0;
         }
     }
 }
@@ -107,7 +104,7 @@ void TaskLog_Core(Task_Handle hdl)
 
         if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(4))
         {
-            if (LogObj_Set_Reg._sec.IMU_Sec && LogObj_State_Reg._sec.IMU_Sec)
+            if (LogObj_Set_Reg._sec.IMU_Sec)
             {
                 TaskLog_ToFile(&LogQueue_IMU);
                 LogObj_State_Reg._sec.IMU_Sec = false;
@@ -148,9 +145,6 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         {
             Queue.push(&LogQueue_IMU, &LogIMU_Header, LOG_HEADER_SIZE);
             Queue.push(&LogQueue_IMU, (uint8_t *)(IMU_Log_DataPipe.data_addr), IMU_Log_DataPipe.data_size);
-
-            if (Queue.size(LogQueue_IMU) >= Disk.get_min_write_unit())
-                LogObj_State_Reg._sec.IMU_Sec = true;
         }
     }
 }
