@@ -20,6 +20,7 @@ static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t siz
 static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
 static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, uint16_t size);
 static uint16_t Queue_GetSize(QueueObj_TypeDef obj);
+static QueueDump_DataObj_TypeDef Queue_DumpData(QueueObj_TypeDef *obj);
 
 /* extern virable */
 Queue_TypeDef Queue = {
@@ -30,6 +31,7 @@ Queue_TypeDef Queue = {
     .check = Queue_Check,
     .state = Queue_GetState,
     .size = Queue_GetSize,
+    .dump = Queue_DumpData,
 };
 
 static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len)
@@ -153,6 +155,29 @@ static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, ui
     }
 
     return true;
+}
+
+static QueueDump_DataObj_TypeDef Queue_DumpData(QueueObj_TypeDef *obj)
+{
+    QueueDump_DataObj_TypeDef dump_data;
+
+    dump_data.ptr = NULL;
+    dump_data.size = 0;
+
+    /* enter critical */
+    if (((obj->state == Queue_ok) || (obj->state == Queue_full)) && (obj->size > 0))
+    {
+        obj->head_pos %= obj->lenth;
+        dump_data.ptr = obj->buff[obj->head_pos];
+        dump_data.size = obj->size;
+        obj->head_pos += obj->size;
+
+        obj->size = 0;
+        obj->state = Queue_empty;
+    }
+    /* exit critical */
+
+    return dump_data;
 }
 
 static Queue_state Queue_GetState(QueueObj_TypeDef obj)

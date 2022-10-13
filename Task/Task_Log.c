@@ -119,18 +119,19 @@ void TaskLog_Core(Task_Handle hdl)
 
 static void TaskLog_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj)
 {
-    uint16_t log_size = 0;
+    QueueDump_DataObj_TypeDef dump_data_tmp;
 
     if ((queue == NULL) || (Queue.size(*queue) == 0) || (pipe_obj.ptr_tmp == NULL))
         return;
 
-    log_size = pipe_obj.data_size + LOG_HEADER_SIZE;
-
-    for (uint16_t i = 0; i < Queue.size(*queue) / log_size; i++)
+    dump_data_tmp = Queue.dump(queue);
+    if (dump_data_tmp.size >= 512)
     {
-        if (Queue.pop(queue, pipe_obj.ptr_tmp, log_size) == Queue_ok)
-            Disk.write(&FATFS_Obj, &LogFile_Obj, pipe_obj.ptr_tmp, log_size);
+        while (1)
+            ;
     }
+
+    Disk.write(&FATFS_Obj, &LogFile_Obj, dump_data_tmp.ptr, dump_data_tmp.size);
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
