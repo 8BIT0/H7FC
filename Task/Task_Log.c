@@ -59,6 +59,7 @@ void TaskLog_Init(void)
     IMU_Log_DataPipe.data_addr = (uint32_t)&LogPriIMU_Data;
     IMU_Log_DataPipe.data_size = sizeof(LogPriIMU_Data);
     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
+    IMU_Log_DataPipe.ptr_tmp = MMU_Malloc(IMU_Log_DataPipe.data_addr);
 
     LogObj_Set_Reg.reg_val = 0;
 
@@ -118,15 +119,17 @@ void TaskLog_Core(Task_Handle hdl)
 
 static void TaskLog_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj)
 {
-    uint8_t data_tmp;
+    uint16_t log_size = 0;
 
-    if ((queue == NULL) || (Queue.size(queue) == 0))
+    if ((queue == NULL) || (Queue.size(queue) == 0) || (pipe_obj.ptr_tmp == NULL))
         return;
 
-    for (uint16_t i = 0; i < Queue.size(queue) / (pipe_obj.data_size + LOG_HEADER_SIZE); i++)
+    log_size = pipe_obj.data_size + LOG_HEADER_SIZE;
+
+    for (uint16_t i = 0; i < Queue.size(queue) / log_size; i++)
     {
-        if (Queue.pop(queue, &data_tmp, 1) == Queue_ok)
-            Disk.write(&FATFS_Obj, &LogFile_Obj, &data_tmp, 1);
+        if (Queue.pop(queue, pipe_obj.ptr_tmp, log_size) == Queue_ok)
+            Disk.write(&FATFS_Obj, &LogFile_Obj, pipe_obj.ptr_tmp, log_size);
     }
 }
 
