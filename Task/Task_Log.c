@@ -121,12 +121,12 @@ static void TaskLog_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj
 {
     uint16_t log_size = 0;
 
-    if ((queue == NULL) || (Queue.size(queue) == 0) || (pipe_obj.ptr_tmp == NULL))
+    if ((queue == NULL) || (Queue.size(*queue) == 0) || (pipe_obj.ptr_tmp == NULL))
         return;
 
     log_size = pipe_obj.data_size + LOG_HEADER_SIZE;
 
-    for (uint16_t i = 0; i < Queue.size(queue) / log_size; i++)
+    for (uint16_t i = 0; i < Queue.size(*queue) / log_size; i++)
     {
         if (Queue.pop(queue, pipe_obj.ptr_tmp, log_size) == Queue_ok)
             Disk.write(&FATFS_Obj, &LogFile_Obj, pipe_obj.ptr_tmp, log_size);
