@@ -116,6 +116,7 @@ static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t siz
     return obj->state;
 }
 
+/* still can be optimize */
 static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size)
 {
     if ((obj == NULL) || (obj->lenth == 0))
