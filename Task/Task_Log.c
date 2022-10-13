@@ -48,7 +48,7 @@ DataPipeObj_TypeDef IMU_Log_DataPipe;
 
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
-static void TaskLog_ToFile(QueueObj_TypeDef *queue);
+static void TaskLog_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj);
 
 void TaskLog_Init(void)
 {
@@ -104,7 +104,7 @@ void TaskLog_Core(Task_Handle hdl)
         if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(4))
         {
             if (LogObj_Set_Reg._sec.IMU_Sec)
-                TaskLog_ToFile(&LogQueue_IMU);
+                TaskLog_ToFile(&LogQueue_IMU, IMU_Log_DataPipe);
         }
         else
         {
@@ -116,14 +116,14 @@ void TaskLog_Core(Task_Handle hdl)
     }
 }
 
-static void TaskLog_ToFile(QueueObj_TypeDef *queue)
+static void TaskLog_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj)
 {
     uint8_t data_tmp;
 
-    if (queue == NULL)
+    if ((queue == NULL) || (Queue.size(queue) == 0))
         return;
 
-    for (uint16_t i = 0; i < Disk.get_min_write_unit(); i++)
+    for (uint16_t i = 0; i < Queue.size(queue) / (pipe_obj.data_size + LOG_HEADER_SIZE); i++)
     {
         if (Queue.pop(queue, &data_tmp, 1) == Queue_ok)
             Disk.write(&FATFS_Obj, &LogFile_Obj, &data_tmp, 1);

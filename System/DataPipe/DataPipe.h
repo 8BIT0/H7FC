@@ -31,6 +31,8 @@ typedef struct
     uint32_t tx_cnt;
     uint32_t rx_cnt;
     uint32_t er_cnt;
+
+    uint8_t *ptr_tmp;
 } DataPipeObj_TypeDef;
 #pragma pack()
 
