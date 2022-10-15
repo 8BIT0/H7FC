@@ -1627,7 +1627,6 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             DebugPin.ctl(Debug_PB4, true);
             DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
             memset(Disk_FileSection_DataCache, '\0', DISK_CARD_SECTION_SZIE);
-            FileObj->remain_byte_in_sec = FATObj->BytePerSection;
 
             if (FileObj->end_sec == cluster_end_section)
             {
@@ -1653,6 +1652,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
             /* update end section */
             FileObj->end_sec++;
+            FileObj->remain_byte_in_sec = FATObj->BytePerSection;
         }
 
         Disk_FileSize_Update(FileObj);

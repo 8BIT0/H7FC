@@ -298,10 +298,6 @@ typedef struct
     uint64_t cursor_pos;
 
     uint16_t remain_byte_in_sec;
-
-    uint32_t cluster_remian_byte;
-    Disk_FileObj_State tx_state;
-    Disk_FileObj_State rx_state;
 } Disk_FileObj_TypeDef;
 
 typedef struct
