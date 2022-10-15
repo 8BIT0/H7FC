@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include "mmu.h"
+#include "kernel.h"
 
 #define Queue_Mem_Malloc(x) MMU_Malloc(x)
 #define Queue_Mem_Free(x) MMU_Free(x)
@@ -165,18 +166,25 @@ static QueueDump_DataObj_TypeDef Queue_DumpData(QueueObj_TypeDef *obj)
     dump_data.ptr = NULL;
     dump_data.size = 0;
 
-    /* enter critical */
+    Kernel_EnterCritical();
+
     if (((obj->state == Queue_ok) || (obj->state == Queue_full)) && (obj->size > 0))
     {
-        obj->head_pos %= obj->lenth;
-        dump_data.ptr = obj->buff[obj->head_pos];
         dump_data.size = obj->size;
-        obj->head_pos += obj->size;
+
+        if (obj->head_pos + obj->size > obj->lenth)
+        {
+        }
+        else
+        {
+            dump_data.ptr = &obj->buff[obj->head_pos];
+            obj->head_pos += obj->size;
+        }
 
         obj->size = 0;
         obj->state = Queue_empty;
     }
-    /* exit critical */
+    Kernel_ExitCritical();
 
     return dump_data;
 }
