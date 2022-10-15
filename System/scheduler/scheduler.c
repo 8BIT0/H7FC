@@ -65,6 +65,7 @@ static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 
 static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum];
 static Task *Idle_Task;
+static Idle_Callback_List_s Idle_List;
 
 /* internal function */
 static void Os_ResetTask_Data(Task *task);
@@ -267,6 +268,20 @@ static void Os_Idle(void)
     }
 }
 
+bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Idle_Callback_Func idle_cb)
+{
+    if (obj == NULL)
+        return false;
+
+    List_Init(&Idle_List.list, , by_order, NULL);
+
+    return true;
+}
+
+bool Os_Unregist_IdleObj(Os_IdleObj_TypeDef *obj)
+{
+}
+
 static bool Os_CreateIdle(void)
 {
     /* for idle task we don`t need priority or other state */
@@ -288,6 +303,8 @@ static bool Os_CreateIdle(void)
     }
     else
         return false;
+
+    Idle_List.num = 0;
 
     return true;
 }
