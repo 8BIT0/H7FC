@@ -39,6 +39,7 @@ typedef uint32_t Task_Handle;
 
 typedef uint32_t Task_Handle;
 typedef void (*Task_Func)(Task_Handle hdl);
+typedef void (*Idle_Callback_Func)(uint8_t *ptr, uint16_t size);
 typedef uint32_t *Task_STK_Ptr;
 
 #define TaskHandlerToObj(x) ((Task *)x)
@@ -139,6 +140,17 @@ typedef struct
     list_obj list;
 } Task_List_s;
 
+typedef Task_List_s Idle_Callback_List_s;
+
+typedef struct
+{
+    void *data_ptr;
+    uint8_t size;
+
+    uint64_t exe_cnt;
+    Idle_Callback_List_s idle_item;
+} Os_IdleObj_TypeDef;
+
 typedef struct
 {
     TASK_STATE State;
@@ -169,5 +181,8 @@ Scheduler_State_List Os_State(void);
 Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task_Priority priority, Task_Func func, uint32_t StackDepth);
 void Os_SwitchContext(void);
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms);
+
+bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Idle_Callback_Func idle_cb);
+bool Os_Unregist_IdleObj(Os_IdleObj_TypeDef *obj);
 
 #endif
