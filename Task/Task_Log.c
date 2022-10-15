@@ -135,12 +135,10 @@ static void TaskLog_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj
     else
         log_size = Queue.size(*queue);
 
-    if (log)
-        Queue.pop(queue, LogQueueBuff_Trail, log_size);
+    Queue.pop(queue, LogQueueBuff_Trail, log_size);
     Kernel_ExitCritical();
 
-    if (log)
-        Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
+    Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
@@ -150,17 +148,10 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 
     if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe) && LogObj_Enable_Reg._sec.IMU_Sec)
     {
-        if (LogFile_Obj.remain_byte_in_sec > obj->data_size)
+        if ((Queue.state(LogQueue_IMU) == Queue_ok) || (Queue.state(LogQueue_IMU) == Queue_empty))
         {
-            Disk.write(&FATFS_Obj, &LogFile_Obj, (uint8_t *)IMU_Log_DataPipe.data_addr, obj->data_size);
-        }
-        else
-        {
-            if ((Queue.state(LogQueue_IMU) == Queue_ok) || (Queue.state(LogQueue_IMU) == Queue_empty))
-            {
-                Queue.push(&LogQueue_IMU, &LogIMU_Header, LOG_HEADER_SIZE);
-                Queue.push(&LogQueue_IMU, (uint8_t *)(IMU_Log_DataPipe.data_addr), IMU_Log_DataPipe.data_size);
-            }
+            Queue.push(&LogQueue_IMU, &LogIMU_Header, LOG_HEADER_SIZE);
+            Queue.push(&LogQueue_IMU, (uint8_t *)(IMU_Log_DataPipe.data_addr), IMU_Log_DataPipe.data_size);
         }
     }
 }
