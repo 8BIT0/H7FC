@@ -44,7 +44,9 @@ static SrvIMU_UnionData_TypeDef LogPriIMU_Data __attribute__((section(".Perph_Se
 static SrvIMU_UnionData_TypeDef LogSecIMU_Data __attribute__((section(".Perph_Section")));
 static QueueObj_TypeDef LogQueue_IMU;
 static LogData_Reg_TypeDef LogObj_Set_Reg;
+static LogData_Reg_TypeDef LogObj_Enable_Reg;
 DataPipeObj_TypeDef IMU_Log_DataPipe;
+uint8_t LogQueueBuff_Trail[K_BYTE / 2];
 
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
@@ -74,7 +76,7 @@ void TaskLog_Init(void)
         if (Queue.create(&LogQueue_IMU, "log queue imu", MAX_FILE_SIZE_K(10)))
         {
             LogFile_Ready = true;
-
+            LogObj_Enable_Reg._sec.IMU_Sec = true;
             LogObj_Set_Reg._sec.IMU_Sec = true;
         }
     }
@@ -110,6 +112,7 @@ void TaskLog_Core(Task_Handle hdl)
         else
         {
             i = 0;
+            LogObj_Enable_Reg._sec.IMU_Sec = false;
             DevLED.ctl(Led2, false);
         }
 
@@ -119,19 +122,23 @@ void TaskLog_Core(Task_Handle hdl)
 
 static void TaskLog_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj)
 {
-    QueueDump_DataObj_TypeDef dump_data_tmp;
+    uint16_t log_size = 0;
 
     if ((queue == NULL) || (Queue.size(*queue) == 0) || (pipe_obj.ptr_tmp == NULL))
         return;
 
-    dump_data_tmp = Queue.dump(queue);
-    if (dump_data_tmp.size >= 512)
+    Kernel_EnterCritical();
+    if (Queue.size(*queue) >= 490)
     {
-        while (1)
-            ;
+        log_size = 490;
     }
+    else
+        log_size = Queue.size(*queue);
 
-    Disk.write(&FATFS_Obj, &LogFile_Obj, dump_data_tmp.ptr, dump_data_tmp.size);
+    Queue.pop(queue, LogQueueBuff_Trail, log_size);
+    Kernel_ExitCritical();
+
+    Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
@@ -139,7 +146,7 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     if ((obj == NULL) || !LogFile_Ready)
         return;
 
-    if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe))
+    if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe) && LogObj_Enable_Reg._sec.IMU_Sec)
     {
         if ((Queue.state(LogQueue_IMU) == Queue_ok) || (Queue.state(LogQueue_IMU) == Queue_empty))
         {
