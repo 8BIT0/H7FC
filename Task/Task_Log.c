@@ -135,10 +135,12 @@ static void TaskLog_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj
     else
         log_size = Queue.size(*queue);
 
-    Queue.pop(queue, LogQueueBuff_Trail, log_size);
+    if (log)
+        Queue.pop(queue, LogQueueBuff_Trail, log_size);
     Kernel_ExitCritical();
 
-    Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
+    if (log)
+        Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
