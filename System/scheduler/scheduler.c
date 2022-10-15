@@ -274,10 +274,11 @@ bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Idle_Callback_Func idle_cb)
     if (obj == NULL)
         return false;
 
+    List_ItemInit();
+
     if (Idle_List.num == 0)
         List_Init(&Idle_List.list, &(obj->idle_item), by_order, NULL);
 
-    List_ItemInit();
     List_Insert_Item(&Idle_List.list, &(obj->idle_item));
 
     return true;
