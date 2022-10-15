@@ -125,6 +125,12 @@ typedef enum
     Disk_FATCluster_End,
 } DiskFATCluster_State_List;
 
+typedef enum
+{
+    Disk_FileObj_Ready = 0,
+    Disk_FileObj_Busy,
+} Disk_FileObj_State;
+
 #pragma pack(1)
 typedef union
 {
@@ -292,6 +298,10 @@ typedef struct
     uint64_t cursor_pos;
 
     uint16_t remain_byte_in_sec;
+
+    uint32_t cluster_remian_byte;
+    Disk_FileObj_State tx_state;
+    Disk_FileObj_State rx_state;
 } Disk_FileObj_TypeDef;
 
 typedef struct
