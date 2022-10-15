@@ -148,7 +148,7 @@ typedef struct
     uint8_t size;
 
     uint64_t exe_cnt;
-    Idle_Callback_List_s idle_item;
+    list_obj idle_item;
 } Os_IdleObj_TypeDef;
 
 typedef struct
