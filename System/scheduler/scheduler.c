@@ -268,13 +268,15 @@ static void Os_Idle(void)
     }
 }
 
-/* still in developing */
-bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Idle_Callback_Func idle_cb)
+bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Os_Idle_DataStream_TypeDef *stream, Idle_Callback_Func idle_cb)
 {
     if (obj == NULL)
         return false;
 
-    // List_ItemInit();
+    obj->stream = stream;
+    obj->callback = idle_cb;
+
+    List_ItemInit(obj->idle_item, obj);
 
     if (Idle_List.num == 0)
         List_Init(&Idle_List.list, &(obj->idle_item), by_order, NULL);
@@ -286,8 +288,12 @@ bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Idle_Callback_Func idle_cb)
 
 bool Os_Unregist_IdleObj(Os_IdleObj_TypeDef *obj)
 {
+    if (Idle_List.num)
+    {
+        List_Delete_Item(obj->idle_item, NULL);
+        Idle_List.num--;
+    }
 }
-/* still in developing */
 
 static bool Os_CreateIdle(void)
 {

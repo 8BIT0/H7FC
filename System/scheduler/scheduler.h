@@ -144,8 +144,14 @@ typedef Task_List_s Idle_Callback_List_s;
 
 typedef struct
 {
-    void *data_ptr;
-    uint8_t size;
+    uint8_t *ptr;
+    uint16_t size;
+} Os_Idle_DataStream_TypeDef;
+
+typedef struct
+{
+    Os_Idle_DataStream_TypeDef stream;
+    Idle_Callback_Func callback;
 
     uint64_t exe_cnt;
     list_obj idle_item;
@@ -182,7 +188,7 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
 void Os_SwitchContext(void);
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms);
 
-bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Idle_Callback_Func idle_cb);
+bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Os_Idle_DataStream_TypeDef *stream, Idle_Callback_Func idle_cb);
 bool Os_Unregist_IdleObj(Os_IdleObj_TypeDef *obj);
 
 #endif
