@@ -1576,7 +1576,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     uint16_t base_len = len;
     uint32_t cluster_end_section = 0;
 
-    if ((FATObj == NULL) || (!FATObj->init) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
+    if ((FATObj == NULL) || (!FATObj->init) || (FileObj == NULL) || (p_data == NULL) || (len == 0) || (FileObj->cursor_pos > FATObj->BytePerSection))
         return false;
 
     if (memcmp(FileObj->info.name, NULL, sizeof(FileObj->info.name)) == 0)
