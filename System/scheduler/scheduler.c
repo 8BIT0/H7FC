@@ -254,6 +254,18 @@ void Os_Start(void)
     Kernel_LoadProcess();
 }
 
+static void Os_Idle_List_TraverseCallback(item_obj *item, void *ptr_1, void *ptr_2)
+{
+    Os_IdleObj_TypeDef *idle_obj = NULL;
+    if ((item == NULL) || (ptr_1 == NULL))
+        return;
+
+    idle_obj = ((Os_IdleObj_TypeDef *)ptr_1);
+
+    idle_obj->callback(idle_obj->stream.ptr, idle_obj->stream.size);
+    idle_obj->exe_cnt++;
+}
+
 static void Os_Idle(void)
 {
     volatile SYSTEM_RunTime Rt = 0;
@@ -261,10 +273,17 @@ static void Os_Idle(void)
 
     Idle_Task->State = Task_Ready;
 
-    if (Rt != Get_CurrentRunningUs())
+    if (Idle_List.num != 0)
     {
-        Rt = Get_CurrentRunningUs();
-        idle_cnt++;
+        if (Rt != Get_CurrentRunningUs())
+        {
+            Rt = Get_CurrentRunningUs();
+            idle_cnt++;
+        }
+    }
+    else
+    {
+        List_traverse(Idle_List.list, Os_Idle_List_TraverseCallback, NULL, pre_callback);
     }
 }
 
