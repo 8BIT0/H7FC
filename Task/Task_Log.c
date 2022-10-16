@@ -48,12 +48,18 @@ static LogData_Reg_TypeDef LogObj_Enable_Reg;
 DataPipeObj_TypeDef IMU_Log_DataPipe;
 uint8_t LogQueueBuff_Trail[K_BYTE / 2];
 
+static uint16_t test_var = 0;
+static Os_IdleObj_TypeDef LogIdleObj;
+
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
 static void TaskLog_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj);
+static void test_callback(uint8_t *ptr, uint16_t len);
 
 void TaskLog_Init(void)
 {
+    Os_Idle_DataStream_TypeDef LogData_Stream;
+
     memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
     memset(&FATFS_Obj, NULL, sizeof(FATFS_Obj));
@@ -80,6 +86,18 @@ void TaskLog_Init(void)
             LogObj_Set_Reg._sec.IMU_Sec = true;
         }
     }
+
+    LogData_Stream.ptr = &test_var;
+    LogData_Stream.size = sizeof(test_var);
+    Os_Regist_IdleObj(&LogIdleObj, LogData_Stream, test_callback);
+}
+
+static void test_callback(uint8_t *ptr, uint16_t len)
+{
+    if((ptr == NULL) || (len != 2))
+        return 0;
+
+    (*ptr) ++;
 }
 
 void TaskLog_Core(Task_Handle hdl)
@@ -104,12 +122,12 @@ void TaskLog_Core(Task_Handle hdl)
             DevLED.ctl(Led2, led_state);
         }
 
-        if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(4))
-        {
-            if (LogObj_Set_Reg._sec.IMU_Sec)
-                TaskLog_ToFile(&LogQueue_IMU, IMU_Log_DataPipe);
-        }
-        else
+        // if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(4))
+        // {
+        //     if (LogObj_Set_Reg._sec.IMU_Sec)
+        //         TaskLog_ToFile(&LogQueue_IMU, IMU_Log_DataPipe);
+        // }
+        // else
         {
             i = 0;
             LogObj_Enable_Reg._sec.IMU_Sec = false;
