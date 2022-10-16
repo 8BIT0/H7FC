@@ -283,11 +283,11 @@ static void Os_Idle(void)
     }
     else
     {
-        List_traverse(Idle_List.list, Os_Idle_List_TraverseCallback, NULL, pre_callback);
+        List_traverse(&Idle_List.list, Os_Idle_List_TraverseCallback, NULL, pre_callback);
     }
 }
 
-bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Os_Idle_DataStream_TypeDef *stream, Idle_Callback_Func idle_cb)
+bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Os_Idle_DataStream_TypeDef stream, Idle_Callback_Func idle_cb)
 {
     if (obj == NULL)
         return false;
@@ -295,7 +295,7 @@ bool Os_Regist_IdleObj(Os_IdleObj_TypeDef *obj, Os_Idle_DataStream_TypeDef *stre
     obj->stream = stream;
     obj->callback = idle_cb;
 
-    List_ItemInit(obj->idle_item, obj);
+    List_ItemInit(&obj->idle_item, obj);
 
     if (Idle_List.num == 0)
         List_Init(&Idle_List.list, &(obj->idle_item), by_order, NULL);
@@ -309,7 +309,7 @@ bool Os_Unregist_IdleObj(Os_IdleObj_TypeDef *obj)
 {
     if (Idle_List.num)
     {
-        List_Delete_Item(obj->idle_item, NULL);
+        List_Delete_Item(&(obj->idle_item), NULL);
         Idle_List.num--;
     }
 }
