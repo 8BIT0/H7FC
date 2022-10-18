@@ -67,6 +67,12 @@ typedef union {
         uint16_t aux_27 : 16;
         uint16_t aux_28 : 16;
     } channel;
+} DevReceiverDecodeData_TypeDef;
+
+typedef struct
+{
+    DevReceiverDecodeData_TypeDef val;
+    uint32_t time_stamp;
 } DevReceiverData_TypeDef;
 
 typedef struct
@@ -79,12 +85,9 @@ typedef struct
 
     uint8_t channel_num;
 
-    DevReceiverData_TypeDef val;
-    uint32_t time_stamp;
-
+    DevReceiverData_TypeDef data;
     DevReceiver_Callback cb;
 } DevReceiverObj_TypeDef;
-
 #pragma pack()
 
 typedef struct
@@ -93,6 +96,7 @@ typedef struct
     /* else src set NULL */
     bool (*init)(DevReceiverObj_TypeDef *obj, DecReceiver_IO_TypeList IO_type, DevReceiverObj_TypeDef *src);
     bool (*set_decode_callback)(DevReceiverObj_TypeDef cb);
+    DevReceiverData_TypeDef (*get)(DevReceiverObj_TypeDef *obj);
 } DevReceiver_TypeDef;
 
 #endif
