@@ -6,8 +6,14 @@
 #include <string.h>
 
 #define RECEIVER_MAX_CHANNEL 32
+#define SBUS_FRAME_BYTE_SIZE 25
 
 typedef bool (*DevReceiver_Callback)(uint8_t *ptr, uint16_t size);
+
+typedef struct
+{
+
+} DevReceiver_Sbus_FrameFormat_TypeDef;
 
 typedef enum
 {
