@@ -7,13 +7,12 @@
 
 #define RECEIVER_MAX_CHANNEL 32
 #define SBUS_FRAME_BYTE_SIZE 25
+#define SBUS_FRAME_HEADER 0xF0
+#define SBUS_DECODE_MASK 0x07FF
+#define CHANNEL_RANGE_MIN 950
+#define CHANNEL_RANGE_MAX 2050
 
 typedef bool (*DevReceiver_Callback)(uint8_t *ptr, uint16_t size);
-
-typedef struct
-{
-
-} DevReceiver_Sbus_FrameFormat_TypeDef;
 
 typedef enum
 {
@@ -23,68 +22,54 @@ typedef enum
 
 typedef enum
 {
-    Receiver_In = 0,
-    Receiver_Out,
-} DecReceiver_IO_TypeList;
+    Receiver_ChannelID_Pitch = 0,
+    Receiver_ChannelID_Roll,
+    Receiver_ChannelID_Throttle,
+    Receiver_ChannelID_Yaw,
+    Receiver_ChannelID_AUX_1,
+    Receiver_ChannelID_AUX_2,
+    Receiver_ChannelID_AUX_3,
+    Receiver_ChannelID_AUX_4,
+    Receiver_ChannelID_AUX_5,
+    Receiver_ChannelID_AUX_6,
+    Receiver_ChannelID_AUX_7,
+    Receiver_ChannelID_AUX_8,
+    Receiver_ChannelID_AUX_9,
+    Receiver_ChannelID_AUX_10,
+    Receiver_ChannelID_AUX_11,
+    Receiver_ChannelID_AUX_12,
+    Receiver_ChannelID_AUX_13,
+    Receiver_ChannelID_AUX_14,
+    Receiver_ChannelID_AUX_15,
+    Receiver_ChannelID_AUX_16,
+    Receiver_ChannelID_AUX_17,
+    Receiver_ChannelID_AUX_18,
+    Receiver_ChannelID_AUX_19,
+    Receiver_ChannelID_AUX_20,
+    Receiver_ChannelID_AUX_21,
+    Receiver_ChannelID_AUX_22,
+    Receiver_ChannelID_AUX_23,
+    Receiver_ChannelID_AUX_24,
+    Receiver_ChannelID_AUX_25,
+    Receiver_ChannelID_AUX_26,
+    Receiver_ChannelID_AUX_27,
+    Receiver_ChannelID_AUX_28,
+} DevRecveiver_FunctionalDef_List;
 
 #pragma pack(1)
-typedef union {
-    uint16_t val_list[RECEIVER_MAX_CHANNEL];
-
-    struct
-    {
-        uint16_t pitch : 16;
-        uint16_t roll : 16;
-        uint16_t throttle : 16;
-        uint16_t yaw : 16;
-
-        uint16_t aux_1 : 16;
-        uint16_t aux_2 : 16;
-        uint16_t aux_3 : 16;
-        uint16_t aux_4 : 16;
-
-        uint16_t aux_5 : 16;
-        uint16_t aux_6 : 16;
-        uint16_t aux_7 : 16;
-        uint16_t aux_8 : 16;
-
-        uint16_t aux_9 : 16;
-        uint16_t aux_10 : 16;
-        uint16_t aux_11 : 16;
-        uint16_t aux_12 : 16;
-
-        uint16_t aux_13 : 16;
-        uint16_t aux_14 : 16;
-        uint16_t aux_15 : 16;
-        uint16_t aux_16 : 16;
-
-        uint16_t aux_17 : 16;
-        uint16_t aux_18 : 16;
-        uint16_t aux_19 : 16;
-        uint16_t aux_20 : 16;
-
-        uint16_t aux_21 : 16;
-        uint16_t aux_22 : 16;
-        uint16_t aux_23 : 16;
-        uint16_t aux_24 : 16;
-
-        uint16_t aux_25 : 16;
-        uint16_t aux_26 : 16;
-        uint16_t aux_27 : 16;
-        uint16_t aux_28 : 16;
-    } channel;
-} DevReceiverDecodeData_TypeDef;
-
 typedef struct
 {
-    DevReceiverDecodeData_TypeDef val;
+    uint8_t channel_func_def[RECEIVER_MAX_CHANNEL];
+    uint16_t val_list[RECEIVER_MAX_CHANNEL];
     uint32_t time_stamp;
+
+    bool valid;
+    bool failsafe;
 } DevReceiverData_TypeDef;
 
 typedef struct
 {
     DevReceiver_TypeList Frame_type;
-    DecReceiver_IO_TypeList IO_type;
 
     uint8_t port_id;
     uint16_t baudrate;
@@ -93,15 +78,24 @@ typedef struct
 
     DevReceiverData_TypeDef data;
     DevReceiver_Callback cb;
+
+    /* for sbus receiver we gonna need inverter hardware */
+    uint32_t invert_port;
+    uint32_t invert_pin;
+
+    bool (*inverter_init)(uint32_t port, uint32_t pin);
+    bool (*invert_control)(uint32_t port, uint32_t pin);
+
+    bool (*port_init)(uint8_t port_id, uint16_t baudrate);
 } DevReceiverObj_TypeDef;
 #pragma pack()
 
 typedef struct
 {
-    /* if IO_type is receiver data out then need source data structure to copy and convert receiver value */
-    /* else src set NULL */
-    bool (*init)(DevReceiverObj_TypeDef *obj, DecReceiver_IO_TypeList IO_type, DevReceiverObj_TypeDef *src);
-    bool (*set_decode_callback)(DevReceiverObj_TypeDef cb);
+    bool (*init)(DevReceiverObj_TypeDef *obj, uint8_t channel_num);
+    bool (*enable_control)(DevReceiverObj_TypeDef *obj, bool state);
+    bool (*set_decode_callback)(DevReceiverObj_TypeDef *obj, DevReceiver_Callback cb);
+    bool (*conver_to)(DevReceiverObj_TypeDef *obj, DevReceiver_TypeList type, uint8_t *ptr, uint16_t size);
     DevReceiverData_TypeDef (*get)(DevReceiverObj_TypeDef *obj);
 } DevReceiver_TypeDef;
 
