@@ -337,6 +337,11 @@ int8_t SrvIMU_GetSec_InitError(void)
 }
 
 /************************************************************ Module Sample API Function *****************************************************************************/
+static bool SrvIMU_DataCheck(IMUData_TypeDef data)
+{
+    
+}
+
 static bool SrvIMU_Sample(void)
 {
     static SYSTEM_RunTime PriSample_Rt_Lst = 0;
