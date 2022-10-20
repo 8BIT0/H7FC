@@ -20,7 +20,7 @@ static const uint8_t default_channle_id_list[Receiver_Channel_Sum] = {
     Receiver_ChannelID_AUX_12,
 };
 
-static DevReceiverData_TypeDefDevReceiver_SBUS_Frame_Decode(uint8_t *ptr, uint16_t size)
+static DevReceiverData_TypeDef DevReceiver_SBUS_Frame_Decode(uint8_t *ptr, uint16_t size)
 {
     DevReceiverData_TypeDef receiver_data;
 
@@ -47,7 +47,7 @@ static DevReceiverData_TypeDefDevReceiver_SBUS_Frame_Decode(uint8_t *ptr, uint16
         receiver_data.val_listL[15] = ((ptr[21] >> 5 | ptr[22] << 3) & SBUS_DECODE_MASK);
 
         receiver_data.valid = true;
-        receiver_data.time_stamp = DevReceiver_Get_SysMs;
+        receiver_data.time_stamp = DevReceiver_Get_SysMs();
     }
     else
     {

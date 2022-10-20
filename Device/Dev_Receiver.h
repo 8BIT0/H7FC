@@ -72,6 +72,7 @@ typedef struct
 
     uint8_t port_id;
     uint16_t baudrate;
+    uint32_t port_addr;
 
     uint8_t channel_num;
 
