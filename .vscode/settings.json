@@ -93,7 +93,8 @@
                 "locale": "c",
                 "sstream": "c",
                 "stm32h7xx_hal_sd.h": "c",
-                "datapipe.h": "c"
+                "datapipe.h": "c",
+                "dev_receiver.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

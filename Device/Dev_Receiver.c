@@ -1,7 +1,7 @@
 #include "Dev_Receiver.h"
 
 __weak DevReceiver_Get_SysMs(void) { reuturn 0; }
-static const uint8_t default_channle_id_list[RECEIVER_MAX_CHANNEL] = {
+static const uint8_t default_channle_id_list[Receiver_Channel_Sum] = {
     Receiver_ChannelID_Pitch,
     Receiver_ChannelID_Roll,
     Receiver_ChannelID_Throttle,
@@ -18,22 +18,6 @@ static const uint8_t default_channle_id_list[RECEIVER_MAX_CHANNEL] = {
     Receiver_ChannelID_AUX_10,
     Receiver_ChannelID_AUX_11,
     Receiver_ChannelID_AUX_12,
-    Receiver_ChannelID_AUX_13,
-    Receiver_ChannelID_AUX_14,
-    Receiver_ChannelID_AUX_15,
-    Receiver_ChannelID_AUX_16,
-    Receiver_ChannelID_AUX_17,
-    Receiver_ChannelID_AUX_18,
-    Receiver_ChannelID_AUX_19,
-    Receiver_ChannelID_AUX_20,
-    Receiver_ChannelID_AUX_21,
-    Receiver_ChannelID_AUX_22,
-    Receiver_ChannelID_AUX_23,
-    Receiver_ChannelID_AUX_24,
-    Receiver_ChannelID_AUX_25,
-    Receiver_ChannelID_AUX_26,
-    Receiver_ChannelID_AUX_27,
-    Receiver_ChannelID_AUX_28,
 };
 
 static DevReceiverData_TypeDefDevReceiver_SBUS_Frame_Decode(uint8_t *ptr, uint16_t size)

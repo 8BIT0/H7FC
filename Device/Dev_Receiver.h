@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#define RECEIVER_MAX_CHANNEL 32
 #define SBUS_FRAME_BYTE_SIZE 25
 #define SBUS_FRAME_HEADER 0xF0
 #define SBUS_DECODE_MASK 0x07FF
@@ -38,29 +37,29 @@ typedef enum
     Receiver_ChannelID_AUX_10,
     Receiver_ChannelID_AUX_11,
     Receiver_ChannelID_AUX_12,
-    Receiver_ChannelID_AUX_13,
-    Receiver_ChannelID_AUX_14,
-    Receiver_ChannelID_AUX_15,
-    Receiver_ChannelID_AUX_16,
-    Receiver_ChannelID_AUX_17,
-    Receiver_ChannelID_AUX_18,
-    Receiver_ChannelID_AUX_19,
-    Receiver_ChannelID_AUX_20,
-    Receiver_ChannelID_AUX_21,
-    Receiver_ChannelID_AUX_22,
-    Receiver_ChannelID_AUX_23,
-    Receiver_ChannelID_AUX_24,
-    Receiver_ChannelID_AUX_25,
-    Receiver_ChannelID_AUX_26,
-    Receiver_ChannelID_AUX_27,
-    Receiver_ChannelID_AUX_28,
+
+    Receiver_Channel_Sum,
 } DevRecveiver_FunctionalDef_List;
 
 #pragma pack(1)
+typedef union
+{
+    struct
+    {
+        uint8_t ch17 : 1;
+        uint8_t ch18 : 1;
+        uint8_t frame_lost : 1;
+        uint8_t fail_safe_act : 1;
+        uint8_t reserve : 4;
+    }bit;
+
+    uint8_t val;
+}DevReceiver_FuncBit_TypeDef;
+
 typedef struct
 {
-    uint8_t channel_func_def[RECEIVER_MAX_CHANNEL];
-    uint16_t val_list[RECEIVER_MAX_CHANNEL];
+    uint8_t channel_func_def[Receiver_Channel_Sum];
+    uint16_t val_list[Receiver_Channel_Sum];
     uint32_t time_stamp;
 
     bool valid;
