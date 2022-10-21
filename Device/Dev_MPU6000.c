@@ -347,6 +347,11 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
 
 IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
 {
+    IMUData_TypeDef tmp;
+
+    memset(&tmp, NULL, sizeof(tmp));
     if (sensor_obj->error == MPU6000_No_Error)
         return sensor_obj->OriData;
+
+    return tmp;
 }

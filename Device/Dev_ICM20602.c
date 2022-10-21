@@ -328,13 +328,16 @@ static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj)
 
 static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj)
 {
+    IMUData_TypeDef tmp;
+    memset(&tmp, NULL, sizeof(tmp));
+
     if ((Obj->error == ICM20602_No_Error) && !Obj->update)
     {
         Obj->drdy = false;
         return Obj->OriData;
     }
-    else
-        return Obj->OriData_Lst;
+
+    return tmp;
 }
 
 static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj)

@@ -340,36 +340,38 @@ int8_t SrvIMU_GetSec_InitError(void)
 }
 
 /************************************************************ Module Sample API Function *****************************************************************************/
-static bool SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t gyr_range)
+static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t gyr_range)
 {
-    float P_Acc_Range_Max = acc_range * MPU_RANGE_THRESHOLD;
-    float P_Gyr_Range_Max = gyr_range * MPU_RANGE_THRESHOLD;
+    float Acc_Range_Max = acc_range * MPU_RANGE_MAX_THRESHOLD;
+    float Gyr_Range_Max = gyr_range * MPU_RANGE_MAX_THRESHOLD;
+    float Acc_Range_Min = acc_range * MPU_RANGE_MIN_THRESHOLD;
+    float Gyr_Range_Min = gyr_range * MPU_RANGE_MIN_THRESHOLD;
 
     for(uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
     {
         /* over range chack */
         {
             /* check acc data range */
-            if(fabs(data->acc_flt[axis]) > P_Acc_Range_Max)
-                return false;
+            if(fabs(data->acc_flt[axis]) > Acc_Range_Max)
+                return SrvIMU_Sample_Data_Acc_OverRange;
 
             /* check gyr data range */
-            if(fabs(data->gyr_flt[axis]) > P_Gyr_Range_Max)
-                return false;
+            if(fabs(data->gyr_flt[axis]) > Gyr_Range_Max)
+                return SrvIMU_Sample_Data_Gyr_OverRange;
         }
 
         /* blunt data check */
         {
             if(data->acc_int_lst[axis] != 0)
             {
-                if(data->acc_int[axis] == data->acc_int_lst[axis])
+                if((fabs(data->acc_flt[axis]) <= Acc_Range_Min) && (data->acc_int[axis] == data->acc_int_lst[axis]))
                 {
                     data->acc_blunt_cnt[axis] ++;
 
                     if(data->acc_blunt_cnt >= IMU_BLUNT_SAMPLE_CNT)
                     {
                         data->acc_blunt_cnt[axis] = 0;
-                        return false;
+                        return SrvIMU_Sample_Data_Acc_Blunt;
                     }
                 }
                 else
@@ -378,14 +380,14 @@ static bool SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t 
 
             if(data->gyr_int_lst[axis] != 0)
             {
-                if(data->gyr_int[axis] == data->gyr_int_lst[axis])
+                if((fabs(data->gyr_flt[axis]) <= Gyr_Range_Min) && (data->gyr_int[axis] == data->gyr_int_lst[axis]))
                 {
                     data->gyr_blunt_cnt[axis] ++;
 
                     if(data->gyr_blunt_cnt[axis] >= IMU_BLUNT_SAMPLE_CNT)
                     {
                         data->gyr_blunt_cnt[axis] = 0;
-                        return false;
+                        return SrvIMU_Sample_Data_Gyr_Blunt;
                     }
                 }
                 else
@@ -394,7 +396,7 @@ static bool SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t 
         }
     }
 
-    return true;
+    return SrvIMU_Sample_NoError;
 }
 
 static bool SrvIMU_Sample(void)
@@ -432,20 +434,23 @@ static bool SrvIMU_Sample(void)
                 /* update pri imu data */
                 PriIMU_Data.tempera = MPU6000Obj.OriData.temp_flt;
 
+                /* Pri imu data validation check */
+                PriIMU_Data.error_code = SrvIMU_DataCheck(&MPU6000Obj.OriData, MPU6000Obj.AccTrip, MPU6000Obj.GyrTrip);
+
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
                     PriIMU_Data.acc[i] = MPU6000Obj.OriData.acc_flt[i];
                     PriIMU_Data.gyr[i] = MPU6000Obj.OriData.gyr_flt[i];
-                }
 
-                /* Pri imu data validation check */
-                if(SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t gyr_range))
-                {
-                    /* update Pri last value */
-                }
-                else                    
-                    pri_sample_state = false;
-
+                    /* update last time value */
+                    if( (PriIMU_Data.error_code != SrvIMU_Sample_Data_Acc_OverRange) && 
+                        (PriIMU_Data.error_code != SrvIMU_Sample_Data_Gyr_OverRange))
+                    {
+                        MPU6000Obj.OriData.acc_int_lst[i] = MPU6000Obj.OriData.acc_int[i];
+                        MPU6000Obj.OriData.gyr_int_lst[i] = MPU6000Obj.OriData.gyr_int[i];
+                    }
+                };
+                    
                 /* filter Pri IMU Module data */
 
                 /* unlock */
@@ -457,6 +462,7 @@ static bool SrvIMU_Sample(void)
         {
             SrvIMU_PriSample_Undrdy(NULL, 0);
             pri_sample_state = false;
+            PriIMU_Data_Lst.error_code = SrvIMU_Sample_Module_UnReady;
         }
 
         PriSample_Rt_Lst = PriIMU_Data.time_stamp;
@@ -487,20 +493,23 @@ static bool SrvIMU_Sample(void)
             {
                 /* update sec imu data */
                 SecIMU_Data.tempera = ICM20602Obj.OriData.temp_flt;
+                
+                /* Sec imu data validation check */ 
+                SecIMU_Data.error_code = SrvIMU_DataCheck(&ICM20602Obj.OriData, ICM20602Obj.AccTrip, ICM20602Obj.GyrTrip);
 
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
                     SecIMU_Data.acc[i] = ICM20602Obj.OriData.acc_flt[i];
                     SecIMU_Data.gyr[i] = ICM20602Obj.OriData.gyr_flt[i];
-                }
 
-                /* Sec imu data validation check */
-                if(SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t gyr_range))
-                {
                     /* update Sec last value */
+                    if( (SecIMU_Data.error_code != SrvIMU_Sample_Data_Acc_OverRange) &&
+                        (SecIMU_Data.error_code != SrvIMU_Sample_Data_Gyr_OverRange))
+                    {
+                        ICM20602Obj.OriData.acc_int_lst[i] = ICM20602Obj.OriData.acc_int[i];
+                        ICM20602Obj.OriData.gyr_int_lst[i] = ICM20602Obj.OriData.gyr_int[i];
+                    }
                 }
-                else
-                    sec_sample_state = false;
 
                 /* filter Sec IMU Module data */
 
@@ -513,6 +522,7 @@ static bool SrvIMU_Sample(void)
         {
             SrvIMU_SecSample_Undrdy(NULL, 0);
             sec_sample_state = false;
+            SecIMU_Data.error_code = SrvIMU_Sample_Module_UnReady;
         }
 
         SecSample_Rt_Lst = SecIMU_Data.time_stamp;
@@ -520,7 +530,7 @@ static bool SrvIMU_Sample(void)
     else
         sec_sample_state = false;
 
-        return (pri_sample_state | sec_sample_state);
+    return (pri_sample_state | sec_sample_state);
 }
 
 static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)

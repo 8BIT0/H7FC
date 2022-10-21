@@ -149,7 +149,6 @@ typedef struct
     ICM20602_SampleRate_List rate;
 
     IMUData_TypeDef OriData;
-    IMUData_TypeDef OriData_Lst;
 } DevICM20602Obj_TypeDef;
 
 typedef struct

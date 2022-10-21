@@ -7,7 +7,8 @@
 #include "runtime.h"
 #include "imu_data.h"
 
-#define MPU_RANGE_THRESHOLD 1.2
+#define MPU_RANGE_MAX_THRESHOLD 1.2f
+#define MPU_RANGE_MIN_THRESHOLD 0.9f
 #define MPU_MODULE_OPR_DURATION 50 // duration time 50ms
 
 typedef union
@@ -41,6 +42,16 @@ typedef enum
     SrvIMU_AllModule_Init_Error,
 } SrvIMU_ErrorCode_List;
 
+typedef enum
+{
+    SrvIMU_Sample_NoError = 0,
+    SrvIMU_Sample_Module_UnReady,
+    SrvIMU_Sample_Data_Acc_Blunt,
+    SrvIMU_Sample_Data_Gyr_Blunt,
+    SrvIMU_Sample_Data_Acc_OverRange,
+    SrvIMU_Sample_Data_Gyr_OverRange,
+}SrvIMU_SampleErrorCode_List;
+
 #pragma pack(1)
 typedef struct
 {
@@ -51,6 +62,7 @@ typedef struct
     float gyr[Axis_Sum];
     float acc[Axis_Sum];
 
+    SrvIMU_SampleErrorCode_List error_code;
     uint16_t chk_sum;
 } SrvIMU_Data_TypeDef;
 
