@@ -40,6 +40,9 @@ typedef struct
 
     int16_t gyr_flt_lst[Axis_Sum];
     int16_t acc_flt_lst[Axis_Sum];
+
+    uint8_t gyr_blunt_cnt[Axis_Sum];
+    uint8_t acc_blunt_cnt[Axis_Sum];
 } IMUData_TypeDef;
 #pragma pack()
 
