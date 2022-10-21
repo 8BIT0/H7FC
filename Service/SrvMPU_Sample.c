@@ -368,6 +368,8 @@ static bool SrvIMU_DataCheck(IMUData_TypeDef data, uint8_t acc_range, uint16_t g
 
         }
     }
+
+    return true;
 }
 
 static bool SrvIMU_Sample(void)
