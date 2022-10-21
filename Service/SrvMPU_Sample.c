@@ -394,8 +394,6 @@ static bool SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t 
         }
     }
 
-    /* update last value */
-
     return true;
 }
 
@@ -438,6 +436,17 @@ static bool SrvIMU_Sample(void)
                 {
                     PriIMU_Data.acc[i] = MPU6000Obj.OriData.acc_flt[i];
                     PriIMU_Data.gyr[i] = MPU6000Obj.OriData.gyr_flt[i];
+                }
+
+                /* Pri imu data validation check */
+                if(SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t gyr_range))
+                {
+                    /* update Pri last value */
+                }
+                else
+                {
+                    
+                    pri_sample_state = false;
                 }
 
                 /* filter Pri IMU Module data */
@@ -487,6 +496,14 @@ static bool SrvIMU_Sample(void)
                     SecIMU_Data.acc[i] = ICM20602Obj.OriData.acc_flt[i];
                     SecIMU_Data.gyr[i] = ICM20602Obj.OriData.gyr_flt[i];
                 }
+
+                /* Sec imu data validation check */
+                if(SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t gyr_range))
+                {
+                    /* update Sec last value */
+                }
+                else
+                    sec_sample_state = false;
 
                 /* filter Sec IMU Module data */
 
