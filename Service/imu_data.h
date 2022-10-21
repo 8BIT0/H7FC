@@ -38,9 +38,8 @@ typedef struct
     float gyr_flt[Axis_Sum];
     float acc_flt[Axis_Sum];
 
-    float temp_flt_lst;
-    float gyr_flt_lst[Axis_Sum];
-    float acc_flt_lst[Axis_Sum];
+    int16_t gyr_flt_lst[Axis_Sum];
+    int16_t acc_flt_lst[Axis_Sum];
 } IMUData_TypeDef;
 #pragma pack()
 
