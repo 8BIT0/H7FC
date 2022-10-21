@@ -41,8 +41,6 @@ typedef struct
 
     uint8_t gyr_blunt_cnt[Axis_Sum];
     uint8_t acc_blunt_cnt[Axis_Sum];
-
-    uint32_t bad_data_cnt;
 } IMUData_TypeDef;
 #pragma pack()
 

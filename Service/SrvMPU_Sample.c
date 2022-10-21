@@ -443,11 +443,8 @@ static bool SrvIMU_Sample(void)
                 {
                     /* update Pri last value */
                 }
-                else
-                {
-                    
+                else                    
                     pri_sample_state = false;
-                }
 
                 /* filter Pri IMU Module data */
 
