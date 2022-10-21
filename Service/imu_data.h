@@ -7,9 +7,7 @@
 
 #define ConvertToTrip_Reg(x) (x << 3)
 
-#define IMU_BLUNT_SAMPLE_CNT 50
-#define IMU_ZERO_SAMPLE_CNT 50
-#define IMU_OVER_RANGE_CNT 50
+#define IMU_BLUNT_SAMPLE_CNT 100
 
 typedef void (*cs_ctl_callback)(bool state);
 typedef bool (*bus_trans_callback)(uint8_t *tx, uint8_t *rx, uint16_t len);
@@ -38,8 +36,8 @@ typedef struct
     float gyr_flt[Axis_Sum];
     float acc_flt[Axis_Sum];
 
-    int16_t gyr_flt_lst[Axis_Sum];
-    int16_t acc_flt_lst[Axis_Sum];
+    int16_t gyr_int_lst[Axis_Sum];
+    int16_t acc_int_lst[Axis_Sum];
 
     uint8_t gyr_blunt_cnt[Axis_Sum];
     uint8_t acc_blunt_cnt[Axis_Sum];

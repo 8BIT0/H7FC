@@ -340,32 +340,55 @@ int8_t SrvIMU_GetSec_InitError(void)
 }
 
 /************************************************************ Module Sample API Function *****************************************************************************/
-static bool SrvIMU_DataCheck(const IMUData_TypeDef data, uint8_t acc_range, uint16_t gyr_range)
+static bool SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t gyr_range)
 {
-    float P_Acc_Range = acc_range * MPU_RANGE_THRESHOLD;
-    float N_Acc_Range = acc_range * MPU_RANGE_THRESHOLD * -1.0f;
-
-    float P_Gyr_Range = gyr_range * MPU_RANGE_THRESHOLD;
-    float N_Gyr_Range = gyr_range * MPU_RANGE_THRESHOLD * -1.0;
+    float P_Acc_Range_Max = acc_range * MPU_RANGE_THRESHOLD;
+    float P_Gyr_Range_Max = gyr_range * MPU_RANGE_THRESHOLD;
 
     for(uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
     {
         /* over range chack */
         {
             /* check acc data range */
-            if((data.acc_flt[axis] > P_Acc_Range) || (data.acc_flt[axis] < N_Acc_Range))
+            if(fabs(data->acc_flt[axis]) > P_Acc_Range_Max)
                 return false;
 
             /* check gyr data range */
-            if((data.gyr_flt[axis] > P_Gyr_Range) || (data.gyr_flt[axis] < N_Gyr_Range))
+            if(fabs(data->gyr_flt[axis]) > P_Gyr_Range_Max)
                 return false;
         }
 
         /* blunt data check */
         {
+            if(data->acc_int_lst[axis] != 0)
+            {
+                if(data->acc_int[axis] == data->acc_int_lst[axis])
+                {
+                    data->acc_blunt_cnt[axis] ++;
 
+                    if(data->acc_blunt_cnt >= IMU_BLUNT_SAMPLE_CNT)
+                        return false;
+                }
+                else
+                    data->acc_blunt_cnt[axis] = 0;
+            }
+
+            if(data->gyr_int_lst[axis] != 0)
+            {
+                if(data->gyr_int[axis] == data->gyr_int_lst[axis])
+                {
+                    data->gyr_blunt_cnt[axis] ++;
+
+                    if(data->gyr_blunt_cnt[axis] >= IMU_BLUNT_SAMPLE_CNT)
+                        return false;
+                }
+                else
+                    data->gyr_blunt_cnt[axis] = 0;
+            }
         }
     }
+
+    /* update last value */
 
     return true;
 }
