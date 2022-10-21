@@ -53,8 +53,8 @@ void TaskInertical_Core(Task_Handle hdl)
                 SecIMU_Data.data.chk_sum += SecIMU_Data.buff[chk];
             }
 
-            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);
-            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ptl_DataPipe);
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);  /* to Log task */
+            // DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ptl_DataPipe);  /* to protocol task */
         }
         break;
 
