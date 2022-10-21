@@ -9,6 +9,8 @@
 #include "Dev_Led.h"
 #include <math.h>
 
+/* use ENU coordinate */
+
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
 
@@ -348,22 +350,18 @@ static bool SrvIMU_DataCheck(IMUData_TypeDef data, uint8_t acc_range, uint16_t g
 
     for(uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
     {
-        /* check acc data range */
-        if(data.acc_flt[axis] < 0)
+        /* over range chack */
         {
+            /* check acc data range */
+            if((data.acc_flt[axis] > P_Acc_Range) || (data.acc_flt[axis] < N_Acc_Range))
+                return false;
 
+            /* check gyr data range */
+            if((data.gyr_flt[axis] > P_Gyr_Range) || (data.gyr_flt[axis] < N_Gyr_Range))
+                return false;
         }
-        else if(data.acc_flt[axis] > 0)
-        {
 
-        }
-
-        /* check gyr data range */
-        if(data.gyr_flt[axis] > 0)
-        {
-
-        }
-        else if(data.gyr_flt[axis] < 0)
+        /* blunt data check */
         {
 
         }
