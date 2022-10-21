@@ -7,6 +7,7 @@
 #include "Bsp_SPI.h"
 #include "error_log.h"
 #include "Dev_Led.h"
+#include <math.h>
 
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
@@ -337,9 +338,36 @@ int8_t SrvIMU_GetSec_InitError(void)
 }
 
 /************************************************************ Module Sample API Function *****************************************************************************/
-static bool SrvIMU_DataCheck(IMUData_TypeDef data)
+static bool SrvIMU_DataCheck(IMUData_TypeDef data, uint8_t acc_range, uint16_t gyr_range)
 {
-    
+    float P_Acc_Range = acc_range * MPU_RANGE_THRESHOLD;
+    float N_Acc_Range = acc_range * MPU_RANGE_THRESHOLD * -1.0f;
+
+    float P_Gyr_Range = gyr_range * MPU_RANGE_THRESHOLD;
+    float N_Gyr_Range = gyr_range * MPU_RANGE_THRESHOLD * -1.0;
+
+    for(uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
+    {
+        /* check acc data range */
+        if(data.acc_flt[axis] < 0)
+        {
+
+        }
+        else if(data.acc_flt[axis] > 0)
+        {
+
+        }
+
+        /* check gyr data range */
+        if(data.gyr_flt[axis] > 0)
+        {
+
+        }
+        else if(data.gyr_flt[axis] < 0)
+        {
+
+        }
+    }
 }
 
 static bool SrvIMU_Sample(void)

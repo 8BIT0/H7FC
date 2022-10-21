@@ -147,7 +147,6 @@ static void LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj
     if ((queue == NULL) || (Queue.size(*queue) == 0) || (pipe_obj.ptr_tmp == NULL))
         return;
 
-    Kernel_EnterCritical();
     queue_size = Queue.size(*queue);
 
     if (queue_size > sizeof(LogQueueBuff_Trail))
@@ -156,7 +155,6 @@ static void LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj
     }
     else
         log_size = queue_size;
-    Kernel_ExitCritical();
 
     Queue.pop(queue, LogQueueBuff_Trail, log_size);
 

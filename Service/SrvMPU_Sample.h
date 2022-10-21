@@ -7,6 +7,7 @@
 #include "runtime.h"
 #include "imu_data.h"
 
+#define MPU_RANGE_THRESHOLD 1.2
 #define MPU_MODULE_OPR_DURATION 50 // duration time 50ms
 
 typedef union
