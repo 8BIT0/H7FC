@@ -340,7 +340,7 @@ int8_t SrvIMU_GetSec_InitError(void)
 }
 
 /************************************************************ Module Sample API Function *****************************************************************************/
-static bool SrvIMU_DataCheck(IMUData_TypeDef data, uint8_t acc_range, uint16_t gyr_range)
+static bool SrvIMU_DataCheck(const IMUData_TypeDef data, uint8_t acc_range, uint16_t gyr_range)
 {
     float P_Acc_Range = acc_range * MPU_RANGE_THRESHOLD;
     float N_Acc_Range = acc_range * MPU_RANGE_THRESHOLD * -1.0f;
