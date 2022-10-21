@@ -367,7 +367,10 @@ static bool SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t 
                     data->acc_blunt_cnt[axis] ++;
 
                     if(data->acc_blunt_cnt >= IMU_BLUNT_SAMPLE_CNT)
+                    {
+                        data->acc_blunt_cnt[axis] = 0;
                         return false;
+                    }
                 }
                 else
                     data->acc_blunt_cnt[axis] = 0;
@@ -380,7 +383,10 @@ static bool SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t 
                     data->gyr_blunt_cnt[axis] ++;
 
                     if(data->gyr_blunt_cnt[axis] >= IMU_BLUNT_SAMPLE_CNT)
+                    {
+                        data->gyr_blunt_cnt[axis] = 0;
                         return false;
+                    }
                 }
                 else
                     data->gyr_blunt_cnt[axis] = 0;
