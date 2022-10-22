@@ -11,11 +11,12 @@
 #include "stm32h7xx_hal_rcc.h"
 #include "IO_Definition.h"
 #include "debug_util.h"
+#include "kernel.h"
 
 /* internal variable */
-static uint32_t sysclock = 0;
-static uint64_t Runtime_DelayUs = 0;
-static Runtime_DataObj_TypeDef RunTime = {
+static volatile uint32_t sysclock = 0;
+static volatile uint64_t Runtime_DelayUs = 0;
+static volatile Runtime_DataObj_TypeDef RunTime = {
     .tick_callback = NULL,
     .start_callback = NULL,
     .stop_callback = NULL,

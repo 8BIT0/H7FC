@@ -14,7 +14,8 @@
 static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj);
 
 /* external function */
-static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len);
+static bool Queue_Create_Auto(QueueObj_TypeDef *obj, char *name, uint16_t len);
+static bool Queue_Create_WithCertainBuff(QueueObj_TypeDef *obj, char *name, uint8_t *buff, uint16_t len);
 static bool Queue_Reset(QueueObj_TypeDef *obj);
 static Queue_state Queue_GetState(QueueObj_TypeDef obj);
 static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
@@ -22,10 +23,12 @@ static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size
 static bool Queue_Check(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, uint16_t size);
 static uint16_t Queue_GetSize(QueueObj_TypeDef obj);
 static uint16_t Queue_GetRemain(QueueObj_TypeDef obj);
+static bool Queue_PopTo(QueueObj_TypeDef *src, QueueObj_TypeDef *dst);
 
 /* extern virable */
 Queue_TypeDef Queue = {
-    .create = Queue_Create,
+    .create_auto = Queue_Create_Auto,
+    .create_with_buf = Queue_Create_WithCertainBuff,
     .reset = Queue_Reset,
     .push = Queue_Push,
     .pop = Queue_Pop,
@@ -33,9 +36,32 @@ Queue_TypeDef Queue = {
     .state = Queue_GetState,
     .size = Queue_GetSize,
     .remain = Queue_GetRemain,
+    .pop_to_queue = Queue_PopTo,
 };
 
-static bool Queue_Create(QueueObj_TypeDef *obj, char *name, uint16_t len)
+static bool Queue_Create_WithCertainBuff(QueueObj_TypeDef *obj, char *name, uint8_t *buff, uint16_t len)
+{
+    if ((obj == NULL) || (len == 0))
+        return false;
+
+    obj->name = name;
+    obj->end_pos = 0;
+    obj->head_pos = 0;
+    obj->size = 0;
+    obj->lenth = len;
+
+    obj->buff = buff;
+    memset(obj->buff, NULL, obj->lenth);
+
+    if (obj->buff == NULL)
+        return false;
+
+    obj->state = Queue_empty;
+
+    return true;  
+}
+
+static bool Queue_Create_Auto(QueueObj_TypeDef *obj, char *name, uint16_t len)
 {
     if ((obj == NULL) || (len == 0))
         return false;
@@ -74,13 +100,13 @@ static bool Queue_Reset(QueueObj_TypeDef *obj)
 
 static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj)
 {
-    if ((obj->head_pos == obj->end_pos) || (obj->size == 0))
+    if ((obj->head_pos == obj->end_pos) && (obj->size == 0))
     {
         obj->state = Queue_empty;
         return Queue_empty;
     }
 
-    if (((obj->end_pos + 1) % obj->lenth) == obj->head_pos)
+    if ((((obj->end_pos + 1) % obj->lenth) == obj->head_pos) || (obj->size == obj->lenth))
     {
         obj->state = Queue_full;
         return Queue_full;
@@ -88,6 +114,41 @@ static Queue_state Queue_UpdateState(QueueObj_TypeDef *obj)
 
     obj->state = Queue_ok;
     return obj->state;
+}
+
+static bool Queue_PopTo(QueueObj_TypeDef *src, QueueObj_TypeDef *dst)
+{
+    uint16_t dst_remain_size = 0;
+    uint16_t src_size = 0;
+    uint16_t copy_size = 0;
+
+    if((src == NULL) || (dst == NULL) || (src->size == 0) || (dst->lenth == dst->size))
+        return false;
+
+    dst_remain_size = Queue_GetRemain(*dst);
+    src_size = Queue_GetSize(*src);
+
+    copy_size = (dst_remain_size <= src_size) ? dst_remain_size : src_size;
+
+    for(uint16_t i = 0; i < copy_size; i++)
+    {
+        dst->end_pos %= dst->lenth;
+        src->head_pos %= src->lenth;
+
+        dst->buff[dst->end_pos] = src->buff[src->head_pos];
+        src->buff[src->head_pos] = NULL;
+
+        src->head_pos++;
+        src->size--;
+        
+        dst->end_pos++;
+        dst->size++;
+
+        Queue_UpdateState(dst);
+        Queue_UpdateState(src);
+    }
+
+    return true;
 }
 
 static Queue_state Queue_Push(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size)

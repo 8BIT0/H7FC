@@ -82,7 +82,7 @@ static Error_Handler ErrorTree_Create(char *name)
 
     if (!ErrorQueue_Init)
     {
-        ErrorQueue_CreateState = Queue.create(&ErrorQueue, "ErrorQueue", ERROR_DESC_BUFFSIZE);
+        ErrorQueue_CreateState = Queue.create_auto(&ErrorQueue, "ErrorQueue", ERROR_DESC_BUFFSIZE);
         ErrorQueue_Init = true;
     }
 

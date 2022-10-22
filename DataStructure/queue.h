@@ -50,12 +50,14 @@ typedef struct
 {
     uint16_t (*size)(QueueObj_TypeDef obj);
     uint16_t (*remain)(QueueObj_TypeDef obj);
-    bool (*create)(QueueObj_TypeDef *obj, char *name, uint16_t len);
+    bool (*create_auto)(QueueObj_TypeDef *obj, char *name, uint16_t len);
+    bool (*create_with_buf)(QueueObj_TypeDef *obj, char *name, uint8_t *buff, uint16_t len);
     bool (*reset)(QueueObj_TypeDef *obj);
     bool (*check)(QueueObj_TypeDef *obj, uint16_t index, uint8_t *data, uint16_t size);
     Queue_state (*push)(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
     Queue_state (*pop)(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size);
     Queue_state (*state)(QueueObj_TypeDef obj);
+    bool (*pop_to_queue)(QueueObj_TypeDef *src, QueueObj_TypeDef *dst);
 } Queue_TypeDef;
 
 extern Queue_TypeDef Queue;

@@ -29,7 +29,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-   .MMU_Section :
+  .MMU_Section :
   {
     . = ALIGN(4);
     MMU_s = .;
@@ -50,6 +50,18 @@ SECTIONS
     . = ALIGN(4);
     Perph_e = .;
   } >RAM_D1 AT>FLASH
+
+  .Fast_Mem_Section : 
+  {
+    . = ALIGN(4);
+    fast_mem_s = .;
+    *(.Fast_Mem_Section)
+    *(.Fast_Mem_Section*)
+    
+    . = ALIGN(4);
+    fast_mem_e = .;
+
+  }>ITCMRAM AT>FLASH
 
   /* The program code and other data goes into FLASH */
   .text :
