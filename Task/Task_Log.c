@@ -102,7 +102,7 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
     {
         if(LogObj_Set_Reg._sec.IMU_Sec)
         {
-            if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(8))
+            if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(4))
             {
                 LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg);
             }
