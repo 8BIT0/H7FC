@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.23.1)
+project(Log2Txt)
+include_directories("./code/inc")
+aux_source_directory(./code/src DIR_SRCS)
+add_executable(log2txt ${DIR_SRCS})

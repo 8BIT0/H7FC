@@ -94,7 +94,9 @@
                 "sstream": "c",
                 "stm32h7xx_hal_sd.h": "c",
                 "datapipe.h": "c",
-                "dev_receiver.h": "c"
+                "dev_receiver.h": "c",
+                "var_def.h": "c",
+                "iosfwd": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
