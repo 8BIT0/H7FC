@@ -2,6 +2,7 @@
 
 #define MIN_LOG_FILENAME_LEN 5
 #define EXTEND_FILETYPE_NAME ".log"
+#define EXTEND_FILETYPE_NAME_LEN strlen(EXTEND_FILETYPE_NAME)
 
 bool Load_File(char *path)
 {
