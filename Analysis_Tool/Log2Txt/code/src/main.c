@@ -37,6 +37,8 @@ static bool Load_File(char *path)
             /* open log file */
 
             /* read log data into buff */
+
+            return true;
         }
         else
         {
