@@ -27,6 +27,7 @@ static bool File_Check_ExtendType(char *ext_type)
 static bool Load_File(char *path)
 {
     uint16_t file_path_len = 0;
+    bool state = false;
 
     if (path)
     {
@@ -38,7 +39,7 @@ static bool Load_File(char *path)
 
             /* read log data into buff */
 
-            return true;
+            state = true;
         }
         else
         {
@@ -49,7 +50,7 @@ static bool Load_File(char *path)
         memset(path, '\0', strlen(path));
     }
 
-    return false;
+    return state;
 }
 
 int main()
