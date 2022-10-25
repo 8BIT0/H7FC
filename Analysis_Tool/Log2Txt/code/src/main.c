@@ -67,7 +67,7 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
                 memcpy(file_name_tmp, path + offset + 1, strlen(path) - offset);
 
                 obj->path = path_tmp;
-                obj->file_name = file_name_tmp;
+                obj->log_file_name = file_name_tmp;
 
                 /* read log data into buff */
                 stat(path, &file_stat);
@@ -78,7 +78,7 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
 
                 printf("\r\n");
                 printf("[INFO]\tFile Path\t\t\t%s\r\n", obj->path);
-                printf("[INFO]\tFile Name:\t\t\t%s\r\n", obj->file_name);
+                printf("[INFO]\tFile Name:\t\t\t%s\r\n", obj->log_file_name);
                 printf("[INFO]\tFile Total Byte Size:\t\t%lld\r\n", obj->logfile_size.total_byte);
 
                 printf("\r\n");

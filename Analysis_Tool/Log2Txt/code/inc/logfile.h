@@ -34,7 +34,8 @@ typedef struct
     FILE *cnv_log_file;
 
     char *path;
-    char *file_name;
+    char *log_file_name;
+    char *cnv_file_name;
 
     FileSize_TypeDef logfile_size;
     FileSize_TypeDef cnvfile_size;
