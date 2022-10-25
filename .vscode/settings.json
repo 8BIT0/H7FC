@@ -96,7 +96,9 @@
                 "datapipe.h": "c",
                 "dev_receiver.h": "c",
                 "var_def.h": "c",
-                "iosfwd": "c"
+                "iosfwd": "c",
+                "logfile.h": "c",
+                "stat.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
