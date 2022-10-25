@@ -38,7 +38,8 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
     bool state = false;
     uint16_t offset = 0;
     char *path_tmp = NULL;
-    char *file_name_tmp = NULL;
+    char *logfile_name_tmp = NULL;
+    char *cnvfile_name_tmp = NULL;
 
     if (path && obj)
     {
@@ -55,19 +56,26 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
                 for (uint16_t i = 0; i < strlen(path); i++)
                 {
                     if (path[i] == '/')
-                        offset = i;
+                        offset = i + 1;
                 }
 
                 path_tmp = malloc(offset);
                 memset(path_tmp, '\0', offset);
                 memcpy(path_tmp, path, offset);
 
-                file_name_tmp = malloc(strlen(path) - offset);
-                memset(file_name_tmp, '\0', strlen(path) - offset);
-                memcpy(file_name_tmp, path + offset + 1, strlen(path) - offset);
+                logfile_name_tmp = malloc(strlen(path) - offset);
+                cnvfile_name_tmp = malloc(strlen(path) - offset - strlen(EXTEND_FILETYPE_NAME) + strlen(CONVERT_EXTEND_FILE_NAME));
+
+                memset(logfile_name_tmp, '\0', strlen(path) - offset);
+                memset(cnvfile_name_tmp, '\0', strlen(path) - offset - strlen(EXTEND_FILETYPE_NAME) + strlen(CONVERT_EXTEND_FILE_NAME));
+
+                memcpy(logfile_name_tmp, path + offset, strlen(path) - offset);
+                memcpy(cnvfile_name_tmp, path + offset, strlen(path) - offset - strlen(EXTEND_FILETYPE_NAME));
+                memcpy(cnvfile_name_tmp + strlen(CONVERT_EXTEND_FILE_NAME) - 1, CONVERT_EXTEND_FILE_NAME, strlen(CONVERT_EXTEND_FILE_NAME));
 
                 obj->path = path_tmp;
-                obj->log_file_name = file_name_tmp;
+                obj->log_file_name = logfile_name_tmp;
+                obj->cnv_file_name = cnvfile_name_tmp;
 
                 /* read log data into buff */
                 stat(path, &file_stat);
@@ -78,7 +86,8 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
 
                 printf("\r\n");
                 printf("[INFO]\tFile Path\t\t\t%s\r\n", obj->path);
-                printf("[INFO]\tFile Name:\t\t\t%s\r\n", obj->log_file_name);
+                printf("[INFO]\tLogFile Name:\t\t\t%s\r\n", obj->log_file_name);
+                printf("[INFO]\tCNVFile Name:\t\t\t%s\r\n", obj->cnv_file_name);
                 printf("[INFO]\tFile Total Byte Size:\t\t%lld\r\n", obj->logfile_size.total_byte);
 
                 printf("\r\n");
