@@ -45,6 +45,8 @@ typedef struct
     uint64_t decode_data_block_cnt;
 
     uint8_t *bin_data;
+
+    uint64_t abandon_byte_cnt;
 } LogFileObj_TypeDef;
 
 #endif

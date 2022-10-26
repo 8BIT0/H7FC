@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.23.1)
 project(Log2Txt)
+SET(CMAKE_BUILD_TYPE Debug)
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -ggdb")
 include_directories("./code/inc")
 aux_source_directory(./code/src DIR_SRCS)
 add_executable(log2txt ${DIR_SRCS})

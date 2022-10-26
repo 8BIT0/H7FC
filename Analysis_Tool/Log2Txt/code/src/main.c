@@ -1,6 +1,9 @@
 #include "../inc/var_def.h"
 #include "../inc/logfile.h"
+#include "../inc/file_decode.h"
 #include <sys/stat.h>
+
+#define MAX_LOAD_MB_SIZE 64
 
 static LogFileObj_TypeDef LogFile;
 
@@ -97,16 +100,34 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
 
                 /* create convert file */
 
-                if (obj->logfile_size.total_byte)
+                if (obj->logfile_size.mb < MAX_LOAD_MB_SIZE)
                 {
                     obj->bin_data = malloc(obj->logfile_size.total_byte);
-                    if (obj->bin_data)
+
+                    if (obj->bin_data == NULL)
                     {
+                        free(obj->bin_data);
+                        printf("[Error]\tMemory Malloc Failed\r\n");
+                        printf("\r\n\r\n");
                     }
                     else
                     {
-                        printf("[Error]\tMemory Malloc Failed\r\n");
-                        printf("\r\n\r\n");
+                        /* Load All Data */
+                        for (uint64_t i = 0; i < obj->logfile_size.total_byte; i++)
+                        {
+                            fscanf(obj->log_file, "%c", &obj->bin_data[i]);
+                        }
+
+                        printf("[INFO]\tFile Load Finished\r\n");
+                        if (fclose(obj->log_file) == 0)
+                        {
+                            printf("[INFO]\tFile Closed\r\n");
+                        }
+                        else
+                        {
+                            printf("[Error]\tFile Close Error\r\n");
+                            state = false;
+                        }
                     }
                 }
 

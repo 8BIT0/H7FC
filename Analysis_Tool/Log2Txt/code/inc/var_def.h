@@ -8,6 +8,11 @@
 #include <stddef.h>
 
 typedef uint64_t SYSTEM_RunTime;
+#define LOG_HEADER 0xBA
+#define LOG_DATATYPE_IMU 0x00
+
+#define LOG_HEADER_SIZE sizeof(LogData_Header_TypeDef)
+#define LOG_IMU_DATA_SIZE sizeof(IMU_LogUnionData_TypeDef)
 
 typedef enum
 {
