@@ -168,6 +168,8 @@ int main()
     // printf("[INFO]\tFile KByte Size:\t\t%d\r\n", LogFile.logfile_size.kb);
     // printf("[INFO]\tFile MByte Size:\t\t%d\r\n", LogFile.logfile_size.mb);
 
+    LogFile_Decode(&LogFile);
+
     while (1)
     {
     }

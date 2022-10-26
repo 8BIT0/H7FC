@@ -6,5 +6,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../inc/logfile.h"
+
+bool LogFile_Decode(LogFileObj_TypeDef *file);
 
 #endif

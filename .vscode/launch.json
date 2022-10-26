@@ -45,6 +45,14 @@
             "launchCompleteCommand": "None",
             "externalConsole": false,
             "cwd": "${workspaceRoot}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Analysis_Tool Debug",
+            "program": "${workspaceFolder}/Analysis_Tool/Log2Txt/build/log2txt",
+            "args": [],
+            "cwd": "${workspaceFolder}/Analysis_Tool/Log2Txt/build"
         }
     ]
 }

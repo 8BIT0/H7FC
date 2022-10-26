@@ -1,5 +1,4 @@
 #include "../inc/var_def.h"
-#include "../inc/logfile.h"
 #include "../inc/file_decode.h"
 
 static uint16_t LogFile_Decode_IMUData(uint8_t *data, uint16_t size);
@@ -23,7 +22,7 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
             {
             case LOG_DATATYPE_IMU:
                 i += LOG_HEADER_SIZE;
-                if (header.size == LOG_IMU_DATA_SIZE)
+                if ((uint8_t)header.size == LOG_IMU_DATA_SIZE)
                 {
                     if (LogFile_Decode_IMUData(&file->bin_data[i], LOG_IMU_DATA_SIZE) != LOG_IMU_DATA_SIZE)
                     {
@@ -31,6 +30,7 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
                 }
                 else
                 {
+                    printf("        %d         %d\r\n", header.size, LOG_IMU_DATA_SIZE);
                     file->error_data_block_cnt++;
                     file->abandon_byte_cnt += LOG_HEADER_SIZE;
                 }
