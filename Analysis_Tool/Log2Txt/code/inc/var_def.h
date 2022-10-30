@@ -49,7 +49,7 @@ typedef struct
     float gyr[Axis_Sum];
     float acc[Axis_Sum];
 
-    SrvIMU_SampleErrorCode_List error_code;
+    uint8_t error_code;
     uint16_t chk_sum;
 } IMU_Data_TypeDef;
 

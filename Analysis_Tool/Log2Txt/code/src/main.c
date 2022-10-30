@@ -43,6 +43,7 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
     char *path_tmp = NULL;
     char *logfile_name_tmp = NULL;
     char *cnvfile_name_tmp = NULL;
+    char *cnvfile_path = NULL;
 
     if (path && obj)
     {
@@ -83,12 +84,19 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
                 /* read log data into buff */
                 stat(path, &file_stat);
                 obj->logfile_size.total_byte = file_stat.st_size;
+                obj->decode_remain = file_stat.st_size;
                 obj->logfile_size.b = FILE_GET_B(obj->logfile_size.total_byte);
                 obj->logfile_size.kb = FILE_GET_KB(obj->logfile_size.total_byte);
                 obj->logfile_size.mb = FILE_GET_MB(obj->logfile_size.total_byte);
 
+                cnvfile_path = malloc(strlen(obj->path) + strlen(obj->cnv_file_name));
+                memcpy(cnvfile_path, obj->path, strlen(obj->path));
+                memcpy(cnvfile_path + strlen(obj->path), obj->cnv_file_name, strlen(obj->cnv_file_name));
+
                 printf("\r\n");
                 printf("[INFO]\tFile Path\t\t\t%s\r\n", obj->path);
+                printf("[INFO]\tConvert File path:\t\t%s\r\n", cnvfile_path);
+
                 printf("[INFO]\tLogFile Name:\t\t\t%s\r\n", obj->log_file_name);
                 printf("[INFO]\tCNVFile Name:\t\t\t%s\r\n", obj->cnv_file_name);
                 printf("[INFO]\tFile Total Byte Size:\t\t%lld\r\n", obj->logfile_size.total_byte);
@@ -99,6 +107,15 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
                 printf("[INFO]\tFile MByte Size:\t\t%d\r\n", obj->logfile_size.mb);
 
                 /* create convert file */
+                obj->cnv_log_file = fopen(cnvfile_path, "w");
+
+                if (!obj->cnv_log_file)
+                {
+                    printf("[ERROR]\tConvert File Create Error\r\n");
+                    return false;
+                }
+                else
+                    printf("[INFO]\tConvert File Create Success\r\n");
 
                 if (obj->logfile_size.mb < MAX_LOAD_MB_SIZE)
                 {

@@ -1,0 +1,1915 @@
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Dev_MPU6000.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.Dev_MPU6000_Regs_Read,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	Dev_MPU6000_Regs_Read:
+  25              	.LVL0:
+  26              	.LFB0:
+  27              		.file 1 "Device/Dev_MPU6000.c"
+   1:Device/Dev_MPU6000.c **** #include "Dev_MPU6000.h"
+   2:Device/Dev_MPU6000.c **** 
+   3:Device/Dev_MPU6000.c **** /* internal function */
+   4:Device/Dev_MPU6000.c **** static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx);
+   5:Device/Dev_MPU6000.c **** static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx);
+   6:Device/Dev_MPU6000.c **** 
+   7:Device/Dev_MPU6000.c **** /* external function */
+   8:Device/Dev_MPU6000.c **** static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
+   9:Device/Dev_MPU6000.c ****                                cs_ctl_callback cs_ctl,
+  10:Device/Dev_MPU6000.c ****                                bus_trans_callback bus_trans,
+  11:Device/Dev_MPU6000.c ****                                delay_callback delay,
+  12:Device/Dev_MPU6000.c ****                                get_time_stamp_callback ge_time_stamp);
+  13:Device/Dev_MPU6000.c **** 
+  14:Device/Dev_MPU6000.c **** static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj,
+  15:Device/Dev_MPU6000.c ****                               DevMPU6000_SampleRate_List rate,
+  16:Device/Dev_MPU6000.c ****                               DevMPU6000_AccTrip_List AccTrip,
+  17:Device/Dev_MPU6000.c ****                               DevMPU6000_GyrTrip_List GyrTrip);
+  18:Device/Dev_MPU6000.c **** 
+  19:Device/Dev_MPU6000.c **** static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj);
+  20:Device/Dev_MPU6000.c **** static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj);
+  21:Device/Dev_MPU6000.c **** static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj);
+  22:Device/Dev_MPU6000.c **** static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj);
+  23:Device/Dev_MPU6000.c **** static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
+  24:Device/Dev_MPU6000.c **** IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
+  25:Device/Dev_MPU6000.c **** static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
+  26:Device/Dev_MPU6000.c **** 
+  27:Device/Dev_MPU6000.c **** /* external MPU6000 Object */
+  28:Device/Dev_MPU6000.c **** DevMPU6000_TypeDef DevMPU6000 = {
+  29:Device/Dev_MPU6000.c ****     .pre_init = DevMPU6000_PreInit,
+  30:Device/Dev_MPU6000.c ****     .init = DevMPU6000_Init,
+  31:Device/Dev_MPU6000.c ****     .config = DevMPU6000_Config,
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 2
+
+
+  32:Device/Dev_MPU6000.c ****     .reset = DevMPU6000_SwReset,
+  33:Device/Dev_MPU6000.c ****     .set_drdy = DevMPU6000_SetDRDY,
+  34:Device/Dev_MPU6000.c ****     .get_drdy = DevMPU6000_GetReady,
+  35:Device/Dev_MPU6000.c ****     .sample = DevMPU6000_Sample,
+  36:Device/Dev_MPU6000.c ****     .get_data = DevMPU6000_Get_Data,
+  37:Device/Dev_MPU6000.c ****     .get_error = DevMPU6000_Get_InitError,
+  38:Device/Dev_MPU6000.c **** };
+  39:Device/Dev_MPU6000.c **** 
+  40:Device/Dev_MPU6000.c **** static bool Dev_MPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uin
+  41:Device/Dev_MPU6000.c **** {
+  28              		.loc 1 41 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 4, pretend = 0, frame = 8
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 41 1 is_stmt 0 view .LVU1
+  33 0000 70B5     		push	{r4, r5, r6, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 4, -16
+  37              		.cfi_offset 5, -12
+  38              		.cfi_offset 6, -8
+  39              		.cfi_offset 14, -4
+  40 0002 82B0     		sub	sp, sp, #8
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 24
+  43 0004 1546     		mov	r5, r2
+  42:Device/Dev_MPU6000.c ****     bool state = false;
+  44              		.loc 1 42 5 is_stmt 1 view .LVU2
+  45              	.LVL1:
+  43:Device/Dev_MPU6000.c ****     uint8_t addr_tmp = addr | MPU6000_WRITE_MASK;
+  46              		.loc 1 43 5 view .LVU3
+  47              		.loc 1 43 13 is_stmt 0 view .LVU4
+  48 0006 61F07F01 		orn	r1, r1, #127
+  49              	.LVL2:
+  50              		.loc 1 43 13 view .LVU5
+  51 000a 8DF80710 		strb	r1, [sp, #7]
+  44:Device/Dev_MPU6000.c ****     uint8_t read_tmp = 0;
+  52              		.loc 1 44 5 is_stmt 1 view .LVU6
+  53              		.loc 1 44 13 is_stmt 0 view .LVU7
+  54 000e 0022     		movs	r2, #0
+  55              	.LVL3:
+  56              		.loc 1 44 13 view .LVU8
+  57 0010 8DF80620 		strb	r2, [sp, #6]
+  45:Device/Dev_MPU6000.c **** 
+  46:Device/Dev_MPU6000.c ****     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
+  58              		.loc 1 46 5 is_stmt 1 view .LVU9
+  59              		.loc 1 46 8 is_stmt 0 view .LVU10
+  60 0014 D8B1     		cbz	r0, .L3
+  61 0016 1E46     		mov	r6, r3
+  62 0018 0446     		mov	r4, r0
+  63              		.loc 1 46 41 discriminator 1 view .LVU11
+  64 001a 0268     		ldr	r2, [r0]
+  65              		.loc 1 46 28 discriminator 1 view .LVU12
+  66 001c CAB1     		cbz	r2, .L4
+  67              		.loc 1 46 71 discriminator 2 view .LVU13
+  68 001e 4368     		ldr	r3, [r0, #4]
+  69              	.LVL4:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 3
+
+
+  70              		.loc 1 46 58 discriminator 2 view .LVU14
+  71 0020 CBB1     		cbz	r3, .L5
+  47:Device/Dev_MPU6000.c ****         return false;
+  48:Device/Dev_MPU6000.c **** 
+  49:Device/Dev_MPU6000.c ****     /* CS Low */
+  50:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(false);
+  72              		.loc 1 50 5 is_stmt 1 view .LVU15
+  73 0022 0020     		movs	r0, #0
+  74              	.LVL5:
+  75              		.loc 1 50 5 is_stmt 0 view .LVU16
+  76 0024 9047     		blx	r2
+  77              	.LVL6:
+  51:Device/Dev_MPU6000.c **** 
+  52:Device/Dev_MPU6000.c ****     state = sensor_obj->bus_trans(&addr_tmp, &read_tmp, 1);
+  78              		.loc 1 52 5 is_stmt 1 view .LVU17
+  79              		.loc 1 52 23 is_stmt 0 view .LVU18
+  80 0026 6368     		ldr	r3, [r4, #4]
+  81              		.loc 1 52 13 view .LVU19
+  82 0028 0122     		movs	r2, #1
+  83 002a 0DF10601 		add	r1, sp, #6
+  84 002e 0DF10700 		add	r0, sp, #7
+  85 0032 9847     		blx	r3
+  86              	.LVL7:
+  53:Device/Dev_MPU6000.c ****     state = sensor_obj->bus_trans(tx, rx, size);
+  87              		.loc 1 53 5 is_stmt 1 view .LVU20
+  88              		.loc 1 53 23 is_stmt 0 view .LVU21
+  89 0034 6368     		ldr	r3, [r4, #4]
+  90              		.loc 1 53 13 view .LVU22
+  91 0036 9DF81820 		ldrb	r2, [sp, #24]	@ zero_extendqisi2
+  92 003a 3146     		mov	r1, r6
+  93 003c 2846     		mov	r0, r5
+  94 003e 9847     		blx	r3
+  95              	.LVL8:
+  96 0040 0546     		mov	r5, r0
+  97              	.LVL9:
+  54:Device/Dev_MPU6000.c **** 
+  55:Device/Dev_MPU6000.c ****     /* CS High */
+  56:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(true);
+  98              		.loc 1 56 5 is_stmt 1 view .LVU23
+  99              		.loc 1 56 15 is_stmt 0 view .LVU24
+ 100 0042 2368     		ldr	r3, [r4]
+ 101              		.loc 1 56 5 view .LVU25
+ 102 0044 0120     		movs	r0, #1
+ 103 0046 9847     		blx	r3
+ 104              	.LVL10:
+  57:Device/Dev_MPU6000.c **** 
+  58:Device/Dev_MPU6000.c ****     return state;
+ 105              		.loc 1 58 5 is_stmt 1 view .LVU26
+ 106              	.L2:
+  59:Device/Dev_MPU6000.c **** }
+ 107              		.loc 1 59 1 is_stmt 0 view .LVU27
+ 108 0048 2846     		mov	r0, r5
+ 109 004a 02B0     		add	sp, sp, #8
+ 110              	.LCFI2:
+ 111              		.cfi_remember_state
+ 112              		.cfi_def_cfa_offset 16
+ 113              		@ sp needed
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 4
+
+
+ 114 004c 70BD     		pop	{r4, r5, r6, pc}
+ 115              	.LVL11:
+ 116              	.L3:
+ 117              	.LCFI3:
+ 118              		.cfi_restore_state
+  47:Device/Dev_MPU6000.c **** 
+ 119              		.loc 1 47 16 view .LVU28
+ 120 004e 0025     		movs	r5, #0
+ 121              	.LVL12:
+  47:Device/Dev_MPU6000.c **** 
+ 122              		.loc 1 47 16 view .LVU29
+ 123 0050 FAE7     		b	.L2
+ 124              	.LVL13:
+ 125              	.L4:
+  47:Device/Dev_MPU6000.c **** 
+ 126              		.loc 1 47 16 view .LVU30
+ 127 0052 0025     		movs	r5, #0
+ 128              	.LVL14:
+  47:Device/Dev_MPU6000.c **** 
+ 129              		.loc 1 47 16 view .LVU31
+ 130 0054 F8E7     		b	.L2
+ 131              	.LVL15:
+ 132              	.L5:
+  47:Device/Dev_MPU6000.c **** 
+ 133              		.loc 1 47 16 view .LVU32
+ 134 0056 0025     		movs	r5, #0
+ 135              	.LVL16:
+  47:Device/Dev_MPU6000.c **** 
+ 136              		.loc 1 47 16 view .LVU33
+ 137 0058 F6E7     		b	.L2
+ 138              		.cfi_endproc
+ 139              	.LFE0:
+ 141              		.section	.text.DevMPU6000_Reg_Read,"ax",%progbits
+ 142              		.align	1
+ 143              		.syntax unified
+ 144              		.thumb
+ 145              		.thumb_func
+ 146              		.fpu fpv5-d16
+ 148              	DevMPU6000_Reg_Read:
+ 149              	.LVL17:
+ 150              	.LFB1:
+  60:Device/Dev_MPU6000.c **** 
+  61:Device/Dev_MPU6000.c **** static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx)
+  62:Device/Dev_MPU6000.c **** {
+ 151              		.loc 1 62 1 is_stmt 1 view -0
+ 152              		.cfi_startproc
+ 153              		@ args = 0, pretend = 0, frame = 8
+ 154              		@ frame_needed = 0, uses_anonymous_args = 0
+ 155              		.loc 1 62 1 is_stmt 0 view .LVU35
+ 156 0000 70B5     		push	{r4, r5, r6, lr}
+ 157              	.LCFI4:
+ 158              		.cfi_def_cfa_offset 16
+ 159              		.cfi_offset 4, -16
+ 160              		.cfi_offset 5, -12
+ 161              		.cfi_offset 6, -8
+ 162              		.cfi_offset 14, -4
+ 163 0002 82B0     		sub	sp, sp, #8
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 5
+
+
+ 164              	.LCFI5:
+ 165              		.cfi_def_cfa_offset 24
+  63:Device/Dev_MPU6000.c ****     uint8_t write_buff[2] = {0};
+ 166              		.loc 1 63 5 is_stmt 1 view .LVU36
+ 167              		.loc 1 63 13 is_stmt 0 view .LVU37
+ 168 0004 0023     		movs	r3, #0
+ 169 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+  64:Device/Dev_MPU6000.c ****     uint8_t read_buff[2] = {0};
+ 170              		.loc 1 64 5 is_stmt 1 view .LVU38
+ 171              		.loc 1 64 13 is_stmt 0 view .LVU39
+ 172 000a ADF80030 		strh	r3, [sp]	@ movhi
+  65:Device/Dev_MPU6000.c ****     bool state = false;
+ 173              		.loc 1 65 5 is_stmt 1 view .LVU40
+ 174              	.LVL18:
+  66:Device/Dev_MPU6000.c **** 
+  67:Device/Dev_MPU6000.c ****     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
+ 175              		.loc 1 67 5 view .LVU41
+ 176              		.loc 1 67 8 is_stmt 0 view .LVU42
+ 177 000e D8B1     		cbz	r0, .L9
+ 178 0010 1646     		mov	r6, r2
+ 179 0012 0446     		mov	r4, r0
+ 180              		.loc 1 67 41 discriminator 1 view .LVU43
+ 181 0014 0368     		ldr	r3, [r0]
+ 182              		.loc 1 67 28 discriminator 1 view .LVU44
+ 183 0016 CBB1     		cbz	r3, .L10
+ 184              		.loc 1 67 71 discriminator 2 view .LVU45
+ 185 0018 4368     		ldr	r3, [r0, #4]
+ 186              		.loc 1 67 58 discriminator 2 view .LVU46
+ 187 001a CBB1     		cbz	r3, .L11
+  68:Device/Dev_MPU6000.c ****         return false;
+  69:Device/Dev_MPU6000.c **** 
+  70:Device/Dev_MPU6000.c ****     write_buff[0] = addr | MPU6000_WRITE_MASK;
+ 188              		.loc 1 70 5 is_stmt 1 view .LVU47
+ 189              		.loc 1 70 19 is_stmt 0 view .LVU48
+ 190 001c 61F07F01 		orn	r1, r1, #127
+ 191              	.LVL19:
+ 192              		.loc 1 70 19 view .LVU49
+ 193 0020 8DF80410 		strb	r1, [sp, #4]
+  71:Device/Dev_MPU6000.c **** 
+  72:Device/Dev_MPU6000.c ****     /* CS Low */
+  73:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(false);
+ 194              		.loc 1 73 5 is_stmt 1 view .LVU50
+ 195              		.loc 1 73 15 is_stmt 0 view .LVU51
+ 196 0024 0368     		ldr	r3, [r0]
+ 197              		.loc 1 73 5 view .LVU52
+ 198 0026 0020     		movs	r0, #0
+ 199              	.LVL20:
+ 200              		.loc 1 73 5 view .LVU53
+ 201 0028 9847     		blx	r3
+ 202              	.LVL21:
+  74:Device/Dev_MPU6000.c **** 
+  75:Device/Dev_MPU6000.c ****     state = sensor_obj->bus_trans(write_buff, read_buff, 2);
+ 203              		.loc 1 75 5 is_stmt 1 view .LVU54
+ 204              		.loc 1 75 23 is_stmt 0 view .LVU55
+ 205 002a 6368     		ldr	r3, [r4, #4]
+ 206              		.loc 1 75 13 view .LVU56
+ 207 002c 0222     		movs	r2, #2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 6
+
+
+ 208 002e 6946     		mov	r1, sp
+ 209 0030 01A8     		add	r0, sp, #4
+ 210 0032 9847     		blx	r3
+ 211              	.LVL22:
+ 212 0034 0546     		mov	r5, r0
+ 213              	.LVL23:
+  76:Device/Dev_MPU6000.c **** 
+  77:Device/Dev_MPU6000.c ****     /* CS High */
+  78:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(true);
+ 214              		.loc 1 78 5 is_stmt 1 view .LVU57
+ 215              		.loc 1 78 15 is_stmt 0 view .LVU58
+ 216 0036 2368     		ldr	r3, [r4]
+ 217              		.loc 1 78 5 view .LVU59
+ 218 0038 0120     		movs	r0, #1
+ 219 003a 9847     		blx	r3
+ 220              	.LVL24:
+  79:Device/Dev_MPU6000.c **** 
+  80:Device/Dev_MPU6000.c ****     *rx = read_buff[1];
+ 221              		.loc 1 80 5 is_stmt 1 view .LVU60
+ 222              		.loc 1 80 20 is_stmt 0 view .LVU61
+ 223 003c 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 224              		.loc 1 80 9 view .LVU62
+ 225 0040 3370     		strb	r3, [r6]
+  81:Device/Dev_MPU6000.c **** 
+  82:Device/Dev_MPU6000.c ****     return state;
+ 226              		.loc 1 82 5 is_stmt 1 view .LVU63
+ 227              	.LVL25:
+ 228              	.L8:
+  83:Device/Dev_MPU6000.c **** }
+ 229              		.loc 1 83 1 is_stmt 0 view .LVU64
+ 230 0042 2846     		mov	r0, r5
+ 231 0044 02B0     		add	sp, sp, #8
+ 232              	.LCFI6:
+ 233              		.cfi_remember_state
+ 234              		.cfi_def_cfa_offset 16
+ 235              		@ sp needed
+ 236 0046 70BD     		pop	{r4, r5, r6, pc}
+ 237              	.LVL26:
+ 238              	.L9:
+ 239              	.LCFI7:
+ 240              		.cfi_restore_state
+  68:Device/Dev_MPU6000.c **** 
+ 241              		.loc 1 68 16 view .LVU65
+ 242 0048 0025     		movs	r5, #0
+ 243 004a FAE7     		b	.L8
+ 244              	.L10:
+  68:Device/Dev_MPU6000.c **** 
+ 245              		.loc 1 68 16 view .LVU66
+ 246 004c 0025     		movs	r5, #0
+ 247 004e F8E7     		b	.L8
+ 248              	.L11:
+ 249 0050 0025     		movs	r5, #0
+ 250 0052 F6E7     		b	.L8
+ 251              		.cfi_endproc
+ 252              	.LFE1:
+ 254              		.section	.text.DevMPU6000_Reg_Write,"ax",%progbits
+ 255              		.align	1
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 7
+
+
+ 256              		.syntax unified
+ 257              		.thumb
+ 258              		.thumb_func
+ 259              		.fpu fpv5-d16
+ 261              	DevMPU6000_Reg_Write:
+ 262              	.LVL27:
+ 263              	.LFB2:
+  84:Device/Dev_MPU6000.c **** 
+  85:Device/Dev_MPU6000.c **** /* MAX Byte I&O Speed 20k */
+  86:Device/Dev_MPU6000.c **** static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx)
+  87:Device/Dev_MPU6000.c **** {
+ 264              		.loc 1 87 1 is_stmt 1 view -0
+ 265              		.cfi_startproc
+ 266              		@ args = 0, pretend = 0, frame = 8
+ 267              		@ frame_needed = 0, uses_anonymous_args = 0
+ 268              		.loc 1 87 1 is_stmt 0 view .LVU68
+ 269 0000 30B5     		push	{r4, r5, lr}
+ 270              	.LCFI8:
+ 271              		.cfi_def_cfa_offset 12
+ 272              		.cfi_offset 4, -12
+ 273              		.cfi_offset 5, -8
+ 274              		.cfi_offset 14, -4
+ 275 0002 83B0     		sub	sp, sp, #12
+ 276              	.LCFI9:
+ 277              		.cfi_def_cfa_offset 24
+  88:Device/Dev_MPU6000.c ****     uint8_t write_buff[2] = {0};
+ 278              		.loc 1 88 5 is_stmt 1 view .LVU69
+ 279              		.loc 1 88 13 is_stmt 0 view .LVU70
+ 280 0004 0023     		movs	r3, #0
+ 281 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+  89:Device/Dev_MPU6000.c ****     uint8_t read_buff[2] = {0};
+ 282              		.loc 1 89 5 is_stmt 1 view .LVU71
+ 283              		.loc 1 89 13 is_stmt 0 view .LVU72
+ 284 000a ADF80030 		strh	r3, [sp]	@ movhi
+  90:Device/Dev_MPU6000.c ****     bool state = false;
+ 285              		.loc 1 90 5 is_stmt 1 view .LVU73
+ 286              	.LVL28:
+  91:Device/Dev_MPU6000.c **** 
+  92:Device/Dev_MPU6000.c ****     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
+ 287              		.loc 1 92 5 view .LVU74
+ 288              		.loc 1 92 8 is_stmt 0 view .LVU75
+ 289 000e B8B1     		cbz	r0, .L15
+ 290 0010 0446     		mov	r4, r0
+ 291              		.loc 1 92 41 discriminator 1 view .LVU76
+ 292 0012 0368     		ldr	r3, [r0]
+ 293              		.loc 1 92 28 discriminator 1 view .LVU77
+ 294 0014 B3B1     		cbz	r3, .L16
+ 295              		.loc 1 92 71 discriminator 2 view .LVU78
+ 296 0016 4368     		ldr	r3, [r0, #4]
+ 297              		.loc 1 92 58 discriminator 2 view .LVU79
+ 298 0018 B3B1     		cbz	r3, .L17
+  93:Device/Dev_MPU6000.c ****         return false;
+  94:Device/Dev_MPU6000.c **** 
+  95:Device/Dev_MPU6000.c ****     write_buff[0] = addr;
+ 299              		.loc 1 95 5 is_stmt 1 view .LVU80
+ 300              		.loc 1 95 19 is_stmt 0 view .LVU81
+ 301 001a 8DF80410 		strb	r1, [sp, #4]
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 8
+
+
+  96:Device/Dev_MPU6000.c ****     write_buff[1] = tx;
+ 302              		.loc 1 96 5 is_stmt 1 view .LVU82
+ 303              		.loc 1 96 19 is_stmt 0 view .LVU83
+ 304 001e 8DF80520 		strb	r2, [sp, #5]
+  97:Device/Dev_MPU6000.c **** 
+  98:Device/Dev_MPU6000.c ****     /* CS Low */
+  99:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(false);
+ 305              		.loc 1 99 5 is_stmt 1 view .LVU84
+ 306              		.loc 1 99 15 is_stmt 0 view .LVU85
+ 307 0022 0368     		ldr	r3, [r0]
+ 308              		.loc 1 99 5 view .LVU86
+ 309 0024 0020     		movs	r0, #0
+ 310              	.LVL29:
+ 311              		.loc 1 99 5 view .LVU87
+ 312 0026 9847     		blx	r3
+ 313              	.LVL30:
+ 100:Device/Dev_MPU6000.c **** 
+ 101:Device/Dev_MPU6000.c ****     state = sensor_obj->bus_trans(write_buff, read_buff, 2);
+ 314              		.loc 1 101 5 is_stmt 1 view .LVU88
+ 315              		.loc 1 101 23 is_stmt 0 view .LVU89
+ 316 0028 6368     		ldr	r3, [r4, #4]
+ 317              		.loc 1 101 13 view .LVU90
+ 318 002a 0222     		movs	r2, #2
+ 319 002c 6946     		mov	r1, sp
+ 320 002e 01A8     		add	r0, sp, #4
+ 321 0030 9847     		blx	r3
+ 322              	.LVL31:
+ 323 0032 0546     		mov	r5, r0
+ 324              	.LVL32:
+ 102:Device/Dev_MPU6000.c **** 
+ 103:Device/Dev_MPU6000.c ****     /* CS High */
+ 104:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(true);
+ 325              		.loc 1 104 5 is_stmt 1 view .LVU91
+ 326              		.loc 1 104 15 is_stmt 0 view .LVU92
+ 327 0034 2368     		ldr	r3, [r4]
+ 328              		.loc 1 104 5 view .LVU93
+ 329 0036 0120     		movs	r0, #1
+ 330 0038 9847     		blx	r3
+ 331              	.LVL33:
+ 105:Device/Dev_MPU6000.c **** 
+ 106:Device/Dev_MPU6000.c ****     return state;
+ 332              		.loc 1 106 5 is_stmt 1 view .LVU94
+ 333              	.L14:
+ 107:Device/Dev_MPU6000.c **** }
+ 334              		.loc 1 107 1 is_stmt 0 view .LVU95
+ 335 003a 2846     		mov	r0, r5
+ 336 003c 03B0     		add	sp, sp, #12
+ 337              	.LCFI10:
+ 338              		.cfi_remember_state
+ 339              		.cfi_def_cfa_offset 12
+ 340              		@ sp needed
+ 341 003e 30BD     		pop	{r4, r5, pc}
+ 342              	.LVL34:
+ 343              	.L15:
+ 344              	.LCFI11:
+ 345              		.cfi_restore_state
+  93:Device/Dev_MPU6000.c **** 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 9
+
+
+ 346              		.loc 1 93 16 view .LVU96
+ 347 0040 0025     		movs	r5, #0
+ 348 0042 FAE7     		b	.L14
+ 349              	.L16:
+  93:Device/Dev_MPU6000.c **** 
+ 350              		.loc 1 93 16 view .LVU97
+ 351 0044 0025     		movs	r5, #0
+ 352 0046 F8E7     		b	.L14
+ 353              	.L17:
+ 354 0048 0025     		movs	r5, #0
+ 355 004a F6E7     		b	.L14
+ 356              		.cfi_endproc
+ 357              	.LFE2:
+ 359              		.section	.text.DevMPU6000_Config,"ax",%progbits
+ 360              		.align	1
+ 361              		.syntax unified
+ 362              		.thumb
+ 363              		.thumb_func
+ 364              		.fpu fpv5-d16
+ 366              	DevMPU6000_Config:
+ 367              	.LVL35:
+ 368              	.LFB3:
+ 108:Device/Dev_MPU6000.c **** 
+ 109:Device/Dev_MPU6000.c **** static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate, D
+ 110:Device/Dev_MPU6000.c **** {
+ 369              		.loc 1 110 1 is_stmt 1 view -0
+ 370              		.cfi_startproc
+ 371              		@ args = 0, pretend = 0, frame = 0
+ 372              		@ frame_needed = 0, uses_anonymous_args = 0
+ 373              		.loc 1 110 1 is_stmt 0 view .LVU99
+ 374 0000 10B5     		push	{r4, lr}
+ 375              	.LCFI12:
+ 376              		.cfi_def_cfa_offset 8
+ 377              		.cfi_offset 4, -8
+ 378              		.cfi_offset 14, -4
+ 111:Device/Dev_MPU6000.c ****     switch ((uint8_t)sensor_obj->rate)
+ 379              		.loc 1 111 5 is_stmt 1 view .LVU100
+ 380              		.loc 1 111 32 is_stmt 0 view .LVU101
+ 381 0002 90F81DE0 		ldrb	lr, [r0, #29]	@ zero_extendqisi2
+ 382 0006 BEF1070F 		cmp	lr, #7
+ 383 000a 94BF     		ite	ls
+ 384 000c 0024     		movls	r4, #0
+ 385 000e 0124     		movhi	r4, #1
+ 386 0010 002C     		cmp	r4, #0
+ 387 0012 40D1     		bne	.L33
+ 388 0014 8446     		mov	ip, r0
+ 389 0016 0120     		movs	r0, #1
+ 390              	.LVL36:
+ 391              		.loc 1 111 32 view .LVU102
+ 392 0018 00FA0EF0 		lsl	r0, r0, lr
+ 393 001c 10F08B0F 		tst	r0, #139
+ 394 0020 14BF     		ite	ne
+ 395 0022 0120     		movne	r0, #1
+ 396 0024 0020     		moveq	r0, #0
+ 397 0026 29D0     		beq	.L20
+ 112:Device/Dev_MPU6000.c ****     {
+ 113:Device/Dev_MPU6000.c ****     case MPU6000_SampleRate_8K:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 10
+
+
+ 114:Device/Dev_MPU6000.c ****     case MPU6000_SampleRate_4K:
+ 115:Device/Dev_MPU6000.c ****     case MPU6000_SampleRate_2K:
+ 116:Device/Dev_MPU6000.c ****     case MPU6000_SampleRate_1K:
+ 117:Device/Dev_MPU6000.c ****         break;
+ 398              		.loc 1 117 9 is_stmt 1 view .LVU103
+ 118:Device/Dev_MPU6000.c **** 
+ 119:Device/Dev_MPU6000.c ****     default:
+ 120:Device/Dev_MPU6000.c ****         return false;
+ 121:Device/Dev_MPU6000.c ****     }
+ 122:Device/Dev_MPU6000.c **** 
+ 123:Device/Dev_MPU6000.c ****     sensor_obj->rate = rate;
+ 399              		.loc 1 123 5 view .LVU104
+ 400              		.loc 1 123 22 is_stmt 0 view .LVU105
+ 401 0028 8CF81D10 		strb	r1, [ip, #29]
+ 124:Device/Dev_MPU6000.c **** 
+ 125:Device/Dev_MPU6000.c ****     switch ((uint8_t)AccTrip)
+ 402              		.loc 1 125 5 is_stmt 1 view .LVU106
+ 403 002c 032A     		cmp	r2, #3
+ 404 002e 34D8     		bhi	.L34
+ 405 0030 DFE802F0 		tbb	[pc, r2]
+ 406              	.LVL37:
+ 407              	.L22:
+ 408 0034 02       		.byte	(.L25-.L22)/2
+ 409 0035 0C       		.byte	(.L24-.L22)/2
+ 410 0036 11       		.byte	(.L23-.L22)/2
+ 411 0037 16       		.byte	(.L21-.L22)/2
+ 412              		.p2align 1
+ 413              	.L25:
+ 126:Device/Dev_MPU6000.c ****     {
+ 127:Device/Dev_MPU6000.c ****     case MPU6000_Acc_2G:
+ 128:Device/Dev_MPU6000.c ****         sensor_obj->acc_scale = MPU6000_ACC_2G_SCALE;
+ 414              		.loc 1 128 9 view .LVU107
+ 415              		.loc 1 128 31 is_stmt 0 view .LVU108
+ 416 0038 4FF08D41 		mov	r1, #1182793728
+ 417 003c CCF81410 		str	r1, [ip, #20]	@ float
+ 129:Device/Dev_MPU6000.c ****         break;
+ 418              		.loc 1 129 9 is_stmt 1 view .LVU109
+ 419              	.L26:
+ 130:Device/Dev_MPU6000.c **** 
+ 131:Device/Dev_MPU6000.c ****     case MPU6000_Acc_4G:
+ 132:Device/Dev_MPU6000.c ****         sensor_obj->acc_scale = MPU6000_ACC_4G_SCALE;
+ 133:Device/Dev_MPU6000.c ****         break;
+ 134:Device/Dev_MPU6000.c **** 
+ 135:Device/Dev_MPU6000.c ****     case MPU6000_Acc_8G:
+ 136:Device/Dev_MPU6000.c ****         sensor_obj->acc_scale = MPU6000_ACC_8G_SCALE;
+ 137:Device/Dev_MPU6000.c ****         break;
+ 138:Device/Dev_MPU6000.c **** 
+ 139:Device/Dev_MPU6000.c ****     case MPU6000_Acc_16G:
+ 140:Device/Dev_MPU6000.c ****         sensor_obj->acc_scale = MPU6000_ACC_16G_SCALE;
+ 141:Device/Dev_MPU6000.c ****         break;
+ 142:Device/Dev_MPU6000.c **** 
+ 143:Device/Dev_MPU6000.c ****     default:
+ 144:Device/Dev_MPU6000.c ****         return false;
+ 145:Device/Dev_MPU6000.c ****     }
+ 146:Device/Dev_MPU6000.c **** 
+ 147:Device/Dev_MPU6000.c ****     switch ((uint8_t)GyrTrip)
+ 420              		.loc 1 147 5 view .LVU110
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 11
+
+
+ 421 0040 032B     		cmp	r3, #3
+ 422 0042 2CD8     		bhi	.L35
+ 423 0044 DFE803F0 		tbb	[pc, r3]
+ 424              	.L28:
+ 425 0048 11       		.byte	(.L31-.L28)/2
+ 426 0049 1B       		.byte	(.L30-.L28)/2
+ 427 004a 1F       		.byte	(.L29-.L28)/2
+ 428 004b 23       		.byte	(.L27-.L28)/2
+ 429              		.p2align 1
+ 430              	.L24:
+ 132:Device/Dev_MPU6000.c ****         break;
+ 431              		.loc 1 132 9 view .LVU111
+ 132:Device/Dev_MPU6000.c ****         break;
+ 432              		.loc 1 132 31 is_stmt 0 view .LVU112
+ 433 004c 4FF08C41 		mov	r1, #1174405120
+ 434 0050 CCF81410 		str	r1, [ip, #20]	@ float
+ 133:Device/Dev_MPU6000.c **** 
+ 435              		.loc 1 133 9 is_stmt 1 view .LVU113
+ 436 0054 F4E7     		b	.L26
+ 437              	.L23:
+ 136:Device/Dev_MPU6000.c ****         break;
+ 438              		.loc 1 136 9 view .LVU114
+ 136:Device/Dev_MPU6000.c ****         break;
+ 439              		.loc 1 136 31 is_stmt 0 view .LVU115
+ 440 0056 4FF08B41 		mov	r1, #1166016512
+ 441 005a CCF81410 		str	r1, [ip, #20]	@ float
+ 137:Device/Dev_MPU6000.c **** 
+ 442              		.loc 1 137 9 is_stmt 1 view .LVU116
+ 443 005e EFE7     		b	.L26
+ 444              	.L21:
+ 140:Device/Dev_MPU6000.c ****         break;
+ 445              		.loc 1 140 9 view .LVU117
+ 140:Device/Dev_MPU6000.c ****         break;
+ 446              		.loc 1 140 31 is_stmt 0 view .LVU118
+ 447 0060 4FF08A41 		mov	r1, #1157627904
+ 448 0064 CCF81410 		str	r1, [ip, #20]	@ float
+ 141:Device/Dev_MPU6000.c **** 
+ 449              		.loc 1 141 9 is_stmt 1 view .LVU119
+ 450 0068 EAE7     		b	.L26
+ 451              	.L31:
+ 148:Device/Dev_MPU6000.c ****     {
+ 149:Device/Dev_MPU6000.c ****     case MPU6000_Gyr_250DPS:
+ 150:Device/Dev_MPU6000.c ****         sensor_obj->gyr_scale = MPU6000_GYR_250DPS_SCALE;
+ 452              		.loc 1 150 9 view .LVU120
+ 453              		.loc 1 150 31 is_stmt 0 view .LVU121
+ 454 006a 0E49     		ldr	r1, .L37
+ 455 006c CCF81810 		str	r1, [ip, #24]	@ float
+ 151:Device/Dev_MPU6000.c ****         break;
+ 456              		.loc 1 151 9 is_stmt 1 view .LVU122
+ 457              	.L32:
+ 152:Device/Dev_MPU6000.c **** 
+ 153:Device/Dev_MPU6000.c ****     case MPU6000_Gyr_500DPS:
+ 154:Device/Dev_MPU6000.c ****         sensor_obj->gyr_scale = MPU6000_GYR_500DPS_SCALE;
+ 155:Device/Dev_MPU6000.c ****         break;
+ 156:Device/Dev_MPU6000.c **** 
+ 157:Device/Dev_MPU6000.c ****     case MPU6000_Gyr_1000DPS:
+ 158:Device/Dev_MPU6000.c ****         sensor_obj->gyr_scale = MPU6000_GYR_1000DPS_SCALE;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 12
+
+
+ 159:Device/Dev_MPU6000.c ****         break;
+ 160:Device/Dev_MPU6000.c **** 
+ 161:Device/Dev_MPU6000.c ****     case MPU6000_Gyr_2000DPS:
+ 162:Device/Dev_MPU6000.c ****         sensor_obj->gyr_scale = MPU6000_GYR_2000DPS_SCALE;
+ 163:Device/Dev_MPU6000.c ****         break;
+ 164:Device/Dev_MPU6000.c **** 
+ 165:Device/Dev_MPU6000.c ****     default:
+ 166:Device/Dev_MPU6000.c ****         return false;
+ 167:Device/Dev_MPU6000.c ****     }
+ 168:Device/Dev_MPU6000.c **** 
+ 169:Device/Dev_MPU6000.c ****     sensor_obj->AccTrip = ConvertToTrip_Reg(AccTrip);
+ 458              		.loc 1 169 5 view .LVU123
+ 459              		.loc 1 169 27 is_stmt 0 view .LVU124
+ 460 0070 D200     		lsls	r2, r2, #3
+ 461              	.LVL38:
+ 462              		.loc 1 169 25 view .LVU125
+ 463 0072 8CF81020 		strb	r2, [ip, #16]
+ 170:Device/Dev_MPU6000.c ****     sensor_obj->GyrTrip = ConvertToTrip_Reg(GyrTrip);
+ 464              		.loc 1 170 5 is_stmt 1 view .LVU126
+ 465              		.loc 1 170 27 is_stmt 0 view .LVU127
+ 466 0076 DB00     		lsls	r3, r3, #3
+ 467              	.LVL39:
+ 468              		.loc 1 170 25 view .LVU128
+ 469 0078 8CF81130 		strb	r3, [ip, #17]
+ 171:Device/Dev_MPU6000.c **** 
+ 172:Device/Dev_MPU6000.c ****     return true;
+ 470              		.loc 1 172 5 is_stmt 1 view .LVU129
+ 471              	.LVL40:
+ 472              	.L20:
+ 173:Device/Dev_MPU6000.c **** }
+ 473              		.loc 1 173 1 is_stmt 0 view .LVU130
+ 474 007c 10BD     		pop	{r4, pc}
+ 475              	.LVL41:
+ 476              	.L30:
+ 154:Device/Dev_MPU6000.c ****         break;
+ 477              		.loc 1 154 9 is_stmt 1 view .LVU131
+ 154:Device/Dev_MPU6000.c ****         break;
+ 478              		.loc 1 154 31 is_stmt 0 view .LVU132
+ 479 007e 0A49     		ldr	r1, .L37+4
+ 480 0080 CCF81810 		str	r1, [ip, #24]	@ float
+ 155:Device/Dev_MPU6000.c **** 
+ 481              		.loc 1 155 9 is_stmt 1 view .LVU133
+ 482 0084 F4E7     		b	.L32
+ 483              	.L29:
+ 158:Device/Dev_MPU6000.c ****         break;
+ 484              		.loc 1 158 9 view .LVU134
+ 158:Device/Dev_MPU6000.c ****         break;
+ 485              		.loc 1 158 31 is_stmt 0 view .LVU135
+ 486 0086 0949     		ldr	r1, .L37+8
+ 487 0088 CCF81810 		str	r1, [ip, #24]	@ float
+ 159:Device/Dev_MPU6000.c **** 
+ 488              		.loc 1 159 9 is_stmt 1 view .LVU136
+ 489 008c F0E7     		b	.L32
+ 490              	.L27:
+ 162:Device/Dev_MPU6000.c ****         break;
+ 491              		.loc 1 162 9 view .LVU137
+ 162:Device/Dev_MPU6000.c ****         break;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 13
+
+
+ 492              		.loc 1 162 31 is_stmt 0 view .LVU138
+ 493 008e 0849     		ldr	r1, .L37+12
+ 494 0090 CCF81810 		str	r1, [ip, #24]	@ float
+ 163:Device/Dev_MPU6000.c **** 
+ 495              		.loc 1 163 9 is_stmt 1 view .LVU139
+ 496 0094 ECE7     		b	.L32
+ 497              	.LVL42:
+ 498              	.L33:
+ 111:Device/Dev_MPU6000.c ****     {
+ 499              		.loc 1 111 32 is_stmt 0 view .LVU140
+ 500 0096 0020     		movs	r0, #0
+ 501              	.LVL43:
+ 111:Device/Dev_MPU6000.c ****     {
+ 502              		.loc 1 111 32 view .LVU141
+ 503 0098 F0E7     		b	.L20
+ 504              	.LVL44:
+ 505              	.L34:
+ 123:Device/Dev_MPU6000.c **** 
+ 506              		.loc 1 123 22 view .LVU142
+ 507 009a 2046     		mov	r0, r4
+ 508 009c EEE7     		b	.L20
+ 509              	.L35:
+ 111:Device/Dev_MPU6000.c ****     {
+ 510              		.loc 1 111 32 view .LVU143
+ 511 009e 2046     		mov	r0, r4
+ 512 00a0 ECE7     		b	.L20
+ 513              	.L38:
+ 514 00a2 00BF     		.align	2
+ 515              	.L37:
+ 516 00a4 00000343 		.word	1124270080
+ 517 00a8 00008342 		.word	1115881472
+ 518 00ac 33330342 		.word	1107505971
+ 519 00b0 33338341 		.word	1099117363
+ 520              		.cfi_endproc
+ 521              	.LFE3:
+ 523              		.section	.text.DevMPU6000_PreInit,"ax",%progbits
+ 524              		.align	1
+ 525              		.syntax unified
+ 526              		.thumb
+ 527              		.thumb_func
+ 528              		.fpu fpv5-d16
+ 530              	DevMPU6000_PreInit:
+ 531              	.LVL45:
+ 532              	.LFB4:
+ 174:Device/Dev_MPU6000.c **** 
+ 175:Device/Dev_MPU6000.c **** static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
+ 176:Device/Dev_MPU6000.c ****                                cs_ctl_callback cs_ctl,
+ 177:Device/Dev_MPU6000.c ****                                bus_trans_callback bus_trans,
+ 178:Device/Dev_MPU6000.c ****                                delay_callback delay,
+ 179:Device/Dev_MPU6000.c ****                                get_time_stamp_callback get_time_stamp)
+ 180:Device/Dev_MPU6000.c **** {
+ 533              		.loc 1 180 1 is_stmt 1 view -0
+ 534              		.cfi_startproc
+ 535              		@ args = 4, pretend = 0, frame = 0
+ 536              		@ frame_needed = 0, uses_anonymous_args = 0
+ 537              		@ link register save eliminated.
+ 181:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl = cs_ctl;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 14
+
+
+ 538              		.loc 1 181 5 view .LVU145
+ 539              		.loc 1 181 24 is_stmt 0 view .LVU146
+ 540 0000 0160     		str	r1, [r0]
+ 182:Device/Dev_MPU6000.c ****     sensor_obj->bus_trans = bus_trans;
+ 541              		.loc 1 182 5 is_stmt 1 view .LVU147
+ 542              		.loc 1 182 27 is_stmt 0 view .LVU148
+ 543 0002 4260     		str	r2, [r0, #4]
+ 183:Device/Dev_MPU6000.c ****     sensor_obj->delay = delay;
+ 544              		.loc 1 183 5 is_stmt 1 view .LVU149
+ 545              		.loc 1 183 23 is_stmt 0 view .LVU150
+ 546 0004 8360     		str	r3, [r0, #8]
+ 184:Device/Dev_MPU6000.c ****     sensor_obj->get_timestamp = get_time_stamp;
+ 547              		.loc 1 184 5 is_stmt 1 view .LVU151
+ 548              		.loc 1 184 31 is_stmt 0 view .LVU152
+ 549 0006 009B     		ldr	r3, [sp]
+ 550              	.LVL46:
+ 551              		.loc 1 184 31 view .LVU153
+ 552 0008 C360     		str	r3, [r0, #12]
+ 185:Device/Dev_MPU6000.c **** }
+ 553              		.loc 1 185 1 view .LVU154
+ 554 000a 7047     		bx	lr
+ 555              		.cfi_endproc
+ 556              	.LFE4:
+ 558              		.section	.text.DevMPU6000_Init,"ax",%progbits
+ 559              		.align	1
+ 560              		.syntax unified
+ 561              		.thumb
+ 562              		.thumb_func
+ 563              		.fpu fpv5-d16
+ 565              	DevMPU6000_Init:
+ 566              	.LVL47:
+ 567              	.LFB5:
+ 186:Device/Dev_MPU6000.c **** 
+ 187:Device/Dev_MPU6000.c **** static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
+ 188:Device/Dev_MPU6000.c **** {
+ 568              		.loc 1 188 1 is_stmt 1 view -0
+ 569              		.cfi_startproc
+ 570              		@ args = 0, pretend = 0, frame = 8
+ 571              		@ frame_needed = 0, uses_anonymous_args = 0
+ 572              		.loc 1 188 1 is_stmt 0 view .LVU156
+ 573 0000 30B5     		push	{r4, r5, lr}
+ 574              	.LCFI13:
+ 575              		.cfi_def_cfa_offset 12
+ 576              		.cfi_offset 4, -12
+ 577              		.cfi_offset 5, -8
+ 578              		.cfi_offset 14, -4
+ 579 0002 83B0     		sub	sp, sp, #12
+ 580              	.LCFI14:
+ 581              		.cfi_def_cfa_offset 24
+ 189:Device/Dev_MPU6000.c ****     uint8_t read_out = 0;
+ 582              		.loc 1 189 5 is_stmt 1 view .LVU157
+ 583              		.loc 1 189 13 is_stmt 0 view .LVU158
+ 584 0004 0023     		movs	r3, #0
+ 585 0006 8DF80730 		strb	r3, [sp, #7]
+ 190:Device/Dev_MPU6000.c **** 
+ 191:Device/Dev_MPU6000.c ****     if ((sensor_obj == NULL) ||
+ 586              		.loc 1 191 5 is_stmt 1 view .LVU159
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 15
+
+
+ 587              		.loc 1 191 8 is_stmt 0 view .LVU160
+ 588 000a 0446     		mov	r4, r0
+ 589 000c 00B3     		cbz	r0, .L41
+ 192:Device/Dev_MPU6000.c ****         (sensor_obj->bus_trans == NULL) ||
+ 590              		.loc 1 192 20 discriminator 1 view .LVU161
+ 591 000e 4368     		ldr	r3, [r0, #4]
+ 191:Device/Dev_MPU6000.c ****         (sensor_obj->bus_trans == NULL) ||
+ 592              		.loc 1 191 30 discriminator 1 view .LVU162
+ 593 0010 F3B1     		cbz	r3, .L41
+ 193:Device/Dev_MPU6000.c ****         (sensor_obj->cs_ctl == NULL))
+ 594              		.loc 1 193 20 view .LVU163
+ 595 0012 0368     		ldr	r3, [r0]
+ 192:Device/Dev_MPU6000.c ****         (sensor_obj->bus_trans == NULL) ||
+ 596              		.loc 1 192 41 view .LVU164
+ 597 0014 E3B1     		cbz	r3, .L41
+ 194:Device/Dev_MPU6000.c ****     {
+ 195:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_Obj_Error;
+ 196:Device/Dev_MPU6000.c ****         return false;
+ 197:Device/Dev_MPU6000.c ****     }
+ 198:Device/Dev_MPU6000.c **** 
+ 199:Device/Dev_MPU6000.c ****     /* reset power manage register first */
+ 200:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, BIT_H_RESET))
+ 598              		.loc 1 200 5 is_stmt 1 view .LVU165
+ 599              		.loc 1 200 10 is_stmt 0 view .LVU166
+ 600 0016 8022     		movs	r2, #128
+ 601 0018 6B21     		movs	r1, #107
+ 602 001a FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 603              	.LVL48:
+ 604              		.loc 1 200 8 view .LVU167
+ 605 001e 0546     		mov	r5, r0
+ 606 0020 E8B1     		cbz	r0, .L57
+ 201:Device/Dev_MPU6000.c ****     {
+ 202:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_BusCommunicate_Error;
+ 203:Device/Dev_MPU6000.c ****         return false;
+ 204:Device/Dev_MPU6000.c ****     }
+ 205:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 607              		.loc 1 205 5 is_stmt 1 view .LVU168
+ 608              		.loc 1 205 15 is_stmt 0 view .LVU169
+ 609 0022 A368     		ldr	r3, [r4, #8]
+ 610              		.loc 1 205 5 view .LVU170
+ 611 0024 0F20     		movs	r0, #15
+ 612 0026 9847     		blx	r3
+ 613              	.LVL49:
+ 206:Device/Dev_MPU6000.c **** 
+ 207:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Read(sensor_obj, MPU6000_WHOAMI, &read_out))
+ 614              		.loc 1 207 5 is_stmt 1 view .LVU171
+ 615              		.loc 1 207 10 is_stmt 0 view .LVU172
+ 616 0028 0DF10702 		add	r2, sp, #7
+ 617 002c 7521     		movs	r1, #117
+ 618 002e 2046     		mov	r0, r4
+ 619 0030 FFF7FEFF 		bl	DevMPU6000_Reg_Read
+ 620              	.LVL50:
+ 621              		.loc 1 207 8 view .LVU173
+ 622 0034 0546     		mov	r5, r0
+ 623 0036 B0B1     		cbz	r0, .L58
+ 208:Device/Dev_MPU6000.c ****     {
+ 209:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_BusCommunicate_Error;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 16
+
+
+ 210:Device/Dev_MPU6000.c ****         return false;
+ 211:Device/Dev_MPU6000.c ****     }
+ 212:Device/Dev_MPU6000.c **** 
+ 213:Device/Dev_MPU6000.c ****     if (read_out != MPU6000_DEV_ID)
+ 624              		.loc 1 213 5 is_stmt 1 view .LVU174
+ 625              		.loc 1 213 18 is_stmt 0 view .LVU175
+ 626 0038 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 627              		.loc 1 213 8 view .LVU176
+ 628 003c 682B     		cmp	r3, #104
+ 629 003e 16D0     		beq	.L46
+ 214:Device/Dev_MPU6000.c ****     {
+ 215:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_DevID_Error;
+ 630              		.loc 1 215 9 is_stmt 1 view .LVU177
+ 631              		.loc 1 215 27 is_stmt 0 view .LVU178
+ 632 0040 0423     		movs	r3, #4
+ 633 0042 84F86A30 		strb	r3, [r4, #106]
+ 216:Device/Dev_MPU6000.c ****         sensor_obj->delay(15);
+ 634              		.loc 1 216 9 is_stmt 1 view .LVU179
+ 635              		.loc 1 216 19 is_stmt 0 view .LVU180
+ 636 0046 A368     		ldr	r3, [r4, #8]
+ 637              		.loc 1 216 9 view .LVU181
+ 638 0048 0F20     		movs	r0, #15
+ 639 004a 9847     		blx	r3
+ 640              	.LVL51:
+ 217:Device/Dev_MPU6000.c ****         return false;
+ 641              		.loc 1 217 9 is_stmt 1 view .LVU182
+ 642              		.loc 1 217 16 is_stmt 0 view .LVU183
+ 643 004c 0025     		movs	r5, #0
+ 644 004e 03E0     		b	.L43
+ 645              	.LVL52:
+ 646              	.L41:
+ 195:Device/Dev_MPU6000.c ****         return false;
+ 647              		.loc 1 195 9 is_stmt 1 view .LVU184
+ 195:Device/Dev_MPU6000.c ****         return false;
+ 648              		.loc 1 195 27 is_stmt 0 view .LVU185
+ 649 0050 0123     		movs	r3, #1
+ 650 0052 84F86A30 		strb	r3, [r4, #106]
+ 196:Device/Dev_MPU6000.c ****     }
+ 651              		.loc 1 196 9 is_stmt 1 view .LVU186
+ 196:Device/Dev_MPU6000.c ****     }
+ 652              		.loc 1 196 16 is_stmt 0 view .LVU187
+ 653 0056 0025     		movs	r5, #0
+ 654              	.LVL53:
+ 655              	.L43:
+ 218:Device/Dev_MPU6000.c ****     }
+ 219:Device/Dev_MPU6000.c **** 
+ 220:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_SIGNAL_PATH_RESET, BIT_GYRO | BIT_ACC | BIT_TEMP)
+ 221:Device/Dev_MPU6000.c ****     {
+ 222:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_SignalPathReset_Error;
+ 223:Device/Dev_MPU6000.c ****         return false;
+ 224:Device/Dev_MPU6000.c ****     }
+ 225:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 226:Device/Dev_MPU6000.c **** 
+ 227:Device/Dev_MPU6000.c ****     /* Clock Source PPL with Z axis gyro reference */
+ 228:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, MPU_CLK_SEL_PLLGYROZ))
+ 229:Device/Dev_MPU6000.c ****     {
+ 230:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_SignalPathReset_Error;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 17
+
+
+ 231:Device/Dev_MPU6000.c ****         return false;
+ 232:Device/Dev_MPU6000.c ****     }
+ 233:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 234:Device/Dev_MPU6000.c **** 
+ 235:Device/Dev_MPU6000.c ****     /* Disable Primary I2C Interface */
+ 236:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_USER_CTRL, BIT_I2C_IF_DIS))
+ 237:Device/Dev_MPU6000.c ****     {
+ 238:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_DisableI2C_Error;
+ 239:Device/Dev_MPU6000.c ****         return false;
+ 240:Device/Dev_MPU6000.c ****     }
+ 241:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 242:Device/Dev_MPU6000.c **** 
+ 243:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_2, 0x00))
+ 244:Device/Dev_MPU6000.c ****     {
+ 245:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_PWRMNG2_Set_Error;
+ 246:Device/Dev_MPU6000.c ****         return false;
+ 247:Device/Dev_MPU6000.c ****     }
+ 248:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 249:Device/Dev_MPU6000.c **** 
+ 250:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_SMPLRT_DIV, sensor_obj->rate))
+ 251:Device/Dev_MPU6000.c ****     {
+ 252:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_DIV_Set_Error;
+ 253:Device/Dev_MPU6000.c ****         return false;
+ 254:Device/Dev_MPU6000.c ****     }
+ 255:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 256:Device/Dev_MPU6000.c **** 
+ 257:Device/Dev_MPU6000.c ****     /* set gyro range 2000dps */
+ 258:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_GYRO_CONFIG, sensor_obj->GyrTrip))
+ 259:Device/Dev_MPU6000.c ****     {
+ 260:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_Gyr_Cfg_Error;
+ 261:Device/Dev_MPU6000.c ****         return false;
+ 262:Device/Dev_MPU6000.c ****     }
+ 263:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 264:Device/Dev_MPU6000.c **** 
+ 265:Device/Dev_MPU6000.c ****     /* set acc range 16G */
+ 266:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_ACCEL_CONFIG, sensor_obj->AccTrip))
+ 267:Device/Dev_MPU6000.c ****     {
+ 268:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_Acc_Cfg_Error;
+ 269:Device/Dev_MPU6000.c ****         return false;
+ 270:Device/Dev_MPU6000.c ****     }
+ 271:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 272:Device/Dev_MPU6000.c **** 
+ 273:Device/Dev_MPU6000.c ****     /* interrupt pin config */
+ 274:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_INT_PIN_CFG, 0 << 7 | 0 << 6 | 0 << 5 | 1 << 4 | 
+ 275:Device/Dev_MPU6000.c ****     {
+ 276:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_IntPin_Set_Error;
+ 277:Device/Dev_MPU6000.c ****         return false;
+ 278:Device/Dev_MPU6000.c ****     }
+ 279:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 280:Device/Dev_MPU6000.c **** 
+ 281:Device/Dev_MPU6000.c ****     /* enable interrupt */
+ 282:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_INT_ENABLE, MPU_RF_DATA_RDY_EN))
+ 283:Device/Dev_MPU6000.c ****     {
+ 284:Device/Dev_MPU6000.c ****         sensor_obj->error = MPU6000_EnableInt_Error;
+ 285:Device/Dev_MPU6000.c ****         return false;
+ 286:Device/Dev_MPU6000.c ****     }
+ 287:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 18
+
+
+ 288:Device/Dev_MPU6000.c **** 
+ 289:Device/Dev_MPU6000.c ****     sensor_obj->error = MPU6000_No_Error;
+ 290:Device/Dev_MPU6000.c ****     return true;
+ 291:Device/Dev_MPU6000.c **** }
+ 656              		.loc 1 291 1 view .LVU188
+ 657 0058 2846     		mov	r0, r5
+ 658 005a 03B0     		add	sp, sp, #12
+ 659              	.LCFI15:
+ 660              		.cfi_remember_state
+ 661              		.cfi_def_cfa_offset 12
+ 662              		@ sp needed
+ 663 005c 30BD     		pop	{r4, r5, pc}
+ 664              	.LVL54:
+ 665              	.L57:
+ 666              	.LCFI16:
+ 667              		.cfi_restore_state
+ 202:Device/Dev_MPU6000.c ****         return false;
+ 668              		.loc 1 202 9 is_stmt 1 view .LVU189
+ 202:Device/Dev_MPU6000.c ****         return false;
+ 669              		.loc 1 202 27 is_stmt 0 view .LVU190
+ 670 005e 0323     		movs	r3, #3
+ 671 0060 84F86A30 		strb	r3, [r4, #106]
+ 203:Device/Dev_MPU6000.c ****     }
+ 672              		.loc 1 203 9 is_stmt 1 view .LVU191
+ 203:Device/Dev_MPU6000.c ****     }
+ 673              		.loc 1 203 16 is_stmt 0 view .LVU192
+ 674 0064 F8E7     		b	.L43
+ 675              	.L58:
+ 209:Device/Dev_MPU6000.c ****         return false;
+ 676              		.loc 1 209 9 is_stmt 1 view .LVU193
+ 209:Device/Dev_MPU6000.c ****         return false;
+ 677              		.loc 1 209 27 is_stmt 0 view .LVU194
+ 678 0066 0323     		movs	r3, #3
+ 679 0068 84F86A30 		strb	r3, [r4, #106]
+ 210:Device/Dev_MPU6000.c ****     }
+ 680              		.loc 1 210 9 is_stmt 1 view .LVU195
+ 210:Device/Dev_MPU6000.c ****     }
+ 681              		.loc 1 210 16 is_stmt 0 view .LVU196
+ 682 006c F4E7     		b	.L43
+ 683              	.L46:
+ 220:Device/Dev_MPU6000.c ****     {
+ 684              		.loc 1 220 5 is_stmt 1 view .LVU197
+ 220:Device/Dev_MPU6000.c ****     {
+ 685              		.loc 1 220 10 is_stmt 0 view .LVU198
+ 686 006e 0322     		movs	r2, #3
+ 687 0070 6821     		movs	r1, #104
+ 688 0072 2046     		mov	r0, r4
+ 689 0074 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 690              	.LVL55:
+ 220:Device/Dev_MPU6000.c ****     {
+ 691              		.loc 1 220 8 view .LVU199
+ 692 0078 0546     		mov	r5, r0
+ 693 007a 0028     		cmp	r0, #0
+ 694 007c 5BD0     		beq	.L59
+ 225:Device/Dev_MPU6000.c **** 
+ 695              		.loc 1 225 5 is_stmt 1 view .LVU200
+ 225:Device/Dev_MPU6000.c **** 
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 19
+
+
+ 696              		.loc 1 225 15 is_stmt 0 view .LVU201
+ 697 007e A368     		ldr	r3, [r4, #8]
+ 225:Device/Dev_MPU6000.c **** 
+ 698              		.loc 1 225 5 view .LVU202
+ 699 0080 0F20     		movs	r0, #15
+ 700 0082 9847     		blx	r3
+ 701              	.LVL56:
+ 228:Device/Dev_MPU6000.c ****     {
+ 702              		.loc 1 228 5 is_stmt 1 view .LVU203
+ 228:Device/Dev_MPU6000.c ****     {
+ 703              		.loc 1 228 10 is_stmt 0 view .LVU204
+ 704 0084 0322     		movs	r2, #3
+ 705 0086 6B21     		movs	r1, #107
+ 706 0088 2046     		mov	r0, r4
+ 707 008a FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 708              	.LVL57:
+ 228:Device/Dev_MPU6000.c ****     {
+ 709              		.loc 1 228 8 view .LVU205
+ 710 008e 0546     		mov	r5, r0
+ 711 0090 0028     		cmp	r0, #0
+ 712 0092 54D0     		beq	.L60
+ 233:Device/Dev_MPU6000.c **** 
+ 713              		.loc 1 233 5 is_stmt 1 view .LVU206
+ 233:Device/Dev_MPU6000.c **** 
+ 714              		.loc 1 233 15 is_stmt 0 view .LVU207
+ 715 0094 A368     		ldr	r3, [r4, #8]
+ 233:Device/Dev_MPU6000.c **** 
+ 716              		.loc 1 233 5 view .LVU208
+ 717 0096 0F20     		movs	r0, #15
+ 718 0098 9847     		blx	r3
+ 719              	.LVL58:
+ 236:Device/Dev_MPU6000.c ****     {
+ 720              		.loc 1 236 5 is_stmt 1 view .LVU209
+ 236:Device/Dev_MPU6000.c ****     {
+ 721              		.loc 1 236 10 is_stmt 0 view .LVU210
+ 722 009a 1022     		movs	r2, #16
+ 723 009c 6A21     		movs	r1, #106
+ 724 009e 2046     		mov	r0, r4
+ 725 00a0 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 726              	.LVL59:
+ 236:Device/Dev_MPU6000.c ****     {
+ 727              		.loc 1 236 8 view .LVU211
+ 728 00a4 0546     		mov	r5, r0
+ 729 00a6 0028     		cmp	r0, #0
+ 730 00a8 4DD0     		beq	.L61
+ 241:Device/Dev_MPU6000.c **** 
+ 731              		.loc 1 241 5 is_stmt 1 view .LVU212
+ 241:Device/Dev_MPU6000.c **** 
+ 732              		.loc 1 241 15 is_stmt 0 view .LVU213
+ 733 00aa A368     		ldr	r3, [r4, #8]
+ 241:Device/Dev_MPU6000.c **** 
+ 734              		.loc 1 241 5 view .LVU214
+ 735 00ac 0F20     		movs	r0, #15
+ 736 00ae 9847     		blx	r3
+ 737              	.LVL60:
+ 243:Device/Dev_MPU6000.c ****     {
+ 738              		.loc 1 243 5 is_stmt 1 view .LVU215
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 20
+
+
+ 243:Device/Dev_MPU6000.c ****     {
+ 739              		.loc 1 243 10 is_stmt 0 view .LVU216
+ 740 00b0 0022     		movs	r2, #0
+ 741 00b2 6C21     		movs	r1, #108
+ 742 00b4 2046     		mov	r0, r4
+ 743 00b6 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 744              	.LVL61:
+ 243:Device/Dev_MPU6000.c ****     {
+ 745              		.loc 1 243 8 view .LVU217
+ 746 00ba 0546     		mov	r5, r0
+ 747 00bc 0028     		cmp	r0, #0
+ 748 00be 46D0     		beq	.L62
+ 248:Device/Dev_MPU6000.c **** 
+ 749              		.loc 1 248 5 is_stmt 1 view .LVU218
+ 248:Device/Dev_MPU6000.c **** 
+ 750              		.loc 1 248 15 is_stmt 0 view .LVU219
+ 751 00c0 A368     		ldr	r3, [r4, #8]
+ 248:Device/Dev_MPU6000.c **** 
+ 752              		.loc 1 248 5 view .LVU220
+ 753 00c2 0F20     		movs	r0, #15
+ 754 00c4 9847     		blx	r3
+ 755              	.LVL62:
+ 250:Device/Dev_MPU6000.c ****     {
+ 756              		.loc 1 250 5 is_stmt 1 view .LVU221
+ 250:Device/Dev_MPU6000.c ****     {
+ 757              		.loc 1 250 10 is_stmt 0 view .LVU222
+ 758 00c6 627F     		ldrb	r2, [r4, #29]	@ zero_extendqisi2
+ 759 00c8 1921     		movs	r1, #25
+ 760 00ca 2046     		mov	r0, r4
+ 761 00cc FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 762              	.LVL63:
+ 250:Device/Dev_MPU6000.c ****     {
+ 763              		.loc 1 250 8 view .LVU223
+ 764 00d0 0546     		mov	r5, r0
+ 765 00d2 0028     		cmp	r0, #0
+ 766 00d4 3FD0     		beq	.L63
+ 255:Device/Dev_MPU6000.c **** 
+ 767              		.loc 1 255 5 is_stmt 1 view .LVU224
+ 255:Device/Dev_MPU6000.c **** 
+ 768              		.loc 1 255 15 is_stmt 0 view .LVU225
+ 769 00d6 A368     		ldr	r3, [r4, #8]
+ 255:Device/Dev_MPU6000.c **** 
+ 770              		.loc 1 255 5 view .LVU226
+ 771 00d8 0F20     		movs	r0, #15
+ 772 00da 9847     		blx	r3
+ 773              	.LVL64:
+ 258:Device/Dev_MPU6000.c ****     {
+ 774              		.loc 1 258 5 is_stmt 1 view .LVU227
+ 258:Device/Dev_MPU6000.c ****     {
+ 775              		.loc 1 258 10 is_stmt 0 view .LVU228
+ 776 00dc 627C     		ldrb	r2, [r4, #17]	@ zero_extendqisi2
+ 777 00de 1B21     		movs	r1, #27
+ 778 00e0 2046     		mov	r0, r4
+ 779 00e2 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 780              	.LVL65:
+ 258:Device/Dev_MPU6000.c ****     {
+ 781              		.loc 1 258 8 view .LVU229
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 21
+
+
+ 782 00e6 0546     		mov	r5, r0
+ 783 00e8 0028     		cmp	r0, #0
+ 784 00ea 38D0     		beq	.L64
+ 263:Device/Dev_MPU6000.c **** 
+ 785              		.loc 1 263 5 is_stmt 1 view .LVU230
+ 263:Device/Dev_MPU6000.c **** 
+ 786              		.loc 1 263 15 is_stmt 0 view .LVU231
+ 787 00ec A368     		ldr	r3, [r4, #8]
+ 263:Device/Dev_MPU6000.c **** 
+ 788              		.loc 1 263 5 view .LVU232
+ 789 00ee 0F20     		movs	r0, #15
+ 790 00f0 9847     		blx	r3
+ 791              	.LVL66:
+ 266:Device/Dev_MPU6000.c ****     {
+ 792              		.loc 1 266 5 is_stmt 1 view .LVU233
+ 266:Device/Dev_MPU6000.c ****     {
+ 793              		.loc 1 266 10 is_stmt 0 view .LVU234
+ 794 00f2 227C     		ldrb	r2, [r4, #16]	@ zero_extendqisi2
+ 795 00f4 1C21     		movs	r1, #28
+ 796 00f6 2046     		mov	r0, r4
+ 797 00f8 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 798              	.LVL67:
+ 266:Device/Dev_MPU6000.c ****     {
+ 799              		.loc 1 266 8 view .LVU235
+ 800 00fc 0546     		mov	r5, r0
+ 801 00fe 90B3     		cbz	r0, .L65
+ 271:Device/Dev_MPU6000.c **** 
+ 802              		.loc 1 271 5 is_stmt 1 view .LVU236
+ 271:Device/Dev_MPU6000.c **** 
+ 803              		.loc 1 271 15 is_stmt 0 view .LVU237
+ 804 0100 A368     		ldr	r3, [r4, #8]
+ 271:Device/Dev_MPU6000.c **** 
+ 805              		.loc 1 271 5 view .LVU238
+ 806 0102 0F20     		movs	r0, #15
+ 807 0104 9847     		blx	r3
+ 808              	.LVL68:
+ 274:Device/Dev_MPU6000.c ****     {
+ 809              		.loc 1 274 5 is_stmt 1 view .LVU239
+ 274:Device/Dev_MPU6000.c ****     {
+ 810              		.loc 1 274 10 is_stmt 0 view .LVU240
+ 811 0106 1022     		movs	r2, #16
+ 812 0108 3721     		movs	r1, #55
+ 813 010a 2046     		mov	r0, r4
+ 814 010c FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 815              	.LVL69:
+ 274:Device/Dev_MPU6000.c ****     {
+ 816              		.loc 1 274 8 view .LVU241
+ 817 0110 0546     		mov	r5, r0
+ 818 0112 60B3     		cbz	r0, .L66
+ 279:Device/Dev_MPU6000.c **** 
+ 819              		.loc 1 279 5 is_stmt 1 view .LVU242
+ 279:Device/Dev_MPU6000.c **** 
+ 820              		.loc 1 279 15 is_stmt 0 view .LVU243
+ 821 0114 A368     		ldr	r3, [r4, #8]
+ 279:Device/Dev_MPU6000.c **** 
+ 822              		.loc 1 279 5 view .LVU244
+ 823 0116 0F20     		movs	r0, #15
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 22
+
+
+ 824 0118 9847     		blx	r3
+ 825              	.LVL70:
+ 282:Device/Dev_MPU6000.c ****     {
+ 826              		.loc 1 282 5 is_stmt 1 view .LVU245
+ 282:Device/Dev_MPU6000.c ****     {
+ 827              		.loc 1 282 10 is_stmt 0 view .LVU246
+ 828 011a 0122     		movs	r2, #1
+ 829 011c 3821     		movs	r1, #56
+ 830 011e 2046     		mov	r0, r4
+ 831 0120 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 832              	.LVL71:
+ 282:Device/Dev_MPU6000.c ****     {
+ 833              		.loc 1 282 8 view .LVU247
+ 834 0124 0546     		mov	r5, r0
+ 835 0126 30B3     		cbz	r0, .L67
+ 287:Device/Dev_MPU6000.c **** 
+ 836              		.loc 1 287 5 is_stmt 1 view .LVU248
+ 287:Device/Dev_MPU6000.c **** 
+ 837              		.loc 1 287 15 is_stmt 0 view .LVU249
+ 838 0128 A368     		ldr	r3, [r4, #8]
+ 287:Device/Dev_MPU6000.c **** 
+ 839              		.loc 1 287 5 view .LVU250
+ 840 012a 0F20     		movs	r0, #15
+ 841 012c 9847     		blx	r3
+ 842              	.LVL72:
+ 289:Device/Dev_MPU6000.c ****     return true;
+ 843              		.loc 1 289 5 is_stmt 1 view .LVU251
+ 289:Device/Dev_MPU6000.c ****     return true;
+ 844              		.loc 1 289 23 is_stmt 0 view .LVU252
+ 845 012e 0023     		movs	r3, #0
+ 846 0130 84F86A30 		strb	r3, [r4, #106]
+ 290:Device/Dev_MPU6000.c **** }
+ 847              		.loc 1 290 5 is_stmt 1 view .LVU253
+ 290:Device/Dev_MPU6000.c **** }
+ 848              		.loc 1 290 12 is_stmt 0 view .LVU254
+ 849 0134 90E7     		b	.L43
+ 850              	.L59:
+ 222:Device/Dev_MPU6000.c ****         return false;
+ 851              		.loc 1 222 9 is_stmt 1 view .LVU255
+ 222:Device/Dev_MPU6000.c ****         return false;
+ 852              		.loc 1 222 27 is_stmt 0 view .LVU256
+ 853 0136 0523     		movs	r3, #5
+ 854 0138 84F86A30 		strb	r3, [r4, #106]
+ 223:Device/Dev_MPU6000.c ****     }
+ 855              		.loc 1 223 9 is_stmt 1 view .LVU257
+ 223:Device/Dev_MPU6000.c ****     }
+ 856              		.loc 1 223 16 is_stmt 0 view .LVU258
+ 857 013c 8CE7     		b	.L43
+ 858              	.L60:
+ 230:Device/Dev_MPU6000.c ****         return false;
+ 859              		.loc 1 230 9 is_stmt 1 view .LVU259
+ 230:Device/Dev_MPU6000.c ****         return false;
+ 860              		.loc 1 230 27 is_stmt 0 view .LVU260
+ 861 013e 0523     		movs	r3, #5
+ 862 0140 84F86A30 		strb	r3, [r4, #106]
+ 231:Device/Dev_MPU6000.c ****     }
+ 863              		.loc 1 231 9 is_stmt 1 view .LVU261
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 23
+
+
+ 231:Device/Dev_MPU6000.c ****     }
+ 864              		.loc 1 231 16 is_stmt 0 view .LVU262
+ 865 0144 88E7     		b	.L43
+ 866              	.L61:
+ 238:Device/Dev_MPU6000.c ****         return false;
+ 867              		.loc 1 238 9 is_stmt 1 view .LVU263
+ 238:Device/Dev_MPU6000.c ****         return false;
+ 868              		.loc 1 238 27 is_stmt 0 view .LVU264
+ 869 0146 0623     		movs	r3, #6
+ 870 0148 84F86A30 		strb	r3, [r4, #106]
+ 239:Device/Dev_MPU6000.c ****     }
+ 871              		.loc 1 239 9 is_stmt 1 view .LVU265
+ 239:Device/Dev_MPU6000.c ****     }
+ 872              		.loc 1 239 16 is_stmt 0 view .LVU266
+ 873 014c 84E7     		b	.L43
+ 874              	.L62:
+ 245:Device/Dev_MPU6000.c ****         return false;
+ 875              		.loc 1 245 9 is_stmt 1 view .LVU267
+ 245:Device/Dev_MPU6000.c ****         return false;
+ 876              		.loc 1 245 27 is_stmt 0 view .LVU268
+ 877 014e 0723     		movs	r3, #7
+ 878 0150 84F86A30 		strb	r3, [r4, #106]
+ 246:Device/Dev_MPU6000.c ****     }
+ 879              		.loc 1 246 9 is_stmt 1 view .LVU269
+ 246:Device/Dev_MPU6000.c ****     }
+ 880              		.loc 1 246 16 is_stmt 0 view .LVU270
+ 881 0154 80E7     		b	.L43
+ 882              	.L63:
+ 252:Device/Dev_MPU6000.c ****         return false;
+ 883              		.loc 1 252 9 is_stmt 1 view .LVU271
+ 252:Device/Dev_MPU6000.c ****         return false;
+ 884              		.loc 1 252 27 is_stmt 0 view .LVU272
+ 885 0156 0823     		movs	r3, #8
+ 886 0158 84F86A30 		strb	r3, [r4, #106]
+ 253:Device/Dev_MPU6000.c ****     }
+ 887              		.loc 1 253 9 is_stmt 1 view .LVU273
+ 253:Device/Dev_MPU6000.c ****     }
+ 888              		.loc 1 253 16 is_stmt 0 view .LVU274
+ 889 015c 7CE7     		b	.L43
+ 890              	.L64:
+ 260:Device/Dev_MPU6000.c ****         return false;
+ 891              		.loc 1 260 9 is_stmt 1 view .LVU275
+ 260:Device/Dev_MPU6000.c ****         return false;
+ 892              		.loc 1 260 27 is_stmt 0 view .LVU276
+ 893 015e 0923     		movs	r3, #9
+ 894 0160 84F86A30 		strb	r3, [r4, #106]
+ 261:Device/Dev_MPU6000.c ****     }
+ 895              		.loc 1 261 9 is_stmt 1 view .LVU277
+ 261:Device/Dev_MPU6000.c ****     }
+ 896              		.loc 1 261 16 is_stmt 0 view .LVU278
+ 897 0164 78E7     		b	.L43
+ 898              	.L65:
+ 268:Device/Dev_MPU6000.c ****         return false;
+ 899              		.loc 1 268 9 is_stmt 1 view .LVU279
+ 268:Device/Dev_MPU6000.c ****         return false;
+ 900              		.loc 1 268 27 is_stmt 0 view .LVU280
+ 901 0166 0A23     		movs	r3, #10
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 24
+
+
+ 902 0168 84F86A30 		strb	r3, [r4, #106]
+ 269:Device/Dev_MPU6000.c ****     }
+ 903              		.loc 1 269 9 is_stmt 1 view .LVU281
+ 269:Device/Dev_MPU6000.c ****     }
+ 904              		.loc 1 269 16 is_stmt 0 view .LVU282
+ 905 016c 74E7     		b	.L43
+ 906              	.L66:
+ 276:Device/Dev_MPU6000.c ****         return false;
+ 907              		.loc 1 276 9 is_stmt 1 view .LVU283
+ 276:Device/Dev_MPU6000.c ****         return false;
+ 908              		.loc 1 276 27 is_stmt 0 view .LVU284
+ 909 016e 0B23     		movs	r3, #11
+ 910 0170 84F86A30 		strb	r3, [r4, #106]
+ 277:Device/Dev_MPU6000.c ****     }
+ 911              		.loc 1 277 9 is_stmt 1 view .LVU285
+ 277:Device/Dev_MPU6000.c ****     }
+ 912              		.loc 1 277 16 is_stmt 0 view .LVU286
+ 913 0174 70E7     		b	.L43
+ 914              	.L67:
+ 284:Device/Dev_MPU6000.c ****         return false;
+ 915              		.loc 1 284 9 is_stmt 1 view .LVU287
+ 284:Device/Dev_MPU6000.c ****         return false;
+ 916              		.loc 1 284 27 is_stmt 0 view .LVU288
+ 917 0176 0C23     		movs	r3, #12
+ 918 0178 84F86A30 		strb	r3, [r4, #106]
+ 285:Device/Dev_MPU6000.c ****     }
+ 919              		.loc 1 285 9 is_stmt 1 view .LVU289
+ 285:Device/Dev_MPU6000.c ****     }
+ 920              		.loc 1 285 16 is_stmt 0 view .LVU290
+ 921 017c 6CE7     		b	.L43
+ 922              		.cfi_endproc
+ 923              	.LFE5:
+ 925              		.section	.text.DevMPU6000_Get_InitError,"ax",%progbits
+ 926              		.align	1
+ 927              		.syntax unified
+ 928              		.thumb
+ 929              		.thumb_func
+ 930              		.fpu fpv5-d16
+ 932              	DevMPU6000_Get_InitError:
+ 933              	.LVL73:
+ 934              	.LFB6:
+ 292:Device/Dev_MPU6000.c **** 
+ 293:Device/Dev_MPU6000.c **** static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj)
+ 294:Device/Dev_MPU6000.c **** {
+ 935              		.loc 1 294 1 is_stmt 1 view -0
+ 936              		.cfi_startproc
+ 937              		@ args = 0, pretend = 0, frame = 0
+ 938              		@ frame_needed = 0, uses_anonymous_args = 0
+ 939              		@ link register save eliminated.
+ 295:Device/Dev_MPU6000.c ****     return sensor_obj->error;
+ 940              		.loc 1 295 5 view .LVU292
+ 296:Device/Dev_MPU6000.c **** }
+ 941              		.loc 1 296 1 is_stmt 0 view .LVU293
+ 942 0000 90F86A00 		ldrb	r0, [r0, #106]	@ zero_extendqisi2
+ 943              	.LVL74:
+ 944              		.loc 1 296 1 view .LVU294
+ 945 0004 7047     		bx	lr
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 25
+
+
+ 946              		.cfi_endproc
+ 947              	.LFE6:
+ 949              		.section	.text.DevMPU6000_SetDRDY,"ax",%progbits
+ 950              		.align	1
+ 951              		.syntax unified
+ 952              		.thumb
+ 953              		.thumb_func
+ 954              		.fpu fpv5-d16
+ 956              	DevMPU6000_SetDRDY:
+ 957              	.LVL75:
+ 958              	.LFB7:
+ 297:Device/Dev_MPU6000.c **** 
+ 298:Device/Dev_MPU6000.c **** static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)
+ 299:Device/Dev_MPU6000.c **** {
+ 959              		.loc 1 299 1 is_stmt 1 view -0
+ 960              		.cfi_startproc
+ 961              		@ args = 0, pretend = 0, frame = 0
+ 962              		@ frame_needed = 0, uses_anonymous_args = 0
+ 963              		@ link register save eliminated.
+ 300:Device/Dev_MPU6000.c ****     sensor_obj->drdy = true;
+ 964              		.loc 1 300 5 view .LVU296
+ 965              		.loc 1 300 22 is_stmt 0 view .LVU297
+ 966 0000 0123     		movs	r3, #1
+ 967 0002 0377     		strb	r3, [r0, #28]
+ 301:Device/Dev_MPU6000.c **** }
+ 968              		.loc 1 301 1 view .LVU298
+ 969 0004 7047     		bx	lr
+ 970              		.cfi_endproc
+ 971              	.LFE7:
+ 973              		.section	.text.DevMPU6000_GetReady,"ax",%progbits
+ 974              		.align	1
+ 975              		.syntax unified
+ 976              		.thumb
+ 977              		.thumb_func
+ 978              		.fpu fpv5-d16
+ 980              	DevMPU6000_GetReady:
+ 981              	.LVL76:
+ 982              	.LFB8:
+ 302:Device/Dev_MPU6000.c **** 
+ 303:Device/Dev_MPU6000.c **** static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj)
+ 304:Device/Dev_MPU6000.c **** {
+ 983              		.loc 1 304 1 is_stmt 1 view -0
+ 984              		.cfi_startproc
+ 985              		@ args = 0, pretend = 0, frame = 0
+ 986              		@ frame_needed = 0, uses_anonymous_args = 0
+ 987              		@ link register save eliminated.
+ 305:Device/Dev_MPU6000.c ****     return sensor_obj->drdy;
+ 988              		.loc 1 305 5 view .LVU300
+ 306:Device/Dev_MPU6000.c **** }
+ 989              		.loc 1 306 1 is_stmt 0 view .LVU301
+ 990 0000 007F     		ldrb	r0, [r0, #28]	@ zero_extendqisi2
+ 991              	.LVL77:
+ 992              		.loc 1 306 1 view .LVU302
+ 993 0002 7047     		bx	lr
+ 994              		.cfi_endproc
+ 995              	.LFE8:
+ 997              		.section	.text.DevMPU6000_SwReset,"ax",%progbits
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 26
+
+
+ 998              		.align	1
+ 999              		.syntax unified
+ 1000              		.thumb
+ 1001              		.thumb_func
+ 1002              		.fpu fpv5-d16
+ 1004              	DevMPU6000_SwReset:
+ 1005              	.LVL78:
+ 1006              	.LFB9:
+ 307:Device/Dev_MPU6000.c **** 
+ 308:Device/Dev_MPU6000.c **** /* half develop */
+ 309:Device/Dev_MPU6000.c **** static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj)
+ 310:Device/Dev_MPU6000.c **** {
+ 1007              		.loc 1 310 1 is_stmt 1 view -0
+ 1008              		.cfi_startproc
+ 1009              		@ args = 0, pretend = 0, frame = 0
+ 1010              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1011              		@ link register save eliminated.
+ 311:Device/Dev_MPU6000.c ****     bool state = false;
+ 1012              		.loc 1 311 5 view .LVU304
+ 312:Device/Dev_MPU6000.c **** 
+ 313:Device/Dev_MPU6000.c ****     if (sensor_obj == NULL)
+ 1013              		.loc 1 313 5 view .LVU305
+ 314:Device/Dev_MPU6000.c ****         return false;
+ 315:Device/Dev_MPU6000.c **** 
+ 316:Device/Dev_MPU6000.c ****     return state;
+ 317:Device/Dev_MPU6000.c **** }
+ 1014              		.loc 1 317 1 is_stmt 0 view .LVU306
+ 1015 0000 0020     		movs	r0, #0
+ 1016              	.LVL79:
+ 1017              		.loc 1 317 1 view .LVU307
+ 1018 0002 7047     		bx	lr
+ 1019              		.cfi_endproc
+ 1020              	.LFE9:
+ 1022              		.section	.text.DevMPU6000_Sample,"ax",%progbits
+ 1023              		.align	1
+ 1024              		.syntax unified
+ 1025              		.thumb
+ 1026              		.thumb_func
+ 1027              		.fpu fpv5-d16
+ 1029              	DevMPU6000_Sample:
+ 1030              	.LVL80:
+ 1031              	.LFB10:
+ 318:Device/Dev_MPU6000.c **** 
+ 319:Device/Dev_MPU6000.c **** static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
+ 320:Device/Dev_MPU6000.c **** {
+ 1032              		.loc 1 320 1 is_stmt 1 view -0
+ 1033              		.cfi_startproc
+ 1034              		@ args = 0, pretend = 0, frame = 32
+ 1035              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1036              		.loc 1 320 1 is_stmt 0 view .LVU309
+ 1037 0000 70B5     		push	{r4, r5, r6, lr}
+ 1038              	.LCFI17:
+ 1039              		.cfi_def_cfa_offset 16
+ 1040              		.cfi_offset 4, -16
+ 1041              		.cfi_offset 5, -12
+ 1042              		.cfi_offset 6, -8
+ 1043              		.cfi_offset 14, -4
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 27
+
+
+ 1044 0002 8AB0     		sub	sp, sp, #40
+ 1045              	.LCFI18:
+ 1046              		.cfi_def_cfa_offset 56
+ 321:Device/Dev_MPU6000.c ****     uint8_t Tx[14] = {0};
+ 1047              		.loc 1 321 5 is_stmt 1 view .LVU310
+ 1048              		.loc 1 321 13 is_stmt 0 view .LVU311
+ 1049 0004 0023     		movs	r3, #0
+ 1050 0006 0693     		str	r3, [sp, #24]
+ 1051 0008 0793     		str	r3, [sp, #28]
+ 1052 000a 0893     		str	r3, [sp, #32]
+ 1053 000c ADF82430 		strh	r3, [sp, #36]	@ movhi
+ 322:Device/Dev_MPU6000.c ****     uint8_t Rx[14] = {0};
+ 1054              		.loc 1 322 5 is_stmt 1 view .LVU312
+ 1055              		.loc 1 322 13 is_stmt 0 view .LVU313
+ 1056 0010 0293     		str	r3, [sp, #8]
+ 1057 0012 0393     		str	r3, [sp, #12]
+ 1058 0014 0493     		str	r3, [sp, #16]
+ 1059 0016 ADF81430 		strh	r3, [sp, #20]	@ movhi
+ 323:Device/Dev_MPU6000.c **** 
+ 324:Device/Dev_MPU6000.c ****     if ((sensor_obj->error == MPU6000_No_Error) && (sensor_obj->drdy))
+ 1060              		.loc 1 324 5 is_stmt 1 view .LVU314
+ 1061              		.loc 1 324 20 is_stmt 0 view .LVU315
+ 1062 001a 90F86A50 		ldrb	r5, [r0, #106]	@ zero_extendqisi2
+ 1063              		.loc 1 324 8 view .LVU316
+ 1064 001e 002D     		cmp	r5, #0
+ 1065 0020 61D1     		bne	.L76
+ 1066 0022 0446     		mov	r4, r0
+ 1067              		.loc 1 324 63 discriminator 1 view .LVU317
+ 1068 0024 067F     		ldrb	r6, [r0, #28]	@ zero_extendqisi2
+ 1069              		.loc 1 324 49 discriminator 1 view .LVU318
+ 1070 0026 002E     		cmp	r6, #0
+ 1071 0028 5ED0     		beq	.L73
+ 325:Device/Dev_MPU6000.c ****     {
+ 326:Device/Dev_MPU6000.c ****         sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
+ 1072              		.loc 1 326 9 is_stmt 1 view .LVU319
+ 1073              		.loc 1 326 52 is_stmt 0 view .LVU320
+ 1074 002a C368     		ldr	r3, [r0, #12]
+ 1075              		.loc 1 326 42 view .LVU321
+ 1076 002c 9847     		blx	r3
+ 1077              	.LVL81:
+ 1078              		.loc 1 326 40 view .LVU322
+ 1079 002e C4F81E00 		str	r0, [r4, #30]	@ unaligned
+ 1080 0032 C4F82210 		str	r1, [r4, #34]	@ unaligned
+ 327:Device/Dev_MPU6000.c **** 
+ 328:Device/Dev_MPU6000.c ****         Dev_MPU6000_Regs_Read(sensor_obj, MPU6000_ACCEL_XOUT_H, Tx, Rx, 14);
+ 1081              		.loc 1 328 9 is_stmt 1 view .LVU323
+ 1082 0036 0E23     		movs	r3, #14
+ 1083 0038 0093     		str	r3, [sp]
+ 1084 003a 02AB     		add	r3, sp, #8
+ 1085 003c 06AA     		add	r2, sp, #24
+ 1086 003e 3B21     		movs	r1, #59
+ 1087 0040 2046     		mov	r0, r4
+ 1088 0042 FFF7FEFF 		bl	Dev_MPU6000_Regs_Read
+ 1089              	.LVL82:
+ 329:Device/Dev_MPU6000.c **** 
+ 330:Device/Dev_MPU6000.c ****         for (uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
+ 1090              		.loc 1 330 9 view .LVU324
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 28
+
+
+ 1091              	.LBB2:
+ 1092              		.loc 1 330 14 view .LVU325
+ 1093              		.loc 1 330 9 is_stmt 0 view .LVU326
+ 1094 0046 43E0     		b	.L74
+ 1095              	.LVL83:
+ 1096              	.L75:
+ 331:Device/Dev_MPU6000.c ****         {
+ 332:Device/Dev_MPU6000.c ****             sensor_obj->OriData.acc_int[axis] = (int16_t)((Rx[axis * 2] << 8) | Rx[axis * 2 + 1]);
+ 1097              		.loc 1 332 13 is_stmt 1 discriminator 3 view .LVU327
+ 1098              		.loc 1 332 68 is_stmt 0 discriminator 3 view .LVU328
+ 1099 0048 6900     		lsls	r1, r5, #1
+ 1100              		.loc 1 332 62 discriminator 3 view .LVU329
+ 1101 004a 0AAB     		add	r3, sp, #40
+ 1102 004c 03EB4503 		add	r3, r3, r5, lsl #1
+ 1103 0050 13F8200C 		ldrb	r0, [r3, #-32]	@ zero_extendqisi2
+ 1104              		.loc 1 332 93 discriminator 3 view .LVU330
+ 1105 0054 4B1C     		adds	r3, r1, #1
+ 1106              		.loc 1 332 83 discriminator 3 view .LVU331
+ 1107 0056 0AAA     		add	r2, sp, #40
+ 1108 0058 1344     		add	r3, r3, r2
+ 1109 005a 13F8202C 		ldrb	r2, [r3, #-32]	@ zero_extendqisi2
+ 1110              		.loc 1 332 49 discriminator 3 view .LVU332
+ 1111 005e 42EA0022 		orr	r2, r2, r0, lsl #8
+ 1112 0062 12B2     		sxth	r2, r2
+ 1113              		.loc 1 332 47 discriminator 3 view .LVU333
+ 1114 0064 05F11803 		add	r3, r5, #24
+ 1115 0068 04EB4303 		add	r3, r4, r3, lsl #1
+ 1116 006c DA80     		strh	r2, [r3, #6]	@ movhi
+ 333:Device/Dev_MPU6000.c ****             sensor_obj->OriData.gyr_int[axis] = (int16_t)((Rx[axis * 2 + 8] << 8) | Rx[axis * 2 + 9
+ 1117              		.loc 1 333 13 is_stmt 1 discriminator 3 view .LVU334
+ 1118              		.loc 1 333 72 is_stmt 0 discriminator 3 view .LVU335
+ 1119 006e 2B1D     		adds	r3, r5, #4
+ 1120              		.loc 1 333 62 discriminator 3 view .LVU336
+ 1121 0070 0AA8     		add	r0, sp, #40
+ 1122 0072 00EB4303 		add	r3, r0, r3, lsl #1
+ 1123 0076 13F8200C 		ldrb	r0, [r3, #-32]	@ zero_extendqisi2
+ 1124              		.loc 1 333 97 discriminator 3 view .LVU337
+ 1125 007a 0931     		adds	r1, r1, #9
+ 1126              		.loc 1 333 87 discriminator 3 view .LVU338
+ 1127 007c 0AAB     		add	r3, sp, #40
+ 1128 007e 1944     		add	r1, r1, r3
+ 1129 0080 11F8203C 		ldrb	r3, [r1, #-32]	@ zero_extendqisi2
+ 1130              		.loc 1 333 49 discriminator 3 view .LVU339
+ 1131 0084 43EA0023 		orr	r3, r3, r0, lsl #8
+ 1132 0088 1BB2     		sxth	r3, r3
+ 1133              		.loc 1 333 47 discriminator 3 view .LVU340
+ 1134 008a 05F11401 		add	r1, r5, #20
+ 1135 008e 04EB4101 		add	r1, r4, r1, lsl #1
+ 1136 0092 0B81     		strh	r3, [r1, #8]	@ movhi
+ 334:Device/Dev_MPU6000.c **** 
+ 335:Device/Dev_MPU6000.c ****             /* convert int data to float */
+ 336:Device/Dev_MPU6000.c ****             sensor_obj->OriData.acc_flt[axis] = ((float)sensor_obj->OriData.acc_int[axis] / sensor_
+ 1137              		.loc 1 336 13 is_stmt 1 discriminator 3 view .LVU341
+ 1138              		.loc 1 336 50 is_stmt 0 discriminator 3 view .LVU342
+ 1139 0094 07EE902A 		vmov	s15, r2	@ int
+ 1140 0098 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 1141              		.loc 1 336 103 discriminator 3 view .LVU343
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 29
+
+
+ 1142 009c D4ED056A 		vldr.32	s13, [r4, #20]
+ 1143              		.loc 1 336 91 discriminator 3 view .LVU344
+ 1144 00a0 87EEA67A 		vdiv.f32	s14, s15, s13
+ 1145              		.loc 1 336 47 discriminator 3 view .LVU345
+ 1146 00a4 05F11002 		add	r2, r5, #16
+ 1147 00a8 04EB8202 		add	r2, r4, r2, lsl #2
+ 1148 00ac 82ED037A 		vstr.32	s14, [r2, #12]
+ 337:Device/Dev_MPU6000.c ****             sensor_obj->OriData.gyr_flt[axis] = ((float)sensor_obj->OriData.gyr_int[axis] / sensor_
+ 1149              		.loc 1 337 13 is_stmt 1 discriminator 3 view .LVU346
+ 1150              		.loc 1 337 50 is_stmt 0 discriminator 3 view .LVU347
+ 1151 00b0 07EE903A 		vmov	s15, r3	@ int
+ 1152 00b4 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 1153              		.loc 1 337 103 discriminator 3 view .LVU348
+ 1154 00b8 D4ED066A 		vldr.32	s13, [r4, #24]
+ 1155              		.loc 1 337 91 discriminator 3 view .LVU349
+ 1156 00bc 87EEA67A 		vdiv.f32	s14, s15, s13
+ 1157              		.loc 1 337 47 discriminator 3 view .LVU350
+ 1158 00c0 05F10E03 		add	r3, r5, #14
+ 1159 00c4 04EB8303 		add	r3, r4, r3, lsl #2
+ 1160 00c8 83ED027A 		vstr.32	s14, [r3, #8]
+ 330:Device/Dev_MPU6000.c ****         {
+ 1161              		.loc 1 330 54 is_stmt 1 discriminator 3 view .LVU351
+ 330:Device/Dev_MPU6000.c ****         {
+ 1162              		.loc 1 330 58 is_stmt 0 discriminator 3 view .LVU352
+ 1163 00cc 0135     		adds	r5, r5, #1
+ 1164              	.LVL84:
+ 330:Device/Dev_MPU6000.c ****         {
+ 1165              		.loc 1 330 58 discriminator 3 view .LVU353
+ 1166 00ce EDB2     		uxtb	r5, r5
+ 1167              	.LVL85:
+ 1168              	.L74:
+ 330:Device/Dev_MPU6000.c ****         {
+ 1169              		.loc 1 330 37 is_stmt 1 discriminator 1 view .LVU354
+ 330:Device/Dev_MPU6000.c ****         {
+ 1170              		.loc 1 330 9 is_stmt 0 discriminator 1 view .LVU355
+ 1171 00d0 022D     		cmp	r5, #2
+ 1172 00d2 B9D9     		bls	.L75
+ 1173              	.LBE2:
+ 338:Device/Dev_MPU6000.c ****         }
+ 339:Device/Dev_MPU6000.c **** 
+ 340:Device/Dev_MPU6000.c ****         sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
+ 1174              		.loc 1 340 9 is_stmt 1 view .LVU356
+ 1175              		.loc 1 340 52 is_stmt 0 view .LVU357
+ 1176 00d4 E368     		ldr	r3, [r4, #12]
+ 1177              		.loc 1 340 42 view .LVU358
+ 1178 00d6 9847     		blx	r3
+ 1179              	.LVL86:
+ 1180              		.loc 1 340 40 view .LVU359
+ 1181 00d8 C4F81E00 		str	r0, [r4, #30]	@ unaligned
+ 1182 00dc C4F82210 		str	r1, [r4, #34]	@ unaligned
+ 341:Device/Dev_MPU6000.c ****         sensor_obj->drdy = false;
+ 1183              		.loc 1 341 9 is_stmt 1 view .LVU360
+ 1184              		.loc 1 341 26 is_stmt 0 view .LVU361
+ 1185 00e0 0023     		movs	r3, #0
+ 1186 00e2 2377     		strb	r3, [r4, #28]
+ 342:Device/Dev_MPU6000.c ****         return true;
+ 1187              		.loc 1 342 9 is_stmt 1 view .LVU362
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 30
+
+
+ 1188              		.loc 1 342 16 is_stmt 0 view .LVU363
+ 1189 00e4 00E0     		b	.L73
+ 1190              	.LVL87:
+ 1191              	.L76:
+ 343:Device/Dev_MPU6000.c ****     }
+ 344:Device/Dev_MPU6000.c **** 
+ 345:Device/Dev_MPU6000.c ****     return false;
+ 1192              		.loc 1 345 12 view .LVU364
+ 1193 00e6 0026     		movs	r6, #0
+ 1194              	.LVL88:
+ 1195              	.L73:
+ 346:Device/Dev_MPU6000.c **** }
+ 1196              		.loc 1 346 1 view .LVU365
+ 1197 00e8 3046     		mov	r0, r6
+ 1198 00ea 0AB0     		add	sp, sp, #40
+ 1199              	.LCFI19:
+ 1200              		.cfi_def_cfa_offset 16
+ 1201              		@ sp needed
+ 1202 00ec 70BD     		pop	{r4, r5, r6, pc}
+ 1203              		.cfi_endproc
+ 1204              	.LFE10:
+ 1206              		.section	.text.DevMPU6000_Get_Data,"ax",%progbits
+ 1207              		.align	1
+ 1208              		.global	DevMPU6000_Get_Data
+ 1209              		.syntax unified
+ 1210              		.thumb
+ 1211              		.thumb_func
+ 1212              		.fpu fpv5-d16
+ 1214              	DevMPU6000_Get_Data:
+ 1215              	.LVL89:
+ 1216              	.LFB11:
+ 347:Device/Dev_MPU6000.c **** 
+ 348:Device/Dev_MPU6000.c **** IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
+ 349:Device/Dev_MPU6000.c **** {
+ 1217              		.loc 1 349 1 is_stmt 1 view -0
+ 1218              		.cfi_startproc
+ 1219              		@ args = 0, pretend = 0, frame = 80
+ 1220              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1221              		.loc 1 349 1 is_stmt 0 view .LVU367
+ 1222 0000 30B5     		push	{r4, r5, lr}
+ 1223              	.LCFI20:
+ 1224              		.cfi_def_cfa_offset 12
+ 1225              		.cfi_offset 4, -12
+ 1226              		.cfi_offset 5, -8
+ 1227              		.cfi_offset 14, -4
+ 1228 0002 95B0     		sub	sp, sp, #84
+ 1229              	.LCFI21:
+ 1230              		.cfi_def_cfa_offset 96
+ 1231 0004 0446     		mov	r4, r0
+ 1232 0006 0D46     		mov	r5, r1
+ 350:Device/Dev_MPU6000.c ****     IMUData_TypeDef tmp;
+ 1233              		.loc 1 350 5 is_stmt 1 view .LVU368
+ 351:Device/Dev_MPU6000.c **** 
+ 352:Device/Dev_MPU6000.c ****     memset(&tmp, NULL, sizeof(tmp));
+ 1234              		.loc 1 352 5 view .LVU369
+ 1235 0008 4C22     		movs	r2, #76
+ 1236 000a 0021     		movs	r1, #0
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 31
+
+
+ 1237              	.LVL90:
+ 1238              		.loc 1 352 5 is_stmt 0 view .LVU370
+ 1239 000c 01A8     		add	r0, sp, #4
+ 1240              	.LVL91:
+ 1241              		.loc 1 352 5 view .LVU371
+ 1242 000e FFF7FEFF 		bl	memset
+ 1243              	.LVL92:
+ 353:Device/Dev_MPU6000.c ****     if (sensor_obj->error == MPU6000_No_Error)
+ 1244              		.loc 1 353 5 is_stmt 1 view .LVU372
+ 1245              		.loc 1 353 19 is_stmt 0 view .LVU373
+ 1246 0012 95F86A30 		ldrb	r3, [r5, #106]	@ zero_extendqisi2
+ 1247              		.loc 1 353 8 view .LVU374
+ 1248 0016 3BB1     		cbz	r3, .L82
+ 354:Device/Dev_MPU6000.c ****         return sensor_obj->OriData;
+ 355:Device/Dev_MPU6000.c **** 
+ 356:Device/Dev_MPU6000.c ****     return tmp;
+ 1249              		.loc 1 356 5 is_stmt 1 view .LVU375
+ 1250              		.loc 1 356 12 is_stmt 0 view .LVU376
+ 1251 0018 4C22     		movs	r2, #76
+ 1252 001a 0021     		movs	r1, #0
+ 1253 001c 2046     		mov	r0, r4
+ 1254 001e FFF7FEFF 		bl	memset
+ 1255              	.LVL93:
+ 1256              	.L78:
+ 357:Device/Dev_MPU6000.c **** }
+ 1257              		.loc 1 357 1 view .LVU377
+ 1258 0022 2046     		mov	r0, r4
+ 1259 0024 15B0     		add	sp, sp, #84
+ 1260              	.LCFI22:
+ 1261              		.cfi_remember_state
+ 1262              		.cfi_def_cfa_offset 12
+ 1263              		@ sp needed
+ 1264 0026 30BD     		pop	{r4, r5, pc}
+ 1265              	.LVL94:
+ 1266              	.L82:
+ 1267              	.LCFI23:
+ 1268              		.cfi_restore_state
+ 354:Device/Dev_MPU6000.c ****         return sensor_obj->OriData;
+ 1269              		.loc 1 354 9 is_stmt 1 view .LVU378
+ 354:Device/Dev_MPU6000.c ****         return sensor_obj->OriData;
+ 1270              		.loc 1 354 26 is_stmt 0 view .LVU379
+ 1271 0028 4C22     		movs	r2, #76
+ 1272 002a 05F11E01 		add	r1, r5, #30
+ 1273 002e 2046     		mov	r0, r4
+ 1274 0030 FFF7FEFF 		bl	memcpy
+ 1275              	.LVL95:
+ 1276 0034 F5E7     		b	.L78
+ 1277              		.cfi_endproc
+ 1278              	.LFE11:
+ 1280              		.global	DevMPU6000
+ 1281              		.section	.data.DevMPU6000,"aw"
+ 1282              		.align	2
+ 1285              	DevMPU6000:
+ 1286 0000 00000000 		.word	DevMPU6000_PreInit
+ 1287 0004 00000000 		.word	DevMPU6000_Config
+ 1288 0008 00000000 		.word	DevMPU6000_Init
+ 1289 000c 00000000 		.word	DevMPU6000_SwReset
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 32
+
+
+ 1290 0010 00000000 		.word	DevMPU6000_GetReady
+ 1291 0014 00000000 		.word	DevMPU6000_SetDRDY
+ 1292 0018 00000000 		.word	DevMPU6000_Sample
+ 1293 001c 00000000 		.word	DevMPU6000_Get_Data
+ 1294 0020 00000000 		.word	DevMPU6000_Get_InitError
+ 1295              		.text
+ 1296              	.Letext0:
+ 1297              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
+ 1298              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 1299              		.file 4 "Service/imu_data.h"
+ 1300              		.file 5 "Device/Dev_MPU6000.h"
+ 1301              		.file 6 "<built-in>"
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s 			page 33
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 Dev_MPU6000.c
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:17     .text.Dev_MPU6000_Regs_Read:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:24     .text.Dev_MPU6000_Regs_Read:0000000000000000 Dev_MPU6000_Regs_Read
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:142    .text.DevMPU6000_Reg_Read:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:148    .text.DevMPU6000_Reg_Read:0000000000000000 DevMPU6000_Reg_Read
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:255    .text.DevMPU6000_Reg_Write:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:261    .text.DevMPU6000_Reg_Write:0000000000000000 DevMPU6000_Reg_Write
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:360    .text.DevMPU6000_Config:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:366    .text.DevMPU6000_Config:0000000000000000 DevMPU6000_Config
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:408    .text.DevMPU6000_Config:0000000000000034 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:412    .text.DevMPU6000_Config:0000000000000038 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:425    .text.DevMPU6000_Config:0000000000000048 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:429    .text.DevMPU6000_Config:000000000000004c $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:516    .text.DevMPU6000_Config:00000000000000a4 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:524    .text.DevMPU6000_PreInit:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:530    .text.DevMPU6000_PreInit:0000000000000000 DevMPU6000_PreInit
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:559    .text.DevMPU6000_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:565    .text.DevMPU6000_Init:0000000000000000 DevMPU6000_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:926    .text.DevMPU6000_Get_InitError:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:932    .text.DevMPU6000_Get_InitError:0000000000000000 DevMPU6000_Get_InitError
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:950    .text.DevMPU6000_SetDRDY:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:956    .text.DevMPU6000_SetDRDY:0000000000000000 DevMPU6000_SetDRDY
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:974    .text.DevMPU6000_GetReady:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:980    .text.DevMPU6000_GetReady:0000000000000000 DevMPU6000_GetReady
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:998    .text.DevMPU6000_SwReset:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:1004   .text.DevMPU6000_SwReset:0000000000000000 DevMPU6000_SwReset
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:1023   .text.DevMPU6000_Sample:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:1029   .text.DevMPU6000_Sample:0000000000000000 DevMPU6000_Sample
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:1207   .text.DevMPU6000_Get_Data:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:1214   .text.DevMPU6000_Get_Data:0000000000000000 DevMPU6000_Get_Data
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:1285   .data.DevMPU6000:0000000000000000 DevMPU6000
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccLnS1Xf.s:1282   .data.DevMPU6000:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+memset
+memcpy

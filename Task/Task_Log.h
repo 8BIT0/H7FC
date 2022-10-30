@@ -9,8 +9,6 @@
 #include <stddef.h>
 #include "scheduler.h"
 
-#define LOG_FUNCTIONAL_BYTE_SIZE 3
-
 #define LOG_HEADER 0xBA
 #define LOG_DATATYPE_IMU 0x00
 

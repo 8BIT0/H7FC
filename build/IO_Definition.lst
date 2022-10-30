@@ -1,0 +1,242 @@
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"IO_Definition.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.global	USB_DctPin
+  17              		.global	ICM20602_BusPin
+  18              		.global	MPU6000_BusPin
+  19              		.global	ICM20602_INTPin
+  20              		.global	ICM20602_CSPin
+  21              		.global	MPU6000_INTPin
+  22              		.global	MPU6000_CSPin
+  23              		.global	Led3
+  24              		.global	Led2
+  25              		.global	Led1
+  26              		.global	Debug_PB10
+  27              		.global	Debug_PB6
+  28              		.global	Debug_PB5
+  29              		.global	Debug_PB4
+  30              		.global	Debug_PB3
+  31              		.global	Debug_PC3
+  32              		.global	Debug_PC2
+  33              		.global	Debug_PC1
+  34              		.global	Debug_PC0
+  35              		.section	.data.Debug_PB10,"aw"
+  36              		.align	2
+  39              	Debug_PB10:
+  40 0000 00040258 		.word	1476527104
+  41 0004 0004     		.short	1024
+  42 0006 00       		.byte	0
+  43 0007 00       		.space	1
+  44              		.section	.data.Debug_PB3,"aw"
+  45              		.align	2
+  48              	Debug_PB3:
+  49 0000 00040258 		.word	1476527104
+  50 0004 0800     		.short	8
+  51 0006 00       		.byte	0
+  52 0007 00       		.space	1
+  53              		.section	.data.Debug_PB4,"aw"
+  54              		.align	2
+  57              	Debug_PB4:
+  58 0000 00040258 		.word	1476527104
+  59 0004 1000     		.short	16
+  60 0006 00       		.byte	0
+  61 0007 00       		.space	1
+  62              		.section	.data.Debug_PB5,"aw"
+  63              		.align	2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s 			page 2
+
+
+  66              	Debug_PB5:
+  67 0000 00040258 		.word	1476527104
+  68 0004 2000     		.short	32
+  69 0006 00       		.byte	0
+  70 0007 00       		.space	1
+  71              		.section	.data.Debug_PB6,"aw"
+  72              		.align	2
+  75              	Debug_PB6:
+  76 0000 00040258 		.word	1476527104
+  77 0004 4000     		.short	64
+  78 0006 00       		.byte	0
+  79 0007 00       		.space	1
+  80              		.section	.data.Debug_PC0,"aw"
+  81              		.align	2
+  84              	Debug_PC0:
+  85 0000 00080258 		.word	1476528128
+  86 0004 0100     		.short	1
+  87 0006 00       		.byte	0
+  88 0007 00       		.space	1
+  89              		.section	.data.Debug_PC1,"aw"
+  90              		.align	2
+  93              	Debug_PC1:
+  94 0000 00080258 		.word	1476528128
+  95 0004 0200     		.short	2
+  96 0006 00       		.byte	0
+  97 0007 00       		.space	1
+  98              		.section	.data.Debug_PC2,"aw"
+  99              		.align	2
+ 102              	Debug_PC2:
+ 103 0000 00080258 		.word	1476528128
+ 104 0004 0400     		.short	4
+ 105 0006 00       		.byte	0
+ 106 0007 00       		.space	1
+ 107              		.section	.data.Debug_PC3,"aw"
+ 108              		.align	2
+ 111              	Debug_PC3:
+ 112 0000 00080258 		.word	1476528128
+ 113 0004 0800     		.short	8
+ 114 0006 00       		.byte	0
+ 115 0007 00       		.space	1
+ 116              		.section	.data.ICM20602_BusPin,"aw"
+ 117              		.align	2
+ 120              	ICM20602_BusPin:
+ 121 0000 00100258 		.word	1476530176
+ 122 0004 00100258 		.word	1476530176
+ 123 0008 00100258 		.word	1476530176
+ 124 000c 00400000 		.word	16384
+ 125 0010 00200000 		.word	8192
+ 126 0014 00100000 		.word	4096
+ 127 0018 05000000 		.word	5
+ 128              		.section	.data.ICM20602_CSPin,"aw"
+ 129              		.align	2
+ 132              	ICM20602_CSPin:
+ 133 0000 00100258 		.word	1476530176
+ 134 0004 0008     		.short	2048
+ 135 0006 01       		.byte	1
+ 136 0007 00       		.space	1
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s 			page 3
+
+
+ 137              		.section	.data.ICM20602_INTPin,"aw"
+ 138              		.align	2
+ 141              	ICM20602_INTPin:
+ 142 0000 00100258 		.word	1476530176
+ 143 0004 0080     		.short	-32768
+ 144 0006 01       		.byte	1
+ 145 0007 00       		.space	1
+ 146              		.section	.data.Led1,"aw"
+ 147              		.align	2
+ 150              	Led1:
+ 151 0000 00100258 		.word	1476530176
+ 152 0004 0800     		.short	8
+ 153 0006 01       		.byte	1
+ 154 0007 00       		.space	1
+ 155              		.section	.data.Led2,"aw"
+ 156              		.align	2
+ 159              	Led2:
+ 160 0000 00100258 		.word	1476530176
+ 161 0004 1000     		.short	16
+ 162 0006 01       		.byte	1
+ 163 0007 00       		.space	1
+ 164              		.section	.data.Led3,"aw"
+ 165              		.align	2
+ 168              	Led3:
+ 169 0000 001C0258 		.word	1476533248
+ 170 0004 8000     		.short	128
+ 171 0006 01       		.byte	1
+ 172 0007 00       		.space	1
+ 173              		.section	.data.MPU6000_BusPin,"aw"
+ 174              		.align	2
+ 177              	MPU6000_BusPin:
+ 178 0000 000C0258 		.word	1476529152
+ 179 0004 00000258 		.word	1476526080
+ 180 0008 00000258 		.word	1476526080
+ 181 000c 80000000 		.word	128
+ 182 0010 40000000 		.word	64
+ 183 0014 20000000 		.word	32
+ 184 0018 05000000 		.word	5
+ 185              		.section	.data.MPU6000_CSPin,"aw"
+ 186              		.align	2
+ 189              	MPU6000_CSPin:
+ 190 0000 00080258 		.word	1476528128
+ 191 0004 0080     		.short	-32768
+ 192 0006 01       		.byte	1
+ 193 0007 00       		.space	1
+ 194              		.section	.data.MPU6000_INTPin,"aw"
+ 195              		.align	2
+ 198              	MPU6000_INTPin:
+ 199 0000 00040258 		.word	1476527104
+ 200 0004 0400     		.short	4
+ 201 0006 01       		.byte	1
+ 202 0007 00       		.space	1
+ 203              		.section	.data.USB_DctPin,"aw"
+ 204              		.align	2
+ 207              	USB_DctPin:
+ 208 0000 00100258 		.word	1476530176
+ 209 0004 0400     		.short	4
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s 			page 4
+
+
+ 210 0006 00       		.byte	0
+ 211 0007 00       		.space	1
+ 212              		.text
+ 213              	.Letext0:
+ 214              		.file 1 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
+ 215              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 216              		.file 3 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 217              		.file 4 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 218              		.file 5 "Bsp/Bsp_GPIO.h"
+ 219              		.file 6 "Bsp/Bsp_SPI.h"
+ 220              		.file 7 "Device/Dev_Led.h"
+ 221              		.file 8 "debug/debug_util.h"
+ 222              		.file 9 "IO_Def/IO_Definition.h"
+ 223              		.file 10 "IO_Def/IO_Definition.c"
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 IO_Definition.c
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:207    .data.USB_DctPin:0000000000000000 USB_DctPin
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:120    .data.ICM20602_BusPin:0000000000000000 ICM20602_BusPin
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:177    .data.MPU6000_BusPin:0000000000000000 MPU6000_BusPin
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:141    .data.ICM20602_INTPin:0000000000000000 ICM20602_INTPin
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:132    .data.ICM20602_CSPin:0000000000000000 ICM20602_CSPin
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:198    .data.MPU6000_INTPin:0000000000000000 MPU6000_INTPin
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:189    .data.MPU6000_CSPin:0000000000000000 MPU6000_CSPin
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:168    .data.Led3:0000000000000000 Led3
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:159    .data.Led2:0000000000000000 Led2
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:150    .data.Led1:0000000000000000 Led1
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:39     .data.Debug_PB10:0000000000000000 Debug_PB10
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:75     .data.Debug_PB6:0000000000000000 Debug_PB6
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:66     .data.Debug_PB5:0000000000000000 Debug_PB5
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:57     .data.Debug_PB4:0000000000000000 Debug_PB4
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:48     .data.Debug_PB3:0000000000000000 Debug_PB3
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:111    .data.Debug_PC3:0000000000000000 Debug_PC3
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:102    .data.Debug_PC2:0000000000000000 Debug_PC2
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:93     .data.Debug_PC1:0000000000000000 Debug_PC1
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:84     .data.Debug_PC0:0000000000000000 Debug_PC0
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:36     .data.Debug_PB10:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:45     .data.Debug_PB3:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:54     .data.Debug_PB4:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:63     .data.Debug_PB5:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:72     .data.Debug_PB6:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:81     .data.Debug_PC0:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:90     .data.Debug_PC1:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:99     .data.Debug_PC2:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:108    .data.Debug_PC3:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:117    .data.ICM20602_BusPin:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:129    .data.ICM20602_CSPin:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:138    .data.ICM20602_INTPin:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:147    .data.Led1:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:156    .data.Led2:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:165    .data.Led3:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:174    .data.MPU6000_BusPin:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:186    .data.MPU6000_CSPin:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:195    .data.MPU6000_INTPin:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccsQvx6q.s:204    .data.USB_DctPin:0000000000000000 $d
+
+NO UNDEFINED SYMBOLS

@@ -50,7 +50,7 @@ typedef enum
     SrvIMU_Sample_Data_Gyr_Blunt,
     SrvIMU_Sample_Data_Acc_OverRange,
     SrvIMU_Sample_Data_Gyr_OverRange,
-}SrvIMU_SampleErrorCode_List;
+} SrvIMU_SampleErrorCode_List;
 
 #pragma pack(1)
 typedef struct

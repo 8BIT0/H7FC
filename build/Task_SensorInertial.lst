@@ -1,0 +1,463 @@
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Task_SensorInertial.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.TaskInertial_Init,"ax",%progbits
+  17              		.align	1
+  18              		.global	TaskInertial_Init
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	TaskInertial_Init:
+  26              	.LFB147:
+  27              		.file 1 "Task/Task_SensorInertial.c"
+   1:Task/Task_SensorInertial.c **** #include "Task_SensorInertial.h"
+   2:Task/Task_SensorInertial.c **** #include "scheduler.h"
+   3:Task/Task_SensorInertial.c **** #include "debug_util.h"
+   4:Task/Task_SensorInertial.c **** #include "runtime.h"
+   5:Task/Task_SensorInertial.c **** #include "IO_Definition.h"
+   6:Task/Task_SensorInertial.c **** #include "debug_util.h"
+   7:Task/Task_SensorInertial.c **** #include "error_log.h"
+   8:Task/Task_SensorInertial.c **** #include "DataPipe/DataPipe.h"
+   9:Task/Task_SensorInertial.c **** 
+  10:Task/Task_SensorInertial.c **** #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
+  11:Task/Task_SensorInertial.c **** 
+  12:Task/Task_SensorInertial.c **** /* internal var */
+  13:Task/Task_SensorInertial.c **** DataPipeObj_TypeDef IMU_Smp_DataPipe;
+  14:Task/Task_SensorInertial.c **** static Task_SensorInertial_State TaskInertial_State = Task_SensorInertial_Core;
+  15:Task/Task_SensorInertial.c **** static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
+  16:Task/Task_SensorInertial.c **** static SrvIMU_UnionData_TypeDef PriIMU_Data __attribute__((section(".Perph_Section")));
+  17:Task/Task_SensorInertial.c **** static SrvIMU_UnionData_TypeDef SecIMU_Data __attribute__((section(".Perph_Section")));
+  18:Task/Task_SensorInertial.c **** 
+  19:Task/Task_SensorInertial.c **** /* internal function */
+  20:Task/Task_SensorInertial.c **** static void TaskInertical_Blink_Notification(uint16_t duration);
+  21:Task/Task_SensorInertial.c **** 
+  22:Task/Task_SensorInertial.c **** /* external function */
+  23:Task/Task_SensorInertial.c **** 
+  24:Task/Task_SensorInertial.c **** void TaskInertial_Init(void)
+  25:Task/Task_SensorInertial.c **** {
+  28              		.loc 1 25 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 70B5     		push	{r4, r5, r6, lr}
+  33              	.LCFI0:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s 			page 2
+
+
+  34              		.cfi_def_cfa_offset 16
+  35              		.cfi_offset 4, -16
+  36              		.cfi_offset 5, -12
+  37              		.cfi_offset 6, -8
+  38              		.cfi_offset 14, -4
+  26:Task/Task_SensorInertial.c ****     memset(&IMU_Smp_DataPipe, NULL, sizeof(IMU_Smp_DataPipe));
+  39              		.loc 1 26 5 view .LVU1
+  40 0002 0F4C     		ldr	r4, .L5
+  41 0004 1E22     		movs	r2, #30
+  42 0006 0021     		movs	r1, #0
+  43 0008 2046     		mov	r0, r4
+  44 000a FFF7FEFF 		bl	memset
+  45              	.LVL0:
+  27:Task/Task_SensorInertial.c ****     memset(&PriIMU_Data, NULL, sizeof(PriIMU_Data));
+  46              		.loc 1 27 5 view .LVU2
+  47 000e 0D4E     		ldr	r6, .L5+4
+  48 0010 2F25     		movs	r5, #47
+  49 0012 2A46     		mov	r2, r5
+  50 0014 0021     		movs	r1, #0
+  51 0016 3046     		mov	r0, r6
+  52 0018 FFF7FEFF 		bl	memset
+  53              	.LVL1:
+  28:Task/Task_SensorInertial.c ****     memset(&SecIMU_Data, NULL, sizeof(SecIMU_Data));
+  54              		.loc 1 28 5 view .LVU3
+  55 001c 2A46     		mov	r2, r5
+  56 001e 0021     		movs	r1, #0
+  57 0020 06F13000 		add	r0, r6, #48
+  58 0024 FFF7FEFF 		bl	memset
+  59              	.LVL2:
+  29:Task/Task_SensorInertial.c **** 
+  30:Task/Task_SensorInertial.c ****     IMU_Smp_DataPipe.data_addr = (uint32_t)&PriIMU_Data;
+  60              		.loc 1 30 5 view .LVU4
+  61              		.loc 1 30 32 is_stmt 0 view .LVU5
+  62 0028 2660     		str	r6, [r4]
+  31:Task/Task_SensorInertial.c ****     IMU_Smp_DataPipe.data_size = sizeof(PriIMU_Data);
+  63              		.loc 1 31 5 is_stmt 1 view .LVU6
+  64              		.loc 1 31 32 is_stmt 0 view .LVU7
+  65 002a A580     		strh	r5, [r4, #4]	@ movhi
+  32:Task/Task_SensorInertial.c **** 
+  33:Task/Task_SensorInertial.c ****     /* regist error */
+  34:Task/Task_SensorInertial.c ****     if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
+  66              		.loc 1 34 5 is_stmt 1 view .LVU8
+  67              		.loc 1 34 15 is_stmt 0 view .LVU9
+  68 002c 064B     		ldr	r3, .L5+8
+  69 002e 1B68     		ldr	r3, [r3]
+  70              		.loc 1 34 9 view .LVU10
+  71 0030 9847     		blx	r3
+  72              	.LVL3:
+  73              		.loc 1 34 8 view .LVU11
+  74 0032 0128     		cmp	r0, #1
+  75 0034 00D0     		beq	.L4
+  76              	.L1:
+  35:Task/Task_SensorInertial.c ****         TaskInertial_State = Task_SensorInertial_Error;
+  36:Task/Task_SensorInertial.c **** }
+  77              		.loc 1 36 1 view .LVU12
+  78 0036 70BD     		pop	{r4, r5, r6, pc}
+  79              	.L4:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s 			page 3
+
+
+  35:Task/Task_SensorInertial.c ****         TaskInertial_State = Task_SensorInertial_Error;
+  80              		.loc 1 35 9 is_stmt 1 view .LVU13
+  35:Task/Task_SensorInertial.c ****         TaskInertial_State = Task_SensorInertial_Error;
+  81              		.loc 1 35 28 is_stmt 0 view .LVU14
+  82 0038 044B     		ldr	r3, .L5+12
+  83 003a 0122     		movs	r2, #1
+  84 003c 1A70     		strb	r2, [r3]
+  85              		.loc 1 36 1 view .LVU15
+  86 003e FAE7     		b	.L1
+  87              	.L6:
+  88              		.align	2
+  89              	.L5:
+  90 0040 00000000 		.word	.LANCHOR0
+  91 0044 00000000 		.word	.LANCHOR1
+  92 0048 00000000 		.word	SrvIMU
+  93 004c 00000000 		.word	.LANCHOR2
+  94              		.cfi_endproc
+  95              	.LFE147:
+  97              		.section	.text.TaskInertical_Core,"ax",%progbits
+  98              		.align	1
+  99              		.global	TaskInertical_Core
+ 100              		.syntax unified
+ 101              		.thumb
+ 102              		.thumb_func
+ 103              		.fpu fpv5-d16
+ 105              	TaskInertical_Core:
+ 106              	.LVL4:
+ 107              	.LFB148:
+  37:Task/Task_SensorInertial.c **** 
+  38:Task/Task_SensorInertial.c **** void TaskInertical_Core(Task_Handle hdl)
+  39:Task/Task_SensorInertial.c **** {
+ 108              		.loc 1 39 1 is_stmt 1 view -0
+ 109              		.cfi_startproc
+ 110              		@ args = 0, pretend = 0, frame = 48
+ 111              		@ frame_needed = 0, uses_anonymous_args = 0
+ 112              		.loc 1 39 1 is_stmt 0 view .LVU17
+ 113 0000 70B5     		push	{r4, r5, r6, lr}
+ 114              	.LCFI1:
+ 115              		.cfi_def_cfa_offset 16
+ 116              		.cfi_offset 4, -16
+ 117              		.cfi_offset 5, -12
+ 118              		.cfi_offset 6, -8
+ 119              		.cfi_offset 14, -4
+ 120 0002 8CB0     		sub	sp, sp, #48
+ 121              	.LCFI2:
+ 122              		.cfi_def_cfa_offset 64
+  40:Task/Task_SensorInertial.c ****     DebugPin.ctl(Debug_PB5, true);
+ 123              		.loc 1 40 5 is_stmt 1 view .LVU18
+ 124              		.loc 1 40 13 is_stmt 0 view .LVU19
+ 125 0004 3E4B     		ldr	r3, .L14
+ 126 0006 5C68     		ldr	r4, [r3, #4]
+ 127              		.loc 1 40 5 view .LVU20
+ 128 0008 3E4B     		ldr	r3, .L14+4
+ 129 000a 0122     		movs	r2, #1
+ 130 000c 93E80300 		ldm	r3, {r0, r1}
+ 131              	.LVL5:
+ 132              		.loc 1 40 5 view .LVU21
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s 			page 4
+
+
+ 133 0010 A047     		blx	r4
+ 134              	.LVL6:
+  41:Task/Task_SensorInertial.c ****     switch ((uint8_t)TaskInertial_State)
+ 135              		.loc 1 41 5 is_stmt 1 view .LVU22
+ 136              		.loc 1 41 13 is_stmt 0 view .LVU23
+ 137 0012 3D4B     		ldr	r3, .L14+8
+ 138 0014 1C78     		ldrb	r4, [r3]	@ zero_extendqisi2
+ 139              		.loc 1 41 5 view .LVU24
+ 140 0016 002C     		cmp	r4, #0
+ 141 0018 66D1     		bne	.L8
+  42:Task/Task_SensorInertial.c ****     {
+  43:Task/Task_SensorInertial.c ****     case Task_SensorInertial_Core:
+  44:Task/Task_SensorInertial.c ****         // TaskInertical_Blink_Notification(100);
+  45:Task/Task_SensorInertial.c ****         if(SrvIMU.sample())
+ 142              		.loc 1 45 9 is_stmt 1 view .LVU25
+ 143              		.loc 1 45 18 is_stmt 0 view .LVU26
+ 144 001a 3C4B     		ldr	r3, .L14+12
+ 145 001c 5B68     		ldr	r3, [r3, #4]
+ 146              		.loc 1 45 12 view .LVU27
+ 147 001e 9847     		blx	r3
+ 148              	.LVL7:
+ 149              		.loc 1 45 11 view .LVU28
+ 150 0020 0028     		cmp	r0, #0
+ 151 0022 61D0     		beq	.L8
+  46:Task/Task_SensorInertial.c ****         {
+  47:Task/Task_SensorInertial.c ****             PriIMU_Data.data = SrvIMU.get_data(SrvIMU_PriModule);
+ 152              		.loc 1 47 13 is_stmt 1 view .LVU29
+ 153              		.loc 1 47 38 is_stmt 0 view .LVU30
+ 154 0024 394B     		ldr	r3, .L14+12
+ 155 0026 9B68     		ldr	r3, [r3, #8]
+ 156              		.loc 1 47 32 view .LVU31
+ 157 0028 0121     		movs	r1, #1
+ 158 002a 6846     		mov	r0, sp
+ 159 002c 9847     		blx	r3
+ 160              	.LVL8:
+ 161 002e EC46     		mov	ip, sp
+ 162 0030 374D     		ldr	r5, .L14+16
+ 163 0032 08AE     		add	r6, sp, #32
+ 164              	.L9:
+ 165 0034 AE46     		mov	lr, r5
+ 166 0036 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 167 003a DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 168 003e DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 169 0042 DCF80C30 		ldr	r3, [ip, #12]	@ unaligned
+ 170 0046 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 171 004a 0CF1100C 		add	ip, ip, #16
+ 172 004e 7546     		mov	r5, lr
+ 173 0050 B445     		cmp	ip, r6
+ 174 0052 EFD1     		bne	.L9
+ 175 0054 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 176 0058 DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 177 005c DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 178 0060 07C5     		stmia	r5!, {r0, r1, r2}
+ 179 0062 BCF80C20 		ldrh	r2, [ip, #12]	@ unaligned
+ 180 0066 9CF80E30 		ldrb	r3, [ip, #14]	@ zero_extendqisi2
+ 181 006a 2A80     		strh	r2, [r5]	@ unaligned
+ 182 006c AB70     		strb	r3, [r5, #2]
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s 			page 5
+
+
+  48:Task/Task_SensorInertial.c ****             SecIMU_Data.data = SrvIMU.get_data(SrvIMU_SecModule);
+ 183              		.loc 1 48 13 is_stmt 1 view .LVU32
+ 184              		.loc 1 48 38 is_stmt 0 view .LVU33
+ 185 006e 274B     		ldr	r3, .L14+12
+ 186 0070 9B68     		ldr	r3, [r3, #8]
+ 187              		.loc 1 48 32 view .LVU34
+ 188 0072 0221     		movs	r1, #2
+ 189 0074 6846     		mov	r0, sp
+ 190 0076 9847     		blx	r3
+ 191              	.LVL9:
+ 192 0078 EC46     		mov	ip, sp
+ 193 007a 264D     		ldr	r5, .L14+20
+ 194 007c 08AE     		add	r6, sp, #32
+ 195              	.L10:
+ 196 007e AE46     		mov	lr, r5
+ 197 0080 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 198 0084 DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 199 0088 DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 200 008c DCF80C30 		ldr	r3, [ip, #12]	@ unaligned
+ 201 0090 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 202 0094 0CF1100C 		add	ip, ip, #16
+ 203 0098 7546     		mov	r5, lr
+ 204 009a B445     		cmp	ip, r6
+ 205 009c EFD1     		bne	.L10
+ 206 009e DCF80000 		ldr	r0, [ip]	@ unaligned
+ 207 00a2 DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 208 00a6 DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 209 00aa 07C5     		stmia	r5!, {r0, r1, r2}
+ 210 00ac BCF80C20 		ldrh	r2, [ip, #12]	@ unaligned
+ 211 00b0 9CF80E30 		ldrb	r3, [ip, #14]	@ zero_extendqisi2
+ 212 00b4 2A80     		strh	r2, [r5]	@ unaligned
+ 213 00b6 AB70     		strb	r3, [r5, #2]
+  49:Task/Task_SensorInertial.c **** 
+  50:Task/Task_SensorInertial.c ****             for(uint8_t chk = 0; chk < sizeof(PriIMU_Data) - sizeof(uint16_t); chk++)
+ 214              		.loc 1 50 13 is_stmt 1 view .LVU35
+ 215              	.LBB2:
+ 216              		.loc 1 50 17 view .LVU36
+ 217              	.LVL10:
+ 218              		.loc 1 50 13 is_stmt 0 view .LVU37
+ 219 00b8 10E0     		b	.L11
+ 220              	.LVL11:
+ 221              	.L12:
+  51:Task/Task_SensorInertial.c ****             {
+  52:Task/Task_SensorInertial.c ****                 PriIMU_Data.data.chk_sum += PriIMU_Data.buff[chk];
+ 222              		.loc 1 52 17 is_stmt 1 discriminator 3 view .LVU38
+ 223              		.loc 1 52 61 is_stmt 0 discriminator 3 view .LVU39
+ 224 00ba 154B     		ldr	r3, .L14+16
+ 225 00bc 1A5D     		ldrb	r2, [r3, r4]	@ zero_extendqisi2
+ 226              		.loc 1 52 42 discriminator 3 view .LVU40
+ 227 00be B3F82D10 		ldrh	r1, [r3, #45]	@ unaligned
+ 228 00c2 0A44     		add	r2, r2, r1
+ 229 00c4 A3F82D20 		strh	r2, [r3, #45]	@ unaligned
+  53:Task/Task_SensorInertial.c ****                 SecIMU_Data.data.chk_sum += SecIMU_Data.buff[chk];
+ 230              		.loc 1 53 17 is_stmt 1 discriminator 3 view .LVU41
+ 231              		.loc 1 53 61 is_stmt 0 discriminator 3 view .LVU42
+ 232 00c8 1A19     		adds	r2, r3, r4
+ 233 00ca 92F83020 		ldrb	r2, [r2, #48]	@ zero_extendqisi2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s 			page 6
+
+
+ 234              		.loc 1 53 42 discriminator 3 view .LVU43
+ 235 00ce B3F85D10 		ldrh	r1, [r3, #93]	@ unaligned
+ 236 00d2 0A44     		add	r2, r2, r1
+ 237 00d4 A3F85D20 		strh	r2, [r3, #93]	@ unaligned
+  50:Task/Task_SensorInertial.c ****             {
+ 238              		.loc 1 50 80 is_stmt 1 discriminator 3 view .LVU44
+  50:Task/Task_SensorInertial.c ****             {
+ 239              		.loc 1 50 83 is_stmt 0 discriminator 3 view .LVU45
+ 240 00d8 0134     		adds	r4, r4, #1
+ 241              	.LVL12:
+  50:Task/Task_SensorInertial.c ****             {
+ 242              		.loc 1 50 83 discriminator 3 view .LVU46
+ 243 00da E4B2     		uxtb	r4, r4
+ 244              	.LVL13:
+ 245              	.L11:
+  50:Task/Task_SensorInertial.c ****             {
+ 246              		.loc 1 50 34 is_stmt 1 discriminator 1 view .LVU47
+  50:Task/Task_SensorInertial.c ****             {
+ 247              		.loc 1 50 13 is_stmt 0 discriminator 1 view .LVU48
+ 248 00dc 2C2C     		cmp	r4, #44
+ 249 00de ECD9     		bls	.L12
+ 250              	.LBE2:
+  54:Task/Task_SensorInertial.c ****             }
+  55:Task/Task_SensorInertial.c **** 
+  56:Task/Task_SensorInertial.c ****             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);  /* to Log task */
+ 251              		.loc 1 56 13 is_stmt 1 view .LVU49
+ 252 00e0 0D49     		ldr	r1, .L14+24
+ 253 00e2 0E48     		ldr	r0, .L14+28
+ 254 00e4 FFF7FEFF 		bl	DataPipe_SendTo
+ 255              	.LVL14:
+ 256              	.L8:
+  57:Task/Task_SensorInertial.c ****             // DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ptl_DataPipe);  /* to protocol task */
+  58:Task/Task_SensorInertial.c ****         }
+  59:Task/Task_SensorInertial.c ****         break;
+  60:Task/Task_SensorInertial.c **** 
+  61:Task/Task_SensorInertial.c ****     case Task_SensorInertial_Error:
+  62:Task/Task_SensorInertial.c ****         break;
+  63:Task/Task_SensorInertial.c **** 
+  64:Task/Task_SensorInertial.c ****     default:
+  65:Task/Task_SensorInertial.c ****         break;
+  66:Task/Task_SensorInertial.c ****     }
+  67:Task/Task_SensorInertial.c **** 
+  68:Task/Task_SensorInertial.c ****     SrvIMU.error_proc();
+ 257              		.loc 1 68 5 view .LVU50
+ 258              		.loc 1 68 11 is_stmt 0 view .LVU51
+ 259 00e8 084B     		ldr	r3, .L14+12
+ 260 00ea DB68     		ldr	r3, [r3, #12]
+ 261              		.loc 1 68 5 view .LVU52
+ 262 00ec 9847     		blx	r3
+ 263              	.LVL15:
+  69:Task/Task_SensorInertial.c ****     DebugPin.ctl(Debug_PB5, false);
+ 264              		.loc 1 69 5 is_stmt 1 view .LVU53
+ 265              		.loc 1 69 13 is_stmt 0 view .LVU54
+ 266 00ee 044B     		ldr	r3, .L14
+ 267 00f0 5C68     		ldr	r4, [r3, #4]
+ 268              		.loc 1 69 5 view .LVU55
+ 269 00f2 044B     		ldr	r3, .L14+4
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s 			page 7
+
+
+ 270 00f4 0022     		movs	r2, #0
+ 271 00f6 93E80300 		ldm	r3, {r0, r1}
+ 272 00fa A047     		blx	r4
+ 273              	.LVL16:
+  70:Task/Task_SensorInertial.c **** }
+ 274              		.loc 1 70 1 view .LVU56
+ 275 00fc 0CB0     		add	sp, sp, #48
+ 276              	.LCFI3:
+ 277              		.cfi_def_cfa_offset 16
+ 278              		@ sp needed
+ 279 00fe 70BD     		pop	{r4, r5, r6, pc}
+ 280              	.L15:
+ 281              		.align	2
+ 282              	.L14:
+ 283 0100 00000000 		.word	DebugPin
+ 284 0104 00000000 		.word	Debug_PB5
+ 285 0108 00000000 		.word	.LANCHOR2
+ 286 010c 00000000 		.word	SrvIMU
+ 287 0110 00000000 		.word	.LANCHOR1
+ 288 0114 30000000 		.word	.LANCHOR1+48
+ 289 0118 00000000 		.word	IMU_Log_DataPipe
+ 290 011c 00000000 		.word	.LANCHOR0
+ 291              		.cfi_endproc
+ 292              	.LFE148:
+ 294              		.global	IMU_Smp_DataPipe
+ 295              		.section	.Perph_Section,"aw"
+ 296              		.align	2
+ 297              		.set	.LANCHOR1,. + 0
+ 300              	PriIMU_Data:
+ 301 0000 00000000 		.space	47
+ 301      00000000 
+ 301      00000000 
+ 301      00000000 
+ 301      00000000 
+ 302 002f 00       		.space	1
+ 305              	SecIMU_Data:
+ 306 0030 00000000 		.space	47
+ 306      00000000 
+ 306      00000000 
+ 306      00000000 
+ 306      00000000 
+ 307              		.section	.bss.IMU_Smp_DataPipe,"aw",%nobits
+ 308              		.align	2
+ 309              		.set	.LANCHOR0,. + 0
+ 312              	IMU_Smp_DataPipe:
+ 313 0000 00000000 		.space	30
+ 313      00000000 
+ 313      00000000 
+ 313      00000000 
+ 313      00000000 
+ 314              		.section	.bss.TaskInertial_State,"aw",%nobits
+ 315              		.set	.LANCHOR2,. + 0
+ 318              	TaskInertial_State:
+ 319 0000 00       		.space	1
+ 320              		.text
+ 321              	.Letext0:
+ 322              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s 			page 8
+
+
+ 323              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 324              		.file 4 "System/runtime/runtime.h"
+ 325              		.file 5 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 326              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 327              		.file 7 "System/scheduler/scheduler.h"
+ 328              		.file 8 "Service/imu_data.h"
+ 329              		.file 9 "Service/SrvMPU_Sample.h"
+ 330              		.file 10 "Task/Task_SensorInertial.h"
+ 331              		.file 11 "Bsp/Bsp_GPIO.h"
+ 332              		.file 12 "debug/debug_util.h"
+ 333              		.file 13 "IO_Def/IO_Definition.h"
+ 334              		.file 14 "Common/error_log.h"
+ 335              		.file 15 "System/DataPipe/DataPipe.h"
+ 336              		.file 16 "<built-in>"
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 Task_SensorInertial.c
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:17     .text.TaskInertial_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:25     .text.TaskInertial_Init:0000000000000000 TaskInertial_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:90     .text.TaskInertial_Init:0000000000000040 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:98     .text.TaskInertical_Core:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:105    .text.TaskInertical_Core:0000000000000000 TaskInertical_Core
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:283    .text.TaskInertical_Core:0000000000000100 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:312    .bss.IMU_Smp_DataPipe:0000000000000000 IMU_Smp_DataPipe
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:296    .Perph_Section:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:300    .Perph_Section:0000000000000000 PriIMU_Data
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:305    .Perph_Section:0000000000000030 SecIMU_Data
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:308    .bss.IMU_Smp_DataPipe:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:318    .bss.TaskInertial_State:0000000000000000 TaskInertial_State
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//ccgqnbk1.s:319    .bss.TaskInertial_State:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+memset
+SrvIMU
+DataPipe_SendTo
+DebugPin
+Debug_PB5
+IMU_Log_DataPipe
