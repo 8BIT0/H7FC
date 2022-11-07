@@ -1,13 +1,9 @@
 #ifndef __DEV_RECEIVER_H
 #define __DEV_RECEIVER_H
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
+#include "Dev_Sbus.h"
+#include "Dev_CRSF.h"
 
-#define SBUS_FRAME_BYTE_SIZE 25
-#define SBUS_FRAME_HEADER 0xF0
-#define SBUS_DECODE_MASK 0x07FF
 #define CHANNEL_RANGE_MIN 950
 #define CHANNEL_RANGE_MAX 2050
 
@@ -42,20 +38,6 @@ typedef enum
 } DevRecveiver_FunctionalDef_List;
 
 #pragma pack(1)
-typedef union
-{
-    struct
-    {
-        uint8_t ch17 : 1;
-        uint8_t ch18 : 1;
-        uint8_t frame_lost : 1;
-        uint8_t fail_safe_act : 1;
-        uint8_t reserve : 4;
-    }bit;
-
-    uint8_t val;
-}DevReceiver_FuncBit_TypeDef;
-
 typedef struct
 {
     uint8_t channel_func_def[Receiver_Channel_Sum];

@@ -99,7 +99,8 @@
                 "iosfwd": "c",
                 "logfile.h": "c",
                 "stat.h": "c",
-                "file_decode.h": "c"
+                "file_decode.h": "c",
+                "dev_sbus.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
