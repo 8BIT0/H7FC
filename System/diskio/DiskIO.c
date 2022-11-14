@@ -1604,9 +1604,9 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 FileObj->info.size += remain_write;
 
                 remain_write = 0;
-
-                return true;
             }
+
+            len = 0;
         }
         else
         {

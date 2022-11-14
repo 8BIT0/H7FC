@@ -54,7 +54,7 @@ static uint8_t LogQueueBuff_Trail[MAX_FILE_SIZE_K(1) / 2] = {0};
 
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
-static void LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg);
+static bool LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg);
 static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len);
 
 void TaskLog_Init(void)
@@ -81,7 +81,7 @@ void TaskLog_Init(void)
         Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
         /* create cache queue for IMU Data */
-        if (Queue.create_auto(&IMUData_Queue, "queue imu data", MAX_FILE_SIZE_K(10)) && 
+        if (Queue.create_auto(&IMUData_Queue, "queue imu data", MAX_FILE_SIZE_K(10)) &&
             Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_L2_Buf)))
         {
             LogFile_Ready = true;
@@ -96,15 +96,19 @@ void TaskLog_Init(void)
     Os_Regist_IdleObj(&LogIdleObj, LogData_Stream, OsIdle_Callback_LogModule);
 }
 
+uint32_t log_test = 0;
+uint32_t log_test_lst = 0;
+
 static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
 {
-    if(LogFile_Ready)
+    if (LogFile_Ready)
     {
-        if(LogObj_Set_Reg._sec.IMU_Sec)
+        if (LogObj_Set_Reg._sec.IMU_Sec)
         {
             if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(4))
             {
-                LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg);
+                if (LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg))
+                    log_test++;
             }
             else
                 LogObj_Enable_Reg._sec.IMU_Sec = false;
@@ -134,17 +138,22 @@ void TaskLog_Core(Task_Handle hdl)
             DevLED.ctl(Led2, led_state);
         }
 
-        if(!LogObj_Enable_Reg._sec.IMU_Sec)
+        if (!LogObj_Enable_Reg._sec.IMU_Sec)
         {
             i = 0;
             DevLED.ctl(Led2, false);
         }
-
+        else if ((log_test_lst != 0) && (log_test_lst == log_test))
+        {
+            i = 0;
+            DevLED.ctl(Led2, true);
+        }
+        log_test_lst = log_test;
         // DebugPin.ctl(Debug_PB4, false);
     }
 }
 
-static void LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg)
+static bool LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg)
 {
     uint16_t log_size = 0;
     uint16_t queue_size = 0;
@@ -162,13 +171,15 @@ static void LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj
     else
         log_size = queue_size;
 
-    if(log_size)
+    if (log_size)
         Queue.pop(queue, LogQueueBuff_Trail, log_size);
-    
+
     log_reg->_sec.IMU_Sec = false;
 
-    if(log_size)
-        Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
+    if (log_size)
+        return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
+
+    return false;
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
@@ -178,14 +189,14 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 
     if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe) && LogObj_Enable_Reg._sec.IMU_Sec)
     {
-        if ((Queue.state(IMUData_Queue) == Queue_ok) || 
+        if ((Queue.state(IMUData_Queue) == Queue_ok) ||
             (Queue.state(IMUData_Queue) == Queue_empty))
         {
             Queue.push(&IMUData_Queue, &LogIMU_Header, LOG_HEADER_SIZE);
             Queue.push(&IMUData_Queue, (uint8_t *)(IMU_Log_DataPipe.data_addr), IMU_Log_DataPipe.data_size);
         }
 
-        if(!LogObj_Logging_Reg._sec.IMU_Sec)
+        if (!LogObj_Logging_Reg._sec.IMU_Sec)
         {
             Queue.pop_to_queue(&IMUData_Queue, &IMULog_Queue);
         }
