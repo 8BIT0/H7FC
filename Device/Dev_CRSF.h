@@ -156,6 +156,7 @@ typedef struct
 
     CRSF_Callback link_up_cb;
     CRSF_Callback link_down_cb;
+    CRSF_Callback failsafe_cb;
 }DevCRSFObj_TypeDef;
 
 typedef struct
