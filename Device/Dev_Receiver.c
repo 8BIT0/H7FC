@@ -21,6 +21,21 @@ static const uint8_t default_channle_id_list[Receiver_Channel_Sum] = {
     Receiver_ChannelID_AUX_12,
 };
 
+bool DevReceiver_Init(DevReceiverObj_TypeDef *obj)
+{
+    if(obj == NULL)
+        return false;
+
+    switch(obj->Frame_type)
+    {
+        
+        default:
+            return false;
+    }
+
+    return true;
+}
+
 void DevReceiver_Range_Check()
 {
 

@@ -3,6 +3,8 @@
 
 #include "Dev_Sbus.h"
 #include "Dev_CRSF.h"
+#include "Bsp_GPIO.h"
+#include "Bsp_Uart.h"
 
 #define CHANNEL_RANGE_MIN 950
 #define CHANNEL_RANGE_MAX 2050
