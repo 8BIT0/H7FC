@@ -153,6 +153,9 @@ typedef struct
     uint32_t update_rt;
     crsf_state_list state;
     bool failsafe;
+
+    CRSF_Callback link_up_cb;
+    CRSF_Callback link_down_cb;
 }DevCRSFObj_TypeDef;
 
 typedef struct
