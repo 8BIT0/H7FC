@@ -168,6 +168,8 @@ static bool LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj
     if (log_size)
         return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
 
+    __DSB();
+
     return false;
 }
 
