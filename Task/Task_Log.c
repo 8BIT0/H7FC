@@ -96,61 +96,50 @@ void TaskLog_Init(void)
     Os_Regist_IdleObj(&LogIdleObj, LogData_Stream, OsIdle_Callback_LogModule);
 }
 
-uint32_t log_test = 0;
-uint32_t log_test_lst = 0;
-
 static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
 {
+    static uint32_t rt = 0;
+    static uint32_t rt_lst = 0;
+    static uint32_t lst_size = 0;
+    static bool led_state = false;
+
     if (LogFile_Ready)
     {
         if (LogObj_Set_Reg._sec.IMU_Sec)
         {
-            if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(4))
+            if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(64))
             {
-                if (LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg))
-                    log_test++;
+                LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg);
+                rt = Get_CurrentRunningMs();
+
+                if(LogFile_Obj.info.size != lst_size)
+                {
+                    if(rt - rt_lst >= 200)
+                    {
+                        led_state = !led_state;
+                        DevLED.ctl(Led2, led_state);
+                        rt_lst = rt;
+                    }
+                }
+                else
+                    DevLED.ctl(Led2, true);
+
+                lst_size = LogFile_Obj.info.size;
             }
             else
+            {
                 LogObj_Enable_Reg._sec.IMU_Sec = false;
+                DevLED.ctl(Led2, false);
+            }
         }
     }
 }
 
 void TaskLog_Core(Task_Handle hdl)
 {
-    static uint8_t i = 0;
-    static bool led_state = false;
-    static uint32_t t;
+    // DebugPin.ctl(Debug_PB4, true);
 
-    t = Get_CurrentRunningMs();
-
-    if (LogFile_Ready)
-    {
-        // DebugPin.ctl(Debug_PB4, true);
-        if (i < 10)
-        {
-            i++;
-        }
-        else
-        {
-            i = 0;
-            led_state = !led_state;
-            DevLED.ctl(Led2, led_state);
-        }
-
-        if (!LogObj_Enable_Reg._sec.IMU_Sec)
-        {
-            i = 0;
-            DevLED.ctl(Led2, false);
-        }
-        else if ((log_test_lst != 0) && (log_test_lst == log_test))
-        {
-            i = 0;
-            DevLED.ctl(Led2, true);
-        }
-        log_test_lst = log_test;
-        // DebugPin.ctl(Debug_PB4, false);
-    }
+    // DebugPin.ctl(Debug_PB4, false);
 }
 
 static bool LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg)
