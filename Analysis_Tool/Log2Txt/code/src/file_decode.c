@@ -1,6 +1,9 @@
 #include "../inc/var_def.h"
 #include "../inc/file_decode.h"
 
+uint64_t err = 0;
+uint64_t done = 0;
+
 static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t size);
 
 bool LogFile_Decode(LogFileObj_TypeDef *file)
@@ -57,9 +60,6 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
 
     return true;
 }
-
-uint64_t err = 0;
-uint64_t done = 0;
 
 static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t size)
 {
