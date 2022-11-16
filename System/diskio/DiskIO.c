@@ -1501,14 +1501,19 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                             /* link up cluster */
                             while(nxt_cluster_item != NULL)
                             {
-                                /* File Cluster -> Free Cluster 1 -> Free Cluster 2 -> ... -> Free Cluster end */
-                                Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
+                                if(nxt_cluster_item->nxt != NULL)
+                                {
+                                    /* File Cluster -> Free Cluster 1 -> Free Cluster 2 -> ... -> Free Cluster end */
+                                    Disk_Establish_ClusterLink(FATObj, *((uint32_t *)(nxt_cluster_item->data)), *((uint32_t *)(nxt_cluster_item->nxt->data)));
 
-                                nxt_cluster_item = nxt_cluster_item->nxt;
+                                    nxt_cluster_item = nxt_cluster_item->nxt;
+                                }
+                                else
+                                    break;
                             }
 
                             /* finish establish cluster chain */
-                            Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD);
+                            Disk_Establish_ClusterLink(FATObj, *((uint32_t *)(nxt_cluster_item->data)), DISK_FAT_CLUSTER_END_MIN_WORLD);
 
                             /* update file size */
                             Disk_FileSize_Update(file_tmp);
