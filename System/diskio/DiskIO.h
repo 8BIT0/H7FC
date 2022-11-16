@@ -6,6 +6,7 @@
 #include <string.h>
 #include "system_cfg.h"
 #include "Dev_Card.h"
+#include "linked_list.h"
 
 #define ROOT_CLUSTER_ADDR 2
 
@@ -298,6 +299,9 @@ typedef struct
     uint64_t cursor_pos;
 
     uint16_t remain_byte_in_sec;
+
+    /* cluster_list_addr real type is list_obj`s pointer */
+    uint32_t cluster_list_addr;
 } Disk_FileObj_TypeDef;
 
 typedef struct
@@ -313,7 +317,7 @@ typedef struct
 {
     bool (*init)(Disk_FATFileSys_TypeDef *FATObj, Disk_Printf_Callback Callback);
     uint32_t (*create_folder)(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
-    Disk_FileObj_TypeDef (*create_file)(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster);
+    Disk_FileObj_TypeDef (*create_file)(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster, uint32_t size);
     uint32_t (*open)(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
     bool (*write)(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
     uint32_t (*get_min_write_unit)(void);

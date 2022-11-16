@@ -83,7 +83,7 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj);
 static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
 static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
-static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
+static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster, uint32_t size);
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
 static uint32_t Disk_Get_MinWriteByte(void);
 
@@ -986,7 +986,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
 
     /* Update FAT2 Table */
     sec_index += FATObj->FAT_Sections;
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    // DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     Data_Ptr = &Disk_Card_SectionBuff[sec_item_index];
     LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
@@ -1381,12 +1381,13 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
 }
 
 /* optimize return file object */
-static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster)
+static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster, uint32_t size)
 {
     Disk_FileObj_TypeDef file_tmp;
     FATCluster_Addr file_cluster;
     Disk_FFInfo_TypeDef F_Info;
     Disk_TargetMatch_TypeDef match_state;
+    uint32_t exp_cluster_cnt;
 
     memset(&match_state, NULL, sizeof(match_state));
     memset(&F_Info, NULL, sizeof(F_Info));
@@ -1413,6 +1414,21 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                 file_tmp.remain_byte_in_sec = FATObj->BytePerSection;
                 file_tmp.info_sec = match_state.sec_index;
                 file_tmp.end_sec = 0;
+
+                if (size)
+                {
+                    /* create linked list */
+                    file_tmp.cluster_list_addr = 0;
+                    (list_obj *)(file_tmp.cluster_list_addr) = MMU_Malloc(sizeof(list_obj));
+
+                    if (file_tmp.cluster_list_addr)
+                    {
+                        /* comput cluster we need */
+                        exp_cluster_cnt = size / FATObj->cluster_byte_size;
+
+                        /* search free cluster and link them */
+                    }
+                }
             }
         }
     }
