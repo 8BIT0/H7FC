@@ -300,8 +300,7 @@ typedef struct
 
     uint16_t remain_byte_in_sec;
 
-    /* cluster_list_addr real type is list_obj`s pointer */
-    uint32_t cluster_list_addr;
+    list_obj cluster_list;
 } Disk_FileObj_TypeDef;
 
 typedef struct

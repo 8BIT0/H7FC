@@ -1388,7 +1388,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
     Disk_FFInfo_TypeDef F_Info;
     Disk_TargetMatch_TypeDef match_state;
     uint32_t exp_cluster_cnt;
-    list_obj *cluster_list_tmp = NULL;
+    list_obj *cluster_list_item_tmp = NULL;
     uint32_t *cluster_id_ptr = NULL;
 
     memset(&match_state, NULL, sizeof(match_state));
@@ -1421,39 +1421,24 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                 {
                     /* comput cluster we need */
                     exp_cluster_cnt = size / FATObj->cluster_byte_size;
-
-                    /* create linked list */
-                    file_tmp.cluster_list_addr = 0;
-                    (list_obj *)(file_tmp.cluster_list_addr) = MMU_Malloc(sizeof(list_obj));
-                    cluster_id_ptr = MMU_Malloc(sizeof(uint32_t));
                     
                     Disk_Printf("    [Prepare File]\r\n");
                     Disk_Printf("    [File Info] FileName:           %s\r\n", file);
                     Disk_Printf("    [File Info] Requir Cluster Num: %d\r\n", exp_cluster_cnt);
 
-                    if (file_tmp.cluster_list_addr && exp_cluster_cnt && cluster_id_ptr)
+                    if (exp_cluster_cnt)
                     {
-                        /* init list_obj first */
-                        cluster_list_tmp = (list_obj *)(file_tmp.cluster_list_addr);
-                        List_ItemInit(cluster_list_tmp, cluster_id_ptr);
-
                         /* search free cluster and link them */
-                        for(uint32_t i = 0; i < (exp_cluster_cnt - 1); i ++)
+                        for(uint32_t i = 0; i < exp_cluster_cnt; i ++)
                         {
                             /* create linked list item first */
-                        }
-                    }
-                    /* only for debug down below */
-                    else
-                    {
-                        if(!file_tmp.cluster_list_addr)
-                        {
-                            Disk_Printf("    [File Warning] FileObj Cluster Linked List Create Error\r\n");
-                        }
+                            cluster_list_item_tmp = (item_obj *)MMU_Malloc(sizeof(item_obj));
 
-                        if(!cluster_id_ptr)
-                        {
-                            Disk_Printf("    [File Warning] FileObj Cluster Linked List Data Pointer Create Error\r\n");
+                            /* create linked list */
+                            cluster_id_ptr = (uint32_t *)MMU_Malloc(sizeof(uint32_t));
+
+                            if((i == 0) && cluster_list_item_tmp && cluster_id_ptr)
+                                List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
                         }
                     }
                 }
