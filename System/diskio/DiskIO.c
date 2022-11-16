@@ -1391,7 +1391,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
     item_obj *lst_cluster_item = NULL;
     item_obj *nxt_cluster_item = NULL;
     uint32_t *cluster_id_ptr = NULL;
-    
+
     uint32_t lst_cluster_id = 0;
     uint32_t cur_cluster_id = 0;
 
@@ -1433,7 +1433,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                     if (exp_cluster_cnt)
                     {
                         /* search free cluster and link them */
-                        for(uint32_t i = 0; i < exp_cluster_cnt; i ++)
+                        for (uint32_t i = 0; i < exp_cluster_cnt; i++)
                         {
                             /* create linked list item first */
                             cluster_list_item_tmp = (item_obj *)MMU_Malloc(sizeof(item_obj));
@@ -1441,16 +1441,16 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                             /* create linked list */
                             cluster_id_ptr = (uint32_t *)MMU_Malloc(sizeof(uint32_t));
 
-                            if(cluster_list_item_tmp && cluster_id_ptr)
+                            if (cluster_list_item_tmp && cluster_id_ptr)
                             {
                                 /* init list item */
                                 List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
 
-                                if(i == 0)
+                                if (i == 0)
                                 {
                                     List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
                                 }
-                                
+
                                 List_Insert_Item(&file_tmp.cluster_list, cluster_list_item_tmp);
 
                                 /* get free cluster id */
@@ -1459,15 +1459,15 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
                                 lst_cluster_item = cluster_list_item_tmp;
                             }
-                            else if(lst_cluster_item)
+                            else if (lst_cluster_item)
                             {
                                 list_obj *nxt_free_item_ptr = NULL;
 
                                 /* free list item forward */
-                                while(lst_cluster_item->prv != NULL)
+                                while (lst_cluster_item->prv != NULL)
                                 {
                                     nxt_free_item_ptr = lst_cluster_item->prv;
-                                    
+
                                     List_Delete_Item(lst_cluster_item);
 
                                     MMU_Free(lst_cluster_item->data);
@@ -1489,9 +1489,8 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                                 break;
                             }
                         }
-                    
 
-                        if(file_tmp.fast_mode)
+                        if (file_tmp.fast_mode)
                         {
                             Disk_Printf("    [File Info] Establish the Cluster Chain\r\n");
                             file_tmp.info.size = file_tmp.total_byte_remain;
@@ -1499,9 +1498,9 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                             Disk_Update_File_Cluster(file_tmp, cluster);
 
                             /* link up cluster */
-                            while(nxt_cluster_item != NULL)
+                            while (nxt_cluster_item != NULL)
                             {
-                                if(nxt_cluster_item->nxt != NULL)
+                                if (nxt_cluster_item->nxt != NULL)
                                 {
                                     /* File Cluster -> Free Cluster 1 -> Free Cluster 2 -> ... -> Free Cluster end */
                                     Disk_Establish_ClusterLink(FATObj, *((uint32_t *)(nxt_cluster_item->data)), *((uint32_t *)(nxt_cluster_item->nxt->data)));
