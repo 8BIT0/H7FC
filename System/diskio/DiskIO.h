@@ -300,7 +300,10 @@ typedef struct
 
     uint16_t remain_byte_in_sec;
 
+    bool fast_mode;
     list_obj cluster_list;
+    item_obj *cur_cluster_item;
+    uint32_t total_byte_remain;
 } Disk_FileObj_TypeDef;
 
 typedef struct

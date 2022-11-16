@@ -1419,7 +1419,9 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                 {
                     /* comput cluster we need */
                     exp_cluster_cnt = size / FATObj->cluster_byte_size;
-                    
+                    file_tmp.fast_mode = true;
+                    file_tmp.total_byte_remain = size;
+
                     Disk_Printf("    [Prepare File]\r\n");
                     Disk_Printf("    [File Info] FileName:           %s\r\n", file);
                     Disk_Printf("    [File Info] Requir Cluster Num: %d\r\n", exp_cluster_cnt);
@@ -1446,6 +1448,11 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                                 }
                                 
                                 List_Insert_Item(&file_tmp.cluster_list, cluster_list_item_tmp);
+
+                                /* get free cluster id */
+                                *cluster_id_ptr = FATObj->free_cluster;
+                                Disk_Update_FreeCluster(FATObj);
+
                                 lst_cluster_item = cluster_list_item_tmp;
                             }
                             else if(lst_cluster_item)
@@ -1465,16 +1472,24 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                                     lst_cluster_item = nxt_free_item_ptr;
                                 }
 
+                                file_tmp.fast_mode = false;
+                                file_tmp.total_byte_remain = 0;
                                 break;
                             }
                             else
                             {
                                 MMU_Free(cluster_id_ptr);
                                 MMU_Free(cluster_list_item_tmp);
-
+                                file_tmp.fast_mode = false;
+                                file_tmp.total_byte_remain = 0;
                                 break;
                             }
                         }
+                    }
+
+                    if(file_tmp.fast_mode)
+                    {
+                        /* set file size */
                     }
                 }
             }
