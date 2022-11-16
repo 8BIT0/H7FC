@@ -1388,6 +1388,8 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
     Disk_FFInfo_TypeDef F_Info;
     Disk_TargetMatch_TypeDef match_state;
     uint32_t exp_cluster_cnt;
+    list_obj *cluster_list_tmp = NULL;
+    uint32_t *cluster_id_ptr = NULL;
 
     memset(&match_state, NULL, sizeof(match_state));
     memset(&F_Info, NULL, sizeof(F_Info));
@@ -1417,16 +1419,29 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
                 if (size)
                 {
+                    /* comput cluster we need */
+                    exp_cluster_cnt = size / FATObj->cluster_byte_size;
+
                     /* create linked list */
                     file_tmp.cluster_list_addr = 0;
                     (list_obj *)(file_tmp.cluster_list_addr) = MMU_Malloc(sizeof(list_obj));
+                    cluster_id_ptr = MMU_Malloc(sizeof(uint32_t));
+                    
+                    Disk_Printf("    [Creating File]\r\n");
+                    Disk_Printf("    [File Info] FileName:           %s\r\n", file);
+                    Disk_Printf("    [File Info] Requir Cluster Num: %d\r\n", exp_cluster_cnt);
 
-                    if (file_tmp.cluster_list_addr)
+                    if (file_tmp.cluster_list_addr && exp_cluster_cnt && cluster_id_ptr)
                     {
-                        /* comput cluster we need */
-                        exp_cluster_cnt = size / FATObj->cluster_byte_size;
+                        /* init list_obj first */
+                        cluster_list_tmp = (list_obj *)(file_tmp.cluster_list_addr);
+                        List_ItemInit(cluster_list_tmp, cluster_id_ptr);
 
                         /* search free cluster and link them */
+                        for(uint32_t i = 0; i < exp_cluster_cnt; i ++)
+                        {
+                            /* create linked list item first */
+                        }
                     }
                 }
             }
