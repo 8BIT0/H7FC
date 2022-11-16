@@ -1453,7 +1453,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                                 list_obj *nxt_free_item_ptr = NULL;
 
                                 /* free list item forward */
-                                while(nxt_free_item_ptr->prv != NULL)
+                                while(lst_cluster_item->prv != NULL)
                                 {
                                     nxt_free_item_ptr = lst_cluster_item->prv;
                                     
