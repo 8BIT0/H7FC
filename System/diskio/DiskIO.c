@@ -1427,7 +1427,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                     (list_obj *)(file_tmp.cluster_list_addr) = MMU_Malloc(sizeof(list_obj));
                     cluster_id_ptr = MMU_Malloc(sizeof(uint32_t));
                     
-                    Disk_Printf("    [Creating File]\r\n");
+                    Disk_Printf("    [Prepare File]\r\n");
                     Disk_Printf("    [File Info] FileName:           %s\r\n", file);
                     Disk_Printf("    [File Info] Requir Cluster Num: %d\r\n", exp_cluster_cnt);
 
@@ -1438,9 +1438,22 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                         List_ItemInit(cluster_list_tmp, cluster_id_ptr);
 
                         /* search free cluster and link them */
-                        for(uint32_t i = 0; i < exp_cluster_cnt; i ++)
+                        for(uint32_t i = 0; i < (exp_cluster_cnt - 1); i ++)
                         {
                             /* create linked list item first */
+                        }
+                    }
+                    /* only for debug down below */
+                    else
+                    {
+                        if(!file_tmp.cluster_list_addr)
+                        {
+                            Disk_Printf("    [File Warning] FileObj Cluster Linked List Create Error\r\n");
+                        }
+
+                        if(!cluster_id_ptr)
+                        {
+                            Disk_Printf("    [File Warning] FileObj Cluster Linked List Data Pointer Create Error\r\n");
                         }
                     }
                 }
