@@ -1391,6 +1391,9 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
     item_obj *lst_cluster_item = NULL;
     item_obj *nxt_cluster_item = NULL;
     uint32_t *cluster_id_ptr = NULL;
+    
+    uint32_t lst_cluster_id = 0;
+    uint32_t cur_cluster_id = 0;
 
     memset(&match_state, NULL, sizeof(match_state));
     memset(&F_Info, NULL, sizeof(F_Info));
@@ -1493,14 +1496,19 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                             Disk_Printf("    [File Info] Establish the Cluster Chain\r\n");
                             file_tmp.info.size = file_tmp.total_byte_remain;
                             nxt_cluster_item = &(file_tmp.cluster_list);
+                            Disk_Update_File_Cluster(file_tmp, cluster);
 
                             /* link up cluster */
                             while(nxt_cluster_item != NULL)
                             {
                                 /* File Cluster -> Free Cluster 1 -> Free Cluster 2 -> ... -> Free Cluster end */
+                                Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
 
                                 nxt_cluster_item = nxt_cluster_item->nxt;
                             }
+
+                            /* finish establish cluster chain */
+                            Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD);
 
                             /* update file size */
                             Disk_FileSize_Update(file_tmp);
