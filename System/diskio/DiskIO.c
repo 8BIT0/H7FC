@@ -1440,11 +1440,11 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                                 /* init list item */
                                 List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
 
-                                if((i == 0) && cluster_list_item_tmp && cluster_id_ptr)
+                                if(i == 0)
                                 {
                                     List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
                                 }
-
+                                
                                 List_Insert_Item(&file_tmp.cluster_list, cluster_list_item_tmp);
                                 lst_cluster_item = cluster_list_item_tmp;
                             }
