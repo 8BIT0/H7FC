@@ -1467,6 +1467,13 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
                                 break;
                             }
+                            else
+                            {
+                                MMU_Free(cluster_id_ptr);
+                                MMU_Free(cluster_list_item_tmp);
+
+                                break;
+                            }
                         }
                     }
                 }
