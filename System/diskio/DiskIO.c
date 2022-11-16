@@ -1384,11 +1384,11 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
 static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster, uint32_t size)
 {
     Disk_FileObj_TypeDef file_tmp;
-    FATCluster_Addr file_cluster;
     Disk_FFInfo_TypeDef F_Info;
     Disk_TargetMatch_TypeDef match_state;
     uint32_t exp_cluster_cnt;
     list_obj *cluster_list_item_tmp = NULL;
+    list_obj *lst_cluster_item = NULL;
     uint32_t *cluster_id_ptr = NULL;
 
     memset(&match_state, NULL, sizeof(match_state));
@@ -1397,9 +1397,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
     if ((file != NULL) && (strlen(file) < 12))
     {
-        file_cluster = Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, file, cluster);
-
-        if (file_cluster)
+        if (Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, file, cluster))
         {
             match_state = Disk_MatchTaget(FATObj, file, Disk_DataType_File, &F_Info, cluster);
 
@@ -1437,8 +1435,38 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                             /* create linked list */
                             cluster_id_ptr = (uint32_t *)MMU_Malloc(sizeof(uint32_t));
 
-                            if((i == 0) && cluster_list_item_tmp && cluster_id_ptr)
-                                List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
+                            if(cluster_list_item_tmp && cluster_id_ptr)
+                            {
+                                /* init list item */
+                                List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
+
+                                if((i == 0) && cluster_list_item_tmp && cluster_id_ptr)
+                                {
+                                    List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
+                                }
+
+                                List_Insert_Item(&file_tmp.cluster_list, cluster_list_item_tmp);
+                                lst_cluster_item = cluster_list_item_tmp;
+                            }
+                            else if(lst_cluster_item)
+                            {
+                                list_obj *nxt_free_item_ptr = NULL;
+
+                                /* free list item forward */
+                                while(nxt_free_item_ptr->prv != NULL)
+                                {
+                                    nxt_free_item_ptr = lst_cluster_item->prv;
+                                    
+                                    List_Delete_Item(lst_cluster_item);
+
+                                    MMU_Free(lst_cluster_item->data);
+                                    MMU_Free(lst_cluster_item);
+
+                                    lst_cluster_item = nxt_free_item_ptr;
+                                }
+
+                                break;
+                            }
                         }
                     }
                 }
