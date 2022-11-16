@@ -1491,6 +1491,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                         if(file_tmp.fast_mode)
                         {
                             Disk_Printf("    [File Info] Establish the Cluster Chain\r\n");
+                            file_tmp.info.size = file_tmp.total_byte_remain;
                             nxt_cluster_item = &(file_tmp.cluster_list);
 
                             /* link up cluster */
@@ -1501,7 +1502,8 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                                 nxt_cluster_item = nxt_cluster_item->nxt;
                             }
 
-                            /* set file size */
+                            /* update file size */
+                            Disk_FileSize_Update(file_tmp);
                         }
                     }
                 }
