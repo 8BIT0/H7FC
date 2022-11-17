@@ -77,7 +77,7 @@ void TaskLog_Init(void)
     if (Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
     {
         LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, LOG_FOLDER, ROOT_CLUSTER_ADDR);
-        LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster);
+        LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M(16));
         Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
         /* create cache queue for IMU Data */
