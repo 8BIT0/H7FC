@@ -1678,7 +1678,6 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 /* need measure the cast of operation down below */
 static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
-    FATCluster_Addr lst_file_cluster = 0;
     uint16_t write_len = 0;
     uint16_t remain_write = 0;
     uint16_t base_len = len;
@@ -1740,6 +1739,8 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
             {
                 if(!FileObj->fast_mode)
                 {
+                    FATCluster_Addr lst_file_cluster = 0;
+
                     lst_file_cluster = FileObj->info.start_cluster;
 
                     Disk_Update_FreeCluster(FATObj);
@@ -1760,7 +1761,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                 }
                 else
                 {
-                    
+
                 }
             }
 
