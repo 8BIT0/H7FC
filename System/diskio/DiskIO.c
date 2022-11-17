@@ -1515,6 +1515,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
                             /* finish establish cluster chain */
                             Disk_Establish_ClusterLink(FATObj, *((uint32_t *)(nxt_cluster_item->data)), DISK_FAT_CLUSTER_END_MIN_WORLD);
+                            file_tmp.cur_cluster_item = &(file_tmp.cluster_list);
 
                             /* update file size */
                             Disk_FileSize_Update(&file_tmp);
