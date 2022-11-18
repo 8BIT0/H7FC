@@ -132,6 +132,13 @@ typedef enum
     Disk_FileObj_Busy,
 } Disk_FileObj_State;
 
+typedef enum
+{
+    Disk_Write_Error = 0,
+    Disk_Write_Contiguous,
+    Disk_Write_Finish,
+}Disk_Write_State;
+
 #pragma pack(1)
 typedef union
 {
@@ -321,7 +328,7 @@ typedef struct
     uint32_t (*create_folder)(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
     Disk_FileObj_TypeDef (*create_file)(Disk_FATFileSys_TypeDef *FATObj, const char *file, FATCluster_Addr cluster, uint32_t size);
     uint32_t (*open)(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
-    bool (*write)(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
+    Disk_Write_State (*write)(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
     uint32_t (*get_min_write_unit)(void);
 } DiskFS_TypeDef;
 

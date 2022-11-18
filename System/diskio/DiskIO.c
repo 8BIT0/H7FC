@@ -84,7 +84,7 @@ static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj);
 static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj);
 static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster);
 static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, const char *name, FATCluster_Addr cluster, uint32_t size);
-static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
+static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len);
 static uint32_t Disk_Get_MinWriteByte(void);
 static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_Addr cluster);
 static void Disk_FileSize_Update(Disk_FileObj_TypeDef *FileObj);
@@ -1677,7 +1677,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 }
 
 /* need measure the cast of operation down below */
-static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
+static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
     uint16_t write_len = 0;
     uint16_t remain_write = 0;
@@ -1685,13 +1685,18 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
     uint32_t cluster_end_section = 0;
 
     if ((FATObj == NULL) || (!FATObj->init) || (FileObj == NULL) || (p_data == NULL) || (len == 0) || (FileObj->cursor_pos > FATObj->BytePerSection))
-        return false;
+        return Disk_Write_Error;
 
     if (memcmp(FileObj->info.name, NULL, sizeof(FileObj->info.name)) == 0)
-        return false;
+        return Disk_Write_Error;
 
     if (FileObj->info.size == 0)
-        return Disk_WriteFile_From_Head(FATObj, FileObj, p_data, len);
+    {
+        if (Disk_WriteFile_From_Head(FATObj, FileObj, p_data, len))
+            return Disk_Write_Contiguous;
+
+        return Disk_Write_Error;
+    }
 
     cluster_end_section = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster) + FATObj->SecPerCluster;
 
@@ -1755,15 +1760,20 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
                     /* establish cluster link */
                     Disk_Establish_ClusterLink(FATObj, lst_file_cluster, FileObj->info.start_cluster);
                     Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD);
-
-                    /* update end section */
-                    FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
-                    cluster_end_section = FileObj->end_sec + FATObj->SecPerCluster;
                 }
                 else
                 {
-
+                    if(FileObj->cur_cluster_item->nxt)
+                    {
+                        FileObj->cur_cluster_item = FileObj->cur_cluster_item->nxt;
+                    }
+                    else
+                        return Disk_Write_Finish;
                 }
+
+                /* update end section */
+                FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
+                cluster_end_section = FileObj->end_sec + FATObj->SecPerCluster;
             }
 
             DebugPin.ctl(Debug_PB4, false);
@@ -1778,7 +1788,7 @@ static bool Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_
 
     } while (remain_write != 0);
 
-    return true;
+    return Disk_Write_Contiguous;
 }
 
 static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *dir_path, const char *name, Disk_FileObj_TypeDef *FileObj)
