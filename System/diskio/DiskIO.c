@@ -1766,6 +1766,7 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
                     if(FileObj->cur_cluster_item->nxt)
                     {
                         FileObj->cur_cluster_item = FileObj->cur_cluster_item->nxt;
+                        FileObj->info.start_cluster = (uint32_t)*(FileObj->cur_cluster_item->data);
                     }
                     else
                         return Disk_Write_Finish;
