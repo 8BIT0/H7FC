@@ -1427,12 +1427,12 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                     file_tmp.total_byte_remain = size;
                     file_tmp.info.size = size;
 
-                    Disk_Printf("    [Prepare File]\r\n");
-                    Disk_Printf("    [File Info] FileName:           %s\r\n", file);
-                    Disk_Printf("    [File Info] Requir Cluster Num: %d\r\n", exp_cluster_cnt);
-
                     if (exp_cluster_cnt)
                     {
+                        Disk_Printf("    [Prepare File]\r\n");
+                        Disk_Printf("    [File Info] FileName:           %s\r\n", file);
+                        Disk_Printf("    [File Info] Requir Cluster Num: %d\r\n", exp_cluster_cnt);
+
                         /* create linked list item first */
                         cluster_list_item_tmp = (item_obj *)MMU_Malloc(sizeof(item_obj));
                         /* create linked list */
@@ -1441,8 +1441,6 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                         List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
                         List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
                         Disk_Update_File_Cluster(&file_tmp, cluster);
-                        /* update file size */
-                        Disk_FileSize_Update(&file_tmp);
 
                         if (cluster_list_item_tmp && cluster_id_ptr)
                         {
@@ -1496,6 +1494,9 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                             if (file_tmp.fast_mode)
                             {
                                 file_tmp.info.size = file_tmp.total_byte_remain;
+                                /* update file size */
+                                Disk_FileSize_Update(&file_tmp);
+
                                 file_tmp.cur_cluster_item = &(file_tmp.cluster_list);
                             }
                         }
