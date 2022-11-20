@@ -54,7 +54,7 @@ static uint8_t LogQueueBuff_Trail[MAX_FILE_SIZE_K(1) / 2] = {0};
 
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
-static bool LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg);
+static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg);
 static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len);
 
 void TaskLog_Init(void)
@@ -98,39 +98,35 @@ void TaskLog_Init(void)
 
 static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
 {
+    Disk_Write_State state;
     static uint32_t rt = 0;
     static uint32_t rt_lst = 0;
-    static uint32_t lst_size = 0;
     static bool led_state = false;
 
     if (LogFile_Ready)
     {
         if (LogObj_Set_Reg._sec.IMU_Sec)
         {
-            if (LogFile_Obj.info.size < MAX_FILE_SIZE_M(16))
+            state = LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg);
+
+            if (state == Disk_Write_Contiguous)
             {
-                LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg);
                 rt = Get_CurrentRunningMs();
 
-                if(LogFile_Obj.info.size != lst_size)
+                if (rt - rt_lst >= 200)
                 {
-                    if(rt - rt_lst >= 200)
-                    {
-                        led_state = !led_state;
-                        DevLED.ctl(Led2, led_state);
-                        rt_lst = rt;
-                    }
+                    led_state = !led_state;
+                    DevLED.ctl(Led2, led_state);
+                    rt_lst = rt;
                 }
-                else
-                    DevLED.ctl(Led2, true);
-
-                lst_size = LogFile_Obj.info.size;
             }
-            else
-            {
-                LogObj_Enable_Reg._sec.IMU_Sec = false;
-                DevLED.ctl(Led2, false);
-            }
+            // else if (state == Disk_Write_Finish)
+            //     DevLED.ctl(Led2, true);
+        }
+        else if (state == Disk_Write_Finish)
+        {
+            LogObj_Enable_Reg._sec.IMU_Sec = false;
+            DevLED.ctl(Led2, false);
         }
     }
 }
@@ -142,7 +138,7 @@ void TaskLog_Core(Task_Handle hdl)
     // DebugPin.ctl(Debug_PB4, false);
 }
 
-static bool LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg)
+static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg)
 {
     uint16_t log_size = 0;
     uint16_t queue_size = 0;

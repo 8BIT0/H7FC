@@ -1745,13 +1745,22 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
                 }
                 else
                 {
-                    if (FileObj->cur_cluster_item->nxt)
+                    if (FileObj->cur_cluster_item)
                     {
+                        FileObj->info.start_cluster++;
+                        if (FileObj->info.start_cluster > ((Disk_PreLinkBlock_TypeDef *)(FileObj->cur_cluster_item->data))->e_addr)
+                        {
+                            if (FileObj->cur_cluster_item->nxt != NULL)
+                            {
+                                FileObj->cur_cluster_item = FileObj->cur_cluster_item->nxt;
+                                FileObj->info.start_cluster = ((Disk_PreLinkBlock_TypeDef *)(FileObj->cur_cluster_item->data))->s_addr;
+                            }
+                            else
+                                return Disk_Write_Finish;
+                        }
+
                         FileObj->cur_cluster_item = FileObj->cur_cluster_item->nxt;
-                        FileObj->info.start_cluster = *((uint32_t *)FileObj->cur_cluster_item->data);
                     }
-                    else
-                        return Disk_Write_Finish;
                 }
 
                 /* update end section */
