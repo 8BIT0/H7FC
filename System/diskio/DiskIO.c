@@ -1434,6 +1434,9 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
                     if (exp_cluster_cnt)
                     {
+                        FATCluster_Addr start_cluster = cluster;
+                        FATCluster_Addr end_cluster = 0;
+
                         /* search free cluster and link them */
                         for (uint32_t i = 0; i < exp_cluster_cnt; i++)
                         {
@@ -1457,8 +1460,12 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
                                 /* get free cluster id */
                                 *cluster_id_ptr = FATObj->free_cluster;
-                                Disk_Update_FreeCluster(FATObj);
 
+                                end_cluster = FATObj->free_cluster;
+                                Disk_Establish_ClusterLink(FATObj, start_cluster, end_cluster);
+                                start_cluster = end_cluster;
+
+                                Disk_Update_FreeCluster(FATObj);
                                 lst_cluster_item = cluster_list_item_tmp;
                             }
                             else if (lst_cluster_item)
@@ -1505,7 +1512,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                                 if (nxt_cluster_item->nxt != NULL)
                                 {
                                     /* File Cluster -> Free Cluster 1 -> Free Cluster 2 -> ... -> Free Cluster end */
-                                    Disk_Establish_ClusterLink(FATObj, *((uint32_t *)(nxt_cluster_item->data)), *((uint32_t *)(nxt_cluster_item->nxt->data)));
+                                    // Disk_Establish_ClusterLink(FATObj, *((uint32_t *)(nxt_cluster_item->data)), *((uint32_t *)(nxt_cluster_item->nxt->data)));
 
                                     nxt_cluster_item = nxt_cluster_item->nxt;
                                 }
@@ -1743,7 +1750,7 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
 
             if (FileObj->end_sec == cluster_end_section)
             {
-                if(!FileObj->fast_mode)
+                if (!FileObj->fast_mode)
                 {
                     FATCluster_Addr lst_file_cluster = 0;
 
@@ -1752,7 +1759,7 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
                     Disk_Update_FreeCluster(FATObj);
 
                     if ((FileObj->info.start_cluster == FATObj->free_cluster) || (FATObj->free_cluster <= ROOT_CLUSTER_ADDR))
-                        while (1)   //error occur fall into infinite loop
+                        while (1) // error occur fall into infinite loop
                             ;
 
                     FileObj->info.start_cluster = FATObj->free_cluster;
@@ -1763,7 +1770,7 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
                 }
                 else
                 {
-                    if(FileObj->cur_cluster_item->nxt)
+                    if (FileObj->cur_cluster_item->nxt)
                     {
                         FileObj->cur_cluster_item = FileObj->cur_cluster_item->nxt;
                         FileObj->info.start_cluster = *((uint32_t *)FileObj->cur_cluster_item->data);
@@ -1784,7 +1791,7 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
             FileObj->remain_byte_in_sec = FATObj->BytePerSection;
         }
 
-        if(!FileObj->fast_mode)
+        if (!FileObj->fast_mode)
             Disk_FileSize_Update(FileObj);
 
     } while (remain_write != 0);
