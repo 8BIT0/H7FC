@@ -137,7 +137,7 @@ typedef enum
     Disk_Write_Error = 0,
     Disk_Write_Contiguous,
     Disk_Write_Finish,
-}Disk_Write_State;
+} Disk_Write_State;
 
 #pragma pack(1)
 typedef union
@@ -320,6 +320,12 @@ typedef struct
     uint8_t info_index;
     FATCluster_Addr cluster_index;
 } Disk_TargetMatch_TypeDef;
+
+typedef struct
+{
+    FATCluster_Addr s_addr;
+    FATCluster_Addr e_addr;
+} Disk_PreLinkBlock_TypeDef;
 #pragma pack()
 
 typedef struct
