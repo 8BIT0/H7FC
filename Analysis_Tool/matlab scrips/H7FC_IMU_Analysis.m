@@ -1,4 +1,4 @@
-Data = load('C:\Users\HUAV\Desktop\8B!T0\H7FC\Analysis_Tool\Log2Txt\logfile\imu.txt');
+Data = load('/Users/mac/Desktop/Stm32/code/H7FC/Analysis_Tool/Log2Txt/logfile/imu.txt');
 
 Data = Data(1:36000,:);
 

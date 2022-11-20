@@ -108,11 +108,10 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
         if (LogObj_Set_Reg._sec.IMU_Sec)
         {
             state = LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg);
+            rt = Get_CurrentRunningMs();
 
             if (state == Disk_Write_Contiguous)
             {
-                rt = Get_CurrentRunningMs();
-
                 if (rt - rt_lst >= 200)
                 {
                     led_state = !led_state;
@@ -125,8 +124,18 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
         }
         else if (state == Disk_Write_Finish)
         {
-            LogObj_Enable_Reg._sec.IMU_Sec = false;
+            LogObj_Set_Reg._sec.IMU_Sec = false;
+
             DevLED.ctl(Led2, false);
+        }
+        else
+        {
+            if (rt - rt_lst >= 500)
+            {
+                led_state = !led_state;
+                DevLED.ctl(Led2, led_state);
+                rt_lst = rt;
+            }
         }
     }
 }
