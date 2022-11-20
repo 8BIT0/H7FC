@@ -8,6 +8,7 @@
 #include "runtime.h"
 
 #define MAX_RETRY_CNT 200
+#define MAX_PIPE_FREQ 2000
 
 DMA_HandleTypeDef DataPipe_DMA;
 
@@ -90,9 +91,9 @@ retry:
     retry_cnt = MAX_RETRY_CNT;
     while (Pipe_State != Pipe_Ready)
     {
-        retry_cnt --;
+        retry_cnt--;
 
-        if(retry_cnt == 0)
+        if (retry_cnt == 0)
             return false;
     }
 
