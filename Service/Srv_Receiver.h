@@ -40,6 +40,12 @@ typedef enum
 } SrvRecveiver_FunctionalDef_List;
 
 #pragma pack(1)
+typedef enum
+{
+    Receiver_Port_Serial,
+    Receiver_Port_Spi,
+} SrvReceiver_Port_Type;
+
 typedef struct
 {
     uint8_t channel_func_def[Receiver_Channel_Sum];
@@ -53,6 +59,7 @@ typedef struct
 typedef struct
 {
     SrvReceiver_TypeList Frame_type;
+    SrvReceiver_Port_Type port_type;
 
     uint16_t baudrate;
     uint32_t port_addr;
