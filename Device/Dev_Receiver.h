@@ -54,7 +54,6 @@ typedef struct
 {
     DevReceiver_TypeList Frame_type;
 
-    uint8_t port_id;
     uint16_t baudrate;
     uint32_t port_addr;
 
@@ -62,6 +61,8 @@ typedef struct
 
     DevReceiverData_TypeDef data;
     DevReceiver_Callback cb;
+
+    void *port_ptr;
 
     /* for sbus receiver we gonna need inverter hardware */
     uint32_t invert_port;
@@ -78,7 +79,7 @@ typedef struct
 {
     bool (*init)(DevReceiverObj_TypeDef *obj, uint8_t channel_num);
     bool (*enable_control)(DevReceiverObj_TypeDef *obj, bool state);
-    bool (*set_decode_callback)(DevReceiverObj_TypeDef *obj, DevReceiver_Callback cb);
+    bool (*set_decode_callback)(DevReceiverObj_TypeDef *obj);
     bool (*conver_to)(DevReceiverObj_TypeDef *obj, DevReceiver_TypeList type, uint8_t *ptr, uint16_t size);
     DevReceiverData_TypeDef (*get)(DevReceiverObj_TypeDef *obj);
 } DevReceiver_TypeDef;

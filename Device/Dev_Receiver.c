@@ -21,23 +21,30 @@ static const uint8_t default_channle_id_list[Receiver_Channel_Sum] = {
     Receiver_ChannelID_AUX_12,
 };
 
-bool DevReceiver_Init(DevReceiverObj_TypeDef *obj)
+bool DevReceiver_Init(DevReceiverObj_TypeDef *obj, void *port_ptr)
 {
-    if(obj == NULL)
+    if ((obj == NULL) || (port_ptr == NULL))
         return false;
 
-    switch(obj->Frame_type)
+    switch (obj->Frame_type)
     {
-        
-        default:
-            return false;
+
+    default:
+        return false;
     }
+
+    obj->port_ptr = port_ptr;
 
     return true;
 }
 
-void DevReceiver_Range_Check()
+void DevReceiver_Decode_Callback(DevReceiverObj_TypeDef *obj)
 {
-
+    if (obj && obj->cb)
+    {
+    }
 }
 
+void DevReceiver_Range_Check()
+{
+}
