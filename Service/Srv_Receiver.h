@@ -1,5 +1,5 @@
-#ifndef __DEV_RECEIVER_H
-#define __DEV_RECEIVER_H
+#ifndef __SRV_RECEIVER_H
+#define __SRV_RECEIVER_H
 
 #include "Dev_Sbus.h"
 #include "Dev_CRSF.h"
@@ -9,13 +9,13 @@
 #define CHANNEL_RANGE_MIN 950
 #define CHANNEL_RANGE_MAX 2050
 
-typedef bool (*DevReceiver_Callback)(uint8_t *ptr, uint16_t size);
+typedef bool (*SrvReceiver_Callback)(uint8_t *ptr, uint16_t size);
 
 typedef enum
 {
     Receiver_Type_Sbus = 0,
     Receiver_Type_CRSF,
-} DevReceiver_TypeList;
+} SRvReceiver_TypeList;
 
 typedef enum
 {
@@ -37,7 +37,7 @@ typedef enum
     Receiver_ChannelID_AUX_12,
 
     Receiver_Channel_Sum,
-} DevRecveiver_FunctionalDef_List;
+} SrvRecveiver_FunctionalDef_List;
 
 #pragma pack(1)
 typedef struct
@@ -48,19 +48,19 @@ typedef struct
 
     bool valid;
     bool failsafe;
-} DevReceiverData_TypeDef;
+} SrvReceiverData_TypeDef;
 
 typedef struct
 {
-    DevReceiver_TypeList Frame_type;
+    SrvReceiver_TypeList Frame_type;
 
     uint16_t baudrate;
     uint32_t port_addr;
 
     uint8_t channel_num;
 
-    DevReceiverData_TypeDef data;
-    DevReceiver_Callback cb;
+    SrvReceiverData_TypeDef data;
+    SrvReceiver_Callback cb;
 
     void *port_ptr;
 
@@ -72,16 +72,16 @@ typedef struct
     bool (*invert_control)(uint32_t port, uint32_t pin);
 
     bool (*port_init)(uint8_t port_id, uint16_t baudrate);
-} DevReceiverObj_TypeDef;
+} SrvReceiverObj_TypeDef;
 #pragma pack()
 
 typedef struct
 {
-    bool (*init)(DevReceiverObj_TypeDef *obj, uint8_t channel_num);
-    bool (*enable_control)(DevReceiverObj_TypeDef *obj, bool state);
-    bool (*set_decode_callback)(DevReceiverObj_TypeDef *obj);
-    bool (*conver_to)(DevReceiverObj_TypeDef *obj, DevReceiver_TypeList type, uint8_t *ptr, uint16_t size);
-    DevReceiverData_TypeDef (*get)(DevReceiverObj_TypeDef *obj);
-} DevReceiver_TypeDef;
+    bool (*init)(SrvReceiverObj_TypeDef *obj, uint8_t channel_num);
+    bool (*enable_control)(SrvReceiverObj_TypeDef *obj, bool state);
+    bool (*set_decode_callback)(SrvReceiverObj_TypeDef *obj);
+    bool (*conver_to)(SrvReceiverObj_TypeDef *obj, SrvReceiver_TypeList type, uint8_t *ptr, uint16_t size);
+    SrvReceiverData_TypeDef (*get)(SrvReceiverObj_TypeDef *obj);
+} SrvReceiver_TypeDef;
 
 #endif

@@ -1,6 +1,6 @@
-#include "Dev_Receiver.h"
+#include "Srv_Receiver.h"
 
-__weak DevReceiver_Get_SysMs(void) { reuturn 0; }
+__weak SrvReceiver_Get_SysMs(void) { reuturn 0; }
 
 static const uint8_t default_channle_id_list[Receiver_Channel_Sum] = {
     Receiver_ChannelID_Pitch,
@@ -21,7 +21,7 @@ static const uint8_t default_channle_id_list[Receiver_Channel_Sum] = {
     Receiver_ChannelID_AUX_12,
 };
 
-bool DevReceiver_Init(DevReceiverObj_TypeDef *obj, void *port_ptr)
+bool SrvReceiver_Init(DevReceiverObj_TypeDef *obj, void *port_ptr)
 {
     if ((obj == NULL) || (port_ptr == NULL))
         return false;
@@ -38,13 +38,13 @@ bool DevReceiver_Init(DevReceiverObj_TypeDef *obj, void *port_ptr)
     return true;
 }
 
-void DevReceiver_Decode_Callback(DevReceiverObj_TypeDef *obj)
+void SrvReceiver_Decode_Callback(DevReceiverObj_TypeDef *obj)
 {
     if (obj && obj->cb)
     {
     }
 }
 
-void DevReceiver_Range_Check()
+void SrvReceiver_Range_Check()
 {
 }
