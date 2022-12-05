@@ -13,9 +13,25 @@ typedef bool (*SrvReceiver_Callback)(uint8_t *ptr, uint16_t size);
 
 typedef enum
 {
+    Receiver_Port_Serial = 1,
+    Receiver_Port_Spi,
+} SrvReceiver_Port_TypeList;
+
+typedef enum
+{
     Receiver_Type_Sbus = 0,
     Receiver_Type_CRSF,
-} SRvReceiver_TypeList;
+    Receiver_Type_SPI_Cus,
+} SrvReceiver_Frame_TypeList;
+
+typedef enum
+{
+    Receiver_No_Error = 0,
+    Receiver_Obj_Error,
+    Receiver_Port_Error,
+    Receiver_Port_Init_Error,
+    Receiver_FrameType_Error,
+} SrvReceiver_ErrorCode_List;
 
 typedef enum
 {
@@ -40,11 +56,27 @@ typedef enum
 } SrvRecveiver_FunctionalDef_List;
 
 #pragma pack(1)
-typedef enum
+typedef struct
 {
-    Receiver_Port_Serial,
-    Receiver_Port_Spi,
-} SrvReceiver_Port_Type;
+    bool FailSafe : 1;
+    bool Update_TimeOut : 1;
+    SrvReceiver_Port_TypeList PortType : 2;
+    SrvReceiver_Frame_TypeList FrameType : 2;
+
+    uint8_t init_error_code;
+
+    uint32_t cur_rt;
+    uint32_t lst_update_rt;
+
+    uint32_t success_decode_cnt;
+    uint32_t error_decode_cnt;
+    uint32_t total_decode_cnt;
+
+    uint32_t over_rang_cnt;
+    uint32_t value_step_bump_cnt;
+} SrvReceiver_Monitor_TypeDef;
+
+#define SRVRECEIVER_SIZE sizeof(SrvReceiver_Monitor_TypeDef)
 
 typedef struct
 {
@@ -58,8 +90,12 @@ typedef struct
 
 typedef struct
 {
-    SrvReceiver_TypeList Frame_type;
-    SrvReceiver_Port_Type port_type;
+    SrvReceiver_Frame_TypeList Frame_type;
+    SrvReceiver_Port_TypeList port_type;
+
+    void *port_cfg;
+
+    uint16_t update_period;
 
     uint16_t baudrate;
     uint32_t port_addr;
@@ -78,7 +114,7 @@ typedef struct
     bool (*inverter_init)(uint32_t port, uint32_t pin);
     bool (*invert_control)(uint32_t port, uint32_t pin);
 
-    bool (*port_init)(uint8_t port_id, uint16_t baudrate);
+    bool (*port_init)(uint8_t *port_cfg, uint16_t size);
 } SrvReceiverObj_TypeDef;
 #pragma pack()
 
@@ -87,7 +123,7 @@ typedef struct
     bool (*init)(SrvReceiverObj_TypeDef *obj, uint8_t channel_num);
     bool (*enable_control)(SrvReceiverObj_TypeDef *obj, bool state);
     bool (*set_decode_callback)(SrvReceiverObj_TypeDef *obj);
-    bool (*conver_to)(SrvReceiverObj_TypeDef *obj, SrvReceiver_TypeList type, uint8_t *ptr, uint16_t size);
+    bool (*conver_to)(SrvReceiverObj_TypeDef *obj, SrvReceiver_Frame_TypeList type, uint8_t *ptr, uint16_t size);
     SrvReceiverData_TypeDef (*get)(SrvReceiverObj_TypeDef *obj);
 } SrvReceiver_TypeDef;
 

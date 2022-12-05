@@ -52,6 +52,7 @@ Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 Device/Dev_Card.c \
 Service/SrvMPU_Sample.c \
+Service/Srv_Receiver.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
