@@ -6,7 +6,6 @@
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_uart.h"
-#include "stm32h7xx_hal_dma.h"
 #include "Bsp_Uart.h"
 
 static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
@@ -54,10 +53,7 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         obj->tx_io.alternate = GPIO_AF8_UART4;
         obj->rx_io.alternate = GPIO_AF8_UART4;
 
-        rx_dma_cfg.Instance = obj->rx_dma_instance;
         rx_dma_cfg.Init.Request = DMA_REQUEST_UART4_RX;
-
-        tx_dma_cfg.Instance = obj->tx_dma_instance;
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
 
         irqn = UART4_IRQn;
@@ -76,10 +72,7 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         obj->tx_io.alternate = GPIO_AF7_USART6;
         obj->rx_io.alternate = GPIO_AF7_USART6;
 
-        rx_dma_cfg.Instance = obj->rx_dma_instance;
         rx_dma_cfg.Init.Request = DMA_REQUEST_USART6_RX;
-
-        tx_dma_cfg.Instance = obj->tx_dma_instance;
         tx_dma_cfg.Init.Request = DMA_REQUEST_USART6_TX;
 
         irqn = USART6_IRQn;
@@ -98,15 +91,19 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         obj->tx_io.alternate = GPIO_AF7_UART7;
         obj->rx_io.alternate = GPIO_AF7_UART7;
 
-        rx_dma_cfg.Instance = obj->rx_dma_instance;
         rx_dma_cfg.Init.Request = DMA_REQUEST_UART7_RX;
-
-        tx_dma_cfg.Instance = obj->tx_dma_instance;
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART7_TX;
 
         irqn = UART7_IRQn;
     }
     else
+        return false;
+
+    obj->tx_dma_hdl = tx_dma_cfg;
+    obj->rx_dma_hdl = rx_dma_cfg;
+
+    if( !BspDMA.regist(obj->rx_dma, obj->rx_stream, &(obj->rx_dma_hdl)) ||
+        !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->rx_dma_hdl)))
         return false;
 
     /* rx pin init */

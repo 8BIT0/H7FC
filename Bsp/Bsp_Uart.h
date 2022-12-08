@@ -6,6 +6,7 @@
 #include <string.h>
 #include "stm32h7xx_hal_uart.h"
 #include "Bsp_GPIO.h"
+#include "Bsp_DMA.h"
 
 typedef void (*BspUART_Callback)(uint8_t *tx, uint16_t size);
 
@@ -23,8 +24,13 @@ typedef struct
 
     UART_HandleTypeDef hdl;
 
-    void *tx_dma_instance;
-    void *rx_dma_instance;
+    BspDMA_List tx_dma;
+    BspDMA_Stream_List tx_stream;
+    DMA_HandleTypeDef tx_dma_hdl;
+
+    BspDMA_List rx_dma;
+    BspDMA_Stream_List rx_stream;
+    DMA_HandleTypeDef rx_dma_hdl;
 
     BspGPIO_Obj_TypeDef tx_io;
     BspGPIO_Obj_TypeDef rx_io;
