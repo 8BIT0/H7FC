@@ -3,6 +3,7 @@
 #include "Bsp_SPI.h"
 #include "error_log.h"
 #include "IO_Definition.h"
+#include "mmu.h"
 
 __weak uint32_t SrvReceiver_Get_SysMs(void) { return 0; }
 
@@ -81,13 +82,11 @@ static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
     },
 };
 
-bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_ptr)
+bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
 {
-
-    if ((obj == NULL) || (port_ptr == NULL))
+    if (obj == NULL)
         return false;
 
-    memset(&Uart_Receiver_Obj, NULL, sizeof(Uart_Receiver_Obj));
     memset(SrvReceiver_Buff, NULL, SRV_RECEIVER_BUFF_SIZE);
 
     /* create error log handle */
@@ -99,44 +98,54 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_ptr)
     switch (obj->port_type)
     {
     case Receiver_Port_Serial:
-        BspUARTObj_TypeDef Uart_Receiver_Obj;
+        BspUARTObj_TypeDef *Uart_Receiver_Obj;
+
+        Uart_Receiver_Obj = (BspUARTObj_TypeDef *)MMU_Malloc(sizeof(BspUARTObj_TypeDef));
+        if(Uart_Receiver_Obj == NULL)
+            return false;
+
+        memset(Uart_Receiver_Obj, NULL, sizeof(Uart_Receiver_Obj));
         memset(&SrvReceiver_Monitor, NULL, SRVRECEIVER_SIZE);
 
         switch (obj->Frame_type)
         {
         case Receiver_Type_Sbus:
-            Uart_Receiver_Obj.baudrate = SBUS_FRAME_BAUDRATE;
+            Uart_Receiver_Obj->baudrate = SBUS_FRAME_BAUDRATE;
             break;
 
         case Receiver_Type_CRSF:
-            Uart_Receiver_Obj.baudrate = CRSF_FRAME_BAUDRATE;
+            Uart_Receiver_Obj->baudrate = CRSF_FRAME_BAUDRATE;
             break;
 
         default:
             return false;
         }
 
-        Uart_Receiver_Obj.instance = UART4;
-        Uart_Receiver_Obj.pin_swap = false;
-        Uart_Receiver_Obj.rx_io.port = ;
-        Uart_Receiver_Obj.rx_io.pin = ;
-        Uart_Receiver_Obj.tx_io.port = ;
-        Uart_Receiver_Obj.tx_io.pin = ;
-        Uart_Receiver_Obj.rx_dma = ;
-        Uart_Receiver_Obj.rx_stream = ;
-        Uart_Receiver_Obj.tx_dma = ;
-        Uart_Receiver_Obj.tx_stream = ;
-        Uart_Receiver_Obj.rx_buf = SrvReceiver_Buff;
-        Uart_Receiver_Obj.rx_size = SRV_RECEIVER_BUFF_SIZE;
-        Uart_Receiver_Obj.cust_data_addr = (uint32_t)obj;
+        Uart_Receiver_Obj->instance = UART4;
+        Uart_Receiver_Obj->pin_swap = false;
+        Uart_Receiver_Obj->rx_io.port = ;
+        Uart_Receiver_Obj->rx_io.pin = ;
+        Uart_Receiver_Obj->tx_io.port = ;
+        Uart_Receiver_Obj->tx_io.pin = ;
+        Uart_Receiver_Obj->rx_dma = ;
+        Uart_Receiver_Obj->rx_stream = ;
+        Uart_Receiver_Obj->tx_dma = ;
+        Uart_Receiver_Obj->tx_stream = ;
+        Uart_Receiver_Obj->rx_buf = SrvReceiver_Buff;
+        Uart_Receiver_Obj->rx_size = SRV_RECEIVER_BUFF_SIZE;
+        Uart_Receiver_Obj->cust_data_addr = (uint32_t)obj;
+
+        /* set uart callback */
 
         /* serial port init */
-        if(!BspUart.init())
+        if(!BspUart.init(&Uart_Receiver_Obj))
         {
             ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Port_Init_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
             return false;
         }
 
+        obj->port->api = &BspUart;
+        obj->port->cfg = Uart_Receiver_Obj;
         break;
 
     case Receiver_Port_Spi:
@@ -148,7 +157,6 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_ptr)
         return false;
     }
 
-    obj->port_ptr = port_ptr;
 
     return true;
 }

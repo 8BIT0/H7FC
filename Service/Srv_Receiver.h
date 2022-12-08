@@ -95,6 +95,12 @@ typedef struct
 
 typedef struct
 {
+    void *api;
+    void *cfg;
+}SrvReceiver_Port_TypeDef;
+
+typedef struct
+{
     SrvReceiver_Frame_TypeList Frame_type;
     SrvReceiver_Port_TypeList port_type;
 
@@ -110,7 +116,7 @@ typedef struct
     SrvReceiverData_TypeDef data;
     SrvReceiver_Callback cb;
 
-    void *port_ptr;
+    SrvReceiver_Port_TypeDef *port;
 
     /* for sbus receiver we gonna need inverter hardware */
     uint32_t invert_port;
