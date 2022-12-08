@@ -19,8 +19,9 @@ typedef struct
 {
     uint8_t id;
     uint16_t baudrate;
+    bool pin_swap;
 
-    UART_HandleTypeDef cfg;
+    UART_HandleTypeDef hdl;
 
     BspUART_Callback TxCallback;
     BspUART_Callback RxCallback;
