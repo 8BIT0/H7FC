@@ -106,10 +106,8 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->rx_dma_hdl)))
         return false;
 
-    /* rx pin init */
+    /* rx tx pin init */
     BspGPIO.alt_init(obj->rx_io);
-    
-    /* tx pin init */
     BspGPIO.alt_init(obj->tx_io);
 
     if (HAL_DMA_Init(&rx_dma_cfg) != HAL_OK)
