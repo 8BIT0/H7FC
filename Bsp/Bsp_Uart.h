@@ -60,6 +60,10 @@ typedef struct
     uint16_t (*get_RecCount)(BspUARTObj_TypeDef *obj);
 } BspUART_TypeDef;
 
+void UART_Idle_Callback(UART_HandleTypeDef *huart);
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
+
 extern BspUART_TypeDef BspUart;
 
 #endif
