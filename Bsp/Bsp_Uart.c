@@ -8,6 +8,9 @@
 #include "stm32h7xx_hal_uart.h"
 #include "Bsp_Uart.h"
 
+/* internal variable */
+static UART_HandleTypeDef *BspUart_Handle_List[BspUART_Port_Sum] = {NULL};
+
 /* external function */
 static bool BspUart_Init(BspUARTObj_TypeDef *obj);
 
@@ -237,23 +240,41 @@ void USART1_Idle_Callback(void)
     }
 }
 
-void UART_Idle_Callback(UART_HandleTypeDef *huart)
+void UART_Idle_Callback(BspUART_Port_List index)
 {
-    if (huart == UART4)
+    if (index == BspUART_Port_4)
     {
     }
-    else if (huart == USART6)
+    else if (index == BspUART_Port_6)
     {
     }
-    else if (huart == UART7)
+    else if (index == BspUART_Port_7)
     {
     }
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+    if (huart->Instance == UART4)
+    {
+    }
+    else if (huart->Instance == USART6)
+    {
+    }
+    else if (huart->Instance == UART7)
+    {
+    }
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
+    if (huart->Instance == UART4)
+    {
+    }
+    else if (huart->Instance == USART6)
+    {
+    }
+    else if (huart->Instance == UART7)
+    {
+    }
 }

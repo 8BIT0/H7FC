@@ -16,6 +16,14 @@ typedef enum
     BspUART_CallbackType_Rx,
 } BspUARTCallback_Type_List;
 
+typedef enum
+{
+    BspUART_Port_4 = 0,
+    BspUART_Port_6,
+    BspUART_Port_7,
+    BspUART_Port_Sum,
+} BspUART_Port_List;
+
 #pragma pack(1)
 typedef struct
 {
@@ -60,7 +68,7 @@ typedef struct
     uint16_t (*get_RecCount)(BspUARTObj_TypeDef *obj);
 } BspUART_TypeDef;
 
-void UART_Idle_Callback(UART_HandleTypeDef *huart);
+void UART_Idle_Callback(BspUART_Port_List index);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
 

@@ -9,6 +9,7 @@
 #include "DIskIO.h"
 #include "DataPipe.h"
 #include "Bsp_DMA.h"
+#include "Bsp_Uart.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern DevCard_Obj_TypeDef DevTFCard_Obj;
@@ -156,7 +157,7 @@ void DMA1_Stream0_IRQHandler(void)
   DMA_HandleTypeDef *hdl = NULL;
   hdl = BspDMA.get_handle(Bsp_DMA_1, Bsp_DMA_Stream_0);
 
-  if(hdl)
+  if (hdl)
     HAL_DMA_IRQHandler(hdl);
 }
 
@@ -165,7 +166,7 @@ void DMA1_Stream1_IRQHandler(void)
   DMA_HandleTypeDef *hdl = NULL;
   hdl = BspDMA.get_handle(Bsp_DMA_1, Bsp_DMA_Stream_1);
 
-  if(hdl)
+  if (hdl)
     HAL_DMA_IRQHandler(hdl);
 }
 
@@ -174,7 +175,7 @@ void DMA1_Stream2_IRQHandler(void)
   DMA_HandleTypeDef *hdl = NULL;
   hdl = BspDMA.get_handle(Bsp_DMA_1, Bsp_DMA_Stream_2);
 
-  if(hdl)
+  if (hdl)
     HAL_DMA_IRQHandler(hdl);
 }
 
@@ -183,7 +184,7 @@ void DMA1_Stream3_IRQHandler(void)
   DMA_HandleTypeDef *hdl = NULL;
   hdl = BspDMA.get_handle(Bsp_DMA_1, Bsp_DMA_Stream_3);
 
-  if(hdl)
+  if (hdl)
     HAL_DMA_IRQHandler(hdl);
 }
 
@@ -192,7 +193,7 @@ void DMA1_Stream4_IRQHandler(void)
   DMA_HandleTypeDef *hdl = NULL;
   hdl = BspDMA.get_handle(Bsp_DMA_1, Bsp_DMA_Stream_4);
 
-  if(hdl)
+  if (hdl)
     HAL_DMA_IRQHandler(hdl);
 }
 
@@ -201,22 +202,27 @@ void DMA1_Stream5_IRQHandler(void)
   DMA_HandleTypeDef *hdl = NULL;
   hdl = BspDMA.get_handle(Bsp_DMA_1, Bsp_DMA_Stream_5);
 
-  if(hdl)
+  if (hdl)
     HAL_DMA_IRQHandler(hdl);
 }
 
 void UART4_IRQHandler(void)
 {
+  UART_Idle_Callback(BspUART_Port_4);
+
   HAL_UART_IRQHandler(&huart4);
 }
 
 void USART6_IRQHandler(void)
 {
+  UART_Idle_Callback(BspUART_Port_6);
+
   HAL_UART_IRQHandler(&huart6);
 }
 
 void UART7_IRQHandler(void)
 {
+  UART_Idle_Callback(BspUART_Port_7);
+
   HAL_UART_IRQHandler(&huart7);
 }
-
