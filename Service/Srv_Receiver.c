@@ -102,7 +102,10 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
 
         Uart_Receiver_Obj = (BspUARTObj_TypeDef *)MMU_Malloc(sizeof(BspUARTObj_TypeDef));
         if(Uart_Receiver_Obj == NULL)
+        {
+            MMU_Free(Uart_Receiver_Obj);
             return false;
+        }
 
         memset(Uart_Receiver_Obj, NULL, sizeof(Uart_Receiver_Obj));
         memset(&SrvReceiver_Monitor, NULL, SRVRECEIVER_SIZE);
@@ -123,10 +126,10 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
 
         Uart_Receiver_Obj->instance = UART4;
         Uart_Receiver_Obj->pin_swap = false;
-        Uart_Receiver_Obj->rx_io.port = ;
-        Uart_Receiver_Obj->rx_io.pin = ;
-        Uart_Receiver_Obj->tx_io.port = ;
-        Uart_Receiver_Obj->tx_io.pin = ;
+        Uart_Receiver_Obj->rx_io.port = UART4_RX_PORT;
+        Uart_Receiver_Obj->rx_io.pin = UART4_RX_PIN;
+        Uart_Receiver_Obj->tx_io.port = UART4_TX_PORT;
+        Uart_Receiver_Obj->tx_io.pin = UART4_TX_PIN;
         Uart_Receiver_Obj->rx_dma = Bsp_DMA_1;
         Uart_Receiver_Obj->rx_stream = Bsp_DMA_Stream_4;
         Uart_Receiver_Obj->tx_dma = Bsp_DMA_1;
