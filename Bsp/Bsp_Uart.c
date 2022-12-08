@@ -168,13 +168,15 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 
     /* start receive data */
     HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
-
     return true;
 }
 
-static bool BspUart_Transfer()
+static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size)
 {
+    if((obj == NULL) || (tx_buf == NULL) || (size == 0))
+        return false;
 
+    return true;
 }
 
 /******************************** irq callback ***********************************/
