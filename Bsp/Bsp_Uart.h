@@ -22,6 +22,7 @@ typedef struct
     uint16_t baudrate;
     bool pin_swap;
 
+    USART_TypeDef *instance;
     UART_HandleTypeDef hdl;
 
     BspDMA_List tx_dma;
@@ -38,11 +39,8 @@ typedef struct
     BspUART_Callback TxCallback;
     BspUART_Callback RxCallback;
 
-    uint8_t *TxBuff;
-    uint8_t *RxBuff;
-
-    uint16_t TxSize;
-    uint16_t RxSize;
+    uint8_t *rx_buf;
+    uint16_t rx_size;
 } BspUARTObj_TypeDef;
 #pragma pack()
 

@@ -38,6 +38,7 @@ BspDMA_TypeDef BspDMA = {
     .get_handle = BspDMA_Get_Handle,
 };
 
+/* DMA2_Stream7 for DataPipe Use */
 static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream)
 {
     DMA2D_TypeDef *instance;
@@ -46,7 +47,7 @@ static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List st
     {
         return BspDMA1_Instance_List[stream];
     }
-    else if((dma == Bsp_DMA_2) && ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_0)))
+    else if((dma == Bsp_DMA_2) && ((stream < Bsp_DMA_Stream_7) && (stream >= Bsp_DMA_Stream_0)))
     {
         return BspDMA2_Instance_List[stream];
     }

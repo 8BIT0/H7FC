@@ -11,8 +11,8 @@
 static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 {
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-    DMA_HandleTypeDef tx_dma_cfg;
-    DMA_HandleTypeDef rx_dma_cfg;
+    DMA_HandleTypeDef tx_dma_cfg = {0};
+    DMA_HandleTypeDef rx_dma_cfg = {0};
     IRQn_Type irqn;
 
     tx_dma_cfg.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -132,7 +132,7 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 
     BspUart_Init_Clock(obj);
 
-    uart_cfg.Instance = obj->hdl.Instance;
+    uart_cfg.Instance = obj->instance;
     uart_cfg.Init.BaudRate = obj->baudrate;
     uart_cfg.Init.WordLength = UART_WORDLENGTH_8B;
     uart_cfg.Init.StopBits = UART_STOPBITS_1;
@@ -146,6 +146,8 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     uart_cfg.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
     uart_cfg.AdvancedInit.DMADisableonRxError = UART_ADVFEATURE_DMA_DISABLEONRXERROR;
 
+    obj->hdl = uart_cfg;
+
     /* swap tx rx pin */
     if(obj->pin_swap)
         uart_cfg.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
@@ -156,5 +158,26 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
         HAL_UARTEx_DisableFifoMode(&uart_cfg) != HAL_OK)
         return false;
 
+    /* enable irq callback */
+    __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_IDLE);
+    __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_ERR);
+    __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_PE);
+
+    if((obj->rx_buf == NULL) || (obj->rx_size == 0))
+        return false;
+
+    /* start receive data */
+    HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
+
     return true;
+}
+
+static bool BspUart_Transfer()
+{
+
+}
+
+static bool BspUart_Receiver()
+{
+
 }
