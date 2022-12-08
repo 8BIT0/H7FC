@@ -177,7 +177,67 @@ static bool BspUart_Transfer()
 
 }
 
-static bool BspUart_Receiver()
+/******************************** irq callback ***********************************/
+void USART1_Idle_Callback(void)
+{
+    uint32_t isrflags   = READ_REG(huart1.Instance->ISR);
+    uint32_t cr1its     = READ_REG(huart1.Instance->CR1);
+    
+    if ((RESET != (isrflags & USART_ISR_IDLE)) && (RESET != (cr1its & USART_CR1_IDLEIE)))
+    {
+        uint16_t len;
+        
+        __HAL_UART_CLEAR_IDLEFLAG(&huart1);
+        
+        len = USART1_RXD_BUF_LEN - __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
+        if (0 != len)
+        {
+            const HAL_UART_StateTypeDef rxstate = huart1.RxState;
+
+            /* Stop UART DMA Rx request if ongoing */
+            if ((HAL_IS_BIT_SET(huart1.Instance->CR3, USART_CR3_DMAR)) &&
+                (rxstate == HAL_UART_STATE_BUSY_RX))
+            {
+                CLEAR_BIT(huart1.Instance->CR3, USART_CR3_DMAR);
+
+                /* Abort the UART DMA Rx channel */
+                if (huart1.hdmarx != NULL)
+                {
+                    HAL_DMA_Abort(huart1.hdmarx);
+                }
+
+                /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
+                CLEAR_BIT(huart1.Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE));
+                CLEAR_BIT(huart1.Instance->CR3, USART_CR3_EIE);
+
+                /* At end of Rx process, restore huart->RxState to Ready */
+                huart1.RxState = HAL_UART_STATE_READY;
+            }
+
+            if (BspUsart1.receive_callback)
+            {
+                BspUsart1.receive_callback(USART1_Rx_Buffer, len);
+            }
+        }
+        else
+        {
+            READ_REG(huart1.Instance->RDR);
+            __HAL_UART_CLEAR_OREFLAG(&huart1);
+        }
+    }
+}
+
+void UART_Idle_Callback(UART_HandleTypeDef *huart)
+{
+
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 
 }
