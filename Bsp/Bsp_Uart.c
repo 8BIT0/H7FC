@@ -8,7 +8,13 @@
 #include "stm32h7xx_hal_uart.h"
 #include "Bsp_Uart.h"
 
-BspUART_TypeDef BspUart;
+/* external function */
+static bool BspUart_Init(BspUARTObj_TypeDef *obj);
+
+BspUART_TypeDef BspUart = {
+    .de_init = NULL,
+    .init = BspUart_Init,
+};
 
 static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 {
