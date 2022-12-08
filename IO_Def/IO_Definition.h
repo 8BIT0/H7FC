@@ -79,6 +79,12 @@
 #define D3_PORT GPIOC
 #define D3_PIN GPIO_PIN_11
 
+/* Serial Pin */
+#define UART4_TX_PORT
+#define UART4_TX_PIN
+#define UART4_RX_PORT
+#define UART4_RX_PIN
+
 /* USB Detected Pin */
 #define USB_DETECT_INT_PORT GPIOE
 #define USB_DETECT_INT_PIN GPIO_PIN_2

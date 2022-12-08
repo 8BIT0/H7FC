@@ -127,10 +127,10 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
         Uart_Receiver_Obj->rx_io.pin = ;
         Uart_Receiver_Obj->tx_io.port = ;
         Uart_Receiver_Obj->tx_io.pin = ;
-        Uart_Receiver_Obj->rx_dma = ;
-        Uart_Receiver_Obj->rx_stream = ;
-        Uart_Receiver_Obj->tx_dma = ;
-        Uart_Receiver_Obj->tx_stream = ;
+        Uart_Receiver_Obj->rx_dma = Bsp_DMA_1;
+        Uart_Receiver_Obj->rx_stream = Bsp_DMA_Stream_4;
+        Uart_Receiver_Obj->tx_dma = Bsp_DMA_1;
+        Uart_Receiver_Obj->tx_stream = Bsp_DMA_Stream_5;
         Uart_Receiver_Obj->rx_buf = SrvReceiver_Buff;
         Uart_Receiver_Obj->rx_size = SRV_RECEIVER_BUFF_SIZE;
         Uart_Receiver_Obj->cust_data_addr = (uint32_t)obj;
