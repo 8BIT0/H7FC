@@ -149,3 +149,50 @@ void DMA2_Stream7_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&DataPipe_DMA);
 }
+
+/* unmodify down below */
+void DMA1_Stream0_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_uart7_rx);
+}
+
+void DMA1_Stream1_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_uart7_tx);
+}
+
+void DMA1_Stream2_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart6_rx);
+}
+
+void DMA1_Stream3_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart6_tx);
+}
+
+void DMA1_Stream4_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_uart4_rx);
+}
+
+void DMA1_Stream5_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_uart4_tx);
+}
+
+void UART4_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart4);
+}
+
+void USART6_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart6);
+}
+
+void UART7_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart7);
+}
+
