@@ -26,6 +26,7 @@ typedef struct
     GPIO_TypeDef *port;
     uint16_t pin;
     GPIO_PinState init_state;
+    uint32_t alternate;
 } BspGPIO_Obj_TypeDef;
 #pragma pack()
 
@@ -34,6 +35,7 @@ typedef struct
     bool (*exti_init)(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
     bool (*out_init)(BspGPIO_Obj_TypeDef IO_Obj);
     bool (*in_init)(BspGPIO_Obj_TypeDef IO_Obj);
+    bool (*alt_init)(BspGPIO_Obj_TypeDef IO_Obj);
     bool (*read)(BspGPIO_Obj_TypeDef IO_Obj);
     bool (*set_exti_callback)(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
     bool (*set_exti_mode)(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode);

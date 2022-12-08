@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "stm32h7xx_hal_uart.h"
+#include "Bsp_GPIO.h"
 
 typedef void (*BspUART_Callback)(uint8_t *tx, uint16_t size);
 
@@ -24,6 +25,9 @@ typedef struct
 
     void *tx_dma_instance;
     void *rx_dma_instance;
+
+    BspGPIO_Obj_TypeDef tx_io;
+    BspGPIO_Obj_TypeDef rx_io;
 
     BspUART_Callback TxCallback;
     BspUART_Callback RxCallback;

@@ -11,22 +11,28 @@
 
 static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-    DMA_HandleTypeDef dma_cfg;
+    DMA_HandleTypeDef tx_dma_cfg;
+    DMA_HandleTypeDef rx_dma_cfg;
     IRQn_Type irqn;
 
-    dma_cfg.Init.PeriphInc = DMA_PINC_DISABLE;
-    dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
-    dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    dma_cfg.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    dma_cfg.Init.Mode = DMA_NORMAL;
-    dma_cfg.Init.Priority = DMA_PRIORITY_MEDIUM;
-    dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    tx_dma_cfg.Init.PeriphInc = DMA_PINC_DISABLE;
+    tx_dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
+    tx_dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    tx_dma_cfg.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    tx_dma_cfg.Init.Mode = DMA_NORMAL;
+    tx_dma_cfg.Init.Priority = DMA_PRIORITY_MEDIUM;
+    tx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    tx_dma_cfg.Init.Direction = DMA_MEMORY_TO_PERIPH;
 
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    rx_dma_cfg.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    rx_dma_cfg.Init.PeriphInc = DMA_PINC_DISABLE;
+    rx_dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
+    rx_dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    rx_dma_cfg.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    rx_dma_cfg.Init.Mode = DMA_NORMAL;
+    rx_dma_cfg.Init.Priority = DMA_PRIORITY_MEDIUM;
+    rx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 
     if( (obj == NULL) || 
         (obj->hdl.Instance == NULL) || 
@@ -36,48 +42,88 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 
     if(obj->hdl.Instance == UART4)
     {
+        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART4;
+        PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+
+        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+            return false;
+
         __HAL_RCC_UART4_CLK_ENABLE();
 
-        /* pin clock and pin config */
+        /* config */
+        obj->tx_io.alternate = GPIO_AF8_UART4;
+        obj->rx_io.alternate = GPIO_AF8_UART4;
 
-        dma_cfg.Instance = obj->rx_dma_instance;
-        dma_cfg.Init.Request = DMA_REQUEST_UART4_RX;
-        dma_cfg.Init.Direction = DMA_PERIPH_TO_MEMORY;
-        
-        if (HAL_DMA_Init(&dma_cfg) != HAL_OK)
-            return false;
+        rx_dma_cfg.Instance = obj->rx_dma_instance;
+        rx_dma_cfg.Init.Request = DMA_REQUEST_UART4_RX;
 
-        __HAL_LINKDMA(huart, hdmarx, dma_cfg);
-
-        dma_cfg.Instance = obj->tx_dma_instance;
-        dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
-        dma_cfg.Init.Direction = DMA_MEMORY_TO_PERIPH;
-
-        if (HAL_DMA_Init(&dma_cfg) != HAL_OK)
-            return false;
-
-        __HAL_LINKDMA(huart, hdmatx, dma_cfg);
+        tx_dma_cfg.Instance = obj->tx_dma_instance;
+        tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
 
         irqn = UART4_IRQn;
     }
-
-    if(obj->hdl.Instance == UART6)
+    else if(obj->hdl.Instance == UART6)
     {
+        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART6;
+        PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+        
+        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+            return false;
+
         __HAL_RCC_USART6_CLK_ENABLE();
 
-        /* pin clock and pin config */
+        /* config */
+        obj->tx_io.alternate = GPIO_AF7_USART6;
+        obj->rx_io.alternate = GPIO_AF7_USART6;
 
-        irqn = UART6_IRQn;
+        rx_dma_cfg.Instance = obj->rx_dma_instance;
+        rx_dma_cfg.Init.Request = DMA_REQUEST_USART6_RX;
+
+        tx_dma_cfg.Instance = obj->tx_dma_instance;
+        tx_dma_cfg.Init.Request = DMA_REQUEST_USART6_TX;
+
+        irqn = USART6_IRQn;
     }
-
-    if(obj->hdl.Instance == UART7)
+    else if(obj->hdl.Instance == UART7)
     {
+        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART7;
+        PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+
+        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+            return false;
+
         __HAL_RCC_UART7_CLK_ENABLE();
 
-        /* pin clock and pin config */
+        /* config */
+        obj->tx_io.alternate = GPIO_AF7_UART7;
+        obj->rx_io.alternate = GPIO_AF7_UART7;
+
+        rx_dma_cfg.Instance = obj->rx_dma_instance;
+        rx_dma_cfg.Init.Request = DMA_REQUEST_UART7_RX;
+
+        tx_dma_cfg.Instance = obj->tx_dma_instance;
+        tx_dma_cfg.Init.Request = DMA_REQUEST_UART7_TX;
 
         irqn = UART7_IRQn;
     }
+    else
+        return false;
+
+    /* rx pin init */
+    BspGPIO.alt_init(obj->rx_io);
+    
+    /* tx pin init */
+    BspGPIO.alt_init(obj->tx_io);
+
+    if (HAL_DMA_Init(&rx_dma_cfg) != HAL_OK)
+        return false;
+
+    __HAL_LINKDMA(huart, hdmarx, rx_dma_cfg);
+
+    if (HAL_DMA_Init(&tx_dma_cfg) != HAL_OK)
+        return false;
+
+    __HAL_LINKDMA(huart, hdmatx, tx_dma_cfg);
 
     HAL_NVIC_SetPriority(irqn, 0, 0);
     HAL_NVIC_EnableIRQ(irqn);
