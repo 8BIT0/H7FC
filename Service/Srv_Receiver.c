@@ -2,6 +2,7 @@
 #include "Bsp_Uart.h"
 #include "Bsp_SPI.h"
 #include "error_log.h"
+#include "IO_Definition.h"
 
 __weak uint32_t SrvReceiver_Get_SysMs(void) { return 0; }
 
@@ -103,12 +104,18 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_ptr)
 
         switch (obj->Frame_type)
         {
+        case Receiver_Type_Sbus:
+            Uart_Receiver_Obj.baudrate = SBUS_FRAME_BAUDRATE;
+            break;
+
+        case Receiver_Type_CRSF:
+            Uart_Receiver_Obj.baudrate = CRSF_FRAME_BAUDRATE;
+            break;
 
         default:
             return false;
         }
 
-        Uart_Receiver_Obj.baudrate = ;
         Uart_Receiver_Obj.instance = UART4;
         Uart_Receiver_Obj.pin_swap = false;
         Uart_Receiver_Obj.rx_io.port = ;
@@ -121,6 +128,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_ptr)
         Uart_Receiver_Obj.tx_stream = ;
         Uart_Receiver_Obj.rx_buf = SrvReceiver_Buff;
         Uart_Receiver_Obj.rx_size = SRV_RECEIVER_BUFF_SIZE;
+        Uart_Receiver_Obj.cust_data_addr = (uint32_t)obj;
 
         /* serial port init */
         if(!BspUart.init())
@@ -145,7 +153,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_ptr)
     return true;
 }
 
-void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj)
+static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj)
 {
     if (obj && obj->cb)
     {

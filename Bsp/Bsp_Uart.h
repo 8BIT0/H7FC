@@ -41,6 +41,8 @@ typedef struct
 
     uint8_t *rx_buf;
     uint16_t rx_size;
+
+    uint32_t cust_data_addr;
 } BspUARTObj_TypeDef;
 #pragma pack()
 
