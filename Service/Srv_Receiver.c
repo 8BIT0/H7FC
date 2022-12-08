@@ -113,11 +113,11 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
         switch (obj->Frame_type)
         {
         case Receiver_Type_Sbus:
-            Uart_Receiver_Obj->baudrate = SBUS_FRAME_BAUDRATE;
+            Uart_Receiver_Obj->baudrate = SBUS_BAUDRATE;
             break;
 
         case Receiver_Type_CRSF:
-            Uart_Receiver_Obj->baudrate = CRSF_FRAME_BAUDRATE;
+            Uart_Receiver_Obj->baudrate = CRSF_BAUDRATE;
             break;
 
         default:

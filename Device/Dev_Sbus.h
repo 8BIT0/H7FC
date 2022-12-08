@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+#define SBUS_BAUDRATE 100000
 #define SBUS_FRAME_BYTE_SIZE 25
 #define SBUS_FRAME_HEADER 0xF0
 #define SBUS_DECODE_MASK 0x07FF
