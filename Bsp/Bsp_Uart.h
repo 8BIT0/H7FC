@@ -58,4 +58,6 @@ typedef struct
     uint16_t (*get_RecCount)(BspUARTObj_TypeDef *obj);
 } BspUART_TypeDef;
 
+extern BspUART_TypeDef BspUart;
+
 #endif

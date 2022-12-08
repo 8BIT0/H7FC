@@ -8,6 +8,8 @@
 #include "stm32h7xx_hal_uart.h"
 #include "Bsp_Uart.h"
 
+BspUART_TypeDef BspUart;
+
 static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 {
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};

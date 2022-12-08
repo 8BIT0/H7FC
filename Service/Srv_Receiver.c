@@ -1,7 +1,11 @@
 #include "Srv_Receiver.h"
+#include "Bsp_Uart.h"
+#include "Bsp_SPI.h"
 #include "error_log.h"
 
 __weak uint32_t SrvReceiver_Get_SysMs(void) { return 0; }
+
+static uint8_t SrvReceiver_Buff[SRV_RECEIVER_BUFF_SIZE];
 
 static Error_Handler SrvReceiver_Error_Handle = NULL;
 static SrvReceiver_Monitor_TypeDef SrvReceiver_Monitor;
@@ -78,10 +82,12 @@ static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
 
 bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_ptr)
 {
+
     if ((obj == NULL) || (port_ptr == NULL))
         return false;
 
-    memset(&SrvReceiver_Monitor, NULL, SRVRECEIVER_SIZE);
+    memset(&Uart_Receiver_Obj, NULL, sizeof(Uart_Receiver_Obj));
+    memset(SrvReceiver_Buff, NULL, SRV_RECEIVER_BUFF_SIZE);
 
     /* create error log handle */
     SrvReceiver_Error_Handle = ErrorLog.create("SrvReceiver_Error");
@@ -92,7 +98,37 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_ptr)
     switch (obj->port_type)
     {
     case Receiver_Port_Serial:
-        /* aserial port init */
+        BspUARTObj_TypeDef Uart_Receiver_Obj;
+        memset(&SrvReceiver_Monitor, NULL, SRVRECEIVER_SIZE);
+
+        switch (obj->Frame_type)
+        {
+
+        default:
+            return false;
+        }
+
+        Uart_Receiver_Obj.baudrate = ;
+        Uart_Receiver_Obj.instance = UART4;
+        Uart_Receiver_Obj.pin_swap = false;
+        Uart_Receiver_Obj.rx_io.port = ;
+        Uart_Receiver_Obj.rx_io.pin = ;
+        Uart_Receiver_Obj.tx_io.port = ;
+        Uart_Receiver_Obj.tx_io.pin = ;
+        Uart_Receiver_Obj.rx_dma = ;
+        Uart_Receiver_Obj.rx_stream = ;
+        Uart_Receiver_Obj.tx_dma = ;
+        Uart_Receiver_Obj.tx_stream = ;
+        Uart_Receiver_Obj.rx_buf = SrvReceiver_Buff;
+        Uart_Receiver_Obj.rx_size = SRV_RECEIVER_BUFF_SIZE;
+
+        /* serial port init */
+        if(!BspUart.init())
+        {
+            ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Port_Init_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
+            return false;
+        }
+
         break;
 
     case Receiver_Port_Spi:
@@ -101,13 +137,6 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_ptr)
 
     default:
         ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
-        return false;
-    }
-
-    switch (obj->Frame_type)
-    {
-
-    default:
         return false;
     }
 

@@ -6,6 +6,8 @@
 #include "Bsp_GPIO.h"
 #include "Bsp_Uart.h"
 
+#define SRV_RECEIVER_BUFF_SIZE 1024
+
 #define CHANNEL_RANGE_MIN 950
 #define CHANNEL_RANGE_MAX 2050
 

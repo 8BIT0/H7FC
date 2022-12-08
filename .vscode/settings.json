@@ -101,7 +101,8 @@
                 "stat.h": "c",
                 "file_decode.h": "c",
                 "dev_sbus.h": "c",
-                "dev_crsf.h": "c"
+                "dev_crsf.h": "c",
+                "srv_receiver.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
