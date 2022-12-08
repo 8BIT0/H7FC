@@ -108,6 +108,8 @@ extern BspGPIO_Obj_TypeDef MPU6000_CSPin;
 extern BspGPIO_Obj_TypeDef ICM20602_CSPin;
 extern BspGPIO_Obj_TypeDef MPU6000_INTPin;
 extern BspGPIO_Obj_TypeDef ICM20602_INTPin;
+extern BspGPIO_Obj_TypeDef Uart4_TxPin;
+extern BspGPIO_Obj_TypeDef Uart4_RxPin;
 
 extern BspSPI_PinConfig_TypeDef MPU6000_BusPin;
 extern BspSPI_PinConfig_TypeDef ICM20602_BusPin;

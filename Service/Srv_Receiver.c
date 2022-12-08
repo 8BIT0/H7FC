@@ -126,10 +126,8 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
 
         Uart_Receiver_Obj->instance = UART4;
         Uart_Receiver_Obj->pin_swap = false;
-        Uart_Receiver_Obj->rx_io.port = UART4_RX_PORT;
-        Uart_Receiver_Obj->rx_io.pin = UART4_RX_PIN;
-        Uart_Receiver_Obj->tx_io.port = UART4_TX_PORT;
-        Uart_Receiver_Obj->tx_io.pin = UART4_TX_PIN;
+        Uart_Receiver_Obj->rx_io = Uart4_RxPin;
+        Uart_Receiver_Obj->tx_io = Uart4_TxPin;
         Uart_Receiver_Obj->rx_dma = Bsp_DMA_1;
         Uart_Receiver_Obj->rx_stream = Bsp_DMA_Stream_4;
         Uart_Receiver_Obj->tx_dma = Bsp_DMA_1;
