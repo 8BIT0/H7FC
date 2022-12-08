@@ -135,6 +135,8 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 {
     UART_HandleTypeDef uart_cfg;
 
+    BspUart_Init_Clock(obj);
+
     uart_cfg.Instance = obj->hdl.Instance;
     uart_cfg.Init.BaudRate = obj->baudrate;
     uart_cfg.Init.WordLength = UART_WORDLENGTH_8B;
