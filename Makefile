@@ -46,6 +46,7 @@ IO_Def/IO_Definition.c \
 Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \
 Bsp/Bsp_SDMMC.c \
+Bsp/Bsp_Uart.c \
 Device/Dev_MPU6000.c \
 Device/Dev_ICM20602.c \
 Device/Dev_Led.c \

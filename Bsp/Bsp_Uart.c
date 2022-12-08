@@ -62,7 +62,7 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 
         irqn = UART4_IRQn;
     }
-    else if(obj->hdl.Instance == UART6)
+    else if(obj->hdl.Instance == USART6)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART6;
         PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
@@ -118,12 +118,12 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
     if (HAL_DMA_Init(&rx_dma_cfg) != HAL_OK)
         return false;
 
-    __HAL_LINKDMA(huart, hdmarx, rx_dma_cfg);
+    __HAL_LINKDMA(&(obj->hdl), hdmarx, rx_dma_cfg);
 
     if (HAL_DMA_Init(&tx_dma_cfg) != HAL_OK)
         return false;
 
-    __HAL_LINKDMA(huart, hdmatx, tx_dma_cfg);
+    __HAL_LINKDMA(&(obj->hdl), hdmatx, tx_dma_cfg);
 
     HAL_NVIC_SetPriority(irqn, 0, 0);
     HAL_NVIC_EnableIRQ(irqn);
