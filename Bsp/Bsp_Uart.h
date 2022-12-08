@@ -10,18 +10,20 @@ typedef void (*BspUART_Callback)(uint8_t *tx, uint16_t size);
 
 typedef enum
 {
-    BspUART_CallbackType_Tx = 0,
+    BspUART_CallbackType_Tx = 1,
     BspUART_CallbackType_Rx,
 } BspUARTCallback_Type_List;
 
 #pragma pack(1)
 typedef struct
 {
-    uint8_t id;
     uint16_t baudrate;
     bool pin_swap;
 
     UART_HandleTypeDef hdl;
+
+    void *tx_dma_instance;
+    void *rx_dma_instance;
 
     BspUART_Callback TxCallback;
     BspUART_Callback RxCallback;
