@@ -46,7 +46,7 @@ static uint16_t DevCrsf_Range_Check(uint16_t channel_val)
 
 static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
 {
-    if(obj == NULL)
+    if (obj == NULL)
         return false;
 
     memset(&DevCRSF_Data, NULL, sizeof(DevCRSF_Data));
@@ -56,32 +56,31 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
 /* serial receiver receive callback */
 static bool DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len)
 {
-    if((obj == NULL) || (p_data == NULL) || (len < CRSF_FRAME_SIZE_MAX + 3))
+    if ((obj == NULL) || (p_data == NULL) || (len < CRSF_FRAME_SIZE_MAX + 3))
         return false;
 
+    return true;
 }
 
 static bool DevCRSF_Callback_Proc(DevCRSFObj_TypeDef *obj, uint8_t *ptr, uint16_t size)
 {
-    if(obj == NULL)
+    if (obj == NULL)
         return false;
 
-    switch(obj->state)
+    switch (obj->state)
     {
-        case CRSF_State_LinkUp:
-            break;
+    case CRSF_State_LinkUp:
+        break;
 
-        case CRSF_State_LinkDown:
-            obj->failsafe = true;
-            break;
+    case CRSF_State_LinkDown:
+        obj->failsafe = true;
+        break;
 
-        case CRSF_State_TimeOut:
-            obj->failsafe = true;
-            break;
+    case CRSF_State_TimeOut:
+        obj->failsafe = true;
+        break;
 
-        default:
-            return false;
+    default:
+        return false;
     }
 }
-
-

@@ -148,7 +148,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             return false;
         }
 
-        obj->update_freq = 0.0f;
+        obj->update_freq = 0;
 
         if (data_obj_error)
         {
@@ -194,13 +194,6 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
     return true;
 }
 
-static void SrvReceiver_Range_Check(SrvReceiverData_TypeDef *data_ptr)
-{
-    if (data_ptr)
-    {
-    }
-}
-
 static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size)
 {
     BspUARTObj_TypeDef *uart_obj = NULL;
@@ -213,13 +206,8 @@ static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_
         {
             /* do serial decode funtion */
             if (obj->cb(obj->frame_data_obj, p_data, size))
-            {
                 /* set decode time stamp */
                 obj->data.time_stamp = SrvReceiver_Get_SysMs();
-
-                /* data check */
-                SrvReceiver_Range_Check(obj->data);
-            }
 
             /* clear serial obj received data */
             if (obj->port->cfg)
