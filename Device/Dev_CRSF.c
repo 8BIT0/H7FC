@@ -1,8 +1,4 @@
 #include "Dev_CRSF.h"
-#include "queue.h"
-
-/* internal variable */
-static DevCRSFData_TypeDef DevCRSF_Data;
 
 // crc implementation from CRSF protocol document rev7
 static const uint8_t crsf_crc8tab[256] = {
@@ -49,7 +45,7 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
     if (obj == NULL)
         return false;
 
-    memset(&DevCRSF_Data, NULL, sizeof(DevCRSF_Data));
+    memset(obj, 0, sizeof(DevCRSFObj_TypeDef));
     return true;
 }
 
@@ -83,4 +79,6 @@ static bool DevCRSF_Callback_Proc(DevCRSFObj_TypeDef *obj, uint8_t *ptr, uint16_
     default:
         return false;
     }
+
+    return true;
 }
