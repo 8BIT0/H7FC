@@ -192,14 +192,11 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
     return true;
 }
 
-static bool SrvReceiver_Range_Check(SrvReceiverData_TypeDef *data_ptr)
+static void SrvReceiver_Range_Check(SrvReceiverData_TypeDef *data_ptr)
 {
     if (data_ptr)
     {
-        return true;
     }
-
-    return false;
 }
 
 static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size)
