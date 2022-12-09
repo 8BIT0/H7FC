@@ -290,7 +290,9 @@ void UART_Idle_Callback(BspUART_Port_List index)
 
                 /* idle receive callback process */
                 if (BspUart_Obj_List[index]->RxCallback)
-                    BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->rx_buf, len);
+                    BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
+                                                        BspUart_Obj_List[index]->rx_buf, 
+                                                        len);
 
                 BspUart_Obj_List[index]->monitor.rx_cnt ++;
                 HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
@@ -328,8 +330,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     if(BspUart_Obj_List[index])
     {
         if (BspUart_Obj_List[index]->RxCallback)
-            BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
-        
+                BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
+                                                    BspUart_Obj_List[index]->rx_buf, 
+                                                    len);
+                                                    
         HAL_UART_Receive_DMA(&(BspUart_Obj_List[index]->hdl), BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
         
         BspUart_Obj_List[index]->monitor.rx_full_cnt ++;
