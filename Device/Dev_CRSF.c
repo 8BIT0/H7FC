@@ -2,9 +2,7 @@
 #include "queue.h"
 
 /* internal variable */
-static DevCRSF_Pack_TypeDef DevCRSF_Pack;
-
-__weak uint32_t DevCRSF_Get_SystemRunTime(void) {return 0;}
+static DevCRSFData_TypeDef DevCRSF_Data;
 
 // crc implementation from CRSF protocol document rev7
 static const uint8_t crsf_crc8tab[256] = {
@@ -51,7 +49,7 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
     if(obj == NULL)
         return false;
 
-    memset(&DevCRSF_Pack, NULL, sizeof(DevCRSF_Pack));
+    memset(&DevCRSF_Data, NULL, sizeof(DevCRSF_Data));
     return true;
 }
 
@@ -61,7 +59,6 @@ static bool DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t le
     if((obj == NULL) || (p_data == NULL) || (len < CRSF_FRAME_SIZE_MAX + 3))
         return false;
 
-    obj->update_rt = DevCRSF_Get_SystemRunTime();
 }
 
 static bool DevCRSF_Callback_Proc(DevCRSFObj_TypeDef *obj, uint8_t *ptr, uint16_t size)
@@ -87,15 +84,4 @@ static bool DevCRSF_Callback_Proc(DevCRSFObj_TypeDef *obj, uint8_t *ptr, uint16_
     }
 }
 
-/* polling this func in crsf core */
-static void DevCRSF_Check_TimeOut(DevCRSFObj_TypeDef *obj)
-{
-    if(obj == NULL)
-        return;
-
-    if((obj->update_rt > 0) && ((DevCRSF_Get_SystemRunTime() - obj->update_rt) > CRSF_PACKET_TIMEOUT_MS))
-    {
-        obj->state = CRSF_State_TimeOut;
-    }
-}
 

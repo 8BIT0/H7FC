@@ -25,7 +25,6 @@ typedef struct
 {
     uint8_t channel;
     uint16_t val[SBUS_MAX_CHANNEL];
-    uint32_t time_stamp;
     bool valid;
 }DevSBUSData_TypeDef;
 

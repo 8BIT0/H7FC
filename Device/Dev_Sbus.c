@@ -1,7 +1,5 @@
 #include "Dev_Sbus.h"
 
-__weak uint32_t DevSbus_Get_SysMs(void) {return 0;}
-
 static DevSBUS_ErrorCode_List DevSBUS_Frame_Decode(uint8_t *ptr, uint16_t size, DevSBUSData_TypeDef *data);
 static DevSBUS_ErrorCode_List DevSBUS_Frame_Encode(uint8_t *ptr, uint16_t size, const DevSBUSData_TypeDef obj);
 
@@ -38,7 +36,6 @@ static DevSBUS_ErrorCode_List DevSBUS_Frame_Decode(uint8_t *ptr, uint16_t size, 
         data->val[15] = ((ptr[21] >> 5 | ptr[22] << 3) & SBUS_DECODE_MASK);
 
         data->valid = true;
-        data->time_stamp = DevSbus_Get_SysMs();
         return DevSBUS_NoError;
     }
 

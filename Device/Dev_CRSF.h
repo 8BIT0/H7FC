@@ -148,9 +148,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*port_init)(uint32_t baudrate);
     uint8_t rx_buf[CRSF_FRAME_SIZE_MAX + 3];
-    uint32_t update_rt;
     crsf_state_list state;
     bool failsafe;
 
@@ -163,7 +161,13 @@ typedef struct
 {
     bool (*init)(DevCRSFObj_TypeDef *obj);
     bool (*decode)(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
-    bool (*core)(DevCRSFObj_TypeDef *obj);
 } DevCRSF_TypeDef;
+
+#pragma pack(1)
+typedef struct
+{
+
+}DevCRSFData_TypeDef;
+#pragma pack()
 
 #endif

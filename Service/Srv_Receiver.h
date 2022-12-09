@@ -110,6 +110,8 @@ typedef struct
 
     uint8_t channel_num;
 
+    uint8_t *frame_data_obj;
+
     SrvReceiverData_TypeDef data;
     SrvReceiver_Callback cb;
 
