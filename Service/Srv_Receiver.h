@@ -11,7 +11,7 @@
 #define CHANNEL_RANGE_MIN 950
 #define CHANNEL_RANGE_MAX 2050
 
-typedef bool (*SrvReceiver_Callback)(uint8_t *ptr, uint16_t size);
+typedef bool (*SrvReceiver_Callback)(uint8_t *data_obj, uint8_t *ptr, uint16_t size);
 
 typedef enum
 {

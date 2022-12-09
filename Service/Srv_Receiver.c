@@ -151,7 +151,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
         Uart_Receiver_Obj->tx_stream = Bsp_DMA_Stream_5;
         Uart_Receiver_Obj->rx_buf = SrvReceiver_Buff;
         Uart_Receiver_Obj->rx_size = SRV_RECEIVER_BUFF_SIZE;
-        Uart_Receiver_Obj->cust_data_addr = (uint32_t)obj;
+        Uart_Receiver_Obj->cust_data_addr = obj;
 
         /* set uart callback */
         Uart_Receiver_Obj->RxCallback = SrvReceiver_Decode_Callback;
@@ -191,6 +191,7 @@ static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_
         if(obj->port_type == Receiver_Port_Serial)
         {
             /* do serial decode funtion */
+            obj->cb();
 
             /* set decode time stamp */
 
