@@ -19,12 +19,13 @@ BspUART_TypeDef BspUart = {
     .init = BspUart_Init,
 };
 
-static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
+static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 {
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
     DMA_HandleTypeDef tx_dma_cfg = {0};
     DMA_HandleTypeDef rx_dma_cfg = {0};
     IRQn_Type irqn;
+    int8_t index = Bspuart_None_Index;
 
     tx_dma_cfg.Init.PeriphInc = DMA_PINC_DISABLE;
     tx_dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
@@ -48,7 +49,7 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         (obj->hdl.Instance == NULL) ||
         (obj->tx_dma_instance == NULL) ||
         (obj->rx_dma_instance == NULL))
-        return false;
+        return BspUart_Clock_Error;
 
     if (obj->hdl.Instance == UART4)
     {
@@ -56,7 +57,7 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
 
         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-            return false;
+            return BspUart_Clock_Error;
 
         __HAL_RCC_UART4_CLK_ENABLE();
 
@@ -68,6 +69,7 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
 
         irqn = UART4_IRQn;
+        index = BspUART_Port_4;
     }
     else if (obj->hdl.Instance == USART6)
     {
@@ -75,7 +77,7 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
 
         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-            return false;
+            return BspUart_Clock_Error;
 
         __HAL_RCC_USART6_CLK_ENABLE();
 
@@ -87,6 +89,7 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         tx_dma_cfg.Init.Request = DMA_REQUEST_USART6_TX;
 
         irqn = USART6_IRQn;
+        index = BspUART_Port_6;
     }
     else if (obj->hdl.Instance == UART7)
     {
@@ -94,7 +97,7 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
 
         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-            return false;
+            return BspUart_Clock_Error;
 
         __HAL_RCC_UART7_CLK_ENABLE();
 
@@ -106,42 +109,47 @@ static bool BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART7_TX;
 
         irqn = UART7_IRQn;
+        index = BspUART_Port_7;
     }
     else
-        return false;
+        return BspUart_Clock_Error;
 
     obj->tx_dma_hdl = tx_dma_cfg;
     obj->rx_dma_hdl = rx_dma_cfg;
 
     if (!BspDMA.regist(obj->rx_dma, obj->rx_stream, &(obj->rx_dma_hdl)) ||
         !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->rx_dma_hdl)))
-        return false;
+        return BspUart_Clock_Error;
 
     /* rx tx pin init */
     BspGPIO.alt_init(obj->rx_io);
     BspGPIO.alt_init(obj->tx_io);
 
     if (HAL_DMA_Init(&rx_dma_cfg) != HAL_OK)
-        return false;
+        return BspUart_Clock_Error;
 
     __HAL_LINKDMA(&(obj->hdl), hdmarx, rx_dma_cfg);
 
     if (HAL_DMA_Init(&tx_dma_cfg) != HAL_OK)
-        return false;
+        return BspUart_Clock_Error;
 
     __HAL_LINKDMA(&(obj->hdl), hdmatx, tx_dma_cfg);
 
     HAL_NVIC_SetPriority(irqn, 0, 0);
     HAL_NVIC_EnableIRQ(irqn);
 
-    return true;
+    return index;
 }
 
 static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 {
     UART_HandleTypeDef uart_cfg;
+    int8_t port_index;
 
-    BspUart_Init_Clock(obj);
+    port_index = BspUart_Init_Clock(obj);
+
+    if(port_index < 0)
+        return false;
 
     uart_cfg.Instance = obj->instance;
     uart_cfg.Init.BaudRate = obj->baudrate;
@@ -179,6 +187,8 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 
     /* start receive data */
     HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
+
+    BspUart_Handle_List[port_index] = &(obj->hdl);
     return true;
 }
 

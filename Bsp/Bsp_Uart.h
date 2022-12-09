@@ -10,6 +10,9 @@
 
 typedef void (*BspUART_Callback)(uint8_t *tx, uint16_t size);
 
+#define BspUart_Clock_Error -1
+#define Bspuart_None_Index -1
+
 typedef enum
 {
     BspUART_CallbackType_Tx = 1,
