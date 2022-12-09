@@ -192,20 +192,35 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
     return true;
 }
 
+static bool SrvReceiver_Range_Check(SrvReceiverData_TypeDef *data_ptr)
+{
+    if (data_ptr)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size)
 {
     BspUARTObj_TypeDef *uart_obj = NULL;
     uint8_t *rx_buff_ptr = NULL;
     uint16_t rx_buff_size = 0;
 
-    if (obj && obj->cb && obj->port)
+    if (obj && obj->cb && obj->port && obj->frame_data_obj)
     {
         if (obj->port_type == Receiver_Port_Serial)
         {
             /* do serial decode funtion */
-            obj->cb();
+            if (obj->cb(obj->frame_data_obj, p_data, size))
+            {
+                /* set decode time stamp */
+                obj->data.time_stamp = SrvReceiver_Get_SysMs();
 
-            /* set decode time stamp */
+                /* data check */
+                SrvReceiver_Range_Check(obj->data);
+            }
 
             /* clear serial obj received data */
             if (obj->port->cfg)
@@ -220,10 +235,6 @@ static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_
             }
         }
     }
-}
-
-void SrvReceiver_Range_Check()
-{
 }
 
 /*************************************************************** Error Process Tree Callback *******************************************************************************/
