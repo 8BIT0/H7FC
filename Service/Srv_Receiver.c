@@ -87,6 +87,8 @@ static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
 
 bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
 {
+    bool data_obj_error = false;
+
     if (obj == NULL)
         return false;
 
@@ -104,7 +106,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
         BspUARTObj_TypeDef *Uart_Receiver_Obj;
 
         Uart_Receiver_Obj = (BspUARTObj_TypeDef *)MMU_Malloc(sizeof(BspUARTObj_TypeDef));
-        if(Uart_Receiver_Obj == NULL)
+        if (Uart_Receiver_Obj == NULL)
         {
             MMU_Free(Uart_Receiver_Obj);
             return false;
@@ -120,8 +122,11 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
 
             /* create data obj */
             obj->frame_data_obj = MMU_Malloc(sizeof(DevSBUSData_TypeDef));
-            if(obj->frame_data_obj == NULL)
-                return false;
+            if (obj->frame_data_obj == NULL)
+            {
+                data_obj_error = true;
+                break;
+            }
 
             /* set receiver object decode callback */
             break;
@@ -131,13 +136,21 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
 
             /* create data obj */
             obj->frame_data_obj = MMU_Malloc(sizeof(DevCRSFData_TypeDef));
-            if(obj->frame_data_obj == NULL)
-                return false;
-
+            if (obj->frame_data_obj == NULL)
+            {
+                data_obj_error = true;
+                break;
+            }
             /* set receiver object decode callback */
             break;
 
         default:
+            return false;
+        }
+
+        if (data_obj_error)
+        {
+            ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
             return false;
         }
 
@@ -157,7 +170,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
         Uart_Receiver_Obj->RxCallback = SrvReceiver_Decode_Callback;
 
         /* serial port init */
-        if(!BspUart.init(&Uart_Receiver_Obj))
+        if (!BspUart.init(&Uart_Receiver_Obj))
         {
             ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Port_Init_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
             return false;
@@ -176,7 +189,6 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
         return false;
     }
 
-
     return true;
 }
 
@@ -188,7 +200,7 @@ static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_
 
     if (obj && obj->cb && obj->port)
     {
-        if(obj->port_type == Receiver_Port_Serial)
+        if (obj->port_type == Receiver_Port_Serial)
         {
             /* do serial decode funtion */
             obj->cb();
@@ -196,14 +208,14 @@ static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_
             /* set decode time stamp */
 
             /* clear serial obj received data */
-            if(obj->port->cfg)
+            if (obj->port->cfg)
             {
                 uart_obj = ((BspUARTObj_TypeDef *)(obj->port->cfg));
 
                 rx_buff_ptr = uart_obj->rx_buf;
                 rx_buff_size = uart_obj->rx_size;
 
-                if(rx_buff_ptr && rx_buff_size)
+                if (rx_buff_ptr && rx_buff_size)
                     memset(rx_buff_ptr, NULL, rx_buff_size);
             }
         }
