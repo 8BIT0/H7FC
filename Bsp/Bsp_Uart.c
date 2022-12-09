@@ -326,9 +326,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         return;
 
     if(BspUart_Obj_List[index])
-    {
         BspUart_Obj_List[index]->monitor.rx_full_cnt ++;
-    }
 }
 
 /* transfer full */
