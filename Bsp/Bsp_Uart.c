@@ -250,9 +250,7 @@ void UART_Idle_Callback(BspUART_Port_List index)
 
                 /* idle receive callback process */
                 if (BspUart_Obj_List[index]->RxCallback)
-                {
                     BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->rx_buf, len);
-                }
             }
             else
             {
