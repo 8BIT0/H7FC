@@ -252,14 +252,13 @@ void USART1_Idle_Callback(void)
 
 void UART_Idle_Callback(BspUART_Port_List index)
 {
-    if (index == BspUART_Port_4)
+    UART_HandleTypeDef *hdl = NULL;
+
+    hdl = BspUart_Handle_List[index];
+
+    if(hdl)
     {
-    }
-    else if (index == BspUART_Port_6)
-    {
-    }
-    else if (index == BspUART_Port_7)
-    {
+        
     }
 }
 
