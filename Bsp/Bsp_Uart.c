@@ -326,7 +326,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         return;
 
     if(BspUart_Obj_List[index])
+    {
+        if (BspUart_Obj_List[index]->RxCallback)
+            BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
+        
+        HAL_UART_Receive_DMA(&(BspUart_Obj_List[index]->hdl), BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
+        
         BspUart_Obj_List[index]->monitor.rx_full_cnt ++;
+    }
 }
 
 /* transfer full */
