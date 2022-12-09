@@ -8,6 +8,8 @@
 #include "stm32h7xx_hal_uart.h"
 #include "Bsp_Uart.h"
 
+#define BspUart_Opr_TimeOut 100 //100ms
+
 /* internal variable */
 static BspUARTObj_TypeDef *BspUart_Obj_List[BspUART_Port_Sum] = {NULL};
 
@@ -185,17 +187,55 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     if ((obj->rx_buf == NULL) || (obj->rx_size == 0))
         return false;
 
+    BspUart_Obj_List[port_index] = obj;
+    obj->send_finish = false;
+    obj->wait_till_send_finish = false;
+
+    memset(&(obj->monitor), NULL, sizeof(obj->monitor));
+
     /* start receive data */
     HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
 
-    BspUart_Obj_List[port_index] = obj;
     return true;
 }
 
-static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size)
+static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size, bool wait_till_finish)
 {
+    uint8_t time_out = BspUart_Opr_TimeOut;
+
     if ((obj == NULL) || (tx_buf == NULL) || (size == 0))
         return false;
+
+    /* send data */
+    switch(HAL_UART_Transmit_DMA(&(obj->hdl), tx_buf, size))
+    {
+        case HAL_OK:
+            obj->monitor.tx_cnt++;
+            break;
+
+        case HAL_ERROR:
+        case HAL_BUSY:
+            obj->monitor.tx_err_cnt++;
+            return false;
+
+        default:
+            obj->monitor.tx_unknow_err_cnt++;
+            return false;
+    }
+
+    obj->wait_till_send_finish = wait_till_finish;
+    if(wait_till_finish)
+    {
+        while(!obj->send_finish)
+        {
+            if((time_out--) == 0)
+            {
+                obj-> monitor.tx_err_cnt ++;
+                return false;
+            }
+        }
+    }
+    obj->monitor.tx_success_cnt++;
 
     return true;
 }
@@ -237,7 +277,7 @@ void UART_Idle_Callback(BspUART_Port_List index)
                     CLEAR_BIT(hdl->Instance->CR3, USART_CR3_DMAR);
 
                     /* Abort the UART DMA Rx channel */
-                    if (huart1.hdmarx != NULL)
+                    if (hdl->hdmarx != NULL)
                         HAL_DMA_Abort(hdl->hdmarx);
 
                     /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
@@ -251,9 +291,13 @@ void UART_Idle_Callback(BspUART_Port_List index)
                 /* idle receive callback process */
                 if (BspUart_Obj_List[index]->RxCallback)
                     BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->rx_buf, len);
+
+                BspUart_Obj_List[index]->monitor.rx_cnt ++;
+                HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
             }
             else
             {
+                BspUart_Obj_List[index]->monitor.rx_err_cnt ++;
                 READ_REG(hdl->Instance->RDR);
                 __HAL_UART_CLEAR_OREFLAG(hdl);
             }
@@ -261,6 +305,7 @@ void UART_Idle_Callback(BspUART_Port_List index)
     }
 }
 
+/* receive full */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     uint8_t index = 0;
@@ -282,10 +327,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
     if(BspUart_Obj_List[index])
     {
-
+        BspUart_Obj_List[index]->monitor.rx_full_cnt ++;
     }
 }
 
+/* transfer full */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
     uint8_t index = 0;
@@ -307,6 +353,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
     if(BspUart_Obj_List[index])
     {
-        
+        if(BspUart_Obj_List[index]->wait_till_send_finish)
+            BspUart_Obj_List[index]->send_finish = true;
     }
 }

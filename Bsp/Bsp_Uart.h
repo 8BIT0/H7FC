@@ -30,6 +30,19 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
+    uint32_t rx_cnt;
+    uint32_t tx_cnt;
+
+    uint32_t rx_err_cnt;
+    uint32_t rx_full_cnt;
+
+    uint32_t tx_success_cnt;
+    uint32_t tx_err_cnt;
+    uint32_t tx_unknow_err_cnt;
+}BspUart_MonitorObj_TypeDef;
+
+typedef struct
+{
     uint16_t baudrate;
     bool pin_swap;
 
@@ -54,6 +67,11 @@ typedef struct
     uint16_t rx_size;
 
     uint32_t cust_data_addr;
+
+    bool wait_till_send_finish;
+    bool send_finish;
+
+    BspUart_MonitorObj_TypeDef monitor;
 } BspUARTObj_TypeDef;
 #pragma pack()
 
