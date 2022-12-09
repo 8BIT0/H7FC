@@ -258,7 +258,12 @@ void UART_Idle_Callback(BspUART_Port_List index)
 
     if(hdl)
     {
-        
+        uint32_t isrflags = READ_REG(hdl->Instance->ISR);
+        uint32_t cr1its = READ_REG(hdl->Instance->CR1);
+
+        if ((RESET != (isrflags & USART_ISR_IDLE)) && (RESET != (cr1its & USART_CR1_IDLEIE)))
+        {
+        }
     }
 }
 
