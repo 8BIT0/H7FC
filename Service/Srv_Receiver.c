@@ -148,6 +148,8 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             return false;
         }
 
+        obj->update_freq = 0.0f;
+
         if (data_obj_error)
         {
             ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
