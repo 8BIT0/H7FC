@@ -23,6 +23,7 @@
  * Device address: (uint8_t)
  * Frame length:   length in  bytes including Type (uint8_t)
  * Type:           (uint8_t)
+ * Payload:        (uint8_t)
  * CRC:            (uint8_t)
  *
  */
