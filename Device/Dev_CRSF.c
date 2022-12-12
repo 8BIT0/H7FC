@@ -92,13 +92,77 @@ static bool DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t le
     if ((obj == NULL) || (p_data == NULL) || (len <= 3))
         return false;
 
-    /* get crc first */
+    obj->frame.device_addr = p_data[0];
+    obj->frame.frame_size = p_data[1];
+    obj->frame.type = p_data[2];
+
+    if(obj->frame.frame_size > CRSF_FRAME_SIZE_MAX)
+        return false;
+
+    memcpy(obj->frame.type, p_data + 3, len - 3);
+
+    /* check crc first */
     if(crsf_crc8(p_data, len) == p_data[len - 1])
     {
-        switch()
-        {
-            
-        }
+    /* check frame type */
+    switch(obj->frame.type)
+    {
+        case CRSF_FRAMETYPE_GPS:
+            break;
+
+        case CRSF_FRAMETYPE_BATTERY_SENSOR:
+            break;
+
+        case CRSF_FRAMETYPE_LINK_STATISTICS:
+            break;
+
+        case CRSF_FRAMETYPE_OPENTX_SYNC:
+            break;
+
+        case CRSF_FRAMETYPE_RADIO_ID:
+            break;
+
+        case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+            break;
+
+        case CRSF_FRAMETYPE_ATTITUDE:
+            break;
+
+        case CRSF_FRAMETYPE_FLIGHT_MODE:
+            break;
+
+        // Extended Header Frames, range: 0x28 to 0x96
+        case CRSF_FRAMETYPE_DEVICE_PING:
+            break;
+
+        case CRSF_FRAMETYPE_DEVICE_INFO:
+            break;
+
+        case CRSF_FRAMETYPE_PARAMETER_SETTINGS_ENTRY:
+            break;
+
+        case CRSF_FRAMETYPE_PARAMETER_READ:
+            break;
+
+        case CRSF_FRAMETYPE_PARAMETER_WRITE:
+            break;
+
+        case CRSF_FRAMETYPE_COMMAND:
+            break;
+
+        // MSP commands
+        case CRSF_FRAMETYPE_MSP_REQ:   // response request using msp sequence as command
+            break;
+
+        case CRSF_FRAMETYPE_MSP_RESP:  // reply with 58 byte chunked binary
+            break;
+
+        case CRSF_FRAMETYPE_MSP_WRITE: // write with 8 byte chunked binary (OpenTX outbound telemetry buffer limit)
+            break;
+
+        default:
+            return false;
+    }
     }
 
     return true;
