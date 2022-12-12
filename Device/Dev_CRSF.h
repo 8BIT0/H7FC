@@ -158,17 +158,17 @@ typedef struct
     uint8_t downlink_RSSI;
     uint8_t downlink_Link_quality;
     int8_t downlink_SNR;
-} crsfLinkStatistics_t;
+} crsf_LinkStatistics_t;
 
 typedef struct
 {
     crsf_frame_t frame;
     crsf_state_list state;
     crsf_channels_t channel;
+    crsf_LinkStatistics_t statistics;
 
+    uint16_t rssi;
     bool failsafe;
-
-    crsfLinkStatistics_t statistics;
 
     CRSF_Callback link_up_cb;
     CRSF_Callback link_down_cb;

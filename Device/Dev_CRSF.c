@@ -102,13 +102,6 @@ static bool DevCrsf_Set_Callback(DevCRSFObj_TypeDef *obj, crsf_state_list state,
     return true;
 }
 
-static void DevCRSF_UpdataChannel_Value(DevCRSFObj_TypeDef *obj)
-{
-    memset(&obj->channel, 0, sizeof(obj->channel));
-    const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)&(obj->frame.data);
-    memcpy(&obj->channel, channel_val_ptr, sizeof(crsf_channels_t));
-}
-
 /* serial receiver receive callback */
 static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len)
 {
@@ -142,6 +135,8 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
             if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr) &&
                 ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->frame.frame_size))
             {
+                const crsf_LinkStatistics_t *stats = (const crsf_LinkStatistics_t *)&(obj->frame.data);
+
                 return CRSF_FRAMETYPE_LINK_STATISTICS;
             }
             break;
@@ -155,7 +150,10 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
             if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr)
             {
-                DevCRSF_UpdataChannel_Value(obj);
+                memset(&obj->channel, 0, sizeof(obj->channel));
+                const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)&(obj->frame.data);
+                memcpy(&obj->channel, channel_val_ptr, sizeof(crsf_channels_t));
+
                 return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
             }
             break;
