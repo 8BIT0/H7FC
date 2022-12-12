@@ -87,8 +87,19 @@ static bool DevCrsf_Set_Callback(DevCRSFObj_TypeDef *obj,crsf_state_list state, 
 /* serial receiver receive callback */
 static bool DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len)
 {
-    if ((obj == NULL) || (p_data == NULL))
+    uint8_t frame_size = 0;
+
+    if ((obj == NULL) || (p_data == NULL) || (len <= 3))
         return false;
+
+    /* get crc first */
+    if(crsf_crc8(p_data, len) == p_data[len - 1])
+    {
+        switch()
+        {
+            
+        }
+    }
 
     return true;
 }

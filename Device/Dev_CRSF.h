@@ -100,8 +100,8 @@ typedef struct
     crsf_addr_list device_addr;
     uint8_t frame_size;  // counts size after this byte, so it must be the payload size + 2 (type and crc)
     crsf_frame_type_list type;
-    uint8_t *data;
-} crsf_header_t;
+    uint8_t data[CRSF_FRAME_SIZE_MAX];  //we might need a union sturture to subtitude this buff
+} crsf_frame_t;
 
 typedef struct
 {
