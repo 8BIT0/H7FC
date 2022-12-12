@@ -123,6 +123,10 @@ static bool DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t le
             break;
 
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+            if(CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr)
+            {
+                
+            }
             break;
 
         case CRSF_FRAMETYPE_ATTITUDE:
