@@ -101,12 +101,19 @@ static bool DevCRSF_Callback_Proc(DevCRSFObj_TypeDef *obj, uint8_t *ptr, uint16_
     switch (obj->state)
     {
     case CRSF_State_LinkUp:
+        if(obj->link_up_cb)
+            obj->link_up_cb(ptr, size);
         break;
 
     case CRSF_State_LinkDown:
+        if(obj->link_down_cb)
+            obj->link_down_cb(ptr, size);
         break;
 
     case CRSF_State_TimeOut:
+        if(obj->failsafe_cb)
+            obj->failsafe_cb(ptr, size);
+        
         obj->failsafe = true;
         break;
 
