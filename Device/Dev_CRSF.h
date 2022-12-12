@@ -148,7 +148,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t rx_buf[CRSF_FRAME_SIZE_MAX + 3];
+    crsf_frame_t frame;
     crsf_state_list state;
     bool failsafe;
 
