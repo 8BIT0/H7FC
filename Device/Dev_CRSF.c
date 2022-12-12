@@ -125,6 +125,7 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
                 ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->frame.frame_size))
             {
                 const crsf_LinkStatistics_t *stats = (const crsf_LinkStatistics_t *)&(obj->frame.data);
+                memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
 
                 return CRSF_FRAMETYPE_LINK_STATISTICS;
             }
