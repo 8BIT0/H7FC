@@ -70,6 +70,8 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
         return false;
 
     memset(obj, 0, sizeof(DevCRSFObj_TypeDef));
+    obj->state = CRSF_State_LinkDown;
+
     return true;
 }
 
@@ -108,6 +110,7 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
             {
                 const crsf_LinkStatistics_t *stats = (const crsf_LinkStatistics_t *)&(obj->frame.data);
                 memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
+                obj->state = CRSF_State_LinkUp;
 
                 return CRSF_FRAMETYPE_LINK_STATISTICS;
             }
@@ -119,6 +122,7 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
                 memset(&obj->channel, 0, sizeof(obj->channel));
                 const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)&(obj->frame.data);
                 memcpy(&obj->channel, channel_val_ptr, sizeof(crsf_channels_t));
+                obj->state = CRSF_State_LinkUp;
 
                 return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
             }
@@ -131,3 +135,5 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
 
     return CRSF_DECODE_ERROR;
 }
+
+/* get crsf data */
