@@ -87,7 +87,7 @@ static bool DevCrsf_Set_Callback(DevCRSFObj_TypeDef *obj,crsf_state_list state, 
 /* serial receiver receive callback */
 static bool DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len)
 {
-    if ((obj == NULL) || (p_data == NULL) || (len < CRSF_FRAME_SIZE_MAX + 3))
+    if ((obj == NULL) || (p_data == NULL))
         return false;
 
     return true;
