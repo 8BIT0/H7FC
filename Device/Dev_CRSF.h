@@ -152,6 +152,8 @@ typedef struct
     crsf_state_list state;
     bool failsafe;
 
+    crsfLinkStatistics_t statistics;
+
     CRSF_Callback link_up_cb;
     CRSF_Callback link_down_cb;
     CRSF_Callback failsafe_cb;
