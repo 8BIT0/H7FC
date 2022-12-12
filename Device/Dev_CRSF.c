@@ -114,6 +114,11 @@ static bool DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t le
             break;
 
         case CRSF_FRAMETYPE_LINK_STATISTICS:
+            if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr) &&
+                ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->frame.frame_size))
+            {
+
+            }
             break;
 
         case CRSF_FRAMETYPE_OPENTX_SYNC:
@@ -125,7 +130,7 @@ static bool DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t le
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
             if(CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr)
             {
-                
+
             }
             break;
 

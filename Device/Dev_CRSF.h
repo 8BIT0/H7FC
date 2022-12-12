@@ -42,6 +42,19 @@ typedef void (*CRSF_Callback)(uint8_t *ptr, uint16_t size);
 #define CRSF_FRAME_RC_CHANNELS_PAYLOAD_SIZE 22  // 11 bits per channel * 16 channels = 22 bytes.
 #define CRSF_FRAME_ATTITUDE_PAYLOAD_SIZE 6
 
+#define CRSF_DISPLAYPORT_SUBCMD_UPDATE 0x01 // transmit displayport buffer to remote
+#define CRSF_DISPLAYPORT_SUBCMD_CLEAR 0X02  // clear client screen
+#define CRSF_DISPLAYPORT_SUBCMD_OPEN 0x03   // client request to open cms menu
+#define CRSF_DISPLAYPORT_SUBCMD_CLOSE 0x04  // client request to close cms menu
+#define CRSF_DISPLAYPORT_SUBCMD_POLL 0x05   // client request to poll/refresh cms menu
+
+#define CRSF_DISPLAYPORT_OPEN_ROWS_OFFSET 1
+#define CRSF_DISPLAYPORT_OPEN_COLS_OFFSET 2
+
+#define CRSF_FRAME_TX_MSP_FRAME_SIZE 58
+#define CRSF_FRAME_RX_MSP_FRAME_SIZE 8
+#define CRSF_FRAME_ORIGIN_DEST_SIZE 2
+
 // Packet timeout where buffer is flushed if no data is received in this time
 #define CRSF_PACKET_TIMEOUT_MS 100
 #define CRSF_FAILSAFE_STAGE1_MS 300
