@@ -28,18 +28,18 @@ typedef void (*CRSF_Callback)(uint8_t *ptr, uint16_t size);
 // Clashes with CRSF_ADDRESS_FLIGHT_CONTROLLER
 #define CRSF_SYNC_BYTE 0XC8
 
-#define CRSF_FRAME_LENGTH_ADDRESS 1         // length of ADDRESS field
-#define CRSF_FRAME_LENGTH_FRAMELENGTH 1     // length of FRAMELENGTH field
-#define CRSF_FRAME_LENGTH_TYPE 1            // length of TYPE field
-#define CRSF_FRAME_LENGTH_CRC 1             // length of CRC field
-#define CRSF_FRAME_LENGTH_TYPE_CRC 2        // length of TYPE and CRC fields combined
-#define CRSF_FRAME_LENGTH_EXT_TYPE_CRC 4    // length of Extended Dest/Origin, TYPE and CRC fields combined
-#define CRSF_FRAME_LENGTH_NON_PAYLOAD 4     // combined length of all fields except payload
+#define CRSF_FRAME_LENGTH_ADDRESS 1      // length of ADDRESS field
+#define CRSF_FRAME_LENGTH_FRAMELENGTH 1  // length of FRAMELENGTH field
+#define CRSF_FRAME_LENGTH_TYPE 1         // length of TYPE field
+#define CRSF_FRAME_LENGTH_CRC 1          // length of CRC field
+#define CRSF_FRAME_LENGTH_TYPE_CRC 2     // length of TYPE and CRC fields combined
+#define CRSF_FRAME_LENGTH_EXT_TYPE_CRC 4 // length of Extended Dest/Origin, TYPE and CRC fields combined
+#define CRSF_FRAME_LENGTH_NON_PAYLOAD 4  // combined length of all fields except payload
 
 #define CRSF_FRAME_GPS_PAYLOAD_SIZE 15
 #define CRSF_FRAME_BATTERY_SENSOR_PAYLOAD_SIZE 8
 #define CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE 10
-#define CRSF_FRAME_RC_CHANNELS_PAYLOAD_SIZE 22  // 11 bits per channel * 16 channels = 22 bytes.
+#define CRSF_FRAME_RC_CHANNELS_PAYLOAD_SIZE 22 // 11 bits per channel * 16 channels = 22 bytes.
 #define CRSF_FRAME_ATTITUDE_PAYLOAD_SIZE 6
 
 #define CRSF_DISPLAYPORT_SUBCMD_UPDATE 0x01 // transmit displayport buffer to remote
@@ -59,6 +59,7 @@ typedef void (*CRSF_Callback)(uint8_t *ptr, uint16_t size);
 #define CRSF_PACKET_TIMEOUT_MS 100
 #define CRSF_FAILSAFE_STAGE1_MS 300
 
+#define CRSF_DECODE_ERROR 255
 
 typedef enum
 {
@@ -105,15 +106,15 @@ typedef enum
     CRSF_State_LinkUp = 0,
     CRSF_State_LinkDown,
     CRSF_State_TimeOut,
-}crsf_state_list;
+} crsf_state_list;
 
 #pragma pack(1)
 typedef struct
 {
     crsf_addr_list device_addr;
-    uint8_t frame_size;  // counts size after this byte, so it must be the payload size + 2 (type and crc)
+    uint8_t frame_size; // counts size after this byte, so it must be the payload size + 2 (type and crc)
     crsf_frame_type_list type;
-    uint8_t data[CRSF_FRAME_SIZE_MAX];  //we might need a union sturture to subtitude this buff
+    uint8_t data[CRSF_FRAME_SIZE_MAX]; // we might need a union sturture to subtitude this buff
 } crsf_frame_t;
 
 typedef struct
@@ -163,6 +164,8 @@ typedef struct
 {
     crsf_frame_t frame;
     crsf_state_list state;
+    crsf_channels_t channel;
+
     bool failsafe;
 
     crsfLinkStatistics_t statistics;
@@ -170,7 +173,7 @@ typedef struct
     CRSF_Callback link_up_cb;
     CRSF_Callback link_down_cb;
     CRSF_Callback failsafe_cb;
-}DevCRSFObj_TypeDef;
+} DevCRSFObj_TypeDef;
 
 typedef struct
 {
@@ -182,7 +185,7 @@ typedef struct
 typedef struct
 {
 
-}DevCRSFData_TypeDef;
+} DevCRSFData_TypeDef;
 #pragma pack()
 
 #endif
