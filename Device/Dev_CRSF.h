@@ -9,6 +9,9 @@ typedef void (*CRSF_Callback)(uint8_t *ptr, uint16_t size);
 
 #define CRSF_BAUDRATE 420000
 
+#define CRSF_LINK_STATUS_UPDATE_TIMEOUT_US 250000
+#define TBS_CRSF_TIME_BETWEEN_FRAMES_US 6667
+
 // Basic setup
 #define CRSF_MAX_CHANNEL 16
 #define CRSF_FRAME_SIZE_MAX 64
@@ -167,7 +170,14 @@ typedef struct
     crsf_channels_t channel;
     crsf_LinkStatistics_t statistics;
 
+    uint64_t rc_frame_update_us;
+    uint64_t statistics_update_us;
+
+    uint64_t lst_rc_frame_update_us;
+    uint64_t lst_statistics_update_us;
+
     uint16_t rssi;
+    uint16_t link_quality;
     bool failsafe;
 
     CRSF_Callback link_up_cb;

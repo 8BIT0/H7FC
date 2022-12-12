@@ -56,17 +56,6 @@ static uint8_t crsf_crc8(uint8_t *ptr, uint16_t len)
     return crc;
 }
 
-static uint16_t DevCrsf_Range_Check(uint16_t channel_val)
-{
-    if (channel_val >= CRSF_DIGITAL_CHANNEL_MAX)
-        return CRSF_DIGITAL_CHANNEL_MAX;
-
-    if (channel_val <= CRSF_DIGITAL_CHANNEL_MIN)
-        return CRSF_DIGITAL_CHANNEL_MIN;
-
-    return channel_val;
-}
-
 static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
 {
     if (obj == NULL)
@@ -141,12 +130,6 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
             }
             break;
 
-        case CRSF_FRAMETYPE_OPENTX_SYNC:
-            break;
-
-        case CRSF_FRAMETYPE_RADIO_ID:
-            break;
-
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
             if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr)
             {
@@ -156,41 +139,6 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
 
                 return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
             }
-            break;
-
-        case CRSF_FRAMETYPE_ATTITUDE:
-            break;
-
-        case CRSF_FRAMETYPE_FLIGHT_MODE:
-            break;
-
-        // Extended Header Frames, range: 0x28 to 0x96
-        case CRSF_FRAMETYPE_DEVICE_PING:
-            break;
-
-        case CRSF_FRAMETYPE_DEVICE_INFO:
-            break;
-
-        case CRSF_FRAMETYPE_PARAMETER_SETTINGS_ENTRY:
-            break;
-
-        case CRSF_FRAMETYPE_PARAMETER_READ:
-            break;
-
-        case CRSF_FRAMETYPE_PARAMETER_WRITE:
-            break;
-
-        case CRSF_FRAMETYPE_COMMAND:
-            break;
-
-        // MSP commands
-        case CRSF_FRAMETYPE_MSP_REQ: // response request using msp sequence as command
-            break;
-
-        case CRSF_FRAMETYPE_MSP_RESP: // reply with 58 byte chunked binary
-            break;
-
-        case CRSF_FRAMETYPE_MSP_WRITE: // write with 8 byte chunked binary (OpenTX outbound telemetry buffer limit)
             break;
 
         default:
