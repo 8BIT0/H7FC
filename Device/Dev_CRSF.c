@@ -49,6 +49,32 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
     return true;
 }
 
+static bool DevCrsf_Set_Callback(DevCRSFObj_TypeDef *obj,crsf_state_list state, CRSF_Callback cb)
+{
+    if(!obj)
+        return false;
+
+    switch(state)
+    {
+        case CRSF_State_LinkUp:
+            obj->link_up_cb = cb;
+            break;
+
+        case CRSF_State_LinkDown:
+            obj->link_down_cb = cb;
+            break;
+
+        case CRSF_State_TimeOut:
+            obj->failsafe_cb = cb;
+            break;
+
+        default:
+            return false;
+    }
+
+    return true;
+}
+
 /* serial receiver receive callback */
 static bool DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len)
 {
