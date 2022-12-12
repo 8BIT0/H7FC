@@ -28,6 +28,14 @@
  *
  */
 
+static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj);
+static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
+
+DevCRSF_TypeDef DevCRSF = {
+    .init = DevCrsf_Init,
+    .decode = DevCRSF_Decode,
+};
+
 static uint8_t crsf_crc8tab[256] = {
     0x00, 0xD5, 0x7F, 0xAA, 0xFE, 0x2B, 0x81, 0x54, 0x29, 0xFC, 0x56, 0x83, 0xD7, 0x02, 0xA8, 0x7D,
     0x52, 0x87, 0x2D, 0xF8, 0xAC, 0x79, 0xD3, 0x06, 0x7B, 0xAE, 0x04, 0xD1, 0x85, 0x50, 0xFA, 0x2F,
@@ -62,32 +70,6 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
         return false;
 
     memset(obj, 0, sizeof(DevCRSFObj_TypeDef));
-    return true;
-}
-
-static bool DevCrsf_Set_Callback(DevCRSFObj_TypeDef *obj, crsf_state_list state, CRSF_Callback cb)
-{
-    if (!obj)
-        return false;
-
-    switch (state)
-    {
-    case CRSF_State_LinkUp:
-        obj->link_up_cb = cb;
-        break;
-
-    case CRSF_State_LinkDown:
-        obj->link_down_cb = cb;
-        break;
-
-    case CRSF_State_TimeOut:
-        obj->failsafe_cb = cb;
-        break;
-
-    default:
-        return false;
-    }
-
     return true;
 }
 
@@ -148,35 +130,4 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
     }
 
     return CRSF_DECODE_ERROR;
-}
-
-static bool DevCRSF_Callback_Proc(DevCRSFObj_TypeDef *obj, uint8_t *ptr, uint16_t size)
-{
-    if (obj == NULL)
-        return false;
-
-    switch (obj->state)
-    {
-    case CRSF_State_LinkUp:
-        if (obj->link_up_cb)
-            obj->link_up_cb(ptr, size);
-        break;
-
-    case CRSF_State_LinkDown:
-        if (obj->link_down_cb)
-            obj->link_down_cb(ptr, size);
-        break;
-
-    case CRSF_State_TimeOut:
-        if (obj->failsafe_cb)
-            obj->failsafe_cb(ptr, size);
-
-        obj->failsafe = true;
-        break;
-
-    default:
-        return false;
-    }
-
-    return true;
 }

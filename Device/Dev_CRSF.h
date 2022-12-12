@@ -168,27 +168,14 @@ typedef struct
     crsf_state_list state;
     crsf_channels_t channel;
     crsf_LinkStatistics_t statistics;
-
-    uint16_t rssi;
-    uint16_t link_quality;
-    bool failsafe;
-
-    CRSF_Callback link_up_cb;
-    CRSF_Callback link_down_cb;
-    CRSF_Callback failsafe_cb;
 } DevCRSFObj_TypeDef;
 
 typedef struct
 {
     bool (*init)(DevCRSFObj_TypeDef *obj);
-    bool (*decode)(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
+    uint8_t (*decode)(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
 } DevCRSF_TypeDef;
 
-#pragma pack(1)
-typedef struct
-{
-
-} DevCRSFData_TypeDef;
-#pragma pack()
+extern DevCRSF_TypeDef DevCRSF;
 
 #endif
