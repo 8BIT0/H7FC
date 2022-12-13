@@ -148,6 +148,8 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     UART_HandleTypeDef uart_cfg;
     int8_t port_index;
 
+    obj->init_state = false;
+
     port_index = BspUart_Init_Clock(obj);
 
     if (port_index < 0)
@@ -167,11 +169,11 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     uart_cfg.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
     uart_cfg.AdvancedInit.DMADisableonRxError = UART_ADVFEATURE_DMA_DISABLEONRXERROR;
 
-    obj->hdl = uart_cfg;
-
     /* swap tx rx pin */
     if (obj->pin_swap)
         uart_cfg.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+
+    obj->hdl = uart_cfg;
 
     if (HAL_UART_Init(&uart_cfg) != HAL_OK ||
         HAL_UARTEx_SetTxFifoThreshold(&uart_cfg, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK ||
@@ -195,6 +197,55 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 
     /* start receive data */
     HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
+
+    obj->init_state = true;
+    return true;
+}
+
+bool BspUart_Set_Baudrate(BspUARTObj_TypeDef *obj, uint32_t baudrate)
+{
+    if (obj || !obj->init_state)
+        return false;
+
+    return true;
+}
+
+bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
+{
+    if (obj || !obj->init_state)
+        return false;
+
+    return true;
+}
+
+bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity)
+{
+    if (obj || !obj->init_state)
+        return false;
+
+    return true;
+}
+
+bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
+{
+    if (obj || !obj->init_state)
+        return false;
+
+    return true;
+}
+
+bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj)
+{
+    if (obj || !obj->init_state)
+        return false;
+
+    return true;
+}
+
+bool BspUart_Enable_Receive(BspUARTObj_TypeDef *obj)
+{
+    if (obj || !obj->init_state)
+        return false;
 
     return true;
 }

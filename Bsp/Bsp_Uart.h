@@ -71,6 +71,8 @@ typedef struct
     bool wait_till_send_finish;
     bool send_finish;
 
+    bool init_state;
+
     BspUart_MonitorObj_TypeDef monitor;
 } BspUARTObj_TypeDef;
 #pragma pack()
