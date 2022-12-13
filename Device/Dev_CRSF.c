@@ -30,10 +30,14 @@
 
 static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj);
 static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
+static crsf_channels_t DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj);
+static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj);
 
 DevCRSF_TypeDef DevCRSF = {
     .init = DevCrsf_Init,
     .decode = DevCRSF_Decode,
+    .get_channel = DevCRSF_Get_Channel,
+    .get_statistics = DevCESF_Get_Statistics,
 };
 
 static uint8_t crsf_crc8tab[256] = {
@@ -136,4 +140,26 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
     return CRSF_DECODE_ERROR;
 }
 
-/* get crsf data */
+static crsf_channels_t DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj)
+{
+    crsf_channels_t channel;
+
+    memset(&channel, 0, sizeof(channel));
+    
+    if(obj)
+        memcpy(&channel, &obj->channel, sizeof(crsf_channels_t));
+    
+    return channel;
+}
+
+static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj)
+{
+    crsf_LinkStatistics_t statistics;
+
+    memset(&statistics, 0, sizeof(crsf_LinkStatistics_t));
+
+    if(obj)
+        memcpy(&statistics, &obj->statistics, sizoef(crsf_LinkStatistics_t));
+
+    return statistics;
+}

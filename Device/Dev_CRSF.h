@@ -174,6 +174,8 @@ typedef struct
 {
     bool (*init)(DevCRSFObj_TypeDef *obj);
     uint8_t (*decode)(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
+    crsf_channels_t (*get_channel)(DevCRSFObj_TypeDef *obj);
+    crsf_LinkStatistics_t (*get_statistics)(DevCRSFObj_TypeDef *obj);
 } DevCRSF_TypeDef;
 
 extern DevCRSF_TypeDef DevCRSF;
