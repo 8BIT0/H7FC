@@ -47,6 +47,7 @@ Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \
 Bsp/Bsp_SDMMC.c \
 Bsp/Bsp_Uart.c \
+Bsp/Bsp_DMA.c \
 Device/Dev_MPU6000.c \
 Device/Dev_ICM20602.c \
 Device/Dev_Led.c \
@@ -87,6 +88,8 @@ HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
+HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash_ex.c \
 HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_gpio.c \

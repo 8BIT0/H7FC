@@ -39,7 +39,7 @@ typedef struct
     uint32_t tx_success_cnt;
     uint32_t tx_err_cnt;
     uint32_t tx_unknow_err_cnt;
-}BspUart_MonitorObj_TypeDef;
+} BspUart_MonitorObj_TypeDef;
 
 typedef struct
 {
@@ -92,6 +92,7 @@ typedef struct
 void UART_Idle_Callback(BspUART_Port_List index);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
+UART_HandleTypeDef *BspUart_GetObj_Handle(BspUART_Port_List index);
 
 extern BspUART_TypeDef BspUart;
 

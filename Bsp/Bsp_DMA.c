@@ -1,5 +1,7 @@
-#include "Bsp_DMA.h"
 #include "stm32h743xx.h"
+#include "stm32h7xx_hal.h"
+#include "stm32h7xx_hal_rcc.h"
+#include "Bsp_DMA.h"
 
 static DMA_HandleTypeDef *BspDMA_Map[Bsp_DMA_Sum][Bsp_DMA_Stream_Sum] = {NULL};
 
@@ -11,8 +13,7 @@ static const BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA1_Stream4,
     DMA1_Stream5,
     DMA1_Stream6,
-    DMA1_Stream7
-};
+    DMA1_Stream7};
 
 static const BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA2_Stream0,
@@ -22,8 +23,7 @@ static const BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA2_Stream4,
     DMA2_Stream5,
     DMA2_Stream6,
-    DMA2_Stream7
-};
+    DMA2_Stream7};
 
 /* internal function */
 
@@ -43,11 +43,11 @@ static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List st
 {
     DMA2D_TypeDef *instance;
 
-    if((dma == Bsp_DMA_1) && ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_0)))
+    if ((dma == Bsp_DMA_1) && ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_0)))
     {
         return BspDMA1_Instance_List[stream];
     }
-    else if((dma == Bsp_DMA_2) && ((stream < Bsp_DMA_Stream_7) && (stream >= Bsp_DMA_Stream_0)))
+    else if ((dma == Bsp_DMA_2) && ((stream < Bsp_DMA_Stream_7) && (stream >= Bsp_DMA_Stream_0)))
     {
         return BspDMA2_Instance_List[stream];
     }
@@ -59,11 +59,11 @@ static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, DMA_Ha
 {
     DMA2D_TypeDef *instance = NULL;
 
-    if( ((dma < Bsp_DMA_Sum) && (dma >= Bsp_DMA_1)) && 
+    if (((dma < Bsp_DMA_Sum) && (dma >= Bsp_DMA_1)) &&
         ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_0)))
     {
         instance = BspDMA_Get_Instance(dma, stream);
-        if(instance == NULL)
+        if (instance == NULL)
             return false;
 
         hdl->Instance = instance;
@@ -76,7 +76,7 @@ static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, DMA_Ha
 
 static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream)
 {
-    if( ((dma < Bsp_DMA_Sum) && (dma >= Bsp_DMA_1)) && 
+    if (((dma < Bsp_DMA_Sum) && (dma >= Bsp_DMA_1)) &&
         ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_0)))
     {
         BspDMA_Map[dma][stream] = NULL;
@@ -88,7 +88,7 @@ static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream)
 
 static DMA_HandleTypeDef *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream)
 {
-    if( ((dma < Bsp_DMA_Sum) && (dma >= Bsp_DMA_1)) && 
+    if (((dma < Bsp_DMA_Sum) && (dma >= Bsp_DMA_1)) &&
         ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_0)))
     {
         return BspDMA_Map[dma][stream];

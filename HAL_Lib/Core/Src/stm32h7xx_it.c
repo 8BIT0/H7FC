@@ -208,21 +208,30 @@ void DMA1_Stream5_IRQHandler(void)
 
 void UART4_IRQHandler(void)
 {
+  UART_HandleTypeDef *hdl = NULL;
   UART_Idle_Callback(BspUART_Port_4);
+  hdl = BspUart_GetObj_Handle(BspUART_Port_4);
 
-  HAL_UART_IRQHandler(&huart4);
+  if (hdl && (hdl->Instance == UART4))
+    HAL_UART_IRQHandler(hdl);
 }
 
 void USART6_IRQHandler(void)
 {
+  UART_HandleTypeDef *hdl = NULL;
   UART_Idle_Callback(BspUART_Port_6);
+  hdl = BspUart_GetObj_Handle(BspUART_Port_6);
 
-  HAL_UART_IRQHandler(&huart6);
+  if (hdl && (hdl->Instance == USART6))
+    HAL_UART_IRQHandler(hdl);
 }
 
 void UART7_IRQHandler(void)
 {
+  UART_HandleTypeDef *hdl = NULL;
   UART_Idle_Callback(BspUART_Port_7);
+  hdl = BspUart_GetObj_Handle(BspUART_Port_7);
 
-  HAL_UART_IRQHandler(&huart7);
+  if (hdl && (hdl->Instance == UART7))
+    HAL_UART_IRQHandler(hdl);
 }

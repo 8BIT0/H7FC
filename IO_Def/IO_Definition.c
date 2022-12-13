@@ -98,15 +98,15 @@ BspGPIO_Obj_TypeDef ICM20602_INTPin = {
 };
 
 BspGPIO_Obj_TypeDef Uart4_TxPin = {
-    .pin = ,
-    .port = ,
+    .pin = UART4_TX_PIN,
+    .port = UART4_TX_PORT,
     .alternate = GPIO_AF8_UART4,
 };
 
 BspGPIO_Obj_TypeDef Uart4_RxPin = {
-    .pin = ,
-    .port = ,
-    .alternate = GPIO_AF8_UART4;
+    .pin = UART4_RX_PIN,
+    .port = UART4_RX_PORT,
+    .alternate = GPIO_AF8_UART4,
 };
 
 BspSPI_PinConfig_TypeDef MPU6000_BusPin = {

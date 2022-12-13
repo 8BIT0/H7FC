@@ -88,6 +88,7 @@ static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
 bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
 {
     bool data_obj_error = false;
+    BspUARTObj_TypeDef *Uart_Receiver_Obj;
 
     if (obj == NULL)
         return false;
@@ -103,8 +104,6 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
     switch (obj->port_type)
     {
     case Receiver_Port_Serial:
-        BspUARTObj_TypeDef *Uart_Receiver_Obj;
-
         Uart_Receiver_Obj = (BspUARTObj_TypeDef *)MMU_Malloc(sizeof(BspUARTObj_TypeDef));
         if (Uart_Receiver_Obj == NULL)
         {
