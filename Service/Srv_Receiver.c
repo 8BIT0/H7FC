@@ -147,6 +147,9 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             obj->invert_control = NULL;
             obj->inverter_init = NULL;
 
+            /* set max channel num */
+            obj->channel_num = CRSF_MAX_CHANNEL;
+
             /* set receiver object decode callback */
             break;
 
