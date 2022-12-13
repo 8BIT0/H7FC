@@ -11,14 +11,14 @@
 #define SBUS_FRAME_BYTE_SIZE 25
 #define SBUS_FRAME_HEADER 0xF0
 #define SBUS_DECODE_MASK 0x07FF
-#define SBUS_MAX_CHANNEL 32
+#define SBUS_MAX_CHANNEL 16
 
 typedef enum
 {
     DevSBUS_NoError = 0,
     DevSBUS_Error_Obj,
     DevSBUS_Error_Frame,
-}DevSBUS_ErrorCode_List;
+} DevSBUS_ErrorCode_List;
 
 #pragma pack(1)
 typedef struct
@@ -26,7 +26,7 @@ typedef struct
     uint8_t channel;
     uint16_t val[SBUS_MAX_CHANNEL];
     bool valid;
-}DevSBUSData_TypeDef;
+} DevSBUSData_TypeDef;
 
 typedef union
 {
@@ -37,19 +37,18 @@ typedef union
         uint8_t frame_lost : 1;
         uint8_t fail_safe_act : 1;
         uint8_t reserve : 4;
-    }bit;
+    } bit;
 
     uint8_t val;
-}DevSBUS_FuncBit_TypeDef;
+} DevSBUS_FuncBit_TypeDef;
 #pragma pack()
 
 typedef struct
 {
     DevSBUS_ErrorCode_List (*decode)(uint8_t *ptr, uint16_t size, DevSBUSData_TypeDef *obj);
     DevSBUS_ErrorCode_List (*encode)(uint8_t *ptr, uint16_t size, const DevSBUSData_TypeDef obj);
-}DevSBUS_TypeDef;
+} DevSBUS_TypeDef;
 
 extern DevSBUS_TypeDef DevSBUS;
 
 #endif
-
