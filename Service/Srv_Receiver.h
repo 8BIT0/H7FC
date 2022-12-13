@@ -112,6 +112,9 @@ typedef struct
 
     uint8_t *frame_data_obj;
 
+    uint16_t rssi;
+    uint16_t link_quality;
+
     SrvReceiverData_TypeDef data;
     SrvReceiver_Callback cb;
 
