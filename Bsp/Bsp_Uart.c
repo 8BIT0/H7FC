@@ -181,11 +181,6 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
         HAL_UARTEx_DisableFifoMode(&uart_cfg) != HAL_OK)
         return false;
 
-    /* enable irq callback */
-    __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_IDLE);
-    __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_ERR);
-    __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_PE);
-
     if ((obj->rx_buf == NULL) || (obj->rx_size == 0))
         return false;
 
@@ -194,6 +189,11 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     obj->wait_till_send_finish = false;
 
     memset(&(obj->monitor), NULL, sizeof(obj->monitor));
+
+    /* enable irq callback */
+    __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_IDLE);
+    __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_ERR);
+    __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_PE);
 
     /* start receive data */
     HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
@@ -235,14 +235,6 @@ bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
 }
 
 bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj)
-{
-    if (obj || !obj->init_state)
-        return false;
-
-    return true;
-}
-
-bool BspUart_Enable_Receive(BspUARTObj_TypeDef *obj)
 {
     if (obj || !obj->init_state)
         return false;
