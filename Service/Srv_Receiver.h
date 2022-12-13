@@ -127,8 +127,6 @@ typedef struct
 
     bool (*inverter_init)(uint32_t port, uint32_t pin);
     bool (*invert_control)(uint32_t port, uint32_t pin);
-
-    bool (*port_init)(uint8_t *port_cfg, uint16_t size);
 } SrvReceiverObj_TypeDef;
 #pragma pack()
 

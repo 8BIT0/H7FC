@@ -126,6 +126,9 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
                 data_obj_error = true;
                 break;
             }
+
+            /* init inverter pin */
+
             /* set receiver object decode callback */
             break;
 
@@ -139,6 +142,11 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
                 data_obj_error = true;
                 break;
             }
+
+            /* for crsf receiver we dont need inverter */
+            obj->invert_control = NULL;
+            obj->inverter_init = NULL;
+
             /* set receiver object decode callback */
             break;
 
