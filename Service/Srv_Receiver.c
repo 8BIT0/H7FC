@@ -127,7 +127,6 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
                 data_obj_error = true;
                 break;
             }
-
             /* set receiver object decode callback */
             break;
 
