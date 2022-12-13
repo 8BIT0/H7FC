@@ -135,7 +135,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             Uart_Receiver_Obj->baudrate = CRSF_BAUDRATE;
 
             /* create data obj */
-            obj->frame_data_obj = MMU_Malloc(sizeof(DevCRSFData_TypeDef));
+            obj->frame_data_obj = MMU_Malloc(sizeof(DevCRSFObj_TypeDef));
             if (obj->frame_data_obj == NULL)
             {
                 data_obj_error = true;
