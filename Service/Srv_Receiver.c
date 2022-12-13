@@ -154,6 +154,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             obj->channel_num = CRSF_MAX_CHANNEL;
 
             /* set receiver object decode callback */
+            obj->cb = DevCRSF.decode;
             break;
 
         default:
