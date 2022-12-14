@@ -16,7 +16,7 @@ static bool DevSBUS_Init(DevSBUSObj_TypeDef *obj)
     if(obj == NULL)
         return false;
 
-    memset(obj, NULL, sizeof(DevSBUSObj_TypeDef));
+    memset(obj, 0, sizeof(DevSBUSObj_TypeDef));
 
     return true;
 }
