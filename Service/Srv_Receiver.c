@@ -1,6 +1,7 @@
 #include "Srv_Receiver.h"
 #include "Bsp_Uart.h"
 #include "Bsp_SPI.h"
+#include "Bsp_GPIO.h" 
 #include "error_log.h"
 #include "IO_Definition.h"
 #include "mmu.h"
@@ -132,7 +133,11 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             /* set max channel num */
             obj->channel_num = SBUS_MAX_CHANNEL;
 
-            /* set receiver object decode callback */
+            /* set receiver object frame object */
+            obj->frame_api = &DevSBUS;
+            
+            if(!((DevSBUS_TypeDef *)(obj->frame_api))->init(obj->frame_data_obj))
+                return false;
             break;
 
         case Receiver_Type_CRSF:
@@ -153,7 +158,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             /* set max channel num */
             obj->channel_num = CRSF_MAX_CHANNEL;
 
-            /* set receiver object decode callback */
+            /* set receiver object frame object */
             obj->frame_api = &DevCRSF;
 
             if(!((DevCRSF_TypeDef *)(obj->frame_api))->init(obj->frame_data_obj))
