@@ -154,7 +154,10 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             obj->channel_num = CRSF_MAX_CHANNEL;
 
             /* set receiver object decode callback */
-            obj->cb = DevCRSF.decode;
+            obj->frame_api = &DevCRSF;
+
+            if(!((DevCRSF_TypeDef *)(obj->frame_api))->init(obj->frame_data_obj))
+                return false;
             break;
 
         default:
@@ -207,25 +210,70 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
     return true;
 }
 
-static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size)
+static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *receiver_obj, uint8_t *p_data, uint16_t size)
 {
     BspUARTObj_TypeDef *uart_obj = NULL;
     uint8_t *rx_buff_ptr = NULL;
     uint16_t rx_buff_size = 0;
+    uint8_t decode_out = 0xFF;
 
-    if (obj && obj->cb && obj->port && obj->frame_data_obj)
+    if (receiver_obj && receiver_obj->frame_api && receiver_obj->port && receiver_obj->frame_data_obj)
     {
-        if (obj->port_type == Receiver_Port_Serial)
+        if (receiver_obj->port_type == Receiver_Port_Serial)
         {
             /* do serial decode funtion */
-            if (obj->cb(obj->frame_data_obj, p_data, size))
-                /* set decode time stamp */
-                obj->data.time_stamp = SrvReceiver_Get_SysMs();
+            if(receiver_obj->Frame_type == Receiver_Type_CRSF)
+            {
+                crsf_channels_t crsf_frame_channel;
+
+                memset(&crsf_frame_channel, NULL, sizeof(crsf_frame_channel));
+                decode_out = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->decode(receiver_obj->frame_data_obj, p_data, size);
+
+                switch(decode_out)
+                {
+                    case CRSF_FRAMETYPE_LINK_STATISTICS:
+                    receiver_obj->data.rssi = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).uplink_RSSI_1;
+                    receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).uplink_Link_quality;
+                    break;
+
+                    case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+                    crsf_frame_channel = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(receiver_obj->frame_data_obj);
+
+                    receiver_obj->data.val_list[0] = crsf_frame_channel.ch0;
+                    receiver_obj->data.val_list[1] = crsf_frame_channel.ch1;
+                    receiver_obj->data.val_list[2] = crsf_frame_channel.ch2;
+                    receiver_obj->data.val_list[3] = crsf_frame_channel.ch3;
+                    receiver_obj->data.val_list[4] = crsf_frame_channel.ch4;
+                    receiver_obj->data.val_list[5] = crsf_frame_channel.ch5;
+                    receiver_obj->data.val_list[6] = crsf_frame_channel.ch6;
+                    receiver_obj->data.val_list[7] = crsf_frame_channel.ch7;
+                    receiver_obj->data.val_list[8] = crsf_frame_channel.ch8;
+                    receiver_obj->data.val_list[9] = crsf_frame_channel.ch9;
+                    receiver_obj->data.val_list[10] = crsf_frame_channel.ch10;
+                    receiver_obj->data.val_list[11] = crsf_frame_channel.ch11;
+                    receiver_obj->data.val_list[12] = crsf_frame_channel.ch12;
+                    receiver_obj->data.val_list[13] = crsf_frame_channel.ch13;
+                    receiver_obj->data.val_list[14] = crsf_frame_channel.ch14;
+                    receiver_obj->data.val_list[15] = crsf_frame_channel.ch15;
+
+                    receiver_obj->data.failsafe = false;
+                    break;
+
+                    default:
+                    return;
+                }
+            }
+            else if(receiver_obj->Frame_type == Receiver_Type_Sbus)
+            {
+            }
+
+            /* set decode time stamp */
+            receiver_obj->data.time_stamp = SrvReceiver_Get_SysMs();
 
             /* clear serial obj received data */
-            if (obj->port->cfg)
+            if (receiver_obj->port->cfg)
             {
-                uart_obj = ((BspUARTObj_TypeDef *)(obj->port->cfg));
+                uart_obj = ((BspUARTObj_TypeDef *)(receiver_obj->port->cfg));
 
                 rx_buff_ptr = uart_obj->rx_buf;
                 rx_buff_size = uart_obj->rx_size;

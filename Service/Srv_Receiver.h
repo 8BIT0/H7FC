@@ -11,8 +11,6 @@
 #define CHANNEL_RANGE_MIN 950
 #define CHANNEL_RANGE_MAX 2050
 
-typedef bool (*SrvReceiver_Callback)(uint8_t *data_obj, uint8_t *ptr, uint16_t size);
-
 typedef enum
 {
     Receiver_Port_Serial = 1,
@@ -82,11 +80,14 @@ typedef struct
 
 typedef struct
 {
-    uint8_t channel_func_def[Receiver_Channel_Sum];
-    uint16_t val_list[Receiver_Channel_Sum];
     uint32_t time_stamp;
 
-    bool valid;
+    uint8_t channel_func_def[Receiver_Channel_Sum];
+    uint16_t val_list[Receiver_Channel_Sum];
+    
+    uint16_t rssi;
+    uint16_t link_quality;
+
     bool failsafe;
 } SrvReceiverData_TypeDef;
 
@@ -100,29 +101,15 @@ typedef struct
 {
     SrvReceiver_Frame_TypeList Frame_type;
     SrvReceiver_Port_TypeList port_type;
-
     void *port_cfg;
-
     uint16_t update_period;
-
     uint16_t baudrate;
     uint32_t port_addr;
-
     uint8_t channel_num;
-
     uint8_t *frame_data_obj;
-
-    uint16_t rssi;
-    uint16_t link_quality;
-
     SrvReceiverData_TypeDef data;
-    SrvReceiver_Callback cb;
-
+    void* frame_api;
     SrvReceiver_Port_TypeDef *port;
-
-    int16_t rssi;
-    int16_t link_quality;
-
     /* for sbus receiver we gonna need inverter hardware */
     uint32_t invert_port;
     uint32_t invert_pin;
