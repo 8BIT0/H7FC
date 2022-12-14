@@ -3,12 +3,10 @@
 /* external function */
 static DevSBUS_ErrorCode_List DevSBUS_Frame_Decode(DevSBUSObj_TypeDef *data, uint8_t *ptr, uint16_t size);
 static bool DevSBUS_Init(DevSBUSObj_TypeDef *obj);
-static DevSBUSObj_TypeDef DevSBUS_Get_Data(DevSBUSObj_TypeDef *obj);
 
 DevSBUS_TypeDef DevSBUS = {
     .init = DevSBUS_Init,
     .decode = DevSBUS_Frame_Decode,
-    .get_data = DevSBUS_Get_Data,
 };
 
 static bool DevSBUS_Init(DevSBUSObj_TypeDef *obj)
@@ -54,16 +52,3 @@ static DevSBUS_ErrorCode_List DevSBUS_Frame_Decode(DevSBUSObj_TypeDef *obj, uint
 
     return DevSBUS_Error_Frame;
 }
-
-static DevSBUSObj_TypeDef DevSBUS_Get_Data(DevSBUSObj_TypeDef *obj)
-{
-    DevSBUSObj_TypeDef data;
-
-    memset(&data, 0, sizeof(DevSBUSObj_TypeDef));
-
-    if(obj)
-        memcpy(&data, obj, sizeof(DevSBUSObj_TypeDef));
-
-    return data;
-}
-

@@ -46,7 +46,6 @@ typedef struct
 {
     bool (*init)(DevSBUSObj_TypeDef *obj);
     DevSBUS_ErrorCode_List (*decode)(DevSBUSObj_TypeDef *obj, uint8_t *ptr, uint16_t size);
-    DevSBUSObj_TypeDef (*get_data)(DevSBUSObj_TypeDef *obj);
 } DevSBUS_TypeDef;
 
 extern DevSBUS_TypeDef DevSBUS;
