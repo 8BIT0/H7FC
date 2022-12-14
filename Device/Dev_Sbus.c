@@ -1,9 +1,11 @@
 #include "Dev_Sbus.h"
 
+/* external function */
 static DevSBUS_ErrorCode_List DevSBUS_Frame_Decode(DevSBUSObj_TypeDef *data, uint8_t *ptr, uint16_t size);
+static bool DevSBUS_Init(DevSBUSObj_TypeDef *obj);
 
 DevSBUS_TypeDef DevSBUS = {
-    .init = NULL,
+    .init = DevSBUS_Init,
     .decode = DevSBUS_Frame_Decode,
     .get_data = NULL,
 };
