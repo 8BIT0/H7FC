@@ -120,6 +120,9 @@ typedef struct
 
     SrvReceiver_Port_TypeDef *port;
 
+    int16_t rssi;
+    int16_t link_quality;
+
     /* for sbus receiver we gonna need inverter hardware */
     uint32_t invert_port;
     uint32_t invert_pin;
