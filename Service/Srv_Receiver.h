@@ -119,7 +119,6 @@ typedef struct
     SrvReceiver_Callback cb;
 
     SrvReceiver_Port_TypeDef *port;
-    float update_freq;
 
     /* for sbus receiver we gonna need inverter hardware */
     uint32_t invert_port;
