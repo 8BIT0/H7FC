@@ -120,7 +120,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             Uart_Receiver_Obj->baudrate = SBUS_BAUDRATE;
 
             /* create data obj */
-            obj->frame_data_obj = MMU_Malloc(sizeof(DevSBUSData_TypeDef));
+            obj->frame_data_obj = MMU_Malloc(sizeof(DevSBUSObj_TypeDef));
             if (obj->frame_data_obj == NULL)
             {
                 data_obj_error = true;
@@ -283,6 +283,11 @@ static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *receiver_obj, ui
             }
         }
     }
+}
+
+static SrvReceiverData_TypeDef SrvReceiver_Get_Value(const SrvReceiverObj_TypeDef receiver_obj)
+{
+    return receiver_obj.data;
 }
 
 /*************************************************************** Error Process Tree Callback *******************************************************************************/

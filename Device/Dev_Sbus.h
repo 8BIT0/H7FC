@@ -23,10 +23,9 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    uint8_t channel;
     uint16_t val[SBUS_MAX_CHANNEL];
-    bool valid;
-} DevSBUSData_TypeDef;
+    DevSBUS_FuncBit_TypeDef func_bit;
+} DevSBUSObj_TypeDef;
 
 typedef union
 {
@@ -45,8 +44,9 @@ typedef union
 
 typedef struct
 {
-    DevSBUS_ErrorCode_List (*decode)(uint8_t *ptr, uint16_t size, DevSBUSData_TypeDef *obj);
-    DevSBUS_ErrorCode_List (*encode)(uint8_t *ptr, uint16_t size, const DevSBUSData_TypeDef obj);
+    bool (*init)(DevSBUSObj_TypeDef *obj);
+    DevSBUS_ErrorCode_List (*decode)(DevSBUSObj_TypeDef *obj, uint8_t *ptr, uint16_t size);
+    DevSBUSObj_TypeDef (*get_data)(DevSBUSObj_TypeDef *obj);
 } DevSBUS_TypeDef;
 
 extern DevSBUS_TypeDef DevSBUS;
