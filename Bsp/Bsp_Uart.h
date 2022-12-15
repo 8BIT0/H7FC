@@ -80,9 +80,10 @@ typedef struct
 typedef struct
 {
     bool (*init)(BspUARTObj_TypeDef *obj);
-    bool (*set_parity)(BspUARTObj_TypeDef *obj);
-    bool (*set_stop_bit)(BspUARTObj_TypeDef *obj);
-    bool (*set_data_bit)(BspUARTObj_TypeDef *obj);
+    bool (*set_parity)(BspUARTObj_TypeDef *obj, uint32_t parity);
+    bool (*set_stop_bit)(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
+    bool (*set_data_bit)(BspUARTObj_TypeDef *obj, uint32_t data_bit);
+    bool (*set_swap)(BspUARTObj_TypeDef *obj, bool swap);
     bool (*send)(BspUARTObj_TypeDef *obj, uint8_t *tx, uint32_t size);
 } BspUART_TypeDef;
 
