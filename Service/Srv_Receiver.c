@@ -86,22 +86,22 @@ static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
     },
 };
 
-bool SrvReceiver_Create_UartObj()
+void *SrvReceiver_Create_UartObj()
 {
 
 }
 
-bool SrvReceiver_Create_SPIObj()
+void *SrvReceiver_Create_SPIObj()
 {
-    
+
 }
 
-bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
+bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_obj)
 {
     bool data_obj_error = false;
-    BspUARTObj_TypeDef *Uart_Receiver_Obj;
+    BspUARTObj_TypeDef *Uart_Receiver_Obj;/* noticed we might need create this object on the task layer */
 
-    if (obj == NULL)
+    if ((obj == NULL) || (port_obj == NULL))
         return false;
 
     memset(SrvReceiver_Buff, NULL, SRV_RECEIVER_BUFF_SIZE);
