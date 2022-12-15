@@ -19,7 +19,7 @@ bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit);
 bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity);
 bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
 bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap);
-static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size, bool wait_till_finish);\
+static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size, bool wait_till_finish);
 
 BspUART_TypeDef BspUart = {
     .init = BspUart_Init,
