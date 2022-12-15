@@ -1,7 +1,6 @@
 #ifndef __SYSTEM_CFG_H
 #define __SYSTEM_CFG_H
 
-#include "stm32h743xx.h"
 #include "Bsp_Uart.h"
 #include "Bsp_DMA.h"
 
