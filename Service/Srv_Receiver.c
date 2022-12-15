@@ -14,7 +14,7 @@ static Error_Handler SrvReceiver_Error_Handle = NULL;
 static SrvReceiver_Monitor_TypeDef SrvReceiver_Monitor;
 
 /* internal function */
-static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size);
+static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size);
 
 static const uint8_t default_channle_id_list[Receiver_Channel_Sum] = {
     Receiver_ChannelID_Pitch,
@@ -201,7 +201,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_obj)
         Uart_Receiver_Obj->cust_data_addr = obj;
 
         /* set uart callback */
-        Uart_Receiver_Obj->RxCallback = SrvReceiver_Decode_Callback;
+        Uart_Receiver_Obj->RxCallback = SrvReceiver_SerialDecode_Callback;
 
         /* serial port init */
         if (!BspUart.init(&Uart_Receiver_Obj))
@@ -226,7 +226,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_obj)
     return true;
 }
 
-static void SrvReceiver_Decode_Callback(SrvReceiverObj_TypeDef *receiver_obj, uint8_t *p_data, uint16_t size)
+static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_obj, uint8_t *p_data, uint16_t size)
 {
     BspUARTObj_TypeDef *uart_obj = NULL;
     uint8_t *rx_buff_ptr = NULL;
