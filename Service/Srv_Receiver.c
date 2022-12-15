@@ -86,6 +86,16 @@ static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
     },
 };
 
+bool SrvReceiver_Create_UartObj()
+{
+
+}
+
+bool SrvReceiver_Create_SPIObj()
+{
+    
+}
+
 bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
 {
     bool data_obj_error = false;
