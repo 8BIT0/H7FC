@@ -208,8 +208,10 @@ bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
         return false;
 
     obj->hdl.Init.WordLength = bit;
-    HAL_UART_Init(&(obj->hdl));
 
+    if(HAL_UART_Init(&obj->hdl) != HAL_OK)
+        return false;
+        
     return true;
 }
 
@@ -219,7 +221,9 @@ bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity)
         return false;
 
     obj->hdl.Init.Parity = parity;
-    HAL_UART_Init(&(obj->hdl));
+
+    if(HAL_UART_Init(&obj->hdl) != HAL_OK)
+        return false;
 
     return true;
 }
@@ -230,14 +234,28 @@ bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
         return false;
 
     obj->hdl.Init.StopBits = stop_bit;
-    HAL_UART_Init(&(obj->hdl));
+
+    if(HAL_UART_Init(&obj->hdl) != HAL_OK)
+        return false;
 
     return true;
 }
 
-bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj)
+bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap)
 {
     if (obj || !obj->init_state)
+        return false;
+
+    obj->pin_swap = swap;
+
+    if (swap)
+    {
+        obj->hdl.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+    }
+    else
+        obj->hdl.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_DISABLE;
+
+    if(HAL_UART_Init(&obj->hdl) != HAL_OK)
         return false;
 
     return true;
