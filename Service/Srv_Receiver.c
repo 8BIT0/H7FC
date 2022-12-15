@@ -220,8 +220,6 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             return false;
         }
 
-        obj->update_freq = 0;
-
         if (data_obj_error)
         {
             ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);

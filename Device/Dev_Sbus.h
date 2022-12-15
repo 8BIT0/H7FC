@@ -21,12 +21,6 @@ typedef enum
 } DevSBUS_ErrorCode_List;
 
 #pragma pack(1)
-typedef struct
-{
-    uint16_t val[SBUS_MAX_CHANNEL];
-    DevSBUS_FuncBit_TypeDef func_bit;
-} DevSBUSObj_TypeDef;
-
 typedef union
 {
     struct
@@ -40,6 +34,12 @@ typedef union
 
     uint8_t val;
 } DevSBUS_FuncBit_TypeDef;
+
+typedef struct
+{
+    uint16_t val[SBUS_MAX_CHANNEL];
+    DevSBUS_FuncBit_TypeDef func_bit;
+} DevSBUSObj_TypeDef;
 #pragma pack()
 
 typedef struct

@@ -1,9 +1,6 @@
 #ifndef __SYSTEM_CFG_H
 #define __SYSTEM_CFG_H
 
-#include "Bsp_Uart.h"
-#include "Bsp_DMA.h"
-
 #define US_IN_1S REAL_1S
 #define SCHEDULER_TIMEBASE US_IN_1S
 
