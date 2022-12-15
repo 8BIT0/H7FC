@@ -80,15 +80,10 @@ typedef struct
 typedef struct
 {
     bool (*init)(BspUARTObj_TypeDef *obj);
-    bool (*de_init)(BspUARTObj_TypeDef *obj);
-    bool (*set_baudrate)(BspUARTObj_TypeDef *obj, uint16_t baudrate);
-    bool (*set_callback)(BspUARTObj_TypeDef *obj, BspUARTCallback_Type_List type, BspUART_Callback callback);
-    BspUART_Callback (*get_callback)(BspUARTObj_TypeDef *obj, BspUARTCallback_Type_List type);
+    bool (*set_parity)(BspUARTObj_TypeDef *obj);
+    bool (*set_stop_bit)(BspUARTObj_TypeDef *obj);
+    bool (*set_data_bit)(BspUARTObj_TypeDef *obj);
     bool (*send)(BspUARTObj_TypeDef *obj, uint8_t *tx, uint32_t size);
-    bool (*get_send_state)(BspUARTObj_TypeDef *obj);
-    bool (*receive)(BspUARTObj_TypeDef *obj, uint8_t *rx, uint16_t size);
-    bool (*reset_receive)(BspUARTObj_TypeDef *obj);
-    uint16_t (*get_RecCount)(BspUARTObj_TypeDef *obj);
 } BspUART_TypeDef;
 
 void UART_Idle_Callback(BspUART_Port_List index);

@@ -177,6 +177,7 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj)
             return false;
         }
 
+        /* set uart init parameter */
         Uart_Receiver_Obj->instance = UART4;
         Uart_Receiver_Obj->pin_swap = false;
         Uart_Receiver_Obj->rx_io = Uart4_RxPin;
