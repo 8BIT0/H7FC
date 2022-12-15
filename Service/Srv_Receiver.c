@@ -16,6 +16,25 @@ static SrvReceiver_Monitor_TypeDef SrvReceiver_Monitor;
 /* internal function */
 static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size);
 
+/* external function */
+static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance, 
+                                    uint32_t rx_dma, 
+                                    uint32_t rx_dma_stream, 
+                                    uint32_t tx_dma,
+                                    uint32_t tx_dma_stream,
+                                    bool swap, 
+                                    const BspGPIO_Obj_TypeDef tx_pin, 
+                                    const BspGPIO_Obj_TypeDef rx_pin);
+static uint8_t *SrvReceiver_Create_SPIObj(void);
+static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj);
+
+SrvReceiver_TypeDef SrvReceiver = {
+    .create_serial_obj = SrvReceiver_Create_UartObj,
+    .create_spi_obj = SrvReceiver_Create_SPIObj,
+    .init = SrvReceiver_Init,
+    .get = NULL,
+};
+
 static const uint8_t default_channle_id_list[Receiver_Channel_Sum] = {
     Receiver_ChannelID_Pitch,
     Receiver_ChannelID_Roll,
@@ -86,20 +105,48 @@ static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
     },
 };
 
-void *SrvReceiver_Create_UartObj()
+static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance, 
+                                    uint32_t rx_dma, 
+                                    uint32_t rx_dma_stream, 
+                                    uint32_t tx_dma,
+                                    uint32_t tx_dma_stream,
+                                    bool swap, 
+                                    const BspGPIO_Obj_TypeDef tx_pin, 
+                                    const BspGPIO_Obj_TypeDef rx_pin)
+{
+    BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
+
+    Uart_Receiver_Obj = (BspUARTObj_TypeDef *)MMU_Malloc(sizeof(BspUARTObj_TypeDef));
+
+    if(Uart_Receiver_Obj == NULL)
+    {
+        MMU_Free(Uart_Receiver_Obj);
+        return NULL;
+    }
+
+    memset(Uart_Receiver_Obj, 0, sizeof(BspUARTObj_TypeDef));
+
+    Uart_Receiver_Obj->instance = serial_instance;
+    Uart_Receiver_Obj->tx_io = tx_pin;
+    Uart_Receiver_Obj->rx_io = rx_pin;
+    Uart_Receiver_Obj->pin_swap = swap;
+    Uart_Receiver_Obj->rx_dma = rx_dma;
+    Uart_Receiver_Obj->rx_stream = rx_dma_stream;
+    Uart_Receiver_Obj->tx_dma = tx_dma;
+    Uart_Receiver_Obj->tx_stream = tx_dma_stream;
+
+    return Uart_Receiver_Obj;
+}
+
+static uint8_t *SrvReceiver_Create_SPIObj(void)
 {
 
 }
 
-void *SrvReceiver_Create_SPIObj()
-{
-
-}
-
-bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_obj)
+static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
 {
     bool data_obj_error = false;
-    BspUARTObj_TypeDef *Uart_Receiver_Obj;/* noticed we might need create this object on the task layer */
+    BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
 
     if ((obj == NULL) || (port_obj == NULL))
         return false;
@@ -115,14 +162,8 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_obj)
     switch (obj->port_type)
     {
     case Receiver_Port_Serial:
-        Uart_Receiver_Obj = (BspUARTObj_TypeDef *)MMU_Malloc(sizeof(BspUARTObj_TypeDef));
-        if (Uart_Receiver_Obj == NULL)
-        {
-            MMU_Free(Uart_Receiver_Obj);
-            return false;
-        }
+        Uart_Receiver_Obj = port_obj;
 
-        memset(Uart_Receiver_Obj, NULL, sizeof(Uart_Receiver_Obj));
         memset(&SrvReceiver_Monitor, NULL, SRVRECEIVER_SIZE);
 
         switch (obj->Frame_type)
@@ -188,14 +229,6 @@ bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, void *port_obj)
         }
 
         /* set uart init parameter */
-        Uart_Receiver_Obj->instance = UART4;
-        Uart_Receiver_Obj->pin_swap = false;
-        Uart_Receiver_Obj->rx_io = Uart4_RxPin;
-        Uart_Receiver_Obj->tx_io = Uart4_TxPin;
-        Uart_Receiver_Obj->rx_dma = Bsp_DMA_1;
-        Uart_Receiver_Obj->rx_stream = Bsp_DMA_Stream_4;
-        Uart_Receiver_Obj->tx_dma = Bsp_DMA_1;
-        Uart_Receiver_Obj->tx_stream = Bsp_DMA_Stream_5;
         Uart_Receiver_Obj->rx_buf = SrvReceiver_Buff;
         Uart_Receiver_Obj->rx_size = SRV_RECEIVER_BUFF_SIZE;
         Uart_Receiver_Obj->cust_data_addr = obj;

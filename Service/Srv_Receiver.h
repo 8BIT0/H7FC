@@ -121,11 +121,19 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(SrvReceiverObj_TypeDef *obj, uint8_t channel_num);
-    bool (*enable_control)(SrvReceiverObj_TypeDef *obj, bool state);
-    bool (*set_decode_callback)(SrvReceiverObj_TypeDef *obj);
-    bool (*conver_to)(SrvReceiverObj_TypeDef *obj, SrvReceiver_Frame_TypeList type, uint8_t *ptr, uint16_t size);
+    uint8_t *(*create_serial_obj)(uint32_t serial_instance, 
+                                    uint32_t rx_dma, 
+                                    uint32_t rx_dma_stream, 
+                                    uint32_t tx_dma,
+                                    uint32_t tx_dma_stream,
+                                    bool swap, 
+                                    const BspGPIO_Obj_TypeDef tx_pin, 
+                                    const BspGPIO_Obj_TypeDef rx_pin);
+    uint8_t *(*create_spi_obj)(void);
+    bool (*init)(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj);
     SrvReceiverData_TypeDef (*get)(SrvReceiverObj_TypeDef *obj);
 } SrvReceiver_TypeDef;
+
+extern SrvReceiver_TypeDef SrvReceiver;
 
 #endif

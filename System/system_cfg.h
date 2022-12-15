@@ -1,6 +1,10 @@
 #ifndef __SYSTEM_CFG_H
 #define __SYSTEM_CFG_H
 
+#include "stm32h743xx.h"
+#include "Bsp_Uart.h"
+#include "Bsp_DMA.h"
+
 #define US_IN_1S REAL_1S
 #define SCHEDULER_TIMEBASE US_IN_1S
 
@@ -13,5 +17,11 @@
 #define MAX_SYSCALL_INTERRUPT_PRIORITY 3
 
 #define SYSCALL_INTERRUPT_PRIORITY (MAX_SYSCALL_INTERRUPT_PRIORITY << 4)
+
+#define RECEIVER_PORT UART4
+#define RECEIVER_RX_DMA Bsp_DMA_1
+#define RECEIVER_RX_DMA_STREAM Bsp_DMA_Stream_4
+#define RECEIVER_TX_DMA Bsp_DMA_1
+#define RECEIVER_TX_DMA_STREAM Bsp_DMA_Stream_5
 
 #endif
