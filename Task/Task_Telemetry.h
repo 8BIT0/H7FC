@@ -7,4 +7,7 @@
 #include "scheduler.h"
 #include "Srv_Receiver.h"
 
+void TaskTelemetry_Init(void);
+void TaskTelemetry_Core(Task_Handle hdl);
+
 #endif

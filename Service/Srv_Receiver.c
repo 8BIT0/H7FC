@@ -105,14 +105,14 @@ static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
     },
 };
 
-static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance, 
-                                    uint32_t rx_dma, 
-                                    uint32_t rx_dma_stream, 
-                                    uint32_t tx_dma,
-                                    uint32_t tx_dma_stream,
-                                    bool swap, 
-                                    const BspGPIO_Obj_TypeDef tx_pin, 
-                                    const BspGPIO_Obj_TypeDef rx_pin)
+static uint8_t *SrvReceiver_Create_UartObj( uint32_t serial_instance, 
+                                            uint32_t rx_dma, 
+                                            uint32_t rx_dma_stream, 
+                                            uint32_t tx_dma,
+                                            uint32_t tx_dma_stream,
+                                            bool swap, 
+                                            const BspGPIO_Obj_TypeDef tx_pin, 
+                                            const BspGPIO_Obj_TypeDef rx_pin)
 {
     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
 
