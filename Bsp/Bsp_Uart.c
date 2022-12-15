@@ -15,10 +15,19 @@ static BspUARTObj_TypeDef *BspUart_Obj_List[BspUART_Port_Sum] = {NULL};
 
 /* external function */
 static bool BspUart_Init(BspUARTObj_TypeDef *obj);
+bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit);
+bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity);
+bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
+bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap);
+static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size, bool wait_till_finish);\
 
 BspUART_TypeDef BspUart = {
-    .de_init = NULL,
     .init = BspUart_Init,
+    .set_parity = BspUart_Set_Parity,
+    .set_stop_bit = BspUart_Set_StopBit,
+    .set_data_bit = BspUart_Set_DataBit,
+    .set_swap = BspUart_Swap_Pin,
+    .send = BspUart_Transfer,
 };
 
 static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
@@ -211,7 +220,7 @@ bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
 
     if(HAL_UART_Init(&obj->hdl) != HAL_OK)
         return false;
-        
+
     return true;
 }
 
