@@ -202,18 +202,13 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     return true;
 }
 
-bool BspUart_Set_Baudrate(BspUARTObj_TypeDef *obj, uint32_t baudrate)
-{
-    if (obj || !obj->init_state)
-        return false;
-
-    return true;
-}
-
 bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
 {
     if (obj || !obj->init_state)
         return false;
+
+    obj->hdl.Init.WordLength = bit;
+    HAL_UART_Init(&(obj->hdl));
 
     return true;
 }
@@ -223,6 +218,9 @@ bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity)
     if (obj || !obj->init_state)
         return false;
 
+    obj->hdl.Init.Parity = parity;
+    HAL_UART_Init(&(obj->hdl));
+
     return true;
 }
 
@@ -230,6 +228,9 @@ bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
 {
     if (obj || !obj->init_state)
         return false;
+
+    obj->hdl.Init.StopBits = stop_bit;
+    HAL_UART_Init(&(obj->hdl));
 
     return true;
 }
