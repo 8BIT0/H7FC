@@ -179,6 +179,8 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             }
 
             /* init inverter pin */
+            // obj->inverter_init();
+            // obj->invert_control();
 
             /* set max channel num */
             obj->channel_num = SBUS_MAX_CHANNEL;

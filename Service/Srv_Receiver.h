@@ -112,11 +112,10 @@ typedef struct
     void* frame_api;
     SrvReceiver_Port_TypeDef *port;
     /* for sbus receiver we gonna need inverter hardware */
-    uint32_t invert_port;
-    uint32_t invert_pin;
+    BspGPIO_Obj_TypeDef inverter_pin;
 
-    bool (*inverter_init)(uint32_t port, uint32_t pin);
-    bool (*invert_control)(uint32_t port, uint32_t pin);
+    bool (*inverter_init)(BspGPIO_Obj_TypeDef pin);
+    bool (*invert_control)(BspGPIO_Obj_TypeDef pin, bool state);
 } SrvReceiverObj_TypeDef;
 #pragma pack()
 

@@ -46,7 +46,7 @@ void TaskTelemetry_Init(void)
     /* init receiver object */
     Receiver_Init_State = SrvReceiver.init(&Receiver_Obj, port_ptr);
 
-    /* init radio port & object */
+    /* init radio port & radio object */
 }
 
 void TaskTelemetry_Core(Task_Handle hdl)
