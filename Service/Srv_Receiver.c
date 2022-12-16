@@ -4,9 +4,8 @@
 #include "Bsp_GPIO.h" 
 #include "error_log.h"
 #include "IO_Definition.h"
+#include "runtime.h"
 #include "mmu.h"
-
-__weak uint32_t SrvReceiver_Get_SysMs(void) { return 0; }
 
 static uint8_t SrvReceiver_Buff[SRV_RECEIVER_BUFF_SIZE];
 
@@ -322,7 +321,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
             }
 
             /* set decode time stamp */
-            receiver_obj->data.time_stamp = SrvReceiver_Get_SysMs();
+            receiver_obj->data.time_stamp = Get_CurrentRunningMs();
 
             /* clear serial obj received data */
             if (receiver_obj->port->cfg)
