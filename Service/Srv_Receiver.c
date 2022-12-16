@@ -338,8 +338,32 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
     }
 }
 
+static bool SrvReceiver_Check(const SrvReceiverObj_TypeDef receiver_obj)
+{
+    /* update check */
+    /* update frequence lower than 10hz */
+    if((Get_CurrentRunningMs() - receiver_obj.data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
+        return false;
+
+    /* range check */
+    for(uint8_t i = 0; i < receiver_obj.channel_num; i++)
+    {
+        if((receiver_obj.data[i] > CHANNEL_RANGE_MAX) || (receiver_obj.data[i] < CHANNEL_RANGE_MIN))
+            return false;
+    }
+
+    /* other check */
+}
+
 static SrvReceiverData_TypeDef SrvReceiver_Get_Value(const SrvReceiverObj_TypeDef receiver_obj)
 {
+    SrvReceiverData_TypeDef receiver_data_tmp;
+
+    if(!SrvReceiver_Check(receiver_obj))
+    {
+
+    }
+
     return receiver_obj.data;
 }
 

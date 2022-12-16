@@ -6,6 +6,7 @@
 #include "Bsp_GPIO.h"
 #include "Bsp_Uart.h"
 
+#define SRV_RECEIVER_UPDATE_TIMEOUT_MS 100
 #define SRV_RECEIVER_BUFF_SIZE 1024
 
 #define CHANNEL_RANGE_MIN 950

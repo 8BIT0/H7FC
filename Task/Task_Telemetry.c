@@ -47,3 +47,8 @@ void TaskTelemetry_Init(void)
 void TaskTelemetry_Core(Task_Handle hdl)
 {
 }
+
+static void TaskTelemetry_Check_Receiver(void)
+{
+    
+}
