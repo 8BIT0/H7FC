@@ -27,6 +27,11 @@ void TaskTelemetry_Init(void)
                                                      false,
                                                      Uart4_TxPin,
                                                      Uart4_RxPin);
+            
+            if(Receiver_Obj.Frame_type == Receiver_Type_Sbus)
+            {
+                /* set inverter pin */
+            }
         break;
 
         case Receiver_Port_Spi:
@@ -50,5 +55,5 @@ void TaskTelemetry_Core(Task_Handle hdl)
 
 static void TaskTelemetry_Check_Receiver(void)
 {
-    
+
 }

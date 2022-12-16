@@ -341,7 +341,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
 static bool SrvReceiver_Check(const SrvReceiverObj_TypeDef receiver_obj)
 {
     /* update check */
-    /* update frequence lower than 10hz */
+    /* update frequence less than 10hz */
     if((Get_CurrentRunningMs() - receiver_obj.data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
         return false;
 
