@@ -85,7 +85,7 @@ typedef struct
 
     uint8_t channel_func_def[Receiver_Channel_Sum];
     uint16_t val_list[Receiver_Channel_Sum];
-    
+
     uint16_t rssi;
     uint16_t link_quality;
 
@@ -109,8 +109,12 @@ typedef struct
     uint8_t channel_num;
     uint8_t *frame_data_obj;
     SrvReceiverData_TypeDef data;
-    void* frame_api;
+    void *frame_api;
     SrvReceiver_Port_TypeDef *port;
+
+    bool re_update;
+    bool in_use;
+
     /* for sbus receiver we gonna need inverter hardware */
     BspGPIO_Obj_TypeDef inverter_pin;
 
@@ -121,14 +125,14 @@ typedef struct
 
 typedef struct
 {
-    uint8_t *(*create_serial_obj)(uint32_t serial_instance, 
-                                    uint32_t rx_dma, 
-                                    uint32_t rx_dma_stream, 
-                                    uint32_t tx_dma,
-                                    uint32_t tx_dma_stream,
-                                    bool swap, 
-                                    const BspGPIO_Obj_TypeDef tx_pin, 
-                                    const BspGPIO_Obj_TypeDef rx_pin);
+    uint8_t *(*create_serial_obj)(uint32_t serial_instance,
+                                  uint32_t rx_dma,
+                                  uint32_t rx_dma_stream,
+                                  uint32_t tx_dma,
+                                  uint32_t tx_dma_stream,
+                                  bool swap,
+                                  const BspGPIO_Obj_TypeDef tx_pin,
+                                  const BspGPIO_Obj_TypeDef rx_pin);
     uint8_t *(*create_spi_obj)(void);
     bool (*init)(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj);
     SrvReceiverData_TypeDef (*get)(SrvReceiverObj_TypeDef *obj);

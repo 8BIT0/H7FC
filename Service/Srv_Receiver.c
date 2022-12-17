@@ -268,6 +268,13 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
     {
         if (receiver_obj->port_type == Receiver_Port_Serial)
         {
+            if (receiver_obj->in_use)
+            {
+                receiver_obj->re_update = true;
+            }
+            else
+                receiver_obj->re_update = false;
+
             /* do serial decode funtion */
             if (receiver_obj->Frame_type == Receiver_Type_CRSF)
             {
@@ -339,32 +346,51 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
     }
 }
 
-static bool SrvReceiver_Check(const SrvReceiverObj_TypeDef receiver_obj)
+static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
 {
     /* update check */
     /* update frequence less than 10hz */
-    if ((Get_CurrentRunningMs() - receiver_obj.data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
+    if ((Get_CurrentRunningMs() - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
         return false;
 
     /* range check */
-    for (uint8_t i = 0; i < receiver_obj.channel_num; i++)
+    for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
     {
-        if ((receiver_obj.data.val_list[i] > CHANNEL_RANGE_MAX) || (receiver_obj.data.val_list[i] < CHANNEL_RANGE_MIN))
+        if ((receiver_obj->data.val_list[i] > CHANNEL_RANGE_MAX) || (receiver_obj->data.val_list[i] < CHANNEL_RANGE_MIN))
             return false;
     }
 
     /* other check */
 }
 
-static SrvReceiverData_TypeDef SrvReceiver_Get_Value(const SrvReceiverObj_TypeDef receiver_obj)
+static SrvReceiverData_TypeDef SrvReceiver_Get_Value(SrvReceiverObj_TypeDef *receiver_obj)
 {
     SrvReceiverData_TypeDef receiver_data_tmp;
 
+    memset(&receiver_data_tmp, 0, sizeof(receiver_data_tmp));
+    receiver_data_tmp.failsafe = true;
+
+    if (receiver_obj == NULL)
+        return receiver_data_tmp;
+
+re_do:
+    receiver_obj->in_use = true;
+
     if (!SrvReceiver_Check(receiver_obj))
+        return receiver_data_tmp;
+
+    receiver_data_tmp.failsafe = false;
+    memcpy(&receiver_obj, &receiver_obj->data, sizeof(SrvReceiverObj_TypeDef));
+
+    receiver_obj->in_use = false;
+
+    if (receiver_obj->re_update)
     {
+        receiver_obj->re_update = false;
+        goto re_do;
     }
 
-    return receiver_obj.data;
+    return receiver_data_tmp;
 }
 
 /*************************************************************** Error Process Tree Callback *******************************************************************************/
