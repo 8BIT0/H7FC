@@ -1,7 +1,7 @@
 #include "Srv_Receiver.h"
 #include "Bsp_Uart.h"
 #include "Bsp_SPI.h"
-#include "Bsp_GPIO.h" 
+#include "Bsp_GPIO.h"
 #include "error_log.h"
 #include "IO_Definition.h"
 #include "runtime.h"
@@ -16,14 +16,14 @@ static SrvReceiver_Monitor_TypeDef SrvReceiver_Monitor;
 static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size);
 
 /* external function */
-static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance, 
-                                    uint32_t rx_dma, 
-                                    uint32_t rx_dma_stream, 
-                                    uint32_t tx_dma,
-                                    uint32_t tx_dma_stream,
-                                    bool swap, 
-                                    const BspGPIO_Obj_TypeDef tx_pin, 
-                                    const BspGPIO_Obj_TypeDef rx_pin);
+static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
+                                           uint32_t rx_dma,
+                                           uint32_t rx_dma_stream,
+                                           uint32_t tx_dma,
+                                           uint32_t tx_dma_stream,
+                                           bool swap,
+                                           const BspGPIO_Obj_TypeDef tx_pin,
+                                           const BspGPIO_Obj_TypeDef rx_pin);
 static uint8_t *SrvReceiver_Create_SPIObj(void);
 static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj);
 
@@ -104,20 +104,20 @@ static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
     },
 };
 
-static uint8_t *SrvReceiver_Create_UartObj( uint32_t serial_instance, 
-                                            uint32_t rx_dma, 
-                                            uint32_t rx_dma_stream, 
-                                            uint32_t tx_dma,
-                                            uint32_t tx_dma_stream,
-                                            bool swap, 
-                                            const BspGPIO_Obj_TypeDef tx_pin, 
-                                            const BspGPIO_Obj_TypeDef rx_pin)
+static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
+                                           uint32_t rx_dma,
+                                           uint32_t rx_dma_stream,
+                                           uint32_t tx_dma,
+                                           uint32_t tx_dma_stream,
+                                           bool swap,
+                                           const BspGPIO_Obj_TypeDef tx_pin,
+                                           const BspGPIO_Obj_TypeDef rx_pin)
 {
     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
 
     Uart_Receiver_Obj = (BspUARTObj_TypeDef *)MMU_Malloc(sizeof(BspUARTObj_TypeDef));
 
-    if(Uart_Receiver_Obj == NULL)
+    if (Uart_Receiver_Obj == NULL)
     {
         MMU_Free(Uart_Receiver_Obj);
         return NULL;
@@ -139,7 +139,6 @@ static uint8_t *SrvReceiver_Create_UartObj( uint32_t serial_instance,
 
 static uint8_t *SrvReceiver_Create_SPIObj(void)
 {
-
 }
 
 static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
@@ -188,7 +187,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             /* set receiver object frame object */
             obj->frame_api = &DevSBUS;
 
-            if(!((DevSBUS_TypeDef *)(obj->frame_api))->init(obj->frame_data_obj))
+            if (!((DevSBUS_TypeDef *)(obj->frame_api))->init(obj->frame_data_obj))
                 return false;
             break;
 
@@ -213,7 +212,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             /* set receiver object frame object */
             obj->frame_api = &DevCRSF;
 
-            if(!((DevCRSF_TypeDef *)(obj->frame_api))->init(obj->frame_data_obj))
+            if (!((DevCRSF_TypeDef *)(obj->frame_api))->init(obj->frame_data_obj))
                 return false;
             break;
 
@@ -270,21 +269,21 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
         if (receiver_obj->port_type == Receiver_Port_Serial)
         {
             /* do serial decode funtion */
-            if(receiver_obj->Frame_type == Receiver_Type_CRSF)
+            if (receiver_obj->Frame_type == Receiver_Type_CRSF)
             {
                 crsf_channels_t crsf_frame_channel;
 
                 memset(&crsf_frame_channel, NULL, sizeof(crsf_frame_channel));
                 decode_out = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->decode(receiver_obj->frame_data_obj, p_data, size);
 
-                switch(decode_out)
+                switch (decode_out)
                 {
-                    case CRSF_FRAMETYPE_LINK_STATISTICS:
+                case CRSF_FRAMETYPE_LINK_STATISTICS:
                     receiver_obj->data.rssi = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).uplink_RSSI_1;
                     receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).uplink_Link_quality;
                     break;
 
-                    case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+                case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
                     crsf_frame_channel = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(receiver_obj->frame_data_obj);
 
                     receiver_obj->data.val_list[0] = crsf_frame_channel.ch0;
@@ -307,15 +306,15 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                     receiver_obj->data.failsafe = false;
                     break;
 
-                    default:
-                        return;
+                default:
+                    return;
                 }
             }
-            else if(receiver_obj->Frame_type == Receiver_Type_Sbus)
+            else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
             {
-                if(((DevSBUS_TypeDef *)(receiver_obj->frame_api))->decode(receiver_obj->frame_data_obj, p_data, size) == DevSBUS_NoError)
+                if (((DevSBUS_TypeDef *)(receiver_obj->frame_api))->decode(receiver_obj->frame_data_obj, p_data, size) == DevSBUS_NoError)
                 {
-                    for(uint8_t i = 0; i < receiver_obj->channel_num; i++)
+                    for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                     {
                         receiver_obj->data.val_list[i] = ((DevSBUSObj_TypeDef *)receiver_obj->frame_data_obj)->val[i];
                     }
@@ -344,13 +343,13 @@ static bool SrvReceiver_Check(const SrvReceiverObj_TypeDef receiver_obj)
 {
     /* update check */
     /* update frequence less than 10hz */
-    if((Get_CurrentRunningMs() - receiver_obj.data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
+    if ((Get_CurrentRunningMs() - receiver_obj.data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
         return false;
 
     /* range check */
-    for(uint8_t i = 0; i < receiver_obj.channel_num; i++)
+    for (uint8_t i = 0; i < receiver_obj.channel_num; i++)
     {
-        if((receiver_obj.data[i] > CHANNEL_RANGE_MAX) || (receiver_obj.data[i] < CHANNEL_RANGE_MIN))
+        if ((receiver_obj.data.val_list[i] > CHANNEL_RANGE_MAX) || (receiver_obj.data.val_list[i] < CHANNEL_RANGE_MIN))
             return false;
     }
 
@@ -361,9 +360,8 @@ static SrvReceiverData_TypeDef SrvReceiver_Get_Value(const SrvReceiverObj_TypeDe
 {
     SrvReceiverData_TypeDef receiver_data_tmp;
 
-    if(!SrvReceiver_Check(receiver_obj))
+    if (!SrvReceiver_Check(receiver_obj))
     {
-
     }
 
     return receiver_obj.data;
