@@ -14,6 +14,7 @@ static SrvReceiver_Monitor_TypeDef SrvReceiver_Monitor;
 
 /* internal function */
 static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size);
+static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj);
 
 /* external function */
 static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
@@ -26,12 +27,13 @@ static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
                                            const BspGPIO_Obj_TypeDef rx_pin);
 static uint8_t *SrvReceiver_Create_SPIObj(void);
 static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj);
+static SrvReceiverData_TypeDef SrvReceiver_Get_Value(SrvReceiverObj_TypeDef *receiver_obj);
 
 SrvReceiver_TypeDef SrvReceiver = {
     .create_serial_obj = SrvReceiver_Create_UartObj,
     .create_spi_obj = SrvReceiver_Create_SPIObj,
     .init = SrvReceiver_Init,
-    .get = NULL,
+    .get = SrvReceiver_Get_Value,
 };
 
 static const uint8_t default_channle_id_list[Receiver_Channel_Sum] = {
