@@ -3,6 +3,7 @@
 #include "Srv_Receiver.h"
 #include "system_cfg.h"
 #include "IO_Definition.h"
+#include "runtime.h"
 
 /* internal variable */
 static SrvReceiverObj_TypeDef Receiver_Obj;
@@ -71,13 +72,15 @@ static void TaskTelemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, S
     RC_Input_obj->module_enable = TELEMETRY_DISABLE_ALL_MODULE;
 }
 
-static bool TaskTelemetry_Check_ARMSig_Input()
+static bool TaskTelemetry_Check_ARMSig_Input(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
+    if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
+        return;
 }
 
 static void TaskTelemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
-    if (!RC_Input_obj->init_state)
+    if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
         return;
 
     SrvReceiver.get(receiver_obj);
