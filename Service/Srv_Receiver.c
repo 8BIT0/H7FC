@@ -203,6 +203,13 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             return false;
         }
 
+        obj->data.val_list = (uint16_t *)MMU_Malloc(sizeof(uint16_t) * obj->channel_num);
+        if (!obj->data.val_list)
+        {
+            MMU_Free(obj->data.val_list);
+            return false;
+        }
+
         if (data_obj_error)
         {
             ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);

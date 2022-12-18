@@ -34,28 +34,6 @@ typedef enum
     Receiver_FrameType_Error,
 } SrvReceiver_ErrorCode_List;
 
-typedef enum
-{
-    Receiver_ChannelID_Pitch = 0,
-    Receiver_ChannelID_Roll,
-    Receiver_ChannelID_Throttle,
-    Receiver_ChannelID_Yaw,
-    Receiver_ChannelID_AUX_1,
-    Receiver_ChannelID_AUX_2,
-    Receiver_ChannelID_AUX_3,
-    Receiver_ChannelID_AUX_4,
-    Receiver_ChannelID_AUX_5,
-    Receiver_ChannelID_AUX_6,
-    Receiver_ChannelID_AUX_7,
-    Receiver_ChannelID_AUX_8,
-    Receiver_ChannelID_AUX_9,
-    Receiver_ChannelID_AUX_10,
-    Receiver_ChannelID_AUX_11,
-    Receiver_ChannelID_AUX_12,
-
-    Receiver_Channel_Sum,
-} SrvRecveiver_FunctionalDef_List;
-
 #pragma pack(1)
 typedef struct
 {
@@ -83,7 +61,7 @@ typedef struct
 {
     uint32_t time_stamp;
 
-    uint16_t val_list[Receiver_Channel_Sum];
+    uint16_t *val_list;
     uint16_t rssi;
     uint16_t link_quality;
 
