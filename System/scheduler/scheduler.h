@@ -10,8 +10,6 @@
 #include "linked_list.h"
 #include "kernel.h"
 
-typedef uint32_t Task_Handle;
-
 #define TASK_EXEC_10KHZ 10000
 #define TASK_EXEC_8KHZ 8000
 #define TASK_EXEC_5KHZ 5000

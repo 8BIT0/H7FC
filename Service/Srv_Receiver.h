@@ -83,9 +83,7 @@ typedef struct
 {
     uint32_t time_stamp;
 
-    uint8_t channel_func_def[Receiver_Channel_Sum];
     uint16_t val_list[Receiver_Channel_Sum];
-
     uint16_t rssi;
     uint16_t link_quality;
 
