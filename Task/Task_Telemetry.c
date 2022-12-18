@@ -12,13 +12,24 @@ static Telemetry_RCInput_TypeDef RC_Setting;
 
 /* internal funciotn */
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
-static void Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
-static bool Telemetry_MapToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
+static bool Telemetry_GimbalBindToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
 
 void TaskTelemetry_Init(void)
 {
     /* init receiver */
-    Telemetry_RC_Sig_Init(&RC_Setting, &Receiver_Obj);
+    if (Telemetry_RC_Sig_Init(&RC_Setting, &Receiver_Obj))
+    {
+        /* map function to channel */
+        if (!Telemetry_GimbalBindToChannel(&RC_Setting, SrvReceiverObj_TypeDef * data_obj, Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            !Telemetry_GimbalBindToChannel(&RC_Setting, SrvReceiverObj_TypeDef * data_obj, Telemetry_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            !Telemetry_GimbalBindToChannel(&RC_Setting, SrvReceiverObj_TypeDef * data_obj, Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            !Telemetry_GimbalBindToChannel(&RC_Setting, SrvReceiverObj_TypeDef * data_obj, Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        {
+            RC_Setting.init_state = false;
+            RC_Setting.arm_state = TELEMETRY_SET_ARM;
+        }
+    }
 
     /* init radio */
 }
@@ -29,7 +40,7 @@ void TaskTelemetry_Core(Task_Handle hdl)
 }
 
 /************************************** receiver ********************************************/
-static void Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
+static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
     uint8_t *port_ptr = NULL;
 
@@ -76,10 +87,8 @@ static void Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
     return RC_Input_obj->init_state;
 }
 
-static bool Telemetry_MapToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
+static bool Telemetry_GimbalBindToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
 {
-    uint8_t index = 0;
-    bool MapGimbal = false;
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
 
     if ((!RC_Input_obj) ||
@@ -88,51 +97,39 @@ static bool Telemetry_MapToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvR
         (max_range > TELEMETRY_RC_CHANNEL_MAX_VAL))
         return false;
 
+    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+
+    if (!channel_set)
+    {
+        MMU_Free(channel_set);
+        return false;
+    }
+
+    channel_set->channel_ptr = data_obj;
+    channel_set->max = max_range;
+    channel_set->min = min_range;
+
     switch (tag)
     {
-    case Telemetry_RC_Pitch:
-        index = 0;
-        MapGimbal = true;
-        break;
-
-    case Telemetry_RC_Roll:
-        index = 1;
-        MapGimbal = true;
-        break;
-
     case Telemetry_RC_Throttle:
-        index = 2;
-        MapGimbal = true;
-        break;
-
+    case Telemetry_RC_Pitch:
+    case Telemetry_RC_Roll:
     case Telemetry_RC_Yaw:
-        index = 3;
-        MapGimbal = true;
+        RC_Input_obj->Gimbal[tag].combo_cnt = 1;
+        List_ItemInit(&(RC_Input_obj->Gimbal[tag].combo_list), channel_set);
         break;
 
     default:
         return false;
     }
+}
 
-    if (MapGimbal)
-    {
-        RC_Input_obj->Gimbal[index].combo_cnt = 1;
-        channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+static bool Telemetry_ARMBindToChannel()
+{
+}
 
-        if (!channel_set)
-        {
-            MMU_Free(channel_set);
-            return false;
-        }
-
-        memset(channel_set, NULL, sizeof(Telemetry_ChannelSet_TypeDef));
-
-        channel_set->channel_ptr = data_obj;
-        channel_set->max = max_range;
-        channel_set->min = min_range;
-
-        List_ItemInit(&RC_Input_obj->Gimbal[index].combo_list, channel_set);
-    }
+static bool Telemetry_DisARMBindToChannel()
+{
 }
 
 static bool Telemetry_Check_ARMSig_Input(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)

@@ -10,33 +10,33 @@
 
 #define Telemetry_SetBit(x) (1 << x)
 
-#define TELEMETRY_SET_ARM true
-#define TELEMETRY_SET_DISARM false
+#define TELEMETRY_SET_ARM 1
+#define TELEMETRY_SET_DISARM 0
 #define TELEMETRY_DISABLE_ALL_MODULE 0
 
-#define TELEMETRY_RC_CHANNEL_MIN_VAL CHANNEL_RANGE_MIN
-#define TELEMETRY_RC_CHANNEL_MAX_VAL CHANNEL_RANGE_MAX
+#define TELEMETRY_RC_CHANNEL_RANGE_MIN CHANNEL_RANGE_MIN
+#define TELEMETRY_RC_CHANNEL_RANGE_MAX CHANNEL_RANGE_MAX
 
 #pragma pack(1)
 typedef enum
 {
-    Telemetry_RC_Pitch = Telemetry_SetBit(0),
-    Telemetry_RC_Roll = Telemetry_SetBit(1),
-    Telemetry_RC_Throttle = Telemetry_SetBit(2),
-    Telemetry_RC_Yaw = Telemetry_SetBit(3),
-    Telemetry_Gimbal_TagSum = 4,
-    Telemetry_RC_AUX_1 = Telemetry_SetBit(4),
-    Telemetry_RC_AUX_2 = Telemetry_SetBit(5),
-    Telemetry_RC_AUX_3 = Telemetry_SetBit(6),
-    Telemetry_RC_AUX_4 = Telemetry_SetBit(7),
-    Telemetry_RC_AUX_5 = Telemetry_SetBit(8),
-    Telemetry_RC_AUX_6 = Telemetry_SetBit(9),
-    Telemetry_RC_AUX_7 = Telemetry_SetBit(10),
-    Telemetry_RC_AUX_8 = Telemetry_SetBit(11),
-    Telemetry_RC_AUX_9 = Telemetry_SetBit(12),
-    Telemetry_RC_AUX_10 = Telemetry_SetBit(13),
-    Telemetry_RC_AUX_11 = Telemetry_SetBit(14),
-    Telemetry_RC_AUX_12 = Telemetry_SetBit(15),
+    Telemetry_RC_Throttle = 0,
+    Telemetry_RC_Pitch,
+    Telemetry_RC_Roll,
+    Telemetry_RC_Yaw,
+    Telemetry_Gimbal_TagSum,
+    Telemetry_RC_AUX_1 = Telemetry_Gimbal_TagSum,
+    Telemetry_RC_AUX_2,
+    Telemetry_RC_AUX_3,
+    Telemetry_RC_AUX_4,
+    Telemetry_RC_AUX_5,
+    Telemetry_RC_AUX_6,
+    Telemetry_RC_AUX_7,
+    Telemetry_RC_AUX_8,
+    Telemetry_RC_AUX_9,
+    Telemetry_RC_AUX_10,
+    Telemetry_RC_AUX_11,
+    Telemetry_RC_AUX_12,
 } Telemetry_Receiver_TagList;
 
 typedef enum
