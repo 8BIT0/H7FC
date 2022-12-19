@@ -127,16 +127,64 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     }
 }
 
-static bool Telemetry_BindARMToChannel()
+static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
 {
+    Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+
+    if ((!RC_Input_obj) ||
+        (!data_obj) ||
+        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+
+    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+
+    if (!channel_set)
+    {
+        MMU_Free(channel_set);
+        return false;
+    }
+
+    channel_set->channel_ptr = data_obj;
+    channel_set->max = max_range;
+    channel_set->min = min_range;
+
+    RC_Input_obj->Gimbal[tag].combo_cnt = 1;
+    List_ItemInit(&(RC_Input_obj->ARM_Toggle.combo_list), channel_set);
+
+    return true;
 }
 
 static bool Telemetry_AddARMCombo()
 {
 }
 
-static bool Telemetry_BindDisARMToChannel()
+static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
 {
+    Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+
+    if ((!RC_Input_obj) ||
+        (!data_obj) ||
+        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+
+    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+
+    if (!channel_set)
+    {
+        MMU_Free(channel_set);
+        return false;
+    }
+
+    channel_set->channel_ptr = data_obj;
+    channel_set->max = max_range;
+    channel_set->min = min_range;
+
+    RC_Input_obj->Gimbal[tag].combo_cnt = 1;
+    List_ItemInit(&(RC_Input_obj->DisARM_Toggle.combo_list), channel_set);
+
+    return true;
 }
 
 static bool Telemetry_AddDisARMCombo()
