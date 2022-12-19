@@ -150,6 +150,8 @@ static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, 
     channel_set->min = min_range;
 
     RC_Input_obj->ARM_Toggle.combo_cnt = 1;
+    RC_Input_obj->ARM_Toggle.combo_list.mode = by_order;
+    RC_Input_obj->ARM_Toggle.combo_list.compare_callback = NULL;
     List_ItemInit(&(RC_Input_obj->ARM_Toggle.combo_list), channel_set);
 
     return true;
@@ -178,6 +180,9 @@ static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     channel_set->min = min_range;
 
     RC_Input_obj->DisARM_Toggle.combo_cnt = 1;
+
+    RC_Input_obj->DisARM_Toggle.combo_list.mode = by_order;
+    RC_Input_obj->DisARM_Toggle.combo_list.compare_callback = NULL;
     List_ItemInit(&(RC_Input_obj->DisARM_Toggle.combo_list), channel_set);
 
     return true;
@@ -186,7 +191,7 @@ static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
 {
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
-    item_obj *comnbo_item = NULL;
+    item_obj *combo_item = NULL;
 
     if ((!RC_Input_obj) ||
         (!data_obj) ||
@@ -202,11 +207,11 @@ static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint1
         return false;
     }
 
-    comnbo_item = (item_obj *)MMU_Malloc(sizeof(item_obj));
+    combo_item = (item_obj *)MMU_Malloc(sizeof(item_obj));
 
-    if (!comnbo_item)
+    if (!combo_item)
     {
-        MMU_Free(comnbo_item);
+        MMU_Free(combo_item);
         return false;
     }
 
@@ -215,13 +220,16 @@ static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint1
     channel_set->min = min_range;
     RC_Input_obj->ARM_Toggle.combo_cnt ++;
 
+    List_ItemInit(combo_item, channel_set);
+    List_Insert_Item(&(RC_Input_obj->ARM_Toggle.combo_list), combo_item);
+
     return true;
 }
 
 static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
 {
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
-    item_obj *comnbo_item = NULL;
+    item_obj *combo_item = NULL;
 
     if ((!RC_Input_obj) ||
         (!data_obj) ||
@@ -237,11 +245,11 @@ static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
         return false;
     }
 
-    comnbo_item = (item_obj *)MMU_Malloc(sizeof(item_obj));
+    combo_item = (item_obj *)MMU_Malloc(sizeof(item_obj));
 
-    if (!comnbo_item)
+    if (!combo_item)
     {
-        MMU_Free(comnbo_item);
+        MMU_Free(combo_item);
         return false;
     }
 
@@ -249,6 +257,9 @@ static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
     channel_set->max = max_range;
     channel_set->min = min_range;
     RC_Input_obj->DisARM_Toggle.combo_cnt ++;
+
+    List_ItemInit(combo_item, channel_set);
+    List_Insert_Item(&(RC_Input_obj->ARM_Toggle.combo_list), combo_item);
 
     return true;
 }
