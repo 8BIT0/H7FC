@@ -80,7 +80,6 @@ typedef struct
 
     Telemetry_RCFuncMap_TypeDef Gimbal[Telemetry_Gimbal_TagSum];
     Telemetry_RCFuncMap_TypeDef ARM_Toggle;
-    Telemetry_RCFuncMap_TypeDef DisARM_Toggle;
     Telemetry_RCFuncMap_TypeDef ControlMode_Toggle;
     Telemetry_RCFuncMap_TypeDef Buzzer_Toggle;
     Telemetry_RCFuncMap_TypeDef Log_Toggle;

@@ -15,9 +15,7 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range);
-static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
-static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
 
 void TaskTelemetry_Init(void)
 {
@@ -38,8 +36,7 @@ void TaskTelemetry_Init(void)
         }
 
         /* bind arm & disarm to channel */
-        if (!Telemetry_BindARMToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) ||
-            !Telemetry_BindDisARMToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        if (!Telemetry_BindARMToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID))
         {
             RC_Setting.init_state = false;
             RC_Setting.arm_state = TELEMETRY_SET_ARM;
@@ -169,145 +166,39 @@ static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, 
     return true;
 }
 
-static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range)
+static bool Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
 {
-    Telemetry_ChannelSet_TypeDef *channel_set = NULL;
-
-    if ((!RC_Input_obj) ||
-        (!data_obj) ||
-        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
-        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+    if (!toggle)
         return false;
 
-    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
-
-    if (!channel_set)
-    {
-        MMU_Free(channel_set);
-        return false;
-    }
-
-    channel_set->channel_ptr = data_obj;
-    channel_set->max = max_range;
-    channel_set->min = min_range;
-
-    RC_Input_obj->DisARM_Toggle.combo_cnt = 1;
-
-    RC_Input_obj->DisARM_Toggle.combo_list.mode = by_order;
-    RC_Input_obj->DisARM_Toggle.combo_list.compare_callback = NULL;
-    List_ItemInit(&(RC_Input_obj->DisARM_Toggle.combo_list), channel_set);
-
-    return true;
-}
-
-static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
-{
-    Telemetry_ChannelSet_TypeDef *channel_set = NULL;
-    item_obj *combo_item = NULL;
-
-    if ((!RC_Input_obj) ||
-        (!data_obj) ||
-        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
-        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
-        return false;
-
-    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
-
-    if (!channel_set)
-    {
-        MMU_Free(channel_set);
-        return false;
-    }
-
-    combo_item = (item_obj *)MMU_Malloc(sizeof(item_obj));
-
-    if (!combo_item)
-    {
-        MMU_Free(combo_item);
-        return false;
-    }
-
-    channel_set->channel_ptr = data_obj;
-    channel_set->max = max_range;
-    channel_set->min = min_range;
-    RC_Input_obj->ARM_Toggle.combo_cnt++;
-
-    List_ItemInit(combo_item, channel_set);
-    List_Insert_Item(&(RC_Input_obj->ARM_Toggle.combo_list), combo_item);
-
-    return true;
-}
-
-static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
-{
-    Telemetry_ChannelSet_TypeDef *channel_set = NULL;
-    item_obj *combo_item = NULL;
-
-    if ((!RC_Input_obj) ||
-        (!data_obj) ||
-        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
-        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
-        return false;
-
-    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
-
-    if (!channel_set)
-    {
-        MMU_Free(channel_set);
-        return false;
-    }
-
-    combo_item = (item_obj *)MMU_Malloc(sizeof(item_obj));
-
-    if (!combo_item)
-    {
-        MMU_Free(combo_item);
-        return false;
-    }
-
-    channel_set->channel_ptr = data_obj;
-    channel_set->max = max_range;
-    channel_set->min = min_range;
-    RC_Input_obj->DisARM_Toggle.combo_cnt++;
-
-    List_ItemInit(combo_item, channel_set);
-    List_Insert_Item(&(RC_Input_obj->ARM_Toggle.combo_list), combo_item);
-
-    return true;
-}
-
-static bool Telemetry_Check_ARMState_Input(Telemetry_RCInput_TypeDef *RC_Input_obj)
-{
-    uint8_t index = 0;
-    item_obj *nxt = NULL;
     uint8_t combo_cnt = 0;
+    item_obj *nxt = &toggle->combo_list;
     Telemetry_ChannelSet_TypeDef *channel_data = NULL;
 
-    if ((!RC_Input_obj) || (!RC_Input_obj->init_state))
-        return false;
-
-    nxt = &(RC_Input_obj->ARM_Toggle.combo_list);
-
-    /* check arm signal input */
     while (nxt)
     {
         channel_data = (Telemetry_ChannelSet_TypeDef *)nxt->data;
 
-        if (!channel_data || ((*(uint16_t *)channel_data->channel_ptr) > channel_data->max) || ((*(uint16_t *)channel_data->channel_ptr) < channel_data->min))
-            break;
+        if (!channel_data ||
+            ((*(uint16_t *)channel_data->channel_ptr) > channel_data->max) ||
+            ((*(uint16_t *)channel_data->channel_ptr) < channel_data->min))
+            return false;
 
         nxt = nxt->nxt;
         combo_cnt++;
     }
 
-    /* arm triggered */
-    if (combo_cnt == RC_Input_obj->ARM_Toggle.combo_cnt)
-        RC_Input_obj->arm_state = true;
+    if (combo_cnt == toggle->combo_cnt)
+        return true;
+}
 
-    nxt = NULL;
-    combo_cnt = 0;
+static bool Telemetry_Check_ARMState_Input(Telemetry_RCInput_TypeDef *RC_Input_obj)
+{
+    if ((!RC_Input_obj) || (!RC_Input_obj->init_state))
+        return false;
 
-    /* check disarm signal input */
+    /* check arm &disarm */
+    RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle);
 }
 
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
