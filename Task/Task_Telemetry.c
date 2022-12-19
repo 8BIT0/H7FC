@@ -155,8 +155,23 @@ static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, 
     return true;
 }
 
-static bool Telemetry_AddARMCombo()
+static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
 {
+    Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+
+    if ((!RC_Input_obj) ||
+        (!data_obj) ||
+        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+
+    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+
+    if (!channel_set)
+    {
+        MMU_Free(channel_set);
+        return false;
+    }
 }
 
 static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
@@ -187,8 +202,23 @@ static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     return true;
 }
 
-static bool Telemetry_AddDisARMCombo()
+static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
 {
+    Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+
+    if ((!RC_Input_obj) ||
+        (!data_obj) ||
+        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+
+    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+
+    if (!channel_set)
+    {
+        MMU_Free(channel_set);
+        return false;
+    }
 }
 
 static bool Telemetry_Check_ARMSig_Input(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
