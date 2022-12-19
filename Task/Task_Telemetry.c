@@ -278,10 +278,34 @@ static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
 
 static bool Telemetry_Check_ARMState_Input(Telemetry_RCInput_TypeDef *RC_Input_obj)
 {
+    uint8_t index = 0;
+    item_obj *nxt = NULL;
+    uint8_t combo_cnt = 0;
+    Telemetry_ChannelSet_TypeDef *channel_data = NULL;
+
     if ((!RC_Input_obj) || (!RC_Input_obj->init_state))
         return false;
 
+    nxt = &(RC_Input_obj->ARM_Toggle.combo_list);
+
     /* check arm signal input */
+    while (nxt)
+    {
+        channel_data = (Telemetry_ChannelSet_TypeDef *)nxt->data;
+
+        if (!channel_data || ((*(uint16_t *)channel_data->channel_ptr) > channel_data->max) || ((*(uint16_t *)channel_data->channel_ptr) < channel_data->min))
+            break;
+
+        nxt = nxt->nxt;
+        combo_cnt++;
+    }
+
+    /* arm triggered */
+    if (combo_cnt == RC_Input_obj->ARM_Toggle.combo_cnt)
+        RC_Input_obj->arm_state = true;
+
+    nxt = NULL;
+    combo_cnt = 0;
 
     /* check disarm signal input */
 }
