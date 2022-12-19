@@ -14,6 +14,10 @@ static Telemetry_RCInput_TypeDef RC_Setting;
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
 
 void TaskTelemetry_Init(void)
 {
@@ -264,10 +268,10 @@ static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
     return true;
 }
 
-static bool Telemetry_Check_ARMSig_Input(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
+static bool Telemetry_Check_ARMSig_Input(Telemetry_RCInput_TypeDef *RC_Input_obj)
 {
-    if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
-        return;
+    if ((!RC_Input_obj) || (!RC_Input_obj->init_state))
+        return false;
 }
 
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
