@@ -276,10 +276,14 @@ static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
     return true;
 }
 
-static bool Telemetry_Check_ARMSig_Input(Telemetry_RCInput_TypeDef *RC_Input_obj)
+static bool Telemetry_Check_ARMState_Input(Telemetry_RCInput_TypeDef *RC_Input_obj)
 {
     if ((!RC_Input_obj) || (!RC_Input_obj->init_state))
         return false;
+
+    /* check arm signal input */
+
+    /* check disarm signal input */
 }
 
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
@@ -288,4 +292,5 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
         return;
 
     SrvReceiver.get(receiver_obj);
+    Telemetry_Check_ARMState_Input();
 }
