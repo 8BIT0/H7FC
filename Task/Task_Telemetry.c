@@ -13,7 +13,7 @@ static Telemetry_RCInput_TypeDef RC_Setting;
 /* internal funciotn */
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
-static bool Telemetry_GimbalBindToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
 
 void TaskTelemetry_Init(void)
 {
@@ -24,10 +24,10 @@ void TaskTelemetry_Init(void)
         /* for sbus frame channel 3 is throttle */
 
         /* map function to channel */
-        if (!Telemetry_GimbalBindToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_GimbalBindToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetry_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_GimbalBindToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_GimbalBindToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        if (!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetry_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX))
         {
             RC_Setting.init_state = false;
             RC_Setting.arm_state = TELEMETRY_SET_ARM;
@@ -90,7 +90,7 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
     return RC_Input_obj->init_state;
 }
 
-static bool Telemetry_GimbalBindToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
+static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
 {
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
 
@@ -127,19 +127,19 @@ static bool Telemetry_GimbalBindToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     }
 }
 
-static bool Telemetry_ARMBindToChannel()
+static bool Telemetry_BindARMToChannel()
 {
 }
 
-static bool Telemetry_ARMAddCombo()
+static bool Telemetry_AddARMCombo()
 {
 }
 
-static bool Telemetry_DisARMBindToChannel()
+static bool Telemetry_BindDisARMToChannel()
 {
 }
 
-static bool Telemetry_DisARMAddCombo()
+static bool Telemetry_AddDisARMCombo()
 {
 }
 
