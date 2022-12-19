@@ -14,8 +14,8 @@ static Telemetry_RCInput_TypeDef RC_Setting;
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
-static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
-static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
 
@@ -38,8 +38,8 @@ void TaskTelemetry_Init(void)
         }
 
         /* bind arm & disarm to channel */
-        if(!Telemetry_BindARMToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) ||
-           !Telemetry_BindDisARMToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        if (!Telemetry_BindARMToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) ||
+            !Telemetry_BindDisARMToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
         {
             RC_Setting.init_state = false;
             RC_Setting.arm_state = TELEMETRY_SET_ARM;
@@ -139,7 +139,7 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     }
 }
 
-static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
+static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range)
 {
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
 
@@ -169,7 +169,7 @@ static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, 
     return true;
 }
 
-static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range)
+static bool Telemetry_BindDisARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range)
 {
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
 
@@ -230,7 +230,7 @@ static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint1
     channel_set->channel_ptr = data_obj;
     channel_set->max = max_range;
     channel_set->min = min_range;
-    RC_Input_obj->ARM_Toggle.combo_cnt ++;
+    RC_Input_obj->ARM_Toggle.combo_cnt++;
 
     List_ItemInit(combo_item, channel_set);
     List_Insert_Item(&(RC_Input_obj->ARM_Toggle.combo_list), combo_item);
@@ -268,7 +268,7 @@ static bool Telemetry_AddDisARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
     channel_set->channel_ptr = data_obj;
     channel_set->max = max_range;
     channel_set->min = min_range;
-    RC_Input_obj->DisARM_Toggle.combo_cnt ++;
+    RC_Input_obj->DisARM_Toggle.combo_cnt++;
 
     List_ItemInit(combo_item, channel_set);
     List_Insert_Item(&(RC_Input_obj->ARM_Toggle.combo_list), combo_item);
@@ -292,5 +292,5 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
         return;
 
     SrvReceiver.get(receiver_obj);
-    Telemetry_Check_ARMState_Input();
+    Telemetry_Check_ARMState_Input(RC_Input_obj);
 }
