@@ -27,11 +27,19 @@ void TaskTelemetry_Init(void)
         /* for crsf frame channel 1 is throttle */
         /* for sbus frame channel 3 is throttle */
 
-        /* map function to channel */
+        /* bind gimbal to channel */
         if (!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
             !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetry_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
             !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
             !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        {
+            RC_Setting.init_state = false;
+            RC_Setting.arm_state = TELEMETRY_SET_ARM;
+        }
+
+        /* bind arm & disarm to channel */
+        if(!Telemetry_BindARMToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) ||
+           !Telemetry_BindDisARMToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
         {
             RC_Setting.init_state = false;
             RC_Setting.arm_state = TELEMETRY_SET_ARM;
