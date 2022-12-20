@@ -102,6 +102,8 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
     RC_Input_obj->init_state = SrvReceiver.init(receiver_obj, port_ptr);
 
     RC_Input_obj->arm_state = TELEMETRY_SET_ARM;
+    RC_Input_obj->buzz_state = false;
+    RC_Input_obj->osd_tune_state = false;
     RC_Input_obj->control_mode = Telemetry_Control_Mode_Default;
     RC_Input_obj->module_enable = TELEMETRY_DISABLE_ALL_MODULE;
 
@@ -246,7 +248,11 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
     /* check arm & disarm */
     RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle);
 
-    /* check osd tune toggle */
-
     /* check buzzer toggle */
+    RC_Input_obj->buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle);
+
+    if (RC_Input_obj->arm_state)
+    {
+        /* check osd tune toggle */
+    }
 }

@@ -74,6 +74,9 @@ typedef struct
 {
     bool init_state;
     bool arm_state;
+    bool buzz_state;
+    bool osd_tune_state;
+
     uint16_t gimbal[4];
     uint8_t control_mode;
     uint16_t module_enable;
