@@ -497,7 +497,6 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
     Disk_FFInfoTable_TypeDef table_tmp;
     Disk_CCSSFFAT_TypeDef *attr_tmp = NULL;
     uint32_t date_tmp = 0;
-    uint32_t disk_section_no = 0;
     char name[11];
 
     memset(name, NULL, sizeof(name));
@@ -1592,7 +1591,7 @@ static void Disk_FileSize_Update(Disk_FileObj_TypeDef *FileObj)
 static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileObj_TypeDef *FileObj, const uint8_t *p_data, uint16_t len)
 {
     // uint32_t use_cluster = 0;
-    uint32_t use_sec = 0;
+    // uint32_t use_sec = 0;
     FATCluster_Addr lst_file_cluster = 0;
 
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
