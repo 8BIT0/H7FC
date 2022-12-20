@@ -248,7 +248,10 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
     SrvReceiver.get(receiver_obj);
 
     /* check arm & disarm */
-    RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle);
+    if (!RC_Input_obj->osd_tune_state)
+    {
+        RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle);
+    }
 
     /* check buzzer toggle */
     RC_Input_obj->buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle);
