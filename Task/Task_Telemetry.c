@@ -15,6 +15,8 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_BindOSDTuneToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_AddOSDTuneCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_AddARMCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t tag, uint16_t min_range, uint16_t max_range);
 
 void TaskTelemetry_Init(void)
@@ -41,6 +43,10 @@ void TaskTelemetry_Init(void)
             RC_Setting.init_state = false;
             RC_Setting.arm_state = TELEMETRY_SET_ARM;
         }
+
+        /* bind osd tune to channel */
+
+        /* bind buzzer to channel */
     }
 
     /* init radio */
@@ -166,6 +172,32 @@ static bool Telemetry_BindARMToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, 
     return true;
 }
 
+static bool Telemetry_BindOSDTuneToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range)
+{
+    Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+
+    if ((!RC_Input_obj) ||
+        (!data_obj) ||
+        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+
+    return true;
+}
+
+static bool Telemetry_AddOSDTuneCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t min_range, uint16_t max_range)
+{
+    Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+
+    if ((!RC_Input_obj) ||
+        (!data_obj) ||
+        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+
+    return true;
+}
+
 static bool Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
 {
     if (!toggle)
@@ -197,7 +229,7 @@ static bool Telemetry_Check_ARMState_Input(Telemetry_RCInput_TypeDef *RC_Input_o
     if ((!RC_Input_obj) || (!RC_Input_obj->init_state))
         return false;
 
-    /* check arm &disarm */
+    /* check arm & disarm */
     RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle);
 }
 
