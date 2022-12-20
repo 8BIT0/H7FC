@@ -15,6 +15,7 @@ static SrvReceiver_Monitor_TypeDef SrvReceiver_Monitor;
 /* internal function */
 static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_t size);
 static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj);
+static void SrvReceiver_Set_Invert(SrvReceiverObj_TypeDef *receiver_obj, uint16_t channel_index);
 
 /* external function */
 static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
@@ -34,6 +35,7 @@ SrvReceiver_TypeDef SrvReceiver = {
     .create_spi_obj = SrvReceiver_Create_SPIObj,
     .init = SrvReceiver_Init,
     .get = SrvReceiver_Get_Value,
+    .invert = SrvReceiver_Set_Invert,
 };
 
 static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
@@ -244,6 +246,8 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
         return false;
     }
 
+    obj->invert_list = 0;
+
     return true;
 }
 
@@ -300,6 +304,17 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                     receiver_obj->data.val_list[14] = crsf_frame_channel.ch14;
                     receiver_obj->data.val_list[15] = crsf_frame_channel.ch15;
 
+                    if (receiver_obj->invert_list)
+                    {
+                        for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
+                        {
+                            if (receiver_obj->invert_list & 1 << i)
+                            {
+                                receiver_obj->data.val_list[i] *= -1;
+                            }
+                        }
+                    }
+
                     receiver_obj->data.failsafe = false;
                     break;
 
@@ -314,6 +329,11 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                     {
                         receiver_obj->data.val_list[i] = ((DevSBUSObj_TypeDef *)receiver_obj->frame_data_obj)->val[i];
+
+                        if (receiver_obj->invert_list & 1 << i)
+                        {
+                            receiver_obj->data.val_list[i] *= -1;
+                        }
                     }
                 }
             }
@@ -351,6 +371,21 @@ static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
     }
 
     /* other check */
+}
+
+static void SrvReceiver_Set_Invert(SrvReceiverObj_TypeDef *receiver_obj, uint16_t channel_index)
+{
+    if (receiver_obj && (channel_index < receiver_obj->channel_num))
+    {
+        if (receiver_obj->invert_list & (1 << channel_index))
+        {
+            receiver_obj->invert_list &= ~(1 << channel_index);
+        }
+        else
+        {
+            receiver_obj->invert_list |= (1 << channel_index);
+        }
+    }
 }
 
 static SrvReceiverData_TypeDef SrvReceiver_Get_Value(SrvReceiverObj_TypeDef *receiver_obj)

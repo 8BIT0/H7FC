@@ -14,8 +14,8 @@ static Telemetry_RCInput_TypeDef RC_Setting;
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
-static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef  *toggle, uint16_t min_range, uint16_t max_range);
-static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef  *toggle, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
 
 void TaskTelemetry_Init(void)
 {
@@ -45,6 +45,11 @@ void TaskTelemetry_Init(void)
         /* bind osd tune to channel */
 
         /* bind buzzer to channel */
+        if (!Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID))
+        {
+            RC_Setting.init_state = false;
+            RC_Setting.arm_state = TELEMETRY_SET_ARM;
+        }
     }
 
     /* init radio */
@@ -140,7 +145,7 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     }
 }
 
-static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef  *toggle, uint16_t min_range, uint16_t max_range)
+static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range)
 {
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
 
@@ -170,7 +175,7 @@ static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     return true;
 }
 
-static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef  *toggle, uint16_t min_range, uint16_t max_range)
+static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range)
 {
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
     item_obj *item = NULL;

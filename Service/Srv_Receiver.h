@@ -91,6 +91,7 @@ typedef struct
 
     bool re_update;
     bool in_use;
+    uint32_t invert_list;
 
     /* for sbus receiver we gonna need inverter hardware */
     BspGPIO_Obj_TypeDef inverter_pin;
@@ -113,6 +114,7 @@ typedef struct
     uint8_t *(*create_spi_obj)(void);
     bool (*init)(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj);
     SrvReceiverData_TypeDef (*get)(SrvReceiverObj_TypeDef *obj);
+    void (*invert)(SrvReceiverObj_TypeDef *obj, uint16_t channel_index);
 } SrvReceiver_TypeDef;
 
 extern SrvReceiver_TypeDef SrvReceiver;
