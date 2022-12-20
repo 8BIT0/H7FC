@@ -236,6 +236,8 @@ static bool Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
 
     if (combo_cnt == toggle->combo_cnt)
         return true;
+
+    return false;
 }
 
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
