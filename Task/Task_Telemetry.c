@@ -231,20 +231,17 @@ static bool Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
         return true;
 }
 
-static bool Telemetry_Check_ARMState_Input(Telemetry_RCInput_TypeDef *RC_Input_obj)
-{
-    if ((!RC_Input_obj) || (!RC_Input_obj->init_state))
-        return false;
-
-    /* check arm & disarm */
-    RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle);
-}
-
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
     if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
         return;
 
     SrvReceiver.get(receiver_obj);
-    Telemetry_Check_ARMState_Input(RC_Input_obj);
+
+    /* check arm & disarm */
+    RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle);
+
+    /* check osd tune toggle */
+
+    /* check buzzer toggle */
 }
