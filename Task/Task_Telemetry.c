@@ -213,6 +213,7 @@ static bool Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
     item_obj *nxt = &toggle->combo_list;
     Telemetry_ChannelSet_TypeDef *channel_data = NULL;
 
+    /* do not use list traverse here */
     while (nxt)
     {
         channel_data = (Telemetry_ChannelSet_TypeDef *)nxt->data;
