@@ -238,15 +238,17 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
 
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
+    SrvReceiverData_TypeDef receiver_data;
+
     if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
         return;
 
-    SrvReceiver.get(receiver_obj);
+    receiver_data = SrvReceiver.get(receiver_obj);
 
     /* notic disarm and osd tune can not enable at the same time */
     /* when power on and arm toggle on remote is set on disarm we force it to arm */
 
-    if (!RC_Input_obj->osd_tune_state)
+    if (!receiver_data.failsafe && !RC_Input_obj->osd_tune_state)
     {
         /* check arm & disarm */
         RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
@@ -254,7 +256,8 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
         /* check control mode */
         RC_Input_obj->control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
 
-        if(RC_Input_obj->control_mode > Telemetry_Control_Mode_AUTO)
+        /* check control mode inedx range */
+        if((RC_Input_obj->control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->control_mode < Telemetry_Control_Mode_ACRO))
             RC_Input_obj->control_mode = Telemetry_Control_Mode_Default;
     }
 
