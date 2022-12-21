@@ -44,7 +44,7 @@ typedef enum
 {
     Telemetry_Control_Mode_ACRO = 1,
     Telemetry_Control_Mode_STAB,
-    Telemetry_Control_Mode_OSD_Tune,
+    Telemetry_Control_Mode_AUTO,
     Telemetry_Control_Mode_Default = Telemetry_Control_Mode_STAB,
 } Telemetry_ControlMode_Type;
 
@@ -56,6 +56,12 @@ typedef enum
     Telemetry_Control_Buzzer = Telemetry_SetBit(3),
     Telemetry_Control_Log = Telemetry_SetBit(4),
 } Telemetry_ModuleControl_List;
+
+typedef struct
+{
+    uint8_t pos;
+    bool state;
+}Telemetry_ToggleData_TypeDef;
 
 typedef struct
 {

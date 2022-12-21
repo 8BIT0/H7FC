@@ -32,6 +32,9 @@ void TaskTelemetry_Init(void)
             !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
             !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind arm & disarm to channel */
             !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.Buzzer_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind buzzer to channel */
+            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.ControlMode_Toggle, ) || /* bind control mode toggle */
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.ControlMode_Toggle) ||
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.ControlMode_Toggle) ||
             !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle, ) || /* bind osd tune to channel */
             !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle) ||
             !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle) ||
@@ -201,14 +204,17 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
     return true;
 }
 
-static bool Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
+static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
 {
-    if (!toggle)
-        return false;
+    Telemetry_ToggleData_TypeDef toggle_val;
 
-    uint8_t combo_cnt = 0;
+    toggle_val.pos = 0;
+    toggle_val.state = false;
     item_obj *nxt = &toggle->combo_list;
     Telemetry_ChannelSet_TypeDef *channel_data = NULL;
+
+    if (!toggle)
+        return toggle_val;
 
     /* do not use list traverse here */
     while (nxt)
@@ -218,16 +224,16 @@ static bool Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
         if (!channel_data ||
             ((*(uint16_t *)channel_data->channel_ptr) > channel_data->max) ||
             ((*(uint16_t *)channel_data->channel_ptr) < channel_data->min))
-            return false;
+            break;
 
         nxt = nxt->nxt;
-        combo_cnt++;
+        toggle_val.pos++;
     }
 
-    if (combo_cnt == toggle->combo_cnt)
-        return true;
+    if (toggle_val.pos == toggle->combo_cnt)
+        toggle_val.state = true;
 
-    return false;
+    return toggle_val;
 }
 
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
@@ -240,18 +246,24 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
     /* notic disarm and osd tune can not enable at the same time */
     /* when power on and arm toggle on remote is set on disarm we force it to arm */
 
-    /* check arm & disarm */
     if (!RC_Input_obj->osd_tune_state)
     {
-        RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle);
+        /* check arm & disarm */
+        RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
+
+        /* check control mode */
+        RC_Input_obj->control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
+
+        if(RC_Input_obj->control_mode > Telemetry_Control_Mode_AUTO)
+            RC_Input_obj->control_mode = Telemetry_Control_Mode_Default;
     }
 
     /* check buzzer toggle */
-    RC_Input_obj->buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle);
+    RC_Input_obj->buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
 
     if (RC_Input_obj->arm_state)
     {
         /* check osd tune toggle */
-        RC_Input_obj->osd_tune_state = Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle);
+        RC_Input_obj->osd_tune_state = Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state;
     }
 }
