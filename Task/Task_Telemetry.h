@@ -83,7 +83,7 @@ typedef struct
     bool buzz_state;
     bool osd_tune_state;
 
-    uint16_t gimbal[4];
+    uint16_t gimbal_val[4];
     uint8_t control_mode;
     uint16_t module_enable;
     uint32_t aux_func_reg;

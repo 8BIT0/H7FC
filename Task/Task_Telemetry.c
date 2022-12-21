@@ -236,6 +236,27 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
     return toggle_val;
 }
 
+static uint16_t Telemetry_Check_Gimbal(Telemetry_RCFuncMap_TypeDef *gimbal)
+{
+    Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
+
+    if(!gimbal)
+        return TELEMETRY_RC_CHANNEL_RANGE_MIN;
+
+    gimbal_channel = gimbal->combo_list.data;
+
+    if(!gimbal_channel)
+        return TELEMETRY_RC_CHANNEL_RANGE_MIN;
+    
+    if(*gimbal_channel->channel_ptr < gimbal_channel->min)
+        return TELEMETRY_RC_CHANNEL_RANGE_MIN;
+
+    if(*gimbal_channel->channel_ptr > gimbal_channel->max)
+        return TELEMETRY_RC_CHANNEL_RANGE_MAX;
+
+    return *gimbal_channel->channel_ptr;
+}
+
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
     SrvReceiverData_TypeDef receiver_data;
@@ -263,6 +284,10 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
             if((RC_Input_obj->control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->control_mode < Telemetry_Control_Mode_ACRO))
                 RC_Input_obj->control_mode = Telemetry_Control_Mode_Default;
         }
+
+        /* get gimbal channel */
+        for(uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
+            RC_Input_obj->gimbal_val[i] = Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
 
         /* check buzzer toggle */
         RC_Input_obj->buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
