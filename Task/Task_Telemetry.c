@@ -13,6 +13,7 @@
 /* internal variable */
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_RCInput_TypeDef RC_Setting;
+static DataPipeObj_TypeDef Receiver_Smp_DataPipe;
 
 /* internal funciotn */
 static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
