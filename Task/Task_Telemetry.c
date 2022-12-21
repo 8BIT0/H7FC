@@ -249,27 +249,32 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
     /* notic disarm and osd tune can not enable at the same time */
     /* when power on and arm toggle on remote is set on disarm we force it to arm */
 
-    if (!receiver_data.failsafe && !RC_Input_obj->osd_tune_state)
+    if(!receiver_data.failsafe)
     {
-        /* check arm & disarm */
-        RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
+        if (!RC_Input_obj->osd_tune_state)
+        {
+            /* check arm & disarm */
+            RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
 
-        /* check control mode */
-        RC_Input_obj->control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
+            /* check control mode */
+            RC_Input_obj->control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
 
-        /* check control mode inedx range */
-        if((RC_Input_obj->control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->control_mode < Telemetry_Control_Mode_ACRO))
-            RC_Input_obj->control_mode = Telemetry_Control_Mode_Default;
+            /* check control mode inedx range */
+            if((RC_Input_obj->control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->control_mode < Telemetry_Control_Mode_ACRO))
+                RC_Input_obj->control_mode = Telemetry_Control_Mode_Default;
+        }
+
+        /* check buzzer toggle */
+        RC_Input_obj->buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
+
+        if (RC_Input_obj->arm_state)
+        {
+            /* check osd tune toggle */
+            RC_Input_obj->osd_tune_state = Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state;
+        }
     }
-
-    /* check buzzer toggle */
-    RC_Input_obj->buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
-
-    if (RC_Input_obj->arm_state)
-    {
-        /* check osd tune toggle */
-        RC_Input_obj->osd_tune_state = Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state;
-    }
+    else
+        RC_Input_obj->arm_state = TELEMETRY_SET_ARM;
 }
 
 
