@@ -25,27 +25,17 @@ void TaskTelemetry_Init(void)
         /* for crsf frame channel 1 is throttle */
         /* for sbus frame channel 3 is throttle */
 
-        /* bind gimbal to channel */
+        /* bind to channel */
         if (!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
             !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetry_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
             !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX))
-        {
-            RC_Setting.init_state = false;
-            RC_Setting.arm_state = TELEMETRY_SET_ARM;
-        }
-
-        /* bind arm & disarm to channel */
-        if (!Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID))
-        {
-            RC_Setting.init_state = false;
-            RC_Setting.arm_state = TELEMETRY_SET_ARM;
-        }
-
-        /* bind osd tune to channel */
-
-        /* bind buzzer to channel */
-        if (!Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID))
+            !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind arm & disarm to channel */
+            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.Buzzer_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind buzzer to channel */
+            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle, ) || /* bind osd tune to channel */
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle) ||
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle) ||
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle))
         {
             RC_Setting.init_state = false;
             RC_Setting.arm_state = TELEMETRY_SET_ARM;
@@ -247,6 +237,9 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
 
     SrvReceiver.get(receiver_obj);
 
+    /* notic disarm and osd tune can not enable at the same time */
+    /* when power on and arm toggle on remote is set on disarm we force it to arm */
+
     /* check arm & disarm */
     if (!RC_Input_obj->osd_tune_state)
     {
@@ -259,5 +252,6 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
     if (RC_Input_obj->arm_state)
     {
         /* check osd tune toggle */
+        RC_Input_obj->osd_tune_state = Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle);
     }
 }

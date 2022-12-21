@@ -87,6 +87,7 @@ typedef struct
     Telemetry_RCFuncMap_TypeDef ControlMode_Toggle;
     Telemetry_RCFuncMap_TypeDef Buzzer_Toggle;
     Telemetry_RCFuncMap_TypeDef Log_Toggle;
+    Telemetry_RCFuncMap_TypeDef OSD_Toggle;
 } Telemetry_RCInput_TypeDef;
 #pragma pack()
 
