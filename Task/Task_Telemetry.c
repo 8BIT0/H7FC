@@ -240,6 +240,7 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
 {
     SrvReceiverData_TypeDef receiver_data;
 
+    memset(&receiver_data, 0, sizeof(receiver_data));
     if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
         return;
 
