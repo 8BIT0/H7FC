@@ -53,7 +53,7 @@ void TaskTelemetry_Core(Task_Handle hdl)
     Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
 }
 
-/************************************** receiver ********************************************/
+/************************************** telemetry receiver section ********************************************/
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
     uint8_t *port_ptr = NULL;
@@ -271,3 +271,9 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
         RC_Input_obj->osd_tune_state = Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state;
     }
 }
+
+
+
+
+/************************************** telemetry radio section ********************************************/
+
