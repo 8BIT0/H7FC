@@ -347,10 +347,9 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                 uart_obj = ((BspUARTObj_TypeDef *)(receiver_obj->port->cfg));
 
                 rx_buff_ptr = uart_obj->rx_buf;
-                rx_buff_size = uart_obj->rx_size;
 
-                if (rx_buff_ptr && rx_buff_size)
-                    memset(rx_buff_ptr, NULL, rx_buff_size);
+                if (rx_buff_ptr)
+                    memset(rx_buff_ptr, NULL, size);
             }
         }
     }
