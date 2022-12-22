@@ -254,10 +254,10 @@ static uint16_t Telemetry_Check_Gimbal(Telemetry_RCFuncMap_TypeDef *gimbal)
         return TELEMETRY_RC_CHANNEL_RANGE_MIN;
     
     if(*gimbal_channel->channel_ptr < gimbal_channel->min)
-        return TELEMETRY_RC_CHANNEL_RANGE_MIN;
+        return gimbal_channel->min;
 
     if(*gimbal_channel->channel_ptr > gimbal_channel->max)
-        return TELEMETRY_RC_CHANNEL_RANGE_MAX;
+        return gimbal_channel->max;
 
     return *gimbal_channel->channel_ptr;
 }
@@ -304,7 +304,14 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
         }
     }
     else
+    {
         RC_Input_obj->arm_state = TELEMETRY_SET_ARM;
+    
+        for(uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
+            RC_Input_obj->gimbal_val[i] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
+
+    }
+
 }
 
 
