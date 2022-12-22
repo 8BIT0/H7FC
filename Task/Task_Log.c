@@ -119,8 +119,6 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
                     rt_lst = rt;
                 }
             }
-            // else if (state == Disk_Write_Finish)
-            //     DevLED.ctl(Led2, true);
         }
         else if (state == Disk_Write_Finish)
         {
