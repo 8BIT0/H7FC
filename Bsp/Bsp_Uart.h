@@ -43,7 +43,7 @@ typedef struct
 
 typedef struct
 {
-    uint16_t baudrate;
+    uint32_t baudrate;
     bool pin_swap;
 
     USART_TypeDef *instance;

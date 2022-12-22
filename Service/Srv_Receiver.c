@@ -227,7 +227,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
         Uart_Receiver_Obj->RxCallback = SrvReceiver_SerialDecode_Callback;
 
         /* serial port init */
-        if (!BspUart.init(&Uart_Receiver_Obj))
+        if (!BspUart.init(Uart_Receiver_Obj))
         {
             ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Port_Init_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
             return false;
@@ -330,11 +330,11 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                     {
                         receiver_obj->data.val_list[i] = ((DevSBUSObj_TypeDef *)receiver_obj->frame_data_obj)->val[i];
-                        
+
                         if (receiver_obj->invert_list && receiver_obj->invert_list & 1 << i)
                         {
-                                receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
-                                receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
+                            receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
+                            receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
                         }
                     }
                 }
