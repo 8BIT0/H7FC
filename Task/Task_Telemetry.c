@@ -283,12 +283,17 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         return sig_tmp;
 
     receiver_data = SrvRseceiver.get(receiver_obj);
+    RC_Input_obj->rssi = 0;
+    RC_Input_obj->link_quality = 0;
 
     /* notic disarm and osd tune can not enable at the same time */
     /* when power on and arm toggle on remote is set on disarm we force it to arm */
 
     if(!receiver_data.failsafe)
     {
+        RC_Input_obj->rssi = receiver_data.rssi;
+        RC_Input_obj->link_quality = receiver_data.link_quality;
+
         if (!RC_Input_obj->sig.osd_tune_state)
         {
             /* check arm & disarm */

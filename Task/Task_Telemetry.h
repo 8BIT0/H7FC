@@ -94,6 +94,8 @@ typedef struct
     bool init_state;
     Telemetry_RCSig_TypeDef sig;
     uint32_t aux_func_reg;
+    uint16_t rssi;
+    uint16_t link_quality;
 
     Telemetry_RCFuncMap_TypeDef Gimbal[Telemetry_Gimbal_TagSum];
     Telemetry_RCFuncMap_TypeDef ARM_Toggle;
