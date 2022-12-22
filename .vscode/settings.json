@@ -105,7 +105,8 @@
                 "srv_receiver.h": "c",
                 "bsp_uart.h": "c",
                 "bsp_dma.h": "c",
-                "task_telemetry.h": "c"
+                "task_telemetry.h": "c",
+                "dshot.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
