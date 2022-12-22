@@ -46,7 +46,7 @@ void TaskTelemetry_Init(void)
             !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100))
         {
             RC_Setting.init_state = false;
-            RC_Setting.arm_state = TELEMETRY_SET_ARM;
+            RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
         }
     }
 
@@ -55,7 +55,9 @@ void TaskTelemetry_Init(void)
 
 void TaskTelemetry_Core(Task_Handle hdl)
 {
-    Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
+    Telemetry_RCSig_TypeDef rc_sig;
+
+    rc_sig = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
 }
 
 /************************************** telemetry receiver section ********************************************/
@@ -99,11 +101,11 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
     /* init receiver object */
     RC_Input_obj->init_state = SrvReceiver.init(receiver_obj, port_ptr);
 
-    RC_Input_obj->arm_state = TELEMETRY_SET_ARM;
-    RC_Input_obj->buzz_state = false;
-    RC_Input_obj->osd_tune_state = false;
-    RC_Input_obj->control_mode = Telemetry_Control_Mode_Default;
-    RC_Input_obj->module_enable = TELEMETRY_DISABLE_ALL_MODULE;
+    RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+    RC_Input_obj->sig.buzz_state = false;
+    RC_Input_obj->sig.osd_tune_state = false;
+    RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+    RC_Input_obj->sig.module_enable = TELEMETRY_DISABLE_ALL_MODULE;
 
     return RC_Input_obj->init_state;
 }
@@ -294,7 +296,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
 
             /* check control mode inedx range */
-            if((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->control_mode < Telemetry_Control_Mode_ACRO))
+            if((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
                 RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
         }
 
