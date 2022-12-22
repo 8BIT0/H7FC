@@ -30,6 +30,11 @@ typedef enum
 
 typedef struct
 {
+
+}DevDshot_cfg_TypeDef;
+
+typedef struct
+{
     bool (*init)();
     bool (*control)();
 }DevDshot_TypeDef;
