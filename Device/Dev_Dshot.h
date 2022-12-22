@@ -30,13 +30,14 @@ typedef enum
 
 typedef struct
 {
-
-}DevDshot_cfg_TypeDef;
+    DevDshotType_List type;
+}DevDshotObj_TypeDef;
 
 typedef struct
 {
-    bool (*init)();
-    bool (*control)();
+    bool (*init)(DevDshotObj_TypeDef *obj);
+    bool (*command)(DevDshotObj_TypeDef *obj, DevDshot_Command_List cmd);
+    bool (*control)(DevDshotObj_TypeDef *obj, uint16_t val);
 }DevDshot_TypeDef;
 
 #endif
