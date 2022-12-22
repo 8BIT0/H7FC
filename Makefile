@@ -54,6 +54,8 @@ Device/Dev_ICM20602.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 Device/Dev_Card.c \
+Device/Dev_Sbus.c \
+Device/Dev_CRSF.c \
 Service/SrvMPU_Sample.c \
 Service/Srv_Receiver.c \
 DataStructure/Data_Convert_Util.c \

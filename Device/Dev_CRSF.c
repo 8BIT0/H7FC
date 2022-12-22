@@ -159,7 +159,7 @@ static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj)
     memset(&statistics, 0, sizeof(crsf_LinkStatistics_t));
 
     if(obj)
-        memcpy(&statistics, &obj->statistics, sizoef(crsf_LinkStatistics_t));
+        memcpy(&statistics, &obj->statistics, sizeof(crsf_LinkStatistics_t));
 
     return statistics;
 }
