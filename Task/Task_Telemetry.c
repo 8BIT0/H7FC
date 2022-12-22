@@ -58,6 +58,8 @@ void TaskTelemetry_Core(Task_Handle hdl)
     Telemetry_RCSig_TypeDef rc_sig;
 
     rc_sig = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
+    
+    /* pipe data out */
 }
 
 /************************************** telemetry receiver section ********************************************/
@@ -278,9 +280,9 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     sig_tmp.gimbal_val[Telemetry_RC_Yaw] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
 
     if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
-        return;
+        return sig_tmp;
 
-    receiver_data = SrvReceiver.get(receiver_obj);
+    receiver_data = SrvRseceiver.get(receiver_obj);
 
     /* notic disarm and osd tune can not enable at the same time */
     /* when power on and arm toggle on remote is set on disarm we force it to arm */
