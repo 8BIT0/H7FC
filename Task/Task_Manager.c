@@ -73,24 +73,3 @@ void Task_Manager_CreateTask(void)
     TaskLog_Handle = Os_CreateTask("Data Log", TASK_EXEC_200HZ, Task_Group_2, Task_Priority_0, TaskLog_Core, 1024);
     TestTelemetry_Handle = Os_CreateTask("Telemetry", TASK_EXEC_500HZ, Task_Group_0, Task_Priority_1, TaskTelemetry_Core, 512);
 }
-
-void Test2(Task_Handle handle)
-{
-    SYSTEM_RunTime Rt = 0;
-    static SYSTEM_RunTime Lst_Rt = 0;
-    static bool led_state = false;
-
-    // DebugPin.ctl(Debug_PB4, true);
-    // DebugPin.ctl(Debug_PB4, false);
-
-    Rt = Get_CurrentRunningMs();
-
-    if ((Rt % 100 == 0) && (Lst_Rt != Rt))
-    {
-        led_state = !led_state;
-        Lst_Rt = Rt;
-    }
-
-    DevLED.ctl(Led1, led_state);
-    // DevLED.ctl(Led3, led_state);
-}

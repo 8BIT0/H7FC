@@ -53,9 +53,32 @@ void TaskTelemetry_Init(void)
     /* init radio */
 }
 
+void Telemetry_blink(void)
+{
+    SYSTEM_RunTime Rt = 0;
+    static SYSTEM_RunTime Lst_Rt = 0;
+    static bool led_state = false;
+
+    // DebugPin.ctl(Debug_PB4, true);
+    // DebugPin.ctl(Debug_PB4, false);
+
+    Rt = Get_CurrentRunningMs();
+
+    if ((Rt % 100 == 0) && (Lst_Rt != Rt))
+    {
+        led_state = !led_state;
+        Lst_Rt = Rt;
+    }
+
+    DevLED.ctl(Led1, led_state);
+    // DevLED.ctl(Led3, led_state);
+}
+
 void TaskTelemetry_Core(Task_Handle hdl)
 {
     Telemetry_RCSig_TypeDef rc_sig;
+
+    Telemetry_blink();
 
     rc_sig = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
 
