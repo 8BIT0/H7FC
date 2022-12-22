@@ -1,6 +1,6 @@
 /* code: 8_B!T0
  * Telemetry Task we use this task to get and process data from RC receiver and radio
- * OSD Tune Gimbal code : throttle down / Pitch down / Yaw right max / Roll lift max / keep this position for 5S
+ * OSD Tune Gimbal code : throttle down / Pitch down / Yaw right max / Roll right max / keep this position for 5S
  */
 #include "Task_Telemetry.h"
 #include "DataPipe.h"
@@ -37,13 +37,13 @@ void TaskTelemetry_Init(void)
             !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
             !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind arm & disarm to channel */
             !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.Buzzer_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind buzzer to channel */
-            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, ) || /* bind control mode toggle */
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, ) ||
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, ) ||
-            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle, ) || /* bind osd tune to channel */
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle, ) ||
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle, ) ||
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[], &RC_Setting.OSD_Toggle, ))
+            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, 1300) || /* bind control mode toggle */
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 1300, 1650) ||
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 1650, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) || /* bind osd tune to channel */
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) ||
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MAX - 100, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100))
         {
             RC_Setting.init_state = false;
             RC_Setting.arm_state = TELEMETRY_SET_ARM;
@@ -309,7 +309,6 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
     
         for(uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
             RC_Input_obj->gimbal_val[i] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
-
     }
 
 }
