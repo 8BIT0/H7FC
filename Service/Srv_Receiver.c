@@ -330,11 +330,14 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                     {
                         receiver_obj->data.val_list[i] = ((DevSBUSObj_TypeDef *)receiver_obj->frame_data_obj)->val[i];
-
-                        if (receiver_obj->invert_list & 1 << i)
+                        
+                        if(receiver_obj->invert_list)
                         {
-                                receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
-                                receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
+                            if (receiver_obj->invert_list & 1 << i)
+                            {
+                                    receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
+                                    receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
+                            }
                         }
                     }
                 }
