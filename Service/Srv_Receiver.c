@@ -372,6 +372,8 @@ static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
     }
 
     /* other check */
+
+    return true;
 }
 
 static void SrvReceiver_Set_Invert(SrvReceiverObj_TypeDef *receiver_obj, uint16_t channel_index)

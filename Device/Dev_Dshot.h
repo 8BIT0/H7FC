@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include "Bsp_GPIO.h"
 
 typedef enum
 {
@@ -31,6 +32,7 @@ typedef enum
 typedef struct
 {
     DevDshotType_List type;
+    BspGPIO_Obj_TypeDef pin;
 }DevDshotObj_TypeDef;
 
 typedef struct
