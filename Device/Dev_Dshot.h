@@ -6,6 +6,24 @@
 #include <stdbool.h>
 #include "Bsp_GPIO.h"
 
+#define MHZ_TO_HZ(x) ((x) * 1000000)
+
+#define DSHOT_TIMER_CLK_HZ MHZ_TO_HZ(100)
+#define DSHOT600_CLK_HZ MHZ_TO_HZ(12)
+#define DSHOT300_CLK_HZ MHZ_TO_HZ(6)
+#define DSHOT150_CLK_HZ MHZ_TO_HZ(3)
+
+#define MOTOR_BIT_0 7
+#define MOTOR_BIT_1 14
+#define MOTOR_BITLENGTH 20
+
+#define DSHOT_FRAME_SIZE 16
+#define DSHOT_DMA_BUFFER_SIZE 18 /* resolution + frame reset (2us) */
+
+#define DSHOT_MIN_THROTTLE 48
+#define DSHOT_MAX_THROTTLE 2047
+#define DSHOT_RANGE (DSHOT_MAX_THROTTLE - DSHOT_MIN_THROTTLE)
+
 typedef enum
 {
     DevDshot_MotoOutput_Lock = 0,
