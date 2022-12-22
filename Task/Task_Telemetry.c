@@ -16,7 +16,7 @@ static Telemetry_RCInput_TypeDef RC_Setting;
 static DataPipeObj_TypeDef Receiver_Smp_DataPipe;
 
 /* internal funciotn */
-static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
+static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
@@ -262,11 +262,19 @@ static uint16_t Telemetry_Check_Gimbal(Telemetry_RCFuncMap_TypeDef *gimbal)
     return *gimbal_channel->channel_ptr;
 }
 
-static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
+static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
     SrvReceiverData_TypeDef receiver_data;
+    Telemetry_RCSig_TypeDef sig_tmp;
 
     memset(&receiver_data, 0, sizeof(receiver_data));
+    memset(&sig_tmp, 0, sizeof(sig_tmp));
+
+    sig_tmp.gimbal_val[Telemetry_RC_Throttle] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
+    sig_tmp.gimbal_val[Telemetry_RC_Pitch] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
+    sig_tmp.gimbal_val[Telemetry_RC_Roll] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
+    sig_tmp.gimbal_val[Telemetry_RC_Yaw] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
+
     if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
         return;
 
@@ -277,40 +285,46 @@ static void Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
 
     if(!receiver_data.failsafe)
     {
-        if (!RC_Input_obj->osd_tune_state)
+        if (!RC_Input_obj->sig.osd_tune_state)
         {
             /* check arm & disarm */
-            RC_Input_obj->arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
+            RC_Input_obj->sig.arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
 
             /* check control mode */
-            RC_Input_obj->control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
+            RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
 
             /* check control mode inedx range */
-            if((RC_Input_obj->control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->control_mode < Telemetry_Control_Mode_ACRO))
-                RC_Input_obj->control_mode = Telemetry_Control_Mode_Default;
+            if((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->control_mode < Telemetry_Control_Mode_ACRO))
+                RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
         }
 
         /* get gimbal channel */
         for(uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
-            RC_Input_obj->gimbal_val[i] = Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
+            RC_Input_obj->sig.gimbal_val[i] = Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
 
         /* check buzzer toggle */
-        RC_Input_obj->buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
+        RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
 
-        if (RC_Input_obj->arm_state)
+        if (RC_Input_obj->sig.arm_state)
         {
             /* check osd tune toggle */
-            RC_Input_obj->osd_tune_state = Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state;
+            RC_Input_obj->sig.osd_tune_state = Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state;
         }
     }
     else
     {
-        RC_Input_obj->arm_state = TELEMETRY_SET_ARM;
-    
+        RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+        RC_Input_obj->sig.osd_tune_state = false;
+        RC_Input_obj->sig.buzz_state = false;
+        RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+
         for(uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
-            RC_Input_obj->gimbal_val[i] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
+            RC_Input_obj->sig.gimbal_val[i] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
     }
 
+    memcpy(&sig_tmp, &RC_Input_obj->sig, sizeof(Telemetry_RCSig_TypeDef));
+
+    return sig_tmp;
 }
 
 

@@ -80,7 +80,6 @@ typedef struct
 
 typedef struct
 {
-    bool init_state;
     bool arm_state;
     bool buzz_state;
     bool osd_tune_state;
@@ -88,6 +87,12 @@ typedef struct
     uint16_t gimbal_val[4];
     uint8_t control_mode;
     uint16_t module_enable;
+}Telemetry_RCSig_TypeDef;
+
+typedef struct
+{
+    bool init_state;
+    Telemetry_RCSig_TypeDef sig;
     uint32_t aux_func_reg;
 
     Telemetry_RCFuncMap_TypeDef Gimbal[Telemetry_Gimbal_TagSum];
