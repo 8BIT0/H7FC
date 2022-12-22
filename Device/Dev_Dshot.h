@@ -43,7 +43,8 @@ typedef enum
 
 typedef enum
 {
-    DevDshot_300 = 1,
+    DevDshot_150 = 1,
+    DevDshot_300,
     DevDshot_600,
 }DevDshotType_List;
 
