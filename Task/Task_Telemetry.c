@@ -14,6 +14,7 @@
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_RCInput_TypeDef RC_Setting;
 static DataPipeObj_TypeDef Receiver_Smp_DataPipe;
+static bool RCData_To_Configuretor = false;
 
 /* internal funciotn */
 static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
@@ -21,6 +22,11 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
+
+void TaskTelemetry_Set_DataIO_Enable(bool state)
+{
+    RCData_To_Configuretor = state;
+}
 
 void TaskTelemetry_Init(void)
 {
