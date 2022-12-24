@@ -72,10 +72,6 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 
         __HAL_RCC_UART4_CLK_ENABLE();
 
-        /* config */
-        obj->tx_io.alternate = GPIO_AF8_UART4;
-        obj->rx_io.alternate = GPIO_AF8_UART4;
-
         rx_dma_cfg.Init.Request = DMA_REQUEST_UART4_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
 
@@ -92,10 +88,6 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 
         __HAL_RCC_USART6_CLK_ENABLE();
 
-        /* config */
-        obj->tx_io.alternate = GPIO_AF7_USART6;
-        obj->rx_io.alternate = GPIO_AF7_USART6;
-
         rx_dma_cfg.Init.Request = DMA_REQUEST_USART6_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_USART6_TX;
 
@@ -111,10 +103,6 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
             return BspUart_Clock_Error;
 
         __HAL_RCC_UART7_CLK_ENABLE();
-
-        /* config */
-        obj->tx_io.alternate = GPIO_AF7_UART7;
-        obj->rx_io.alternate = GPIO_AF7_UART7;
 
         rx_dma_cfg.Init.Request = DMA_REQUEST_UART7_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART7_TX;
@@ -218,7 +206,7 @@ bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
 
     obj->hdl.Init.WordLength = bit;
 
-    if(HAL_UART_Init(&obj->hdl) != HAL_OK)
+    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
         return false;
 
     return true;
@@ -231,7 +219,7 @@ bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity)
 
     obj->hdl.Init.Parity = parity;
 
-    if(HAL_UART_Init(&obj->hdl) != HAL_OK)
+    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
         return false;
 
     return true;
@@ -244,7 +232,7 @@ bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
 
     obj->hdl.Init.StopBits = stop_bit;
 
-    if(HAL_UART_Init(&obj->hdl) != HAL_OK)
+    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
         return false;
 
     return true;
@@ -264,7 +252,7 @@ bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap)
     else
         obj->hdl.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_DISABLE;
 
-    if(HAL_UART_Init(&obj->hdl) != HAL_OK)
+    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
         return false;
 
     return true;
