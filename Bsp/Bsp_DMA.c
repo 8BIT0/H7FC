@@ -42,13 +42,27 @@ BspDMA_TypeDef BspDMA = {
 static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream)
 {
     DMA2D_TypeDef *instance;
+    bool dma1_clk_init = false;
+    bool dma2_clk_init = false;
 
     if ((dma == Bsp_DMA_1) && ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_0)))
     {
+        if (!dma1_clk_init)
+        {
+            __HAL_RCC_DMA1_CLK_ENABLE();
+            dma1_clk_init = true;
+        }
+
         return BspDMA1_Instance_List[stream];
     }
     else if ((dma == Bsp_DMA_2) && ((stream < Bsp_DMA_Stream_7) && (stream >= Bsp_DMA_Stream_0)))
     {
+        if (!dma2_clk_init)
+        {
+            __HAL_RCC_DMA2_CLK_ENABLE();
+            dma2_clk_init = true;
+        }
+
         return BspDMA2_Instance_List[stream];
     }
 
