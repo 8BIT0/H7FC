@@ -177,10 +177,27 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     BspDMA.enable_irq(dma, stream, 5, 0);
 }
 
-static void BspTimer_SetPreScale()
+static void BspTimer_DMA_Enable(BspTimerPWMObj_TypeDef *obj)
 {
+    __HAL_TIM_ENABLE_DMA(obj->instance, obj->tim_cc);
 }
 
-static void BspTimer_SetAutoReload()
+static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 {
+    HAL_TIM_PWM_Start(obj->instance, obj->tim_channel);
+}
+
+static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
+{
+    HAL_DMA_Start_IT(MOTOR_1_TIM->hdma[TIM_DMA_ID_CC4], (uint32_t)motor1_dmabuffer, (uint32_t)&MOTOR_1_TIM->Instance->CCR4, DSHOT_DMA_BUFFER_SIZE);
+}
+
+static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
+{
+    __HAL_TIM_SET_PRESCALER(obj->instance, prescale);
+}
+
+static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload)
+{
+    __HAL_TIM_SET_AUTORELOAD(obj->instance, auto_reload);
 }

@@ -24,6 +24,9 @@ typedef struct
 typedef struct
 {
     bool (*init)();
+    void (*set_prescaler)();
+    void (*set_autoreload)();
+    void (*start)();
 } BspTimerPWM_TypeDef;
 
 #endif
