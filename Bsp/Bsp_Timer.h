@@ -16,6 +16,8 @@ typedef struct
     uint8_t stream;
     DMA_HandleTypeDef dma_hdl;
     TIM_HandleTypeDef tim_hdl;
+    uint32_t prescale;
+    uint32_t auto_reload;
     uint16_t tim_cc;
 } BspTimerPWMObj_TypeDef;
 

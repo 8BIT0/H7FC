@@ -177,6 +177,10 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     BspDMA.enable_irq(dma, stream, 5, 0);
 }
 
-static void BspTimer_Set()
+static void BspTimer_SetPreScale()
+{
+}
+
+static void BspTimer_SetAutoReload()
 {
 }
