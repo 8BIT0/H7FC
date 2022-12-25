@@ -168,7 +168,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     if (HAL_DMA_Init(&obj->dma_hdl) != HAL_OK)
         return false;
 
-    __HAL_LINKDMA(&(obj->tim_hdl), hdma[TIM_DMA_ID_CC1], obj->dma_hdl);
+    __HAL_LINKDMA(&(obj->tim_hdl), hdma[obj->tim_cc], obj->dma_hdl);
 
     /* dma regist */
     BspDMA.regist(dma, stream, obj->dma_hdl);
