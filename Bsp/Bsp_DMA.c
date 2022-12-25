@@ -31,11 +31,13 @@ static const BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
 static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, DMA_HandleTypeDef *hdl);
 static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
 static DMA_HandleTypeDef *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream);
+static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream);
 
 BspDMA_TypeDef BspDMA = {
     .regist = BspDMA_Regist_Obj,
     .unregist = BspDMA_Unregist_Obj,
     .get_handle = BspDMA_Get_Handle,
+    .get_instance = BspDMA_Get_Instance,
 };
 
 /* DMA2_Stream7 for DataPipe Use */

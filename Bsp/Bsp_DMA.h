@@ -10,7 +10,7 @@ typedef enum
     Bsp_DMA_1 = 0,
     Bsp_DMA_2,
     Bsp_DMA_Sum,
-}BspDMA_List;
+} BspDMA_List;
 
 typedef enum
 {
@@ -23,16 +23,16 @@ typedef enum
     Bsp_DMA_Stream_6,
     Bsp_DMA_Stream_7,
     Bsp_DMA_Stream_Sum,
-}BspDMA_Stream_List;
+} BspDMA_Stream_List;
 
 typedef struct
 {
     bool (*regist)(BspDMA_List dma, BspDMA_Stream_List stream, DMA_HandleTypeDef *obj);
     bool (*unregist)(BspDMA_List dma, BspDMA_Stream_List stream);
-    DMA_HandleTypeDef* (*get_handle)(BspDMA_List dma, BspDMA_Stream_List stream);
-}BspDMA_TypeDef;
+    DMA_HandleTypeDef *(*get_handle)(BspDMA_List dma, BspDMA_Stream_List stream);
+    DMA2D_TypeDef *(get_instance)(BspDMA_List dma, BspDMA_Stream_List stream);
+} BspDMA_TypeDef;
 
 extern BspDMA_TypeDef BspDMA;
 
 #endif
-

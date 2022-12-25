@@ -14,8 +14,9 @@ typedef struct
     uint32_t tim_channel;
     uint8_t dma;
     uint8_t stream;
-    uint32_t dma_channel;
-    TIM_HandleTypeDef hdl;
+    DMA_HandleTypeDef dma_hdl;
+    TIM_HandleTypeDef tim_hdl;
+    uint16_t tim_cc;
 } BspTimerPWMObj_TypeDef;
 
 typedef struct
