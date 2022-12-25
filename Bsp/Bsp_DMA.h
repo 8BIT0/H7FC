@@ -30,7 +30,7 @@ typedef struct
     bool (*regist)(BspDMA_List dma, BspDMA_Stream_List stream, DMA_HandleTypeDef *obj);
     bool (*unregist)(BspDMA_List dma, BspDMA_Stream_List stream);
     DMA_HandleTypeDef *(*get_handle)(BspDMA_List dma, BspDMA_Stream_List stream);
-    DMA2D_TypeDef *(get_instance)(BspDMA_List dma, BspDMA_Stream_List stream);
+    DMA2D_TypeDef *(*get_instance)(BspDMA_List dma, BspDMA_Stream_List stream);
 } BspDMA_TypeDef;
 
 extern BspDMA_TypeDef BspDMA;
