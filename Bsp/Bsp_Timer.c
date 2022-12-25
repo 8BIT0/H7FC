@@ -26,7 +26,7 @@ static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
     {
         for (uint8_t i = 0; i < monitor.init_cnt; i++)
         {
-            if (hdl.Instance == monitor.list[i]->Instance)
+            if (tim == monitor.list[i])
                 return false;
         }
     }
@@ -171,11 +171,10 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     __HAL_LINKDMA(&(obj->tim_hdl), hdma[obj->tim_cc], obj->dma_hdl);
 
     /* dma regist */
-    BspDMA.regist(dma, stream, obj->dma_hdl);
+    BspDMA.regist(dma, stream, &obj->dma_hdl);
 
     /* init DMA IRQ */
-    HAL_NVIC_SetPriority(irqn, 5, 0);
-    HAL_NVIC_EnableIRQ(irqn);
+    BspDMA.enable_irq(dma, stream, 5, 0);
 }
 
 static void BspTimer_Set()

@@ -32,12 +32,14 @@ static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, DMA_Ha
 static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
 static DMA_HandleTypeDef *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream);
 static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream);
+static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub);
 
 BspDMA_TypeDef BspDMA = {
     .regist = BspDMA_Regist_Obj,
     .unregist = BspDMA_Unregist_Obj,
     .get_handle = BspDMA_Get_Handle,
     .get_instance = BspDMA_Get_Instance,
+    .enable_irq = BspDMA_EnableIRQ,
 };
 
 /* DMA2_Stream7 for DataPipe Use */
@@ -111,4 +113,95 @@ static DMA_HandleTypeDef *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List 
     }
 
     return NULL;
+}
+
+static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub)
+{
+    IRQn_Type irq;
+
+    if (dma == Bsp_DMA_1)
+    {
+        switch (stream)
+        {
+        case Bsp_DMA_Stream_0:
+            irq = DMA1_Stream0_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_1:
+            irq = DMA1_Stream1_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_2:
+            irq = DMA1_Stream2_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_3:
+            irq = DMA1_Stream3_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_4:
+            irq = DMA1_Stream4_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_5:
+            irq = DMA1_Stream5_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_6:
+            irq = DMA1_Stream6_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_7:
+            irq = DMA1_Stream7_IRQn;
+            break;
+
+        default:
+            return;
+        }
+    }
+    else if (dma == Bsp_DMA_2)
+    {
+        switch (stream)
+        {
+        case Bsp_DMA_Stream_0:
+            irq = DMA2_Stream0_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_1:
+            irq = DMA2_Stream1_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_2:
+            irq = DMA2_Stream2_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_3:
+            irq = DMA2_Stream3_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_4:
+            irq = DMA2_Stream4_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_5:
+            irq = DMA2_Stream5_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_6:
+            irq = DMA2_Stream6_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_7:
+            irq = DMA2_Stream7_IRQn;
+            break;
+
+        default:
+            return;
+        }
+    }
+    else
+        return;
+
+    HAL_NVIC_SetPriority(irq, 0, 0);
+    HAL_NVIC_EnableIRQ(irq);
 }
