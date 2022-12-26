@@ -26,12 +26,14 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale);
 static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload);
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj);
+static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj);
 
 BspTimerPWM_TypeDef BspTimer_PWM = {
     .init = BspTimer_PWM_Init,
     .set_prescaler = BspTimer_SetPreScale,
     .set_autoreload = BspTimer_SetAutoReload,
-    .start = BspTimer_PWM_Start,
+    .start_pwm = BspTimer_PWM_Start,
+    .dma_trans = BspTimer_DMA_Start,
 };
 
 static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
@@ -166,8 +168,6 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
 
     __HAL_LINKDMA(&(obj->tim_hdl), hdma[obj->tim_dma_id_cc], obj->dma_hdl);
 
-    obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
-
     /* dma regist */
     if (BspDMA.regist(dma, stream, &obj->dma_hdl))
     {
@@ -186,6 +186,7 @@ static void BspTimer_PWM_DMA_Enable(BspTimerPWMObj_TypeDef *obj)
 
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 {
+    obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
     HAL_TIM_PWM_Start(&obj->tim_hdl, obj->tim_channel);
 }
 
@@ -216,6 +217,7 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
     }
 
     HAL_DMA_Start_IT(obj->tim_hdl.hdma[obj->tim_dma_id_cc], obj->buffer_addr, src_addr, obj->buffer_size);
+    __HAL_TIM_ENABLE_DMA(&obj->tim_hdl, obj->tim_dma_cc);
 }
 
 static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)

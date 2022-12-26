@@ -39,7 +39,8 @@ typedef struct
                  uint32_t buf_size);
     void (*set_prescaler)(BspTimerPWMObj_TypeDef *obj, uint32_t prescale);
     void (*set_autoreload)(BspTimerPWMObj_TypeDef *obj, uint32_t autoreload);
-    void (*start)(BspTimerPWMObj_TypeDef *obj);
+    void (*start_pwm)(BspTimerPWMObj_TypeDef *obj);
+    void (*dma_trans)(BspTimerPWMObj_TypeDef *obj);
 } BspTimerPWM_TypeDef;
 
 extern BspTimerPWM_TypeDef BspTimer_PWM;
