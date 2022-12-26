@@ -11,6 +11,9 @@ BspTIM_PWMInitMonitor_TypeDef monitor = {
     .monitor_init = false,
 };
 
+/* internal function */
+static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma);
+
 /* external function */
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               TIM_TypeDef *instance,
@@ -163,6 +166,8 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
 
     __HAL_LINKDMA(&(obj->tim_hdl), hdma[obj->tim_dma_id_cc], obj->dma_hdl);
 
+    obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
+
     /* dma regist */
     if (BspDMA.regist(dma, stream, &obj->dma_hdl))
     {
@@ -243,9 +248,4 @@ static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma)
     {
         __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC4);
     }
-}
-
-static void BspTimer_Set_DMA_Callback(BspTimerPWMObj_TypeDef *obj)
-{
-    obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
 }
