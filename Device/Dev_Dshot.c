@@ -2,6 +2,16 @@
 #include "Dev_Dshot.h"
 #include <math.h>
 
+/* external function */
+static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream);
+
+DevDshot_TypeDef DevDshot = {
+    .init = DevDshot_Init,
+    .command = NULL,
+    .control = NULL,
+    .rev_dir = NULL,
+};
+
 static uint16_t DevDshot_GetType_Clock(DevDshotType_List type)
 {
     switch (type)
