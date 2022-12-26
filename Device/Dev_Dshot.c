@@ -4,11 +4,12 @@
 
 /* external function */
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream);
+static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value);
 
 DevDshot_TypeDef DevDshot = {
     .init = DevDshot_Init,
     .command = NULL,
-    .control = NULL,
+    .control = DevDshot_Control,
     .rev_dir = NULL,
 };
 
