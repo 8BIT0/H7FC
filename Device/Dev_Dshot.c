@@ -20,7 +20,7 @@ static uint16_t DevDshot_GetType_Clock(DevDshotType_List type)
     }
 }
 
-static bool DevDshot_Init(DevDshotObj_TypeDef *obj, DevDshotType_List type, BspGPIO_Obj_TypeDef pin)
+static bool DevDshot_Init(DevDshotObj_TypeDef *obj)
 {
     uint16_t dshot_clk = 0;
     uint16_t prescaler = 0;
@@ -28,18 +28,14 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj, DevDshotType_List type, BspG
     if (!obj)
         return false;
 
-    if ((type < DevDshot_150) || (type > DevDshot_600))
+    if ((obj->type < DevDshot_150) || (obj->type > DevDshot_600))
     {
         obj->type = DevDshot_300;
     }
-    else
-        obj->type = type;
 
-    dshot_clk = DevDshot_GetType_Clock(type);
+    dshot_clk = DevDshot_GetType_Clock(obj->type);
 
-    obj->pin = pin;
-
-    BspTimer_PWM.init();
+    BspTimer_PWM.init(&obj->pwm_obj, );
 
     return true;
 }

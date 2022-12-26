@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include "Bsp_GPIO.h"
 
-#define MHZ_TO_HZ(x) ((x) * 1000000)
+#define MHZ_TO_HZ(x) ((x)*1000000)
 
 #define DSHOT_TIMER_CLK_HZ MHZ_TO_HZ(100)
 #define DSHOT600_CLK_HZ MHZ_TO_HZ(12)
@@ -39,26 +39,28 @@ typedef enum
     DevDshot_Enable_3D_Mode,
     DevDshot_Setting_Req,
     DevDshot_Save_Setting,
-}DevDshot_Command_List; 
+} DevDshot_Command_List;
 
 typedef enum
 {
     DevDshot_150 = 1,
     DevDshot_300,
     DevDshot_600,
-}DevDshotType_List;
+} DevDshotType_List;
 
 typedef struct
 {
     DevDshotType_List type;
-    BspGPIO_Obj_TypeDef pin;
-}DevDshotObj_TypeDef;
+    BspTimerPWMObj_TypeDef pwm_obj;
+
+    uint8_t ctl_buf[MOTOR_BITLENGTH];
+} DevDshotObj_TypeDef;
 
 typedef struct
 {
     bool (*init)(DevDshotObj_TypeDef *obj);
     bool (*command)(DevDshotObj_TypeDef *obj, DevDshot_Command_List cmd);
     bool (*control)(DevDshotObj_TypeDef *obj, uint16_t val);
-}DevDshot_TypeDef;
+} DevDshot_TypeDef;
 
 #endif
