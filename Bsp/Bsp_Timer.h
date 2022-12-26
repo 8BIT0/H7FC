@@ -27,7 +27,14 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)();
+    bool (*init)(BspTimerPWMObj_TypeDef *obj,
+                 TIM_TypeDef *instance,
+                 uint32_t ch,
+                 BspGPIO_Obj_TypeDef pin,
+                 uint8_t dma,
+                 uint8_t stream,
+                 uint32_t buf_aadr,
+                 uint32_t buf_size);
     void (*set_prescaler)();
     void (*set_autoreload)();
     void (*start)();

@@ -13,8 +13,18 @@ BspTIM_PWMInitMonitor_TypeDef monitor = {
     .monitor_init = false,
 };
 
+/* external function */
+static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
+                              TIM_TypeDef *instance,
+                              uint32_t ch,
+                              BspGPIO_Obj_TypeDef pin,
+                              uint8_t dma,
+                              uint8_t stream,
+                              uint32_t buf_aadr,
+                              uint32_t buf_size);
+
 BspTimerPWM_TypeDef BspTimer_PWM = {
-    .init = NULL,
+    .init = BspTimer_PWM_Init,
 };
 
 static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
