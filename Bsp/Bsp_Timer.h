@@ -7,6 +7,8 @@
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_tim.h"
+#include "Bsp_DMA.h"
+#include "Bsp_GPIO.h"
 
 typedef struct
 {

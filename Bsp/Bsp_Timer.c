@@ -1,6 +1,4 @@
 #include "Bsp_Timer.h"
-#include "Bsp_DMA.h"
-#include "Bsp_GPIO.h"
 
 typedef struct
 {
