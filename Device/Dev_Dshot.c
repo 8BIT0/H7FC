@@ -21,7 +21,7 @@ static uint16_t DevDshot_GetType_Clock(DevDshotType_List type)
 }
 
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
-                          TIM_TypeDef *instance,
+                          void *timer_ins,
                           uint32_t ch,
                           BspGPIO_Obj_TypeDef pin,
                           uint8_t dma,
@@ -37,7 +37,7 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
         obj->type = DevDshot_300;
     }
 
-    BspTimer_PWM.init(&obj->pwm_obj, instance, ch, pin, dma, stream, (uint32_t)obj->ctl_buf, MOTOR_BITLENGTH);
+    BspTimer_PWM.init(&obj->pwm_obj, timer_ins, ch, pin, dma, stream, (uint32_t)obj->ctl_buf, MOTOR_BITLENGTH);
     BspTimer_PWM.set_prescaler(&obj->pwm_obj, prescaler);
     BspTImer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
     BspTimer_PWM.start(&obj->pwm_obj);
