@@ -18,7 +18,11 @@ typedef struct
     TIM_HandleTypeDef tim_hdl;
     uint32_t prescale;
     uint32_t auto_reload;
-    uint16_t tim_cc;
+    uint32_t tim_dma_id_cc;
+    uint32_t tim_dma_cc;
+
+    uint32_t buffer_addr;
+    uint32_t buffer_size;
 } BspTimerPWMObj_TypeDef;
 
 typedef struct
@@ -28,5 +32,7 @@ typedef struct
     void (*set_autoreload)();
     void (*start)();
 } BspTimerPWM_TypeDef;
+
+extern BspTimerPWM_TypeDef BspTimer_PWM;
 
 #endif

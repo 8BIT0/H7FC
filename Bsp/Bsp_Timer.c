@@ -13,6 +13,10 @@ BspTIM_PWMInitMonitor_TypeDef monitor = {
     .monitor_init = false,
 };
 
+BspTimerPWM_TypeDef BspTimer_PWM = {
+    .init = NULL,
+};
+
 static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
 {
     if (!monitor.monitor_init)
@@ -57,38 +61,6 @@ static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
         {
             __HAL_RCC_TIM6_CLK_ENABLE();
         }
-        else if (hdl->Instance == TIM7)
-        {
-            __HAL_RCC_TIM7_CLK_ENABLE();
-        }
-        else if (hdl->Instance == TIM8)
-        {
-            __HAL_RCC_TIM8_CLK_ENABLE();
-        }
-        else if (hdl->Instance == TIM12)
-        {
-            __HAL_RCC_TIM12_CLK_ENABLE();
-        }
-        else if (hdl->Instance == TIM13)
-        {
-            __HAL_RCC_TIM13_CLK_ENABLE();
-        }
-        else if (hdl->Instance == TIM14)
-        {
-            __HAL_RCC_TIM14_CLK_ENABLE();
-        }
-        else if (hdl->Instance == TIM15)
-        {
-            __HAL_RCC_TIM15_CLK_ENABLE();
-        }
-        else if (hdl->Instance == TIM16)
-        {
-            __HAL_RCC_TIM16_CLK_ENABLE();
-        }
-        else if (hdl->Instance == TIM17)
-        {
-            __HAL_RCC_TIM17_CLK_ENABLE();
-        }
         else
             return false;
 
@@ -99,10 +71,13 @@ static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
     return true;
 }
 
-static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance, uint32_t ch, uint8_t dma, uint8_t stream)
+static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream, uint32_t buf_aadr, uint32_t buf_size)
 {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_OC_InitTypeDef sConfigOC = {0};
+
+    if ((obj == NULL) || (instance == NULL) || (buf_aadr == 0) || (buf_size == 0))
+        return false;
 
     if (BspTimer_PWM_InitMonit(instance))
     {
@@ -131,13 +106,17 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     switch (ch)
     {
     case TIM_CHANNEL_1:
-        obj->tim_cc = TIM_DMA_ID_CC1;
+        obj->tim_dma_id_cc = TIM_DMA_ID_CC1;
+        obj->tim_dma_cc = TIM_DMA_CC1;
     case TIM_CHANNEL_2:
-        obj->tim_cc = TIM_DMA_ID_CC2;
+        obj->tim_dma_id_cc = TIM_DMA_ID_CC2;
+        obj->tim_dma_cc = TIM_DMA_CC2;
     case TIM_CHANNEL_3:
-        obj->tim_cc = TIM_DMA_ID_CC3;
+        obj->tim_dma_id_cc = TIM_DMA_ID_CC3;
+        obj->tim_dma_cc = TIM_DMA_CC3;
     case TIM_CHANNEL_4:
-        obj->tim_cc = TIM_DMA_ID_CC4;
+        obj->tim_dma_id_cc = TIM_DMA_ID_CC4;
+        obj->tim_dma_cc = TIM_DMA_CC4;
         if (HAL_TIM_PWM_ConfigChannel(&(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
             return false;
         obj->tim_channel = ch;
@@ -148,7 +127,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     }
 
     /* pin init */
-    BspGPIO.alt_init();
+    BspGPIO.alt_init(pin);
 
     /* dma init */
     obj->dma_hdl.Instance = BspDMA.get_instance(dma, stream);
@@ -168,36 +147,91 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     if (HAL_DMA_Init(&obj->dma_hdl) != HAL_OK)
         return false;
 
-    __HAL_LINKDMA(&(obj->tim_hdl), hdma[obj->tim_cc], obj->dma_hdl);
+    __HAL_LINKDMA(&(obj->tim_hdl), hdma[obj->tim_dma_id_cc], obj->dma_hdl);
 
     /* dma regist */
-    BspDMA.regist(dma, stream, &obj->dma_hdl);
+    if (BspDMA.regist(dma, stream, &obj->dma_hdl))
+    {
+        /* init DMA IRQ */
+        BspDMA.enable_irq(dma, stream, 5, 0);
+        return true;
+    }
 
-    /* init DMA IRQ */
-    BspDMA.enable_irq(dma, stream, 5, 0);
+    return false;
 }
 
-static void BspTimer_DMA_Enable(BspTimerPWMObj_TypeDef *obj)
+static void BspTimer_PWM_DMA_Enable(BspTimerPWMObj_TypeDef *obj)
 {
-    __HAL_TIM_ENABLE_DMA(obj->instance, obj->tim_cc);
+    __HAL_TIM_ENABLE_DMA(&obj->tim_hdl, obj->tim_dma_cc);
 }
 
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 {
-    HAL_TIM_PWM_Start(obj->instance, obj->tim_channel);
+    HAL_TIM_PWM_Start(&obj->tim_hdl, obj->tim_channel);
 }
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
-    HAL_DMA_Start_IT(MOTOR_1_TIM->hdma[TIM_DMA_ID_CC4], (uint32_t)motor1_dmabuffer, (uint32_t)&MOTOR_1_TIM->Instance->CCR4, DSHOT_DMA_BUFFER_SIZE);
+    uint32_t src_addr = 0;
+
+    switch (obj->tim_dma_id_cc)
+    {
+    case TIM_DMA_ID_CC1:
+        src_addr = (uint32_t) & (obj->tim_hdl.Instance->CCR1);
+        break;
+
+    case TIM_DMA_ID_CC2:
+        src_addr = (uint32_t) & (obj->tim_hdl.Instance->CCR2);
+        break;
+
+    case TIM_DMA_ID_CC3:
+        src_addr = (uint32_t) & (obj->tim_hdl.Instance->CCR3);
+        break;
+
+    case TIM_DMA_ID_CC4:
+        src_addr = (uint32_t) & (obj->tim_hdl.Instance->CCR4);
+        break;
+
+    default:
+        return;
+    }
+
+    HAL_DMA_Start_IT(obj->tim_hdl.hdma[obj->tim_dma_id_cc], obj->buffer_addr, src_addr, obj->buffer_size);
 }
 
 static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
 {
-    __HAL_TIM_SET_PRESCALER(obj->instance, prescale);
+    __HAL_TIM_SET_PRESCALER(&obj->tim_hdl, prescale);
 }
 
 static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload)
 {
-    __HAL_TIM_SET_AUTORELOAD(obj->instance, auto_reload);
+    __HAL_TIM_SET_AUTORELOAD(&obj->tim_hdl, auto_reload);
+}
+
+static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma)
+{
+    TIM_HandleTypeDef *htim = (TIM_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
+
+    if (hdma == htim->hdma[TIM_DMA_ID_CC1])
+    {
+        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC1);
+    }
+    else if (hdma == htim->hdma[TIM_DMA_ID_CC2])
+    {
+        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC2);
+    }
+    else if (hdma == htim->hdma[TIM_DMA_ID_CC3])
+    {
+        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC3);
+    }
+    else if (hdma == htim->hdma[TIM_DMA_ID_CC4])
+    {
+        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC4);
+    }
+}
+
+static void BspTimer_Set_DMA_Callback(BspTimerPWMObj_TypeDef *obj)
+{
+    obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
 }
