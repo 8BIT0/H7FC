@@ -27,8 +27,7 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
                           uint8_t dma,
                           uint8_t stream)
 {
-    uint16_t dshot_clk = 0;
-    uint16_t prescaler = 0;
+    uint16_t prescaler = lrintf((float)DSHOT_TIMER_CLK_HZ / DevDshot_GetType_Clock(obj->type) + 0.01f) - 1;
 
     if (!obj)
         return false;
@@ -38,9 +37,9 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
         obj->type = DevDshot_300;
     }
 
-    dshot_clk = DevDshot_GetType_Clock(obj->type);
-
     BspTimer_PWM.init(&obj->pwm_obj, instance, ch, pin, dma, stream, (uint32_t)obj->ctl_buf, MOTOR_BITLENGTH);
+    BspTimer_PWM.set_prescaler(&obj->pwm_obj, prescaler);
+    BspTImer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
 
     return true;
 }
