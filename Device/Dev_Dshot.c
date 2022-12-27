@@ -5,12 +5,12 @@
 /* external function */
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream);
 static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value);
+static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd);
 
 DevDshot_TypeDef DevDshot = {
     .init = DevDshot_Init,
-    .command = NULL,
+    .command = DevDshot_Command,
     .control = DevDshot_Control,
-    .rev_dir = NULL,
 };
 
 static uint16_t DevDshot_GetType_Clock(DevDshotType_List type)
@@ -63,6 +63,15 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
     uint16_t packet;
     bool dshot_telemetry = false;
 
+    if (!obj)
+        return;
+
+    if (value > DSHOT_MAX_THROTTLE)
+        value = DSHOT_MAX_THROTTLE;
+
+    if (value < DSHOT_MIN_THROTTLE)
+        value = DSHOT_LOCK_THROTTLE;
+
     packet = (value << 1) | (dshot_telemetry ? 1 : 0);
 
     // compute checksum
@@ -88,4 +97,12 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
     obj->ctl_buf[17] = 0;
 
     BspTimer_PWM.dma_trans(&obj->pwm_obj);
+}
+
+static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd)
+{
+    if (!obj || cmd >= DSHOT_MIN_THROTTLE)
+        return;
+
+    DevDshot_Control(obj, cmd);
 }

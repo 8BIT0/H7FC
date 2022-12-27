@@ -20,6 +20,7 @@
 #define DSHOT_FRAME_SIZE 16
 #define DSHOT_DMA_BUFFER_SIZE 18 /* resolution + frame reset (2us) */
 
+#define DSHOT_LOCK_THROTTLE 0
 #define DSHOT_MIN_THROTTLE 48
 #define DSHOT_MAX_THROTTLE 2047
 #define DSHOT_RANGE (DSHOT_MAX_THROTTLE - DSHOT_MIN_THROTTLE)
@@ -61,7 +62,6 @@ typedef struct
     bool (*init)(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream);
     bool (*command)(DevDshotObj_TypeDef *obj, DevDshot_Command_List cmd);
     bool (*control)(DevDshotObj_TypeDef *obj, uint16_t val);
-    bool (*rev_dir)(DevDshotObj_TypeDef *obj);
 } DevDshot_TypeDef;
 
 extern DevDshot_TypeDef DevDshot;
