@@ -15,20 +15,15 @@ typedef enum
     ProtoQueeu_Error,
 } ProtoQueue_State_List;
 
-#pragma pack(1)
-typedef struct
+typedef enum
 {
-    int16_t Org_Acc[3];
-    int16_t Org_Gyr[3];
-
-    float Flt_Acc[3];
-    float Flt_Gyr[3];
-
-    int16_t Org_temp;
-
-    SYSTEM_RunTime Rt;
-} ProtIMUData_TypeDef;
-#pragma pack()
+    Proto_IMU = 0,
+    Proto_INS,
+    Proto_Filter,
+    Proto_Control,
+    Proto_Remote,
+    Proto_Config,
+} ProtType_List;
 
 typedef enum
 {

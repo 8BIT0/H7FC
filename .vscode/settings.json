@@ -108,7 +108,8 @@
                 "task_telemetry.h": "c",
                 "dshot.h": "c",
                 "bsp_timer.h": "c",
-                "dev_dshot.h": "c"
+                "dev_dshot.h": "c",
+                "task_control.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

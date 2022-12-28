@@ -1,0 +1,1327 @@
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Task_Log.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.LogData_ToFile,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	LogData_ToFile:
+  25              	.LVL0:
+  26              	.LFB150:
+  27              		.file 1 "Task/Task_Log.c"
+   1:Task/Task_Log.c **** /*
+   2:Task/Task_Log.c ****  *  coder: 8_B!T0
+   3:Task/Task_Log.c ****  *  bref: use this task Log Gyro and Acc Data
+   4:Task/Task_Log.c ****  *
+   5:Task/Task_Log.c ****  *  this task and module can be improved and optimized in a big but way we use it in short time tem
+   6:Task/Task_Log.c ****  *  after when the main fundamental ability was accomplished we go back in this file and do improve
+   7:Task/Task_Log.c ****  */
+   8:Task/Task_Log.c **** #include "Task_Log.h"
+   9:Task/Task_Log.c **** #include "scheduler.h"
+  10:Task/Task_Log.c **** #include "shell.h"
+  11:Task/Task_Log.c **** #include "debug_util.h"
+  12:Task/Task_Log.c **** #include <stdio.h>
+  13:Task/Task_Log.c **** #include "queue.h"
+  14:Task/Task_Log.c **** #include "error_log.h"
+  15:Task/Task_Log.c **** #include "mmu.h"
+  16:Task/Task_Log.c **** #include "DiskIO.h"
+  17:Task/Task_Log.c **** #include "DataPipe/DataPipe.h"
+  18:Task/Task_Log.c **** #include "Task_Protocol.h"
+  19:Task/Task_Log.c **** #include "Task_SensorInertial.h"
+  20:Task/Task_Log.c **** #include "Dev_Led.h"
+  21:Task/Task_Log.c **** #include "IO_Definition.h"
+  22:Task/Task_Log.c **** #include <stdio.h>
+  23:Task/Task_Log.c **** 
+  24:Task/Task_Log.c **** #define LOG_FOLDER "log/"
+  25:Task/Task_Log.c **** #define IMU_LOG_FILE "imu.log"
+  26:Task/Task_Log.c **** 
+  27:Task/Task_Log.c **** #define K_BYTE 1024
+  28:Task/Task_Log.c **** #define M_BYTE K_BYTE *K_BYTE
+  29:Task/Task_Log.c **** #define MAX_FILE_SIZE_M(x) x *M_BYTE
+  30:Task/Task_Log.c **** #define MAX_FILE_SIZE_K(x) x *K_BYTE
+  31:Task/Task_Log.c **** #define MIN_CACHE_NUM 2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 2
+
+
+  32:Task/Task_Log.c **** 
+  33:Task/Task_Log.c **** /* internal variable */
+  34:Task/Task_Log.c **** static const LogData_Header_TypeDef LogIMU_Header = {
+  35:Task/Task_Log.c ****     .header = LOG_HEADER,
+  36:Task/Task_Log.c ****     .type = LOG_DATATYPE_IMU,
+  37:Task/Task_Log.c ****     .size = sizeof(SrvIMU_UnionData_TypeDef),
+  38:Task/Task_Log.c **** };
+  39:Task/Task_Log.c **** static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
+  40:Task/Task_Log.c **** static volatile Disk_FileObj_TypeDef LogFile_Obj;
+  41:Task/Task_Log.c **** static Disk_FATFileSys_TypeDef FATFS_Obj;
+  42:Task/Task_Log.c **** static bool LogFile_Ready = false;
+  43:Task/Task_Log.c **** static SrvIMU_UnionData_TypeDef LogPriIMU_Data __attribute__((section(".Perph_Section")));
+  44:Task/Task_Log.c **** static SrvIMU_UnionData_TypeDef LogSecIMU_Data __attribute__((section(".Perph_Section")));
+  45:Task/Task_Log.c **** static uint8_t LogCache_L2_Buf[MAX_FILE_SIZE_K(10)] __attribute__((section(".Fast_Mem_section")));
+  46:Task/Task_Log.c **** static QueueObj_TypeDef IMULog_Queue;
+  47:Task/Task_Log.c **** static QueueObj_TypeDef IMUData_Queue;
+  48:Task/Task_Log.c **** static LogData_Reg_TypeDef LogObj_Set_Reg;
+  49:Task/Task_Log.c **** static LogData_Reg_TypeDef LogObj_Enable_Reg;
+  50:Task/Task_Log.c **** static LogData_Reg_TypeDef LogObj_Logging_Reg;
+  51:Task/Task_Log.c **** DataPipeObj_TypeDef IMU_Log_DataPipe;
+  52:Task/Task_Log.c **** static Os_IdleObj_TypeDef LogIdleObj;
+  53:Task/Task_Log.c **** static uint8_t LogQueueBuff_Trail[MAX_FILE_SIZE_K(1) / 2] = {0};
+  54:Task/Task_Log.c **** 
+  55:Task/Task_Log.c **** /* internal function */
+  56:Task/Task_Log.c **** static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
+  57:Task/Task_Log.c **** static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogDa
+  58:Task/Task_Log.c **** static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len);
+  59:Task/Task_Log.c **** 
+  60:Task/Task_Log.c **** void TaskLog_Init(void)
+  61:Task/Task_Log.c **** {
+  62:Task/Task_Log.c ****     Os_Idle_DataStream_TypeDef LogData_Stream;
+  63:Task/Task_Log.c **** 
+  64:Task/Task_Log.c ****     memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
+  65:Task/Task_Log.c ****     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
+  66:Task/Task_Log.c ****     memset(&FATFS_Obj, NULL, sizeof(FATFS_Obj));
+  67:Task/Task_Log.c **** 
+  68:Task/Task_Log.c ****     IMU_Log_DataPipe.data_addr = (uint32_t)&LogPriIMU_Data;
+  69:Task/Task_Log.c ****     IMU_Log_DataPipe.data_size = sizeof(LogPriIMU_Data);
+  70:Task/Task_Log.c ****     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
+  71:Task/Task_Log.c ****     IMU_Log_DataPipe.ptr_tmp = MMU_Malloc(IMU_Log_DataPipe.data_addr);
+  72:Task/Task_Log.c **** 
+  73:Task/Task_Log.c ****     LogObj_Set_Reg.reg_val = 0;
+  74:Task/Task_Log.c ****     LogObj_Logging_Reg.reg_val = 0;
+  75:Task/Task_Log.c **** 
+  76:Task/Task_Log.c ****     /* init module first then init task */
+  77:Task/Task_Log.c ****     if (Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
+  78:Task/Task_Log.c ****     {
+  79:Task/Task_Log.c ****         LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, LOG_FOLDER, ROOT_CLUSTER_ADDR);
+  80:Task/Task_Log.c ****         LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M
+  81:Task/Task_Log.c ****         Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
+  82:Task/Task_Log.c **** 
+  83:Task/Task_Log.c ****         /* create cache queue for IMU Data */
+  84:Task/Task_Log.c ****         if (Queue.create_auto(&IMUData_Queue, "queue imu data", MAX_FILE_SIZE_K(10)) &&
+  85:Task/Task_Log.c ****             Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_
+  86:Task/Task_Log.c ****         {
+  87:Task/Task_Log.c ****             LogFile_Ready = true;
+  88:Task/Task_Log.c ****             LogObj_Enable_Reg._sec.IMU_Sec = true;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 3
+
+
+  89:Task/Task_Log.c ****             LogObj_Set_Reg._sec.IMU_Sec = true;
+  90:Task/Task_Log.c ****         }
+  91:Task/Task_Log.c ****     }
+  92:Task/Task_Log.c **** 
+  93:Task/Task_Log.c ****     LogData_Stream.ptr = NULL;
+  94:Task/Task_Log.c ****     LogData_Stream.size = 0;
+  95:Task/Task_Log.c **** 
+  96:Task/Task_Log.c ****     Os_Regist_IdleObj(&LogIdleObj, LogData_Stream, OsIdle_Callback_LogModule);
+  97:Task/Task_Log.c **** }
+  98:Task/Task_Log.c **** 
+  99:Task/Task_Log.c **** static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
+ 100:Task/Task_Log.c **** {
+ 101:Task/Task_Log.c ****     Disk_Write_State state;
+ 102:Task/Task_Log.c ****     static uint32_t rt = 0;
+ 103:Task/Task_Log.c ****     static uint32_t rt_lst = 0;
+ 104:Task/Task_Log.c ****     static bool led_state = false;
+ 105:Task/Task_Log.c **** 
+ 106:Task/Task_Log.c ****     if (LogFile_Ready)
+ 107:Task/Task_Log.c ****     {
+ 108:Task/Task_Log.c ****         if (LogObj_Set_Reg._sec.IMU_Sec)
+ 109:Task/Task_Log.c ****         {
+ 110:Task/Task_Log.c ****             state = LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg);
+ 111:Task/Task_Log.c ****             rt = Get_CurrentRunningMs();
+ 112:Task/Task_Log.c **** 
+ 113:Task/Task_Log.c ****             if (state == Disk_Write_Contiguous)
+ 114:Task/Task_Log.c ****             {
+ 115:Task/Task_Log.c ****                 if (rt - rt_lst >= 200)
+ 116:Task/Task_Log.c ****                 {
+ 117:Task/Task_Log.c ****                     led_state = !led_state;
+ 118:Task/Task_Log.c ****                     DevLED.ctl(Led2, led_state);
+ 119:Task/Task_Log.c ****                     rt_lst = rt;
+ 120:Task/Task_Log.c ****                 }
+ 121:Task/Task_Log.c ****             }
+ 122:Task/Task_Log.c ****         }
+ 123:Task/Task_Log.c ****         else if (state == Disk_Write_Finish)
+ 124:Task/Task_Log.c ****         {
+ 125:Task/Task_Log.c ****             LogObj_Set_Reg._sec.IMU_Sec = false;
+ 126:Task/Task_Log.c **** 
+ 127:Task/Task_Log.c ****             DevLED.ctl(Led2, false);
+ 128:Task/Task_Log.c ****         }
+ 129:Task/Task_Log.c ****         else
+ 130:Task/Task_Log.c ****         {
+ 131:Task/Task_Log.c ****             if (rt - rt_lst >= 500)
+ 132:Task/Task_Log.c ****             {
+ 133:Task/Task_Log.c ****                 led_state = !led_state;
+ 134:Task/Task_Log.c ****                 DevLED.ctl(Led2, led_state);
+ 135:Task/Task_Log.c ****                 rt_lst = rt;
+ 136:Task/Task_Log.c ****             }
+ 137:Task/Task_Log.c ****         }
+ 138:Task/Task_Log.c ****     }
+ 139:Task/Task_Log.c **** }
+ 140:Task/Task_Log.c **** 
+ 141:Task/Task_Log.c **** void TaskLog_Core(Task_Handle hdl)
+ 142:Task/Task_Log.c **** {
+ 143:Task/Task_Log.c ****     // DebugPin.ctl(Debug_PB4, true);
+ 144:Task/Task_Log.c **** 
+ 145:Task/Task_Log.c ****     // DebugPin.ctl(Debug_PB4, false);
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 4
+
+
+ 146:Task/Task_Log.c **** }
+ 147:Task/Task_Log.c **** 
+ 148:Task/Task_Log.c **** static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogDa
+ 149:Task/Task_Log.c **** {
+  28              		.loc 1 149 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 40, pretend = 16, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 149 1 is_stmt 0 view .LVU1
+  33 0000 84B0     		sub	sp, sp, #16
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36 0002 70B5     		push	{r4, r5, r6, lr}
+  37              	.LCFI1:
+  38              		.cfi_def_cfa_offset 32
+  39              		.cfi_offset 4, -32
+  40              		.cfi_offset 5, -28
+  41              		.cfi_offset 6, -24
+  42              		.cfi_offset 14, -20
+  43 0004 82B0     		sub	sp, sp, #8
+  44              	.LCFI2:
+  45              		.cfi_def_cfa_offset 40
+  46 0006 07AC     		add	r4, sp, #28
+  47 0008 84E80E00 		stm	r4, {r1, r2, r3}
+  48 000c 0F9E     		ldr	r6, [sp, #60]
+ 150:Task/Task_Log.c ****     uint16_t log_size = 0;
+  49              		.loc 1 150 5 is_stmt 1 view .LVU2
+  50              	.LVL1:
+ 151:Task/Task_Log.c ****     uint16_t queue_size = 0;
+  51              		.loc 1 151 5 view .LVU3
+ 152:Task/Task_Log.c **** 
+ 153:Task/Task_Log.c ****     if ((queue == NULL) || (Queue.size(*queue) == 0) || (pipe_obj.ptr_tmp == NULL))
+  52              		.loc 1 153 5 view .LVU4
+  53              		.loc 1 153 8 is_stmt 0 view .LVU5
+  54 000e 80B3     		cbz	r0, .L1
+  55 0010 0446     		mov	r4, r0
+  56              		.loc 1 153 34 discriminator 1 view .LVU6
+  57 0012 1E4B     		ldr	r3, .L11
+  58 0014 1D68     		ldr	r5, [r3]
+  59              		.loc 1 153 29 discriminator 1 view .LVU7
+  60 0016 037C     		ldrb	r3, [r0, #16]	@ zero_extendqisi2
+  61 0018 8DF80030 		strb	r3, [sp]
+  62 001c 0068     		ldr	r0, [r0]	@ unaligned
+  63              	.LVL2:
+  64              		.loc 1 153 29 discriminator 1 view .LVU8
+  65 001e 6168     		ldr	r1, [r4, #4]	@ unaligned
+  66 0020 A268     		ldr	r2, [r4, #8]	@ unaligned
+  67 0022 E368     		ldr	r3, [r4, #12]	@ unaligned
+  68 0024 A847     		blx	r5
+  69              	.LVL3:
+  70              		.loc 1 153 25 discriminator 1 view .LVU9
+  71 0026 20B3     		cbz	r0, .L1
+  72              		.loc 1 153 66 discriminator 2 view .LVU10
+  73 0028 DDF83630 		ldr	r3, [sp, #54]	@ unaligned
+  74              		.loc 1 153 54 discriminator 2 view .LVU11
+  75 002c 0BB3     		cbz	r3, .L1
+ 154:Task/Task_Log.c ****         return;
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 5
+
+
+ 155:Task/Task_Log.c **** 
+ 156:Task/Task_Log.c ****     log_reg->_sec.IMU_Sec = true;
+  76              		.loc 1 156 5 is_stmt 1 view .LVU12
+  77              		.loc 1 156 27 is_stmt 0 view .LVU13
+  78 002e 3378     		ldrb	r3, [r6]	@ zero_extendqisi2
+  79 0030 43F00103 		orr	r3, r3, #1
+  80 0034 3370     		strb	r3, [r6]
+ 157:Task/Task_Log.c ****     queue_size = Queue.size(*queue);
+  81              		.loc 1 157 5 is_stmt 1 view .LVU14
+  82              		.loc 1 157 23 is_stmt 0 view .LVU15
+  83 0036 154B     		ldr	r3, .L11
+  84 0038 1D68     		ldr	r5, [r3]
+  85              		.loc 1 157 18 view .LVU16
+  86 003a 237C     		ldrb	r3, [r4, #16]	@ zero_extendqisi2
+  87 003c 8DF80030 		strb	r3, [sp]
+  88 0040 2068     		ldr	r0, [r4]	@ unaligned
+  89 0042 6168     		ldr	r1, [r4, #4]	@ unaligned
+  90 0044 A268     		ldr	r2, [r4, #8]	@ unaligned
+  91 0046 E368     		ldr	r3, [r4, #12]	@ unaligned
+  92 0048 A847     		blx	r5
+  93              	.LVL4:
+  94 004a 0546     		mov	r5, r0
+  95              	.LVL5:
+ 158:Task/Task_Log.c **** 
+ 159:Task/Task_Log.c ****     if (queue_size > sizeof(LogQueueBuff_Trail))
+  96              		.loc 1 159 5 is_stmt 1 view .LVU17
+  97              		.loc 1 159 8 is_stmt 0 view .LVU18
+  98 004c B0F5007F 		cmp	r0, #512
+  99 0050 01D8     		bhi	.L7
+ 160:Task/Task_Log.c ****     {
+ 161:Task/Task_Log.c ****         log_size = sizeof(LogQueueBuff_Trail);
+ 162:Task/Task_Log.c ****     }
+ 163:Task/Task_Log.c ****     else
+ 164:Task/Task_Log.c ****         log_size = queue_size;
+ 100              		.loc 1 164 9 is_stmt 1 view .LVU19
+ 101              	.LVL6:
+ 165:Task/Task_Log.c **** 
+ 166:Task/Task_Log.c ****     if (log_size)
+ 102              		.loc 1 166 5 view .LVU20
+ 103              		.loc 1 166 8 is_stmt 0 view .LVU21
+ 104 0052 40B1     		cbz	r0, .L5
+ 105 0054 01E0     		b	.L4
+ 106              	.LVL7:
+ 107              	.L7:
+ 161:Task/Task_Log.c ****     }
+ 108              		.loc 1 161 18 view .LVU22
+ 109 0056 4FF40075 		mov	r5, #512
+ 110              	.LVL8:
+ 111              	.L4:
+ 167:Task/Task_Log.c ****         Queue.pop(queue, LogQueueBuff_Trail, log_size);
+ 112              		.loc 1 167 9 is_stmt 1 view .LVU23
+ 113              		.loc 1 167 14 is_stmt 0 view .LVU24
+ 114 005a 0C4B     		ldr	r3, .L11
+ 115 005c DB69     		ldr	r3, [r3, #28]
+ 116              		.loc 1 167 9 view .LVU25
+ 117 005e 2A46     		mov	r2, r5
+ 118 0060 0B49     		ldr	r1, .L11+4
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 6
+
+
+ 119 0062 2046     		mov	r0, r4
+ 120              	.LVL9:
+ 121              		.loc 1 167 9 view .LVU26
+ 122 0064 9847     		blx	r3
+ 123              	.LVL10:
+ 124              	.L5:
+ 168:Task/Task_Log.c **** 
+ 169:Task/Task_Log.c ****     log_reg->_sec.IMU_Sec = false;
+ 125              		.loc 1 169 5 is_stmt 1 view .LVU27
+ 126              		.loc 1 169 27 is_stmt 0 view .LVU28
+ 127 0066 3378     		ldrb	r3, [r6]	@ zero_extendqisi2
+ 128 0068 6FF30003 		bfc	r3, #0, #1
+ 129 006c 3370     		strb	r3, [r6]
+ 170:Task/Task_Log.c **** 
+ 171:Task/Task_Log.c ****     if (log_size)
+ 130              		.loc 1 171 5 is_stmt 1 view .LVU29
+ 131              		.loc 1 171 8 is_stmt 0 view .LVU30
+ 132 006e 2DB9     		cbnz	r5, .L10
+ 172:Task/Task_Log.c ****         return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
+ 173:Task/Task_Log.c **** 
+ 174:Task/Task_Log.c ****     // __DSB();
+ 175:Task/Task_Log.c **** 
+ 176:Task/Task_Log.c ****     return false;
+ 133              		.loc 1 176 12 view .LVU31
+ 134 0070 0020     		movs	r0, #0
+ 135              	.LVL11:
+ 136              	.L1:
+ 177:Task/Task_Log.c **** }
+ 137              		.loc 1 177 1 view .LVU32
+ 138 0072 02B0     		add	sp, sp, #8
+ 139              	.LCFI3:
+ 140              		.cfi_remember_state
+ 141              		.cfi_def_cfa_offset 32
+ 142              		@ sp needed
+ 143 0074 BDE87040 		pop	{r4, r5, r6, lr}
+ 144              	.LCFI4:
+ 145              		.cfi_restore 14
+ 146              		.cfi_restore 6
+ 147              		.cfi_restore 5
+ 148              		.cfi_restore 4
+ 149              		.cfi_def_cfa_offset 16
+ 150 0078 04B0     		add	sp, sp, #16
+ 151              	.LCFI5:
+ 152              		.cfi_def_cfa_offset 0
+ 153 007a 7047     		bx	lr
+ 154              	.LVL12:
+ 155              	.L10:
+ 156              	.LCFI6:
+ 157              		.cfi_restore_state
+ 172:Task/Task_Log.c ****         return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
+ 158              		.loc 1 172 9 is_stmt 1 view .LVU33
+ 172:Task/Task_Log.c ****         return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
+ 159              		.loc 1 172 20 is_stmt 0 view .LVU34
+ 160 007c 054B     		ldr	r3, .L11+8
+ 161 007e 1C69     		ldr	r4, [r3, #16]
+ 162              	.LVL13:
+ 172:Task/Task_Log.c ****         return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 7
+
+
+ 163              		.loc 1 172 16 view .LVU35
+ 164 0080 2B46     		mov	r3, r5
+ 165 0082 034A     		ldr	r2, .L11+4
+ 166 0084 0449     		ldr	r1, .L11+12
+ 167 0086 0548     		ldr	r0, .L11+16
+ 168 0088 A047     		blx	r4
+ 169              	.LVL14:
+ 170 008a F2E7     		b	.L1
+ 171              	.L12:
+ 172              		.align	2
+ 173              	.L11:
+ 174 008c 00000000 		.word	Queue
+ 175 0090 00000000 		.word	.LANCHOR0
+ 176 0094 00000000 		.word	Disk
+ 177 0098 00000000 		.word	.LANCHOR1
+ 178 009c 00000000 		.word	.LANCHOR2
+ 179              		.cfi_endproc
+ 180              	.LFE150:
+ 182              		.section	.text.TaskLog_PipeTransFinish_Callback,"ax",%progbits
+ 183              		.align	1
+ 184              		.syntax unified
+ 185              		.thumb
+ 186              		.thumb_func
+ 187              		.fpu fpv5-d16
+ 189              	TaskLog_PipeTransFinish_Callback:
+ 190              	.LVL15:
+ 191              	.LFB151:
+ 178:Task/Task_Log.c **** 
+ 179:Task/Task_Log.c **** static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
+ 180:Task/Task_Log.c **** {
+ 192              		.loc 1 180 1 is_stmt 1 view -0
+ 193              		.cfi_startproc
+ 194              		@ args = 0, pretend = 0, frame = 0
+ 195              		@ frame_needed = 0, uses_anonymous_args = 0
+ 181:Task/Task_Log.c ****     if ((obj == NULL) || !LogFile_Ready)
+ 196              		.loc 1 181 5 view .LVU37
+ 197              		.loc 1 181 8 is_stmt 0 view .LVU38
+ 198 0000 50B1     		cbz	r0, .L18
+ 199              		.loc 1 181 26 discriminator 1 view .LVU39
+ 200 0002 1F4B     		ldr	r3, .L22
+ 201 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 202              		.loc 1 181 23 discriminator 1 view .LVU40
+ 203 0006 3BB1     		cbz	r3, .L18
+ 182:Task/Task_Log.c ****         return;
+ 183:Task/Task_Log.c **** 
+ 184:Task/Task_Log.c ****     if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe) && LogObj_Enable_Reg._sec.IMU_Sec
+ 204              		.loc 1 184 5 is_stmt 1 view .LVU41
+ 205              		.loc 1 184 9 is_stmt 0 view .LVU42
+ 206 0008 1E4B     		ldr	r3, .L22+4
+ 207 000a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 208              		.loc 1 184 8 view .LVU43
+ 209 000c 13F0010F 		tst	r3, #1
+ 210 0010 02D0     		beq	.L18
+ 211              		.loc 1 184 37 discriminator 1 view .LVU44
+ 212 0012 1D4B     		ldr	r3, .L22+8
+ 213 0014 9842     		cmp	r0, r3
+ 214 0016 00D0     		beq	.L21
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 8
+
+
+ 215              	.L18:
+ 216 0018 7047     		bx	lr
+ 217              	.L21:
+ 218              		.loc 1 184 67 discriminator 2 view .LVU45
+ 219 001a 1C4B     		ldr	r3, .L22+12
+ 220 001c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 221 001e 13F0010F 		tst	r3, #1
+ 222 0022 F9D0     		beq	.L18
+ 180:Task/Task_Log.c ****     if ((obj == NULL) || !LogFile_Ready)
+ 223              		.loc 1 180 1 view .LVU46
+ 224 0024 30B5     		push	{r4, r5, lr}
+ 225              	.LCFI7:
+ 226              		.cfi_def_cfa_offset 12
+ 227              		.cfi_offset 4, -12
+ 228              		.cfi_offset 5, -8
+ 229              		.cfi_offset 14, -4
+ 230 0026 83B0     		sub	sp, sp, #12
+ 231              	.LCFI8:
+ 232              		.cfi_def_cfa_offset 24
+ 185:Task/Task_Log.c ****     {
+ 186:Task/Task_Log.c ****         if ((Queue.state(IMUData_Queue) == Queue_ok) ||
+ 233              		.loc 1 186 9 is_stmt 1 view .LVU47
+ 234              		.loc 1 186 19 is_stmt 0 view .LVU48
+ 235 0028 194B     		ldr	r3, .L22+16
+ 236 002a 1C6A     		ldr	r4, [r3, #32]
+ 237              		.loc 1 186 14 view .LVU49
+ 238 002c 194B     		ldr	r3, .L22+20
+ 239 002e 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 240 0030 8DF80020 		strb	r2, [sp]
+ 241 0034 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 242              	.LVL16:
+ 243              		.loc 1 186 14 view .LVU50
+ 244 0036 A047     		blx	r4
+ 245              	.LVL17:
+ 246              		.loc 1 186 12 view .LVU51
+ 247 0038 48B1     		cbz	r0, .L15
+ 187:Task/Task_Log.c ****             (Queue.state(IMUData_Queue) == Queue_empty))
+ 248              		.loc 1 187 19 discriminator 1 view .LVU52
+ 249 003a 154B     		ldr	r3, .L22+16
+ 250 003c 1C6A     		ldr	r4, [r3, #32]
+ 251              		.loc 1 187 14 discriminator 1 view .LVU53
+ 252 003e 154B     		ldr	r3, .L22+20
+ 253 0040 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 254 0042 8DF80020 		strb	r2, [sp]
+ 255 0046 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 256 0048 A047     		blx	r4
+ 257              	.LVL18:
+ 186:Task/Task_Log.c ****             (Queue.state(IMUData_Queue) == Queue_empty))
+ 258              		.loc 1 186 54 discriminator 1 view .LVU54
+ 259 004a 0328     		cmp	r0, #3
+ 260 004c 0CD1     		bne	.L16
+ 261              	.L15:
+ 188:Task/Task_Log.c ****         {
+ 189:Task/Task_Log.c ****             Queue.push(&IMUData_Queue, &LogIMU_Header, LOG_HEADER_SIZE);
+ 262              		.loc 1 189 13 is_stmt 1 view .LVU55
+ 263              		.loc 1 189 18 is_stmt 0 view .LVU56
+ 264 004e 104D     		ldr	r5, .L22+16
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 9
+
+
+ 265 0050 AB69     		ldr	r3, [r5, #24]
+ 266              		.loc 1 189 13 view .LVU57
+ 267 0052 104C     		ldr	r4, .L22+20
+ 268 0054 0322     		movs	r2, #3
+ 269 0056 1049     		ldr	r1, .L22+24
+ 270 0058 2046     		mov	r0, r4
+ 271 005a 9847     		blx	r3
+ 272              	.LVL19:
+ 190:Task/Task_Log.c ****             Queue.push(&IMUData_Queue, (uint8_t *)(IMU_Log_DataPipe.data_addr), IMU_Log_DataPipe.da
+ 273              		.loc 1 190 13 is_stmt 1 view .LVU58
+ 274              		.loc 1 190 18 is_stmt 0 view .LVU59
+ 275 005c AD69     		ldr	r5, [r5, #24]
+ 276              		.loc 1 190 68 view .LVU60
+ 277 005e 0A4B     		ldr	r3, .L22+8
+ 278              		.loc 1 190 13 view .LVU61
+ 279 0060 9A88     		ldrh	r2, [r3, #4]
+ 280 0062 1968     		ldr	r1, [r3]
+ 281 0064 2046     		mov	r0, r4
+ 282 0066 A847     		blx	r5
+ 283              	.LVL20:
+ 284              	.L16:
+ 191:Task/Task_Log.c ****         }
+ 192:Task/Task_Log.c **** 
+ 193:Task/Task_Log.c ****         if (!LogObj_Logging_Reg._sec.IMU_Sec)
+ 285              		.loc 1 193 9 is_stmt 1 view .LVU62
+ 286              		.loc 1 193 13 is_stmt 0 view .LVU63
+ 287 0068 0C4B     		ldr	r3, .L22+28
+ 288 006a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 289              		.loc 1 193 12 view .LVU64
+ 290 006c 13F0010F 		tst	r3, #1
+ 291 0070 04D1     		bne	.L13
+ 194:Task/Task_Log.c ****         {
+ 195:Task/Task_Log.c ****             Queue.pop_to_queue(&IMUData_Queue, &IMULog_Queue);
+ 292              		.loc 1 195 13 is_stmt 1 view .LVU65
+ 293              		.loc 1 195 18 is_stmt 0 view .LVU66
+ 294 0072 074B     		ldr	r3, .L22+16
+ 295 0074 5B6A     		ldr	r3, [r3, #36]
+ 296              		.loc 1 195 13 view .LVU67
+ 297 0076 0A49     		ldr	r1, .L22+32
+ 298 0078 0648     		ldr	r0, .L22+20
+ 299 007a 9847     		blx	r3
+ 300              	.LVL21:
+ 301              	.L13:
+ 196:Task/Task_Log.c ****         }
+ 197:Task/Task_Log.c ****     }
+ 198:Task/Task_Log.c **** }
+ 302              		.loc 1 198 1 view .LVU68
+ 303 007c 03B0     		add	sp, sp, #12
+ 304              	.LCFI9:
+ 305              		.cfi_def_cfa_offset 12
+ 306              		@ sp needed
+ 307 007e 30BD     		pop	{r4, r5, pc}
+ 308              	.L23:
+ 309              		.align	2
+ 310              	.L22:
+ 311 0080 00000000 		.word	.LANCHOR3
+ 312 0084 00000000 		.word	.LANCHOR4
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 10
+
+
+ 313 0088 00000000 		.word	.LANCHOR5
+ 314 008c 00000000 		.word	.LANCHOR6
+ 315 0090 00000000 		.word	Queue
+ 316 0094 00000000 		.word	.LANCHOR7
+ 317 0098 00000000 		.word	.LANCHOR8
+ 318 009c 00000000 		.word	.LANCHOR9
+ 319 00a0 00000000 		.word	.LANCHOR10
+ 320              		.cfi_endproc
+ 321              	.LFE151:
+ 323              		.section	.text.OsIdle_Callback_LogModule,"ax",%progbits
+ 324              		.align	1
+ 325              		.syntax unified
+ 326              		.thumb
+ 327              		.thumb_func
+ 328              		.fpu fpv5-d16
+ 330              	OsIdle_Callback_LogModule:
+ 331              	.LVL22:
+ 332              	.LFB148:
+ 100:Task/Task_Log.c ****     Disk_Write_State state;
+ 333              		.loc 1 100 1 is_stmt 1 view -0
+ 334              		.cfi_startproc
+ 335              		@ args = 0, pretend = 0, frame = 0
+ 336              		@ frame_needed = 0, uses_anonymous_args = 0
+ 101:Task/Task_Log.c ****     static uint32_t rt = 0;
+ 337              		.loc 1 101 5 view .LVU70
+ 102:Task/Task_Log.c ****     static uint32_t rt_lst = 0;
+ 338              		.loc 1 102 5 view .LVU71
+ 103:Task/Task_Log.c ****     static bool led_state = false;
+ 339              		.loc 1 103 5 view .LVU72
+ 104:Task/Task_Log.c **** 
+ 340              		.loc 1 104 5 view .LVU73
+ 106:Task/Task_Log.c ****     {
+ 341              		.loc 1 106 5 view .LVU74
+ 106:Task/Task_Log.c ****     {
+ 342              		.loc 1 106 9 is_stmt 0 view .LVU75
+ 343 0000 284B     		ldr	r3, .L33
+ 344 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 106:Task/Task_Log.c ****     {
+ 345              		.loc 1 106 8 view .LVU76
+ 346 0004 002B     		cmp	r3, #0
+ 347 0006 4CD0     		beq	.L29
+ 100:Task/Task_Log.c ****     Disk_Write_State state;
+ 348              		.loc 1 100 1 view .LVU77
+ 349 0008 10B5     		push	{r4, lr}
+ 350              	.LCFI10:
+ 351              		.cfi_def_cfa_offset 8
+ 352              		.cfi_offset 4, -8
+ 353              		.cfi_offset 14, -4
+ 354 000a 86B0     		sub	sp, sp, #24
+ 355              	.LCFI11:
+ 356              		.cfi_def_cfa_offset 32
+ 108:Task/Task_Log.c ****         {
+ 357              		.loc 1 108 9 is_stmt 1 view .LVU78
+ 108:Task/Task_Log.c ****         {
+ 358              		.loc 1 108 13 is_stmt 0 view .LVU79
+ 359 000c 264B     		ldr	r3, .L33+4
+ 360 000e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 11
+
+
+ 108:Task/Task_Log.c ****         {
+ 361              		.loc 1 108 12 view .LVU80
+ 362 0010 13F0010F 		tst	r3, #1
+ 363 0014 17D1     		bne	.L32
+ 131:Task/Task_Log.c ****             {
+ 364              		.loc 1 131 13 is_stmt 1 view .LVU81
+ 131:Task/Task_Log.c ****             {
+ 365              		.loc 1 131 20 is_stmt 0 view .LVU82
+ 366 0016 254B     		ldr	r3, .L33+8
+ 367 0018 1B68     		ldr	r3, [r3]
+ 368 001a 254A     		ldr	r2, .L33+12
+ 369 001c 1268     		ldr	r2, [r2]
+ 370 001e 9B1A     		subs	r3, r3, r2
+ 131:Task/Task_Log.c ****             {
+ 371              		.loc 1 131 16 view .LVU83
+ 372 0020 B3F5FA7F 		cmp	r3, #500
+ 373 0024 0DD3     		bcc	.L24
+ 133:Task/Task_Log.c ****                 DevLED.ctl(Led2, led_state);
+ 374              		.loc 1 133 17 is_stmt 1 view .LVU84
+ 375 0026 234A     		ldr	r2, .L33+16
+ 376 0028 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 377 002a 83F00103 		eor	r3, r3, #1
+ 133:Task/Task_Log.c ****                 DevLED.ctl(Led2, led_state);
+ 378              		.loc 1 133 27 is_stmt 0 view .LVU85
+ 379 002e 1370     		strb	r3, [r2]
+ 134:Task/Task_Log.c ****                 rt_lst = rt;
+ 380              		.loc 1 134 17 is_stmt 1 view .LVU86
+ 134:Task/Task_Log.c ****                 rt_lst = rt;
+ 381              		.loc 1 134 23 is_stmt 0 view .LVU87
+ 382 0030 214A     		ldr	r2, .L33+20
+ 383 0032 5468     		ldr	r4, [r2, #4]
+ 134:Task/Task_Log.c ****                 rt_lst = rt;
+ 384              		.loc 1 134 17 view .LVU88
+ 385 0034 214A     		ldr	r2, .L33+24
+ 386 0036 07CA     		ldm	r2, {r0, r1, r2}
+ 387              	.LVL23:
+ 134:Task/Task_Log.c ****                 rt_lst = rt;
+ 388              		.loc 1 134 17 view .LVU89
+ 389 0038 A047     		blx	r4
+ 390              	.LVL24:
+ 135:Task/Task_Log.c ****             }
+ 391              		.loc 1 135 17 is_stmt 1 view .LVU90
+ 135:Task/Task_Log.c ****             }
+ 392              		.loc 1 135 24 is_stmt 0 view .LVU91
+ 393 003a 1C4B     		ldr	r3, .L33+8
+ 394 003c 1A68     		ldr	r2, [r3]
+ 395 003e 1C4B     		ldr	r3, .L33+12
+ 396 0040 1A60     		str	r2, [r3]
+ 397              	.L24:
+ 139:Task/Task_Log.c **** 
+ 398              		.loc 1 139 1 view .LVU92
+ 399 0042 06B0     		add	sp, sp, #24
+ 400              	.LCFI12:
+ 401              		.cfi_remember_state
+ 402              		.cfi_def_cfa_offset 8
+ 403              		@ sp needed
+ 404 0044 10BD     		pop	{r4, pc}
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 12
+
+
+ 405              	.LVL25:
+ 406              	.L32:
+ 407              	.LCFI13:
+ 408              		.cfi_restore_state
+ 110:Task/Task_Log.c ****             rt = Get_CurrentRunningMs();
+ 409              		.loc 1 110 13 is_stmt 1 view .LVU93
+ 110:Task/Task_Log.c ****             rt = Get_CurrentRunningMs();
+ 410              		.loc 1 110 21 is_stmt 0 view .LVU94
+ 411 0046 1E4C     		ldr	r4, .L33+28
+ 412 0048 1E4B     		ldr	r3, .L33+32
+ 413 004a 0593     		str	r3, [sp, #20]
+ 414 004c EC46     		mov	ip, sp
+ 415 004e 04F10C0E 		add	lr, r4, #12
+ 416 0052 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 417              	.LVL26:
+ 110:Task/Task_Log.c ****             rt = Get_CurrentRunningMs();
+ 418              		.loc 1 110 21 view .LVU95
+ 419 0056 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 420 005a DEF80030 		ldr	r3, [lr]
+ 421 005e ACF80030 		strh	r3, [ip]	@ movhi
+ 422 0062 94E80E00 		ldm	r4, {r1, r2, r3}
+ 423 0066 1848     		ldr	r0, .L33+36
+ 424 0068 FFF7FEFF 		bl	LogData_ToFile
+ 425              	.LVL27:
+ 426 006c 0446     		mov	r4, r0
+ 427              	.LVL28:
+ 111:Task/Task_Log.c **** 
+ 428              		.loc 1 111 13 is_stmt 1 view .LVU96
+ 111:Task/Task_Log.c **** 
+ 429              		.loc 1 111 18 is_stmt 0 view .LVU97
+ 430 006e FFF7FEFF 		bl	Get_CurrentRunningMs
+ 431              	.LVL29:
+ 111:Task/Task_Log.c **** 
+ 432              		.loc 1 111 16 view .LVU98
+ 433 0072 0E4B     		ldr	r3, .L33+8
+ 434 0074 1860     		str	r0, [r3]
+ 113:Task/Task_Log.c ****             {
+ 435              		.loc 1 113 13 is_stmt 1 view .LVU99
+ 113:Task/Task_Log.c ****             {
+ 436              		.loc 1 113 16 is_stmt 0 view .LVU100
+ 437 0076 012C     		cmp	r4, #1
+ 438 0078 E3D1     		bne	.L24
+ 115:Task/Task_Log.c ****                 {
+ 439              		.loc 1 115 17 is_stmt 1 view .LVU101
+ 115:Task/Task_Log.c ****                 {
+ 440              		.loc 1 115 24 is_stmt 0 view .LVU102
+ 441 007a 0D4B     		ldr	r3, .L33+12
+ 442 007c 1B68     		ldr	r3, [r3]
+ 443 007e C01A     		subs	r0, r0, r3
+ 115:Task/Task_Log.c ****                 {
+ 444              		.loc 1 115 20 view .LVU103
+ 445 0080 C728     		cmp	r0, #199
+ 446 0082 DED9     		bls	.L24
+ 117:Task/Task_Log.c ****                     DevLED.ctl(Led2, led_state);
+ 447              		.loc 1 117 21 is_stmt 1 view .LVU104
+ 448 0084 0B4A     		ldr	r2, .L33+16
+ 449 0086 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 13
+
+
+ 450 0088 83F00103 		eor	r3, r3, #1
+ 117:Task/Task_Log.c ****                     DevLED.ctl(Led2, led_state);
+ 451              		.loc 1 117 31 is_stmt 0 view .LVU105
+ 452 008c 1370     		strb	r3, [r2]
+ 118:Task/Task_Log.c ****                     rt_lst = rt;
+ 453              		.loc 1 118 21 is_stmt 1 view .LVU106
+ 118:Task/Task_Log.c ****                     rt_lst = rt;
+ 454              		.loc 1 118 27 is_stmt 0 view .LVU107
+ 455 008e 0A4A     		ldr	r2, .L33+20
+ 456 0090 5468     		ldr	r4, [r2, #4]
+ 457              	.LVL30:
+ 118:Task/Task_Log.c ****                     rt_lst = rt;
+ 458              		.loc 1 118 21 view .LVU108
+ 459 0092 0A4A     		ldr	r2, .L33+24
+ 460 0094 07CA     		ldm	r2, {r0, r1, r2}
+ 461 0096 A047     		blx	r4
+ 462              	.LVL31:
+ 119:Task/Task_Log.c ****                 }
+ 463              		.loc 1 119 21 is_stmt 1 view .LVU109
+ 119:Task/Task_Log.c ****                 }
+ 464              		.loc 1 119 28 is_stmt 0 view .LVU110
+ 465 0098 044B     		ldr	r3, .L33+8
+ 466 009a 1A68     		ldr	r2, [r3]
+ 467 009c 044B     		ldr	r3, .L33+12
+ 468 009e 1A60     		str	r2, [r3]
+ 469 00a0 CFE7     		b	.L24
+ 470              	.LVL32:
+ 471              	.L29:
+ 472              	.LCFI14:
+ 473              		.cfi_def_cfa_offset 0
+ 474              		.cfi_restore 4
+ 475              		.cfi_restore 14
+ 119:Task/Task_Log.c ****                 }
+ 476              		.loc 1 119 28 view .LVU111
+ 477 00a2 7047     		bx	lr
+ 478              	.L34:
+ 479              		.align	2
+ 480              	.L33:
+ 481 00a4 00000000 		.word	.LANCHOR3
+ 482 00a8 00000000 		.word	.LANCHOR4
+ 483 00ac 00000000 		.word	.LANCHOR11
+ 484 00b0 00000000 		.word	.LANCHOR12
+ 485 00b4 00000000 		.word	.LANCHOR13
+ 486 00b8 00000000 		.word	DevLED
+ 487 00bc 00000000 		.word	Led2
+ 488 00c0 00000000 		.word	.LANCHOR5
+ 489 00c4 00000000 		.word	.LANCHOR9
+ 490 00c8 00000000 		.word	.LANCHOR10
+ 491              		.cfi_endproc
+ 492              	.LFE148:
+ 494              		.section	.rodata.TaskLog_Init.str1.4,"aMS",%progbits,1
+ 495              		.align	2
+ 496              	.LC0:
+ 497 0000 6C6F672F 		.ascii	"log/\000"
+ 497      00
+ 498 0005 000000   		.align	2
+ 499              	.LC1:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 14
+
+
+ 500 0008 696D752E 		.ascii	"imu.log\000"
+ 500      6C6F6700 
+ 501              		.align	2
+ 502              	.LC2:
+ 503 0010 71756575 		.ascii	"queue imu data\000"
+ 503      6520696D 
+ 503      75206461 
+ 503      746100
+ 504 001f 00       		.align	2
+ 505              	.LC3:
+ 506 0020 71756575 		.ascii	"queue imu log\000"
+ 506      6520696D 
+ 506      75206C6F 
+ 506      6700
+ 507              		.section	.text.TaskLog_Init,"ax",%progbits
+ 508              		.align	1
+ 509              		.global	TaskLog_Init
+ 510              		.syntax unified
+ 511              		.thumb
+ 512              		.thumb_func
+ 513              		.fpu fpv5-d16
+ 515              	TaskLog_Init:
+ 516              	.LFB147:
+  61:Task/Task_Log.c ****     Os_Idle_DataStream_TypeDef LogData_Stream;
+ 517              		.loc 1 61 1 is_stmt 1 view -0
+ 518              		.cfi_startproc
+ 519              		@ args = 0, pretend = 0, frame = 112
+ 520              		@ frame_needed = 0, uses_anonymous_args = 0
+ 521 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 522              	.LCFI15:
+ 523              		.cfi_def_cfa_offset 28
+ 524              		.cfi_offset 4, -28
+ 525              		.cfi_offset 5, -24
+ 526              		.cfi_offset 6, -20
+ 527              		.cfi_offset 7, -16
+ 528              		.cfi_offset 8, -12
+ 529              		.cfi_offset 9, -8
+ 530              		.cfi_offset 14, -4
+ 531 0004 9FB0     		sub	sp, sp, #124
+ 532              	.LCFI16:
+ 533              		.cfi_def_cfa_offset 152
+  62:Task/Task_Log.c **** 
+ 534              		.loc 1 62 5 view .LVU113
+  64:Task/Task_Log.c ****     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
+ 535              		.loc 1 64 5 view .LVU114
+ 536 0006 3B4C     		ldr	r4, .L38
+ 537 0008 1E22     		movs	r2, #30
+ 538 000a 0021     		movs	r1, #0
+ 539 000c 2046     		mov	r0, r4
+ 540 000e FFF7FEFF 		bl	memset
+ 541              	.LVL33:
+  65:Task/Task_Log.c ****     memset(&FATFS_Obj, NULL, sizeof(FATFS_Obj));
+ 542              		.loc 1 65 5 view .LVU115
+ 543 0012 6622     		movs	r2, #102
+ 544 0014 0021     		movs	r1, #0
+ 545 0016 3848     		ldr	r0, .L38+4
+ 546 0018 FFF7FEFF 		bl	memset
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 15
+
+
+ 547              	.LVL34:
+  66:Task/Task_Log.c **** 
+ 548              		.loc 1 66 5 view .LVU116
+ 549 001c 374D     		ldr	r5, .L38+8
+ 550 001e C822     		movs	r2, #200
+ 551 0020 0021     		movs	r1, #0
+ 552 0022 2846     		mov	r0, r5
+ 553 0024 FFF7FEFF 		bl	memset
+ 554              	.LVL35:
+  68:Task/Task_Log.c ****     IMU_Log_DataPipe.data_size = sizeof(LogPriIMU_Data);
+ 555              		.loc 1 68 5 view .LVU117
+  68:Task/Task_Log.c ****     IMU_Log_DataPipe.data_size = sizeof(LogPriIMU_Data);
+ 556              		.loc 1 68 34 is_stmt 0 view .LVU118
+ 557 0028 3548     		ldr	r0, .L38+12
+  68:Task/Task_Log.c ****     IMU_Log_DataPipe.data_size = sizeof(LogPriIMU_Data);
+ 558              		.loc 1 68 32 view .LVU119
+ 559 002a 2060     		str	r0, [r4]
+  69:Task/Task_Log.c ****     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
+ 560              		.loc 1 69 5 is_stmt 1 view .LVU120
+  69:Task/Task_Log.c ****     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
+ 561              		.loc 1 69 32 is_stmt 0 view .LVU121
+ 562 002c 2F23     		movs	r3, #47
+ 563 002e A380     		strh	r3, [r4, #4]	@ movhi
+  70:Task/Task_Log.c ****     IMU_Log_DataPipe.ptr_tmp = MMU_Malloc(IMU_Log_DataPipe.data_addr);
+ 564              		.loc 1 70 5 is_stmt 1 view .LVU122
+  70:Task/Task_Log.c ****     IMU_Log_DataPipe.ptr_tmp = MMU_Malloc(IMU_Log_DataPipe.data_addr);
+ 565              		.loc 1 70 38 is_stmt 0 view .LVU123
+ 566 0030 344B     		ldr	r3, .L38+16
+ 567 0032 C4F80630 		str	r3, [r4, #6]	@ unaligned
+  71:Task/Task_Log.c **** 
+ 568              		.loc 1 71 5 is_stmt 1 view .LVU124
+  71:Task/Task_Log.c **** 
+ 569              		.loc 1 71 32 is_stmt 0 view .LVU125
+ 570 0036 80B2     		uxth	r0, r0
+ 571 0038 FFF7FEFF 		bl	MMU_Malloc
+ 572              	.LVL36:
+  71:Task/Task_Log.c **** 
+ 573              		.loc 1 71 30 view .LVU126
+ 574 003c C4F81A00 		str	r0, [r4, #26]	@ unaligned
+  73:Task/Task_Log.c ****     LogObj_Logging_Reg.reg_val = 0;
+ 575              		.loc 1 73 5 is_stmt 1 view .LVU127
+  73:Task/Task_Log.c ****     LogObj_Logging_Reg.reg_val = 0;
+ 576              		.loc 1 73 28 is_stmt 0 view .LVU128
+ 577 0040 0023     		movs	r3, #0
+ 578 0042 314A     		ldr	r2, .L38+20
+ 579 0044 1380     		strh	r3, [r2]	@ movhi
+  74:Task/Task_Log.c **** 
+ 580              		.loc 1 74 5 is_stmt 1 view .LVU129
+  74:Task/Task_Log.c **** 
+ 581              		.loc 1 74 32 is_stmt 0 view .LVU130
+ 582 0046 314A     		ldr	r2, .L38+24
+ 583 0048 1380     		strh	r3, [r2]	@ movhi
+  77:Task/Task_Log.c ****     {
+ 584              		.loc 1 77 5 is_stmt 1 view .LVU131
+  77:Task/Task_Log.c ****     {
+ 585              		.loc 1 77 13 is_stmt 0 view .LVU132
+ 586 004a 314B     		ldr	r3, .L38+28
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 16
+
+
+ 587 004c 1B68     		ldr	r3, [r3]
+  77:Task/Task_Log.c ****     {
+ 588              		.loc 1 77 9 view .LVU133
+ 589 004e 3149     		ldr	r1, .L38+32
+ 590 0050 2846     		mov	r0, r5
+ 591 0052 9847     		blx	r3
+ 592              	.LVL37:
+  77:Task/Task_Log.c ****     {
+ 593              		.loc 1 77 8 view .LVU134
+ 594 0054 0028     		cmp	r0, #0
+ 595 0056 3FD0     		beq	.L36
+  79:Task/Task_Log.c ****         LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M
+ 596              		.loc 1 79 9 is_stmt 1 view .LVU135
+  79:Task/Task_Log.c ****         LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M
+ 597              		.loc 1 79 33 is_stmt 0 view .LVU136
+ 598 0058 2D4D     		ldr	r5, .L38+28
+ 599 005a 6B68     		ldr	r3, [r5, #4]
+  79:Task/Task_Log.c ****         LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M
+ 600              		.loc 1 79 29 view .LVU137
+ 601 005c DFF8E890 		ldr	r9, .L38+84
+ 602 0060 264C     		ldr	r4, .L38+8
+ 603 0062 0222     		movs	r2, #2
+ 604 0064 4946     		mov	r1, r9
+ 605 0066 2046     		mov	r0, r4
+ 606 0068 9847     		blx	r3
+ 607              	.LVL38:
+ 608 006a 0346     		mov	r3, r0
+  79:Task/Task_Log.c ****         LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M
+ 609              		.loc 1 79 27 view .LVU138
+ 610 006c 2A4A     		ldr	r2, .L38+36
+ 611 006e 1060     		str	r0, [r2]
+  80:Task/Task_Log.c ****         Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
+ 612              		.loc 1 80 9 is_stmt 1 view .LVU139
+  80:Task/Task_Log.c ****         Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
+ 613              		.loc 1 80 23 is_stmt 0 view .LVU140
+ 614 0070 DFF88480 		ldr	r8, .L38+4
+ 615 0074 294F     		ldr	r7, .L38+40
+ 616 0076 4FF08072 		mov	r2, #16777216
+ 617 007a 0092     		str	r2, [sp]
+ 618 007c 3A46     		mov	r2, r7
+ 619 007e 2146     		mov	r1, r4
+ 620 0080 02A8     		add	r0, sp, #8
+ 621 0082 AE68     		ldr	r6, [r5, #8]
+ 622 0084 B047     		blx	r6
+ 623              	.LVL39:
+ 624 0086 6622     		movs	r2, #102
+ 625 0088 02A9     		add	r1, sp, #8
+ 626 008a 4046     		mov	r0, r8
+ 627 008c FFF7FEFF 		bl	memcpy
+ 628              	.LVL40:
+  81:Task/Task_Log.c **** 
+ 629              		.loc 1 81 9 is_stmt 1 view .LVU141
+  81:Task/Task_Log.c **** 
+ 630              		.loc 1 81 13 is_stmt 0 view .LVU142
+ 631 0090 ED68     		ldr	r5, [r5, #12]
+  81:Task/Task_Log.c **** 
+ 632              		.loc 1 81 9 view .LVU143
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 17
+
+
+ 633 0092 4346     		mov	r3, r8
+ 634 0094 3A46     		mov	r2, r7
+ 635 0096 4946     		mov	r1, r9
+ 636 0098 2046     		mov	r0, r4
+ 637 009a A847     		blx	r5
+ 638              	.LVL41:
+  84:Task/Task_Log.c ****             Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_
+ 639              		.loc 1 84 9 is_stmt 1 view .LVU144
+  84:Task/Task_Log.c ****             Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_
+ 640              		.loc 1 84 18 is_stmt 0 view .LVU145
+ 641 009c 204B     		ldr	r3, .L38+44
+ 642 009e 9B68     		ldr	r3, [r3, #8]
+  84:Task/Task_Log.c ****             Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_
+ 643              		.loc 1 84 13 view .LVU146
+ 644 00a0 4FF42052 		mov	r2, #10240
+ 645 00a4 1F49     		ldr	r1, .L38+48
+ 646 00a6 2048     		ldr	r0, .L38+52
+ 647 00a8 9847     		blx	r3
+ 648              	.LVL42:
+  84:Task/Task_Log.c ****             Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_
+ 649              		.loc 1 84 12 view .LVU147
+ 650 00aa A8B1     		cbz	r0, .L36
+  85:Task/Task_Log.c ****         {
+ 651              		.loc 1 85 18 discriminator 1 view .LVU148
+ 652 00ac 1C4B     		ldr	r3, .L38+44
+ 653 00ae DC68     		ldr	r4, [r3, #12]
+  85:Task/Task_Log.c ****         {
+ 654              		.loc 1 85 13 discriminator 1 view .LVU149
+ 655 00b0 4FF42053 		mov	r3, #10240
+ 656 00b4 1D4A     		ldr	r2, .L38+56
+ 657 00b6 1E49     		ldr	r1, .L38+60
+ 658 00b8 1E48     		ldr	r0, .L38+64
+ 659 00ba A047     		blx	r4
+ 660              	.LVL43:
+  84:Task/Task_Log.c ****             Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_
+ 661              		.loc 1 84 86 discriminator 1 view .LVU150
+ 662 00bc 60B1     		cbz	r0, .L36
+  87:Task/Task_Log.c ****             LogObj_Enable_Reg._sec.IMU_Sec = true;
+ 663              		.loc 1 87 13 is_stmt 1 view .LVU151
+  87:Task/Task_Log.c ****             LogObj_Enable_Reg._sec.IMU_Sec = true;
+ 664              		.loc 1 87 27 is_stmt 0 view .LVU152
+ 665 00be 1E4B     		ldr	r3, .L38+68
+ 666 00c0 0122     		movs	r2, #1
+ 667 00c2 1A70     		strb	r2, [r3]
+  88:Task/Task_Log.c ****             LogObj_Set_Reg._sec.IMU_Sec = true;
+ 668              		.loc 1 88 13 is_stmt 1 view .LVU153
+  88:Task/Task_Log.c ****             LogObj_Set_Reg._sec.IMU_Sec = true;
+ 669              		.loc 1 88 44 is_stmt 0 view .LVU154
+ 670 00c4 1D4A     		ldr	r2, .L38+72
+ 671 00c6 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 672 00c8 43F00103 		orr	r3, r3, #1
+ 673 00cc 1370     		strb	r3, [r2]
+  89:Task/Task_Log.c ****         }
+ 674              		.loc 1 89 13 is_stmt 1 view .LVU155
+  89:Task/Task_Log.c ****         }
+ 675              		.loc 1 89 41 is_stmt 0 view .LVU156
+ 676 00ce 0E4A     		ldr	r2, .L38+20
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 18
+
+
+ 677 00d0 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 678 00d2 43F00103 		orr	r3, r3, #1
+ 679 00d6 1370     		strb	r3, [r2]
+ 680              	.L36:
+  93:Task/Task_Log.c ****     LogData_Stream.size = 0;
+ 681              		.loc 1 93 5 is_stmt 1 view .LVU157
+  93:Task/Task_Log.c ****     LogData_Stream.size = 0;
+ 682              		.loc 1 93 24 is_stmt 0 view .LVU158
+ 683 00d8 0023     		movs	r3, #0
+ 684 00da 1C93     		str	r3, [sp, #112]
+  94:Task/Task_Log.c **** 
+ 685              		.loc 1 94 5 is_stmt 1 view .LVU159
+  94:Task/Task_Log.c **** 
+ 686              		.loc 1 94 25 is_stmt 0 view .LVU160
+ 687 00dc ADF87430 		strh	r3, [sp, #116]	@ movhi
+  96:Task/Task_Log.c **** }
+ 688              		.loc 1 96 5 is_stmt 1 view .LVU161
+ 689 00e0 174B     		ldr	r3, .L38+76
+ 690 00e2 1EAA     		add	r2, sp, #120
+ 691 00e4 12E90600 		ldmdb	r2, {r1, r2}
+ 692 00e8 1648     		ldr	r0, .L38+80
+ 693 00ea FFF7FEFF 		bl	Os_Regist_IdleObj
+ 694              	.LVL44:
+  97:Task/Task_Log.c **** 
+ 695              		.loc 1 97 1 is_stmt 0 view .LVU162
+ 696 00ee 1FB0     		add	sp, sp, #124
+ 697              	.LCFI17:
+ 698              		.cfi_def_cfa_offset 28
+ 699              		@ sp needed
+ 700 00f0 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 701              	.L39:
+ 702              		.align	2
+ 703              	.L38:
+ 704 00f4 00000000 		.word	.LANCHOR5
+ 705 00f8 00000000 		.word	.LANCHOR1
+ 706 00fc 00000000 		.word	.LANCHOR2
+ 707 0100 00000000 		.word	.LANCHOR14
+ 708 0104 00000000 		.word	TaskLog_PipeTransFinish_Callback
+ 709 0108 00000000 		.word	.LANCHOR4
+ 710 010c 00000000 		.word	.LANCHOR9
+ 711 0110 00000000 		.word	Disk
+ 712 0114 00000000 		.word	TaskProto_PushProtocolQueue
+ 713 0118 00000000 		.word	.LANCHOR15
+ 714 011c 08000000 		.word	.LC1
+ 715 0120 00000000 		.word	Queue
+ 716 0124 10000000 		.word	.LC2
+ 717 0128 00000000 		.word	.LANCHOR7
+ 718 012c 00000000 		.word	LogCache_L2_Buf
+ 719 0130 20000000 		.word	.LC3
+ 720 0134 00000000 		.word	.LANCHOR10
+ 721 0138 00000000 		.word	.LANCHOR3
+ 722 013c 00000000 		.word	.LANCHOR6
+ 723 0140 00000000 		.word	OsIdle_Callback_LogModule
+ 724 0144 00000000 		.word	.LANCHOR16
+ 725 0148 00000000 		.word	.LC0
+ 726              		.cfi_endproc
+ 727              	.LFE147:
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 19
+
+
+ 729              		.section	.text.TaskLog_Core,"ax",%progbits
+ 730              		.align	1
+ 731              		.global	TaskLog_Core
+ 732              		.syntax unified
+ 733              		.thumb
+ 734              		.thumb_func
+ 735              		.fpu fpv5-d16
+ 737              	TaskLog_Core:
+ 738              	.LVL45:
+ 739              	.LFB149:
+ 142:Task/Task_Log.c ****     // DebugPin.ctl(Debug_PB4, true);
+ 740              		.loc 1 142 1 is_stmt 1 view -0
+ 741              		.cfi_startproc
+ 742              		@ args = 0, pretend = 0, frame = 0
+ 743              		@ frame_needed = 0, uses_anonymous_args = 0
+ 744              		@ link register save eliminated.
+ 146:Task/Task_Log.c **** 
+ 745              		.loc 1 146 1 view .LVU164
+ 746 0000 7047     		bx	lr
+ 747              		.cfi_endproc
+ 748              	.LFE149:
+ 750              		.global	IMU_Log_DataPipe
+ 751              		.section	.Fast_Mem_section,"aw"
+ 752              		.align	2
+ 755              	LogCache_L2_Buf:
+ 756 0000 00000000 		.space	10240
+ 756      00000000 
+ 756      00000000 
+ 756      00000000 
+ 756      00000000 
+ 757              		.section	.Perph_Section,"aw"
+ 758              		.align	2
+ 759              		.set	.LANCHOR14,. + 0
+ 762              	LogPriIMU_Data:
+ 763 0000 00000000 		.space	47
+ 763      00000000 
+ 763      00000000 
+ 763      00000000 
+ 763      00000000 
+ 764              		.section	.bss.FATFS_Obj,"aw",%nobits
+ 765              		.align	2
+ 766              		.set	.LANCHOR2,. + 0
+ 769              	FATFS_Obj:
+ 770 0000 00000000 		.space	200
+ 770      00000000 
+ 770      00000000 
+ 770      00000000 
+ 770      00000000 
+ 771              		.section	.bss.IMUData_Queue,"aw",%nobits
+ 772              		.align	2
+ 773              		.set	.LANCHOR7,. + 0
+ 776              	IMUData_Queue:
+ 777 0000 00000000 		.space	17
+ 777      00000000 
+ 777      00000000 
+ 777      00000000 
+ 777      00
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 20
+
+
+ 778              		.section	.bss.IMULog_Queue,"aw",%nobits
+ 779              		.align	2
+ 780              		.set	.LANCHOR10,. + 0
+ 783              	IMULog_Queue:
+ 784 0000 00000000 		.space	17
+ 784      00000000 
+ 784      00000000 
+ 784      00000000 
+ 784      00
+ 785              		.section	.bss.IMU_Log_DataPipe,"aw",%nobits
+ 786              		.align	2
+ 787              		.set	.LANCHOR5,. + 0
+ 790              	IMU_Log_DataPipe:
+ 791 0000 00000000 		.space	30
+ 791      00000000 
+ 791      00000000 
+ 791      00000000 
+ 791      00000000 
+ 792              		.section	.bss.LogFile_Obj,"aw",%nobits
+ 793              		.align	2
+ 794              		.set	.LANCHOR1,. + 0
+ 797              	LogFile_Obj:
+ 798 0000 00000000 		.space	102
+ 798      00000000 
+ 798      00000000 
+ 798      00000000 
+ 798      00000000 
+ 799              		.section	.bss.LogFile_Ready,"aw",%nobits
+ 800              		.set	.LANCHOR3,. + 0
+ 803              	LogFile_Ready:
+ 804 0000 00       		.space	1
+ 805              		.section	.bss.LogFolder_Cluster,"aw",%nobits
+ 806              		.align	2
+ 807              		.set	.LANCHOR15,. + 0
+ 810              	LogFolder_Cluster:
+ 811 0000 00000000 		.space	4
+ 812              		.section	.bss.LogIdleObj,"aw",%nobits
+ 813              		.align	2
+ 814              		.set	.LANCHOR16,. + 0
+ 817              	LogIdleObj:
+ 818 0000 00000000 		.space	40
+ 818      00000000 
+ 818      00000000 
+ 818      00000000 
+ 818      00000000 
+ 819              		.section	.bss.LogObj_Enable_Reg,"aw",%nobits
+ 820              		.align	2
+ 821              		.set	.LANCHOR6,. + 0
+ 824              	LogObj_Enable_Reg:
+ 825 0000 0000     		.space	2
+ 826              		.section	.bss.LogObj_Logging_Reg,"aw",%nobits
+ 827              		.align	2
+ 828              		.set	.LANCHOR9,. + 0
+ 831              	LogObj_Logging_Reg:
+ 832 0000 0000     		.space	2
+ 833              		.section	.bss.LogObj_Set_Reg,"aw",%nobits
+ 834              		.align	2
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 21
+
+
+ 835              		.set	.LANCHOR4,. + 0
+ 838              	LogObj_Set_Reg:
+ 839 0000 0000     		.space	2
+ 840              		.section	.bss.LogQueueBuff_Trail,"aw",%nobits
+ 841              		.align	2
+ 842              		.set	.LANCHOR0,. + 0
+ 845              	LogQueueBuff_Trail:
+ 846 0000 00000000 		.space	512
+ 846      00000000 
+ 846      00000000 
+ 846      00000000 
+ 846      00000000 
+ 847              		.section	.bss.led_state.0,"aw",%nobits
+ 848              		.set	.LANCHOR13,. + 0
+ 851              	led_state.0:
+ 852 0000 00       		.space	1
+ 853              		.section	.bss.rt.2,"aw",%nobits
+ 854              		.align	2
+ 855              		.set	.LANCHOR11,. + 0
+ 858              	rt.2:
+ 859 0000 00000000 		.space	4
+ 860              		.section	.bss.rt_lst.1,"aw",%nobits
+ 861              		.align	2
+ 862              		.set	.LANCHOR12,. + 0
+ 865              	rt_lst.1:
+ 866 0000 00000000 		.space	4
+ 867              		.section	.rodata.LogIMU_Header,"a"
+ 868              		.align	2
+ 869              		.set	.LANCHOR8,. + 0
+ 872              	LogIMU_Header:
+ 873 0000 BA       		.byte	-70
+ 874 0001 00       		.byte	0
+ 875 0002 2F       		.byte	47
+ 876              		.text
+ 877              	.Letext0:
+ 878              		.file 2 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/mac
+ 879              		.file 3 "/usr/local/arm-none-eabi-gcc/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys
+ 880              		.file 4 "System/runtime/runtime.h"
+ 881              		.file 5 "DataStructure/linked_list.h"
+ 882              		.file 6 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 883              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 884              		.file 8 "System/scheduler/scheduler.h"
+ 885              		.file 9 "Task/Task_Log.h"
+ 886              		.file 10 "Bsp/Bsp_GPIO.h"
+ 887              		.file 11 "DataStructure/queue.h"
+ 888              		.file 12 "System/diskio/DiskIO.h"
+ 889              		.file 13 "System/DataPipe/DataPipe.h"
+ 890              		.file 14 "Service/imu_data.h"
+ 891              		.file 15 "Service/SrvMPU_Sample.h"
+ 892              		.file 16 "Device/Dev_Led.h"
+ 893              		.file 17 "IO_Def/IO_Definition.h"
+ 894              		.file 18 "System/mmu/mmu.h"
+ 895              		.file 19 "<built-in>"
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 22
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 Task_Log.c
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:17     .text.LogData_ToFile:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:24     .text.LogData_ToFile:0000000000000000 LogData_ToFile
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:174    .text.LogData_ToFile:000000000000008c $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:183    .text.TaskLog_PipeTransFinish_Callback:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:189    .text.TaskLog_PipeTransFinish_Callback:0000000000000000 TaskLog_PipeTransFinish_Callback
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:311    .text.TaskLog_PipeTransFinish_Callback:0000000000000080 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:324    .text.OsIdle_Callback_LogModule:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:330    .text.OsIdle_Callback_LogModule:0000000000000000 OsIdle_Callback_LogModule
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:481    .text.OsIdle_Callback_LogModule:00000000000000a4 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:495    .rodata.TaskLog_Init.str1.4:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:508    .text.TaskLog_Init:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:515    .text.TaskLog_Init:0000000000000000 TaskLog_Init
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:704    .text.TaskLog_Init:00000000000000f4 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:755    .Fast_Mem_section:0000000000000000 LogCache_L2_Buf
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:730    .text.TaskLog_Core:0000000000000000 $t
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:737    .text.TaskLog_Core:0000000000000000 TaskLog_Core
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:790    .bss.IMU_Log_DataPipe:0000000000000000 IMU_Log_DataPipe
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:752    .Fast_Mem_section:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:758    .Perph_Section:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:762    .Perph_Section:0000000000000000 LogPriIMU_Data
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:765    .bss.FATFS_Obj:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:769    .bss.FATFS_Obj:0000000000000000 FATFS_Obj
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:772    .bss.IMUData_Queue:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:776    .bss.IMUData_Queue:0000000000000000 IMUData_Queue
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:779    .bss.IMULog_Queue:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:783    .bss.IMULog_Queue:0000000000000000 IMULog_Queue
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:786    .bss.IMU_Log_DataPipe:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:793    .bss.LogFile_Obj:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:797    .bss.LogFile_Obj:0000000000000000 LogFile_Obj
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:803    .bss.LogFile_Ready:0000000000000000 LogFile_Ready
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:804    .bss.LogFile_Ready:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:806    .bss.LogFolder_Cluster:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:810    .bss.LogFolder_Cluster:0000000000000000 LogFolder_Cluster
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:813    .bss.LogIdleObj:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:817    .bss.LogIdleObj:0000000000000000 LogIdleObj
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:820    .bss.LogObj_Enable_Reg:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:824    .bss.LogObj_Enable_Reg:0000000000000000 LogObj_Enable_Reg
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:827    .bss.LogObj_Logging_Reg:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:831    .bss.LogObj_Logging_Reg:0000000000000000 LogObj_Logging_Reg
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:834    .bss.LogObj_Set_Reg:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:838    .bss.LogObj_Set_Reg:0000000000000000 LogObj_Set_Reg
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:841    .bss.LogQueueBuff_Trail:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:845    .bss.LogQueueBuff_Trail:0000000000000000 LogQueueBuff_Trail
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:851    .bss.led_state.0:0000000000000000 led_state.0
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:852    .bss.led_state.0:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:854    .bss.rt.2:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:858    .bss.rt.2:0000000000000000 rt.2
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:861    .bss.rt_lst.1:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:865    .bss.rt_lst.1:0000000000000000 rt_lst.1
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:868    .rodata.LogIMU_Header:0000000000000000 $d
+/var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s:872    .rodata.LogIMU_Header:0000000000000000 LogIMU_Header
+
+UNDEFINED SYMBOLS
+Queue
+Disk
+ARM GAS  /var/folders/lx/hc4sn_b53233_zkc9xbbl97r0000gp/T//cc2LzSV1.s 			page 23
+
+
+Get_CurrentRunningMs
+DevLED
+Led2
+memset
+MMU_Malloc
+memcpy
+Os_Regist_IdleObj
+TaskProto_PushProtocolQueue
