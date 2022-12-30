@@ -11,6 +11,7 @@ typedef void (*Pipe_TimeOutProc_Callback)(void *pipe_obj);
 
 #define DataPipeHandleToObj(x) ((DataPipeObj_TypeDef *)x)
 #define DataPipe_CreateDataObj(type, name) static type name##_##PipeDataObj __attribute__((section(".Perph_Section")))
+#define DataPipe_DataObjAddr(name) (uint32_t)(&name##_##PipeDataObj)
 #define DataPipe_DataObj(name) name##_##PipeDataObj
 
 typedef enum

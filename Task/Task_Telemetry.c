@@ -57,6 +57,10 @@ void TaskTelemetry_Init(void)
         {
             RC_Setting.init_state = false;
             RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
+
+            /* set datapipe */
+            Receiver_Smp_DataPipe.data_addr = DataPipe_DataObjAddr(Rc);
+            Receiver_Smp_DataPipe.data_size = sizeof(Telemetry_RCSig_TypeDef);
         }
     }
 
