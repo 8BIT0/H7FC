@@ -10,6 +10,9 @@
 #include "runtime.h"
 #include "mmu.h"
 
+#define CRSF_TX_PIN Uart4_TxPin
+#define CRSF_RX_PIN Uart4_RxPin
+
 /* internal variable */
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_RCInput_TypeDef RC_Setting;
@@ -111,8 +114,8 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
                                                  RECEIVER_TX_DMA,
                                                  RECEIVER_TX_DMA_STREAM,
                                                  false,
-                                                 Uart4_TxPin,
-                                                 Uart4_RxPin);
+                                                 CRSF_TX_PIN,
+                                                 CRSF_RX_PIN);
 
         if (receiver_obj->Frame_type == Receiver_Type_Sbus)
         {
