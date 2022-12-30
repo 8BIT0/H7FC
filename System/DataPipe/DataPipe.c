@@ -61,32 +61,8 @@ bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
 
     if ((p_org == NULL) ||
         (p_dst == NULL) ||
-        (p_org->data_size != p_dst->data_size) ||
-        (Pipe_State != Pipe_Ready))
+        (p_org->data_size != p_dst->data_size))
         return false;
-
-    Cur_Pluged_PipeObj.dst = p_dst;
-    Cur_Pluged_PipeObj.org = p_org;
-
-    Kernel_EnterCritical();
-
-retry:
-    Pipe_State = Pipe_Busy;
-    if (HAL_DMA_Start_IT(&DataPipe_DMA, p_org->data_addr, p_dst->data_addr, p_org->data_size) != HAL_OK)
-    {
-        Pipe_State = Pipe_Error;
-        p_org->er_cnt++;
-        p_dst->er_cnt++;
-        retry_cnt--;
-
-        if (HAL_DMA_Abort_IT(&DataPipe_DMA) != HAL_OK)
-        {
-            if (retry_cnt)
-                goto retry;
-        }
-    }
-
-    Kernel_ExitCritical();
 
     retry_cnt = MAX_RETRY_CNT;
     while (Pipe_State != Pipe_Ready)
@@ -97,9 +73,34 @@ retry:
             return false;
     }
 
+    Cur_Pluged_PipeObj.dst = p_dst;
+    Cur_Pluged_PipeObj.org = p_org;
+
+    Kernel_EnterCritical();
+
+retry:
+    Pipe_State = Pipe_Busy;
+    if (HAL_DMA_Start_IT(&DataPipe_DMA, p_org->data_addr, p_dst->data_addr, p_org->data_size) != HAL_OK)
+    {
+        retry_cnt--;
+
+        if (HAL_DMA_Abort_IT(&DataPipe_DMA) != HAL_OK)
+        {
+            if (retry_cnt)
+                goto retry;
+        }
+
+        Pipe_State = Pipe_Error;
+        p_org->er_cnt++;
+        p_dst->er_cnt++;
+    }
+
+    Kernel_ExitCritical();
+
     return true;
 }
 
+/* still in developing */
 bool DataPipe_DealError(void)
 {
     if (Pipe_State == Pipe_Error)
