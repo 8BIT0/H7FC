@@ -57,6 +57,7 @@ Device/Dev_W25Qxx.c \
 Device/Dev_Card.c \
 Device/Dev_Sbus.c \
 Device/Dev_CRSF.c \
+Device/Dev_Dshot.c \
 Service/SrvMPU_Sample.c \
 Service/Srv_Receiver.c \
 DataStructure/Data_Convert_Util.c \

@@ -52,7 +52,7 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
         return false;
 
     BspTimer_PWM.set_prescaler(&obj->pwm_obj, prescaler);
-    BspTImer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
+    BspTimer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
     BspTimer_PWM.start_pwm(&obj->pwm_obj);
 
     return true;
