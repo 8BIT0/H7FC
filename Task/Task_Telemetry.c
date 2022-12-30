@@ -90,13 +90,12 @@ void Telemetry_blink(void)
 
 void TaskTelemetry_Core(Task_Handle hdl)
 {
-    Telemetry_RCSig_TypeDef rc_sig;
-
     Telemetry_blink();
 
-    rc_sig = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
+    DataPipe_DataObj(Rc) = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
 
     /* pipe data out */
+    // DataPipe_SendTo(&Receiver_Smp_DataPipe, NULL);
 }
 
 /************************************** telemetry receiver section ********************************************/
