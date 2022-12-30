@@ -48,7 +48,6 @@ static QueueObj_TypeDef IMUData_Queue;
 static LogData_Reg_TypeDef LogObj_Set_Reg;
 static LogData_Reg_TypeDef LogObj_Enable_Reg;
 static LogData_Reg_TypeDef LogObj_Logging_Reg;
-DataPipeObj_TypeDef IMU_Log_DataPipe;
 static Os_IdleObj_TypeDef LogIdleObj;
 static uint8_t LogQueueBuff_Trail[MAX_FILE_SIZE_K(1) / 2] = {0};
 
@@ -68,7 +67,6 @@ void TaskLog_Init(void)
     IMU_Log_DataPipe.data_addr = (uint32_t)&LogPriIMU_Data;
     IMU_Log_DataPipe.data_size = sizeof(LogPriIMU_Data);
     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
-    IMU_Log_DataPipe.ptr_tmp = MMU_Malloc(IMU_Log_DataPipe.data_addr);
 
     LogObj_Set_Reg.reg_val = 0;
     LogObj_Logging_Reg.reg_val = 0;
@@ -150,7 +148,7 @@ static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_Type
     uint16_t log_size = 0;
     uint16_t queue_size = 0;
 
-    if ((queue == NULL) || (Queue.size(*queue) == 0) || (pipe_obj.ptr_tmp == NULL))
+    if ((queue == NULL) || (Queue.size(*queue) == 0))
         return;
 
     log_reg->_sec.IMU_Sec = true;

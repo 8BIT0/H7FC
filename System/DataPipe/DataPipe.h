@@ -11,7 +11,7 @@ typedef void (*Pipe_TimeOutProc_Callback)(void *pipe_obj);
 
 #define DataPipeHandleToObj(x) ((DataPipeObj_TypeDef *)x)
 #define DataPipe_CreateDataObj(type, name) static type name##_##PipeDataObj __attribute__((section(".Perph_Section")))
-#define DataPipe_DataObjAddr(name) (uint32_t)(&name##_##PipeDataObj)
+#define DataPipe_DataObjAddr(name) &name##_##PipeDataObj
 #define DataPipe_DataObj(name) name##_##PipeDataObj
 
 typedef enum
@@ -34,8 +34,6 @@ typedef struct
     uint32_t tx_cnt;
     uint32_t rx_cnt;
     uint32_t er_cnt;
-
-    uint8_t *ptr_tmp;
 } DataPipeObj_TypeDef;
 #pragma pack()
 
@@ -51,6 +49,8 @@ bool DataPipe_DealError(void);
 
 extern DataPipeObj_TypeDef IMU_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_Log_DataPipe;
-extern DataPipeObj_TypeDef IMU_Ptl_DataPipe;
+
+extern DataPipeObj_TypeDef Receiver_Smp_DataPipe;
+extern DataPipeObj_TypeDef Receiver_Ctl_DataPipe;
 
 #endif

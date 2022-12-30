@@ -10,7 +10,6 @@
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
 
 /* internal var */
-DataPipeObj_TypeDef IMU_Smp_DataPipe;
 static Task_SensorInertial_State TaskInertial_State = Task_SensorInertial_Core;
 static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
 static SrvIMU_UnionData_TypeDef PriIMU_Data __attribute__((section(".Perph_Section")));

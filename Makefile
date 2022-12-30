@@ -67,6 +67,7 @@ DataStructure/binary_tree.c \
 Common/reboot.c \
 Common/error_log.c \
 System/DataPipe/DataPipe.c \
+System/DataPipe/DataPipe_Def.c \
 System/mmu/mmu.c \
 System/scheduler/scheduler.c \
 System/kernel/kernel.c \
