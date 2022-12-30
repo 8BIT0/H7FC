@@ -18,6 +18,7 @@ static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_RCInput_TypeDef RC_Setting;
 static DataPipeObj_TypeDef Receiver_Smp_DataPipe;
 static bool RCData_To_Configuretor = false;
+DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
 
 /* internal funciotn */
 static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
