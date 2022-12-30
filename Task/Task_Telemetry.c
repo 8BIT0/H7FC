@@ -174,7 +174,7 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     case Telemetry_RC_Yaw:
         RC_Input_obj->Gimbal[tag].combo_cnt = 1;
         List_ItemInit(&(RC_Input_obj->Gimbal[tag].combo_list), channel_set);
-        break;
+        return true;
 
     default:
         return false;
