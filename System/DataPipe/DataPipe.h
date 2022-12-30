@@ -10,6 +10,8 @@ typedef void (*Pipe_TransError_Callback)(void *pipe_obj);
 typedef void (*Pipe_TimeOutProc_Callback)(void *pipe_obj);
 
 #define DataPipeHandleToObj(x) ((DataPipeObj_TypeDef *)x)
+#define DataPipe_CreateDataObj(type, name) static type name##_##PipeDataObj __attribute__((section(".Perph_Section")))
+#define DataPipe_DataObj(name) name##_##PipeDataObj
 
 typedef enum
 {
