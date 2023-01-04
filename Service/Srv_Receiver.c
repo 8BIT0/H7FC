@@ -7,7 +7,7 @@
 #include "runtime.h"
 #include "mmu.h"
 
-static uint8_t SrvReceiver_Buff[SRV_RECEIVER_BUFF_SIZE];
+static uint8_t SrvReceiver_Buff[SRV_RECEIVER_BUFF_SIZE] __attribute__((section(".Perph_Section")));
 
 static Error_Handler SrvReceiver_Error_Handle = NULL;
 static SrvReceiver_Monitor_TypeDef SrvReceiver_Monitor;
@@ -145,7 +145,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
     switch (obj->port_type)
     {
     case Receiver_Port_Serial:
-        Uart_Receiver_Obj = port_obj;
+        Uart_Receiver_Obj = (BspUARTObj_TypeDef *)port_obj;
 
         memset(&SrvReceiver_Monitor, NULL, SRVRECEIVER_SIZE);
 

@@ -57,12 +57,10 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
     rx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 
     if ((obj == NULL) ||
-        (obj->hdl.Instance == NULL) ||
-        (obj->tx_dma_hdl.Instance == NULL) ||
-        (obj->rx_dma_hdl.Instance == NULL))
+        (obj->instance == NULL))
         return BspUart_Clock_Error;
 
-    if (obj->hdl.Instance == UART4)
+    if (obj->instance == UART4)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART4;
         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
@@ -78,7 +76,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         irqn = UART4_IRQn;
         index = BspUART_Port_4;
     }
-    else if (obj->hdl.Instance == USART6)
+    else if (obj->instance == USART6)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART6;
         PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
@@ -94,7 +92,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         irqn = USART6_IRQn;
         index = BspUART_Port_6;
     }
-    else if (obj->hdl.Instance == UART7)
+    else if (obj->instance == UART7)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART7;
         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
@@ -117,22 +115,22 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
     obj->rx_dma_hdl = rx_dma_cfg;
 
     if (!BspDMA.regist(obj->rx_dma, obj->rx_stream, &(obj->rx_dma_hdl)) ||
-        !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->rx_dma_hdl)))
+        !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl)))
         return BspUart_Clock_Error;
 
     /* rx tx pin init */
     BspGPIO.alt_init(obj->rx_io);
     BspGPIO.alt_init(obj->tx_io);
 
-    if (HAL_DMA_Init(&rx_dma_cfg) != HAL_OK)
+    if (HAL_DMA_Init(&(obj->rx_dma_hdl)) != HAL_OK)
         return BspUart_Clock_Error;
 
-    __HAL_LINKDMA(&(obj->hdl), hdmarx, rx_dma_cfg);
+    __HAL_LINKDMA(&(obj->hdl), hdmarx, obj->rx_dma_hdl);
 
-    if (HAL_DMA_Init(&tx_dma_cfg) != HAL_OK)
+    if (HAL_DMA_Init(&(obj->rx_dma_hdl)) != HAL_OK)
         return BspUart_Clock_Error;
 
-    __HAL_LINKDMA(&(obj->hdl), hdmatx, tx_dma_cfg);
+    __HAL_LINKDMA(&(obj->hdl), hdmatx, obj->tx_dma_hdl);
 
     HAL_NVIC_SetPriority(irqn, 0, 0);
     HAL_NVIC_EnableIRQ(irqn);
