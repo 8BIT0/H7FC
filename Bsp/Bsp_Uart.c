@@ -47,7 +47,6 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
     tx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     tx_dma_cfg.Init.Direction = DMA_MEMORY_TO_PERIPH;
 
-    rx_dma_cfg.Init.Direction = DMA_PERIPH_TO_MEMORY;
     rx_dma_cfg.Init.PeriphInc = DMA_PINC_DISABLE;
     rx_dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
     rx_dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
@@ -55,6 +54,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
     rx_dma_cfg.Init.Mode = DMA_NORMAL;
     rx_dma_cfg.Init.Priority = DMA_PRIORITY_MEDIUM;
     rx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    rx_dma_cfg.Init.Direction = DMA_PERIPH_TO_MEMORY;
 
     if ((obj == NULL) ||
         (obj->instance == NULL))
