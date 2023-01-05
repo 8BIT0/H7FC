@@ -127,7 +127,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 
     __HAL_LINKDMA(&(obj->hdl), hdmarx, obj->rx_dma_hdl);
 
-    if (HAL_DMA_Init(&(obj->rx_dma_hdl)) != HAL_OK)
+    if (HAL_DMA_Init(&(obj->tx_dma_hdl)) != HAL_OK)
         return BspUart_Clock_Error;
 
     __HAL_LINKDMA(&(obj->hdl), hdmatx, obj->tx_dma_hdl);
