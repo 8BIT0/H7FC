@@ -91,7 +91,7 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
     obj->frame.frame_size = p_data[1];
     obj->frame.type = p_data[2];
 
-    if (obj->frame.frame_size > CRSF_FRAME_SIZE_MAX)
+    if ((obj->frame.frame_size == 0) || (obj->frame.frame_size > CRSF_FRAME_SIZE_MAX))
         return false;
 
     memcpy(obj->frame.data, p_data + 3, len - 3);
@@ -145,10 +145,10 @@ static crsf_channels_t DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj)
     crsf_channels_t channel;
 
     memset(&channel, 0, sizeof(channel));
-    
-    if(obj)
+
+    if (obj)
         memcpy(&channel, &obj->channel, sizeof(crsf_channels_t));
-    
+
     return channel;
 }
 
@@ -158,7 +158,7 @@ static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj)
 
     memset(&statistics, 0, sizeof(crsf_LinkStatistics_t));
 
-    if(obj)
+    if (obj)
         memcpy(&statistics, &obj->statistics, sizeof(crsf_LinkStatistics_t));
 
     return statistics;
