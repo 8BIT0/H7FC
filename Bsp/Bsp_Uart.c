@@ -219,9 +219,17 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 
     obj->hdl = uart_cfg;
 
-    if (HAL_UART_Init(&obj->hdl) != HAL_OK ||
-        BspUart_Init_DMA(obj) < 0 ||
-        HAL_UARTEx_SetTxFifoThreshold(&uart_cfg, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK ||
+    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+        return false;
+
+    if (BspUart_Init_DMA(obj) < 0)
+    {
+        obj->irq_type = BspUart_IRQ_Type_Byte;
+    }
+    else
+        obj->irq_type = BspUart_IRQ_Type_Idle;
+
+    if (HAL_UARTEx_SetTxFifoThreshold(&uart_cfg, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK ||
         HAL_UARTEx_SetRxFifoThreshold(&uart_cfg, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK ||
         HAL_UARTEx_DisableFifoMode(&uart_cfg) != HAL_OK)
         return false;
@@ -236,15 +244,29 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     memset(&(obj->monitor), NULL, sizeof(obj->monitor));
 
     /* enable irq callback */
-    __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_IDLE);
+    switch (obj->irq_type)
+    {
+    case BspUart_IRQ_Type_Idle:
+        __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_IDLE);
+        break;
+
+    case BspUart_IRQ_Type_Byte:
+        __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_RXNE);
+        break;
+
+    default:
+        return false;
+    }
+
     __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_ERR);
     __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_PE);
 
     if (BspUart_SetIRQ(obj) < 0)
         return false;
 
-    /* start receive data */
-    HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
+    if (obj->irq_type == BspUart_IRQ_Type_Idle)
+        /* start receive data */
+        HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
 
     obj->init_state = true;
     return true;
@@ -391,6 +413,18 @@ static void BSP_UART_DMAStopRx(BspUART_Port_List index)
 }
 
 /******************************** irq callback ***********************************/
+void UART_Rx_Callback(BspUART_Port_List index)
+{
+    static UART_HandleTypeDef *hdl = NULL;
+
+    if (BspUart_Obj_List[index])
+    {
+        hdl = &(BspUart_Obj_List[index]->hdl);
+    }
+    else
+        return;
+}
+
 void UART_Idle_Callback(BspUART_Port_List index)
 {
     static UART_HandleTypeDef *hdl = NULL;
