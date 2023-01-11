@@ -21,6 +21,13 @@ typedef enum
 
 typedef enum
 {
+    BspUart_IRQ_Type_None = 0,
+    BspUart_IRQ_Type_Idle,
+    BspUart_IRQ_Type_Byte,
+} BsuUart_IRQ_Type_List;
+
+typedef enum
+{
     BspUART_Port_4 = 0,
     BspUART_Port_6,
     BspUART_Port_7,
@@ -72,6 +79,8 @@ typedef struct
     bool send_finish;
 
     bool init_state;
+
+    BsuUart_IRQ_Type_List irq_type;
 
     BspUart_MonitorObj_TypeDef monitor;
 } BspUARTObj_TypeDef;
