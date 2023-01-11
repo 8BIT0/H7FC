@@ -7,6 +7,7 @@
 
 typedef enum
 {
+    Bsp_DMA_None = -1,
     Bsp_DMA_1 = 0,
     Bsp_DMA_2,
     Bsp_DMA_Sum,
@@ -14,6 +15,7 @@ typedef enum
 
 typedef enum
 {
+    Bsp_DMA_Stream_None = -1,
     Bsp_DMA_Stream_0 = 0,
     Bsp_DMA_Stream_1,
     Bsp_DMA_Stream_2,
