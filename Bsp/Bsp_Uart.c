@@ -420,6 +420,14 @@ void UART_Rx_Callback(BspUART_Port_List index)
     if (BspUart_Obj_List[index])
     {
         hdl = &(BspUart_Obj_List[index]->hdl);
+
+        uint32_t isrflags = READ_REG(hdl->Instance->ISR);
+        uint32_t cr1its = READ_REG(hdl->Instance->CR1);
+        const HAL_UART_StateTypeDef rxstate = hdl->RxState;
+
+        if ((RESET != (isrflags & USART_ISR_RXNE_RXFNE)) && (RESET != (cr1its & USART_CR1_RXNEIE_RXFNEIE)))
+        {
+        }
     }
     else
         return;
