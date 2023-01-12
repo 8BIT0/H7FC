@@ -73,6 +73,8 @@ typedef struct
     uint8_t *rx_buf;
     uint16_t rx_size;
 
+    uint8_t rx_single_byte;
+
     uint32_t cust_data_addr;
 
     bool wait_till_send_finish;
