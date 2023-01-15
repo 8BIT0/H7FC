@@ -125,7 +125,7 @@ typedef enum
 typedef struct
 {
     crsf_addr_list addr;
-    uint16_t length; // counts size after this byte, so it must be the payload size + 2 (type and crc)
+    uint8_t length; // counts size after this byte, so it must be the payload size + 2 (type and crc)
     crsf_frame_type_list type;
     uint8_t data[CRSF_PAYLOAD_SIZE_MAX + 1]; // we might need a union sturture to subtitude this buff
 } crsf_frame_t;
