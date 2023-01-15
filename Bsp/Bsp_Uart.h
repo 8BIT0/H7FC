@@ -98,7 +98,7 @@ typedef struct
     bool (*send)(BspUARTObj_TypeDef *obj, uint8_t *tx, uint32_t size);
 } BspUART_TypeDef;
 
-void UART_Idle_Callback(BspUART_Port_List index);
+void UART_IRQ_Callback(BspUART_Port_List index);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
 UART_HandleTypeDef *BspUart_GetObj_Handle(BspUART_Port_List index);

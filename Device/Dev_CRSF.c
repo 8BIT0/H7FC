@@ -32,10 +32,11 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj);
 static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
 static crsf_channels_t DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj);
 static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj);
+static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg);
 
 DevCRSF_TypeDef DevCRSF = {
     .init = DevCrsf_Init,
-    .decode = DevCRSF_Decode,
+    .decode = DevCRSF_FIFO_In,
     .get_channel = DevCRSF_Get_Channel,
     .get_statistics = DevCESF_Get_Statistics,
 };
@@ -74,9 +75,83 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
         return false;
 
     memset(obj, 0, sizeof(DevCRSFObj_TypeDef));
+
     obj->state = CRSF_State_LinkDown;
+    obj->frame.stage = CRSF_Rec_Stage_Header;
+    obj->frame.payload_size = 0;
 
     return true;
+}
+
+static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg)
+{
+    if (obj)
+    {
+        if ((obj->frame.stage == CRSF_Rec_Stage_Header) && (CRSF_ADDRESS_FLIGHT_CONTROLLER == *p_data))
+        {
+            obj->frame.device_addr = *p_data;
+            obj->frame.stage = CRSF_Rec_Stage_Size;
+        }
+        else
+        {
+            switch (obj->frame.stage)
+            {
+            case CRSF_Rec_Stage_Size:
+                obj->frame.frame_size = *p_data;
+                if (obj->frame.payload_size >= CRSF_FRAME_SIZE_MAX)
+                {
+                    obj->frame.payload_size = 0;
+                    obj->frame.stage = CRSF_Rec_Stage_Header;
+                    break;
+                }
+
+                obj->frame.stage = CRSF_Rec_Stage_Type;
+                break;
+
+            case CRSF_Rec_Stage_Type:
+                if ((CRSF_FRAMETYPE_LINK_STATISTICS == *p_data) ||
+                    (CRSF_FRAMETYPE_RC_CHANNELS_PACKED == *p_data))
+                {
+                    obj->frame.type = *p_data;
+                    obj->frame.stage = CRSF_Rec_Stage_Payload;
+
+                    obj->frame.data[0] = obj->frame.type;
+                    obj->frame.payload_size = 1;
+                }
+                else
+                {
+                    obj->frame.payload_size = 0;
+                    obj->frame.stage = CRSF_Rec_Stage_Header;
+                    break;
+                }
+                break;
+
+            default:
+                if (obj->frame.frame_size >= obj->frame.payload_size)
+                {
+                    obj->frame.data[obj->frame.payload_size] = *p_data;
+
+                    if (obj->frame.frame_size && (obj->frame.frame_size == obj->frame.payload_size))
+                    {
+                        /* decode data */
+                        DevCRSF_Decode(obj, obj->frame.data, obj->frame.payload_size);
+                        obj->frame.payload_size = 0;
+                        obj->frame.stage = CRSF_Rec_Stage_Header;
+                    }
+                    else
+                        obj->frame.payload_size++;
+                }
+                else
+                {
+                    obj->frame.payload_size = 0;
+                    obj->frame.stage = CRSF_Rec_Stage_Header;
+                }
+                break;
+            }
+        }
+    }
+
+    return 0;
 }
 
 /* serial receiver receive callback */
@@ -87,27 +162,15 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
     if ((obj == NULL) || (p_data == NULL) || (len <= 3))
         return false;
 
-    obj->frame.device_addr = p_data[0];
-    obj->frame.frame_size = p_data[1];
-    obj->frame.type = p_data[2];
-
     if ((obj->frame.frame_size == 0) || (obj->frame.frame_size > CRSF_FRAME_SIZE_MAX))
         return false;
 
-    memcpy(obj->frame.data, p_data + 3, len - 3);
-
     /* check crc first */
-    if (crsf_crc8(&p_data[3], obj->frame.frame_size - 1) == p_data[len - 1])
+    if (crsf_crc8(p_data, obj->frame.frame_size) == obj->frame.data[obj->frame.payload_size - 1])
     {
         /* check frame type */
         switch (obj->frame.type)
         {
-        case CRSF_FRAMETYPE_GPS:
-            break;
-
-        case CRSF_FRAMETYPE_BATTERY_SENSOR:
-            break;
-
         case CRSF_FRAMETYPE_LINK_STATISTICS:
             if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr) &&
                 ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->frame.frame_size))

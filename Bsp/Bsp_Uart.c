@@ -420,48 +420,60 @@ static void BSP_UART_DMAStopRx(BspUART_Port_List index)
 }
 
 /******************************** irq callback ***********************************/
-void UART_Idle_Callback(BspUART_Port_List index)
+void UART_IRQ_Callback(BspUART_Port_List index)
 {
     static UART_HandleTypeDef *hdl = NULL;
     static DMA_HandleTypeDef *rx_dma = NULL;
     uint16_t len = 0;
+    uint32_t isrflags = 0;
+    uint32_t cr1its = 0;
+    uint32_t errorflags = 0;
+    uint32_t cr3its = 0;
 
-    if (BspUart_Obj_List[index] && 
-        (BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Idle))
+    if (BspUart_Obj_List[index])
     {
         hdl = &(BspUart_Obj_List[index]->hdl);
-        rx_dma = &(BspUart_Obj_List[index]->rx_dma_hdl);
+        isrflags = READ_REG(hdl->Instance->ISR);
+        cr1its = READ_REG(hdl->Instance->CR1);
+        cr3its = READ_REG(hdl->Instance->CR3);
+        errorflags = (isrflags & (uint32_t)(USART_ISR_PE | USART_ISR_FE | USART_ISR_ORE | USART_ISR_NE | USART_ISR_RTOF));
 
-        if (hdl && rx_dma)
+        if (errorflags != 0)
+            return;
+
+        if (BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Idle)
         {
-            uint32_t isrflags = READ_REG(hdl->Instance->ISR);
-            uint32_t cr1its = READ_REG(hdl->Instance->CR1);
-            const HAL_UART_StateTypeDef rxstate = hdl->RxState;
+            rx_dma = &(BspUart_Obj_List[index]->rx_dma_hdl);
 
-            if ((RESET != (isrflags & USART_ISR_IDLE)) && (RESET != (cr1its & USART_CR1_IDLEIE)))
+            if (hdl && rx_dma)
             {
-                __HAL_UART_CLEAR_IDLEFLAG(hdl);
+                const HAL_UART_StateTypeDef rxstate = hdl->RxState;
 
-                BSP_UART_DMAStopRx(index);
-
-                len = BspUart_Obj_List[index]->rx_size - __HAL_DMA_GET_COUNTER(rx_dma);
-
-                if (len)
+                if ((RESET != (isrflags & USART_ISR_IDLE)) && (RESET != (cr1its & USART_CR1_IDLEIE)))
                 {
-                    /* idle receive callback process */
-                    if (BspUart_Obj_List[index]->RxCallback)
-                        BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
-                                                            BspUart_Obj_List[index]->rx_buf,
-                                                            len);
+                    __HAL_UART_CLEAR_IDLEFLAG(hdl);
 
-                    BspUart_Obj_List[index]->monitor.rx_cnt++;
-                    HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
-                }
-                else
-                {
-                    BspUart_Obj_List[index]->monitor.rx_err_cnt++;
-                    READ_REG(hdl->Instance->RDR);
-                    __HAL_UART_CLEAR_OREFLAG(hdl);
+                    BSP_UART_DMAStopRx(index);
+
+                    len = BspUart_Obj_List[index]->rx_size - __HAL_DMA_GET_COUNTER(rx_dma);
+
+                    if (len)
+                    {
+                        /* idle receive callback process */
+                        if (BspUart_Obj_List[index]->RxCallback)
+                            BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
+                                                                BspUart_Obj_List[index]->rx_buf,
+                                                                len);
+
+                        BspUart_Obj_List[index]->monitor.rx_cnt++;
+                        HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
+                    }
+                    else
+                    {
+                        BspUart_Obj_List[index]->monitor.rx_err_cnt++;
+                        READ_REG(hdl->Instance->RDR);
+                        __HAL_UART_CLEAR_OREFLAG(hdl);
+                    }
                 }
             }
         }
@@ -490,7 +502,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
     if (BspUart_Obj_List[index])
     {
-        if(BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Idle)
+        if (BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Idle)
         {
             if (BspUart_Obj_List[index]->RxCallback)
                 BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
@@ -501,12 +513,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
             BspUart_Obj_List[index]->monitor.rx_full_cnt++;
         }
-        else if(BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Byte)
+        else if (BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Byte)
         {
-            if ((HAL_UART_GetState(&(BspUart_Obj_List[index]->hdl)) == HAL_UART_STATE_READY) && 
-                (HAL_UART_Receive_IT(&(BspUart_Obj_List[index]->hdl), &BspUart_Obj_List[index]->rx_single_byte, 1) == HAL_OK))
+            if (HAL_UART_GetState(&(BspUart_Obj_List[index]->hdl) == HAL_UART_STATE_READY))
             {
-                /* process receive data */
+                if (BspUart_Obj_List[index]->RxCallback)
+                    BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr, BspUart_Obj_List[index]->rx_single_byte, 1);
+
+                HAL_UART_Receive_IT(&(BspUart_Obj_List[index]->hdl), &BspUart_Obj_List[index]->rx_single_byte, 1);
             }
         }
     }

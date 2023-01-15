@@ -10,10 +10,11 @@ typedef void (*CRSF_Callback)(uint8_t *ptr, uint16_t size);
 #define CRSF_BAUDRATE 420000
 
 #define CRSF_LINK_STATUS_UPDATE_TIMEOUT_US 250000
-
 // Basic setup
 #define CRSF_MAX_CHANNEL 16
 #define CRSF_FRAME_SIZE_MAX 64
+
+#define CRSF_PAYLOAD_SIZE_MAX (CRSF_FRAME_SIZE_MAX - 6)
 
 // Device address & type
 #define RADIO_ADDRESS 0xEA
@@ -110,14 +111,30 @@ typedef enum
     CRSF_State_TimeOut,
 } crsf_state_list;
 
+typedef enum
+{
+    CRSF_Rec_Stage_Header = 0,
+    CRSF_Rec_Stage_Size,
+    CRSF_Rec_Stage_Type,
+    CRSF_Rec_Stage_Payload,
+    CRSF_Rec_Stage_CRC,
+} crsf_recv_stage;
+
 #pragma pack(1)
+
 typedef struct
 {
-    crsf_addr_list device_addr;
-    uint8_t frame_size; // counts size after this byte, so it must be the payload size + 2 (type and crc)
+    crsf_addr_list addr;
+    uint16_t length; // counts size after this byte, so it must be the payload size + 2 (type and crc)
     crsf_frame_type_list type;
-    uint8_t data[CRSF_FRAME_SIZE_MAX]; // we might need a union sturture to subtitude this buff
+    uint8_t data[CRSF_PAYLOAD_SIZE_MAX + 1]; // we might need a union sturture to subtitude this buff
 } crsf_frame_t;
+
+typedef union
+{
+    uint8_t buff[CRSF_FRAME_SIZE_MAX];
+    crsf_frame_t u_frame;
+} crsf_drame_union_TypeDef;
 
 typedef struct
 {
