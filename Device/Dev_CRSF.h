@@ -110,16 +110,6 @@ typedef enum
     CRSF_State_LinkDown,
     CRSF_State_TimeOut,
 } crsf_state_list;
-
-typedef enum
-{
-    CRSF_Rec_Stage_Header = 0,
-    CRSF_Rec_Stage_Size,
-    CRSF_Rec_Stage_Type,
-    CRSF_Rec_Stage_Payload,
-    CRSF_Rec_Stage_CRC,
-} crsf_recv_stage;
-
 #pragma pack(1)
 
 typedef struct
@@ -181,7 +171,9 @@ typedef struct
 
 typedef struct
 {
-    crsf_frame_t frame;
+    crsf_drame_union_TypeDef frame;
+    uint8_t rec_cnt;
+
     crsf_state_list state;
     crsf_channels_t channel;
     crsf_LinkStatistics_t statistics;

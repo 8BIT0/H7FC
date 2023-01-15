@@ -77,8 +77,7 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
     memset(obj, 0, sizeof(DevCRSFObj_TypeDef));
 
     obj->state = CRSF_State_LinkDown;
-    obj->frame.stage = CRSF_Rec_Stage_Header;
-    obj->frame.payload_size = 0;
+    obj->rec_cnt = 0;
 
     return true;
 }
@@ -87,71 +86,7 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
 {
     if (obj)
     {
-        if ((obj->frame.stage == CRSF_Rec_Stage_Header) && (CRSF_ADDRESS_FLIGHT_CONTROLLER == *p_data))
-        {
-            obj->frame.device_addr = *p_data;
-            obj->frame.stage = CRSF_Rec_Stage_Size;
-        }
-        else
-        {
-            switch (obj->frame.stage)
-            {
-            case CRSF_Rec_Stage_Size:
-                obj->frame.frame_size = *p_data;
-                if (obj->frame.payload_size >= CRSF_FRAME_SIZE_MAX)
-                {
-                    obj->frame.payload_size = 0;
-                    obj->frame.stage = CRSF_Rec_Stage_Header;
-                    break;
-                }
-
-                obj->frame.stage = CRSF_Rec_Stage_Type;
-                break;
-
-            case CRSF_Rec_Stage_Type:
-                if ((CRSF_FRAMETYPE_LINK_STATISTICS == *p_data) ||
-                    (CRSF_FRAMETYPE_RC_CHANNELS_PACKED == *p_data))
-                {
-                    obj->frame.type = *p_data;
-                    obj->frame.stage = CRSF_Rec_Stage_Payload;
-
-                    obj->frame.data[0] = obj->frame.type;
-                    obj->frame.payload_size = 1;
-                }
-                else
-                {
-                    obj->frame.payload_size = 0;
-                    obj->frame.stage = CRSF_Rec_Stage_Header;
-                    break;
-                }
-                break;
-
-            default:
-                if (obj->frame.frame_size >= obj->frame.payload_size)
-                {
-                    obj->frame.data[obj->frame.payload_size] = *p_data;
-
-                    if (obj->frame.frame_size && (obj->frame.frame_size == obj->frame.payload_size))
-                    {
-                        /* decode data */
-                        DevCRSF_Decode(obj, obj->frame.data, obj->frame.payload_size);
-                        obj->frame.payload_size = 0;
-                        obj->frame.stage = CRSF_Rec_Stage_Header;
-                    }
-                    else
-                        obj->frame.payload_size++;
-                }
-                else
-                {
-                    obj->frame.payload_size = 0;
-                    obj->frame.stage = CRSF_Rec_Stage_Header;
-                }
-                break;
-            }
-        }
     }
-
-    return 0;
 }
 
 /* serial receiver receive callback */
@@ -159,46 +94,46 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
 {
     uint8_t frame_size = 0;
 
-    if ((obj == NULL) || (p_data == NULL) || (len <= 3))
-        return false;
+    // if ((obj == NULL) || (p_data == NULL) || (len <= 3))
+    //     return false;
 
-    if ((obj->frame.frame_size == 0) || (obj->frame.frame_size > CRSF_FRAME_SIZE_MAX))
-        return false;
+    // if ((obj->frame.frame_size == 0) || (obj->frame.frame_size > CRSF_FRAME_SIZE_MAX))
+    //     return false;
 
-    /* check crc first */
-    if (crsf_crc8(p_data, obj->frame.frame_size) == obj->frame.data[obj->frame.payload_size - 1])
-    {
-        /* check frame type */
-        switch (obj->frame.type)
-        {
-        case CRSF_FRAMETYPE_LINK_STATISTICS:
-            if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr) &&
-                ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->frame.frame_size))
-            {
-                const crsf_LinkStatistics_t *stats = (const crsf_LinkStatistics_t *)&(obj->frame.data);
-                memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
-                obj->state = CRSF_State_LinkUp;
+    // /* check crc first */
+    // if (crsf_crc8(p_data, obj->frame.frame_size) == obj->frame.data[obj->frame.payload_size - 1])
+    // {
+    //     /* check frame type */
+    //     switch (obj->frame.type)
+    //     {
+    //     case CRSF_FRAMETYPE_LINK_STATISTICS:
+    //         if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr) &&
+    //             ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->frame.frame_size))
+    //         {
+    //             const crsf_LinkStatistics_t *stats = (const crsf_LinkStatistics_t *)&(obj->frame.data);
+    //             memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
+    //             obj->state = CRSF_State_LinkUp;
 
-                return CRSF_FRAMETYPE_LINK_STATISTICS;
-            }
-            break;
+    //             return CRSF_FRAMETYPE_LINK_STATISTICS;
+    //         }
+    //         break;
 
-        case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
-            if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr)
-            {
-                memset(&obj->channel, 0, sizeof(obj->channel));
-                const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)&(obj->frame.data);
-                memcpy(&obj->channel, channel_val_ptr, sizeof(crsf_channels_t));
-                obj->state = CRSF_State_LinkUp;
+    //     case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+    //         if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr)
+    //         {
+    //             memset(&obj->channel, 0, sizeof(obj->channel));
+    //             const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)&(obj->frame.data);
+    //             memcpy(&obj->channel, channel_val_ptr, sizeof(crsf_channels_t));
+    //             obj->state = CRSF_State_LinkUp;
 
-                return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
-            }
-            break;
+    //             return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
+    //         }
+    //         break;
 
-        default:
-            return CRSF_DECODE_ERROR;
-        }
-    }
+    //     default:
+    //         return CRSF_DECODE_ERROR;
+    //     }
+    // }
 
     return CRSF_DECODE_ERROR;
 }
