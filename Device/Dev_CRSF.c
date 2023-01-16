@@ -117,6 +117,9 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
             break;
 
         case CRSF_Stage_Type:
+            obj->frame.buff[obj->rec_cnt] = *p_data;
+            obj->rec_cnt++;
+            obj->rec_stage = CRSF_Stage_Payload;
             break;
         }
     }
