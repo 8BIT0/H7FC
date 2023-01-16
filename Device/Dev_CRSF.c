@@ -78,6 +78,7 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
 
     obj->state = CRSF_State_LinkDown;
     obj->rec_cnt = 0;
+    obj->rec_stage = CRSF_Stage_Header;
 
     return true;
 }
@@ -86,6 +87,31 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
 {
     if (obj)
     {
+        switch ((uint8_t)(obj->rec_stage))
+        {
+        case CRSF_Stage_Header:
+            if (*p_data == CRSF_ADDRESS_FLIGHT_CONTROLLER)
+            {
+                obj->rec_stage = CRSF_Stage_Size;
+
+                obj->frame.buff[obj->rec_cnt] = *p_data;
+                obj->rec_cnt++;
+            }
+            else
+                obj->rec_cnt = 0;
+            break;
+
+        case CRSF_Stage_Size:
+            if (*p_data <= CRSF_PAYLOAD_SIZE_MAX)
+            {
+            }
+            else
+            {
+                obj->rec_cnt = 0;
+                obj->rec_stage = CRSF_Stage_Header;
+            }
+            break;
+        }
     }
 }
 

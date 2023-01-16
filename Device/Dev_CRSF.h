@@ -155,6 +155,15 @@ typedef struct
 } crsf_sensor_battery_t;
 #pragma pack()
 
+typedef enum
+{
+    CRSF_Stage_Header = 0,
+    CRSF_Stage_Size,
+    CRSF_Stage_Type,
+    CRSF_Stage_Payload,
+    CRSF_Stage_CRC,
+} crsf_Rec_Stage_List;
+
 typedef struct
 {
     uint8_t uplink_RSSI_1;
@@ -173,6 +182,7 @@ typedef struct
 {
     crsf_drame_union_TypeDef frame;
     uint8_t rec_cnt;
+    crsf_Rec_Stage_List rec_stage;
 
     crsf_state_list state;
     crsf_channels_t channel;
