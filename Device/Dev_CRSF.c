@@ -104,12 +104,19 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
         case CRSF_Stage_Size:
             if (*p_data <= CRSF_PAYLOAD_SIZE_MAX)
             {
+                obj->rec_stage = CRSF_Stage_Type;
+
+                obj->frame.buff[obj->rec_cnt] = *p_data;
+                obj->rec_cnt++;
             }
             else
             {
                 obj->rec_cnt = 0;
                 obj->rec_stage = CRSF_Stage_Header;
             }
+            break;
+
+        case CRSF_Stage_Type:
             break;
         }
     }
