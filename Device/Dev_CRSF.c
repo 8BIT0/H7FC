@@ -203,6 +203,7 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
             break;
 
         default:
+            obj->channel_update = false;
             return CRSF_DECODE_ERROR;
         }
     }
