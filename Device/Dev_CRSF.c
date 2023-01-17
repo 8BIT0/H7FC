@@ -85,6 +85,8 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
 
 static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg)
 {
+    uint8_t decode_state = 0;
+
     if (obj)
     {
         switch ((uint8_t)(obj->rec_stage))
@@ -94,8 +96,7 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
             {
                 obj->rec_stage = CRSF_Stage_Size;
 
-                obj->frame.buff[obj->rec_cnt] = *p_data;
-                obj->rec_cnt++;
+                obj->frame.u_frame.addr = *p_data;
             }
             else
                 obj->rec_cnt = 0;
@@ -106,8 +107,8 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
             {
                 obj->rec_stage = CRSF_Stage_Type;
 
-                obj->frame.buff[obj->rec_cnt] = *p_data;
-                obj->rec_cnt++;
+                obj->frame.u_frame.length = *p_data;
+                obj->rec_cnt = 0;
             }
             else
             {
@@ -117,9 +118,28 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
             break;
 
         case CRSF_Stage_Type:
+            obj->frame.u_frame.type = *p_data;
             obj->frame.buff[obj->rec_cnt] = *p_data;
             obj->rec_cnt++;
             obj->rec_stage = CRSF_Stage_Payload;
+            break;
+
+        case CRSF_Stage_Payload:
+            if(obj->rec_cnt < obj->frame.u_frame.length)
+            {
+                obj->frame.buff[obj->rec_cnt] = *p_data;
+                obj->rec_cnt++;
+
+                if(obj->rec_cnt == obj->frame.u_frame.length)
+                {
+                    decode_state = DevCRSF_Decode(obj, obj->frame.buff, obj->frame.u_frame.length);
+
+                    obj->rec_stage = CRSF_Stage_Header;
+                    obj->rec_cnt = 0;
+
+                    memset(&obj->frame, NULL, sizeof(obj->frame));
+                }
+            }
             break;
         }
     }
@@ -130,15 +150,12 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
 {
     uint8_t frame_size = 0;
 
-    // if ((obj == NULL) || (p_data == NULL) || (len <= 3))
-    //     return false;
+    if ((obj == NULL) || (obj->rec_cnt == 0) || (p_data == NULL) || (len <= 3))
+        return false;
 
-    // if ((obj->frame.frame_size == 0) || (obj->frame.frame_size > CRSF_FRAME_SIZE_MAX))
-    //     return false;
-
-    // /* check crc first */
-    // if (crsf_crc8(p_data, obj->frame.frame_size) == obj->frame.data[obj->frame.payload_size - 1])
-    // {
+    /* check crc first */
+    if (crsf_crc8(p_data, len) == obj->frame.u_frame.data[obj->rec_cnt - 1])
+    {
     //     /* check frame type */
     //     switch (obj->frame.type)
     //     {
@@ -169,7 +186,7 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
     //     default:
     //         return CRSF_DECODE_ERROR;
     //     }
-    // }
+    }
 
     return CRSF_DECODE_ERROR;
 }
