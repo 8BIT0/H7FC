@@ -176,9 +176,24 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
             if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr)
             {
-                memset(&obj->channel, 0, sizeof(obj->channel));
-                const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)&(obj->frame.data);
-                memcpy(&obj->channel, channel_val_ptr, sizeof(crsf_channels_t));
+                const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)(obj->frame.data + 1);
+                obj->channel[0] = channel_val_ptr->ch0;
+                obj->channel[1] = channel_val_ptr->ch1;
+                obj->channel[2] = channel_val_ptr->ch2;
+                obj->channel[3] = channel_val_ptr->ch3;
+                obj->channel[4] = channel_val_ptr->ch4;
+                obj->channel[5] = channel_val_ptr->ch5;
+                obj->channel[6] = channel_val_ptr->ch6;
+                obj->channel[7] = channel_val_ptr->ch7;
+                obj->channel[8] = channel_val_ptr->ch8;
+                obj->channel[9] = channel_val_ptr->ch9;
+                obj->channel[10] = channel_val_ptr->ch10;
+                obj->channel[11] = channel_val_ptr->ch11;
+                obj->channel[12] = channel_val_ptr->ch12;
+                obj->channel[13] = channel_val_ptr->ch13;
+                obj->channel[14] = channel_val_ptr->ch14;
+                obj->channel[15] = channel_val_ptr->ch15;
+
                 obj->state = CRSF_State_LinkUp;
 
                 return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;

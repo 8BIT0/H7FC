@@ -179,8 +179,9 @@ typedef struct
     crsf_Rec_Stage_List rec_stage;
 
     crsf_state_list state;
-    crsf_channels_t channel;
     crsf_LinkStatistics_t statistics;
+
+    uint16_t channel[16];
 } DevCRSFObj_TypeDef;
 
 typedef struct
