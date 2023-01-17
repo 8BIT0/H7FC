@@ -518,7 +518,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             if (HAL_UART_GetState(&(BspUart_Obj_List[index]->hdl) == HAL_UART_STATE_READY))
             {
                 if (BspUart_Obj_List[index]->RxCallback)
-                    BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr, BspUart_Obj_List[index]->rx_single_byte, 1);
+                    BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr, &BspUart_Obj_List[index]->rx_single_byte, 1);
 
                 HAL_UART_Receive_IT(&(BspUart_Obj_List[index]->hdl), &BspUart_Obj_List[index]->rx_single_byte, 1);
             }
