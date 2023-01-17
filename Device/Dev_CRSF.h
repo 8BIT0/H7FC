@@ -14,7 +14,7 @@ typedef void (*CRSF_Callback)(uint8_t *ptr, uint16_t size);
 #define CRSF_MAX_CHANNEL 16
 #define CRSF_FRAME_SIZE_MAX 64
 
-#define CRSF_PAYLOAD_SIZE_MAX (CRSF_FRAME_SIZE_MAX - 6)
+#define CRSF_PAYLOAD_SIZE_MAX (CRSF_FRAME_SIZE_MAX - 4)
 
 // Device address & type
 #define RADIO_ADDRESS 0xEA
@@ -120,12 +120,6 @@ typedef struct
     uint8_t data[CRSF_PAYLOAD_SIZE_MAX + 1];
 } crsf_frame_t;
 
-typedef union
-{
-    uint8_t buff[CRSF_FRAME_SIZE_MAX];
-    crsf_frame_t u_frame;
-} crsf_drame_union_TypeDef;
-
 typedef struct
 {
     unsigned ch0 : 11;
@@ -180,7 +174,7 @@ typedef struct
 
 typedef struct
 {
-    crsf_drame_union_TypeDef frame;
+    crsf_frame_t frame;
     uint8_t rec_cnt;
     crsf_Rec_Stage_List rec_stage;
 

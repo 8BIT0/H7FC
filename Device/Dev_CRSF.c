@@ -64,7 +64,7 @@ static uint8_t crsf_crc8(uint8_t *ptr, uint16_t len)
     uint8_t crc = 0;
     for (uint8_t i = 0; i < len; i++)
     {
-        crc = crsf_crc8tab[crc ^ *ptr++];
+        crc = crsf_crc8tab[crc ^ *(ptr++)];
     }
     return crc;
 }
@@ -83,6 +83,7 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
     return true;
 }
 
+crsf_frame_t test;
 static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg)
 {
     uint8_t decode_state = 0;
@@ -96,7 +97,7 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
             {
                 obj->rec_stage = CRSF_Stage_Size;
 
-                obj->frame.u_frame.addr = *p_data;
+                obj->frame.addr = *p_data;
             }
             else
                 obj->rec_cnt = 0;
@@ -107,7 +108,7 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
             {
                 obj->rec_stage = CRSF_Stage_Type;
 
-                obj->frame.u_frame.length = *p_data;
+                obj->frame.length = *p_data;
                 obj->rec_cnt = 0;
             }
             else
@@ -118,26 +119,27 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
             break;
 
         case CRSF_Stage_Type:
-            obj->frame.u_frame.type = *p_data;
-            obj->frame.buff[obj->rec_cnt] = *p_data;
+            obj->frame.type = *p_data;
+            obj->frame.data[obj->rec_cnt] = *p_data;
             obj->rec_cnt++;
             obj->rec_stage = CRSF_Stage_Payload;
             break;
 
         case CRSF_Stage_Payload:
-            if(obj->rec_cnt < obj->frame.u_frame.length)
+            if (obj->rec_cnt < obj->frame.length)
             {
-                obj->frame.buff[obj->rec_cnt] = *p_data;
+                obj->frame.data[obj->rec_cnt] = *p_data;
                 obj->rec_cnt++;
 
-                if(obj->rec_cnt == obj->frame.u_frame.length)
+                if (obj->rec_cnt == obj->frame.length)
                 {
-                    decode_state = DevCRSF_Decode(obj, obj->frame.buff, obj->frame.u_frame.length);
+                    decode_state = DevCRSF_Decode(obj, obj->frame.data, obj->frame.length);
+                    memcpy(&test, &obj->frame, sizeof(test));
 
                     obj->rec_stage = CRSF_Stage_Header;
                     obj->rec_cnt = 0;
 
-                    memset(&obj->frame, NULL, sizeof(obj->frame));
+                    memset(&obj->frame, 0, sizeof(obj->frame));
                 }
             }
             break;
@@ -154,38 +156,38 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
         return false;
 
     /* check crc first */
-    if (crsf_crc8(p_data, len) == obj->frame.u_frame.data[obj->rec_cnt - 1])
+    if (crsf_crc8(p_data, len - 1) == obj->frame.data[len - 1])
     {
-    //     /* check frame type */
-    //     switch (obj->frame.type)
-    //     {
-    //     case CRSF_FRAMETYPE_LINK_STATISTICS:
-    //         if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr) &&
-    //             ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->frame.frame_size))
-    //         {
-    //             const crsf_LinkStatistics_t *stats = (const crsf_LinkStatistics_t *)&(obj->frame.data);
-    //             memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
-    //             obj->state = CRSF_State_LinkUp;
+        /* check frame type */
+        switch (obj->frame.type)
+        {
+        case CRSF_FRAMETYPE_LINK_STATISTICS:
+            if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr) &&
+                ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->frame.length))
+            {
+                const crsf_LinkStatistics_t *stats = (const crsf_LinkStatistics_t *)&(obj->frame.data);
+                memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
+                obj->state = CRSF_State_LinkUp;
 
-    //             return CRSF_FRAMETYPE_LINK_STATISTICS;
-    //         }
-    //         break;
+                return CRSF_FRAMETYPE_LINK_STATISTICS;
+            }
+            break;
 
-    //     case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
-    //         if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.device_addr)
-    //         {
-    //             memset(&obj->channel, 0, sizeof(obj->channel));
-    //             const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)&(obj->frame.data);
-    //             memcpy(&obj->channel, channel_val_ptr, sizeof(crsf_channels_t));
-    //             obj->state = CRSF_State_LinkUp;
+        case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+            if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr)
+            {
+                memset(&obj->channel, 0, sizeof(obj->channel));
+                const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)&(obj->frame.data);
+                memcpy(&obj->channel, channel_val_ptr, sizeof(crsf_channels_t));
+                obj->state = CRSF_State_LinkUp;
 
-    //             return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
-    //         }
-    //         break;
+                return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
+            }
+            break;
 
-    //     default:
-    //         return CRSF_DECODE_ERROR;
-    //     }
+        default:
+            return CRSF_DECODE_ERROR;
+        }
     }
 
     return CRSF_DECODE_ERROR;
