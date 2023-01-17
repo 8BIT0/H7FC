@@ -79,6 +79,7 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
     obj->state = CRSF_State_LinkDown;
     obj->rec_cnt = 0;
     obj->rec_stage = CRSF_Stage_Header;
+    obj->channel_update = false;
 
     return true;
 }
@@ -195,6 +196,7 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
                 obj->channel[15] = channel_val_ptr->ch15;
 
                 obj->state = CRSF_State_LinkUp;
+                obj->channel_update = true;
 
                 return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
             }
