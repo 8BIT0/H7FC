@@ -15,9 +15,13 @@
 #define SYSCALL_INTERRUPT_PRIORITY (MAX_SYSCALL_INTERRUPT_PRIORITY << 4)
 
 #define RECEIVER_PORT UART4
-#define RECEIVER_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
-#define RECEIVER_RX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_4
-#define RECEIVER_TX_DMA Bsp_DMA_None               // Bsp_DMA_1
-#define RECEIVER_TX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_5
+#define RECEIVER_CRSF_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
+#define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_4
+#define RECEIVER_CRSF_TX_DMA Bsp_DMA_None               // Bsp_DMA_1
+#define RECEIVER_CRSF_TX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_5
+#define RECEIVER_SBUS_RX_DMA Bsp_DMA_1
+#define RECEIVER_SBUS_RX_DMA_STREAM Bsp_DMA_Stream_4
+#define RECEIVER_SBUS_TX_DMA Bsp_DMA_1
+#define RECEIVER_SBUS_TX_DMA_STREAM Bsp_DMA_Stream_5
 
 #endif

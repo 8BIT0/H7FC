@@ -13,6 +13,9 @@
 #define CRSF_TX_PIN Uart4_TxPin
 #define CRSF_RX_PIN Uart4_RxPin
 
+#define SBUS_TX_PIN Uart4_TxPin
+#define SBUS_RX_PIN Uart4_RxPin
+
 /* internal variable */
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_RCInput_TypeDef RC_Setting;
@@ -114,17 +117,28 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
     switch (receiver_obj->port_type)
     {
     case Receiver_Port_Serial:
-        port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
-                                                 RECEIVER_RX_DMA,
-                                                 RECEIVER_RX_DMA_STREAM,
-                                                 RECEIVER_TX_DMA,
-                                                 RECEIVER_TX_DMA_STREAM,
-                                                 false,
-                                                 CRSF_TX_PIN,
-                                                 CRSF_RX_PIN);
-
-        if (receiver_obj->Frame_type == Receiver_Type_Sbus)
+        if(receiver_obj->Frame_type == Receiver_Type_CRSF)
         {
+            port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
+                                                    RECEIVER_CRSF_RX_DMA,
+                                                    RECEIVER_CRSF_RX_DMA_STREAM,
+                                                    RECEIVER_CRSF_TX_DMA,
+                                                    RECEIVER_CRSF_TX_DMA_STREAM,
+                                                    false,
+                                                    CRSF_TX_PIN,
+                                                    CRSF_RX_PIN);
+        }
+        else if(receiver_obj->Frame_type == Receiver_Type_Sbus)
+        {
+            port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
+                                                    RECEIVER_SBUS_RX_DMA,
+                                                    RECEIVER_SBUS_RX_DMA_STREAM,
+                                                    RECEIVER_SBUS_TX_DMA,
+                                                    RECEIVER_SBUS_TX_DMA_STREAM,
+                                                    false,
+                                                    SBUS_TX_PIN,
+                                                    SBUS_RX_PIN);
+ 
             /* set inverter pin */
         }
         break;
