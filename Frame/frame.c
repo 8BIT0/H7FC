@@ -36,6 +36,14 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
                         frame_monitor.err_cnt++;
                         return Frame_Decode_HeartBeat_Error;
                     }
+                    
+                    payload = p_data + sizeof(Frame_Format_TypeDef);
+
+                    if(*((uint16_t *)(*payload)) != FRAME_HEARTBEAT_ENDER)
+                    {
+                        frame_monitor.err_cnt++;
+                        return Frame_Decode_HeartBeat_Error;
+                    }
                     break;
 
                 case Frame_Type_Receiver:

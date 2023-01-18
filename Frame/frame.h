@@ -9,6 +9,7 @@
 #define FRAEM_HEADER_2 0xFE
 
 #define FRAME_HEARTBEAT_SIZE 0
+#define FRAME_HEARTBEAT_ENDER 0xFEFF
 
 #define FRAME_HEARTBEAT_TIMEOUT 200 //unit: ms
 
@@ -93,5 +94,7 @@ typedef struct
     uint16_t crc16;
 }Frame_ChannelSetting_TypeDef;
 #pragma pack()
+
+Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size);
 
 #endif
