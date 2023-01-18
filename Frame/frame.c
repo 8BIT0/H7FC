@@ -5,6 +5,7 @@
 #include "frame.h"
 
 __weak uint32_t Frame_Get_Runtime(void){return 0;};
+__weak void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data, void *target){};
 
 /* internal function */
 Frame_Monitor_TypeDef frame_monitor = {
@@ -48,6 +49,21 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
                     break;
 
                 case Frame_Type_Receiver:
+                    if(frame.dir == Frame_ReceiverChannel_Set)
+                    {
+                        if(frame.size == sizeof(Frame_ChannelSetting_TypeDef) && )
+                        {
+                            Frame_ChannelSetting_TypeDef ChannelSetting_Tmp;
+                            memset(&ChannelSetting_Tmp, 0, sizeof(ChannelSetting_Tmp));
+
+                            Frame_Update_ChannelSetting(ChannelSetting_Tmp, ??);
+                        }
+                        else
+                        {
+                            frame_monitor.err_cnt++;
+                            frame_monitor.receiver_setting_err_cnt++;
+                        }
+                    }
                     break;
 
                 case Frame_Type_IMU:

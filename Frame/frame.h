@@ -14,6 +14,8 @@
 
 #define FRAME_HEARTBEAT_TIMEOUT 200 //unit: ms
 
+typedef bool (*frame_decode_callback)(uint8_t *data_in);
+
 typedef enum
 {
     Frame_Decode_NoneError = 0,
@@ -42,6 +44,8 @@ typedef struct
     uint32_t update_rt;
 
     uint32_t err_cnt;
+    uint32_t receiver_setting_err_cnt
+
     uint32_t receiver_setting_cnt;
 }Frame_Monitor_TypeDef;
 
