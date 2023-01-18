@@ -4,12 +4,13 @@
  */
 #include "frame.h"
 
-__weak uint32_t Frame_Get_Runtime(void){return 0;};
-__weak void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data, void *target){};
+__attribute__((weak)) uint32_t Frame_Get_Runtime(void) { return 0; };
+__attribute__((weak)) void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data){};
 
 /* internal function */
 Frame_Monitor_TypeDef frame_monitor = {
     .err_cnt = 0,
+    .receiver_setting_err_cnt = 0,
     .receiver_setting_cnt = 0,
     .update_rt = 0,
 };
@@ -20,58 +21,58 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
     uint8_t *payload = NULL;
 
     memset(&frame, 0, sizeof(Frame_Format_TypeDef));
-    
-    if(p_data && (size > 0))
+
+    if (p_data && (size > 0))
     {
         memcpy(&frame, p_data, sizeof(Frame_Format_TypeDef));
-        
+
         /* check header */
-        if((frame.header_1 == FRAEM_HEADER_1) &&
-           (frame.header_2 == FRAEM_HEADER_2))
+        if ((frame.header_1 == FRAEM_HEADER_1) &&
+            (frame.header_2 == FRAEM_HEADER_2))
         {
-            switch(frame.type)
+            switch (frame.type)
             {
-                case Frame_Type_HeartBeat:
-                    if( (frame.dir != FRAME_HEADER_DIR) || 
-                        (frame.size != FRAME_HEARTBEAT_SIZE))
+            case Frame_Type_HeartBeat:
+                if ((frame.dir != FRAME_HEADER_DIR) ||
+                    (frame.size != FRAME_HEARTBEAT_SIZE))
+                {
+                    frame_monitor.err_cnt++;
+                    return Frame_Decode_HeartBeat_Error;
+                }
+
+                payload = p_data + sizeof(Frame_Format_TypeDef);
+
+                if (*((uint16_t *)(payload)) != FRAME_HEARTBEAT_ENDER)
+                {
+                    frame_monitor.err_cnt++;
+                    return Frame_Decode_HeartBeat_Error;
+                }
+                break;
+
+            case Frame_Type_Receiver:
+                if (frame.dir == Frame_ReceiverChannel_Set)
+                {
+                    if (frame.size == sizeof(Frame_ChannelSetting_TypeDef) &&)
+                    {
+                        Frame_ChannelSetting_TypeDef ChannelSetting_Tmp;
+                        memset(&ChannelSetting_Tmp, 0, sizeof(ChannelSetting_Tmp));
+
+                        Frame_Update_ChannelSetting(ChannelSetting_Tmp);
+                    }
+                    else
                     {
                         frame_monitor.err_cnt++;
-                        return Frame_Decode_HeartBeat_Error;
+                        frame_monitor.receiver_setting_err_cnt++;
                     }
-                    
-                    payload = p_data + sizeof(Frame_Format_TypeDef);
+                }
+                break;
 
-                    if(*((uint16_t *)(*payload)) != FRAME_HEARTBEAT_ENDER)
-                    {
-                        frame_monitor.err_cnt++;
-                        return Frame_Decode_HeartBeat_Error;
-                    }
-                    break;
+            case Frame_Type_IMU:
+                break;
 
-                case Frame_Type_Receiver:
-                    if(frame.dir == Frame_ReceiverChannel_Set)
-                    {
-                        if(frame.size == sizeof(Frame_ChannelSetting_TypeDef) && )
-                        {
-                            Frame_ChannelSetting_TypeDef ChannelSetting_Tmp;
-                            memset(&ChannelSetting_Tmp, 0, sizeof(ChannelSetting_Tmp));
-
-                            Frame_Update_ChannelSetting(ChannelSetting_Tmp, ??);
-                        }
-                        else
-                        {
-                            frame_monitor.err_cnt++;
-                            frame_monitor.receiver_setting_err_cnt++;
-                        }
-                    }
-                    break;
-
-                case Frame_Type_IMU:
-                    break;
-
-                default:
-                    frame_monitor.err_cnt ++;
-                    return Frame_Decode_Type_Error;
+            default:
+                frame_monitor.err_cnt++;
+                return Frame_Decode_Type_Error;
             }
 
             /* update frame communicate time */
