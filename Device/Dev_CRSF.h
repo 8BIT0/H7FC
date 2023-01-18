@@ -181,7 +181,6 @@ typedef struct
     crsf_state_list state;
     crsf_LinkStatistics_t statistics;
 
-    bool channel_update;
     uint16_t channel[CRSF_MAX_CHANNEL];
 } DevCRSFObj_TypeDef;
 
