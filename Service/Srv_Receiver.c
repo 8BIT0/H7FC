@@ -279,9 +279,6 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
             /* do serial decode funtion */
             if (receiver_obj->Frame_type == Receiver_Type_CRSF)
             {
-                crsf_channels_t crsf_frame_channel;
-
-                memset(&crsf_frame_channel, NULL, sizeof(crsf_frame_channel));
                 decode_out = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->decode(receiver_obj->frame_data_obj, p_data, size);
 
                 switch (decode_out)
@@ -292,24 +289,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                     break;
 
                 case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
-                    crsf_frame_channel = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(receiver_obj->frame_data_obj);
-
-                    receiver_obj->data.val_list[0] = crsf_frame_channel.ch0;
-                    receiver_obj->data.val_list[1] = crsf_frame_channel.ch1;
-                    receiver_obj->data.val_list[2] = crsf_frame_channel.ch2;
-                    receiver_obj->data.val_list[3] = crsf_frame_channel.ch3;
-                    receiver_obj->data.val_list[4] = crsf_frame_channel.ch4;
-                    receiver_obj->data.val_list[5] = crsf_frame_channel.ch5;
-                    receiver_obj->data.val_list[6] = crsf_frame_channel.ch6;
-                    receiver_obj->data.val_list[7] = crsf_frame_channel.ch7;
-                    receiver_obj->data.val_list[8] = crsf_frame_channel.ch8;
-                    receiver_obj->data.val_list[9] = crsf_frame_channel.ch9;
-                    receiver_obj->data.val_list[10] = crsf_frame_channel.ch10;
-                    receiver_obj->data.val_list[11] = crsf_frame_channel.ch11;
-                    receiver_obj->data.val_list[12] = crsf_frame_channel.ch12;
-                    receiver_obj->data.val_list[13] = crsf_frame_channel.ch13;
-                    receiver_obj->data.val_list[14] = crsf_frame_channel.ch14;
-                    receiver_obj->data.val_list[15] = crsf_frame_channel.ch15;
+                    ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(receiver_obj->frame_data_obj, receiver_obj->data.val_list);
 
                     if (receiver_obj->invert_list)
                     {
