@@ -177,6 +177,8 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
             if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr)
             {
+                obj->channel_update = true;
+
                 const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)(obj->frame.data + 1);
                 obj->channel[0] = channel_val_ptr->ch0;
                 obj->channel[1] = channel_val_ptr->ch1;
@@ -196,14 +198,13 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
                 obj->channel[15] = channel_val_ptr->ch15;
 
                 obj->state = CRSF_State_LinkUp;
-                obj->channel_update = true;
+                obj->channel_update = false;
 
                 return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
             }
             break;
 
         default:
-            obj->channel_update = false;
             return CRSF_DECODE_ERROR;
         }
     }
@@ -215,14 +216,10 @@ static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in)
 {
     if (obj && ch_in)
     {
+        while(obj->channel_update);
+        
+        /* fresh new data */
         memcpy(ch_in, &obj->channel, sizeof(obj->channel));
-
-        if(obj->channel_update)
-        {
-            /* fresh new data */
-
-            obj->channel_update = false;
-        }
     }
 }
 
