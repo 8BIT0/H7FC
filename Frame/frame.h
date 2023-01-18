@@ -8,6 +8,8 @@
 #define FRAEM_HEADER_1 0xFF
 #define FRAEM_HEADER_2 0xFE
 
+#define FRAME_HEARTBEAT_SIZE 0
+
 #define FRAME_HEARTBEAT_TIMEOUT 200 //unit: ms
 
 typedef enum
@@ -17,6 +19,7 @@ typedef enum
     Frame_Decode_Type_Error,
     Frame_Decode_Dir_Error,
     Frame_Decode_RecData_Error,
+    Frame_Decode_HeartBeat_Error,
 }Frame_Decode_ErrorCode_List;
 
 typedef enum
