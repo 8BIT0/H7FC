@@ -190,7 +190,7 @@ typedef struct
 {
     bool (*init)(DevCRSFObj_TypeDef *obj);
     uint8_t (*decode)(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
-    crsf_channels_t (*get_channel)(DevCRSFObj_TypeDef *obj);
+    void (*get_channel)(DevCRSFObj_TypeDef *obj, uint16_t *ch_in);
     crsf_LinkStatistics_t (*get_statistics)(DevCRSFObj_TypeDef *obj);
 } DevCRSF_TypeDef;
 

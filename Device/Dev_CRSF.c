@@ -30,7 +30,7 @@
 
 static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj);
 static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
-static crsf_channels_t DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj);
+static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in);
 static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj);
 static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg);
 
@@ -211,16 +211,19 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
     return CRSF_DECODE_ERROR;
 }
 
-static crsf_channels_t DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj)
+static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in)
 {
-    crsf_channels_t channel;
+    if (obj && ch_in)
+    {
+        memcpy(ch_in, &obj->channel, sizeof(obj->channel));
 
-    memset(&channel, 0, sizeof(channel));
+        if(obj->channel_update)
+        {
+            /* fresh new data */
 
-    if (obj)
-        memcpy(&channel, &obj->channel, sizeof(crsf_channels_t));
-
-    return channel;
+            obj->channel_update = false;
+        }
+    }
 }
 
 static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj)
