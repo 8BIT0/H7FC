@@ -1,6 +1,25 @@
 /* code: 8_B!T0
  * Telemetry Task we use this task to get and process data from RC receiver and radio
  * OSD Tune Gimbal code : throttle down / Pitch down / Yaw right max / Roll right max / keep this position for 5S
+ * 
+ * deflaut receiver list
+ * channel 1  pitch
+ * channel 2  roll
+ * channel 3  throttle
+ * channel 4  yaw
+ * channel 5  aux1
+ * channel 6  aux2
+ * channel 7  aux3
+ * channel 8  aux4
+ * channel 9  aux5
+ * channel 10 aux6
+ * channel 11 aux7
+ * channel 12 aux8
+ * channel 13 aux9
+ * channel 14 aux10
+ * channel 15 aux11
+ * channel 16 aux12
+ * 
  */
 #include "Task_Telemetry.h"
 #include "DataPipe.h"
@@ -22,11 +41,11 @@ static Telemetry_RCInput_TypeDef RC_Setting;
 static bool RCData_To_Configuretor = false;
 DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
 
-static const uint8_t Telemetry_CRSF_MapTable[CRSF_MAX_CHANNEL] =
+static const uint8_t Telemetry_Default_MapTable[CRSF_MAX_CHANNEL] =
 {
-    Telemetry_RC_Throttle,
     Telemetry_RC_Pitch,
     Telemetry_RC_Roll,
+    Telemetry_RC_Throttle,
     Telemetry_RC_Yaw,
     Telemetry_RC_AUX_1,
     Telemetry_RC_AUX_2,
