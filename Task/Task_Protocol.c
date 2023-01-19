@@ -18,6 +18,7 @@
 #include "DataPipe/DataPipe.h"
 #include "Task_SensorInertial.h"
 #include "mmu.h"
+#include "frame.h"
 
 static bool test = false;
 
