@@ -100,7 +100,16 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
 
 static void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data)
 {
+    Frame_OutputStream_TypeDef out_stream;
+    memset(&out_stream, 0, sizeof(out_stream));
 
     Frame_ChannelSetting_Callback(rec_data);
+
+    out_stream.format.header_1 = FRAEM_HEADER_1;
+    out_stream.format.header_2 = FRAEM_HEADER_2;
+    out_stream.format.type = Frame_Type_Receiver;
+
+    /* send frame ack */\
+    Frame_Protocol_Pack();
 }
 
