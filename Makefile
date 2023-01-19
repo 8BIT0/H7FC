@@ -66,6 +66,7 @@ DataStructure/linked_list.c \
 DataStructure/binary_tree.c \
 Common/reboot.c \
 Common/error_log.c \
+Frame/frame.c \
 System/DataPipe/DataPipe.c \
 System/DataPipe/DataPipe_Def.c \
 System/mmu/mmu.c \
@@ -176,6 +177,7 @@ C_INCLUDES =  \
 -ITask/ \
 -IDevice/ \
 -ICommon/ \
+-IFrame/ \
 -IService/ \
 -ISystem/ \
 -ISystem/mmu/ \

@@ -12,8 +12,9 @@
 /* internal var */
 static Task_SensorInertial_State TaskInertial_State = Task_SensorInertial_Core;
 static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
-static SrvIMU_UnionData_TypeDef PriIMU_Data __attribute__((section(".Perph_Section")));
-static SrvIMU_UnionData_TypeDef SecIMU_Data __attribute__((section(".Perph_Section")));
+
+DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PriIMU_Data);
+DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, SecIMU_Data);
 
 /* internal function */
 static void TaskInertical_Blink_Notification(uint16_t duration);
@@ -23,11 +24,11 @@ static void TaskInertical_Blink_Notification(uint16_t duration);
 void TaskInertial_Init(void)
 {
     memset(&IMU_Smp_DataPipe, NULL, sizeof(IMU_Smp_DataPipe));
-    memset(&PriIMU_Data, NULL, sizeof(PriIMU_Data));
-    memset(&SecIMU_Data, NULL, sizeof(SecIMU_Data));
+    memset(&DataPipe_DataObj(PriIMU_Data), NULL, sizeof(DataPipe_DataObj(PriIMU_Data)));
+    memset(&DataPipe_DataObj(SecIMU_Data), NULL, sizeof(DataPipe_DataObj(SecIMU_Data)));
 
-    IMU_Smp_DataPipe.data_addr = (uint32_t)&PriIMU_Data;
-    IMU_Smp_DataPipe.data_size = sizeof(PriIMU_Data);
+    IMU_Smp_DataPipe.data_addr = (uint32_t)&DataPipe_DataObj(PriIMU_Data);
+    IMU_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(PriIMU_Data));
 
     /* regist error */
     if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
@@ -43,13 +44,13 @@ void TaskInertical_Core(Task_Handle hdl)
         // TaskInertical_Blink_Notification(100);
         if(SrvIMU.sample())
         {
-            PriIMU_Data.data = SrvIMU.get_data(SrvIMU_PriModule);
-            SecIMU_Data.data = SrvIMU.get_data(SrvIMU_SecModule);
+            DataPipe_DataObj(PriIMU_Data).data = SrvIMU.get_data(SrvIMU_PriModule);
+            DataPipe_DataObj(SecIMU_Data).data = SrvIMU.get_data(SrvIMU_SecModule);
 
-            for(uint8_t chk = 0; chk < sizeof(PriIMU_Data) - sizeof(uint16_t); chk++)
+            for(uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(PriIMU_Data)) - sizeof(uint16_t); chk++)
             {
-                PriIMU_Data.data.chk_sum += PriIMU_Data.buff[chk];
-                SecIMU_Data.data.chk_sum += SecIMU_Data.buff[chk];
+                DataPipe_DataObj(PriIMU_Data).data.chk_sum += DataPipe_DataObj(PriIMU_Data).buff[chk];
+                DataPipe_DataObj(SecIMU_Data).data.chk_sum += DataPipe_DataObj(SecIMU_Data).buff[chk];
             }
 
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);  /* to Log task */
