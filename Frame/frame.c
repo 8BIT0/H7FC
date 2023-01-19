@@ -8,10 +8,12 @@
 
 __attribute__((weak)) uint32_t Frame_Get_Runtime(void) { return 0; };
 __attribute__((weak)) int8_t Frame_ChannelSetting_Callback(const Frame_ChannelSetting_TypeDef rec_data){return FRAME_ACK_FAILED;};
+__attributr__((weak)) int8_t Frame_ChannelOut_Callback(uint8_t *p_data, uint16_t size){};
 __attribute__((weak)) int32_t Frame_Protocol_Pack(uint8_t *p_data, uint32_t size){};
 
 /* internal function */
 static void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data);
+static void Frame_ChannelOutput(void);
 
 /* internal function */
 Frame_Monitor_TypeDef frame_monitor = {
@@ -78,6 +80,14 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
                         frame_monitor.receiver_setting_err_cnt++;
                     }
                 }
+                else if(frame.dir == Frame_ReceiverData_Out)
+                {
+                    if( (frame.size == FRAME_CHANNELOUT_SIZE) &&
+                        ((*(uint16_t *)(p_data + sizeof(Frame_Format_TypeDef))) == FRAME_ENDER))
+                    {
+                        Frame_ChannelOutput();
+                    }
+                }
                 break;
 
             case Frame_Type_IMU:
@@ -96,6 +106,11 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
     }
 
     return Frame_Decode_RecData_Error;
+}
+
+static void Frame_ChannelOutput(void)
+{
+
 }
 
 static void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data)

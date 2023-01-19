@@ -10,6 +10,7 @@
 
 #define FRAME_HEADER_DIR 0
 #define FRAME_HEARTBEAT_SIZE 0
+#define FRAME_CHANNELOUT_SIZE 0
 #define FRAME_ENDER 0xFEFF
 #define FRAME_ACK_SIZE 1
 #define FRAME_ACK_SUCCESS true
@@ -38,8 +39,8 @@ typedef enum
 
 typedef enum
 {
-    Frame_ReceiverData_Out = 0,
-    Frame_ReceiverChannel_Set = 1,
+    Frame_ReceiverData_Out = 1,
+    Frame_ReceiverChannel_Set,
     Frame_ReceiverChannel_Set_Ack,
 } Frame_Receiver_DirList;
 
