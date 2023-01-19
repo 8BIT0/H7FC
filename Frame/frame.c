@@ -7,8 +7,11 @@
 #include "util.h"
 
 __attribute__((weak)) uint32_t Frame_Get_Runtime(void) { return 0; };
-__attribute__((weak)) void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data){};
+__attribute__((weak)) void Frame_ChannelSetting_Callback(const Frame_ChannelSetting_TypeDef rec_data){};
 __attribute__((weak)) int32_t Frame_Protocol_Pack(uint8_t *p_data, uint32_t size){};
+
+/* internal function */
+static void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data);
 
 /* internal function */
 Frame_Monitor_TypeDef frame_monitor = {
@@ -93,5 +96,11 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
     }
 
     return Frame_Decode_RecData_Error;
+}
+
+static void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data)
+{
+
+    Frame_ChannelSetting_Callback(rec_data);
 }
 
