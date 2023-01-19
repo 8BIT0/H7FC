@@ -101,6 +101,9 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
             case Frame_Type_IMU:
                 break;
 
+            case Frame_Type_ESC:
+                break;
+
             default:
                 frame_monitor.err_cnt++;
                 return Frame_Decode_Type_Error;

@@ -35,6 +35,7 @@ typedef enum
     Frame_Type_HeartBeat = 0,
     Frame_Type_Receiver,
     Frame_Type_IMU,
+    Frame_Type_ESC,
 } Frame_TypeList;
 
 typedef enum
