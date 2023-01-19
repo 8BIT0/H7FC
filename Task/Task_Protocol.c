@@ -185,3 +185,9 @@ static void shell_test(void)
     usb_printf("\t8_B!T0 Shell test\r\n");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, test, shell_test, Shell Test);
+
+/* implimention frame file weak function */
+uint32_t Frame_Get_Runtime(void)
+{
+    return Get_CurrentRunningMs();
+}
