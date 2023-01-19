@@ -145,6 +145,11 @@ void TaskProtocol_Core(Task_Handle hdl)
             }
         }
 
+        if(Frame_CheckProtocol_Update())
+        {
+            /* communicate to pc application */
+        }
+
         break;
 
     case TaskProto_Error_Proc:
