@@ -63,7 +63,7 @@ typedef struct
 {
     uint8_t pos;
     bool state;
-}Telemetry_ToggleData_TypeDef;
+} Telemetry_ToggleData_TypeDef;
 
 typedef struct
 {
@@ -87,7 +87,7 @@ typedef struct
     uint16_t gimbal_val[4];
     uint8_t control_mode;
     uint16_t module_enable;
-}Telemetry_RCSig_TypeDef;
+} Telemetry_RCSig_TypeDef;
 
 typedef struct
 {

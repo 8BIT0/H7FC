@@ -64,19 +64,19 @@ void TaskTelemetry_Init(void)
         {
             /* set crsf receiver map */
             /* bind to channel */
-            if (!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+            if (!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
                 !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetry_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-                !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+                !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
                 !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
                 !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) ||    /* bind arm & disarm to channel */
                 !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.Buzzer_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind buzzer to channel */
                 !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, 300) ||                       /* bind control mode toggle */
                 !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 900, 1100) ||
                 !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 1650, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-                !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) || /* bind osd tune to channel */
+                !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) || /* bind osd tune to channel */
                 !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) ||
-                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MAX - 100, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100))
+                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MAX - 100, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100))
             {
                 RC_Setting.init_state = false;
                 RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
@@ -294,6 +294,7 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
     return true;
 }
 
+/* still bug */
 static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
 {
     Telemetry_ToggleData_TypeDef toggle_val;
@@ -314,10 +315,11 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
         if (!channel_data ||
             (((*(uint16_t *)channel_data->channel_ptr) < channel_data->max) &&
              ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
-            break;
+        {
+            toggle_val.pos++;
+        }
 
         nxt = nxt->nxt;
-        toggle_val.pos++;
     }
 
     if (toggle_val.pos == toggle->combo_cnt)
@@ -375,25 +377,25 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->rssi = receiver_data.rssi;
         RC_Input_obj->link_quality = receiver_data.link_quality;
 
-        /* check buzzer toggle */
-        RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
-
-        // if (!RC_Input_obj->sig.osd_tune_state)
-        // {
-        /* check arm & disarm */
-        RC_Input_obj->sig.arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
-
-        /* check control mode */
-        RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
-
-        /* check control mode inedx range */
-        if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
-            RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
-        // }
-
         /* get gimbal channel */
         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
             RC_Input_obj->sig.gimbal_val[i] = Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
+
+        /* check buzzer toggle */
+        RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
+
+        if (!RC_Input_obj->sig.osd_tune_state)
+        {
+            /* check arm & disarm */
+            RC_Input_obj->sig.arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
+
+            /* check control mode */
+            RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
+
+            /* check control mode inedx range */
+            if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
+                RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+        }
 
         if (RC_Input_obj->sig.arm_state)
         {
