@@ -89,7 +89,7 @@ void TaskTelemetry_Init(void)
                 Receiver_Smp_DataPipe.data_size = sizeof(Telemetry_RCSig_TypeDef);
             }
         }
-        else if(Receiver_Obj.Frame_type == Receiver_Type_SBUS)
+        else if(Receiver_Obj.Frame_type == Receiver_Type_Sbus)
         {
 
         }
