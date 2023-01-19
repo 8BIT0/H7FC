@@ -41,26 +41,6 @@ static Telemetry_RCInput_TypeDef RC_Setting;
 static bool RCData_To_Configuretor = false;
 DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
 
-static const uint8_t Telemetry_Default_MapTable[CRSF_MAX_CHANNEL] =
-{
-    Telemetry_RC_Pitch,
-    Telemetry_RC_Roll,
-    Telemetry_RC_Throttle,
-    Telemetry_RC_Yaw,
-    Telemetry_RC_AUX_1,
-    Telemetry_RC_AUX_2,
-    Telemetry_RC_AUX_3,
-    Telemetry_RC_AUX_4,
-    Telemetry_RC_AUX_5,
-    Telemetry_RC_AUX_6,
-    Telemetry_RC_AUX_7,
-    Telemetry_RC_AUX_8,
-    Telemetry_RC_AUX_9,
-    Telemetry_RC_AUX_10,
-    Telemetry_RC_AUX_11,
-    Telemetry_RC_AUX_12,
-};
-
 /* internal funciotn */
 static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
@@ -83,36 +63,35 @@ void TaskTelemetry_Init(void)
         if(Receiver_Obj.Frame_type == Receiver_Type_CRSF)
         {
             /* set crsf receiver map */
+            /* bind to channel */
+            if (!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+                !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetry_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+                !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+                !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+                !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) ||    /* bind arm & disarm to channel */
+                !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.Buzzer_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind buzzer to channel */
+                !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, 1300) ||                      /* bind control mode toggle */
+                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 1300, 1650) ||
+                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 1650, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+                !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) || /* bind osd tune to channel */
+                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) ||
+                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MAX - 100, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
+                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100))
+            {
+                RC_Setting.init_state = false;
+                RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
+
+                /* set datapipe */
+                memset(&Receiver_Smp_DataPipe, 0, sizeof(Receiver_Smp_DataPipe));
+                memset(DataPipe_DataObjAddr(Rc), 0, sizeof(Telemetry_RCSig_TypeDef));
+
+                Receiver_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Rc);
+                Receiver_Smp_DataPipe.data_size = sizeof(Telemetry_RCSig_TypeDef);
+            }
         }
-        else if(Receiver_Obj.Frame_type == Receiver_Type_Sbus)
+        else if(Receiver_Obj.Frame_type == Receiver_Type_SBUS)
         {
-            /* set sbus receiver map */
-        }
 
-        /* bind to channel */
-        if (!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetry_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) ||    /* bind arm & disarm to channel */
-            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.Buzzer_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind buzzer to channel */
-            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, 1300) ||                      /* bind control mode toggle */
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 1300, 1650) ||
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 1650, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) || /* bind osd tune to channel */
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) ||
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MAX - 100, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
-            !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100))
-        {
-            RC_Setting.init_state = false;
-            RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
-
-            /* set datapipe */
-            memset(&Receiver_Smp_DataPipe, 0, sizeof(Receiver_Smp_DataPipe));
-            memset(DataPipe_DataObjAddr(Rc), 0, sizeof(Telemetry_RCSig_TypeDef));
-
-            Receiver_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Rc);
-            Receiver_Smp_DataPipe.data_size = sizeof(Telemetry_RCSig_TypeDef);
         }
     }
 
