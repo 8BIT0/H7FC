@@ -8,7 +8,7 @@
 
 __attribute__((weak)) uint32_t Frame_Get_Runtime(void) { return 0; };
 __attribute__((weak)) int8_t Frame_ChannelSetting_Callback(const Frame_ChannelSetting_TypeDef rec_data){return FRAME_ACK_FAILED;};
-__attributr__((weak)) int8_t Frame_ChannelOut_Callback(uint8_t *p_data, uint16_t size){};
+__attributr__((weak)) int8_t Frame_ChannelOut_Callback(void){};
 __attribute__((weak)) int32_t Frame_Protocol_Pack(uint8_t *p_data, uint32_t size){};
 
 /* internal function */
@@ -110,13 +110,15 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
 
 static void Frame_ChannelOutput(void)
 {
+    int8_t ack_state = FRAME_ACK_FAILED;
 
+    ack_state = Frame_ChannelOut_Callback();
 }
 
 static void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data)
 {
     Frame_OutputStream_TypeDef out_stream;
-    int8_t ack_state = false;
+    int8_t ack_state = FRAME_ACK_FAILED;
     memset(&out_stream, 0, sizeof(out_stream));
 
     ack_state = Frame_ChannelSetting_Callback(rec_data);
