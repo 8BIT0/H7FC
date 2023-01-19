@@ -108,29 +108,48 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
     return Frame_Decode_RecData_Error;
 }
 
+static Frame_OutputStream_TypeDef Frame_Pack(uint8_t *p_data, uint16_t size)
+{
+    Frame_OutputStream_TypeDef out_stream;
+    memset(&out_stream, 0, sizeof(out_stream));
+
+    out_stream.format.header_1 = FRAEM_HEADER_1;
+    out_stream.format.header_2 = FRAEM_HEADER_2;
+    out_stream.format.type = Frame_Type_Receiver;
+    out_stream.format.dir = Frame_ReceiverChannel_Set_Ack;
+    out_stream.format.size = size;
+
+    out_stream.ptr = p_data;
+
+    if(out_stream.format.size == FRAME_ACK_SIZE)
+    {
+        out_stream.crc16 = FRAME_ENDER;
+    }
+    else
+        out_stream.crc16 = Common_CRC16(p_data, size);
+
+    return out_stream;
+}
+
 static void Frame_ChannelOutput(void)
 {
+    Frame_OutputStream_TypeDef out_stream;
     int8_t ack_state = FRAME_ACK_FAILED;
 
     ack_state = Frame_ChannelOut_Callback();
+    out_stream = Frame_Pack(&ack_state, FRAME_ACK_SIZE);
+
+    /* send frame ack */
+    Frame_Protocol_Pack(&out_stream, sizeof(Frame_OutputStream_TypeDef) + FRAME_ACK_SIZE);
 }
 
 static void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data)
 {
     Frame_OutputStream_TypeDef out_stream;
     int8_t ack_state = FRAME_ACK_FAILED;
-    memset(&out_stream, 0, sizeof(out_stream));
 
     ack_state = Frame_ChannelSetting_Callback(rec_data);
-
-    out_stream.format.header_1 = FRAEM_HEADER_1;
-    out_stream.format.header_2 = FRAEM_HEADER_2;
-    out_stream.format.type = Frame_Type_Receiver;
-    out_stream.format.dir = Frame_ReceiverChannel_Set_Ack;
-    out_stream.format.size = FRAME_ACK_SIZE;
-
-    out_stream.ptr = &ack_state;
-    out_stream.crc16 = FRAME_ENDER;
+    out_stream = Frame_Pack(&ack_state, FRAME_ACK_SIZE);
 
     /* send frame ack */
     Frame_Protocol_Pack(&out_stream, sizeof(Frame_OutputStream_TypeDef) + FRAME_ACK_SIZE);
