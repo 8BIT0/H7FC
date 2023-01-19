@@ -52,6 +52,12 @@ typedef struct
 #pragma pack(1)
 typedef struct
 {
+    uint8_t *ptr;
+    uint32_t size;
+}Frame_OutputStream_TypeDef;
+
+typedef struct
+{
     uint8_t header_1;
     uint8_t header_2;
     uint8_t type;
