@@ -1,7 +1,7 @@
 /* code: 8_B!T0
  * Telemetry Task we use this task to get and process data from RC receiver and radio
  * OSD Tune Gimbal code : throttle down / Pitch down / Yaw right max / Roll right max / keep this position for 5S
- * 
+ *
  * deflaut receiver list
  * channel 1  pitch
  * channel 2  roll
@@ -19,7 +19,7 @@
  * channel 14 aux10
  * channel 15 aux11
  * channel 16 aux12
- * 
+ *
  */
 #include "Task_Telemetry.h"
 #include "DataPipe.h"
@@ -60,7 +60,7 @@ void TaskTelemetry_Init(void)
     {
         /* for crsf frame channel 1 is throttle */
         /* for sbus frame channel 3 is throttle */
-        if(Receiver_Obj.Frame_type == Receiver_Type_CRSF)
+        if (Receiver_Obj.Frame_type == Receiver_Type_CRSF)
         {
             /* set crsf receiver map */
             /* bind to channel */
@@ -70,8 +70,8 @@ void TaskTelemetry_Init(void)
                 !Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
                 !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) ||    /* bind arm & disarm to channel */
                 !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.Buzzer_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) || /* bind buzzer to channel */
-                !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, 1300) ||                      /* bind control mode toggle */
-                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 1300, 1650) ||
+                !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, 300) ||                       /* bind control mode toggle */
+                !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 900, 1100) ||
                 !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, 1650, TELEMETRY_RC_CHANNEL_RANGE_MAX) ||
                 !Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) || /* bind osd tune to channel */
                 !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100) ||
@@ -89,9 +89,8 @@ void TaskTelemetry_Init(void)
                 Receiver_Smp_DataPipe.data_size = sizeof(Telemetry_RCSig_TypeDef);
             }
         }
-        else if(Receiver_Obj.Frame_type == Receiver_Type_Sbus)
+        else if (Receiver_Obj.Frame_type == Receiver_Type_Sbus)
         {
-
         }
     }
 
@@ -143,28 +142,28 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
     switch (receiver_obj->port_type)
     {
     case Receiver_Port_Serial:
-        if(receiver_obj->Frame_type == Receiver_Type_CRSF)
+        if (receiver_obj->Frame_type == Receiver_Type_CRSF)
         {
             port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
-                                                    RECEIVER_CRSF_RX_DMA,
-                                                    RECEIVER_CRSF_RX_DMA_STREAM,
-                                                    RECEIVER_CRSF_TX_DMA,
-                                                    RECEIVER_CRSF_TX_DMA_STREAM,
-                                                    false,
-                                                    CRSF_TX_PIN,
-                                                    CRSF_RX_PIN);
+                                                     RECEIVER_CRSF_RX_DMA,
+                                                     RECEIVER_CRSF_RX_DMA_STREAM,
+                                                     RECEIVER_CRSF_TX_DMA,
+                                                     RECEIVER_CRSF_TX_DMA_STREAM,
+                                                     false,
+                                                     CRSF_TX_PIN,
+                                                     CRSF_RX_PIN);
         }
-        else if(receiver_obj->Frame_type == Receiver_Type_Sbus)
+        else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
         {
             port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
-                                                    RECEIVER_SBUS_RX_DMA,
-                                                    RECEIVER_SBUS_RX_DMA_STREAM,
-                                                    RECEIVER_SBUS_TX_DMA,
-                                                    RECEIVER_SBUS_TX_DMA_STREAM,
-                                                    false,
-                                                    SBUS_TX_PIN,
-                                                    SBUS_RX_PIN);
- 
+                                                     RECEIVER_SBUS_RX_DMA,
+                                                     RECEIVER_SBUS_RX_DMA_STREAM,
+                                                     RECEIVER_SBUS_TX_DMA,
+                                                     RECEIVER_SBUS_TX_DMA_STREAM,
+                                                     false,
+                                                     SBUS_TX_PIN,
+                                                     SBUS_RX_PIN);
+
             /* set inverter pin */
         }
         break;
@@ -284,6 +283,10 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
         return false;
     }
 
+    channel_set->channel_ptr = data_obj;
+    channel_set->max = max_range;
+    channel_set->min = min_range;
+
     toggle->combo_cnt++;
     List_ItemInit(item, channel_set);
     List_Insert_Item(&toggle->combo_list, item);
@@ -309,8 +312,8 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
         channel_data = (Telemetry_ChannelSet_TypeDef *)nxt->data;
 
         if (!channel_data ||
-            ((*(uint16_t *)channel_data->channel_ptr) > channel_data->max) ||
-            ((*(uint16_t *)channel_data->channel_ptr) < channel_data->min))
+            (((*(uint16_t *)channel_data->channel_ptr) < channel_data->max) &&
+             ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
             break;
 
         nxt = nxt->nxt;
@@ -372,18 +375,18 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->rssi = receiver_data.rssi;
         RC_Input_obj->link_quality = receiver_data.link_quality;
 
-        if (!RC_Input_obj->sig.osd_tune_state)
-        {
-            /* check arm & disarm */
-            RC_Input_obj->sig.arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
+        // if (!RC_Input_obj->sig.osd_tune_state)
+        // {
+        /* check arm & disarm */
+        RC_Input_obj->sig.arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
 
-            /* check control mode */
-            RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
+        /* check control mode */
+        RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
 
-            /* check control mode inedx range */
-            if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
-                RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
-        }
+        /* check control mode inedx range */
+        if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
+            RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+        // }
 
         /* get gimbal channel */
         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)

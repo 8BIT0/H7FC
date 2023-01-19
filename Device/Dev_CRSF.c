@@ -140,11 +140,15 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
                     obj->rec_cnt = 0;
 
                     memset(&obj->frame, 0, sizeof(obj->frame));
+
+                    return decode_state;
                 }
             }
             break;
         }
     }
+
+    return 0;
 }
 
 /* serial receiver receive callback */
@@ -211,9 +215,9 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
 static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in)
 {
     if (obj && ch_in)
-    {        
+    {
         /* fresh new data */
-        memcpy(ch_in, &obj->channel, sizeof(obj->channel));
+        memcpy(ch_in, obj->channel, sizeof(obj->channel));
     }
 }
 

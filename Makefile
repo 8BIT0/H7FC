@@ -66,6 +66,7 @@ DataStructure/linked_list.c \
 DataStructure/binary_tree.c \
 Common/reboot.c \
 Common/error_log.c \
+Common/util.c \
 Frame/frame.c \
 System/DataPipe/DataPipe.c \
 System/DataPipe/DataPipe_Def.c \

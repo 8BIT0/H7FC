@@ -291,15 +291,21 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                 case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
                     ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(receiver_obj->frame_data_obj, receiver_obj->data.val_list);
 
-                    if (receiver_obj->invert_list)
+                    for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                     {
-                        for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
+                        if (receiver_obj->data.val_list[i] < CHANNEL_RANGE_MIN)
                         {
-                            if (receiver_obj->invert_list & 1 << i)
-                            {
-                                receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
-                                receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
-                            }
+                            receiver_obj->data.val_list[i] = CHANNEL_RANGE_MIN;
+                        }
+                        else if (receiver_obj->data.val_list[i] > CHANNEL_RANGE_MAX)
+                        {
+                            receiver_obj->data.val_list[i] = CHANNEL_RANGE_MAX;
+                        }
+
+                        if (receiver_obj->invert_list && (receiver_obj->invert_list & 1 << i))
+                        {
+                            receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
+                            receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
                         }
                     }
 
@@ -395,7 +401,7 @@ re_do:
         return receiver_data_tmp;
 
     receiver_data_tmp.failsafe = false;
-    memcpy(&receiver_obj, &receiver_obj->data, sizeof(SrvReceiverObj_TypeDef));
+    receiver_data_tmp = receiver_obj->data;
 
     receiver_obj->in_use = false;
 
