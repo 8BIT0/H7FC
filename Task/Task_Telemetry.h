@@ -87,6 +87,9 @@ typedef struct
     uint16_t gimbal_val[4];
     uint8_t control_mode;
     uint16_t module_enable;
+
+    uint8_t map_table[32];
+    uint16_t *map_addr[32];
 }Telemetry_RCSig_TypeDef;
 
 typedef struct
