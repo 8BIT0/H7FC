@@ -1,6 +1,7 @@
 /* coder: 8_B!T0
  * frame format down below
  * < 0 header_1>< 1 header_2>< 2 type>< 3 dir_type>< 4 size>< 5 payload>< end crc16>
+ * crc gets from first byte payload to last byte in the payload
  */
 #include "frame.h"
 #include "util.h"
@@ -21,6 +22,7 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
 {
     Frame_Format_TypeDef frame;
     uint8_t *payload = NULL;
+    uint16_t crc_in = 0;
 
     memset(&frame, 0, sizeof(Frame_Format_TypeDef));
 
@@ -54,12 +56,18 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
             case Frame_Type_Receiver:
                 if (frame.dir == Frame_ReceiverChannel_Set)
                 {
-                    if (frame.size == sizeof(Frame_ChannelSetting_TypeDef) &&)
+                    if (frame.size == sizeof(Frame_ChannelSetting_TypeDef))
                     {
-                        Frame_ChannelSetting_TypeDef ChannelSetting_Tmp;
-                        memset(&ChannelSetting_Tmp, 0, sizeof(ChannelSetting_Tmp));
+                        payload = p_data + sizeof(Frame_Format_TypeDef);
+                        crc_in = *((uint16_t *)(payload + frame.size));
 
-                        Frame_Update_ChannelSetting(ChannelSetting_Tmp);
+                        /* check crc */
+                        if(Common_CRC16(payload, frame.size) == crc_in)
+                        {
+                            Frame_ChannelSetting_TypeDef ChannelSetting_Tmp;
+                            memset(&ChannelSetting_Tmp, 0, sizeof(ChannelSetting_Tmp));
+                            Frame_Update_ChannelSetting(ChannelSetting_Tmp);
+                        }
                     }
                     else
                     {
