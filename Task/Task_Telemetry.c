@@ -375,6 +375,9 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->rssi = receiver_data.rssi;
         RC_Input_obj->link_quality = receiver_data.link_quality;
 
+        /* check buzzer toggle */
+        RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
+
         // if (!RC_Input_obj->sig.osd_tune_state)
         // {
         /* check arm & disarm */
@@ -391,9 +394,6 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         /* get gimbal channel */
         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
             RC_Input_obj->sig.gimbal_val[i] = Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
-
-        /* check buzzer toggle */
-        RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
 
         if (RC_Input_obj->sig.arm_state)
         {
