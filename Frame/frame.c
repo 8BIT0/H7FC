@@ -116,6 +116,6 @@ static void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_d
     out_stream.crc16 = FRAME_ENDER;
 
     /* send frame ack */
-    Frame_Protocol_Pack();
+    Frame_Protocol_Pack(&out_stream, sizeof(Frame_OutputStream_TypeDef) + FRAME_ACK_SIZE);
 }
 
