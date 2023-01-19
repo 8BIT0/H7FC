@@ -12,6 +12,8 @@
 #define FRAME_HEARTBEAT_SIZE 0
 #define FRAME_ENDER 0xFEFF
 #define FRAME_ACK_SIZE 1
+#define FRAME_ACK_SUCCESS true
+#define FRAME_ACK_FAILED false
 
 #define FRAME_HEARTBEAT_TIMEOUT 200 // unit: ms
 

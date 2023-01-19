@@ -7,7 +7,7 @@
 #include "util.h"
 
 __attribute__((weak)) uint32_t Frame_Get_Runtime(void) { return 0; };
-__attribute__((weak)) int8_t Frame_ChannelSetting_Callback(const Frame_ChannelSetting_TypeDef rec_data){};
+__attribute__((weak)) int8_t Frame_ChannelSetting_Callback(const Frame_ChannelSetting_TypeDef rec_data){return FRAME_ACK_FAILED;};
 __attribute__((weak)) int32_t Frame_Protocol_Pack(uint8_t *p_data, uint32_t size){};
 
 /* internal function */
