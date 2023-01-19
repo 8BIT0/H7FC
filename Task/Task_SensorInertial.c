@@ -24,8 +24,8 @@ static void TaskInertical_Blink_Notification(uint16_t duration);
 void TaskInertial_Init(void)
 {
     memset(&IMU_Smp_DataPipe, NULL, sizeof(IMU_Smp_DataPipe));
-    memset(&DataPipe_DataObj(PriIMU_Data), NULL, sizeof(DataPipe_DataObj(PriIMU_Data)));
-    memset(&DataPipe_DataObj(SecIMU_Data), NULL, sizeof(DataPipe_DataObj(SecIMU_Data)));
+    memset(DataPipe_DataObjAddr(PriIMU_Data), NULL, sizeof(DataPipe_DataObj(PriIMU_Data)));
+    memset(DataPipe_DataObjAddr(SecIMU_Data), NULL, sizeof(DataPipe_DataObj(SecIMU_Data)));
 
     IMU_Smp_DataPipe.data_addr = (uint32_t)&DataPipe_DataObj(PriIMU_Data);
     IMU_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(PriIMU_Data));
