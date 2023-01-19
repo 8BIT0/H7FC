@@ -36,7 +36,7 @@ DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlSecIMU_Data);
 DataPipeObj_TypeDef IMU_Ptl_DataPipe;
 
 /* internal function */
-static void TaskProtocol_Main(uint8_t *data, uint16_t size);
+static void TaskProtocol_MainProc(uint8_t *data, uint16_t size);
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 static void TaskProtocol_PlugDetect_Callback(void);
@@ -126,7 +126,7 @@ void TaskProtocol_Core(Task_Handle hdl)
     switch ((uint8_t)task_state)
     {
     case TaskProto_Core:
-        TaskProtocol_Main(NULL, 0);
+        TaskProtocol_MainProc(NULL, 0);
 
         /* check vcp send queue state */
         /* if it has any data then send them out */
@@ -162,7 +162,7 @@ void TaskProtocol_Core(Task_Handle hdl)
     DebugPin.ctl(Debug_PC3, false);
 }
 
-static void TaskProtocol_Main(uint8_t *data, uint16_t size)
+static void TaskProtocol_MainProc(uint8_t *data, uint16_t size)
 {
 }
 
