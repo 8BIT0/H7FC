@@ -171,6 +171,8 @@ static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
     // shellHandler(Shell_GetInstence(), data[i]);
     // TaskProtocol_TransBuff(data, len);
     test = true;
+
+    Frame_Decode(data, len);
 }
 
 static void TaskProtocol_PlugDetect_Callback(void)
