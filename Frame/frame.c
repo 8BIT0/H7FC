@@ -7,7 +7,7 @@
 #include "util.h"
 
 __attribute__((weak)) uint32_t Frame_Get_Runtime(void) { return 0; };
-__attribute__((weak)) void Frame_ChannelSetting_Callback(const Frame_ChannelSetting_TypeDef rec_data){};
+__attribute__((weak)) int8_t Frame_ChannelSetting_Callback(const Frame_ChannelSetting_TypeDef rec_data){};
 __attribute__((weak)) int32_t Frame_Protocol_Pack(uint8_t *p_data, uint32_t size){};
 
 /* internal function */
@@ -49,7 +49,7 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
 
                 payload = p_data + sizeof(Frame_Format_TypeDef);
 
-                if (*((uint16_t *)(payload)) != FRAME_HEARTBEAT_ENDER)
+                if (*((uint16_t *)(payload)) != FRAME_ENDER)
                 {
                     frame_monitor.err_cnt++;
                     return Frame_Decode_HeartBeat_Error;
@@ -101,15 +101,21 @@ Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
 static void Frame_Update_ChannelSetting(const Frame_ChannelSetting_TypeDef rec_data)
 {
     Frame_OutputStream_TypeDef out_stream;
+    int8_t ack_state = false;
     memset(&out_stream, 0, sizeof(out_stream));
 
-    Frame_ChannelSetting_Callback(rec_data);
+    ack_state = Frame_ChannelSetting_Callback(rec_data);
 
     out_stream.format.header_1 = FRAEM_HEADER_1;
     out_stream.format.header_2 = FRAEM_HEADER_2;
     out_stream.format.type = Frame_Type_Receiver;
+    out_stream.format.dir = Frame_ReceiverChannel_Set_Ack;
+    out_stream.format.size = FRAME_ACK_SIZE;
 
-    /* send frame ack */\
+    out_stream.ptr = &ack_state;
+    out_stream.crc16 = FRAME_ENDER;
+
+    /* send frame ack */
     Frame_Protocol_Pack();
 }
 

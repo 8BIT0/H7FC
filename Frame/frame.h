@@ -10,7 +10,8 @@
 
 #define FRAME_HEADER_DIR 0
 #define FRAME_HEARTBEAT_SIZE 0
-#define FRAME_HEARTBEAT_ENDER 0xFEFF
+#define FRAME_ENDER 0xFEFF
+#define FRAME_ACK_SIZE 1
 
 #define FRAME_HEARTBEAT_TIMEOUT 200 // unit: ms
 
@@ -37,6 +38,7 @@ typedef enum
 {
     Frame_ReceiverData_Out = 0,
     Frame_ReceiverChannel_Set = 1,
+    Frame_ReceiverChannel_Set_Ack,
 } Frame_Receiver_DirList;
 
 typedef struct
@@ -62,7 +64,7 @@ typedef struct
 typedef struct
 {
     Frame_Format_TypeDef format;
-    
+
     uint8_t *ptr;
     uint32_t size;
 
