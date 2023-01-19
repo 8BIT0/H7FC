@@ -23,6 +23,14 @@ Frame_Monitor_TypeDef frame_monitor = {
     .update_rt = 0,
 };
 
+bool Frame_CheckProtocol_Update(void)
+{
+    if((frame_monitor.update_rt - Frame_Get_Runtime()) >= FRAME_HEARTBEAT_TIMEOUT)
+        return false;
+
+    return true;
+}
+
 Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size)
 {
     Frame_Format_TypeDef frame;

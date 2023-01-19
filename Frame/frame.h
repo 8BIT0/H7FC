@@ -116,5 +116,6 @@ typedef struct
 #pragma pack()
 
 Frame_Decode_ErrorCode_List Frame_Decode(uint8_t *p_data, uint16_t size);
+bool Frame_CheckProtocol_Update(void);
 
 #endif
