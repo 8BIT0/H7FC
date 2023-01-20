@@ -62,8 +62,9 @@ typedef enum
 
 typedef struct
 {
-    uint8_t pos;
+    uint8_t cnt;
     bool state;
+    uint16_t pos; 
 } Telemetry_ToggleData_TypeDef;
 
 typedef struct
@@ -71,6 +72,7 @@ typedef struct
     uint16_t min;
     uint16_t max;
     uint16_t *channel_ptr;
+    uint16_t reg; 
 } Telemetry_ChannelSet_TypeDef;
 
 typedef struct

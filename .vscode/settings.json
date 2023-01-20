@@ -111,7 +111,8 @@
                 "dev_dshot.h": "c",
                 "task_control.h": "c",
                 "frame.h": "c",
-                "util.h": "c"
+                "util.h": "c",
+                "cmath": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }

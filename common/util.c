@@ -53,3 +53,28 @@ int16_t Common_CRC16(const uint8_t *pBuf, const uint32_t len)
     
     return CheckSum;
 }
+
+uint8_t Get_Bit_Index(uint16_t val)
+{
+	float f_val = (float)val;
+	uint32_t u32_val = 0;
+	uint8_t bit = 0;
+	
+	u32_val = *((unsigned long*)(&f_val));
+	
+	bit = (u32_val >> 23) & 0xFF;
+	bit -= 127;
+	
+	return bit;
+}
+
+uint8_t Get_OnSet_Bit_Num(uint32_t value)
+{
+    value = ( value & 0x55555555 ) + ( (value >>1)  & 0x55555555 ) ; 
+    value = ( value & 0x33333333 ) + ( (value >>2)  & 0x33333333 ) ; 
+    value = ( value & 0x0f0f0f0f ) + ( (value >>4)  & 0x0f0f0f0f ) ; 
+    value = ( value & 0x00ff00ff ) + ( (value >>8)  & 0x00ff00ff ) ; 
+    value = ( value & 0x0000ffff ) + ( (value >>16) & 0x0000ffff ) ; 
+ 
+    return value  ; 
+}

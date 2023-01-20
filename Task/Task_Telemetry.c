@@ -28,6 +28,7 @@
 #include "IO_Definition.h"
 #include "runtime.h"
 #include "mmu.h"
+#include "util.h"
 
 #define CRSF_TX_PIN Uart4_TxPin
 #define CRSF_RX_PIN Uart4_RxPin
@@ -298,8 +299,10 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
 static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
 {
     Telemetry_ToggleData_TypeDef toggle_val;
+    uint8_t pos_reg = 0;
 
     toggle_val.pos = 0;
+    toggle_val.cnt = 0;
     toggle_val.state = false;
     item_obj *nxt = &toggle->combo_list;
     Telemetry_ChannelSet_TypeDef *channel_data = NULL;
@@ -316,13 +319,23 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
             (((*(uint16_t *)channel_data->channel_ptr) < channel_data->max) &&
              ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
         {
-            toggle_val.pos++;
+            pos_reg |= 1 << toggle_val.cnt;
+            toggle_val.cnt++;
         }
 
         nxt = nxt->nxt;
     }
 
-    if (toggle_val.pos == toggle->combo_cnt)
+    /* get the number of the bit on set */
+    if(Get_OnSet_Bit_Num(pos_reg) == 1)
+    {
+        /* only on bit been set */
+        toggle_val.pos = Get_Bit_Index(pos_reg);
+    }
+    else
+        toggle_val.pos = 0;
+
+    if (toggle_val.cnt == toggle->combo_cnt)
         toggle_val.state = true;
 
     return toggle_val;
