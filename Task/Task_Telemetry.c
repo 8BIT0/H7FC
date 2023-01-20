@@ -333,8 +333,11 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
         toggle_val.pos = Get_Bit_Index(pos_reg);
     }
     else
+    {
+        /* many bits been set on pos_reg */
         toggle_val.pos = 0;
-
+    }
+    
     if (toggle_val.cnt == toggle->combo_cnt)
         toggle_val.state = true;
 
