@@ -77,6 +77,17 @@ typedef struct
 
 typedef struct
 {
+    bool arm_state;
+    bool buzz_state;
+    bool osd_tune_state;
+
+    uint16_t gimbal_val[4];
+    uint8_t control_mode;
+    uint16_t module_enable;
+} SrvRecever_RCSig_TypeDef;
+
+typedef struct
+{
     SrvReceiver_Frame_TypeList Frame_type;
     SrvReceiver_Port_TypeList port_type;
     void *port_cfg;

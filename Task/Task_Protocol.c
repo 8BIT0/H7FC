@@ -41,6 +41,7 @@ static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 static void TaskProtocol_PlugDetect_Callback(void);
 ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
+static void TaskProtocol_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
 
 bool TaskProtocol_Init(void)
 {

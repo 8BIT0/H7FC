@@ -81,16 +81,7 @@ typedef struct
     uint8_t combo_cnt;
 } Telemetry_RCFuncMap_TypeDef;
 
-typedef struct
-{
-    bool arm_state;
-    bool buzz_state;
-    bool osd_tune_state;
-
-    uint16_t gimbal_val[4];
-    uint8_t control_mode;
-    uint16_t module_enable;
-} Telemetry_RCSig_TypeDef;
+typedef SrvRecever_RCSig_TypeDef Telemetry_RCSig_TypeDef;
 
 typedef struct
 {
