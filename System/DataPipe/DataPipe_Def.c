@@ -1,7 +1,7 @@
 #include "DataPipe.h"
 
-DataPipeObj_TypeDef Receiver_Smp_DataPipe;
-DataPipeObj_TypeDef Receiver_Ctl_DataPipe;
+DataPipeObj_TypeDef Receiver_Smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Receiver_Ctl_DataPipe = {.enable = true};
 
-DataPipeObj_TypeDef IMU_Log_DataPipe;
-DataPipeObj_TypeDef IMU_Smp_DataPipe;
+DataPipeObj_TypeDef IMU_Log_DataPipe = {.enable = true};
+DataPipeObj_TypeDef IMU_Smp_DataPipe = {.enable = true};

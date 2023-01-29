@@ -61,7 +61,9 @@ bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
 
     if ((p_org == NULL) ||
         (p_dst == NULL) ||
-        (p_org->data_size != p_dst->data_size))
+        (p_org->data_size != p_dst->data_size) ||
+        !p_org->enable ||
+        !p_dst->enable)
         return false;
 
     retry_cnt = MAX_RETRY_CNT;

@@ -25,6 +25,8 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
+    bool enable;
+
     uint32_t data_addr;
     uint16_t data_size;
 
@@ -46,6 +48,26 @@ typedef struct
 bool DataPipe_Init(void);
 bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst);
 bool DataPipe_DealError(void);
+
+inline bool DataPipe_Enable(DataPipeObj_TypeDef *obj)
+{
+    if(obj == NULL)
+        return false;
+
+    obj->enable = true;
+
+    return true;
+}
+
+inline bool DataPipe_Disable(DataPipeObj_TypeDef *obj)
+{
+    if(obj == NULL)
+        return false;
+
+    obj->enable = false;
+
+    return true;
+}
 
 extern DataPipeObj_TypeDef IMU_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_Log_DataPipe;
