@@ -319,10 +319,11 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
             (((*(uint16_t *)channel_data->channel_ptr) < channel_data->max) &&
              ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
         {
-            pos_reg |= 1 << toggle_val.cnt;
+            pos_reg |= 1 << toggle_val.pos;
             toggle_val.cnt++;
         }
 
+        toggle_val.pos++;
         nxt = nxt->nxt;
     }
 
