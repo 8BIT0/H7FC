@@ -50,6 +50,8 @@ bool TaskProtocol_Init(void)
     IMU_Ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlPriIMU_Data);
     IMU_Ptl_DataPipe.data_size = sizeof(DataPipe_DataObj(PtlPriIMU_Data));
 
+    Receiver_Ctl_DataPipe.trans_finish_cb = TaskProtocol_PipeRcTelemtryDataFinish_Callback;
+
     if (!USB_DEVICE_Init())
     {
         task_state = TaskProto_Error_Proc;
@@ -192,4 +194,15 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 uint32_t Frame_Get_Runtime(void)
 {
     return Get_CurrentRunningMs();
+}
+
+static void TaskProtocol_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj)
+{
+    if(obj == NULL)
+        return;
+
+    if(obj == &Receiver_Ctl_DataPipe)
+    {
+
+    }
 }
