@@ -45,7 +45,7 @@ typedef enum
 
 typedef enum
 {
-    Telemetry_Control_Mode_ACRO = 1,
+    Telemetry_Control_Mode_ACRO = 0,
     Telemetry_Control_Mode_STAB,
     Telemetry_Control_Mode_AUTO,
     Telemetry_Control_Mode_Default = Telemetry_Control_Mode_STAB,

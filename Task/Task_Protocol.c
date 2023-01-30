@@ -17,6 +17,7 @@
 #include "error_log.h"
 #include "DataPipe/DataPipe.h"
 #include "Task_SensorInertial.h"
+#include "Task_Telemetry.h"
 #include "mmu.h"
 #include "frame.h"
 
@@ -33,6 +34,8 @@ static TaskProto_State_List task_state = TaskProto_Core;
 static bool Shell_Mode = false;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlSecIMU_Data);
+
+DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
 DataPipeObj_TypeDef IMU_Ptl_DataPipe;
 
 /* internal function */
@@ -45,13 +48,15 @@ static void TaskProtocol_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *
 
 bool TaskProtocol_Init(void)
 {
-    memset(DataPipe_DataObjAddr(PtlSecIMU_Data), NULL, sizeof(DataPipe_DataObj(PtlSecIMU_Data)));
-    memset(DataPipe_DataObjAddr(PtlPriIMU_Data), NULL, sizeof(DataPipe_DataObj(PtlPriIMU_Data)));
-    
+    memset(DataPipe_DataObjAddr(PtlPriIMU_Data), NULL, DataPipe_DataSize(PtlPriIMU_Data));
     IMU_Ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlPriIMU_Data);
-    IMU_Ptl_DataPipe.data_size = sizeof(DataPipe_DataObj(PtlPriIMU_Data));
+    IMU_Ptl_DataPipe.data_size = DataPipe_DataSize(PtlPriIMU_Data);
 
-    Receiver_Ctl_DataPipe.trans_finish_cb = TaskProtocol_PipeRcTelemtryDataFinish_Callback;
+    memset(DataPipe_DataObjAddr(Proto_Rc), 0, DataPipe_DataSize(Proto_Rc));
+    Receiver_ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
+    Receiver_ptl_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
+    Receiver_ptl_DataPipe.trans_finish_cb = TaskProtocol_PipeRcTelemtryDataFinish_Callback;
+    DataPipe_Enable(&Receiver_ptl_DataPipe);
 
     if (!USB_DEVICE_Init())
     {
@@ -202,7 +207,7 @@ static void TaskProtocol_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *
     if(obj == NULL)
         return;
 
-    if(obj == &Receiver_Ctl_DataPipe)
+    if(obj == &Receiver_ptl_DataPipe)
     {
 
     }

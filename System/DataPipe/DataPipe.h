@@ -13,6 +13,7 @@ typedef void (*Pipe_TimeOutProc_Callback)(void *pipe_obj);
 #define DataPipe_CreateDataObj(type, name) static type name##_##PipeDataObj __attribute__((section(".Perph_Section")))
 #define DataPipe_DataObjAddr(name) &name##_##PipeDataObj
 #define DataPipe_DataObj(name) name##_##PipeDataObj
+#define DataPipe_DataSize(name) sizeof(name##_##PipeDataObj)
 
 typedef enum
 {
@@ -25,6 +26,7 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
+    uint32_t duration;
     bool enable;
 
     uint32_t data_addr;
@@ -74,5 +76,6 @@ extern DataPipeObj_TypeDef IMU_Log_DataPipe;
 
 extern DataPipeObj_TypeDef Receiver_Smp_DataPipe;
 extern DataPipeObj_TypeDef Receiver_Ctl_DataPipe;
+extern DataPipeObj_TypeDef Receiver_ptl_DataPipe;
 
 #endif
