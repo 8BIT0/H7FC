@@ -296,7 +296,6 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
     return true;
 }
 
-/* still bug */
 static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
 {
     Telemetry_ToggleData_TypeDef toggle_val;
