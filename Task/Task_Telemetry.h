@@ -86,6 +86,8 @@ typedef SrvRecever_RCSig_TypeDef Telemetry_RCSig_TypeDef;
 typedef struct
 {
     bool init_state;
+    uint32_t update_rt;
+    uint32_t lst_update_rt;
     Telemetry_RCSig_TypeDef sig;
     uint32_t aux_func_reg;
     uint16_t rssi;

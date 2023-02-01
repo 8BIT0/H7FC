@@ -84,6 +84,8 @@ typedef struct
     uint16_t gimbal_val[4];
     uint8_t control_mode;
     uint16_t module_enable;
+
+    uint32_t update_interval;
 } SrvRecever_RCSig_TypeDef;
 
 typedef struct
