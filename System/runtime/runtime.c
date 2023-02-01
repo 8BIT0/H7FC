@@ -232,3 +232,13 @@ void Runtime_DelayMs(uint32_t ms)
     while (Runtime_DelayUs)
         ;
 }
+
+uint64_t Runtime_MsToUs(uint32_t target_ms)
+{
+    return (uint64_t)(target_ms * US_PER_MS);
+}
+
+uint32_t Runtime_UsToMs(uint64_t target_us)
+{
+    return target_us / US_PER_MS;
+}

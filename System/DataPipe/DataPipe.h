@@ -26,7 +26,10 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    uint32_t duration;
+    uint32_t min_rx_interval;
+    uint32_t detect_interval;
+    uint64_t rx_us_rt;
+
     bool enable;
 
     uint32_t data_addr;
@@ -69,6 +72,17 @@ inline bool DataPipe_Disable(DataPipeObj_TypeDef *obj)
     obj->enable = false;
 
     return true;
+}
+
+inline bool DataPipe_Set_RxInterval(DataPipeObj_TypeDef *obj, uint64_t interval_us)
+{
+    if(obj)
+    {
+        obj->min_rx_interval = interval_us;
+        return true;
+    }
+
+    return false;
 }
 
 extern DataPipeObj_TypeDef IMU_Smp_DataPipe;

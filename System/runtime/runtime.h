@@ -10,6 +10,7 @@
 #include "system_cfg.h"
 
 #define REAL_1US 1
+#define US_PER_MS 1000
 #define REAL_1MS 1000 * REAL_1US /* 1ms == 1000us */
 #define REAL_1S 1000 * REAL_1MS
 
@@ -86,7 +87,8 @@ uint32_t RuntimeObj_Compare(const SYSTEM_RunTime *EQ_L, const SYSTEM_RunTime *EQ
 
 Tick_Frq Runtime_GetTickFrq(void);
 Tick_Base Runtime_GetTickBase(void);
-
+uint64_t Runtime_MsToUs(uint32_t target_ms);
+uint32_t Runtime_UsToMs(uint64_t target_us);
 void Runtime_DelayMs(uint32_t ms);
 
 #endif

@@ -57,13 +57,14 @@ bool DataPipe_Init(void)
 bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
 {
     uint8_t retry_cnt = 5;
-    uint32_t cur_ms = Get_CurrentRunningMs();
 
     if ((p_org == NULL) ||
         (p_dst == NULL) ||
         (p_org->data_size != p_dst->data_size) ||
         !p_org->enable ||
-        !p_dst->enable)
+        !p_dst->enable || 
+        (p_dst->min_rx_interval && 
+        (Get_CurrentRunningUs() - p_dst->rx_us_rt < p_dst->min_rx_interval)))
         return false;
 
     retry_cnt = MAX_RETRY_CNT;
@@ -115,6 +116,8 @@ bool DataPipe_DealError(void)
 /* transmit completely callback */
 static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl)
 {
+    uint64_t cur_us = Get_CurrentRunningUs();
+
     if (dma_hdl == &DataPipe_DMA)
     {
         Pipe_State = Pipe_Ready;
@@ -127,6 +130,11 @@ static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl)
 
         if (Cur_Pluged_PipeObj.dst->trans_finish_cb)
             Cur_Pluged_PipeObj.dst->trans_finish_cb(Cur_Pluged_PipeObj.dst);
+
+        if(Cur_Pluged_PipeObj.dst->rx_us_rt)
+            Cur_Pluged_PipeObj.dst->detect_interval = cur_us - Cur_Pluged_PipeObj.dst->rx_us_rt;
+
+        Cur_Pluged_PipeObj.dst->rx_us_rt = cur_us;
 
         Cur_Pluged_PipeObj.dst = NULL;
         Cur_Pluged_PipeObj.org = NULL;

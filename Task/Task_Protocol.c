@@ -56,6 +56,7 @@ bool TaskProtocol_Init(void)
     Receiver_ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
     Receiver_ptl_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
     Receiver_ptl_DataPipe.trans_finish_cb = TaskProtocol_PipeRcTelemtryDataFinish_Callback;
+    DataPipe_Set_RxInterval(&Receiver_ptl_DataPipe, Runtime_MsToUs(20));
     DataPipe_Enable(&Receiver_ptl_DataPipe);
 
     if (!USB_DEVICE_Init())
