@@ -32,6 +32,7 @@ bool TaskControl_Init(void)
     memset(&Control_Param, 0, sizeof(Control_Param));
 
     /* read in storage */
+    /* current use default */
     Control_Param.model = DEFAULT_CONTROL_MODLE;
 
     switch(Control_Param.model)
