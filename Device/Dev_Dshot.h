@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "Bsp_GPIO.h"
+#include "Bsp_Timer.h"
 
 #define MHZ_TO_HZ(x) ((x)*1000000)
 
