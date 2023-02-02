@@ -6,19 +6,19 @@
 #include <stdlib.h>
 
 #define QUAD_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){4, 0, NULL, NULL, NULL}
+            (Control_Component_TypeDef){4, 0, NULL, NULL, NULL, NULL}
 #define HEX_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){6, 0, NULL, NULL, NULL}
+            (Control_Component_TypeDef){6, 0, NULL, NULL, NULL, NULL}
 #define OCT_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){8, 0, NULL, NULL, NULL}
+            (Control_Component_TypeDef){8, 0, NULL, NULL, NULL, NULL}
 #define X8_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){8, 0, NULL, NULL, NULL}
+            (Control_Component_TypeDef){8, 0, NULL, NULL, NULL, NULL}
 #define Y6_CONTROL_CONPONENT \
-            (Control_Component_TypeDef){6, 0, NULL, NULL, NULL}
+            (Control_Component_TypeDef){6, 0, NULL, NULL, NULL, NULL}
 #define TRI_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){3, 1, NULL, NULL, NULL}
+            (Control_Component_TypeDef){3, 1, NULL, NULL, NULL, NULL}
 #define TDRONE_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){2, 3, NULL, NULL, NULL}
+            (Control_Component_TypeDef){2, 3, NULL, NULL, NULL, NULL}
 
 #define DSHOT_IDLE 100
 #define DSHOT_MAX 1900
@@ -60,6 +60,7 @@ typedef struct
     Control_ESC_Type_List *moto_type;
     ComponentCTL_Range_TypeDef *moto_range;
     ComponentCTL_Range_TypeDef *servo_range;
+    void *rotor_obj;
 }Control_Component_TypeDef;
 
 typedef struct
