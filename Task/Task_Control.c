@@ -29,47 +29,6 @@ static Control_Stream_TypeDef Control_Stream;
 
 bool TaskControl_Init(void)
 {
-    uint8_t i = 0;
-    memset(&Control_Param, 0, sizeof(Control_Param));
-
-    /* read in storage */
-    /* current use default */
-    Control_Param.model = DEFAULT_CONTROL_MODLE;
-
-    switch(Control_Param.model)
-    {
-        case Model_Quad:
-            Control_Param.drive_component = QUAD_CONTROL_COMPONENT;
-            break;
-
-        case Model_Hex:
-            Control_Param.drive_component = HEX_CONTROL_COMPONENT;
-            break;
-
-        case Model_Oct:
-            Control_Param.drive_component = OCT_CONTROL_COMPONENT;
-            break;
-
-        case Model_X8:
-            Control_Param.drive_component = X8_CONTROL_COMPONENT;
-            break;
-
-        case Model_Y6:
-            Control_Param.drive_component = Y6_CONTROL_CONPONENT;
-            break;
-
-        case Model_Tri:
-            Control_Param.drive_component = TRI_CONTROL_COMPONENT;
-            break;
-
-        case Model_TDrone:
-            Control_Param.drive_component = TDRONE_CONTROL_COMPONENT;
-            break;
-
-        default:
-            return false;
-    }
-
     if(Control_Param.drive_component.moto_num)
     {
         Control_Param.drive_component.moto_type = DEFAULT_CONTROL_ESC_TYPE;

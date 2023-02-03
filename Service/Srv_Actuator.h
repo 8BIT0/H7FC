@@ -39,15 +39,15 @@ typedef enum
     ESC_Type_Dshot_300,
     ESC_Type_Dshot_600,
     ESC_Type_Dshot_1200,
-    WSC_Type_OneShot,
-}Control_ESC_Type_List;
+    ESC_Type_OneShot,
+}SrvActuator_ESC_Type_List;
 
 typedef struct
 {
     uint16_t min;
     uint16_t idle;
     uint16_t max;
-}ComponentCTL_Range_TypeDef;
+}SrvActuator_CTL_Range_TypeDef;
 
 typedef struct
 {
@@ -56,24 +56,24 @@ typedef struct
 
     uint16_t *moto_val;
     uint16_t *servo_val;
-}Control_Stream_TypeDef;
+}SrvActuator_CTL_Stream_TypeDef;
 
 typedef struct
 {
     uint8_t moto_num;
     uint8_t servo_num;
 
-    Control_ESC_Type_List moto_type;
-    ComponentCTL_Range_TypeDef *moto_range;
-    ComponentCTL_Range_TypeDef *servo_range;
+    SrvActuator_ESC_Type_List moto_type;
+    SrvActuator_CTL_Range_TypeDef *moto_range;
+    SrvActuator_CTL_Range_TypeDef *servo_range;
     void *moto_obj;
-}Control_Component_TypeDef;
+}SrvActuator_Component_TypeDef;
 
 typedef struct
 {
-    Control_Model_List model;
-    Control_Component_TypeDef drive_component;
-}ControlParam_TypDef;
+    SrvActuator_Model_List model;
+    SrvActuator_Component_TypeDef drive_component;
+}SrvActuatorObj_TypeDef;
 #pragma pak()
 
 
