@@ -20,6 +20,7 @@
 #define TDRONE_CONTROL_COMPONENT \
             (Control_Component_TypeDef){2, 3, NULL, NULL, NULL, NULL}
 
+#define DSHOT_LOCK 0
 #define DSHOT_IDLE 100
 #define DSHOT_MAX 1900
 
@@ -49,18 +50,30 @@ typedef enum
 typedef struct
 {
     uint16_t min;
+    uint16_t idle;
     uint16_t max;
 }ComponentCTL_Range_TypeDef;
+
+#pragma pack(1)
+typedef struct
+{
+    uint8_t moto_num;
+    uint8_t servo_num;
+
+    uint16_t *moto_val;
+    uint16_t *servo_val;
+}Control_Stream_TypeDef;
+#pragma pack()
 
 typedef struct
 {
     uint8_t moto_num;
     uint8_t servo_num;
 
-    Control_ESC_Type_List *moto_type;
+    Control_ESC_Type_List moto_type;
     ComponentCTL_Range_TypeDef *moto_range;
     ComponentCTL_Range_TypeDef *servo_range;
-    void *rotor_obj;
+    void *moto_obj;
 }Control_Component_TypeDef;
 
 typedef struct
