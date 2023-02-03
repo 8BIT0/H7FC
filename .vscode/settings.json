@@ -113,7 +113,8 @@
                 "frame.h": "c",
                 "util.h": "c",
                 "cmath": "c",
-                "math.h": "c"
+                "math.h": "c",
+                "datapath.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
