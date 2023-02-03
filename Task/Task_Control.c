@@ -1,6 +1,6 @@
 /*
  *  coder : 8_B!T0
- *  this file use for moto control
+ *  this file use for moto & servo control
  *
  * For MATEK H743 Flight Controller Hardware
  * S1   PB0     TIM3    CH3 DMA1 Stream0
