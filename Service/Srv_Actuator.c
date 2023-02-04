@@ -21,6 +21,8 @@
 SrvActuatorObj_TypeDef SrvActuator_Obj;
 SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
 
+SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM];
+
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 {
     uint8_t i = 0;
@@ -108,7 +110,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                     return false;
                 }
 
-                DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, );
+                // DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, );
             }
         }
         else
@@ -117,11 +119,12 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
             return false;
         }
 
-        // /* create servo object */
-        // if(SrvActuator_Obj.drive_component.servo_num)
-        // {
+        /* create servo object */
+        if(SrvActuator_Obj.drive_module.num.servo_cnt)
+        {
         //     SrvActuator_ControlStream.servo_num = SrvActuator_Obj.drive_component.servo_num;
         //     SrvActuator_ControlStream.servo_val = (uint16_t *)MMU_Malloc(SrvActuator_ControlStream.servo_num * sizeof(uint16_t));
+        
         //     if(SrvActuator_ControlStream.servo_val == NULL)
         //     {
         //         if(SrvActuator_Obj.drive_component.moto_num)
@@ -146,7 +149,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
         //         MMU_Free(SrvActuator_Obj.drive_component.moto_range);
         //         return false;
         //     }
-        // }
+        }
     }
 
     return true;

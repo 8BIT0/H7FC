@@ -4,24 +4,73 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include "bsp_gpio.h"
+#include "Bsp_GPIO.h"
+#include "Bsp_Timer.h"
+#include "Bsp_DMA.h"
 
-#define MAX_PWM_OUT_SIG_CHANNEL_CNT 12
+#define SRVACTUATOR_SIG_1 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM3, TIM_CHANNEL_3, Bsp_DMA_1, Bsp_DMA_Stream_0, \
+    {}}
+#define SRVACTUATOR_SIG_2 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM3, TIM_CHANNEL_4, Bsp_DMA_1, Bsp_DMA_Stream_1, \
+    {}}
+#define SRVACTUATOR_SIG_3 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM5, TIM_CHANNEL_1, Bsp_DMA_1, Bsp_DMA_Stream_2, \
+    {}}
+#define SRVACTUATOR_SIG_4 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM5, TIM_CHANNEL_2, Bsp_DMA_1, Bsp_DMA_Stream_3, \
+    {}}
+#define SRVACTUATOR_SIG_5 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM5, TIM_CHANNEL_3, Bsp_DMA_None, Bsp_DMA_Stream_None, \
+    {}}
+#define SRVACTUATOR_SIG_6 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM5, TIM_CHANNEL_4, Bsp_DMA_None, Bsp_DMA_Stream_None, \
+    {}}
+#define SRVACTUATOR_SIG_7 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM4, TIM_CHANNEL_1, Bsp_DMA_None, Bsp_DMA_Stream_None, \
+    {}}
+#define SRVACTUATOR_SIG_8 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM4, TIM_CHANNEL_2, Bsp_DMA_None, Bsp_DMA_Stream_None, \
+    {}}
+#define SRVACTUATOR_SIG_9 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM4, TIM_CHANNEL_3, Bsp_DMA_None, Bsp_DMA_Stream_None, \
+    {}}
+#define SRVACTUATOR_SIG_10 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM4, TIM_CHANNEL_4, Bsp_DMA_None, Bsp_DMA_Stream_None, \
+    {}}
+#define SRVACTUATOR_SIG_11 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM15, TIM_CHANNEL_1, Bsp_DMA_None, Bsp_DMA_Stream_None, \
+    {}}
+#define SRVACTUATOR_SIG_12 \
+    (SrvActuator_PeriphSet_TypeDef)\
+    {TIM15, TIM_CHANNEL_2, Bsp_DMA_None, Bsp_DMA_Stream_None, \
+    {}}
 
 #define QUAD_CONTROL_COMPONENT \
-            (SrvActuator_ModelComponentNum_TypeDef){4, 4, 0}
+    (SrvActuator_ModelComponentNum_TypeDef){4, 4, 0}
 #define HEX_CONTROL_COMPONENT \
-            (SrvActuator_ModelComponentNum_TypeDef){6, 6, 0}
+    (SrvActuator_ModelComponentNum_TypeDef){6, 6, 0}
 #define OCT_CONTROL_COMPONENT \
-            (SrvActuator_ModelComponentNum_TypeDef){8, 8, 0}
+    (SrvActuator_ModelComponentNum_TypeDef){8, 8, 0}
 #define X8_CONTROL_COMPONENT \
-            (SrvActuator_ModelComponentNum_TypeDef){8, 8, 0}
+    (SrvActuator_ModelComponentNum_TypeDef){8, 8, 0}
 #define Y6_CONTROL_CONPONENT \
-            (SrvActuator_ModelComponentNum_TypeDef){6, 6, 0}
+    (SrvActuator_ModelComponentNum_TypeDef){6, 6, 0}
 #define TRI_CONTROL_COMPONENT \
-            (SrvActuator_ModelComponentNum_TypeDef){4, 3, 1}
+    (SrvActuator_ModelComponentNum_TypeDef){4, 3, 1}
 #define TDRONE_CONTROL_COMPONENT \
-            (SrvActuator_ModelComponentNum_TypeDef){5, 2, 3}
+    (SrvActuator_ModelComponentNum_TypeDef){5, 2, 3}
 
 typedef enum
 {
@@ -48,6 +97,7 @@ typedef enum
     Actuator_PWM_Sig10,
     Actuator_PWM_Sig11,
     Actuator_PWM_Sig12,
+    Actuator_PWM_SigSUM,
 } SrvActuator_MotoTag_List;
 
 typedef enum
@@ -59,7 +109,15 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    uint8_t sig_id;
+    void *tim_base;
+    uint32_t tim_channel;
+    uint32_t dma;
+    uint32_t dma_channel;
+    BspGPIO_Obj_TypeDef pin;
+}SrvActuator_PeriphSet_TypeDef;
+
+typedef struct
+{
     uint8_t tag;
     uint8_t drv_type;
 
@@ -69,13 +127,8 @@ typedef struct
     uint16_t idle_val;
     uint16_t lock_val;
 
-    uint32_t tim_base;
-    uint32_t tim_channel;
-    uint32_t dma;
-    uint32_t dma_channel;
-
+    SrvActuator_PeriphSet_TypeDef *periph_ptr;
     void *drv_obj;
-    BspGPIO_Obj_TypeDef pin;
 } SrvActuator_PWMOutObj_TypeDef;
 
 typedef struct
