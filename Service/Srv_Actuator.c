@@ -21,7 +21,7 @@
 SrvActuatorObj_TypeDef SrvActuator_Obj;
 SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
 
-SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM] = {
+const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM] = {
     SRVACTUATOR_PB0_SIG_1,
     SRVACTUATOR_PB1_SIG_2,
     SRVACTUATOR_PA0_SIG_3,
