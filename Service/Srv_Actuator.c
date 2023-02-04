@@ -80,6 +80,14 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                     case DevDshot_300:
                     case DevDshot_600:
                         SrvActuator_Obj.drive_module.obj_list[i].drv_type = esc_type;
+                        SrvActuator_Obj.drive_module.obj_list[i].sig_id = i;
+                        SrvActuator_Obj.drive_module.obj_list[i].tag = SrvActuator_Tag_Moto;
+
+                        SrvActuator_Obj.drive_module.obj_list[i].ctl_val = DSHOT_LOCK_THROTTLE;
+                        SrvActuator_Obj.drive_module.obj_list[i].min_val = DSHOT_MIN_THROTTLE;
+                        SrvActuator_Obj.drive_module.obj_list[i].max_val = DSHOT_MAX_THROTTLE;
+                        SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
+                        SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
                         break;
 
                     default:
@@ -113,8 +121,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 
         // if( (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_150) ||
         //     (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_300) ||
-        //     (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_600) ||
-        //     (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_1200))
+        //     (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_600))
         // {
         //     SrvActuator_ControlStream.moto_num = SrvActuator_Obj.drive_component.moto_num;
         //     SrvActuator_ControlStream.moto_val = (uint16_t *)MMU_Malloc(SrvActuator_ControlStream.moto_num * sizeof(uint16_t));

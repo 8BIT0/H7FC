@@ -32,7 +32,7 @@ typedef enum
     Model_Y6,
     Model_Tri,
     Model_TDrone,
-}SrvActuator_Model_List;
+} SrvActuator_Model_List;
 
 typedef enum
 {
@@ -48,7 +48,13 @@ typedef enum
     Actuator_PWM_Sig10,
     Actuator_PWM_Sig11,
     Actuator_PWM_Sig12,
-}SrvActuator_MotoTag_List;
+} SrvActuator_MotoTag_List;
+
+typedef enum
+{
+    SrvActuator_Tag_Moto = 0,
+    SrvActuator_Tag_Servo,
+} SrvActuator_ComponentTag_TypeDef;
 
 #pragma pack(1)
 typedef enum
@@ -59,14 +65,7 @@ typedef enum
     ESC_Type_Dshot_600,
     ESC_Type_Dshot_1200,
     ESC_Type_OneShot,
-}SrvActuator_ESC_Type_List;
-
-typedef struct
-{
-    uint16_t min;
-    uint16_t idle;
-    uint16_t max;
-}SrvActuator_CTL_Range_TypeDef;
+} SrvActuator_ESC_Type_List;
 
 typedef struct
 {
@@ -87,26 +86,26 @@ typedef struct
 
     void *drv_obj;
     BspGPIO_Obj_TypeDef pin;
-}SrvActuator_PWMOutObj_TypeDef;
+} SrvActuator_PWMOutObj_TypeDef;
 
 typedef struct
 {
     uint8_t total_cnt;
     uint8_t moto_cnt;
     uint8_t servo_cnt;
-}SrvActuator_ModelComponentNum_TypeDef;
+} SrvActuator_ModelComponentNum_TypeDef;
 
 typedef struct
 {
     SrvActuator_ModelComponentNum_TypeDef num;
     SrvActuator_PWMOutObj_TypeDef *obj_list;
-}SrcActuatorCTL_Obj_TypeDef;
+} SrcActuatorCTL_Obj_TypeDef;
 
 typedef struct
 {
     SrvActuator_Model_List model;
     SrcActuatorCTL_Obj_TypeDef drive_module;
-}SrvActuatorObj_TypeDef;
+} SrvActuatorObj_TypeDef;
 #pragma pak()
 
 
