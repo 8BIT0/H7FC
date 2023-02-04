@@ -61,6 +61,7 @@ Device/Dev_CRSF.c \
 Device/Dev_Dshot.c \
 Service/SrvMPU_Sample.c \
 Service/Srv_Receiver.c \
+Service/Srv_Actuator.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \

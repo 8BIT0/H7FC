@@ -4,21 +4,24 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include "bsp_gpio.h"
+
+#define MAX_PWM_OUT_SIG_CHANNEL_CNT 12
 
 #define QUAD_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){4, 0, NULL, NULL, NULL, NULL}
+            (SrvActuator_Component_TypeDef){4, 0, DevDshot_300, NULL, NULL, NULL}
 #define HEX_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){6, 0, NULL, NULL, NULL, NULL}
+            (SrvActuator_Component_TypeDef){6, 0, DevDshot_300, NULL, NULL, NULL}
 #define OCT_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){8, 0, NULL, NULL, NULL, NULL}
+            (SrvActuator_Component_TypeDef){8, 0, DevDshot_300, NULL, NULL, NULL}
 #define X8_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){8, 0, NULL, NULL, NULL, NULL}
+            (SrvActuator_Component_TypeDef){8, 0, DevDshot_300, NULL, NULL, NULL}
 #define Y6_CONTROL_CONPONENT \
-            (Control_Component_TypeDef){6, 0, NULL, NULL, NULL, NULL}
+            (SrvActuator_Component_TypeDef){6, 0, DevDshot_300, NULL, NULL, NULL}
 #define TRI_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){3, 1, NULL, NULL, NULL, NULL}
+            (SrvActuator_Component_TypeDef){3, 1, DevDshot_300, NULL, NULL, NULL}
 #define TDRONE_CONTROL_COMPONENT \
-            (Control_Component_TypeDef){2, 3, NULL, NULL, NULL, NULL}
+            (SrvActuator_Component_TypeDef){2, 3, DevDshot_300, NULL, NULL, NULL}
 
 typedef enum
 {
@@ -51,28 +54,40 @@ typedef struct
 
 typedef struct
 {
-    uint8_t moto_num;
-    uint8_t servo_num;
+    uint8_t sig_id;
+    uint8_t tag;
+    uint8_t drv_type;
 
-    uint16_t *moto_val;
-    uint16_t *servo_val;
-}SrvActuator_CTL_Stream_TypeDef;
+    uint16_t ctl_val;
+    uint16_t max_val;
+    uint16_t min_val;
+    uint16_t idle_val;
+    uint16_t lock_val;
+
+    uint32_t tim_base;
+    uint32_t tim_channel;
+    uint32_t dma;
+    uint32_t dma_channel;
+
+    void *drv_obj;
+    BspGPIO_Obj_TypeDef pin;
+}SrvActuator_PWMOutObj_TypeDef;
 
 typedef struct
 {
+    uint8_t max_channel_cnt;
+    uint8_t ocp_channel_cnt;
+
     uint8_t moto_num;
     uint8_t servo_num;
 
-    SrvActuator_ESC_Type_List moto_type;
-    SrvActuator_CTL_Range_TypeDef *moto_range;
-    SrvActuator_CTL_Range_TypeDef *servo_range;
-    void *moto_obj;
-}SrvActuator_Component_TypeDef;
+    SrvActuator_PWMOutObj_TypeDef *obj_list;
+}SrcActuatorCTL_Obj_TypeDef;
 
 typedef struct
 {
     SrvActuator_Model_List model;
-    SrvActuator_Component_TypeDef drive_component;
+    SrcActuatorCTL_Obj_TypeDef drive_component;
 }SrvActuatorObj_TypeDef;
 #pragma pak()
 
