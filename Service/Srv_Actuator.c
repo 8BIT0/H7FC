@@ -21,7 +21,20 @@
 SrvActuatorObj_TypeDef SrvActuator_Obj;
 SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
 
-SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM];
+SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM] = {
+    SRVACTUATOR_PB0_SIG_1,
+    SRVACTUATOR_PB1_SIG_2,
+    SRVACTUATOR_PA0_SIG_3,
+    SRVACTUATOR_PA1_SIG_4,
+    SRVACTUATOR_PA2_SIG_5,
+    SRVACTUATOR_PA3_SIG_6,
+    SRVACTUATOR_PD12_SIG_7,
+    SRVACTUATOR_PD13_SIG_8,
+    SRVACTUATOR_PD14_SIG_9,
+    SRVACTUATOR_PD15_SIG_10,
+    SRVACTUATOR_PE5_SIG_11,
+    SRVACTUATOR_PE6_SIG_12
+};
 
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 {
@@ -82,7 +95,6 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                     case DevDshot_300:
                     case DevDshot_600:
                         SrvActuator_Obj.drive_module.obj_list[i].drv_type = esc_type;
-                        SrvActuator_Obj.drive_module.obj_list[i].sig_id = i;
                         SrvActuator_Obj.drive_module.obj_list[i].tag = SrvActuator_Tag_Moto;
 
                         SrvActuator_Obj.drive_module.obj_list[i].ctl_val = DSHOT_LOCK_THROTTLE;
