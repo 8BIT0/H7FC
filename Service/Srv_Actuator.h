@@ -9,19 +9,19 @@
 #define MAX_PWM_OUT_SIG_CHANNEL_CNT 12
 
 #define QUAD_CONTROL_COMPONENT \
-            (SrvActuator_Component_TypeDef){4, 0, DevDshot_300, NULL, NULL, NULL}
+            (SrvActuator_ModelComponentNum_TypeDef){4, 4, 0}
 #define HEX_CONTROL_COMPONENT \
-            (SrvActuator_Component_TypeDef){6, 0, DevDshot_300, NULL, NULL, NULL}
+            (SrvActuator_ModelComponentNum_TypeDef){6, 6, 0}
 #define OCT_CONTROL_COMPONENT \
-            (SrvActuator_Component_TypeDef){8, 0, DevDshot_300, NULL, NULL, NULL}
+            (SrvActuator_ModelComponentNum_TypeDef){8, 8, 0}
 #define X8_CONTROL_COMPONENT \
-            (SrvActuator_Component_TypeDef){8, 0, DevDshot_300, NULL, NULL, NULL}
+            (SrvActuator_ModelComponentNum_TypeDef){8, 8, 0}
 #define Y6_CONTROL_CONPONENT \
-            (SrvActuator_Component_TypeDef){6, 0, DevDshot_300, NULL, NULL, NULL}
+            (SrvActuator_ModelComponentNum_TypeDef){6, 6, 0}
 #define TRI_CONTROL_COMPONENT \
-            (SrvActuator_Component_TypeDef){3, 1, DevDshot_300, NULL, NULL, NULL}
+            (SrvActuator_ModelComponentNum_TypeDef){4, 3, 1}
 #define TDRONE_CONTROL_COMPONENT \
-            (SrvActuator_Component_TypeDef){2, 3, DevDshot_300, NULL, NULL, NULL}
+            (SrvActuator_ModelComponentNum_TypeDef){5, 2, 3}
 
 typedef enum
 {
@@ -75,19 +75,21 @@ typedef struct
 
 typedef struct
 {
-    uint8_t max_channel_cnt;
-    uint8_t ocp_channel_cnt;
+    uint8_t total_cnt;
+    uint8_t moto_cnt;
+    uint8_t servo_cnt;
+}SrvActuator_ModelComponentNum_TypeDef;
 
-    uint8_t moto_num;
-    uint8_t servo_num;
-
+typedef struct
+{
+    SrvActuator_ModelComponentNum_TypeDef num;
     SrvActuator_PWMOutObj_TypeDef *obj_list;
 }SrcActuatorCTL_Obj_TypeDef;
 
 typedef struct
 {
     SrvActuator_Model_List model;
-    SrcActuatorCTL_Obj_TypeDef drive_component;
+    SrcActuatorCTL_Obj_TypeDef drive_module;
 }SrvActuatorObj_TypeDef;
 #pragma pak()
 
