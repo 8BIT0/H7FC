@@ -79,12 +79,29 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                     case DevDshot_150:
                     case DevDshot_300:
                     case DevDshot_600:
-                        SrvActuator_Obj.drive_module.obj_list->drv_type = esc_type;
+                        SrvActuator_Obj.drive_module.obj_list[i].drv_type = esc_type;
                         break;
 
                     default:
                         MMU_Free(SrvActuator_Obj.drive_module.obj_list);
                         return false;
+                }
+
+                SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef));
+
+                if(SrvActuator_Obj.drive_module.obj_list[i].drv_obj)
+                {
+
+                }
+                else
+                {
+                    for(uint8_t j = 0; j < i; j++)
+                    {
+                        MMU_Free(SrvActuator_Obj.drive_module.obj_list[j].drv_obj);
+                    }
+                                
+                    MMU_Free(SrvActuator_Obj.drive_module.obj_list);
+                    return false;
                 }
             }
         }
@@ -94,21 +111,11 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
             return false;
         }
 
-        // SrvActuator_Obj.drive_component.moto_range = (SrvActuator_CTL_Range_TypeDef *)MMU_Malloc(sizeof(SrvActuator_CTL_Range_TypeDef) * SrvActuator_Obj.drive_component.moto_num);
-
         // if( (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_150) ||
         //     (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_300) ||
         //     (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_600) ||
         //     (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_1200))
         // {
-        //     SrvActuator_Obj.drive_component.moto_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef) * SrvActuator_Obj.drive_component.moto_num);
-
-        //     if(SrvActuator_Obj.drive_component.moto_obj == NULL)
-        //     {
-        //         MMU_Free(SrvActuator_Obj.drive_component.moto_obj);
-        //         return false;
-        //     }
-                
         //     SrvActuator_ControlStream.moto_num = SrvActuator_Obj.drive_component.moto_num;
         //     SrvActuator_ControlStream.moto_val = (uint16_t *)MMU_Malloc(SrvActuator_ControlStream.moto_num * sizeof(uint16_t));
         //     if(SrvActuator_ControlStream.moto_val == NULL)

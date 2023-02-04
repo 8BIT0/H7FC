@@ -34,6 +34,22 @@ typedef enum
     Model_TDrone,
 }SrvActuator_Model_List;
 
+typedef enum
+{
+    Actuator_PWM_Sig1 = 0,
+    Actuator_PWM_Sig2,
+    Actuator_PWM_Sig3,
+    Actuator_PWM_Sig4,
+    Actuator_PWM_Sig5,
+    Actuator_PWM_Sig6,
+    Actuator_PWM_Sig7,
+    Actuator_PWM_Sig8,
+    Actuator_PWM_Sig9,
+    Actuator_PWM_Sig10,
+    Actuator_PWM_Sig11,
+    Actuator_PWM_Sig12,
+}SrvActuator_MotoTag_List;
+
 #pragma pack(1)
 typedef enum
 {
