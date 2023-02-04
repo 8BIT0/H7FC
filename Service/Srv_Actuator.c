@@ -97,11 +97,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 
                 SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef));
 
-                if(SrvActuator_Obj.drive_module.obj_list[i].drv_obj)
-                {
-
-                }
-                else
+                if(SrvActuator_Obj.drive_module.obj_list[i].drv_obj == NULL)
                 {
                     for(uint8_t j = 0; j < i; j++)
                     {
@@ -111,6 +107,8 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                     MMU_Free(SrvActuator_Obj.drive_module.obj_list);
                     return false;
                 }
+
+                DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, );
             }
         }
         else
@@ -118,34 +116,6 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
             MMU_Free(SrvActuator_Obj.drive_module.obj_list);
             return false;
         }
-
-        // if( (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_150) ||
-        //     (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_300) ||
-        //     (SrvActuator_Obj.drive_component.moto_type == ESC_Type_Dshot_600))
-        // {
-        //     SrvActuator_ControlStream.moto_num = SrvActuator_Obj.drive_component.moto_num;
-        //     SrvActuator_ControlStream.moto_val = (uint16_t *)MMU_Malloc(SrvActuator_ControlStream.moto_num * sizeof(uint16_t));
-        //     if(SrvActuator_ControlStream.moto_val == NULL)
-        //     {
-        //         MMU_Free(SrvActuator_Obj.drive_component.moto_obj);
-        //         MMU_Free(SrvActuator_ControlStream.moto_val);
-        //         return false;
-        //     }
-
-        //     for(i = 0; i < SrvActuator_Obj.drive_component.moto_num; i++)
-        //     {
-        //         /* set moto range */
-        //         SrvActuator_Obj.drive_component.moto_range[i].min = DSHOT_LOCK_THROTTLE;
-        //         SrvActuator_Obj.drive_component.moto_range[i].idle = DSHOT_IDLE_THROTTLE;
-        //         SrvActuator_Obj.drive_component.moto_range[i].max = DSHOT_MAX_THROTTLE;
-            
-        //         /* init dshot device object */
-        //         DevDshot.init(&SrvActuator_Obj.drive_component.moto_obj[i], TIM3, TIM_CHANNEL_3, );
-
-        //         /* lock dshot device output */
-        //         SrvActuator_ControlStream.moto_val[i] = SrvActuator_Obj.drive_component.moto_range[i].min;
-        //     }
-        // }
 
         // /* create servo object */
         // if(SrvActuator_Obj.drive_component.servo_num)

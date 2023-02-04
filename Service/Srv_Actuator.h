@@ -57,16 +57,6 @@ typedef enum
 } SrvActuator_ComponentTag_TypeDef;
 
 #pragma pack(1)
-typedef enum
-{
-    ESC_Type_PWM = 0,
-    ESC_Type_Dshot_150,
-    ESC_Type_Dshot_300,
-    ESC_Type_Dshot_600,
-    ESC_Type_Dshot_1200,
-    ESC_Type_OneShot,
-} SrvActuator_ESC_Type_List;
-
 typedef struct
 {
     uint8_t sig_id;
