@@ -194,12 +194,18 @@ static bool SrcActuator_Get_ChannelRemap(void)
 
 static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
 {
+    uint8_t i = 0;
+    
     if((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt))
         return;
 
     switch(SrvActuator_Obj.model)
     {
         case Model_Quad:
+            for()
+            {
+
+            }
             break;
 
         case Model_Hex:
