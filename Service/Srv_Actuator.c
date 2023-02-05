@@ -194,7 +194,27 @@ static bool SrcActuator_Get_ChannelRemap(void)
 
 static void SrvActuator_Lock(void)
 {
+    uint8_t i = 0;
 
+    for(i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
+    {
+        switch(SrvActuator_Obj.drive_module.obj_list[i].drv_type)
+        {
+            case DevDshot_150:
+            case DevDshot_300:
+            case DevDshot_600:
+                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].lock_val);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    for(i = 0; i < SrvActuator_Obj.drive_module.num.servo_cnt; i++)
+    {
+
+    }
 }
 
 static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
