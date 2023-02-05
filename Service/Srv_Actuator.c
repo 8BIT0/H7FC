@@ -177,9 +177,9 @@ static bool SrcActuator_Get_ChannelRemap(void)
             SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = &SrvActuator_Periph_List[storage_serial[i]];
             periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 
-            DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, 
-                          periph_ptr->tim_base, periph_ptr->tim_channel, periph_ptr->pin
-                          , periph_ptr->dma, periph_ptr->dma_channel);
+            DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, \
+                          periph_ptr->tim_base, periph_ptr->tim_channel, periph_ptr->pin, \
+                          periph_ptr->dma, periph_ptr->dma_channel);
         }
     }
 
