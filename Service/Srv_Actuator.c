@@ -164,18 +164,23 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 static bool SrcActuator_Get_ChannelRemap(void)
 {
     uint8_t storage_serial[SrvActuator_Obj.drive_module.num.moto_cnt + SrvActuator_Obj.drive_module.num.servo_cnt];
+    SrvActuator_PeriphSet_TypeDef *periph_ptr = NULL;
 
     /* get remap relationship */
+    memcpy(storage_serial, default_sig_serial, sizeof(storage_serial));
 
     /* moto section */
     if(SrvActuator_Obj.drive_module.num.moto_cnt)
     {
         for(uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         {
-            SrvActuator_Obj.drive_module.obj_list[i].sig_id = storage_serial[i];
-            SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = &SrvActuator_Periph_List[i];
+            SrvActuator_Obj.drive_module.obj_list[i].sig_id = storage_serial[storage_serial[i]];
+            SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = &SrvActuator_Periph_List[storage_serial[i]];
+            periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 
-            // DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, );
+            DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, 
+                          periph_ptr->tim_base, periph_ptr->tim_channel, periph_ptr->pin
+                          , periph_ptr->dma, periph_ptr->dma_channel);
         }
     }
 
