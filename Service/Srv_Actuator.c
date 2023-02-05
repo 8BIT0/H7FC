@@ -192,19 +192,32 @@ static bool SrcActuator_Get_ChannelRemap(void)
     }
 }
 
+static void SrvActuator_Lock(void)
+{
+
+}
+
 static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
 {
     uint8_t i = 0;
-    
+
     if((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt))
         return;
 
     switch(SrvActuator_Obj.model)
     {
         case Model_Quad:
-            for()
+            for(i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
             {
+                SrvActuator_Obj.drive_module.obj_list[i].ctl_val = p_val[i];
+                if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].min_val)
+                {
+                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].min_val;
+                }
+                else if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val >= SrvActuator_Obj.drive_module.obj_list[i].max_val)
+                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].max_val;
 
+                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
             }
             break;
 
