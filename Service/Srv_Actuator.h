@@ -131,6 +131,7 @@ typedef struct
 {
     uint8_t tag;
     uint8_t drv_type;
+    uint8_t sig_id;
 
     uint16_t ctl_val;
     uint16_t max_val;
