@@ -153,7 +153,6 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     {
     }
 
-
     /* check value remap relationship */
     /* we can read this info from storage module */
     SrcActuator_Get_ChannelRemap();
@@ -193,6 +192,38 @@ static bool SrcActuator_Get_ChannelRemap(void)
     }
 }
 
+static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
+{
+    if((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt))
+        return;
+
+    switch(SrvActuator_Obj.model)
+    {
+        case Model_Quad:
+            break;
+
+        case Model_Hex:
+            break;
+
+        case Model_Oct:
+            break;
+
+        case Model_X8:
+            break;
+
+        case Model_Y6:
+            break;
+
+        case Model_Tri:
+            break;
+
+        case Model_TDrone:
+            break;
+
+        default:
+            return;
+    }
+}
 
 
 
