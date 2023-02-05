@@ -204,43 +204,22 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
     if((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt))
         return;
 
-    switch(SrvActuator_Obj.model)
+    for(i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
-        case Model_Quad:
-            for(i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
-            {
-                SrvActuator_Obj.drive_module.obj_list[i].ctl_val = p_val[i];
-                if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].min_val)
-                {
-                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].min_val;
-                }
-                else if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val >= SrvActuator_Obj.drive_module.obj_list[i].max_val)
-                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].max_val;
+        SrvActuator_Obj.drive_module.obj_list[i].ctl_val = p_val[i];
+        if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].min_val)
+        {
+            SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].min_val;
+        }
+        else if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val >= SrvActuator_Obj.drive_module.obj_list[i].max_val)
+            SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].max_val;
 
-                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
-            }
-            break;
+        DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
+    }
 
-        case Model_Hex:
-            break;
+    for(i = 0; i < SrvActuator_Obj.drive_module.num.servo_cnt; i++)
+    {
 
-        case Model_Oct:
-            break;
-
-        case Model_X8:
-            break;
-
-        case Model_Y6:
-            break;
-
-        case Model_Tri:
-            break;
-
-        case Model_TDrone:
-            break;
-
-        default:
-            return;
     }
 }
 
