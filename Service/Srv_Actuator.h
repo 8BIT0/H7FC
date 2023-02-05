@@ -159,6 +159,7 @@ typedef struct
 typedef struct
 {
     SrvActuator_Model_List model;
+    bool init;
     SrcActuatorCTL_Obj_TypeDef drive_module;
 } SrvActuatorObj_TypeDef;
 #pragma pak()

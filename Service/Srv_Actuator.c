@@ -53,7 +53,7 @@ SrvActuatorObj_TypeDef SrvActuator_Obj;
 SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
 
 /* internal function */
-static bool SrcActuator_Get_ChannelRemap(void);
+static void SrcActuator_Get_ChannelRemap(void);
 
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 {
@@ -156,11 +156,11 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     /* check value remap relationship */
     /* we can read this info from storage module */
     SrcActuator_Get_ChannelRemap();
-
+    SrvActuator_Obj.init = true;
     return true;
 }
 
-static bool SrcActuator_Get_ChannelRemap(void)
+static void SrcActuator_Get_ChannelRemap(void)
 {
     uint8_t storage_serial[SrvActuator_Obj.drive_module.num.moto_cnt + SrvActuator_Obj.drive_module.num.servo_cnt];
     SrvActuator_PeriphSet_TypeDef *periph_ptr = NULL;
@@ -196,6 +196,9 @@ static void SrvActuator_Lock(void)
 {
     uint8_t i = 0;
 
+    if(!SrvActuator_Obj.init)
+        return;
+
     for(i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
         switch(SrvActuator_Obj.drive_module.obj_list[i].drv_type)
@@ -221,7 +224,7 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
 {
     uint8_t i = 0;
 
-    if((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt))
+    if((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt) || !SrvActuator_Obj.init)
         return;
 
     for(i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
