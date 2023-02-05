@@ -126,14 +126,14 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                     SrvActuator_Obj.drive_module.obj_list[i].max_val = DSHOT_MAX_THROTTLE;
                     SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
                     SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
+
+                    SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef));
                     break;
 
                 default:
                     MMU_Free(SrvActuator_Obj.drive_module.obj_list);
                     return false;
             }
-
-            SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef));
 
             if(SrvActuator_Obj.drive_module.obj_list[i].drv_obj == NULL)
             {
