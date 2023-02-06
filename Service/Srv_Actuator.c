@@ -52,6 +52,7 @@ SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
 
 /* internal function */
 static void SrcActuator_Get_ChannelRemap(void);
+static bool SrvActuator_Config_MotoSpinDir(void);
 
 /* external function */
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type);
@@ -138,23 +139,6 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                 SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
                 SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
 
-                switch (SrvActuator_Obj.model)
-                {
-                case Model_Quad:
-                    if ((i == 0) || (i == 3))
-                    {
-                        SrvActuator_Obj.drive_module.obj_list[i].spin_dir = Actuator_MS_ACW;
-                    }
-                    else if ((i == 1) || (i == 2))
-                    {
-                        SrvActuator_Obj.drive_module.obj_list[i].spin_dir = Actuator_MS_CW;
-                    }
-                    break;
-
-                default:
-                    break;
-                }
-
                 SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef));
                 break;
 
@@ -184,6 +168,8 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     /* check value remap relationship */
     /* we can read this info from storage module */
     SrcActuator_Get_ChannelRemap();
+    SrvActuator_Config_MotoSpinDir();
+
     SrvActuator_Obj.init = true;
     return true;
 }
@@ -278,12 +264,15 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
     }
 }
 
+/* mast set spin direction when moto under halt statement */
 static bool SrvActuator_SetMotoSpinDir(uint8_t component_index, SrvActuator_SpinDir_List dir)
 {
     uint32_t dir_cmd = 0;
 
     if (!SrvActuator_Obj.init ||
         (component_index >= SrvActuator_Obj.drive_module.num.moto_cnt) ||
+        (SrvActuator_Obj.drive_module.obj_list[component_index].ctl_val !=
+         SrvActuator_Obj.drive_module.obj_list[component_index].lock_val) ||
         (dir == Actuator_SS_CW) ||
         (dir == Actuator_SS_ACW))
         return false;
@@ -306,6 +295,35 @@ static bool SrvActuator_SetMotoSpinDir(uint8_t component_index, SrvActuator_Spin
 
     default:
         return false;
+    }
+
+    return true;
+}
+
+static bool SrvActuator_Config_MotoSpinDir(void)
+{
+    /* we should read moto spin direction info from storage module */
+    /* if read failed use default setting down below */
+    switch (SrvActuator_Obj.model)
+    {
+    case Model_Quad:
+        for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
+        {
+            if ((i == 0) || (i == 3))
+            {
+                SrvActuator_Obj.drive_module.obj_list[i].spin_dir = Actuator_MS_ACW;
+            }
+            else if ((i == 1) || (i == 2))
+            {
+                SrvActuator_Obj.drive_module.obj_list[i].spin_dir = Actuator_MS_CW;
+            }
+
+            SrvActuator_SetMotoSpinDir(i, SrvActuator_Obj.drive_module.obj_list[i].spin_dir);
+        }
+        break;
+
+    default:
+        break;
     }
 
     return true;
