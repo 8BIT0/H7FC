@@ -74,7 +74,7 @@ bool TaskProtocol_Init(void)
     VCP_Queue_CreateState = true;
 
     usb_setrec_callback(TaskProtocol_Rec);
-    Shell_Init(TaskProtocol_TransBuff);
+    // Shell_Init(TaskProtocol_TransBuff);
 
     ErrorLog.set_callback(Error_Out_Callback, TaskProto_PushProtocolQueue);
 
@@ -154,7 +154,7 @@ void TaskProtocol_Core(Task_Handle hdl)
             }
         }
 
-        if(Frame_CheckProtocol_Update())
+        if (Frame_CheckProtocol_Update())
         {
             /* communicate to pc application */
         }
@@ -205,11 +205,10 @@ uint32_t Frame_Get_Runtime(void)
 
 static void TaskProtocol_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj)
 {
-    if(obj == NULL)
+    if (obj == NULL)
         return;
 
-    if(obj == &Receiver_ptl_DataPipe)
+    if (obj == &Receiver_ptl_DataPipe)
     {
-
     }
 }
