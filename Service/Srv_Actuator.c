@@ -57,10 +57,12 @@ static void SrcActuator_Get_ChannelRemap(void);
 
 /* external function */
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type);
+static bool SrvActuator_Lock(void);
 
 /* external variable */
 SrvActuator_TypeDef SrvActuator = {
     .init = SrvActuator_Init,
+    .lock = SrvActuator_Lock,
 };
 
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
@@ -199,12 +201,12 @@ static void SrcActuator_Get_ChannelRemap(void)
     }
 }
 
-static void SrvActuator_Lock(void)
+static bool SrvActuator_Lock(void)
 {
     uint8_t i = 0;
 
     if(!SrvActuator_Obj.init)
-        return;
+        return false;
 
     for(i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
     {
@@ -214,10 +216,10 @@ static void SrvActuator_Lock(void)
             case DevDshot_300:
             case DevDshot_600:
                 DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].lock_val);
-                break;
+                return true;
 
             default:
-                break;
+                return false;
         }
     }
 }

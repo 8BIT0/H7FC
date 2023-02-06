@@ -160,6 +160,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(SrvActuator_Model_List model, uint8_t esc_type);
+    bool (*lock)(void);
 }SrvActuator_TypeDef;
 
 extern SrvActuator_TypeDef SrvActuator;
