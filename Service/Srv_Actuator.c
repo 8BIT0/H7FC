@@ -58,6 +58,7 @@ static void SrcActuator_Get_ChannelRemap(void);
 /* external function */
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type);
 static void SrvActuator_Control(uint16_t *p_val, uint8_t len);
+static bool SrvActuator_InvertSpinDir(uint8_t component_index);
 static bool SrvActuator_Lock(void);
 
 /* external variable */
@@ -65,6 +66,7 @@ SrvActuator_TypeDef SrvActuator = {
     .init = SrvActuator_Init,
     .lock = SrvActuator_Lock,
     .control = SrvActuator_Control,
+    .invert_spin = SrvActuator_InvertSpinDir,
 };
 
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
