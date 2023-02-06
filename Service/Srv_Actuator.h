@@ -111,12 +111,6 @@ typedef enum
     Actuator_PWM_SigSUM,
 } SrvActuator_MotoTag_List;
 
-typedef enum
-{
-    SrvActuator_Tag_Moto = 0,
-    SrvActuator_Tag_Servo,
-} SrvActuator_ComponentTag_TypeDef;
-
 #pragma pack(1)
 typedef struct
 {
@@ -129,7 +123,6 @@ typedef struct
 
 typedef struct
 {
-    uint8_t tag;
     uint8_t drv_type;
     uint8_t sig_id;
 

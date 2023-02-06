@@ -127,7 +127,6 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                 case DevDshot_300:
                 case DevDshot_600:
                     SrvActuator_Obj.drive_module.obj_list[i].drv_type = esc_type;
-                    SrvActuator_Obj.drive_module.obj_list[i].tag = SrvActuator_Tag_Moto;
 
                     SrvActuator_Obj.drive_module.obj_list[i].ctl_val = DSHOT_LOCK_THROTTLE;
                     SrvActuator_Obj.drive_module.obj_list[i].min_val = DSHOT_MIN_THROTTLE;
