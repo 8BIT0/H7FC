@@ -250,6 +250,9 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
     }
 }
 
+static void SrvActuator_InvertSpinDir(uint8_t component_index)
+{
 
+}
 
 
