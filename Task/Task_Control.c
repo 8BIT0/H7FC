@@ -4,6 +4,7 @@
  */
 #include "Task_Control.h"
 #include "DataPipe.h"
+#include "scheduler.h"
 #include "Srv_Actuator.h"
 #include "mmu.h"
 
@@ -19,4 +20,8 @@ void TaskControl_Init(void)
     if (TaskControl_Monitor.init_state)
     {
     }
+}
+
+void TaskControl_Core(Task_Handle hdl)
+{
 }
