@@ -173,7 +173,7 @@ static void SrcActuator_Get_ChannelRemap(void)
     SrvActuator_PeriphSet_TypeDef *periph_ptr = NULL;
 
     /* get remap relationship */
-    memcpy(storage_serial, default_sig_serial, sizeof(storage_serial));
+    memcpy(storage_serial, default_sig_serial, sizeof(storage_serial)); //only for develop stage... 
 
     /* moto section */
     if(SrvActuator_Obj.drive_module.num.moto_cnt)
