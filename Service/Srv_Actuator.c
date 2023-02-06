@@ -263,7 +263,8 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
 
 static bool SrvActuator_InvertSpinDir(uint8_t component_index)
 {
-    if(component_index > SrvActuator_Obj.drive_module.num.total_cnt)
+    if((component_index > SrvActuator_Obj.drive_module.num.total_cnt) || 
+        !SrvActuator_Obj.init)
         return false;
 
     return true;
