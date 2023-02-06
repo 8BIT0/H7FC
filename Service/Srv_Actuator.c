@@ -278,12 +278,12 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
     }
 }
 
-static bool SrvActuator_SetSpinDir(uint8_t component_index, SrvActuator_SpinDir_List dir)
+static bool SrvActuator_SetMotoSpinDir(uint8_t component_index, SrvActuator_SpinDir_List dir)
 {
     uint32_t dir_cmd = 0;
 
-    if ((component_index > SrvActuator_Obj.drive_module.num.total_cnt) ||
-        !SrvActuator_Obj.init ||
+    if (!SrvActuator_Obj.init ||
+        (component_index >= SrvActuator_Obj.drive_module.num.moto_cnt) ||
         (dir == Actuator_SS_CW) ||
         (dir == Actuator_SS_ACW))
         return false;
@@ -311,6 +311,31 @@ static bool SrvActuator_SetSpinDir(uint8_t component_index, SrvActuator_SpinDir_
     return true;
 }
 
-static bool SrvActuator_InvertSpinDir(uint8_t component_index)
+static bool SrvActuator_InvertMotoSpinDir(uint8_t component_index)
 {
+    if (!SrvActuator_Obj.init ||
+        (component_index >= SrvActuator_Obj.drive_module.num.moto_cnt))
+        return false;
+
+    switch (SrvActuator_Obj.drive_module.obj_list[component_index].spin_dir)
+    {
+    case Actuator_MS_CW:
+        if (SrvActuator_SetMotoSpinDir(component_index, Actuator_MS_ACW))
+        {
+            SrvActuator_Obj.drive_module.obj_list[component_index].spin_dir = Actuator_MS_ACW;
+            return true;
+        }
+        return false;
+
+    case Actuator_MS_ACW:
+        if (SrvActuator_SetMotoSpinDir(component_index, Actuator_MS_CW))
+        {
+            SrvActuator_Obj.drive_module.obj_list[component_index].spin_dir = Actuator_MS_CW;
+            return true;
+        }
+        return false;
+
+    default:
+        return false;
+    }
 }
