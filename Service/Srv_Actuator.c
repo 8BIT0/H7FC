@@ -227,7 +227,7 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
     if((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt) || !SrvActuator_Obj.init)
         return;
 
-    for(i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
+    for(i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
     {
         SrvActuator_Obj.drive_module.obj_list[i].ctl_val = p_val[i];
         if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].min_val)
@@ -237,12 +237,21 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
         else if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val >= SrvActuator_Obj.drive_module.obj_list[i].max_val)
             SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].max_val;
 
-        DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
-    }
+        switch(SrvActuator_Obj.drive_module.obj_list[i].drv_type)
+        {
+            case DevDshot_150:
+            case DevDshot_300:
+            case DevDshot_600:
+                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
+                break;
 
-    for(i = 0; i < SrvActuator_Obj.drive_module.num.servo_cnt; i++)
-    {
+            /* servo control */
+            // case servo_pwm:
+                // break;
 
+            default:
+                return;
+        }
     }
 }
 
