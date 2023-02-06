@@ -14,7 +14,6 @@
  * S12  PE6     TIM15   CH2
  */
 #include "Srv_Actuator.h"
-#include "Dev_Dshot.h"
 #include "datapipe.h"
 #include "mmu.h"
 
@@ -30,8 +29,7 @@ const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM]
     SRVACTUATOR_PD14_SIG_9,
     SRVACTUATOR_PD15_SIG_10,
     SRVACTUATOR_PE5_SIG_11,
-    SRVACTUATOR_PE6_SIG_12
-};
+    SRVACTUATOR_PE6_SIG_12};
 
 const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
     Actuator_PWM_Sig1,
@@ -75,38 +73,38 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     memset(&SrvActuator_Obj, 0, sizeof(SrvActuator_Obj));
     memset(&SrvActuator_ControlStream, 0, sizeof(SrvActuator_ControlStream));
 
-    switch(model)
+    switch (model)
     {
-        case Model_Quad:
-            SrvActuator_Obj.drive_module.num = QUAD_CONTROL_COMPONENT;
-            break;
+    case Model_Quad:
+        SrvActuator_Obj.drive_module.num = QUAD_CONTROL_COMPONENT;
+        break;
 
-        case Model_Hex:
-            SrvActuator_Obj.drive_module.num = HEX_CONTROL_COMPONENT;
-            break;
+    case Model_Hex:
+        SrvActuator_Obj.drive_module.num = HEX_CONTROL_COMPONENT;
+        break;
 
-        case Model_Oct:
-            SrvActuator_Obj.drive_module.num = OCT_CONTROL_COMPONENT;
-            break;
+    case Model_Oct:
+        SrvActuator_Obj.drive_module.num = OCT_CONTROL_COMPONENT;
+        break;
 
-        case Model_X8:
-            SrvActuator_Obj.drive_module.num = X8_CONTROL_COMPONENT;
-            break;
+    case Model_X8:
+        SrvActuator_Obj.drive_module.num = X8_CONTROL_COMPONENT;
+        break;
 
-        case Model_Y6:
-            SrvActuator_Obj.drive_module.num = Y6_CONTROL_CONPONENT;
-            break;
+    case Model_Y6:
+        SrvActuator_Obj.drive_module.num = Y6_CONTROL_CONPONENT;
+        break;
 
-        case Model_Tri:
-            SrvActuator_Obj.drive_module.num = TRI_CONTROL_COMPONENT;
-            break;
+    case Model_Tri:
+        SrvActuator_Obj.drive_module.num = TRI_CONTROL_COMPONENT;
+        break;
 
-        case Model_TDrone:
-            SrvActuator_Obj.drive_module.num = TDRONE_CONTROL_COMPONENT;
-            break;
+    case Model_TDrone:
+        SrvActuator_Obj.drive_module.num = TDRONE_CONTROL_COMPONENT;
+        break;
 
-        default:
-            return false;
+    default:
+        return false;
     }
 
     /* read in storage */
@@ -116,45 +114,62 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     /* malloc dshot esc driver obj for using */
     SrvActuator_Obj.drive_module.obj_list = (SrvActuator_PWMOutObj_TypeDef *)MMU_Malloc(sizeof(SrvActuator_PWMOutObj_TypeDef) * SrvActuator_Obj.drive_module.num.total_cnt);
 
-    if(SrvActuator_Obj.drive_module.obj_list == NULL)
+    if (SrvActuator_Obj.drive_module.obj_list == NULL)
     {
         MMU_Free(SrvActuator_Obj.drive_module.obj_list);
         return false;
     }
 
-    if(SrvActuator_Obj.drive_module.num.moto_cnt)
+    if (SrvActuator_Obj.drive_module.num.moto_cnt)
     {
         /* default init */
-        for(uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
+        for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         {
-            switch(esc_type)
+            switch (esc_type)
             {
-                case DevDshot_150:
-                case DevDshot_300:
-                case DevDshot_600:
-                    SrvActuator_Obj.drive_module.obj_list[i].drv_type = esc_type;
+            case DevDshot_150:
+            case DevDshot_300:
+            case DevDshot_600:
+                SrvActuator_Obj.drive_module.obj_list[i].drv_type = esc_type;
 
-                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val = DSHOT_LOCK_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].min_val = DSHOT_MIN_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].max_val = DSHOT_MAX_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].ctl_val = DSHOT_LOCK_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].min_val = DSHOT_MIN_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].max_val = DSHOT_MAX_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
 
-                    SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef));
+                switch (SrvActuator_Obj.model)
+                {
+                case Model_Quad:
+                    if ((i == 0) || (i == 3))
+                    {
+                        SrvActuator_Obj.drive_module.obj_list[i].spin_dir = Actuator_MS_ACW;
+                    }
+                    else if ((i == 1) || (i == 2))
+                    {
+                        SrvActuator_Obj.drive_module.obj_list[i].spin_dir = Actuator_MS_CW;
+                    }
                     break;
 
                 default:
-                    MMU_Free(SrvActuator_Obj.drive_module.obj_list);
-                    return false;
+                    break;
+                }
+
+                SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef));
+                break;
+
+            default:
+                MMU_Free(SrvActuator_Obj.drive_module.obj_list);
+                return false;
             }
 
-            if(SrvActuator_Obj.drive_module.obj_list[i].drv_obj == NULL)
+            if (SrvActuator_Obj.drive_module.obj_list[i].drv_obj == NULL)
             {
-                for(uint8_t j = 0; j < i; j++)
+                for (uint8_t j = 0; j < i; j++)
                 {
                     MMU_Free(SrvActuator_Obj.drive_module.obj_list[j].drv_obj);
                 }
-                                
+
                 MMU_Free(SrvActuator_Obj.drive_module.obj_list);
                 return false;
             }
@@ -162,7 +177,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     }
 
     /* create servo object */
-    if(SrvActuator_Obj.drive_module.num.servo_cnt)
+    if (SrvActuator_Obj.drive_module.num.servo_cnt)
     {
     }
 
@@ -179,27 +194,27 @@ static void SrcActuator_Get_ChannelRemap(void)
     SrvActuator_PeriphSet_TypeDef *periph_ptr = NULL;
 
     /* get remap relationship */
-    memcpy(storage_serial, default_sig_serial, sizeof(storage_serial)); //only for develop stage... 
+    memcpy(storage_serial, default_sig_serial, sizeof(storage_serial)); // only for develop stage...
 
     /* moto section */
-    if(SrvActuator_Obj.drive_module.num.moto_cnt)
+    if (SrvActuator_Obj.drive_module.num.moto_cnt)
     {
-        for(uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
+        for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         {
             SrvActuator_Obj.drive_module.obj_list[i].sig_id = storage_serial[storage_serial[i]];
             SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = &SrvActuator_Periph_List[storage_serial[i]];
             periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 
-            DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, \
-                          periph_ptr->tim_base, periph_ptr->tim_channel, periph_ptr->pin, \
+            DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj,
+                          periph_ptr->tim_base, periph_ptr->tim_channel, periph_ptr->pin,
                           periph_ptr->dma, periph_ptr->dma_channel);
         }
     }
 
     /* servo section */
-    if(SrvActuator_Obj.drive_module.num.servo_cnt)
+    if (SrvActuator_Obj.drive_module.num.servo_cnt)
     {
-        for(uint8_t i = SrvActuator_Obj.drive_module.num.moto_cnt; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
+        for (uint8_t i = SrvActuator_Obj.drive_module.num.moto_cnt; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
         {
         }
     }
@@ -209,21 +224,21 @@ static bool SrvActuator_Lock(void)
 {
     uint8_t i = 0;
 
-    if(!SrvActuator_Obj.init)
+    if (!SrvActuator_Obj.init)
         return false;
 
-    for(i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
+    for (i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
     {
-        switch(SrvActuator_Obj.drive_module.obj_list[i].drv_type)
+        switch (SrvActuator_Obj.drive_module.obj_list[i].drv_type)
         {
-            case DevDshot_150:
-            case DevDshot_300:
-            case DevDshot_600:
-                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].lock_val);
-                return true;
+        case DevDshot_150:
+        case DevDshot_300:
+        case DevDshot_600:
+            DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].lock_val);
+            return true;
 
-            default:
-                return false;
+        default:
+            return false;
         }
     }
 }
@@ -232,55 +247,70 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
 {
     uint8_t i = 0;
 
-    if((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt) || !SrvActuator_Obj.init)
+    if ((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt) || !SrvActuator_Obj.init)
         return;
 
-    for(i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
+    for (i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
     {
         SrvActuator_Obj.drive_module.obj_list[i].ctl_val = p_val[i];
-        if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].min_val)
+        if (SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].min_val)
         {
             SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].min_val;
         }
-        else if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val >= SrvActuator_Obj.drive_module.obj_list[i].max_val)
+        else if (SrvActuator_Obj.drive_module.obj_list[i].ctl_val >= SrvActuator_Obj.drive_module.obj_list[i].max_val)
             SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].max_val;
 
-        switch(SrvActuator_Obj.drive_module.obj_list[i].drv_type)
+        switch (SrvActuator_Obj.drive_module.obj_list[i].drv_type)
         {
-            case DevDshot_150:
-            case DevDshot_300:
-            case DevDshot_600:
-                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
-                break;
+        case DevDshot_150:
+        case DevDshot_300:
+        case DevDshot_600:
+            DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
+            break;
 
             /* servo control */
             // case servo_pwm:
-                // break;
+            // break;
 
-            default:
-                return;
+        default:
+            return;
         }
     }
 }
 
-static bool SrvActuator_InvertSpinDir(uint8_t component_index)
+static bool SrvActuator_SetSpinDir(uint8_t component_index, SrvActuator_SpinDir_List dir)
 {
-    if((component_index > SrvActuator_Obj.drive_module.num.total_cnt) || 
-        !SrvActuator_Obj.init)
+    uint32_t dir_cmd = 0;
+
+    if ((component_index > SrvActuator_Obj.drive_module.num.total_cnt) ||
+        !SrvActuator_Obj.init ||
+        (dir == Actuator_SS_CW) ||
+        (dir == Actuator_SS_ACW))
         return false;
 
-    switch(SrvActuator_Obj.drive_module.obj_list[component_index].drv_type)
+    switch (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type)
     {
-        case DevDshot_150:
-        case DevDshot_300:
-        case DevDshot_600:
-            break;
+    case DevDshot_150:
+    case DevDshot_300:
+    case DevDshot_600:
+        if (dir == Actuator_MS_CW)
+        {
+            dir_cmd = DSHOT_CMD_SET_SPIN_CLOCKWISE;
+        }
+        else
+            dir_cmd = DSHOT_CMD_SET_SPIN_ANTICLOCKWISE;
 
-        default:
-            return false;
+        DevDshot.command(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj, dir_cmd);
+        DevDshot.command(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj, DSHOT_CMD_SAVE_SETTING);
+        break;
+
+    default:
+        return false;
     }
 
     return true;
 }
 
-
+static bool SrvActuator_InvertSpinDir(uint8_t component_index)
+{
+}

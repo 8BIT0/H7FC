@@ -27,6 +27,10 @@
 #define DSHOT_MAX_THROTTLE 1900
 #define DSHOT_RANGE (DSHOT_MAX_THROTTLE - DSHOT_MIN_THROTTLE)
 
+#define DSHOT_CMD_SET_SPIN_CLOCKWISE ((1 << DevDshot_RotateDir_ClockWise) | (0 << DevDshot_RotateDir_AntiClockWise))
+#define DSHOT_CMD_SET_SPIN_ANTICLOCKWISE ((0 << DevDshot_RotateDir_ClockWise) | (1 << DevDshot_RotateDir_AntiClockWise))
+#define DSHOT_CMD_SAVE_SETTING (1 << DevDshot_Save_Setting)
+
 typedef enum
 {
     DevDshot_MotoOutput_Lock = 0,
