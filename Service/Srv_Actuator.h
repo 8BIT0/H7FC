@@ -164,5 +164,11 @@ typedef struct
 } SrvActuatorObj_TypeDef;
 #pragma pak()
 
+typedef struct
+{
+    bool (*init)(SrvActuator_Model_List model, uint8_t esc_type);
+}SrvActuator_TypeDef;
+
+extern SrvActuator_TypeDef SrvActuator;
 
 #endif

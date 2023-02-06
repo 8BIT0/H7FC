@@ -9,5 +9,4 @@
 
 void TaskControl_Init(void)
 {
-
 }

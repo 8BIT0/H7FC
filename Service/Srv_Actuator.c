@@ -55,6 +55,14 @@ SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
 /* internal function */
 static void SrcActuator_Get_ChannelRemap(void);
 
+/* external function */
+static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type);
+
+/* external variable */
+SrvActuator_TypeDef SrvActuator = {
+    .init = SrvActuator_Init,
+};
+
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 {
     uint8_t i = 0;
