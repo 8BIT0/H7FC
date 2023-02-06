@@ -199,7 +199,7 @@ static void SrvActuator_Lock(void)
     if(!SrvActuator_Obj.init)
         return;
 
-    for(i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
+    for(i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
     {
         switch(SrvActuator_Obj.drive_module.obj_list[i].drv_type)
         {
@@ -212,11 +212,6 @@ static void SrvActuator_Lock(void)
             default:
                 break;
         }
-    }
-
-    for(i = 0; i < SrvActuator_Obj.drive_module.num.servo_cnt; i++)
-    {
-
     }
 }
 
