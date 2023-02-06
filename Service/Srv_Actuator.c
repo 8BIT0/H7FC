@@ -269,6 +269,17 @@ static bool SrvActuator_InvertSpinDir(uint8_t component_index)
         !SrvActuator_Obj.init)
         return false;
 
+    switch(SrvActuator_Obj.drive_module.obj_list[component_index].drv_type)
+    {
+        case DevDshot_150:
+        case DevDshot_300:
+        case DevDshot_600:
+            break;
+
+        default:
+            return false;
+    }
+
     return true;
 }
 
