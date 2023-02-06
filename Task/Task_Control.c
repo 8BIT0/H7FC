@@ -10,7 +10,9 @@
 #define DEFAULT_CONTROL_MODEL Model_Quad
 #define DEFAULT_ESC_TYPE DevDshot_600
 
+TaskControl_Monitor_TypeDef TaskControl_Monitor;
+
 void TaskControl_Init(void)
 {
-    SrvActuator.init(DEFAULT_CONTROL_MODEL, );
+    SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 }

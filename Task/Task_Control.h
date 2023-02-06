@@ -5,5 +5,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+typedef struct
+{
+    bool init_state;
+}TaskControl_Monitor_TypeDef;
 
 #endif
