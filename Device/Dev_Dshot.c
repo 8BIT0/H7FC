@@ -100,8 +100,35 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
 
 static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd)
 {
+    uint16_t packet;
+    bool dshot_telemetry = false;
+
     if (!obj || cmd >= DSHOT_MIN_THROTTLE)
         return;
 
-    DevDshot_Control(obj, cmd);
+    packet = (cmd << 1) | (dshot_telemetry ? 1 : 0);
+
+    // compute checksum
+    uint8_t csum = 0;
+    uint16_t csum_data = packet;
+
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        csum ^= csum_data; // xor data by nibbles
+        csum_data >>= 4;
+    }
+
+    csum &= 0xf;
+    packet = (packet << 4) | csum;
+
+    for (int i = 0; i < 16; i++)
+    {
+        obj->ctl_buf[i] = (packet & 0x8000) ? MOTOR_BIT_1 : MOTOR_BIT_0;
+        packet <<= 1;
+    }
+
+    obj->ctl_buf[16] = 0;
+    obj->ctl_buf[17] = 0;
+
+    BspTimer_PWM.dma_trans(&obj->pwm_obj);
 }
