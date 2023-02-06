@@ -8,6 +8,8 @@
 typedef struct
 {
     bool init_state;
-}TaskControl_Monitor_TypeDef;
+} TaskControl_Monitor_TypeDef;
+
+void TaskControl_Init(void);
 
 #endif

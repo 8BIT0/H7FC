@@ -14,5 +14,9 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor;
 
 void TaskControl_Init(void)
 {
-    SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
+    TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
+
+    if (TaskControl_Monitor.init_state)
+    {
+    }
 }

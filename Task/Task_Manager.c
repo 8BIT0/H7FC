@@ -1,6 +1,7 @@
 #include "Task_Manager.h"
 #include "Task_Log.h"
 #include "Task_Protocol.h"
+#include "Task_Control.h"
 #include "Task_SensorInertial.h"
 #include "Task_Telemetry.h"
 #include "scheduler.h"
@@ -63,6 +64,7 @@ void Task_Manager_Init(void)
     TaskProtocol_Init();
     TaskInertial_Init();
     TaskTelemetry_Init();
+    TaskControl_Init();
     TaskLog_Init();
 }
 
