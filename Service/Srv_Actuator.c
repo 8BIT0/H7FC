@@ -170,6 +170,8 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     SrcActuator_Get_ChannelRemap();
     SrvActuator_Config_MotoSpinDir();
 
+    SrvActuator_Lock();
+
     SrvActuator_Obj.init = true;
     return true;
 }
