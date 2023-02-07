@@ -231,11 +231,6 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     return false;
 }
 
-static void BspTimer_PWM_DMA_Enable(BspTimerPWMObj_TypeDef *obj)
-{
-    __HAL_TIM_ENABLE_DMA(&obj->tim_hdl, obj->tim_dma_cc);
-}
-
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 {
     obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
