@@ -49,7 +49,7 @@ static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List st
     bool dma1_clk_init = false;
     bool dma2_clk_init = false;
 
-    if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_1))
+    if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_0))
         return NULL;
 
     if ((dma == Bsp_DMA_1) && ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_0)))
@@ -80,7 +80,7 @@ static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, DMA_Ha
 {
     DMA2D_TypeDef *instance = NULL;
 
-    if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_1))
+    if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_0))
         return false;
 
     if (((dma < Bsp_DMA_Sum) && (dma >= Bsp_DMA_1)) &&

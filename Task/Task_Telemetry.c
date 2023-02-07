@@ -421,6 +421,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         }
         RC_Input_obj->update_rt = receiver_data.time_stamp;
         RC_Input_obj->sig.update_interval = RC_Input_obj->update_rt - RC_Input_obj->lst_update_rt;
+
         RC_Input_obj->lst_update_rt = RC_Input_obj->update_rt;
     }
     else

@@ -90,6 +90,58 @@ static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
     return true;
 }
 
+static uint32_t BspTimer_Get_DMA_Request(TIM_TypeDef *instance, uint32_t ch)
+{
+    switch ((uint32_t)instance)
+    {
+    case (uint32_t)TIM5:
+        switch(ch)
+        {
+            case TIM_CHANNEL_1: return DMA_REQUEST_TIM5_CH1;
+            case TIM_CHANNEL_2: return DMA_REQUEST_TIM5_CH2;
+            case TIM_CHANNEL_3: return DMA_REQUEST_TIM5_CH3;
+            case TIM_CHANNEL_4: return DMA_REQUEST_TIM5_CH4;
+            default: return 0;
+        }
+        break;
+
+    case (uint32_t)TIM3:
+        switch(ch)
+        {
+            case TIM_CHANNEL_1: return DMA_REQUEST_TIM3_CH1;
+            case TIM_CHANNEL_2: return DMA_REQUEST_TIM3_CH2;
+            case TIM_CHANNEL_3: return DMA_REQUEST_TIM3_CH3;
+            case TIM_CHANNEL_4: return DMA_REQUEST_TIM3_CH4;
+            default: return 0;
+        }
+        break;
+
+    case (uint32_t)TIM4:
+        switch(ch)
+        {
+            case TIM_CHANNEL_1: return DMA_REQUEST_TIM4_CH1;
+            case TIM_CHANNEL_2: return DMA_REQUEST_TIM4_CH2;
+            case TIM_CHANNEL_3: return DMA_REQUEST_TIM4_CH3;
+            default: return 0;
+        }
+        break;
+
+    case (uint32_t)TIM15:
+        switch(ch)
+        {
+            case TIM_CHANNEL_1: return DMA_REQUEST_TIM15_CH1;
+            case TIM_CHANNEL_2: return DMA_REQUEST_TIM15_UP;
+            case TIM_CHANNEL_3: return DMA_REQUEST_TIM15_TRIG;
+            case TIM_CHANNEL_4: return DMA_REQUEST_TIM15_COM;
+            default: return 0;
+        }
+        break;
+
+    default:
+        return 0;
+    }
+}
+
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream, uint32_t buf_aadr, uint32_t buf_size)
 {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -150,12 +202,12 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
 
     /* dma init */
     obj->dma_hdl.Instance = BspDMA.get_instance(dma, stream);
-    obj->dma_hdl.Init.Request = DMA_REQUEST_MEM2MEM;
-    obj->dma_hdl.Init.Direction = DMA_MEMORY_TO_MEMORY;
-    obj->dma_hdl.Init.PeriphInc = DMA_PINC_ENABLE;
+    obj->dma_hdl.Init.Request = BspTimer_Get_DMA_Request(instance, ch);
+    obj->dma_hdl.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    obj->dma_hdl.Init.PeriphInc = DMA_PINC_DISABLE;
     obj->dma_hdl.Init.MemInc = DMA_MINC_ENABLE;
-    obj->dma_hdl.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    obj->dma_hdl.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    obj->dma_hdl.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    obj->dma_hdl.Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
     obj->dma_hdl.Init.Mode = DMA_NORMAL;
     obj->dma_hdl.Init.Priority = DMA_PRIORITY_VERY_HIGH;
     obj->dma_hdl.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
@@ -187,6 +239,7 @@ static void BspTimer_PWM_DMA_Enable(BspTimerPWMObj_TypeDef *obj)
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 {
     obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
+    // HAL_TIM_PWM_Start_DMA(&obj->tim_hdl, );
     HAL_TIM_PWM_Start(&obj->tim_hdl, obj->tim_channel);
 }
 

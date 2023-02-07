@@ -24,4 +24,10 @@ void TaskControl_Init(void)
 
 void TaskControl_Core(Task_Handle hdl)
 {
+    uint16_t test_val[4] = {200, 200, 200, 200};
+
+    if(TaskControl_Monitor.init_state)
+    {
+        SrvActuator.control(test_val, sizeof(test_val) / sizeof(test_val[0]));
+    }
 }
