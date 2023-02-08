@@ -1,7 +1,7 @@
 /*
  * For MATEK H743 Flight Controller Hardware
- * S1   PB0     TIM8    CH2 DMA1 Stream0
- * S2   PB1     TIM8    CH3 DMA1 Stream1
+ * S1   PB0     TIM3    CH3 DMA1 Stream0
+ * S2   PB1     TIM3    CH4 DMA1 Stream1
  * S3   PA0     TIM5    CH1 DMA1 Stream2
  * S4   PA1     TIM5    CH2 DMA1 Stream3
  * S5   PA2     TIM5    CH3
