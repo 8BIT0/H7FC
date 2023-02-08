@@ -95,6 +95,9 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
     obj->ctl_buf[16] = 0;
     obj->ctl_buf[17] = 0;
 
+    obj->pwm_obj.buffer_addr = obj->ctl_buf;
+    obj->pwm_obj.buffer_size = sizeof(obj->ctl_buf);
+
     BspTimer_PWM.dma_trans(&obj->pwm_obj);
 }
 
