@@ -60,7 +60,7 @@ typedef struct
     DevDshotType_List type;
     BspTimerPWMObj_TypeDef pwm_obj;
 
-    uint8_t ctl_buf[MOTOR_BITLENGTH];
+    uint16_t ctl_buf[MOTOR_BITLENGTH];
 } DevDshotObj_TypeDef;
 
 typedef struct

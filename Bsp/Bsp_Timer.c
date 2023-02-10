@@ -211,7 +211,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     obj->tim_channel = ch;
 
     /* pin init */
-    BspGPIO.alt_init(pin);
+    // BspGPIO.alt_init(pin);
 
     /* dma init */
     obj->dma_hdl.Instance = BspDMA.get_instance(dma, stream);
@@ -222,7 +222,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     obj->dma_hdl.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     obj->dma_hdl.Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
     obj->dma_hdl.Init.Mode = DMA_NORMAL;
-    obj->dma_hdl.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+    obj->dma_hdl.Init.Priority = DMA_PRIORITY_HIGH;
     obj->dma_hdl.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
     obj->dma_hdl.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
     obj->dma_hdl.Init.MemBurst = DMA_MBURST_SINGLE;
@@ -260,26 +260,26 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
     switch (obj->tim_dma_id_cc)
     {
     case TIM_DMA_ID_CC1:
-        dst_addr = (uint32_t) & (obj->tim_hdl.Instance->CCR1);
+        dst_addr = (uint32_t)&(obj->tim_hdl.Instance->CCR1);
         break;
 
     case TIM_DMA_ID_CC2:
-        dst_addr = (uint32_t) & (obj->tim_hdl.Instance->CCR2);
+        dst_addr = (uint32_t)&(obj->tim_hdl.Instance->CCR2);
         break;
 
     case TIM_DMA_ID_CC3:
-        dst_addr = (uint32_t) & (obj->tim_hdl.Instance->CCR3);
+        dst_addr = (uint32_t)&(obj->tim_hdl.Instance->CCR3);
         break;
 
     case TIM_DMA_ID_CC4:
-        dst_addr = (uint32_t) & (obj->tim_hdl.Instance->CCR4);
+        dst_addr = (uint32_t)&(obj->tim_hdl.Instance->CCR4);
         break;
 
     default:
         return;
     }
 
-    HAL_DMA_Start_IT(obj->tim_hdl.hdma[obj->tim_dma_id_cc], obj->buffer_addr, dst_addr, obj->buffer_size);
+    HAL_DMA_Start_IT(&obj->dma_hdl, (uint32_t)obj->buffer_addr, dst_addr, obj->buffer_size);
     __HAL_TIM_ENABLE_DMA(&obj->tim_hdl, obj->tim_dma_cc);
 }
 

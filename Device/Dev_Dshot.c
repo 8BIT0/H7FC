@@ -30,6 +30,7 @@ static uint16_t DevDshot_GetType_Clock(DevDshotType_List type)
     }
 }
 
+uint16_t prescaler = 0;
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
                           void *timer_ins,
                           uint32_t ch,
@@ -37,7 +38,7 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
                           uint8_t dma,
                           uint8_t stream)
 {
-    uint16_t prescaler = lrintf((float)DSHOT_TIMER_CLK_HZ / DevDshot_GetType_Clock(obj->type) + 0.01f) - 1;
+    prescaler = lrintf((float)DSHOT_TIMER_CLK_HZ / DevDshot_GetType_Clock(obj->type) + 0.01f) - 1;
 
     if (!obj)
         return false;
@@ -96,7 +97,7 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
     obj->ctl_buf[17] = 0;
 
     obj->pwm_obj.buffer_addr = obj->ctl_buf;
-    obj->pwm_obj.buffer_size = sizeof(obj->ctl_buf);
+    obj->pwm_obj.buffer_size = DSHOT_DMA_BUFFER_SIZE;
 
     BspTimer_PWM.dma_trans(&obj->pwm_obj);
 }
