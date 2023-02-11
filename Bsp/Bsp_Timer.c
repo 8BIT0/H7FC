@@ -95,45 +95,64 @@ static uint32_t BspTimer_Get_DMA_Request(TIM_TypeDef *instance, uint32_t ch)
     switch ((uint32_t)instance)
     {
     case (uint32_t)TIM5:
-        switch(ch)
+        switch (ch)
         {
-            case TIM_CHANNEL_1: return DMA_REQUEST_TIM5_CH1;
-            case TIM_CHANNEL_2: return DMA_REQUEST_TIM5_CH2;
-            case TIM_CHANNEL_3: return DMA_REQUEST_TIM5_CH3;
-            case TIM_CHANNEL_4: return DMA_REQUEST_TIM5_CH4;
-            default: return 0;
+        case TIM_CHANNEL_1:
+            return DMA_REQUEST_TIM5_CH1;
+        case TIM_CHANNEL_2:
+            return DMA_REQUEST_TIM5_CH2;
+        case TIM_CHANNEL_3:
+            return DMA_REQUEST_TIM5_CH3;
+        case TIM_CHANNEL_4:
+            return DMA_REQUEST_TIM5_CH4;
+        default:
+            return 0;
         }
         break;
 
     case (uint32_t)TIM3:
-        switch(ch)
+        switch (ch)
         {
-            case TIM_CHANNEL_1: return DMA_REQUEST_TIM3_CH1;
-            case TIM_CHANNEL_2: return DMA_REQUEST_TIM3_CH2;
-            case TIM_CHANNEL_3: return DMA_REQUEST_TIM3_CH3;
-            case TIM_CHANNEL_4: return DMA_REQUEST_TIM3_CH4;
-            default: return 0;
+        case TIM_CHANNEL_1:
+            return DMA_REQUEST_TIM3_CH1;
+        case TIM_CHANNEL_2:
+            return DMA_REQUEST_TIM3_CH2;
+        case TIM_CHANNEL_3:
+            return DMA_REQUEST_TIM3_CH3;
+        case TIM_CHANNEL_4:
+            return DMA_REQUEST_TIM3_CH4;
+        default:
+            return 0;
         }
         break;
 
     case (uint32_t)TIM4:
-        switch(ch)
+        switch (ch)
         {
-            case TIM_CHANNEL_1: return DMA_REQUEST_TIM4_CH1;
-            case TIM_CHANNEL_2: return DMA_REQUEST_TIM4_CH2;
-            case TIM_CHANNEL_3: return DMA_REQUEST_TIM4_CH3;
-            default: return 0;
+        case TIM_CHANNEL_1:
+            return DMA_REQUEST_TIM4_CH1;
+        case TIM_CHANNEL_2:
+            return DMA_REQUEST_TIM4_CH2;
+        case TIM_CHANNEL_3:
+            return DMA_REQUEST_TIM4_CH3;
+        default:
+            return 0;
         }
         break;
 
     case (uint32_t)TIM15:
-        switch(ch)
+        switch (ch)
         {
-            case TIM_CHANNEL_1: return DMA_REQUEST_TIM15_CH1;
-            case TIM_CHANNEL_2: return DMA_REQUEST_TIM15_UP;
-            case TIM_CHANNEL_3: return DMA_REQUEST_TIM15_TRIG;
-            case TIM_CHANNEL_4: return DMA_REQUEST_TIM15_COM;
-            default: return 0;
+        case TIM_CHANNEL_1:
+            return DMA_REQUEST_TIM15_CH1;
+        case TIM_CHANNEL_2:
+            return DMA_REQUEST_TIM15_UP;
+        case TIM_CHANNEL_3:
+            return DMA_REQUEST_TIM15_TRIG;
+        case TIM_CHANNEL_4:
+            return DMA_REQUEST_TIM15_COM;
+        default:
+            return 0;
         }
         break;
 
@@ -142,7 +161,11 @@ static uint32_t BspTimer_Get_DMA_Request(TIM_TypeDef *instance, uint32_t ch)
     }
 }
 
-static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream, uint32_t buf_aadr, uint32_t buf_size)
+static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
+                              TIM_TypeDef *instance,
+                              uint32_t ch,
+                              BspGPIO_Obj_TypeDef pin,
+                              uint8_t dma, uint8_t stream, uint32_t buf_aadr, uint32_t buf_size)
 {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_OC_InitTypeDef sConfigOC = {0};
@@ -153,6 +176,32 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     obj->dma = dma;
     obj->stream = stream;
 
+    switch (ch)
+    {
+    case TIM_CHANNEL_1:
+        obj->tim_dma_id_cc = TIM_DMA_ID_CC1;
+        obj->tim_dma_cc = TIM_DMA_CC1;
+        break;
+
+    case TIM_CHANNEL_2:
+        obj->tim_dma_id_cc = TIM_DMA_ID_CC2;
+        obj->tim_dma_cc = TIM_DMA_CC2;
+        break;
+
+    case TIM_CHANNEL_3:
+        obj->tim_dma_id_cc = TIM_DMA_ID_CC3;
+        obj->tim_dma_cc = TIM_DMA_CC3;
+        break;
+
+    case TIM_CHANNEL_4:
+        obj->tim_dma_id_cc = TIM_DMA_ID_CC4;
+        obj->tim_dma_cc = TIM_DMA_CC4;
+        break;
+
+    default:
+        return false;
+    }
+
     BspTimer_PWM_InitMonit(instance);
     obj->instance = instance;
     obj->tim_hdl.Instance = instance;
@@ -161,57 +210,6 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
     obj->tim_hdl.Init.Period = 0;
     obj->tim_hdl.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     obj->tim_hdl.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-
-    if (HAL_TIM_PWM_Init(&(obj->tim_hdl)) != HAL_OK)
-        return false;
-
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&(obj->tim_hdl), &sMasterConfig) != HAL_OK)
-        return false;
-
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 0;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-
-    switch (ch)
-    {
-    case TIM_CHANNEL_1:
-        obj->tim_dma_id_cc = TIM_DMA_ID_CC1;
-        obj->tim_dma_cc = TIM_DMA_CC1;
-        if (HAL_TIM_PWM_ConfigChannel(&(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
-            return false;
-        break;
-
-    case TIM_CHANNEL_2:
-        obj->tim_dma_id_cc = TIM_DMA_ID_CC2;
-        obj->tim_dma_cc = TIM_DMA_CC2;
-        if (HAL_TIM_PWM_ConfigChannel(&(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
-            return false;
-        break;
-
-    case TIM_CHANNEL_3:
-        obj->tim_dma_id_cc = TIM_DMA_ID_CC3;
-        obj->tim_dma_cc = TIM_DMA_CC3;
-        if (HAL_TIM_PWM_ConfigChannel(&(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
-            return false;
-        break;
-
-    case TIM_CHANNEL_4:
-        obj->tim_dma_id_cc = TIM_DMA_ID_CC4;
-        obj->tim_dma_cc = TIM_DMA_CC4;
-        if (HAL_TIM_PWM_ConfigChannel(&(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
-            return false;
-        break;
-
-    default:
-        return false;
-    }
-    obj->tim_channel = ch;
-
-    /* pin init */
-    // BspGPIO.alt_init(pin);
 
     /* dma init */
     obj->dma_hdl.Instance = BspDMA.get_instance(dma, stream);
@@ -233,6 +231,28 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
 
     __HAL_LINKDMA(&(obj->tim_hdl), hdma[obj->tim_dma_id_cc], obj->dma_hdl);
 
+    if (HAL_TIM_PWM_Init(&(obj->tim_hdl)) != HAL_OK)
+        return false;
+
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+
+    if (HAL_TIMEx_MasterConfigSynchronization(&(obj->tim_hdl), &sMasterConfig) != HAL_OK)
+        return false;
+
+    sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    sConfigOC.Pulse = 0;
+    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+
+    if (HAL_TIM_PWM_ConfigChannel(&(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
+        return false;
+
+    obj->tim_channel = ch;
+
+    /* pin init */
+    BspGPIO.alt_init(pin);
+
     /* dma regist */
     if (BspDMA.regist(dma, stream, &obj->dma_hdl))
     {
@@ -241,7 +261,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj, TIM_TypeDef *instance
         return true;
     }
 
-    return false;
+    return true;
 }
 
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
@@ -254,42 +274,44 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
     uint32_t dst_addr = 0;
 
-    if((obj->buffer_addr == 0) || (obj->buffer_size == 0))
+    if ((obj->buffer_addr == 0) || (obj->buffer_size == 0))
         return;
 
     switch (obj->tim_dma_id_cc)
     {
     case TIM_DMA_ID_CC1:
-        dst_addr = (uint32_t)&(obj->tim_hdl.Instance->CCR1);
+        dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR1;
         break;
 
     case TIM_DMA_ID_CC2:
-        dst_addr = (uint32_t)&(obj->tim_hdl.Instance->CCR2);
+        dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR2;
         break;
 
     case TIM_DMA_ID_CC3:
-        dst_addr = (uint32_t)&(obj->tim_hdl.Instance->CCR3);
+        dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR3;
         break;
 
     case TIM_DMA_ID_CC4:
-        dst_addr = (uint32_t)&(obj->tim_hdl.Instance->CCR4);
+        dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR4;
         break;
 
     default:
         return;
     }
 
-    HAL_DMA_Start_IT(&obj->dma_hdl, (uint32_t)obj->buffer_addr, dst_addr, obj->buffer_size);
+    HAL_DMA_Start_IT(obj->tim_hdl.hdma[obj->tim_dma_id_cc], obj->buffer_addr, dst_addr, obj->buffer_size);
     __HAL_TIM_ENABLE_DMA(&obj->tim_hdl, obj->tim_dma_cc);
 }
 
 static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
 {
+    obj->prescale = prescale;
     __HAL_TIM_SET_PRESCALER(&obj->tim_hdl, prescale);
 }
 
 static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload)
 {
+    obj->auto_reload = auto_reload;
     __HAL_TIM_SET_AUTORELOAD(&obj->tim_hdl, auto_reload);
 }
 

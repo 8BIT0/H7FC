@@ -7,7 +7,7 @@
 #include "Bsp_GPIO.h"
 #include "Bsp_Timer.h"
 
-#define MHZ_TO_HZ(x) ((x)*1000000)
+#define MHZ_TO_HZ(x) (x * 1000000)
 
 #define DSHOT_TIMER_CLK_HZ MHZ_TO_HZ(160)
 #define DSHOT600_CLK_HZ MHZ_TO_HZ(12)
@@ -60,7 +60,7 @@ typedef struct
     DevDshotType_List type;
     BspTimerPWMObj_TypeDef pwm_obj;
 
-    uint16_t ctl_buf[MOTOR_BITLENGTH];
+    uint32_t ctl_buf[DSHOT_DMA_BUFFER_SIZE];
 } DevDshotObj_TypeDef;
 
 typedef struct

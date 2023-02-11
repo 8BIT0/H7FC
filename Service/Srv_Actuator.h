@@ -14,7 +14,7 @@
     {                                                     \
         TIM3, TIM_CHANNEL_3, Bsp_DMA_1, Bsp_DMA_Stream_0, \
         {                                                 \
-            GPIOB, GPIO_PIN_0, GPIO_AF2_TIM3              \
+            GPIOB, GPIO_PIN_0, false, GPIO_AF2_TIM3       \
         }                                                 \
     }
 
@@ -23,7 +23,7 @@
     {                                                     \
         TIM3, TIM_CHANNEL_4, Bsp_DMA_1, Bsp_DMA_Stream_1, \
         {                                                 \
-            GPIOB, GPIO_PIN_1, GPIO_AF2_TIM3              \
+            GPIOB, GPIO_PIN_1, false, GPIO_AF2_TIM3       \
         }                                                 \
     }
 
@@ -32,7 +32,7 @@
     {                                                     \
         TIM5, TIM_CHANNEL_1, Bsp_DMA_1, Bsp_DMA_Stream_2, \
         {                                                 \
-            GPIOA, GPIO_PIN_0, GPIO_AF2_TIM5              \
+            GPIOA, GPIO_PIN_0, false, GPIO_AF2_TIM5       \
         }                                                 \
     }
 
@@ -41,7 +41,7 @@
     {                                                     \
         TIM5, TIM_CHANNEL_2, Bsp_DMA_1, Bsp_DMA_Stream_3, \
         {                                                 \
-            GPIOA, GPIO_PIN_1, GPIO_AF2_TIM5              \
+            GPIOA, GPIO_PIN_1, false, GPIO_AF2_TIM5       \
         }                                                 \
     }
 
@@ -50,7 +50,7 @@
     {                                                           \
         TIM5, TIM_CHANNEL_3, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOA, GPIO_PIN_2, GPIO_AF2_TIM5                    \
+            GPIOA, GPIO_PIN_2, false, GPIO_AF2_TIM5             \
         }                                                       \
     }
 
@@ -59,7 +59,7 @@
     {                                                           \
         TIM5, TIM_CHANNEL_4, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOA, GPIO_PIN_3, GPIO_AF2_TIM5                    \
+            GPIOA, GPIO_PIN_3, false, GPIO_AF2_TIM5             \
         }                                                       \
     }
 
@@ -68,7 +68,7 @@
     {                                                           \
         TIM4, TIM_CHANNEL_1, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOD, GPIO_PIN_12, GPIO_AF2_TIM4                   \
+            GPIOD, GPIO_PIN_12, false, GPIO_AF2_TIM4            \
         }                                                       \
     }
 
@@ -77,7 +77,7 @@
     {                                                           \
         TIM4, TIM_CHANNEL_2, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOD, GPIO_PIN_13, GPIO_AF2_TIM4                   \
+            GPIOD, GPIO_PIN_13, false, GPIO_AF2_TIM4            \
         }                                                       \
     }
 
@@ -86,7 +86,7 @@
     {                                                           \
         TIM4, TIM_CHANNEL_3, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOD, GPIO_PIN_14, GPIO_AF2_TIM4                   \
+            GPIOD, GPIO_PIN_14, false, GPIO_AF2_TIM4            \
         }                                                       \
     }
 
@@ -95,7 +95,7 @@
     {                                                           \
         TIM4, TIM_CHANNEL_4, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOD, GPIO_PIN_15, GPIO_AF2_TIM4                   \
+            GPIOD, GPIO_PIN_15, false, GPIO_AF2_TIM4            \
         }                                                       \
     }
 
@@ -104,7 +104,7 @@
     {                                                            \
         TIM15, TIM_CHANNEL_1, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                        \
-            GPIOE, GPIO_PIN_5, GPIO_AF2_TIM15                    \
+            GPIOE, GPIO_PIN_5, false, GPIO_AF2_TIM15             \
         }                                                        \
     }
 
@@ -113,7 +113,7 @@
     {                                                            \
         TIM15, TIM_CHANNEL_2, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                        \
-            GPIOE, GPIO_PIN_6, GPIO_AF2_TIM15                    \
+            GPIOE, GPIO_PIN_6, false, GPIO_AF2_TIM15             \
         }                                                        \
     }
 

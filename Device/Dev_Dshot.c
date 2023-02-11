@@ -12,7 +12,7 @@ DevDshot_TypeDef DevDshot = {
     .control = DevDshot_Control,
 };
 
-static uint16_t DevDshot_GetType_Clock(DevDshotType_List type)
+static uint32_t DevDshot_GetType_Clock(DevDshotType_List type)
 {
     switch (type)
     {
@@ -30,7 +30,6 @@ static uint16_t DevDshot_GetType_Clock(DevDshotType_List type)
     }
 }
 
-uint16_t prescaler = 0;
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
                           void *timer_ins,
                           uint32_t ch,
@@ -38,7 +37,7 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
                           uint8_t dma,
                           uint8_t stream)
 {
-    prescaler = lrintf((float)DSHOT_TIMER_CLK_HZ / DevDshot_GetType_Clock(obj->type) + 0.01f) - 1;
+    uint32_t prescaler = lrintf((float)DSHOT_TIMER_CLK_HZ / DevDshot_GetType_Clock(obj->type) + 0.01f) - 1;
 
     if (!obj)
         return false;
@@ -48,14 +47,34 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
         obj->type = DevDshot_300;
     }
 
-    if (!BspTimer_PWM.init(&obj->pwm_obj, timer_ins, ch, pin, dma, stream, (uint32_t)obj->ctl_buf, MOTOR_BITLENGTH))
+    if (!BspTimer_PWM.init(&obj->pwm_obj, timer_ins, ch, pin, dma, stream, (uint32_t)obj->ctl_buf, DSHOT_DMA_BUFFER_SIZE))
         return false;
 
     BspTimer_PWM.set_prescaler(&obj->pwm_obj, prescaler);
     BspTimer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
+
     BspTimer_PWM.start_pwm(&obj->pwm_obj);
 
     return true;
+}
+
+static uint16_t DevDshot_Prepare_Packet(const uint16_t value, int8_t requestTelemetry)
+{
+    volatile uint16_t packet = (value << 1) | (requestTelemetry ? 1 : 0);
+
+    // compute checksum
+    int csum = 0;
+    int csum_data = packet;
+    for (int i = 0; i < 3; i++)
+    {
+        csum ^= csum_data; // xor data by nibbles
+        csum_data >>= 4;
+    }
+
+    csum &= 0xf;
+    // append checksum
+    packet = (packet << 4) | csum;
+    return packet;
 }
 
 static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
@@ -72,20 +91,7 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
     if (value < DSHOT_MIN_THROTTLE)
         value = DSHOT_LOCK_THROTTLE;
 
-    packet = (value << 1) | (dshot_telemetry ? 1 : 0);
-
-    // compute checksum
-    uint8_t csum = 0;
-    uint16_t csum_data = packet;
-
-    for (uint8_t i = 0; i < 3; i++)
-    {
-        csum ^= csum_data; // xor data by nibbles
-        csum_data >>= 4;
-    }
-
-    csum &= 0xf;
-    packet = (packet << 4) | csum;
+    packet = DevDshot_Prepare_Packet(value, dshot_telemetry);
 
     for (int i = 0; i < 16; i++)
     {
@@ -96,7 +102,7 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
     obj->ctl_buf[16] = 0;
     obj->ctl_buf[17] = 0;
 
-    obj->pwm_obj.buffer_addr = obj->ctl_buf;
+    obj->pwm_obj.buffer_addr = (uint32_t)obj->ctl_buf;
     obj->pwm_obj.buffer_size = DSHOT_DMA_BUFFER_SIZE;
 
     BspTimer_PWM.dma_trans(&obj->pwm_obj);
@@ -110,20 +116,7 @@ static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd)
     if (!obj || cmd >= DSHOT_MIN_THROTTLE)
         return;
 
-    packet = (cmd << 1) | (dshot_telemetry ? 1 : 0);
-
-    // compute checksum
-    uint8_t csum = 0;
-    uint16_t csum_data = packet;
-
-    for (uint8_t i = 0; i < 3; i++)
-    {
-        csum ^= csum_data; // xor data by nibbles
-        csum_data >>= 4;
-    }
-
-    csum &= 0xf;
-    packet = (packet << 4) | csum;
+    packet = DevDshot_Prepare_Packet(cmd, dshot_telemetry);
 
     for (int i = 0; i < 16; i++)
     {
