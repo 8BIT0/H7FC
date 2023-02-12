@@ -18,6 +18,8 @@ DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, RCTelemtry_Data);
 
 TaskControl_Monitor_TypeDef TaskControl_Monitor;
 
+static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj);
+
 void TaskControl_Init(void)
 {
     // IMU_Ctl_DataPipe
@@ -36,4 +38,9 @@ void TaskControl_Core(Task_Handle hdl)
     {
         SrvActuator.control(test_val, sizeof(test_val) / sizeof(test_val[0]));
     }
+}
+
+static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj)
+{
+
 }
