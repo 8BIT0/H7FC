@@ -3,6 +3,8 @@
  *  this file use for moto & servo control
  */
 #include "Task_Control.h"
+#include "SrvMPU_Sample.h"
+#include "Srv_Receiver.h"
 #include "DataPipe.h"
 #include "scheduler.h"
 #include "Srv_Actuator.h"
@@ -11,10 +13,14 @@
 #define DEFAULT_CONTROL_MODEL Model_Quad
 #define DEFAULT_ESC_TYPE DevDshot_600
 
+DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, Filted_IMU_Data);
+DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, RCTelemtry_Data);
+
 TaskControl_Monitor_TypeDef TaskControl_Monitor;
 
 void TaskControl_Init(void)
 {
+    // IMU_Ctl_DataPipe
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
     if (TaskControl_Monitor.init_state)
