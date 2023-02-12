@@ -533,6 +533,11 @@ static bool SrvIMU_Sample(void)
     return (pri_sample_state | sec_sample_state);
 }
 
+static bool SrvIMU_Calibration(void)
+{
+
+}
+
 static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
 {
     SrvIMU_Data_TypeDef imu_data_tmp;
