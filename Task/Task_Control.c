@@ -27,8 +27,13 @@ void TaskControl_Init(void)
     Receiver_Ctl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Control_RC_Data);
     Receiver_Ctl_DataPipe.data_size = DataPipe_DataSize(Control_RC_Data);
     Receiver_Ctl_DataPipe.trans_finish_cb = TaskControl_DataPipe_Callback;
-    DataPipe_Enable(&Receiver_Ctl_DataPipe);
 
+    memset(DataPipe_DataObjAddr(Filted_IMU_Data), 0, DataPipe_DataSize(Filted_IMU_Data));
+    IMU_Ctl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Filted_IMU_Data);
+    IMU_Ctl_DataPipe.data_size = DataPipe_DataSize(Filted_IMU_Data);
+    IMU_Ctl_DataPipe.trans_finish_cb = TaskControl_DataPipe_Callback;
+
+    DataPipe_Enable(&Receiver_Ctl_DataPipe);
     DataPipe_Enable(&IMU_Ctl_DataPipe);
 
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
