@@ -56,5 +56,11 @@ void TaskControl_Core(Task_Handle hdl)
 
 static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj)
 {
+    if(obj == NULL)
+        return;
 
+    if(obj == )
+    {
+
+    }
 }
