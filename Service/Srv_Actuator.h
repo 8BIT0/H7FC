@@ -8,41 +8,42 @@
 #include "Bsp_Timer.h"
 #include "Bsp_DMA.h"
 #include "Dev_Dshot.h"
+#include "IO_Definition.h"
 
-#define SRVACTUATOR_PB0_SIG_1                             \
-    (SrvActuator_PeriphSet_TypeDef)                       \
-    {                                                     \
-        TIM3, TIM_CHANNEL_3, Bsp_DMA_1, Bsp_DMA_Stream_0, \
-        {                                                 \
-            GPIOB, GPIO_PIN_0, false, GPIO_AF2_TIM3       \
-        }                                                 \
+#define SRVACTUATOR_PB0_SIG_1                                   \
+    (SrvActuator_PeriphSet_TypeDef)                             \
+    {                                                           \
+        TIM3, TIM_CHANNEL_3, Bsp_DMA_1, Bsp_DMA_Stream_0,       \
+        {                                                       \
+            PWM_SIG_1_PORT, PWM_SIG_1_PIN, false, GPIO_AF2_TIM3 \
+        }                                                       \
     }
 
-#define SRVACTUATOR_PB1_SIG_2                             \
-    (SrvActuator_PeriphSet_TypeDef)                       \
-    {                                                     \
-        TIM3, TIM_CHANNEL_4, Bsp_DMA_1, Bsp_DMA_Stream_1, \
-        {                                                 \
-            GPIOB, GPIO_PIN_1, false, GPIO_AF2_TIM3       \
-        }                                                 \
+#define SRVACTUATOR_PB1_SIG_2                                   \
+    (SrvActuator_PeriphSet_TypeDef)                             \
+    {                                                           \
+        TIM3, TIM_CHANNEL_4, Bsp_DMA_1, Bsp_DMA_Stream_1,       \
+        {                                                       \
+            PWM_SIG_2_PORT, PWM_SIG_2_PIN, false, GPIO_AF2_TIM3 \
+        }                                                       \
     }
 
-#define SRVACTUATOR_PA0_SIG_3                             \
-    (SrvActuator_PeriphSet_TypeDef)                       \
-    {                                                     \
-        TIM5, TIM_CHANNEL_1, Bsp_DMA_1, Bsp_DMA_Stream_2, \
-        {                                                 \
-            GPIOA, GPIO_PIN_0, false, GPIO_AF2_TIM5       \
-        }                                                 \
+#define SRVACTUATOR_PA0_SIG_3                                   \
+    (SrvActuator_PeriphSet_TypeDef)                             \
+    {                                                           \
+        TIM5, TIM_CHANNEL_1, Bsp_DMA_1, Bsp_DMA_Stream_2,       \
+        {                                                       \
+            PWM_SIG_3_PORT, PWM_SIG_3_PIN, false, GPIO_AF2_TIM5 \
+        }                                                       \
     }
 
-#define SRVACTUATOR_PA1_SIG_4                             \
-    (SrvActuator_PeriphSet_TypeDef)                       \
-    {                                                     \
-        TIM5, TIM_CHANNEL_2, Bsp_DMA_1, Bsp_DMA_Stream_3, \
-        {                                                 \
-            GPIOA, GPIO_PIN_1, false, GPIO_AF2_TIM5       \
-        }                                                 \
+#define SRVACTUATOR_PA1_SIG_4                                   \
+    (SrvActuator_PeriphSet_TypeDef)                             \
+    {                                                           \
+        TIM5, TIM_CHANNEL_2, Bsp_DMA_1, Bsp_DMA_Stream_3,       \
+        {                                                       \
+            PWM_SIG_4_PORT, PWM_SIG_4_PIN, false, GPIO_AF2_TIM5 \
+        }                                                       \
     }
 
 #define SRVACTUATOR_PA2_SIG_5                                   \
@@ -50,7 +51,7 @@
     {                                                           \
         TIM5, TIM_CHANNEL_3, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOA, GPIO_PIN_2, false, GPIO_AF2_TIM5             \
+            PWM_SIG_5_PORT, PWM_SIG_5_PIN, false, GPIO_AF2_TIM5 \
         }                                                       \
     }
 
@@ -59,7 +60,7 @@
     {                                                           \
         TIM5, TIM_CHANNEL_4, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOA, GPIO_PIN_3, false, GPIO_AF2_TIM5             \
+            PWM_SIG_6_PORT, PWM_SIG_6_PIN, false, GPIO_AF2_TIM5 \
         }                                                       \
     }
 
@@ -68,7 +69,7 @@
     {                                                           \
         TIM4, TIM_CHANNEL_1, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOD, GPIO_PIN_12, false, GPIO_AF2_TIM4            \
+            PWM_SIG_7_PORT, PWM_SIG_7_PIN, false, GPIO_AF2_TIM4 \
         }                                                       \
     }
 
@@ -77,7 +78,7 @@
     {                                                           \
         TIM4, TIM_CHANNEL_2, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOD, GPIO_PIN_13, false, GPIO_AF2_TIM4            \
+            PWM_SIG_8_PORT, PWM_SIG_8_PIN, false, GPIO_AF2_TIM4 \
         }                                                       \
     }
 
@@ -86,35 +87,35 @@
     {                                                           \
         TIM4, TIM_CHANNEL_3, Bsp_DMA_None, Bsp_DMA_Stream_None, \
         {                                                       \
-            GPIOD, GPIO_PIN_14, false, GPIO_AF2_TIM4            \
+            PWM_SIG_9_PORT, PWM_SIG_9_PIN, false, GPIO_AF2_TIM4 \
         }                                                       \
     }
 
-#define SRVACTUATOR_PD15_SIG_10                                 \
-    (SrvActuator_PeriphSet_TypeDef)                             \
-    {                                                           \
-        TIM4, TIM_CHANNEL_4, Bsp_DMA_None, Bsp_DMA_Stream_None, \
-        {                                                       \
-            GPIOD, GPIO_PIN_15, false, GPIO_AF2_TIM4            \
-        }                                                       \
+#define SRVACTUATOR_PD15_SIG_10                                   \
+    (SrvActuator_PeriphSet_TypeDef)                               \
+    {                                                             \
+        TIM4, TIM_CHANNEL_4, Bsp_DMA_None, Bsp_DMA_Stream_None,   \
+        {                                                         \
+            PWM_SIG_10_PORT, PWM_SIG_10_PIN, false, GPIO_AF2_TIM4 \
+        }                                                         \
     }
 
-#define SRVACTUATOR_PE5_SIG_11                                   \
-    (SrvActuator_PeriphSet_TypeDef)                              \
-    {                                                            \
-        TIM15, TIM_CHANNEL_1, Bsp_DMA_None, Bsp_DMA_Stream_None, \
-        {                                                        \
-            GPIOE, GPIO_PIN_5, false, GPIO_AF2_TIM15             \
-        }                                                        \
+#define SRVACTUATOR_PE5_SIG_11                                     \
+    (SrvActuator_PeriphSet_TypeDef)                                \
+    {                                                              \
+        TIM15, TIM_CHANNEL_1, Bsp_DMA_None, Bsp_DMA_Stream_None,   \
+        {                                                          \
+            PWM_SIG_11_PORT, PWM_SIG_11_PIN, false, GPIO_AF2_TIM15 \
+        }                                                          \
     }
 
-#define SRVACTUATOR_PE6_SIG_12                                   \
-    (SrvActuator_PeriphSet_TypeDef)                              \
-    {                                                            \
-        TIM15, TIM_CHANNEL_2, Bsp_DMA_None, Bsp_DMA_Stream_None, \
-        {                                                        \
-            GPIOE, GPIO_PIN_6, false, GPIO_AF2_TIM15             \
-        }                                                        \
+#define SRVACTUATOR_PE6_SIG_12                                     \
+    (SrvActuator_PeriphSet_TypeDef)                                \
+    {                                                              \
+        TIM15, TIM_CHANNEL_2, Bsp_DMA_None, Bsp_DMA_Stream_None,   \
+        {                                                          \
+            PWM_SIG_12_PORT, PWM_SIG_12_PIN, false, GPIO_AF2_TIM15 \
+        }                                                          \
     }
 
 #define QUAD_CONTROL_COMPONENT              \

@@ -89,6 +89,43 @@
 #define USB_DETECT_INT_PORT GPIOE
 #define USB_DETECT_INT_PIN GPIO_PIN_2
 
+/* PWM IO */
+#define PWM_SIG_1_PORT GPIOB
+#define PWM_SIG_1_PIN GPIO_PIN_0
+
+#define PWM_SIG_2_PORT GPIOB
+#define PWM_SIG_2_PIN GPIO_PIN_1
+
+#define PWM_SIG_3_PORT GPIOA
+#define PWM_SIG_3_PIN GPIO_PIN_0
+
+#define PWM_SIG_4_PORT GPIOA
+#define PWM_SIG_4_PIN GPIO_PIN_1
+
+#define PWM_SIG_5_PORT GPIOA
+#define PWM_SIG_5_PIN GPIO_PIN_2
+
+#define PWM_SIG_6_PORT GPIOA
+#define PWM_SIG_6_PIN GPIO_PIN_3
+
+#define PWM_SIG_7_PORT GPIOD
+#define PWM_SIG_7_PIN GPIO_PIN_12
+
+#define PWM_SIG_8_PORT GPIOD
+#define PWM_SIG_8_PIN GPIO_PIN_13
+
+#define PWM_SIG_9_PORT GPIOD
+#define PWM_SIG_9_PIN GPIO_PIN_14
+
+#define PWM_SIG_10_PORT GPIOD
+#define PWM_SIG_10_PIN GPIO_PIN_15
+
+#define PWM_SIG_11_PORT GPIOE
+#define PWM_SIG_11_PIN GPIO_PIN_5
+
+#define PWM_SIG_12_PORT GPIOE
+#define PWM_SIG_12_PIN GPIO_PIN_6
+
 extern DebugPinObj_TypeDef Debug_PC0;
 extern DebugPinObj_TypeDef Debug_PC1;
 extern DebugPinObj_TypeDef Debug_PC2;
