@@ -22,6 +22,9 @@ static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj);
 
 void TaskControl_Init(void)
 {
+    // init monitor
+    memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
+
     // IMU_Ctl_DataPipe
     memset(DataPipe_DataObjAddr(Control_RC_Data), 0, DataPipe_DataSize(Control_RC_Data));
     memset(DataPipe_DataObjAddr(Filted_IMU_Data), 0, DataPipe_DataSize(Filted_IMU_Data));
@@ -73,18 +76,15 @@ void TaskControl_Core(Task_Handle hdl)
 
 static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj)
 {
-    static uint8_t r_cnt;
-    static uint8_t i_cnt;
-
     if (obj == NULL)
         return;
 
     if (obj == &Receiver_Ctl_DataPipe)
     {
-        r_cnt++;
+        TaskControl_Monitor.rc_pipe_cnt++;
     }
     else if (obj == &IMU_Ctl_DataPipe)
     {
-        i_cnt++;
+        TaskControl_Monitor.imu_pipe_cnt++;
     }
 }
