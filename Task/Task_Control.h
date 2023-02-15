@@ -11,6 +11,7 @@ typedef struct
     bool init_state;
 
     uint8_t ctl_model;
+    uint8_t actuator_num;
 
     uint32_t rc_pipe_cnt;
     uint64_t imu_pipe_cnt;

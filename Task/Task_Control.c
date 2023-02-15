@@ -43,18 +43,31 @@ void TaskControl_Init(void)
 
     if (TaskControl_Monitor.init_state)
     {
+        TaskControl_Monitor.actuator_num = SrvActuator.get_cnt().total_cnt;
+        TaskControl_Monitor.ctl_buff = (uint16_t *)MMU_Malloc(sizeof(uint16_t) * TaskControl_Monitor.actuator_num);
+
+        if (TaskControl_Monitor.ctl_buff == NULL)
+        {
+            MMU_Free(TaskControl_Monitor.ctl_buff);
+            TaskControl_Monitor.init_state = false;
+            return;
+        }
+
+        memset(TaskControl_Monitor.ctl_buff, 0, sizeof(uint16_t) * TaskControl_Monitor.actuator_num);
     }
 }
 
 void TaskControl_Core(Task_Handle hdl)
 {
-    uint16_t test_val[4] = {0, 0, 0, 0};
-
     if (TaskControl_Monitor.init_state)
     {
         /* only manipulate esc or servo when disarm */
         if (!DataPipe_DataObj(Control_RC_Data).arm_state)
-            SrvActuator.control(test_val, sizeof(test_val) / sizeof(test_val[0]));
+        {
+            SrvActuator.control(TaskControl_Monitor.ctl_buff, TaskControl_Monitor.actuator_num);
+        }
+        else
+            SrvActuator.lock();
     }
 }
 

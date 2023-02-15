@@ -59,6 +59,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type);
 static void SrvActuator_Control(uint16_t *p_val, uint8_t len);
 static bool SrvActuator_InvertMotoSpinDir(uint8_t component_index);
 static bool SrvActuator_Lock(void);
+static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void);
 
 /* external variable */
 SrvActuator_TypeDef SrvActuator = {
@@ -66,6 +67,7 @@ SrvActuator_TypeDef SrvActuator = {
     .lock = SrvActuator_Lock,
     .control = SrvActuator_Control,
     .invert_spin = SrvActuator_InvertMotoSpinDir,
+    .get_cnt = SrvActuator_Get_NumData,
 };
 
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
@@ -358,4 +360,9 @@ static bool SrvActuator_InvertMotoSpinDir(uint8_t component_index)
     default:
         return false;
     }
+}
+
+static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void)
+{
+    return SrvActuator_Obj.drive_module.num;
 }
