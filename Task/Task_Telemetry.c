@@ -128,6 +128,7 @@ void TaskTelemetry_Core(Task_Handle hdl)
 
     /* pipe data out */
     DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_ptl_DataPipe);
+    DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_Ctl_DataPipe);
 }
 
 /************************************** telemetry receiver section ********************************************/
@@ -328,7 +329,7 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
     }
 
     /* get the number of the bit on set */
-    if(Get_OnSet_Bit_Num(pos_reg) == 1)
+    if (Get_OnSet_Bit_Num(pos_reg) == 1)
     {
         /* only on bit been set */
         toggle_val.pos = Get_Bit_Index(pos_reg);
@@ -338,7 +339,7 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
         /* many bits been set on pos_reg */
         toggle_val.pos = 0;
     }
-    
+
     if (toggle_val.cnt == toggle->combo_cnt)
         toggle_val.state = true;
 
@@ -393,6 +394,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     {
         RC_Input_obj->rssi = receiver_data.rssi;
         RC_Input_obj->link_quality = receiver_data.link_quality;
+        RC_Input_obj->sig.time_stamp = RC_Input_obj->update_rt;
 
         /* get gimbal channel */
         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)

@@ -34,6 +34,8 @@ void TaskControl_Init(void)
     IMU_Ctl_DataPipe.data_size = DataPipe_DataSize(Filted_IMU_Data);
     IMU_Ctl_DataPipe.trans_finish_cb = TaskControl_DataPipe_Callback;
 
+    DataPipe_Set_RxInterval(&IMU_Ctl_DataPipe, 1000);
+
     DataPipe_Enable(&Receiver_Ctl_DataPipe);
     DataPipe_Enable(&IMU_Ctl_DataPipe);
 
@@ -46,21 +48,30 @@ void TaskControl_Init(void)
 
 void TaskControl_Core(Task_Handle hdl)
 {
-    uint16_t test_val[4] = {500, 500, 500, 500};
+    uint16_t test_val[4] = {0, 0, 0, 0};
 
     if (TaskControl_Monitor.init_state)
     {
-        SrvActuator.control(test_val, sizeof(test_val) / sizeof(test_val[0]));
+        /* only manipulate esc or servo when disarm */
+        if (!DataPipe_DataObj(Control_RC_Data).arm_state)
+            SrvActuator.control(test_val, sizeof(test_val) / sizeof(test_val[0]));
     }
 }
 
 static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj)
 {
-    if(obj == NULL)
+    static uint8_t r_cnt;
+    static uint8_t i_cnt;
+
+    if (obj == NULL)
         return;
 
-    if(obj == )
+    if (obj == &Receiver_Ctl_DataPipe)
     {
-
+        r_cnt++;
+    }
+    else if (obj == &IMU_Ctl_DataPipe)
+    {
+        i_cnt++;
     }
 }

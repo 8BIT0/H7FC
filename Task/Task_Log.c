@@ -87,6 +87,8 @@ void TaskLog_Init(void)
             LogObj_Set_Reg._sec.IMU_Sec = true;
         }
     }
+    else
+        DataPipe_Disable(&IMU_Log_DataPipe);
 
     LogData_Stream.ptr = NULL;
     LogData_Stream.size = 0;

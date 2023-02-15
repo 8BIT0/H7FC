@@ -29,6 +29,7 @@ void TaskInertial_Init(void)
 
     IMU_Smp_DataPipe.data_addr = (uint32_t)&DataPipe_DataObj(PriIMU_Data);
     IMU_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(PriIMU_Data));
+    DataPipe_Enable(&IMU_Smp_DataPipe);
 
     /* regist error */
     if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
@@ -42,19 +43,19 @@ void TaskInertical_Core(Task_Handle hdl)
     {
     case Task_SensorInertial_Core:
         // TaskInertical_Blink_Notification(100);
-        if(SrvIMU.sample())
+        if (SrvIMU.sample())
         {
             DataPipe_DataObj(PriIMU_Data).data = SrvIMU.get_data(SrvIMU_PriModule);
             DataPipe_DataObj(SecIMU_Data).data = SrvIMU.get_data(SrvIMU_SecModule);
 
-            for(uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(PriIMU_Data)) - sizeof(uint16_t); chk++)
+            for (uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(PriIMU_Data)) - sizeof(uint16_t); chk++)
             {
                 DataPipe_DataObj(PriIMU_Data).data.chk_sum += DataPipe_DataObj(PriIMU_Data).buff[chk];
                 DataPipe_DataObj(SecIMU_Data).data.chk_sum += DataPipe_DataObj(SecIMU_Data).buff[chk];
             }
 
-            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);  /* to Log task */
-            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ctl_DataPipe);  /* to control task */
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ctl_DataPipe); /* to control task */
             // DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ptl_DataPipe);  /* to protocol task */
         }
         break;

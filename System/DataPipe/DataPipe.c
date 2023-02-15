@@ -62,9 +62,10 @@ bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
         (p_dst == NULL) ||
         (p_org->data_size != p_dst->data_size) ||
         !p_org->enable ||
-        !p_dst->enable || 
-        (p_dst->min_rx_interval && 
-        (Get_CurrentRunningUs() - p_dst->rx_us_rt < p_dst->min_rx_interval)))
+        !p_dst->enable ||
+        (p_dst->min_rx_interval &&
+         p_dst->rx_us_rt &&
+         (Get_CurrentRunningUs() - p_dst->rx_us_rt < p_dst->min_rx_interval)))
         return false;
 
     retry_cnt = MAX_RETRY_CNT;
@@ -131,7 +132,7 @@ static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl)
         if (Cur_Pluged_PipeObj.dst->trans_finish_cb)
             Cur_Pluged_PipeObj.dst->trans_finish_cb(Cur_Pluged_PipeObj.dst);
 
-        if(Cur_Pluged_PipeObj.dst->rx_us_rt)
+        if (Cur_Pluged_PipeObj.dst->rx_us_rt)
             Cur_Pluged_PipeObj.dst->detect_interval = cur_us - Cur_Pluged_PipeObj.dst->rx_us_rt;
 
         Cur_Pluged_PipeObj.dst->rx_us_rt = cur_us;

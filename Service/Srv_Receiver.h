@@ -86,6 +86,7 @@ typedef struct
     uint16_t module_enable;
 
     uint32_t update_interval;
+    uint32_t time_stamp;
 } SrvRecever_RCSig_TypeDef;
 
 typedef struct
