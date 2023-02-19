@@ -4,7 +4,7 @@
  */
 #include "Task_Control.h"
 #include "SrvMPU_Sample.h"
-#include "Srv_Receiver.h"
+#include "Task_Telemetry.h"
 #include "DataPipe.h"
 #include "scheduler.h"
 #include "Srv_Actuator.h"
@@ -12,6 +12,9 @@
 
 #define DEFAULT_CONTROL_MODEL Model_Quad
 #define DEFAULT_ESC_TYPE DevDshot_600
+
+SrvIMU_UnionData_TypeDef LstCyc_IMU_Data;
+SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
 
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, Filted_IMU_Data);
 DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Control_RC_Data);
@@ -62,20 +65,39 @@ void TaskControl_Init(void)
 
 void TaskControl_Core(Task_Handle hdl)
 {
-    if (TaskControl_Monitor.init_state)
+    static SYSTEM_RunTime IMU_Rt = 0;
+    static SYSTEM_RunTime RC_Rt = 0;
+
+    if (TaskControl_Monitor.init_state || TaskControl_Monitor.control_abort)
     {
         // check imu filter gyro data update or not
+        if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp)
+        {
+            if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > IMU_Rt)
+            {
+                TaskControl_Monitor.imu_update_error_cnt = 0;
+                IMU_Rt = DataPipe_DataObj(Filted_IMU_Data).data.time_stamp;
+            }
+            else if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > IMU_Rt)
+            {
+                TaskControl_Monitor.imu_update_error_cnt ++;
+                if(TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)
+                    TaskControl_Monitor.control_abort = true;
+            }
+        }
 
         // do drone control algorithm down below
 
         /* only manipulate esc or servo when disarm */
-        if (!DataPipe_DataObj(Control_RC_Data).arm_state)
+        if (DataPipe_DataObj(Control_RC_Data).arm_state == TELEMETRY_SET_DISARM)
         {
             SrvActuator.control(TaskControl_Monitor.ctl_buff, TaskControl_Monitor.actuator_num);
         }
         else
             SrvActuator.lock();
     }
+    else
+        SrvActuator.lock();
 }
 
 static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj)

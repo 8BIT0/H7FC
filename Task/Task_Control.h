@@ -6,9 +6,12 @@
 #include <stdlib.h>
 #include "scheduler.h"
 
+#define IMU_ERROR_UPDATE_MAX_COUNT 10
+
 typedef struct
 {
     bool init_state;
+    bool control_abort;
 
     uint8_t ctl_model;
     uint8_t actuator_num;
@@ -18,6 +21,7 @@ typedef struct
 
     uint16_t *ctl_buff;
 
+    uint8_t imu_update_error_cnt;
 } TaskControl_Monitor_TypeDef;
 
 void TaskControl_Init(void);
