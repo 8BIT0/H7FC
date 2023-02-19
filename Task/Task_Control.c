@@ -64,6 +64,10 @@ void TaskControl_Core(Task_Handle hdl)
 {
     if (TaskControl_Monitor.init_state)
     {
+        // check imu filter gyro data update or not
+
+        // do drone control algorithm down below
+
         /* only manipulate esc or servo when disarm */
         if (!DataPipe_DataObj(Control_RC_Data).arm_state)
         {
