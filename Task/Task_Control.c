@@ -89,12 +89,12 @@ void TaskControl_Core(Task_Handle hdl)
         // check imu filter gyro data update or not
         if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp)
         {
-            if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > IMU_Rt)
+            if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > TaskControl_Monitor.IMU_Rt)
             {
                 TaskControl_Monitor.imu_update_error_cnt = 0;
                 TaskControl_Monitor.IMU_Rt = DataPipe_DataObj(Filted_IMU_Data).data.time_stamp;
             }
-            else if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > IMU_Rt)
+            else if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > TaskControl_Monitor.IMU_Rt)
             {
                 TaskControl_Monitor.imu_update_error_cnt ++;
                 if(TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)

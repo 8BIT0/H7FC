@@ -22,6 +22,7 @@
 #define TELEMETRY_RC_CHANNEL_RANGE_MAX CHANNEL_RANGE_MAX
 
 #define TELEMETRY_RC_GIMBAL_ZERO_ZONE_RANGE 20
+#define TELEMETRY_OSDTUNE_POSHOLD 100 /* unit ms */ 
 
 #pragma pack(1)
 typedef enum

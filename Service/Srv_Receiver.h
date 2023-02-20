@@ -1,6 +1,7 @@
 #ifndef __SRV_RECEIVER_H
 #define __SRV_RECEIVER_H
 
+#include "runtime.h"
 #include "Dev_Sbus.h"
 #include "Dev_CRSF.h"
 #include "Bsp_GPIO.h"
@@ -107,6 +108,8 @@ typedef struct
     bool re_update;
     bool in_use;
     uint32_t invert_list;
+
+    SYSTEM_RunTime OSDTune_TriggerMs;
 
     /* for sbus receiver we gonna need inverter hardware */
     BspGPIO_Obj_TypeDef inverter_pin;

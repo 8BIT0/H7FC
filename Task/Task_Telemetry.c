@@ -140,6 +140,7 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
 
     receiver_obj->port_type = Receiver_Port_Serial;
     receiver_obj->Frame_type = Receiver_Type_CRSF;
+    receiver_obj->OSDTune_TriggerMs = 0;
 
     /* create receiver port */
     switch (receiver_obj->port_type)
@@ -415,12 +416,26 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
                 RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
         }
+        else
+        {
+            /* doing osd tuning */
+        }
 
         if (RC_Input_obj->sig.arm_state)
         {
             /* check osd tune toggle */
-            RC_Input_obj->sig.osd_tune_state = Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state;
+            if(Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state)
+            {
+                if(Receiver_Obj.OSDTune_TriggerMs == 0)
+                    Receiver_Obj.OSDTune_TriggerMs = Get_CurrentRunningMs();
+
+                if(Get_CurrentRunningMs() - Receiver_Obj.OSDTune_TriggerMs >= TELEMETRY_OSDTUNE_POSHOLD)
+                    RC_Input_obj->sig.osd_tune_state = true;
+            }
+            else
+                Receiver_Obj.OSDTune_TriggerMs = 0;
         }
+
         RC_Input_obj->update_rt = receiver_data.time_stamp;
         RC_Input_obj->sig.update_interval = RC_Input_obj->update_rt - RC_Input_obj->lst_update_rt;
 
