@@ -102,25 +102,30 @@ void TaskControl_Core(Task_Handle hdl)
             }
         }
 
-        // check rc telemtry rc remote data
-        if(DataPipe_DataObj(Control_RC_Data).time_stamp)
+        /* only manipulate esc or servo when disarm */
+        if (DataPipe_DataObj(Control_RC_Data).time_stamp)
         {
             if(!DataPipe_DataObj(Control_RC_Data).failsafe)
             {
                 TaskControl_Monitor.RC_Rt = DataPipe_DataObj(Control_RC_Data).time_stamp;
+
+                if(DataPipe_DataObj(Control_RC_Data).arm_state == TELEMETRY_SET_DISARM)
+                {
+                    for(uint8_t i = 0; i < TaskControl_Monitor.actuator_num; i++)
+                    {
+                        /* throttlr idle value check */
+                        TaskControl_Monitor.ctl_buff[i] = DataPipe_DataObj(Control_RC_Data).gimbal_val[Telemetry_RC_Throttle];
+                    }
+                }
             }
             else
             {
                 // do drone return to liftoff spot or do auto control
                 TaskControl_Monitor.auto_control = true;
             }
-        }
 
-        // do drone control algorithm down below
+            // do drone control algorithm down below
 
-        /* only manipulate esc or servo when disarm */
-        if (DataPipe_DataObj(Control_RC_Data).arm_state == TELEMETRY_SET_DISARM)
-        {
             SrvActuator.control(TaskControl_Monitor.ctl_buff, TaskControl_Monitor.actuator_num);
         }
         else
