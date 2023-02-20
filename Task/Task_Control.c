@@ -19,7 +19,24 @@ SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, Filted_IMU_Data);
 DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Control_RC_Data);
 
-TaskControl_Monitor_TypeDef TaskControl_Monitor;
+TaskControl_Monitor_TypeDef TaskControl_Monitor = {
+    .init_state = false,
+    .control_abort = false,
+    .auto_control = false,
+
+    .ctl_model = Model_Quad,
+    .actuator_num = 0,
+
+    .rc_pipe_cnt = 0,
+    .imu_pipe_cnt = 0,
+
+    .ctl_buff = NULL,
+
+    .imu_update_error_cnt = 0,
+
+    .IMU_Rt = 0,
+    .RC_Rt = 0,
+};
 
 static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj);
 
@@ -27,6 +44,8 @@ void TaskControl_Init(void)
 {
     // init monitor
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
+
+    TaskControl_Monitor.ctl_model = SrvActuator.get_model();
 
     // IMU_Ctl_DataPipe
     memset(DataPipe_DataObjAddr(Control_RC_Data), 0, DataPipe_DataSize(Control_RC_Data));
@@ -65,9 +84,6 @@ void TaskControl_Init(void)
 
 void TaskControl_Core(Task_Handle hdl)
 {
-    static SYSTEM_RunTime IMU_Rt = 0;
-    static SYSTEM_RunTime RC_Rt = 0;
-
     if (TaskControl_Monitor.init_state || TaskControl_Monitor.control_abort)
     {
         // check imu filter gyro data update or not
@@ -76,13 +92,27 @@ void TaskControl_Core(Task_Handle hdl)
             if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > IMU_Rt)
             {
                 TaskControl_Monitor.imu_update_error_cnt = 0;
-                IMU_Rt = DataPipe_DataObj(Filted_IMU_Data).data.time_stamp;
+                TaskControl_Monitor.IMU_Rt = DataPipe_DataObj(Filted_IMU_Data).data.time_stamp;
             }
             else if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > IMU_Rt)
             {
                 TaskControl_Monitor.imu_update_error_cnt ++;
                 if(TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)
                     TaskControl_Monitor.control_abort = true;
+            }
+        }
+
+        // check rc telemtry rc remote data
+        if(DataPipe_DataObj(Control_RC_Data).time_stamp)
+        {
+            if(!DataPipe_DataObj(Control_RC_Data).failsafe)
+            {
+                TaskControl_Monitor.RC_Rt = DataPipe_DataObj(Control_RC_Data).time_stamp;
+            }
+            else
+            {
+                // do drone return to liftoff spot or do auto control
+                TaskControl_Monitor.auto_control = true;
             }
         }
 

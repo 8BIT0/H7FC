@@ -244,6 +244,7 @@ typedef struct
     void (*control)(uint16_t *p_val, uint8_t len);
     bool (*invert_spin)(uint8_t component_index);
     SrvActuator_ModelComponentNum_TypeDef (*get_cnt)(void);
+    SrvActuator_Model_List (*get_model)(void);
 } SrvActuator_TypeDef;
 
 extern SrvActuator_TypeDef SrvActuator;

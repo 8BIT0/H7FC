@@ -22,6 +22,12 @@ typedef struct
     uint16_t *ctl_buff;
 
     uint8_t imu_update_error_cnt;
+    uint8_t rc_update_error_cnt;
+
+    SYSTEM_RunTime IMU_Rt;
+    SYSTEM_RunTime RC_Rt;
+
+    bool auto_control;
 } TaskControl_Monitor_TypeDef;
 
 void TaskControl_Init(void);
