@@ -425,9 +425,11 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->sig.update_interval = RC_Input_obj->update_rt - RC_Input_obj->lst_update_rt;
 
         RC_Input_obj->lst_update_rt = RC_Input_obj->update_rt;
+        RC_Input_obj->sig.failsafe = false;
     }
     else
     {
+        RC_Input_obj->sig.failsafe = true;
         RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
         RC_Input_obj->sig.osd_tune_state = false;
         RC_Input_obj->sig.buzz_state = false;

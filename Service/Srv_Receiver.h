@@ -80,6 +80,7 @@ typedef struct
     bool arm_state;
     bool buzz_state;
     bool osd_tune_state;
+    bool failsafe;
 
     uint16_t gimbal_val[4];
     uint8_t control_mode;
