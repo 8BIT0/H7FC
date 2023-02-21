@@ -113,6 +113,7 @@ void TaskControl_Core(Task_Handle hdl)
                 {
                     for(uint8_t i = 0; i < TaskControl_Monitor.actuator_num; i++)
                     {
+                        /* currently use this section for dshot test */
                         /* throttlr idle value check */
                         TaskControl_Monitor.ctl_buff[i] = DataPipe_DataObj(Control_RC_Data).gimbal_val[Telemetry_RC_Throttle];
                     }
