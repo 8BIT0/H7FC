@@ -128,6 +128,10 @@ void TaskControl_Core(Task_Handle hdl)
             {
                 // do drone return to liftoff spot or do auto control
                 TaskControl_Monitor.auto_control = true;
+
+                /* currently for test for safety */
+                SrvActuator.lock();
+                return;
             }
 
             // do drone control algorithm down below
