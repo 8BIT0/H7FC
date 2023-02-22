@@ -293,13 +293,13 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
 
                     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                     {
-                        if (receiver_obj->data.val_list[i] < CHANNEL_RANGE_MIN)
+                        if (receiver_obj->data.val_list[i] < CRSF_DIGITAL_CHANNEL_MIN)
                         {
-                            receiver_obj->data.val_list[i] = CHANNEL_RANGE_MIN;
+                            receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MIN;
                         }
-                        else if (receiver_obj->data.val_list[i] > CHANNEL_RANGE_MAX)
+                        else if (receiver_obj->data.val_list[i] > CRSF_DIGITAL_CHANNEL_MAX)
                         {
-                            receiver_obj->data.val_list[i] = CHANNEL_RANGE_MAX;
+                            receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MAX;
                         }
 
                         if (receiver_obj->invert_list && (receiver_obj->invert_list & 1 << i))

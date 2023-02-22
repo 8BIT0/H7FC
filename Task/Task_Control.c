@@ -87,17 +87,17 @@ void TaskControl_Core(Task_Handle hdl)
     if (TaskControl_Monitor.init_state || TaskControl_Monitor.control_abort)
     {
         // check imu filter gyro data update or not
-        if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp)
+        if (DataPipe_DataObj(Filted_IMU_Data).data.time_stamp)
         {
-            if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > TaskControl_Monitor.IMU_Rt)
+            if (DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > TaskControl_Monitor.IMU_Rt)
             {
                 TaskControl_Monitor.imu_update_error_cnt = 0;
                 TaskControl_Monitor.IMU_Rt = DataPipe_DataObj(Filted_IMU_Data).data.time_stamp;
             }
-            else if(DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > TaskControl_Monitor.IMU_Rt)
+            else if (DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > TaskControl_Monitor.IMU_Rt)
             {
-                TaskControl_Monitor.imu_update_error_cnt ++;
-                if(TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)
+                TaskControl_Monitor.imu_update_error_cnt++;
+                if (TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)
                     TaskControl_Monitor.control_abort = true;
             }
         }
@@ -105,18 +105,23 @@ void TaskControl_Core(Task_Handle hdl)
         /* only manipulate esc or servo when disarm */
         if (DataPipe_DataObj(Control_RC_Data).time_stamp)
         {
-            if(!DataPipe_DataObj(Control_RC_Data).failsafe)
+            if (!DataPipe_DataObj(Control_RC_Data).failsafe)
             {
                 TaskControl_Monitor.RC_Rt = DataPipe_DataObj(Control_RC_Data).time_stamp;
 
-                if(DataPipe_DataObj(Control_RC_Data).arm_state == TELEMETRY_SET_DISARM)
+                if (DataPipe_DataObj(Control_RC_Data).arm_state == TELEMETRY_SET_DISARM)
                 {
-                    for(uint8_t i = 0; i < TaskControl_Monitor.actuator_num; i++)
+                    for (uint8_t i = 0; i < TaskControl_Monitor.actuator_num; i++)
                     {
                         /* currently use this section for dshot test */
                         /* throttlr idle value check */
                         TaskControl_Monitor.ctl_buff[i] = DataPipe_DataObj(Control_RC_Data).gimbal_val[Telemetry_RC_Throttle];
                     }
+                }
+                else
+                {
+                    SrvActuator.lock();
+                    return;
                 }
             }
             else
