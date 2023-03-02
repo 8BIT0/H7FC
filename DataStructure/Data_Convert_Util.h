@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 uint32_t LEndian2Word(const uint8_t *ptr);
 uint16_t LEndian2HalfWord(const uint8_t *ptr);

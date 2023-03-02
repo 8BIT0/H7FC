@@ -19,7 +19,6 @@
 #include "Task_SensorInertial.h"
 #include "Task_Telemetry.h"
 #include "mmu.h"
-#include "frame.h"
 
 static bool test = false;
 
@@ -154,11 +153,6 @@ void TaskProtocol_Core(Task_Handle hdl)
             }
         }
 
-        if (Frame_CheckProtocol_Update())
-        {
-            /* communicate to pc application */
-        }
-
         break;
 
     case TaskProto_Error_Proc:
@@ -180,8 +174,6 @@ static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
     // shellHandler(Shell_GetInstence(), data[i]);
     // TaskProtocol_TransBuff(data, len);
     test = true;
-
-    Frame_Decode(data, len);
 }
 
 static void TaskProtocol_PlugDetect_Callback(void)
