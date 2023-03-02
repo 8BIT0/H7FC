@@ -17,16 +17,6 @@ typedef enum
 
 typedef enum
 {
-    Proto_IMU = 0,
-    Proto_INS,
-    Proto_Filter,
-    Proto_Control,
-    Proto_Remote,
-    Proto_Config,
-} ProtType_List;
-
-typedef enum
-{
     TaskProto_Init = 0,
     TaskProto_Core,
     TaskProto_Error_Proc,
