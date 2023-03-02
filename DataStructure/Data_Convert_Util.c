@@ -52,16 +52,31 @@ bool LEndianHalfWord2BytesArray(const uint16_t target, uint8_t *p_bytes)
 
 /******************************************************* Big Endain Convert ****************************************************************/
 
-uint32_t BEndian2Word(const uint8_t *ptr)
+uint16_t BEndian2HalfWord(const uint8_t *p_data)
 {
-    uint32_t tmp = 0;
+    uint16_t tmp = 0;
+
+    if(p_data == NULL)
+        return 0;
+
+    ((uint8_t *)&tmp)[0] = p_data[1];
+    ((uint8_t *)&tmp)[1] = p_data[0];
 
     return tmp;
 }
 
-uint16_t BEndian2HalfWord(const uint8_t *ptr)
+uint32_t BEndian2Word(const uint8_t *p_data)
 {
-    uint16_t tmp = 0;
+    uint32_t tmp = 0;
+    uint8_t byte_index = sizeof(uint32_t) - 1;
+
+    if(p_data == NULL)
+        return 0;
+
+    for(uint8_t i = 0; i < sizeof(uint32_t); i++)
+    {
+        ((uint8_t *)&tmp)[i] = p_data[byte_index - i];
+    }
 
     return tmp;
 }
