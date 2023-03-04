@@ -7,49 +7,34 @@
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
 
-typedef union
+typedef enum
 {
-    struct section
-    {
-    };
+    SrvComProto_Type_Cus = 0,
+    SrvComProto_Type_MAV,
+} SrvComProto_Type_List;
 
-    uint64_t val;
-} SrvComProto_MAVReg1_TypeDef;
-
-typedef union
+typedef enum
 {
-    struct section
-    {
-    };
 
-    uint64_t val;
-} SrvComProto_MavReg2_TypeDef;
+} SrvComProto_MAVMsg_List;
 
 typedef union
 {
     struct section
     {
+        uint8_t msg_actuator_control_target : 1;
     };
 
-    uint64_t val;
-} SrvComProto_MavReg3_TypeDef;
-
-typedef union
-{
-    struct section
-    {
-    };
-
-    uint64_t val;
-} SrvComProto_MavReg4_TypeDef;
+    uint64_t val[4];
+} SrvComProto_MavReg_TypeDef;
 
 typedef struct
 {
-    bool enable_mavlink;
+    SrvComProto_Type_List Proto_Type;
+    SrvComProto_MavReg_TypeDef MavSet_Reg;
 
     uint8_t *proto_buf;
     uint16_t proto_buf_size;
-
 } SrvComProto_Monitor_TypeDef;
 
 #endif
