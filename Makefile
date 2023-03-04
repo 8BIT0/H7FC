@@ -185,6 +185,7 @@ C_INCLUDES =  \
 -ISystem/shell \
 -ISystem/diskio \
 -Idebug \
+-IMAVLink \
 -IDataStructure/ \
 -ISystem/runtime/ \
 -ISystem/scheduler/ \
