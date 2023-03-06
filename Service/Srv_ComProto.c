@@ -50,3 +50,23 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg,
 
     return true;
 }
+
+static void SrvComProto_MavMsg_Raw_IMU()
+{
+}
+
+static void SrvComProto_MavMsg_Raw_IMU2()
+{
+}
+
+static void SrvComProto_MavMsg_Scale_IMU()
+{
+}
+
+static void SrvComProto_MavMsg_Scale_IMU2()
+{
+}
+
+static void SrvComProto_MavMsg_Raw_RcChannel()
+{
+}
