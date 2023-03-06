@@ -65,7 +65,7 @@ typedef struct
 
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, uint32_t msg_id, uint32_t period, SrvComProto_IOType_List io_dir, SrvComProto_Stream_TypeDef tar_stream);
-    bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *stream, ComProto_Callback proto_cb);
+    bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
 } SrvComProto_TypeDef;
 
 extern SrvComProto_TypeDef SrvComProto;
