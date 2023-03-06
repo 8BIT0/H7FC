@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "MAVLink\common\common.h"
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
 
@@ -22,7 +23,15 @@ typedef union
 {
     struct section
     {
-        uint8_t msg_actuator_control_target : 1;
+        uint64_t msg_actuator_control_target : 1;
+        uint64_t msg_altitude : 1;
+        uint64_t msg_attitude_quaternion_cov : 1;
+        uint64_t msg_attitude_quaternion : 1;
+        uint64_t msg_attitude_target : 1;
+        uint64_t msg_attitude : 1;
+        uint64_t msg_battery_status : 1;
+
+        uint64_t reserve[3];
     };
 
     uint64_t val[4];
