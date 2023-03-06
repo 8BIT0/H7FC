@@ -48,7 +48,7 @@ typedef struct
 {
     uint32_t msg_id;
     SrvComProto_IOType_List io_type;
-    uint16_t freq;
+    uint16_t period;
 
     SrvComProto_Stream_TypeDef tar_obj; /* target proto data object stream */
 
@@ -64,8 +64,10 @@ typedef struct
     // void (*set_decode_callback)();
 
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
-    bool (*mav_msg_proto_init)(SrvComProto_MsgInfo_TypeDef *msg, uint32_t msg_id, uint32_t freq, SrvComProto_IOType_List io_dir, SrvComProto_Stream_TypeDef tar_stream);
+    bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, uint32_t msg_id, uint32_t period, SrvComProto_IOType_List io_dir, SrvComProto_Stream_TypeDef tar_stream);
     bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *stream, ComProto_Callback proto_cb);
 } SrvComProto_TypeDef;
+
+extern SrvComProto_TypeDef SrvComProto;
 
 #endif
