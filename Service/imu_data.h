@@ -45,6 +45,12 @@ typedef struct
     uint8_t gyr_blunt_cnt[Axis_Sum];
     uint8_t acc_blunt_cnt[Axis_Sum];
 } IMUData_TypeDef;
+
+typedef struct
+{
+    float acc_scale;
+    float gyr_scale;
+} IMUModuleScale_TypeDef;
 #pragma pack()
 
 #endif

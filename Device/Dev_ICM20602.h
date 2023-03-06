@@ -169,6 +169,7 @@ typedef struct
     bool (*sample)(DevICM20602Obj_TypeDef *Obj);
     IMUData_TypeDef (*get_data)(DevICM20602Obj_TypeDef *Obj);
     ICM20602_Error_List (*get_error)(DevICM20602Obj_TypeDef *Obj);
+    IMUModuleScale_TypeDef (*get_scale)(const DevICM20602Obj_TypeDef sensor_obj);
 } DevICM20602_TypeDef;
 
 extern DevICM20602_TypeDef DevICM20602;

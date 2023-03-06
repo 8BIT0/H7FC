@@ -21,8 +21,9 @@ static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
-IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
+static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
 static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
+static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef sensor_obj);
 
 /* external MPU6000 Object */
 DevMPU6000_TypeDef DevMPU6000 = {
@@ -35,6 +36,7 @@ DevMPU6000_TypeDef DevMPU6000 = {
     .sample = DevMPU6000_Sample,
     .get_data = DevMPU6000_Get_Data,
     .get_error = DevMPU6000_Get_InitError,
+    .get_scale = DevMPU6000_Get_Scale,
 };
 
 static bool Dev_MPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uint8_t *rx, uint8_t size)
@@ -345,7 +347,7 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
     return false;
 }
 
-IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
+static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     IMUData_TypeDef tmp;
 
@@ -354,4 +356,14 @@ IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
         return sensor_obj->OriData;
 
     return tmp;
+}
+
+static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef sensor_obj)
+{
+    IMUModuleScale_TypeDef scale_tmp;
+
+    scale_tmp.acc_scale = sensor_obj.acc_scale;
+    scale_tmp.gyr_scale = sensor_obj.gyr_scale;
+
+    return scale_tmp;
 }

@@ -178,6 +178,7 @@ typedef struct
     bool (*sample)(DevMPU6000Obj_TypeDef *sensor_obj);
     IMUData_TypeDef (*get_data)(DevMPU6000Obj_TypeDef *sensor_obj);
     DevMPU6000_Error_List (*get_error)(DevMPU6000Obj_TypeDef *sensor_obj);
+    IMUModuleScale_TypeDef (*get_scale)(const DevMPU6000Obj_TypeDef sensor_obj);
 } DevMPU6000_TypeDef;
 
 extern DevMPU6000_TypeDef DevMPU6000;

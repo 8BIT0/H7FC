@@ -19,6 +19,7 @@ static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj);
 static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj);
 static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj);
 static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj);
+static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef Obj);
 
 /* external variable */
 DevICM20602_TypeDef DevICM20602 = {
@@ -31,6 +32,7 @@ DevICM20602_TypeDef DevICM20602 = {
     .sample = DevICM20602_Sample,
     .get_error = DevICM20602_Get_InitError,
     .get_data = DevICM20602_Get_Data,
+    .get_scale = DevICM20602_Get_Scale,
 };
 
 static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
@@ -343,4 +345,14 @@ static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj)
 static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj)
 {
     return Obj->error;
+}
+
+static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef Obj)
+{
+    IMUModuleScale_TypeDef scale;
+
+    scale.acc_scale = Obj.acc_scale;
+    scale.gyr_scale = Obj.gyr_scale;
+
+    return scale;
 }
