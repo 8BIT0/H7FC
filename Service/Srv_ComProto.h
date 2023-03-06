@@ -23,18 +23,29 @@ typedef union
 {
     struct section
     {
-        uint64_t msg_actuator_control_target : 1;
-        uint64_t msg_altitude : 1;
-        uint64_t msg_attitude_quaternion_cov : 1;
-        uint64_t msg_attitude_quaternion : 1;
-        uint64_t msg_attitude_target : 1;
-        uint64_t msg_attitude : 1;
-        uint64_t msg_battery_status : 1;
+        uint32_t msg_actuator_control_target : 1;
+        uint32_t msg_altitude : 1;
+        uint32_t msg_attitude_quaternion_cov : 1;
+        uint32_t msg_attitude_quaternion : 1;
+        uint32_t msg_attitude_target : 1;
+        uint32_t msg_attitude : 1;
+        uint32_t msg_battery_status : 1;
+        uint32_t msg_raw_imu : 1;
+        uint32_t msg_raw_pressure : 1;
+        uint32_t msg_rc_channels_override : 1;
+        uint32_t msg_rc_channels_raw : 1;
+        uint32_t msg_rc_channels_scaled : 1;
+        uint32_t msg_scaled_imu : 1;
+        uint32_t msg_scaled_imu2 : 1;
+        uint32_t msg_scaled_pressure : 1;
+        uint32_t msg_scaled_pressure2 : 1;
+        
+        uint32_t res_bit : 16;
 
-        uint64_t reserve[3];
+        uint32_t reserve[3];
     };
 
-    uint64_t val[4];
+    uint32_t val[4];
 } SrvComProto_MavReg_TypeDef;
 
 typedef struct
