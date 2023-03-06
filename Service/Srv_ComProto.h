@@ -4,7 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "MAVLink\common\common.h"
+#include "../System/runtime/runtime.h"
+#include "MAVLink/common/common.h"
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
 
@@ -25,31 +26,6 @@ typedef enum
 
 } SrvComProto_MAVMsg_List;
 
-typedef union
-{
-    struct section
-    {
-        uint32_t msg_altitude : 1;
-        uint32_t msg_attitude_quaternion : 1;
-        uint32_t msg_attitude : 1;
-        uint32_t msg_battery_status : 1;
-        uint32_t msg_raw_imu : 1;
-        uint32_t msg_raw_pressure : 1;
-        uint32_t msg_rc_channels_raw : 1;
-        uint32_t msg_rc_channels_scaled : 1;
-        uint32_t msg_scaled_imu : 1;
-        uint32_t msg_scaled_imu2 : 1;
-        uint32_t msg_scaled_pressure : 1;
-        uint32_t msg_sys_status : 1;
-
-        uint32_t res_bit : 16;
-
-        uint32_t reserve[3];
-    };
-
-    uint32_t val[4];
-} SrvComProto_MavReg_TypeDef;
-
 typedef struct
 {
     uint8_t *p_buf;
@@ -59,36 +35,32 @@ typedef struct
 typedef struct
 {
     SrvComProto_Type_List Proto_Type;
-    SrvComProto_MavReg_TypeDef MavTx_Reg;
-    SrvComProto_MavReg_TypeDef MavRx_Reg;
 
-    uint32_t proto_msg_attitude_cnt;
-    uint32_t proto_msg_raw_imu_cnt;
-    uint32_t proto_msg_scaled_imu_cnt;
-    uint32_t proto_msg_scaled_imu2_cnt;
+    uint32_t tx_msg_attitude_cnt;
+    uint32_t tx_msg_raw_imu_cnt;
+    uint32_t tx_msg_scaled_imu_cnt;
+    uint32_t tx_msg_scaled_imu2_cnt;
 } SrvComProto_Monitor_TypeDef;
 
 typedef struct
 {
-    uint32_t msg_id;
-    SrvComProto_IOType_List IOType;
+    uint32_t msg_type;
+    SrvComProto_IOType_List io_type;
     uint16_t freq;
 
-    uint8_t *p_data;
-    uint16_t data_size;
+    SrvComProto_Stream_TypeDef tar_obj; /* target proto data object stream */
 
-    uint8_t *p_buf;
-    uint16_t buf_size;
+    SYSTEM_RunTime proto_time;
 } SrvComProto_MsgInfo_TypeDef;
 
 typedef struct
 {
     void (*init)(SrvComProto_Type_List type, uint8_t *arg);
-    bool (*create_msg)(SrvComProto_IOType_List IOType, );
     void (*set_decode_callback)();
 
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
-    bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg, ComProto_Callback proto_cb);
+    bool (*mav_msg_proto_init)(SrvComProto_MsgInfo_TypeDef *msg, uint32_t msg_type, SrvComProto_IOType_List io_dir, );
+    bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *stream, ComProto_Callback proto_cb);
 }
 
 #endif
