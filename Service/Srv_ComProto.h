@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "../System/runtime/runtime.h"
-#include "MAVLink/common/common.h"
+// #include "../MAVLink/common/common.h"
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
 
@@ -23,7 +23,9 @@ typedef enum
 
 typedef enum
 {
-
+    MAV_Msg_Attitude,
+    MAV_Msg_Raw_IMU,
+    MAV_Msg_Raw_IMU2,
 } SrvComProto_MAVMsg_List;
 
 typedef struct
@@ -44,23 +46,26 @@ typedef struct
 
 typedef struct
 {
-    uint32_t msg_type;
+    uint32_t msg_id;
     SrvComProto_IOType_List io_type;
     uint16_t freq;
 
     SrvComProto_Stream_TypeDef tar_obj; /* target proto data object stream */
 
     SYSTEM_RunTime proto_time;
+
+    bool in_proto;
+    bool lock_proto;
 } SrvComProto_MsgInfo_TypeDef;
 
 typedef struct
 {
     void (*init)(SrvComProto_Type_List type, uint8_t *arg);
-    void (*set_decode_callback)();
+    // void (*set_decode_callback)();
 
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
-    bool (*mav_msg_proto_init)(SrvComProto_MsgInfo_TypeDef *msg, uint32_t msg_type, SrvComProto_IOType_List io_dir, );
+    bool (*mav_msg_proto_init)(SrvComProto_MsgInfo_TypeDef *msg, uint32_t msg_id, uint32_t freq, SrvComProto_IOType_List io_dir, SrvComProto_Stream_TypeDef tar_stream);
     bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *stream, ComProto_Callback proto_cb);
-}
+} SrvComProto_TypeDef;
 
 #endif

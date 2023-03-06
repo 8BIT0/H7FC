@@ -62,6 +62,7 @@ Device/Dev_Dshot.c \
 Service/SrvMPU_Sample.c \
 Service/Srv_Receiver.c \
 Service/Srv_Actuator.c \
+Service/Srv_ComProto.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
@@ -186,6 +187,9 @@ C_INCLUDES =  \
 -ISystem/diskio \
 -Idebug \
 -IMAVLink \
+-IMAVLink/common \
+-IMAVLink/minimal \
+-IMAVLink/standard \
 -IDataStructure/ \
 -ISystem/runtime/ \
 -ISystem/scheduler/ \
