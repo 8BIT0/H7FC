@@ -4,6 +4,11 @@
 SrvComProto_Monitor_TypeDef SrvComProto_monitor;
 
 /* internal function */
+static void SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef pck);
+static void SrvComProto_MavMsg_Raw_IMU2(SrvComProto_MsgInfo_TypeDef pck);
+static void SrvComProto_MavMsg_Scale_IMU(SrvComProto_MsgInfo_TypeDef pck);
+static void SrvComProto_MavMsg_Scale_IMU2(SrvComProto_MsgInfo_TypeDef pck);
+static void SrvComProto_MavMsg_Raw_RcChannel(SrvComProto_MsgInfo_TypeDef pck);
 
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
@@ -48,10 +53,33 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     msg->msg_obj = (mavlink_message_t *)MMU_Malloc(sizeof(mavlink_message_t));
 
     if (msg->msg_obj)
+    {
+        MMU_Free(msg->msg_ob);
         return false;
+    }
 
     memset(msg->msg_obj, 0, sizeof(mavlink_message_t));
+
     /* set mavlink data structure value set function */
+    switch((uint8_t)pck_info.component_id)
+    {
+        case MAV_Component_Attitude:
+        break;
+
+        case MAV_Component_Rc_Channel:
+        break;
+
+        case MAV_Component_Raw_IMU:
+            msg->pack_callback = SrvComProto_MavMsg_Raw_IMU;
+        break;
+
+        case MAV_Component_Raw_IMU2:
+        break;
+
+        default:
+            MMU_Free(msg->msg_ob);
+            return false;
+    }
 
     msg->lock_proto = false;
 
@@ -64,18 +92,18 @@ static void SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef pck)
                                                                time_boot_ms, xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag);
 }
 
-static void SrvComProto_MavMsg_Raw_IMU2()
+static void SrvComProto_MavMsg_Raw_IMU2(SrvComProto_MsgInfo_TypeDef pck)
 {
 }
 
-static void SrvComProto_MavMsg_Scale_IMU()
+static void SrvComProto_MavMsg_Scale_IMU(SrvComProto_MsgInfo_TypeDef pck)
 {
 }
 
-static void SrvComProto_MavMsg_Scale_IMU2()
+static void SrvComProto_MavMsg_Scale_IMU2(SrvComProto_MsgInfo_TypeDef pck)
 {
 }
 
-static void SrvComProto_MavMsg_Raw_RcChannel()
+static void SrvComProto_MavMsg_Raw_RcChannel(SrvComProto_MsgInfo_TypeDef pck)
 {
 }

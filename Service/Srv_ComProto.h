@@ -9,6 +9,7 @@
 #include "../MAVLink/common/mavlink.h"
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
+typedef void (*DataPack_Callback)(SrvComProto_MsgInfo_TypeDef pck)
 
 typedef enum
 {
@@ -60,9 +61,8 @@ typedef struct
 
     SrvComProto_MavPackInfo_TypeDef pck_info;
     mavlink_message_t *msg_obj;
-
     SrvComProto_Stream_TypeDef tar_obj; /* target proto data object stream */
-
+    DataPack_Callback pack_callback;
     SYSTEM_RunTime proto_time;
 
     bool in_proto;
