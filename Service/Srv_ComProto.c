@@ -7,7 +7,7 @@ SrvComProto_Monitor_TypeDef monitor;
 
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
-static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, uint32_t msg_id,
+static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
                                      uint32_t period, SrvComProto_IOType_List io_dir,
                                      SrvComProto_Stream_TypeDef tar_stream);
 
@@ -25,9 +25,8 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
     return true;
 }
 
-static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg,
-                                     uint32_t msg_id, uint32_t period,
-                                     SrvComProto_IOType_List io_dir,
+static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
+                                     uint32_t period, SrvComProto_IOType_List io_dir,
                                      SrvComProto_Stream_TypeDef tar_stream)
 {
     if ((msg == NULL) ||
@@ -47,8 +46,8 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg,
 
     /* create mavlink message object */
     msg->msg_obj = (mavlink_message_t *)MMU_Malloc(sizeof(mavlink_message_t));
-    
-    if(msg->msg_obj)
+
+    if (msg->msg_obj)
         return false;
 
     /* set mavlink data structure value set function */
