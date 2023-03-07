@@ -15,9 +15,12 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
 static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
                                      uint32_t period, SrvComProto_IOType_List io_dir,
                                      SrvComProto_Stream_TypeDef tar_stream);
+static void SrvComProto_Msg(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
+
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
+    .mav_msg_proto = SrvComProto_Msg,
 };
 
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
@@ -84,6 +87,11 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     msg->lock_proto = false;
 
     return true;
+}
+
+static void SrvComProto_Msg(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb)
+{
+
 }
 
 static void SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef pck)
