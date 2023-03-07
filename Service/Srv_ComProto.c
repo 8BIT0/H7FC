@@ -38,7 +38,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     msg->in_proto = false;
     msg->lock_proto = true;
 
-    msg->msg_id = msg_id;
+    msg->pck_info = pck_info;
     msg->period = period;
     msg->io_type = io_dir;
     msg->tar_obj = tar_stream;

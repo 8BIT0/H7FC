@@ -57,6 +57,7 @@ typedef struct
     SrvComProto_IOType_List io_type;
     uint16_t period;
 
+    SrvComProto_MavPackInfo_TypeDef pck_info;
     mavlink_message_t *msg_obj;
 
     SrvComProto_Stream_TypeDef tar_obj; /* target proto data object stream */
