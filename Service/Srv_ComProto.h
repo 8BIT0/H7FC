@@ -24,10 +24,11 @@ typedef enum
 
 typedef enum
 {
-    MAV_Msg_Attitude,
-    MAV_Msg_Raw_IMU,
-    MAV_Msg_Raw_IMU2,
-} SrvComProto_MAVMsg_List;
+    MAV_Component_Attitude = 1,
+    MAV_Component_Rc_Channel,
+    MAV_Component_Raw_IMU,
+    MAV_Component_Raw_IMU2,
+} SrvComProto_MAVComponent_List;
 
 typedef struct
 {
