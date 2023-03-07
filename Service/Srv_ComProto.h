@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
-// #include "../MAVLink/common/common.h"
+#include "../MAVLink/common/mavlink.h"
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
 

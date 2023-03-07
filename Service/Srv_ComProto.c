@@ -1,7 +1,7 @@
 #include "Srv_ComProto.h"
 #include "mmu.h"
 
-SrvComProto_Monitor_TypeDef monitor;
+SrvComProto_Monitor_TypeDef SrvComProto_monitor;
 
 /* internal function */
 
@@ -19,8 +19,8 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
 {
     UNUSED(arg);
 
-    memset(&monitor, 0, sizeof(monitor));
-    monitor.Proto_Type = type;
+    memset(&SrvComProto_monitor, 0, sizeof(SrvComProto_monitor));
+    SrvComProto_monitor.Proto_Type = type;
 
     return true;
 }
