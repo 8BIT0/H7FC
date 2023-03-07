@@ -70,6 +70,23 @@ typedef struct
 
 typedef struct
 {
+    uint32_t time_stamp;
+    
+    int16_t gyr_x;
+    int16_t gyr_y;
+    int16_t gyr_z;
+
+    int16_t acc_x;
+    int16_t acc_y;
+    int16_t acc_z;
+
+    int16_t mag_x;
+    int16_t mag_y;
+    int16_t mag_z;
+}SrvComProto_IMUData_TypeDef;
+
+typedef struct
+{
     void (*init)(SrvComProto_Type_List type, uint8_t *arg);
     // void (*set_decode_callback)();
 

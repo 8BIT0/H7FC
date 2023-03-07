@@ -50,6 +50,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     if (msg->msg_obj)
         return false;
 
+    memset(msg->msg_obj, 0, sizeof(mavlink_message_t));
     /* set mavlink data structure value set function */
 
     msg->lock_proto = false;
@@ -57,8 +58,10 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     return true;
 }
 
-static void SrvComProto_MavMsg_Raw_IMU()
+static void SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef pck)
 {
+    uint16_t OutStream_Len = mavlink_msg_scaled_imu_pack_chan( pck.pck_info.system_id, pck.pck_info.component_id, pck.pck_info.chan, pck.msg_obj,
+                                                               time_boot_ms, xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag);
 }
 
 static void SrvComProto_MavMsg_Raw_IMU2()
