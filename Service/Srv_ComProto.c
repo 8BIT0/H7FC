@@ -1,4 +1,5 @@
 #include "Srv_ComProto.h"
+#include "mmu.h"
 
 SrvComProto_Monitor_TypeDef monitor;
 
@@ -43,6 +44,12 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg,
     msg->io_type = io_dir;
     msg->tar_obj = tar_stream;
     msg->proto_time = 0;
+
+    /* create mavlink message object */
+    msg->msg_obj = (mavlink_message_t *)MMU_Malloc(sizeof(mavlink_message_t));
+    
+    if(msg->msg_obj)
+        return false;
 
     /* set mavlink data structure value set function */
 
