@@ -1,10 +1,11 @@
 #ifndef __SRV_COMPROTO_H
 #define __SRV_COMPROTO_H
 
-#include <string.h>
+#include "../System/runtime/runtime.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include "../System/runtime/runtime.h"
+#include <string.h>
+
 // #include "../MAVLink/common/common.h"
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
@@ -46,7 +47,13 @@ typedef struct
 
 typedef struct
 {
-    uint32_t msg_id;
+    uint8_t system_id;
+    uint8_t component_id;
+    uint8_t chan;
+} SrvComProto_MavPackInfo_TypeDef;
+
+typedef struct
+{
     SrvComProto_IOType_List io_type;
     uint16_t period;
 
@@ -66,8 +73,12 @@ typedef struct
     // void (*set_decode_callback)();
 
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
-    bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, uint32_t msg_id, uint32_t period, SrvComProto_IOType_List io_dir, SrvComProto_Stream_TypeDef tar_stream);
-    bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
+    bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
+                             uint32_t period, SrvComProto_IOType_List io_dir,
+                             SrvComProto_Stream_TypeDef tar_stream);
+    bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg,
+                          SrvComProto_Stream_TypeDef *com_stream,
+                          ComProto_Callback tx_cb);
 } SrvComProto_TypeDef;
 
 extern SrvComProto_TypeDef SrvComProto;
