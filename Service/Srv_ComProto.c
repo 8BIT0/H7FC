@@ -1,6 +1,7 @@
 #include "Srv_ComProto.h"
 #include "DataPipe.h"
 #include "mmu.h"
+#include "runtime.h"
 
 SrvComProto_Monitor_TypeDef SrvComProto_monitor;
 
@@ -14,8 +15,7 @@ static void SrvComProto_MavMsg_Raw_RcChannel(SrvComProto_MsgInfo_TypeDef pck);
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
 static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
-                                     uint32_t period, SrvComProto_IOType_List io_dir,
-                                     SrvComProto_Stream_TypeDef tar_stream);
+                                     uint32_t period, SrvComProto_IOType_List io_dir);
 static void SrvComProto_Msg(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
 
 static void SrvComProto_Fill_IMU(uint32_t update_time, float acc_scale, float gyr_scale, float accx, float accy, float accz, float gyrx, float gyry, float gyrz);
@@ -43,13 +43,10 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
 }
 
 static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
-                                     uint32_t period, SrvComProto_IOType_List io_dir,
-                                     SrvComProto_Stream_TypeDef tar_stream)
+                                     uint32_t period, SrvComProto_IOType_List io_dir)
 {
     if ((msg == NULL) ||
-        (period == 0) ||
-        (tar_stream.p_buf == NULL) ||
-        (tar_stream.size == 0))
+        (period == 0))
         return false;
 
     msg->in_proto = false;
@@ -58,7 +55,6 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     msg->pck_info = pck_info;
     msg->period = period;
     msg->io_type = io_dir;
-    msg->tar_obj = tar_stream;
     msg->proto_time = 0;
 
     /* create mavlink message object */
@@ -100,8 +96,21 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 
 static void SrvComProto_Msg(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb)
 {
-    if (com_stream && com_stream->p_buf && com_stream->size && tx_cb)
+    if (com_stream && com_stream->p_buf && com_stream->size && tx_cb && IS_PROTO_OUT(msg.io_type))
     {
+        msg.in_proto = true;
+
+        if (msg.proto_time == 0)
+        {
+            msg.proto_time = Get_CurrentRunningMs();
+        }
+        else if (Get_CurrentRunningMs() - msg.proto_time < msg.period)
+        {
+            goto quit_proto;
+        }
+
+    quit_proto:
+        msg.in_proto = false;
     }
 }
 

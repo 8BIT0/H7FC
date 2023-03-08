@@ -11,6 +11,8 @@
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
 typedef void (*DataPack_Callback)(void *pck);
 
+#define IS_PROTO_OUT(x) (x == SrvComProto_FrameOut) ? true : false
+
 typedef enum
 {
     SrvComProto_Type_Cus = 0,
@@ -51,7 +53,6 @@ typedef struct
 
     SrvComProto_MavPackInfo_TypeDef pck_info;
     mavlink_message_t *msg_obj;
-    SrvComProto_Stream_TypeDef tar_obj; /* target proto data object stream */
     DataPack_Callback pack_callback;
     SYSTEM_RunTime proto_time;
 
