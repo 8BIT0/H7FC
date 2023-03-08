@@ -193,5 +193,7 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     if (obj == &Receiver_ptl_DataPipe)
     {
     }
-    else if (obj == &)
+    else if (obj == &IMU_Ptl_DataPipe)
+    {
+    }
 }
