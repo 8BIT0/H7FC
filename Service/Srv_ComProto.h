@@ -121,6 +121,7 @@ typedef struct
 
 typedef struct
 {
+    bool init_state;
     SrvComProto_Type_List Proto_Type;
     SrvComProto_Data_TypeDef proto_data;
 } SrvComProto_Monitor_TypeDef;

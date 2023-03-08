@@ -5,7 +5,7 @@
 #include "mmu.h"
 #include "runtime.h"
 
-SrvComProto_Monitor_TypeDef SrvComProto_monitor;
+SrvComProto_Monitor_TypeDef SrvComProto_monitor = {0};
 
 /* Pipe Object */
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
@@ -41,6 +41,10 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
 {
     UNUSED(arg);
 
+    /* only init one time */
+    if (SrvComProto_monitor.init_state)
+        return true;
+
     memset(DataPipe_DataObjAddr(PtlPriIMU_Data), NULL, DataPipe_DataSize(PtlPriIMU_Data));
     IMU_Ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlPriIMU_Data);
     IMU_Ptl_DataPipe.data_size = DataPipe_DataSize(PtlPriIMU_Data);
@@ -54,6 +58,7 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
 
     memset(&SrvComProto_monitor, 0, sizeof(SrvComProto_monitor));
     SrvComProto_monitor.Proto_Type = type;
+    SrvComProto_monitor.init_state = true;
 
     return true;
 }
