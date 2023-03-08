@@ -9,7 +9,7 @@
 #include "../MAVLink/common/mavlink.h"
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
-typedef void (*DataPack_Callback)(SrvComProto_MsgInfo_TypeDef pck)
+typedef void (*DataPack_Callback)(void *pck);
 
 typedef enum
 {
@@ -39,16 +39,6 @@ typedef struct
 
 typedef struct
 {
-    SrvComProto_Type_List Proto_Type;
-
-    uint32_t tx_msg_attitude_cnt;
-    uint32_t tx_msg_raw_imu_cnt;
-    uint32_t tx_msg_scaled_imu_cnt;
-    uint32_t tx_msg_scaled_imu2_cnt;
-} SrvComProto_Monitor_TypeDef;
-
-typedef struct
-{
     uint8_t system_id;
     uint8_t component_id;
     uint8_t chan;
@@ -71,25 +61,79 @@ typedef struct
 
 typedef struct
 {
-    uint32_t time_stamp;
-    
-    int16_t gyr_x;
-    int16_t gyr_y;
-    int16_t gyr_z;
+    uint32_t imu_update_time;
+    float gyr_scale;
+    float gyr_x;
+    float gyr_y;
+    float gyr_z;
 
-    int16_t acc_x;
-    int16_t acc_y;
-    int16_t acc_z;
+    float acc_scale;
+    float acc_x;
+    float acc_y;
+    float acc_z;
 
-    int16_t mag_x;
-    int16_t mag_y;
-    int16_t mag_z;
-}SrvComProto_IMUData_TypeDef;
+    uint32_t mag_update_time;
+    float mag_scale;
+    float mag_x;
+    float mag_y;
+    float mag_z;
+
+    uint32_t baro_update_time;
+    float baro_scale;
+    float baro;
+
+    uint32_t sonar_update_time;
+    float sonar_scale;
+    float sonar_dis;
+
+    uint32_t tof_update_time;
+    float tof_scale;
+    float tof_dis;
+
+    uint32_t att_update_time;
+    float att_roll;
+    float att_pitch;
+    float att_yaw;
+
+    uint32_t gnss_update_time;
+    double lon;
+    double lat;
+    double alt;
+
+    double vel_n;
+    double vel_e;
+    double vel_d;
+
+    double forward_vel;
+    double lateral_vel;
+    double vertical_vel;
+
+    uint16_t utc_year;
+    uint16_t utc_month;
+    uint16_t utc_day;
+    uint16_t utc_hour;
+    uint16_t utc_min;
+    uint16_t utc_s;
+    uint16_t utc_ms;
+} SrvComProto_Data_TypeDef;
+
+typedef struct
+{
+    SrvComProto_Type_List Proto_Type;
+    SrvComProto_Data_TypeDef proto_data;
+} SrvComProto_Monitor_TypeDef;
 
 typedef struct
 {
     void (*init)(SrvComProto_Type_List type, uint8_t *arg);
     // void (*set_decode_callback)();
+
+    void (*fill_imu)(uint32_t update_time, float acc_scale, float gyr_scale, float accx, float accy, float accz, float gyrx, float gyry, float gyrz);
+    void (*fill_mag)(uint32_t update_time, float mag_scale, float magx, float magy, float magz);
+    void (*fill_baro)(uint32_t update_time, float baro_scale, float bar);
+    void (*fill_tof)(uint32_t update_time, float tof_scale, float tof_dis);
+    void (*fill_sonar)(uint32_t update_time, float sonar_scale, float sonar_dis);
+    void (*fill_attitude)(uint32_t update_time, float roll, float pitch, float yaw);
 
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
