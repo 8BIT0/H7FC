@@ -45,15 +45,20 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
     if (SrvComProto_monitor.init_state)
         return true;
 
+    /* init pipe object */
     memset(DataPipe_DataObjAddr(PtlPriIMU_Data), NULL, DataPipe_DataSize(PtlPriIMU_Data));
     IMU_Ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlPriIMU_Data);
     IMU_Ptl_DataPipe.data_size = DataPipe_DataSize(PtlPriIMU_Data);
+    IMU_Ptl_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+    DataPipe_Set_RxInterval(&IMU_Ptl_DataPipe, Runtime_MsToUs(5)); /* limit pipe frequence to 200Hz */
+    DataPipe_Enable(&IMU_Ptl_DataPipe);
 
+    /* init pipe object */
     memset(DataPipe_DataObjAddr(Proto_Rc), 0, DataPipe_DataSize(Proto_Rc));
     Receiver_ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
     Receiver_ptl_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
     Receiver_ptl_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
-    DataPipe_Set_RxInterval(&Receiver_ptl_DataPipe, Runtime_MsToUs(20));
+    DataPipe_Set_RxInterval(&Receiver_ptl_DataPipe, Runtime_MsToUs(20)); /* limit pipe frequence to 50Hz */
     DataPipe_Enable(&Receiver_ptl_DataPipe);
 
     memset(&SrvComProto_monitor, 0, sizeof(SrvComProto_monitor));
@@ -188,4 +193,5 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     if (obj == &Receiver_ptl_DataPipe)
     {
     }
+    else if (obj == &)
 }
