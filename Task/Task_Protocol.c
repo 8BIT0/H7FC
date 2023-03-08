@@ -31,11 +31,6 @@ static ProtoQueue_State_List VCPQueue_State = ProtoQueue_Idle;
 static bool VCP_Connect_State = false; /* USB connect state */
 static TaskProto_State_List task_state = TaskProto_Core;
 static bool Shell_Mode = false;
-DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
-DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlSecIMU_Data);
-
-DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
-DataPipeObj_TypeDef IMU_Ptl_DataPipe;
 
 /* internal function */
 static void TaskProtocol_MainProc(uint8_t *data, uint16_t size);
@@ -43,21 +38,9 @@ static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 static void TaskProtocol_PlugDetect_Callback(void);
 ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
-static void TaskProtocol_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
 
 bool TaskProtocol_Init(void)
 {
-    memset(DataPipe_DataObjAddr(PtlPriIMU_Data), NULL, DataPipe_DataSize(PtlPriIMU_Data));
-    IMU_Ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlPriIMU_Data);
-    IMU_Ptl_DataPipe.data_size = DataPipe_DataSize(PtlPriIMU_Data);
-
-    memset(DataPipe_DataObjAddr(Proto_Rc), 0, DataPipe_DataSize(Proto_Rc));
-    Receiver_ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
-    Receiver_ptl_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
-    Receiver_ptl_DataPipe.trans_finish_cb = TaskProtocol_PipeRcTelemtryDataFinish_Callback;
-    DataPipe_Set_RxInterval(&Receiver_ptl_DataPipe, Runtime_MsToUs(20));
-    DataPipe_Enable(&Receiver_ptl_DataPipe);
-
     if (!USB_DEVICE_Init())
     {
         task_state = TaskProto_Error_Proc;
@@ -188,19 +171,3 @@ static void shell_test(void)
     usb_printf("\t8_B!T0 Shell test\r\n");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, test, shell_test, Shell Test);
-
-/* implimention frame file weak function */
-uint32_t Frame_Get_Runtime(void)
-{
-    return Get_CurrentRunningMs();
-}
-
-static void TaskProtocol_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj)
-{
-    if (obj == NULL)
-        return;
-
-    if (obj == &Receiver_ptl_DataPipe)
-    {
-    }
-}

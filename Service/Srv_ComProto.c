@@ -1,12 +1,22 @@
 #include "Srv_ComProto.h"
+#include "Srv_Receiver.h"
+#include "SrvMPU_Sample.h"
 #include "DataPipe.h"
 #include "mmu.h"
 #include "runtime.h"
 
 SrvComProto_Monitor_TypeDef SrvComProto_monitor;
 
+/* Pipe Object */
+DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
+DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlSecIMU_Data);
+
+DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
+DataPipeObj_TypeDef IMU_Ptl_DataPipe;
+
 /* internal function */
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck);
+static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
 
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
@@ -19,7 +29,6 @@ static void SrvComProto_Fill_IMU(uint32_t update_time, float acc_scale, float gy
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
     .mav_msg_proto = SrvComProto_Msg,
-
     .fill_imu = SrvComProto_Fill_IMU,
     .fill_mag = NULL,
     .fill_baro = NULL,
@@ -31,6 +40,17 @@ SrvComProto_TypeDef SrvComProto = {
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
 {
     UNUSED(arg);
+
+    memset(DataPipe_DataObjAddr(PtlPriIMU_Data), NULL, DataPipe_DataSize(PtlPriIMU_Data));
+    IMU_Ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlPriIMU_Data);
+    IMU_Ptl_DataPipe.data_size = DataPipe_DataSize(PtlPriIMU_Data);
+
+    memset(DataPipe_DataObjAddr(Proto_Rc), 0, DataPipe_DataSize(Proto_Rc));
+    Receiver_ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
+    Receiver_ptl_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
+    Receiver_ptl_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+    DataPipe_Set_RxInterval(&Receiver_ptl_DataPipe, Runtime_MsToUs(20));
+    DataPipe_Enable(&Receiver_ptl_DataPipe);
 
     memset(&SrvComProto_monitor, 0, sizeof(SrvComProto_monitor));
     SrvComProto_monitor.Proto_Type = type;
@@ -153,4 +173,14 @@ static void SrvComProto_Fill_IMU(uint32_t update_time, float acc_scale, float gy
     SrvComProto_monitor.proto_data.gyr_x = gyrx;
     SrvComProto_monitor.proto_data.gyr_y = gyry;
     SrvComProto_monitor.proto_data.gyr_z = gyrz;
+}
+
+static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj)
+{
+    if (obj == NULL)
+        return;
+
+    if (obj == &Receiver_ptl_DataPipe)
+    {
+    }
 }
