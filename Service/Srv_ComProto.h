@@ -9,7 +9,7 @@
 #include "../MAVLink/common/mavlink.h"
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
-typedef void (*DataPack_Callback)(void *pck);
+typedef uint16_t (*DataPack_Callback)(uint8_t *pck);
 
 #define IS_PROTO_OUT(x) (x == SrvComProto_FrameOut) ? true : false
 
@@ -37,6 +37,7 @@ typedef struct
 {
     uint8_t *p_buf;
     uint16_t size;
+    uint16_t max_size;
 } SrvComProto_Stream_TypeDef;
 
 typedef struct
