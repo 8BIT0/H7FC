@@ -12,7 +12,6 @@ DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlSecIMU_Data);
 
 DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
-DataPipeObj_TypeDef IMU_Ptl_DataPipe;
 
 /* internal function */
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck);
@@ -195,5 +194,12 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
     else if (obj == &IMU_Ptl_DataPipe)
     {
+        SrvComProto_Fill_IMU(DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp,
+                             DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_X],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Y],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Z],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_X],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Y],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Z]);
     }
 }

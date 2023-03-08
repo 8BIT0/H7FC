@@ -21,7 +21,7 @@ typedef enum
     Pipe_Ready,
     Pipe_Busy,
     Pipe_Error,
-}DataPipe_State_List;
+} DataPipe_State_List;
 
 #pragma pack(1)
 typedef struct
@@ -48,7 +48,7 @@ typedef struct
 {
     DataPipeObj_TypeDef *org;
     DataPipeObj_TypeDef *dst;
-}Data_PlugedPipeObj_TypeDef;
+} Data_PlugedPipeObj_TypeDef;
 
 bool DataPipe_Init(void);
 bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst);
@@ -56,7 +56,7 @@ bool DataPipe_DealError(void);
 
 inline bool DataPipe_Enable(DataPipeObj_TypeDef *obj)
 {
-    if(obj == NULL)
+    if (obj == NULL)
         return false;
 
     obj->enable = true;
@@ -66,7 +66,7 @@ inline bool DataPipe_Enable(DataPipeObj_TypeDef *obj)
 
 inline bool DataPipe_Disable(DataPipeObj_TypeDef *obj)
 {
-    if(obj == NULL)
+    if (obj == NULL)
         return false;
 
     obj->enable = false;
@@ -76,7 +76,7 @@ inline bool DataPipe_Disable(DataPipeObj_TypeDef *obj)
 
 inline bool DataPipe_Set_RxInterval(DataPipeObj_TypeDef *obj, uint64_t interval_us)
 {
-    if(obj)
+    if (obj)
     {
         obj->min_rx_interval = interval_us;
         return true;
@@ -88,6 +88,7 @@ inline bool DataPipe_Set_RxInterval(DataPipeObj_TypeDef *obj, uint64_t interval_
 extern DataPipeObj_TypeDef IMU_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_Log_DataPipe;
 extern DataPipeObj_TypeDef IMU_Ctl_DataPipe;
+extern DataPipeObj_TypeDef IMU_Ptl_DataPipe;
 
 extern DataPipeObj_TypeDef Receiver_Smp_DataPipe;
 extern DataPipeObj_TypeDef Receiver_Ctl_DataPipe;
