@@ -1,8 +1,7 @@
 #include "Srv_DataHub.h"
 
 /* internal variable */
-SrvDataHub_TypeDef DataHub;
-SrvDataHub_UpdateReg_TypeDef update_reg;
+SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor;
 
 /* Pipe Object */
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
@@ -32,11 +31,14 @@ static void SrvDataHub_Init(void)
     Receiver_ptl_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
     // DataPipe_Set_RxInterval(&Receiver_ptl_DataPipe, Runtime_MsToUs(20)); /* limit pipe frequence to 50Hz */
     DataPipe_Enable(&Receiver_ptl_DataPipe);
+
+    memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
+    SrvDataHub_Monitor.init_state = true;
 }
 
 static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj)
 {
-    if (obj == NULL)
+    if ((!SrvDataHub_Monitor.init_state) || (obj == NULL))
         return;
 
     if (obj == &Receiver_ptl_DataPipe)

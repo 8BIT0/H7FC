@@ -113,4 +113,11 @@ typedef struct
 } SrvDataHub_TypeDef;
 #pragma pack()
 
+typedef struct
+{
+    bool init_state;
+    SrvDataHub_UpdateReg_TypeDef update_reg;
+    SrvDataHub_TypeDef data;
+} SrvDataHub_Monitor_TypeDef;
+
 #endif
