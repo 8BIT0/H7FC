@@ -117,6 +117,15 @@ typedef struct
     uint16_t utc_min;
     uint16_t utc_s;
     uint16_t utc_ms;
+
+    uint32_t actuator_update_time;
+    uint8_t moto_cnt;
+    uint8_t moto_dir[8];
+    uint16_t moto[8];
+
+    uint8_t servo_cnt;
+    uint8_t servo_dir[8];
+    uint16_t servo[8];
 } SrvComProto_Data_TypeDef;
 
 typedef struct
