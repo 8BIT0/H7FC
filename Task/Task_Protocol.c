@@ -16,8 +16,6 @@
 #include "Bsp_GPIO.h"
 #include "error_log.h"
 #include "DataPipe/DataPipe.h"
-#include "Task_SensorInertial.h"
-#include "Task_Telemetry.h"
 #include "mmu.h"
 
 static bool test = false;

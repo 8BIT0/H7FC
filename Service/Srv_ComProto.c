@@ -194,12 +194,12 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
     else if (obj == &IMU_Ptl_DataPipe)
     {
-        SrvComProto_Fill_IMU(DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp,
-                             DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_X],
-                             DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Y],
-                             DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Z],
-                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_X],
-                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Y],
-                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Z]);
+        //     SrvComProto_Fill_IMU(DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp,
+        //                          DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_X],
+        //                          DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Y],
+        //                          DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Z],
+        //                          DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_X],
+        //                          DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Y],
+        //                          DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Z]);
     }
 }
