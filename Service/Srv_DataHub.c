@@ -43,5 +43,9 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
     else if (obj == &IMU_Ptl_DataPipe)
     {
+        DataHub.imu_update_time = DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp;
+        DataHub.acc_scale = DataPipe_DataObj(PtlPriIMU_Data).data.acc_scale;
+        DataHub.gyr_scale = DataPipe_DataObj(PtlPriIMU_Data).data.gyr_scale;
+        DataHub.flt_acc_x = DataPipe_DataObj(PtlPriIMU_Data).data.acc_x;
     }
 }

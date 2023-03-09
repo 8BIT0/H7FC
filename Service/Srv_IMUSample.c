@@ -445,8 +445,8 @@ static bool SrvIMU_Sample(void)
 
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
-                    PriIMU_Data.acc[i] = MPU6000Obj.OriData.acc_flt[i];
-                    PriIMU_Data.gyr[i] = MPU6000Obj.OriData.gyr_flt[i];
+                    PriIMU_Data.org_acc[i] = MPU6000Obj.OriData.acc_flt[i];
+                    PriIMU_Data.org_gyr[i] = MPU6000Obj.OriData.gyr_flt[i];
 
                     /* update last time value */
                     if ((PriIMU_Data.error_code != SrvIMU_Sample_Data_Acc_OverRange) &&
@@ -509,8 +509,8 @@ static bool SrvIMU_Sample(void)
 
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
-                    SecIMU_Data.acc[i] = ICM20602Obj.OriData.acc_flt[i];
-                    SecIMU_Data.gyr[i] = ICM20602Obj.OriData.gyr_flt[i];
+                    SecIMU_Data.org_acc[i] = ICM20602Obj.OriData.acc_flt[i];
+                    SecIMU_Data.org_gyr[i] = ICM20602Obj.OriData.gyr_flt[i];
 
                     /* update Sec last value */
                     if ((SecIMU_Data.error_code != SrvIMU_Sample_Data_Acc_OverRange) &&

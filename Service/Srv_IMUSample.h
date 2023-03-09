@@ -59,8 +59,12 @@ typedef struct
     uint64_t cycle_cnt;
 
     float tempera;
-    float gyr[Axis_Sum];
-    float acc[Axis_Sum];
+
+    float flt_gyr[Axis_Sum];
+    float flt_acc[Axis_Sum];
+
+    float org_gyr[Axis_Sum];
+    float org_acc[Axis_Sum];
 
     SrvIMU_SampleErrorCode_List error_code;
     float acc_scale;
