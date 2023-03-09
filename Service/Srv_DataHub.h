@@ -10,6 +10,21 @@
 #include "Srv_Receiver.h"
 
 #pragma pack(1)
+typedef union
+{
+    struct
+    {
+        uint8_t imu_updating : 1;
+        uint8_t mag_updating : 1;
+        uint8_t baro_updating : 1;
+        uint8_t sonar_updating : 1;
+        uint8_t tof_updating : 1;
+        uint8_t rc_updating : 1;
+    } bit;
+
+    uint8_t val;
+} SrvDataHub_UpdateReg_TypeDef;
+
 typedef struct
 {
     uint32_t imu_update_time;

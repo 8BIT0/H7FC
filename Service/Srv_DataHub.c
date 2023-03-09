@@ -2,6 +2,7 @@
 
 /* internal variable */
 SrvDataHub_TypeDef DataHub;
+SrvDataHub_UpdateReg_TypeDef update_reg;
 
 /* Pipe Object */
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
@@ -46,6 +47,22 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         DataHub.imu_update_time = DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp;
         DataHub.acc_scale = DataPipe_DataObj(PtlPriIMU_Data).data.acc_scale;
         DataHub.gyr_scale = DataPipe_DataObj(PtlPriIMU_Data).data.gyr_scale;
-        DataHub.flt_acc_x = DataPipe_DataObj(PtlPriIMU_Data).data.acc_x;
+        DataHub.imu_temp = DataPipe_DataObj(PtlPriIMU_Data).data.tempera;
+
+        DataHub.flt_acc_x = DataPipe_DataObj(PtlPriIMU_Data).data.flt_acc[Axis_X];
+        DataHub.flt_acc_y = DataPipe_DataObj(PtlPriIMU_Data).data.flt_acc[Axis_Y];
+        DataHub.flt_acc_z = DataPipe_DataObj(PtlPriIMU_Data).data.flt_acc[Axis_Z];
+
+        DataHub.flt_gyr_x = DataPipe_DataObj(PtlPriIMU_Data).data.flt_gyr[Axis_X];
+        DataHub.flt_gyr_y = DataPipe_DataObj(PtlPriIMU_Data).data.flt_gyr[Axis_Y];
+        DataHub.flt_gyr_z = DataPipe_DataObj(PtlPriIMU_Data).data.flt_gyr[Axis_Z];
+
+        DataHub.org_acc_x = DataPipe_DataObj(PtlPriIMU_Data).data.org_acc[Axis_X];
+        DataHub.org_acc_y = DataPipe_DataObj(PtlPriIMU_Data).data.org_acc[Axis_Y];
+        DataHub.org_acc_z = DataPipe_DataObj(PtlPriIMU_Data).data.org_acc[Axis_Z];
+
+        DataHub.org_gyr_x = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_X];
+        DataHub.org_gyr_y = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Y];
+        DataHub.org_gyr_z = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Z];
     }
 }

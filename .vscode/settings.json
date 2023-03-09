@@ -116,7 +116,8 @@
                 "math.h": "c",
                 "datapath.h": "c",
                 "srv_actuator.h": "c",
-                "srv_comproto.h": "c"
+                "srv_comproto.h": "c",
+                "srv_datahub.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled"
 }
