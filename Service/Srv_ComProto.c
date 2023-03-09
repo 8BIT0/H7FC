@@ -5,6 +5,9 @@
 #include "mmu.h"
 #include "runtime.h"
 
+/* only can use one hardware port at one time */
+/* still can be optmize / use multi port proto mavlink frame */
+
 SrvComProto_Monitor_TypeDef SrvComProto_monitor = {0};
 
 /* Pipe Object */
@@ -21,7 +24,7 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
 static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
                                      uint32_t period, SrvComProto_IOType_List io_dir);
-static void SrvComProto_Msg(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
+static void SrvComProto_Msg(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream);
 
 static void SrvComProto_Fill_IMU(uint32_t update_time, float acc_scale, float gyr_scale, float accx, float accy, float accz, float gyrx, float gyry, float gyrz);
 
@@ -119,9 +122,9 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     return true;
 }
 
-static void SrvComProto_Msg(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb)
+static void SrvComProto_Msg(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream)
 {
-    if (com_stream && com_stream->p_buf && com_stream->size && tx_cb && IS_PROTO_OUT(msg.io_type))
+    if (com_stream && com_stream->p_buf && com_stream->size && IS_PROTO_OUT(msg.io_type))
     {
         msg.in_proto = true;
 
@@ -139,8 +142,6 @@ static void SrvComProto_Msg(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_
         if (com_stream->size && ((com_stream->size + MAVLINK_NUM_NON_PAYLOAD_BYTES) <= com_stream->max_size))
         {
             com_stream->size = mavlink_msg_to_send_buffer(com_stream->p_buf, msg.msg_obj);
-
-            tx_cb(com_stream->p_buf, com_stream->size);
         }
 
     quit_proto:
@@ -194,12 +195,14 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
     else if (obj == &IMU_Ptl_DataPipe)
     {
-        //     SrvComProto_Fill_IMU(DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp,
-        //                          DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_X],
-        //                          DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Y],
-        //                          DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Z],
-        //                          DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_X],
-        //                          DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Y],
-        //                          DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Z]);
+        SrvComProto_Fill_IMU(DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp,
+                             DataPipe_DataObj(PtlPriIMU_Data).data.acc_scale,
+                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr_scale,
+                             DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_X],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Y],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.acc[Axis_Z],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_X],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Y],
+                             DataPipe_DataObj(PtlPriIMU_Data).data.gyr[Axis_Z]);
     }
 }

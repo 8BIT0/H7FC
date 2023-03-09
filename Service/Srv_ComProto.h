@@ -143,8 +143,7 @@ typedef struct
                              uint32_t period, SrvComProto_IOType_List io_dir,
                              SrvComProto_Stream_TypeDef tar_stream);
     bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg,
-                          SrvComProto_Stream_TypeDef *com_stream,
-                          ComProto_Callback tx_cb);
+                          SrvComProto_Stream_TypeDef *com_stream);
 } SrvComProto_TypeDef;
 
 extern SrvComProto_TypeDef SrvComProto;
