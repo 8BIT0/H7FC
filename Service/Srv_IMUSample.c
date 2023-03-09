@@ -1,4 +1,4 @@
-#include "SrvMPU_Sample.h"
+#include "Srv_IMUSample.h"
 #include "Dev_MPU6000.h"
 #include "Dev_ICM20602.h"
 #include "IO_Definition.h"

@@ -1,5 +1,5 @@
-#ifndef __SRVMPU_SAMPLE_H
-#define __SRVMPU_SAMPLE_H
+#ifndef __SRV_IMUSAMPLE_H
+#define __SRV_IMUSAMPLE_H
 
 #include <stdbool.h>
 #include <stdint.h>

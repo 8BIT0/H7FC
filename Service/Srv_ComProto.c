@@ -1,6 +1,6 @@
 #include "Srv_ComProto.h"
 #include "Srv_Receiver.h"
-#include "SrvMPU_Sample.h"
+#include "Srv_IMUSample.h"
 #include "DataPipe.h"
 #include "mmu.h"
 #include "runtime.h"
