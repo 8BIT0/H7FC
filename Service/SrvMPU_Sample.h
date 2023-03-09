@@ -63,6 +63,8 @@ typedef struct
     float acc[Axis_Sum];
 
     SrvIMU_SampleErrorCode_List error_code;
+    float acc_scale;
+    float gyr_scale;
     uint16_t chk_sum;
 } SrvIMU_Data_TypeDef;
 
