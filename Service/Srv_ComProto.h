@@ -73,19 +73,12 @@ typedef struct
     void (*init)(SrvComProto_Type_List type, uint8_t *arg);
     // void (*set_decode_callback)();
 
-    void (*fill_imu)(uint32_t update_time, float acc_scale, float gyr_scale, float accx, float accy, float accz, float gyrx, float gyry, float gyrz);
-    void (*fill_mag)(uint32_t update_time, float mag_scale, float magx, float magy, float magz);
-    void (*fill_baro)(uint32_t update_time, float baro_scale, float bar);
-    void (*fill_tof)(uint32_t update_time, float tof_scale, float tof_dis);
-    void (*fill_sonar)(uint32_t update_time, float sonar_scale, float sonar_dis);
-    void (*fill_attitude)(uint32_t update_time, float roll, float pitch, float yaw);
-
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
                              uint32_t period, SrvComProto_IOType_List io_dir,
                              SrvComProto_Stream_TypeDef tar_stream);
-    bool (*mav_msg_proto)(SrvComProto_MsgInfo_TypeDef msg,
-                          SrvComProto_Stream_TypeDef *com_stream);
+    bool (*mav_msg_stream)(SrvComProto_MsgInfo_TypeDef msg,
+                           SrvComProto_Stream_TypeDef *com_stream);
 } SrvComProto_TypeDef;
 
 extern SrvComProto_TypeDef SrvComProto;
