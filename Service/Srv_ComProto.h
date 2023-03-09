@@ -63,76 +63,9 @@ typedef struct
 
 typedef struct
 {
-    uint32_t imu_update_time;
-    float gyr_scale;
-    float gyr_x;
-    float gyr_y;
-    float gyr_z;
-
-    float acc_scale;
-    float acc_x;
-    float acc_y;
-    float acc_z;
-
-    uint32_t mag_update_time;
-    float mag_scale;
-    float mag_x;
-    float mag_y;
-    float mag_z;
-
-    uint32_t baro_update_time;
-    float baro_scale;
-    float baro;
-
-    uint32_t sonar_update_time;
-    float sonar_scale;
-    float sonar_dis;
-
-    uint32_t tof_update_time;
-    float tof_scale;
-    float tof_dis;
-
-    uint32_t att_update_time;
-    float att_roll;
-    float att_pitch;
-    float att_yaw;
-
-    uint32_t gnss_update_time;
-    double lon;
-    double lat;
-    double alt;
-
-    double vel_n;
-    double vel_e;
-    double vel_d;
-
-    double forward_vel;
-    double lateral_vel;
-    double vertical_vel;
-
-    uint16_t utc_year;
-    uint16_t utc_month;
-    uint16_t utc_day;
-    uint16_t utc_hour;
-    uint16_t utc_min;
-    uint16_t utc_s;
-    uint16_t utc_ms;
-
-    uint32_t actuator_update_time;
-    uint8_t moto_cnt;
-    uint8_t moto_dir[8];
-    uint16_t moto[8];
-
-    uint8_t servo_cnt;
-    uint8_t servo_dir[8];
-    uint16_t servo[8];
-} SrvComProto_Data_TypeDef;
-
-typedef struct
-{
     bool init_state;
     SrvComProto_Type_List Proto_Type;
-    SrvComProto_Data_TypeDef proto_data;
+    // SrvComProto_Data_TypeDef proto_data;
 } SrvComProto_Monitor_TypeDef;
 
 typedef struct
