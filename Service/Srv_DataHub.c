@@ -142,3 +142,14 @@ reupdate_scaled_imu:
 
     return true;
 }
+
+static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z)
+{
+    if ((time_stamp == NULL) ||
+        (mag_x == NULL) ||
+        (mag_y == NULL) ||
+        (mag_z == NULL))
+        return false;
+
+    return true;
+}
