@@ -87,7 +87,7 @@ static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_x, float *ac
         (gyr_z == NULL))
         return false;
 
-reupdate_imu:
+reupdate_raw_imu:
     SrvDataHub_Monitor.inuse_reg.bit.imu = true;
     *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
     *acc_x = SrvDataHub_Monitor.data.org_acc_x;
@@ -98,7 +98,7 @@ reupdate_imu:
     *gyr_z = SrvDataHub_Monitor.data.org_gyr_z;
     *tmpr = SrvDataHub_Monitor.data.imu_temp;
     if (!SrvDataHub_Monitor.inuse_reg.bit.imu)
-        goto reupdate_imu;
+        goto reupdate_raw_imu;
 
     SrvDataHub_Monitor.inuse_reg.bit.imu = false;
 
