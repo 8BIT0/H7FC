@@ -14,12 +14,12 @@ typedef union
 {
     struct
     {
-        uint8_t imu_updating : 1;
-        uint8_t mag_updating : 1;
-        uint8_t baro_updating : 1;
-        uint8_t sonar_updating : 1;
-        uint8_t tof_updating : 1;
-        uint8_t rc_updating : 1;
+        uint8_t imu : 1;
+        uint8_t mag : 1;
+        uint8_t baro : 1;
+        uint8_t sonar : 1;
+        uint8_t tof : 1;
+        uint8_t rc : 1;
     } bit;
 
     uint8_t val;
@@ -116,6 +116,7 @@ typedef struct
 typedef struct
 {
     bool init_state;
+    SrvDataHub_UpdateReg_TypeDef inuse_reg;
     SrvDataHub_UpdateReg_TypeDef update_reg;
     SrvDataHub_TypeDef data;
 } SrvDataHub_Monitor_TypeDef;

@@ -46,7 +46,10 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
     else if (obj == &IMU_Ptl_DataPipe)
     {
-        SrvDataHub_Monitor.update_reg.bit.imu_updating = true;
+        SrvDataHub_Monitor.update_reg.bit.imu = true;
+
+        if (SrvDataHub_Monitor.inuse_reg.bit.imu)
+            SrvDataHub_Monitor.inuse_reg.bit.imu = false;
 
         SrvDataHub_Monitor.data.imu_update_time = DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp;
         SrvDataHub_Monitor.data.acc_scale = DataPipe_DataObj(PtlPriIMU_Data).data.acc_scale;
@@ -69,6 +72,49 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         SrvDataHub_Monitor.data.org_gyr_y = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Y];
         SrvDataHub_Monitor.data.org_gyr_z = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Z];
 
-        SrvDataHub_Monitor.update_reg.bit.imu_updating = false;
+        SrvDataHub_Monitor.update_reg.bit.imu = false;
     }
+}
+
+static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr;)
+{
+    if ((time_stamp == NULL) ||
+        (acc_x == NULL) ||
+        (acc_y == NULL) ||
+        (acc_z == NULL) ||
+        (gyr_x == NULL) ||
+        (gyr_y == NULL) ||
+        (gyr_z == NULL))
+        return false;
+
+reupdate_imu:
+    SrvDataHub_Monitor.inuse_reg.bit.imu = true;
+    *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
+    *acc_x = SrvDataHub_Monitor.data.org_acc_x;
+    *acc_y = SrvDataHub_Monitor.data.org_acc_y;
+    *acc_z = SrvDataHub_Monitor.data.org_acc_z;
+    *gyr_x = SrvDataHub_Monitor.data.org_gyr_x;
+    *gyr_y = SrvDataHub_Monitor.data.org_gyr_y;
+    *gyr_z = SrvDataHub_Monitor.data.org_gyr_z;
+    *tmpr = SrvDataHub_Monitor.data.imu_temp;
+    if (!SrvDataHub_Monitor.inuse_reg.bit.imu)
+        goto reupdate_imu;
+
+    SrvDataHub_Monitor.inuse_reg.bit.imu = false;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z)
+{
+    if ((time_stamp == NULL) ||
+        (acc_x == NULL) ||
+        (acc_y == NULL) ||
+        (acc_z == NULL) ||
+        (gyr_x == NULL) ||
+        (gyr_y == NULL) ||
+        (gyr_z == NULL))
+        return false;
+
+    return true;
 }
