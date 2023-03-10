@@ -14,11 +14,21 @@ typedef union
 {
     struct
     {
-        uint8_t imu : 1;
-        uint8_t mag : 1;
-        uint8_t baro : 1;
-        uint8_t sonar : 1;
-        uint8_t tof : 1;
+        uint8_t raw_imu : 1;
+        uint8_t scaled_imu : 1;
+
+        uint8_t raw_mag : 1;
+        uint8_t scaled_mag : 1;
+
+        uint8_t raw_baro : 1;
+        uint8_t scaled_baro : 1;
+
+        uint8_t raw_sonar : 1;
+        uint8_t scaled_sonar : 1;
+
+        uint8_t raw_tof : 1;
+        uint8_t scaled_tof : 1;
+
         uint8_t rc : 1;
     } bit;
 

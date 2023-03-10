@@ -46,10 +46,14 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
     else if (obj == &IMU_Ptl_DataPipe)
     {
-        SrvDataHub_Monitor.update_reg.bit.imu = true;
+        SrvDataHub_Monitor.update_reg.bit.raw_imu = true;
+        SrvDataHub_Monitor.update_reg.bit.scaled_imu = true;
 
-        if (SrvDataHub_Monitor.inuse_reg.bit.imu)
-            SrvDataHub_Monitor.inuse_reg.bit.imu = false;
+        if (SrvDataHub_Monitor.inuse_reg.bit.raw_imu)
+            SrvDataHub_Monitor.inuse_reg.bit.raw_imu = false;
+
+        if (SrvDataHub_Monitor.update_reg.bit.scaled_imu)
+            SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
 
         SrvDataHub_Monitor.data.imu_update_time = DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp;
         SrvDataHub_Monitor.data.acc_scale = DataPipe_DataObj(PtlPriIMU_Data).data.acc_scale;
@@ -72,7 +76,8 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         SrvDataHub_Monitor.data.org_gyr_y = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Y];
         SrvDataHub_Monitor.data.org_gyr_z = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Z];
 
-        SrvDataHub_Monitor.update_reg.bit.imu = false;
+        SrvDataHub_Monitor.update_reg.bit.raw_imu = false;
+        SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
     }
 }
 
@@ -88,7 +93,8 @@ static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_x, float *ac
         return false;
 
 reupdate_raw_imu:
-    SrvDataHub_Monitor.inuse_reg.bit.imu = true;
+    SrvDataHub_Monitor.inuse_reg.bit.raw_imu = true;
+
     *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
     *acc_x = SrvDataHub_Monitor.data.org_acc_x;
     *acc_y = SrvDataHub_Monitor.data.org_acc_y;
@@ -97,10 +103,11 @@ reupdate_raw_imu:
     *gyr_y = SrvDataHub_Monitor.data.org_gyr_y;
     *gyr_z = SrvDataHub_Monitor.data.org_gyr_z;
     *tmpr = SrvDataHub_Monitor.data.imu_temp;
-    if (!SrvDataHub_Monitor.inuse_reg.bit.imu)
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.raw_imu)
         goto reupdate_raw_imu;
 
-    SrvDataHub_Monitor.inuse_reg.bit.imu = false;
+    SrvDataHub_Monitor.inuse_reg.bit.raw_imu = false;
 
     return true;
 }
@@ -115,6 +122,23 @@ static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_x, float 
         (gyr_y == NULL) ||
         (gyr_z == NULL))
         return false;
+
+reupdate_scaled_imu:
+    SrvDataHub_Monitor.inuse_reg.bit.scaled_imu = true;
+
+    *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
+    *acc_x = SrvDataHub_Monitor.data.flt_acc_x;
+    *acc_y = SrvDataHub_Monitor.data.flt_acc_y;
+    *acc_z = SrvDataHub_Monitor.data.flt_acc_z;
+    *gyr_x = SrvDataHub_Monitor.data.flt_gyr_x;
+    *gyr_y = SrvDataHub_Monitor.data.flt_gyr_y;
+    *gyr_z = SrvDataHub_Monitor.data.flt_gyr_z;
+    *tmpr = SrvDataHub_Monitor.data.imu_temp;
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_imu)
+        goto reupdate_scaled_imu;
+
+    SrvDataHub_Monitor.inuse_reg.bit.scaled_imu = false;
 
     return true;
 }
