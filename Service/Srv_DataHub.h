@@ -138,6 +138,8 @@ typedef struct
     bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp);
     bool (*get_raw_mag)(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z);
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z);
+    bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t ch_cnt);
+    bool (*get_actuator)(uint32_t *time_stamp, uint16_t *moto_ch, uint8_t *moto_cnt, uint16_t *servo_ch, uint8_t *servo_cnt);
 }SrvDataHub_TypeDef;
 
 extern SrvDataHub_TypeDef SrvDataHub;
