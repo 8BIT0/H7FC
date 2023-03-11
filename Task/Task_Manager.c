@@ -62,6 +62,7 @@ void Task_Manager_Init(void)
     /* cur ADC init */
 
     DataPipe_Init();
+    SrvDataHub.init();
 
     TaskProtocol_Init();
     TaskInertial_Init();

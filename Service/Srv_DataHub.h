@@ -140,4 +140,6 @@ typedef struct
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z);
 }SrvDataHub_TypeDef;
 
+extern SrvDataHub_TypeDef SrvDataHub;
+
 #endif
