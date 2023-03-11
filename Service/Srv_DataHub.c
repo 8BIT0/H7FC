@@ -1,7 +1,9 @@
 #include "Srv_DataHub.h"
 
 /* internal variable */
-SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor;
+SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor = {
+    .init_state = false,
+};
 
 /* Pipe Object */
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
@@ -12,9 +14,28 @@ DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
 /* internal function */
 static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
 
+/* external function */
+static void SrvDataHub_Init(void);
+static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr);
+static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr);
+static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z);
+static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z);
+
+/* external variable */
+SrvDataHub_TypeDef SrvDataHub = {
+    .init = SrvDataHub_Init,
+    .get_raw_imu = SrvDataHub_Get_Raw_IMU,
+    .get_scaled_imu = SrvDataHub_Get_Scaled_IMU,
+    .get_raw_mag = SrvDataHub_Get_Raw_Mag,
+    .get_scaled_mag = SrvDataHub_Get_Scaled_Mag,
+};
+
 static void SrvDataHub_Init(void)
 {
-    memset(&DataHub, 0, sizeof(DataHub));
+    if(SrvDataHub_Monitor.init_state)
+        return;
+
+    memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
 
     /* init pipe object */
     memset(DataPipe_DataObjAddr(PtlPriIMU_Data), NULL, DataPipe_DataSize(PtlPriIMU_Data));
@@ -81,7 +102,7 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
 }
 
-static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr;)
+static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
 {
     if ((time_stamp == NULL) ||
         (acc_x == NULL) ||
@@ -89,7 +110,8 @@ static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_x, float *ac
         (acc_z == NULL) ||
         (gyr_x == NULL) ||
         (gyr_y == NULL) ||
-        (gyr_z == NULL))
+        (gyr_z == NULL) ||
+        (tmpr == NULL))
         return false;
 
 reupdate_raw_imu:
@@ -112,7 +134,7 @@ reupdate_raw_imu:
     return true;
 }
 
-static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z)
+static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
 {
     if ((time_stamp == NULL) ||
         (acc_x == NULL) ||
@@ -120,7 +142,8 @@ static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_x, float 
         (acc_z == NULL) ||
         (gyr_x == NULL) ||
         (gyr_y == NULL) ||
-        (gyr_z == NULL))
+        (gyr_z == NULL) ||
+        (tmpr == NULL))
         return false;
 
 reupdate_scaled_imu:
@@ -153,3 +176,15 @@ static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *mag_x, float *ma
 
     return true;
 }
+
+static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z)
+{
+    if ((time_stamp == NULL) ||
+        (mag_x == NULL) ||
+        (mag_y == NULL) ||
+        (mag_z == NULL))
+        return false;
+
+    return true;
+}
+

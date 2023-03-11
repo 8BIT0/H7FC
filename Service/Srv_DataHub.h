@@ -120,7 +120,7 @@ typedef struct
     uint8_t servo_dir[8];
     uint16_t moto[8];
     uint8_t servo[8];
-} SrvDataHub_TypeDef;
+} SrvDataHubObj_TypeDef;
 #pragma pack()
 
 typedef struct
@@ -128,7 +128,16 @@ typedef struct
     bool init_state;
     SrvDataHub_UpdateReg_TypeDef inuse_reg;
     SrvDataHub_UpdateReg_TypeDef update_reg;
-    SrvDataHub_TypeDef data;
+    SrvDataHubObj_TypeDef data;
 } SrvDataHub_Monitor_TypeDef;
+
+typedef struct
+{
+    void (*init)(void);
+    bool (*get_raw_imu)(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp);
+    bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp);
+    bool (*get_raw_mag)(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z);
+    bool (*get_scaled_mag)(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z);
+}SrvDataHub_TypeDef;
 
 #endif

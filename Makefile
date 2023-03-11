@@ -63,6 +63,7 @@ Service/Srv_IMUSample.c \
 Service/Srv_Receiver.c \
 Service/Srv_Actuator.c \
 Service/Srv_ComProto.c \
+Service/Srv_DataHub.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
