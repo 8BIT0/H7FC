@@ -7,7 +7,10 @@
 /* only can use one hardware port at one time */
 /* still can be optmize / use multi port proto mavlink frame */
 
-SrvComProto_Monitor_TypeDef SrvComProto_monitor = {0};
+SrvComProto_Monitor_TypeDef SrvComProto_monitor = {
+    .Proto_Type = SrvComProto_Type_None,
+    .init_state = false,
+};
 
 /* internal function */
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck);
@@ -17,9 +20,11 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
 static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
                                      uint32_t period, SrvComProto_IOType_List io_dir);
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream);
+static SrvComProto_Type_List Srv_ComProto_GetType(void);
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
+    .get_msg_type = Srv_ComProto_GetType,
     .mav_msg_stream = SrvComProto_MsgToStream,
 };
 
@@ -38,6 +43,11 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
     SrvComProto_monitor.init_state = true;
 
     return true;
+}
+
+static SrvComProto_Type_List Srv_ComProto_GetType(void)
+{
+    return SrvComProto_monitor.Proto_Type;
 }
 
 static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,

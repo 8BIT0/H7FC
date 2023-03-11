@@ -15,7 +15,8 @@ typedef uint16_t (*DataPack_Callback)(uint8_t *pck);
 
 typedef enum
 {
-    SrvComProto_Type_Cus = 0,
+    SrvComProto_Type_None = 0,
+    SrvComProto_Type_Cus,
     SrvComProto_Type_MAV,
 } SrvComProto_Type_List;
 
@@ -71,6 +72,7 @@ typedef struct
 typedef struct
 {
     void (*init)(SrvComProto_Type_List type, uint8_t *arg);
+    SrvComProto_Type_List (*get_msg_type)(void);
     // void (*set_decode_callback)();
 
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);

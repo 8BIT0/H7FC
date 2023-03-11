@@ -42,6 +42,15 @@ bool TaskProtocol_Init(void)
 {
     SrvComProto.init(SrvComProto_Type_MAV, NULL);
 
+    /* create mavlink message object */
+    if(SrvComProto.get_msg_type() == SrvComProto_Type_MAV)
+    {
+        // SrvComProto.mav_msg_obj_init();
+    }
+    else if(SrvComProto.get_msg_type() == SrvComProto_Type_Cus)
+    {
+    }
+
     if (!USB_DEVICE_Init())
     {
         task_state = TaskProto_Error_Proc;
