@@ -11,7 +11,6 @@
 #include "Dev_Led.h"
 #include "DiskIO.h"
 #include "DataPipe/DataPipe.h"
-#include "Srv_DataHub.h"
 
 Task_Handle TaskProtocol_Handle = NULL;
 Task_Handle TaskInertial_Handle = NULL;
@@ -62,7 +61,6 @@ void Task_Manager_Init(void)
     /* cur ADC init */
 
     DataPipe_Init();
-    SrvDataHub.init();
 
     TaskProtocol_Init();
     TaskInertial_Init();

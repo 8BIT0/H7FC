@@ -29,6 +29,7 @@
 #include "runtime.h"
 #include "mmu.h"
 #include "util.h"
+#include "Srv_ComProto.h"
 
 #define CRSF_TX_PIN Uart4_TxPin
 #define CRSF_RX_PIN Uart4_RxPin
@@ -56,6 +57,8 @@ void TaskTelemetry_Set_DataIO_Enable(bool state)
 
 void TaskTelemetry_Init(void)
 {
+    SrvComProto.init(SrvComProto_Type_MAV, NULL);
+
     /* init receiver */
     if (Telemetry_RC_Sig_Init(&RC_Setting, &Receiver_Obj))
     {

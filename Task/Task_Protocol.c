@@ -16,6 +16,7 @@
 #include "Bsp_GPIO.h"
 #include "error_log.h"
 #include "DataPipe/DataPipe.h"
+#include "Srv_ComProto.h"
 #include "mmu.h"
 
 static bool test = false;
@@ -39,6 +40,8 @@ ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size
 
 bool TaskProtocol_Init(void)
 {
+    SrvComProto.init(SrvComProto_Type_MAV, NULL);
+
     if (!USB_DEVICE_Init())
     {
         task_state = TaskProto_Error_Proc;

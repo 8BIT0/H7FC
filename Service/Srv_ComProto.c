@@ -31,6 +31,8 @@ static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
     if (SrvComProto_monitor.init_state)
         return true;
 
+    SrvDataHub.init();
+
     memset(&SrvComProto_monitor, 0, sizeof(SrvComProto_monitor));
     SrvComProto_monitor.Proto_Type = type;
     SrvComProto_monitor.init_state = true;
