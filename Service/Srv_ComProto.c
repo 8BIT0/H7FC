@@ -19,12 +19,14 @@ static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck);
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
 static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream);
+static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state);
 static SrvComProto_Type_List Srv_ComProto_GetType(void);
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
     .get_msg_type = Srv_ComProto_GetType,
     .mav_msg_stream = SrvComProto_MsgToStream,
+    .mav_msg_enable_ctl = SrvComProto_MsgEnable_Control,
 };
 
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
@@ -98,7 +100,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream)
 {
-    if (com_stream && com_stream->p_buf && com_stream->size)
+    if (msg.enable && com_stream && com_stream->p_buf && com_stream->size)
     {
         msg.in_proto = true;
 
@@ -118,6 +120,15 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto
 
         msg.in_proto = false;
     }
+}
+
+static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state)
+{
+    if(msg == NULL)
+        return false;
+
+    msg->enable = state;
+    return true;
 }
 
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck)
