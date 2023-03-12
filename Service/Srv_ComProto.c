@@ -76,17 +76,14 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     /* set mavlink data structure value set function */
     switch ((uint8_t)pck_info.component_id)
     {
-    case MAV_Component_Attitude:
+    case MAV_CompoID_Attitude:
         break;
 
-    case MAV_Component_Rc_Channel:
+    case MAV_CompoID_RC_Channel:
         break;
 
-    case MAV_Component_Raw_IMU:
+    case MAV_CompoID_Raw_IMU:
         msg->pack_callback = SrvComProto_MavMsg_Raw_IMU;
-        break;
-
-    case MAV_Component_Raw_IMU2:
         break;
 
     default:
