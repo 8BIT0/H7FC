@@ -100,7 +100,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream)
 {
-    if (msg.enable && com_stream && com_stream->p_buf && com_stream->size)
+    if (msg.enable && com_stream && com_stream->p_buf && com_stream->size && msg.pack_callback)
     {
         msg.in_proto = true;
 
