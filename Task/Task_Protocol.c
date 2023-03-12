@@ -71,7 +71,7 @@ bool TaskProtocol_Init(void)
         PckInfo.component_id = MAV_CompoID_Scaled_IMU;
         PckInfo.chan = 0;
         SrvComProto.mav_msg_obj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10);
-        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_ScaledIMU, true);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_ScaledIMU, false);
 
         // period 20Ms 50Hz
         PckInfo.system_id = MAV_SysID_Drone;
