@@ -11,20 +11,12 @@
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
 typedef uint16_t (*DataPack_Callback)(uint8_t *pck);
 
-#define IS_PROTO_OUT(x) (x == SrvComProto_FrameOut) ? true : false
-
 typedef enum
 {
     SrvComProto_Type_None = 0,
     SrvComProto_Type_Cus,
     SrvComProto_Type_MAV,
 } SrvComProto_Type_List;
-
-typedef enum
-{
-    SrvComProto_FrameOut = 1,
-    SrvComProto_FrameIn,
-} SrvComProto_IOType_List;
 
 typedef enum
 {
@@ -50,7 +42,6 @@ typedef struct
 
 typedef struct
 {
-    SrvComProto_IOType_List io_type;
     uint16_t period;
 
     SrvComProto_MavPackInfo_TypeDef pck_info;
@@ -77,8 +68,7 @@ typedef struct
 
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info,
-                             uint32_t period, SrvComProto_IOType_List io_dir,
-                             SrvComProto_Stream_TypeDef tar_stream);
+                             uint32_t period, SrvComProto_Stream_TypeDef tar_stream);
     bool (*mav_msg_stream)(SrvComProto_MsgInfo_TypeDef msg,
                            SrvComProto_Stream_TypeDef *com_stream);
 } SrvComProto_TypeDef;
