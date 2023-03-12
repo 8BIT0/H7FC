@@ -102,11 +102,7 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto
     {
         msg.in_proto = true;
 
-        if (msg.proto_time == 0)
-        {
-            msg.proto_time = Get_CurrentRunningMs();
-        }
-        else if (Get_CurrentRunningMs() - msg.proto_time < msg.period)
+        if ((msg.proto_time) && (Get_CurrentRunningMs() - msg.proto_time < msg.period))
         {
             msg.in_proto = false;
             return;
@@ -117,6 +113,7 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto
         if (com_stream->size && ((com_stream->size + MAVLINK_NUM_NON_PAYLOAD_BYTES) <= com_stream->max_size))
         {
             com_stream->size = mavlink_msg_to_send_buffer(com_stream->p_buf, msg.msg_obj);
+            msg.proto_time = Get_CurrentRunningMs();
         }
 
         msg.in_proto = false;
