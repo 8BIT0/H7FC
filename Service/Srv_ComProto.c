@@ -108,7 +108,8 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto
         }
         else if (Get_CurrentRunningMs() - msg.proto_time < msg.period)
         {
-            goto quit_proto;
+            msg.in_proto = false;
+            return;
         }
 
         com_stream->size = msg.pack_callback((uint8_t *)&msg);
@@ -118,7 +119,6 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto
             com_stream->size = mavlink_msg_to_send_buffer(com_stream->p_buf, msg.msg_obj);
         }
 
-    quit_proto:
         msg.in_proto = false;
     }
 }
