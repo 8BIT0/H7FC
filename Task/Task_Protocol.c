@@ -53,7 +53,7 @@ bool TaskProtocol_Init(void)
     {
         SrvComProto_MavPackInfo_TypeDef PckInfo;
 
-        memset(&PckInfom, 0, sizeof(PckInfo));
+        memset(&PckInfo, 0, sizeof(PckInfo));
         memset(&TaskProto_MAV_RawIMU, 0, sizeof(TaskProto_MAV_RawIMU));
         memset(&TaskProto_MAV_ScaledIMU, 0, sizeof(TaskProto_MAV_ScaledIMU));
         memset(&TaskProto_MAV_RcChannel, 0, sizeof(TaskProto_MAV_RcChannel));
