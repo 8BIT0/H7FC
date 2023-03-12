@@ -59,18 +59,33 @@ bool TaskProtocol_Init(void)
         memset(&TaskProto_MAV_RcChannel, 0, sizeof(TaskProto_MAV_RcChannel));
         memset(&TaskProto_MAV_MotoChannel, 0, sizeof(TaskProto_MAV_MotoChannel));
 
+        // period 10Ms 100Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Raw_IMU;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RawIMU, PckInfo, 10); // period 10Ms 100Hz
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RawIMU, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RawIMU, true);
 
+        // period 10Ms 100Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Scaled_IMU;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10); // period 10Ms 100Hz
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_ScaledIMU, true);
 
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RcChannel, );
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_MotoChannel, );
+        // period 20Ms 50Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_RC_Channel;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RcChannel, PckInfo, 20);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RcChannel, true);
+
+        // period 10Ms 100Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_MotoCtl;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_MotoChannel, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_MotoChannel, true);
     }
     else if (SrvComProto.get_msg_type() == SrvComProto_Type_Cus)
     {
