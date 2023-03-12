@@ -13,6 +13,23 @@ typedef uint16_t (*DataPack_Callback)(uint8_t *pck);
 
 typedef enum
 {
+    SysID_Drone = 1,
+    SysID_ROS,
+} SrvComProto_SysID_List;
+
+typedef enum
+{
+    CompoID_Raw_IMU = 1,
+    CompoID_Scaled_IMU,
+    CompoID_Raw_Mag,
+    CompoID_Scaled_Mag,
+    CompoID_RC_Channel,
+    CompoID_MotoCtl,
+    CompoID_ServoCtl,
+} SrvComProto_ComponentID_List;
+
+typedef enum
+{
     SrvComProto_Type_None = 0,
     SrvComProto_Type_Cus,
     SrvComProto_Type_MAV,
