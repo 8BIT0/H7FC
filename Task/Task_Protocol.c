@@ -23,6 +23,12 @@ static bool test = false;
 
 #define VCP_QUEUE_BUFF_SIZE 4096
 
+/* MAVLink message List */
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RawIMU;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_ScaledIMU;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RcChannel;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_MotoChannel;
+
 /* internal vriable */
 static QueueObj_TypeDef VCP_ProtoQueue; /* Send Queue */
 static bool VCP_Queue_CreateState = false;
@@ -45,7 +51,26 @@ bool TaskProtocol_Init(void)
     /* create mavlink message object */
     if (SrvComProto.get_msg_type() == SrvComProto_Type_MAV)
     {
-        // SrvComProto.mav_msg_obj_init();
+        SrvComProto_MavPackInfo_TypeDef PckInfo;
+
+        memset(&PckInfom, 0, sizeof(PckInfo));
+        memset(&TaskProto_MAV_RawIMU, 0, sizeof(TaskProto_MAV_RawIMU));
+        memset(&TaskProto_MAV_ScaledIMU, 0, sizeof(TaskProto_MAV_ScaledIMU));
+        memset(&TaskProto_MAV_RcChannel, 0, sizeof(TaskProto_MAV_RcChannel));
+        memset(&TaskProto_MAV_MotoChannel, 0, sizeof(TaskProto_MAV_MotoChannel));
+
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Raw_IMU;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RawIMU, PckInfo, 10); // period 10Ms 100Hz
+
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Scaled_IMU;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10);
+        
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RcChannel, );
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_MotoChannel, );
     }
     else if (SrvComProto.get_msg_type() == SrvComProto_Type_Cus)
     {

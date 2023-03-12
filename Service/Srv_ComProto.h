@@ -52,6 +52,7 @@ typedef struct
 
 typedef struct
 {
+    bool enable;
     uint16_t period;
 
     SrvComProto_MavPackInfo_TypeDef pck_info;
@@ -78,6 +79,7 @@ typedef struct
 
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
+    bool (*mav_msg_enable_ctl)(SrvComProto_MsgInfo_TypeDef *msg, bool state);
     bool (*mav_msg_stream)(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream);
 } SrvComProto_TypeDef;
 
