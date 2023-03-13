@@ -115,6 +115,10 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto
         if (com_stream->size && ((com_stream->size + MAVLINK_NUM_NON_PAYLOAD_BYTES) <= com_stream->max_size))
         {
             com_stream->size = mavlink_msg_to_send_buffer(com_stream->p_buf, msg.msg_obj);
+
+            if (tx_cb)
+                tx_cb(com_stream->p_buf, com_stream->size);
+
             msg.proto_time = Get_CurrentRunningMs();
         }
 
