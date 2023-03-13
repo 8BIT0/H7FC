@@ -15,7 +15,6 @@
 #include "IO_Definition.h"
 #include "Bsp_GPIO.h"
 #include "error_log.h"
-#include "DataPipe/DataPipe.h"
 #include "Srv_ComProto.h"
 #include "mmu.h"
 

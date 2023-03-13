@@ -28,12 +28,7 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .ctl_model = Model_Quad,
     .actuator_num = 0,
 
-    .rc_pipe_cnt = 0,
-    .imu_pipe_cnt = 0,
-
     .ctl_buff = NULL,
-
-    .imu_update_error_cnt = 0,
 
     .IMU_Rt = 0,
     .RC_Rt = 0,

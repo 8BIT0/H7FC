@@ -130,8 +130,7 @@ void TaskTelemetry_Core(Task_Handle hdl)
     DataPipe_DataObj(Rc) = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
 
     /* pipe data out */
-    DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_ptl_DataPipe);
-    DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_Ctl_DataPipe);
+    DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
 }
 
 /************************************** telemetry receiver section ********************************************/

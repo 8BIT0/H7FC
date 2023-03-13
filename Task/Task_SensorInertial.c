@@ -55,8 +55,7 @@ void TaskInertical_Core(Task_Handle hdl)
             }
 
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
-            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ctl_DataPipe); /* to control task */
-            // DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Ptl_DataPipe);  /* to protocol task */
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe); /* to control task */
         }
         break;
 
