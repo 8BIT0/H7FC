@@ -124,7 +124,7 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto
 
 static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state)
 {
-    if(msg == NULL)
+    if (msg == NULL)
         return false;
 
     msg->enable = state;
@@ -133,21 +133,32 @@ static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool
 
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck)
 {
-    // int16_t acc_x = SrvComProto_monitor.proto_data.acc_x * SrvComProto_monitor.proto_data.acc_scale;
-    // int16_t acc_y = SrvComProto_monitor.proto_data.acc_y * SrvComProto_monitor.proto_data.acc_scale;
-    // int16_t acc_z = SrvComProto_monitor.proto_data.acc_z * SrvComProto_monitor.proto_data.acc_scale;
+    uint32_t time_stamp = 0;
+    float acc_scale = 0.0f;
+    float gyr_scale = 0.0f;
+    float acc_x = 0.0f;
+    float acc_y = 0.0f;
+    float acc_z = 0.0f;
+    float gyr_x = 0.0f;
+    float gyr_y = 0.0f;
+    float gyr_z = 0.0f;
+    float tmpr = 0.0f;
 
-    // int16_t gyr_x = SrvComProto_monitor.proto_data.gyr_x * SrvComProto_monitor.proto_data.gyr_scale;
-    // int16_t gyr_y = SrvComProto_monitor.proto_data.gyr_y * SrvComProto_monitor.proto_data.gyr_scale;
-    // int16_t gyr_z = SrvComProto_monitor.proto_data.gyr_z * SrvComProto_monitor.proto_data.gyr_scale;
+    SrvDataHub.get_raw_imu(&time_stamp, &acc_scale, &gyr_scale, &acc_x, &acc_y, &acc_z, &gyr_x, &gyr_y, &gyr_z, &tmpr);
 
-    // int16_t mag_x = SrvComProto_monitor.proto_data.mag_x * SrvComProto_monitor.proto_data.mag_scale;
-    // int16_t mag_y = SrvComProto_monitor.proto_data.mag_y * SrvComProto_monitor.proto_data.mag_scale;
-    // int16_t mag_z = SrvComProto_monitor.proto_data.mag_z * SrvComProto_monitor.proto_data.mag_scale;
+    int16_t i_acc_x = (int16_t)(acc_x * acc_scale);
+    int16_t i_acc_y = (int16_t)(acc_y * acc_scale);
+    int16_t i_acc_z = (int16_t)(acc_z * acc_scale);
 
-    // return mavlink_msg_scaled_imu_pack_chan(pck->pck_info.system_id,
-    //                                         pck->pck_info.component_id,
-    //                                         pck->pck_info.chan, pck->msg_obj,
-    //                                         SrvComProto_monitor.proto_data.imu_update_time,
-    //                                         acc_x, acc_y, acc_z, gyr_x, gyr_y, gyr_z, mag_x, mag_y, mag_z);
+    int16_t i_gyr_x = (int16_t)(gyr_x * gyr_scale);
+    int16_t i_gyr_y = (int16_t)(gyr_y * gyr_scale);
+    int16_t i_gyr_z = (int16_t)(gyr_z * gyr_scale);
+
+    return mavlink_msg_scaled_imu_pack_chan(pck->pck_info.system_id,
+                                            pck->pck_info.component_id,
+                                            pck->pck_info.chan, pck->msg_obj,
+                                            time_stamp,
+                                            i_acc_x, i_acc_y, i_acc_z,
+                                            i_gyr_x, i_gyr_y, i_gyr_z,
+                                            0, 0, 0);
 }

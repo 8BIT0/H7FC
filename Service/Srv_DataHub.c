@@ -16,10 +16,10 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
 
 /* external function */
 static void SrvDataHub_Init(void);
-static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr);
-static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr);
-static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z);
-static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z);
+static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr);
+static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr);
+static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
+static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -32,7 +32,7 @@ SrvDataHub_TypeDef SrvDataHub = {
 
 static void SrvDataHub_Init(void)
 {
-    if(SrvDataHub_Monitor.init_state)
+    if (SrvDataHub_Monitor.init_state)
         return;
 
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
@@ -102,7 +102,7 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
 }
 
-static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
+static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
 {
     if ((time_stamp == NULL) ||
         (acc_x == NULL) ||
@@ -118,6 +118,8 @@ reupdate_raw_imu:
     SrvDataHub_Monitor.inuse_reg.bit.raw_imu = true;
 
     *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
+    *acc_scale = SrvDataHub_Monitor.data.acc_scale;
+    *gyr_scale = SrvDataHub_Monitor.data.gyr_scale;
     *acc_x = SrvDataHub_Monitor.data.org_acc_x;
     *acc_y = SrvDataHub_Monitor.data.org_acc_y;
     *acc_z = SrvDataHub_Monitor.data.org_acc_z;
@@ -134,7 +136,7 @@ reupdate_raw_imu:
     return true;
 }
 
-static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
+static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
 {
     if ((time_stamp == NULL) ||
         (acc_x == NULL) ||
@@ -150,6 +152,8 @@ reupdate_scaled_imu:
     SrvDataHub_Monitor.inuse_reg.bit.scaled_imu = true;
 
     *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
+    *acc_scale = SrvDataHub_Monitor.data.acc_scale;
+    *gyr_scale = SrvDataHub_Monitor.data.gyr_scale;
     *acc_x = SrvDataHub_Monitor.data.flt_acc_x;
     *acc_y = SrvDataHub_Monitor.data.flt_acc_y;
     *acc_z = SrvDataHub_Monitor.data.flt_acc_z;
@@ -166,7 +170,7 @@ reupdate_scaled_imu:
     return true;
 }
 
-static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z)
+static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z)
 {
     if ((time_stamp == NULL) ||
         (mag_x == NULL) ||
@@ -177,7 +181,7 @@ static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *mag_x, float *ma
     return true;
 }
 
-static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *mag_x, float *mag_y, float *mag_z)
+static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z)
 {
     if ((time_stamp == NULL) ||
         (mag_x == NULL) ||
@@ -187,4 +191,3 @@ static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *mag_x, float 
 
     return true;
 }
-
