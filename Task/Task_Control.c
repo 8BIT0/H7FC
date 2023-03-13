@@ -5,6 +5,7 @@
 #include "Task_Control.h"
 #include "Srv_IMUSample.h"
 #include "Task_Telemetry.h"
+#include "Srv_DataHub.h"
 #include "DataPipe.h"
 #include "scheduler.h"
 #include "Srv_Actuator.h"
