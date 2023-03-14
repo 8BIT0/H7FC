@@ -6,7 +6,7 @@
 #include "Srv_IMUSample.h"
 #include "Task_Telemetry.h"
 #include "Srv_DataHub.h"
-#include "DataPipe.h"
+#include "Srv_DataHub.h"
 #include "scheduler.h"
 #include "Srv_Actuator.h"
 #include "mmu.h"
@@ -16,9 +16,6 @@
 
 SrvIMU_UnionData_TypeDef LstCyc_IMU_Data;
 SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
-
-DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, Filted_IMU_Data);
-DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Control_RC_Data);
 
 TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .init_state = false,
@@ -34,31 +31,12 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .RC_Rt = 0,
 };
 
-static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj);
-
 void TaskControl_Init(void)
 {
     // init monitor
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
 
     TaskControl_Monitor.ctl_model = SrvActuator.get_model();
-
-    // IMU_Ctl_DataPipe
-    memset(DataPipe_DataObjAddr(Control_RC_Data), 0, DataPipe_DataSize(Control_RC_Data));
-    memset(DataPipe_DataObjAddr(Filted_IMU_Data), 0, DataPipe_DataSize(Filted_IMU_Data));
-
-    Receiver_Ctl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Control_RC_Data);
-    Receiver_Ctl_DataPipe.data_size = DataPipe_DataSize(Control_RC_Data);
-    Receiver_Ctl_DataPipe.trans_finish_cb = TaskControl_DataPipe_Callback;
-
-    IMU_Ctl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Filted_IMU_Data);
-    IMU_Ctl_DataPipe.data_size = DataPipe_DataSize(Filted_IMU_Data);
-    IMU_Ctl_DataPipe.trans_finish_cb = TaskControl_DataPipe_Callback;
-
-    DataPipe_Set_RxInterval(&IMU_Ctl_DataPipe, 1000);
-
-    DataPipe_Enable(&Receiver_Ctl_DataPipe);
-    DataPipe_Enable(&IMU_Ctl_DataPipe);
 
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
@@ -80,17 +58,34 @@ void TaskControl_Init(void)
 
 void TaskControl_Core(Task_Handle hdl)
 {
+    uint64_t imu_update_time = 0;
+    float imu_tmpr = 0.0f;
+    float acc_scale = 0.0f;
+    float gyr_scale = 0.0f;
+    float acc_x = 0.0f;
+    float acc_y = 0.0f;
+    float acc_z = 0.0f;
+    float gyr_x = 0.0f;
+    float gyr_y = 0.0f;
+    float gyr_z = 0.0f;
+
     if (TaskControl_Monitor.init_state || TaskControl_Monitor.control_abort)
     {
         // check imu filter gyro data update or not
-        if (DataPipe_DataObj(Filted_IMU_Data).data.time_stamp)
+        SrvDataHub.get_scaled_imu(&imu_update_time, 
+                                  &acc_scale, &gyr_scale, 
+                                  &acc_x, &acc_y, &acc_z, 
+                                  &gyr_x, &gyr_y, &gyr_z, 
+                                  &imu_tmpr);
+
+        if (imu_update_time)
         {
-            if (DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > TaskControl_Monitor.IMU_Rt)
+            if (imu_update_time > TaskControl_Monitor.IMU_Rt)
             {
                 TaskControl_Monitor.imu_update_error_cnt = 0;
-                TaskControl_Monitor.IMU_Rt = DataPipe_DataObj(Filted_IMU_Data).data.time_stamp;
+                TaskControl_Monitor.IMU_Rt = imu_update_time;
             }
-            else if (DataPipe_DataObj(Filted_IMU_Data).data.time_stamp > TaskControl_Monitor.IMU_Rt)
+            else if (imu_update_time <= TaskControl_Monitor.IMU_Rt)
             {
                 TaskControl_Monitor.imu_update_error_cnt++;
                 if (TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)
@@ -139,19 +134,4 @@ void TaskControl_Core(Task_Handle hdl)
     }
     else
         SrvActuator.lock();
-}
-
-static void TaskControl_DataPipe_Callback(DataPipeObj_TypeDef *obj)
-{
-    if (obj == NULL)
-        return;
-
-    if (obj == &Receiver_Ctl_DataPipe)
-    {
-        TaskControl_Monitor.rc_pipe_cnt++;
-    }
-    else if (obj == &IMU_Ctl_DataPipe)
-    {
-        TaskControl_Monitor.imu_pipe_cnt++;
-    }
 }

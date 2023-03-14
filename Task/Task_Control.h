@@ -16,9 +16,6 @@ typedef struct
     uint8_t ctl_model;
     uint8_t actuator_num;
 
-    uint32_t rc_pipe_cnt;
-    uint64_t imu_pipe_cnt;
-
     uint16_t *ctl_buff;
 
     uint8_t imu_update_error_cnt;

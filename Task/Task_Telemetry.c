@@ -400,8 +400,13 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->sig.time_stamp = RC_Input_obj->update_rt;
 
         /* get gimbal channel */
-        for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
-            RC_Input_obj->sig.gimbal_val[i] = Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
+        for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
+        {
+            if(i < Telemetry_Gimbal_TagSum)
+                RC_Input_obj->sig.gimbal_val[i] = Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
+
+            RC_Input_obj->sig.channel[i] = receiver_data.val_list[i];
+        }
 
         /* check buzzer toggle */
         RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;

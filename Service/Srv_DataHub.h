@@ -90,6 +90,12 @@ typedef struct
     float att_yaw;
 
     uint32_t rc_update_time;
+    bool arm;
+    bool failsafe;
+    bool osd_tune;
+    bool buzz;
+    bool module;
+    uint8_t mode;
     uint16_t ch[16];
 
     uint32_t gnss_update_time;
