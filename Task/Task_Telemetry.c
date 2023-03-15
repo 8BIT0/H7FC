@@ -399,6 +399,8 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->link_quality = receiver_data.link_quality;
         RC_Input_obj->sig.time_stamp = RC_Input_obj->update_rt;
 
+        RC_Input_obj->sig.channel_sum = Receiver_Obj.channel_num;
+
         /* get gimbal channel */
         for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
         {

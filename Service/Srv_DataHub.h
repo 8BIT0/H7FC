@@ -96,7 +96,9 @@ typedef struct
     bool buzz;
     bool module;
     uint8_t mode;
-    uint16_t ch[16];
+    uint8_t channel_sum;
+    uint16_t ch[32];
+    uint16_t gimbal[4];
 
     uint32_t gnss_update_time;
     double lon;
@@ -144,8 +146,11 @@ typedef struct
     bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp);
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
-    bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t ch_cnt);
+    bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cnt);
     bool (*get_actuator)(uint32_t *time_stamp, uint16_t *moto_ch, uint8_t *moto_cnt, uint16_t *servo_ch, uint8_t *servo_cnt);
+    bool (*get_arm_state)(bool *arm);
+    bool (*get_failsafe)(bool *failsafe);
+    bool (*get_control_mode)(uint8_t *mode);
 } SrvDataHub_TypeDef;
 
 extern SrvDataHub_TypeDef SrvDataHub;

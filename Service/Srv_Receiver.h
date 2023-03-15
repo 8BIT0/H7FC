@@ -90,7 +90,8 @@ typedef struct
     uint32_t update_interval;
     uint32_t time_stamp;
 
-    uint16_t channel[16];
+    uint8_t channel_sum;
+    uint16_t channel[32];
 } SrvRecever_RCSig_TypeDef;
 
 typedef struct

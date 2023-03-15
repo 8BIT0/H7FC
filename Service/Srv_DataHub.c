@@ -20,6 +20,10 @@ static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float
 static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr);
 static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
 static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
+static bool SrvDataHub_Get_Arm(bool *arm);
+static bool SrvDataHub_Get_Failsafe(bool *failsafe);
+static bool SrvDataHub_Get_ControlMode(uint8_t *mode);
+static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cum);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -28,6 +32,10 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_scaled_imu = SrvDataHub_Get_Scaled_IMU,
     .get_raw_mag = SrvDataHub_Get_Raw_Mag,
     .get_scaled_mag = SrvDataHub_Get_Scaled_Mag,
+    .get_arm_state = SrvDataHub_Get_Arm,
+    .get_failsafe = SrvDataHub_Get_Failsafe,
+    .get_control_mode = SrvDataHub_Get_ControlMode,
+    .get_rc = SrvDataHub_Get_RcChannel,
 };
 
 static void SrvDataHub_Init(void)
@@ -64,6 +72,29 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
 
     if (obj == &Receiver_ptl_DataPipe)
     {
+        SrvDataHub_Monitor.update_reg.bit.rc = true;
+
+        if(SrvDataHub_Monitor.inuse_reg.bit.rc)
+            SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+
+        SrvDataHub_Monitor.data.rc_update_time = DataPipe_DataObj(Proto_Rc).time_stamp;
+        SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Proto_Rc).arm_state;
+        SrvDataHub_Monitor.data.mode = DataPipe_DataObj(Proto_Rc).control_mode;
+        SrvDataHub_Monitor.data.buzz = DataPipe_DataObj(Proto_Rc).buzz_state;
+        SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Proto_Rc).failsafe;
+        SrvDataHub_Monitor.data.channel_sum = DataPipe_DataObj(Proto_Rc).channel_sum;
+
+        for(uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
+        {
+            SrvDataHub_Monitor.data.ch[i] = DataPipe_DataObj(Proto_Rc).channel[i];
+        }
+
+        for()
+        {
+            SrvDataHub_Monitor.data.ch
+        }
+
+        SrvDataHub_Monitor.update_reg.bit.rc = false;
     }
     else if (obj == &IMU_Ptl_DataPipe)
     {
@@ -188,6 +219,80 @@ static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float 
         (mag_y == NULL) ||
         (mag_z == NULL))
         return false;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_Arm(bool *arm)
+{
+    if(arm == NULL)
+        return false;
+
+reupdate_arm:
+    SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+    *arm = SrvDataHub_Monitor.data.arm;
+
+    if(!SrvDataHub_Monitor.inuse_reg.bit.rc)
+        goto reupdate_arm;
+
+    SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_Failsafe(bool *failsafe)
+{
+    if(failsafe == NULL)
+        return false;
+
+reupdate_failsafe:
+    SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+    *failsafe = SrvDataHub_Monitor.data.failsafe;
+
+    if(!SrvDataHub_Monitor.inuse_reg.bit.rc)
+        goto reupdate_failsafe;
+
+    SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_ControlMode(uint8_t *mode)
+{
+    if(mode == NULL)
+        return false;
+
+reupdate_control_mode:
+    SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+    *mode = SrvDataHub_Monitor.data.mode;
+
+    if(!SrvDataHub_Monitor.inuse_reg.bit.rc)
+        goto reupdate_control_mode;
+
+    SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cum)
+{
+    if((time_stamp == NULL) || (ch == NULL) || (ch_sum == NULL))
+        return false;
+
+reupdate_rc_channel:
+    SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+    *time_stamp = SrvDataHub_Monitor.data.rc_update_time;
+    *ch_sum = SrvDataHub_Monitor.data.channel_sum;
+
+    for(uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
+    {
+        ch[i] = SrvDataHub_Monitor.data.ch[i];
+    }
+
+    if(!SrvDataHub_Monitor.inuse_reg.bit.rc)
+        goto reupdate_rc_channel;
+
+    SrvDataHub_Monitor.inuse_reg.bit.rc  = false;
 
     return true;
 }

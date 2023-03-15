@@ -59,6 +59,12 @@ void TaskControl_Init(void)
 void TaskControl_Core(Task_Handle hdl)
 {
     uint64_t imu_update_time = 0;
+    uint32_t rc_update_time = 0;
+    uint16_t rc_ch[32];
+    uint8_t rc_channel_sum;
+    bool arm_state;
+    bool failsafe;
+
     float imu_tmpr = 0.0f;
     float acc_scale = 0.0f;
     float gyr_scale = 0.0f;
@@ -78,6 +84,13 @@ void TaskControl_Core(Task_Handle hdl)
                                   &gyr_x, &gyr_y, &gyr_z, 
                                   &imu_tmpr);
 
+        // get rc channel and other toggle signal
+        SrvDataHub.get_rc(&rc_update_time, rc_ch, &rc_channel_sum);
+
+        // get failsafe
+        SrvDataHub.get_arm_state(&arm_state);
+        SrvDataHub.get_failsafe(&failsafe);
+
         if (imu_update_time)
         {
             if (imu_update_time > TaskControl_Monitor.IMU_Rt)
@@ -94,13 +107,13 @@ void TaskControl_Core(Task_Handle hdl)
         }
 
         /* only manipulate esc or servo when disarm */
-        if (DataPipe_DataObj(Control_RC_Data).time_stamp)
+        if (rc_update_time)
         {
-            if (!DataPipe_DataObj(Control_RC_Data).failsafe)
+            if (!failsafe)
             {
-                TaskControl_Monitor.RC_Rt = DataPipe_DataObj(Control_RC_Data).time_stamp;
+                TaskControl_Monitor.RC_Rt = rc_update_time;
 
-                if (DataPipe_DataObj(Control_RC_Data).arm_state == TELEMETRY_SET_DISARM)
+                if (arm_state == TELEMETRY_SET_DISARM)
                 {
                     for (uint8_t i = 0; i < TaskControl_Monitor.actuator_num; i++)
                     {
