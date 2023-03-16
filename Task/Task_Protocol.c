@@ -28,6 +28,15 @@ SrvComProto_MsgInfo_TypeDef TaskProto_MAV_ScaledIMU;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RcChannel;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_MotoChannel;
 
+static uint8_t USB_MavShareBuf[1024];
+
+SrvComProto_Stream_TypeDef MavStream = 
+{
+    .p_buf = USB_MavShareBuf,
+    .size = 0,
+    .max_size = 1024,
+};
+
 /* internal vriable */
 static QueueObj_TypeDef VCP_ProtoQueue; /* Send Queue */
 static bool VCP_Queue_CreateState = false;
@@ -184,6 +193,9 @@ void TaskProtocol_Core(Task_Handle hdl)
                 MMU_Free(p_buf);
             }
         }
+        
+        /* test proto mavlink raw imu data */
+        SrvComProto.mav_msg_stream(TaskProto_MAV_ScaledIMU, &MavStream, TaskProtocol_TransBuff);
 
         break;
 
