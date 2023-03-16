@@ -24,6 +24,7 @@ static bool SrvDataHub_Get_Arm(bool *arm);
 static bool SrvDataHub_Get_Failsafe(bool *failsafe);
 static bool SrvDataHub_Get_ControlMode(uint8_t *mode);
 static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cum);
+static bool SrvDataHub_Get_Gimbal(uint16_t *gimbal);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -36,6 +37,7 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_failsafe = SrvDataHub_Get_Failsafe,
     .get_control_mode = SrvDataHub_Get_ControlMode,
     .get_rc = SrvDataHub_Get_RcChannel,
+    .get_gimbal = SrvDataHub_Get_Gimbal,
 };
 
 static void SrvDataHub_Init(void)
@@ -47,19 +49,19 @@ static void SrvDataHub_Init(void)
 
     /* init pipe object */
     memset(DataPipe_DataObjAddr(PtlPriIMU_Data), NULL, DataPipe_DataSize(PtlPriIMU_Data));
-    IMU_Ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlPriIMU_Data);
-    IMU_Ptl_DataPipe.data_size = DataPipe_DataSize(PtlPriIMU_Data);
-    IMU_Ptl_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
-    // DataPipe_Set_RxInterval(&IMU_Ptl_DataPipe, Runtime_MsToUs(5)); /* limit pipe frequence to 200Hz */
-    DataPipe_Enable(&IMU_Ptl_DataPipe);
+    IMU_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlPriIMU_Data);
+    IMU_hub_DataPipe.data_size = DataPipe_DataSize(PtlPriIMU_Data);
+    IMU_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+    // DataPipe_Set_RxInterval(&IMU_hub_DataPipe, Runtime_MsToUs(5)); /* limit pipe frequence to 200Hz */
+    DataPipe_Enable(&IMU_hub_DataPipe);
 
     /* init pipe object */
     memset(DataPipe_DataObjAddr(Proto_Rc), 0, DataPipe_DataSize(Proto_Rc));
-    Receiver_ptl_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
-    Receiver_ptl_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
-    Receiver_ptl_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
-    // DataPipe_Set_RxInterval(&Receiver_ptl_DataPipe, Runtime_MsToUs(20)); /* limit pipe frequence to 50Hz */
-    DataPipe_Enable(&Receiver_ptl_DataPipe);
+    Receiver_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
+    Receiver_hub_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
+    Receiver_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+    // DataPipe_Set_RxInterval(&Receiver_hub_DataPipe, Runtime_MsToUs(20)); /* limit pipe frequence to 50Hz */
+    DataPipe_Enable(&Receiver_hub_DataPipe);
 
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
     SrvDataHub_Monitor.init_state = true;
@@ -70,11 +72,11 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     if ((!SrvDataHub_Monitor.init_state) || (obj == NULL))
         return;
 
-    if (obj == &Receiver_ptl_DataPipe)
+    if (obj == &Receiver_hub_DataPipe)
     {
         SrvDataHub_Monitor.update_reg.bit.rc = true;
 
-        if(SrvDataHub_Monitor.inuse_reg.bit.rc)
+        if (SrvDataHub_Monitor.inuse_reg.bit.rc)
             SrvDataHub_Monitor.inuse_reg.bit.rc = false;
 
         SrvDataHub_Monitor.data.rc_update_time = DataPipe_DataObj(Proto_Rc).time_stamp;
@@ -84,19 +86,17 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Proto_Rc).failsafe;
         SrvDataHub_Monitor.data.channel_sum = DataPipe_DataObj(Proto_Rc).channel_sum;
 
-        for(uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
+        for (uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
         {
             SrvDataHub_Monitor.data.ch[i] = DataPipe_DataObj(Proto_Rc).channel[i];
-        }
 
-        for()
-        {
-            SrvDataHub_Monitor.data.ch
+            if (i < 4)
+                SrvDataHub_Monitor.data.gimbal[i] = DataPipe_DataObj(Proto_Rc).gimbal_val[i];
         }
 
         SrvDataHub_Monitor.update_reg.bit.rc = false;
     }
-    else if (obj == &IMU_Ptl_DataPipe)
+    else if (obj == &IMU_hub_DataPipe)
     {
         SrvDataHub_Monitor.update_reg.bit.raw_imu = true;
         SrvDataHub_Monitor.update_reg.bit.scaled_imu = true;
@@ -225,14 +225,14 @@ static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float 
 
 static bool SrvDataHub_Get_Arm(bool *arm)
 {
-    if(arm == NULL)
+    if (arm == NULL)
         return false;
 
 reupdate_arm:
     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
     *arm = SrvDataHub_Monitor.data.arm;
 
-    if(!SrvDataHub_Monitor.inuse_reg.bit.rc)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
         goto reupdate_arm;
 
     SrvDataHub_Monitor.inuse_reg.bit.rc = false;
@@ -242,14 +242,14 @@ reupdate_arm:
 
 static bool SrvDataHub_Get_Failsafe(bool *failsafe)
 {
-    if(failsafe == NULL)
+    if (failsafe == NULL)
         return false;
 
 reupdate_failsafe:
     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
     *failsafe = SrvDataHub_Monitor.data.failsafe;
 
-    if(!SrvDataHub_Monitor.inuse_reg.bit.rc)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
         goto reupdate_failsafe;
 
     SrvDataHub_Monitor.inuse_reg.bit.rc = false;
@@ -259,14 +259,14 @@ reupdate_failsafe:
 
 static bool SrvDataHub_Get_ControlMode(uint8_t *mode)
 {
-    if(mode == NULL)
+    if (mode == NULL)
         return false;
 
 reupdate_control_mode:
     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
     *mode = SrvDataHub_Monitor.data.mode;
 
-    if(!SrvDataHub_Monitor.inuse_reg.bit.rc)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
         goto reupdate_control_mode;
 
     SrvDataHub_Monitor.inuse_reg.bit.rc = false;
@@ -274,9 +274,9 @@ reupdate_control_mode:
     return true;
 }
 
-static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cum)
+static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_sum)
 {
-    if((time_stamp == NULL) || (ch == NULL) || (ch_sum == NULL))
+    if ((time_stamp == NULL) || (ch == NULL) || (ch_sum == NULL))
         return false;
 
 reupdate_rc_channel:
@@ -284,15 +284,36 @@ reupdate_rc_channel:
     *time_stamp = SrvDataHub_Monitor.data.rc_update_time;
     *ch_sum = SrvDataHub_Monitor.data.channel_sum;
 
-    for(uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
+    for (uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
     {
         ch[i] = SrvDataHub_Monitor.data.ch[i];
     }
 
-    if(!SrvDataHub_Monitor.inuse_reg.bit.rc)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
         goto reupdate_rc_channel;
 
-    SrvDataHub_Monitor.inuse_reg.bit.rc  = false;
+    SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_Gimbal(uint16_t *gimbal)
+{
+    if (gimbal == NULL)
+        return false;
+
+reupdate_gimbal:
+    SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        gimbal[i] = SrvDataHub_Monitor.data.gimbal[i];
+    }
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
+        goto reupdate_gimbal;
+
+    SrvDataHub_Monitor.inuse_reg.bit.rc = false;
 
     return true;
 }

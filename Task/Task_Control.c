@@ -61,6 +61,7 @@ void TaskControl_Core(Task_Handle hdl)
     uint64_t imu_update_time = 0;
     uint32_t rc_update_time = 0;
     uint16_t rc_ch[32];
+    uint16_t gimbal[4];
     uint8_t rc_channel_sum;
     bool arm_state;
     bool failsafe;
@@ -78,10 +79,10 @@ void TaskControl_Core(Task_Handle hdl)
     if (TaskControl_Monitor.init_state || TaskControl_Monitor.control_abort)
     {
         // check imu filter gyro data update or not
-        SrvDataHub.get_scaled_imu(&imu_update_time, 
-                                  &acc_scale, &gyr_scale, 
-                                  &acc_x, &acc_y, &acc_z, 
-                                  &gyr_x, &gyr_y, &gyr_z, 
+        SrvDataHub.get_scaled_imu(&imu_update_time,
+                                  &acc_scale, &gyr_scale,
+                                  &acc_x, &acc_y, &acc_z,
+                                  &gyr_x, &gyr_y, &gyr_z,
                                   &imu_tmpr);
 
         // get rc channel and other toggle signal
@@ -90,6 +91,7 @@ void TaskControl_Core(Task_Handle hdl)
         // get failsafe
         SrvDataHub.get_arm_state(&arm_state);
         SrvDataHub.get_failsafe(&failsafe);
+        SrvDataHub.get_gimbal(gimbal);
 
         if (imu_update_time)
         {
@@ -119,7 +121,7 @@ void TaskControl_Core(Task_Handle hdl)
                     {
                         /* currently use this section for dshot test */
                         /* throttlr idle value check */
-                        TaskControl_Monitor.ctl_buff[i] = DataPipe_DataObj(Control_RC_Data).gimbal_val[Telemetry_RC_Throttle];
+                        TaskControl_Monitor.ctl_buff[i] = gimbal[Telemetry_RC_Throttle];
                     }
                 }
                 else

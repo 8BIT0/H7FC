@@ -147,6 +147,7 @@ typedef struct
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
     bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cnt);
+    bool (*get_gimbal)(uint16_t *gimbal);
     bool (*get_actuator)(uint32_t *time_stamp, uint16_t *moto_ch, uint8_t *moto_cnt, uint16_t *servo_ch, uint8_t *servo_cnt);
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);
