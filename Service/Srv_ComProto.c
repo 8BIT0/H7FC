@@ -24,6 +24,7 @@ static SrvComProto_Type_List Srv_ComProto_GetType(void);
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
+    .mav_msg_obj_init = Srv_ComProto_MsgObj_Init,
     .get_msg_type = Srv_ComProto_GetType,
     .mav_msg_stream = SrvComProto_MsgToStream,
     .mav_msg_enable_ctl = SrvComProto_MsgEnable_Control,
