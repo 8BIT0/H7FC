@@ -68,7 +68,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     /* create mavlink message object */
     msg->msg_obj = (mavlink_message_t *)MMU_Malloc(sizeof(mavlink_message_t));
 
-    if (msg->msg_obj)
+    if (msg->msg_obj == NULL)
     {
         MMU_Free(msg->msg_obj);
         return false;
@@ -101,7 +101,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb)
 {
-    if (msg.enable && com_stream && com_stream->p_buf && com_stream->size && msg.pack_callback)
+    if (msg.enable && com_stream && com_stream->p_buf && msg.pack_callback)
     {
         msg.in_proto = true;
 
