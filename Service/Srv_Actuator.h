@@ -235,6 +235,17 @@ typedef struct
     bool init;
     SrcActuatorCTL_Obj_TypeDef drive_module;
 } SrvActuatorObj_TypeDef;
+
+typedef struct
+{
+    uint64_t time_stamp;
+
+    uint8_t moto_cnt;
+    uint8_t servo_cnt;
+
+    uint16_t moto[8];
+    uint16_t servo[8];
+}SrvActuatorPipeData_TypeDef;
 #pragma pak()
 
 typedef struct

@@ -16,6 +16,9 @@
 
 SrvIMU_UnionData_TypeDef LstCyc_IMU_Data;
 SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
+SrvActuatorPipeData_TypeDef Proto_Actuator_Data;
+
+DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Actuator_Data);
 
 TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .init_state = false,
@@ -37,7 +40,6 @@ void TaskControl_Init(void)
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
 
     TaskControl_Monitor.ctl_model = SrvActuator.get_model();
-
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
     if (TaskControl_Monitor.init_state)
