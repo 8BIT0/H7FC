@@ -91,4 +91,6 @@ extern DataPipeObj_TypeDef IMU_hub_DataPipe;
 
 extern DataPipeObj_TypeDef Receiver_Smp_DataPipe;
 extern DataPipeObj_TypeDef Receiver_hub_DataPipe;
+
+extern DataPipeObj_TypeDef Actuator_hub_DataPipe;
 #endif
