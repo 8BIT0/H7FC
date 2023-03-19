@@ -375,6 +375,7 @@ static SrvActuator_Model_List SrvActuator_GetModel(void)
 }
 
 /* Drone Moto Mix Control Model */
+/* only check throttle_ch roll_ch pitch_ch yaw_ch */
 static bool SrvActuator_CheckInput_Range(uint16_t *rc_ctl)
 {
     if((!SrvActuator_Obj.init) || (rc_ctl == NULL))
