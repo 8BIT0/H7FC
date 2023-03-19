@@ -40,12 +40,12 @@ void TaskControl_Init(void)
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
 
     // init actuator data pipe
-    memset(&Actuator_hub_DataPipe, 0, sizeof(Actuator_hub_DataPipe));
+    memset(&Actuator_cal_DataPipe, 0, sizeof(Actuator_cal_DataPipe));
     memset(DataPipe_DataObjAddr(Actuator_Data), NULL, sizeof(DataPipe_DataObj(Actuator_Data)));
 
-    Actuator_hub_DataPipe.data_addr = (uint32_t)&DataPipe_DataObj(Actuator_Data);
-    Actuator_hub_DataPipe.data_size = sizeof(DataPipe_DataObj(Actuator_Data));
-    DataPipe_Enable(&Actuator_hub_DataPipe);
+    Actuator_cal_DataPipe.data_addr = (uint32_t)&DataPipe_DataObj(Actuator_Data);
+    Actuator_cal_DataPipe.data_size = sizeof(DataPipe_DataObj(Actuator_Data));
+    DataPipe_Enable(&Actuator_cal_DataPipe);
 
     TaskControl_Monitor.ctl_model = SrvActuator.get_model();
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
