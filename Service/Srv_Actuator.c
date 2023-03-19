@@ -377,15 +377,16 @@ static SrvActuator_Model_List SrvActuator_GetModel(void)
 /* Drone Moto Mix Control Model */
 static bool SrvActuator_CheckInput_Range(uint16_t *rc_ctl)
 {
-    if(rc_ctl == NULL)
+    if((!SrvActuator_Obj.init) || (rc_ctl == NULL))
         return false;
+
 
     return true;
 }
 
 static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl, uint16_t *moto)
 {
-    if((rc_ctl == NULL) || (moto == NULL))
+    if((!SrvActuator_Obj.init) || (rc_ctl == NULL) || (moto == NULL))
         return false;
 
     return true;
