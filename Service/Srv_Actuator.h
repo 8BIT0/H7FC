@@ -233,7 +233,6 @@ typedef struct
 
 typedef struct
 {
-    uint32_t update_time_stamp;
     SrvActuator_ModelComponentNum_TypeDef num;
     SrvActuator_PWMOutObj_TypeDef *obj_list;
 } SrcActuatorCTL_Obj_TypeDef;

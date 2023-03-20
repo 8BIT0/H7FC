@@ -254,7 +254,7 @@ static bool SrvActuator_Lock(void)
         }
     }
 
-    SrvActuator_Obj.drive_module.update_time_stamp = Get_CurrentRunningMs();
+    SrvActuator_PipeData();
 }
 
 static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
@@ -291,7 +291,7 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
         }
     }
 
-    SrvActuator_Obj.drive_module.update_time_stamp = Get_CurrentRunningMs();
+    SrvActuator_PipeData();
 }
 
 /* mast set spin direction when moto under halt statement */
@@ -422,7 +422,7 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl, uint16_t *mot
 
 static void SrvActuator_PipeData(void)
 {
-    DataPipe_DataObj(Actuator_Data).time_stamp = SrvActuator_Obj.drive_module.update_time_stamp;
+    DataPipe_DataObj(Actuator_Data).time_stamp = Get_CurrentRunningMs();
     DataPipe_DataObj(Actuator_Data).moto_cnt = SrvActuator_Obj.drive_module.num.moto_cnt;
     DataPipe_DataObj(Actuator_Data).servo_cnt = SrvActuator_Obj.drive_module.num.servo_cnt;
 
