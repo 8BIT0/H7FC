@@ -149,12 +149,12 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
 
         for(uint8_t moto_i = 0; moto_i < SrvDataHub_Monitor.data.moto_num; moto_i++)
         {
-
+            SrvDataHub_Monitor.data.moto[moto_i] = DataPipe_DataObj(PtlActuator_Data).moto[moto_i];
         }
 
         for(uint8_t servo_i = 0; servo_i < SrvDataHub_Monitor.data.servo_num; servo_i++)
         {
-
+            SrvDataHub_Monitor.data.servo[servo_i] = DataPipe_DataObj(PtlActuator_Data).servo[servo_i];
         }
     }
 }
