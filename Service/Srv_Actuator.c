@@ -14,6 +14,8 @@
  * S12  PE6     TIM15   CH2
  */
 #include "Srv_Actuator.h"
+#include "Srv_DataHub.h"
+#include "runtime.h"
 #include "datapipe.h"
 #include "mmu.h"
 
@@ -49,10 +51,14 @@ const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
 /* internal variable */
 SrvActuatorObj_TypeDef SrvActuator_Obj;
 SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
+SrvActuatorPipeData_TypeDef Proto_Actuator_Data;
+
+DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Actuator_Data);
 
 /* internal function */
 static void SrcActuator_Get_ChannelRemap(void);
 static bool SrvActuator_Config_MotoSpinDir(void);
+static void SrvActuator_PipeData(void);
 
 /* external function */
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type);
@@ -132,9 +138,9 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
         {
             switch (esc_type)
             {
-            case DevDshot_150:
-            case DevDshot_300:
-            case DevDshot_600:
+            case Actuator_DevType_DShot150:
+            case Actuator_DevType_DShot300:
+            case Actuator_DevType_DShot600:
                 SrvActuator_Obj.drive_module.obj_list[i].drv_type = esc_type;
 
                 SrvActuator_Obj.drive_module.obj_list[i].ctl_val = DSHOT_LOCK_THROTTLE;
@@ -144,6 +150,9 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                 SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
 
                 SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef));
+                break;
+
+            case Actuator_DevType_ServoPWM:
                 break;
 
             default:
@@ -175,6 +184,14 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     SrvActuator_Config_MotoSpinDir();
 
     SrvActuator_Lock();
+
+    // init actuator data pipe
+    memset(&Actuator_cal_DataPipe, 0, sizeof(Actuator_cal_DataPipe));
+    memset(DataPipe_DataObjAddr(Actuator_Data), NULL, sizeof(DataPipe_DataObj(Actuator_Data)));
+
+    Actuator_cal_DataPipe.data_addr = (uint32_t)&DataPipe_DataObj(Actuator_Data);
+    Actuator_cal_DataPipe.data_size = sizeof(DataPipe_DataObj(Actuator_Data));
+    DataPipe_Enable(&Actuator_cal_DataPipe);
 
     SrvActuator_Obj.init = true;
     return true;
@@ -223,16 +240,21 @@ static bool SrvActuator_Lock(void)
     {
         switch (SrvActuator_Obj.drive_module.obj_list[i].drv_type)
         {
-        case DevDshot_150:
-        case DevDshot_300:
-        case DevDshot_600:
+        case Actuator_DevType_DShot150:
+        case Actuator_DevType_DShot300:
+        case Actuator_DevType_DShot600:
             DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].lock_val);
             return true;
+
+        case Actuator_DevType_ServoPWM:
+            break;
 
         default:
             return false;
         }
     }
+
+    SrvActuator_Obj.drive_module.update_time_stamp = Get_CurrentRunningMs();
 }
 
 static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
@@ -254,20 +276,22 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
 
         switch (SrvActuator_Obj.drive_module.obj_list[i].drv_type)
         {
-        case DevDshot_150:
-        case DevDshot_300:
-        case DevDshot_600:
+        case Actuator_DevType_DShot150:
+        case Actuator_DevType_DShot300:
+        case Actuator_DevType_DShot600:
             DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
             break;
 
             /* servo control */
-            // case servo_pwm:
-            // break;
+        case Actuator_DevType_ServoPWM:
+            break;
 
         default:
             return;
         }
     }
+
+    SrvActuator_Obj.drive_module.update_time_stamp = Get_CurrentRunningMs();
 }
 
 /* mast set spin direction when moto under halt statement */
@@ -285,9 +309,9 @@ static bool SrvActuator_SetMotoSpinDir(uint8_t component_index, SrvActuator_Spin
 
     switch (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type)
     {
-    case DevDshot_150:
-    case DevDshot_300:
-    case DevDshot_600:
+    case Actuator_DevType_DShot150:
+    case Actuator_DevType_DShot300:
+    case Actuator_DevType_DShot600:
         if (dir == Actuator_MS_CW)
         {
             dir_cmd = DSHOT_CMD_SET_SPIN_CLOCKWISE;
@@ -297,6 +321,9 @@ static bool SrvActuator_SetMotoSpinDir(uint8_t component_index, SrvActuator_Spin
 
         DevDshot.command(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj, dir_cmd);
         DevDshot.command(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj, DSHOT_CMD_SAVE_SETTING);
+        break;
+
+    case Actuator_DevType_ServoPWM:
         break;
 
     default:
@@ -392,3 +419,23 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl, uint16_t *mot
 
     return true;
 }
+
+static void SrvActuator_PipeData(void)
+{
+    DataPipe_DataObj(Actuator_Data).time_stamp = SrvActuator_Obj.drive_module.update_time_stamp;
+    DataPipe_DataObj(Actuator_Data).moto_cnt = SrvActuator_Obj.drive_module.num.moto_cnt;
+    DataPipe_DataObj(Actuator_Data).servo_cnt = SrvActuator_Obj.drive_module.num.servo_cnt;
+
+    for(uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
+    {
+        if(i < SrvActuator_Obj.drive_module.num.moto_cnt)
+        {
+            DataPipe_DataObj(Actuator_Data).moto[i] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
+        }
+        else
+            DataPipe_DataObj(Actuator_Data).servo[i - SrvActuator_Obj.drive_module.num.moto_cnt] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
+    }
+
+    DataPipe_SendTo(&Actuator_cal_DataPipe, &Actuator_hub_DataPipe);
+}
+

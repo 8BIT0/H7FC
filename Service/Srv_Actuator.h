@@ -190,6 +190,14 @@ typedef enum
     Actuator_SS_ACW     // servo anticlockwise spin
 } SrvActuator_SpinDir_List;
 
+typedef enum
+{
+    Actuator_DevType_DShot150 = DevDshot_150,
+    Actuator_DevType_DShot300 = DevDshot_300,
+    Actuator_DevType_DShot600 = DevDshot_600,
+    Actuator_DevType_ServoPWM,
+}SrvActuator_DevType_List;
+
 #pragma pack(1)
 typedef struct
 {
@@ -225,6 +233,7 @@ typedef struct
 
 typedef struct
 {
+    uint32_t update_time_stamp;
     SrvActuator_ModelComponentNum_TypeDef num;
     SrvActuator_PWMOutObj_TypeDef *obj_list;
 } SrcActuatorCTL_Obj_TypeDef;

@@ -16,9 +16,6 @@
 
 SrvIMU_UnionData_TypeDef LstCyc_IMU_Data;
 SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
-SrvActuatorPipeData_TypeDef Proto_Actuator_Data;
-
-DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Actuator_Data);
 
 TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .init_state = false,
@@ -38,14 +35,6 @@ void TaskControl_Init(void)
 {
     // init monitor
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
-
-    // init actuator data pipe
-    memset(&Actuator_cal_DataPipe, 0, sizeof(Actuator_cal_DataPipe));
-    memset(DataPipe_DataObjAddr(Actuator_Data), NULL, sizeof(DataPipe_DataObj(Actuator_Data)));
-
-    Actuator_cal_DataPipe.data_addr = (uint32_t)&DataPipe_DataObj(Actuator_Data);
-    Actuator_cal_DataPipe.data_size = sizeof(DataPipe_DataObj(Actuator_Data));
-    DataPipe_Enable(&Actuator_cal_DataPipe);
 
     TaskControl_Monitor.ctl_model = SrvActuator.get_model();
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
@@ -151,7 +140,6 @@ void TaskControl_Core(Task_Handle hdl)
             }
 
             // do drone control algorithm down below
-
             SrvActuator.control(TaskControl_Monitor.ctl_buff, TaskControl_Monitor.actuator_num);
         }
         else

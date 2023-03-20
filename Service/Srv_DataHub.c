@@ -131,6 +131,10 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         SrvDataHub_Monitor.update_reg.bit.raw_imu = false;
         SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
     }
+    else if(obj == &Actuator_hub_DataPipe)
+    {
+
+    }
 }
 
 static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
