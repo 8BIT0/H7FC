@@ -253,6 +253,9 @@ typedef struct
 
     uint16_t moto[8];
     uint16_t servo[8];
+
+    uint8_t moto_dir[8];
+    uint8_t servo_dir[8];
 }SrvActuatorPipeData_TypeDef;
 #pragma pak()
 

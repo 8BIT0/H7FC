@@ -8,7 +8,7 @@ SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor = {
 /* Pipe Object */
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlSecIMU_Data);
-
+DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, PtlActuator_Data);
 DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
 
 /* internal function */
@@ -133,7 +133,14 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
     else if(obj == &Actuator_hub_DataPipe)
     {
+        SrvDataHub_Monitor.data.actucator_update_time = DataPipe_DataObj(PtlActuator_Data).time_stamp;
+        SrvDataHub_Monitor.data.moto_num = ;
+        SrvDataHub_Monitor.data.servo_num = ;
 
+        uint8_t moto_dir[8];
+        uint8_t servo_dir[8];
+        uint16_t moto[8];
+        uint8_t servo[8];
     }
 }
 
