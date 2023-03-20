@@ -133,14 +133,29 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
     else if(obj == &Actuator_hub_DataPipe)
     {
-        SrvDataHub_Monitor.data.actucator_update_time = DataPipe_DataObj(PtlActuator_Data).time_stamp;
-        SrvDataHub_Monitor.data.moto_num = ;
-        SrvDataHub_Monitor.data.servo_num = ;
+        SrvDataHub_Monitor.update_reg.bit.actuator = true;
 
-        uint8_t moto_dir[8];
-        uint8_t servo_dir[8];
-        uint16_t moto[8];
-        uint8_t servo[8];
+        if (SrvDataHub_Monitor.inuse_reg.bit.actuator)
+            SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
+
+        SrvDataHub_Monitor.data.actucator_update_time = DataPipe_DataObj(PtlActuator_Data).time_stamp;
+        SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(PtlActuator_Data).moto_cnt;
+        SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(PtlActuator_Data).servo_cnt;
+
+        memset(SrvDataHub_Monitor.data.moto_dir, 0, sizeof(SrvDataHub_Monitor.data.moto_dir));
+        memset(SrvDataHub_Monitor.data.servo_dir, 0, sizeof(SrvDataHub_Monitor.data.servo_dir));
+        memset(SrvDataHub_Monitor.data.moto, 0, sizeof(SrvDataHub_Monitor.data.moto));
+        memset(SrvDataHub_Monitor.data.servo, 0, sizeof(SrvDataHub_Monitor.data.servo));
+
+        for(uint8_t moto_i = 0; moto_i < SrvDataHub_Monitor.data.moto_num; moto_i++)
+        {
+
+        }
+
+        for(uint8_t servo_i = 0; servo_i < SrvDataHub_Monitor.data.servo_num; servo_i++)
+        {
+
+        }
     }
 }
 

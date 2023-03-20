@@ -30,6 +30,8 @@ typedef union
         uint8_t scaled_tof : 1;
 
         uint8_t rc : 1;
+
+        uint8_t actuator : 1;
     } bit;
 
     uint8_t val;

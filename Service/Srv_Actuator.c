@@ -431,9 +431,13 @@ static void SrvActuator_PipeData(void)
         if(i < SrvActuator_Obj.drive_module.num.moto_cnt)
         {
             DataPipe_DataObj(Actuator_Data).moto[i] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
+            DataPipe_DataObj(Actuator_Data).moto_dir[i] = SrvActuator_Obj.drive_module.obj_list[i].spin_dir;
         }
         else
+        {
+            DataPipe_DataObj(Actuator_Data).servo_dir[i - SrvActuator_Obj.drive_module.num.moto_cnt] = SrvActuator_Obj.drive_module.obj_list[i].spin_dir;
             DataPipe_DataObj(Actuator_Data).servo[i - SrvActuator_Obj.drive_module.num.moto_cnt] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
+        }
     }
 
     DataPipe_SendTo(&Actuator_cal_DataPipe, &Actuator_hub_DataPipe);
