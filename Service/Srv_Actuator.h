@@ -198,6 +198,14 @@ typedef enum
     Actuator_DevType_ServoPWM,
 }SrvActuator_DevType_List;
 
+typedef enum
+{
+    Actuator_CtlChannel_Throttle = 0,
+    Actuator_CtlChannel_Roll,
+    Actuator_CtlChannel_Pitch,
+    Actuator_CtlChannel_Yaw,
+}SrvActuator_ChannelControl_List;
+
 #pragma pack(1)
 typedef struct
 {

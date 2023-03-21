@@ -59,6 +59,7 @@ DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Actuator_Data);
 static void SrcActuator_Get_ChannelRemap(void);
 static bool SrvActuator_Config_MotoSpinDir(void);
 static void SrvActuator_PipeData(void);
+static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl, uint16_t *moto);
 
 /* external function */
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type);
@@ -264,9 +265,13 @@ static void SrvActuator_Control(uint16_t *p_val, uint8_t len)
     if ((p_val == NULL) || (len != SrvActuator_Obj.drive_module.num.total_cnt) || !SrvActuator_Obj.init)
         return;
 
+    uint16_t actuator_ctl[SrvActuator_Obj.drive_module.num.total_cnt] = {0};
+    SrvActuator_QuadDrone_MotoMixControl(p_val, actuator_ctl);
+
     for (i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
     {
-        SrvActuator_Obj.drive_module.obj_list[i].ctl_val = p_val[i];
+        SrvActuator_Obj.drive_module.obj_list[i].ctl_val = actuator_ctl[i];
+
         if (SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].min_val)
         {
             SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].min_val;
@@ -412,10 +417,20 @@ static bool SrvActuator_CheckInput_Range(uint16_t *rc_ctl)
     return true;
 }
 
+/*
+ * X axis -> Roll
+ * Y axis -> Pitch
+ * Z axis -> Yaw
+ */
 static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl, uint16_t *moto)
 {
     if((!SrvActuator_Obj.init) || (rc_ctl == NULL) || (moto == NULL))
         return false;
+
+    moto[0] = rc_ctl[Actuator_CtlChannel_Throttle] + rc_ctl[Actuator_CtlChannel_Roll] - rc_ctl[Actuator_CtlChannel_Pitch] - rc_ctl[Actuator_CtlChannel_Yaw];
+    moto[1] = rc_ctl[Actuator_CtlChannel_Throttle] + rc_ctl[Actuator_CtlChannel_Roll] + rc_ctl[Actuator_CtlChannel_Pitch] + rc_ctl[Actuator_CtlChannel_Yaw];
+    moto[2] = rc_ctl[Actuator_CtlChannel_Throttle] - rc_ctl[Actuator_CtlChannel_Roll] + rc_ctl[Actuator_CtlChannel_Pitch] - rc_ctl[Actuator_CtlChannel_Yaw];
+    moto[3] = rc_ctl[Actuator_CtlChannel_Throttle] - rc_ctl[Actuator_CtlChannel_Roll] - rc_ctl[Actuator_CtlChannel_Pitch] + rc_ctl[Actuator_CtlChannel_Yaw];
 
     return true;
 }
