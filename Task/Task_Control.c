@@ -39,7 +39,7 @@ void TaskControl_Init(void)
 void TaskControl_Core(Task_Handle hdl)
 {
     uint64_t imu_update_time = 0;
-    uint32_t rc_update_time = 0;
+    uint64_t rc_update_time = 0;
     uint16_t rc_ch[32];
     uint16_t gimbal[4];
     uint8_t rc_channel_sum;
