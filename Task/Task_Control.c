@@ -22,9 +22,6 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .auto_control = false,
 
     .ctl_model = Model_Quad,
-    .actuator_num = 0,
-
-    .ctl_buff = NULL,
 
     .IMU_Rt = 0,
     .RC_Rt = 0,
@@ -37,21 +34,6 @@ void TaskControl_Init(void)
 
     TaskControl_Monitor.ctl_model = SrvActuator.get_model();
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
-
-    if (TaskControl_Monitor.init_state)
-    {
-        TaskControl_Monitor.actuator_num = SrvActuator.get_cnt().total_cnt;
-        TaskControl_Monitor.ctl_buff = (uint16_t *)MMU_Malloc(sizeof(uint16_t) * TaskControl_Monitor.actuator_num);
-
-        if (TaskControl_Monitor.ctl_buff == NULL)
-        {
-            MMU_Free(TaskControl_Monitor.ctl_buff);
-            TaskControl_Monitor.init_state = false;
-            return;
-        }
-
-        memset(TaskControl_Monitor.ctl_buff, 0, sizeof(uint16_t) * TaskControl_Monitor.actuator_num);
-    }
 }
 
 void TaskControl_Core(Task_Handle hdl)
@@ -113,16 +95,7 @@ void TaskControl_Core(Task_Handle hdl)
             {
                 TaskControl_Monitor.RC_Rt = rc_update_time;
 
-                if (arm_state == TELEMETRY_SET_DISARM)
-                {
-                    for (uint8_t i = 0; i < TaskControl_Monitor.actuator_num; i++)
-                    {
-                        /* currently use this section for dshot test */
-                        /* throttlr idle value check */
-                        TaskControl_Monitor.ctl_buff[i] = gimbal[Telemetry_RC_Throttle];
-                    }
-                }
-                else
+                if (arm_state != TELEMETRY_SET_DISARM)
                 {
                     SrvActuator.lock();
                     return;
@@ -139,7 +112,9 @@ void TaskControl_Core(Task_Handle hdl)
             }
 
             // do drone control algorithm down below
-            SrvActuator.control(TaskControl_Monitor.ctl_buff, TaskControl_Monitor.actuator_num);
+
+            // currently use gimbal input val for moto testing
+            SrvActuator.moto_control(gimbal);
         }
         else
             SrvActuator.lock();

@@ -271,7 +271,8 @@ typedef struct
 {
     bool (*init)(SrvActuator_Model_List model, uint8_t esc_type);
     bool (*lock)(void);
-    void (*control)(uint16_t *p_val, uint8_t len);
+    void (*moto_control)(uint16_t *p_val);
+    void (*servo_conttol)(uint8_t index, uint16_t val);
     bool (*invert_spin)(uint8_t component_index);
     SrvActuator_ModelComponentNum_TypeDef (*get_cnt)(void);
     SrvActuator_Model_List (*get_model)(void);

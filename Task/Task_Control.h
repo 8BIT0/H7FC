@@ -14,9 +14,6 @@ typedef struct
     bool control_abort;
 
     uint8_t ctl_model;
-    uint8_t actuator_num;
-
-    uint16_t *ctl_buff;
 
     uint8_t imu_update_error_cnt;
     uint8_t rc_update_error_cnt;
