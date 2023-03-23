@@ -154,6 +154,8 @@ typedef struct
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);
     bool (*get_control_mode)(uint8_t *mode);
+    bool (*get_moto)(uint8_t *cnt, uint16_t *ch, uint8_t *dir);
+    bool (*get_servo)(uint8_t *cnt, uint16_t *ch, uint8_t *dir);
 } SrvDataHub_TypeDef;
 
 extern SrvDataHub_TypeDef SrvDataHub;

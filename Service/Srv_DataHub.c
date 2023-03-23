@@ -25,6 +25,8 @@ static bool SrvDataHub_Get_Failsafe(bool *failsafe);
 static bool SrvDataHub_Get_ControlMode(uint8_t *mode);
 static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cum);
 static bool SrvDataHub_Get_Gimbal(uint16_t *gimbal);
+static bool SrvDataHub_Get_MotoChannel(uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir);
+static bool SrvDataHub_Get_ServoChannel(uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -38,6 +40,8 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_control_mode = SrvDataHub_Get_ControlMode,
     .get_rc = SrvDataHub_Get_RcChannel,
     .get_gimbal = SrvDataHub_Get_Gimbal,
+    .get_moto = SrvDataHub_Get_MotoChannel,
+    .get_servo = SrvDataHub_Get_ServoChannel,
 };
 
 static void SrvDataHub_Init(void)
@@ -131,7 +135,7 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         SrvDataHub_Monitor.update_reg.bit.raw_imu = false;
         SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
     }
-    else if(obj == &Actuator_hub_DataPipe)
+    else if (obj == &Actuator_hub_DataPipe)
     {
         SrvDataHub_Monitor.update_reg.bit.actuator = true;
 
@@ -147,12 +151,12 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         memset(SrvDataHub_Monitor.data.moto, 0, sizeof(SrvDataHub_Monitor.data.moto));
         memset(SrvDataHub_Monitor.data.servo, 0, sizeof(SrvDataHub_Monitor.data.servo));
 
-        for(uint8_t moto_i = 0; moto_i < SrvDataHub_Monitor.data.moto_num; moto_i++)
+        for (uint8_t moto_i = 0; moto_i < SrvDataHub_Monitor.data.moto_num; moto_i++)
         {
             SrvDataHub_Monitor.data.moto[moto_i] = DataPipe_DataObj(PtlActuator_Data).moto[moto_i];
         }
 
-        for(uint8_t servo_i = 0; servo_i < SrvDataHub_Monitor.data.servo_num; servo_i++)
+        for (uint8_t servo_i = 0; servo_i < SrvDataHub_Monitor.data.servo_num; servo_i++)
         {
             SrvDataHub_Monitor.data.servo[servo_i] = DataPipe_DataObj(PtlActuator_Data).servo[servo_i];
         }
@@ -340,6 +344,54 @@ reupdate_gimbal:
         goto reupdate_gimbal;
 
     SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_MotoChannel(uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir)
+{
+    if ((cnt == NULL) || (moto_ch == NULL))
+        return false;
+
+reupdate_moto_channel:
+    SrvDataHub_Monitor.inuse_reg.bit.actuator = true;
+
+    *cnt = SrvDataHub_Monitor.data.moto_num;
+
+    if (*cnt)
+    {
+        memcpy(moto_ch, SrvDataHub_Monitor.data.moto, *cnt);
+        memcpy(moto_dir, SrvDataHub_Monitor.data.moto_dir, *cnt);
+    }
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.actuator)
+        goto reupdate_moto_channel;
+
+    SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_ServoChannel(uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir)
+{
+    if ((cnt == NULL) || (servo_ch == NULL) || (servo_dir == NULL))
+        return false;
+
+reupdate_servo_channel:
+    SrvDataHub_Monitor.inuse_reg.bit.actuator = true;
+
+    *cnt = SrvDataHub_Monitor.data.servo_num;
+
+    if (*cnt)
+    {
+        memcpy(servo_ch, SrvDataHub_Monitor.data.servo, *cnt);
+        memcpy(servo_dir, SrvDataHub_Monitor.data.servo_dir, *cnt);
+    }
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.actuator)
+        goto reupdate_servo_channel;
+
+    SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
 
     return true;
 }
