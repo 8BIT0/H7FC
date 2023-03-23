@@ -25,8 +25,8 @@ static bool SrvDataHub_Get_Failsafe(bool *failsafe);
 static bool SrvDataHub_Get_ControlMode(uint8_t *mode);
 static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cum);
 static bool SrvDataHub_Get_Gimbal(uint16_t *gimbal);
-static bool SrvDataHub_Get_MotoChannel(uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir);
-static bool SrvDataHub_Get_ServoChannel(uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
+static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir);
+static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -142,7 +142,7 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         if (SrvDataHub_Monitor.inuse_reg.bit.actuator)
             SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
 
-        SrvDataHub_Monitor.data.actucator_update_time = DataPipe_DataObj(PtlActuator_Data).time_stamp;
+        SrvDataHub_Monitor.data.actuator_update_time = DataPipe_DataObj(PtlActuator_Data).time_stamp;
         SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(PtlActuator_Data).moto_cnt;
         SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(PtlActuator_Data).servo_cnt;
 
@@ -348,7 +348,7 @@ reupdate_gimbal:
     return true;
 }
 
-static bool SrvDataHub_Get_MotoChannel(uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir)
+static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir)
 {
     if ((cnt == NULL) || (moto_ch == NULL))
         return false;
@@ -356,6 +356,7 @@ static bool SrvDataHub_Get_MotoChannel(uint8_t *cnt, uint16_t *moto_ch, uint8_t 
 reupdate_moto_channel:
     SrvDataHub_Monitor.inuse_reg.bit.actuator = true;
 
+    *time_stamp = SrvDataHub_Monitor.data.actuator_update_time;
     *cnt = SrvDataHub_Monitor.data.moto_num;
 
     if (*cnt)
@@ -372,7 +373,7 @@ reupdate_moto_channel:
     return true;
 }
 
-static bool SrvDataHub_Get_ServoChannel(uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir)
+static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir)
 {
     if ((cnt == NULL) || (servo_ch == NULL) || (servo_dir == NULL))
         return false;
@@ -380,6 +381,7 @@ static bool SrvDataHub_Get_ServoChannel(uint8_t *cnt, uint16_t *servo_ch, uint8_
 reupdate_servo_channel:
     SrvDataHub_Monitor.inuse_reg.bit.actuator = true;
 
+    *time_stamp = SrvDataHub_Monitor.data.actuator_update_time;
     *cnt = SrvDataHub_Monitor.data.servo_num;
 
     if (*cnt)

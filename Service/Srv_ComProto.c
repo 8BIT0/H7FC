@@ -143,6 +143,74 @@ static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool
     return true;
 }
 
+static uint16_t SrvComProto_MavMsg_Moto(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    uint32_t time_stamp = 0;
+    uint16_t moto[8] = {0};
+    uint8_t moto_dir[8] = {0};
+    uint8_t moto_cnt = 0;
+
+    SrvDataHub.get_moto(&time_stamp, &moto_cnt, moto, moto_dir);
+
+    return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
+                                                  pck->pck_info.component_id,
+                                                  pck->pck_info.chan, pck->msg_obj,
+                                                  time_stamp, MAV_ActuatorPort_Moto,
+                                                  moto[0], moto[1], moto[2], moto[3],
+                                                  moto[4], moto[5], moto[6], moto[7]);
+}
+
+static uint16_t SrvComProto_MavMsg_MotoDir(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    uint32_t time_stamp = 0;
+    uint16_t moto[8] = {0};
+    uint8_t moto_dir[8] = {0};
+    uint8_t moto_cnt = 0;
+
+    SrvDataHub.get_moto(&time_stamp, &moto_cnt, moto, moto_dir);
+
+    return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
+                                                  pck->pck_info.component_id,
+                                                  pck->pck_info.chan, pck->msg_obj,
+                                                  time_stamp, MAV_ActuatorPort_MotoDir,
+                                                  moto_dir[0], moto_dir[1], moto_dir[2], moto_dir[3],
+                                                  moto_dir[4], moto_dir[5], moto_dir[6], moto_dir[7]);
+}
+
+static uint16_t SrvComProto_MavMsg_Servo(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    uint32_t time_stamp = 0;
+    uint16_t servo[8] = {0};
+    uint8_t servo_dir[8] = {0};
+    uint8_t servo_cnt = 0;
+
+    SrvDataHub.get_servo(&time_stamp, &servo_cnt, servo, servo_dir);
+
+    return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
+                                                  pck->pck_info.component_id,
+                                                  pck->pck_info.chan, pck->msg_obj,
+                                                  time_stamp, MAV_ActuatorPort_Servo,
+                                                  servo[0], servo[1], servo[2], servo[3],
+                                                  servo[4], servo[5], servo[6], servo[7]);
+}
+
+static uint16_t SrvComProto_MavMsg_ServoDir(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    uint32_t time_stamp = 0;
+    uint16_t servo[8] = {0};
+    uint8_t servo_dir[8] = {0};
+    uint8_t servo_cnt = 0;
+
+    SrvDataHub.get_servo(&time_stamp, &servo_cnt, servo, servo_dir);
+
+    return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
+                                                  pck->pck_info.component_id,
+                                                  pck->pck_info.chan, pck->msg_obj,
+                                                  time_stamp, MAV_ActuatorPort_ServoDir,
+                                                  servo_dir[0], servo_dir[1], servo_dir[2], servo_dir[3],
+                                                  servo_dir[4], servo_dir[5], servo_dir[6], servo_dir[7]);
+}
+
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck)
 {
     uint32_t time_stamp = 0;

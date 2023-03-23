@@ -31,6 +31,14 @@ typedef enum
 
 typedef enum
 {
+    MAV_ActuatorPort_Servo = 0,
+    MAV_ActuatorPort_ServoDir,
+    MAV_ActuatorPort_Moto,
+    MAV_ActuatorPort_MotoDir,
+} SrvComProto_ActuatorPort_List;
+
+typedef enum
+{
     SrvComProto_Type_None = 0,
     SrvComProto_Type_Cus,
     SrvComProto_Type_MAV,

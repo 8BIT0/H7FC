@@ -123,7 +123,7 @@ typedef struct
     uint16_t utc_s;
     uint16_t utc_ms;
 
-    uint32_t actucator_update_time;
+    uint32_t actuator_update_time;
     uint8_t moto_num;
     uint8_t servo_num;
     uint8_t moto_dir[8];
@@ -150,12 +150,11 @@ typedef struct
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
     bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cnt);
     bool (*get_gimbal)(uint16_t *gimbal);
-    bool (*get_actuator)(uint32_t *time_stamp, uint16_t *moto_ch, uint8_t *moto_cnt, uint16_t *servo_ch, uint8_t *servo_cnt);
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);
     bool (*get_control_mode)(uint8_t *mode);
-    bool (*get_moto)(uint8_t *cnt, uint16_t *ch, uint8_t *dir);
-    bool (*get_servo)(uint8_t *cnt, uint16_t *ch, uint8_t *dir);
+    bool (*get_moto)(uint32_t *time_stamp, uint8_t *cnt, uint16_t *ch, uint8_t *dir);
+    bool (*get_servo)(uint32_t *time_stamp, uint8_t *cnt, uint16_t *ch, uint8_t *dir);
 } SrvDataHub_TypeDef;
 
 extern SrvDataHub_TypeDef SrvDataHub;
