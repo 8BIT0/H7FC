@@ -24,7 +24,7 @@ static bool SrvDataHub_Get_Arm(bool *arm);
 static bool SrvDataHub_Get_Failsafe(bool *failsafe);
 static bool SrvDataHub_Get_ControlMode(uint8_t *mode);
 static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cum);
-static bool SrvDataHub_Get_Gimbal(uint16_t *gimbal);
+static bool SrvDataHub_Get_GimbalPercent(uint16_t *gimbal);
 static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir);
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 
@@ -39,7 +39,7 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_failsafe = SrvDataHub_Get_Failsafe,
     .get_control_mode = SrvDataHub_Get_ControlMode,
     .get_rc = SrvDataHub_Get_RcChannel,
-    .get_gimbal = SrvDataHub_Get_Gimbal,
+    .get_gimbal_percent = SrvDataHub_Get_GimbalPercent,
     .get_moto = SrvDataHub_Get_MotoChannel,
     .get_servo = SrvDataHub_Get_ServoChannel,
 };
@@ -95,7 +95,7 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
             SrvDataHub_Monitor.data.ch[i] = DataPipe_DataObj(Proto_Rc).channel[i];
 
             if (i < 4)
-                SrvDataHub_Monitor.data.gimbal[i] = DataPipe_DataObj(Proto_Rc).gimbal_val[i];
+                SrvDataHub_Monitor.data.gimbal[i] = DataPipe_DataObj(Proto_Rc).gimbal_percent[i];
         }
 
         SrvDataHub_Monitor.update_reg.bit.rc = false;
@@ -355,7 +355,7 @@ reupdate_rc_channel:
     return true;
 }
 
-static bool SrvDataHub_Get_Gimbal(uint16_t *gimbal)
+static bool SrvDataHub_Get_GimbalPercent(uint16_t *gimbal)
 {
     if (gimbal == NULL)
         return false;

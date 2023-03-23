@@ -149,7 +149,7 @@ typedef struct
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
     bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cnt);
-    bool (*get_gimbal)(uint16_t *gimbal);
+    bool (*get_gimbal_percent)(uint16_t *gimbal);
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);
     bool (*get_control_mode)(uint8_t *mode);

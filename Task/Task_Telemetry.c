@@ -353,12 +353,12 @@ static uint16_t Telemetry_Check_Gimbal(Telemetry_RCFuncMap_TypeDef *gimbal)
 {
     Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
 
-    if (!gimbal)
+    if (gimbal == NULL)
         return TELEMETRY_RC_CHANNEL_RANGE_MIN;
 
     gimbal_channel = gimbal->combo_list.data;
 
-    if (!gimbal_channel)
+    if ((gimbal_channel == NULL) || (gimbal_channel->min >=  gimbal_channel->max))
         return TELEMETRY_RC_CHANNEL_RANGE_MIN;
 
     if (*gimbal_channel->channel_ptr < gimbal_channel->min)
@@ -370,6 +370,27 @@ static uint16_t Telemetry_Check_Gimbal(Telemetry_RCFuncMap_TypeDef *gimbal)
     return *gimbal_channel->channel_ptr;
 }
 
+static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
+{
+    Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
+    uint16_t gimbal_range = 0;
+    float percent = 0.0f;
+
+    if(gimbal == NULL)
+        return 0;
+
+    gimbal_channel = gimbal->combo_list.data;
+
+    if((gimbal_channel == NULL) || (gimbal_channel->min >= gimbal_channel->max))
+        return 0;
+
+    gimbal_range = gimbal_channel->max - gimbal_channel->min;
+    percent = (float)(*gimbal_channel->channel_ptr - gimbal_channel->min) / gimbal_range;
+    percent *= 100;
+
+    return (uint16_t)percent;
+}
+
 static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
     SrvReceiverData_TypeDef receiver_data;
@@ -378,10 +399,10 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     memset(&receiver_data, 0, sizeof(receiver_data));
     memset(&sig_tmp, 0, sizeof(sig_tmp));
 
-    sig_tmp.gimbal_val[Telemetry_RC_Throttle] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
-    sig_tmp.gimbal_val[Telemetry_RC_Pitch] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
-    sig_tmp.gimbal_val[Telemetry_RC_Roll] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
-    sig_tmp.gimbal_val[Telemetry_RC_Yaw] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
+    sig_tmp.gimbal_percent[Telemetry_RC_Throttle] = 0;
+    sig_tmp.gimbal_percent[Telemetry_RC_Pitch] = 0;
+    sig_tmp.gimbal_percent[Telemetry_RC_Roll] = 0;
+    sig_tmp.gimbal_percent[Telemetry_RC_Yaw] = 0;
 
     if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
         return sig_tmp;
@@ -405,7 +426,10 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
         {
             if(i < Telemetry_Gimbal_TagSum)
-                RC_Input_obj->sig.gimbal_val[i] = Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
+            {
+                Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
+                RC_Input_obj->sig.gimbal_percent[i] = Telemetry_GimbalToPercent(&RC_Input_obj->Gimbal[i]);
+            }
 
             RC_Input_obj->sig.channel[i] = receiver_data.val_list[i];
         }
@@ -460,7 +484,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
 
         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
-            RC_Input_obj->sig.gimbal_val[i] = TELEMETRY_RC_CHANNEL_RANGE_MIN;
+            RC_Input_obj->sig.gimbal_percent[i] = 0;
     }
 
     memcpy(&sig_tmp, &RC_Input_obj->sig, sizeof(Telemetry_RCSig_TypeDef));

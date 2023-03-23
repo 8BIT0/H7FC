@@ -71,7 +71,7 @@ void TaskControl_Core(Task_Handle hdl)
         // get failsafe
         SrvDataHub.get_arm_state(&arm_state);
         SrvDataHub.get_failsafe(&failsafe);
-        SrvDataHub.get_gimbal(gimbal);
+        SrvDataHub.get_gimbal_percent(gimbal);
 
         if (imu_update_time)
         {

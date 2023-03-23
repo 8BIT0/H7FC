@@ -83,7 +83,7 @@ typedef struct
     bool osd_tune_state;
     bool failsafe;
 
-    uint16_t gimbal_val[4];
+    uint16_t gimbal_percent[4];
     uint8_t control_mode;
     uint16_t module_enable;
 
