@@ -73,8 +73,7 @@ typedef struct
 typedef struct
 {
     bool enable_deadzone;
-    uint16_t center_deadzone_min;
-    uint16_t center_deadzone_max;
+    uint16_t center_deadzone_scope;
 
     uint16_t min;
     uint16_t max;
