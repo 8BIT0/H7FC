@@ -265,14 +265,14 @@ static void SrvActuator_MotoControl(uint16_t *p_val)
     if ((p_val == NULL) || !SrvActuator_Obj.init)
         return;
 
-    switch(SrvActuator_Obj.model)
+    switch (SrvActuator_Obj.model)
     {
-        case Model_Quad:
-            SrvActuator_QuadDrone_MotoMixControl(p_val);
-            break;
+    case Model_Quad:
+        SrvActuator_QuadDrone_MotoMixControl(p_val);
+        break;
 
-        default:
-            return;
+    default:
+        return;
     }
 
     SrvActuator_PipeData();
@@ -280,7 +280,6 @@ static void SrvActuator_MotoControl(uint16_t *p_val)
 
 static void SrvActuator_ServoControl(uint8_t index, uint16_t val)
 {
-
 }
 
 /* mast set spin direction when moto under halt statement */
@@ -390,26 +389,15 @@ static SrvActuator_Model_List SrvActuator_GetModel(void)
     return SrvActuator_Obj.model;
 }
 
-/* Drone Moto Mix Control Model */
-/* only check throttle_ch roll_ch pitch_ch yaw_ch */
-static bool SrvActuator_CheckInput_Range(uint16_t *rc_ctl)
-{
-    if((!SrvActuator_Obj.init) || (rc_ctl == NULL))
-        return false;
-
-
-    return true;
-}
-
 static void SrvActuator_PipeData(void)
 {
     DataPipe_DataObj(Actuator_Data).time_stamp = Get_CurrentRunningMs();
     DataPipe_DataObj(Actuator_Data).moto_cnt = SrvActuator_Obj.drive_module.num.moto_cnt;
     DataPipe_DataObj(Actuator_Data).servo_cnt = SrvActuator_Obj.drive_module.num.servo_cnt;
 
-    for(uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
+    for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
     {
-        if(i < SrvActuator_Obj.drive_module.num.moto_cnt)
+        if (i < SrvActuator_Obj.drive_module.num.moto_cnt)
         {
             DataPipe_DataObj(Actuator_Data).moto[i] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
             DataPipe_DataObj(Actuator_Data).moto_dir[i] = SrvActuator_Obj.drive_module.obj_list[i].spin_dir;
@@ -431,7 +419,7 @@ static void SrvActuator_PipeData(void)
  */
 static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl)
 {
-    if( (!SrvActuator_Obj.init) || 
+    if ((!SrvActuator_Obj.init) ||
         (rc_ctl == NULL))
         return false;
 
@@ -440,7 +428,7 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl)
     SrvActuator_Obj.drive_module.obj_list[2].ctl_val = rc_ctl[Actuator_CtlChannel_Throttle] - rc_ctl[Actuator_CtlChannel_Roll] + rc_ctl[Actuator_CtlChannel_Pitch] - rc_ctl[Actuator_CtlChannel_Yaw];
     SrvActuator_Obj.drive_module.obj_list[3].ctl_val = rc_ctl[Actuator_CtlChannel_Throttle] - rc_ctl[Actuator_CtlChannel_Roll] - rc_ctl[Actuator_CtlChannel_Pitch] + rc_ctl[Actuator_CtlChannel_Yaw];
 
-    for(uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
+    for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
         if (SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].min_val)
         {
@@ -451,14 +439,14 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl)
 
         switch (SrvActuator_Obj.drive_module.obj_list[i].drv_type)
         {
-            case Actuator_DevType_DShot150:
-            case Actuator_DevType_DShot300:
-            case Actuator_DevType_DShot600:
-                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
-                break;
+        case Actuator_DevType_DShot150:
+        case Actuator_DevType_DShot300:
+        case Actuator_DevType_DShot600:
+            DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
+            break;
 
-            default:
-                return;
+        default:
+            return;
         }
     }
 
