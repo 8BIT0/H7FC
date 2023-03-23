@@ -8,7 +8,6 @@
 #include "Srv_Actuator.h"
 #include "Srv_IMUSample.h"
 #include "Srv_Receiver.h"
-#include "system_cfg.h"
 
 #pragma pack(1)
 typedef union
