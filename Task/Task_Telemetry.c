@@ -391,6 +391,14 @@ static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
     return (uint16_t)percent;
 }
 
+static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal)
+{
+    if(gimbal)
+    {
+        
+    }
+}
+
 static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)
 {
     SrvReceiverData_TypeDef receiver_data;
