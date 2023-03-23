@@ -14,6 +14,8 @@
 
 #define SYSCALL_INTERRUPT_PRIORITY (MAX_SYSCALL_INTERRUPT_PRIORITY << 4)
 
+#define TCM_CODE __attribute__((section(".Fast_Mem_Section")))
+
 #define RECEIVER_PORT UART4
 #define RECEIVER_CRSF_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
 #define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_4

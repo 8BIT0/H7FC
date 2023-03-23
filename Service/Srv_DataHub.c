@@ -163,7 +163,7 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
 }
 
-static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
+TCM_CODE static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
 {
     if ((time_stamp == NULL) ||
         (acc_x == NULL) ||
@@ -197,7 +197,7 @@ reupdate_raw_imu:
     return true;
 }
 
-static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
+TCM_CODE static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
 {
     if ((time_stamp == NULL) ||
         (acc_x == NULL) ||
@@ -231,7 +231,7 @@ reupdate_scaled_imu:
     return true;
 }
 
-static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z)
+TCM_CODE static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z)
 {
     if ((time_stamp == NULL) ||
         (mag_x == NULL) ||
@@ -239,10 +239,22 @@ static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *ma
         (mag_z == NULL))
         return false;
 
+reupdate_raw_mag:
+    SrvDataHub_Monitor.inuse_reg.bit.raw_mag = true;
+
+    *time_stamp = SrvDataHub_Monitor.data.mag_update_time;
+    *scale = SrvDataHub_Monitor.data.mag_scale;
+    *mag_x = SrvDataHub_Monitor.data.org_mag_x;
+    *mag_y = SrvDataHub_Monitor.data.org_mag_y;
+    *mag_z = SrvDataHub_Monitor.data.org_mag_z;
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.raw_mag)
+        goto reupdate_raw_mag;
+
     return true;
 }
 
-static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z)
+TCM_CODE static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z)
 {
     if ((time_stamp == NULL) ||
         (mag_x == NULL) ||
@@ -250,10 +262,22 @@ static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float 
         (mag_z == NULL))
         return false;
 
+reupdate_scaled_mag:
+    SrvDataHub_Monitor.inuse_reg.bit.scaled_mag = true;
+
+    *time_stamp = SrvDataHub_Monitor.data.mag_update_time;
+    *scale = SrvDataHub_Monitor.data.mag_scale;
+    *mag_x = SrvDataHub_Monitor.data.flt_mag_x;
+    *mag_y = SrvDataHub_Monitor.data.flt_mag_y;
+    *mag_z = SrvDataHub_Monitor.data.flt_mag_z;
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_mag)
+        goto reupdate_scaled_mag;
+
     return true;
 }
 
-static bool SrvDataHub_Get_Arm(bool *arm)
+TCM_CODE static bool SrvDataHub_Get_Arm(bool *arm)
 {
     if (arm == NULL)
         return false;
@@ -270,7 +294,7 @@ reupdate_arm:
     return true;
 }
 
-static bool SrvDataHub_Get_Failsafe(bool *failsafe)
+TCM_CODE static bool SrvDataHub_Get_Failsafe(bool *failsafe)
 {
     if (failsafe == NULL)
         return false;
@@ -287,7 +311,7 @@ reupdate_failsafe:
     return true;
 }
 
-static bool SrvDataHub_Get_ControlMode(uint8_t *mode)
+TCM_CODE static bool SrvDataHub_Get_ControlMode(uint8_t *mode)
 {
     if (mode == NULL)
         return false;
@@ -304,7 +328,7 @@ reupdate_control_mode:
     return true;
 }
 
-static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_sum)
+TCM_CODE static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_sum)
 {
     if ((time_stamp == NULL) || (ch == NULL) || (ch_sum == NULL))
         return false;
@@ -327,7 +351,7 @@ reupdate_rc_channel:
     return true;
 }
 
-static bool SrvDataHub_Get_Gimbal(uint16_t *gimbal)
+TCM_CODE static bool SrvDataHub_Get_Gimbal(uint16_t *gimbal)
 {
     if (gimbal == NULL)
         return false;
@@ -348,7 +372,7 @@ reupdate_gimbal:
     return true;
 }
 
-static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir)
+TCM_CODE static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir)
 {
     if ((cnt == NULL) || (moto_ch == NULL))
         return false;
@@ -373,7 +397,7 @@ reupdate_moto_channel:
     return true;
 }
 
-static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir)
+TCM_CODE static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir)
 {
     if ((cnt == NULL) || (servo_ch == NULL) || (servo_dir == NULL))
         return false;
