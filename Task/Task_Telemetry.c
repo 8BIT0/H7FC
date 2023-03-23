@@ -216,6 +216,8 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     channel_set->channel_ptr = data_obj;
     channel_set->max = max_range;
     channel_set->min = min_range;
+    channel_set->center_deadzone_scope = 0;
+    channel_set->enable_deadzone = false;
 
     switch (tag)
     {
@@ -349,6 +351,22 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
     return toggle_val;
 }
 
+static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope)
+{
+    Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
+
+    if(gimbal)
+    {
+        gimbal_channel = gimbal->combo_list.data;
+
+        if(gimbal_channel)
+        {
+            gimbal_channel->center_deadzone_scope = scope;
+            gimbal_channel->enable_deadzone = true;
+        }
+    }
+}
+
 static uint16_t Telemetry_Check_Gimbal(Telemetry_RCFuncMap_TypeDef *gimbal)
 {
     Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
@@ -384,19 +402,16 @@ static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
     if((gimbal_channel == NULL) || (gimbal_channel->min >= gimbal_channel->max))
         return 0;
 
+    if(gimbal_channel->enable_deadzone)
+    {
+        /* do it tomorrow */
+    }
+
     gimbal_range = gimbal_channel->max - gimbal_channel->min;
     percent = (float)(*gimbal_channel->channel_ptr - gimbal_channel->min) / gimbal_range;
     percent *= 100;
 
     return (uint16_t)percent;
-}
-
-static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope)
-{
-    if(gimbal)
-    {
-
-    }
 }
 
 static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj)

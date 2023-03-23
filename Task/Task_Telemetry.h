@@ -76,6 +76,7 @@ typedef struct
     uint16_t center_deadzone_scope;
 
     uint16_t min;
+    uint16_t mid;
     uint16_t max;
     uint16_t *channel_ptr;
     uint16_t reg; 
