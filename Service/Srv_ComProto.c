@@ -89,8 +89,15 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
         msg->pack_callback = SrvComProto_MavMsg_Raw_IMU;
         break;
 
+    case MAV_CompoID_MotoCtl:
+        break;
+
+    case MAV_CompoID_ServoCtl:
+        break;
+
     default:
         MMU_Free(msg->msg_obj);
+        msg->lock_proto = false;
         return false;
     }
 
