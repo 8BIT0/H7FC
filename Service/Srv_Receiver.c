@@ -356,7 +356,6 @@ static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
     /* update frequence less than 10hz switch into failsafe */
     if ((Get_CurrentRunningMs() - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
     {
-        receiver_obj->data.failsafe = true;
         return false;
     }
 
