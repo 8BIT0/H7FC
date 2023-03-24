@@ -433,6 +433,9 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
         (pid_ctl == NULL))
         return false;
 
+    if (pid_ctl[Actuator_CtlChannel_Throttle] >= SRV_ACTUATOR_MAX_THROTTLE_PERCENT)
+        pid_ctl[Actuator_CtlChannel_Throttle] = SRV_ACTUATOR_MAX_THROTTLE_PERCENT;
+
     throttle_base_percent = pid_ctl[Actuator_CtlChannel_Throttle] / 100.0f;
 
     for (uint8_t i = 0; i < 4; i++)

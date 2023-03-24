@@ -154,6 +154,8 @@
         5, 2, 3                             \
     }
 
+#define SRV_ACTUATOR_MAX_THROTTLE_PERCENT 80
+
 typedef enum
 {
     Model_Quad = 0,
@@ -196,7 +198,7 @@ typedef enum
     Actuator_DevType_DShot300 = DevDshot_300,
     Actuator_DevType_DShot600 = DevDshot_600,
     Actuator_DevType_ServoPWM,
-}SrvActuator_DevType_List;
+} SrvActuator_DevType_List;
 
 typedef enum
 {
@@ -204,7 +206,7 @@ typedef enum
     Actuator_CtlChannel_Roll,
     Actuator_CtlChannel_Pitch,
     Actuator_CtlChannel_Yaw,
-}SrvActuator_ChannelControl_List;
+} SrvActuator_ChannelControl_List;
 
 #pragma pack(1)
 typedef struct
@@ -264,7 +266,7 @@ typedef struct
 
     uint8_t moto_dir[8];
     uint8_t servo_dir[8];
-}SrvActuatorPipeData_TypeDef;
+} SrvActuatorPipeData_TypeDef;
 #pragma pak()
 
 typedef struct
