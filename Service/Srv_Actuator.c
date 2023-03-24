@@ -416,17 +416,38 @@ static void SrvActuator_PipeData(void)
  * X axis -> Roll
  * Y axis -> Pitch
  * Z axis -> Yaw
+ *
+ * M1    M2
+ *   \  /
+ *    \/
+ *    /\
+ *   /  \
+ * M3    M4
+ *
  */
-static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl)
+static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
 {
+    uint16_t ctl_val[4] = {0};
+    float throttle_base_percent = 0.0f;
+
     if ((!SrvActuator_Obj.init) ||
-        (rc_ctl == NULL))
+        (pid_ctl == NULL))
         return false;
 
-    SrvActuator_Obj.drive_module.obj_list[0].ctl_val = rc_ctl[Actuator_CtlChannel_Throttle] + rc_ctl[Actuator_CtlChannel_Roll] - rc_ctl[Actuator_CtlChannel_Pitch] - rc_ctl[Actuator_CtlChannel_Yaw];
-    SrvActuator_Obj.drive_module.obj_list[1].ctl_val = rc_ctl[Actuator_CtlChannel_Throttle] + rc_ctl[Actuator_CtlChannel_Roll] + rc_ctl[Actuator_CtlChannel_Pitch] + rc_ctl[Actuator_CtlChannel_Yaw];
-    SrvActuator_Obj.drive_module.obj_list[2].ctl_val = rc_ctl[Actuator_CtlChannel_Throttle] - rc_ctl[Actuator_CtlChannel_Roll] + rc_ctl[Actuator_CtlChannel_Pitch] - rc_ctl[Actuator_CtlChannel_Yaw];
-    SrvActuator_Obj.drive_module.obj_list[3].ctl_val = rc_ctl[Actuator_CtlChannel_Throttle] - rc_ctl[Actuator_CtlChannel_Roll] - rc_ctl[Actuator_CtlChannel_Pitch] + rc_ctl[Actuator_CtlChannel_Yaw];
+    throttle_base_percent = pid_ctl[0] / 100.0f;
+
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        SrvActuator_Obj.drive_module.obj_list[i].ctl_val = (SrvActuator_Obj.drive_module.obj_list[i].max_val -
+                                                            SrvActuator_Obj.drive_module.obj_list[i].min_val) *
+                                                               throttle_base_percent +
+                                                           SrvActuator_Obj.drive_module.obj_list[i].min_val;
+    }
+
+    SrvActuator_Obj.drive_module.obj_list[0].ctl_val += ctl_val[Actuator_CtlChannel_Roll] - ctl_val[Actuator_CtlChannel_Pitch] - ctl_val[Actuator_CtlChannel_Yaw];
+    SrvActuator_Obj.drive_module.obj_list[1].ctl_val += ctl_val[Actuator_CtlChannel_Roll] + ctl_val[Actuator_CtlChannel_Pitch] + ctl_val[Actuator_CtlChannel_Yaw];
+    SrvActuator_Obj.drive_module.obj_list[2].ctl_val -= ctl_val[Actuator_CtlChannel_Roll] + ctl_val[Actuator_CtlChannel_Pitch] - ctl_val[Actuator_CtlChannel_Yaw];
+    SrvActuator_Obj.drive_module.obj_list[3].ctl_val -= ctl_val[Actuator_CtlChannel_Roll] - ctl_val[Actuator_CtlChannel_Pitch] + ctl_val[Actuator_CtlChannel_Yaw];
 
     for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
