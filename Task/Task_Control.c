@@ -56,7 +56,7 @@ void TaskControl_Core(Task_Handle hdl)
     float gyr_y = 0.0f;
     float gyr_z = 0.0f;
 
-    if (TaskControl_Monitor.init_state || TaskControl_Monitor.control_abort)
+    if (TaskControl_Monitor.init_state || !TaskControl_Monitor.control_abort)
     {
         // check imu filter gyro data update or not
         SrvDataHub.get_scaled_imu(&imu_update_time,
@@ -93,32 +93,43 @@ void TaskControl_Core(Task_Handle hdl)
         {
             if (!failsafe)
             {
-                TaskControl_Monitor.RC_Rt = rc_update_time;
+                if (rc_update_time >= TaskControl_Monitor.RC_Rt)
+                {
+                    TaskControl_Monitor.RC_Rt = rc_update_time;
+                }
+                else
+                {
+                    TaskControl_Monitor.auto_control = true;
+
+                    goto lock_moto;
+                }
 
                 if (arm_state != TELEMETRY_SET_DISARM)
-                {
-                    SrvActuator.lock();
-                    return;
-                }
+                    goto lock_moto;
             }
             else
             {
                 // do drone return to liftoff spot or do auto control
                 TaskControl_Monitor.auto_control = true;
 
-                /* currently for test for safety */
-                SrvActuator.lock();
-                return;
+                /* currently moto for safety */
+                goto lock_moto;
             }
-
-            // do drone control algorithm down below
-
-            // currently use gimbal input percent val for moto testing
-            SrvActuator.moto_control(gimbal);
         }
         else
-            SrvActuator.lock();
+        {
+            // do drone return to liftoff spot or do auto control
+            TaskControl_Monitor.auto_control = true;
+
+            /* currently moto for safety */
+            goto lock_moto;
+        }
+        // do drone control algorithm down below
+
+        // currently use gimbal input percent val for moto testing
+        SrvActuator.moto_control(gimbal);
     }
-    else
-        SrvActuator.lock();
+
+lock_moto:
+    SrvActuator.lock();
 }
