@@ -49,6 +49,7 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t mid_val, uint16_t max_range);
 static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
+static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
 
 void TaskTelemetry_Set_DataIO_Enable(bool state)
 {
@@ -83,6 +84,11 @@ void TaskTelemetry_Init(void)
                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.OSD_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MIN + 100))
             {
                 RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
+
+                /* set gimbal center dead zone */
+                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Pitch], 50);
+                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Roll], 50);
+                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Yaw], 50);
 
                 /* set datapipe */
                 memset(&Receiver_Smp_DataPipe, 0, sizeof(Receiver_Smp_DataPipe));
