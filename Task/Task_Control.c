@@ -127,6 +127,10 @@ void TaskControl_Core(Task_Handle hdl)
         // do drone control algorithm down below
 
         // currently use gimbal input percent val for moto testing
+        gimbal[1] = 0;
+        gimbal[2] = 0;
+        gimbal[3] = 0;
+
         SrvActuator.moto_control(gimbal);
     }
 
