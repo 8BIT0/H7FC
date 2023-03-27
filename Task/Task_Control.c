@@ -93,16 +93,14 @@ void TaskControl_Core(Task_Handle hdl)
         {
             if (!failsafe)
             {
-                if (rc_update_time >= TaskControl_Monitor.RC_Rt)
-                {
-                    TaskControl_Monitor.RC_Rt = rc_update_time;
-                }
-                else
+                if (rc_update_time < TaskControl_Monitor.RC_Rt)
                 {
                     TaskControl_Monitor.auto_control = true;
 
                     goto lock_moto;
                 }
+
+                TaskControl_Monitor.RC_Rt = rc_update_time;
 
                 if (arm_state != TELEMETRY_SET_DISARM)
                     goto lock_moto;
