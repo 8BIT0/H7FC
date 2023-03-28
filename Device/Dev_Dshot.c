@@ -60,7 +60,7 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
 
 static uint16_t DevDshot_Prepare_Packet(const uint16_t value, int8_t requestTelemetry)
 {
-    volatile uint16_t packet = (value << 1) | (requestTelemetry ? 1 : 0);
+    uint16_t packet = (value << 1) | (requestTelemetry ? 1 : 0);
 
     // compute checksum
     int csum = 0;
