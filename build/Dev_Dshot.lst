@@ -1,0 +1,890 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Dev_Dshot.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.DevDshot_GetType_Clock,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	DevDshot_GetType_Clock:
+  25              	.LVL0:
+  26              	.LFB144:
+  27              		.file 1 "Device/Dev_Dshot.c"
+   1:Device/Dev_Dshot.c **** #include "Dev_Dshot.h"
+   2:Device/Dev_Dshot.c **** #include <math.h>
+   3:Device/Dev_Dshot.c **** 
+   4:Device/Dev_Dshot.c **** /* external function */
+   5:Device/Dev_Dshot.c **** static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, BspGPIO_Obj_TypeD
+   6:Device/Dev_Dshot.c **** static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value);
+   7:Device/Dev_Dshot.c **** static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd);
+   8:Device/Dev_Dshot.c **** 
+   9:Device/Dev_Dshot.c **** DevDshot_TypeDef DevDshot = {
+  10:Device/Dev_Dshot.c ****     .init = DevDshot_Init,
+  11:Device/Dev_Dshot.c ****     .command = DevDshot_Command,
+  12:Device/Dev_Dshot.c ****     .control = DevDshot_Control,
+  13:Device/Dev_Dshot.c **** };
+  14:Device/Dev_Dshot.c **** 
+  15:Device/Dev_Dshot.c **** static uint32_t DevDshot_GetType_Clock(DevDshotType_List type)
+  16:Device/Dev_Dshot.c **** {
+  28              		.loc 1 16 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  17:Device/Dev_Dshot.c ****     switch (type)
+  33              		.loc 1 17 5 view .LVU1
+  34 0000 0228     		cmp	r0, #2
+  35 0002 07D0     		beq	.L3
+  36 0004 0328     		cmp	r0, #3
+  37 0006 07D0     		beq	.L4
+  38 0008 0128     		cmp	r0, #1
+  39 000a 01D0     		beq	.L6
+  18:Device/Dev_Dshot.c ****     {
+  19:Device/Dev_Dshot.c ****     case DevDshot_150:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 2
+
+
+  20:Device/Dev_Dshot.c ****         return DSHOT150_CLK_HZ;
+  21:Device/Dev_Dshot.c **** 
+  22:Device/Dev_Dshot.c ****     case DevDshot_300:
+  23:Device/Dev_Dshot.c ****         return DSHOT300_CLK_HZ;
+  24:Device/Dev_Dshot.c **** 
+  25:Device/Dev_Dshot.c ****     case DevDshot_600:
+  26:Device/Dev_Dshot.c ****         return DSHOT600_CLK_HZ;
+  27:Device/Dev_Dshot.c **** 
+  28:Device/Dev_Dshot.c ****     default:
+  29:Device/Dev_Dshot.c ****         return DSHOT300_CLK_HZ;
+  40              		.loc 1 29 16 is_stmt 0 view .LVU2
+  41 000c 0348     		ldr	r0, .L7
+  42              	.LVL1:
+  30:Device/Dev_Dshot.c ****     }
+  31:Device/Dev_Dshot.c **** }
+  43              		.loc 1 31 1 view .LVU3
+  44 000e 7047     		bx	lr
+  45              	.LVL2:
+  46              	.L6:
+  17:Device/Dev_Dshot.c ****     {
+  47              		.loc 1 17 5 view .LVU4
+  48 0010 0348     		ldr	r0, .L7+4
+  49              	.LVL3:
+  17:Device/Dev_Dshot.c ****     {
+  50              		.loc 1 17 5 view .LVU5
+  51 0012 7047     		bx	lr
+  52              	.LVL4:
+  53              	.L3:
+  23:Device/Dev_Dshot.c **** 
+  54              		.loc 1 23 16 view .LVU6
+  55 0014 0148     		ldr	r0, .L7
+  56              	.LVL5:
+  23:Device/Dev_Dshot.c **** 
+  57              		.loc 1 23 16 view .LVU7
+  58 0016 7047     		bx	lr
+  59              	.LVL6:
+  60              	.L4:
+  26:Device/Dev_Dshot.c **** 
+  61              		.loc 1 26 16 view .LVU8
+  62 0018 0248     		ldr	r0, .L7+8
+  63              	.LVL7:
+  26:Device/Dev_Dshot.c **** 
+  64              		.loc 1 26 16 view .LVU9
+  65 001a 7047     		bx	lr
+  66              	.L8:
+  67              		.align	2
+  68              	.L7:
+  69 001c 808D5B00 		.word	6000000
+  70 0020 C0C62D00 		.word	3000000
+  71 0024 001BB700 		.word	12000000
+  72              		.cfi_endproc
+  73              	.LFE144:
+  75              		.section	.text.DevDshot_Prepare_Packet,"ax",%progbits
+  76              		.align	1
+  77              		.syntax unified
+  78              		.thumb
+  79              		.thumb_func
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 3
+
+
+  80              		.fpu fpv5-d16
+  82              	DevDshot_Prepare_Packet:
+  83              	.LVL8:
+  84              	.LFB146:
+  32:Device/Dev_Dshot.c **** 
+  33:Device/Dev_Dshot.c **** static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
+  34:Device/Dev_Dshot.c ****                           void *timer_ins,
+  35:Device/Dev_Dshot.c ****                           uint32_t ch,
+  36:Device/Dev_Dshot.c ****                           BspGPIO_Obj_TypeDef pin,
+  37:Device/Dev_Dshot.c ****                           uint8_t dma,
+  38:Device/Dev_Dshot.c ****                           uint8_t stream)
+  39:Device/Dev_Dshot.c **** {
+  40:Device/Dev_Dshot.c ****     uint32_t prescaler = lrintf((float)DSHOT_TIMER_CLK_HZ / DevDshot_GetType_Clock(obj->type) + 0.0
+  41:Device/Dev_Dshot.c **** 
+  42:Device/Dev_Dshot.c ****     if (!obj)
+  43:Device/Dev_Dshot.c ****         return false;
+  44:Device/Dev_Dshot.c **** 
+  45:Device/Dev_Dshot.c ****     if ((obj->type < DevDshot_150) || (obj->type > DevDshot_600))
+  46:Device/Dev_Dshot.c ****     {
+  47:Device/Dev_Dshot.c ****         obj->type = DevDshot_300;
+  48:Device/Dev_Dshot.c ****     }
+  49:Device/Dev_Dshot.c **** 
+  50:Device/Dev_Dshot.c ****     if (!BspTimer_PWM.init(&obj->pwm_obj, timer_ins, ch, pin, dma, stream, (uint32_t)obj->ctl_buf, 
+  51:Device/Dev_Dshot.c ****         return false;
+  52:Device/Dev_Dshot.c **** 
+  53:Device/Dev_Dshot.c ****     BspTimer_PWM.set_prescaler(&obj->pwm_obj, prescaler);
+  54:Device/Dev_Dshot.c ****     BspTimer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
+  55:Device/Dev_Dshot.c **** 
+  56:Device/Dev_Dshot.c ****     BspTimer_PWM.start_pwm(&obj->pwm_obj);
+  57:Device/Dev_Dshot.c **** 
+  58:Device/Dev_Dshot.c ****     return true;
+  59:Device/Dev_Dshot.c **** }
+  60:Device/Dev_Dshot.c **** 
+  61:Device/Dev_Dshot.c **** static uint16_t DevDshot_Prepare_Packet(const uint16_t value, int8_t requestTelemetry)
+  62:Device/Dev_Dshot.c **** {
+  85              		.loc 1 62 1 is_stmt 1 view -0
+  86              		.cfi_startproc
+  87              		@ args = 0, pretend = 0, frame = 8
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+  89              		@ link register save eliminated.
+  90              		.loc 1 62 1 is_stmt 0 view .LVU11
+  91 0000 82B0     		sub	sp, sp, #8
+  92              	.LCFI0:
+  93              		.cfi_def_cfa_offset 8
+  63:Device/Dev_Dshot.c ****     volatile uint16_t packet = (value << 1) | (requestTelemetry ? 1 : 0);
+  94              		.loc 1 63 5 is_stmt 1 view .LVU12
+  95              		.loc 1 63 69 is_stmt 0 view .LVU13
+  96 0002 0039     		subs	r1, r1, #0
+  97              	.LVL9:
+  98              		.loc 1 63 69 view .LVU14
+  99 0004 18BF     		it	ne
+ 100 0006 0121     		movne	r1, #1
+ 101              		.loc 1 63 45 view .LVU15
+ 102 0008 41EA4001 		orr	r1, r1, r0, lsl #1
+ 103 000c 89B2     		uxth	r1, r1
+ 104              		.loc 1 63 23 view .LVU16
+ 105 000e ADF80610 		strh	r1, [sp, #6]	@ movhi
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 4
+
+
+  64:Device/Dev_Dshot.c **** 
+  65:Device/Dev_Dshot.c ****     // compute checksum
+  66:Device/Dev_Dshot.c ****     int csum = 0;
+ 106              		.loc 1 66 5 is_stmt 1 view .LVU17
+ 107              	.LVL10:
+  67:Device/Dev_Dshot.c ****     int csum_data = packet;
+ 108              		.loc 1 67 5 view .LVU18
+ 109              		.loc 1 67 9 is_stmt 0 view .LVU19
+ 110 0012 BDF80610 		ldrh	r1, [sp, #6]
+ 111 0016 89B2     		uxth	r1, r1
+ 112              	.LVL11:
+  68:Device/Dev_Dshot.c ****     for (int i = 0; i < 3; i++)
+ 113              		.loc 1 68 5 is_stmt 1 view .LVU20
+ 114              	.LBB2:
+ 115              		.loc 1 68 10 view .LVU21
+ 116              		.loc 1 68 14 is_stmt 0 view .LVU22
+ 117 0018 0022     		movs	r2, #0
+ 118              	.LBE2:
+  66:Device/Dev_Dshot.c ****     int csum_data = packet;
+ 119              		.loc 1 66 9 view .LVU23
+ 120 001a 1346     		mov	r3, r2
+ 121              	.LBB3:
+ 122              		.loc 1 68 5 view .LVU24
+ 123 001c 02E0     		b	.L10
+ 124              	.LVL12:
+ 125              	.L11:
+  69:Device/Dev_Dshot.c ****     {
+  70:Device/Dev_Dshot.c ****         csum ^= csum_data; // xor data by nibbles
+ 126              		.loc 1 70 9 is_stmt 1 discriminator 3 view .LVU25
+ 127              		.loc 1 70 14 is_stmt 0 discriminator 3 view .LVU26
+ 128 001e 4B40     		eors	r3, r3, r1
+ 129              	.LVL13:
+  71:Device/Dev_Dshot.c ****         csum_data >>= 4;
+ 130              		.loc 1 71 9 is_stmt 1 discriminator 3 view .LVU27
+ 131              		.loc 1 71 19 is_stmt 0 discriminator 3 view .LVU28
+ 132 0020 0911     		asrs	r1, r1, #4
+ 133              	.LVL14:
+  68:Device/Dev_Dshot.c ****     {
+ 134              		.loc 1 68 28 is_stmt 1 discriminator 3 view .LVU29
+  68:Device/Dev_Dshot.c ****     {
+ 135              		.loc 1 68 29 is_stmt 0 discriminator 3 view .LVU30
+ 136 0022 0132     		adds	r2, r2, #1
+ 137              	.LVL15:
+ 138              	.L10:
+  68:Device/Dev_Dshot.c ****     {
+ 139              		.loc 1 68 21 is_stmt 1 discriminator 1 view .LVU31
+  68:Device/Dev_Dshot.c ****     {
+ 140              		.loc 1 68 5 is_stmt 0 discriminator 1 view .LVU32
+ 141 0024 022A     		cmp	r2, #2
+ 142 0026 FADD     		ble	.L11
+  68:Device/Dev_Dshot.c ****     {
+ 143              		.loc 1 68 5 discriminator 1 view .LVU33
+ 144              	.LBE3:
+  72:Device/Dev_Dshot.c ****     }
+  73:Device/Dev_Dshot.c **** 
+  74:Device/Dev_Dshot.c ****     csum &= 0xf;
+ 145              		.loc 1 74 5 is_stmt 1 view .LVU34
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 5
+
+
+ 146              		.loc 1 74 10 is_stmt 0 view .LVU35
+ 147 0028 03F00F03 		and	r3, r3, #15
+ 148              	.LVL16:
+  75:Device/Dev_Dshot.c ****     // append checksum
+  76:Device/Dev_Dshot.c ****     packet = (packet << 4) | csum;
+ 149              		.loc 1 76 5 is_stmt 1 view .LVU36
+ 150              		.loc 1 76 22 is_stmt 0 view .LVU37
+ 151 002c BDF80620 		ldrh	r2, [sp, #6]
+ 152              	.LVL17:
+ 153              		.loc 1 76 22 view .LVU38
+ 154 0030 92B2     		uxth	r2, r2
+ 155              		.loc 1 76 28 view .LVU39
+ 156 0032 43EA0213 		orr	r3, r3, r2, lsl #4
+ 157              	.LVL18:
+ 158              		.loc 1 76 28 view .LVU40
+ 159 0036 9BB2     		uxth	r3, r3
+ 160              		.loc 1 76 12 view .LVU41
+ 161 0038 ADF80630 		strh	r3, [sp, #6]	@ movhi
+  77:Device/Dev_Dshot.c ****     return packet;
+ 162              		.loc 1 77 5 is_stmt 1 view .LVU42
+ 163              		.loc 1 77 12 is_stmt 0 view .LVU43
+ 164 003c BDF80600 		ldrh	r0, [sp, #6]
+ 165              	.LVL19:
+  78:Device/Dev_Dshot.c **** }
+ 166              		.loc 1 78 1 view .LVU44
+ 167 0040 80B2     		uxth	r0, r0
+ 168 0042 02B0     		add	sp, sp, #8
+ 169              	.LCFI1:
+ 170              		.cfi_def_cfa_offset 0
+ 171              		@ sp needed
+ 172 0044 7047     		bx	lr
+ 173              		.cfi_endproc
+ 174              	.LFE146:
+ 176              		.section	.text.DevDshot_Control,"ax",%progbits
+ 177              		.align	1
+ 178              		.syntax unified
+ 179              		.thumb
+ 180              		.thumb_func
+ 181              		.fpu fpv5-d16
+ 183              	DevDshot_Control:
+ 184              	.LVL20:
+ 185              	.LFB147:
+  79:Device/Dev_Dshot.c **** 
+  80:Device/Dev_Dshot.c **** static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
+  81:Device/Dev_Dshot.c **** {
+ 186              		.loc 1 81 1 is_stmt 1 view -0
+ 187              		.cfi_startproc
+ 188              		@ args = 0, pretend = 0, frame = 0
+ 189              		@ frame_needed = 0, uses_anonymous_args = 0
+  82:Device/Dev_Dshot.c ****     uint16_t packet;
+ 190              		.loc 1 82 5 view .LVU46
+  83:Device/Dev_Dshot.c ****     bool dshot_telemetry = false;
+ 191              		.loc 1 83 5 view .LVU47
+  84:Device/Dev_Dshot.c **** 
+  85:Device/Dev_Dshot.c ****     if (!obj)
+ 192              		.loc 1 85 5 view .LVU48
+ 193              		.loc 1 85 8 is_stmt 0 view .LVU49
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 6
+
+
+ 194 0000 98B3     		cbz	r0, .L23
+  81:Device/Dev_Dshot.c ****     uint16_t packet;
+ 195              		.loc 1 81 1 view .LVU50
+ 196 0002 10B5     		push	{r4, lr}
+ 197              	.LCFI2:
+ 198              		.cfi_def_cfa_offset 8
+ 199              		.cfi_offset 4, -8
+ 200              		.cfi_offset 14, -4
+ 201 0004 0B46     		mov	r3, r1
+ 202 0006 0446     		mov	r4, r0
+  86:Device/Dev_Dshot.c ****         return;
+  87:Device/Dev_Dshot.c **** 
+  88:Device/Dev_Dshot.c ****     if (value > DSHOT_MAX_THROTTLE)
+ 203              		.loc 1 88 5 is_stmt 1 view .LVU51
+ 204              		.loc 1 88 8 is_stmt 0 view .LVU52
+ 205 0008 40F26C72 		movw	r2, #1900
+ 206 000c 9142     		cmp	r1, r2
+ 207 000e 03D8     		bhi	.L19
+  89:Device/Dev_Dshot.c ****         value = DSHOT_MAX_THROTTLE;
+  90:Device/Dev_Dshot.c **** 
+  91:Device/Dev_Dshot.c ****     if (value < DSHOT_MIN_THROTTLE)
+ 208              		.loc 1 91 5 is_stmt 1 view .LVU53
+ 209              		.loc 1 91 8 is_stmt 0 view .LVU54
+ 210 0010 2F29     		cmp	r1, #47
+ 211 0012 03D8     		bhi	.L15
+  92:Device/Dev_Dshot.c ****         value = DSHOT_LOCK_THROTTLE;
+ 212              		.loc 1 92 15 view .LVU55
+ 213 0014 0023     		movs	r3, #0
+ 214 0016 01E0     		b	.L15
+ 215              	.L19:
+  89:Device/Dev_Dshot.c ****         value = DSHOT_MAX_THROTTLE;
+ 216              		.loc 1 89 15 view .LVU56
+ 217 0018 40F26C73 		movw	r3, #1900
+ 218              	.L15:
+ 219              	.LVL21:
+  93:Device/Dev_Dshot.c **** 
+  94:Device/Dev_Dshot.c ****     packet = DevDshot_Prepare_Packet(value, dshot_telemetry);
+ 220              		.loc 1 94 5 is_stmt 1 view .LVU57
+ 221              		.loc 1 94 14 is_stmt 0 view .LVU58
+ 222 001c 0021     		movs	r1, #0
+ 223 001e 1846     		mov	r0, r3
+ 224              	.LVL22:
+ 225              		.loc 1 94 14 view .LVU59
+ 226 0020 FFF7FEFF 		bl	DevDshot_Prepare_Packet
+ 227              	.LVL23:
+  95:Device/Dev_Dshot.c **** 
+  96:Device/Dev_Dshot.c ****     for (int i = 0; i < 16; i++)
+ 228              		.loc 1 96 5 is_stmt 1 view .LVU60
+ 229              	.LBB4:
+ 230              		.loc 1 96 10 view .LVU61
+ 231              		.loc 1 96 14 is_stmt 0 view .LVU62
+ 232 0024 0023     		movs	r3, #0
+ 233              		.loc 1 96 5 view .LVU63
+ 234 0026 08E0     		b	.L16
+ 235              	.LVL24:
+ 236              	.L27:
+  97:Device/Dev_Dshot.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 7
+
+
+  98:Device/Dev_Dshot.c ****         obj->ctl_buf[i] = (packet & 0x8000) ? MOTOR_BIT_1 : MOTOR_BIT_0;
+ 237              		.loc 1 98 59 view .LVU64
+ 238 0028 0E21     		movs	r1, #14
+ 239              	.L17:
+ 240              		.loc 1 98 25 discriminator 4 view .LVU65
+ 241 002a 03F13A02 		add	r2, r3, #58
+ 242 002e 04EB8202 		add	r2, r4, r2, lsl #2
+ 243 0032 5160     		str	r1, [r2, #4]
+  99:Device/Dev_Dshot.c ****         packet <<= 1;
+ 244              		.loc 1 99 9 is_stmt 1 discriminator 4 view .LVU66
+ 245              		.loc 1 99 16 is_stmt 0 discriminator 4 view .LVU67
+ 246 0034 4000     		lsls	r0, r0, #1
+ 247              	.LVL25:
+ 248              		.loc 1 99 16 discriminator 4 view .LVU68
+ 249 0036 80B2     		uxth	r0, r0
+ 250              	.LVL26:
+  96:Device/Dev_Dshot.c ****     {
+ 251              		.loc 1 96 29 is_stmt 1 discriminator 4 view .LVU69
+  96:Device/Dev_Dshot.c ****     {
+ 252              		.loc 1 96 30 is_stmt 0 discriminator 4 view .LVU70
+ 253 0038 0133     		adds	r3, r3, #1
+ 254              	.LVL27:
+ 255              	.L16:
+  96:Device/Dev_Dshot.c ****     {
+ 256              		.loc 1 96 21 is_stmt 1 discriminator 2 view .LVU71
+  96:Device/Dev_Dshot.c ****     {
+ 257              		.loc 1 96 5 is_stmt 0 discriminator 2 view .LVU72
+ 258 003a 0F2B     		cmp	r3, #15
+ 259 003c 04DC     		bgt	.L26
+  98:Device/Dev_Dshot.c ****         packet <<= 1;
+ 260              		.loc 1 98 9 is_stmt 1 view .LVU73
+  98:Device/Dev_Dshot.c ****         packet <<= 1;
+ 261              		.loc 1 98 59 is_stmt 0 view .LVU74
+ 262 003e 10F4004F 		tst	r0, #32768
+ 263 0042 F1D1     		bne	.L27
+ 264 0044 0721     		movs	r1, #7
+ 265 0046 F0E7     		b	.L17
+ 266              	.L26:
+ 267              	.LBE4:
+ 100:Device/Dev_Dshot.c ****     }
+ 101:Device/Dev_Dshot.c **** 
+ 102:Device/Dev_Dshot.c ****     obj->ctl_buf[16] = 0;
+ 268              		.loc 1 102 5 is_stmt 1 view .LVU75
+ 269              		.loc 1 102 22 is_stmt 0 view .LVU76
+ 270 0048 0023     		movs	r3, #0
+ 271              	.LVL28:
+ 272              		.loc 1 102 22 view .LVU77
+ 273 004a C4F82C31 		str	r3, [r4, #300]
+ 103:Device/Dev_Dshot.c ****     obj->ctl_buf[17] = 0;
+ 274              		.loc 1 103 5 is_stmt 1 view .LVU78
+ 275              		.loc 1 103 22 is_stmt 0 view .LVU79
+ 276 004e C4F83031 		str	r3, [r4, #304]
+ 104:Device/Dev_Dshot.c **** 
+ 105:Device/Dev_Dshot.c ****     obj->pwm_obj.buffer_addr = (uint32_t)obj->ctl_buf;
+ 277              		.loc 1 105 5 is_stmt 1 view .LVU80
+ 278              		.loc 1 105 42 is_stmt 0 view .LVU81
+ 279 0052 04F1EC03 		add	r3, r4, #236
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 8
+
+
+ 280              		.loc 1 105 30 view .LVU82
+ 281 0056 C4F8E430 		str	r3, [r4, #228]
+ 106:Device/Dev_Dshot.c ****     obj->pwm_obj.buffer_size = DSHOT_DMA_BUFFER_SIZE;
+ 282              		.loc 1 106 5 is_stmt 1 view .LVU83
+ 283              		.loc 1 106 30 is_stmt 0 view .LVU84
+ 284 005a 1223     		movs	r3, #18
+ 285 005c C4F8E830 		str	r3, [r4, #232]
+ 107:Device/Dev_Dshot.c **** 
+ 108:Device/Dev_Dshot.c ****     BspTimer_PWM.dma_trans(&obj->pwm_obj);
+ 286              		.loc 1 108 5 is_stmt 1 view .LVU85
+ 287              		.loc 1 108 17 is_stmt 0 view .LVU86
+ 288 0060 024B     		ldr	r3, .L28
+ 289 0062 1B69     		ldr	r3, [r3, #16]
+ 290              		.loc 1 108 5 view .LVU87
+ 291 0064 201D     		adds	r0, r4, #4
+ 292              	.LVL29:
+ 293              		.loc 1 108 5 view .LVU88
+ 294 0066 9847     		blx	r3
+ 295              	.LVL30:
+ 109:Device/Dev_Dshot.c **** }
+ 296              		.loc 1 109 1 view .LVU89
+ 297 0068 10BD     		pop	{r4, pc}
+ 298              	.LVL31:
+ 299              	.L23:
+ 300              	.LCFI3:
+ 301              		.cfi_def_cfa_offset 0
+ 302              		.cfi_restore 4
+ 303              		.cfi_restore 14
+ 304              		.loc 1 109 1 view .LVU90
+ 305 006a 7047     		bx	lr
+ 306              	.L29:
+ 307              		.align	2
+ 308              	.L28:
+ 309 006c 00000000 		.word	BspTimer_PWM
+ 310              		.cfi_endproc
+ 311              	.LFE147:
+ 313              		.section	.text.DevDshot_Command,"ax",%progbits
+ 314              		.align	1
+ 315              		.syntax unified
+ 316              		.thumb
+ 317              		.thumb_func
+ 318              		.fpu fpv5-d16
+ 320              	DevDshot_Command:
+ 321              	.LVL32:
+ 322              	.LFB148:
+ 110:Device/Dev_Dshot.c **** 
+ 111:Device/Dev_Dshot.c **** static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd)
+ 112:Device/Dev_Dshot.c **** {
+ 323              		.loc 1 112 1 is_stmt 1 view -0
+ 324              		.cfi_startproc
+ 325              		@ args = 0, pretend = 0, frame = 0
+ 326              		@ frame_needed = 0, uses_anonymous_args = 0
+ 113:Device/Dev_Dshot.c ****     uint16_t packet;
+ 327              		.loc 1 113 5 view .LVU92
+ 114:Device/Dev_Dshot.c ****     bool dshot_telemetry = false;
+ 328              		.loc 1 114 5 view .LVU93
+ 115:Device/Dev_Dshot.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 9
+
+
+ 116:Device/Dev_Dshot.c ****     if (!obj || cmd >= DSHOT_MIN_THROTTLE)
+ 329              		.loc 1 116 5 view .LVU94
+ 330              		.loc 1 116 21 is_stmt 0 view .LVU95
+ 331 0000 2F29     		cmp	r1, #47
+ 332 0002 94BF     		ite	ls
+ 333 0004 0022     		movls	r2, #0
+ 334 0006 0122     		movhi	r2, #1
+ 335              		.loc 1 116 14 view .LVU96
+ 336 0008 0028     		cmp	r0, #0
+ 337 000a 08BF     		it	eq
+ 338 000c 0122     		moveq	r2, #1
+ 339              		.loc 1 116 8 view .LVU97
+ 340 000e 02B1     		cbz	r2, .L40
+ 341 0010 7047     		bx	lr
+ 342              	.L40:
+ 112:Device/Dev_Dshot.c ****     uint16_t packet;
+ 343              		.loc 1 112 1 view .LVU98
+ 344 0012 10B5     		push	{r4, lr}
+ 345              	.LCFI4:
+ 346              		.cfi_def_cfa_offset 8
+ 347              		.cfi_offset 4, -8
+ 348              		.cfi_offset 14, -4
+ 349 0014 0B46     		mov	r3, r1
+ 350 0016 0446     		mov	r4, r0
+ 117:Device/Dev_Dshot.c ****         return;
+ 118:Device/Dev_Dshot.c **** 
+ 119:Device/Dev_Dshot.c ****     packet = DevDshot_Prepare_Packet(cmd, dshot_telemetry);
+ 351              		.loc 1 119 5 is_stmt 1 view .LVU99
+ 352              		.loc 1 119 14 is_stmt 0 view .LVU100
+ 353 0018 0021     		movs	r1, #0
+ 354              	.LVL33:
+ 355              		.loc 1 119 14 view .LVU101
+ 356 001a 1846     		mov	r0, r3
+ 357              	.LVL34:
+ 358              		.loc 1 119 14 view .LVU102
+ 359 001c FFF7FEFF 		bl	DevDshot_Prepare_Packet
+ 360              	.LVL35:
+ 120:Device/Dev_Dshot.c **** 
+ 121:Device/Dev_Dshot.c ****     for (int i = 0; i < 16; i++)
+ 361              		.loc 1 121 5 is_stmt 1 view .LVU103
+ 362              	.LBB5:
+ 363              		.loc 1 121 10 view .LVU104
+ 364              		.loc 1 121 14 is_stmt 0 view .LVU105
+ 365 0020 0023     		movs	r3, #0
+ 366              		.loc 1 121 5 view .LVU106
+ 367 0022 08E0     		b	.L32
+ 368              	.LVL36:
+ 369              	.L42:
+ 122:Device/Dev_Dshot.c ****     {
+ 123:Device/Dev_Dshot.c ****         obj->ctl_buf[i] = (packet & 0x8000) ? MOTOR_BIT_1 : MOTOR_BIT_0;
+ 370              		.loc 1 123 59 view .LVU107
+ 371 0024 0E21     		movs	r1, #14
+ 372              	.L33:
+ 373              		.loc 1 123 25 discriminator 4 view .LVU108
+ 374 0026 03F13A02 		add	r2, r3, #58
+ 375 002a 04EB8202 		add	r2, r4, r2, lsl #2
+ 376 002e 5160     		str	r1, [r2, #4]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 10
+
+
+ 124:Device/Dev_Dshot.c ****         packet <<= 1;
+ 377              		.loc 1 124 9 is_stmt 1 discriminator 4 view .LVU109
+ 378              		.loc 1 124 16 is_stmt 0 discriminator 4 view .LVU110
+ 379 0030 4000     		lsls	r0, r0, #1
+ 380              	.LVL37:
+ 381              		.loc 1 124 16 discriminator 4 view .LVU111
+ 382 0032 80B2     		uxth	r0, r0
+ 383              	.LVL38:
+ 121:Device/Dev_Dshot.c ****     {
+ 384              		.loc 1 121 29 is_stmt 1 discriminator 4 view .LVU112
+ 121:Device/Dev_Dshot.c ****     {
+ 385              		.loc 1 121 30 is_stmt 0 discriminator 4 view .LVU113
+ 386 0034 0133     		adds	r3, r3, #1
+ 387              	.LVL39:
+ 388              	.L32:
+ 121:Device/Dev_Dshot.c ****     {
+ 389              		.loc 1 121 21 is_stmt 1 discriminator 2 view .LVU114
+ 121:Device/Dev_Dshot.c ****     {
+ 390              		.loc 1 121 5 is_stmt 0 discriminator 2 view .LVU115
+ 391 0036 0F2B     		cmp	r3, #15
+ 392 0038 04DC     		bgt	.L41
+ 123:Device/Dev_Dshot.c ****         packet <<= 1;
+ 393              		.loc 1 123 9 is_stmt 1 view .LVU116
+ 123:Device/Dev_Dshot.c ****         packet <<= 1;
+ 394              		.loc 1 123 59 is_stmt 0 view .LVU117
+ 395 003a 10F4004F 		tst	r0, #32768
+ 396 003e F1D1     		bne	.L42
+ 397 0040 0721     		movs	r1, #7
+ 398 0042 F0E7     		b	.L33
+ 399              	.L41:
+ 400              	.LBE5:
+ 125:Device/Dev_Dshot.c ****     }
+ 126:Device/Dev_Dshot.c **** 
+ 127:Device/Dev_Dshot.c ****     obj->ctl_buf[16] = 0;
+ 401              		.loc 1 127 5 is_stmt 1 view .LVU118
+ 402              		.loc 1 127 22 is_stmt 0 view .LVU119
+ 403 0044 0023     		movs	r3, #0
+ 404              	.LVL40:
+ 405              		.loc 1 127 22 view .LVU120
+ 406 0046 C4F82C31 		str	r3, [r4, #300]
+ 128:Device/Dev_Dshot.c ****     obj->ctl_buf[17] = 0;
+ 407              		.loc 1 128 5 is_stmt 1 view .LVU121
+ 408              		.loc 1 128 22 is_stmt 0 view .LVU122
+ 409 004a C4F83031 		str	r3, [r4, #304]
+ 129:Device/Dev_Dshot.c **** 
+ 130:Device/Dev_Dshot.c ****     BspTimer_PWM.dma_trans(&obj->pwm_obj);
+ 410              		.loc 1 130 5 is_stmt 1 view .LVU123
+ 411              		.loc 1 130 17 is_stmt 0 view .LVU124
+ 412 004e 024B     		ldr	r3, .L43
+ 413 0050 1B69     		ldr	r3, [r3, #16]
+ 414              		.loc 1 130 5 view .LVU125
+ 415 0052 201D     		adds	r0, r4, #4
+ 416              	.LVL41:
+ 417              		.loc 1 130 5 view .LVU126
+ 418 0054 9847     		blx	r3
+ 419              	.LVL42:
+ 131:Device/Dev_Dshot.c **** }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 11
+
+
+ 420              		.loc 1 131 1 view .LVU127
+ 421 0056 10BD     		pop	{r4, pc}
+ 422              	.LVL43:
+ 423              	.L44:
+ 424              		.loc 1 131 1 view .LVU128
+ 425              		.align	2
+ 426              	.L43:
+ 427 0058 00000000 		.word	BspTimer_PWM
+ 428              		.cfi_endproc
+ 429              	.LFE148:
+ 431              		.section	.text.DevDshot_Init,"ax",%progbits
+ 432              		.align	1
+ 433              		.syntax unified
+ 434              		.thumb
+ 435              		.thumb_func
+ 436              		.fpu fpv5-d16
+ 438              	DevDshot_Init:
+ 439              	.LVL44:
+ 440              	.LFB145:
+  39:Device/Dev_Dshot.c ****     uint32_t prescaler = lrintf((float)DSHOT_TIMER_CLK_HZ / DevDshot_GetType_Clock(obj->type) + 0.0
+ 441              		.loc 1 39 1 is_stmt 1 view -0
+ 442              		.cfi_startproc
+ 443              		@ args = 24, pretend = 8, frame = 0
+ 444              		@ frame_needed = 0, uses_anonymous_args = 0
+  39:Device/Dev_Dshot.c ****     uint32_t prescaler = lrintf((float)DSHOT_TIMER_CLK_HZ / DevDshot_GetType_Clock(obj->type) + 0.0
+ 445              		.loc 1 39 1 is_stmt 0 view .LVU130
+ 446 0000 82B0     		sub	sp, sp, #8
+ 447              	.LCFI5:
+ 448              		.cfi_def_cfa_offset 8
+ 449 0002 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 450              	.LCFI6:
+ 451              		.cfi_def_cfa_offset 36
+ 452              		.cfi_offset 4, -36
+ 453              		.cfi_offset 5, -32
+ 454              		.cfi_offset 6, -28
+ 455              		.cfi_offset 7, -24
+ 456              		.cfi_offset 8, -20
+ 457              		.cfi_offset 9, -16
+ 458              		.cfi_offset 14, -12
+ 459 0006 87B0     		sub	sp, sp, #28
+ 460              	.LCFI7:
+ 461              		.cfi_def_cfa_offset 64
+ 462 0008 0446     		mov	r4, r0
+ 463 000a 0D46     		mov	r5, r1
+ 464 000c 1646     		mov	r6, r2
+ 465 000e 0F93     		str	r3, [sp, #60]
+  40:Device/Dev_Dshot.c **** 
+ 466              		.loc 1 40 5 is_stmt 1 view .LVU131
+  40:Device/Dev_Dshot.c **** 
+ 467              		.loc 1 40 61 is_stmt 0 view .LVU132
+ 468 0010 0078     		ldrb	r0, [r0]	@ zero_extendqisi2
+ 469              	.LVL45:
+  40:Device/Dev_Dshot.c **** 
+ 470              		.loc 1 40 61 view .LVU133
+ 471 0012 FFF7FEFF 		bl	DevDshot_GetType_Clock
+ 472              	.LVL46:
+  40:Device/Dev_Dshot.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 12
+
+
+ 473              		.loc 1 40 61 view .LVU134
+ 474 0016 07EE900A 		vmov	s15, r0	@ int
+  40:Device/Dev_Dshot.c **** 
+ 475              		.loc 1 40 59 view .LVU135
+ 476 001a F8EE677A 		vcvt.f32.u32	s15, s15
+ 477 001e 9FED217A 		vldr.32	s14, .L50
+ 478 0022 87EE270A 		vdiv.f32	s0, s14, s15
+  40:Device/Dev_Dshot.c **** 
+ 479              		.loc 1 40 26 view .LVU136
+ 480 0026 DFED207A 		vldr.32	s15, .L50+4
+ 481 002a 30EE270A 		vadd.f32	s0, s0, s15
+ 482 002e FFF7FEFF 		bl	lrintf
+ 483              	.LVL47:
+  42:Device/Dev_Dshot.c ****         return false;
+ 484              		.loc 1 42 5 is_stmt 1 view .LVU137
+  42:Device/Dev_Dshot.c ****         return false;
+ 485              		.loc 1 42 8 is_stmt 0 view .LVU138
+ 486 0032 002C     		cmp	r4, #0
+ 487 0034 33D0     		beq	.L48
+ 488 0036 471E     		subs	r7, r0, #1
+ 489              	.LVL48:
+  45:Device/Dev_Dshot.c ****     {
+ 490              		.loc 1 45 5 is_stmt 1 view .LVU139
+  45:Device/Dev_Dshot.c ****     {
+ 491              		.loc 1 45 13 is_stmt 0 view .LVU140
+ 492 0038 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+  45:Device/Dev_Dshot.c ****     {
+ 493              		.loc 1 45 36 view .LVU141
+ 494 003a 013B     		subs	r3, r3, #1
+ 495 003c DBB2     		uxtb	r3, r3
+  45:Device/Dev_Dshot.c ****     {
+ 496              		.loc 1 45 8 view .LVU142
+ 497 003e 022B     		cmp	r3, #2
+ 498 0040 01D9     		bls	.L47
+  47:Device/Dev_Dshot.c ****     }
+ 499              		.loc 1 47 9 is_stmt 1 view .LVU143
+  47:Device/Dev_Dshot.c ****     }
+ 500              		.loc 1 47 19 is_stmt 0 view .LVU144
+ 501 0042 0223     		movs	r3, #2
+ 502 0044 2370     		strb	r3, [r4]
+ 503              	.L47:
+  50:Device/Dev_Dshot.c ****         return false;
+ 504              		.loc 1 50 5 is_stmt 1 view .LVU145
+  50:Device/Dev_Dshot.c ****         return false;
+ 505              		.loc 1 50 22 is_stmt 0 view .LVU146
+ 506 0046 194B     		ldr	r3, .L50+8
+ 507 0048 D3F80090 		ldr	r9, [r3]
+  50:Device/Dev_Dshot.c ****         return false;
+ 508              		.loc 1 50 10 view .LVU147
+ 509 004c 04F10408 		add	r8, r4, #4
+  50:Device/Dev_Dshot.c ****         return false;
+ 510              		.loc 1 50 86 view .LVU148
+ 511 0050 EC34     		adds	r4, r4, #236
+ 512              	.LVL49:
+  50:Device/Dev_Dshot.c ****         return false;
+ 513              		.loc 1 50 10 view .LVU149
+ 514 0052 1223     		movs	r3, #18
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 13
+
+
+ 515 0054 0593     		str	r3, [sp, #20]
+ 516 0056 0494     		str	r4, [sp, #16]
+ 517 0058 9DF84C30 		ldrb	r3, [sp, #76]	@ zero_extendqisi2
+ 518 005c 0393     		str	r3, [sp, #12]
+ 519 005e 9DF84830 		ldrb	r3, [sp, #72]	@ zero_extendqisi2
+ 520 0062 0293     		str	r3, [sp, #8]
+ 521 0064 1199     		ldr	r1, [sp, #68]
+ 522 0066 1098     		ldr	r0, [sp, #64]
+ 523 0068 8DE80300 		stm	sp, {r0, r1}
+ 524 006c 0F9B     		ldr	r3, [sp, #60]
+ 525 006e 3246     		mov	r2, r6
+ 526 0070 2946     		mov	r1, r5
+ 527 0072 4046     		mov	r0, r8
+ 528 0074 C847     		blx	r9
+ 529              	.LVL50:
+  50:Device/Dev_Dshot.c ****         return false;
+ 530              		.loc 1 50 8 view .LVU150
+ 531 0076 0546     		mov	r5, r0
+ 532              	.LVL51:
+  50:Device/Dev_Dshot.c ****         return false;
+ 533              		.loc 1 50 8 view .LVU151
+ 534 0078 58B1     		cbz	r0, .L46
+  53:Device/Dev_Dshot.c ****     BspTimer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
+ 535              		.loc 1 53 5 is_stmt 1 view .LVU152
+  53:Device/Dev_Dshot.c ****     BspTimer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
+ 536              		.loc 1 53 17 is_stmt 0 view .LVU153
+ 537 007a 0C4C     		ldr	r4, .L50+8
+ 538              	.LVL52:
+  53:Device/Dev_Dshot.c ****     BspTimer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
+ 539              		.loc 1 53 17 view .LVU154
+ 540 007c 6368     		ldr	r3, [r4, #4]
+  53:Device/Dev_Dshot.c ****     BspTimer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
+ 541              		.loc 1 53 5 view .LVU155
+ 542 007e 3946     		mov	r1, r7
+ 543 0080 4046     		mov	r0, r8
+ 544 0082 9847     		blx	r3
+ 545              	.LVL53:
+  54:Device/Dev_Dshot.c **** 
+ 546              		.loc 1 54 5 is_stmt 1 view .LVU156
+  54:Device/Dev_Dshot.c **** 
+ 547              		.loc 1 54 17 is_stmt 0 view .LVU157
+ 548 0084 A368     		ldr	r3, [r4, #8]
+  54:Device/Dev_Dshot.c **** 
+ 549              		.loc 1 54 5 view .LVU158
+ 550 0086 1421     		movs	r1, #20
+ 551 0088 4046     		mov	r0, r8
+ 552 008a 9847     		blx	r3
+ 553              	.LVL54:
+  56:Device/Dev_Dshot.c **** 
+ 554              		.loc 1 56 5 is_stmt 1 view .LVU159
+  56:Device/Dev_Dshot.c **** 
+ 555              		.loc 1 56 17 is_stmt 0 view .LVU160
+ 556 008c E368     		ldr	r3, [r4, #12]
+  56:Device/Dev_Dshot.c **** 
+ 557              		.loc 1 56 5 view .LVU161
+ 558 008e 4046     		mov	r0, r8
+ 559 0090 9847     		blx	r3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 14
+
+
+ 560              	.LVL55:
+  58:Device/Dev_Dshot.c **** }
+ 561              		.loc 1 58 5 is_stmt 1 view .LVU162
+ 562              	.L46:
+  59:Device/Dev_Dshot.c **** 
+ 563              		.loc 1 59 1 is_stmt 0 view .LVU163
+ 564 0092 2846     		mov	r0, r5
+ 565 0094 07B0     		add	sp, sp, #28
+ 566              	.LCFI8:
+ 567              		.cfi_remember_state
+ 568              		.cfi_def_cfa_offset 36
+ 569              		@ sp needed
+ 570 0096 BDE8F043 		pop	{r4, r5, r6, r7, r8, r9, lr}
+ 571              	.LCFI9:
+ 572              		.cfi_restore 14
+ 573              		.cfi_restore 9
+ 574              		.cfi_restore 8
+ 575              		.cfi_restore 7
+ 576              		.cfi_restore 6
+ 577              		.cfi_restore 5
+ 578              		.cfi_restore 4
+ 579              		.cfi_def_cfa_offset 8
+ 580              	.LVL56:
+  59:Device/Dev_Dshot.c **** 
+ 581              		.loc 1 59 1 view .LVU164
+ 582 009a 02B0     		add	sp, sp, #8
+ 583              	.LCFI10:
+ 584              		.cfi_def_cfa_offset 0
+ 585 009c 7047     		bx	lr
+ 586              	.LVL57:
+ 587              	.L48:
+ 588              	.LCFI11:
+ 589              		.cfi_restore_state
+  43:Device/Dev_Dshot.c **** 
+ 590              		.loc 1 43 16 view .LVU165
+ 591 009e 0025     		movs	r5, #0
+ 592              	.LVL58:
+  43:Device/Dev_Dshot.c **** 
+ 593              		.loc 1 43 16 view .LVU166
+ 594 00a0 F7E7     		b	.L46
+ 595              	.L51:
+ 596 00a2 00BF     		.align	2
+ 597              	.L50:
+ 598 00a4 8096184D 		.word	1293457024
+ 599 00a8 0AD7233C 		.word	1008981770
+ 600 00ac 00000000 		.word	BspTimer_PWM
+ 601              		.cfi_endproc
+ 602              	.LFE145:
+ 604              		.global	DevDshot
+ 605              		.section	.data.DevDshot,"aw"
+ 606              		.align	2
+ 609              	DevDshot:
+ 610 0000 00000000 		.word	DevDshot_Init
+ 611 0004 00000000 		.word	DevDshot_Command
+ 612 0008 00000000 		.word	DevDshot_Control
+ 613              		.text
+ 614              	.Letext0:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 15
+
+
+ 615              		.file 2 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 616              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 617              		.file 4 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 618              		.file 5 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 619              		.file 6 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\lib\\gcc\\arm-none
+ 620              		.file 7 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 621              		.file 8 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 622              		.file 9 "HAL_Lib/CMSIS/Core/Include/core_cm7.h"
+ 623              		.file 10 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/system_stm32h7xx.h"
+ 624              		.file 11 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 625              		.file 12 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\in
+ 626              		.file 13 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 627              		.file 14 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 628              		.file 15 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 629              		.file 16 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h"
+ 630              		.file 17 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h"
+ 631              		.file 18 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 632              		.file 19 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 633              		.file 20 "Bsp/Bsp_GPIO.h"
+ 634              		.file 21 "Bsp/Bsp_DMA.h"
+ 635              		.file 22 "Bsp/Bsp_Timer.h"
+ 636              		.file 23 "Device/Dev_Dshot.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s 			page 16
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_Dshot.c
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:17     .text.DevDshot_GetType_Clock:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:24     .text.DevDshot_GetType_Clock:00000000 DevDshot_GetType_Clock
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:69     .text.DevDshot_GetType_Clock:0000001c $d
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:76     .text.DevDshot_Prepare_Packet:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:82     .text.DevDshot_Prepare_Packet:00000000 DevDshot_Prepare_Packet
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:177    .text.DevDshot_Control:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:183    .text.DevDshot_Control:00000000 DevDshot_Control
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:309    .text.DevDshot_Control:0000006c $d
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:314    .text.DevDshot_Command:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:320    .text.DevDshot_Command:00000000 DevDshot_Command
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:427    .text.DevDshot_Command:00000058 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:432    .text.DevDshot_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:438    .text.DevDshot_Init:00000000 DevDshot_Init
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:598    .text.DevDshot_Init:000000a4 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:609    .data.DevDshot:00000000 DevDshot
+C:\Users\HUAV\AppData\Local\Temp\ccbgUvJW.s:606    .data.DevDshot:00000000 $d
+
+UNDEFINED SYMBOLS
+BspTimer_PWM
+lrintf

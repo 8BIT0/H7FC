@@ -1,0 +1,3357 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Bsp_Uart.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.BspUart_Transfer,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	BspUart_Transfer:
+  25              	.LVL0:
+  26              	.LFB153:
+  27              		.file 1 "Bsp/Bsp_Uart.c"
+   1:Bsp/Bsp_Uart.c **** /*
+   2:Bsp/Bsp_Uart.c ****  * coder : 8_B!T0
+   3:Bsp/Bsp_Uart.c ****  * bref : default using uart dma transfer
+   4:Bsp/Bsp_Uart.c ****  */
+   5:Bsp/Bsp_Uart.c **** #include "stm32h743xx.h"
+   6:Bsp/Bsp_Uart.c **** #include "stm32h7xx_hal.h"
+   7:Bsp/Bsp_Uart.c **** #include "stm32h7xx_hal_rcc.h"
+   8:Bsp/Bsp_Uart.c **** #include "stm32h7xx_hal_uart.h"
+   9:Bsp/Bsp_Uart.c **** #include "Bsp_Uart.h"
+  10:Bsp/Bsp_Uart.c **** 
+  11:Bsp/Bsp_Uart.c **** #define BspUart_Opr_TimeOut 100 // 100ms
+  12:Bsp/Bsp_Uart.c **** 
+  13:Bsp/Bsp_Uart.c **** /* internal variable */
+  14:Bsp/Bsp_Uart.c **** static BspUARTObj_TypeDef *BspUart_Obj_List[BspUART_Port_Sum] = {NULL};
+  15:Bsp/Bsp_Uart.c **** 
+  16:Bsp/Bsp_Uart.c **** /* external function */
+  17:Bsp/Bsp_Uart.c **** static bool BspUart_Init(BspUARTObj_TypeDef *obj);
+  18:Bsp/Bsp_Uart.c **** bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit);
+  19:Bsp/Bsp_Uart.c **** bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity);
+  20:Bsp/Bsp_Uart.c **** bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
+  21:Bsp/Bsp_Uart.c **** bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap);
+  22:Bsp/Bsp_Uart.c **** static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size, bool wait_til
+  23:Bsp/Bsp_Uart.c **** 
+  24:Bsp/Bsp_Uart.c **** BspUART_TypeDef BspUart = {
+  25:Bsp/Bsp_Uart.c ****     .init = BspUart_Init,
+  26:Bsp/Bsp_Uart.c ****     .set_parity = BspUart_Set_Parity,
+  27:Bsp/Bsp_Uart.c ****     .set_stop_bit = BspUart_Set_StopBit,
+  28:Bsp/Bsp_Uart.c ****     .set_data_bit = BspUart_Set_DataBit,
+  29:Bsp/Bsp_Uart.c ****     .set_swap = BspUart_Swap_Pin,
+  30:Bsp/Bsp_Uart.c ****     .send = BspUart_Transfer,
+  31:Bsp/Bsp_Uart.c **** };
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 2
+
+
+  32:Bsp/Bsp_Uart.c **** 
+  33:Bsp/Bsp_Uart.c **** static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
+  34:Bsp/Bsp_Uart.c **** {
+  35:Bsp/Bsp_Uart.c ****     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  36:Bsp/Bsp_Uart.c ****     int8_t index = Bspuart_None_Index;
+  37:Bsp/Bsp_Uart.c **** 
+  38:Bsp/Bsp_Uart.c ****     if ((obj == NULL) ||
+  39:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+  40:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+  41:Bsp/Bsp_Uart.c **** 
+  42:Bsp/Bsp_Uart.c ****     if (obj->instance == UART4)
+  43:Bsp/Bsp_Uart.c ****     {
+  44:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART4;
+  45:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+  46:Bsp/Bsp_Uart.c **** 
+  47:Bsp/Bsp_Uart.c ****         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  48:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+  49:Bsp/Bsp_Uart.c **** 
+  50:Bsp/Bsp_Uart.c ****         __HAL_RCC_UART4_CLK_ENABLE();
+  51:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+  52:Bsp/Bsp_Uart.c ****     }
+  53:Bsp/Bsp_Uart.c ****     else if (obj->instance == USART6)
+  54:Bsp/Bsp_Uart.c ****     {
+  55:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART6;
+  56:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+  57:Bsp/Bsp_Uart.c **** 
+  58:Bsp/Bsp_Uart.c ****         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  59:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+  60:Bsp/Bsp_Uart.c **** 
+  61:Bsp/Bsp_Uart.c ****         __HAL_RCC_USART6_CLK_ENABLE();
+  62:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+  63:Bsp/Bsp_Uart.c ****     }
+  64:Bsp/Bsp_Uart.c ****     else if (obj->instance == UART7)
+  65:Bsp/Bsp_Uart.c ****     {
+  66:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART7;
+  67:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+  68:Bsp/Bsp_Uart.c **** 
+  69:Bsp/Bsp_Uart.c ****         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  70:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+  71:Bsp/Bsp_Uart.c **** 
+  72:Bsp/Bsp_Uart.c ****         __HAL_RCC_UART7_CLK_ENABLE();
+  73:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+  74:Bsp/Bsp_Uart.c ****     }
+  75:Bsp/Bsp_Uart.c ****     else
+  76:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+  77:Bsp/Bsp_Uart.c **** 
+  78:Bsp/Bsp_Uart.c ****     /* rx tx pin init */
+  79:Bsp/Bsp_Uart.c ****     BspGPIO.alt_init(obj->rx_io);
+  80:Bsp/Bsp_Uart.c ****     BspGPIO.alt_init(obj->tx_io);
+  81:Bsp/Bsp_Uart.c **** 
+  82:Bsp/Bsp_Uart.c ****     return index;
+  83:Bsp/Bsp_Uart.c **** }
+  84:Bsp/Bsp_Uart.c **** 
+  85:Bsp/Bsp_Uart.c **** static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
+  86:Bsp/Bsp_Uart.c **** {
+  87:Bsp/Bsp_Uart.c ****     DMA_HandleTypeDef tx_dma_cfg = {0};
+  88:Bsp/Bsp_Uart.c ****     DMA_HandleTypeDef rx_dma_cfg = {0};
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 3
+
+
+  89:Bsp/Bsp_Uart.c ****     int8_t index = Bspuart_None_Index;
+  90:Bsp/Bsp_Uart.c **** 
+  91:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.PeriphInc = DMA_PINC_DISABLE;
+  92:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
+  93:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  94:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  95:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.Mode = DMA_NORMAL;
+  96:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.Priority = DMA_PRIORITY_MEDIUM;
+  97:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+  98:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.Direction = DMA_MEMORY_TO_PERIPH;
+  99:Bsp/Bsp_Uart.c **** 
+ 100:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.PeriphInc = DMA_PINC_DISABLE;
+ 101:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
+ 102:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+ 103:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+ 104:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.Mode = DMA_NORMAL;
+ 105:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.Priority = DMA_PRIORITY_MEDIUM;
+ 106:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+ 107:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.Direction = DMA_PERIPH_TO_MEMORY;
+ 108:Bsp/Bsp_Uart.c **** 
+ 109:Bsp/Bsp_Uart.c ****     if ((obj == NULL) ||
+ 110:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 111:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 112:Bsp/Bsp_Uart.c **** 
+ 113:Bsp/Bsp_Uart.c ****     if (obj->instance == UART4)
+ 114:Bsp/Bsp_Uart.c ****     {
+ 115:Bsp/Bsp_Uart.c ****         rx_dma_cfg.Init.Request = DMA_REQUEST_UART4_RX;
+ 116:Bsp/Bsp_Uart.c ****         tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
+ 117:Bsp/Bsp_Uart.c **** 
+ 118:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 119:Bsp/Bsp_Uart.c ****     }
+ 120:Bsp/Bsp_Uart.c ****     else if (obj->instance == USART6)
+ 121:Bsp/Bsp_Uart.c ****     {
+ 122:Bsp/Bsp_Uart.c ****         rx_dma_cfg.Init.Request = DMA_REQUEST_USART6_RX;
+ 123:Bsp/Bsp_Uart.c ****         tx_dma_cfg.Init.Request = DMA_REQUEST_USART6_TX;
+ 124:Bsp/Bsp_Uart.c **** 
+ 125:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 126:Bsp/Bsp_Uart.c ****     }
+ 127:Bsp/Bsp_Uart.c ****     else if (obj->instance == UART7)
+ 128:Bsp/Bsp_Uart.c ****     {
+ 129:Bsp/Bsp_Uart.c ****         rx_dma_cfg.Init.Request = DMA_REQUEST_UART7_RX;
+ 130:Bsp/Bsp_Uart.c ****         tx_dma_cfg.Init.Request = DMA_REQUEST_UART7_TX;
+ 131:Bsp/Bsp_Uart.c **** 
+ 132:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 133:Bsp/Bsp_Uart.c ****     }
+ 134:Bsp/Bsp_Uart.c ****     else
+ 135:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 136:Bsp/Bsp_Uart.c **** 
+ 137:Bsp/Bsp_Uart.c ****     obj->tx_dma_hdl = tx_dma_cfg;
+ 138:Bsp/Bsp_Uart.c ****     obj->rx_dma_hdl = rx_dma_cfg;
+ 139:Bsp/Bsp_Uart.c **** 
+ 140:Bsp/Bsp_Uart.c ****     if (!BspDMA.regist(obj->rx_dma, obj->rx_stream, &(obj->rx_dma_hdl)) ||
+ 141:Bsp/Bsp_Uart.c ****         !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl)))
+ 142:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 143:Bsp/Bsp_Uart.c **** 
+ 144:Bsp/Bsp_Uart.c ****     if (HAL_DMA_Init(&(obj->rx_dma_hdl)) != HAL_OK)
+ 145:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 4
+
+
+ 146:Bsp/Bsp_Uart.c **** 
+ 147:Bsp/Bsp_Uart.c ****     __HAL_LINKDMA(&(obj->hdl), hdmarx, obj->rx_dma_hdl);
+ 148:Bsp/Bsp_Uart.c **** 
+ 149:Bsp/Bsp_Uart.c ****     if (HAL_DMA_Init(&(obj->tx_dma_hdl)) != HAL_OK)
+ 150:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 151:Bsp/Bsp_Uart.c **** 
+ 152:Bsp/Bsp_Uart.c ****     __HAL_LINKDMA(&(obj->hdl), hdmatx, obj->tx_dma_hdl);
+ 153:Bsp/Bsp_Uart.c **** 
+ 154:Bsp/Bsp_Uart.c ****     return index;
+ 155:Bsp/Bsp_Uart.c **** }
+ 156:Bsp/Bsp_Uart.c **** 
+ 157:Bsp/Bsp_Uart.c **** static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj)
+ 158:Bsp/Bsp_Uart.c **** {
+ 159:Bsp/Bsp_Uart.c ****     IRQn_Type irqn;
+ 160:Bsp/Bsp_Uart.c ****     int8_t index = Bspuart_None_Index;
+ 161:Bsp/Bsp_Uart.c **** 
+ 162:Bsp/Bsp_Uart.c ****     if ((obj == NULL) ||
+ 163:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 164:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 165:Bsp/Bsp_Uart.c **** 
+ 166:Bsp/Bsp_Uart.c ****     if (obj->instance == UART4)
+ 167:Bsp/Bsp_Uart.c ****     {
+ 168:Bsp/Bsp_Uart.c ****         irqn = UART4_IRQn;
+ 169:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 170:Bsp/Bsp_Uart.c ****     }
+ 171:Bsp/Bsp_Uart.c ****     else if (obj->instance == USART6)
+ 172:Bsp/Bsp_Uart.c ****     {
+ 173:Bsp/Bsp_Uart.c ****         irqn = USART6_IRQn;
+ 174:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 175:Bsp/Bsp_Uart.c ****     }
+ 176:Bsp/Bsp_Uart.c ****     else if (obj->instance == UART7)
+ 177:Bsp/Bsp_Uart.c ****     {
+ 178:Bsp/Bsp_Uart.c ****         irqn = UART7_IRQn;
+ 179:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 180:Bsp/Bsp_Uart.c ****     }
+ 181:Bsp/Bsp_Uart.c ****     else
+ 182:Bsp/Bsp_Uart.c ****         return Bspuart_None_Index;
+ 183:Bsp/Bsp_Uart.c **** 
+ 184:Bsp/Bsp_Uart.c ****     HAL_NVIC_SetPriority(irqn, 5, 0);
+ 185:Bsp/Bsp_Uart.c ****     HAL_NVIC_EnableIRQ(irqn);
+ 186:Bsp/Bsp_Uart.c **** 
+ 187:Bsp/Bsp_Uart.c ****     return index;
+ 188:Bsp/Bsp_Uart.c **** }
+ 189:Bsp/Bsp_Uart.c **** 
+ 190:Bsp/Bsp_Uart.c **** static bool BspUart_Init(BspUARTObj_TypeDef *obj)
+ 191:Bsp/Bsp_Uart.c **** {
+ 192:Bsp/Bsp_Uart.c ****     UART_HandleTypeDef uart_cfg;
+ 193:Bsp/Bsp_Uart.c ****     int8_t port_index;
+ 194:Bsp/Bsp_Uart.c **** 
+ 195:Bsp/Bsp_Uart.c ****     obj->init_state = false;
+ 196:Bsp/Bsp_Uart.c **** 
+ 197:Bsp/Bsp_Uart.c ****     port_index = BspUart_Init_Clock(obj);
+ 198:Bsp/Bsp_Uart.c **** 
+ 199:Bsp/Bsp_Uart.c ****     if (port_index < 0)
+ 200:Bsp/Bsp_Uart.c ****         return false;
+ 201:Bsp/Bsp_Uart.c **** 
+ 202:Bsp/Bsp_Uart.c ****     uart_cfg.Instance = obj->instance;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 5
+
+
+ 203:Bsp/Bsp_Uart.c ****     uart_cfg.Init.BaudRate = obj->baudrate;
+ 204:Bsp/Bsp_Uart.c ****     uart_cfg.Init.WordLength = UART_WORDLENGTH_8B;
+ 205:Bsp/Bsp_Uart.c ****     uart_cfg.Init.StopBits = UART_STOPBITS_1;
+ 206:Bsp/Bsp_Uart.c ****     uart_cfg.Init.Parity = UART_PARITY_NONE;
+ 207:Bsp/Bsp_Uart.c ****     uart_cfg.Init.Mode = UART_MODE_TX_RX;
+ 208:Bsp/Bsp_Uart.c ****     uart_cfg.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 209:Bsp/Bsp_Uart.c ****     uart_cfg.Init.OverSampling = UART_OVERSAMPLING_16;
+ 210:Bsp/Bsp_Uart.c ****     uart_cfg.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+ 211:Bsp/Bsp_Uart.c ****     uart_cfg.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+ 212:Bsp/Bsp_Uart.c ****     uart_cfg.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT | UART_ADVFEATURE_
+ 213:Bsp/Bsp_Uart.c ****     uart_cfg.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+ 214:Bsp/Bsp_Uart.c ****     uart_cfg.AdvancedInit.DMADisableonRxError = UART_ADVFEATURE_DMA_DISABLEONRXERROR;
+ 215:Bsp/Bsp_Uart.c **** 
+ 216:Bsp/Bsp_Uart.c ****     /* swap tx rx pin */
+ 217:Bsp/Bsp_Uart.c ****     if (obj->pin_swap)
+ 218:Bsp/Bsp_Uart.c ****         uart_cfg.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+ 219:Bsp/Bsp_Uart.c **** 
+ 220:Bsp/Bsp_Uart.c ****     obj->hdl = uart_cfg;
+ 221:Bsp/Bsp_Uart.c **** 
+ 222:Bsp/Bsp_Uart.c ****     if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+ 223:Bsp/Bsp_Uart.c ****         return false;
+ 224:Bsp/Bsp_Uart.c **** 
+ 225:Bsp/Bsp_Uart.c ****     if (BspUart_Init_DMA(obj) < 0)
+ 226:Bsp/Bsp_Uart.c ****     {
+ 227:Bsp/Bsp_Uart.c ****         obj->irq_type = BspUart_IRQ_Type_Byte;
+ 228:Bsp/Bsp_Uart.c ****     }
+ 229:Bsp/Bsp_Uart.c ****     else
+ 230:Bsp/Bsp_Uart.c ****         obj->irq_type = BspUart_IRQ_Type_Idle;
+ 231:Bsp/Bsp_Uart.c **** 
+ 232:Bsp/Bsp_Uart.c ****     if (HAL_UARTEx_SetTxFifoThreshold(&uart_cfg, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK ||
+ 233:Bsp/Bsp_Uart.c ****         HAL_UARTEx_SetRxFifoThreshold(&uart_cfg, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK ||
+ 234:Bsp/Bsp_Uart.c ****         HAL_UARTEx_DisableFifoMode(&uart_cfg) != HAL_OK)
+ 235:Bsp/Bsp_Uart.c ****         return false;
+ 236:Bsp/Bsp_Uart.c **** 
+ 237:Bsp/Bsp_Uart.c ****     if ((obj->rx_buf == NULL) || (obj->rx_size == 0))
+ 238:Bsp/Bsp_Uart.c ****         return false;
+ 239:Bsp/Bsp_Uart.c **** 
+ 240:Bsp/Bsp_Uart.c ****     BspUart_Obj_List[port_index] = obj;
+ 241:Bsp/Bsp_Uart.c ****     obj->send_finish = false;
+ 242:Bsp/Bsp_Uart.c ****     obj->wait_till_send_finish = false;
+ 243:Bsp/Bsp_Uart.c **** 
+ 244:Bsp/Bsp_Uart.c ****     memset(&(obj->monitor), NULL, sizeof(obj->monitor));
+ 245:Bsp/Bsp_Uart.c **** 
+ 246:Bsp/Bsp_Uart.c ****     /* enable irq callback */
+ 247:Bsp/Bsp_Uart.c ****     switch (obj->irq_type)
+ 248:Bsp/Bsp_Uart.c ****     {
+ 249:Bsp/Bsp_Uart.c ****     case BspUart_IRQ_Type_Idle:
+ 250:Bsp/Bsp_Uart.c ****         __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_IDLE);
+ 251:Bsp/Bsp_Uart.c ****         break;
+ 252:Bsp/Bsp_Uart.c **** 
+ 253:Bsp/Bsp_Uart.c ****     case BspUart_IRQ_Type_Byte:
+ 254:Bsp/Bsp_Uart.c ****         __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_RXNE);
+ 255:Bsp/Bsp_Uart.c ****         break;
+ 256:Bsp/Bsp_Uart.c **** 
+ 257:Bsp/Bsp_Uart.c ****     default:
+ 258:Bsp/Bsp_Uart.c ****         return false;
+ 259:Bsp/Bsp_Uart.c ****     }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 6
+
+
+ 260:Bsp/Bsp_Uart.c **** 
+ 261:Bsp/Bsp_Uart.c ****     __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_ERR);
+ 262:Bsp/Bsp_Uart.c ****     __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_PE);
+ 263:Bsp/Bsp_Uart.c **** 
+ 264:Bsp/Bsp_Uart.c ****     if (BspUart_SetIRQ(obj) < 0)
+ 265:Bsp/Bsp_Uart.c ****         return false;
+ 266:Bsp/Bsp_Uart.c **** 
+ 267:Bsp/Bsp_Uart.c ****     if (obj->irq_type == BspUart_IRQ_Type_Idle)
+ 268:Bsp/Bsp_Uart.c ****     {
+ 269:Bsp/Bsp_Uart.c ****         /* start dma receive data */
+ 270:Bsp/Bsp_Uart.c ****         HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
+ 271:Bsp/Bsp_Uart.c ****     }
+ 272:Bsp/Bsp_Uart.c ****     else if (obj->irq_type == BspUart_IRQ_Type_Byte)
+ 273:Bsp/Bsp_Uart.c ****     {
+ 274:Bsp/Bsp_Uart.c ****         /* start receive irq */
+ 275:Bsp/Bsp_Uart.c ****         HAL_UART_Receive_IT(&(obj->hdl), &obj->rx_single_byte, 1);
+ 276:Bsp/Bsp_Uart.c ****     }
+ 277:Bsp/Bsp_Uart.c **** 
+ 278:Bsp/Bsp_Uart.c ****     obj->init_state = true;
+ 279:Bsp/Bsp_Uart.c ****     return true;
+ 280:Bsp/Bsp_Uart.c **** }
+ 281:Bsp/Bsp_Uart.c **** 
+ 282:Bsp/Bsp_Uart.c **** bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
+ 283:Bsp/Bsp_Uart.c **** {
+ 284:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 285:Bsp/Bsp_Uart.c ****         return false;
+ 286:Bsp/Bsp_Uart.c **** 
+ 287:Bsp/Bsp_Uart.c ****     obj->hdl.Init.WordLength = bit;
+ 288:Bsp/Bsp_Uart.c **** 
+ 289:Bsp/Bsp_Uart.c ****     if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+ 290:Bsp/Bsp_Uart.c ****         return false;
+ 291:Bsp/Bsp_Uart.c **** 
+ 292:Bsp/Bsp_Uart.c ****     return true;
+ 293:Bsp/Bsp_Uart.c **** }
+ 294:Bsp/Bsp_Uart.c **** 
+ 295:Bsp/Bsp_Uart.c **** bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity)
+ 296:Bsp/Bsp_Uart.c **** {
+ 297:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 298:Bsp/Bsp_Uart.c ****         return false;
+ 299:Bsp/Bsp_Uart.c **** 
+ 300:Bsp/Bsp_Uart.c ****     obj->hdl.Init.Parity = parity;
+ 301:Bsp/Bsp_Uart.c **** 
+ 302:Bsp/Bsp_Uart.c ****     if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+ 303:Bsp/Bsp_Uart.c ****         return false;
+ 304:Bsp/Bsp_Uart.c **** 
+ 305:Bsp/Bsp_Uart.c ****     return true;
+ 306:Bsp/Bsp_Uart.c **** }
+ 307:Bsp/Bsp_Uart.c **** 
+ 308:Bsp/Bsp_Uart.c **** bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
+ 309:Bsp/Bsp_Uart.c **** {
+ 310:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 311:Bsp/Bsp_Uart.c ****         return false;
+ 312:Bsp/Bsp_Uart.c **** 
+ 313:Bsp/Bsp_Uart.c ****     obj->hdl.Init.StopBits = stop_bit;
+ 314:Bsp/Bsp_Uart.c **** 
+ 315:Bsp/Bsp_Uart.c ****     if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+ 316:Bsp/Bsp_Uart.c ****         return false;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 7
+
+
+ 317:Bsp/Bsp_Uart.c **** 
+ 318:Bsp/Bsp_Uart.c ****     return true;
+ 319:Bsp/Bsp_Uart.c **** }
+ 320:Bsp/Bsp_Uart.c **** 
+ 321:Bsp/Bsp_Uart.c **** bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap)
+ 322:Bsp/Bsp_Uart.c **** {
+ 323:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 324:Bsp/Bsp_Uart.c ****         return false;
+ 325:Bsp/Bsp_Uart.c **** 
+ 326:Bsp/Bsp_Uart.c ****     obj->pin_swap = swap;
+ 327:Bsp/Bsp_Uart.c **** 
+ 328:Bsp/Bsp_Uart.c ****     if (swap)
+ 329:Bsp/Bsp_Uart.c ****     {
+ 330:Bsp/Bsp_Uart.c ****         obj->hdl.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+ 331:Bsp/Bsp_Uart.c ****     }
+ 332:Bsp/Bsp_Uart.c ****     else
+ 333:Bsp/Bsp_Uart.c ****         obj->hdl.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_DISABLE;
+ 334:Bsp/Bsp_Uart.c **** 
+ 335:Bsp/Bsp_Uart.c ****     if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+ 336:Bsp/Bsp_Uart.c ****         return false;
+ 337:Bsp/Bsp_Uart.c **** 
+ 338:Bsp/Bsp_Uart.c ****     return true;
+ 339:Bsp/Bsp_Uart.c **** }
+ 340:Bsp/Bsp_Uart.c **** 
+ 341:Bsp/Bsp_Uart.c **** UART_HandleTypeDef *BspUart_GetObj_Handle(BspUART_Port_List index)
+ 342:Bsp/Bsp_Uart.c **** {
+ 343:Bsp/Bsp_Uart.c ****     if (index >= BspUART_Port_Sum)
+ 344:Bsp/Bsp_Uart.c ****         return NULL;
+ 345:Bsp/Bsp_Uart.c **** 
+ 346:Bsp/Bsp_Uart.c ****     return &(BspUart_Obj_List[index]->hdl);
+ 347:Bsp/Bsp_Uart.c **** }
+ 348:Bsp/Bsp_Uart.c **** 
+ 349:Bsp/Bsp_Uart.c **** static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size, bool wait_til
+ 350:Bsp/Bsp_Uart.c **** {
+  28              		.loc 1 350 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 350 1 is_stmt 0 view .LVU1
+  33 0000 70B5     		push	{r4, r5, r6, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 4, -16
+  37              		.cfi_offset 5, -12
+  38              		.cfi_offset 6, -8
+  39              		.cfi_offset 14, -4
+ 351:Bsp/Bsp_Uart.c ****     uint8_t time_out = BspUart_Opr_TimeOut;
+  40              		.loc 1 351 5 is_stmt 1 view .LVU2
+  41              	.LVL1:
+ 352:Bsp/Bsp_Uart.c **** 
+ 353:Bsp/Bsp_Uart.c ****     if ((obj == NULL) || (tx_buf == NULL) || (size == 0))
+  42              		.loc 1 353 5 view .LVU3
+  43              		.loc 1 353 34 is_stmt 0 view .LVU4
+  44 0002 B1FA81F4 		clz	r4, r1
+  45 0006 6409     		lsrs	r4, r4, #5
+  46              		.loc 1 353 23 view .LVU5
+  47 0008 0028     		cmp	r0, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 8
+
+
+  48 000a 08BF     		it	eq
+  49 000c 0124     		moveq	r4, #1
+  50              		.loc 1 353 8 view .LVU6
+  51 000e B4BB     		cbnz	r4, .L9
+  52 0010 1E46     		mov	r6, r3
+  53 0012 0546     		mov	r5, r0
+  54              		.loc 1 353 43 discriminator 1 view .LVU7
+  55 0014 A2B3     		cbz	r2, .L2
+ 354:Bsp/Bsp_Uart.c ****         return false;
+ 355:Bsp/Bsp_Uart.c **** 
+ 356:Bsp/Bsp_Uart.c ****     /* send data */
+ 357:Bsp/Bsp_Uart.c ****     switch (HAL_UART_Transmit_DMA(&(obj->hdl), tx_buf, size))
+  56              		.loc 1 357 5 is_stmt 1 view .LVU8
+  57              		.loc 1 357 13 is_stmt 0 view .LVU9
+  58 0016 0930     		adds	r0, r0, #9
+  59              	.LVL2:
+  60              		.loc 1 357 13 view .LVU10
+  61 0018 FFF7FEFF 		bl	HAL_UART_Transmit_DMA
+  62              	.LVL3:
+  63              		.loc 1 357 5 view .LVU11
+  64 001c 48B1     		cbz	r0, .L3
+  65 001e 431E     		subs	r3, r0, #1
+  66 0020 DBB2     		uxtb	r3, r3
+  67 0022 012B     		cmp	r3, #1
+  68 0024 14D8     		bhi	.L14
+ 358:Bsp/Bsp_Uart.c ****     {
+ 359:Bsp/Bsp_Uart.c ****     case HAL_OK:
+ 360:Bsp/Bsp_Uart.c ****         obj->monitor.tx_cnt++;
+ 361:Bsp/Bsp_Uart.c ****         break;
+ 362:Bsp/Bsp_Uart.c **** 
+ 363:Bsp/Bsp_Uart.c ****     case HAL_ERROR:
+ 364:Bsp/Bsp_Uart.c ****     case HAL_BUSY:
+ 365:Bsp/Bsp_Uart.c ****         obj->monitor.tx_err_cnt++;
+  69              		.loc 1 365 9 is_stmt 1 view .LVU12
+  70              		.loc 1 365 21 is_stmt 0 view .LVU13
+  71 0026 D5F8D031 		ldr	r3, [r5, #464]	@ unaligned
+  72              		.loc 1 365 32 view .LVU14
+  73 002a 0133     		adds	r3, r3, #1
+  74 002c C5F8D031 		str	r3, [r5, #464]	@ unaligned
+ 366:Bsp/Bsp_Uart.c ****         return false;
+  75              		.loc 1 366 9 is_stmt 1 view .LVU15
+  76              		.loc 1 366 16 is_stmt 0 view .LVU16
+  77 0030 26E0     		b	.L2
+  78              	.L3:
+ 360:Bsp/Bsp_Uart.c ****         break;
+  79              		.loc 1 360 9 is_stmt 1 view .LVU17
+ 360:Bsp/Bsp_Uart.c ****         break;
+  80              		.loc 1 360 21 is_stmt 0 view .LVU18
+  81 0032 D5F8C031 		ldr	r3, [r5, #448]	@ unaligned
+ 360:Bsp/Bsp_Uart.c ****         break;
+  82              		.loc 1 360 28 view .LVU19
+  83 0036 0133     		adds	r3, r3, #1
+  84 0038 C5F8C031 		str	r3, [r5, #448]	@ unaligned
+ 361:Bsp/Bsp_Uart.c **** 
+  85              		.loc 1 361 9 is_stmt 1 view .LVU20
+ 367:Bsp/Bsp_Uart.c **** 
+ 368:Bsp/Bsp_Uart.c ****     default:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 9
+
+
+ 369:Bsp/Bsp_Uart.c ****         obj->monitor.tx_unknow_err_cnt++;
+ 370:Bsp/Bsp_Uart.c ****         return false;
+ 371:Bsp/Bsp_Uart.c ****     }
+ 372:Bsp/Bsp_Uart.c **** 
+ 373:Bsp/Bsp_Uart.c ****     obj->wait_till_send_finish = wait_till_finish;
+  86              		.loc 1 373 5 view .LVU21
+  87              		.loc 1 373 32 is_stmt 0 view .LVU22
+  88 003c 85F8B861 		strb	r6, [r5, #440]
+ 374:Bsp/Bsp_Uart.c ****     if (wait_till_finish)
+  89              		.loc 1 374 5 is_stmt 1 view .LVU23
+  90              		.loc 1 374 8 is_stmt 0 view .LVU24
+  91 0040 96B9     		cbnz	r6, .L10
+  92              	.LVL4:
+  93              	.L7:
+ 375:Bsp/Bsp_Uart.c ****     {
+ 376:Bsp/Bsp_Uart.c ****         while (!obj->send_finish)
+ 377:Bsp/Bsp_Uart.c ****         {
+ 378:Bsp/Bsp_Uart.c ****             if ((time_out--) == 0)
+ 379:Bsp/Bsp_Uart.c ****             {
+ 380:Bsp/Bsp_Uart.c ****                 obj->monitor.tx_err_cnt++;
+ 381:Bsp/Bsp_Uart.c ****                 return false;
+ 382:Bsp/Bsp_Uart.c ****             }
+ 383:Bsp/Bsp_Uart.c ****         }
+ 384:Bsp/Bsp_Uart.c ****     }
+ 385:Bsp/Bsp_Uart.c ****     obj->monitor.tx_success_cnt++;
+  94              		.loc 1 385 5 is_stmt 1 view .LVU25
+  95              		.loc 1 385 17 is_stmt 0 view .LVU26
+  96 0042 D5F8CC31 		ldr	r3, [r5, #460]	@ unaligned
+  97              		.loc 1 385 32 view .LVU27
+  98 0046 0133     		adds	r3, r3, #1
+  99 0048 C5F8CC31 		str	r3, [r5, #460]	@ unaligned
+ 386:Bsp/Bsp_Uart.c **** 
+ 387:Bsp/Bsp_Uart.c ****     return true;
+ 100              		.loc 1 387 5 is_stmt 1 view .LVU28
+ 101              		.loc 1 387 12 is_stmt 0 view .LVU29
+ 102 004c 0124     		movs	r4, #1
+ 103 004e 17E0     		b	.L2
+ 104              	.LVL5:
+ 105              	.L14:
+ 369:Bsp/Bsp_Uart.c ****         return false;
+ 106              		.loc 1 369 9 is_stmt 1 view .LVU30
+ 369:Bsp/Bsp_Uart.c ****         return false;
+ 107              		.loc 1 369 21 is_stmt 0 view .LVU31
+ 108 0050 D5F8D431 		ldr	r3, [r5, #468]	@ unaligned
+ 369:Bsp/Bsp_Uart.c ****         return false;
+ 109              		.loc 1 369 39 view .LVU32
+ 110 0054 0133     		adds	r3, r3, #1
+ 111 0056 C5F8D431 		str	r3, [r5, #468]	@ unaligned
+ 370:Bsp/Bsp_Uart.c ****     }
+ 112              		.loc 1 370 9 is_stmt 1 view .LVU33
+ 370:Bsp/Bsp_Uart.c ****     }
+ 113              		.loc 1 370 16 is_stmt 0 view .LVU34
+ 114 005a 11E0     		b	.L2
+ 115              	.LVL6:
+ 116              	.L15:
+ 380:Bsp/Bsp_Uart.c ****                 return false;
+ 117              		.loc 1 380 17 is_stmt 1 view .LVU35
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 10
+
+
+ 380:Bsp/Bsp_Uart.c ****                 return false;
+ 118              		.loc 1 380 29 is_stmt 0 view .LVU36
+ 119 005c D5F8D031 		ldr	r3, [r5, #464]	@ unaligned
+ 120              	.LVL7:
+ 380:Bsp/Bsp_Uart.c ****                 return false;
+ 121              		.loc 1 380 40 view .LVU37
+ 122 0060 0133     		adds	r3, r3, #1
+ 123 0062 C5F8D031 		str	r3, [r5, #464]	@ unaligned
+ 381:Bsp/Bsp_Uart.c ****             }
+ 124              		.loc 1 381 17 is_stmt 1 view .LVU38
+ 381:Bsp/Bsp_Uart.c ****             }
+ 125              		.loc 1 381 24 is_stmt 0 view .LVU39
+ 126 0066 0BE0     		b	.L2
+ 127              	.LVL8:
+ 128              	.L10:
+ 351:Bsp/Bsp_Uart.c **** 
+ 129              		.loc 1 351 13 view .LVU40
+ 130 0068 6422     		movs	r2, #100
+ 131              	.LVL9:
+ 132              	.L6:
+ 376:Bsp/Bsp_Uart.c ****         {
+ 133              		.loc 1 376 15 is_stmt 1 view .LVU41
+ 376:Bsp/Bsp_Uart.c ****         {
+ 134              		.loc 1 376 20 is_stmt 0 view .LVU42
+ 135 006a 95F8B941 		ldrb	r4, [r5, #441]	@ zero_extendqisi2
+ 376:Bsp/Bsp_Uart.c ****         {
+ 136              		.loc 1 376 15 view .LVU43
+ 137 006e 002C     		cmp	r4, #0
+ 138 0070 E7D1     		bne	.L7
+ 378:Bsp/Bsp_Uart.c ****             {
+ 139              		.loc 1 378 13 is_stmt 1 view .LVU44
+ 378:Bsp/Bsp_Uart.c ****             {
+ 140              		.loc 1 378 26 is_stmt 0 view .LVU45
+ 141 0072 531E     		subs	r3, r2, #1
+ 142 0074 DBB2     		uxtb	r3, r3
+ 143              	.LVL10:
+ 378:Bsp/Bsp_Uart.c ****             {
+ 144              		.loc 1 378 16 view .LVU46
+ 145 0076 002A     		cmp	r2, #0
+ 146 0078 F0D0     		beq	.L15
+ 378:Bsp/Bsp_Uart.c ****             {
+ 147              		.loc 1 378 26 view .LVU47
+ 148 007a 1A46     		mov	r2, r3
+ 149 007c F5E7     		b	.L6
+ 150              	.LVL11:
+ 151              	.L9:
+ 354:Bsp/Bsp_Uart.c **** 
+ 152              		.loc 1 354 16 view .LVU48
+ 153 007e 0024     		movs	r4, #0
+ 154              	.LVL12:
+ 155              	.L2:
+ 388:Bsp/Bsp_Uart.c **** }
+ 156              		.loc 1 388 1 view .LVU49
+ 157 0080 2046     		mov	r0, r4
+ 158 0082 70BD     		pop	{r4, r5, r6, pc}
+ 159              		.cfi_endproc
+ 160              	.LFE153:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 11
+
+
+ 162              		.section	.text.BspUart_Set_DataBit,"ax",%progbits
+ 163              		.align	1
+ 164              		.global	BspUart_Set_DataBit
+ 165              		.syntax unified
+ 166              		.thumb
+ 167              		.thumb_func
+ 168              		.fpu fpv5-d16
+ 170              	BspUart_Set_DataBit:
+ 171              	.LVL13:
+ 172              	.LFB148:
+ 283:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 173              		.loc 1 283 1 is_stmt 1 view -0
+ 174              		.cfi_startproc
+ 175              		@ args = 0, pretend = 0, frame = 0
+ 176              		@ frame_needed = 0, uses_anonymous_args = 0
+ 283:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 177              		.loc 1 283 1 is_stmt 0 view .LVU51
+ 178 0000 10B5     		push	{r4, lr}
+ 179              	.LCFI1:
+ 180              		.cfi_def_cfa_offset 8
+ 181              		.cfi_offset 4, -8
+ 182              		.cfi_offset 14, -4
+ 284:Bsp/Bsp_Uart.c ****         return false;
+ 183              		.loc 1 284 5 is_stmt 1 view .LVU52
+ 284:Bsp/Bsp_Uart.c ****         return false;
+ 184              		.loc 1 284 8 is_stmt 0 view .LVU53
+ 185 0002 10B1     		cbz	r0, .L21
+ 285:Bsp/Bsp_Uart.c **** 
+ 186              		.loc 1 285 16 view .LVU54
+ 187 0004 0024     		movs	r4, #0
+ 188              	.LVL14:
+ 189              	.L17:
+ 293:Bsp/Bsp_Uart.c **** 
+ 190              		.loc 1 293 1 view .LVU55
+ 191 0006 2046     		mov	r0, r4
+ 192 0008 10BD     		pop	{r4, pc}
+ 193              	.LVL15:
+ 194              	.L21:
+ 284:Bsp/Bsp_Uart.c ****         return false;
+ 195              		.loc 1 284 20 discriminator 1 view .LVU56
+ 196 000a 90F8BA41 		ldrb	r4, [r0, #442]	@ zero_extendqisi2
+ 284:Bsp/Bsp_Uart.c ****         return false;
+ 197              		.loc 1 284 13 discriminator 1 view .LVU57
+ 198 000e 002C     		cmp	r4, #0
+ 199 0010 F9D0     		beq	.L17
+ 287:Bsp/Bsp_Uart.c **** 
+ 200              		.loc 1 287 5 is_stmt 1 view .LVU58
+ 287:Bsp/Bsp_Uart.c **** 
+ 201              		.loc 1 287 30 is_stmt 0 view .LVU59
+ 202 0012 C0F81110 		str	r1, [r0, #17]	@ unaligned
+ 289:Bsp/Bsp_Uart.c ****         return false;
+ 203              		.loc 1 289 5 is_stmt 1 view .LVU60
+ 289:Bsp/Bsp_Uart.c ****         return false;
+ 204              		.loc 1 289 9 is_stmt 0 view .LVU61
+ 205 0016 0930     		adds	r0, r0, #9
+ 206              	.LVL16:
+ 289:Bsp/Bsp_Uart.c ****         return false;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 12
+
+
+ 207              		.loc 1 289 9 view .LVU62
+ 208 0018 FFF7FEFF 		bl	HAL_UART_Init
+ 209              	.LVL17:
+ 289:Bsp/Bsp_Uart.c ****         return false;
+ 210              		.loc 1 289 8 view .LVU63
+ 211 001c 0028     		cmp	r0, #0
+ 212 001e F2D0     		beq	.L17
+ 290:Bsp/Bsp_Uart.c **** 
+ 213              		.loc 1 290 16 view .LVU64
+ 214 0020 0024     		movs	r4, #0
+ 215 0022 F0E7     		b	.L17
+ 216              		.cfi_endproc
+ 217              	.LFE148:
+ 219              		.section	.text.BspUart_Set_Parity,"ax",%progbits
+ 220              		.align	1
+ 221              		.global	BspUart_Set_Parity
+ 222              		.syntax unified
+ 223              		.thumb
+ 224              		.thumb_func
+ 225              		.fpu fpv5-d16
+ 227              	BspUart_Set_Parity:
+ 228              	.LVL18:
+ 229              	.LFB149:
+ 296:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 230              		.loc 1 296 1 is_stmt 1 view -0
+ 231              		.cfi_startproc
+ 232              		@ args = 0, pretend = 0, frame = 0
+ 233              		@ frame_needed = 0, uses_anonymous_args = 0
+ 296:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 234              		.loc 1 296 1 is_stmt 0 view .LVU66
+ 235 0000 10B5     		push	{r4, lr}
+ 236              	.LCFI2:
+ 237              		.cfi_def_cfa_offset 8
+ 238              		.cfi_offset 4, -8
+ 239              		.cfi_offset 14, -4
+ 297:Bsp/Bsp_Uart.c ****         return false;
+ 240              		.loc 1 297 5 is_stmt 1 view .LVU67
+ 297:Bsp/Bsp_Uart.c ****         return false;
+ 241              		.loc 1 297 8 is_stmt 0 view .LVU68
+ 242 0002 10B1     		cbz	r0, .L27
+ 298:Bsp/Bsp_Uart.c **** 
+ 243              		.loc 1 298 16 view .LVU69
+ 244 0004 0024     		movs	r4, #0
+ 245              	.LVL19:
+ 246              	.L23:
+ 306:Bsp/Bsp_Uart.c **** 
+ 247              		.loc 1 306 1 view .LVU70
+ 248 0006 2046     		mov	r0, r4
+ 249 0008 10BD     		pop	{r4, pc}
+ 250              	.LVL20:
+ 251              	.L27:
+ 297:Bsp/Bsp_Uart.c ****         return false;
+ 252              		.loc 1 297 20 discriminator 1 view .LVU71
+ 253 000a 90F8BA41 		ldrb	r4, [r0, #442]	@ zero_extendqisi2
+ 297:Bsp/Bsp_Uart.c ****         return false;
+ 254              		.loc 1 297 13 discriminator 1 view .LVU72
+ 255 000e 002C     		cmp	r4, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 13
+
+
+ 256 0010 F9D0     		beq	.L23
+ 300:Bsp/Bsp_Uart.c **** 
+ 257              		.loc 1 300 5 is_stmt 1 view .LVU73
+ 300:Bsp/Bsp_Uart.c **** 
+ 258              		.loc 1 300 26 is_stmt 0 view .LVU74
+ 259 0012 C0F81910 		str	r1, [r0, #25]	@ unaligned
+ 302:Bsp/Bsp_Uart.c ****         return false;
+ 260              		.loc 1 302 5 is_stmt 1 view .LVU75
+ 302:Bsp/Bsp_Uart.c ****         return false;
+ 261              		.loc 1 302 9 is_stmt 0 view .LVU76
+ 262 0016 0930     		adds	r0, r0, #9
+ 263              	.LVL21:
+ 302:Bsp/Bsp_Uart.c ****         return false;
+ 264              		.loc 1 302 9 view .LVU77
+ 265 0018 FFF7FEFF 		bl	HAL_UART_Init
+ 266              	.LVL22:
+ 302:Bsp/Bsp_Uart.c ****         return false;
+ 267              		.loc 1 302 8 view .LVU78
+ 268 001c 0028     		cmp	r0, #0
+ 269 001e F2D0     		beq	.L23
+ 303:Bsp/Bsp_Uart.c **** 
+ 270              		.loc 1 303 16 view .LVU79
+ 271 0020 0024     		movs	r4, #0
+ 272 0022 F0E7     		b	.L23
+ 273              		.cfi_endproc
+ 274              	.LFE149:
+ 276              		.section	.text.BspUart_Set_StopBit,"ax",%progbits
+ 277              		.align	1
+ 278              		.global	BspUart_Set_StopBit
+ 279              		.syntax unified
+ 280              		.thumb
+ 281              		.thumb_func
+ 282              		.fpu fpv5-d16
+ 284              	BspUart_Set_StopBit:
+ 285              	.LVL23:
+ 286              	.LFB150:
+ 309:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 287              		.loc 1 309 1 is_stmt 1 view -0
+ 288              		.cfi_startproc
+ 289              		@ args = 0, pretend = 0, frame = 0
+ 290              		@ frame_needed = 0, uses_anonymous_args = 0
+ 309:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 291              		.loc 1 309 1 is_stmt 0 view .LVU81
+ 292 0000 10B5     		push	{r4, lr}
+ 293              	.LCFI3:
+ 294              		.cfi_def_cfa_offset 8
+ 295              		.cfi_offset 4, -8
+ 296              		.cfi_offset 14, -4
+ 310:Bsp/Bsp_Uart.c ****         return false;
+ 297              		.loc 1 310 5 is_stmt 1 view .LVU82
+ 310:Bsp/Bsp_Uart.c ****         return false;
+ 298              		.loc 1 310 8 is_stmt 0 view .LVU83
+ 299 0002 10B1     		cbz	r0, .L33
+ 311:Bsp/Bsp_Uart.c **** 
+ 300              		.loc 1 311 16 view .LVU84
+ 301 0004 0024     		movs	r4, #0
+ 302              	.LVL24:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 14
+
+
+ 303              	.L29:
+ 319:Bsp/Bsp_Uart.c **** 
+ 304              		.loc 1 319 1 view .LVU85
+ 305 0006 2046     		mov	r0, r4
+ 306 0008 10BD     		pop	{r4, pc}
+ 307              	.LVL25:
+ 308              	.L33:
+ 310:Bsp/Bsp_Uart.c ****         return false;
+ 309              		.loc 1 310 20 discriminator 1 view .LVU86
+ 310 000a 90F8BA41 		ldrb	r4, [r0, #442]	@ zero_extendqisi2
+ 310:Bsp/Bsp_Uart.c ****         return false;
+ 311              		.loc 1 310 13 discriminator 1 view .LVU87
+ 312 000e 002C     		cmp	r4, #0
+ 313 0010 F9D0     		beq	.L29
+ 313:Bsp/Bsp_Uart.c **** 
+ 314              		.loc 1 313 5 is_stmt 1 view .LVU88
+ 313:Bsp/Bsp_Uart.c **** 
+ 315              		.loc 1 313 28 is_stmt 0 view .LVU89
+ 316 0012 C0F81510 		str	r1, [r0, #21]	@ unaligned
+ 315:Bsp/Bsp_Uart.c ****         return false;
+ 317              		.loc 1 315 5 is_stmt 1 view .LVU90
+ 315:Bsp/Bsp_Uart.c ****         return false;
+ 318              		.loc 1 315 9 is_stmt 0 view .LVU91
+ 319 0016 0930     		adds	r0, r0, #9
+ 320              	.LVL26:
+ 315:Bsp/Bsp_Uart.c ****         return false;
+ 321              		.loc 1 315 9 view .LVU92
+ 322 0018 FFF7FEFF 		bl	HAL_UART_Init
+ 323              	.LVL27:
+ 315:Bsp/Bsp_Uart.c ****         return false;
+ 324              		.loc 1 315 8 view .LVU93
+ 325 001c 0028     		cmp	r0, #0
+ 326 001e F2D0     		beq	.L29
+ 316:Bsp/Bsp_Uart.c **** 
+ 327              		.loc 1 316 16 view .LVU94
+ 328 0020 0024     		movs	r4, #0
+ 329 0022 F0E7     		b	.L29
+ 330              		.cfi_endproc
+ 331              	.LFE150:
+ 333              		.section	.text.BspUart_Swap_Pin,"ax",%progbits
+ 334              		.align	1
+ 335              		.global	BspUart_Swap_Pin
+ 336              		.syntax unified
+ 337              		.thumb
+ 338              		.thumb_func
+ 339              		.fpu fpv5-d16
+ 341              	BspUart_Swap_Pin:
+ 342              	.LVL28:
+ 343              	.LFB151:
+ 322:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 344              		.loc 1 322 1 is_stmt 1 view -0
+ 345              		.cfi_startproc
+ 346              		@ args = 0, pretend = 0, frame = 0
+ 347              		@ frame_needed = 0, uses_anonymous_args = 0
+ 322:Bsp/Bsp_Uart.c ****     if (obj || !obj->init_state)
+ 348              		.loc 1 322 1 is_stmt 0 view .LVU96
+ 349 0000 10B5     		push	{r4, lr}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 15
+
+
+ 350              	.LCFI4:
+ 351              		.cfi_def_cfa_offset 8
+ 352              		.cfi_offset 4, -8
+ 353              		.cfi_offset 14, -4
+ 323:Bsp/Bsp_Uart.c ****         return false;
+ 354              		.loc 1 323 5 is_stmt 1 view .LVU97
+ 323:Bsp/Bsp_Uart.c ****         return false;
+ 355              		.loc 1 323 8 is_stmt 0 view .LVU98
+ 356 0002 10B1     		cbz	r0, .L41
+ 324:Bsp/Bsp_Uart.c **** 
+ 357              		.loc 1 324 16 view .LVU99
+ 358 0004 0024     		movs	r4, #0
+ 359              	.LVL29:
+ 360              	.L35:
+ 339:Bsp/Bsp_Uart.c **** 
+ 361              		.loc 1 339 1 view .LVU100
+ 362 0006 2046     		mov	r0, r4
+ 363 0008 10BD     		pop	{r4, pc}
+ 364              	.LVL30:
+ 365              	.L41:
+ 339:Bsp/Bsp_Uart.c **** 
+ 366              		.loc 1 339 1 view .LVU101
+ 367 000a 0346     		mov	r3, r0
+ 323:Bsp/Bsp_Uart.c ****         return false;
+ 368              		.loc 1 323 20 discriminator 1 view .LVU102
+ 369 000c 90F8BA41 		ldrb	r4, [r0, #442]	@ zero_extendqisi2
+ 323:Bsp/Bsp_Uart.c ****         return false;
+ 370              		.loc 1 323 13 discriminator 1 view .LVU103
+ 371 0010 002C     		cmp	r4, #0
+ 372 0012 F8D0     		beq	.L35
+ 326:Bsp/Bsp_Uart.c **** 
+ 373              		.loc 1 326 5 is_stmt 1 view .LVU104
+ 326:Bsp/Bsp_Uart.c **** 
+ 374              		.loc 1 326 19 is_stmt 0 view .LVU105
+ 375 0014 0171     		strb	r1, [r0, #4]
+ 328:Bsp/Bsp_Uart.c ****     {
+ 376              		.loc 1 328 5 is_stmt 1 view .LVU106
+ 328:Bsp/Bsp_Uart.c ****     {
+ 377              		.loc 1 328 8 is_stmt 0 view .LVU107
+ 378 0016 91B1     		cbz	r1, .L36
+ 330:Bsp/Bsp_Uart.c ****     }
+ 379              		.loc 1 330 9 is_stmt 1 view .LVU108
+ 330:Bsp/Bsp_Uart.c ****     }
+ 380              		.loc 1 330 36 is_stmt 0 view .LVU109
+ 381 0018 0022     		movs	r2, #0
+ 382 001a 80F84120 		strb	r2, [r0, #65]
+ 383 001e 6FF07F01 		mvn	r1, #127
+ 384              	.LVL31:
+ 330:Bsp/Bsp_Uart.c ****     }
+ 385              		.loc 1 330 36 view .LVU110
+ 386 0022 80F84210 		strb	r1, [r0, #66]
+ 387 0026 80F84320 		strb	r2, [r0, #67]
+ 388 002a 80F84420 		strb	r2, [r0, #68]
+ 389              	.L37:
+ 335:Bsp/Bsp_Uart.c ****         return false;
+ 390              		.loc 1 335 5 is_stmt 1 view .LVU111
+ 335:Bsp/Bsp_Uart.c ****         return false;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 16
+
+
+ 391              		.loc 1 335 9 is_stmt 0 view .LVU112
+ 392 002e 03F10900 		add	r0, r3, #9
+ 393              	.LVL32:
+ 335:Bsp/Bsp_Uart.c ****         return false;
+ 394              		.loc 1 335 9 view .LVU113
+ 395 0032 FFF7FEFF 		bl	HAL_UART_Init
+ 396              	.LVL33:
+ 335:Bsp/Bsp_Uart.c ****         return false;
+ 397              		.loc 1 335 8 view .LVU114
+ 398 0036 0028     		cmp	r0, #0
+ 399 0038 E5D0     		beq	.L35
+ 336:Bsp/Bsp_Uart.c **** 
+ 400              		.loc 1 336 16 view .LVU115
+ 401 003a 0024     		movs	r4, #0
+ 402 003c E3E7     		b	.L35
+ 403              	.LVL34:
+ 404              	.L36:
+ 333:Bsp/Bsp_Uart.c **** 
+ 405              		.loc 1 333 9 is_stmt 1 view .LVU116
+ 333:Bsp/Bsp_Uart.c **** 
+ 406              		.loc 1 333 36 is_stmt 0 view .LVU117
+ 407 003e 0022     		movs	r2, #0
+ 408 0040 80F84120 		strb	r2, [r0, #65]
+ 409 0044 80F84220 		strb	r2, [r0, #66]
+ 410 0048 80F84320 		strb	r2, [r0, #67]
+ 411 004c 80F84420 		strb	r2, [r0, #68]
+ 412 0050 EDE7     		b	.L37
+ 413              		.cfi_endproc
+ 414              	.LFE151:
+ 416              		.section	.text.BspUart_Init_Clock,"ax",%progbits
+ 417              		.align	1
+ 418              		.syntax unified
+ 419              		.thumb
+ 420              		.thumb_func
+ 421              		.fpu fpv5-d16
+ 423              	BspUart_Init_Clock:
+ 424              	.LVL35:
+ 425              	.LFB144:
+  34:Bsp/Bsp_Uart.c ****     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+ 426              		.loc 1 34 1 is_stmt 1 view -0
+ 427              		.cfi_startproc
+ 428              		@ args = 0, pretend = 0, frame = 200
+ 429              		@ frame_needed = 0, uses_anonymous_args = 0
+  34:Bsp/Bsp_Uart.c ****     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+ 430              		.loc 1 34 1 is_stmt 0 view .LVU119
+ 431 0000 70B5     		push	{r4, r5, r6, lr}
+ 432              	.LCFI5:
+ 433              		.cfi_def_cfa_offset 16
+ 434              		.cfi_offset 4, -16
+ 435              		.cfi_offset 5, -12
+ 436              		.cfi_offset 6, -8
+ 437              		.cfi_offset 14, -4
+ 438 0002 B2B0     		sub	sp, sp, #200
+ 439              	.LCFI6:
+ 440              		.cfi_def_cfa_offset 216
+ 441 0004 0446     		mov	r4, r0
+  35:Bsp/Bsp_Uart.c ****     int8_t index = Bspuart_None_Index;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 17
+
+
+ 442              		.loc 1 35 5 is_stmt 1 view .LVU120
+  35:Bsp/Bsp_Uart.c ****     int8_t index = Bspuart_None_Index;
+ 443              		.loc 1 35 30 is_stmt 0 view .LVU121
+ 444 0006 BC22     		movs	r2, #188
+ 445 0008 0021     		movs	r1, #0
+ 446 000a 03A8     		add	r0, sp, #12
+ 447              	.LVL36:
+  35:Bsp/Bsp_Uart.c ****     int8_t index = Bspuart_None_Index;
+ 448              		.loc 1 35 30 view .LVU122
+ 449 000c FFF7FEFF 		bl	memset
+ 450              	.LVL37:
+  36:Bsp/Bsp_Uart.c **** 
+ 451              		.loc 1 36 5 is_stmt 1 view .LVU123
+  38:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 452              		.loc 1 38 5 view .LVU124
+  38:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 453              		.loc 1 38 8 is_stmt 0 view .LVU125
+ 454 0010 002C     		cmp	r4, #0
+ 455 0012 65D0     		beq	.L47
+  39:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 456              		.loc 1 39 13 discriminator 1 view .LVU126
+ 457 0014 D4F80530 		ldr	r3, [r4, #5]	@ unaligned
+  38:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 458              		.loc 1 38 23 discriminator 1 view .LVU127
+ 459 0018 002B     		cmp	r3, #0
+ 460 001a 64D0     		beq	.L48
+  42:Bsp/Bsp_Uart.c ****     {
+ 461              		.loc 1 42 5 is_stmt 1 view .LVU128
+  42:Bsp/Bsp_Uart.c ****     {
+ 462              		.loc 1 42 8 is_stmt 0 view .LVU129
+ 463 001c 394A     		ldr	r2, .L56
+ 464 001e 9342     		cmp	r3, r2
+ 465 0020 30D0     		beq	.L54
+  53:Bsp/Bsp_Uart.c ****     {
+ 466              		.loc 1 53 10 is_stmt 1 view .LVU130
+  53:Bsp/Bsp_Uart.c ****     {
+ 467              		.loc 1 53 13 is_stmt 0 view .LVU131
+ 468 0022 394A     		ldr	r2, .L56+4
+ 469 0024 9342     		cmp	r3, r2
+ 470 0026 44D0     		beq	.L55
+  64:Bsp/Bsp_Uart.c ****     {
+ 471              		.loc 1 64 10 is_stmt 1 view .LVU132
+  64:Bsp/Bsp_Uart.c ****     {
+ 472              		.loc 1 64 13 is_stmt 0 view .LVU133
+ 473 0028 384A     		ldr	r2, .L56+8
+ 474 002a 9342     		cmp	r3, r2
+ 475 002c 64D1     		bne	.L51
+  66:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+ 476              		.loc 1 66 9 is_stmt 1 view .LVU134
+  66:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+ 477              		.loc 1 66 50 is_stmt 0 view .LVU135
+ 478 002e 0223     		movs	r3, #2
+ 479 0030 0393     		str	r3, [sp, #12]
+  67:Bsp/Bsp_Uart.c **** 
+ 480              		.loc 1 67 9 is_stmt 1 view .LVU136
+  67:Bsp/Bsp_Uart.c **** 
+ 481              		.loc 1 67 55 is_stmt 0 view .LVU137
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 18
+
+
+ 482 0032 0023     		movs	r3, #0
+ 483 0034 2093     		str	r3, [sp, #128]
+  69:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+ 484              		.loc 1 69 9 is_stmt 1 view .LVU138
+  69:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+ 485              		.loc 1 69 13 is_stmt 0 view .LVU139
+ 486 0036 03A8     		add	r0, sp, #12
+ 487 0038 FFF7FEFF 		bl	HAL_RCCEx_PeriphCLKConfig
+ 488              	.LVL38:
+  69:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+ 489              		.loc 1 69 12 view .LVU140
+ 490 003c 0028     		cmp	r0, #0
+ 491 003e 5ED1     		bne	.L52
+  72:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 492              		.loc 1 72 9 is_stmt 1 view .LVU141
+ 493              	.LBB2:
+  72:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 494              		.loc 1 72 9 view .LVU142
+  72:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 495              		.loc 1 72 9 view .LVU143
+ 496 0040 334B     		ldr	r3, .L56+12
+ 497 0042 D3F8E820 		ldr	r2, [r3, #232]
+ 498 0046 42F08042 		orr	r2, r2, #1073741824
+ 499 004a C3F8E820 		str	r2, [r3, #232]
+  72:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 500              		.loc 1 72 9 view .LVU144
+ 501 004e D3F8E830 		ldr	r3, [r3, #232]
+ 502 0052 03F08043 		and	r3, r3, #1073741824
+ 503 0056 0293     		str	r3, [sp, #8]
+  72:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 504              		.loc 1 72 9 view .LVU145
+ 505 0058 029B     		ldr	r3, [sp, #8]
+ 506              	.LBE2:
+  72:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 507              		.loc 1 72 9 view .LVU146
+  73:Bsp/Bsp_Uart.c ****     }
+ 508              		.loc 1 73 9 view .LVU147
+ 509              	.LVL39:
+  73:Bsp/Bsp_Uart.c ****     }
+ 510              		.loc 1 73 15 is_stmt 0 view .LVU148
+ 511 005a 0225     		movs	r5, #2
+ 512              	.LVL40:
+ 513              	.L45:
+  79:Bsp/Bsp_Uart.c ****     BspGPIO.alt_init(obj->tx_io);
+ 514              		.loc 1 79 5 is_stmt 1 view .LVU149
+  79:Bsp/Bsp_Uart.c ****     BspGPIO.alt_init(obj->tx_io);
+ 515              		.loc 1 79 12 is_stmt 0 view .LVU150
+ 516 005c 2D4E     		ldr	r6, .L56+16
+ 517 005e F368     		ldr	r3, [r6, #12]
+  79:Bsp/Bsp_Uart.c ****     BspGPIO.alt_init(obj->tx_io);
+ 518              		.loc 1 79 5 view .LVU151
+ 519 0060 D4F89901 		ldr	r0, [r4, #409]	@ unaligned
+ 520 0064 D4F89D11 		ldr	r1, [r4, #413]	@ unaligned
+ 521 0068 D4F8A121 		ldr	r2, [r4, #417]	@ unaligned
+ 522 006c 9847     		blx	r3
+ 523              	.LVL41:
+  80:Bsp/Bsp_Uart.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 19
+
+
+ 524              		.loc 1 80 5 is_stmt 1 view .LVU152
+  80:Bsp/Bsp_Uart.c **** 
+ 525              		.loc 1 80 12 is_stmt 0 view .LVU153
+ 526 006e F368     		ldr	r3, [r6, #12]
+  80:Bsp/Bsp_Uart.c **** 
+ 527              		.loc 1 80 5 view .LVU154
+ 528 0070 D4F88D01 		ldr	r0, [r4, #397]	@ unaligned
+ 529 0074 D4F89111 		ldr	r1, [r4, #401]	@ unaligned
+ 530 0078 D4F89521 		ldr	r2, [r4, #405]	@ unaligned
+ 531 007c 9847     		blx	r3
+ 532              	.LVL42:
+  82:Bsp/Bsp_Uart.c **** }
+ 533              		.loc 1 82 5 is_stmt 1 view .LVU155
+  82:Bsp/Bsp_Uart.c **** }
+ 534              		.loc 1 82 12 is_stmt 0 view .LVU156
+ 535 007e 2846     		mov	r0, r5
+ 536              	.LVL43:
+ 537              	.L42:
+  83:Bsp/Bsp_Uart.c **** 
+ 538              		.loc 1 83 1 view .LVU157
+ 539 0080 32B0     		add	sp, sp, #200
+ 540              	.LCFI7:
+ 541              		.cfi_remember_state
+ 542              		.cfi_def_cfa_offset 16
+ 543              		@ sp needed
+ 544 0082 70BD     		pop	{r4, r5, r6, pc}
+ 545              	.LVL44:
+ 546              	.L54:
+ 547              	.LCFI8:
+ 548              		.cfi_restore_state
+  44:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+ 549              		.loc 1 44 9 is_stmt 1 view .LVU158
+  44:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+ 550              		.loc 1 44 50 is_stmt 0 view .LVU159
+ 551 0084 0223     		movs	r3, #2
+ 552 0086 0393     		str	r3, [sp, #12]
+  45:Bsp/Bsp_Uart.c **** 
+ 553              		.loc 1 45 9 is_stmt 1 view .LVU160
+  45:Bsp/Bsp_Uart.c **** 
+ 554              		.loc 1 45 55 is_stmt 0 view .LVU161
+ 555 0088 0023     		movs	r3, #0
+ 556 008a 2093     		str	r3, [sp, #128]
+  47:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+ 557              		.loc 1 47 9 is_stmt 1 view .LVU162
+  47:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+ 558              		.loc 1 47 13 is_stmt 0 view .LVU163
+ 559 008c 03A8     		add	r0, sp, #12
+ 560 008e FFF7FEFF 		bl	HAL_RCCEx_PeriphCLKConfig
+ 561              	.LVL45:
+  47:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+ 562              		.loc 1 47 12 view .LVU164
+ 563 0092 58BB     		cbnz	r0, .L49
+  50:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 564              		.loc 1 50 9 is_stmt 1 view .LVU165
+ 565              	.LBB3:
+  50:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 566              		.loc 1 50 9 view .LVU166
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 20
+
+
+  50:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 567              		.loc 1 50 9 view .LVU167
+ 568 0094 1E4B     		ldr	r3, .L56+12
+ 569 0096 D3F8E820 		ldr	r2, [r3, #232]
+ 570 009a 42F40022 		orr	r2, r2, #524288
+ 571 009e C3F8E820 		str	r2, [r3, #232]
+  50:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 572              		.loc 1 50 9 view .LVU168
+ 573 00a2 D3F8E830 		ldr	r3, [r3, #232]
+ 574 00a6 03F40023 		and	r3, r3, #524288
+ 575 00aa 0093     		str	r3, [sp]
+  50:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 576              		.loc 1 50 9 view .LVU169
+ 577 00ac 009B     		ldr	r3, [sp]
+ 578              	.LBE3:
+  50:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 579              		.loc 1 50 9 view .LVU170
+  51:Bsp/Bsp_Uart.c ****     }
+ 580              		.loc 1 51 9 view .LVU171
+ 581              	.LVL46:
+  51:Bsp/Bsp_Uart.c ****     }
+ 582              		.loc 1 51 15 is_stmt 0 view .LVU172
+ 583 00ae 0025     		movs	r5, #0
+ 584 00b0 D4E7     		b	.L45
+ 585              	.LVL47:
+ 586              	.L55:
+  55:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+ 587              		.loc 1 55 9 is_stmt 1 view .LVU173
+  55:Bsp/Bsp_Uart.c ****         PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+ 588              		.loc 1 55 50 is_stmt 0 view .LVU174
+ 589 00b2 0123     		movs	r3, #1
+ 590 00b4 0393     		str	r3, [sp, #12]
+  56:Bsp/Bsp_Uart.c **** 
+ 591              		.loc 1 56 9 is_stmt 1 view .LVU175
+  56:Bsp/Bsp_Uart.c **** 
+ 592              		.loc 1 56 51 is_stmt 0 view .LVU176
+ 593 00b6 0023     		movs	r3, #0
+ 594 00b8 2193     		str	r3, [sp, #132]
+  58:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+ 595              		.loc 1 58 9 is_stmt 1 view .LVU177
+  58:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+ 596              		.loc 1 58 13 is_stmt 0 view .LVU178
+ 597 00ba 03A8     		add	r0, sp, #12
+ 598 00bc FFF7FEFF 		bl	HAL_RCCEx_PeriphCLKConfig
+ 599              	.LVL48:
+  58:Bsp/Bsp_Uart.c ****             return BspUart_Clock_Error;
+ 600              		.loc 1 58 12 view .LVU179
+ 601 00c0 B8B9     		cbnz	r0, .L50
+  61:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 602              		.loc 1 61 9 is_stmt 1 view .LVU180
+ 603              	.LBB4:
+  61:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 604              		.loc 1 61 9 view .LVU181
+  61:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 605              		.loc 1 61 9 view .LVU182
+ 606 00c2 134B     		ldr	r3, .L56+12
+ 607 00c4 D3F8F020 		ldr	r2, [r3, #240]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 21
+
+
+ 608 00c8 42F02002 		orr	r2, r2, #32
+ 609 00cc C3F8F020 		str	r2, [r3, #240]
+  61:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 610              		.loc 1 61 9 view .LVU183
+ 611 00d0 D3F8F030 		ldr	r3, [r3, #240]
+ 612 00d4 03F02003 		and	r3, r3, #32
+ 613 00d8 0193     		str	r3, [sp, #4]
+  61:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 614              		.loc 1 61 9 view .LVU184
+ 615 00da 019B     		ldr	r3, [sp, #4]
+ 616              	.LBE4:
+  61:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 617              		.loc 1 61 9 view .LVU185
+  62:Bsp/Bsp_Uart.c ****     }
+ 618              		.loc 1 62 9 view .LVU186
+ 619              	.LVL49:
+  62:Bsp/Bsp_Uart.c ****     }
+ 620              		.loc 1 62 15 is_stmt 0 view .LVU187
+ 621 00dc 0125     		movs	r5, #1
+ 622 00de BDE7     		b	.L45
+ 623              	.LVL50:
+ 624              	.L47:
+  40:Bsp/Bsp_Uart.c **** 
+ 625              		.loc 1 40 16 view .LVU188
+ 626 00e0 4FF0FF30 		mov	r0, #-1
+ 627 00e4 CCE7     		b	.L42
+ 628              	.L48:
+ 629 00e6 4FF0FF30 		mov	r0, #-1
+ 630 00ea C9E7     		b	.L42
+ 631              	.L49:
+  48:Bsp/Bsp_Uart.c **** 
+ 632              		.loc 1 48 20 view .LVU189
+ 633 00ec 4FF0FF30 		mov	r0, #-1
+ 634 00f0 C6E7     		b	.L42
+ 635              	.L50:
+  59:Bsp/Bsp_Uart.c **** 
+ 636              		.loc 1 59 20 view .LVU190
+ 637 00f2 4FF0FF30 		mov	r0, #-1
+ 638 00f6 C3E7     		b	.L42
+ 639              	.L51:
+  76:Bsp/Bsp_Uart.c **** 
+ 640              		.loc 1 76 16 view .LVU191
+ 641 00f8 4FF0FF30 		mov	r0, #-1
+ 642 00fc C0E7     		b	.L42
+ 643              	.L52:
+  70:Bsp/Bsp_Uart.c **** 
+ 644              		.loc 1 70 20 view .LVU192
+ 645 00fe 4FF0FF30 		mov	r0, #-1
+ 646 0102 BDE7     		b	.L42
+ 647              	.L57:
+ 648              		.align	2
+ 649              	.L56:
+ 650 0104 004C0040 		.word	1073761280
+ 651 0108 00140140 		.word	1073812480
+ 652 010c 00780040 		.word	1073772544
+ 653 0110 00440258 		.word	1476543488
+ 654 0114 00000000 		.word	BspGPIO
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 22
+
+
+ 655              		.cfi_endproc
+ 656              	.LFE144:
+ 658              		.section	.text.BspUart_Init_DMA,"ax",%progbits
+ 659              		.align	1
+ 660              		.syntax unified
+ 661              		.thumb
+ 662              		.thumb_func
+ 663              		.fpu fpv5-d16
+ 665              	BspUart_Init_DMA:
+ 666              	.LVL51:
+ 667              	.LFB145:
+  86:Bsp/Bsp_Uart.c ****     DMA_HandleTypeDef tx_dma_cfg = {0};
+ 668              		.loc 1 86 1 is_stmt 1 view -0
+ 669              		.cfi_startproc
+ 670              		@ args = 0, pretend = 0, frame = 240
+ 671              		@ frame_needed = 0, uses_anonymous_args = 0
+  86:Bsp/Bsp_Uart.c ****     DMA_HandleTypeDef tx_dma_cfg = {0};
+ 672              		.loc 1 86 1 is_stmt 0 view .LVU194
+ 673 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 674              	.LCFI9:
+ 675              		.cfi_def_cfa_offset 24
+ 676              		.cfi_offset 4, -24
+ 677              		.cfi_offset 5, -20
+ 678              		.cfi_offset 6, -16
+ 679              		.cfi_offset 7, -12
+ 680              		.cfi_offset 8, -8
+ 681              		.cfi_offset 14, -4
+ 682 0004 BCB0     		sub	sp, sp, #240
+ 683              	.LCFI10:
+ 684              		.cfi_def_cfa_offset 264
+ 685 0006 0446     		mov	r4, r0
+  87:Bsp/Bsp_Uart.c ****     DMA_HandleTypeDef rx_dma_cfg = {0};
+ 686              		.loc 1 87 5 is_stmt 1 view .LVU195
+  87:Bsp/Bsp_Uart.c ****     DMA_HandleTypeDef rx_dma_cfg = {0};
+ 687              		.loc 1 87 23 is_stmt 0 view .LVU196
+ 688 0008 7825     		movs	r5, #120
+ 689 000a 2A46     		mov	r2, r5
+ 690 000c 0021     		movs	r1, #0
+ 691 000e 0DEB0500 		add	r0, sp, r5
+ 692              	.LVL52:
+  87:Bsp/Bsp_Uart.c ****     DMA_HandleTypeDef rx_dma_cfg = {0};
+ 693              		.loc 1 87 23 view .LVU197
+ 694 0012 FFF7FEFF 		bl	memset
+ 695              	.LVL53:
+  88:Bsp/Bsp_Uart.c ****     int8_t index = Bspuart_None_Index;
+ 696              		.loc 1 88 5 is_stmt 1 view .LVU198
+  88:Bsp/Bsp_Uart.c ****     int8_t index = Bspuart_None_Index;
+ 697              		.loc 1 88 23 is_stmt 0 view .LVU199
+ 698 0016 2A46     		mov	r2, r5
+ 699 0018 0021     		movs	r1, #0
+ 700 001a 6846     		mov	r0, sp
+ 701 001c FFF7FEFF 		bl	memset
+ 702              	.LVL54:
+  89:Bsp/Bsp_Uart.c **** 
+ 703              		.loc 1 89 5 is_stmt 1 view .LVU200
+  91:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
+ 704              		.loc 1 91 5 view .LVU201
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 23
+
+
+  92:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+ 705              		.loc 1 92 5 view .LVU202
+  92:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+ 706              		.loc 1 92 28 is_stmt 0 view .LVU203
+ 707 0020 4FF48062 		mov	r2, #1024
+ 708 0024 2292     		str	r2, [sp, #136]
+  93:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+ 709              		.loc 1 93 5 is_stmt 1 view .LVU204
+  94:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.Mode = DMA_NORMAL;
+ 710              		.loc 1 94 5 view .LVU205
+  95:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.Priority = DMA_PRIORITY_MEDIUM;
+ 711              		.loc 1 95 5 view .LVU206
+  96:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+ 712              		.loc 1 96 5 view .LVU207
+  96:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+ 713              		.loc 1 96 30 is_stmt 0 view .LVU208
+ 714 0026 4FF48033 		mov	r3, #65536
+ 715 002a 2693     		str	r3, [sp, #152]
+  97:Bsp/Bsp_Uart.c ****     tx_dma_cfg.Init.Direction = DMA_MEMORY_TO_PERIPH;
+ 716              		.loc 1 97 5 is_stmt 1 view .LVU209
+  98:Bsp/Bsp_Uart.c **** 
+ 717              		.loc 1 98 5 view .LVU210
+  98:Bsp/Bsp_Uart.c **** 
+ 718              		.loc 1 98 31 is_stmt 0 view .LVU211
+ 719 002c 4021     		movs	r1, #64
+ 720 002e 2091     		str	r1, [sp, #128]
+ 100:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
+ 721              		.loc 1 100 5 is_stmt 1 view .LVU212
+ 101:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+ 722              		.loc 1 101 5 view .LVU213
+ 101:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+ 723              		.loc 1 101 28 is_stmt 0 view .LVU214
+ 724 0030 0492     		str	r2, [sp, #16]
+ 102:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+ 725              		.loc 1 102 5 is_stmt 1 view .LVU215
+ 103:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.Mode = DMA_NORMAL;
+ 726              		.loc 1 103 5 view .LVU216
+ 104:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.Priority = DMA_PRIORITY_MEDIUM;
+ 727              		.loc 1 104 5 view .LVU217
+ 105:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+ 728              		.loc 1 105 5 view .LVU218
+ 105:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+ 729              		.loc 1 105 30 is_stmt 0 view .LVU219
+ 730 0032 0893     		str	r3, [sp, #32]
+ 106:Bsp/Bsp_Uart.c ****     rx_dma_cfg.Init.Direction = DMA_PERIPH_TO_MEMORY;
+ 731              		.loc 1 106 5 is_stmt 1 view .LVU220
+ 107:Bsp/Bsp_Uart.c **** 
+ 732              		.loc 1 107 5 view .LVU221
+ 109:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 733              		.loc 1 109 5 view .LVU222
+ 109:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 734              		.loc 1 109 8 is_stmt 0 view .LVU223
+ 735 0034 002C     		cmp	r4, #0
+ 736 0036 58D0     		beq	.L65
+ 110:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 737              		.loc 1 110 13 discriminator 1 view .LVU224
+ 738 0038 D4F80530 		ldr	r3, [r4, #5]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 24
+
+
+ 109:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 739              		.loc 1 109 23 discriminator 1 view .LVU225
+ 740 003c 002B     		cmp	r3, #0
+ 741 003e 57D0     		beq	.L66
+ 113:Bsp/Bsp_Uart.c ****     {
+ 742              		.loc 1 113 5 is_stmt 1 view .LVU226
+ 113:Bsp/Bsp_Uart.c ****     {
+ 743              		.loc 1 113 8 is_stmt 0 view .LVU227
+ 744 0040 314A     		ldr	r2, .L73
+ 745 0042 9342     		cmp	r3, r2
+ 746 0044 43D0     		beq	.L71
+ 120:Bsp/Bsp_Uart.c ****     {
+ 747              		.loc 1 120 10 is_stmt 1 view .LVU228
+ 120:Bsp/Bsp_Uart.c ****     {
+ 748              		.loc 1 120 13 is_stmt 0 view .LVU229
+ 749 0046 314A     		ldr	r2, .L73+4
+ 750 0048 9342     		cmp	r3, r2
+ 751 004a 45D0     		beq	.L72
+ 127:Bsp/Bsp_Uart.c ****     {
+ 752              		.loc 1 127 10 is_stmt 1 view .LVU230
+ 127:Bsp/Bsp_Uart.c ****     {
+ 753              		.loc 1 127 13 is_stmt 0 view .LVU231
+ 754 004c 304A     		ldr	r2, .L73+8
+ 755 004e 9342     		cmp	r3, r2
+ 756 0050 51D1     		bne	.L67
+ 129:Bsp/Bsp_Uart.c ****         tx_dma_cfg.Init.Request = DMA_REQUEST_UART7_TX;
+ 757              		.loc 1 129 9 is_stmt 1 view .LVU232
+ 129:Bsp/Bsp_Uart.c ****         tx_dma_cfg.Init.Request = DMA_REQUEST_UART7_TX;
+ 758              		.loc 1 129 33 is_stmt 0 view .LVU233
+ 759 0052 4F23     		movs	r3, #79
+ 760 0054 0193     		str	r3, [sp, #4]
+ 130:Bsp/Bsp_Uart.c **** 
+ 761              		.loc 1 130 9 is_stmt 1 view .LVU234
+ 130:Bsp/Bsp_Uart.c **** 
+ 762              		.loc 1 130 33 is_stmt 0 view .LVU235
+ 763 0056 5023     		movs	r3, #80
+ 764 0058 1F93     		str	r3, [sp, #124]
+ 132:Bsp/Bsp_Uart.c ****     }
+ 765              		.loc 1 132 9 is_stmt 1 view .LVU236
+ 766              	.LVL55:
+ 132:Bsp/Bsp_Uart.c ****     }
+ 767              		.loc 1 132 15 is_stmt 0 view .LVU237
+ 768 005a 0226     		movs	r6, #2
+ 769              	.LVL56:
+ 770              	.L61:
+ 137:Bsp/Bsp_Uart.c ****     obj->rx_dma_hdl = rx_dma_cfg;
+ 771              		.loc 1 137 5 is_stmt 1 view .LVU238
+ 137:Bsp/Bsp_Uart.c ****     obj->rx_dma_hdl = rx_dma_cfg;
+ 772              		.loc 1 137 21 is_stmt 0 view .LVU239
+ 773 005c 7827     		movs	r7, #120
+ 774 005e 3A46     		mov	r2, r7
+ 775 0060 0DEB0701 		add	r1, sp, r7
+ 776 0064 04F19B00 		add	r0, r4, #155
+ 777 0068 FFF7FEFF 		bl	memcpy
+ 778              	.LVL57:
+ 138:Bsp/Bsp_Uart.c **** 
+ 779              		.loc 1 138 5 is_stmt 1 view .LVU240
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 25
+
+
+ 138:Bsp/Bsp_Uart.c **** 
+ 780              		.loc 1 138 21 is_stmt 0 view .LVU241
+ 781 006c 04F21515 		addw	r5, r4, #277
+ 782 0070 3A46     		mov	r2, r7
+ 783 0072 6946     		mov	r1, sp
+ 784 0074 2846     		mov	r0, r5
+ 785 0076 FFF7FEFF 		bl	memcpy
+ 786              	.LVL58:
+ 140:Bsp/Bsp_Uart.c ****         !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl)))
+ 787              		.loc 1 140 5 is_stmt 1 view .LVU242
+ 140:Bsp/Bsp_Uart.c ****         !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl)))
+ 788              		.loc 1 140 16 is_stmt 0 view .LVU243
+ 789 007a 264B     		ldr	r3, .L73+12
+ 790 007c 1B68     		ldr	r3, [r3]
+ 140:Bsp/Bsp_Uart.c ****         !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl)))
+ 791              		.loc 1 140 10 view .LVU244
+ 792 007e 2A46     		mov	r2, r5
+ 793 0080 94F91411 		ldrsb	r1, [r4, #276]
+ 794 0084 94F91301 		ldrsb	r0, [r4, #275]
+ 795 0088 9847     		blx	r3
+ 796              	.LVL59:
+ 140:Bsp/Bsp_Uart.c ****         !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl)))
+ 797              		.loc 1 140 8 view .LVU245
+ 798 008a 58B3     		cbz	r0, .L63
+ 141:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 799              		.loc 1 141 16 discriminator 1 view .LVU246
+ 800 008c 214B     		ldr	r3, .L73+12
+ 801 008e 1B68     		ldr	r3, [r3]
+ 141:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 802              		.loc 1 141 10 discriminator 1 view .LVU247
+ 803 0090 04F19B07 		add	r7, r4, #155
+ 804 0094 3A46     		mov	r2, r7
+ 805 0096 94F99A10 		ldrsb	r1, [r4, #154]
+ 806 009a 94F99900 		ldrsb	r0, [r4, #153]
+ 807 009e 9847     		blx	r3
+ 808              	.LVL60:
+ 140:Bsp/Bsp_Uart.c ****         !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl)))
+ 809              		.loc 1 140 73 discriminator 1 view .LVU248
+ 810 00a0 00B3     		cbz	r0, .L63
+ 144:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 811              		.loc 1 144 5 is_stmt 1 view .LVU249
+ 144:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 812              		.loc 1 144 9 is_stmt 0 view .LVU250
+ 813 00a2 2846     		mov	r0, r5
+ 814 00a4 FFF7FEFF 		bl	HAL_DMA_Init
+ 815              	.LVL61:
+ 144:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 816              		.loc 1 144 8 view .LVU251
+ 817 00a8 40BB     		cbnz	r0, .L68
+ 147:Bsp/Bsp_Uart.c **** 
+ 818              		.loc 1 147 5 is_stmt 1 view .LVU252
+ 147:Bsp/Bsp_Uart.c **** 
+ 819              		.loc 1 147 5 view .LVU253
+ 820 00aa C4F88550 		str	r5, [r4, #133]	@ unaligned
+ 147:Bsp/Bsp_Uart.c **** 
+ 821              		.loc 1 147 5 view .LVU254
+ 822 00ae 04F10905 		add	r5, r4, #9
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 26
+
+
+ 823 00b2 C4F84D51 		str	r5, [r4, #333]	@ unaligned
+ 147:Bsp/Bsp_Uart.c **** 
+ 824              		.loc 1 147 5 view .LVU255
+ 149:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 825              		.loc 1 149 5 view .LVU256
+ 149:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 826              		.loc 1 149 9 is_stmt 0 view .LVU257
+ 827 00b6 3846     		mov	r0, r7
+ 828 00b8 FFF7FEFF 		bl	HAL_DMA_Init
+ 829              	.LVL62:
+ 149:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 830              		.loc 1 149 8 view .LVU258
+ 831 00bc 08BB     		cbnz	r0, .L69
+ 152:Bsp/Bsp_Uart.c **** 
+ 832              		.loc 1 152 5 is_stmt 1 view .LVU259
+ 152:Bsp/Bsp_Uart.c **** 
+ 833              		.loc 1 152 5 view .LVU260
+ 834 00be C4F88170 		str	r7, [r4, #129]	@ unaligned
+ 152:Bsp/Bsp_Uart.c **** 
+ 835              		.loc 1 152 5 view .LVU261
+ 836 00c2 C4F8D350 		str	r5, [r4, #211]	@ unaligned
+ 152:Bsp/Bsp_Uart.c **** 
+ 837              		.loc 1 152 5 view .LVU262
+ 154:Bsp/Bsp_Uart.c **** }
+ 838              		.loc 1 154 5 view .LVU263
+ 154:Bsp/Bsp_Uart.c **** }
+ 839              		.loc 1 154 12 is_stmt 0 view .LVU264
+ 840 00c6 3046     		mov	r0, r6
+ 841              	.LVL63:
+ 842              	.L58:
+ 155:Bsp/Bsp_Uart.c **** 
+ 843              		.loc 1 155 1 view .LVU265
+ 844 00c8 3CB0     		add	sp, sp, #240
+ 845              	.LCFI11:
+ 846              		.cfi_remember_state
+ 847              		.cfi_def_cfa_offset 24
+ 848              		@ sp needed
+ 849 00ca BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 850              	.LVL64:
+ 851              	.L71:
+ 852              	.LCFI12:
+ 853              		.cfi_restore_state
+ 115:Bsp/Bsp_Uart.c ****         tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
+ 854              		.loc 1 115 9 is_stmt 1 view .LVU266
+ 115:Bsp/Bsp_Uart.c ****         tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
+ 855              		.loc 1 115 33 is_stmt 0 view .LVU267
+ 856 00ce 3F23     		movs	r3, #63
+ 857 00d0 0193     		str	r3, [sp, #4]
+ 116:Bsp/Bsp_Uart.c **** 
+ 858              		.loc 1 116 9 is_stmt 1 view .LVU268
+ 116:Bsp/Bsp_Uart.c **** 
+ 859              		.loc 1 116 33 is_stmt 0 view .LVU269
+ 860 00d2 1F91     		str	r1, [sp, #124]
+ 118:Bsp/Bsp_Uart.c ****     }
+ 861              		.loc 1 118 9 is_stmt 1 view .LVU270
+ 862              	.LVL65:
+ 118:Bsp/Bsp_Uart.c ****     }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 27
+
+
+ 863              		.loc 1 118 15 is_stmt 0 view .LVU271
+ 864 00d4 0026     		movs	r6, #0
+ 865 00d6 C1E7     		b	.L61
+ 866              	.LVL66:
+ 867              	.L72:
+ 122:Bsp/Bsp_Uart.c ****         tx_dma_cfg.Init.Request = DMA_REQUEST_USART6_TX;
+ 868              		.loc 1 122 9 is_stmt 1 view .LVU272
+ 122:Bsp/Bsp_Uart.c ****         tx_dma_cfg.Init.Request = DMA_REQUEST_USART6_TX;
+ 869              		.loc 1 122 33 is_stmt 0 view .LVU273
+ 870 00d8 4723     		movs	r3, #71
+ 871 00da 0193     		str	r3, [sp, #4]
+ 123:Bsp/Bsp_Uart.c **** 
+ 872              		.loc 1 123 9 is_stmt 1 view .LVU274
+ 123:Bsp/Bsp_Uart.c **** 
+ 873              		.loc 1 123 33 is_stmt 0 view .LVU275
+ 874 00dc 4823     		movs	r3, #72
+ 875 00de 1F93     		str	r3, [sp, #124]
+ 125:Bsp/Bsp_Uart.c ****     }
+ 876              		.loc 1 125 9 is_stmt 1 view .LVU276
+ 877              	.LVL67:
+ 125:Bsp/Bsp_Uart.c ****     }
+ 878              		.loc 1 125 15 is_stmt 0 view .LVU277
+ 879 00e0 0126     		movs	r6, #1
+ 880 00e2 BBE7     		b	.L61
+ 881              	.LVL68:
+ 882              	.L63:
+ 142:Bsp/Bsp_Uart.c **** 
+ 883              		.loc 1 142 9 is_stmt 1 view .LVU278
+ 142:Bsp/Bsp_Uart.c **** 
+ 884              		.loc 1 142 16 is_stmt 0 view .LVU279
+ 885 00e4 4FF0FF30 		mov	r0, #-1
+ 886 00e8 EEE7     		b	.L58
+ 887              	.LVL69:
+ 888              	.L65:
+ 111:Bsp/Bsp_Uart.c **** 
+ 889              		.loc 1 111 16 view .LVU280
+ 890 00ea 4FF0FF30 		mov	r0, #-1
+ 891 00ee EBE7     		b	.L58
+ 892              	.L66:
+ 893 00f0 4FF0FF30 		mov	r0, #-1
+ 894 00f4 E8E7     		b	.L58
+ 895              	.L67:
+ 135:Bsp/Bsp_Uart.c **** 
+ 896              		.loc 1 135 16 view .LVU281
+ 897 00f6 4FF0FF30 		mov	r0, #-1
+ 898 00fa E5E7     		b	.L58
+ 899              	.LVL70:
+ 900              	.L68:
+ 145:Bsp/Bsp_Uart.c **** 
+ 901              		.loc 1 145 16 view .LVU282
+ 902 00fc 4FF0FF30 		mov	r0, #-1
+ 903 0100 E2E7     		b	.L58
+ 904              	.L69:
+ 150:Bsp/Bsp_Uart.c **** 
+ 905              		.loc 1 150 16 view .LVU283
+ 906 0102 4FF0FF30 		mov	r0, #-1
+ 907 0106 DFE7     		b	.L58
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 28
+
+
+ 908              	.L74:
+ 909              		.align	2
+ 910              	.L73:
+ 911 0108 004C0040 		.word	1073761280
+ 912 010c 00140140 		.word	1073812480
+ 913 0110 00780040 		.word	1073772544
+ 914 0114 00000000 		.word	BspDMA
+ 915              		.cfi_endproc
+ 916              	.LFE145:
+ 918              		.section	.text.BspUart_SetIRQ,"ax",%progbits
+ 919              		.align	1
+ 920              		.syntax unified
+ 921              		.thumb
+ 922              		.thumb_func
+ 923              		.fpu fpv5-d16
+ 925              	BspUart_SetIRQ:
+ 926              	.LVL71:
+ 927              	.LFB146:
+ 158:Bsp/Bsp_Uart.c ****     IRQn_Type irqn;
+ 928              		.loc 1 158 1 is_stmt 1 view -0
+ 929              		.cfi_startproc
+ 930              		@ args = 0, pretend = 0, frame = 0
+ 931              		@ frame_needed = 0, uses_anonymous_args = 0
+ 159:Bsp/Bsp_Uart.c ****     int8_t index = Bspuart_None_Index;
+ 932              		.loc 1 159 5 view .LVU285
+ 160:Bsp/Bsp_Uart.c **** 
+ 933              		.loc 1 160 5 view .LVU286
+ 162:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 934              		.loc 1 162 5 view .LVU287
+ 162:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 935              		.loc 1 162 8 is_stmt 0 view .LVU288
+ 936 0000 00B3     		cbz	r0, .L78
+ 158:Bsp/Bsp_Uart.c ****     IRQn_Type irqn;
+ 937              		.loc 1 158 1 discriminator 1 view .LVU289
+ 938 0002 38B5     		push	{r3, r4, r5, lr}
+ 939              	.LCFI13:
+ 940              		.cfi_def_cfa_offset 16
+ 941              		.cfi_offset 3, -16
+ 942              		.cfi_offset 4, -12
+ 943              		.cfi_offset 5, -8
+ 944              		.cfi_offset 14, -4
+ 163:Bsp/Bsp_Uart.c ****         return BspUart_Clock_Error;
+ 945              		.loc 1 163 13 discriminator 1 view .LVU290
+ 946 0004 D0F80530 		ldr	r3, [r0, #5]	@ unaligned
+ 162:Bsp/Bsp_Uart.c ****         (obj->instance == NULL))
+ 947              		.loc 1 162 23 discriminator 1 view .LVU291
+ 948 0008 FBB1     		cbz	r3, .L79
+ 166:Bsp/Bsp_Uart.c ****     {
+ 949              		.loc 1 166 5 is_stmt 1 view .LVU292
+ 166:Bsp/Bsp_Uart.c ****     {
+ 950              		.loc 1 166 8 is_stmt 0 view .LVU293
+ 951 000a 134A     		ldr	r2, .L87
+ 952 000c 9342     		cmp	r3, r2
+ 953 000e 13D0     		beq	.L80
+ 171:Bsp/Bsp_Uart.c ****     {
+ 954              		.loc 1 171 10 is_stmt 1 view .LVU294
+ 171:Bsp/Bsp_Uart.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 29
+
+
+ 955              		.loc 1 171 13 is_stmt 0 view .LVU295
+ 956 0010 02F54842 		add	r2, r2, #51200
+ 957 0014 9342     		cmp	r3, r2
+ 958 0016 12D0     		beq	.L81
+ 176:Bsp/Bsp_Uart.c ****     {
+ 959              		.loc 1 176 10 is_stmt 1 view .LVU296
+ 176:Bsp/Bsp_Uart.c ****     {
+ 960              		.loc 1 176 13 is_stmt 0 view .LVU297
+ 961 0018 A2F51C42 		sub	r2, r2, #39936
+ 962 001c 9342     		cmp	r3, r2
+ 963 001e 17D1     		bne	.L82
+ 179:Bsp/Bsp_Uart.c ****     }
+ 964              		.loc 1 179 15 view .LVU298
+ 965 0020 0224     		movs	r4, #2
+ 178:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 966              		.loc 1 178 14 view .LVU299
+ 967 0022 5225     		movs	r5, #82
+ 968              	.L77:
+ 969              	.LVL72:
+ 184:Bsp/Bsp_Uart.c ****     HAL_NVIC_EnableIRQ(irqn);
+ 970              		.loc 1 184 5 is_stmt 1 view .LVU300
+ 971 0024 0022     		movs	r2, #0
+ 972 0026 0521     		movs	r1, #5
+ 973 0028 2846     		mov	r0, r5
+ 974              	.LVL73:
+ 184:Bsp/Bsp_Uart.c ****     HAL_NVIC_EnableIRQ(irqn);
+ 975              		.loc 1 184 5 is_stmt 0 view .LVU301
+ 976 002a FFF7FEFF 		bl	HAL_NVIC_SetPriority
+ 977              	.LVL74:
+ 185:Bsp/Bsp_Uart.c **** 
+ 978              		.loc 1 185 5 is_stmt 1 view .LVU302
+ 979 002e 2846     		mov	r0, r5
+ 980 0030 FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 981              	.LVL75:
+ 187:Bsp/Bsp_Uart.c **** }
+ 982              		.loc 1 187 5 view .LVU303
+ 187:Bsp/Bsp_Uart.c **** }
+ 983              		.loc 1 187 12 is_stmt 0 view .LVU304
+ 984 0034 2046     		mov	r0, r4
+ 985              	.LVL76:
+ 986              	.L75:
+ 188:Bsp/Bsp_Uart.c **** 
+ 987              		.loc 1 188 1 view .LVU305
+ 988 0036 38BD     		pop	{r3, r4, r5, pc}
+ 989              	.LVL77:
+ 990              	.L80:
+ 169:Bsp/Bsp_Uart.c ****     }
+ 991              		.loc 1 169 15 view .LVU306
+ 992 0038 0024     		movs	r4, #0
+ 168:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 993              		.loc 1 168 14 view .LVU307
+ 994 003a 3425     		movs	r5, #52
+ 995 003c F2E7     		b	.L77
+ 996              	.L81:
+ 174:Bsp/Bsp_Uart.c ****     }
+ 997              		.loc 1 174 15 view .LVU308
+ 998 003e 0124     		movs	r4, #1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 30
+
+
+ 173:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 999              		.loc 1 173 14 view .LVU309
+ 1000 0040 4725     		movs	r5, #71
+ 1001 0042 EFE7     		b	.L77
+ 1002              	.L78:
+ 1003              	.LCFI14:
+ 1004              		.cfi_def_cfa_offset 0
+ 1005              		.cfi_restore 3
+ 1006              		.cfi_restore 4
+ 1007              		.cfi_restore 5
+ 1008              		.cfi_restore 14
+ 164:Bsp/Bsp_Uart.c **** 
+ 1009              		.loc 1 164 16 view .LVU310
+ 1010 0044 4FF0FF30 		mov	r0, #-1
+ 1011              	.LVL78:
+ 188:Bsp/Bsp_Uart.c **** 
+ 1012              		.loc 1 188 1 view .LVU311
+ 1013 0048 7047     		bx	lr
+ 1014              	.LVL79:
+ 1015              	.L79:
+ 1016              	.LCFI15:
+ 1017              		.cfi_def_cfa_offset 16
+ 1018              		.cfi_offset 3, -16
+ 1019              		.cfi_offset 4, -12
+ 1020              		.cfi_offset 5, -8
+ 1021              		.cfi_offset 14, -4
+ 164:Bsp/Bsp_Uart.c **** 
+ 1022              		.loc 1 164 16 view .LVU312
+ 1023 004a 4FF0FF30 		mov	r0, #-1
+ 1024              	.LVL80:
+ 164:Bsp/Bsp_Uart.c **** 
+ 1025              		.loc 1 164 16 view .LVU313
+ 1026 004e F2E7     		b	.L75
+ 1027              	.LVL81:
+ 1028              	.L82:
+ 182:Bsp/Bsp_Uart.c **** 
+ 1029              		.loc 1 182 16 view .LVU314
+ 1030 0050 4FF0FF30 		mov	r0, #-1
+ 1031              	.LVL82:
+ 182:Bsp/Bsp_Uart.c **** 
+ 1032              		.loc 1 182 16 view .LVU315
+ 1033 0054 EFE7     		b	.L75
+ 1034              	.L88:
+ 1035 0056 00BF     		.align	2
+ 1036              	.L87:
+ 1037 0058 004C0040 		.word	1073761280
+ 1038              		.cfi_endproc
+ 1039              	.LFE146:
+ 1041              		.section	.text.BspUart_Init,"ax",%progbits
+ 1042              		.align	1
+ 1043              		.syntax unified
+ 1044              		.thumb
+ 1045              		.thumb_func
+ 1046              		.fpu fpv5-d16
+ 1048              	BspUart_Init:
+ 1049              	.LVL83:
+ 1050              	.LFB147:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 31
+
+
+ 191:Bsp/Bsp_Uart.c ****     UART_HandleTypeDef uart_cfg;
+ 1051              		.loc 1 191 1 is_stmt 1 view -0
+ 1052              		.cfi_startproc
+ 1053              		@ args = 0, pretend = 0, frame = 144
+ 1054              		@ frame_needed = 0, uses_anonymous_args = 0
+ 191:Bsp/Bsp_Uart.c ****     UART_HandleTypeDef uart_cfg;
+ 1055              		.loc 1 191 1 is_stmt 0 view .LVU317
+ 1056 0000 70B5     		push	{r4, r5, r6, lr}
+ 1057              	.LCFI16:
+ 1058              		.cfi_def_cfa_offset 16
+ 1059              		.cfi_offset 4, -16
+ 1060              		.cfi_offset 5, -12
+ 1061              		.cfi_offset 6, -8
+ 1062              		.cfi_offset 14, -4
+ 1063 0002 A4B0     		sub	sp, sp, #144
+ 1064              	.LCFI17:
+ 1065              		.cfi_def_cfa_offset 160
+ 1066 0004 0446     		mov	r4, r0
+ 192:Bsp/Bsp_Uart.c ****     int8_t port_index;
+ 1067              		.loc 1 192 5 is_stmt 1 view .LVU318
+ 193:Bsp/Bsp_Uart.c **** 
+ 1068              		.loc 1 193 5 view .LVU319
+ 195:Bsp/Bsp_Uart.c **** 
+ 1069              		.loc 1 195 5 view .LVU320
+ 195:Bsp/Bsp_Uart.c **** 
+ 1070              		.loc 1 195 21 is_stmt 0 view .LVU321
+ 1071 0006 0023     		movs	r3, #0
+ 1072 0008 80F8BA31 		strb	r3, [r0, #442]
+ 197:Bsp/Bsp_Uart.c **** 
+ 1073              		.loc 1 197 5 is_stmt 1 view .LVU322
+ 197:Bsp/Bsp_Uart.c **** 
+ 1074              		.loc 1 197 18 is_stmt 0 view .LVU323
+ 1075 000c FFF7FEFF 		bl	BspUart_Init_Clock
+ 1076              	.LVL84:
+ 197:Bsp/Bsp_Uart.c **** 
+ 1077              		.loc 1 197 16 view .LVU324
+ 1078 0010 45B2     		sxtb	r5, r0
+ 1079              	.LVL85:
+ 199:Bsp/Bsp_Uart.c ****         return false;
+ 1080              		.loc 1 199 5 is_stmt 1 view .LVU325
+ 199:Bsp/Bsp_Uart.c ****         return false;
+ 1081              		.loc 1 199 8 is_stmt 0 view .LVU326
+ 1082 0012 002D     		cmp	r5, #0
+ 1083 0014 C0F2A680 		blt	.L101
+ 202:Bsp/Bsp_Uart.c ****     uart_cfg.Init.BaudRate = obj->baudrate;
+ 1084              		.loc 1 202 5 is_stmt 1 view .LVU327
+ 202:Bsp/Bsp_Uart.c ****     uart_cfg.Init.BaudRate = obj->baudrate;
+ 1085              		.loc 1 202 28 is_stmt 0 view .LVU328
+ 1086 0018 D4F80530 		ldr	r3, [r4, #5]	@ unaligned
+ 202:Bsp/Bsp_Uart.c ****     uart_cfg.Init.BaudRate = obj->baudrate;
+ 1087              		.loc 1 202 23 view .LVU329
+ 1088 001c 0093     		str	r3, [sp]
+ 203:Bsp/Bsp_Uart.c ****     uart_cfg.Init.WordLength = UART_WORDLENGTH_8B;
+ 1089              		.loc 1 203 5 is_stmt 1 view .LVU330
+ 203:Bsp/Bsp_Uart.c ****     uart_cfg.Init.WordLength = UART_WORDLENGTH_8B;
+ 1090              		.loc 1 203 33 is_stmt 0 view .LVU331
+ 1091 001e 2368     		ldr	r3, [r4]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 32
+
+
+ 203:Bsp/Bsp_Uart.c ****     uart_cfg.Init.WordLength = UART_WORDLENGTH_8B;
+ 1092              		.loc 1 203 28 view .LVU332
+ 1093 0020 0193     		str	r3, [sp, #4]
+ 204:Bsp/Bsp_Uart.c ****     uart_cfg.Init.StopBits = UART_STOPBITS_1;
+ 1094              		.loc 1 204 5 is_stmt 1 view .LVU333
+ 204:Bsp/Bsp_Uart.c ****     uart_cfg.Init.StopBits = UART_STOPBITS_1;
+ 1095              		.loc 1 204 30 is_stmt 0 view .LVU334
+ 1096 0022 0023     		movs	r3, #0
+ 1097 0024 0293     		str	r3, [sp, #8]
+ 205:Bsp/Bsp_Uart.c ****     uart_cfg.Init.Parity = UART_PARITY_NONE;
+ 1098              		.loc 1 205 5 is_stmt 1 view .LVU335
+ 205:Bsp/Bsp_Uart.c ****     uart_cfg.Init.Parity = UART_PARITY_NONE;
+ 1099              		.loc 1 205 28 is_stmt 0 view .LVU336
+ 1100 0026 0393     		str	r3, [sp, #12]
+ 206:Bsp/Bsp_Uart.c ****     uart_cfg.Init.Mode = UART_MODE_TX_RX;
+ 1101              		.loc 1 206 5 is_stmt 1 view .LVU337
+ 206:Bsp/Bsp_Uart.c ****     uart_cfg.Init.Mode = UART_MODE_TX_RX;
+ 1102              		.loc 1 206 26 is_stmt 0 view .LVU338
+ 1103 0028 0493     		str	r3, [sp, #16]
+ 207:Bsp/Bsp_Uart.c ****     uart_cfg.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 1104              		.loc 1 207 5 is_stmt 1 view .LVU339
+ 207:Bsp/Bsp_Uart.c ****     uart_cfg.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 1105              		.loc 1 207 24 is_stmt 0 view .LVU340
+ 1106 002a 0C22     		movs	r2, #12
+ 1107 002c 0592     		str	r2, [sp, #20]
+ 208:Bsp/Bsp_Uart.c ****     uart_cfg.Init.OverSampling = UART_OVERSAMPLING_16;
+ 1108              		.loc 1 208 5 is_stmt 1 view .LVU341
+ 208:Bsp/Bsp_Uart.c ****     uart_cfg.Init.OverSampling = UART_OVERSAMPLING_16;
+ 1109              		.loc 1 208 29 is_stmt 0 view .LVU342
+ 1110 002e 0693     		str	r3, [sp, #24]
+ 209:Bsp/Bsp_Uart.c ****     uart_cfg.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+ 1111              		.loc 1 209 5 is_stmt 1 view .LVU343
+ 209:Bsp/Bsp_Uart.c ****     uart_cfg.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+ 1112              		.loc 1 209 32 is_stmt 0 view .LVU344
+ 1113 0030 0793     		str	r3, [sp, #28]
+ 210:Bsp/Bsp_Uart.c ****     uart_cfg.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+ 1114              		.loc 1 210 5 is_stmt 1 view .LVU345
+ 210:Bsp/Bsp_Uart.c ****     uart_cfg.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+ 1115              		.loc 1 210 34 is_stmt 0 view .LVU346
+ 1116 0032 0893     		str	r3, [sp, #32]
+ 211:Bsp/Bsp_Uart.c ****     uart_cfg.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT | UART_ADVFEATURE_
+ 1117              		.loc 1 211 5 is_stmt 1 view .LVU347
+ 211:Bsp/Bsp_Uart.c ****     uart_cfg.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT | UART_ADVFEATURE_
+ 1118              		.loc 1 211 34 is_stmt 0 view .LVU348
+ 1119 0034 0993     		str	r3, [sp, #36]
+ 212:Bsp/Bsp_Uart.c ****     uart_cfg.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+ 1120              		.loc 1 212 5 is_stmt 1 view .LVU349
+ 212:Bsp/Bsp_Uart.c ****     uart_cfg.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+ 1121              		.loc 1 212 42 is_stmt 0 view .LVU350
+ 1122 0036 3023     		movs	r3, #48
+ 1123 0038 0A93     		str	r3, [sp, #40]
+ 213:Bsp/Bsp_Uart.c ****     uart_cfg.AdvancedInit.DMADisableonRxError = UART_ADVFEATURE_DMA_DISABLEONRXERROR;
+ 1124              		.loc 1 213 5 is_stmt 1 view .LVU351
+ 213:Bsp/Bsp_Uart.c ****     uart_cfg.AdvancedInit.DMADisableonRxError = UART_ADVFEATURE_DMA_DISABLEONRXERROR;
+ 1125              		.loc 1 213 42 is_stmt 0 view .LVU352
+ 1126 003a 4FF48053 		mov	r3, #4096
+ 1127 003e 0F93     		str	r3, [sp, #60]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 33
+
+
+ 214:Bsp/Bsp_Uart.c **** 
+ 1128              		.loc 1 214 5 is_stmt 1 view .LVU353
+ 214:Bsp/Bsp_Uart.c **** 
+ 1129              		.loc 1 214 47 is_stmt 0 view .LVU354
+ 1130 0040 4FF40053 		mov	r3, #8192
+ 1131 0044 1093     		str	r3, [sp, #64]
+ 217:Bsp/Bsp_Uart.c ****         uart_cfg.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+ 1132              		.loc 1 217 5 is_stmt 1 view .LVU355
+ 217:Bsp/Bsp_Uart.c ****         uart_cfg.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+ 1133              		.loc 1 217 12 is_stmt 0 view .LVU356
+ 1134 0046 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 217:Bsp/Bsp_Uart.c ****         uart_cfg.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+ 1135              		.loc 1 217 8 view .LVU357
+ 1136 0048 13B1     		cbz	r3, .L91
+ 218:Bsp/Bsp_Uart.c **** 
+ 1137              		.loc 1 218 9 is_stmt 1 view .LVU358
+ 218:Bsp/Bsp_Uart.c **** 
+ 1138              		.loc 1 218 36 is_stmt 0 view .LVU359
+ 1139 004a 4FF40043 		mov	r3, #32768
+ 1140 004e 0E93     		str	r3, [sp, #56]
+ 1141              	.L91:
+ 220:Bsp/Bsp_Uart.c **** 
+ 1142              		.loc 1 220 5 is_stmt 1 view .LVU360
+ 220:Bsp/Bsp_Uart.c **** 
+ 1143              		.loc 1 220 14 is_stmt 0 view .LVU361
+ 1144 0050 04F10906 		add	r6, r4, #9
+ 1145 0054 9022     		movs	r2, #144
+ 1146 0056 6946     		mov	r1, sp
+ 1147 0058 3046     		mov	r0, r6
+ 1148 005a FFF7FEFF 		bl	memcpy
+ 1149              	.LVL86:
+ 222:Bsp/Bsp_Uart.c ****         return false;
+ 1150              		.loc 1 222 5 is_stmt 1 view .LVU362
+ 222:Bsp/Bsp_Uart.c ****         return false;
+ 1151              		.loc 1 222 9 is_stmt 0 view .LVU363
+ 1152 005e 3046     		mov	r0, r6
+ 1153 0060 FFF7FEFF 		bl	HAL_UART_Init
+ 1154              	.LVL87:
+ 222:Bsp/Bsp_Uart.c ****         return false;
+ 1155              		.loc 1 222 8 view .LVU364
+ 1156 0064 10B1     		cbz	r0, .L107
+ 223:Bsp/Bsp_Uart.c **** 
+ 1157              		.loc 1 223 16 view .LVU365
+ 1158 0066 0020     		movs	r0, #0
+ 1159              	.L90:
+ 280:Bsp/Bsp_Uart.c **** 
+ 1160              		.loc 1 280 1 view .LVU366
+ 1161 0068 24B0     		add	sp, sp, #144
+ 1162              	.LCFI18:
+ 1163              		.cfi_remember_state
+ 1164              		.cfi_def_cfa_offset 16
+ 1165              		@ sp needed
+ 1166 006a 70BD     		pop	{r4, r5, r6, pc}
+ 1167              	.LVL88:
+ 1168              	.L107:
+ 1169              	.LCFI19:
+ 1170              		.cfi_restore_state
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 34
+
+
+ 225:Bsp/Bsp_Uart.c ****     {
+ 1171              		.loc 1 225 5 is_stmt 1 view .LVU367
+ 225:Bsp/Bsp_Uart.c ****     {
+ 1172              		.loc 1 225 9 is_stmt 0 view .LVU368
+ 1173 006c 2046     		mov	r0, r4
+ 1174 006e FFF7FEFF 		bl	BspUart_Init_DMA
+ 1175              	.LVL89:
+ 225:Bsp/Bsp_Uart.c ****     {
+ 1176              		.loc 1 225 8 view .LVU369
+ 1177 0072 0028     		cmp	r0, #0
+ 1178 0074 09DB     		blt	.L108
+ 230:Bsp/Bsp_Uart.c **** 
+ 1179              		.loc 1 230 9 is_stmt 1 view .LVU370
+ 230:Bsp/Bsp_Uart.c **** 
+ 1180              		.loc 1 230 23 is_stmt 0 view .LVU371
+ 1181 0076 0123     		movs	r3, #1
+ 1182 0078 84F8BB31 		strb	r3, [r4, #443]
+ 1183              	.L93:
+ 232:Bsp/Bsp_Uart.c ****         HAL_UARTEx_SetRxFifoThreshold(&uart_cfg, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK ||
+ 1184              		.loc 1 232 5 is_stmt 1 view .LVU372
+ 232:Bsp/Bsp_Uart.c ****         HAL_UARTEx_SetRxFifoThreshold(&uart_cfg, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK ||
+ 1185              		.loc 1 232 9 is_stmt 0 view .LVU373
+ 1186 007c 0021     		movs	r1, #0
+ 1187 007e 6846     		mov	r0, sp
+ 1188 0080 FFF7FEFF 		bl	HAL_UARTEx_SetTxFifoThreshold
+ 1189              	.LVL90:
+ 232:Bsp/Bsp_Uart.c ****         HAL_UARTEx_SetRxFifoThreshold(&uart_cfg, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK ||
+ 1190              		.loc 1 232 8 view .LVU374
+ 1191 0084 28B1     		cbz	r0, .L109
+ 1192              	.L94:
+ 235:Bsp/Bsp_Uart.c **** 
+ 1193              		.loc 1 235 9 is_stmt 1 view .LVU375
+ 235:Bsp/Bsp_Uart.c **** 
+ 1194              		.loc 1 235 16 is_stmt 0 view .LVU376
+ 1195 0086 0020     		movs	r0, #0
+ 1196 0088 EEE7     		b	.L90
+ 1197              	.L108:
+ 227:Bsp/Bsp_Uart.c ****     }
+ 1198              		.loc 1 227 9 is_stmt 1 view .LVU377
+ 227:Bsp/Bsp_Uart.c ****     }
+ 1199              		.loc 1 227 23 is_stmt 0 view .LVU378
+ 1200 008a 0223     		movs	r3, #2
+ 1201 008c 84F8BB31 		strb	r3, [r4, #443]
+ 1202 0090 F4E7     		b	.L93
+ 1203              	.L109:
+ 233:Bsp/Bsp_Uart.c ****         HAL_UARTEx_DisableFifoMode(&uart_cfg) != HAL_OK)
+ 1204              		.loc 1 233 9 discriminator 1 view .LVU379
+ 1205 0092 0021     		movs	r1, #0
+ 1206 0094 6846     		mov	r0, sp
+ 1207 0096 FFF7FEFF 		bl	HAL_UARTEx_SetRxFifoThreshold
+ 1208              	.LVL91:
+ 232:Bsp/Bsp_Uart.c ****         HAL_UARTEx_SetRxFifoThreshold(&uart_cfg, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK ||
+ 1209              		.loc 1 232 87 discriminator 1 view .LVU380
+ 1210 009a 0028     		cmp	r0, #0
+ 1211 009c F3D1     		bne	.L94
+ 234:Bsp/Bsp_Uart.c ****         return false;
+ 1212              		.loc 1 234 9 view .LVU381
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 35
+
+
+ 1213 009e 6846     		mov	r0, sp
+ 1214 00a0 FFF7FEFF 		bl	HAL_UARTEx_DisableFifoMode
+ 1215              	.LVL92:
+ 233:Bsp/Bsp_Uart.c ****         HAL_UARTEx_DisableFifoMode(&uart_cfg) != HAL_OK)
+ 1216              		.loc 1 233 87 view .LVU382
+ 1217 00a4 0028     		cmp	r0, #0
+ 1218 00a6 EED1     		bne	.L94
+ 237:Bsp/Bsp_Uart.c ****         return false;
+ 1219              		.loc 1 237 5 is_stmt 1 view .LVU383
+ 237:Bsp/Bsp_Uart.c ****         return false;
+ 1220              		.loc 1 237 13 is_stmt 0 view .LVU384
+ 1221 00a8 D4F8AD31 		ldr	r3, [r4, #429]	@ unaligned
+ 237:Bsp/Bsp_Uart.c ****         return false;
+ 1222              		.loc 1 237 8 view .LVU385
+ 1223 00ac 002B     		cmp	r3, #0
+ 1224 00ae 5BD0     		beq	.L103
+ 237:Bsp/Bsp_Uart.c ****         return false;
+ 1225              		.loc 1 237 38 discriminator 1 view .LVU386
+ 1226 00b0 B4F8B131 		ldrh	r3, [r4, #433]	@ unaligned
+ 237:Bsp/Bsp_Uart.c ****         return false;
+ 1227              		.loc 1 237 31 discriminator 1 view .LVU387
+ 1228 00b4 0BB9     		cbnz	r3, .L110
+ 238:Bsp/Bsp_Uart.c **** 
+ 1229              		.loc 1 238 16 view .LVU388
+ 1230 00b6 0020     		movs	r0, #0
+ 1231 00b8 D6E7     		b	.L90
+ 1232              	.L110:
+ 240:Bsp/Bsp_Uart.c ****     obj->send_finish = false;
+ 1233              		.loc 1 240 5 is_stmt 1 view .LVU389
+ 240:Bsp/Bsp_Uart.c ****     obj->send_finish = false;
+ 1234              		.loc 1 240 34 is_stmt 0 view .LVU390
+ 1235 00ba 2D4B     		ldr	r3, .L113
+ 1236 00bc 43F82540 		str	r4, [r3, r5, lsl #2]
+ 241:Bsp/Bsp_Uart.c ****     obj->wait_till_send_finish = false;
+ 1237              		.loc 1 241 5 is_stmt 1 view .LVU391
+ 241:Bsp/Bsp_Uart.c ****     obj->wait_till_send_finish = false;
+ 1238              		.loc 1 241 22 is_stmt 0 view .LVU392
+ 1239 00c0 0023     		movs	r3, #0
+ 1240 00c2 84F8B931 		strb	r3, [r4, #441]
+ 242:Bsp/Bsp_Uart.c **** 
+ 1241              		.loc 1 242 5 is_stmt 1 view .LVU393
+ 242:Bsp/Bsp_Uart.c **** 
+ 1242              		.loc 1 242 32 is_stmt 0 view .LVU394
+ 1243 00c6 84F8B831 		strb	r3, [r4, #440]
+ 244:Bsp/Bsp_Uart.c **** 
+ 1244              		.loc 1 244 5 is_stmt 1 view .LVU395
+ 1245 00ca C4F8BC31 		str	r3, [r4, #444]	@ unaligned
+ 1246 00ce C4F8C031 		str	r3, [r4, #448]	@ unaligned
+ 1247 00d2 C4F8C431 		str	r3, [r4, #452]	@ unaligned
+ 1248 00d6 C4F8C831 		str	r3, [r4, #456]	@ unaligned
+ 1249 00da C4F8CC31 		str	r3, [r4, #460]	@ unaligned
+ 1250 00de C4F8D031 		str	r3, [r4, #464]	@ unaligned
+ 1251 00e2 C4F8D431 		str	r3, [r4, #468]	@ unaligned
+ 247:Bsp/Bsp_Uart.c ****     {
+ 1252              		.loc 1 247 5 view .LVU396
+ 247:Bsp/Bsp_Uart.c ****     {
+ 1253              		.loc 1 247 16 is_stmt 0 view .LVU397
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 36
+
+
+ 1254 00e6 94F8BB31 		ldrb	r3, [r4, #443]	@ zero_extendqisi2
+ 247:Bsp/Bsp_Uart.c ****     {
+ 1255              		.loc 1 247 5 view .LVU398
+ 1256 00ea 012B     		cmp	r3, #1
+ 1257 00ec 03D0     		beq	.L96
+ 247:Bsp/Bsp_Uart.c ****     {
+ 1258              		.loc 1 247 5 view .LVU399
+ 1259 00ee 022B     		cmp	r3, #2
+ 1260 00f0 22D0     		beq	.L97
+ 1261 00f2 0020     		movs	r0, #0
+ 1262 00f4 B8E7     		b	.L90
+ 1263              	.L96:
+ 250:Bsp/Bsp_Uart.c ****         break;
+ 1264              		.loc 1 250 9 is_stmt 1 view .LVU400
+ 1265 00f6 D4F80920 		ldr	r2, [r4, #9]	@ unaligned
+ 1266 00fa 1368     		ldr	r3, [r2]
+ 1267 00fc 43F01003 		orr	r3, r3, #16
+ 1268 0100 1360     		str	r3, [r2]
+ 251:Bsp/Bsp_Uart.c **** 
+ 1269              		.loc 1 251 9 view .LVU401
+ 1270              	.L98:
+ 261:Bsp/Bsp_Uart.c ****     __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_PE);
+ 1271              		.loc 1 261 5 view .LVU402
+ 1272 0102 D4F80920 		ldr	r2, [r4, #9]	@ unaligned
+ 1273 0106 9368     		ldr	r3, [r2, #8]
+ 1274 0108 23F00103 		bic	r3, r3, #1
+ 1275 010c 9360     		str	r3, [r2, #8]
+ 262:Bsp/Bsp_Uart.c **** 
+ 1276              		.loc 1 262 5 view .LVU403
+ 1277 010e D4F80920 		ldr	r2, [r4, #9]	@ unaligned
+ 1278 0112 1368     		ldr	r3, [r2]
+ 1279 0114 23F48073 		bic	r3, r3, #256
+ 1280 0118 1360     		str	r3, [r2]
+ 264:Bsp/Bsp_Uart.c ****         return false;
+ 1281              		.loc 1 264 5 view .LVU404
+ 264:Bsp/Bsp_Uart.c ****         return false;
+ 1282              		.loc 1 264 9 is_stmt 0 view .LVU405
+ 1283 011a 2046     		mov	r0, r4
+ 1284 011c FFF7FEFF 		bl	BspUart_SetIRQ
+ 1285              	.LVL93:
+ 264:Bsp/Bsp_Uart.c ****         return false;
+ 1286              		.loc 1 264 8 view .LVU406
+ 1287 0120 0028     		cmp	r0, #0
+ 1288 0122 23DB     		blt	.L105
+ 267:Bsp/Bsp_Uart.c ****     {
+ 1289              		.loc 1 267 5 is_stmt 1 view .LVU407
+ 267:Bsp/Bsp_Uart.c ****     {
+ 1290              		.loc 1 267 12 is_stmt 0 view .LVU408
+ 1291 0124 94F8BB31 		ldrb	r3, [r4, #443]	@ zero_extendqisi2
+ 267:Bsp/Bsp_Uart.c ****     {
+ 1292              		.loc 1 267 8 view .LVU409
+ 1293 0128 012B     		cmp	r3, #1
+ 1294 012a 0CD0     		beq	.L111
+ 272:Bsp/Bsp_Uart.c ****     {
+ 1295              		.loc 1 272 10 is_stmt 1 view .LVU410
+ 272:Bsp/Bsp_Uart.c ****     {
+ 1296              		.loc 1 272 13 is_stmt 0 view .LVU411
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 37
+
+
+ 1297 012c 022B     		cmp	r3, #2
+ 1298 012e 12D0     		beq	.L112
+ 1299              	.L100:
+ 278:Bsp/Bsp_Uart.c ****     return true;
+ 1300              		.loc 1 278 5 is_stmt 1 view .LVU412
+ 278:Bsp/Bsp_Uart.c ****     return true;
+ 1301              		.loc 1 278 21 is_stmt 0 view .LVU413
+ 1302 0130 0120     		movs	r0, #1
+ 1303 0132 84F8BA01 		strb	r0, [r4, #442]
+ 279:Bsp/Bsp_Uart.c **** }
+ 1304              		.loc 1 279 5 is_stmt 1 view .LVU414
+ 279:Bsp/Bsp_Uart.c **** }
+ 1305              		.loc 1 279 12 is_stmt 0 view .LVU415
+ 1306 0136 97E7     		b	.L90
+ 1307              	.L97:
+ 254:Bsp/Bsp_Uart.c ****         break;
+ 1308              		.loc 1 254 9 is_stmt 1 view .LVU416
+ 1309 0138 D4F80920 		ldr	r2, [r4, #9]	@ unaligned
+ 1310 013c 1368     		ldr	r3, [r2]
+ 1311 013e 43F02003 		orr	r3, r3, #32
+ 1312 0142 1360     		str	r3, [r2]
+ 255:Bsp/Bsp_Uart.c **** 
+ 1313              		.loc 1 255 9 view .LVU417
+ 1314 0144 DDE7     		b	.L98
+ 1315              	.L111:
+ 270:Bsp/Bsp_Uart.c ****     }
+ 1316              		.loc 1 270 9 view .LVU418
+ 1317 0146 B4F8B121 		ldrh	r2, [r4, #433]	@ unaligned
+ 1318 014a D4F8AD11 		ldr	r1, [r4, #429]	@ unaligned
+ 1319 014e 3046     		mov	r0, r6
+ 1320 0150 FFF7FEFF 		bl	HAL_UART_Receive_DMA
+ 1321              	.LVL94:
+ 1322 0154 ECE7     		b	.L100
+ 1323              	.L112:
+ 275:Bsp/Bsp_Uart.c ****     }
+ 1324              		.loc 1 275 9 view .LVU419
+ 1325 0156 0122     		movs	r2, #1
+ 1326 0158 04F2B311 		addw	r1, r4, #435
+ 1327 015c 3046     		mov	r0, r6
+ 1328 015e FFF7FEFF 		bl	HAL_UART_Receive_IT
+ 1329              	.LVL95:
+ 1330 0162 E5E7     		b	.L100
+ 1331              	.L101:
+ 200:Bsp/Bsp_Uart.c **** 
+ 1332              		.loc 1 200 16 is_stmt 0 view .LVU420
+ 1333 0164 0020     		movs	r0, #0
+ 1334 0166 7FE7     		b	.L90
+ 1335              	.L103:
+ 238:Bsp/Bsp_Uart.c **** 
+ 1336              		.loc 1 238 16 view .LVU421
+ 1337 0168 0020     		movs	r0, #0
+ 1338 016a 7DE7     		b	.L90
+ 1339              	.L105:
+ 265:Bsp/Bsp_Uart.c **** 
+ 1340              		.loc 1 265 16 view .LVU422
+ 1341 016c 0020     		movs	r0, #0
+ 1342 016e 7BE7     		b	.L90
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 38
+
+
+ 1343              	.L114:
+ 1344              		.align	2
+ 1345              	.L113:
+ 1346 0170 00000000 		.word	.LANCHOR0
+ 1347              		.cfi_endproc
+ 1348              	.LFE147:
+ 1350              		.section	.text.BSP_UART_DMAStopRx,"ax",%progbits
+ 1351              		.align	1
+ 1352              		.syntax unified
+ 1353              		.thumb
+ 1354              		.thumb_func
+ 1355              		.fpu fpv5-d16
+ 1357              	BSP_UART_DMAStopRx:
+ 1358              	.LVL96:
+ 1359              	.LFB154:
+ 389:Bsp/Bsp_Uart.c **** 
+ 390:Bsp/Bsp_Uart.c **** static void BSP_UART_DMAStopRx(BspUART_Port_List index)
+ 391:Bsp/Bsp_Uart.c **** {
+ 1360              		.loc 1 391 1 is_stmt 1 view -0
+ 1361              		.cfi_startproc
+ 1362              		@ args = 0, pretend = 0, frame = 144
+ 1363              		@ frame_needed = 0, uses_anonymous_args = 0
+ 392:Bsp/Bsp_Uart.c ****     UART_HandleTypeDef hdl;
+ 1364              		.loc 1 392 5 view .LVU424
+ 393:Bsp/Bsp_Uart.c **** 
+ 394:Bsp/Bsp_Uart.c ****     if (BspUart_Obj_List[index])
+ 1365              		.loc 1 394 5 view .LVU425
+ 1366              		.loc 1 394 25 is_stmt 0 view .LVU426
+ 1367 0000 144B     		ldr	r3, .L123
+ 1368 0002 53F82010 		ldr	r1, [r3, r0, lsl #2]
+ 1369              		.loc 1 394 8 view .LVU427
+ 1370 0006 19B3     		cbz	r1, .L119
+ 391:Bsp/Bsp_Uart.c ****     UART_HandleTypeDef hdl;
+ 1371              		.loc 1 391 1 view .LVU428
+ 1372 0008 10B5     		push	{r4, lr}
+ 1373              	.LCFI20:
+ 1374              		.cfi_def_cfa_offset 8
+ 1375              		.cfi_offset 4, -8
+ 1376              		.cfi_offset 14, -4
+ 1377 000a A4B0     		sub	sp, sp, #144
+ 1378              	.LCFI21:
+ 1379              		.cfi_def_cfa_offset 152
+ 1380              	.LBB5:
+ 395:Bsp/Bsp_Uart.c ****     {
+ 396:Bsp/Bsp_Uart.c ****         hdl = BspUart_Obj_List[index]->hdl;
+ 1381              		.loc 1 396 9 is_stmt 1 view .LVU429
+ 1382              		.loc 1 396 13 is_stmt 0 view .LVU430
+ 1383 000c 9022     		movs	r2, #144
+ 1384 000e 0931     		adds	r1, r1, #9
+ 1385 0010 6846     		mov	r0, sp
+ 1386              	.LVL97:
+ 1387              		.loc 1 396 13 view .LVU431
+ 1388 0012 FFF7FEFF 		bl	memcpy
+ 1389              	.LVL98:
+ 397:Bsp/Bsp_Uart.c **** 
+ 398:Bsp/Bsp_Uart.c ****         const HAL_UART_StateTypeDef rxstate = hdl.RxState;
+ 1390              		.loc 1 398 9 is_stmt 1 view .LVU432
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 39
+
+
+ 1391              		.loc 1 398 37 is_stmt 0 view .LVU433
+ 1392 0016 229A     		ldr	r2, [sp, #136]
+ 1393              	.LVL99:
+ 399:Bsp/Bsp_Uart.c **** 
+ 400:Bsp/Bsp_Uart.c ****         /* Stop UART DMA Rx request if ongoing */
+ 401:Bsp/Bsp_Uart.c ****         if ((HAL_IS_BIT_SET(hdl.Instance->CR3, USART_CR3_DMAR)) &&
+ 1394              		.loc 1 401 9 is_stmt 1 view .LVU434
+ 1395              		.loc 1 401 14 is_stmt 0 view .LVU435
+ 1396 0018 009C     		ldr	r4, [sp]
+ 1397 001a A368     		ldr	r3, [r4, #8]
+ 1398              		.loc 1 401 12 view .LVU436
+ 1399 001c 13F0400F 		tst	r3, #64
+ 1400 0020 01D0     		beq	.L115
+ 1401              		.loc 1 401 65 discriminator 1 view .LVU437
+ 1402 0022 222A     		cmp	r2, #34
+ 1403 0024 01D0     		beq	.L122
+ 1404              	.LVL100:
+ 1405              	.L115:
+ 1406              		.loc 1 401 65 discriminator 1 view .LVU438
+ 1407              	.LBE5:
+ 402:Bsp/Bsp_Uart.c ****             (rxstate == HAL_UART_STATE_BUSY_RX))
+ 403:Bsp/Bsp_Uart.c ****         {
+ 404:Bsp/Bsp_Uart.c ****             CLEAR_BIT(hdl.Instance->CR3, USART_CR3_DMAR);
+ 405:Bsp/Bsp_Uart.c **** 
+ 406:Bsp/Bsp_Uart.c ****             /* Abort the UART DMA Rx channel */
+ 407:Bsp/Bsp_Uart.c ****             if (hdl.hdmarx != NULL)
+ 408:Bsp/Bsp_Uart.c ****             {
+ 409:Bsp/Bsp_Uart.c ****                 HAL_DMA_Abort(hdl.hdmarx);
+ 410:Bsp/Bsp_Uart.c ****             }
+ 411:Bsp/Bsp_Uart.c **** 
+ 412:Bsp/Bsp_Uart.c ****             /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
+ 413:Bsp/Bsp_Uart.c ****             CLEAR_BIT(hdl.Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE));
+ 414:Bsp/Bsp_Uart.c ****             CLEAR_BIT(hdl.Instance->CR3, USART_CR3_EIE);
+ 415:Bsp/Bsp_Uart.c **** 
+ 416:Bsp/Bsp_Uart.c ****             /* At end of Rx process, restore huart->RxState to Ready */
+ 417:Bsp/Bsp_Uart.c ****             hdl.RxState = HAL_UART_STATE_READY;
+ 418:Bsp/Bsp_Uart.c ****         }
+ 419:Bsp/Bsp_Uart.c ****     }
+ 420:Bsp/Bsp_Uart.c **** }
+ 1408              		.loc 1 420 1 view .LVU439
+ 1409 0026 24B0     		add	sp, sp, #144
+ 1410              	.LCFI22:
+ 1411              		.cfi_remember_state
+ 1412              		.cfi_def_cfa_offset 8
+ 1413              		@ sp needed
+ 1414 0028 10BD     		pop	{r4, pc}
+ 1415              	.LVL101:
+ 1416              	.L122:
+ 1417              	.LCFI23:
+ 1418              		.cfi_restore_state
+ 1419              	.LBB6:
+ 404:Bsp/Bsp_Uart.c **** 
+ 1420              		.loc 1 404 13 is_stmt 1 view .LVU440
+ 1421 002a A368     		ldr	r3, [r4, #8]
+ 1422 002c 23F04003 		bic	r3, r3, #64
+ 1423 0030 A360     		str	r3, [r4, #8]
+ 407:Bsp/Bsp_Uart.c ****             {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 40
+
+
+ 1424              		.loc 1 407 13 view .LVU441
+ 407:Bsp/Bsp_Uart.c ****             {
+ 1425              		.loc 1 407 20 is_stmt 0 view .LVU442
+ 1426 0032 1F98     		ldr	r0, [sp, #124]
+ 407:Bsp/Bsp_Uart.c ****             {
+ 1427              		.loc 1 407 16 view .LVU443
+ 1428 0034 08B1     		cbz	r0, .L117
+ 409:Bsp/Bsp_Uart.c ****             }
+ 1429              		.loc 1 409 17 is_stmt 1 view .LVU444
+ 1430 0036 FFF7FEFF 		bl	HAL_DMA_Abort
+ 1431              	.LVL102:
+ 1432              	.L117:
+ 413:Bsp/Bsp_Uart.c ****             CLEAR_BIT(hdl.Instance->CR3, USART_CR3_EIE);
+ 1433              		.loc 1 413 13 view .LVU445
+ 1434 003a 2368     		ldr	r3, [r4]
+ 1435 003c 23F49073 		bic	r3, r3, #288
+ 1436 0040 2360     		str	r3, [r4]
+ 414:Bsp/Bsp_Uart.c **** 
+ 1437              		.loc 1 414 13 view .LVU446
+ 1438 0042 A368     		ldr	r3, [r4, #8]
+ 1439 0044 23F00103 		bic	r3, r3, #1
+ 1440 0048 A360     		str	r3, [r4, #8]
+ 417:Bsp/Bsp_Uart.c ****         }
+ 1441              		.loc 1 417 13 view .LVU447
+ 417:Bsp/Bsp_Uart.c ****         }
+ 1442              		.loc 1 417 25 is_stmt 0 view .LVU448
+ 1443 004a 2023     		movs	r3, #32
+ 1444 004c 2293     		str	r3, [sp, #136]
+ 1445              	.LBE6:
+ 1446              		.loc 1 420 1 view .LVU449
+ 1447 004e EAE7     		b	.L115
+ 1448              	.LVL103:
+ 1449              	.L119:
+ 1450              	.LCFI24:
+ 1451              		.cfi_def_cfa_offset 0
+ 1452              		.cfi_restore 4
+ 1453              		.cfi_restore 14
+ 1454              		.loc 1 420 1 view .LVU450
+ 1455 0050 7047     		bx	lr
+ 1456              	.L124:
+ 1457 0052 00BF     		.align	2
+ 1458              	.L123:
+ 1459 0054 00000000 		.word	.LANCHOR0
+ 1460              		.cfi_endproc
+ 1461              	.LFE154:
+ 1463              		.section	.text.BspUart_GetObj_Handle,"ax",%progbits
+ 1464              		.align	1
+ 1465              		.global	BspUart_GetObj_Handle
+ 1466              		.syntax unified
+ 1467              		.thumb
+ 1468              		.thumb_func
+ 1469              		.fpu fpv5-d16
+ 1471              	BspUart_GetObj_Handle:
+ 1472              	.LVL104:
+ 1473              	.LFB152:
+ 342:Bsp/Bsp_Uart.c ****     if (index >= BspUART_Port_Sum)
+ 1474              		.loc 1 342 1 is_stmt 1 view -0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 41
+
+
+ 1475              		.cfi_startproc
+ 1476              		@ args = 0, pretend = 0, frame = 0
+ 1477              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1478              		@ link register save eliminated.
+ 343:Bsp/Bsp_Uart.c ****         return NULL;
+ 1479              		.loc 1 343 5 view .LVU452
+ 343:Bsp/Bsp_Uart.c ****         return NULL;
+ 1480              		.loc 1 343 8 is_stmt 0 view .LVU453
+ 1481 0000 0228     		cmp	r0, #2
+ 1482 0002 04D8     		bhi	.L127
+ 346:Bsp/Bsp_Uart.c **** }
+ 1483              		.loc 1 346 5 is_stmt 1 view .LVU454
+ 346:Bsp/Bsp_Uart.c **** }
+ 1484              		.loc 1 346 30 is_stmt 0 view .LVU455
+ 1485 0004 034B     		ldr	r3, .L128
+ 1486 0006 53F82000 		ldr	r0, [r3, r0, lsl #2]
+ 1487              	.LVL105:
+ 346:Bsp/Bsp_Uart.c **** }
+ 1488              		.loc 1 346 12 view .LVU456
+ 1489 000a 0930     		adds	r0, r0, #9
+ 1490 000c 7047     		bx	lr
+ 1491              	.LVL106:
+ 1492              	.L127:
+ 344:Bsp/Bsp_Uart.c **** 
+ 1493              		.loc 1 344 16 view .LVU457
+ 1494 000e 0020     		movs	r0, #0
+ 1495              	.LVL107:
+ 347:Bsp/Bsp_Uart.c **** 
+ 1496              		.loc 1 347 1 view .LVU458
+ 1497 0010 7047     		bx	lr
+ 1498              	.L129:
+ 1499 0012 00BF     		.align	2
+ 1500              	.L128:
+ 1501 0014 00000000 		.word	.LANCHOR0
+ 1502              		.cfi_endproc
+ 1503              	.LFE152:
+ 1505              		.section	.text.UART_IRQ_Callback,"ax",%progbits
+ 1506              		.align	1
+ 1507              		.global	UART_IRQ_Callback
+ 1508              		.syntax unified
+ 1509              		.thumb
+ 1510              		.thumb_func
+ 1511              		.fpu fpv5-d16
+ 1513              	UART_IRQ_Callback:
+ 1514              	.LVL108:
+ 1515              	.LFB155:
+ 421:Bsp/Bsp_Uart.c **** 
+ 422:Bsp/Bsp_Uart.c **** /******************************** irq callback ***********************************/
+ 423:Bsp/Bsp_Uart.c **** void UART_IRQ_Callback(BspUART_Port_List index)
+ 424:Bsp/Bsp_Uart.c **** {
+ 1516              		.loc 1 424 1 is_stmt 1 view -0
+ 1517              		.cfi_startproc
+ 1518              		@ args = 0, pretend = 0, frame = 0
+ 1519              		@ frame_needed = 0, uses_anonymous_args = 0
+ 425:Bsp/Bsp_Uart.c ****     static UART_HandleTypeDef *hdl = NULL;
+ 1520              		.loc 1 425 5 view .LVU460
+ 426:Bsp/Bsp_Uart.c ****     static DMA_HandleTypeDef *rx_dma = NULL;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 42
+
+
+ 1521              		.loc 1 426 5 view .LVU461
+ 427:Bsp/Bsp_Uart.c ****     uint16_t len = 0;
+ 1522              		.loc 1 427 5 view .LVU462
+ 428:Bsp/Bsp_Uart.c ****     uint32_t isrflags = 0;
+ 1523              		.loc 1 428 5 view .LVU463
+ 429:Bsp/Bsp_Uart.c ****     uint32_t cr1its = 0;
+ 1524              		.loc 1 429 5 view .LVU464
+ 430:Bsp/Bsp_Uart.c ****     uint32_t errorflags = 0;
+ 1525              		.loc 1 430 5 view .LVU465
+ 431:Bsp/Bsp_Uart.c ****     uint32_t cr3its = 0;
+ 1526              		.loc 1 431 5 view .LVU466
+ 432:Bsp/Bsp_Uart.c **** 
+ 433:Bsp/Bsp_Uart.c ****     if (BspUart_Obj_List[index])
+ 1527              		.loc 1 433 5 view .LVU467
+ 1528              		.loc 1 433 25 is_stmt 0 view .LVU468
+ 1529 0000 4A4B     		ldr	r3, .L142
+ 1530 0002 53F82030 		ldr	r3, [r3, r0, lsl #2]
+ 1531              		.loc 1 433 8 view .LVU469
+ 1532 0006 002B     		cmp	r3, #0
+ 1533 0008 00F08E80 		beq	.L138
+ 424:Bsp/Bsp_Uart.c ****     static UART_HandleTypeDef *hdl = NULL;
+ 1534              		.loc 1 424 1 view .LVU470
+ 1535 000c 70B5     		push	{r4, r5, r6, lr}
+ 1536              	.LCFI25:
+ 1537              		.cfi_def_cfa_offset 16
+ 1538              		.cfi_offset 4, -16
+ 1539              		.cfi_offset 5, -12
+ 1540              		.cfi_offset 6, -8
+ 1541              		.cfi_offset 14, -4
+ 1542 000e 0446     		mov	r4, r0
+ 434:Bsp/Bsp_Uart.c ****     {
+ 435:Bsp/Bsp_Uart.c ****         hdl = &(BspUart_Obj_List[index]->hdl);
+ 1543              		.loc 1 435 9 is_stmt 1 view .LVU471
+ 1544              		.loc 1 435 15 is_stmt 0 view .LVU472
+ 1545 0010 03F10901 		add	r1, r3, #9
+ 1546              		.loc 1 435 13 view .LVU473
+ 1547 0014 464A     		ldr	r2, .L142+4
+ 1548 0016 1160     		str	r1, [r2]
+ 436:Bsp/Bsp_Uart.c ****         isrflags = READ_REG(hdl->Instance->ISR);
+ 1549              		.loc 1 436 9 is_stmt 1 view .LVU474
+ 1550              		.loc 1 436 20 is_stmt 0 view .LVU475
+ 1551 0018 D3F80920 		ldr	r2, [r3, #9]
+ 1552              		.loc 1 436 18 view .LVU476
+ 1553 001c D069     		ldr	r0, [r2, #28]
+ 1554              	.LVL109:
+ 437:Bsp/Bsp_Uart.c ****         cr1its = READ_REG(hdl->Instance->CR1);
+ 1555              		.loc 1 437 9 is_stmt 1 view .LVU477
+ 1556              		.loc 1 437 16 is_stmt 0 view .LVU478
+ 1557 001e 1668     		ldr	r6, [r2]
+ 1558              	.LVL110:
+ 438:Bsp/Bsp_Uart.c ****         cr3its = READ_REG(hdl->Instance->CR3);
+ 1559              		.loc 1 438 9 is_stmt 1 view .LVU479
+ 1560              		.loc 1 438 16 is_stmt 0 view .LVU480
+ 1561 0020 9568     		ldr	r5, [r2, #8]
+ 1562              	.LVL111:
+ 439:Bsp/Bsp_Uart.c ****         errorflags = (isrflags & (uint32_t)(USART_ISR_PE | USART_ISR_FE | USART_ISR_ORE | USART_ISR
+ 1563              		.loc 1 439 9 is_stmt 1 view .LVU481
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 43
+
+
+ 440:Bsp/Bsp_Uart.c **** 
+ 441:Bsp/Bsp_Uart.c ****         if (errorflags != 0)
+ 1564              		.loc 1 441 9 view .LVU482
+ 1565              		.loc 1 441 12 is_stmt 0 view .LVU483
+ 1566 0022 40F60F05 		movw	r5, #2063
+ 1567 0026 2842     		tst	r0, r5
+ 1568 0028 03D1     		bne	.L130
+ 442:Bsp/Bsp_Uart.c ****             return;
+ 443:Bsp/Bsp_Uart.c **** 
+ 444:Bsp/Bsp_Uart.c ****         if (BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Idle)
+ 1569              		.loc 1 444 9 is_stmt 1 view .LVU484
+ 1570              		.loc 1 444 36 is_stmt 0 view .LVU485
+ 1571 002a 93F8BB51 		ldrb	r5, [r3, #443]	@ zero_extendqisi2
+ 1572              		.loc 1 444 12 view .LVU486
+ 1573 002e 012D     		cmp	r5, #1
+ 1574 0030 00D0     		beq	.L141
+ 1575              	.LVL112:
+ 1576              	.L130:
+ 445:Bsp/Bsp_Uart.c ****         {
+ 446:Bsp/Bsp_Uart.c ****             rx_dma = &(BspUart_Obj_List[index]->rx_dma_hdl);
+ 447:Bsp/Bsp_Uart.c **** 
+ 448:Bsp/Bsp_Uart.c ****             if (hdl && rx_dma)
+ 449:Bsp/Bsp_Uart.c ****             {
+ 450:Bsp/Bsp_Uart.c ****                 const HAL_UART_StateTypeDef rxstate = hdl->RxState;
+ 451:Bsp/Bsp_Uart.c **** 
+ 452:Bsp/Bsp_Uart.c ****                 if ((RESET != (isrflags & USART_ISR_IDLE)) && (RESET != (cr1its & USART_CR1_IDLEIE)
+ 453:Bsp/Bsp_Uart.c ****                 {
+ 454:Bsp/Bsp_Uart.c ****                     __HAL_UART_CLEAR_IDLEFLAG(hdl);
+ 455:Bsp/Bsp_Uart.c **** 
+ 456:Bsp/Bsp_Uart.c ****                     BSP_UART_DMAStopRx(index);
+ 457:Bsp/Bsp_Uart.c **** 
+ 458:Bsp/Bsp_Uart.c ****                     len = BspUart_Obj_List[index]->rx_size - __HAL_DMA_GET_COUNTER(rx_dma);
+ 459:Bsp/Bsp_Uart.c **** 
+ 460:Bsp/Bsp_Uart.c ****                     if (len)
+ 461:Bsp/Bsp_Uart.c ****                     {
+ 462:Bsp/Bsp_Uart.c ****                         /* idle receive callback process */
+ 463:Bsp/Bsp_Uart.c ****                         if (BspUart_Obj_List[index]->RxCallback)
+ 464:Bsp/Bsp_Uart.c ****                             BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_
+ 465:Bsp/Bsp_Uart.c ****                                                                 BspUart_Obj_List[index]->rx_buf,
+ 466:Bsp/Bsp_Uart.c ****                                                                 len);
+ 467:Bsp/Bsp_Uart.c **** 
+ 468:Bsp/Bsp_Uart.c ****                         BspUart_Obj_List[index]->monitor.rx_cnt++;
+ 469:Bsp/Bsp_Uart.c ****                         HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List
+ 470:Bsp/Bsp_Uart.c ****                     }
+ 471:Bsp/Bsp_Uart.c ****                     else
+ 472:Bsp/Bsp_Uart.c ****                     {
+ 473:Bsp/Bsp_Uart.c ****                         BspUart_Obj_List[index]->monitor.rx_err_cnt++;
+ 474:Bsp/Bsp_Uart.c ****                         READ_REG(hdl->Instance->RDR);
+ 475:Bsp/Bsp_Uart.c ****                         __HAL_UART_CLEAR_OREFLAG(hdl);
+ 476:Bsp/Bsp_Uart.c ****                     }
+ 477:Bsp/Bsp_Uart.c ****                 }
+ 478:Bsp/Bsp_Uart.c ****             }
+ 479:Bsp/Bsp_Uart.c ****         }
+ 480:Bsp/Bsp_Uart.c ****     }
+ 481:Bsp/Bsp_Uart.c **** }
+ 1577              		.loc 1 481 1 view .LVU487
+ 1578 0032 70BD     		pop	{r4, r5, r6, pc}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 44
+
+
+ 1579              	.LVL113:
+ 1580              	.L141:
+ 446:Bsp/Bsp_Uart.c **** 
+ 1581              		.loc 1 446 13 is_stmt 1 view .LVU488
+ 446:Bsp/Bsp_Uart.c **** 
+ 1582              		.loc 1 446 22 is_stmt 0 view .LVU489
+ 1583 0034 03F21513 		addw	r3, r3, #277
+ 446:Bsp/Bsp_Uart.c **** 
+ 1584              		.loc 1 446 20 view .LVU490
+ 1585 0038 3E4D     		ldr	r5, .L142+8
+ 1586 003a 2B60     		str	r3, [r5]
+ 448:Bsp/Bsp_Uart.c ****             {
+ 1587              		.loc 1 448 13 is_stmt 1 view .LVU491
+ 448:Bsp/Bsp_Uart.c ****             {
+ 1588              		.loc 1 448 16 is_stmt 0 view .LVU492
+ 1589 003c 0029     		cmp	r1, #0
+ 1590 003e F8D0     		beq	.L130
+ 448:Bsp/Bsp_Uart.c ****             {
+ 1591              		.loc 1 448 21 discriminator 1 view .LVU493
+ 1592 0040 002B     		cmp	r3, #0
+ 1593 0042 F6D0     		beq	.L130
+ 1594              	.LBB7:
+ 450:Bsp/Bsp_Uart.c **** 
+ 1595              		.loc 1 450 17 is_stmt 1 view .LVU494
+ 450:Bsp/Bsp_Uart.c **** 
+ 1596              		.loc 1 450 45 is_stmt 0 view .LVU495
+ 1597 0044 D1F88830 		ldr	r3, [r1, #136]
+ 452:Bsp/Bsp_Uart.c ****                 {
+ 1598              		.loc 1 452 17 is_stmt 1 view .LVU496
+ 452:Bsp/Bsp_Uart.c ****                 {
+ 1599              		.loc 1 452 20 is_stmt 0 view .LVU497
+ 1600 0048 10F0100F 		tst	r0, #16
+ 1601 004c F1D0     		beq	.L130
+ 452:Bsp/Bsp_Uart.c ****                 {
+ 1602              		.loc 1 452 60 discriminator 1 view .LVU498
+ 1603 004e 16F0100F 		tst	r6, #16
+ 1604 0052 EED0     		beq	.L130
+ 454:Bsp/Bsp_Uart.c **** 
+ 1605              		.loc 1 454 21 is_stmt 1 view .LVU499
+ 1606 0054 1023     		movs	r3, #16
+ 1607 0056 1362     		str	r3, [r2, #32]
+ 456:Bsp/Bsp_Uart.c **** 
+ 1608              		.loc 1 456 21 view .LVU500
+ 1609 0058 2046     		mov	r0, r4
+ 1610              	.LVL114:
+ 456:Bsp/Bsp_Uart.c **** 
+ 1611              		.loc 1 456 21 is_stmt 0 view .LVU501
+ 1612 005a FFF7FEFF 		bl	BSP_UART_DMAStopRx
+ 1613              	.LVL115:
+ 458:Bsp/Bsp_Uart.c **** 
+ 1614              		.loc 1 458 21 is_stmt 1 view .LVU502
+ 458:Bsp/Bsp_Uart.c **** 
+ 1615              		.loc 1 458 43 is_stmt 0 view .LVU503
+ 1616 005e 334B     		ldr	r3, .L142
+ 1617 0060 53F82400 		ldr	r0, [r3, r4, lsl #2]
+ 458:Bsp/Bsp_Uart.c **** 
+ 1618              		.loc 1 458 50 view .LVU504
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 45
+
+
+ 1619 0064 B0F8B121 		ldrh	r2, [r0, #433]	@ unaligned
+ 458:Bsp/Bsp_Uart.c **** 
+ 1620              		.loc 1 458 62 view .LVU505
+ 1621 0068 2B68     		ldr	r3, [r5]
+ 1622 006a 1B68     		ldr	r3, [r3]
+ 458:Bsp/Bsp_Uart.c **** 
+ 1623              		.loc 1 458 60 view .LVU506
+ 1624 006c 324D     		ldr	r5, .L142+12
+ 1625 006e 3349     		ldr	r1, .L142+16
+ 1626 0070 8B42     		cmp	r3, r1
+ 1627 0072 18BF     		it	ne
+ 1628 0074 AB42     		cmpne	r3, r5
+ 1629 0076 2DD0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1630              		.loc 1 458 62 discriminator 2 view .LVU507
+ 1631 0078 1831     		adds	r1, r1, #24
+ 1632 007a 8B42     		cmp	r3, r1
+ 1633 007c 2AD0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1634              		.loc 1 458 62 discriminator 4 view .LVU508
+ 1635 007e 1831     		adds	r1, r1, #24
+ 1636 0080 8B42     		cmp	r3, r1
+ 1637 0082 27D0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1638              		.loc 1 458 62 discriminator 6 view .LVU509
+ 1639 0084 1831     		adds	r1, r1, #24
+ 1640 0086 8B42     		cmp	r3, r1
+ 1641 0088 24D0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1642              		.loc 1 458 62 discriminator 8 view .LVU510
+ 1643 008a 1831     		adds	r1, r1, #24
+ 1644 008c 8B42     		cmp	r3, r1
+ 1645 008e 21D0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1646              		.loc 1 458 62 discriminator 10 view .LVU511
+ 1647 0090 1831     		adds	r1, r1, #24
+ 1648 0092 8B42     		cmp	r3, r1
+ 1649 0094 1ED0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1650              		.loc 1 458 62 discriminator 12 view .LVU512
+ 1651 0096 1831     		adds	r1, r1, #24
+ 1652 0098 8B42     		cmp	r3, r1
+ 1653 009a 1BD0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1654              		.loc 1 458 62 discriminator 14 view .LVU513
+ 1655 009c 01F55671 		add	r1, r1, #856
+ 1656 00a0 8B42     		cmp	r3, r1
+ 1657 00a2 17D0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1658              		.loc 1 458 62 discriminator 16 view .LVU514
+ 1659 00a4 1831     		adds	r1, r1, #24
+ 1660 00a6 8B42     		cmp	r3, r1
+ 1661 00a8 14D0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1662              		.loc 1 458 62 discriminator 18 view .LVU515
+ 1663 00aa 1831     		adds	r1, r1, #24
+ 1664 00ac 8B42     		cmp	r3, r1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 46
+
+
+ 1665 00ae 11D0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1666              		.loc 1 458 62 discriminator 20 view .LVU516
+ 1667 00b0 1831     		adds	r1, r1, #24
+ 1668 00b2 8B42     		cmp	r3, r1
+ 1669 00b4 0ED0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1670              		.loc 1 458 62 discriminator 22 view .LVU517
+ 1671 00b6 1831     		adds	r1, r1, #24
+ 1672 00b8 8B42     		cmp	r3, r1
+ 1673 00ba 0BD0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1674              		.loc 1 458 62 discriminator 24 view .LVU518
+ 1675 00bc 1831     		adds	r1, r1, #24
+ 1676 00be 8B42     		cmp	r3, r1
+ 1677 00c0 08D0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1678              		.loc 1 458 62 discriminator 26 view .LVU519
+ 1679 00c2 1831     		adds	r1, r1, #24
+ 1680 00c4 8B42     		cmp	r3, r1
+ 1681 00c6 05D0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1682              		.loc 1 458 62 discriminator 28 view .LVU520
+ 1683 00c8 1831     		adds	r1, r1, #24
+ 1684 00ca 8B42     		cmp	r3, r1
+ 1685 00cc 02D0     		beq	.L132
+ 458:Bsp/Bsp_Uart.c **** 
+ 1686              		.loc 1 458 62 discriminator 30 view .LVU521
+ 1687 00ce 5B68     		ldr	r3, [r3, #4]
+ 458:Bsp/Bsp_Uart.c **** 
+ 1688              		.loc 1 458 60 discriminator 30 view .LVU522
+ 1689 00d0 9BB2     		uxth	r3, r3
+ 1690 00d2 01E0     		b	.L134
+ 1691              	.L132:
+ 458:Bsp/Bsp_Uart.c **** 
+ 1692              		.loc 1 458 62 discriminator 29 view .LVU523
+ 1693 00d4 5B68     		ldr	r3, [r3, #4]
+ 458:Bsp/Bsp_Uart.c **** 
+ 1694              		.loc 1 458 60 discriminator 29 view .LVU524
+ 1695 00d6 9BB2     		uxth	r3, r3
+ 1696              	.L134:
+ 458:Bsp/Bsp_Uart.c **** 
+ 1697              		.loc 1 458 25 discriminator 32 view .LVU525
+ 1698 00d8 D21A     		subs	r2, r2, r3
+ 1699 00da 92B2     		uxth	r2, r2
+ 1700              	.LVL116:
+ 460:Bsp/Bsp_Uart.c ****                     {
+ 1701              		.loc 1 460 21 is_stmt 1 discriminator 32 view .LVU526
+ 460:Bsp/Bsp_Uart.c ****                     {
+ 1702              		.loc 1 460 24 is_stmt 0 discriminator 32 view .LVU527
+ 1703 00dc C2B1     		cbz	r2, .L135
+ 463:Bsp/Bsp_Uart.c ****                             BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_
+ 1704              		.loc 1 463 25 is_stmt 1 view .LVU528
+ 463:Bsp/Bsp_Uart.c ****                             BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_
+ 1705              		.loc 1 463 52 is_stmt 0 view .LVU529
+ 1706 00de D0F8A931 		ldr	r3, [r0, #425]	@ unaligned
+ 463:Bsp/Bsp_Uart.c ****                             BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 47
+
+
+ 1707              		.loc 1 463 28 view .LVU530
+ 1708 00e2 23B1     		cbz	r3, .L136
+ 464:Bsp/Bsp_Uart.c ****                                                                 BspUart_Obj_List[index]->rx_buf,
+ 1709              		.loc 1 464 29 is_stmt 1 view .LVU531
+ 1710 00e4 D0F8AD11 		ldr	r1, [r0, #429]	@ unaligned
+ 1711 00e8 D0F8B401 		ldr	r0, [r0, #436]	@ unaligned
+ 1712 00ec 9847     		blx	r3
+ 1713              	.LVL117:
+ 1714              	.L136:
+ 468:Bsp/Bsp_Uart.c ****                         HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List
+ 1715              		.loc 1 468 25 view .LVU532
+ 468:Bsp/Bsp_Uart.c ****                         HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List
+ 1716              		.loc 1 468 41 is_stmt 0 view .LVU533
+ 1717 00ee 0F4B     		ldr	r3, .L142
+ 1718 00f0 53F82430 		ldr	r3, [r3, r4, lsl #2]
+ 468:Bsp/Bsp_Uart.c ****                         HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List
+ 1719              		.loc 1 468 57 view .LVU534
+ 1720 00f4 D3F8BC21 		ldr	r2, [r3, #444]	@ unaligned
+ 468:Bsp/Bsp_Uart.c ****                         HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List
+ 1721              		.loc 1 468 64 view .LVU535
+ 1722 00f8 0132     		adds	r2, r2, #1
+ 1723 00fa C3F8BC21 		str	r2, [r3, #444]	@ unaligned
+ 469:Bsp/Bsp_Uart.c ****                     }
+ 1724              		.loc 1 469 25 is_stmt 1 view .LVU536
+ 1725 00fe B3F8B121 		ldrh	r2, [r3, #433]	@ unaligned
+ 1726 0102 D3F8AD11 		ldr	r1, [r3, #429]	@ unaligned
+ 1727 0106 0A4B     		ldr	r3, .L142+4
+ 1728 0108 1868     		ldr	r0, [r3]
+ 1729 010a FFF7FEFF 		bl	HAL_UART_Receive_DMA
+ 1730              	.LVL118:
+ 1731 010e 90E7     		b	.L130
+ 1732              	.LVL119:
+ 1733              	.L135:
+ 473:Bsp/Bsp_Uart.c ****                         READ_REG(hdl->Instance->RDR);
+ 1734              		.loc 1 473 25 view .LVU537
+ 473:Bsp/Bsp_Uart.c ****                         READ_REG(hdl->Instance->RDR);
+ 1735              		.loc 1 473 57 is_stmt 0 view .LVU538
+ 1736 0110 D0F8C431 		ldr	r3, [r0, #452]	@ unaligned
+ 473:Bsp/Bsp_Uart.c ****                         READ_REG(hdl->Instance->RDR);
+ 1737              		.loc 1 473 68 view .LVU539
+ 1738 0114 0133     		adds	r3, r3, #1
+ 1739 0116 C0F8C431 		str	r3, [r0, #452]	@ unaligned
+ 474:Bsp/Bsp_Uart.c ****                         __HAL_UART_CLEAR_OREFLAG(hdl);
+ 1740              		.loc 1 474 25 is_stmt 1 view .LVU540
+ 1741 011a 054B     		ldr	r3, .L142+4
+ 1742 011c 1B68     		ldr	r3, [r3]
+ 1743 011e 1B68     		ldr	r3, [r3]
+ 1744 0120 5A6A     		ldr	r2, [r3, #36]
+ 1745              	.LVL120:
+ 475:Bsp/Bsp_Uart.c ****                     }
+ 1746              		.loc 1 475 25 view .LVU541
+ 1747 0122 0822     		movs	r2, #8
+ 1748 0124 1A62     		str	r2, [r3, #32]
+ 475:Bsp/Bsp_Uart.c ****                     }
+ 1749              		.loc 1 475 25 is_stmt 0 view .LVU542
+ 1750 0126 84E7     		b	.L130
+ 1751              	.LVL121:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 48
+
+
+ 1752              	.L138:
+ 1753              	.LCFI26:
+ 1754              		.cfi_def_cfa_offset 0
+ 1755              		.cfi_restore 4
+ 1756              		.cfi_restore 5
+ 1757              		.cfi_restore 6
+ 1758              		.cfi_restore 14
+ 475:Bsp/Bsp_Uart.c ****                     }
+ 1759              		.loc 1 475 25 view .LVU543
+ 1760 0128 7047     		bx	lr
+ 1761              	.L143:
+ 1762 012a 00BF     		.align	2
+ 1763              	.L142:
+ 1764 012c 00000000 		.word	.LANCHOR0
+ 1765 0130 00000000 		.word	.LANCHOR1
+ 1766 0134 00000000 		.word	.LANCHOR2
+ 1767 0138 10000240 		.word	1073872912
+ 1768 013c 28000240 		.word	1073872936
+ 1769              	.LBE7:
+ 1770              		.cfi_endproc
+ 1771              	.LFE155:
+ 1773              		.section	.text.HAL_UART_RxCpltCallback,"ax",%progbits
+ 1774              		.align	1
+ 1775              		.global	HAL_UART_RxCpltCallback
+ 1776              		.syntax unified
+ 1777              		.thumb
+ 1778              		.thumb_func
+ 1779              		.fpu fpv5-d16
+ 1781              	HAL_UART_RxCpltCallback:
+ 1782              	.LVL122:
+ 1783              	.LFB156:
+ 482:Bsp/Bsp_Uart.c **** 
+ 483:Bsp/Bsp_Uart.c **** /* receive full */
+ 484:Bsp/Bsp_Uart.c **** void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+ 485:Bsp/Bsp_Uart.c **** {
+ 1784              		.loc 1 485 1 is_stmt 1 view -0
+ 1785              		.cfi_startproc
+ 1786              		@ args = 0, pretend = 0, frame = 0
+ 1787              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1788              		.loc 1 485 1 is_stmt 0 view .LVU545
+ 1789 0000 38B5     		push	{r3, r4, r5, lr}
+ 1790              	.LCFI27:
+ 1791              		.cfi_def_cfa_offset 16
+ 1792              		.cfi_offset 3, -16
+ 1793              		.cfi_offset 4, -12
+ 1794              		.cfi_offset 5, -8
+ 1795              		.cfi_offset 14, -4
+ 486:Bsp/Bsp_Uart.c ****     uint8_t index = 0;
+ 1796              		.loc 1 486 5 is_stmt 1 view .LVU546
+ 1797              	.LVL123:
+ 487:Bsp/Bsp_Uart.c **** 
+ 488:Bsp/Bsp_Uart.c ****     if (huart->Instance == UART4)
+ 1798              		.loc 1 488 5 view .LVU547
+ 1799              		.loc 1 488 14 is_stmt 0 view .LVU548
+ 1800 0002 0368     		ldr	r3, [r0]
+ 1801              		.loc 1 488 8 view .LVU549
+ 1802 0004 2B4A     		ldr	r2, .L158
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 49
+
+
+ 1803 0006 9342     		cmp	r3, r2
+ 1804 0008 0AD0     		beq	.L151
+ 489:Bsp/Bsp_Uart.c ****     {
+ 490:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 491:Bsp/Bsp_Uart.c ****     }
+ 492:Bsp/Bsp_Uart.c ****     else if (huart->Instance == USART6)
+ 1805              		.loc 1 492 10 is_stmt 1 view .LVU550
+ 1806              		.loc 1 492 13 is_stmt 0 view .LVU551
+ 1807 000a 02F54842 		add	r2, r2, #51200
+ 1808 000e 9342     		cmp	r3, r2
+ 1809 0010 30D0     		beq	.L152
+ 493:Bsp/Bsp_Uart.c ****     {
+ 494:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 495:Bsp/Bsp_Uart.c ****     }
+ 496:Bsp/Bsp_Uart.c ****     else if (huart->Instance == UART7)
+ 1810              		.loc 1 496 10 is_stmt 1 view .LVU552
+ 1811              		.loc 1 496 13 is_stmt 0 view .LVU553
+ 1812 0012 A2F51C42 		sub	r2, r2, #39936
+ 1813 0016 9342     		cmp	r3, r2
+ 1814 0018 00D0     		beq	.L155
+ 1815              	.LVL124:
+ 1816              	.L144:
+ 497:Bsp/Bsp_Uart.c ****     {
+ 498:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 499:Bsp/Bsp_Uart.c ****     }
+ 500:Bsp/Bsp_Uart.c ****     else
+ 501:Bsp/Bsp_Uart.c ****         return;
+ 502:Bsp/Bsp_Uart.c **** 
+ 503:Bsp/Bsp_Uart.c ****     if (BspUart_Obj_List[index])
+ 504:Bsp/Bsp_Uart.c ****     {
+ 505:Bsp/Bsp_Uart.c ****         if (BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Idle)
+ 506:Bsp/Bsp_Uart.c ****         {
+ 507:Bsp/Bsp_Uart.c ****             if (BspUart_Obj_List[index]->RxCallback)
+ 508:Bsp/Bsp_Uart.c ****                 BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
+ 509:Bsp/Bsp_Uart.c ****                                                     BspUart_Obj_List[index]->rx_buf,
+ 510:Bsp/Bsp_Uart.c ****                                                     BspUart_Obj_List[index]->rx_size);
+ 511:Bsp/Bsp_Uart.c **** 
+ 512:Bsp/Bsp_Uart.c ****             HAL_UART_Receive_DMA(&(BspUart_Obj_List[index]->hdl), BspUart_Obj_List[index]->rx_buf, 
+ 513:Bsp/Bsp_Uart.c **** 
+ 514:Bsp/Bsp_Uart.c ****             BspUart_Obj_List[index]->monitor.rx_full_cnt++;
+ 515:Bsp/Bsp_Uart.c ****         }
+ 516:Bsp/Bsp_Uart.c ****         else if (BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Byte)
+ 517:Bsp/Bsp_Uart.c ****         {
+ 518:Bsp/Bsp_Uart.c ****             if (HAL_UART_GetState(&(BspUart_Obj_List[index]->hdl) == HAL_UART_STATE_READY))
+ 519:Bsp/Bsp_Uart.c ****             {
+ 520:Bsp/Bsp_Uart.c ****                 if (BspUart_Obj_List[index]->RxCallback)
+ 521:Bsp/Bsp_Uart.c ****                     BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr, &B
+ 522:Bsp/Bsp_Uart.c **** 
+ 523:Bsp/Bsp_Uart.c ****                 HAL_UART_Receive_IT(&(BspUart_Obj_List[index]->hdl), &BspUart_Obj_List[index]->rx_s
+ 524:Bsp/Bsp_Uart.c ****             }
+ 525:Bsp/Bsp_Uart.c ****         }
+ 526:Bsp/Bsp_Uart.c ****     }
+ 527:Bsp/Bsp_Uart.c **** }
+ 1817              		.loc 1 527 1 view .LVU554
+ 1818 001a 38BD     		pop	{r3, r4, r5, pc}
+ 1819              	.LVL125:
+ 1820              	.L155:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 50
+
+
+ 498:Bsp/Bsp_Uart.c ****     }
+ 1821              		.loc 1 498 15 view .LVU555
+ 1822 001c 0223     		movs	r3, #2
+ 1823 001e 00E0     		b	.L145
+ 1824              	.L151:
+ 490:Bsp/Bsp_Uart.c ****     }
+ 1825              		.loc 1 490 15 view .LVU556
+ 1826 0020 0023     		movs	r3, #0
+ 1827              	.L145:
+ 1828              	.LVL126:
+ 503:Bsp/Bsp_Uart.c ****     {
+ 1829              		.loc 1 503 5 is_stmt 1 view .LVU557
+ 503:Bsp/Bsp_Uart.c ****     {
+ 1830              		.loc 1 503 25 is_stmt 0 view .LVU558
+ 1831 0022 1C46     		mov	r4, r3
+ 1832 0024 244A     		ldr	r2, .L158+4
+ 1833 0026 52F82330 		ldr	r3, [r2, r3, lsl #2]
+ 1834              	.LVL127:
+ 503:Bsp/Bsp_Uart.c ****     {
+ 1835              		.loc 1 503 8 view .LVU559
+ 1836 002a 002B     		cmp	r3, #0
+ 1837 002c F5D0     		beq	.L144
+ 505:Bsp/Bsp_Uart.c ****         {
+ 1838              		.loc 1 505 9 is_stmt 1 view .LVU560
+ 505:Bsp/Bsp_Uart.c ****         {
+ 1839              		.loc 1 505 36 is_stmt 0 view .LVU561
+ 1840 002e 93F8BB21 		ldrb	r2, [r3, #443]	@ zero_extendqisi2
+ 505:Bsp/Bsp_Uart.c ****         {
+ 1841              		.loc 1 505 12 view .LVU562
+ 1842 0032 012A     		cmp	r2, #1
+ 1843 0034 20D0     		beq	.L156
+ 516:Bsp/Bsp_Uart.c ****         {
+ 1844              		.loc 1 516 14 is_stmt 1 view .LVU563
+ 516:Bsp/Bsp_Uart.c ****         {
+ 1845              		.loc 1 516 17 is_stmt 0 view .LVU564
+ 1846 0036 022A     		cmp	r2, #2
+ 1847 0038 EFD1     		bne	.L144
+ 518:Bsp/Bsp_Uart.c ****             {
+ 1848              		.loc 1 518 13 is_stmt 1 view .LVU565
+ 518:Bsp/Bsp_Uart.c ****             {
+ 1849              		.loc 1 518 17 is_stmt 0 view .LVU566
+ 1850 003a 172B     		cmp	r3, #23
+ 1851 003c 38D0     		beq	.L157
+ 1852 003e 0020     		movs	r0, #0
+ 1853              	.LVL128:
+ 1854              	.L149:
+ 518:Bsp/Bsp_Uart.c ****             {
+ 1855              		.loc 1 518 17 discriminator 4 view .LVU567
+ 1856 0040 FFF7FEFF 		bl	HAL_UART_GetState
+ 1857              	.LVL129:
+ 518:Bsp/Bsp_Uart.c ****             {
+ 1858              		.loc 1 518 16 discriminator 4 view .LVU568
+ 1859 0044 0028     		cmp	r0, #0
+ 1860 0046 E8D0     		beq	.L144
+ 520:Bsp/Bsp_Uart.c ****                     BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr, &B
+ 1861              		.loc 1 520 17 is_stmt 1 view .LVU569
+ 520:Bsp/Bsp_Uart.c ****                     BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr, &B
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 51
+
+
+ 1862              		.loc 1 520 37 is_stmt 0 view .LVU570
+ 1863 0048 1B4B     		ldr	r3, .L158+4
+ 1864 004a 53F82430 		ldr	r3, [r3, r4, lsl #2]
+ 520:Bsp/Bsp_Uart.c ****                     BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr, &B
+ 1865              		.loc 1 520 44 view .LVU571
+ 1866 004e D3F8A951 		ldr	r5, [r3, #425]	@ unaligned
+ 520:Bsp/Bsp_Uart.c ****                     BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr, &B
+ 1867              		.loc 1 520 20 view .LVU572
+ 1868 0052 2DB1     		cbz	r5, .L150
+ 521:Bsp/Bsp_Uart.c **** 
+ 1869              		.loc 1 521 21 is_stmt 1 view .LVU573
+ 1870 0054 0122     		movs	r2, #1
+ 1871 0056 03F2B311 		addw	r1, r3, #435
+ 1872 005a D3F8B401 		ldr	r0, [r3, #436]	@ unaligned
+ 1873 005e A847     		blx	r5
+ 1874              	.LVL130:
+ 1875              	.L150:
+ 523:Bsp/Bsp_Uart.c ****             }
+ 1876              		.loc 1 523 17 view .LVU574
+ 523:Bsp/Bsp_Uart.c ****             }
+ 1877              		.loc 1 523 55 is_stmt 0 view .LVU575
+ 1878 0060 154B     		ldr	r3, .L158+4
+ 1879 0062 53F82400 		ldr	r0, [r3, r4, lsl #2]
+ 523:Bsp/Bsp_Uart.c ****             }
+ 1880              		.loc 1 523 17 view .LVU576
+ 1881 0066 0122     		movs	r2, #1
+ 1882 0068 00F2B311 		addw	r1, r0, #435
+ 1883 006c 0930     		adds	r0, r0, #9
+ 1884 006e FFF7FEFF 		bl	HAL_UART_Receive_IT
+ 1885              	.LVL131:
+ 1886 0072 D2E7     		b	.L144
+ 1887              	.LVL132:
+ 1888              	.L152:
+ 494:Bsp/Bsp_Uart.c ****     }
+ 1889              		.loc 1 494 15 view .LVU577
+ 1890 0074 0123     		movs	r3, #1
+ 1891 0076 D4E7     		b	.L145
+ 1892              	.LVL133:
+ 1893              	.L156:
+ 507:Bsp/Bsp_Uart.c ****                 BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
+ 1894              		.loc 1 507 13 is_stmt 1 view .LVU578
+ 507:Bsp/Bsp_Uart.c ****                 BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
+ 1895              		.loc 1 507 40 is_stmt 0 view .LVU579
+ 1896 0078 D3F8A951 		ldr	r5, [r3, #425]	@ unaligned
+ 507:Bsp/Bsp_Uart.c ****                 BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
+ 1897              		.loc 1 507 16 view .LVU580
+ 1898 007c 35B1     		cbz	r5, .L148
+ 508:Bsp/Bsp_Uart.c ****                                                     BspUart_Obj_List[index]->rx_buf,
+ 1899              		.loc 1 508 17 is_stmt 1 view .LVU581
+ 1900 007e B3F8B121 		ldrh	r2, [r3, #433]	@ unaligned
+ 1901 0082 D3F8AD11 		ldr	r1, [r3, #429]	@ unaligned
+ 1902 0086 D3F8B401 		ldr	r0, [r3, #436]	@ unaligned
+ 1903              	.LVL134:
+ 508:Bsp/Bsp_Uart.c ****                                                     BspUart_Obj_List[index]->rx_buf,
+ 1904              		.loc 1 508 17 is_stmt 0 view .LVU582
+ 1905 008a A847     		blx	r5
+ 1906              	.LVL135:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 52
+
+
+ 1907              	.L148:
+ 512:Bsp/Bsp_Uart.c **** 
+ 1908              		.loc 1 512 13 is_stmt 1 view .LVU583
+ 512:Bsp/Bsp_Uart.c **** 
+ 1909              		.loc 1 512 52 is_stmt 0 view .LVU584
+ 1910 008c 0A4D     		ldr	r5, .L158+4
+ 1911 008e 55F82400 		ldr	r0, [r5, r4, lsl #2]
+ 512:Bsp/Bsp_Uart.c **** 
+ 1912              		.loc 1 512 13 view .LVU585
+ 1913 0092 B0F8B121 		ldrh	r2, [r0, #433]	@ unaligned
+ 1914 0096 D0F8AD11 		ldr	r1, [r0, #429]	@ unaligned
+ 1915 009a 0930     		adds	r0, r0, #9
+ 1916 009c FFF7FEFF 		bl	HAL_UART_Receive_DMA
+ 1917              	.LVL136:
+ 514:Bsp/Bsp_Uart.c ****         }
+ 1918              		.loc 1 514 13 is_stmt 1 view .LVU586
+ 514:Bsp/Bsp_Uart.c ****         }
+ 1919              		.loc 1 514 29 is_stmt 0 view .LVU587
+ 1920 00a0 55F82420 		ldr	r2, [r5, r4, lsl #2]
+ 514:Bsp/Bsp_Uart.c ****         }
+ 1921              		.loc 1 514 45 view .LVU588
+ 1922 00a4 D2F8C831 		ldr	r3, [r2, #456]	@ unaligned
+ 514:Bsp/Bsp_Uart.c ****         }
+ 1923              		.loc 1 514 57 view .LVU589
+ 1924 00a8 0133     		adds	r3, r3, #1
+ 1925 00aa C2F8C831 		str	r3, [r2, #456]	@ unaligned
+ 1926 00ae B4E7     		b	.L144
+ 1927              	.LVL137:
+ 1928              	.L157:
+ 518:Bsp/Bsp_Uart.c ****             {
+ 1929              		.loc 1 518 17 view .LVU590
+ 1930 00b0 0120     		movs	r0, #1
+ 1931              	.LVL138:
+ 518:Bsp/Bsp_Uart.c ****             {
+ 1932              		.loc 1 518 17 view .LVU591
+ 1933 00b2 C5E7     		b	.L149
+ 1934              	.L159:
+ 1935              		.align	2
+ 1936              	.L158:
+ 1937 00b4 004C0040 		.word	1073761280
+ 1938 00b8 00000000 		.word	.LANCHOR0
+ 1939              		.cfi_endproc
+ 1940              	.LFE156:
+ 1942              		.section	.text.HAL_UART_TxCpltCallback,"ax",%progbits
+ 1943              		.align	1
+ 1944              		.global	HAL_UART_TxCpltCallback
+ 1945              		.syntax unified
+ 1946              		.thumb
+ 1947              		.thumb_func
+ 1948              		.fpu fpv5-d16
+ 1950              	HAL_UART_TxCpltCallback:
+ 1951              	.LVL139:
+ 1952              	.LFB157:
+ 528:Bsp/Bsp_Uart.c **** 
+ 529:Bsp/Bsp_Uart.c **** /* transfer full */
+ 530:Bsp/Bsp_Uart.c **** void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+ 531:Bsp/Bsp_Uart.c **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 53
+
+
+ 1953              		.loc 1 531 1 is_stmt 1 view -0
+ 1954              		.cfi_startproc
+ 1955              		@ args = 0, pretend = 0, frame = 0
+ 1956              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1957              		@ link register save eliminated.
+ 532:Bsp/Bsp_Uart.c ****     uint8_t index = 0;
+ 1958              		.loc 1 532 5 view .LVU593
+ 533:Bsp/Bsp_Uart.c **** 
+ 534:Bsp/Bsp_Uart.c ****     if (huart->Instance == UART4)
+ 1959              		.loc 1 534 5 view .LVU594
+ 1960              		.loc 1 534 14 is_stmt 0 view .LVU595
+ 1961 0000 0368     		ldr	r3, [r0]
+ 1962              		.loc 1 534 8 view .LVU596
+ 1963 0002 0F4A     		ldr	r2, .L166
+ 1964 0004 9342     		cmp	r3, r2
+ 1965 0006 0AD0     		beq	.L163
+ 535:Bsp/Bsp_Uart.c ****     {
+ 536:Bsp/Bsp_Uart.c ****         index = BspUART_Port_4;
+ 537:Bsp/Bsp_Uart.c ****     }
+ 538:Bsp/Bsp_Uart.c ****     else if (huart->Instance == USART6)
+ 1966              		.loc 1 538 10 is_stmt 1 view .LVU597
+ 1967              		.loc 1 538 13 is_stmt 0 view .LVU598
+ 1968 0008 02F54842 		add	r2, r2, #51200
+ 1969 000c 9342     		cmp	r3, r2
+ 1970 000e 14D0     		beq	.L164
+ 539:Bsp/Bsp_Uart.c ****     {
+ 540:Bsp/Bsp_Uart.c ****         index = BspUART_Port_6;
+ 541:Bsp/Bsp_Uart.c ****     }
+ 542:Bsp/Bsp_Uart.c ****     else if (huart->Instance == UART7)
+ 1971              		.loc 1 542 10 is_stmt 1 view .LVU599
+ 1972              		.loc 1 542 13 is_stmt 0 view .LVU600
+ 1973 0010 A2F51C42 		sub	r2, r2, #39936
+ 1974 0014 9342     		cmp	r3, r2
+ 1975 0016 00D0     		beq	.L165
+ 1976              	.LVL140:
+ 1977              	.L160:
+ 543:Bsp/Bsp_Uart.c ****     {
+ 544:Bsp/Bsp_Uart.c ****         index = BspUART_Port_7;
+ 545:Bsp/Bsp_Uart.c ****     }
+ 546:Bsp/Bsp_Uart.c ****     else
+ 547:Bsp/Bsp_Uart.c ****         return;
+ 548:Bsp/Bsp_Uart.c **** 
+ 549:Bsp/Bsp_Uart.c ****     if (BspUart_Obj_List[index])
+ 550:Bsp/Bsp_Uart.c ****     {
+ 551:Bsp/Bsp_Uart.c ****         if (BspUart_Obj_List[index]->wait_till_send_finish)
+ 552:Bsp/Bsp_Uart.c ****             BspUart_Obj_List[index]->send_finish = true;
+ 553:Bsp/Bsp_Uart.c ****     }
+ 554:Bsp/Bsp_Uart.c **** }
+ 1978              		.loc 1 554 1 view .LVU601
+ 1979 0018 7047     		bx	lr
+ 1980              	.LVL141:
+ 1981              	.L165:
+ 544:Bsp/Bsp_Uart.c ****     }
+ 1982              		.loc 1 544 15 view .LVU602
+ 1983 001a 0222     		movs	r2, #2
+ 1984 001c 00E0     		b	.L161
+ 1985              	.L163:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 54
+
+
+ 536:Bsp/Bsp_Uart.c ****     }
+ 1986              		.loc 1 536 15 view .LVU603
+ 1987 001e 0022     		movs	r2, #0
+ 1988              	.L161:
+ 1989              	.LVL142:
+ 549:Bsp/Bsp_Uart.c ****     {
+ 1990              		.loc 1 549 5 is_stmt 1 view .LVU604
+ 549:Bsp/Bsp_Uart.c ****     {
+ 1991              		.loc 1 549 25 is_stmt 0 view .LVU605
+ 1992 0020 084B     		ldr	r3, .L166+4
+ 1993 0022 53F82230 		ldr	r3, [r3, r2, lsl #2]
+ 549:Bsp/Bsp_Uart.c ****     {
+ 1994              		.loc 1 549 8 view .LVU606
+ 1995 0026 002B     		cmp	r3, #0
+ 1996 0028 F6D0     		beq	.L160
+ 551:Bsp/Bsp_Uart.c ****             BspUart_Obj_List[index]->send_finish = true;
+ 1997              		.loc 1 551 9 is_stmt 1 view .LVU607
+ 551:Bsp/Bsp_Uart.c ****             BspUart_Obj_List[index]->send_finish = true;
+ 1998              		.loc 1 551 36 is_stmt 0 view .LVU608
+ 1999 002a 93F8B821 		ldrb	r2, [r3, #440]	@ zero_extendqisi2
+ 2000              	.LVL143:
+ 551:Bsp/Bsp_Uart.c ****             BspUart_Obj_List[index]->send_finish = true;
+ 2001              		.loc 1 551 12 view .LVU609
+ 2002 002e 002A     		cmp	r2, #0
+ 2003 0030 F2D0     		beq	.L160
+ 552:Bsp/Bsp_Uart.c ****     }
+ 2004              		.loc 1 552 13 is_stmt 1 view .LVU610
+ 552:Bsp/Bsp_Uart.c ****     }
+ 2005              		.loc 1 552 50 is_stmt 0 view .LVU611
+ 2006 0032 0122     		movs	r2, #1
+ 2007 0034 83F8B921 		strb	r2, [r3, #441]
+ 2008 0038 EEE7     		b	.L160
+ 2009              	.LVL144:
+ 2010              	.L164:
+ 540:Bsp/Bsp_Uart.c ****     }
+ 2011              		.loc 1 540 15 view .LVU612
+ 2012 003a 0122     		movs	r2, #1
+ 2013 003c F0E7     		b	.L161
+ 2014              	.L167:
+ 2015 003e 00BF     		.align	2
+ 2016              	.L166:
+ 2017 0040 004C0040 		.word	1073761280
+ 2018 0044 00000000 		.word	.LANCHOR0
+ 2019              		.cfi_endproc
+ 2020              	.LFE157:
+ 2022              		.global	BspUart
+ 2023              		.section	.bss.BspUart_Obj_List,"aw",%nobits
+ 2024              		.align	2
+ 2025              		.set	.LANCHOR0,. + 0
+ 2028              	BspUart_Obj_List:
+ 2029 0000 00000000 		.space	12
+ 2029      00000000 
+ 2029      00000000 
+ 2030              		.section	.bss.hdl.12633,"aw",%nobits
+ 2031              		.align	2
+ 2032              		.set	.LANCHOR1,. + 0
+ 2035              	hdl.12633:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 55
+
+
+ 2036 0000 00000000 		.space	4
+ 2037              		.section	.bss.rx_dma.12634,"aw",%nobits
+ 2038              		.align	2
+ 2039              		.set	.LANCHOR2,. + 0
+ 2042              	rx_dma.12634:
+ 2043 0000 00000000 		.space	4
+ 2044              		.section	.data.BspUart,"aw"
+ 2045              		.align	2
+ 2048              	BspUart:
+ 2049 0000 00000000 		.word	BspUart_Init
+ 2050 0004 00000000 		.word	BspUart_Set_Parity
+ 2051 0008 00000000 		.word	BspUart_Set_StopBit
+ 2052 000c 00000000 		.word	BspUart_Set_DataBit
+ 2053 0010 00000000 		.word	BspUart_Swap_Pin
+ 2054 0014 00000000 		.word	BspUart_Transfer
+ 2055              		.text
+ 2056              	.Letext0:
+ 2057              		.file 2 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 2058              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 2059              		.file 4 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 2060              		.file 5 "HAL_Lib/CMSIS/Core/Include/core_cm7.h"
+ 2061              		.file 6 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/system_stm32h7xx.h"
+ 2062              		.file 7 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h7xx.h"
+ 2063              		.file 8 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 2064              		.file 9 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 2065              		.file 10 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\lib\\gcc\\arm-non
+ 2066              		.file 11 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\in
+ 2067              		.file 12 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\in
+ 2068              		.file 13 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 2069              		.file 14 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc_ex.h"
+ 2070              		.file 15 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 2071              		.file 16 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 2072              		.file 17 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h"
+ 2073              		.file 18 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 2074              		.file 19 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 2075              		.file 20 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\in
+ 2076              		.file 21 "Bsp/Bsp_GPIO.h"
+ 2077              		.file 22 "Bsp/Bsp_DMA.h"
+ 2078              		.file 23 "Bsp/Bsp_Uart.h"
+ 2079              		.file 24 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h"
+ 2080              		.file 25 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cortex.h"
+ 2081              		.file 26 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 56
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Bsp_Uart.c
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:17     .text.BspUart_Transfer:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:24     .text.BspUart_Transfer:00000000 BspUart_Transfer
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:163    .text.BspUart_Set_DataBit:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:170    .text.BspUart_Set_DataBit:00000000 BspUart_Set_DataBit
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:220    .text.BspUart_Set_Parity:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:227    .text.BspUart_Set_Parity:00000000 BspUart_Set_Parity
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:277    .text.BspUart_Set_StopBit:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:284    .text.BspUart_Set_StopBit:00000000 BspUart_Set_StopBit
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:334    .text.BspUart_Swap_Pin:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:341    .text.BspUart_Swap_Pin:00000000 BspUart_Swap_Pin
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:417    .text.BspUart_Init_Clock:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:423    .text.BspUart_Init_Clock:00000000 BspUart_Init_Clock
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:650    .text.BspUart_Init_Clock:00000104 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:659    .text.BspUart_Init_DMA:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:665    .text.BspUart_Init_DMA:00000000 BspUart_Init_DMA
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:911    .text.BspUart_Init_DMA:00000108 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:919    .text.BspUart_SetIRQ:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:925    .text.BspUart_SetIRQ:00000000 BspUart_SetIRQ
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1037   .text.BspUart_SetIRQ:00000058 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1042   .text.BspUart_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1048   .text.BspUart_Init:00000000 BspUart_Init
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1346   .text.BspUart_Init:00000170 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1351   .text.BSP_UART_DMAStopRx:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1357   .text.BSP_UART_DMAStopRx:00000000 BSP_UART_DMAStopRx
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1459   .text.BSP_UART_DMAStopRx:00000054 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1464   .text.BspUart_GetObj_Handle:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1471   .text.BspUart_GetObj_Handle:00000000 BspUart_GetObj_Handle
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1501   .text.BspUart_GetObj_Handle:00000014 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1506   .text.UART_IRQ_Callback:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1513   .text.UART_IRQ_Callback:00000000 UART_IRQ_Callback
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1764   .text.UART_IRQ_Callback:0000012c $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1774   .text.HAL_UART_RxCpltCallback:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1781   .text.HAL_UART_RxCpltCallback:00000000 HAL_UART_RxCpltCallback
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1937   .text.HAL_UART_RxCpltCallback:000000b4 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1943   .text.HAL_UART_TxCpltCallback:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:1950   .text.HAL_UART_TxCpltCallback:00000000 HAL_UART_TxCpltCallback
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:2017   .text.HAL_UART_TxCpltCallback:00000040 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:2048   .data.BspUart:00000000 BspUart
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:2024   .bss.BspUart_Obj_List:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:2028   .bss.BspUart_Obj_List:00000000 BspUart_Obj_List
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:2031   .bss.hdl.12633:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:2035   .bss.hdl.12633:00000000 hdl.12633
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:2038   .bss.rx_dma.12634:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:2042   .bss.rx_dma.12634:00000000 rx_dma.12634
+C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s:2045   .data.BspUart:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_UART_Transmit_DMA
+HAL_UART_Init
+memset
+HAL_RCCEx_PeriphCLKConfig
+BspGPIO
+memcpy
+HAL_DMA_Init
+BspDMA
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccNwrasn.s 			page 57
+
+
+HAL_NVIC_SetPriority
+HAL_NVIC_EnableIRQ
+HAL_UARTEx_SetTxFifoThreshold
+HAL_UARTEx_SetRxFifoThreshold
+HAL_UARTEx_DisableFifoMode
+HAL_UART_Receive_DMA
+HAL_UART_Receive_IT
+HAL_DMA_Abort
+HAL_UART_GetState

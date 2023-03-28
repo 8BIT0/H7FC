@@ -1,0 +1,2334 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"binary_tree.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.Tree_Get_Depth,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	Tree_Get_Depth:
+  25              	.LVL0:
+  26              	.LFB4:
+  27              		.file 1 "DataStructure/binary_tree.c"
+   1:DataStructure/binary_tree.c **** /*
+   2:DataStructure/binary_tree.c **** coder: 8_B!T0
+   3:DataStructure/binary_tree.c **** bref:
+   4:DataStructure/binary_tree.c **** use binary tree structure estabilsh a error log tree make error trigger and seach effcient
+   5:DataStructure/binary_tree.c **** */
+   6:DataStructure/binary_tree.c **** #include "binary_tree.h"
+   7:DataStructure/binary_tree.c **** #include "mmu.h"
+   8:DataStructure/binary_tree.c **** 
+   9:DataStructure/binary_tree.c **** #define TreeMalloc(x) MMU_Malloc(x)
+  10:DataStructure/binary_tree.c **** #define TreeFree(x) MMU_Free(x)
+  11:DataStructure/binary_tree.c **** 
+  12:DataStructure/binary_tree.c **** static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Search_Callback searc
+  13:DataStructure/binary_tree.c **** static void Tree_Traverse(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback c
+  14:DataStructure/binary_tree.c **** static bool Tree_Insert(Tree_TypeDef *tree, char *node_name, data_handle data_addr);
+  15:DataStructure/binary_tree.c **** static TreeNode_Handle Tree_Search(Tree_TypeDef *tree, data_handle data);
+  16:DataStructure/binary_tree.c **** 
+  17:DataStructure/binary_tree.c **** BinaryTree_TypeDef BalanceTree = {
+  18:DataStructure/binary_tree.c ****     .Create = BinaryTree_Create,
+  19:DataStructure/binary_tree.c ****     .Insert = Tree_Insert,
+  20:DataStructure/binary_tree.c ****     .Traverse = Tree_Traverse,
+  21:DataStructure/binary_tree.c ****     .Search = Tree_Search,
+  22:DataStructure/binary_tree.c **** };
+  23:DataStructure/binary_tree.c **** 
+  24:DataStructure/binary_tree.c **** static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Search_Callback searc
+  25:DataStructure/binary_tree.c **** {
+  26:DataStructure/binary_tree.c ****     Tree_TypeDef *tree_tmp = NULL;
+  27:DataStructure/binary_tree.c **** 
+  28:DataStructure/binary_tree.c ****     tree_tmp = (Tree_TypeDef *)TreeMalloc(sizeof(Tree_TypeDef));
+  29:DataStructure/binary_tree.c **** 
+  30:DataStructure/binary_tree.c ****     if (tree_tmp)
+  31:DataStructure/binary_tree.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 2
+
+
+  32:DataStructure/binary_tree.c ****         if ((insert != NULL) && (search != NULL) && (compare != NULL))
+  33:DataStructure/binary_tree.c ****         {
+  34:DataStructure/binary_tree.c ****             tree_tmp->name = name;
+  35:DataStructure/binary_tree.c ****             tree_tmp->search_callback = search;
+  36:DataStructure/binary_tree.c ****             tree_tmp->insert_callback = insert;
+  37:DataStructure/binary_tree.c ****             tree_tmp->compare_callback = compare;
+  38:DataStructure/binary_tree.c ****             tree_tmp->root_node = NULL;
+  39:DataStructure/binary_tree.c ****         }
+  40:DataStructure/binary_tree.c ****         else
+  41:DataStructure/binary_tree.c ****         {
+  42:DataStructure/binary_tree.c ****             TreeFree(tree_tmp);
+  43:DataStructure/binary_tree.c ****             tree_tmp = NULL;
+  44:DataStructure/binary_tree.c ****         }
+  45:DataStructure/binary_tree.c ****     }
+  46:DataStructure/binary_tree.c **** 
+  47:DataStructure/binary_tree.c ****     return tree_tmp;
+  48:DataStructure/binary_tree.c **** }
+  49:DataStructure/binary_tree.c **** 
+  50:DataStructure/binary_tree.c **** static int16_t Tree_Get_Depth(TreeNode_TypeDef *target)
+  51:DataStructure/binary_tree.c **** {
+  28              		.loc 1 51 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  52:DataStructure/binary_tree.c ****     int16_t l_depth = 0;
+  32              		.loc 1 52 5 view .LVU1
+  53:DataStructure/binary_tree.c ****     int16_t r_depth = 0;
+  33              		.loc 1 53 5 view .LVU2
+  54:DataStructure/binary_tree.c **** 
+  55:DataStructure/binary_tree.c ****     if (target != NULL)
+  34              		.loc 1 55 5 view .LVU3
+  35              		.loc 1 55 8 is_stmt 0 view .LVU4
+  36 0000 08B9     		cbnz	r0, .L8
+  56:DataStructure/binary_tree.c ****     {
+  57:DataStructure/binary_tree.c ****         l_depth = Tree_Get_Depth(target->L_Node) + 1;
+  58:DataStructure/binary_tree.c ****         r_depth = Tree_Get_Depth(target->R_Node) + 1;
+  59:DataStructure/binary_tree.c **** 
+  60:DataStructure/binary_tree.c ****         return (l_depth >= r_depth) ? l_depth : r_depth;
+  61:DataStructure/binary_tree.c ****     }
+  62:DataStructure/binary_tree.c **** 
+  63:DataStructure/binary_tree.c ****     return 0;
+  37              		.loc 1 63 12 view .LVU5
+  38 0002 0020     		movs	r0, #0
+  39              	.LVL1:
+  64:DataStructure/binary_tree.c **** }
+  40              		.loc 1 64 1 view .LVU6
+  41 0004 7047     		bx	lr
+  42              	.LVL2:
+  43              	.L8:
+  51:DataStructure/binary_tree.c ****     int16_t l_depth = 0;
+  44              		.loc 1 51 1 view .LVU7
+  45 0006 38B5     		push	{r3, r4, r5, lr}
+  46              	.LCFI0:
+  47              		.cfi_def_cfa_offset 16
+  48              		.cfi_offset 3, -16
+  49              		.cfi_offset 4, -12
+  50              		.cfi_offset 5, -8
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 3
+
+
+  51              		.cfi_offset 14, -4
+  52 0008 0546     		mov	r5, r0
+  57:DataStructure/binary_tree.c ****         r_depth = Tree_Get_Depth(target->R_Node) + 1;
+  53              		.loc 1 57 9 is_stmt 1 view .LVU8
+  57:DataStructure/binary_tree.c ****         r_depth = Tree_Get_Depth(target->R_Node) + 1;
+  54              		.loc 1 57 19 is_stmt 0 view .LVU9
+  55 000a D0F80E00 		ldr	r0, [r0, #14]	@ unaligned
+  56              	.LVL3:
+  57:DataStructure/binary_tree.c ****         r_depth = Tree_Get_Depth(target->R_Node) + 1;
+  57              		.loc 1 57 19 view .LVU10
+  58 000e FFF7F7FF 		bl	Tree_Get_Depth
+  59              	.LVL4:
+  60 0012 80B2     		uxth	r0, r0
+  57:DataStructure/binary_tree.c ****         r_depth = Tree_Get_Depth(target->R_Node) + 1;
+  61              		.loc 1 57 50 view .LVU11
+  62 0014 0130     		adds	r0, r0, #1
+  57:DataStructure/binary_tree.c ****         r_depth = Tree_Get_Depth(target->R_Node) + 1;
+  63              		.loc 1 57 17 view .LVU12
+  64 0016 04B2     		sxth	r4, r0
+  65              	.LVL5:
+  58:DataStructure/binary_tree.c **** 
+  66              		.loc 1 58 9 is_stmt 1 view .LVU13
+  58:DataStructure/binary_tree.c **** 
+  67              		.loc 1 58 19 is_stmt 0 view .LVU14
+  68 0018 D5F81200 		ldr	r0, [r5, #18]	@ unaligned
+  69 001c FFF7F0FF 		bl	Tree_Get_Depth
+  70              	.LVL6:
+  71 0020 80B2     		uxth	r0, r0
+  58:DataStructure/binary_tree.c **** 
+  72              		.loc 1 58 50 view .LVU15
+  73 0022 0130     		adds	r0, r0, #1
+  58:DataStructure/binary_tree.c **** 
+  74              		.loc 1 58 17 view .LVU16
+  75 0024 00B2     		sxth	r0, r0
+  76              	.LVL7:
+  60:DataStructure/binary_tree.c ****     }
+  77              		.loc 1 60 9 is_stmt 1 view .LVU17
+  60:DataStructure/binary_tree.c ****     }
+  78              		.loc 1 60 47 is_stmt 0 view .LVU18
+  79 0026 A042     		cmp	r0, r4
+  80 0028 B8BF     		it	lt
+  81 002a 2046     		movlt	r0, r4
+  82              	.LVL8:
+  83              		.loc 1 64 1 view .LVU19
+  84 002c 38BD     		pop	{r3, r4, r5, pc}
+  85              		.loc 1 64 1 view .LVU20
+  86              		.cfi_endproc
+  87              	.LFE4:
+  89              		.section	.text.Tree_Get_BalanceFactory,"ax",%progbits
+  90              		.align	1
+  91              		.syntax unified
+  92              		.thumb
+  93              		.thumb_func
+  94              		.fpu fpv5-d16
+  96              	Tree_Get_BalanceFactory:
+  97              	.LVL9:
+  98              	.LFB5:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 4
+
+
+  65:DataStructure/binary_tree.c **** 
+  66:DataStructure/binary_tree.c **** static int16_t Tree_Get_BalanceFactory(TreeNode_TypeDef *target)
+  67:DataStructure/binary_tree.c **** {
+  99              		.loc 1 67 1 is_stmt 1 view -0
+ 100              		.cfi_startproc
+ 101              		@ args = 0, pretend = 0, frame = 0
+ 102              		@ frame_needed = 0, uses_anonymous_args = 0
+  68:DataStructure/binary_tree.c ****     if (target)
+ 103              		.loc 1 68 5 view .LVU22
+ 104              		.loc 1 68 8 is_stmt 0 view .LVU23
+ 105 0000 08B9     		cbnz	r0, .L16
+  69:DataStructure/binary_tree.c ****         return Tree_Get_Depth(target->L_Node) - Tree_Get_Depth(target->R_Node);
+  70:DataStructure/binary_tree.c **** 
+  71:DataStructure/binary_tree.c ****     return 0;
+ 106              		.loc 1 71 12 view .LVU24
+ 107 0002 0020     		movs	r0, #0
+ 108              	.LVL10:
+  72:DataStructure/binary_tree.c **** }
+ 109              		.loc 1 72 1 view .LVU25
+ 110 0004 7047     		bx	lr
+ 111              	.LVL11:
+ 112              	.L16:
+  67:DataStructure/binary_tree.c ****     if (target)
+ 113              		.loc 1 67 1 view .LVU26
+ 114 0006 38B5     		push	{r3, r4, r5, lr}
+ 115              	.LCFI1:
+ 116              		.cfi_def_cfa_offset 16
+ 117              		.cfi_offset 3, -16
+ 118              		.cfi_offset 4, -12
+ 119              		.cfi_offset 5, -8
+ 120              		.cfi_offset 14, -4
+ 121 0008 0546     		mov	r5, r0
+  69:DataStructure/binary_tree.c ****         return Tree_Get_Depth(target->L_Node) - Tree_Get_Depth(target->R_Node);
+ 122              		.loc 1 69 9 is_stmt 1 view .LVU27
+  69:DataStructure/binary_tree.c ****         return Tree_Get_Depth(target->L_Node) - Tree_Get_Depth(target->R_Node);
+ 123              		.loc 1 69 16 is_stmt 0 view .LVU28
+ 124 000a D0F80E00 		ldr	r0, [r0, #14]	@ unaligned
+ 125              	.LVL12:
+  69:DataStructure/binary_tree.c ****         return Tree_Get_Depth(target->L_Node) - Tree_Get_Depth(target->R_Node);
+ 126              		.loc 1 69 16 view .LVU29
+ 127 000e FFF7FEFF 		bl	Tree_Get_Depth
+ 128              	.LVL13:
+ 129 0012 84B2     		uxth	r4, r0
+  69:DataStructure/binary_tree.c ****         return Tree_Get_Depth(target->L_Node) - Tree_Get_Depth(target->R_Node);
+ 130              		.loc 1 69 49 view .LVU30
+ 131 0014 D5F81200 		ldr	r0, [r5, #18]	@ unaligned
+ 132 0018 FFF7FEFF 		bl	Tree_Get_Depth
+ 133              	.LVL14:
+ 134 001c 80B2     		uxth	r0, r0
+  69:DataStructure/binary_tree.c ****         return Tree_Get_Depth(target->L_Node) - Tree_Get_Depth(target->R_Node);
+ 135              		.loc 1 69 47 view .LVU31
+ 136 001e 201A     		subs	r0, r4, r0
+ 137 0020 00B2     		sxth	r0, r0
+ 138              		.loc 1 72 1 view .LVU32
+ 139 0022 38BD     		pop	{r3, r4, r5, pc}
+ 140              		.loc 1 72 1 view .LVU33
+ 141              		.cfi_endproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 5
+
+
+ 142              	.LFE5:
+ 144              		.section	.text.Tree_Search_RootNode,"ax",%progbits
+ 145              		.align	1
+ 146              		.syntax unified
+ 147              		.thumb
+ 148              		.thumb_func
+ 149              		.fpu fpv5-d16
+ 151              	Tree_Search_RootNode:
+ 152              	.LVL15:
+ 153              	.LFB6:
+  73:DataStructure/binary_tree.c **** 
+  74:DataStructure/binary_tree.c **** static TreeNode_TypeDef *Tree_Search_RootNode(TreeNode_TypeDef *node)
+  75:DataStructure/binary_tree.c **** {
+ 154              		.loc 1 75 1 is_stmt 1 view -0
+ 155              		.cfi_startproc
+ 156              		@ args = 0, pretend = 0, frame = 0
+ 157              		@ frame_needed = 0, uses_anonymous_args = 0
+ 158              		.loc 1 75 1 is_stmt 0 view .LVU35
+ 159 0000 08B5     		push	{r3, lr}
+ 160              	.LCFI2:
+ 161              		.cfi_def_cfa_offset 8
+ 162              		.cfi_offset 3, -8
+ 163              		.cfi_offset 14, -4
+  76:DataStructure/binary_tree.c ****     if (node)
+ 164              		.loc 1 76 5 is_stmt 1 view .LVU36
+ 165              		.loc 1 76 8 is_stmt 0 view .LVU37
+ 166 0002 0346     		mov	r3, r0
+ 167 0004 28B1     		cbz	r0, .L18
+  77:DataStructure/binary_tree.c ****     {
+  78:DataStructure/binary_tree.c ****         if (node->F_Node)
+ 168              		.loc 1 78 9 is_stmt 1 view .LVU38
+ 169              		.loc 1 78 17 is_stmt 0 view .LVU39
+ 170 0006 D0F80A00 		ldr	r0, [r0, #10]	@ unaligned
+ 171              	.LVL16:
+ 172              		.loc 1 78 12 view .LVU40
+ 173 000a 10B1     		cbz	r0, .L18
+  79:DataStructure/binary_tree.c ****         {
+  80:DataStructure/binary_tree.c ****             return Tree_Search_RootNode(node->F_Node);
+ 174              		.loc 1 80 13 is_stmt 1 view .LVU41
+ 175              		.loc 1 80 20 is_stmt 0 view .LVU42
+ 176 000c FFF7F8FF 		bl	Tree_Search_RootNode
+ 177              	.LVL17:
+ 178              		.loc 1 80 20 view .LVU43
+ 179 0010 0346     		mov	r3, r0
+ 180              	.L18:
+  81:DataStructure/binary_tree.c ****         }
+  82:DataStructure/binary_tree.c ****         else
+  83:DataStructure/binary_tree.c ****             return node;
+  84:DataStructure/binary_tree.c ****     }
+  85:DataStructure/binary_tree.c **** 
+  86:DataStructure/binary_tree.c ****     return NULL;
+  87:DataStructure/binary_tree.c **** }
+ 181              		.loc 1 87 1 view .LVU44
+ 182 0012 1846     		mov	r0, r3
+ 183 0014 08BD     		pop	{r3, pc}
+ 184              		.cfi_endproc
+ 185              	.LFE6:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 6
+
+
+ 187              		.section	.text.TreeNode_RightRotate,"ax",%progbits
+ 188              		.align	1
+ 189              		.syntax unified
+ 190              		.thumb
+ 191              		.thumb_func
+ 192              		.fpu fpv5-d16
+ 194              	TreeNode_RightRotate:
+ 195              	.LVL18:
+ 196              	.LFB7:
+  88:DataStructure/binary_tree.c **** 
+  89:DataStructure/binary_tree.c **** static TreeNode_TypeDef *TreeNode_RightRotate(TreeNode_TypeDef *node)
+  90:DataStructure/binary_tree.c **** {
+ 197              		.loc 1 90 1 is_stmt 1 view -0
+ 198              		.cfi_startproc
+ 199              		@ args = 0, pretend = 0, frame = 0
+ 200              		@ frame_needed = 0, uses_anonymous_args = 0
+ 201              		.loc 1 90 1 is_stmt 0 view .LVU46
+ 202 0000 70B5     		push	{r4, r5, r6, lr}
+ 203              	.LCFI3:
+ 204              		.cfi_def_cfa_offset 16
+ 205              		.cfi_offset 4, -16
+ 206              		.cfi_offset 5, -12
+ 207              		.cfi_offset 6, -8
+ 208              		.cfi_offset 14, -4
+  91:DataStructure/binary_tree.c ****     TreeNode_TypeDef *o_r = NULL; // old root node
+ 209              		.loc 1 91 5 is_stmt 1 view .LVU47
+ 210              	.LVL19:
+  92:DataStructure/binary_tree.c ****     TreeNode_TypeDef *n_r = NULL; // new root node
+ 211              		.loc 1 92 5 view .LVU48
+  93:DataStructure/binary_tree.c ****     TreeNode_TypeDef *f_n = NULL; // father node
+ 212              		.loc 1 93 5 view .LVU49
+  94:DataStructure/binary_tree.c **** 
+  95:DataStructure/binary_tree.c ****     if (node)
+ 213              		.loc 1 95 5 view .LVU50
+ 214              		.loc 1 95 8 is_stmt 0 view .LVU51
+ 215 0002 0546     		mov	r5, r0
+ 216 0004 50B3     		cbz	r0, .L25
+  96:DataStructure/binary_tree.c ****     {
+  97:DataStructure/binary_tree.c ****         o_r = node;
+ 217              		.loc 1 97 9 is_stmt 1 view .LVU52
+ 218              	.LVL20:
+  98:DataStructure/binary_tree.c ****         n_r = node->L_Node;
+ 219              		.loc 1 98 9 view .LVU53
+ 220              		.loc 1 98 13 is_stmt 0 view .LVU54
+ 221 0006 D0F80E40 		ldr	r4, [r0, #14]	@ unaligned
+ 222              	.LVL21:
+  99:DataStructure/binary_tree.c ****         f_n = node->F_Node;
+ 223              		.loc 1 99 9 is_stmt 1 view .LVU55
+ 224              		.loc 1 99 13 is_stmt 0 view .LVU56
+ 225 000a D0F80A60 		ldr	r6, [r0, #10]	@ unaligned
+ 226              	.LVL22:
+ 100:DataStructure/binary_tree.c **** 
+ 101:DataStructure/binary_tree.c ****         if (f_n)
+ 227              		.loc 1 101 9 is_stmt 1 view .LVU57
+ 228              		.loc 1 101 12 is_stmt 0 view .LVU58
+ 229 000e 76B1     		cbz	r6, .L22
+ 102:DataStructure/binary_tree.c ****         {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 7
+
+
+ 103:DataStructure/binary_tree.c ****             /* old root data < father node data */
+ 104:DataStructure/binary_tree.c ****             if (node->compare_callback(f_n->data, n_r->data) == n_r->data)
+ 230              		.loc 1 104 13 is_stmt 1 view .LVU59
+ 231              		.loc 1 104 21 is_stmt 0 view .LVU60
+ 232 0010 D0F81E30 		ldr	r3, [r0, #30]	@ unaligned
+ 233              		.loc 1 104 17 view .LVU61
+ 234 0014 6168     		ldr	r1, [r4, #4]	@ unaligned
+ 235 0016 7068     		ldr	r0, [r6, #4]	@ unaligned
+ 236              	.LVL23:
+ 237              		.loc 1 104 17 view .LVU62
+ 238 0018 9847     		blx	r3
+ 239              	.LVL24:
+ 240              		.loc 1 104 68 view .LVU63
+ 241 001a 6168     		ldr	r1, [r4, #4]	@ unaligned
+ 242              		.loc 1 104 16 view .LVU64
+ 243 001c 8842     		cmp	r0, r1
+ 244 001e 17D0     		beq	.L27
+ 105:DataStructure/binary_tree.c ****             {
+ 106:DataStructure/binary_tree.c ****                 f_n->L_Node = n_r;
+ 107:DataStructure/binary_tree.c ****             }
+ 108:DataStructure/binary_tree.c ****             else if (node->compare_callback(f_n->data, n_r->data) == n_r->data)
+ 245              		.loc 1 108 18 is_stmt 1 view .LVU65
+ 246              		.loc 1 108 26 is_stmt 0 view .LVU66
+ 247 0020 D5F81E30 		ldr	r3, [r5, #30]	@ unaligned
+ 248              		.loc 1 108 22 view .LVU67
+ 249 0024 7068     		ldr	r0, [r6, #4]	@ unaligned
+ 250 0026 9847     		blx	r3
+ 251              	.LVL25:
+ 252              		.loc 1 108 73 view .LVU68
+ 253 0028 6368     		ldr	r3, [r4, #4]	@ unaligned
+ 254              		.loc 1 108 21 view .LVU69
+ 255 002a 9842     		cmp	r0, r3
+ 256 002c 13D0     		beq	.L28
+ 257              	.L22:
+ 109:DataStructure/binary_tree.c ****             {
+ 110:DataStructure/binary_tree.c ****                 f_n->R_Node = n_r;
+ 111:DataStructure/binary_tree.c ****             }
+ 112:DataStructure/binary_tree.c ****         }
+ 113:DataStructure/binary_tree.c ****         n_r->F_Node = f_n;
+ 258              		.loc 1 113 9 is_stmt 1 view .LVU70
+ 259              		.loc 1 113 21 is_stmt 0 view .LVU71
+ 260 002e C4F80A60 		str	r6, [r4, #10]	@ unaligned
+ 114:DataStructure/binary_tree.c **** 
+ 115:DataStructure/binary_tree.c ****         o_r->L_Node = n_r->R_Node;
+ 261              		.loc 1 115 9 is_stmt 1 view .LVU72
+ 262              		.loc 1 115 26 is_stmt 0 view .LVU73
+ 263 0032 D4F81230 		ldr	r3, [r4, #18]	@ unaligned
+ 264              		.loc 1 115 21 view .LVU74
+ 265 0036 C5F80E30 		str	r3, [r5, #14]	@ unaligned
+ 116:DataStructure/binary_tree.c ****         if (n_r->R_Node)
+ 266              		.loc 1 116 9 is_stmt 1 view .LVU75
+ 267              		.loc 1 116 16 is_stmt 0 view .LVU76
+ 268 003a D4F81230 		ldr	r3, [r4, #18]	@ unaligned
+ 269              		.loc 1 116 12 view .LVU77
+ 270 003e 0BB1     		cbz	r3, .L24
+ 117:DataStructure/binary_tree.c ****         {
+ 118:DataStructure/binary_tree.c ****             n_r->R_Node->F_Node = o_r;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 8
+
+
+ 271              		.loc 1 118 13 is_stmt 1 view .LVU78
+ 272              		.loc 1 118 33 is_stmt 0 view .LVU79
+ 273 0040 C3F80A50 		str	r5, [r3, #10]	@ unaligned
+ 274              	.L24:
+ 119:DataStructure/binary_tree.c ****         }
+ 120:DataStructure/binary_tree.c ****         n_r->R_Node = o_r;
+ 275              		.loc 1 120 9 is_stmt 1 view .LVU80
+ 276              		.loc 1 120 21 is_stmt 0 view .LVU81
+ 277 0044 C4F81250 		str	r5, [r4, #18]	@ unaligned
+ 121:DataStructure/binary_tree.c ****         o_r->F_Node = n_r;
+ 278              		.loc 1 121 9 is_stmt 1 view .LVU82
+ 279              		.loc 1 121 21 is_stmt 0 view .LVU83
+ 280 0048 C5F80A40 		str	r4, [r5, #10]	@ unaligned
+ 281              	.LVL26:
+ 282              	.L20:
+ 122:DataStructure/binary_tree.c ****     }
+ 123:DataStructure/binary_tree.c **** 
+ 124:DataStructure/binary_tree.c ****     return n_r;
+ 125:DataStructure/binary_tree.c **** }
+ 283              		.loc 1 125 1 view .LVU84
+ 284 004c 2046     		mov	r0, r4
+ 285 004e 70BD     		pop	{r4, r5, r6, pc}
+ 286              	.LVL27:
+ 287              	.L27:
+ 106:DataStructure/binary_tree.c ****             }
+ 288              		.loc 1 106 17 is_stmt 1 view .LVU85
+ 106:DataStructure/binary_tree.c ****             }
+ 289              		.loc 1 106 29 is_stmt 0 view .LVU86
+ 290 0050 C6F80E40 		str	r4, [r6, #14]	@ unaligned
+ 291 0054 EBE7     		b	.L22
+ 292              	.L28:
+ 110:DataStructure/binary_tree.c ****             }
+ 293              		.loc 1 110 17 is_stmt 1 view .LVU87
+ 110:DataStructure/binary_tree.c ****             }
+ 294              		.loc 1 110 29 is_stmt 0 view .LVU88
+ 295 0056 C6F81240 		str	r4, [r6, #18]	@ unaligned
+ 296 005a E8E7     		b	.L22
+ 297              	.LVL28:
+ 298              	.L25:
+  92:DataStructure/binary_tree.c ****     TreeNode_TypeDef *f_n = NULL; // father node
+ 299              		.loc 1 92 23 view .LVU89
+ 300 005c 0446     		mov	r4, r0
+ 301              	.LVL29:
+ 124:DataStructure/binary_tree.c **** }
+ 302              		.loc 1 124 5 is_stmt 1 view .LVU90
+ 124:DataStructure/binary_tree.c **** }
+ 303              		.loc 1 124 12 is_stmt 0 view .LVU91
+ 304 005e F5E7     		b	.L20
+ 305              		.cfi_endproc
+ 306              	.LFE7:
+ 308              		.section	.text.TreeNode_LeftRotate,"ax",%progbits
+ 309              		.align	1
+ 310              		.syntax unified
+ 311              		.thumb
+ 312              		.thumb_func
+ 313              		.fpu fpv5-d16
+ 315              	TreeNode_LeftRotate:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 9
+
+
+ 316              	.LVL30:
+ 317              	.LFB8:
+ 126:DataStructure/binary_tree.c **** 
+ 127:DataStructure/binary_tree.c **** static TreeNode_TypeDef *TreeNode_LeftRotate(TreeNode_TypeDef *node)
+ 128:DataStructure/binary_tree.c **** {
+ 318              		.loc 1 128 1 is_stmt 1 view -0
+ 319              		.cfi_startproc
+ 320              		@ args = 0, pretend = 0, frame = 0
+ 321              		@ frame_needed = 0, uses_anonymous_args = 0
+ 322              		.loc 1 128 1 is_stmt 0 view .LVU93
+ 323 0000 70B5     		push	{r4, r5, r6, lr}
+ 324              	.LCFI4:
+ 325              		.cfi_def_cfa_offset 16
+ 326              		.cfi_offset 4, -16
+ 327              		.cfi_offset 5, -12
+ 328              		.cfi_offset 6, -8
+ 329              		.cfi_offset 14, -4
+ 129:DataStructure/binary_tree.c ****     TreeNode_TypeDef *o_r = NULL; // old root node
+ 330              		.loc 1 129 5 is_stmt 1 view .LVU94
+ 331              	.LVL31:
+ 130:DataStructure/binary_tree.c ****     TreeNode_TypeDef *n_r = NULL; // new root node
+ 332              		.loc 1 130 5 view .LVU95
+ 131:DataStructure/binary_tree.c ****     TreeNode_TypeDef *f_n = NULL; // father node
+ 333              		.loc 1 131 5 view .LVU96
+ 132:DataStructure/binary_tree.c **** 
+ 133:DataStructure/binary_tree.c ****     if (node)
+ 334              		.loc 1 133 5 view .LVU97
+ 335              		.loc 1 133 8 is_stmt 0 view .LVU98
+ 336 0002 0546     		mov	r5, r0
+ 337 0004 50B3     		cbz	r0, .L34
+ 134:DataStructure/binary_tree.c ****     {
+ 135:DataStructure/binary_tree.c ****         o_r = node;
+ 338              		.loc 1 135 9 is_stmt 1 view .LVU99
+ 339              	.LVL32:
+ 136:DataStructure/binary_tree.c ****         n_r = node->R_Node;
+ 340              		.loc 1 136 9 view .LVU100
+ 341              		.loc 1 136 13 is_stmt 0 view .LVU101
+ 342 0006 D0F81240 		ldr	r4, [r0, #18]	@ unaligned
+ 343              	.LVL33:
+ 137:DataStructure/binary_tree.c ****         f_n = node->F_Node;
+ 344              		.loc 1 137 9 is_stmt 1 view .LVU102
+ 345              		.loc 1 137 13 is_stmt 0 view .LVU103
+ 346 000a D0F80A60 		ldr	r6, [r0, #10]	@ unaligned
+ 347              	.LVL34:
+ 138:DataStructure/binary_tree.c **** 
+ 139:DataStructure/binary_tree.c ****         if (f_n)
+ 348              		.loc 1 139 9 is_stmt 1 view .LVU104
+ 349              		.loc 1 139 12 is_stmt 0 view .LVU105
+ 350 000e 76B1     		cbz	r6, .L31
+ 140:DataStructure/binary_tree.c ****         {
+ 141:DataStructure/binary_tree.c ****             if (node->compare_callback(f_n->data, n_r->data) == n_r->data)
+ 351              		.loc 1 141 13 is_stmt 1 view .LVU106
+ 352              		.loc 1 141 21 is_stmt 0 view .LVU107
+ 353 0010 D0F81E30 		ldr	r3, [r0, #30]	@ unaligned
+ 354              		.loc 1 141 17 view .LVU108
+ 355 0014 6168     		ldr	r1, [r4, #4]	@ unaligned
+ 356 0016 7068     		ldr	r0, [r6, #4]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 10
+
+
+ 357              	.LVL35:
+ 358              		.loc 1 141 17 view .LVU109
+ 359 0018 9847     		blx	r3
+ 360              	.LVL36:
+ 361              		.loc 1 141 68 view .LVU110
+ 362 001a 6168     		ldr	r1, [r4, #4]	@ unaligned
+ 363              		.loc 1 141 16 view .LVU111
+ 364 001c 8842     		cmp	r0, r1
+ 365 001e 17D0     		beq	.L36
+ 142:DataStructure/binary_tree.c ****             {
+ 143:DataStructure/binary_tree.c ****                 f_n->L_Node = n_r;
+ 144:DataStructure/binary_tree.c ****             }
+ 145:DataStructure/binary_tree.c ****             else if (node->compare_callback(f_n->data, n_r->data) == f_n->data)
+ 366              		.loc 1 145 18 is_stmt 1 view .LVU112
+ 367              		.loc 1 145 26 is_stmt 0 view .LVU113
+ 368 0020 D5F81E30 		ldr	r3, [r5, #30]	@ unaligned
+ 369              		.loc 1 145 22 view .LVU114
+ 370 0024 7068     		ldr	r0, [r6, #4]	@ unaligned
+ 371 0026 9847     		blx	r3
+ 372              	.LVL37:
+ 373              		.loc 1 145 73 view .LVU115
+ 374 0028 7368     		ldr	r3, [r6, #4]	@ unaligned
+ 375              		.loc 1 145 21 view .LVU116
+ 376 002a 9842     		cmp	r0, r3
+ 377 002c 13D0     		beq	.L37
+ 378              	.L31:
+ 146:DataStructure/binary_tree.c ****             {
+ 147:DataStructure/binary_tree.c ****                 f_n->R_Node = n_r;
+ 148:DataStructure/binary_tree.c ****             }
+ 149:DataStructure/binary_tree.c ****         }
+ 150:DataStructure/binary_tree.c ****         n_r->F_Node = f_n;
+ 379              		.loc 1 150 9 is_stmt 1 view .LVU117
+ 380              		.loc 1 150 21 is_stmt 0 view .LVU118
+ 381 002e C4F80A60 		str	r6, [r4, #10]	@ unaligned
+ 151:DataStructure/binary_tree.c **** 
+ 152:DataStructure/binary_tree.c ****         o_r->R_Node = n_r->L_Node;
+ 382              		.loc 1 152 9 is_stmt 1 view .LVU119
+ 383              		.loc 1 152 26 is_stmt 0 view .LVU120
+ 384 0032 D4F80E30 		ldr	r3, [r4, #14]	@ unaligned
+ 385              		.loc 1 152 21 view .LVU121
+ 386 0036 C5F81230 		str	r3, [r5, #18]	@ unaligned
+ 153:DataStructure/binary_tree.c ****         if (n_r->L_Node)
+ 387              		.loc 1 153 9 is_stmt 1 view .LVU122
+ 388              		.loc 1 153 16 is_stmt 0 view .LVU123
+ 389 003a D4F80E30 		ldr	r3, [r4, #14]	@ unaligned
+ 390              		.loc 1 153 12 view .LVU124
+ 391 003e 0BB1     		cbz	r3, .L33
+ 154:DataStructure/binary_tree.c ****         {
+ 155:DataStructure/binary_tree.c ****             n_r->L_Node->F_Node = o_r;
+ 392              		.loc 1 155 13 is_stmt 1 view .LVU125
+ 393              		.loc 1 155 33 is_stmt 0 view .LVU126
+ 394 0040 C3F80A50 		str	r5, [r3, #10]	@ unaligned
+ 395              	.L33:
+ 156:DataStructure/binary_tree.c ****         }
+ 157:DataStructure/binary_tree.c ****         n_r->L_Node = o_r;
+ 396              		.loc 1 157 9 is_stmt 1 view .LVU127
+ 397              		.loc 1 157 21 is_stmt 0 view .LVU128
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 11
+
+
+ 398 0044 C4F80E50 		str	r5, [r4, #14]	@ unaligned
+ 158:DataStructure/binary_tree.c ****         o_r->F_Node = n_r;
+ 399              		.loc 1 158 9 is_stmt 1 view .LVU129
+ 400              		.loc 1 158 21 is_stmt 0 view .LVU130
+ 401 0048 C5F80A40 		str	r4, [r5, #10]	@ unaligned
+ 402              	.LVL38:
+ 403              	.L29:
+ 159:DataStructure/binary_tree.c ****     }
+ 160:DataStructure/binary_tree.c **** 
+ 161:DataStructure/binary_tree.c ****     return n_r;
+ 162:DataStructure/binary_tree.c **** }
+ 404              		.loc 1 162 1 view .LVU131
+ 405 004c 2046     		mov	r0, r4
+ 406 004e 70BD     		pop	{r4, r5, r6, pc}
+ 407              	.LVL39:
+ 408              	.L36:
+ 143:DataStructure/binary_tree.c ****             }
+ 409              		.loc 1 143 17 is_stmt 1 view .LVU132
+ 143:DataStructure/binary_tree.c ****             }
+ 410              		.loc 1 143 29 is_stmt 0 view .LVU133
+ 411 0050 C6F80E40 		str	r4, [r6, #14]	@ unaligned
+ 412 0054 EBE7     		b	.L31
+ 413              	.L37:
+ 147:DataStructure/binary_tree.c ****             }
+ 414              		.loc 1 147 17 is_stmt 1 view .LVU134
+ 147:DataStructure/binary_tree.c ****             }
+ 415              		.loc 1 147 29 is_stmt 0 view .LVU135
+ 416 0056 C6F81240 		str	r4, [r6, #18]	@ unaligned
+ 417 005a E8E7     		b	.L31
+ 418              	.LVL40:
+ 419              	.L34:
+ 130:DataStructure/binary_tree.c ****     TreeNode_TypeDef *f_n = NULL; // father node
+ 420              		.loc 1 130 23 view .LVU136
+ 421 005c 0446     		mov	r4, r0
+ 422              	.LVL41:
+ 161:DataStructure/binary_tree.c **** }
+ 423              		.loc 1 161 5 is_stmt 1 view .LVU137
+ 161:DataStructure/binary_tree.c **** }
+ 424              		.loc 1 161 12 is_stmt 0 view .LVU138
+ 425 005e F5E7     		b	.L29
+ 426              		.cfi_endproc
+ 427              	.LFE8:
+ 429              		.section	.text.TreeNoe_Dynamic_Trim,"ax",%progbits
+ 430              		.align	1
+ 431              		.syntax unified
+ 432              		.thumb
+ 433              		.thumb_func
+ 434              		.fpu fpv5-d16
+ 436              	TreeNoe_Dynamic_Trim:
+ 437              	.LVL42:
+ 438              	.LFB9:
+ 163:DataStructure/binary_tree.c **** 
+ 164:DataStructure/binary_tree.c **** static void TreeNoe_Dynamic_Trim(TreeNode_TypeDef *root)
+ 165:DataStructure/binary_tree.c **** {
+ 439              		.loc 1 165 1 is_stmt 1 view -0
+ 440              		.cfi_startproc
+ 441              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 12
+
+
+ 442              		@ frame_needed = 0, uses_anonymous_args = 0
+ 166:DataStructure/binary_tree.c ****     int16_t bf = 0;
+ 443              		.loc 1 166 5 view .LVU140
+ 167:DataStructure/binary_tree.c ****     int16_t lbf = 0;
+ 444              		.loc 1 167 5 view .LVU141
+ 168:DataStructure/binary_tree.c ****     int16_t rbf = 0;
+ 445              		.loc 1 168 5 view .LVU142
+ 169:DataStructure/binary_tree.c **** 
+ 170:DataStructure/binary_tree.c ****     if (root == NULL)
+ 446              		.loc 1 170 5 view .LVU143
+ 447              		.loc 1 170 8 is_stmt 0 view .LVU144
+ 448 0000 60B3     		cbz	r0, .L44
+ 165:DataStructure/binary_tree.c ****     int16_t bf = 0;
+ 449              		.loc 1 165 1 view .LVU145
+ 450 0002 38B5     		push	{r3, r4, r5, lr}
+ 451              	.LCFI5:
+ 452              		.cfi_def_cfa_offset 16
+ 453              		.cfi_offset 3, -16
+ 454              		.cfi_offset 4, -12
+ 455              		.cfi_offset 5, -8
+ 456              		.cfi_offset 14, -4
+ 457 0004 0446     		mov	r4, r0
+ 171:DataStructure/binary_tree.c ****         return;
+ 172:DataStructure/binary_tree.c **** 
+ 173:DataStructure/binary_tree.c ****     bf = Tree_Get_BalanceFactory(root);
+ 458              		.loc 1 173 5 is_stmt 1 view .LVU146
+ 459              		.loc 1 173 10 is_stmt 0 view .LVU147
+ 460 0006 FFF7FEFF 		bl	Tree_Get_BalanceFactory
+ 461              	.LVL43:
+ 174:DataStructure/binary_tree.c ****     if (bf == 2) // LL
+ 462              		.loc 1 174 5 is_stmt 1 view .LVU148
+ 463              		.loc 1 174 8 is_stmt 0 view .LVU149
+ 464 000a 0228     		cmp	r0, #2
+ 465 000c 03D0     		beq	.L47
+ 175:DataStructure/binary_tree.c ****     {
+ 176:DataStructure/binary_tree.c ****         lbf = Tree_Get_BalanceFactory(root->L_Node);
+ 177:DataStructure/binary_tree.c ****         if (lbf == -1) // LR
+ 178:DataStructure/binary_tree.c ****         {
+ 179:DataStructure/binary_tree.c ****             root->L_Node = TreeNode_LeftRotate(root->L_Node);
+ 180:DataStructure/binary_tree.c ****         }
+ 181:DataStructure/binary_tree.c **** 
+ 182:DataStructure/binary_tree.c ****         root = TreeNode_RightRotate(root);
+ 183:DataStructure/binary_tree.c ****     }
+ 184:DataStructure/binary_tree.c ****     else if (bf == -2) // RR
+ 466              		.loc 1 184 10 is_stmt 1 view .LVU150
+ 467              		.loc 1 184 13 is_stmt 0 view .LVU151
+ 468 000e 10F1020F 		cmn	r0, #2
+ 469 0012 12D0     		beq	.L48
+ 470              	.LVL44:
+ 471              	.L38:
+ 185:DataStructure/binary_tree.c ****     {
+ 186:DataStructure/binary_tree.c ****         rbf = Tree_Get_BalanceFactory(root->R_Node);
+ 187:DataStructure/binary_tree.c ****         if (rbf == 1) // RL
+ 188:DataStructure/binary_tree.c ****         {
+ 189:DataStructure/binary_tree.c ****             root->R_Node = TreeNode_RightRotate(root->R_Node);
+ 190:DataStructure/binary_tree.c ****         }
+ 191:DataStructure/binary_tree.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 13
+
+
+ 192:DataStructure/binary_tree.c ****         root = TreeNode_LeftRotate(root);
+ 193:DataStructure/binary_tree.c ****     }
+ 194:DataStructure/binary_tree.c **** }
+ 472              		.loc 1 194 1 view .LVU152
+ 473 0014 38BD     		pop	{r3, r4, r5, pc}
+ 474              	.LVL45:
+ 475              	.L47:
+ 176:DataStructure/binary_tree.c ****         if (lbf == -1) // LR
+ 476              		.loc 1 176 9 is_stmt 1 view .LVU153
+ 176:DataStructure/binary_tree.c ****         if (lbf == -1) // LR
+ 477              		.loc 1 176 43 is_stmt 0 view .LVU154
+ 478 0016 D4F80E50 		ldr	r5, [r4, #14]	@ unaligned
+ 176:DataStructure/binary_tree.c ****         if (lbf == -1) // LR
+ 479              		.loc 1 176 15 view .LVU155
+ 480 001a 2846     		mov	r0, r5
+ 481              	.LVL46:
+ 176:DataStructure/binary_tree.c ****         if (lbf == -1) // LR
+ 482              		.loc 1 176 15 view .LVU156
+ 483 001c FFF7FEFF 		bl	Tree_Get_BalanceFactory
+ 484              	.LVL47:
+ 177:DataStructure/binary_tree.c ****         {
+ 485              		.loc 1 177 9 is_stmt 1 view .LVU157
+ 177:DataStructure/binary_tree.c ****         {
+ 486              		.loc 1 177 12 is_stmt 0 view .LVU158
+ 487 0020 B0F1FF3F 		cmp	r0, #-1
+ 488 0024 03D0     		beq	.L49
+ 489              	.LVL48:
+ 490              	.L41:
+ 182:DataStructure/binary_tree.c ****     }
+ 491              		.loc 1 182 9 is_stmt 1 view .LVU159
+ 182:DataStructure/binary_tree.c ****     }
+ 492              		.loc 1 182 16 is_stmt 0 view .LVU160
+ 493 0026 2046     		mov	r0, r4
+ 494 0028 FFF7FEFF 		bl	TreeNode_RightRotate
+ 495              	.LVL49:
+ 182:DataStructure/binary_tree.c ****     }
+ 496              		.loc 1 182 16 view .LVU161
+ 497 002c F2E7     		b	.L38
+ 498              	.LVL50:
+ 499              	.L49:
+ 179:DataStructure/binary_tree.c ****         }
+ 500              		.loc 1 179 13 is_stmt 1 view .LVU162
+ 179:DataStructure/binary_tree.c ****         }
+ 501              		.loc 1 179 28 is_stmt 0 view .LVU163
+ 502 002e 2846     		mov	r0, r5
+ 503              	.LVL51:
+ 179:DataStructure/binary_tree.c ****         }
+ 504              		.loc 1 179 28 view .LVU164
+ 505 0030 FFF7FEFF 		bl	TreeNode_LeftRotate
+ 506              	.LVL52:
+ 179:DataStructure/binary_tree.c ****         }
+ 507              		.loc 1 179 26 view .LVU165
+ 508 0034 C4F80E00 		str	r0, [r4, #14]	@ unaligned
+ 509 0038 F5E7     		b	.L41
+ 510              	.LVL53:
+ 511              	.L48:
+ 186:DataStructure/binary_tree.c ****         if (rbf == 1) // RL
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 14
+
+
+ 512              		.loc 1 186 9 is_stmt 1 view .LVU166
+ 186:DataStructure/binary_tree.c ****         if (rbf == 1) // RL
+ 513              		.loc 1 186 43 is_stmt 0 view .LVU167
+ 514 003a D4F81250 		ldr	r5, [r4, #18]	@ unaligned
+ 186:DataStructure/binary_tree.c ****         if (rbf == 1) // RL
+ 515              		.loc 1 186 15 view .LVU168
+ 516 003e 2846     		mov	r0, r5
+ 517              	.LVL54:
+ 186:DataStructure/binary_tree.c ****         if (rbf == 1) // RL
+ 518              		.loc 1 186 15 view .LVU169
+ 519 0040 FFF7FEFF 		bl	Tree_Get_BalanceFactory
+ 520              	.LVL55:
+ 187:DataStructure/binary_tree.c ****         {
+ 521              		.loc 1 187 9 is_stmt 1 view .LVU170
+ 187:DataStructure/binary_tree.c ****         {
+ 522              		.loc 1 187 12 is_stmt 0 view .LVU171
+ 523 0044 0128     		cmp	r0, #1
+ 524 0046 03D0     		beq	.L50
+ 525              	.LVL56:
+ 526              	.L42:
+ 192:DataStructure/binary_tree.c ****     }
+ 527              		.loc 1 192 9 is_stmt 1 view .LVU172
+ 192:DataStructure/binary_tree.c ****     }
+ 528              		.loc 1 192 16 is_stmt 0 view .LVU173
+ 529 0048 2046     		mov	r0, r4
+ 530 004a FFF7FEFF 		bl	TreeNode_LeftRotate
+ 531              	.LVL57:
+ 192:DataStructure/binary_tree.c ****     }
+ 532              		.loc 1 192 16 view .LVU174
+ 533 004e E1E7     		b	.L38
+ 534              	.LVL58:
+ 535              	.L50:
+ 189:DataStructure/binary_tree.c ****         }
+ 536              		.loc 1 189 13 is_stmt 1 view .LVU175
+ 189:DataStructure/binary_tree.c ****         }
+ 537              		.loc 1 189 28 is_stmt 0 view .LVU176
+ 538 0050 2846     		mov	r0, r5
+ 539              	.LVL59:
+ 189:DataStructure/binary_tree.c ****         }
+ 540              		.loc 1 189 28 view .LVU177
+ 541 0052 FFF7FEFF 		bl	TreeNode_RightRotate
+ 542              	.LVL60:
+ 189:DataStructure/binary_tree.c ****         }
+ 543              		.loc 1 189 26 view .LVU178
+ 544 0056 C4F81200 		str	r0, [r4, #18]	@ unaligned
+ 545 005a F5E7     		b	.L42
+ 546              	.LVL61:
+ 547              	.L44:
+ 548              	.LCFI6:
+ 549              		.cfi_def_cfa_offset 0
+ 550              		.cfi_restore 3
+ 551              		.cfi_restore 4
+ 552              		.cfi_restore 5
+ 553              		.cfi_restore 14
+ 189:DataStructure/binary_tree.c ****         }
+ 554              		.loc 1 189 26 view .LVU179
+ 555 005c 7047     		bx	lr
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 15
+
+
+ 556              		.cfi_endproc
+ 557              	.LFE9:
+ 559              		.section	.text.TreeNode_Insert,"ax",%progbits
+ 560              		.align	1
+ 561              		.syntax unified
+ 562              		.thumb
+ 563              		.thumb_func
+ 564              		.fpu fpv5-d16
+ 566              	TreeNode_Insert:
+ 567              	.LVL62:
+ 568              	.LFB10:
+ 195:DataStructure/binary_tree.c **** 
+ 196:DataStructure/binary_tree.c **** static bool TreeNode_Insert(TreeNode_TypeDef *root, TreeNode_TypeDef *node)
+ 197:DataStructure/binary_tree.c **** {
+ 569              		.loc 1 197 1 is_stmt 1 view -0
+ 570              		.cfi_startproc
+ 571              		@ args = 0, pretend = 0, frame = 0
+ 572              		@ frame_needed = 0, uses_anonymous_args = 0
+ 573              		.loc 1 197 1 is_stmt 0 view .LVU181
+ 574 0000 70B5     		push	{r4, r5, r6, lr}
+ 575              	.LCFI7:
+ 576              		.cfi_def_cfa_offset 16
+ 577              		.cfi_offset 4, -16
+ 578              		.cfi_offset 5, -12
+ 579              		.cfi_offset 6, -8
+ 580              		.cfi_offset 14, -4
+ 198:DataStructure/binary_tree.c ****     data_handle hdl_tmp = 0;
+ 581              		.loc 1 198 5 is_stmt 1 view .LVU182
+ 582              	.LVL63:
+ 199:DataStructure/binary_tree.c **** 
+ 200:DataStructure/binary_tree.c ****     if (root == NULL || node == NULL)
+ 583              		.loc 1 200 5 view .LVU183
+ 584              		.loc 1 200 30 is_stmt 0 view .LVU184
+ 585 0002 0E46     		mov	r6, r1
+ 586 0004 B1FA81F1 		clz	r1, r1
+ 587              	.LVL64:
+ 588              		.loc 1 200 30 view .LVU185
+ 589 0008 4909     		lsrs	r1, r1, #5
+ 590              		.loc 1 200 22 view .LVU186
+ 591 000a 0028     		cmp	r0, #0
+ 592 000c 14BF     		ite	ne
+ 593 000e 0C46     		movne	r4, r1
+ 594 0010 0124     		moveq	r4, #1
+ 595              		.loc 1 200 8 view .LVU187
+ 596 0012 3CBB     		cbnz	r4, .L56
+ 597 0014 0546     		mov	r5, r0
+ 201:DataStructure/binary_tree.c ****         return false;
+ 202:DataStructure/binary_tree.c **** 
+ 203:DataStructure/binary_tree.c ****     hdl_tmp = root->insert_callback(root->data, node->data);
+ 598              		.loc 1 203 5 is_stmt 1 view .LVU188
+ 599              		.loc 1 203 19 is_stmt 0 view .LVU189
+ 600 0016 D0F81630 		ldr	r3, [r0, #22]	@ unaligned
+ 601              		.loc 1 203 15 view .LVU190
+ 602 001a 7168     		ldr	r1, [r6, #4]	@ unaligned
+ 603 001c 4068     		ldr	r0, [r0, #4]	@ unaligned
+ 604              	.LVL65:
+ 605              		.loc 1 203 15 view .LVU191
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 16
+
+
+ 606 001e 9847     		blx	r3
+ 607              	.LVL66:
+ 204:DataStructure/binary_tree.c **** 
+ 205:DataStructure/binary_tree.c ****     /* insert callback return smaller data`s addr */
+ 206:DataStructure/binary_tree.c ****     if (hdl_tmp == node->data)
+ 608              		.loc 1 206 5 is_stmt 1 view .LVU192
+ 609              		.loc 1 206 24 is_stmt 0 view .LVU193
+ 610 0020 7368     		ldr	r3, [r6, #4]	@ unaligned
+ 611              		.loc 1 206 8 view .LVU194
+ 612 0022 8342     		cmp	r3, r0
+ 613 0024 0BD0     		beq	.L58
+ 207:DataStructure/binary_tree.c ****     {
+ 208:DataStructure/binary_tree.c ****         /* insert node data smaller than root/target_node data */
+ 209:DataStructure/binary_tree.c ****         if (root->L_Node != NULL)
+ 210:DataStructure/binary_tree.c ****         {
+ 211:DataStructure/binary_tree.c ****             return TreeNode_Insert(root->L_Node, node);
+ 212:DataStructure/binary_tree.c ****         }
+ 213:DataStructure/binary_tree.c ****         else
+ 214:DataStructure/binary_tree.c ****         {
+ 215:DataStructure/binary_tree.c ****             node->F_Node = root;
+ 216:DataStructure/binary_tree.c ****             root->L_Node = node;
+ 217:DataStructure/binary_tree.c ****         }
+ 218:DataStructure/binary_tree.c ****     }
+ 219:DataStructure/binary_tree.c ****     else if (hdl_tmp == root->data)
+ 614              		.loc 1 219 10 is_stmt 1 view .LVU195
+ 615              		.loc 1 219 29 is_stmt 0 view .LVU196
+ 616 0026 6B68     		ldr	r3, [r5, #4]	@ unaligned
+ 617              		.loc 1 219 13 view .LVU197
+ 618 0028 8342     		cmp	r3, r0
+ 619 002a 1CD1     		bne	.L52
+ 220:DataStructure/binary_tree.c ****     {
+ 221:DataStructure/binary_tree.c ****         /* insert node data bigger than root/target_node data  */
+ 222:DataStructure/binary_tree.c ****         if (root->R_Node != NULL)
+ 620              		.loc 1 222 9 is_stmt 1 view .LVU198
+ 621              		.loc 1 222 17 is_stmt 0 view .LVU199
+ 622 002c D5F81200 		ldr	r0, [r5, #18]	@ unaligned
+ 623              	.LVL67:
+ 624              		.loc 1 222 12 view .LVU200
+ 625 0030 98B9     		cbnz	r0, .L59
+ 223:DataStructure/binary_tree.c ****         {
+ 224:DataStructure/binary_tree.c ****             return TreeNode_Insert(root->R_Node, node);
+ 225:DataStructure/binary_tree.c ****         }
+ 226:DataStructure/binary_tree.c ****         else
+ 227:DataStructure/binary_tree.c ****         {
+ 228:DataStructure/binary_tree.c ****             node->F_Node = root;
+ 626              		.loc 1 228 13 is_stmt 1 view .LVU201
+ 627              		.loc 1 228 26 is_stmt 0 view .LVU202
+ 628 0032 C6F80A50 		str	r5, [r6, #10]	@ unaligned
+ 229:DataStructure/binary_tree.c ****             root->R_Node = node;
+ 629              		.loc 1 229 13 is_stmt 1 view .LVU203
+ 630              		.loc 1 229 26 is_stmt 0 view .LVU204
+ 631 0036 C5F81260 		str	r6, [r5, #18]	@ unaligned
+ 230:DataStructure/binary_tree.c ****         }
+ 231:DataStructure/binary_tree.c ****     }
+ 232:DataStructure/binary_tree.c ****     else
+ 233:DataStructure/binary_tree.c ****         return false;
+ 234:DataStructure/binary_tree.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 17
+
+
+ 235:DataStructure/binary_tree.c ****     return true;
+ 632              		.loc 1 235 12 view .LVU205
+ 633 003a 0124     		movs	r4, #1
+ 634 003c 13E0     		b	.L52
+ 635              	.LVL68:
+ 636              	.L58:
+ 209:DataStructure/binary_tree.c ****         {
+ 637              		.loc 1 209 9 is_stmt 1 view .LVU206
+ 209:DataStructure/binary_tree.c ****         {
+ 638              		.loc 1 209 17 is_stmt 0 view .LVU207
+ 639 003e D5F80E00 		ldr	r0, [r5, #14]	@ unaligned
+ 640              	.LVL69:
+ 209:DataStructure/binary_tree.c ****         {
+ 641              		.loc 1 209 12 view .LVU208
+ 642 0042 28B9     		cbnz	r0, .L60
+ 215:DataStructure/binary_tree.c ****             root->L_Node = node;
+ 643              		.loc 1 215 13 is_stmt 1 view .LVU209
+ 215:DataStructure/binary_tree.c ****             root->L_Node = node;
+ 644              		.loc 1 215 26 is_stmt 0 view .LVU210
+ 645 0044 C6F80A50 		str	r5, [r6, #10]	@ unaligned
+ 216:DataStructure/binary_tree.c ****         }
+ 646              		.loc 1 216 13 is_stmt 1 view .LVU211
+ 216:DataStructure/binary_tree.c ****         }
+ 647              		.loc 1 216 26 is_stmt 0 view .LVU212
+ 648 0048 C5F80E60 		str	r6, [r5, #14]	@ unaligned
+ 649              		.loc 1 235 12 view .LVU213
+ 650 004c 0124     		movs	r4, #1
+ 651 004e 0AE0     		b	.L52
+ 652              	.L60:
+ 211:DataStructure/binary_tree.c ****         }
+ 653              		.loc 1 211 13 is_stmt 1 view .LVU214
+ 211:DataStructure/binary_tree.c ****         }
+ 654              		.loc 1 211 20 is_stmt 0 view .LVU215
+ 655 0050 3146     		mov	r1, r6
+ 656 0052 FFF7D5FF 		bl	TreeNode_Insert
+ 657              	.LVL70:
+ 658 0056 0446     		mov	r4, r0
+ 659 0058 05E0     		b	.L52
+ 660              	.L59:
+ 224:DataStructure/binary_tree.c ****         }
+ 661              		.loc 1 224 13 is_stmt 1 view .LVU216
+ 224:DataStructure/binary_tree.c ****         }
+ 662              		.loc 1 224 20 is_stmt 0 view .LVU217
+ 663 005a 3146     		mov	r1, r6
+ 664 005c FFF7D0FF 		bl	TreeNode_Insert
+ 665              	.LVL71:
+ 666 0060 0446     		mov	r4, r0
+ 667 0062 00E0     		b	.L52
+ 668              	.LVL72:
+ 669              	.L56:
+ 201:DataStructure/binary_tree.c **** 
+ 670              		.loc 1 201 16 view .LVU218
+ 671 0064 0024     		movs	r4, #0
+ 672              	.LVL73:
+ 673              	.L52:
+ 236:DataStructure/binary_tree.c **** }
+ 674              		.loc 1 236 1 view .LVU219
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 18
+
+
+ 675 0066 2046     		mov	r0, r4
+ 676 0068 70BD     		pop	{r4, r5, r6, pc}
+ 677              		.loc 1 236 1 view .LVU220
+ 678              		.cfi_endproc
+ 679              	.LFE10:
+ 681              		.section	.text.TreeNode_Update_BalanceFactory,"ax",%progbits
+ 682              		.align	1
+ 683              		.syntax unified
+ 684              		.thumb
+ 685              		.thumb_func
+ 686              		.fpu fpv5-d16
+ 688              	TreeNode_Update_BalanceFactory:
+ 689              	.LVL74:
+ 690              	.LFB11:
+ 237:DataStructure/binary_tree.c **** 
+ 238:DataStructure/binary_tree.c **** static void TreeNode_Update_BalanceFactory(TreeNode_TypeDef *node)
+ 239:DataStructure/binary_tree.c **** {
+ 691              		.loc 1 239 1 is_stmt 1 view -0
+ 692              		.cfi_startproc
+ 693              		@ args = 0, pretend = 0, frame = 0
+ 694              		@ frame_needed = 0, uses_anonymous_args = 0
+ 240:DataStructure/binary_tree.c ****     if (node)
+ 695              		.loc 1 240 5 view .LVU222
+ 696              		.loc 1 240 8 is_stmt 0 view .LVU223
+ 697 0000 C0B1     		cbz	r0, .L64
+ 239:DataStructure/binary_tree.c ****     if (node)
+ 698              		.loc 1 239 1 view .LVU224
+ 699 0002 10B5     		push	{r4, lr}
+ 700              	.LCFI8:
+ 701              		.cfi_def_cfa_offset 8
+ 702              		.cfi_offset 4, -8
+ 703              		.cfi_offset 14, -4
+ 704 0004 0446     		mov	r4, r0
+ 241:DataStructure/binary_tree.c ****     {
+ 242:DataStructure/binary_tree.c ****         node->balance_factory = Tree_Get_BalanceFactory(node);
+ 705              		.loc 1 242 9 is_stmt 1 view .LVU225
+ 706              		.loc 1 242 33 is_stmt 0 view .LVU226
+ 707 0006 FFF7FEFF 		bl	Tree_Get_BalanceFactory
+ 708              	.LVL75:
+ 709              		.loc 1 242 31 view .LVU227
+ 710 000a 2081     		strh	r0, [r4, #8]	@ unaligned
+ 243:DataStructure/binary_tree.c **** 
+ 244:DataStructure/binary_tree.c ****         TreeNode_Update_BalanceFactory(node->L_Node);
+ 711              		.loc 1 244 9 is_stmt 1 view .LVU228
+ 712 000c D4F80E00 		ldr	r0, [r4, #14]	@ unaligned
+ 713 0010 FFF7F6FF 		bl	TreeNode_Update_BalanceFactory
+ 714              	.LVL76:
+ 245:DataStructure/binary_tree.c ****         TreeNode_Update_BalanceFactory(node->R_Node);
+ 715              		.loc 1 245 9 view .LVU229
+ 716 0014 D4F81200 		ldr	r0, [r4, #18]	@ unaligned
+ 717 0018 FFF7F2FF 		bl	TreeNode_Update_BalanceFactory
+ 718              	.LVL77:
+ 246:DataStructure/binary_tree.c **** 
+ 247:DataStructure/binary_tree.c ****         if ((node->balance_factory == 2) || (node->balance_factory == -2))
+ 719              		.loc 1 247 9 view .LVU230
+ 720              		.loc 1 247 18 is_stmt 0 view .LVU231
+ 721 001c B4F90830 		ldrsh	r3, [r4, #8]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 19
+
+
+ 722              		.loc 1 247 12 view .LVU232
+ 723 0020 13F1020F 		cmn	r3, #2
+ 724 0024 18BF     		it	ne
+ 725 0026 022B     		cmpne	r3, #2
+ 726 0028 00D0     		beq	.L67
+ 727              	.L61:
+ 248:DataStructure/binary_tree.c ****         {
+ 249:DataStructure/binary_tree.c ****             /* dynamic balance trim */
+ 250:DataStructure/binary_tree.c ****             TreeNoe_Dynamic_Trim(node);
+ 251:DataStructure/binary_tree.c ****         }
+ 252:DataStructure/binary_tree.c ****     }
+ 253:DataStructure/binary_tree.c **** }
+ 728              		.loc 1 253 1 view .LVU233
+ 729 002a 10BD     		pop	{r4, pc}
+ 730              	.LVL78:
+ 731              	.L67:
+ 250:DataStructure/binary_tree.c ****         }
+ 732              		.loc 1 250 13 is_stmt 1 view .LVU234
+ 733 002c 2046     		mov	r0, r4
+ 734 002e FFF7FEFF 		bl	TreeNoe_Dynamic_Trim
+ 735              	.LVL79:
+ 736              		.loc 1 253 1 is_stmt 0 view .LVU235
+ 737 0032 FAE7     		b	.L61
+ 738              	.LVL80:
+ 739              	.L64:
+ 740              	.LCFI9:
+ 741              		.cfi_def_cfa_offset 0
+ 742              		.cfi_restore 4
+ 743              		.cfi_restore 14
+ 744              		.loc 1 253 1 view .LVU236
+ 745 0034 7047     		bx	lr
+ 746              		.cfi_endproc
+ 747              	.LFE11:
+ 749              		.section	.text.Tree_RootUpdate,"ax",%progbits
+ 750              		.align	1
+ 751              		.syntax unified
+ 752              		.thumb
+ 753              		.thumb_func
+ 754              		.fpu fpv5-d16
+ 756              	Tree_RootUpdate:
+ 757              	.LVL81:
+ 758              	.LFB12:
+ 254:DataStructure/binary_tree.c **** 
+ 255:DataStructure/binary_tree.c **** static void Tree_RootUpdate(Tree_TypeDef *tree)
+ 256:DataStructure/binary_tree.c **** {
+ 759              		.loc 1 256 1 is_stmt 1 view -0
+ 760              		.cfi_startproc
+ 761              		@ args = 0, pretend = 0, frame = 0
+ 762              		@ frame_needed = 0, uses_anonymous_args = 0
+ 257:DataStructure/binary_tree.c ****     TreeNode_TypeDef *root = NULL;
+ 763              		.loc 1 257 5 view .LVU238
+ 258:DataStructure/binary_tree.c **** 
+ 259:DataStructure/binary_tree.c ****     if (tree && tree->root_node)
+ 764              		.loc 1 259 5 view .LVU239
+ 765              		.loc 1 259 8 is_stmt 0 view .LVU240
+ 766 0000 50B1     		cbz	r0, .L71
+ 256:DataStructure/binary_tree.c ****     TreeNode_TypeDef *root = NULL;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 20
+
+
+ 767              		.loc 1 256 1 discriminator 1 view .LVU241
+ 768 0002 10B5     		push	{r4, lr}
+ 769              	.LCFI10:
+ 770              		.cfi_def_cfa_offset 8
+ 771              		.cfi_offset 4, -8
+ 772              		.cfi_offset 14, -4
+ 773 0004 0446     		mov	r4, r0
+ 774              		.loc 1 259 21 discriminator 1 view .LVU242
+ 775 0006 4068     		ldr	r0, [r0, #4]	@ unaligned
+ 776              	.LVL82:
+ 777              		.loc 1 259 14 discriminator 1 view .LVU243
+ 778 0008 28B1     		cbz	r0, .L68
+ 260:DataStructure/binary_tree.c ****     {
+ 261:DataStructure/binary_tree.c ****         root = Tree_Search_RootNode(tree->root_node);
+ 779              		.loc 1 261 9 is_stmt 1 view .LVU244
+ 780              		.loc 1 261 16 is_stmt 0 view .LVU245
+ 781 000a FFF7FEFF 		bl	Tree_Search_RootNode
+ 782              	.LVL83:
+ 262:DataStructure/binary_tree.c **** 
+ 263:DataStructure/binary_tree.c ****         if (root != NULL)
+ 783              		.loc 1 263 9 is_stmt 1 view .LVU246
+ 784              		.loc 1 263 12 is_stmt 0 view .LVU247
+ 785 000e 10B1     		cbz	r0, .L68
+ 264:DataStructure/binary_tree.c ****         {
+ 265:DataStructure/binary_tree.c ****             tree->root_node = root;
+ 786              		.loc 1 265 13 is_stmt 1 view .LVU248
+ 787              		.loc 1 265 29 is_stmt 0 view .LVU249
+ 788 0010 6060     		str	r0, [r4, #4]	@ unaligned
+ 266:DataStructure/binary_tree.c **** 
+ 267:DataStructure/binary_tree.c ****             /* test code */
+ 268:DataStructure/binary_tree.c ****             TreeNode_Update_BalanceFactory(tree->root_node);
+ 789              		.loc 1 268 13 is_stmt 1 view .LVU250
+ 790 0012 FFF7FEFF 		bl	TreeNode_Update_BalanceFactory
+ 791              	.LVL84:
+ 792              	.L68:
+ 269:DataStructure/binary_tree.c ****         }
+ 270:DataStructure/binary_tree.c ****     }
+ 271:DataStructure/binary_tree.c **** }
+ 793              		.loc 1 271 1 is_stmt 0 view .LVU251
+ 794 0016 10BD     		pop	{r4, pc}
+ 795              	.LVL85:
+ 796              	.L71:
+ 797              	.LCFI11:
+ 798              		.cfi_def_cfa_offset 0
+ 799              		.cfi_restore 4
+ 800              		.cfi_restore 14
+ 801              		.loc 1 271 1 view .LVU252
+ 802 0018 7047     		bx	lr
+ 803              		.cfi_endproc
+ 804              	.LFE12:
+ 806              		.section	.text.TreeNode_Init,"ax",%progbits
+ 807              		.align	1
+ 808              		.syntax unified
+ 809              		.thumb
+ 810              		.thumb_func
+ 811              		.fpu fpv5-d16
+ 813              	TreeNode_Init:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 21
+
+
+ 814              	.LVL86:
+ 815              	.LFB13:
+ 272:DataStructure/binary_tree.c **** 
+ 273:DataStructure/binary_tree.c **** static bool TreeNode_Init(TreeNode_TypeDef *node, char *name, data_handle data, Tree_Callback inser
+ 274:DataStructure/binary_tree.c **** {
+ 816              		.loc 1 274 1 is_stmt 1 view -0
+ 817              		.cfi_startproc
+ 818              		@ args = 8, pretend = 0, frame = 0
+ 819              		@ frame_needed = 0, uses_anonymous_args = 0
+ 820              		@ link register save eliminated.
+ 821              		.loc 1 274 1 is_stmt 0 view .LVU254
+ 822 0000 70B4     		push	{r4, r5, r6}
+ 823              	.LCFI12:
+ 824              		.cfi_def_cfa_offset 12
+ 825              		.cfi_offset 4, -12
+ 826              		.cfi_offset 5, -8
+ 827              		.cfi_offset 6, -4
+ 275:DataStructure/binary_tree.c ****     if (node && data)
+ 828              		.loc 1 275 5 is_stmt 1 view .LVU255
+ 829              		.loc 1 275 9 is_stmt 0 view .LVU256
+ 830 0002 0446     		mov	r4, r0
+ 831              		.loc 1 275 14 view .LVU257
+ 832 0004 1546     		mov	r5, r2
+ 833 0006 003A     		subs	r2, r2, #0
+ 834              	.LVL87:
+ 835              		.loc 1 275 14 view .LVU258
+ 836 0008 18BF     		it	ne
+ 837 000a 0122     		movne	r2, #1
+ 838 000c 0028     		cmp	r0, #0
+ 839 000e 14BF     		ite	ne
+ 840 0010 1046     		movne	r0, r2
+ 841 0012 0020     		moveq	r0, #0
+ 842              	.LVL88:
+ 843              		.loc 1 275 8 view .LVU259
+ 844 0014 90B1     		cbz	r0, .L75
+ 276:DataStructure/binary_tree.c ****     {
+ 277:DataStructure/binary_tree.c ****         if ((insert == NULL) || (search == NULL) || (compare == NULL))
+ 845              		.loc 1 277 9 is_stmt 1 view .LVU260
+ 846              		.loc 1 277 41 is_stmt 0 view .LVU261
+ 847 0016 039A     		ldr	r2, [sp, #12]
+ 848 0018 B2FA82F2 		clz	r2, r2
+ 849 001c 5209     		lsrs	r2, r2, #5
+ 850              		.loc 1 277 30 view .LVU262
+ 851 001e 002B     		cmp	r3, #0
+ 852 0020 08BF     		it	eq
+ 853 0022 0122     		moveq	r2, #1
+ 854              		.loc 1 277 12 view .LVU263
+ 855 0024 62B9     		cbnz	r2, .L76
+ 856              		.loc 1 277 50 discriminator 1 view .LVU264
+ 857 0026 049E     		ldr	r6, [sp, #16]
+ 858 0028 66B1     		cbz	r6, .L77
+ 278:DataStructure/binary_tree.c ****             return false;
+ 279:DataStructure/binary_tree.c **** 
+ 280:DataStructure/binary_tree.c ****         node->name = name;
+ 859              		.loc 1 280 9 is_stmt 1 view .LVU265
+ 860              		.loc 1 280 20 is_stmt 0 view .LVU266
+ 861 002a 2160     		str	r1, [r4]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 22
+
+
+ 281:DataStructure/binary_tree.c ****         node->data = data;
+ 862              		.loc 1 281 9 is_stmt 1 view .LVU267
+ 863              		.loc 1 281 20 is_stmt 0 view .LVU268
+ 864 002c 6560     		str	r5, [r4, #4]	@ unaligned
+ 282:DataStructure/binary_tree.c ****         node->compare_callback = compare;
+ 865              		.loc 1 282 9 is_stmt 1 view .LVU269
+ 866              		.loc 1 282 32 is_stmt 0 view .LVU270
+ 867 002e C4F81E60 		str	r6, [r4, #30]	@ unaligned
+ 283:DataStructure/binary_tree.c ****         node->insert_callback = insert;
+ 868              		.loc 1 283 9 is_stmt 1 view .LVU271
+ 869              		.loc 1 283 31 is_stmt 0 view .LVU272
+ 870 0032 C4F81630 		str	r3, [r4, #22]	@ unaligned
+ 284:DataStructure/binary_tree.c ****         node->search_callback = search;
+ 871              		.loc 1 284 9 is_stmt 1 view .LVU273
+ 872              		.loc 1 284 31 is_stmt 0 view .LVU274
+ 873 0036 039B     		ldr	r3, [sp, #12]
+ 874              	.LVL89:
+ 875              		.loc 1 284 31 view .LVU275
+ 876 0038 C4F81A30 		str	r3, [r4, #26]	@ unaligned
+ 285:DataStructure/binary_tree.c **** 
+ 286:DataStructure/binary_tree.c ****         return true;
+ 877              		.loc 1 286 9 is_stmt 1 view .LVU276
+ 878              	.L75:
+ 287:DataStructure/binary_tree.c ****     }
+ 288:DataStructure/binary_tree.c **** 
+ 289:DataStructure/binary_tree.c ****     return false;
+ 290:DataStructure/binary_tree.c **** }
+ 879              		.loc 1 290 1 is_stmt 0 view .LVU277
+ 880 003c 70BC     		pop	{r4, r5, r6}
+ 881              	.LCFI13:
+ 882              		.cfi_remember_state
+ 883              		.cfi_restore 6
+ 884              		.cfi_restore 5
+ 885              		.cfi_restore 4
+ 886              		.cfi_def_cfa_offset 0
+ 887              	.LVL90:
+ 888              		.loc 1 290 1 view .LVU278
+ 889 003e 7047     		bx	lr
+ 890              	.LVL91:
+ 891              	.L76:
+ 892              	.LCFI14:
+ 893              		.cfi_restore_state
+ 278:DataStructure/binary_tree.c **** 
+ 894              		.loc 1 278 20 view .LVU279
+ 895 0040 0020     		movs	r0, #0
+ 896 0042 FBE7     		b	.L75
+ 897              	.L77:
+ 898 0044 1046     		mov	r0, r2
+ 899 0046 F9E7     		b	.L75
+ 900              		.cfi_endproc
+ 901              	.LFE13:
+ 903              		.section	.text.TreeNode_Pre_Traverse,"ax",%progbits
+ 904              		.align	1
+ 905              		.syntax unified
+ 906              		.thumb
+ 907              		.thumb_func
+ 908              		.fpu fpv5-d16
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 23
+
+
+ 910              	TreeNode_Pre_Traverse:
+ 911              	.LVL92:
+ 912              	.LFB15:
+ 291:DataStructure/binary_tree.c **** 
+ 292:DataStructure/binary_tree.c **** static bool Tree_Insert(Tree_TypeDef *tree, char *node_name, data_handle data_addr)
+ 293:DataStructure/binary_tree.c **** {
+ 294:DataStructure/binary_tree.c ****     /* create node first */
+ 295:DataStructure/binary_tree.c ****     TreeNode_TypeDef *node_tmp = NULL;
+ 296:DataStructure/binary_tree.c **** 
+ 297:DataStructure/binary_tree.c ****     if (tree == NULL)
+ 298:DataStructure/binary_tree.c ****         return false;
+ 299:DataStructure/binary_tree.c **** 
+ 300:DataStructure/binary_tree.c ****     node_tmp = (TreeNode_TypeDef *)TreeMalloc(sizeof(TreeNode_TypeDef));
+ 301:DataStructure/binary_tree.c ****     TreeNode_Init(node_tmp, node_name, data_addr, tree->insert_callback, tree->search_callback, tre
+ 302:DataStructure/binary_tree.c **** 
+ 303:DataStructure/binary_tree.c ****     if (node_tmp)
+ 304:DataStructure/binary_tree.c ****     {
+ 305:DataStructure/binary_tree.c ****         /* update root node */
+ 306:DataStructure/binary_tree.c ****         Tree_RootUpdate(tree);
+ 307:DataStructure/binary_tree.c **** 
+ 308:DataStructure/binary_tree.c ****         if (tree->root_node != NULL)
+ 309:DataStructure/binary_tree.c ****         {
+ 310:DataStructure/binary_tree.c ****             TreeNode_Insert(tree->root_node, node_tmp);
+ 311:DataStructure/binary_tree.c ****         }
+ 312:DataStructure/binary_tree.c ****         else
+ 313:DataStructure/binary_tree.c ****             tree->root_node = node_tmp;
+ 314:DataStructure/binary_tree.c **** 
+ 315:DataStructure/binary_tree.c ****         /* update root node */
+ 316:DataStructure/binary_tree.c ****         Tree_RootUpdate(tree);
+ 317:DataStructure/binary_tree.c **** 
+ 318:DataStructure/binary_tree.c ****         return true;
+ 319:DataStructure/binary_tree.c ****     }
+ 320:DataStructure/binary_tree.c **** 
+ 321:DataStructure/binary_tree.c ****     return false;
+ 322:DataStructure/binary_tree.c **** }
+ 323:DataStructure/binary_tree.c **** 
+ 324:DataStructure/binary_tree.c **** static void TreeNode_Pre_Traverse(TreeNode_TypeDef *node, Tree_Traverse_Callback callback)
+ 325:DataStructure/binary_tree.c **** {
+ 913              		.loc 1 325 1 is_stmt 1 view -0
+ 914              		.cfi_startproc
+ 915              		@ args = 0, pretend = 0, frame = 0
+ 916              		@ frame_needed = 0, uses_anonymous_args = 0
+ 326:DataStructure/binary_tree.c ****     if (node != NULL)
+ 917              		.loc 1 326 5 view .LVU281
+ 918              		.loc 1 326 8 is_stmt 0 view .LVU282
+ 919 0000 80B1     		cbz	r0, .L83
+ 325:DataStructure/binary_tree.c ****     if (node != NULL)
+ 920              		.loc 1 325 1 view .LVU283
+ 921 0002 38B5     		push	{r3, r4, r5, lr}
+ 922              	.LCFI15:
+ 923              		.cfi_def_cfa_offset 16
+ 924              		.cfi_offset 3, -16
+ 925              		.cfi_offset 4, -12
+ 926              		.cfi_offset 5, -8
+ 927              		.cfi_offset 14, -4
+ 928 0004 0C46     		mov	r4, r1
+ 929 0006 0546     		mov	r5, r0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 24
+
+
+ 327:DataStructure/binary_tree.c ****     {
+ 328:DataStructure/binary_tree.c ****         // process root node
+ 329:DataStructure/binary_tree.c ****         if (callback != NULL)
+ 930              		.loc 1 329 9 is_stmt 1 view .LVU284
+ 931              		.loc 1 329 12 is_stmt 0 view .LVU285
+ 932 0008 09B1     		cbz	r1, .L81
+ 330:DataStructure/binary_tree.c ****             callback(node->data);
+ 933              		.loc 1 330 13 is_stmt 1 view .LVU286
+ 934 000a 4068     		ldr	r0, [r0, #4]	@ unaligned
+ 935              	.LVL93:
+ 936              		.loc 1 330 13 is_stmt 0 view .LVU287
+ 937 000c 8847     		blx	r1
+ 938              	.LVL94:
+ 939              	.L81:
+ 331:DataStructure/binary_tree.c **** 
+ 332:DataStructure/binary_tree.c ****         // traverse left node
+ 333:DataStructure/binary_tree.c ****         TreeNode_Pre_Traverse(node->L_Node, callback);
+ 940              		.loc 1 333 9 is_stmt 1 view .LVU288
+ 941 000e 2146     		mov	r1, r4
+ 942 0010 D5F80E00 		ldr	r0, [r5, #14]	@ unaligned
+ 943 0014 FFF7F4FF 		bl	TreeNode_Pre_Traverse
+ 944              	.LVL95:
+ 334:DataStructure/binary_tree.c ****         // traverse right node
+ 335:DataStructure/binary_tree.c ****         TreeNode_Pre_Traverse(node->R_Node, callback);
+ 945              		.loc 1 335 9 view .LVU289
+ 946 0018 2146     		mov	r1, r4
+ 947 001a D5F81200 		ldr	r0, [r5, #18]	@ unaligned
+ 948 001e FFF7EFFF 		bl	TreeNode_Pre_Traverse
+ 949              	.LVL96:
+ 336:DataStructure/binary_tree.c ****     }
+ 337:DataStructure/binary_tree.c **** }
+ 950              		.loc 1 337 1 is_stmt 0 view .LVU290
+ 951 0022 38BD     		pop	{r3, r4, r5, pc}
+ 952              	.LVL97:
+ 953              	.L83:
+ 954              	.LCFI16:
+ 955              		.cfi_def_cfa_offset 0
+ 956              		.cfi_restore 3
+ 957              		.cfi_restore 4
+ 958              		.cfi_restore 5
+ 959              		.cfi_restore 14
+ 960              		.loc 1 337 1 view .LVU291
+ 961 0024 7047     		bx	lr
+ 962              		.cfi_endproc
+ 963              	.LFE15:
+ 965              		.section	.text.TreeNode_Mid_Traverse,"ax",%progbits
+ 966              		.align	1
+ 967              		.syntax unified
+ 968              		.thumb
+ 969              		.thumb_func
+ 970              		.fpu fpv5-d16
+ 972              	TreeNode_Mid_Traverse:
+ 973              	.LVL98:
+ 974              	.LFB16:
+ 338:DataStructure/binary_tree.c **** 
+ 339:DataStructure/binary_tree.c **** static void TreeNode_Mid_Traverse(TreeNode_TypeDef *node, Tree_Traverse_Callback callback)
+ 340:DataStructure/binary_tree.c **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 25
+
+
+ 975              		.loc 1 340 1 is_stmt 1 view -0
+ 976              		.cfi_startproc
+ 977              		@ args = 0, pretend = 0, frame = 0
+ 978              		@ frame_needed = 0, uses_anonymous_args = 0
+ 341:DataStructure/binary_tree.c ****     if (node != NULL)
+ 979              		.loc 1 341 5 view .LVU293
+ 980              		.loc 1 341 8 is_stmt 0 view .LVU294
+ 981 0000 78B1     		cbz	r0, .L90
+ 340:DataStructure/binary_tree.c ****     if (node != NULL)
+ 982              		.loc 1 340 1 view .LVU295
+ 983 0002 38B5     		push	{r3, r4, r5, lr}
+ 984              	.LCFI17:
+ 985              		.cfi_def_cfa_offset 16
+ 986              		.cfi_offset 3, -16
+ 987              		.cfi_offset 4, -12
+ 988              		.cfi_offset 5, -8
+ 989              		.cfi_offset 14, -4
+ 990 0004 0C46     		mov	r4, r1
+ 991 0006 0546     		mov	r5, r0
+ 342:DataStructure/binary_tree.c ****     {
+ 343:DataStructure/binary_tree.c ****         // traverse left node
+ 344:DataStructure/binary_tree.c ****         TreeNode_Mid_Traverse(node->L_Node, callback);
+ 992              		.loc 1 344 9 is_stmt 1 view .LVU296
+ 993 0008 D0F80E00 		ldr	r0, [r0, #14]	@ unaligned
+ 994              	.LVL99:
+ 995              		.loc 1 344 9 is_stmt 0 view .LVU297
+ 996 000c FFF7F8FF 		bl	TreeNode_Mid_Traverse
+ 997              	.LVL100:
+ 345:DataStructure/binary_tree.c **** 
+ 346:DataStructure/binary_tree.c ****         // process root node
+ 347:DataStructure/binary_tree.c ****         if (callback != NULL)
+ 998              		.loc 1 347 9 is_stmt 1 view .LVU298
+ 999              		.loc 1 347 12 is_stmt 0 view .LVU299
+ 1000 0010 0CB1     		cbz	r4, .L88
+ 348:DataStructure/binary_tree.c ****             callback(node->data);
+ 1001              		.loc 1 348 13 is_stmt 1 view .LVU300
+ 1002 0012 6868     		ldr	r0, [r5, #4]	@ unaligned
+ 1003 0014 A047     		blx	r4
+ 1004              	.LVL101:
+ 1005              	.L88:
+ 349:DataStructure/binary_tree.c **** 
+ 350:DataStructure/binary_tree.c ****         // traverse right node
+ 351:DataStructure/binary_tree.c ****         TreeNode_Mid_Traverse(node->R_Node, callback);
+ 1006              		.loc 1 351 9 view .LVU301
+ 1007 0016 2146     		mov	r1, r4
+ 1008 0018 D5F81200 		ldr	r0, [r5, #18]	@ unaligned
+ 1009 001c FFF7F0FF 		bl	TreeNode_Mid_Traverse
+ 1010              	.LVL102:
+ 352:DataStructure/binary_tree.c ****     }
+ 353:DataStructure/binary_tree.c **** }
+ 1011              		.loc 1 353 1 is_stmt 0 view .LVU302
+ 1012 0020 38BD     		pop	{r3, r4, r5, pc}
+ 1013              	.LVL103:
+ 1014              	.L90:
+ 1015              	.LCFI18:
+ 1016              		.cfi_def_cfa_offset 0
+ 1017              		.cfi_restore 3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 26
+
+
+ 1018              		.cfi_restore 4
+ 1019              		.cfi_restore 5
+ 1020              		.cfi_restore 14
+ 1021              		.loc 1 353 1 view .LVU303
+ 1022 0022 7047     		bx	lr
+ 1023              		.cfi_endproc
+ 1024              	.LFE16:
+ 1026              		.section	.text.TreeNode_Bck_Traverse,"ax",%progbits
+ 1027              		.align	1
+ 1028              		.syntax unified
+ 1029              		.thumb
+ 1030              		.thumb_func
+ 1031              		.fpu fpv5-d16
+ 1033              	TreeNode_Bck_Traverse:
+ 1034              	.LVL104:
+ 1035              	.LFB17:
+ 354:DataStructure/binary_tree.c **** 
+ 355:DataStructure/binary_tree.c **** static void TreeNode_Bck_Traverse(TreeNode_TypeDef *node, Tree_Traverse_Callback callback)
+ 356:DataStructure/binary_tree.c **** {
+ 1036              		.loc 1 356 1 is_stmt 1 view -0
+ 1037              		.cfi_startproc
+ 1038              		@ args = 0, pretend = 0, frame = 0
+ 1039              		@ frame_needed = 0, uses_anonymous_args = 0
+ 357:DataStructure/binary_tree.c ****     if (node != NULL)
+ 1040              		.loc 1 357 5 view .LVU305
+ 1041              		.loc 1 357 8 is_stmt 0 view .LVU306
+ 1042 0000 78B1     		cbz	r0, .L96
+ 356:DataStructure/binary_tree.c ****     if (node != NULL)
+ 1043              		.loc 1 356 1 view .LVU307
+ 1044 0002 38B5     		push	{r3, r4, r5, lr}
+ 1045              	.LCFI19:
+ 1046              		.cfi_def_cfa_offset 16
+ 1047              		.cfi_offset 3, -16
+ 1048              		.cfi_offset 4, -12
+ 1049              		.cfi_offset 5, -8
+ 1050              		.cfi_offset 14, -4
+ 1051 0004 0C46     		mov	r4, r1
+ 1052 0006 0546     		mov	r5, r0
+ 358:DataStructure/binary_tree.c ****     {
+ 359:DataStructure/binary_tree.c ****         // traverse left node
+ 360:DataStructure/binary_tree.c ****         TreeNode_Bck_Traverse(node->L_Node, callback);
+ 1053              		.loc 1 360 9 is_stmt 1 view .LVU308
+ 1054 0008 D0F80E00 		ldr	r0, [r0, #14]	@ unaligned
+ 1055              	.LVL105:
+ 1056              		.loc 1 360 9 is_stmt 0 view .LVU309
+ 1057 000c FFF7F8FF 		bl	TreeNode_Bck_Traverse
+ 1058              	.LVL106:
+ 361:DataStructure/binary_tree.c ****         // traverse right node
+ 362:DataStructure/binary_tree.c ****         TreeNode_Bck_Traverse(node->R_Node, callback);
+ 1059              		.loc 1 362 9 is_stmt 1 view .LVU310
+ 1060 0010 2146     		mov	r1, r4
+ 1061 0012 D5F81200 		ldr	r0, [r5, #18]	@ unaligned
+ 1062 0016 FFF7F3FF 		bl	TreeNode_Bck_Traverse
+ 1063              	.LVL107:
+ 363:DataStructure/binary_tree.c **** 
+ 364:DataStructure/binary_tree.c ****         // precess root node
+ 365:DataStructure/binary_tree.c ****         if (callback != NULL)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 27
+
+
+ 1064              		.loc 1 365 9 view .LVU311
+ 1065              		.loc 1 365 12 is_stmt 0 view .LVU312
+ 1066 001a 0CB1     		cbz	r4, .L93
+ 366:DataStructure/binary_tree.c ****             callback(node->data);
+ 1067              		.loc 1 366 13 is_stmt 1 view .LVU313
+ 1068 001c 6868     		ldr	r0, [r5, #4]	@ unaligned
+ 1069 001e A047     		blx	r4
+ 1070              	.LVL108:
+ 1071              	.L93:
+ 367:DataStructure/binary_tree.c ****     }
+ 368:DataStructure/binary_tree.c **** }
+ 1072              		.loc 1 368 1 is_stmt 0 view .LVU314
+ 1073 0020 38BD     		pop	{r3, r4, r5, pc}
+ 1074              	.LVL109:
+ 1075              	.L96:
+ 1076              	.LCFI20:
+ 1077              		.cfi_def_cfa_offset 0
+ 1078              		.cfi_restore 3
+ 1079              		.cfi_restore 4
+ 1080              		.cfi_restore 5
+ 1081              		.cfi_restore 14
+ 1082              		.loc 1 368 1 view .LVU315
+ 1083 0022 7047     		bx	lr
+ 1084              		.cfi_endproc
+ 1085              	.LFE17:
+ 1087              		.section	.text.Tree_Traverse,"ax",%progbits
+ 1088              		.align	1
+ 1089              		.syntax unified
+ 1090              		.thumb
+ 1091              		.thumb_func
+ 1092              		.fpu fpv5-d16
+ 1094              	Tree_Traverse:
+ 1095              	.LVL110:
+ 1096              	.LFB18:
+ 369:DataStructure/binary_tree.c **** 
+ 370:DataStructure/binary_tree.c **** static void Tree_Traverse(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback c
+ 371:DataStructure/binary_tree.c **** {
+ 1097              		.loc 1 371 1 is_stmt 1 view -0
+ 1098              		.cfi_startproc
+ 1099              		@ args = 0, pretend = 0, frame = 0
+ 1100              		@ frame_needed = 0, uses_anonymous_args = 0
+ 372:DataStructure/binary_tree.c ****     if (tree && tree->root_node)
+ 1101              		.loc 1 372 5 view .LVU317
+ 1102              		.loc 1 372 8 is_stmt 0 view .LVU318
+ 1103 0000 B0B1     		cbz	r0, .L104
+ 371:DataStructure/binary_tree.c ****     if (tree && tree->root_node)
+ 1104              		.loc 1 371 1 discriminator 1 view .LVU319
+ 1105 0002 08B5     		push	{r3, lr}
+ 1106              	.LCFI21:
+ 1107              		.cfi_def_cfa_offset 8
+ 1108              		.cfi_offset 3, -8
+ 1109              		.cfi_offset 14, -4
+ 1110 0004 0B46     		mov	r3, r1
+ 1111              		.loc 1 372 21 discriminator 1 view .LVU320
+ 1112 0006 4068     		ldr	r0, [r0, #4]	@ unaligned
+ 1113              	.LVL111:
+ 1114              		.loc 1 372 14 discriminator 1 view .LVU321
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 28
+
+
+ 1115 0008 28B1     		cbz	r0, .L99
+ 373:DataStructure/binary_tree.c ****     {
+ 374:DataStructure/binary_tree.c ****         switch ((uint8_t)type)
+ 1116              		.loc 1 374 9 is_stmt 1 view .LVU322
+ 1117 000a 022B     		cmp	r3, #2
+ 1118 000c 08D0     		beq	.L101
+ 1119 000e 032B     		cmp	r3, #3
+ 1120 0010 0AD0     		beq	.L102
+ 1121 0012 012B     		cmp	r3, #1
+ 1122 0014 00D0     		beq	.L107
+ 1123              	.LVL112:
+ 1124              	.L99:
+ 375:DataStructure/binary_tree.c ****         {
+ 376:DataStructure/binary_tree.c ****         case Tree_Pre_Traverse:
+ 377:DataStructure/binary_tree.c ****             TreeNode_Pre_Traverse(tree->root_node, callback);
+ 378:DataStructure/binary_tree.c ****             break;
+ 379:DataStructure/binary_tree.c **** 
+ 380:DataStructure/binary_tree.c ****         case Tree_Mid_Traverse:
+ 381:DataStructure/binary_tree.c ****             TreeNode_Mid_Traverse(tree->root_node, callback);
+ 382:DataStructure/binary_tree.c ****             break;
+ 383:DataStructure/binary_tree.c **** 
+ 384:DataStructure/binary_tree.c ****         case Tree_Bck_Traverse:
+ 385:DataStructure/binary_tree.c ****             TreeNode_Bck_Traverse(tree->root_node, callback);
+ 386:DataStructure/binary_tree.c ****             break;
+ 387:DataStructure/binary_tree.c **** 
+ 388:DataStructure/binary_tree.c ****         default:
+ 389:DataStructure/binary_tree.c ****             break;
+ 390:DataStructure/binary_tree.c ****         }
+ 391:DataStructure/binary_tree.c ****     }
+ 392:DataStructure/binary_tree.c **** }
+ 1125              		.loc 1 392 1 is_stmt 0 view .LVU323
+ 1126 0016 08BD     		pop	{r3, pc}
+ 1127              	.LVL113:
+ 1128              	.L107:
+ 377:DataStructure/binary_tree.c ****             break;
+ 1129              		.loc 1 377 13 is_stmt 1 view .LVU324
+ 1130 0018 1146     		mov	r1, r2
+ 1131              	.LVL114:
+ 377:DataStructure/binary_tree.c ****             break;
+ 1132              		.loc 1 377 13 is_stmt 0 view .LVU325
+ 1133 001a FFF7FEFF 		bl	TreeNode_Pre_Traverse
+ 1134              	.LVL115:
+ 378:DataStructure/binary_tree.c **** 
+ 1135              		.loc 1 378 13 is_stmt 1 view .LVU326
+ 1136 001e FAE7     		b	.L99
+ 1137              	.LVL116:
+ 1138              	.L101:
+ 381:DataStructure/binary_tree.c ****             break;
+ 1139              		.loc 1 381 13 view .LVU327
+ 1140 0020 1146     		mov	r1, r2
+ 1141              	.LVL117:
+ 381:DataStructure/binary_tree.c ****             break;
+ 1142              		.loc 1 381 13 is_stmt 0 view .LVU328
+ 1143 0022 FFF7FEFF 		bl	TreeNode_Mid_Traverse
+ 1144              	.LVL118:
+ 382:DataStructure/binary_tree.c **** 
+ 1145              		.loc 1 382 13 is_stmt 1 view .LVU329
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 29
+
+
+ 1146 0026 F6E7     		b	.L99
+ 1147              	.LVL119:
+ 1148              	.L102:
+ 385:DataStructure/binary_tree.c ****             break;
+ 1149              		.loc 1 385 13 view .LVU330
+ 1150 0028 1146     		mov	r1, r2
+ 1151              	.LVL120:
+ 385:DataStructure/binary_tree.c ****             break;
+ 1152              		.loc 1 385 13 is_stmt 0 view .LVU331
+ 1153 002a FFF7FEFF 		bl	TreeNode_Bck_Traverse
+ 1154              	.LVL121:
+ 386:DataStructure/binary_tree.c **** 
+ 1155              		.loc 1 386 13 is_stmt 1 view .LVU332
+ 1156              		.loc 1 392 1 is_stmt 0 view .LVU333
+ 1157 002e F2E7     		b	.L99
+ 1158              	.LVL122:
+ 1159              	.L104:
+ 1160              	.LCFI22:
+ 1161              		.cfi_def_cfa_offset 0
+ 1162              		.cfi_restore 3
+ 1163              		.cfi_restore 14
+ 1164              		.loc 1 392 1 view .LVU334
+ 1165 0030 7047     		bx	lr
+ 1166              		.cfi_endproc
+ 1167              	.LFE18:
+ 1169              		.section	.text.TreeNode_Search,"ax",%progbits
+ 1170              		.align	1
+ 1171              		.syntax unified
+ 1172              		.thumb
+ 1173              		.thumb_func
+ 1174              		.fpu fpv5-d16
+ 1176              	TreeNode_Search:
+ 1177              	.LVL123:
+ 1178              	.LFB19:
+ 393:DataStructure/binary_tree.c **** 
+ 394:DataStructure/binary_tree.c **** static TreeSearch_Out_TypeDef TreeNode_Search(TreeNode_TypeDef *node, data_handle data)
+ 395:DataStructure/binary_tree.c **** {
+ 1179              		.loc 1 395 1 is_stmt 1 view -0
+ 1180              		.cfi_startproc
+ 1181              		@ args = 0, pretend = 0, frame = 8
+ 1182              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1183              		.loc 1 395 1 is_stmt 0 view .LVU336
+ 1184 0000 70B5     		push	{r4, r5, r6, lr}
+ 1185              	.LCFI23:
+ 1186              		.cfi_def_cfa_offset 16
+ 1187              		.cfi_offset 4, -16
+ 1188              		.cfi_offset 5, -12
+ 1189              		.cfi_offset 6, -8
+ 1190              		.cfi_offset 14, -4
+ 1191 0002 82B0     		sub	sp, sp, #8
+ 1192              	.LCFI24:
+ 1193              		.cfi_def_cfa_offset 24
+ 1194 0004 0446     		mov	r4, r0
+ 396:DataStructure/binary_tree.c ****     TreeSearch_Out_TypeDef search_out;
+ 1195              		.loc 1 396 5 is_stmt 1 view .LVU337
+ 397:DataStructure/binary_tree.c **** 
+ 398:DataStructure/binary_tree.c ****     memset(&search_out, NULL, sizeof(search_out));
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 30
+
+
+ 1196              		.loc 1 398 5 view .LVU338
+ 399:DataStructure/binary_tree.c **** 
+ 400:DataStructure/binary_tree.c ****     search_out.state = Tree_Search_E;
+ 1197              		.loc 1 400 5 view .LVU339
+ 1198              		.loc 1 400 22 is_stmt 0 view .LVU340
+ 1199 0006 0423     		movs	r3, #4
+ 1200 0008 8DF80430 		strb	r3, [sp, #4]
+ 401:DataStructure/binary_tree.c ****     search_out.node_hdl = 0;
+ 1201              		.loc 1 401 5 is_stmt 1 view .LVU341
+ 1202              		.loc 1 401 25 is_stmt 0 view .LVU342
+ 1203 000c 0023     		movs	r3, #0
+ 1204 000e 0093     		str	r3, [sp]
+ 402:DataStructure/binary_tree.c **** 
+ 403:DataStructure/binary_tree.c ****     if (node != NULL && node->search_callback != NULL)
+ 1205              		.loc 1 403 5 is_stmt 1 view .LVU343
+ 1206              		.loc 1 403 8 is_stmt 0 view .LVU344
+ 1207 0010 79B1     		cbz	r1, .L109
+ 1208 0012 1646     		mov	r6, r2
+ 1209 0014 0D46     		mov	r5, r1
+ 1210              		.loc 1 403 29 discriminator 1 view .LVU345
+ 1211 0016 D1F81A30 		ldr	r3, [r1, #26]	@ unaligned
+ 1212              		.loc 1 403 22 discriminator 1 view .LVU346
+ 1213 001a 53B1     		cbz	r3, .L109
+ 404:DataStructure/binary_tree.c ****     {
+ 405:DataStructure/binary_tree.c ****         search_out.state = node->search_callback(node->data, data);
+ 1214              		.loc 1 405 9 is_stmt 1 view .LVU347
+ 1215              		.loc 1 405 28 is_stmt 0 view .LVU348
+ 1216 001c 1146     		mov	r1, r2
+ 1217              	.LVL124:
+ 1218              		.loc 1 405 28 view .LVU349
+ 1219 001e 6868     		ldr	r0, [r5, #4]	@ unaligned
+ 1220              	.LVL125:
+ 1221              		.loc 1 405 28 view .LVU350
+ 1222 0020 9847     		blx	r3
+ 1223              	.LVL126:
+ 1224              		.loc 1 405 26 view .LVU351
+ 1225 0022 8DF80400 		strb	r0, [sp, #4]
+ 406:DataStructure/binary_tree.c **** 
+ 407:DataStructure/binary_tree.c ****         switch (search_out.state)
+ 1226              		.loc 1 407 9 is_stmt 1 view .LVU352
+ 1227 0026 0228     		cmp	r0, #2
+ 1228 0028 14D0     		beq	.L110
+ 1229 002a 0328     		cmp	r0, #3
+ 1230 002c 09D0     		beq	.L111
+ 1231 002e 0128     		cmp	r0, #1
+ 1232 0030 09D0     		beq	.L115
+ 1233              	.LVL127:
+ 1234              	.L109:
+ 408:DataStructure/binary_tree.c ****         {
+ 409:DataStructure/binary_tree.c ****         case Tree_Search_D:
+ 410:DataStructure/binary_tree.c ****             /* data matach */
+ 411:DataStructure/binary_tree.c ****             search_out.node_hdl = (TreeNode_Handle)node;
+ 412:DataStructure/binary_tree.c ****             break;
+ 413:DataStructure/binary_tree.c **** 
+ 414:DataStructure/binary_tree.c ****         case Tree_Search_L:
+ 415:DataStructure/binary_tree.c ****             /* search left node */
+ 416:DataStructure/binary_tree.c ****             return TreeNode_Search(node->L_Node, data);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 31
+
+
+ 417:DataStructure/binary_tree.c **** 
+ 418:DataStructure/binary_tree.c ****         case Tree_Search_R:
+ 419:DataStructure/binary_tree.c ****             /* search right node */
+ 420:DataStructure/binary_tree.c ****             return TreeNode_Search(node->R_Node, data);
+ 421:DataStructure/binary_tree.c **** 
+ 422:DataStructure/binary_tree.c ****         case Tree_Search_E:
+ 423:DataStructure/binary_tree.c ****         default:
+ 424:DataStructure/binary_tree.c ****             /* error match */
+ 425:DataStructure/binary_tree.c ****             break;
+ 426:DataStructure/binary_tree.c ****         }
+ 427:DataStructure/binary_tree.c ****     }
+ 428:DataStructure/binary_tree.c **** 
+ 429:DataStructure/binary_tree.c ****     return search_out;
+ 1235              		.loc 1 429 5 view .LVU353
+ 1236              		.loc 1 429 12 is_stmt 0 view .LVU354
+ 1237 0032 0098     		ldr	r0, [sp]
+ 1238 0034 2060     		str	r0, [r4]	@ unaligned
+ 1239 0036 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 1240 003a 2371     		strb	r3, [r4, #4]
+ 1241              	.L108:
+ 430:DataStructure/binary_tree.c **** }
+ 1242              		.loc 1 430 1 view .LVU355
+ 1243 003c 2046     		mov	r0, r4
+ 1244 003e 02B0     		add	sp, sp, #8
+ 1245              	.LCFI25:
+ 1246              		.cfi_remember_state
+ 1247              		.cfi_def_cfa_offset 16
+ 1248              		@ sp needed
+ 1249 0040 70BD     		pop	{r4, r5, r6, pc}
+ 1250              	.LVL128:
+ 1251              	.L111:
+ 1252              	.LCFI26:
+ 1253              		.cfi_restore_state
+ 411:DataStructure/binary_tree.c ****             break;
+ 1254              		.loc 1 411 13 is_stmt 1 view .LVU356
+ 411:DataStructure/binary_tree.c ****             break;
+ 1255              		.loc 1 411 33 is_stmt 0 view .LVU357
+ 1256 0042 0095     		str	r5, [sp]
+ 412:DataStructure/binary_tree.c **** 
+ 1257              		.loc 1 412 13 is_stmt 1 view .LVU358
+ 1258 0044 F5E7     		b	.L109
+ 1259              	.L115:
+ 416:DataStructure/binary_tree.c **** 
+ 1260              		.loc 1 416 13 view .LVU359
+ 416:DataStructure/binary_tree.c **** 
+ 1261              		.loc 1 416 20 is_stmt 0 view .LVU360
+ 1262 0046 3246     		mov	r2, r6
+ 1263 0048 D5F80E10 		ldr	r1, [r5, #14]	@ unaligned
+ 1264 004c 2046     		mov	r0, r4
+ 1265 004e FFF7D7FF 		bl	TreeNode_Search
+ 1266              	.LVL129:
+ 1267 0052 F3E7     		b	.L108
+ 1268              	.L110:
+ 420:DataStructure/binary_tree.c **** 
+ 1269              		.loc 1 420 13 is_stmt 1 view .LVU361
+ 420:DataStructure/binary_tree.c **** 
+ 1270              		.loc 1 420 20 is_stmt 0 view .LVU362
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 32
+
+
+ 1271 0054 3246     		mov	r2, r6
+ 1272 0056 D5F81210 		ldr	r1, [r5, #18]	@ unaligned
+ 1273 005a 2046     		mov	r0, r4
+ 1274 005c FFF7D0FF 		bl	TreeNode_Search
+ 1275              	.LVL130:
+ 1276 0060 ECE7     		b	.L108
+ 1277              		.cfi_endproc
+ 1278              	.LFE19:
+ 1280              		.section	.text.Tree_Search,"ax",%progbits
+ 1281              		.align	1
+ 1282              		.syntax unified
+ 1283              		.thumb
+ 1284              		.thumb_func
+ 1285              		.fpu fpv5-d16
+ 1287              	Tree_Search:
+ 1288              	.LVL131:
+ 1289              	.LFB20:
+ 431:DataStructure/binary_tree.c **** 
+ 432:DataStructure/binary_tree.c **** static TreeNode_Handle Tree_Search(Tree_TypeDef *tree, data_handle data)
+ 433:DataStructure/binary_tree.c **** {
+ 1290              		.loc 1 433 1 is_stmt 1 view -0
+ 1291              		.cfi_startproc
+ 1292              		@ args = 0, pretend = 0, frame = 8
+ 1293              		@ frame_needed = 0, uses_anonymous_args = 0
+ 434:DataStructure/binary_tree.c ****     TreeSearch_Out_TypeDef search_out;
+ 1294              		.loc 1 434 5 view .LVU364
+ 435:DataStructure/binary_tree.c **** 
+ 436:DataStructure/binary_tree.c ****     search_out.state = Tree_Search_E;
+ 1295              		.loc 1 436 5 view .LVU365
+ 437:DataStructure/binary_tree.c ****     search_out.node_hdl = 0;
+ 1296              		.loc 1 437 5 view .LVU366
+ 438:DataStructure/binary_tree.c **** 
+ 439:DataStructure/binary_tree.c ****     if (tree == NULL || data == 0 || tree->search_callback == NULL)
+ 1297              		.loc 1 439 5 view .LVU367
+ 1298              		.loc 1 439 30 is_stmt 0 view .LVU368
+ 1299 0000 0A46     		mov	r2, r1
+ 1300 0002 B1FA81F1 		clz	r1, r1
+ 1301              	.LVL132:
+ 1302              		.loc 1 439 30 view .LVU369
+ 1303 0006 4909     		lsrs	r1, r1, #5
+ 1304              		.loc 1 439 22 view .LVU370
+ 1305 0008 0028     		cmp	r0, #0
+ 1306 000a 08BF     		it	eq
+ 1307 000c 0121     		moveq	r1, #1
+ 1308              		.loc 1 439 8 view .LVU371
+ 1309 000e 89B9     		cbnz	r1, .L118
+ 1310              		.loc 1 439 42 discriminator 1 view .LVU372
+ 1311 0010 C168     		ldr	r1, [r0, #12]	@ unaligned
+ 1312              		.loc 1 439 35 discriminator 1 view .LVU373
+ 1313 0012 89B1     		cbz	r1, .L119
+ 433:DataStructure/binary_tree.c ****     TreeSearch_Out_TypeDef search_out;
+ 1314              		.loc 1 433 1 view .LVU374
+ 1315 0014 00B5     		push	{lr}
+ 1316              	.LCFI27:
+ 1317              		.cfi_def_cfa_offset 4
+ 1318              		.cfi_offset 14, -4
+ 1319 0016 83B0     		sub	sp, sp, #12
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 33
+
+
+ 1320              	.LCFI28:
+ 1321              		.cfi_def_cfa_offset 16
+ 440:DataStructure/binary_tree.c ****         return 0;
+ 441:DataStructure/binary_tree.c **** 
+ 442:DataStructure/binary_tree.c ****     search_out = TreeNode_Search(tree->root_node, data);
+ 1322              		.loc 1 442 5 is_stmt 1 view .LVU375
+ 1323              		.loc 1 442 18 is_stmt 0 view .LVU376
+ 1324 0018 4168     		ldr	r1, [r0, #4]	@ unaligned
+ 1325 001a 6846     		mov	r0, sp
+ 1326              	.LVL133:
+ 1327              		.loc 1 442 18 view .LVU377
+ 1328 001c FFF7FEFF 		bl	TreeNode_Search
+ 1329              	.LVL134:
+ 443:DataStructure/binary_tree.c **** 
+ 444:DataStructure/binary_tree.c ****     if (search_out.state == Tree_Search_D)
+ 1330              		.loc 1 444 5 is_stmt 1 view .LVU378
+ 1331              		.loc 1 444 19 is_stmt 0 view .LVU379
+ 1332 0020 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 1333              		.loc 1 444 8 view .LVU380
+ 1334 0024 032B     		cmp	r3, #3
+ 1335 0026 03D0     		beq	.L125
+ 445:DataStructure/binary_tree.c ****     {
+ 446:DataStructure/binary_tree.c ****         return search_out.node_hdl;
+ 447:DataStructure/binary_tree.c ****     }
+ 448:DataStructure/binary_tree.c ****     else
+ 449:DataStructure/binary_tree.c ****         return 0;
+ 1336              		.loc 1 449 16 view .LVU381
+ 1337 0028 0020     		movs	r0, #0
+ 1338              	.L116:
+ 450:DataStructure/binary_tree.c **** }
+ 1339              		.loc 1 450 1 view .LVU382
+ 1340 002a 03B0     		add	sp, sp, #12
+ 1341              	.LCFI29:
+ 1342              		.cfi_remember_state
+ 1343              		.cfi_def_cfa_offset 4
+ 1344              		@ sp needed
+ 1345 002c 5DF804FB 		ldr	pc, [sp], #4
+ 1346              	.L125:
+ 1347              	.LCFI30:
+ 1348              		.cfi_restore_state
+ 446:DataStructure/binary_tree.c ****     }
+ 1349              		.loc 1 446 9 is_stmt 1 view .LVU383
+ 446:DataStructure/binary_tree.c ****     }
+ 1350              		.loc 1 446 26 is_stmt 0 view .LVU384
+ 1351 0030 0098     		ldr	r0, [sp]
+ 1352 0032 FAE7     		b	.L116
+ 1353              	.LVL135:
+ 1354              	.L118:
+ 1355              	.LCFI31:
+ 1356              		.cfi_def_cfa_offset 0
+ 1357              		.cfi_restore 14
+ 440:DataStructure/binary_tree.c **** 
+ 1358              		.loc 1 440 16 view .LVU385
+ 1359 0034 0020     		movs	r0, #0
+ 1360              	.LVL136:
+ 440:DataStructure/binary_tree.c **** 
+ 1361              		.loc 1 440 16 view .LVU386
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 34
+
+
+ 1362 0036 7047     		bx	lr
+ 1363              	.LVL137:
+ 1364              	.L119:
+ 440:DataStructure/binary_tree.c **** 
+ 1365              		.loc 1 440 16 view .LVU387
+ 1366 0038 0020     		movs	r0, #0
+ 1367              	.LVL138:
+ 1368              		.loc 1 450 1 view .LVU388
+ 1369 003a 7047     		bx	lr
+ 1370              		.cfi_endproc
+ 1371              	.LFE20:
+ 1373              		.section	.text.Tree_Insert,"ax",%progbits
+ 1374              		.align	1
+ 1375              		.syntax unified
+ 1376              		.thumb
+ 1377              		.thumb_func
+ 1378              		.fpu fpv5-d16
+ 1380              	Tree_Insert:
+ 1381              	.LVL139:
+ 1382              	.LFB14:
+ 293:DataStructure/binary_tree.c ****     /* create node first */
+ 1383              		.loc 1 293 1 is_stmt 1 view -0
+ 1384              		.cfi_startproc
+ 1385              		@ args = 0, pretend = 0, frame = 0
+ 1386              		@ frame_needed = 0, uses_anonymous_args = 0
+ 295:DataStructure/binary_tree.c **** 
+ 1387              		.loc 1 295 5 view .LVU390
+ 297:DataStructure/binary_tree.c ****         return false;
+ 1388              		.loc 1 297 5 view .LVU391
+ 297:DataStructure/binary_tree.c ****         return false;
+ 1389              		.loc 1 297 8 is_stmt 0 view .LVU392
+ 1390 0000 20B3     		cbz	r0, .L130
+ 293:DataStructure/binary_tree.c ****     /* create node first */
+ 1391              		.loc 1 293 1 view .LVU393
+ 1392 0002 F0B5     		push	{r4, r5, r6, r7, lr}
+ 1393              	.LCFI32:
+ 1394              		.cfi_def_cfa_offset 20
+ 1395              		.cfi_offset 4, -20
+ 1396              		.cfi_offset 5, -16
+ 1397              		.cfi_offset 6, -12
+ 1398              		.cfi_offset 7, -8
+ 1399              		.cfi_offset 14, -4
+ 1400 0004 83B0     		sub	sp, sp, #12
+ 1401              	.LCFI33:
+ 1402              		.cfi_def_cfa_offset 32
+ 1403 0006 0F46     		mov	r7, r1
+ 1404 0008 1546     		mov	r5, r2
+ 1405 000a 0446     		mov	r4, r0
+ 300:DataStructure/binary_tree.c ****     TreeNode_Init(node_tmp, node_name, data_addr, tree->insert_callback, tree->search_callback, tre
+ 1406              		.loc 1 300 5 is_stmt 1 view .LVU394
+ 300:DataStructure/binary_tree.c ****     TreeNode_Init(node_tmp, node_name, data_addr, tree->insert_callback, tree->search_callback, tre
+ 1407              		.loc 1 300 36 is_stmt 0 view .LVU395
+ 1408 000c 2220     		movs	r0, #34
+ 1409              	.LVL140:
+ 300:DataStructure/binary_tree.c ****     TreeNode_Init(node_tmp, node_name, data_addr, tree->insert_callback, tree->search_callback, tre
+ 1410              		.loc 1 300 36 view .LVU396
+ 1411 000e FFF7FEFF 		bl	MMU_Malloc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 35
+
+
+ 1412              	.LVL141:
+ 300:DataStructure/binary_tree.c ****     TreeNode_Init(node_tmp, node_name, data_addr, tree->insert_callback, tree->search_callback, tre
+ 1413              		.loc 1 300 36 view .LVU397
+ 1414 0012 0646     		mov	r6, r0
+ 1415              	.LVL142:
+ 301:DataStructure/binary_tree.c **** 
+ 1416              		.loc 1 301 5 is_stmt 1 view .LVU398
+ 301:DataStructure/binary_tree.c **** 
+ 1417              		.loc 1 301 78 is_stmt 0 view .LVU399
+ 1418 0014 E368     		ldr	r3, [r4, #12]	@ unaligned
+ 301:DataStructure/binary_tree.c **** 
+ 1419              		.loc 1 301 5 view .LVU400
+ 1420 0016 2269     		ldr	r2, [r4, #16]	@ unaligned
+ 1421 0018 0192     		str	r2, [sp, #4]
+ 1422 001a 0093     		str	r3, [sp]
+ 1423 001c A368     		ldr	r3, [r4, #8]	@ unaligned
+ 1424 001e 2A46     		mov	r2, r5
+ 1425 0020 3946     		mov	r1, r7
+ 1426 0022 FFF7FEFF 		bl	TreeNode_Init
+ 1427              	.LVL143:
+ 303:DataStructure/binary_tree.c ****     {
+ 1428              		.loc 1 303 5 is_stmt 1 view .LVU401
+ 303:DataStructure/binary_tree.c ****     {
+ 1429              		.loc 1 303 8 is_stmt 0 view .LVU402
+ 1430 0026 16B9     		cbnz	r6, .L136
+ 321:DataStructure/binary_tree.c **** }
+ 1431              		.loc 1 321 12 view .LVU403
+ 1432 0028 0020     		movs	r0, #0
+ 1433              	.L127:
+ 322:DataStructure/binary_tree.c **** 
+ 1434              		.loc 1 322 1 view .LVU404
+ 1435 002a 03B0     		add	sp, sp, #12
+ 1436              	.LCFI34:
+ 1437              		.cfi_remember_state
+ 1438              		.cfi_def_cfa_offset 20
+ 1439              		@ sp needed
+ 1440 002c F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1441              	.LVL144:
+ 1442              	.L136:
+ 1443              	.LCFI35:
+ 1444              		.cfi_restore_state
+ 306:DataStructure/binary_tree.c **** 
+ 1445              		.loc 1 306 9 is_stmt 1 view .LVU405
+ 1446 002e 2046     		mov	r0, r4
+ 1447 0030 FFF7FEFF 		bl	Tree_RootUpdate
+ 1448              	.LVL145:
+ 308:DataStructure/binary_tree.c ****         {
+ 1449              		.loc 1 308 9 view .LVU406
+ 308:DataStructure/binary_tree.c ****         {
+ 1450              		.loc 1 308 17 is_stmt 0 view .LVU407
+ 1451 0034 6068     		ldr	r0, [r4, #4]	@ unaligned
+ 308:DataStructure/binary_tree.c ****         {
+ 1452              		.loc 1 308 12 view .LVU408
+ 1453 0036 38B1     		cbz	r0, .L128
+ 310:DataStructure/binary_tree.c ****         }
+ 1454              		.loc 1 310 13 is_stmt 1 view .LVU409
+ 1455 0038 3146     		mov	r1, r6
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 36
+
+
+ 1456 003a FFF7FEFF 		bl	TreeNode_Insert
+ 1457              	.LVL146:
+ 1458              	.L129:
+ 316:DataStructure/binary_tree.c **** 
+ 1459              		.loc 1 316 9 view .LVU410
+ 1460 003e 2046     		mov	r0, r4
+ 1461 0040 FFF7FEFF 		bl	Tree_RootUpdate
+ 1462              	.LVL147:
+ 318:DataStructure/binary_tree.c ****     }
+ 1463              		.loc 1 318 9 view .LVU411
+ 318:DataStructure/binary_tree.c ****     }
+ 1464              		.loc 1 318 16 is_stmt 0 view .LVU412
+ 1465 0044 0120     		movs	r0, #1
+ 1466 0046 F0E7     		b	.L127
+ 1467              	.L128:
+ 313:DataStructure/binary_tree.c **** 
+ 1468              		.loc 1 313 13 is_stmt 1 view .LVU413
+ 313:DataStructure/binary_tree.c **** 
+ 1469              		.loc 1 313 29 is_stmt 0 view .LVU414
+ 1470 0048 6660     		str	r6, [r4, #4]	@ unaligned
+ 1471 004a F8E7     		b	.L129
+ 1472              	.LVL148:
+ 1473              	.L130:
+ 1474              	.LCFI36:
+ 1475              		.cfi_def_cfa_offset 0
+ 1476              		.cfi_restore 4
+ 1477              		.cfi_restore 5
+ 1478              		.cfi_restore 6
+ 1479              		.cfi_restore 7
+ 1480              		.cfi_restore 14
+ 298:DataStructure/binary_tree.c **** 
+ 1481              		.loc 1 298 16 view .LVU415
+ 1482 004c 0020     		movs	r0, #0
+ 1483              	.LVL149:
+ 322:DataStructure/binary_tree.c **** 
+ 1484              		.loc 1 322 1 view .LVU416
+ 1485 004e 7047     		bx	lr
+ 1486              		.cfi_endproc
+ 1487              	.LFE14:
+ 1489              		.section	.text.BinaryTree_Create,"ax",%progbits
+ 1490              		.align	1
+ 1491              		.syntax unified
+ 1492              		.thumb
+ 1493              		.thumb_func
+ 1494              		.fpu fpv5-d16
+ 1496              	BinaryTree_Create:
+ 1497              	.LVL150:
+ 1498              	.LFB3:
+  25:DataStructure/binary_tree.c ****     Tree_TypeDef *tree_tmp = NULL;
+ 1499              		.loc 1 25 1 is_stmt 1 view -0
+ 1500              		.cfi_startproc
+ 1501              		@ args = 0, pretend = 0, frame = 0
+ 1502              		@ frame_needed = 0, uses_anonymous_args = 0
+  25:DataStructure/binary_tree.c ****     Tree_TypeDef *tree_tmp = NULL;
+ 1503              		.loc 1 25 1 is_stmt 0 view .LVU418
+ 1504 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 1505              	.LCFI37:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 37
+
+
+ 1506              		.cfi_def_cfa_offset 24
+ 1507              		.cfi_offset 3, -24
+ 1508              		.cfi_offset 4, -20
+ 1509              		.cfi_offset 5, -16
+ 1510              		.cfi_offset 6, -12
+ 1511              		.cfi_offset 7, -8
+ 1512              		.cfi_offset 14, -4
+ 1513 0002 0746     		mov	r7, r0
+ 1514 0004 0C46     		mov	r4, r1
+ 1515 0006 1546     		mov	r5, r2
+ 1516 0008 1E46     		mov	r6, r3
+  26:DataStructure/binary_tree.c **** 
+ 1517              		.loc 1 26 5 is_stmt 1 view .LVU419
+ 1518              	.LVL151:
+  28:DataStructure/binary_tree.c **** 
+ 1519              		.loc 1 28 5 view .LVU420
+  28:DataStructure/binary_tree.c **** 
+ 1520              		.loc 1 28 32 is_stmt 0 view .LVU421
+ 1521 000a 1420     		movs	r0, #20
+ 1522              	.LVL152:
+  28:DataStructure/binary_tree.c **** 
+ 1523              		.loc 1 28 32 view .LVU422
+ 1524 000c FFF7FEFF 		bl	MMU_Malloc
+ 1525              	.LVL153:
+  30:DataStructure/binary_tree.c ****     {
+ 1526              		.loc 1 30 5 is_stmt 1 view .LVU423
+  30:DataStructure/binary_tree.c ****     {
+ 1527              		.loc 1 30 8 is_stmt 0 view .LVU424
+ 1528 0010 80B1     		cbz	r0, .L137
+  32:DataStructure/binary_tree.c ****         {
+ 1529              		.loc 1 32 9 is_stmt 1 view .LVU425
+  32:DataStructure/binary_tree.c ****         {
+ 1530              		.loc 1 32 41 is_stmt 0 view .LVU426
+ 1531 0012 2B1E     		subs	r3, r5, #0
+ 1532 0014 18BF     		it	ne
+ 1533 0016 0123     		movne	r3, #1
+  32:DataStructure/binary_tree.c ****         {
+ 1534              		.loc 1 32 30 view .LVU427
+ 1535 0018 002C     		cmp	r4, #0
+ 1536 001a 08BF     		it	eq
+ 1537 001c 0023     		moveq	r3, #0
+  32:DataStructure/binary_tree.c ****         {
+ 1538              		.loc 1 32 12 view .LVU428
+ 1539 001e 53B1     		cbz	r3, .L139
+  32:DataStructure/binary_tree.c ****         {
+ 1540              		.loc 1 32 50 discriminator 1 view .LVU429
+ 1541 0020 4EB1     		cbz	r6, .L139
+  34:DataStructure/binary_tree.c ****             tree_tmp->search_callback = search;
+ 1542              		.loc 1 34 13 is_stmt 1 view .LVU430
+  34:DataStructure/binary_tree.c ****             tree_tmp->search_callback = search;
+ 1543              		.loc 1 34 28 is_stmt 0 view .LVU431
+ 1544 0022 0760     		str	r7, [r0]	@ unaligned
+  35:DataStructure/binary_tree.c ****             tree_tmp->insert_callback = insert;
+ 1545              		.loc 1 35 13 is_stmt 1 view .LVU432
+  35:DataStructure/binary_tree.c ****             tree_tmp->insert_callback = insert;
+ 1546              		.loc 1 35 39 is_stmt 0 view .LVU433
+ 1547 0024 C560     		str	r5, [r0, #12]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 38
+
+
+  36:DataStructure/binary_tree.c ****             tree_tmp->compare_callback = compare;
+ 1548              		.loc 1 36 13 is_stmt 1 view .LVU434
+  36:DataStructure/binary_tree.c ****             tree_tmp->compare_callback = compare;
+ 1549              		.loc 1 36 39 is_stmt 0 view .LVU435
+ 1550 0026 8460     		str	r4, [r0, #8]	@ unaligned
+  37:DataStructure/binary_tree.c ****             tree_tmp->root_node = NULL;
+ 1551              		.loc 1 37 13 is_stmt 1 view .LVU436
+  37:DataStructure/binary_tree.c ****             tree_tmp->root_node = NULL;
+ 1552              		.loc 1 37 40 is_stmt 0 view .LVU437
+ 1553 0028 0661     		str	r6, [r0, #16]	@ unaligned
+  38:DataStructure/binary_tree.c ****         }
+ 1554              		.loc 1 38 13 is_stmt 1 view .LVU438
+  38:DataStructure/binary_tree.c ****         }
+ 1555              		.loc 1 38 33 is_stmt 0 view .LVU439
+ 1556 002a 0023     		movs	r3, #0
+ 1557 002c 0371     		strb	r3, [r0, #4]
+ 1558 002e 4371     		strb	r3, [r0, #5]
+ 1559 0030 8371     		strb	r3, [r0, #6]
+ 1560 0032 C371     		strb	r3, [r0, #7]
+ 1561              	.LVL154:
+ 1562              	.L137:
+  48:DataStructure/binary_tree.c **** 
+ 1563              		.loc 1 48 1 view .LVU440
+ 1564 0034 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 1565              	.LVL155:
+ 1566              	.L139:
+  42:DataStructure/binary_tree.c ****             tree_tmp = NULL;
+ 1567              		.loc 1 42 13 is_stmt 1 view .LVU441
+ 1568 0036 FFF7FEFF 		bl	MMU_Free
+ 1569              	.LVL156:
+  43:DataStructure/binary_tree.c ****         }
+ 1570              		.loc 1 43 13 view .LVU442
+  43:DataStructure/binary_tree.c ****         }
+ 1571              		.loc 1 43 22 is_stmt 0 view .LVU443
+ 1572 003a 0020     		movs	r0, #0
+  47:DataStructure/binary_tree.c **** }
+ 1573              		.loc 1 47 5 is_stmt 1 view .LVU444
+  47:DataStructure/binary_tree.c **** }
+ 1574              		.loc 1 47 12 is_stmt 0 view .LVU445
+ 1575 003c FAE7     		b	.L137
+ 1576              		.cfi_endproc
+ 1577              	.LFE3:
+ 1579              		.global	BalanceTree
+ 1580              		.section	.data.BalanceTree,"aw"
+ 1581              		.align	2
+ 1584              	BalanceTree:
+ 1585 0000 00000000 		.word	BinaryTree_Create
+ 1586 0004 00000000 		.word	Tree_Insert
+ 1587 0008 00000000 		.word	Tree_Search
+ 1588 000c 00000000 		.word	Tree_Traverse
+ 1589              		.text
+ 1590              	.Letext0:
+ 1591              		.file 2 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1592              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1593              		.file 4 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1594              		.file 5 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\lib\\gcc\\arm-none
+ 1595              		.file 6 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 39
+
+
+ 1596              		.file 7 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1597              		.file 8 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1598              		.file 9 "DataStructure/binary_tree.h"
+ 1599              		.file 10 "System/mmu/mmu.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s 			page 40
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 binary_tree.c
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:17     .text.Tree_Get_Depth:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:24     .text.Tree_Get_Depth:00000000 Tree_Get_Depth
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:90     .text.Tree_Get_BalanceFactory:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:96     .text.Tree_Get_BalanceFactory:00000000 Tree_Get_BalanceFactory
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:145    .text.Tree_Search_RootNode:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:151    .text.Tree_Search_RootNode:00000000 Tree_Search_RootNode
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:188    .text.TreeNode_RightRotate:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:194    .text.TreeNode_RightRotate:00000000 TreeNode_RightRotate
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:309    .text.TreeNode_LeftRotate:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:315    .text.TreeNode_LeftRotate:00000000 TreeNode_LeftRotate
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:430    .text.TreeNoe_Dynamic_Trim:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:436    .text.TreeNoe_Dynamic_Trim:00000000 TreeNoe_Dynamic_Trim
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:560    .text.TreeNode_Insert:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:566    .text.TreeNode_Insert:00000000 TreeNode_Insert
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:682    .text.TreeNode_Update_BalanceFactory:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:688    .text.TreeNode_Update_BalanceFactory:00000000 TreeNode_Update_BalanceFactory
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:750    .text.Tree_RootUpdate:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:756    .text.Tree_RootUpdate:00000000 Tree_RootUpdate
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:807    .text.TreeNode_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:813    .text.TreeNode_Init:00000000 TreeNode_Init
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:904    .text.TreeNode_Pre_Traverse:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:910    .text.TreeNode_Pre_Traverse:00000000 TreeNode_Pre_Traverse
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:966    .text.TreeNode_Mid_Traverse:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:972    .text.TreeNode_Mid_Traverse:00000000 TreeNode_Mid_Traverse
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1027   .text.TreeNode_Bck_Traverse:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1033   .text.TreeNode_Bck_Traverse:00000000 TreeNode_Bck_Traverse
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1088   .text.Tree_Traverse:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1094   .text.Tree_Traverse:00000000 Tree_Traverse
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1170   .text.TreeNode_Search:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1176   .text.TreeNode_Search:00000000 TreeNode_Search
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1281   .text.Tree_Search:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1287   .text.Tree_Search:00000000 Tree_Search
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1374   .text.Tree_Insert:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1380   .text.Tree_Insert:00000000 Tree_Insert
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1490   .text.BinaryTree_Create:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1496   .text.BinaryTree_Create:00000000 BinaryTree_Create
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1584   .data.BalanceTree:00000000 BalanceTree
+C:\Users\HUAV\AppData\Local\Temp\cc8WwCUI.s:1581   .data.BalanceTree:00000000 $d
+
+UNDEFINED SYMBOLS
+MMU_Malloc
+MMU_Free

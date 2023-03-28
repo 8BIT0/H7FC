@@ -130,6 +130,7 @@ void TaskControl_Core(Task_Handle hdl)
         gimbal[3] = 0;
 
         SrvActuator.moto_control(gimbal);
+        return;
     }
 
 lock_moto:

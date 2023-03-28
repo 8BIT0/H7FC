@@ -1,0 +1,2056 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Srv_ComProto.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.Srv_ComProto_Init,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	Srv_ComProto_Init:
+  25              	.LVL0:
+  26              	.LFB1997:
+  27              		.file 1 "Service/Srv_ComProto.c"
+   1:Service/Srv_ComProto.c **** #include "Srv_ComProto.h"
+   2:Service/Srv_ComProto.c **** #include "Srv_DataHub.h"
+   3:Service/Srv_ComProto.c **** #include "DataPipe.h"
+   4:Service/Srv_ComProto.c **** #include "mmu.h"
+   5:Service/Srv_ComProto.c **** #include "runtime.h"
+   6:Service/Srv_ComProto.c **** 
+   7:Service/Srv_ComProto.c **** /* only can use one hardware port at one time */
+   8:Service/Srv_ComProto.c **** /* still can be optmize / use multi port proto mavlink frame */
+   9:Service/Srv_ComProto.c **** 
+  10:Service/Srv_ComProto.c **** SrvComProto_Monitor_TypeDef SrvComProto_monitor = {
+  11:Service/Srv_ComProto.c ****     .Proto_Type = SrvComProto_Type_None,
+  12:Service/Srv_ComProto.c ****     .init_state = false,
+  13:Service/Srv_ComProto.c **** };
+  14:Service/Srv_ComProto.c **** 
+  15:Service/Srv_ComProto.c **** /* internal function */
+  16:Service/Srv_ComProto.c **** static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck);
+  17:Service/Srv_ComProto.c **** 
+  18:Service/Srv_ComProto.c **** /* external function */
+  19:Service/Srv_ComProto.c **** static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
+  20:Service/Srv_ComProto.c **** static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_Type
+  21:Service/Srv_ComProto.c **** static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *co
+  22:Service/Srv_ComProto.c **** static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state);
+  23:Service/Srv_ComProto.c **** static SrvComProto_Type_List Srv_ComProto_GetType(void);
+  24:Service/Srv_ComProto.c **** 
+  25:Service/Srv_ComProto.c **** SrvComProto_TypeDef SrvComProto = {
+  26:Service/Srv_ComProto.c ****     .init = Srv_ComProto_Init,
+  27:Service/Srv_ComProto.c ****     .mav_msg_obj_init = Srv_ComProto_MsgObj_Init,
+  28:Service/Srv_ComProto.c ****     .get_msg_type = Srv_ComProto_GetType,
+  29:Service/Srv_ComProto.c ****     .mav_msg_stream = SrvComProto_MsgToStream,
+  30:Service/Srv_ComProto.c ****     .mav_msg_enable_ctl = SrvComProto_MsgEnable_Control,
+  31:Service/Srv_ComProto.c **** };
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 2
+
+
+  32:Service/Srv_ComProto.c **** 
+  33:Service/Srv_ComProto.c **** static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
+  34:Service/Srv_ComProto.c **** {
+  28              		.loc 1 34 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  35:Service/Srv_ComProto.c ****     UNUSED(arg);
+  32              		.loc 1 35 5 view .LVU1
+  36:Service/Srv_ComProto.c **** 
+  37:Service/Srv_ComProto.c ****     /* only init one time */
+  38:Service/Srv_ComProto.c ****     if (SrvComProto_monitor.init_state)
+  33              		.loc 1 38 5 view .LVU2
+  34              		.loc 1 38 28 is_stmt 0 view .LVU3
+  35 0000 074B     		ldr	r3, .L7
+  36 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  37              		.loc 1 38 8 view .LVU4
+  38 0004 53B9     		cbnz	r3, .L4
+  34:Service/Srv_ComProto.c ****     UNUSED(arg);
+  39              		.loc 1 34 1 view .LVU5
+  40 0006 10B5     		push	{r4, lr}
+  41              	.LCFI0:
+  42              		.cfi_def_cfa_offset 8
+  43              		.cfi_offset 4, -8
+  44              		.cfi_offset 14, -4
+  45 0008 0446     		mov	r4, r0
+  39:Service/Srv_ComProto.c ****         return true;
+  40:Service/Srv_ComProto.c **** 
+  41:Service/Srv_ComProto.c ****     SrvDataHub.init();
+  46              		.loc 1 41 5 is_stmt 1 view .LVU6
+  47              		.loc 1 41 15 is_stmt 0 view .LVU7
+  48 000a 064B     		ldr	r3, .L7+4
+  49 000c 1B68     		ldr	r3, [r3]
+  50              		.loc 1 41 5 view .LVU8
+  51 000e 9847     		blx	r3
+  52              	.LVL1:
+  42:Service/Srv_ComProto.c **** 
+  43:Service/Srv_ComProto.c ****     memset(&SrvComProto_monitor, 0, sizeof(SrvComProto_monitor));
+  53              		.loc 1 43 5 is_stmt 1 view .LVU9
+  44:Service/Srv_ComProto.c ****     SrvComProto_monitor.Proto_Type = type;
+  54              		.loc 1 44 5 view .LVU10
+  55              		.loc 1 44 36 is_stmt 0 view .LVU11
+  56 0010 034B     		ldr	r3, .L7
+  57 0012 5C70     		strb	r4, [r3, #1]
+  45:Service/Srv_ComProto.c ****     SrvComProto_monitor.init_state = true;
+  58              		.loc 1 45 5 is_stmt 1 view .LVU12
+  59              		.loc 1 45 36 is_stmt 0 view .LVU13
+  60 0014 0122     		movs	r2, #1
+  61 0016 1A70     		strb	r2, [r3]
+  46:Service/Srv_ComProto.c **** 
+  47:Service/Srv_ComProto.c ****     return true;
+  62              		.loc 1 47 5 is_stmt 1 view .LVU14
+  48:Service/Srv_ComProto.c **** }
+  63              		.loc 1 48 1 is_stmt 0 view .LVU15
+  64 0018 0120     		movs	r0, #1
+  65 001a 10BD     		pop	{r4, pc}
+  66              	.LVL2:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 3
+
+
+  67              	.L4:
+  68              	.LCFI1:
+  69              		.cfi_def_cfa_offset 0
+  70              		.cfi_restore 4
+  71              		.cfi_restore 14
+  72              		.loc 1 48 1 view .LVU16
+  73 001c 0120     		movs	r0, #1
+  74              	.LVL3:
+  75              		.loc 1 48 1 view .LVU17
+  76 001e 7047     		bx	lr
+  77              	.L8:
+  78              		.align	2
+  79              	.L7:
+  80 0020 00000000 		.word	.LANCHOR0
+  81 0024 00000000 		.word	SrvDataHub
+  82              		.cfi_endproc
+  83              	.LFE1997:
+  85              		.section	.text.Srv_ComProto_GetType,"ax",%progbits
+  86              		.align	1
+  87              		.syntax unified
+  88              		.thumb
+  89              		.thumb_func
+  90              		.fpu fpv5-d16
+  92              	Srv_ComProto_GetType:
+  93              	.LFB1998:
+  49:Service/Srv_ComProto.c **** 
+  50:Service/Srv_ComProto.c **** static SrvComProto_Type_List Srv_ComProto_GetType(void)
+  51:Service/Srv_ComProto.c **** {
+  94              		.loc 1 51 1 is_stmt 1 view -0
+  95              		.cfi_startproc
+  96              		@ args = 0, pretend = 0, frame = 0
+  97              		@ frame_needed = 0, uses_anonymous_args = 0
+  98              		@ link register save eliminated.
+  52:Service/Srv_ComProto.c ****     return SrvComProto_monitor.Proto_Type;
+  99              		.loc 1 52 5 view .LVU19
+  53:Service/Srv_ComProto.c **** }
+ 100              		.loc 1 53 1 is_stmt 0 view .LVU20
+ 101 0000 014B     		ldr	r3, .L10
+ 102 0002 5878     		ldrb	r0, [r3, #1]	@ zero_extendqisi2
+ 103 0004 7047     		bx	lr
+ 104              	.L11:
+ 105 0006 00BF     		.align	2
+ 106              	.L10:
+ 107 0008 00000000 		.word	.LANCHOR0
+ 108              		.cfi_endproc
+ 109              	.LFE1998:
+ 111              		.section	.text.SrvComProto_MsgEnable_Control,"ax",%progbits
+ 112              		.align	1
+ 113              		.syntax unified
+ 114              		.thumb
+ 115              		.thumb_func
+ 116              		.fpu fpv5-d16
+ 118              	SrvComProto_MsgEnable_Control:
+ 119              	.LVL4:
+ 120              	.LFB2001:
+  54:Service/Srv_ComProto.c **** 
+  55:Service/Srv_ComProto.c **** static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_Type
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 4
+
+
+  56:Service/Srv_ComProto.c **** {
+  57:Service/Srv_ComProto.c ****     if ((msg == NULL) ||
+  58:Service/Srv_ComProto.c ****         (period == 0))
+  59:Service/Srv_ComProto.c ****         return false;
+  60:Service/Srv_ComProto.c **** 
+  61:Service/Srv_ComProto.c ****     msg->in_proto = false;
+  62:Service/Srv_ComProto.c ****     msg->lock_proto = true;
+  63:Service/Srv_ComProto.c **** 
+  64:Service/Srv_ComProto.c ****     msg->pck_info = pck_info;
+  65:Service/Srv_ComProto.c ****     msg->period = period;
+  66:Service/Srv_ComProto.c ****     msg->proto_time = 0;
+  67:Service/Srv_ComProto.c **** 
+  68:Service/Srv_ComProto.c ****     /* create mavlink message object */
+  69:Service/Srv_ComProto.c ****     msg->msg_obj = (mavlink_message_t *)MMU_Malloc(sizeof(mavlink_message_t));
+  70:Service/Srv_ComProto.c **** 
+  71:Service/Srv_ComProto.c ****     if (msg->msg_obj == NULL)
+  72:Service/Srv_ComProto.c ****     {
+  73:Service/Srv_ComProto.c ****         MMU_Free(msg->msg_obj);
+  74:Service/Srv_ComProto.c ****         return false;
+  75:Service/Srv_ComProto.c ****     }
+  76:Service/Srv_ComProto.c **** 
+  77:Service/Srv_ComProto.c ****     memset(msg->msg_obj, 0, sizeof(mavlink_message_t));
+  78:Service/Srv_ComProto.c **** 
+  79:Service/Srv_ComProto.c ****     /* set mavlink data structure value set function */
+  80:Service/Srv_ComProto.c ****     switch ((uint8_t)pck_info.component_id)
+  81:Service/Srv_ComProto.c ****     {
+  82:Service/Srv_ComProto.c ****     case MAV_CompoID_Attitude:
+  83:Service/Srv_ComProto.c ****         break;
+  84:Service/Srv_ComProto.c **** 
+  85:Service/Srv_ComProto.c ****     case MAV_CompoID_RC_Channel:
+  86:Service/Srv_ComProto.c ****         break;
+  87:Service/Srv_ComProto.c **** 
+  88:Service/Srv_ComProto.c ****     case MAV_CompoID_Raw_IMU:
+  89:Service/Srv_ComProto.c ****         msg->pack_callback = SrvComProto_MavMsg_Raw_IMU;
+  90:Service/Srv_ComProto.c ****         break;
+  91:Service/Srv_ComProto.c **** 
+  92:Service/Srv_ComProto.c ****     case MAV_CompoID_MotoCtl:
+  93:Service/Srv_ComProto.c ****         break;
+  94:Service/Srv_ComProto.c **** 
+  95:Service/Srv_ComProto.c ****     case MAV_CompoID_ServoCtl:
+  96:Service/Srv_ComProto.c ****         break;
+  97:Service/Srv_ComProto.c **** 
+  98:Service/Srv_ComProto.c ****     default:
+  99:Service/Srv_ComProto.c ****         MMU_Free(msg->msg_obj);
+ 100:Service/Srv_ComProto.c ****         msg->lock_proto = false;
+ 101:Service/Srv_ComProto.c ****         return false;
+ 102:Service/Srv_ComProto.c ****     }
+ 103:Service/Srv_ComProto.c **** 
+ 104:Service/Srv_ComProto.c ****     msg->lock_proto = false;
+ 105:Service/Srv_ComProto.c **** 
+ 106:Service/Srv_ComProto.c ****     return true;
+ 107:Service/Srv_ComProto.c **** }
+ 108:Service/Srv_ComProto.c **** 
+ 109:Service/Srv_ComProto.c **** static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *co
+ 110:Service/Srv_ComProto.c **** {
+ 111:Service/Srv_ComProto.c ****     if (msg.enable && com_stream && com_stream->p_buf && msg.pack_callback)
+ 112:Service/Srv_ComProto.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 5
+
+
+ 113:Service/Srv_ComProto.c ****         msg.in_proto = true;
+ 114:Service/Srv_ComProto.c **** 
+ 115:Service/Srv_ComProto.c ****         if ((msg.proto_time) && (Get_CurrentRunningMs() - msg.proto_time < msg.period))
+ 116:Service/Srv_ComProto.c ****         {
+ 117:Service/Srv_ComProto.c ****             msg.in_proto = false;
+ 118:Service/Srv_ComProto.c ****             return;
+ 119:Service/Srv_ComProto.c ****         }
+ 120:Service/Srv_ComProto.c **** 
+ 121:Service/Srv_ComProto.c ****         com_stream->size = msg.pack_callback((uint8_t *)&msg);
+ 122:Service/Srv_ComProto.c **** 
+ 123:Service/Srv_ComProto.c ****         if (com_stream->size && ((com_stream->size + MAVLINK_NUM_NON_PAYLOAD_BYTES) <= com_stream->
+ 124:Service/Srv_ComProto.c ****         {
+ 125:Service/Srv_ComProto.c ****             com_stream->size = mavlink_msg_to_send_buffer(com_stream->p_buf, msg.msg_obj);
+ 126:Service/Srv_ComProto.c **** 
+ 127:Service/Srv_ComProto.c ****             if (tx_cb)
+ 128:Service/Srv_ComProto.c ****                 tx_cb(com_stream->p_buf, com_stream->size);
+ 129:Service/Srv_ComProto.c **** 
+ 130:Service/Srv_ComProto.c ****             msg.proto_time = Get_CurrentRunningMs();
+ 131:Service/Srv_ComProto.c ****         }
+ 132:Service/Srv_ComProto.c **** 
+ 133:Service/Srv_ComProto.c ****         msg.in_proto = false;
+ 134:Service/Srv_ComProto.c ****     }
+ 135:Service/Srv_ComProto.c **** }
+ 136:Service/Srv_ComProto.c **** 
+ 137:Service/Srv_ComProto.c **** static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state)
+ 138:Service/Srv_ComProto.c **** {
+ 121              		.loc 1 138 1 is_stmt 1 view -0
+ 122              		.cfi_startproc
+ 123              		@ args = 0, pretend = 0, frame = 0
+ 124              		@ frame_needed = 0, uses_anonymous_args = 0
+ 125              		@ link register save eliminated.
+ 139:Service/Srv_ComProto.c ****     if (msg == NULL)
+ 126              		.loc 1 139 5 view .LVU22
+ 127              		.loc 1 139 8 is_stmt 0 view .LVU23
+ 128 0000 10B1     		cbz	r0, .L14
+ 140:Service/Srv_ComProto.c ****         return false;
+ 141:Service/Srv_ComProto.c **** 
+ 142:Service/Srv_ComProto.c ****     msg->enable = state;
+ 129              		.loc 1 142 5 is_stmt 1 view .LVU24
+ 130              		.loc 1 142 17 is_stmt 0 view .LVU25
+ 131 0002 0170     		strb	r1, [r0]
+ 143:Service/Srv_ComProto.c ****     return true;
+ 132              		.loc 1 143 5 is_stmt 1 view .LVU26
+ 133              		.loc 1 143 12 is_stmt 0 view .LVU27
+ 134 0004 0120     		movs	r0, #1
+ 135              	.LVL5:
+ 136              		.loc 1 143 12 view .LVU28
+ 137 0006 7047     		bx	lr
+ 138              	.LVL6:
+ 139              	.L14:
+ 140:Service/Srv_ComProto.c ****         return false;
+ 140              		.loc 1 140 16 view .LVU29
+ 141 0008 0020     		movs	r0, #0
+ 142              	.LVL7:
+ 144:Service/Srv_ComProto.c **** }
+ 143              		.loc 1 144 1 view .LVU30
+ 144 000a 7047     		bx	lr
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 6
+
+
+ 145              		.cfi_endproc
+ 146              	.LFE2001:
+ 148              		.section	.text.SrvComProto_MsgToStream,"ax",%progbits
+ 149              		.align	1
+ 150              		.syntax unified
+ 151              		.thumb
+ 152              		.thumb_func
+ 153              		.fpu fpv5-d16
+ 155              	SrvComProto_MsgToStream:
+ 156              	.LVL8:
+ 157              	.LFB2000:
+ 110:Service/Srv_ComProto.c ****     if (msg.enable && com_stream && com_stream->p_buf && msg.pack_callback)
+ 158              		.loc 1 110 1 is_stmt 1 view -0
+ 159              		.cfi_startproc
+ 160              		@ args = 40, pretend = 16, frame = 0
+ 161              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110:Service/Srv_ComProto.c ****     if (msg.enable && com_stream && com_stream->p_buf && msg.pack_callback)
+ 162              		.loc 1 110 1 is_stmt 0 view .LVU32
+ 163 0000 84B0     		sub	sp, sp, #16
+ 164              	.LCFI2:
+ 165              		.cfi_def_cfa_offset 16
+ 166 0002 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 167              	.LCFI3:
+ 168              		.cfi_def_cfa_offset 40
+ 169              		.cfi_offset 3, -40
+ 170              		.cfi_offset 4, -36
+ 171              		.cfi_offset 5, -32
+ 172              		.cfi_offset 6, -28
+ 173              		.cfi_offset 7, -24
+ 174              		.cfi_offset 14, -20
+ 175 0004 06AC     		add	r4, sp, #24
+ 176 0006 84E80F00 		stm	r4, {r0, r1, r2, r3}
+ 177 000a 0E9C     		ldr	r4, [sp, #56]
+ 111:Service/Srv_ComProto.c ****     {
+ 178              		.loc 1 111 5 is_stmt 1 view .LVU33
+ 111:Service/Srv_ComProto.c ****     {
+ 179              		.loc 1 111 12 is_stmt 0 view .LVU34
+ 180 000c 9DF81830 		ldrb	r3, [sp, #24]	@ zero_extendqisi2
+ 111:Service/Srv_ComProto.c ****     {
+ 181              		.loc 1 111 8 view .LVU35
+ 182 0010 A3B1     		cbz	r3, .L15
+ 111:Service/Srv_ComProto.c ****     {
+ 183              		.loc 1 111 20 discriminator 1 view .LVU36
+ 184 0012 9CB1     		cbz	r4, .L15
+ 111:Service/Srv_ComProto.c ****     {
+ 185              		.loc 1 111 47 discriminator 2 view .LVU37
+ 186 0014 2368     		ldr	r3, [r4]
+ 111:Service/Srv_ComProto.c ****     {
+ 187              		.loc 1 111 34 discriminator 2 view .LVU38
+ 188 0016 8BB1     		cbz	r3, .L15
+ 111:Service/Srv_ComProto.c ****     {
+ 189              		.loc 1 111 61 discriminator 3 view .LVU39
+ 190 0018 099B     		ldr	r3, [sp, #36]
+ 111:Service/Srv_ComProto.c ****     {
+ 191              		.loc 1 111 55 discriminator 3 view .LVU40
+ 192 001a 7BB1     		cbz	r3, .L15
+ 113:Service/Srv_ComProto.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 7
+
+
+ 193              		.loc 1 113 9 is_stmt 1 view .LVU41
+ 113:Service/Srv_ComProto.c **** 
+ 194              		.loc 1 113 22 is_stmt 0 view .LVU42
+ 195 001c 0123     		movs	r3, #1
+ 196 001e 8DF83030 		strb	r3, [sp, #48]
+ 115:Service/Srv_ComProto.c ****         {
+ 197              		.loc 1 115 9 is_stmt 1 view .LVU43
+ 115:Service/Srv_ComProto.c ****         {
+ 198              		.loc 1 115 17 is_stmt 0 view .LVU44
+ 199 0022 DDE90A23 		ldrd	r2, [sp, #40]
+ 115:Service/Srv_ComProto.c ****         {
+ 200              		.loc 1 115 12 view .LVU45
+ 201 0026 1343     		orrs	r3, r2, r3
+ 202 0028 0CD1     		bne	.L21
+ 203              	.L17:
+ 121:Service/Srv_ComProto.c **** 
+ 204              		.loc 1 121 9 is_stmt 1 view .LVU46
+ 121:Service/Srv_ComProto.c **** 
+ 205              		.loc 1 121 28 is_stmt 0 view .LVU47
+ 206 002a 06A8     		add	r0, sp, #24
+ 207 002c 099B     		ldr	r3, [sp, #36]
+ 208 002e 9847     		blx	r3
+ 209              	.LVL9:
+ 121:Service/Srv_ComProto.c **** 
+ 210              		.loc 1 121 26 view .LVU48
+ 211 0030 A080     		strh	r0, [r4, #4]	@ movhi
+ 123:Service/Srv_ComProto.c ****         {
+ 212              		.loc 1 123 9 is_stmt 1 view .LVU49
+ 123:Service/Srv_ComProto.c ****         {
+ 213              		.loc 1 123 12 is_stmt 0 view .LVU50
+ 214 0032 18B1     		cbz	r0, .L15
+ 123:Service/Srv_ComProto.c ****         {
+ 215              		.loc 1 123 85 discriminator 1 view .LVU51
+ 216 0034 0730     		adds	r0, r0, #7
+ 123:Service/Srv_ComProto.c ****         {
+ 217              		.loc 1 123 98 discriminator 1 view .LVU52
+ 218 0036 E388     		ldrh	r3, [r4, #6]
+ 123:Service/Srv_ComProto.c ****         {
+ 219              		.loc 1 123 30 discriminator 1 view .LVU53
+ 220 0038 9842     		cmp	r0, r3
+ 221 003a 12DB     		blt	.L22
+ 222              	.L15:
+ 135:Service/Srv_ComProto.c **** 
+ 223              		.loc 1 135 1 view .LVU54
+ 224 003c BDE8F840 		pop	{r3, r4, r5, r6, r7, lr}
+ 225              	.LCFI4:
+ 226              		.cfi_remember_state
+ 227              		.cfi_restore 14
+ 228              		.cfi_restore 7
+ 229              		.cfi_restore 6
+ 230              		.cfi_restore 5
+ 231              		.cfi_restore 4
+ 232              		.cfi_restore 3
+ 233              		.cfi_def_cfa_offset 16
+ 234 0040 04B0     		add	sp, sp, #16
+ 235              	.LCFI5:
+ 236              		.cfi_def_cfa_offset 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 8
+
+
+ 237 0042 7047     		bx	lr
+ 238              	.L21:
+ 239              	.LCFI6:
+ 240              		.cfi_restore_state
+ 115:Service/Srv_ComProto.c ****         {
+ 241              		.loc 1 115 34 discriminator 1 view .LVU55
+ 242 0044 FFF7FEFF 		bl	Get_CurrentRunningMs
+ 243              	.LVL10:
+ 115:Service/Srv_ComProto.c ****         {
+ 244              		.loc 1 115 62 discriminator 1 view .LVU56
+ 245 0048 0A9B     		ldr	r3, [sp, #40]
+ 115:Service/Srv_ComProto.c ****         {
+ 246              		.loc 1 115 57 discriminator 1 view .LVU57
+ 247 004a C61A     		subs	r6, r0, r3
+ 248 004c 0B9B     		ldr	r3, [sp, #44]
+ 249 004e 61EB0307 		sbc	r7, r1, r3
+ 115:Service/Srv_ComProto.c ****         {
+ 250              		.loc 1 115 79 discriminator 1 view .LVU58
+ 251 0052 BDF81A20 		ldrh	r2, [sp, #26]
+ 252 0056 0023     		movs	r3, #0
+ 115:Service/Srv_ComProto.c ****         {
+ 253              		.loc 1 115 30 discriminator 1 view .LVU59
+ 254 0058 9F42     		cmp	r7, r3
+ 255 005a 08BF     		it	eq
+ 256 005c 9642     		cmpeq	r6, r2
+ 257 005e E4D2     		bcs	.L17
+ 258 0060 ECE7     		b	.L15
+ 259              	.L22:
+ 125:Service/Srv_ComProto.c **** 
+ 260              		.loc 1 125 13 is_stmt 1 view .LVU60
+ 125:Service/Srv_ComProto.c **** 
+ 261              		.loc 1 125 32 is_stmt 0 view .LVU61
+ 262 0062 2668     		ldr	r6, [r4]
+ 125:Service/Srv_ComProto.c **** 
+ 263              		.loc 1 125 81 view .LVU62
+ 264 0064 089D     		ldr	r5, [sp, #32]
+ 265              	.LVL11:
+ 266              	.LBB28:
+ 267              	.LBI28:
+ 268              		.file 2 "Service/../MAVLink/common/../mavlink_helpers.h"
+   1:Service/../MAVLink/common/../mavlink_helpers.h **** #ifndef  _MAVLINK_HELPERS_H_
+   2:Service/../MAVLink/common/../mavlink_helpers.h **** #define  _MAVLINK_HELPERS_H_
+   3:Service/../MAVLink/common/../mavlink_helpers.h **** 
+   4:Service/../MAVLink/common/../mavlink_helpers.h **** #include "string.h"
+   5:Service/../MAVLink/common/../mavlink_helpers.h **** #include "checksum.h"
+   6:Service/../MAVLink/common/../mavlink_helpers.h **** #include "mavlink_types.h"
+   7:Service/../MAVLink/common/../mavlink_helpers.h **** #include "mavlink_conversions.h"
+   8:Service/../MAVLink/common/../mavlink_helpers.h **** 
+   9:Service/../MAVLink/common/../mavlink_helpers.h **** #ifndef MAVLINK_HELPER
+  10:Service/../MAVLink/common/../mavlink_helpers.h **** #define MAVLINK_HELPER
+  11:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+  12:Service/../MAVLink/common/../mavlink_helpers.h **** 
+  13:Service/../MAVLink/common/../mavlink_helpers.h **** /*
+  14:Service/../MAVLink/common/../mavlink_helpers.h ****  * Internal function to give access to the channel status for each channel
+  15:Service/../MAVLink/common/../mavlink_helpers.h ****  */
+  16:Service/../MAVLink/common/../mavlink_helpers.h **** #ifndef MAVLINK_GET_CHANNEL_STATUS
+  17:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER mavlink_status_t* mavlink_get_channel_status(uint8_t chan)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 9
+
+
+  18:Service/../MAVLink/common/../mavlink_helpers.h **** {
+  19:Service/../MAVLink/common/../mavlink_helpers.h **** #ifdef MAVLINK_EXTERNAL_RX_STATUS
+  20:Service/../MAVLink/common/../mavlink_helpers.h **** 	// No m_mavlink_status array defined in function,
+  21:Service/../MAVLink/common/../mavlink_helpers.h **** 	// has to be defined externally
+  22:Service/../MAVLink/common/../mavlink_helpers.h **** #else
+  23:Service/../MAVLink/common/../mavlink_helpers.h **** 	static mavlink_status_t m_mavlink_status[MAVLINK_COMM_NUM_BUFFERS];
+  24:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+  25:Service/../MAVLink/common/../mavlink_helpers.h **** 	return &m_mavlink_status[chan];
+  26:Service/../MAVLink/common/../mavlink_helpers.h **** }
+  27:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+  28:Service/../MAVLink/common/../mavlink_helpers.h **** 
+  29:Service/../MAVLink/common/../mavlink_helpers.h **** /*
+  30:Service/../MAVLink/common/../mavlink_helpers.h ****  * Internal function to give access to the channel buffer for each channel
+  31:Service/../MAVLink/common/../mavlink_helpers.h ****  */
+  32:Service/../MAVLink/common/../mavlink_helpers.h **** #ifndef MAVLINK_GET_CHANNEL_BUFFER
+  33:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER mavlink_message_t* mavlink_get_channel_buffer(uint8_t chan)
+  34:Service/../MAVLink/common/../mavlink_helpers.h **** {
+  35:Service/../MAVLink/common/../mavlink_helpers.h **** 	
+  36:Service/../MAVLink/common/../mavlink_helpers.h **** #ifdef MAVLINK_EXTERNAL_RX_BUFFER
+  37:Service/../MAVLink/common/../mavlink_helpers.h **** 	// No m_mavlink_buffer array defined in function,
+  38:Service/../MAVLink/common/../mavlink_helpers.h **** 	// has to be defined externally
+  39:Service/../MAVLink/common/../mavlink_helpers.h **** #else
+  40:Service/../MAVLink/common/../mavlink_helpers.h **** 	static mavlink_message_t m_mavlink_buffer[MAVLINK_COMM_NUM_BUFFERS];
+  41:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+  42:Service/../MAVLink/common/../mavlink_helpers.h **** 	return &m_mavlink_buffer[chan];
+  43:Service/../MAVLink/common/../mavlink_helpers.h **** }
+  44:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+  45:Service/../MAVLink/common/../mavlink_helpers.h **** 
+  46:Service/../MAVLink/common/../mavlink_helpers.h **** /**
+  47:Service/../MAVLink/common/../mavlink_helpers.h ****  * @brief Reset the status of a channel.
+  48:Service/../MAVLink/common/../mavlink_helpers.h ****  */
+  49:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER void mavlink_reset_channel_status(uint8_t chan)
+  50:Service/../MAVLink/common/../mavlink_helpers.h **** {
+  51:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_status_t *status = mavlink_get_channel_status(chan);
+  52:Service/../MAVLink/common/../mavlink_helpers.h **** 	status->parse_state = MAVLINK_PARSE_STATE_IDLE;
+  53:Service/../MAVLink/common/../mavlink_helpers.h **** }
+  54:Service/../MAVLink/common/../mavlink_helpers.h **** 
+  55:Service/../MAVLink/common/../mavlink_helpers.h **** /**
+  56:Service/../MAVLink/common/../mavlink_helpers.h ****  * @brief Finalize a MAVLink message with channel assignment
+  57:Service/../MAVLink/common/../mavlink_helpers.h ****  *
+  58:Service/../MAVLink/common/../mavlink_helpers.h ****  * This function calculates the checksum and sets length and aircraft id correctly.
+  59:Service/../MAVLink/common/../mavlink_helpers.h ****  * It assumes that the message id and the payload are already correctly set. This function
+  60:Service/../MAVLink/common/../mavlink_helpers.h ****  * can also be used if the message header has already been written before (as in mavlink_msg_xxx_pa
+  61:Service/../MAVLink/common/../mavlink_helpers.h ****  * instead of mavlink_msg_xxx_pack_headerless), it just introduces little extra overhead.
+  62:Service/../MAVLink/common/../mavlink_helpers.h ****  *
+  63:Service/../MAVLink/common/../mavlink_helpers.h ****  * @param msg Message to finalize
+  64:Service/../MAVLink/common/../mavlink_helpers.h ****  * @param system_id Id of the sending (this) system, 1-127
+  65:Service/../MAVLink/common/../mavlink_helpers.h ****  * @param length Message length
+  66:Service/../MAVLink/common/../mavlink_helpers.h ****  */
+  67:Service/../MAVLink/common/../mavlink_helpers.h **** #if MAVLINK_CRC_EXTRA
+  68:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER uint16_t mavlink_finalize_message_chan(mavlink_message_t* msg, uint8_t system_id, ui
+  69:Service/../MAVLink/common/../mavlink_helpers.h **** 						      uint8_t chan, uint8_t min_length, uint8_t length, uint8_t crc_extra)
+  70:Service/../MAVLink/common/../mavlink_helpers.h **** #else
+  71:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER uint16_t mavlink_finalize_message_chan(mavlink_message_t* msg, uint8_t system_id, ui
+  72:Service/../MAVLink/common/../mavlink_helpers.h **** 						      uint8_t chan, uint8_t length)
+  73:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+  74:Service/../MAVLink/common/../mavlink_helpers.h **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 10
+
+
+  75:Service/../MAVLink/common/../mavlink_helpers.h **** 	// This is only used for the v2 protocol and we silence it here
+  76:Service/../MAVLink/common/../mavlink_helpers.h **** 	(void)min_length;
+  77:Service/../MAVLink/common/../mavlink_helpers.h **** 	// This code part is the same for all messages;
+  78:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->magic = MAVLINK_STX;
+  79:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->len = length;
+  80:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->sysid = system_id;
+  81:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->compid = component_id;
+  82:Service/../MAVLink/common/../mavlink_helpers.h **** 	// One sequence number per channel
+  83:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->seq = mavlink_get_channel_status(chan)->current_tx_seq;
+  84:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_get_channel_status(chan)->current_tx_seq = mavlink_get_channel_status(chan)->current_tx_se
+  85:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->checksum = crc_calculate(((const uint8_t*)(msg)) + 3, MAVLINK_CORE_HEADER_LEN);
+  86:Service/../MAVLink/common/../mavlink_helpers.h **** 	crc_accumulate_buffer(&msg->checksum, _MAV_PAYLOAD(msg), msg->len);
+  87:Service/../MAVLink/common/../mavlink_helpers.h **** #if MAVLINK_CRC_EXTRA
+  88:Service/../MAVLink/common/../mavlink_helpers.h **** 	crc_accumulate(crc_extra, &msg->checksum);
+  89:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+  90:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_ck_a(msg) = (uint8_t)(msg->checksum & 0xFF);
+  91:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_ck_b(msg) = (uint8_t)(msg->checksum >> 8);
+  92:Service/../MAVLink/common/../mavlink_helpers.h **** 
+  93:Service/../MAVLink/common/../mavlink_helpers.h **** 	return length + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+  94:Service/../MAVLink/common/../mavlink_helpers.h **** }
+  95:Service/../MAVLink/common/../mavlink_helpers.h **** 
+  96:Service/../MAVLink/common/../mavlink_helpers.h **** 
+  97:Service/../MAVLink/common/../mavlink_helpers.h **** /**
+  98:Service/../MAVLink/common/../mavlink_helpers.h ****  * @brief Finalize a MAVLink message with MAVLINK_COMM_0 as default channel
+  99:Service/../MAVLink/common/../mavlink_helpers.h ****  */
+ 100:Service/../MAVLink/common/../mavlink_helpers.h **** #if MAVLINK_CRC_EXTRA
+ 101:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER uint16_t mavlink_finalize_message(mavlink_message_t* msg, uint8_t system_id, uint8_t
+ 102:Service/../MAVLink/common/../mavlink_helpers.h **** 						 uint8_t min_length, uint8_t length, uint8_t crc_extra)
+ 103:Service/../MAVLink/common/../mavlink_helpers.h **** {
+ 104:Service/../MAVLink/common/../mavlink_helpers.h ****     return mavlink_finalize_message_chan(msg, system_id, component_id, MAVLINK_COMM_0, min_length, 
+ 105:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 106:Service/../MAVLink/common/../mavlink_helpers.h **** #else
+ 107:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER uint16_t mavlink_finalize_message(mavlink_message_t* msg, uint8_t system_id, uint8_t
+ 108:Service/../MAVLink/common/../mavlink_helpers.h **** 						 uint8_t length)
+ 109:Service/../MAVLink/common/../mavlink_helpers.h **** {
+ 110:Service/../MAVLink/common/../mavlink_helpers.h **** 	return mavlink_finalize_message_chan(msg, system_id, component_id, MAVLINK_COMM_0, length);
+ 111:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 112:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+ 113:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 114:Service/../MAVLink/common/../mavlink_helpers.h **** #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
+ 115:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER void _mavlink_send_uart(mavlink_channel_t chan, const char *buf, uint16_t len);
+ 116:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 117:Service/../MAVLink/common/../mavlink_helpers.h **** /**
+ 118:Service/../MAVLink/common/../mavlink_helpers.h ****  * @brief Finalize a MAVLink message with channel assignment and send
+ 119:Service/../MAVLink/common/../mavlink_helpers.h ****  */
+ 120:Service/../MAVLink/common/../mavlink_helpers.h **** #if MAVLINK_CRC_EXTRA
+ 121:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER void _mav_finalize_message_chan_send(mavlink_channel_t chan, uint8_t msgid, const ch
+ 122:Service/../MAVLink/common/../mavlink_helpers.h **** 						    uint8_t min_length, uint8_t length, uint8_t crc_extra)
+ 123:Service/../MAVLink/common/../mavlink_helpers.h **** #else
+ 124:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER void _mav_finalize_message_chan_send(mavlink_channel_t chan, uint8_t msgid, const ch
+ 125:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+ 126:Service/../MAVLink/common/../mavlink_helpers.h **** {
+ 127:Service/../MAVLink/common/../mavlink_helpers.h **** 	uint16_t checksum;
+ 128:Service/../MAVLink/common/../mavlink_helpers.h **** 	uint8_t buf[MAVLINK_NUM_HEADER_BYTES];
+ 129:Service/../MAVLink/common/../mavlink_helpers.h **** 	uint8_t ck[2];
+ 130:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_status_t *status = mavlink_get_channel_status(chan);
+ 131:Service/../MAVLink/common/../mavlink_helpers.h **** 	buf[0] = MAVLINK_STX;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 11
+
+
+ 132:Service/../MAVLink/common/../mavlink_helpers.h **** 	buf[1] = length;
+ 133:Service/../MAVLink/common/../mavlink_helpers.h **** 	buf[2] = status->current_tx_seq;
+ 134:Service/../MAVLink/common/../mavlink_helpers.h **** 	buf[3] = mavlink_system.sysid;
+ 135:Service/../MAVLink/common/../mavlink_helpers.h **** 	buf[4] = mavlink_system.compid;
+ 136:Service/../MAVLink/common/../mavlink_helpers.h **** 	buf[5] = msgid;
+ 137:Service/../MAVLink/common/../mavlink_helpers.h **** 	status->current_tx_seq++;
+ 138:Service/../MAVLink/common/../mavlink_helpers.h **** 	checksum = crc_calculate((const uint8_t*)&buf[1], MAVLINK_CORE_HEADER_LEN);
+ 139:Service/../MAVLink/common/../mavlink_helpers.h **** 	crc_accumulate_buffer(&checksum, packet, length);
+ 140:Service/../MAVLink/common/../mavlink_helpers.h **** #if MAVLINK_CRC_EXTRA
+ 141:Service/../MAVLink/common/../mavlink_helpers.h **** 	crc_accumulate(crc_extra, &checksum);
+ 142:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+ 143:Service/../MAVLink/common/../mavlink_helpers.h **** 	ck[0] = (uint8_t)(checksum & 0xFF);
+ 144:Service/../MAVLink/common/../mavlink_helpers.h **** 	ck[1] = (uint8_t)(checksum >> 8);
+ 145:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 146:Service/../MAVLink/common/../mavlink_helpers.h **** 	MAVLINK_START_UART_SEND(chan, MAVLINK_NUM_NON_PAYLOAD_BYTES + (uint16_t)length);
+ 147:Service/../MAVLink/common/../mavlink_helpers.h **** 	_mavlink_send_uart(chan, (const char *)buf, MAVLINK_NUM_HEADER_BYTES);
+ 148:Service/../MAVLink/common/../mavlink_helpers.h **** 	_mavlink_send_uart(chan, packet, length);
+ 149:Service/../MAVLink/common/../mavlink_helpers.h **** 	_mavlink_send_uart(chan, (const char *)ck, 2);
+ 150:Service/../MAVLink/common/../mavlink_helpers.h **** 	MAVLINK_END_UART_SEND(chan, MAVLINK_NUM_NON_PAYLOAD_BYTES + (uint16_t)length);
+ 151:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 152:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 153:Service/../MAVLink/common/../mavlink_helpers.h **** /**
+ 154:Service/../MAVLink/common/../mavlink_helpers.h ****  * @brief re-send a message over a uart channel
+ 155:Service/../MAVLink/common/../mavlink_helpers.h ****  * this is more stack efficient than re-marshalling the message
+ 156:Service/../MAVLink/common/../mavlink_helpers.h ****  */
+ 157:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER void _mavlink_resend_uart(mavlink_channel_t chan, const mavlink_message_t *msg)
+ 158:Service/../MAVLink/common/../mavlink_helpers.h **** {
+ 159:Service/../MAVLink/common/../mavlink_helpers.h **** 	uint8_t ck[2];
+ 160:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 161:Service/../MAVLink/common/../mavlink_helpers.h **** 	ck[0] = (uint8_t)(msg->checksum & 0xFF);
+ 162:Service/../MAVLink/common/../mavlink_helpers.h **** 	ck[1] = (uint8_t)(msg->checksum >> 8);
+ 163:Service/../MAVLink/common/../mavlink_helpers.h **** 	// XXX use the right sequence here
+ 164:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 165:Service/../MAVLink/common/../mavlink_helpers.h **** 	MAVLINK_START_UART_SEND(chan, MAVLINK_NUM_NON_PAYLOAD_BYTES + msg->len);
+ 166:Service/../MAVLink/common/../mavlink_helpers.h **** 	_mavlink_send_uart(chan, (const char *)&msg->magic, MAVLINK_NUM_HEADER_BYTES);
+ 167:Service/../MAVLink/common/../mavlink_helpers.h **** 	_mavlink_send_uart(chan, _MAV_PAYLOAD(msg), msg->len);
+ 168:Service/../MAVLink/common/../mavlink_helpers.h **** 	_mavlink_send_uart(chan, (const char *)ck, 2);
+ 169:Service/../MAVLink/common/../mavlink_helpers.h **** 	MAVLINK_END_UART_SEND(chan, MAVLINK_NUM_NON_PAYLOAD_BYTES + msg->len);
+ 170:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 171:Service/../MAVLink/common/../mavlink_helpers.h **** #endif // MAVLINK_USE_CONVENIENCE_FUNCTIONS
+ 172:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 173:Service/../MAVLink/common/../mavlink_helpers.h **** /**
+ 174:Service/../MAVLink/common/../mavlink_helpers.h ****  * @brief Pack a message to send it over a serial byte stream
+ 175:Service/../MAVLink/common/../mavlink_helpers.h ****  */
+ 176:Service/../MAVLink/common/../mavlink_helpers.h **** MAVLINK_HELPER uint16_t mavlink_msg_to_send_buffer(uint8_t *buffer, const mavlink_message_t *msg)
+ 269              		.loc 2 176 25 is_stmt 1 view .LVU63
+ 270              	.LBB29:
+ 177:Service/../MAVLink/common/../mavlink_helpers.h **** {
+ 178:Service/../MAVLink/common/../mavlink_helpers.h **** 	memcpy(buffer, (const uint8_t *)&msg->magic, MAVLINK_NUM_HEADER_BYTES + (uint16_t)msg->len);
+ 271              		.loc 2 178 2 view .LVU64
+ 272              		.loc 2 178 87 is_stmt 0 view .LVU65
+ 273 0066 EA78     		ldrb	r2, [r5, #3]	@ zero_extendqisi2
+ 274              		.loc 2 178 2 view .LVU66
+ 275 0068 0632     		adds	r2, r2, #6
+ 276 006a A91C     		adds	r1, r5, #2
+ 277 006c 3046     		mov	r0, r6
+ 278 006e FFF7FEFF 		bl	memcpy
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 12
+
+
+ 279              	.LVL12:
+ 179:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 180:Service/../MAVLink/common/../mavlink_helpers.h **** 	uint8_t *ck = buffer + (MAVLINK_NUM_HEADER_BYTES + (uint16_t)msg->len);
+ 280              		.loc 2 180 2 is_stmt 1 view .LVU67
+ 281              		.loc 2 180 66 is_stmt 0 view .LVU68
+ 282 0072 EB78     		ldrb	r3, [r5, #3]	@ zero_extendqisi2
+ 283              		.loc 2 180 51 view .LVU69
+ 284 0074 0633     		adds	r3, r3, #6
+ 285              		.loc 2 180 11 view .LVU70
+ 286 0076 F218     		adds	r2, r6, r3
+ 287              	.LVL13:
+ 181:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 182:Service/../MAVLink/common/../mavlink_helpers.h **** 	ck[0] = (uint8_t)(msg->checksum & 0xFF);
+ 288              		.loc 2 182 2 is_stmt 1 view .LVU71
+ 289              		.loc 2 182 23 is_stmt 0 view .LVU72
+ 290 0078 2988     		ldrh	r1, [r5]	@ unaligned
+ 291              		.loc 2 182 8 view .LVU73
+ 292 007a F154     		strb	r1, [r6, r3]
+ 183:Service/../MAVLink/common/../mavlink_helpers.h **** 	ck[1] = (uint8_t)(msg->checksum >> 8);
+ 293              		.loc 2 183 2 is_stmt 1 view .LVU74
+ 294              		.loc 2 183 23 is_stmt 0 view .LVU75
+ 295 007c 2B88     		ldrh	r3, [r5]	@ unaligned
+ 296              		.loc 2 183 10 view .LVU76
+ 297 007e 1B0A     		lsrs	r3, r3, #8
+ 298              		.loc 2 183 8 view .LVU77
+ 299 0080 5370     		strb	r3, [r2, #1]
+ 184:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 185:Service/../MAVLink/common/../mavlink_helpers.h **** 	return MAVLINK_NUM_NON_PAYLOAD_BYTES + (uint16_t)msg->len;
+ 300              		.loc 2 185 2 is_stmt 1 view .LVU78
+ 301              		.loc 2 185 54 is_stmt 0 view .LVU79
+ 302 0082 E978     		ldrb	r1, [r5, #3]	@ zero_extendqisi2
+ 303              		.loc 2 185 39 view .LVU80
+ 304 0084 0831     		adds	r1, r1, #8
+ 305              	.LVL14:
+ 306              		.loc 2 185 39 view .LVU81
+ 307              	.LBE29:
+ 308              	.LBE28:
+ 125:Service/Srv_ComProto.c **** 
+ 309              		.loc 1 125 30 view .LVU82
+ 310 0086 A180     		strh	r1, [r4, #4]	@ movhi
+ 127:Service/Srv_ComProto.c ****                 tx_cb(com_stream->p_buf, com_stream->size);
+ 311              		.loc 1 127 13 is_stmt 1 view .LVU83
+ 127:Service/Srv_ComProto.c ****                 tx_cb(com_stream->p_buf, com_stream->size);
+ 312              		.loc 1 127 16 is_stmt 0 view .LVU84
+ 313 0088 0F9B     		ldr	r3, [sp, #60]
+ 314 008a 0BB1     		cbz	r3, .L19
+ 128:Service/Srv_ComProto.c **** 
+ 315              		.loc 1 128 17 is_stmt 1 view .LVU85
+ 316 008c 2068     		ldr	r0, [r4]
+ 317 008e 9847     		blx	r3
+ 318              	.LVL15:
+ 319              	.L19:
+ 130:Service/Srv_ComProto.c ****         }
+ 320              		.loc 1 130 13 view .LVU86
+ 130:Service/Srv_ComProto.c ****         }
+ 321              		.loc 1 130 30 is_stmt 0 view .LVU87
+ 322 0090 FFF7FEFF 		bl	Get_CurrentRunningMs
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 13
+
+
+ 323              	.LVL16:
+ 133:Service/Srv_ComProto.c ****     }
+ 324              		.loc 1 133 9 is_stmt 1 view .LVU88
+ 325 0094 D2E7     		b	.L15
+ 326              		.cfi_endproc
+ 327              	.LFE2000:
+ 329              		.section	.text.SrvComProto_MavMsg_Raw_IMU,"ax",%progbits
+ 330              		.align	1
+ 331              		.syntax unified
+ 332              		.thumb
+ 333              		.thumb_func
+ 334              		.fpu fpv5-d16
+ 336              	SrvComProto_MavMsg_Raw_IMU:
+ 337              	.LVL17:
+ 338              	.LFB2006:
+ 145:Service/Srv_ComProto.c **** 
+ 146:Service/Srv_ComProto.c **** static uint16_t SrvComProto_MavMsg_Moto(SrvComProto_MsgInfo_TypeDef *pck)
+ 147:Service/Srv_ComProto.c **** {
+ 148:Service/Srv_ComProto.c ****     uint32_t time_stamp = 0;
+ 149:Service/Srv_ComProto.c ****     uint16_t moto[8] = {0};
+ 150:Service/Srv_ComProto.c ****     uint8_t moto_dir[8] = {0};
+ 151:Service/Srv_ComProto.c ****     uint8_t moto_cnt = 0;
+ 152:Service/Srv_ComProto.c **** 
+ 153:Service/Srv_ComProto.c ****     SrvDataHub.get_moto(&time_stamp, &moto_cnt, moto, moto_dir);
+ 154:Service/Srv_ComProto.c **** 
+ 155:Service/Srv_ComProto.c ****     return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
+ 156:Service/Srv_ComProto.c ****                                                   pck->pck_info.component_id,
+ 157:Service/Srv_ComProto.c ****                                                   pck->pck_info.chan, pck->msg_obj,
+ 158:Service/Srv_ComProto.c ****                                                   time_stamp, MAV_ActuatorPort_Moto,
+ 159:Service/Srv_ComProto.c ****                                                   moto[0], moto[1], moto[2], moto[3],
+ 160:Service/Srv_ComProto.c ****                                                   moto[4], moto[5], moto[6], moto[7]);
+ 161:Service/Srv_ComProto.c **** }
+ 162:Service/Srv_ComProto.c **** 
+ 163:Service/Srv_ComProto.c **** static uint16_t SrvComProto_MavMsg_MotoDir(SrvComProto_MsgInfo_TypeDef *pck)
+ 164:Service/Srv_ComProto.c **** {
+ 165:Service/Srv_ComProto.c ****     uint32_t time_stamp = 0;
+ 166:Service/Srv_ComProto.c ****     uint16_t moto[8] = {0};
+ 167:Service/Srv_ComProto.c ****     uint8_t moto_dir[8] = {0};
+ 168:Service/Srv_ComProto.c ****     uint8_t moto_cnt = 0;
+ 169:Service/Srv_ComProto.c **** 
+ 170:Service/Srv_ComProto.c ****     SrvDataHub.get_moto(&time_stamp, &moto_cnt, moto, moto_dir);
+ 171:Service/Srv_ComProto.c **** 
+ 172:Service/Srv_ComProto.c ****     return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
+ 173:Service/Srv_ComProto.c ****                                                   pck->pck_info.component_id,
+ 174:Service/Srv_ComProto.c ****                                                   pck->pck_info.chan, pck->msg_obj,
+ 175:Service/Srv_ComProto.c ****                                                   time_stamp, MAV_ActuatorPort_MotoDir,
+ 176:Service/Srv_ComProto.c ****                                                   moto_dir[0], moto_dir[1], moto_dir[2], moto_dir[3
+ 177:Service/Srv_ComProto.c ****                                                   moto_dir[4], moto_dir[5], moto_dir[6], moto_dir[7
+ 178:Service/Srv_ComProto.c **** }
+ 179:Service/Srv_ComProto.c **** 
+ 180:Service/Srv_ComProto.c **** static uint16_t SrvComProto_MavMsg_Servo(SrvComProto_MsgInfo_TypeDef *pck)
+ 181:Service/Srv_ComProto.c **** {
+ 182:Service/Srv_ComProto.c ****     uint32_t time_stamp = 0;
+ 183:Service/Srv_ComProto.c ****     uint16_t servo[8] = {0};
+ 184:Service/Srv_ComProto.c ****     uint8_t servo_dir[8] = {0};
+ 185:Service/Srv_ComProto.c ****     uint8_t servo_cnt = 0;
+ 186:Service/Srv_ComProto.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 14
+
+
+ 187:Service/Srv_ComProto.c ****     SrvDataHub.get_servo(&time_stamp, &servo_cnt, servo, servo_dir);
+ 188:Service/Srv_ComProto.c **** 
+ 189:Service/Srv_ComProto.c ****     return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
+ 190:Service/Srv_ComProto.c ****                                                   pck->pck_info.component_id,
+ 191:Service/Srv_ComProto.c ****                                                   pck->pck_info.chan, pck->msg_obj,
+ 192:Service/Srv_ComProto.c ****                                                   time_stamp, MAV_ActuatorPort_Servo,
+ 193:Service/Srv_ComProto.c ****                                                   servo[0], servo[1], servo[2], servo[3],
+ 194:Service/Srv_ComProto.c ****                                                   servo[4], servo[5], servo[6], servo[7]);
+ 195:Service/Srv_ComProto.c **** }
+ 196:Service/Srv_ComProto.c **** 
+ 197:Service/Srv_ComProto.c **** static uint16_t SrvComProto_MavMsg_ServoDir(SrvComProto_MsgInfo_TypeDef *pck)
+ 198:Service/Srv_ComProto.c **** {
+ 199:Service/Srv_ComProto.c ****     uint32_t time_stamp = 0;
+ 200:Service/Srv_ComProto.c ****     uint16_t servo[8] = {0};
+ 201:Service/Srv_ComProto.c ****     uint8_t servo_dir[8] = {0};
+ 202:Service/Srv_ComProto.c ****     uint8_t servo_cnt = 0;
+ 203:Service/Srv_ComProto.c **** 
+ 204:Service/Srv_ComProto.c ****     SrvDataHub.get_servo(&time_stamp, &servo_cnt, servo, servo_dir);
+ 205:Service/Srv_ComProto.c **** 
+ 206:Service/Srv_ComProto.c ****     return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
+ 207:Service/Srv_ComProto.c ****                                                   pck->pck_info.component_id,
+ 208:Service/Srv_ComProto.c ****                                                   pck->pck_info.chan, pck->msg_obj,
+ 209:Service/Srv_ComProto.c ****                                                   time_stamp, MAV_ActuatorPort_ServoDir,
+ 210:Service/Srv_ComProto.c ****                                                   servo_dir[0], servo_dir[1], servo_dir[2], servo_d
+ 211:Service/Srv_ComProto.c ****                                                   servo_dir[4], servo_dir[5], servo_dir[6], servo_d
+ 212:Service/Srv_ComProto.c **** }
+ 213:Service/Srv_ComProto.c **** 
+ 214:Service/Srv_ComProto.c **** static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck)
+ 215:Service/Srv_ComProto.c **** {
+ 339              		.loc 1 215 1 view -0
+ 340              		.cfi_startproc
+ 341              		@ args = 0, pretend = 0, frame = 64
+ 342              		@ frame_needed = 0, uses_anonymous_args = 0
+ 343              		.loc 1 215 1 is_stmt 0 view .LVU90
+ 344 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 345              	.LCFI7:
+ 346              		.cfi_def_cfa_offset 20
+ 347              		.cfi_offset 4, -20
+ 348              		.cfi_offset 5, -16
+ 349              		.cfi_offset 6, -12
+ 350              		.cfi_offset 7, -8
+ 351              		.cfi_offset 14, -4
+ 352 0002 97B0     		sub	sp, sp, #92
+ 353              	.LCFI8:
+ 354              		.cfi_def_cfa_offset 112
+ 355 0004 0446     		mov	r4, r0
+ 216:Service/Srv_ComProto.c ****     uint32_t time_stamp = 0;
+ 356              		.loc 1 216 5 is_stmt 1 view .LVU91
+ 357              		.loc 1 216 14 is_stmt 0 view .LVU92
+ 358 0006 0025     		movs	r5, #0
+ 359 0008 1595     		str	r5, [sp, #84]
+ 217:Service/Srv_ComProto.c ****     float acc_scale = 0.0f;
+ 360              		.loc 1 217 5 is_stmt 1 view .LVU93
+ 361              		.loc 1 217 11 is_stmt 0 view .LVU94
+ 362 000a 0023     		movs	r3, #0
+ 363 000c 1493     		str	r3, [sp, #80]	@ float
+ 218:Service/Srv_ComProto.c ****     float gyr_scale = 0.0f;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 15
+
+
+ 364              		.loc 1 218 5 is_stmt 1 view .LVU95
+ 365              		.loc 1 218 11 is_stmt 0 view .LVU96
+ 366 000e 1393     		str	r3, [sp, #76]	@ float
+ 219:Service/Srv_ComProto.c ****     float acc_x = 0.0f;
+ 367              		.loc 1 219 5 is_stmt 1 view .LVU97
+ 368              		.loc 1 219 11 is_stmt 0 view .LVU98
+ 369 0010 1293     		str	r3, [sp, #72]	@ float
+ 220:Service/Srv_ComProto.c ****     float acc_y = 0.0f;
+ 370              		.loc 1 220 5 is_stmt 1 view .LVU99
+ 371              		.loc 1 220 11 is_stmt 0 view .LVU100
+ 372 0012 1193     		str	r3, [sp, #68]	@ float
+ 221:Service/Srv_ComProto.c ****     float acc_z = 0.0f;
+ 373              		.loc 1 221 5 is_stmt 1 view .LVU101
+ 374              		.loc 1 221 11 is_stmt 0 view .LVU102
+ 375 0014 1093     		str	r3, [sp, #64]	@ float
+ 222:Service/Srv_ComProto.c ****     float gyr_x = 0.0f;
+ 376              		.loc 1 222 5 is_stmt 1 view .LVU103
+ 377              		.loc 1 222 11 is_stmt 0 view .LVU104
+ 378 0016 0F93     		str	r3, [sp, #60]	@ float
+ 223:Service/Srv_ComProto.c ****     float gyr_y = 0.0f;
+ 379              		.loc 1 223 5 is_stmt 1 view .LVU105
+ 380              		.loc 1 223 11 is_stmt 0 view .LVU106
+ 381 0018 0E93     		str	r3, [sp, #56]	@ float
+ 224:Service/Srv_ComProto.c ****     float gyr_z = 0.0f;
+ 382              		.loc 1 224 5 is_stmt 1 view .LVU107
+ 383              		.loc 1 224 11 is_stmt 0 view .LVU108
+ 384 001a 0D93     		str	r3, [sp, #52]	@ float
+ 225:Service/Srv_ComProto.c ****     float tmpr = 0.0f;
+ 385              		.loc 1 225 5 is_stmt 1 view .LVU109
+ 386              		.loc 1 225 11 is_stmt 0 view .LVU110
+ 387 001c 0C93     		str	r3, [sp, #48]	@ float
+ 226:Service/Srv_ComProto.c **** 
+ 227:Service/Srv_ComProto.c ****     SrvDataHub.get_raw_imu(&time_stamp, &acc_scale, &gyr_scale, &acc_x, &acc_y, &acc_z, &gyr_x, &gy
+ 388              		.loc 1 227 5 is_stmt 1 view .LVU111
+ 389              		.loc 1 227 15 is_stmt 0 view .LVU112
+ 390 001e 684B     		ldr	r3, .L30
+ 391 0020 5E68     		ldr	r6, [r3, #4]
+ 392              		.loc 1 227 5 view .LVU113
+ 393 0022 0CAB     		add	r3, sp, #48
+ 394 0024 0593     		str	r3, [sp, #20]
+ 395 0026 0DAB     		add	r3, sp, #52
+ 396 0028 0493     		str	r3, [sp, #16]
+ 397 002a 0EAB     		add	r3, sp, #56
+ 398 002c 0393     		str	r3, [sp, #12]
+ 399 002e 0FAB     		add	r3, sp, #60
+ 400 0030 0293     		str	r3, [sp, #8]
+ 401 0032 10AB     		add	r3, sp, #64
+ 402 0034 0193     		str	r3, [sp, #4]
+ 403 0036 11AB     		add	r3, sp, #68
+ 404 0038 0093     		str	r3, [sp]
+ 405 003a 12AB     		add	r3, sp, #72
+ 406 003c 13AA     		add	r2, sp, #76
+ 407 003e 14A9     		add	r1, sp, #80
+ 408 0040 15A8     		add	r0, sp, #84
+ 409              	.LVL18:
+ 410              		.loc 1 227 5 view .LVU114
+ 411 0042 B047     		blx	r6
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 16
+
+
+ 412              	.LVL19:
+ 228:Service/Srv_ComProto.c **** 
+ 229:Service/Srv_ComProto.c ****     int16_t i_acc_x = (int16_t)(acc_x * acc_scale);
+ 413              		.loc 1 229 5 is_stmt 1 view .LVU115
+ 414              		.loc 1 229 39 is_stmt 0 view .LVU116
+ 415 0044 DDED147A 		vldr.32	s15, [sp, #80]
+ 416 0048 9DED127A 		vldr.32	s14, [sp, #72]
+ 417 004c 27EE877A 		vmul.f32	s14, s15, s14
+ 418              		.loc 1 229 13 view .LVU117
+ 419 0050 BDEEC77A 		vcvt.s32.f32	s14, s14
+ 420 0054 17EE10EA 		vmov	lr, s14	@ int
+ 421              	.LVL20:
+ 230:Service/Srv_ComProto.c ****     int16_t i_acc_y = (int16_t)(acc_y * acc_scale);
+ 422              		.loc 1 230 5 is_stmt 1 view .LVU118
+ 423              		.loc 1 230 39 is_stmt 0 view .LVU119
+ 424 0058 9DED117A 		vldr.32	s14, [sp, #68]
+ 425 005c 27EE877A 		vmul.f32	s14, s15, s14
+ 426              		.loc 1 230 13 view .LVU120
+ 427 0060 BDEEC77A 		vcvt.s32.f32	s14, s14
+ 428 0064 17EE100A 		vmov	r0, s14	@ int
+ 429              	.LVL21:
+ 231:Service/Srv_ComProto.c ****     int16_t i_acc_z = (int16_t)(acc_z * acc_scale);
+ 430              		.loc 1 231 5 is_stmt 1 view .LVU121
+ 431              		.loc 1 231 39 is_stmt 0 view .LVU122
+ 432 0068 9DED107A 		vldr.32	s14, [sp, #64]
+ 433 006c 67EE877A 		vmul.f32	s15, s15, s14
+ 434              		.loc 1 231 13 view .LVU123
+ 435 0070 FDEEE77A 		vcvt.s32.f32	s15, s15
+ 436 0074 17EE903A 		vmov	r3, s15	@ int
+ 437              	.LVL22:
+ 232:Service/Srv_ComProto.c **** 
+ 233:Service/Srv_ComProto.c ****     int16_t i_gyr_x = (int16_t)(gyr_x * gyr_scale);
+ 438              		.loc 1 233 5 is_stmt 1 view .LVU124
+ 439              		.loc 1 233 39 is_stmt 0 view .LVU125
+ 440 0078 DDED137A 		vldr.32	s15, [sp, #76]
+ 441 007c 9DED0F7A 		vldr.32	s14, [sp, #60]
+ 442 0080 27EE877A 		vmul.f32	s14, s15, s14
+ 443              		.loc 1 233 13 view .LVU126
+ 444 0084 BDEEC77A 		vcvt.s32.f32	s14, s14
+ 445 0088 17EE101A 		vmov	r1, s14	@ int
+ 446              	.LVL23:
+ 234:Service/Srv_ComProto.c ****     int16_t i_gyr_y = (int16_t)(gyr_y * gyr_scale);
+ 447              		.loc 1 234 5 is_stmt 1 view .LVU127
+ 448              		.loc 1 234 39 is_stmt 0 view .LVU128
+ 449 008c 9DED0E7A 		vldr.32	s14, [sp, #56]
+ 450 0090 27EE877A 		vmul.f32	s14, s15, s14
+ 451              		.loc 1 234 13 view .LVU129
+ 452 0094 BDEEC77A 		vcvt.s32.f32	s14, s14
+ 453              	.LVL24:
+ 235:Service/Srv_ComProto.c ****     int16_t i_gyr_z = (int16_t)(gyr_z * gyr_scale);
+ 454              		.loc 1 235 5 is_stmt 1 view .LVU130
+ 455              		.loc 1 235 39 is_stmt 0 view .LVU131
+ 456 0098 DDED0D6A 		vldr.32	s13, [sp, #52]
+ 457 009c 67EEA67A 		vmul.f32	s15, s15, s13
+ 458              		.loc 1 235 13 view .LVU132
+ 459 00a0 FDEEE77A 		vcvt.s32.f32	s15, s15
+ 460              	.LVL25:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 17
+
+
+ 236:Service/Srv_ComProto.c **** 
+ 237:Service/Srv_ComProto.c ****     /* we dont have any mag sensor currently */
+ 238:Service/Srv_ComProto.c ****     return mavlink_msg_scaled_imu_pack_chan(pck->pck_info.system_id,
+ 461              		.loc 1 238 5 is_stmt 1 view .LVU133
+ 462              		.loc 1 238 12 is_stmt 0 view .LVU134
+ 463 00a4 94F804C0 		ldrb	ip, [r4, #4]	@ zero_extendqisi2
+ 464 00a8 6779     		ldrb	r7, [r4, #5]	@ zero_extendqisi2
+ 465 00aa A679     		ldrb	r6, [r4, #6]	@ zero_extendqisi2
+ 466 00ac A468     		ldr	r4, [r4, #8]
+ 467              	.LVL26:
+ 468              		.loc 1 238 12 view .LVU135
+ 469 00ae 159A     		ldr	r2, [sp, #84]
+ 470              	.LVL27:
+ 471              	.LBB50:
+ 472              	.LBI50:
+ 473              		.file 3 "Service/../MAVLink/common/./mavlink_msg_scaled_imu.h"
+   1:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #pragma once
+   2:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** // MESSAGE SCALED_IMU PACKING
+   3:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+   4:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #define MAVLINK_MSG_ID_SCALED_IMU 26
+   5:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+   6:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+   7:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** typedef struct __mavlink_scaled_imu_t {
+   8:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  uint32_t time_boot_ms; /*< [ms] Timestamp (time since system boot).*/
+   9:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  int16_t xacc; /*< [mG] X acceleration*/
+  10:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  int16_t yacc; /*< [mG] Y acceleration*/
+  11:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  int16_t zacc; /*< [mG] Z acceleration*/
+  12:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  int16_t xgyro; /*< [mrad/s] Angular speed around X axis*/
+  13:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  int16_t ygyro; /*< [mrad/s] Angular speed around Y axis*/
+  14:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  int16_t zgyro; /*< [mrad/s] Angular speed around Z axis*/
+  15:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  int16_t xmag; /*< [mgauss] X Magnetic field*/
+  16:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  int16_t ymag; /*< [mgauss] Y Magnetic field*/
+  17:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  int16_t zmag; /*< [mgauss] Z Magnetic field*/
+  18:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** } mavlink_scaled_imu_t;
+  19:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+  20:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #define MAVLINK_MSG_ID_SCALED_IMU_LEN 22
+  21:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #define MAVLINK_MSG_ID_SCALED_IMU_MIN_LEN 22
+  22:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #define MAVLINK_MSG_ID_26_LEN 22
+  23:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #define MAVLINK_MSG_ID_26_MIN_LEN 22
+  24:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+  25:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #define MAVLINK_MSG_ID_SCALED_IMU_CRC 170
+  26:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #define MAVLINK_MSG_ID_26_CRC 170
+  27:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+  28:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+  29:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+  30:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #if MAVLINK_COMMAND_24BIT
+  31:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #define MAVLINK_MESSAGE_INFO_SCALED_IMU { \
+  32:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     26, \
+  33:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     "SCALED_IMU", \
+  34:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     10, \
+  35:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     {  { "time_boot_ms", NULL, MAVLINK_TYPE_UINT32_T, 0, 0, offsetof(mavlink_scaled_imu_t, time_boo
+  36:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "xacc", NULL, MAVLINK_TYPE_INT16_T, 0, 4, offsetof(mavlink_scaled_imu_t, xacc) }, \
+  37:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "yacc", NULL, MAVLINK_TYPE_INT16_T, 0, 6, offsetof(mavlink_scaled_imu_t, yacc) }, \
+  38:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "zacc", NULL, MAVLINK_TYPE_INT16_T, 0, 8, offsetof(mavlink_scaled_imu_t, zacc) }, \
+  39:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "xgyro", NULL, MAVLINK_TYPE_INT16_T, 0, 10, offsetof(mavlink_scaled_imu_t, xgyro) }, \
+  40:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "ygyro", NULL, MAVLINK_TYPE_INT16_T, 0, 12, offsetof(mavlink_scaled_imu_t, ygyro) }, \
+  41:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "zgyro", NULL, MAVLINK_TYPE_INT16_T, 0, 14, offsetof(mavlink_scaled_imu_t, zgyro) }, \
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 18
+
+
+  42:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "xmag", NULL, MAVLINK_TYPE_INT16_T, 0, 16, offsetof(mavlink_scaled_imu_t, xmag) }, \
+  43:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "ymag", NULL, MAVLINK_TYPE_INT16_T, 0, 18, offsetof(mavlink_scaled_imu_t, ymag) }, \
+  44:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "zmag", NULL, MAVLINK_TYPE_INT16_T, 0, 20, offsetof(mavlink_scaled_imu_t, zmag) }, \
+  45:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          } \
+  46:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** }
+  47:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #else
+  48:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #define MAVLINK_MESSAGE_INFO_SCALED_IMU { \
+  49:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     "SCALED_IMU", \
+  50:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     10, \
+  51:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     {  { "time_boot_ms", NULL, MAVLINK_TYPE_UINT32_T, 0, 0, offsetof(mavlink_scaled_imu_t, time_boo
+  52:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "xacc", NULL, MAVLINK_TYPE_INT16_T, 0, 4, offsetof(mavlink_scaled_imu_t, xacc) }, \
+  53:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "yacc", NULL, MAVLINK_TYPE_INT16_T, 0, 6, offsetof(mavlink_scaled_imu_t, yacc) }, \
+  54:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "zacc", NULL, MAVLINK_TYPE_INT16_T, 0, 8, offsetof(mavlink_scaled_imu_t, zacc) }, \
+  55:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "xgyro", NULL, MAVLINK_TYPE_INT16_T, 0, 10, offsetof(mavlink_scaled_imu_t, xgyro) }, \
+  56:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "ygyro", NULL, MAVLINK_TYPE_INT16_T, 0, 12, offsetof(mavlink_scaled_imu_t, ygyro) }, \
+  57:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "zgyro", NULL, MAVLINK_TYPE_INT16_T, 0, 14, offsetof(mavlink_scaled_imu_t, zgyro) }, \
+  58:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "xmag", NULL, MAVLINK_TYPE_INT16_T, 0, 16, offsetof(mavlink_scaled_imu_t, xmag) }, \
+  59:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "ymag", NULL, MAVLINK_TYPE_INT16_T, 0, 18, offsetof(mavlink_scaled_imu_t, ymag) }, \
+  60:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          { "zmag", NULL, MAVLINK_TYPE_INT16_T, 0, 20, offsetof(mavlink_scaled_imu_t, zmag) }, \
+  61:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****          } \
+  62:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** }
+  63:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #endif
+  64:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+  65:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** /**
+  66:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @brief Pack a scaled_imu message
+  67:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param system_id ID of this system
+  68:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param component_id ID of this component (e.g. 200 for IMU)
+  69:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param msg The MAVLink message to compress the data into
+  70:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  *
+  71:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param time_boot_ms [ms] Timestamp (time since system boot).
+  72:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param xacc [mG] X acceleration
+  73:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param yacc [mG] Y acceleration
+  74:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param zacc [mG] Z acceleration
+  75:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param xgyro [mrad/s] Angular speed around X axis
+  76:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param ygyro [mrad/s] Angular speed around Y axis
+  77:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param zgyro [mrad/s] Angular speed around Z axis
+  78:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param xmag [mgauss] X Magnetic field
+  79:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param ymag [mgauss] Y Magnetic field
+  80:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param zmag [mgauss] Z Magnetic field
+  81:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @return length of the message in bytes (excluding serial stream start sign)
+  82:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  */
+  83:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** static inline uint16_t mavlink_msg_scaled_imu_pack(uint8_t system_id, uint8_t component_id, mavlink
+  84:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****                                uint32_t time_boot_ms, int16_t xacc, int16_t yacc, int16_t zacc, int
+  85:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** {
+  86:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
+  87:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     char buf[MAVLINK_MSG_ID_SCALED_IMU_LEN];
+  88:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_uint32_t(buf, 0, time_boot_ms);
+  89:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 4, xacc);
+  90:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 6, yacc);
+  91:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 8, zacc);
+  92:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 10, xgyro);
+  93:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 12, ygyro);
+  94:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 14, zgyro);
+  95:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 16, xmag);
+  96:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 18, ymag);
+  97:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 20, zmag);
+  98:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 19
+
+
+  99:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_SCALED_IMU_LEN);
+ 100:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #else
+ 101:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     mavlink_scaled_imu_t packet;
+ 102:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.time_boot_ms = time_boot_ms;
+ 103:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.xacc = xacc;
+ 104:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.yacc = yacc;
+ 105:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.zacc = zacc;
+ 106:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.xgyro = xgyro;
+ 107:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.ygyro = ygyro;
+ 108:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.zgyro = zgyro;
+ 109:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.xmag = xmag;
+ 110:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.ymag = ymag;
+ 111:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.zmag = zmag;
+ 112:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+ 113:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_SCALED_IMU_LEN);
+ 114:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #endif
+ 115:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+ 116:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     msg->msgid = MAVLINK_MSG_ID_SCALED_IMU;
+ 117:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     return mavlink_finalize_message(msg, system_id, component_id, MAVLINK_MSG_ID_SCALED_IMU_MIN_LEN
+ 118:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** }
+ 119:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+ 120:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** /**
+ 121:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @brief Pack a scaled_imu message on a channel
+ 122:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param system_id ID of this system
+ 123:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param component_id ID of this component (e.g. 200 for IMU)
+ 124:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param chan The MAVLink channel this message will be sent over
+ 125:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param msg The MAVLink message to compress the data into
+ 126:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param time_boot_ms [ms] Timestamp (time since system boot).
+ 127:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param xacc [mG] X acceleration
+ 128:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param yacc [mG] Y acceleration
+ 129:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param zacc [mG] Z acceleration
+ 130:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param xgyro [mrad/s] Angular speed around X axis
+ 131:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param ygyro [mrad/s] Angular speed around Y axis
+ 132:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param zgyro [mrad/s] Angular speed around Z axis
+ 133:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param xmag [mgauss] X Magnetic field
+ 134:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param ymag [mgauss] Y Magnetic field
+ 135:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @param zmag [mgauss] Z Magnetic field
+ 136:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  * @return length of the message in bytes (excluding serial stream start sign)
+ 137:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****  */
+ 138:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** static inline uint16_t mavlink_msg_scaled_imu_pack_chan(uint8_t system_id, uint8_t component_id, ui
+ 474              		.loc 3 138 24 is_stmt 1 view .LVU136
+ 475              	.LBB51:
+ 139:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****                                mavlink_message_t* msg,
+ 140:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****                                    uint32_t time_boot_ms,int16_t xacc,int16_t yacc,int16_t zacc,int
+ 141:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** {
+ 142:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
+ 143:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     char buf[MAVLINK_MSG_ID_SCALED_IMU_LEN];
+ 144:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_uint32_t(buf, 0, time_boot_ms);
+ 145:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 4, xacc);
+ 146:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 6, yacc);
+ 147:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 8, zacc);
+ 148:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 10, xgyro);
+ 149:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 12, ygyro);
+ 150:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 14, zgyro);
+ 151:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 16, xmag);
+ 152:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 18, ymag);
+ 153:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     _mav_put_int16_t(buf, 20, zmag);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 20
+
+
+ 154:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+ 155:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_SCALED_IMU_LEN);
+ 156:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #else
+ 157:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     mavlink_scaled_imu_t packet;
+ 476              		.loc 3 157 5 view .LVU137
+ 158:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.time_boot_ms = time_boot_ms;
+ 477              		.loc 3 158 5 view .LVU138
+ 478              		.loc 3 158 25 is_stmt 0 view .LVU139
+ 479 00b0 0692     		str	r2, [sp, #24]
+ 159:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.xacc = xacc;
+ 480              		.loc 3 159 5 is_stmt 1 view .LVU140
+ 481              		.loc 3 159 17 is_stmt 0 view .LVU141
+ 482 00b2 ADF81CE0 		strh	lr, [sp, #28]	@ movhi
+ 160:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.yacc = yacc;
+ 483              		.loc 3 160 5 is_stmt 1 view .LVU142
+ 484              		.loc 3 160 17 is_stmt 0 view .LVU143
+ 485 00b6 ADF81E00 		strh	r0, [sp, #30]	@ movhi
+ 161:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.zacc = zacc;
+ 486              		.loc 3 161 5 is_stmt 1 view .LVU144
+ 487              		.loc 3 161 17 is_stmt 0 view .LVU145
+ 488 00ba ADF82030 		strh	r3, [sp, #32]	@ movhi
+ 162:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.xgyro = xgyro;
+ 489              		.loc 3 162 5 is_stmt 1 view .LVU146
+ 490              		.loc 3 162 18 is_stmt 0 view .LVU147
+ 491 00be ADF82210 		strh	r1, [sp, #34]	@ movhi
+ 163:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.ygyro = ygyro;
+ 492              		.loc 3 163 5 is_stmt 1 view .LVU148
+ 493              		.loc 3 163 18 is_stmt 0 view .LVU149
+ 494 00c2 17EE103A 		vmov	r3, s14	@ int
+ 495              	.LVL28:
+ 496              		.loc 3 163 18 view .LVU150
+ 497 00c6 ADF82430 		strh	r3, [sp, #36]	@ movhi
+ 164:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.zgyro = zgyro;
+ 498              		.loc 3 164 5 is_stmt 1 view .LVU151
+ 499              		.loc 3 164 18 is_stmt 0 view .LVU152
+ 500 00ca 17EE903A 		vmov	r3, s15	@ int
+ 501 00ce ADF82630 		strh	r3, [sp, #38]	@ movhi
+ 165:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.xmag = xmag;
+ 502              		.loc 3 165 5 is_stmt 1 view .LVU153
+ 503              		.loc 3 165 17 is_stmt 0 view .LVU154
+ 504 00d2 ADF82850 		strh	r5, [sp, #40]	@ movhi
+ 166:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.ymag = ymag;
+ 505              		.loc 3 166 5 is_stmt 1 view .LVU155
+ 506              		.loc 3 166 17 is_stmt 0 view .LVU156
+ 507 00d6 ADF82A50 		strh	r5, [sp, #42]	@ movhi
+ 167:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     packet.zmag = zmag;
+ 508              		.loc 3 167 5 is_stmt 1 view .LVU157
+ 509              		.loc 3 167 17 is_stmt 0 view .LVU158
+ 510 00da ADF82C50 		strh	r5, [sp, #44]	@ movhi
+ 168:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+ 169:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_SCALED_IMU_LEN);
+ 511              		.loc 3 169 9 is_stmt 1 view .LVU159
+ 512 00de 06AD     		add	r5, sp, #24
+ 513 00e0 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 514              	.LVL29:
+ 515              		.loc 3 169 9 is_stmt 0 view .LVU160
+ 516 00e2 A060     		str	r0, [r4, #8]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 21
+
+
+ 517              	.LVL30:
+ 518              		.loc 3 169 9 view .LVU161
+ 519 00e4 E160     		str	r1, [r4, #12]	@ unaligned
+ 520 00e6 2261     		str	r2, [r4, #16]	@ unaligned
+ 521 00e8 6361     		str	r3, [r4, #20]	@ unaligned
+ 522 00ea 2868     		ldr	r0, [r5]
+ 523              	.LVL31:
+ 524              		.loc 3 169 9 view .LVU162
+ 525 00ec A061     		str	r0, [r4, #24]	@ unaligned
+ 526 00ee AB88     		ldrh	r3, [r5, #4]	@ unaligned
+ 527 00f0 A383     		strh	r3, [r4, #28]	@ unaligned
+ 170:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** #endif
+ 171:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h **** 
+ 172:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     msg->msgid = MAVLINK_MSG_ID_SCALED_IMU;
+ 528              		.loc 3 172 5 is_stmt 1 view .LVU163
+ 529              		.loc 3 172 16 is_stmt 0 view .LVU164
+ 530 00f2 1A23     		movs	r3, #26
+ 531 00f4 E371     		strb	r3, [r4, #7]
+ 173:Service/../MAVLink/common/./mavlink_msg_scaled_imu.h ****     return mavlink_finalize_message_chan(msg, system_id, component_id, chan, MAVLINK_MSG_ID_SCALED_
+ 532              		.loc 3 173 5 is_stmt 1 view .LVU165
+ 533              	.LVL32:
+ 534              	.LBB52:
+ 535              	.LBI52:
+  68:Service/../MAVLink/common/../mavlink_helpers.h **** 						      uint8_t chan, uint8_t min_length, uint8_t length, uint8_t crc_extra)
+ 536              		.loc 2 68 25 view .LVU166
+ 537              	.LBB53:
+  76:Service/../MAVLink/common/../mavlink_helpers.h **** 	// This code part is the same for all messages;
+ 538              		.loc 2 76 2 view .LVU167
+  78:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->len = length;
+ 539              		.loc 2 78 2 view .LVU168
+  78:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->len = length;
+ 540              		.loc 2 78 13 is_stmt 0 view .LVU169
+ 541 00f6 FE23     		movs	r3, #254
+ 542 00f8 A370     		strb	r3, [r4, #2]
+  79:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->sysid = system_id;
+ 543              		.loc 2 79 2 is_stmt 1 view .LVU170
+  79:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->sysid = system_id;
+ 544              		.loc 2 79 11 is_stmt 0 view .LVU171
+ 545 00fa 1623     		movs	r3, #22
+ 546 00fc E370     		strb	r3, [r4, #3]
+  80:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->compid = component_id;
+ 547              		.loc 2 80 2 is_stmt 1 view .LVU172
+  80:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->compid = component_id;
+ 548              		.loc 2 80 13 is_stmt 0 view .LVU173
+ 549 00fe 84F805C0 		strb	ip, [r4, #5]
+  81:Service/../MAVLink/common/../mavlink_helpers.h **** 	// One sequence number per channel
+ 550              		.loc 2 81 2 is_stmt 1 view .LVU174
+  81:Service/../MAVLink/common/../mavlink_helpers.h **** 	// One sequence number per channel
+ 551              		.loc 2 81 14 is_stmt 0 view .LVU175
+ 552 0102 A771     		strb	r7, [r4, #6]
+  83:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_get_channel_status(chan)->current_tx_seq = mavlink_get_channel_status(chan)->current_tx_se
+ 553              		.loc 2 83 2 is_stmt 1 view .LVU176
+ 554              	.LVL33:
+ 555              	.LBB54:
+ 556              	.LBI54:
+  17:Service/../MAVLink/common/../mavlink_helpers.h **** {
+ 557              		.loc 2 17 34 view .LVU177
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 22
+
+
+ 558              	.LBB55:
+  23:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+ 559              		.loc 2 23 2 view .LVU178
+  25:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 560              		.loc 2 25 2 view .LVU179
+  25:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 561              		.loc 2 25 2 is_stmt 0 view .LVU180
+ 562              	.LBE55:
+ 563              	.LBE54:
+  83:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_get_channel_status(chan)->current_tx_seq = mavlink_get_channel_status(chan)->current_tx_se
+ 564              		.loc 2 83 45 view .LVU181
+ 565 0104 2F4B     		ldr	r3, .L30+4
+ 566 0106 06EB4602 		add	r2, r6, r6, lsl #1
+ 567 010a 03EB8202 		add	r2, r3, r2, lsl #2
+ 568 010e 9279     		ldrb	r2, [r2, #6]	@ zero_extendqisi2
+  83:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_get_channel_status(chan)->current_tx_seq = mavlink_get_channel_status(chan)->current_tx_se
+ 569              		.loc 2 83 11 view .LVU182
+ 570 0110 2271     		strb	r2, [r4, #4]
+  84:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->checksum = crc_calculate(((const uint8_t*)(msg)) + 3, MAVLINK_CORE_HEADER_LEN);
+ 571              		.loc 2 84 2 is_stmt 1 view .LVU183
+ 572              	.LVL34:
+ 573              	.LBB56:
+ 574              	.LBI56:
+  17:Service/../MAVLink/common/../mavlink_helpers.h **** {
+ 575              		.loc 2 17 34 view .LVU184
+ 576              	.LBE56:
+ 577              	.LBE53:
+ 578              	.LBE52:
+ 579              	.LBE51:
+ 580              	.LBE50:
+  23:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+ 581              		.loc 2 23 2 view .LVU185
+  25:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 582              		.loc 2 25 2 view .LVU186
+ 583              	.LBB80:
+ 584              	.LBB78:
+ 585              	.LBB76:
+ 586              	.LBB74:
+ 587              	.LBB57:
+ 588              	.LBI57:
+  17:Service/../MAVLink/common/../mavlink_helpers.h **** {
+ 589              		.loc 2 17 34 view .LVU187
+ 590              	.LBE57:
+ 591              	.LBE74:
+ 592              	.LBE76:
+ 593              	.LBE78:
+ 594              	.LBE80:
+  23:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+ 595              		.loc 2 23 2 view .LVU188
+  25:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 596              		.loc 2 25 2 view .LVU189
+ 597              	.LBB81:
+ 598              	.LBB79:
+ 599              	.LBB77:
+ 600              	.LBB75:
+  84:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->checksum = crc_calculate(((const uint8_t*)(msg)) + 3, MAVLINK_CORE_HEADER_LEN);
+ 601              		.loc 2 84 101 is_stmt 0 view .LVU190
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 23
+
+
+ 602 0112 0132     		adds	r2, r2, #1
+  84:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->checksum = crc_calculate(((const uint8_t*)(msg)) + 3, MAVLINK_CORE_HEADER_LEN);
+ 603              		.loc 2 84 51 view .LVU191
+ 604 0114 06EB4606 		add	r6, r6, r6, lsl #1
+ 605              	.LVL35:
+  84:Service/../MAVLink/common/../mavlink_helpers.h **** 	msg->checksum = crc_calculate(((const uint8_t*)(msg)) + 3, MAVLINK_CORE_HEADER_LEN);
+ 606              		.loc 2 84 51 view .LVU192
+ 607 0118 03EB8606 		add	r6, r3, r6, lsl #2
+ 608 011c B271     		strb	r2, [r6, #6]
+  85:Service/../MAVLink/common/../mavlink_helpers.h **** 	crc_accumulate_buffer(&msg->checksum, _MAV_PAYLOAD(msg), msg->len);
+ 609              		.loc 2 85 2 is_stmt 1 view .LVU193
+  85:Service/../MAVLink/common/../mavlink_helpers.h **** 	crc_accumulate_buffer(&msg->checksum, _MAV_PAYLOAD(msg), msg->len);
+ 610              		.loc 2 85 18 is_stmt 0 view .LVU194
+ 611 011e E11C     		adds	r1, r4, #3
+ 612              	.LVL36:
+ 613              	.LBB58:
+ 614              	.LBI58:
+ 615              		.file 4 "Service/../MAVLink/common/../checksum.h"
+   1:Service/../MAVLink/common/../checksum.h **** #ifdef __cplusplus
+   2:Service/../MAVLink/common/../checksum.h **** extern "C" {
+   3:Service/../MAVLink/common/../checksum.h **** #endif
+   4:Service/../MAVLink/common/../checksum.h **** 
+   5:Service/../MAVLink/common/../checksum.h **** #ifndef _CHECKSUM_H_
+   6:Service/../MAVLink/common/../checksum.h **** #define _CHECKSUM_H_
+   7:Service/../MAVLink/common/../checksum.h **** 
+   8:Service/../MAVLink/common/../checksum.h **** // Visual Studio versions before 2010 don't have stdint.h, so we just error out.
+   9:Service/../MAVLink/common/../checksum.h **** #if (defined _MSC_VER) && (_MSC_VER < 1600)
+  10:Service/../MAVLink/common/../checksum.h **** #error "The C-MAVLink implementation requires Visual Studio 2010 or greater"
+  11:Service/../MAVLink/common/../checksum.h **** #endif
+  12:Service/../MAVLink/common/../checksum.h **** 
+  13:Service/../MAVLink/common/../checksum.h **** #include <stdint.h>
+  14:Service/../MAVLink/common/../checksum.h **** 
+  15:Service/../MAVLink/common/../checksum.h **** /**
+  16:Service/../MAVLink/common/../checksum.h ****  *
+  17:Service/../MAVLink/common/../checksum.h ****  *  CALCULATE THE CHECKSUM
+  18:Service/../MAVLink/common/../checksum.h ****  *
+  19:Service/../MAVLink/common/../checksum.h ****  */
+  20:Service/../MAVLink/common/../checksum.h **** 
+  21:Service/../MAVLink/common/../checksum.h **** #define X25_INIT_CRC 0xffff
+  22:Service/../MAVLink/common/../checksum.h **** #define X25_VALIDATE_CRC 0xf0b8
+  23:Service/../MAVLink/common/../checksum.h **** 
+  24:Service/../MAVLink/common/../checksum.h **** #ifndef HAVE_CRC_ACCUMULATE
+  25:Service/../MAVLink/common/../checksum.h **** /**
+  26:Service/../MAVLink/common/../checksum.h ****  * @brief Accumulate the MCRF4XX CRC16 by adding one char at a time.
+  27:Service/../MAVLink/common/../checksum.h ****  *
+  28:Service/../MAVLink/common/../checksum.h ****  * The checksum function adds the hash of one char at a time to the
+  29:Service/../MAVLink/common/../checksum.h ****  * 16 bit checksum (uint16_t).
+  30:Service/../MAVLink/common/../checksum.h ****  *
+  31:Service/../MAVLink/common/../checksum.h ****  * @param data new char to hash
+  32:Service/../MAVLink/common/../checksum.h ****  * @param crcAccum the already accumulated checksum
+  33:Service/../MAVLink/common/../checksum.h ****  **/
+  34:Service/../MAVLink/common/../checksum.h **** static inline void crc_accumulate(uint8_t data, uint16_t *crcAccum)
+  35:Service/../MAVLink/common/../checksum.h **** {
+  36:Service/../MAVLink/common/../checksum.h ****         /*Accumulate one byte of data into the CRC*/
+  37:Service/../MAVLink/common/../checksum.h ****         uint8_t tmp;
+  38:Service/../MAVLink/common/../checksum.h **** 
+  39:Service/../MAVLink/common/../checksum.h ****         tmp = data ^ (uint8_t)(*crcAccum &0xff);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 24
+
+
+  40:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+  41:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+  42:Service/../MAVLink/common/../checksum.h **** }
+  43:Service/../MAVLink/common/../checksum.h **** #endif
+  44:Service/../MAVLink/common/../checksum.h **** 
+  45:Service/../MAVLink/common/../checksum.h **** 
+  46:Service/../MAVLink/common/../checksum.h **** /**
+  47:Service/../MAVLink/common/../checksum.h ****  * @brief Initialize the buffer for the MCRF4XX CRC16
+  48:Service/../MAVLink/common/../checksum.h ****  *
+  49:Service/../MAVLink/common/../checksum.h ****  * @param crcAccum the 16 bit MCRF4XX CRC16
+  50:Service/../MAVLink/common/../checksum.h ****  */
+  51:Service/../MAVLink/common/../checksum.h **** static inline void crc_init(uint16_t* crcAccum)
+  52:Service/../MAVLink/common/../checksum.h **** {
+  53:Service/../MAVLink/common/../checksum.h ****         *crcAccum = X25_INIT_CRC;
+  54:Service/../MAVLink/common/../checksum.h **** }
+  55:Service/../MAVLink/common/../checksum.h **** 
+  56:Service/../MAVLink/common/../checksum.h **** 
+  57:Service/../MAVLink/common/../checksum.h **** /**
+  58:Service/../MAVLink/common/../checksum.h ****  * @brief Calculates the MCRF4XX CRC16 checksum on a byte buffer
+  59:Service/../MAVLink/common/../checksum.h ****  *
+  60:Service/../MAVLink/common/../checksum.h ****  * @param  pBuffer buffer containing the byte array to hash
+  61:Service/../MAVLink/common/../checksum.h ****  * @param  length  length of the byte array
+  62:Service/../MAVLink/common/../checksum.h ****  * @return the checksum over the buffer bytes
+  63:Service/../MAVLink/common/../checksum.h ****  **/
+  64:Service/../MAVLink/common/../checksum.h **** static inline uint16_t crc_calculate(const uint8_t* pBuffer, uint16_t length)
+ 616              		.loc 4 64 24 is_stmt 1 view .LVU195
+ 617              	.LBB59:
+ 618              	.LBB60:
+ 619              	.LBB61:
+  53:Service/../MAVLink/common/../checksum.h **** }
+ 620              		.loc 4 53 19 is_stmt 0 view .LVU196
+ 621 0120 4FF6FF73 		movw	r3, #65535
+ 622              	.LBE61:
+ 623              	.LBE60:
+ 624              	.LBE59:
+ 625              	.LBE58:
+  85:Service/../MAVLink/common/../mavlink_helpers.h **** 	crc_accumulate_buffer(&msg->checksum, _MAV_PAYLOAD(msg), msg->len);
+ 626              		.loc 2 85 18 view .LVU197
+ 627 0124 0522     		movs	r2, #5
+ 628              	.LVL37:
+ 629              	.L24:
+ 630              	.LBB67:
+ 631              	.LBB66:
+  65:Service/../MAVLink/common/../checksum.h **** {
+  66:Service/../MAVLink/common/../checksum.h ****         uint16_t crcTmp;
+  67:Service/../MAVLink/common/../checksum.h ****         crc_init(&crcTmp);
+  68:Service/../MAVLink/common/../checksum.h **** 	while (length--) {
+ 632              		.loc 4 68 8 is_stmt 1 view .LVU198
+ 633              		.loc 4 68 15 is_stmt 0 view .LVU199
+ 634 0126 501E     		subs	r0, r2, #1
+ 635 0128 80B2     		uxth	r0, r0
+ 636              	.LVL38:
+ 637              		.loc 4 68 8 view .LVU200
+ 638 012a 8AB1     		cbz	r2, .L29
+  69:Service/../MAVLink/common/../checksum.h ****                 crc_accumulate(*pBuffer++, &crcTmp);
+ 639              		.loc 4 69 17 is_stmt 1 view .LVU201
+ 640              	.LVL39:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 25
+
+
+ 641              		.loc 4 69 17 is_stmt 0 view .LVU202
+ 642 012c 11F8012B 		ldrb	r2, [r1], #1	@ zero_extendqisi2
+ 643              	.LVL40:
+ 644              	.LBB62:
+ 645              	.LBI62:
+  34:Service/../MAVLink/common/../checksum.h **** {
+ 646              		.loc 4 34 20 is_stmt 1 view .LVU203
+ 647              	.LBB63:
+  37:Service/../MAVLink/common/../checksum.h **** 
+ 648              		.loc 4 37 9 view .LVU204
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 649              		.loc 4 39 9 view .LVU205
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 650              		.loc 4 39 22 is_stmt 0 view .LVU206
+ 651 0130 DDB2     		uxtb	r5, r3
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 652              		.loc 4 39 13 view .LVU207
+ 653 0132 6A40     		eors	r2, r2, r5
+ 654              	.LVL41:
+  40:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+ 655              		.loc 4 40 9 is_stmt 1 view .LVU208
+  40:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+ 656              		.loc 4 40 13 is_stmt 0 view .LVU209
+ 657 0134 82EA0212 		eor	r2, r2, r2, lsl #4
+ 658              	.LVL42:
+  40:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+ 659              		.loc 4 40 13 view .LVU210
+ 660 0138 D2B2     		uxtb	r2, r2
+ 661              	.LVL43:
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 662              		.loc 4 41 9 is_stmt 1 view .LVU211
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 663              		.loc 4 41 36 is_stmt 0 view .LVU212
+ 664 013a 1B0A     		lsrs	r3, r3, #8
+ 665              	.LVL44:
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 666              		.loc 4 41 36 view .LVU213
+ 667 013c 43EA0223 		orr	r3, r3, r2, lsl #8
+ 668 0140 1BB2     		sxth	r3, r3
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 669              		.loc 4 41 47 view .LVU214
+ 670 0142 83EAC203 		eor	r3, r3, r2, lsl #3
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 671              		.loc 4 41 59 view .LVU215
+ 672 0146 83EA1213 		eor	r3, r3, r2, lsr #4
+ 673 014a 9BB2     		uxth	r3, r3
+ 674              	.LVL45:
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 675              		.loc 4 41 59 view .LVU216
+ 676              	.LBE63:
+ 677              	.LBE62:
+  68:Service/../MAVLink/common/../checksum.h ****                 crc_accumulate(*pBuffer++, &crcTmp);
+ 678              		.loc 4 68 15 view .LVU217
+ 679 014c 0246     		mov	r2, r0
+ 680              	.LVL46:
+ 681              	.LBB65:
+ 682              	.LBB64:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 26
+
+
+  42:Service/../MAVLink/common/../checksum.h **** #endif
+ 683              		.loc 4 42 1 view .LVU218
+ 684 014e EAE7     		b	.L24
+ 685              	.LVL47:
+ 686              	.L29:
+  42:Service/../MAVLink/common/../checksum.h **** #endif
+ 687              		.loc 4 42 1 view .LVU219
+ 688              	.LBE64:
+ 689              	.LBE65:
+  70:Service/../MAVLink/common/../checksum.h ****         }
+  71:Service/../MAVLink/common/../checksum.h ****         return crcTmp;
+ 690              		.loc 4 71 9 is_stmt 1 view .LVU220
+ 691              		.loc 4 71 9 is_stmt 0 view .LVU221
+ 692              	.LBE66:
+ 693              	.LBE67:
+  85:Service/../MAVLink/common/../mavlink_helpers.h **** 	crc_accumulate_buffer(&msg->checksum, _MAV_PAYLOAD(msg), msg->len);
+ 694              		.loc 2 85 16 view .LVU222
+ 695 0150 2146     		mov	r1, r4
+ 696 0152 21F8083B 		strh	r3, [r1], #8	@ unaligned
+  86:Service/../MAVLink/common/../mavlink_helpers.h **** #if MAVLINK_CRC_EXTRA
+ 697              		.loc 2 86 2 is_stmt 1 view .LVU223
+  86:Service/../MAVLink/common/../mavlink_helpers.h **** #if MAVLINK_CRC_EXTRA
+ 698              		.loc 2 86 62 is_stmt 0 view .LVU224
+ 699 0156 E078     		ldrb	r0, [r4, #3]	@ zero_extendqisi2
+  86:Service/../MAVLink/common/../mavlink_helpers.h **** #if MAVLINK_CRC_EXTRA
+ 700              		.loc 2 86 2 view .LVU225
+ 701 0158 83B2     		uxth	r3, r0
+ 702              	.LVL48:
+ 703              	.LBB68:
+ 704              	.LBI68:
+  72:Service/../MAVLink/common/../checksum.h **** }
+  73:Service/../MAVLink/common/../checksum.h **** 
+  74:Service/../MAVLink/common/../checksum.h **** 
+  75:Service/../MAVLink/common/../checksum.h **** /**
+  76:Service/../MAVLink/common/../checksum.h ****  * @brief Accumulate the MCRF4XX CRC16 CRC by adding an array of bytes
+  77:Service/../MAVLink/common/../checksum.h ****  *
+  78:Service/../MAVLink/common/../checksum.h ****  * The checksum function adds the hash of one char at a time to the
+  79:Service/../MAVLink/common/../checksum.h ****  * 16 bit checksum (uint16_t).
+  80:Service/../MAVLink/common/../checksum.h ****  *
+  81:Service/../MAVLink/common/../checksum.h ****  * @param data new bytes to hash
+  82:Service/../MAVLink/common/../checksum.h ****  * @param crcAccum the already accumulated checksum
+  83:Service/../MAVLink/common/../checksum.h ****  **/
+  84:Service/../MAVLink/common/../checksum.h **** static inline void crc_accumulate_buffer(uint16_t *crcAccum, const char *pBuffer, uint16_t length)
+ 705              		.loc 4 84 20 is_stmt 1 view .LVU226
+ 706              	.LBB69:
+  85:Service/../MAVLink/common/../checksum.h **** {
+  86:Service/../MAVLink/common/../checksum.h **** 	const uint8_t *p = (const uint8_t *)pBuffer;
+ 707              		.loc 4 86 17 is_stmt 0 view .LVU227
+ 708 015a 0D46     		mov	r5, r1
+ 709 015c 11E0     		b	.L26
+ 710              	.LVL49:
+ 711              	.L27:
+  87:Service/../MAVLink/common/../checksum.h **** 	while (length--) {
+  88:Service/../MAVLink/common/../checksum.h ****                 crc_accumulate(*p++, crcAccum);
+ 712              		.loc 4 88 17 is_stmt 1 view .LVU228
+ 713              		.loc 4 88 17 is_stmt 0 view .LVU229
+ 714 015e 15F8012B 		ldrb	r2, [r5], #1	@ zero_extendqisi2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 27
+
+
+ 715              	.LVL50:
+ 716              	.LBB70:
+ 717              	.LBI70:
+  34:Service/../MAVLink/common/../checksum.h **** {
+ 718              		.loc 4 34 20 is_stmt 1 view .LVU230
+ 719              	.LBB71:
+  37:Service/../MAVLink/common/../checksum.h **** 
+ 720              		.loc 4 37 9 view .LVU231
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 721              		.loc 4 39 9 view .LVU232
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 722              		.loc 4 39 32 is_stmt 0 view .LVU233
+ 723 0162 2388     		ldrh	r3, [r4]
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 724              		.loc 4 39 22 view .LVU234
+ 725 0164 DFB2     		uxtb	r7, r3
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 726              		.loc 4 39 13 view .LVU235
+ 727 0166 7A40     		eors	r2, r2, r7
+ 728              	.LVL51:
+  40:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+ 729              		.loc 4 40 9 is_stmt 1 view .LVU236
+  40:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+ 730              		.loc 4 40 13 is_stmt 0 view .LVU237
+ 731 0168 82EA0212 		eor	r2, r2, r2, lsl #4
+ 732              	.LVL52:
+  40:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+ 733              		.loc 4 40 13 view .LVU238
+ 734 016c D2B2     		uxtb	r2, r2
+ 735              	.LVL53:
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 736              		.loc 4 41 9 is_stmt 1 view .LVU239
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 737              		.loc 4 41 36 is_stmt 0 view .LVU240
+ 738 016e 1B0A     		lsrs	r3, r3, #8
+ 739 0170 43EA0223 		orr	r3, r3, r2, lsl #8
+ 740 0174 1BB2     		sxth	r3, r3
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 741              		.loc 4 41 47 view .LVU241
+ 742 0176 83EAC203 		eor	r3, r3, r2, lsl #3
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 743              		.loc 4 41 59 view .LVU242
+ 744 017a 83EA1213 		eor	r3, r3, r2, lsr #4
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 745              		.loc 4 41 19 view .LVU243
+ 746 017e 2380     		strh	r3, [r4]	@ movhi
+ 747              	.LVL54:
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 748              		.loc 4 41 19 view .LVU244
+ 749              	.LBE71:
+ 750              	.LBE70:
+  87:Service/../MAVLink/common/../checksum.h ****                 crc_accumulate(*p++, crcAccum);
+ 751              		.loc 4 87 15 view .LVU245
+ 752 0180 3346     		mov	r3, r6
+ 753              	.LVL55:
+ 754              	.L26:
+  87:Service/../MAVLink/common/../checksum.h ****                 crc_accumulate(*p++, crcAccum);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 28
+
+
+ 755              		.loc 4 87 8 is_stmt 1 view .LVU246
+  87:Service/../MAVLink/common/../checksum.h ****                 crc_accumulate(*p++, crcAccum);
+ 756              		.loc 4 87 15 is_stmt 0 view .LVU247
+ 757 0182 5E1E     		subs	r6, r3, #1
+ 758 0184 B6B2     		uxth	r6, r6
+ 759              	.LVL56:
+  87:Service/../MAVLink/common/../checksum.h ****                 crc_accumulate(*p++, crcAccum);
+ 760              		.loc 4 87 8 view .LVU248
+ 761 0186 002B     		cmp	r3, #0
+ 762 0188 E9D1     		bne	.L27
+ 763              	.LVL57:
+  87:Service/../MAVLink/common/../checksum.h ****                 crc_accumulate(*p++, crcAccum);
+ 764              		.loc 4 87 8 view .LVU249
+ 765              	.LBE69:
+ 766              	.LBE68:
+  88:Service/../MAVLink/common/../mavlink_helpers.h **** #endif
+ 767              		.loc 2 88 2 is_stmt 1 view .LVU250
+ 768              	.LBB72:
+ 769              	.LBI72:
+  34:Service/../MAVLink/common/../checksum.h **** {
+ 770              		.loc 4 34 20 view .LVU251
+ 771              	.LBB73:
+  37:Service/../MAVLink/common/../checksum.h **** 
+ 772              		.loc 4 37 9 view .LVU252
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 773              		.loc 4 39 9 view .LVU253
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 774              		.loc 4 39 32 is_stmt 0 view .LVU254
+ 775 018a 2288     		ldrh	r2, [r4]
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 776              		.loc 4 39 22 view .LVU255
+ 777 018c D3B2     		uxtb	r3, r2
+  39:Service/../MAVLink/common/../checksum.h ****         tmp ^= (tmp<<4);
+ 778              		.loc 4 39 13 view .LVU256
+ 779 018e 83F0AA03 		eor	r3, r3, #170
+ 780              	.LVL58:
+  40:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+ 781              		.loc 4 40 9 is_stmt 1 view .LVU257
+  40:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+ 782              		.loc 4 40 13 is_stmt 0 view .LVU258
+ 783 0192 83EA0313 		eor	r3, r3, r3, lsl #4
+ 784              	.LVL59:
+  40:Service/../MAVLink/common/../checksum.h ****         *crcAccum = (*crcAccum>>8) ^ (tmp<<8) ^ (tmp <<3) ^ (tmp>>4);
+ 785              		.loc 4 40 13 view .LVU259
+ 786 0196 DDB2     		uxtb	r5, r3
+ 787              	.LVL60:
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 788              		.loc 4 41 9 is_stmt 1 view .LVU260
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 789              		.loc 4 41 36 is_stmt 0 view .LVU261
+ 790 0198 130A     		lsrs	r3, r2, #8
+ 791 019a 43EA0523 		orr	r3, r3, r5, lsl #8
+ 792 019e 1BB2     		sxth	r3, r3
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 793              		.loc 4 41 47 view .LVU262
+ 794 01a0 83EAC503 		eor	r3, r3, r5, lsl #3
+  41:Service/../MAVLink/common/../checksum.h **** }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 29
+
+
+ 795              		.loc 4 41 59 view .LVU263
+ 796 01a4 83EA1513 		eor	r3, r3, r5, lsr #4
+ 797 01a8 9BB2     		uxth	r3, r3
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 798              		.loc 4 41 19 view .LVU264
+ 799 01aa 2380     		strh	r3, [r4]	@ movhi
+ 800              	.LVL61:
+  41:Service/../MAVLink/common/../checksum.h **** }
+ 801              		.loc 4 41 19 view .LVU265
+ 802              	.LBE73:
+ 803              	.LBE72:
+  90:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_ck_b(msg) = (uint8_t)(msg->checksum >> 8);
+ 804              		.loc 2 90 2 is_stmt 1 view .LVU266
+  90:Service/../MAVLink/common/../mavlink_helpers.h **** 	mavlink_ck_b(msg) = (uint8_t)(msg->checksum >> 8);
+ 805              		.loc 2 90 20 is_stmt 0 view .LVU267
+ 806 01ac 0B54     		strb	r3, [r1, r0]
+ 807              	.LVL62:
+  91:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 808              		.loc 2 91 2 is_stmt 1 view .LVU268
+  91:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 809              		.loc 2 91 35 is_stmt 0 view .LVU269
+ 810 01ae 2288     		ldrh	r2, [r4]	@ unaligned
+  91:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 811              		.loc 2 91 2 view .LVU270
+ 812 01b0 E378     		ldrb	r3, [r4, #3]	@ zero_extendqisi2
+ 813 01b2 0133     		adds	r3, r3, #1
+  91:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 814              		.loc 2 91 22 view .LVU271
+ 815 01b4 120A     		lsrs	r2, r2, #8
+  91:Service/../MAVLink/common/../mavlink_helpers.h **** 
+ 816              		.loc 2 91 20 view .LVU272
+ 817 01b6 CA54     		strb	r2, [r1, r3]
+  93:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 818              		.loc 2 93 2 is_stmt 1 view .LVU273
+ 819              	.LVL63:
+  93:Service/../MAVLink/common/../mavlink_helpers.h **** }
+ 820              		.loc 2 93 2 is_stmt 0 view .LVU274
+ 821              	.LBE75:
+ 822              	.LBE77:
+ 823              	.LBE79:
+ 824              	.LBE81:
+ 239:Service/Srv_ComProto.c ****                                             pck->pck_info.component_id,
+ 240:Service/Srv_ComProto.c ****                                             pck->pck_info.chan, pck->msg_obj,
+ 241:Service/Srv_ComProto.c ****                                             time_stamp,
+ 242:Service/Srv_ComProto.c ****                                             i_acc_x, i_acc_y, i_acc_z,
+ 243:Service/Srv_ComProto.c ****                                             i_gyr_x, i_gyr_y, i_gyr_z,
+ 244:Service/Srv_ComProto.c ****                                             0, 0, 0);
+ 245:Service/Srv_ComProto.c **** }
+ 825              		.loc 1 245 1 view .LVU275
+ 826 01b8 1E20     		movs	r0, #30
+ 827 01ba 17B0     		add	sp, sp, #92
+ 828              	.LCFI9:
+ 829              		.cfi_def_cfa_offset 20
+ 830              		@ sp needed
+ 831 01bc F0BD     		pop	{r4, r5, r6, r7, pc}
+ 832              	.L31:
+ 833 01be 00BF     		.align	2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 30
+
+
+ 834              	.L30:
+ 835 01c0 00000000 		.word	SrvDataHub
+ 836 01c4 00000000 		.word	.LANCHOR1
+ 837              		.cfi_endproc
+ 838              	.LFE2006:
+ 840              		.section	.text.Srv_ComProto_MsgObj_Init,"ax",%progbits
+ 841              		.align	1
+ 842              		.syntax unified
+ 843              		.thumb
+ 844              		.thumb_func
+ 845              		.fpu fpv5-d16
+ 847              	Srv_ComProto_MsgObj_Init:
+ 848              	.LVL64:
+ 849              	.LFB1999:
+  56:Service/Srv_ComProto.c ****     if ((msg == NULL) ||
+ 850              		.loc 1 56 1 is_stmt 1 view -0
+ 851              		.cfi_startproc
+ 852              		@ args = 0, pretend = 0, frame = 8
+ 853              		@ frame_needed = 0, uses_anonymous_args = 0
+  56:Service/Srv_ComProto.c ****     if ((msg == NULL) ||
+ 854              		.loc 1 56 1 is_stmt 0 view .LVU277
+ 855 0000 30B5     		push	{r4, r5, lr}
+ 856              	.LCFI10:
+ 857              		.cfi_def_cfa_offset 12
+ 858              		.cfi_offset 4, -12
+ 859              		.cfi_offset 5, -8
+ 860              		.cfi_offset 14, -4
+ 861 0002 83B0     		sub	sp, sp, #12
+ 862              	.LCFI11:
+ 863              		.cfi_def_cfa_offset 24
+ 864 0004 0191     		str	r1, [sp, #4]
+  57:Service/Srv_ComProto.c ****         (period == 0))
+ 865              		.loc 1 57 5 is_stmt 1 view .LVU278
+  58:Service/Srv_ComProto.c ****         return false;
+ 866              		.loc 1 58 17 is_stmt 0 view .LVU279
+ 867 0006 1146     		mov	r1, r2
+ 868 0008 B2FA82F2 		clz	r2, r2
+ 869              	.LVL65:
+  58:Service/Srv_ComProto.c ****         return false;
+ 870              		.loc 1 58 17 view .LVU280
+ 871 000c 5209     		lsrs	r2, r2, #5
+  57:Service/Srv_ComProto.c ****         (period == 0))
+ 872              		.loc 1 57 23 view .LVU281
+ 873 000e 0028     		cmp	r0, #0
+ 874 0010 14BF     		ite	ne
+ 875 0012 1446     		movne	r4, r2
+ 876 0014 0124     		moveq	r4, #1
+  57:Service/Srv_ComProto.c ****         (period == 0))
+ 877              		.loc 1 57 8 view .LVU282
+ 878 0016 1CB1     		cbz	r4, .L40
+  59:Service/Srv_ComProto.c **** 
+ 879              		.loc 1 59 16 view .LVU283
+ 880 0018 0024     		movs	r4, #0
+ 881              	.LVL66:
+ 882              	.L33:
+ 107:Service/Srv_ComProto.c **** 
+ 883              		.loc 1 107 1 view .LVU284
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 31
+
+
+ 884 001a 2046     		mov	r0, r4
+ 885 001c 03B0     		add	sp, sp, #12
+ 886              	.LCFI12:
+ 887              		.cfi_remember_state
+ 888              		.cfi_def_cfa_offset 12
+ 889              		@ sp needed
+ 890 001e 30BD     		pop	{r4, r5, pc}
+ 891              	.LVL67:
+ 892              	.L40:
+ 893              	.LCFI13:
+ 894              		.cfi_restore_state
+ 107:Service/Srv_ComProto.c **** 
+ 895              		.loc 1 107 1 view .LVU285
+ 896 0020 0546     		mov	r5, r0
+  61:Service/Srv_ComProto.c ****     msg->lock_proto = true;
+ 897              		.loc 1 61 5 is_stmt 1 view .LVU286
+  61:Service/Srv_ComProto.c ****     msg->lock_proto = true;
+ 898              		.loc 1 61 19 is_stmt 0 view .LVU287
+ 899 0022 0023     		movs	r3, #0
+ 900 0024 0376     		strb	r3, [r0, #24]
+  62:Service/Srv_ComProto.c **** 
+ 901              		.loc 1 62 5 is_stmt 1 view .LVU288
+  62:Service/Srv_ComProto.c **** 
+ 902              		.loc 1 62 21 is_stmt 0 view .LVU289
+ 903 0026 0123     		movs	r3, #1
+ 904 0028 4376     		strb	r3, [r0, #25]
+  64:Service/Srv_ComProto.c ****     msg->period = period;
+ 905              		.loc 1 64 5 is_stmt 1 view .LVU290
+  64:Service/Srv_ComProto.c ****     msg->period = period;
+ 906              		.loc 1 64 19 is_stmt 0 view .LVU291
+ 907 002a 019B     		ldr	r3, [sp, #4]
+ 908 002c 8380     		strh	r3, [r0, #4]	@ movhi
+ 909 002e 1B0C     		lsrs	r3, r3, #16
+ 910 0030 8371     		strb	r3, [r0, #6]
+  65:Service/Srv_ComProto.c ****     msg->proto_time = 0;
+ 911              		.loc 1 65 5 is_stmt 1 view .LVU292
+  65:Service/Srv_ComProto.c ****     msg->proto_time = 0;
+ 912              		.loc 1 65 17 is_stmt 0 view .LVU293
+ 913 0032 4180     		strh	r1, [r0, #2]	@ movhi
+  66:Service/Srv_ComProto.c **** 
+ 914              		.loc 1 66 5 is_stmt 1 view .LVU294
+  66:Service/Srv_ComProto.c **** 
+ 915              		.loc 1 66 21 is_stmt 0 view .LVU295
+ 916 0034 0022     		movs	r2, #0
+ 917 0036 0023     		movs	r3, #0
+ 918 0038 C0E90423 		strd	r2, [r0, #16]
+  69:Service/Srv_ComProto.c **** 
+ 919              		.loc 1 69 5 is_stmt 1 view .LVU296
+  69:Service/Srv_ComProto.c **** 
+ 920              		.loc 1 69 41 is_stmt 0 view .LVU297
+ 921 003c 4FF48870 		mov	r0, #272
+ 922              	.LVL68:
+  69:Service/Srv_ComProto.c **** 
+ 923              		.loc 1 69 41 view .LVU298
+ 924 0040 FFF7FEFF 		bl	MMU_Malloc
+ 925              	.LVL69:
+  69:Service/Srv_ComProto.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 32
+
+
+ 926              		.loc 1 69 18 view .LVU299
+ 927 0044 A860     		str	r0, [r5, #8]
+  71:Service/Srv_ComProto.c ****     {
+ 928              		.loc 1 71 5 is_stmt 1 view .LVU300
+  71:Service/Srv_ComProto.c ****     {
+ 929              		.loc 1 71 8 is_stmt 0 view .LVU301
+ 930 0046 90B1     		cbz	r0, .L41
+  77:Service/Srv_ComProto.c **** 
+ 931              		.loc 1 77 5 is_stmt 1 view .LVU302
+ 932 0048 4FF48872 		mov	r2, #272
+ 933 004c 0021     		movs	r1, #0
+ 934 004e FFF7FEFF 		bl	memset
+ 935              	.LVL70:
+  80:Service/Srv_ComProto.c ****     {
+ 936              		.loc 1 80 5 view .LVU303
+  80:Service/Srv_ComProto.c ****     {
+ 937              		.loc 1 80 30 is_stmt 0 view .LVU304
+ 938 0052 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+  80:Service/Srv_ComProto.c ****     {
+ 939              		.loc 1 80 5 view .LVU305
+ 940 0056 012B     		cmp	r3, #1
+ 941 0058 0CD0     		beq	.L35
+ 942 005a 5AB2     		sxtb	r2, r3
+ 943 005c 6AB1     		cbz	r2, .L36
+ 944 005e 053B     		subs	r3, r3, #5
+ 945 0060 DBB2     		uxtb	r3, r3
+ 946 0062 032B     		cmp	r3, #3
+ 947 0064 09D8     		bhi	.L36
+ 948              	.L37:
+ 104:Service/Srv_ComProto.c **** 
+ 949              		.loc 1 104 5 is_stmt 1 view .LVU306
+ 104:Service/Srv_ComProto.c **** 
+ 950              		.loc 1 104 21 is_stmt 0 view .LVU307
+ 951 0066 0023     		movs	r3, #0
+ 952 0068 6B76     		strb	r3, [r5, #25]
+ 106:Service/Srv_ComProto.c **** }
+ 953              		.loc 1 106 5 is_stmt 1 view .LVU308
+ 106:Service/Srv_ComProto.c **** }
+ 954              		.loc 1 106 12 is_stmt 0 view .LVU309
+ 955 006a 0124     		movs	r4, #1
+ 956 006c D5E7     		b	.L33
+ 957              	.L41:
+  73:Service/Srv_ComProto.c ****         return false;
+ 958              		.loc 1 73 9 is_stmt 1 view .LVU310
+ 959 006e FFF7FEFF 		bl	MMU_Free
+ 960              	.LVL71:
+  74:Service/Srv_ComProto.c ****     }
+ 961              		.loc 1 74 9 view .LVU311
+  74:Service/Srv_ComProto.c ****     }
+ 962              		.loc 1 74 16 is_stmt 0 view .LVU312
+ 963 0072 D2E7     		b	.L33
+ 964              	.L35:
+  89:Service/Srv_ComProto.c ****         break;
+ 965              		.loc 1 89 9 is_stmt 1 view .LVU313
+  89:Service/Srv_ComProto.c ****         break;
+ 966              		.loc 1 89 28 is_stmt 0 view .LVU314
+ 967 0074 044B     		ldr	r3, .L42
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 33
+
+
+ 968 0076 EB60     		str	r3, [r5, #12]
+  90:Service/Srv_ComProto.c **** 
+ 969              		.loc 1 90 9 is_stmt 1 view .LVU315
+ 970 0078 F5E7     		b	.L37
+ 971              	.L36:
+  99:Service/Srv_ComProto.c ****         msg->lock_proto = false;
+ 972              		.loc 1 99 9 view .LVU316
+ 973 007a A868     		ldr	r0, [r5, #8]
+ 974 007c FFF7FEFF 		bl	MMU_Free
+ 975              	.LVL72:
+ 100:Service/Srv_ComProto.c ****         return false;
+ 976              		.loc 1 100 9 view .LVU317
+ 100:Service/Srv_ComProto.c ****         return false;
+ 977              		.loc 1 100 25 is_stmt 0 view .LVU318
+ 978 0080 0023     		movs	r3, #0
+ 979 0082 6B76     		strb	r3, [r5, #25]
+ 101:Service/Srv_ComProto.c ****     }
+ 980              		.loc 1 101 9 is_stmt 1 view .LVU319
+ 101:Service/Srv_ComProto.c ****     }
+ 981              		.loc 1 101 16 is_stmt 0 view .LVU320
+ 982 0084 C9E7     		b	.L33
+ 983              	.L43:
+ 984 0086 00BF     		.align	2
+ 985              	.L42:
+ 986 0088 00000000 		.word	SrvComProto_MavMsg_Raw_IMU
+ 987              		.cfi_endproc
+ 988              	.LFE1999:
+ 990              		.global	SrvComProto
+ 991              		.global	SrvComProto_monitor
+ 992              		.section	.bss.SrvComProto_monitor,"aw",%nobits
+ 993              		.align	2
+ 994              		.set	.LANCHOR0,. + 0
+ 997              	SrvComProto_monitor:
+ 998 0000 0000     		.space	2
+ 999              		.section	.bss.m_mavlink_status.7974,"aw",%nobits
+ 1000              		.align	2
+ 1001              		.set	.LANCHOR1,. + 0
+ 1004              	m_mavlink_status.7974:
+ 1005 0000 00000000 		.space	48
+ 1005      00000000 
+ 1005      00000000 
+ 1005      00000000 
+ 1005      00000000 
+ 1006              		.section	.data.SrvComProto,"aw"
+ 1007              		.align	2
+ 1010              	SrvComProto:
+ 1011 0000 00000000 		.word	Srv_ComProto_Init
+ 1012 0004 00000000 		.word	Srv_ComProto_GetType
+ 1013 0008 00000000 		.space	4
+ 1014 000c 00000000 		.word	Srv_ComProto_MsgObj_Init
+ 1015 0010 00000000 		.word	SrvComProto_MsgEnable_Control
+ 1016 0014 00000000 		.word	SrvComProto_MsgToStream
+ 1017              		.text
+ 1018              	.Letext0:
+ 1019              		.file 5 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1020              		.file 6 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1021              		.file 7 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 34
+
+
+ 1022              		.file 8 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\lib\\gcc\\arm-none
+ 1023              		.file 9 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1024              		.file 10 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\in
+ 1025              		.file 11 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\in
+ 1026              		.file 12 "Service/../System/runtime/runtime.h"
+ 1027              		.file 13 "Service/../MAVLink/common/../mavlink_types.h"
+ 1028              		.file 14 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\in
+ 1029              		.file 15 "Service/Srv_ComProto.h"
+ 1030              		.file 16 "System/DataPipe/DataPipe.h"
+ 1031              		.file 17 "HAL_Lib/CMSIS/Core/Include/core_cm7.h"
+ 1032              		.file 18 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/system_stm32h7xx.h"
+ 1033              		.file 19 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1034              		.file 20 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1035              		.file 21 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1036              		.file 22 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1037              		.file 23 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h"
+ 1038              		.file 24 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h"
+ 1039              		.file 25 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h"
+ 1040              		.file 26 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 1041              		.file 27 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 1042              		.file 28 "Bsp/Bsp_GPIO.h"
+ 1043              		.file 29 "Bsp/Bsp_DMA.h"
+ 1044              		.file 30 "Bsp/Bsp_Timer.h"
+ 1045              		.file 31 "Device/Dev_Dshot.h"
+ 1046              		.file 32 "Bsp/Bsp_SPI.h"
+ 1047              		.file 33 "Device/Dev_Led.h"
+ 1048              		.file 34 "debug/debug_util.h"
+ 1049              		.file 35 "IO_Def/IO_Definition.h"
+ 1050              		.file 36 "Service/Srv_Actuator.h"
+ 1051              		.file 37 "Service/imu_data.h"
+ 1052              		.file 38 "Service/Srv_IMUSample.h"
+ 1053              		.file 39 "Device/Dev_Sbus.h"
+ 1054              		.file 40 "Device/Dev_CRSF.h"
+ 1055              		.file 41 "Bsp/Bsp_Uart.h"
+ 1056              		.file 42 "Service/Srv_Receiver.h"
+ 1057              		.file 43 "Service/Srv_DataHub.h"
+ 1058              		.file 44 "System/mmu/mmu.h"
+ 1059              		.file 45 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s 			page 35
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Srv_ComProto.c
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:17     .text.Srv_ComProto_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:24     .text.Srv_ComProto_Init:00000000 Srv_ComProto_Init
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:80     .text.Srv_ComProto_Init:00000020 $d
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:86     .text.Srv_ComProto_GetType:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:92     .text.Srv_ComProto_GetType:00000000 Srv_ComProto_GetType
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:107    .text.Srv_ComProto_GetType:00000008 $d
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:112    .text.SrvComProto_MsgEnable_Control:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:118    .text.SrvComProto_MsgEnable_Control:00000000 SrvComProto_MsgEnable_Control
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:149    .text.SrvComProto_MsgToStream:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:155    .text.SrvComProto_MsgToStream:00000000 SrvComProto_MsgToStream
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:330    .text.SrvComProto_MavMsg_Raw_IMU:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:336    .text.SrvComProto_MavMsg_Raw_IMU:00000000 SrvComProto_MavMsg_Raw_IMU
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:835    .text.SrvComProto_MavMsg_Raw_IMU:000001c0 $d
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:841    .text.Srv_ComProto_MsgObj_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:847    .text.Srv_ComProto_MsgObj_Init:00000000 Srv_ComProto_MsgObj_Init
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:986    .text.Srv_ComProto_MsgObj_Init:00000088 $d
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:1010   .data.SrvComProto:00000000 SrvComProto
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:997    .bss.SrvComProto_monitor:00000000 SrvComProto_monitor
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:993    .bss.SrvComProto_monitor:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:1000   .bss.m_mavlink_status.7974:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:1004   .bss.m_mavlink_status.7974:00000000 m_mavlink_status.7974
+C:\Users\HUAV\AppData\Local\Temp\ccLhRk1i.s:1007   .data.SrvComProto:00000000 $d
+
+UNDEFINED SYMBOLS
+SrvDataHub
+Get_CurrentRunningMs
+memcpy
+MMU_Malloc
+memset
+MMU_Free

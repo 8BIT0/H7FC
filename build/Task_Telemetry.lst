@@ -1,0 +1,3074 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Task_Telemetry.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.Telemetry_Enable_GimbalDeadZone,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	Telemetry_Enable_GimbalDeadZone:
+  25              	.LVL0:
+  26              	.LFB2006:
+  27              		.file 1 "Task/Task_Telemetry.c"
+   1:Task/Task_Telemetry.c **** /* code: 8_B!T0
+   2:Task/Task_Telemetry.c ****  * Telemetry Task we use this task to get and process data from RC receiver and radio
+   3:Task/Task_Telemetry.c ****  * OSD Tune Gimbal code : throttle down / Pitch down / Yaw right max / Roll right max / keep this p
+   4:Task/Task_Telemetry.c ****  *
+   5:Task/Task_Telemetry.c ****  * deflaut receiver list
+   6:Task/Task_Telemetry.c ****  * channel 1  pitch
+   7:Task/Task_Telemetry.c ****  * channel 2  roll
+   8:Task/Task_Telemetry.c ****  * channel 3  throttle
+   9:Task/Task_Telemetry.c ****  * channel 4  yaw
+  10:Task/Task_Telemetry.c ****  * channel 5  aux1
+  11:Task/Task_Telemetry.c ****  * channel 6  aux2
+  12:Task/Task_Telemetry.c ****  * channel 7  aux3
+  13:Task/Task_Telemetry.c ****  * channel 8  aux4
+  14:Task/Task_Telemetry.c ****  * channel 9  aux5
+  15:Task/Task_Telemetry.c ****  * channel 10 aux6
+  16:Task/Task_Telemetry.c ****  * channel 11 aux7
+  17:Task/Task_Telemetry.c ****  * channel 12 aux8
+  18:Task/Task_Telemetry.c ****  * channel 13 aux9
+  19:Task/Task_Telemetry.c ****  * channel 14 aux10
+  20:Task/Task_Telemetry.c ****  * channel 15 aux11
+  21:Task/Task_Telemetry.c ****  * channel 16 aux12
+  22:Task/Task_Telemetry.c ****  *
+  23:Task/Task_Telemetry.c ****  */
+  24:Task/Task_Telemetry.c **** #include "Task_Telemetry.h"
+  25:Task/Task_Telemetry.c **** #include "DataPipe.h"
+  26:Task/Task_Telemetry.c **** #include "Srv_Receiver.h"
+  27:Task/Task_Telemetry.c **** #include "system_cfg.h"
+  28:Task/Task_Telemetry.c **** #include "IO_Definition.h"
+  29:Task/Task_Telemetry.c **** #include "runtime.h"
+  30:Task/Task_Telemetry.c **** #include "mmu.h"
+  31:Task/Task_Telemetry.c **** #include "util.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 2
+
+
+  32:Task/Task_Telemetry.c **** #include "Srv_ComProto.h"
+  33:Task/Task_Telemetry.c **** 
+  34:Task/Task_Telemetry.c **** #define CRSF_TX_PIN Uart4_TxPin
+  35:Task/Task_Telemetry.c **** #define CRSF_RX_PIN Uart4_RxPin
+  36:Task/Task_Telemetry.c **** 
+  37:Task/Task_Telemetry.c **** #define SBUS_TX_PIN Uart4_TxPin
+  38:Task/Task_Telemetry.c **** #define SBUS_RX_PIN Uart4_RxPin
+  39:Task/Task_Telemetry.c **** 
+  40:Task/Task_Telemetry.c **** /* internal variable */
+  41:Task/Task_Telemetry.c **** static SrvReceiverObj_TypeDef Receiver_Obj;
+  42:Task/Task_Telemetry.c **** static Telemetry_RCInput_TypeDef RC_Setting;
+  43:Task/Task_Telemetry.c **** static bool RCData_To_Configuretor = false;
+  44:Task/Task_Telemetry.c **** DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
+  45:Task/Task_Telemetry.c **** 
+  46:Task/Task_Telemetry.c **** /* internal funciotn */
+  47:Task/Task_Telemetry.c **** static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
+  48:Task/Task_Telemetry.c **** static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *
+  49:Task/Task_Telemetry.c **** static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_o
+  50:Task/Task_Telemetry.c **** static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_o
+  51:Task/Task_Telemetry.c **** static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, T
+  52:Task/Task_Telemetry.c **** static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
+  53:Task/Task_Telemetry.c **** 
+  54:Task/Task_Telemetry.c **** void TaskTelemetry_Set_DataIO_Enable(bool state)
+  55:Task/Task_Telemetry.c **** {
+  56:Task/Task_Telemetry.c ****     RCData_To_Configuretor = state;
+  57:Task/Task_Telemetry.c **** }
+  58:Task/Task_Telemetry.c **** 
+  59:Task/Task_Telemetry.c **** void TaskTelemetry_Init(void)
+  60:Task/Task_Telemetry.c **** {
+  61:Task/Task_Telemetry.c ****     SrvComProto.init(SrvComProto_Type_MAV, NULL);
+  62:Task/Task_Telemetry.c **** 
+  63:Task/Task_Telemetry.c ****     /* init receiver */
+  64:Task/Task_Telemetry.c ****     if (Telemetry_RC_Sig_Init(&RC_Setting, &Receiver_Obj))
+  65:Task/Task_Telemetry.c ****     {
+  66:Task/Task_Telemetry.c ****         /* for crsf frame channel 1 is throttle */
+  67:Task/Task_Telemetry.c ****         /* for sbus frame channel 3 is throttle */
+  68:Task/Task_Telemetry.c ****         if (Receiver_Obj.Frame_type == Receiver_Type_CRSF)
+  69:Task/Task_Telemetry.c ****         {
+  70:Task/Task_Telemetry.c ****             /* set crsf receiver map */
+  71:Task/Task_Telemetry.c ****             /* bind to channel */
+  72:Task/Task_Telemetry.c ****             if (Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetr
+  73:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetr
+  74:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetr
+  75:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetr
+  76:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Sett
+  77:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Sett
+  78:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Sett
+  79:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.C
+  80:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.C
+  81:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Sett
+  82:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.O
+  83:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.O
+  84:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.O
+  85:Task/Task_Telemetry.c ****             {
+  86:Task/Task_Telemetry.c ****                 RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
+  87:Task/Task_Telemetry.c **** 
+  88:Task/Task_Telemetry.c ****                 /* set gimbal center dead zone */
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 3
+
+
+  89:Task/Task_Telemetry.c ****                 Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Pitch], 50);
+  90:Task/Task_Telemetry.c ****                 Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Roll], 50);
+  91:Task/Task_Telemetry.c ****                 Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Yaw], 50);
+  92:Task/Task_Telemetry.c **** 
+  93:Task/Task_Telemetry.c ****                 /* set datapipe */
+  94:Task/Task_Telemetry.c ****                 memset(&Receiver_Smp_DataPipe, 0, sizeof(Receiver_Smp_DataPipe));
+  95:Task/Task_Telemetry.c ****                 memset(DataPipe_DataObjAddr(Rc), 0, sizeof(Telemetry_RCSig_TypeDef));
+  96:Task/Task_Telemetry.c **** 
+  97:Task/Task_Telemetry.c ****                 Receiver_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Rc);
+  98:Task/Task_Telemetry.c ****                 Receiver_Smp_DataPipe.data_size = DataPipe_DataSize(Rc);
+  99:Task/Task_Telemetry.c **** 
+ 100:Task/Task_Telemetry.c ****                 DataPipe_Enable(&Receiver_Smp_DataPipe);
+ 101:Task/Task_Telemetry.c ****             }
+ 102:Task/Task_Telemetry.c ****         }
+ 103:Task/Task_Telemetry.c ****         else if (Receiver_Obj.Frame_type == Receiver_Type_Sbus)
+ 104:Task/Task_Telemetry.c ****         {
+ 105:Task/Task_Telemetry.c ****         }
+ 106:Task/Task_Telemetry.c ****     }
+ 107:Task/Task_Telemetry.c **** 
+ 108:Task/Task_Telemetry.c ****     /* init radio */
+ 109:Task/Task_Telemetry.c **** }
+ 110:Task/Task_Telemetry.c **** 
+ 111:Task/Task_Telemetry.c **** void Telemetry_blink(void)
+ 112:Task/Task_Telemetry.c **** {
+ 113:Task/Task_Telemetry.c ****     SYSTEM_RunTime Rt = 0;
+ 114:Task/Task_Telemetry.c ****     static SYSTEM_RunTime Lst_Rt = 0;
+ 115:Task/Task_Telemetry.c ****     static bool led_state = false;
+ 116:Task/Task_Telemetry.c **** 
+ 117:Task/Task_Telemetry.c ****     // DebugPin.ctl(Debug_PB4, true);
+ 118:Task/Task_Telemetry.c ****     // DebugPin.ctl(Debug_PB4, false);
+ 119:Task/Task_Telemetry.c **** 
+ 120:Task/Task_Telemetry.c ****     Rt = Get_CurrentRunningMs();
+ 121:Task/Task_Telemetry.c **** 
+ 122:Task/Task_Telemetry.c ****     if ((Rt % 100 == 0) && (Lst_Rt != Rt))
+ 123:Task/Task_Telemetry.c ****     {
+ 124:Task/Task_Telemetry.c ****         led_state = !led_state;
+ 125:Task/Task_Telemetry.c ****         Lst_Rt = Rt;
+ 126:Task/Task_Telemetry.c ****     }
+ 127:Task/Task_Telemetry.c **** 
+ 128:Task/Task_Telemetry.c ****     DevLED.ctl(Led1, led_state);
+ 129:Task/Task_Telemetry.c ****     // DevLED.ctl(Led3, led_state);
+ 130:Task/Task_Telemetry.c **** }
+ 131:Task/Task_Telemetry.c **** 
+ 132:Task/Task_Telemetry.c **** void TaskTelemetry_Core(Task_Handle hdl)
+ 133:Task/Task_Telemetry.c **** {
+ 134:Task/Task_Telemetry.c ****     Telemetry_blink();
+ 135:Task/Task_Telemetry.c **** 
+ 136:Task/Task_Telemetry.c ****     DataPipe_DataObj(Rc) = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
+ 137:Task/Task_Telemetry.c **** 
+ 138:Task/Task_Telemetry.c ****     /* pipe data out */
+ 139:Task/Task_Telemetry.c ****     DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
+ 140:Task/Task_Telemetry.c **** }
+ 141:Task/Task_Telemetry.c **** 
+ 142:Task/Task_Telemetry.c **** /************************************** telemetry receiver section ********************************
+ 143:Task/Task_Telemetry.c **** static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *
+ 144:Task/Task_Telemetry.c **** {
+ 145:Task/Task_Telemetry.c ****     uint8_t *port_ptr = NULL;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 4
+
+
+ 146:Task/Task_Telemetry.c **** 
+ 147:Task/Task_Telemetry.c ****     memset(receiver_obj, 0, sizeof(receiver_obj));
+ 148:Task/Task_Telemetry.c **** 
+ 149:Task/Task_Telemetry.c ****     receiver_obj->port_type = Receiver_Port_Serial;
+ 150:Task/Task_Telemetry.c ****     receiver_obj->Frame_type = Receiver_Type_CRSF;
+ 151:Task/Task_Telemetry.c ****     receiver_obj->OSDTune_TriggerMs = 0;
+ 152:Task/Task_Telemetry.c **** 
+ 153:Task/Task_Telemetry.c ****     /* create receiver port */
+ 154:Task/Task_Telemetry.c ****     switch (receiver_obj->port_type)
+ 155:Task/Task_Telemetry.c ****     {
+ 156:Task/Task_Telemetry.c ****     case Receiver_Port_Serial:
+ 157:Task/Task_Telemetry.c ****         if (receiver_obj->Frame_type == Receiver_Type_CRSF)
+ 158:Task/Task_Telemetry.c ****         {
+ 159:Task/Task_Telemetry.c ****             port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
+ 160:Task/Task_Telemetry.c ****                                                      RECEIVER_CRSF_RX_DMA,
+ 161:Task/Task_Telemetry.c ****                                                      RECEIVER_CRSF_RX_DMA_STREAM,
+ 162:Task/Task_Telemetry.c ****                                                      RECEIVER_CRSF_TX_DMA,
+ 163:Task/Task_Telemetry.c ****                                                      RECEIVER_CRSF_TX_DMA_STREAM,
+ 164:Task/Task_Telemetry.c ****                                                      false,
+ 165:Task/Task_Telemetry.c ****                                                      CRSF_TX_PIN,
+ 166:Task/Task_Telemetry.c ****                                                      CRSF_RX_PIN);
+ 167:Task/Task_Telemetry.c ****         }
+ 168:Task/Task_Telemetry.c ****         else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
+ 169:Task/Task_Telemetry.c ****         {
+ 170:Task/Task_Telemetry.c ****             port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
+ 171:Task/Task_Telemetry.c ****                                                      RECEIVER_SBUS_RX_DMA,
+ 172:Task/Task_Telemetry.c ****                                                      RECEIVER_SBUS_RX_DMA_STREAM,
+ 173:Task/Task_Telemetry.c ****                                                      RECEIVER_SBUS_TX_DMA,
+ 174:Task/Task_Telemetry.c ****                                                      RECEIVER_SBUS_TX_DMA_STREAM,
+ 175:Task/Task_Telemetry.c ****                                                      false,
+ 176:Task/Task_Telemetry.c ****                                                      SBUS_TX_PIN,
+ 177:Task/Task_Telemetry.c ****                                                      SBUS_RX_PIN);
+ 178:Task/Task_Telemetry.c **** 
+ 179:Task/Task_Telemetry.c ****             /* set inverter pin */
+ 180:Task/Task_Telemetry.c ****         }
+ 181:Task/Task_Telemetry.c ****         break;
+ 182:Task/Task_Telemetry.c **** 
+ 183:Task/Task_Telemetry.c ****     case Receiver_Port_Spi:
+ 184:Task/Task_Telemetry.c ****         /* still in developing */
+ 185:Task/Task_Telemetry.c ****         port_ptr = SrvReceiver.create_spi_obj();
+ 186:Task/Task_Telemetry.c ****         break;
+ 187:Task/Task_Telemetry.c **** 
+ 188:Task/Task_Telemetry.c ****     default:
+ 189:Task/Task_Telemetry.c ****         return false;
+ 190:Task/Task_Telemetry.c ****     }
+ 191:Task/Task_Telemetry.c **** 
+ 192:Task/Task_Telemetry.c ****     /* init receiver object */
+ 193:Task/Task_Telemetry.c ****     RC_Input_obj->init_state = SrvReceiver.init(receiver_obj, port_ptr);
+ 194:Task/Task_Telemetry.c **** 
+ 195:Task/Task_Telemetry.c ****     RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+ 196:Task/Task_Telemetry.c ****     RC_Input_obj->sig.buzz_state = false;
+ 197:Task/Task_Telemetry.c ****     RC_Input_obj->sig.osd_tune_state = false;
+ 198:Task/Task_Telemetry.c ****     RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+ 199:Task/Task_Telemetry.c ****     RC_Input_obj->sig.module_enable = TELEMETRY_DISABLE_ALL_MODULE;
+ 200:Task/Task_Telemetry.c **** 
+ 201:Task/Task_Telemetry.c ****     return RC_Input_obj->init_state;
+ 202:Task/Task_Telemetry.c **** }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 5
+
+
+ 203:Task/Task_Telemetry.c **** 
+ 204:Task/Task_Telemetry.c **** static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_o
+ 205:Task/Task_Telemetry.c **** {
+ 206:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+ 207:Task/Task_Telemetry.c **** 
+ 208:Task/Task_Telemetry.c ****     if ((!RC_Input_obj) ||
+ 209:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 210:Task/Task_Telemetry.c ****         (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+ 211:Task/Task_Telemetry.c ****         (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+ 212:Task/Task_Telemetry.c ****         return false;
+ 213:Task/Task_Telemetry.c **** 
+ 214:Task/Task_Telemetry.c ****     channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+ 215:Task/Task_Telemetry.c **** 
+ 216:Task/Task_Telemetry.c ****     if (!channel_set)
+ 217:Task/Task_Telemetry.c ****     {
+ 218:Task/Task_Telemetry.c ****         MMU_Free(channel_set);
+ 219:Task/Task_Telemetry.c ****         return false;
+ 220:Task/Task_Telemetry.c ****     }
+ 221:Task/Task_Telemetry.c **** 
+ 222:Task/Task_Telemetry.c ****     channel_set->channel_ptr = data_obj;
+ 223:Task/Task_Telemetry.c ****     channel_set->max = max_range;
+ 224:Task/Task_Telemetry.c ****     channel_set->min = min_range;
+ 225:Task/Task_Telemetry.c ****     channel_set->center_deadzone_scope = 0;
+ 226:Task/Task_Telemetry.c ****     channel_set->enable_deadzone = false;
+ 227:Task/Task_Telemetry.c **** 
+ 228:Task/Task_Telemetry.c ****     switch (tag)
+ 229:Task/Task_Telemetry.c ****     {
+ 230:Task/Task_Telemetry.c ****     case Telemetry_RC_Throttle:
+ 231:Task/Task_Telemetry.c ****     case Telemetry_RC_Pitch:
+ 232:Task/Task_Telemetry.c ****     case Telemetry_RC_Roll:
+ 233:Task/Task_Telemetry.c ****     case Telemetry_RC_Yaw:
+ 234:Task/Task_Telemetry.c ****         RC_Input_obj->Gimbal[tag].combo_cnt = 1;
+ 235:Task/Task_Telemetry.c ****         List_ItemInit(&(RC_Input_obj->Gimbal[tag].combo_list), channel_set);
+ 236:Task/Task_Telemetry.c ****         return true;
+ 237:Task/Task_Telemetry.c **** 
+ 238:Task/Task_Telemetry.c ****     default:
+ 239:Task/Task_Telemetry.c ****         return false;
+ 240:Task/Task_Telemetry.c ****     }
+ 241:Task/Task_Telemetry.c **** }
+ 242:Task/Task_Telemetry.c **** 
+ 243:Task/Task_Telemetry.c **** static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_o
+ 244:Task/Task_Telemetry.c **** {
+ 245:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+ 246:Task/Task_Telemetry.c **** 
+ 247:Task/Task_Telemetry.c ****     if ((!RC_Input_obj) ||
+ 248:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 249:Task/Task_Telemetry.c ****         (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+ 250:Task/Task_Telemetry.c ****         (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+ 251:Task/Task_Telemetry.c ****         return false;
+ 252:Task/Task_Telemetry.c **** 
+ 253:Task/Task_Telemetry.c ****     channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+ 254:Task/Task_Telemetry.c **** 
+ 255:Task/Task_Telemetry.c ****     if (!channel_set)
+ 256:Task/Task_Telemetry.c ****     {
+ 257:Task/Task_Telemetry.c ****         MMU_Free(channel_set);
+ 258:Task/Task_Telemetry.c ****         return false;
+ 259:Task/Task_Telemetry.c ****     }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 6
+
+
+ 260:Task/Task_Telemetry.c **** 
+ 261:Task/Task_Telemetry.c ****     channel_set->channel_ptr = data_obj;
+ 262:Task/Task_Telemetry.c ****     channel_set->max = max_range;
+ 263:Task/Task_Telemetry.c ****     channel_set->min = min_range;
+ 264:Task/Task_Telemetry.c **** 
+ 265:Task/Task_Telemetry.c ****     toggle->combo_cnt = 1;
+ 266:Task/Task_Telemetry.c ****     toggle->combo_list.mode = by_order;
+ 267:Task/Task_Telemetry.c ****     toggle->combo_list.compare_callback = NULL;
+ 268:Task/Task_Telemetry.c ****     List_ItemInit(&(toggle->combo_list), channel_set);
+ 269:Task/Task_Telemetry.c **** 
+ 270:Task/Task_Telemetry.c ****     return true;
+ 271:Task/Task_Telemetry.c **** }
+ 272:Task/Task_Telemetry.c **** 
+ 273:Task/Task_Telemetry.c **** static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, T
+ 274:Task/Task_Telemetry.c **** {
+ 275:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+ 276:Task/Task_Telemetry.c ****     item_obj *item = NULL;
+ 277:Task/Task_Telemetry.c **** 
+ 278:Task/Task_Telemetry.c ****     if ((!RC_Input_obj) ||
+ 279:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 280:Task/Task_Telemetry.c ****         (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+ 281:Task/Task_Telemetry.c ****         (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+ 282:Task/Task_Telemetry.c ****         return false;
+ 283:Task/Task_Telemetry.c **** 
+ 284:Task/Task_Telemetry.c ****     channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+ 285:Task/Task_Telemetry.c **** 
+ 286:Task/Task_Telemetry.c ****     if (!channel_set)
+ 287:Task/Task_Telemetry.c ****     {
+ 288:Task/Task_Telemetry.c ****         MMU_Free(channel_set);
+ 289:Task/Task_Telemetry.c ****         return false;
+ 290:Task/Task_Telemetry.c ****     }
+ 291:Task/Task_Telemetry.c **** 
+ 292:Task/Task_Telemetry.c ****     item = (item_obj *)MMU_Malloc(sizeof(item_obj));
+ 293:Task/Task_Telemetry.c **** 
+ 294:Task/Task_Telemetry.c ****     if (!item)
+ 295:Task/Task_Telemetry.c ****     {
+ 296:Task/Task_Telemetry.c ****         MMU_Free(item);
+ 297:Task/Task_Telemetry.c ****         return false;
+ 298:Task/Task_Telemetry.c ****     }
+ 299:Task/Task_Telemetry.c **** 
+ 300:Task/Task_Telemetry.c ****     channel_set->channel_ptr = data_obj;
+ 301:Task/Task_Telemetry.c ****     channel_set->max = max_range;
+ 302:Task/Task_Telemetry.c ****     channel_set->min = min_range;
+ 303:Task/Task_Telemetry.c **** 
+ 304:Task/Task_Telemetry.c ****     toggle->combo_cnt++;
+ 305:Task/Task_Telemetry.c ****     List_ItemInit(item, channel_set);
+ 306:Task/Task_Telemetry.c ****     List_Insert_Item(&toggle->combo_list, item);
+ 307:Task/Task_Telemetry.c **** 
+ 308:Task/Task_Telemetry.c ****     return true;
+ 309:Task/Task_Telemetry.c **** }
+ 310:Task/Task_Telemetry.c **** 
+ 311:Task/Task_Telemetry.c **** static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_TypeDef *toggle)
+ 312:Task/Task_Telemetry.c **** {
+ 313:Task/Task_Telemetry.c ****     Telemetry_ToggleData_TypeDef toggle_val;
+ 314:Task/Task_Telemetry.c ****     uint8_t pos_reg = 0;
+ 315:Task/Task_Telemetry.c **** 
+ 316:Task/Task_Telemetry.c ****     toggle_val.pos = 0;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 7
+
+
+ 317:Task/Task_Telemetry.c ****     toggle_val.cnt = 0;
+ 318:Task/Task_Telemetry.c ****     toggle_val.state = false;
+ 319:Task/Task_Telemetry.c ****     item_obj *nxt = &toggle->combo_list;
+ 320:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_data = NULL;
+ 321:Task/Task_Telemetry.c **** 
+ 322:Task/Task_Telemetry.c ****     if (!toggle)
+ 323:Task/Task_Telemetry.c ****         return toggle_val;
+ 324:Task/Task_Telemetry.c **** 
+ 325:Task/Task_Telemetry.c ****     /* do not use list traverse here */
+ 326:Task/Task_Telemetry.c ****     while (nxt)
+ 327:Task/Task_Telemetry.c ****     {
+ 328:Task/Task_Telemetry.c ****         channel_data = (Telemetry_ChannelSet_TypeDef *)nxt->data;
+ 329:Task/Task_Telemetry.c **** 
+ 330:Task/Task_Telemetry.c ****         if (!channel_data ||
+ 331:Task/Task_Telemetry.c ****             (((*(uint16_t *)channel_data->channel_ptr) < channel_data->max) &&
+ 332:Task/Task_Telemetry.c ****              ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
+ 333:Task/Task_Telemetry.c ****         {
+ 334:Task/Task_Telemetry.c ****             pos_reg |= 1 << toggle_val.pos;
+ 335:Task/Task_Telemetry.c ****             toggle_val.cnt++;
+ 336:Task/Task_Telemetry.c ****         }
+ 337:Task/Task_Telemetry.c **** 
+ 338:Task/Task_Telemetry.c ****         toggle_val.pos++;
+ 339:Task/Task_Telemetry.c ****         nxt = nxt->nxt;
+ 340:Task/Task_Telemetry.c ****     }
+ 341:Task/Task_Telemetry.c **** 
+ 342:Task/Task_Telemetry.c ****     /* get the number of the bit on set */
+ 343:Task/Task_Telemetry.c ****     if (Get_OnSet_Bit_Num(pos_reg) == 1)
+ 344:Task/Task_Telemetry.c ****     {
+ 345:Task/Task_Telemetry.c ****         /* only on bit been set */
+ 346:Task/Task_Telemetry.c ****         toggle_val.pos = Get_Bit_Index(pos_reg);
+ 347:Task/Task_Telemetry.c ****     }
+ 348:Task/Task_Telemetry.c ****     else
+ 349:Task/Task_Telemetry.c ****     {
+ 350:Task/Task_Telemetry.c ****         /* many bits been set on pos_reg */
+ 351:Task/Task_Telemetry.c ****         toggle_val.pos = 0;
+ 352:Task/Task_Telemetry.c ****     }
+ 353:Task/Task_Telemetry.c **** 
+ 354:Task/Task_Telemetry.c ****     if (toggle_val.cnt == toggle->combo_cnt)
+ 355:Task/Task_Telemetry.c ****         toggle_val.state = true;
+ 356:Task/Task_Telemetry.c **** 
+ 357:Task/Task_Telemetry.c ****     return toggle_val;
+ 358:Task/Task_Telemetry.c **** }
+ 359:Task/Task_Telemetry.c **** 
+ 360:Task/Task_Telemetry.c **** static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope)
+ 361:Task/Task_Telemetry.c **** {
+  28              		.loc 1 361 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+ 362:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
+  33              		.loc 1 362 5 view .LVU1
+ 363:Task/Task_Telemetry.c **** 
+ 364:Task/Task_Telemetry.c ****     if (gimbal)
+  34              		.loc 1 364 5 view .LVU2
+  35              		.loc 1 364 8 is_stmt 0 view .LVU3
+  36 0000 28B1     		cbz	r0, .L1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 8
+
+
+ 365:Task/Task_Telemetry.c ****     {
+ 366:Task/Task_Telemetry.c ****         gimbal_channel = gimbal->combo_list.data;
+  37              		.loc 1 366 9 is_stmt 1 view .LVU4
+  38              		.loc 1 366 24 is_stmt 0 view .LVU5
+  39 0002 0369     		ldr	r3, [r0, #16]	@ unaligned
+  40              	.LVL1:
+ 367:Task/Task_Telemetry.c **** 
+ 368:Task/Task_Telemetry.c ****         if (gimbal_channel)
+  41              		.loc 1 368 9 is_stmt 1 view .LVU6
+  42              		.loc 1 368 12 is_stmt 0 view .LVU7
+  43 0004 1BB1     		cbz	r3, .L1
+ 369:Task/Task_Telemetry.c ****         {
+ 370:Task/Task_Telemetry.c ****             gimbal_channel->center_deadzone_scope = scope;
+  44              		.loc 1 370 13 is_stmt 1 view .LVU8
+  45              		.loc 1 370 51 is_stmt 0 view .LVU9
+  46 0006 A3F80110 		strh	r1, [r3, #1]	@ unaligned
+ 371:Task/Task_Telemetry.c ****             gimbal_channel->enable_deadzone = true;
+  47              		.loc 1 371 13 is_stmt 1 view .LVU10
+  48              		.loc 1 371 45 is_stmt 0 view .LVU11
+  49 000a 0122     		movs	r2, #1
+  50 000c 1A70     		strb	r2, [r3]
+  51              	.LVL2:
+  52              	.L1:
+ 372:Task/Task_Telemetry.c ****         }
+ 373:Task/Task_Telemetry.c ****     }
+ 374:Task/Task_Telemetry.c **** }
+  53              		.loc 1 374 1 view .LVU12
+  54 000e 7047     		bx	lr
+  55              		.cfi_endproc
+  56              	.LFE2006:
+  58              		.section	.text.Telemetry_GimbalToPercent,"ax",%progbits
+  59              		.align	1
+  60              		.syntax unified
+  61              		.thumb
+  62              		.thumb_func
+  63              		.fpu fpv5-d16
+  65              	Telemetry_GimbalToPercent:
+  66              	.LVL3:
+  67              	.LFB2008:
+ 375:Task/Task_Telemetry.c **** 
+ 376:Task/Task_Telemetry.c **** static uint16_t Telemetry_Check_Gimbal(Telemetry_RCFuncMap_TypeDef *gimbal)
+ 377:Task/Task_Telemetry.c **** {
+ 378:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
+ 379:Task/Task_Telemetry.c **** 
+ 380:Task/Task_Telemetry.c ****     if (gimbal == NULL)
+ 381:Task/Task_Telemetry.c ****         return TELEMETRY_RC_CHANNEL_RANGE_MIN;
+ 382:Task/Task_Telemetry.c **** 
+ 383:Task/Task_Telemetry.c ****     gimbal_channel = gimbal->combo_list.data;
+ 384:Task/Task_Telemetry.c **** 
+ 385:Task/Task_Telemetry.c ****     if ((gimbal_channel == NULL) || (gimbal_channel->min >= gimbal_channel->max))
+ 386:Task/Task_Telemetry.c ****         return TELEMETRY_RC_CHANNEL_RANGE_MIN;
+ 387:Task/Task_Telemetry.c **** 
+ 388:Task/Task_Telemetry.c ****     if (*gimbal_channel->channel_ptr < gimbal_channel->min)
+ 389:Task/Task_Telemetry.c ****         return gimbal_channel->min;
+ 390:Task/Task_Telemetry.c **** 
+ 391:Task/Task_Telemetry.c ****     if (*gimbal_channel->channel_ptr > gimbal_channel->max)
+ 392:Task/Task_Telemetry.c ****         return gimbal_channel->max;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 9
+
+
+ 393:Task/Task_Telemetry.c **** 
+ 394:Task/Task_Telemetry.c ****     return *gimbal_channel->channel_ptr;
+ 395:Task/Task_Telemetry.c **** }
+ 396:Task/Task_Telemetry.c **** 
+ 397:Task/Task_Telemetry.c **** static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
+ 398:Task/Task_Telemetry.c **** {
+  68              		.loc 1 398 1 is_stmt 1 view -0
+  69              		.cfi_startproc
+  70              		@ args = 0, pretend = 0, frame = 0
+  71              		@ frame_needed = 0, uses_anonymous_args = 0
+  72              		@ link register save eliminated.
+ 399:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
+  73              		.loc 1 399 5 view .LVU14
+ 400:Task/Task_Telemetry.c ****     uint16_t gimbal_range = 0;
+  74              		.loc 1 400 5 view .LVU15
+ 401:Task/Task_Telemetry.c ****     float percent = 0.0f;
+  75              		.loc 1 401 5 view .LVU16
+ 402:Task/Task_Telemetry.c **** 
+ 403:Task/Task_Telemetry.c ****     if (gimbal == NULL)
+  76              		.loc 1 403 5 view .LVU17
+  77              		.loc 1 403 8 is_stmt 0 view .LVU18
+  78 0000 90B3     		cbz	r0, .L6
+ 404:Task/Task_Telemetry.c ****         return 0;
+ 405:Task/Task_Telemetry.c **** 
+ 406:Task/Task_Telemetry.c ****     gimbal_channel = gimbal->combo_list.data;
+  79              		.loc 1 406 5 is_stmt 1 view .LVU19
+  80              		.loc 1 406 20 is_stmt 0 view .LVU20
+  81 0002 0369     		ldr	r3, [r0, #16]	@ unaligned
+  82              	.LVL4:
+ 407:Task/Task_Telemetry.c **** 
+ 408:Task/Task_Telemetry.c ****     if ((gimbal_channel == NULL) || (gimbal_channel->min >= gimbal_channel->max))
+  83              		.loc 1 408 5 is_stmt 1 view .LVU21
+  84              		.loc 1 408 8 is_stmt 0 view .LVU22
+  85 0004 93B3     		cbz	r3, .L7
+  86              		.loc 1 408 52 discriminator 1 view .LVU23
+  87 0006 B3F80310 		ldrh	r1, [r3, #3]	@ unaligned
+  88              		.loc 1 408 75 discriminator 1 view .LVU24
+  89 000a B3F80720 		ldrh	r2, [r3, #7]	@ unaligned
+  90              		.loc 1 408 34 discriminator 1 view .LVU25
+  91 000e 9142     		cmp	r1, r2
+  92 0010 2ED2     		bcs	.L8
+ 398:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
+  93              		.loc 1 398 1 view .LVU26
+  94 0012 70B4     		push	{r4, r5, r6}
+  95              	.LCFI0:
+  96              		.cfi_def_cfa_offset 12
+  97              		.cfi_offset 4, -12
+  98              		.cfi_offset 5, -8
+  99              		.cfi_offset 6, -4
+ 409:Task/Task_Telemetry.c ****         return 0;
+ 410:Task/Task_Telemetry.c **** 
+ 411:Task/Task_Telemetry.c ****     if (gimbal_channel->enable_deadzone)
+ 100              		.loc 1 411 5 is_stmt 1 view .LVU27
+ 101              		.loc 1 411 23 is_stmt 0 view .LVU28
+ 102 0014 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 103              	.LVL5:
+ 104              		.loc 1 411 8 view .LVU29
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 10
+
+
+ 105 0016 60B1     		cbz	r0, .L5
+ 412:Task/Task_Telemetry.c ****     {
+ 413:Task/Task_Telemetry.c ****         if (*gimbal_channel->channel_ptr < (gimbal_channel->mid + gimbal_channel->center_deadzone_s
+ 106              		.loc 1 413 9 is_stmt 1 view .LVU30
+ 107              		.loc 1 413 28 is_stmt 0 view .LVU31
+ 108 0018 D3F80900 		ldr	r0, [r3, #9]	@ unaligned
+ 109              		.loc 1 413 13 view .LVU32
+ 110 001c 0488     		ldrh	r4, [r0]
+ 111              		.loc 1 413 59 view .LVU33
+ 112 001e B3F80500 		ldrh	r0, [r3, #5]	@ unaligned
+ 113              		.loc 1 413 81 view .LVU34
+ 114 0022 B3F80150 		ldrh	r5, [r3, #1]	@ unaligned
+ 115              		.loc 1 413 65 view .LVU35
+ 116 0026 4619     		adds	r6, r0, r5
+ 117              		.loc 1 413 12 view .LVU36
+ 118 0028 B442     		cmp	r4, r6
+ 119 002a 23DB     		blt	.L9
+ 414:Task/Task_Telemetry.c ****             (*gimbal_channel->channel_ptr > (gimbal_channel->mid - gimbal_channel->center_deadzone_
+ 120              		.loc 1 414 66 discriminator 1 view .LVU37
+ 121 002c 401B     		subs	r0, r0, r5
+ 413:Task/Task_Telemetry.c ****             (*gimbal_channel->channel_ptr > (gimbal_channel->mid - gimbal_channel->center_deadzone_
+ 122              		.loc 1 413 106 discriminator 1 view .LVU38
+ 123 002e 8442     		cmp	r4, r0
+ 124 0030 22DC     		bgt	.L10
+ 125              	.L5:
+ 415:Task/Task_Telemetry.c ****             return 50;
+ 416:Task/Task_Telemetry.c ****     }
+ 417:Task/Task_Telemetry.c **** 
+ 418:Task/Task_Telemetry.c ****     gimbal_range = gimbal_channel->max - gimbal_channel->min;
+ 126              		.loc 1 418 5 is_stmt 1 view .LVU39
+ 127              		.loc 1 418 18 is_stmt 0 view .LVU40
+ 128 0032 521A     		subs	r2, r2, r1
+ 129 0034 92B2     		uxth	r2, r2
+ 130              	.LVL6:
+ 419:Task/Task_Telemetry.c ****     percent = (float)(*gimbal_channel->channel_ptr - gimbal_channel->min) / gimbal_range;
+ 131              		.loc 1 419 5 is_stmt 1 view .LVU41
+ 132              		.loc 1 419 38 is_stmt 0 view .LVU42
+ 133 0036 D3F80930 		ldr	r3, [r3, #9]	@ unaligned
+ 134              	.LVL7:
+ 135              		.loc 1 419 23 view .LVU43
+ 136 003a 1B88     		ldrh	r3, [r3]
+ 137              		.loc 1 419 52 view .LVU44
+ 138 003c 5B1A     		subs	r3, r3, r1
+ 139              		.loc 1 419 15 view .LVU45
+ 140 003e 07EE903A 		vmov	s15, r3	@ int
+ 141 0042 F8EEE76A 		vcvt.f32.s32	s13, s15
+ 142              		.loc 1 419 75 view .LVU46
+ 143 0046 07EE902A 		vmov	s15, r2	@ int
+ 144 004a B8EEE77A 		vcvt.f32.s32	s14, s15
+ 145              		.loc 1 419 13 view .LVU47
+ 146 004e C6EE877A 		vdiv.f32	s15, s13, s14
+ 147              	.LVL8:
+ 420:Task/Task_Telemetry.c ****     percent *= 100;
+ 148              		.loc 1 420 5 is_stmt 1 view .LVU48
+ 149              		.loc 1 420 13 is_stmt 0 view .LVU49
+ 150 0052 9FED0A7A 		vldr.32	s14, .L15
+ 151 0056 67EE877A 		vmul.f32	s15, s15, s14
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 11
+
+
+ 152              	.LVL9:
+ 421:Task/Task_Telemetry.c **** 
+ 422:Task/Task_Telemetry.c ****     return (uint16_t)percent;
+ 153              		.loc 1 422 5 is_stmt 1 view .LVU50
+ 154              		.loc 1 422 12 is_stmt 0 view .LVU51
+ 155 005a FCEEE77A 		vcvt.u32.f32	s15, s15
+ 156              	.LVL10:
+ 157              		.loc 1 422 12 view .LVU52
+ 158 005e 17EE903A 		vmov	r3, s15	@ int
+ 159 0062 98B2     		uxth	r0, r3
+ 160              	.LVL11:
+ 161              	.L4:
+ 423:Task/Task_Telemetry.c **** }
+ 162              		.loc 1 423 1 view .LVU53
+ 163 0064 70BC     		pop	{r4, r5, r6}
+ 164              	.LCFI1:
+ 165              		.cfi_restore 6
+ 166              		.cfi_restore 5
+ 167              		.cfi_restore 4
+ 168              		.cfi_def_cfa_offset 0
+ 169 0066 7047     		bx	lr
+ 170              	.LVL12:
+ 171              	.L6:
+ 404:Task/Task_Telemetry.c **** 
+ 172              		.loc 1 404 16 view .LVU54
+ 173 0068 0020     		movs	r0, #0
+ 174              	.LVL13:
+ 404:Task/Task_Telemetry.c **** 
+ 175              		.loc 1 404 16 view .LVU55
+ 176 006a 7047     		bx	lr
+ 177              	.LVL14:
+ 178              	.L7:
+ 409:Task/Task_Telemetry.c **** 
+ 179              		.loc 1 409 16 view .LVU56
+ 180 006c 0020     		movs	r0, #0
+ 181              	.LVL15:
+ 409:Task/Task_Telemetry.c **** 
+ 182              		.loc 1 409 16 view .LVU57
+ 183 006e 7047     		bx	lr
+ 184              	.LVL16:
+ 185              	.L8:
+ 409:Task/Task_Telemetry.c **** 
+ 186              		.loc 1 409 16 view .LVU58
+ 187 0070 0020     		movs	r0, #0
+ 188              	.LVL17:
+ 189              		.loc 1 423 1 view .LVU59
+ 190 0072 7047     		bx	lr
+ 191              	.L9:
+ 192              	.LCFI2:
+ 193              		.cfi_def_cfa_offset 12
+ 194              		.cfi_offset 4, -12
+ 195              		.cfi_offset 5, -8
+ 196              		.cfi_offset 6, -4
+ 415:Task/Task_Telemetry.c ****     }
+ 197              		.loc 1 415 20 view .LVU60
+ 198 0074 3220     		movs	r0, #50
+ 199 0076 F5E7     		b	.L4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 12
+
+
+ 200              	.L10:
+ 201 0078 3220     		movs	r0, #50
+ 202 007a F3E7     		b	.L4
+ 203              	.L16:
+ 204              		.align	2
+ 205              	.L15:
+ 206 007c 0000C842 		.word	1120403456
+ 207              		.cfi_endproc
+ 208              	.LFE2008:
+ 210              		.section	.text.Telemetry_RC_Sig_Init,"ax",%progbits
+ 211              		.align	1
+ 212              		.syntax unified
+ 213              		.thumb
+ 214              		.thumb_func
+ 215              		.fpu fpv5-d16
+ 217              	Telemetry_RC_Sig_Init:
+ 218              	.LVL18:
+ 219              	.LFB2001:
+ 144:Task/Task_Telemetry.c ****     uint8_t *port_ptr = NULL;
+ 220              		.loc 1 144 1 is_stmt 1 view -0
+ 221              		.cfi_startproc
+ 222              		@ args = 0, pretend = 0, frame = 0
+ 223              		@ frame_needed = 0, uses_anonymous_args = 0
+ 144:Task/Task_Telemetry.c ****     uint8_t *port_ptr = NULL;
+ 224              		.loc 1 144 1 is_stmt 0 view .LVU62
+ 225 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 226              	.LCFI3:
+ 227              		.cfi_def_cfa_offset 28
+ 228              		.cfi_offset 4, -28
+ 229              		.cfi_offset 5, -24
+ 230              		.cfi_offset 6, -20
+ 231              		.cfi_offset 7, -16
+ 232              		.cfi_offset 8, -12
+ 233              		.cfi_offset 9, -8
+ 234              		.cfi_offset 14, -4
+ 235 0004 89B0     		sub	sp, sp, #36
+ 236              	.LCFI4:
+ 237              		.cfi_def_cfa_offset 64
+ 238 0006 0546     		mov	r5, r0
+ 239 0008 8946     		mov	r9, r1
+ 145:Task/Task_Telemetry.c **** 
+ 240              		.loc 1 145 5 is_stmt 1 view .LVU63
+ 241              	.LVL19:
+ 147:Task/Task_Telemetry.c **** 
+ 242              		.loc 1 147 5 view .LVU64
+ 243 000a 0024     		movs	r4, #0
+ 244 000c 4C80     		strh	r4, [r1, #2]	@ unaligned
+ 149:Task/Task_Telemetry.c ****     receiver_obj->Frame_type = Receiver_Type_CRSF;
+ 245              		.loc 1 149 5 view .LVU65
+ 149:Task/Task_Telemetry.c ****     receiver_obj->Frame_type = Receiver_Type_CRSF;
+ 246              		.loc 1 149 29 is_stmt 0 view .LVU66
+ 247 000e 4FF00108 		mov	r8, #1
+ 248 0012 81F80180 		strb	r8, [r1, #1]
+ 150:Task/Task_Telemetry.c ****     receiver_obj->OSDTune_TriggerMs = 0;
+ 249              		.loc 1 150 5 is_stmt 1 view .LVU67
+ 150:Task/Task_Telemetry.c ****     receiver_obj->OSDTune_TriggerMs = 0;
+ 250              		.loc 1 150 30 is_stmt 0 view .LVU68
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 13
+
+
+ 251 0016 0B46     		mov	r3, r1
+ 252 0018 03F82E8B 		strb	r8, [r3], #46
+ 151:Task/Task_Telemetry.c **** 
+ 253              		.loc 1 151 5 is_stmt 1 view .LVU69
+ 151:Task/Task_Telemetry.c **** 
+ 254              		.loc 1 151 37 is_stmt 0 view .LVU70
+ 255 001c 81F82E40 		strb	r4, [r1, #46]
+ 256 0020 5C70     		strb	r4, [r3, #1]
+ 257 0022 9C70     		strb	r4, [r3, #2]
+ 258 0024 DC70     		strb	r4, [r3, #3]
+ 259 0026 1C71     		strb	r4, [r3, #4]
+ 260 0028 5C71     		strb	r4, [r3, #5]
+ 261 002a 9C71     		strb	r4, [r3, #6]
+ 262 002c DC71     		strb	r4, [r3, #7]
+ 154:Task/Task_Telemetry.c ****     {
+ 263              		.loc 1 154 5 is_stmt 1 view .LVU71
+ 157:Task/Task_Telemetry.c ****         {
+ 264              		.loc 1 157 9 view .LVU72
+ 159:Task/Task_Telemetry.c ****                                                      RECEIVER_CRSF_RX_DMA,
+ 265              		.loc 1 159 13 view .LVU73
+ 159:Task/Task_Telemetry.c ****                                                      RECEIVER_CRSF_RX_DMA,
+ 266              		.loc 1 159 35 is_stmt 0 view .LVU74
+ 267 002e 124F     		ldr	r7, .L19
+ 159:Task/Task_Telemetry.c ****                                                      RECEIVER_CRSF_RX_DMA,
+ 268              		.loc 1 159 24 view .LVU75
+ 269 0030 124A     		ldr	r2, .L19+4
+ 270 0032 05AB     		add	r3, sp, #20
+ 271 0034 07CA     		ldm	r2, {r0, r1, r2}
+ 272              	.LVL20:
+ 159:Task/Task_Telemetry.c ****                                                      RECEIVER_CRSF_RX_DMA,
+ 273              		.loc 1 159 24 view .LVU76
+ 274 0036 83E80700 		stm	r3, {r0, r1, r2}
+ 275 003a 114A     		ldr	r2, .L19+8
+ 276 003c 02AB     		add	r3, sp, #8
+ 277 003e 07CA     		ldm	r2, {r0, r1, r2}
+ 278 0040 83E80700 		stm	r3, {r0, r1, r2}
+ 279 0044 0194     		str	r4, [sp, #4]
+ 280 0046 4FF0FF31 		mov	r1, #-1
+ 281 004a 0091     		str	r1, [sp]
+ 282 004c 0B46     		mov	r3, r1
+ 283 004e 0A46     		mov	r2, r1
+ 284 0050 0C48     		ldr	r0, .L19+12
+ 285 0052 3E68     		ldr	r6, [r7]
+ 286 0054 B047     		blx	r6
+ 287              	.LVL21:
+ 288 0056 0146     		mov	r1, r0
+ 289              	.LVL22:
+ 193:Task/Task_Telemetry.c **** 
+ 290              		.loc 1 193 5 is_stmt 1 view .LVU77
+ 193:Task/Task_Telemetry.c **** 
+ 291              		.loc 1 193 43 is_stmt 0 view .LVU78
+ 292 0058 BB68     		ldr	r3, [r7, #8]
+ 193:Task/Task_Telemetry.c **** 
+ 293              		.loc 1 193 32 view .LVU79
+ 294 005a 4846     		mov	r0, r9
+ 295              	.LVL23:
+ 193:Task/Task_Telemetry.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 14
+
+
+ 296              		.loc 1 193 32 view .LVU80
+ 297 005c 9847     		blx	r3
+ 298              	.LVL24:
+ 193:Task/Task_Telemetry.c **** 
+ 299              		.loc 1 193 30 view .LVU81
+ 300 005e 2870     		strb	r0, [r5]
+ 195:Task/Task_Telemetry.c ****     RC_Input_obj->sig.buzz_state = false;
+ 301              		.loc 1 195 5 is_stmt 1 view .LVU82
+ 195:Task/Task_Telemetry.c ****     RC_Input_obj->sig.buzz_state = false;
+ 302              		.loc 1 195 33 is_stmt 0 view .LVU83
+ 303 0060 85F80980 		strb	r8, [r5, #9]
+ 196:Task/Task_Telemetry.c ****     RC_Input_obj->sig.osd_tune_state = false;
+ 304              		.loc 1 196 5 is_stmt 1 view .LVU84
+ 196:Task/Task_Telemetry.c ****     RC_Input_obj->sig.osd_tune_state = false;
+ 305              		.loc 1 196 34 is_stmt 0 view .LVU85
+ 306 0064 AC72     		strb	r4, [r5, #10]
+ 197:Task/Task_Telemetry.c ****     RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+ 307              		.loc 1 197 5 is_stmt 1 view .LVU86
+ 197:Task/Task_Telemetry.c ****     RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+ 308              		.loc 1 197 38 is_stmt 0 view .LVU87
+ 309 0066 EC72     		strb	r4, [r5, #11]
+ 198:Task/Task_Telemetry.c ****     RC_Input_obj->sig.module_enable = TELEMETRY_DISABLE_ALL_MODULE;
+ 310              		.loc 1 198 5 is_stmt 1 view .LVU88
+ 198:Task/Task_Telemetry.c ****     RC_Input_obj->sig.module_enable = TELEMETRY_DISABLE_ALL_MODULE;
+ 311              		.loc 1 198 36 is_stmt 0 view .LVU89
+ 312 0068 85F81580 		strb	r8, [r5, #21]
+ 199:Task/Task_Telemetry.c **** 
+ 313              		.loc 1 199 5 is_stmt 1 view .LVU90
+ 199:Task/Task_Telemetry.c **** 
+ 314              		.loc 1 199 37 is_stmt 0 view .LVU91
+ 315 006c AC75     		strb	r4, [r5, #22]
+ 316 006e EC75     		strb	r4, [r5, #23]
+ 201:Task/Task_Telemetry.c **** }
+ 317              		.loc 1 201 5 is_stmt 1 view .LVU92
+ 202:Task/Task_Telemetry.c **** 
+ 318              		.loc 1 202 1 is_stmt 0 view .LVU93
+ 319 0070 09B0     		add	sp, sp, #36
+ 320              	.LCFI5:
+ 321              		.cfi_def_cfa_offset 28
+ 322              		@ sp needed
+ 323 0072 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 324              	.LVL25:
+ 325              	.L20:
+ 202:Task/Task_Telemetry.c **** 
+ 326              		.loc 1 202 1 view .LVU94
+ 327 0076 00BF     		.align	2
+ 328              	.L19:
+ 329 0078 00000000 		.word	SrvReceiver
+ 330 007c 00000000 		.word	Uart4_RxPin
+ 331 0080 00000000 		.word	Uart4_TxPin
+ 332 0084 004C0040 		.word	1073761280
+ 333              		.cfi_endproc
+ 334              	.LFE2001:
+ 336              		.section	.text.Telemetry_BindGimbalToChannel,"ax",%progbits
+ 337              		.align	1
+ 338              		.syntax unified
+ 339              		.thumb
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 15
+
+
+ 340              		.thumb_func
+ 341              		.fpu fpv5-d16
+ 343              	Telemetry_BindGimbalToChannel:
+ 344              	.LVL26:
+ 345              	.LFB2002:
+ 205:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+ 346              		.loc 1 205 1 is_stmt 1 view -0
+ 347              		.cfi_startproc
+ 348              		@ args = 8, pretend = 0, frame = 0
+ 349              		@ frame_needed = 0, uses_anonymous_args = 0
+ 205:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+ 350              		.loc 1 205 1 is_stmt 0 view .LVU96
+ 351 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 352              	.LCFI6:
+ 353              		.cfi_def_cfa_offset 32
+ 354              		.cfi_offset 3, -32
+ 355              		.cfi_offset 4, -28
+ 356              		.cfi_offset 5, -24
+ 357              		.cfi_offset 6, -20
+ 358              		.cfi_offset 7, -16
+ 359              		.cfi_offset 8, -12
+ 360              		.cfi_offset 9, -8
+ 361              		.cfi_offset 14, -4
+ 362 0004 BDF82460 		ldrh	r6, [sp, #36]
+ 206:Task/Task_Telemetry.c **** 
+ 363              		.loc 1 206 5 is_stmt 1 view .LVU97
+ 364              	.LVL27:
+ 208:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 365              		.loc 1 208 5 view .LVU98
+ 208:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 366              		.loc 1 208 10 is_stmt 0 view .LVU99
+ 367 0008 0746     		mov	r7, r0
+ 209:Task/Task_Telemetry.c ****         (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+ 368              		.loc 1 209 10 view .LVU100
+ 369 000a 8846     		mov	r8, r1
+ 370 000c B1FA81F1 		clz	r1, r1
+ 371              	.LVL28:
+ 209:Task/Task_Telemetry.c ****         (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+ 372              		.loc 1 209 10 view .LVU101
+ 373 0010 4909     		lsrs	r1, r1, #5
+ 208:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 374              		.loc 1 208 25 view .LVU102
+ 375 0012 0028     		cmp	r0, #0
+ 376 0014 14BF     		ite	ne
+ 377 0016 0846     		movne	r0, r1
+ 378 0018 0120     		moveq	r0, #1
+ 379              	.LVL29:
+ 208:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 380              		.loc 1 208 8 view .LVU103
+ 381 001a B0BB     		cbnz	r0, .L24
+ 382 001c 1446     		mov	r4, r2
+ 383 001e 1D46     		mov	r5, r3
+ 211:Task/Task_Telemetry.c ****         return false;
+ 384              		.loc 1 211 20 view .LVU104
+ 385 0020 40F26C79 		movw	r9, #1900
+ 386 0024 4E45     		cmp	r6, r9
+ 387 0026 94BF     		ite	ls
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 16
+
+
+ 388 0028 4FF00009 		movls	r9, #0
+ 389 002c 4FF00109 		movhi	r9, #1
+ 210:Task/Task_Telemetry.c ****         (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+ 390              		.loc 1 210 54 view .LVU105
+ 391 0030 632B     		cmp	r3, #99
+ 392 0032 98BF     		it	ls
+ 393 0034 49F00109 		orrls	r9, r9, #1
+ 394 0038 B9F1000F 		cmp	r9, #0
+ 395 003c 26D1     		bne	.L22
+ 214:Task/Task_Telemetry.c **** 
+ 396              		.loc 1 214 5 is_stmt 1 view .LVU106
+ 214:Task/Task_Telemetry.c **** 
+ 397              		.loc 1 214 51 is_stmt 0 view .LVU107
+ 398 003e 0F20     		movs	r0, #15
+ 399 0040 FFF7FEFF 		bl	MMU_Malloc
+ 400              	.LVL30:
+ 216:Task/Task_Telemetry.c ****     {
+ 401              		.loc 1 216 5 is_stmt 1 view .LVU108
+ 216:Task/Task_Telemetry.c ****     {
+ 402              		.loc 1 216 8 is_stmt 0 view .LVU109
+ 403 0044 0146     		mov	r1, r0
+ 404 0046 68B1     		cbz	r0, .L27
+ 222:Task/Task_Telemetry.c ****     channel_set->max = max_range;
+ 405              		.loc 1 222 5 is_stmt 1 view .LVU110
+ 222:Task/Task_Telemetry.c ****     channel_set->max = max_range;
+ 406              		.loc 1 222 30 is_stmt 0 view .LVU111
+ 407 0048 C0F80980 		str	r8, [r0, #9]	@ unaligned
+ 223:Task/Task_Telemetry.c ****     channel_set->min = min_range;
+ 408              		.loc 1 223 5 is_stmt 1 view .LVU112
+ 223:Task/Task_Telemetry.c ****     channel_set->min = min_range;
+ 409              		.loc 1 223 22 is_stmt 0 view .LVU113
+ 410 004c A0F80760 		strh	r6, [r0, #7]	@ unaligned
+ 224:Task/Task_Telemetry.c ****     channel_set->center_deadzone_scope = 0;
+ 411              		.loc 1 224 5 is_stmt 1 view .LVU114
+ 224:Task/Task_Telemetry.c ****     channel_set->center_deadzone_scope = 0;
+ 412              		.loc 1 224 22 is_stmt 0 view .LVU115
+ 413 0050 A0F80350 		strh	r5, [r0, #3]	@ unaligned
+ 225:Task/Task_Telemetry.c ****     channel_set->enable_deadzone = false;
+ 414              		.loc 1 225 5 is_stmt 1 view .LVU116
+ 225:Task/Task_Telemetry.c ****     channel_set->enable_deadzone = false;
+ 415              		.loc 1 225 40 is_stmt 0 view .LVU117
+ 416 0054 0023     		movs	r3, #0
+ 417 0056 4370     		strb	r3, [r0, #1]
+ 418 0058 8370     		strb	r3, [r0, #2]
+ 226:Task/Task_Telemetry.c **** 
+ 419              		.loc 1 226 5 is_stmt 1 view .LVU118
+ 226:Task/Task_Telemetry.c **** 
+ 420              		.loc 1 226 34 is_stmt 0 view .LVU119
+ 421 005a 0370     		strb	r3, [r0]
+ 228:Task/Task_Telemetry.c ****     {
+ 422              		.loc 1 228 5 is_stmt 1 view .LVU120
+ 423 005c 032C     		cmp	r4, #3
+ 424 005e 05D9     		bls	.L28
+ 239:Task/Task_Telemetry.c ****     }
+ 425              		.loc 1 239 16 is_stmt 0 view .LVU121
+ 426 0060 4846     		mov	r0, r9
+ 427              	.LVL31:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 17
+
+
+ 239:Task/Task_Telemetry.c ****     }
+ 428              		.loc 1 239 16 view .LVU122
+ 429 0062 13E0     		b	.L22
+ 430              	.LVL32:
+ 431              	.L27:
+ 218:Task/Task_Telemetry.c ****         return false;
+ 432              		.loc 1 218 9 is_stmt 1 view .LVU123
+ 433 0064 FFF7FEFF 		bl	MMU_Free
+ 434              	.LVL33:
+ 219:Task/Task_Telemetry.c ****     }
+ 435              		.loc 1 219 9 view .LVU124
+ 219:Task/Task_Telemetry.c ****     }
+ 436              		.loc 1 219 16 is_stmt 0 view .LVU125
+ 437 0068 4846     		mov	r0, r9
+ 438 006a 0FE0     		b	.L22
+ 439              	.LVL34:
+ 440              	.L28:
+ 234:Task/Task_Telemetry.c ****         List_ItemInit(&(RC_Input_obj->Gimbal[tag].combo_list), channel_set);
+ 441              		.loc 1 234 9 is_stmt 1 view .LVU126
+ 234:Task/Task_Telemetry.c ****         List_ItemInit(&(RC_Input_obj->Gimbal[tag].combo_list), channel_set);
+ 442              		.loc 1 234 45 is_stmt 0 view .LVU127
+ 443 006c 04EB4402 		add	r2, r4, r4, lsl #1
+ 444 0070 C2EBC202 		rsb	r2, r2, r2, lsl #3
+ 445 0074 BB18     		adds	r3, r7, r2
+ 446 0076 0124     		movs	r4, #1
+ 447 0078 83F87D40 		strb	r4, [r3, #125]
+ 235:Task/Task_Telemetry.c ****         return true;
+ 448              		.loc 1 235 9 is_stmt 1 view .LVU128
+ 449 007c 6832     		adds	r2, r2, #104
+ 450 007e 3A44     		add	r2, r2, r7
+ 451 0080 1019     		adds	r0, r2, r4
+ 452              	.LVL35:
+ 235:Task/Task_Telemetry.c ****         return true;
+ 453              		.loc 1 235 9 is_stmt 0 view .LVU129
+ 454 0082 FFF7FEFF 		bl	List_ItemInit
+ 455              	.LVL36:
+ 236:Task/Task_Telemetry.c **** 
+ 456              		.loc 1 236 9 is_stmt 1 view .LVU130
+ 236:Task/Task_Telemetry.c **** 
+ 457              		.loc 1 236 16 is_stmt 0 view .LVU131
+ 458 0086 2046     		mov	r0, r4
+ 459 0088 00E0     		b	.L22
+ 460              	.LVL37:
+ 461              	.L24:
+ 212:Task/Task_Telemetry.c **** 
+ 462              		.loc 1 212 16 view .LVU132
+ 463 008a 0020     		movs	r0, #0
+ 464              	.LVL38:
+ 465              	.L22:
+ 241:Task/Task_Telemetry.c **** 
+ 466              		.loc 1 241 1 view .LVU133
+ 467 008c BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 241:Task/Task_Telemetry.c **** 
+ 468              		.loc 1 241 1 view .LVU134
+ 469              		.cfi_endproc
+ 470              	.LFE2002:
+ 472              		.section	.text.Telemetry_BindToggleToChannel,"ax",%progbits
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 18
+
+
+ 473              		.align	1
+ 474              		.syntax unified
+ 475              		.thumb
+ 476              		.thumb_func
+ 477              		.fpu fpv5-d16
+ 479              	Telemetry_BindToggleToChannel:
+ 480              	.LVL39:
+ 481              	.LFB2003:
+ 244:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+ 482              		.loc 1 244 1 is_stmt 1 view -0
+ 483              		.cfi_startproc
+ 484              		@ args = 4, pretend = 0, frame = 0
+ 485              		@ frame_needed = 0, uses_anonymous_args = 0
+ 244:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+ 486              		.loc 1 244 1 is_stmt 0 view .LVU136
+ 487 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 488              	.LCFI7:
+ 489              		.cfi_def_cfa_offset 24
+ 490              		.cfi_offset 4, -24
+ 491              		.cfi_offset 5, -20
+ 492              		.cfi_offset 6, -16
+ 493              		.cfi_offset 7, -12
+ 494              		.cfi_offset 8, -8
+ 495              		.cfi_offset 14, -4
+ 496 0004 BDF81870 		ldrh	r7, [sp, #24]
+ 245:Task/Task_Telemetry.c **** 
+ 497              		.loc 1 245 5 is_stmt 1 view .LVU137
+ 498              	.LVL40:
+ 247:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 499              		.loc 1 247 5 view .LVU138
+ 248:Task/Task_Telemetry.c ****         (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+ 500              		.loc 1 248 10 is_stmt 0 view .LVU139
+ 501 0008 8846     		mov	r8, r1
+ 502 000a B1FA81F1 		clz	r1, r1
+ 503              	.LVL41:
+ 248:Task/Task_Telemetry.c ****         (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+ 504              		.loc 1 248 10 view .LVU140
+ 505 000e 4909     		lsrs	r1, r1, #5
+ 247:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 506              		.loc 1 247 25 view .LVU141
+ 507 0010 0028     		cmp	r0, #0
+ 508 0012 14BF     		ite	ne
+ 509 0014 0846     		movne	r0, r1
+ 510 0016 0120     		moveq	r0, #1
+ 511              	.LVL42:
+ 247:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 512              		.loc 1 247 8 view .LVU142
+ 513 0018 40BB     		cbnz	r0, .L32
+ 514 001a 1546     		mov	r5, r2
+ 515 001c 1E46     		mov	r6, r3
+ 250:Task/Task_Telemetry.c ****         return false;
+ 516              		.loc 1 250 20 view .LVU143
+ 517 001e 40F26C74 		movw	r4, #1900
+ 518 0022 A742     		cmp	r7, r4
+ 519 0024 94BF     		ite	ls
+ 520 0026 0024     		movls	r4, #0
+ 521 0028 0124     		movhi	r4, #1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 19
+
+
+ 249:Task/Task_Telemetry.c ****         (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+ 522              		.loc 1 249 54 view .LVU144
+ 523 002a 632B     		cmp	r3, #99
+ 524 002c 98BF     		it	ls
+ 525 002e 44F00104 		orrls	r4, r4, #1
+ 526 0032 E4B9     		cbnz	r4, .L30
+ 253:Task/Task_Telemetry.c **** 
+ 527              		.loc 1 253 5 is_stmt 1 view .LVU145
+ 253:Task/Task_Telemetry.c **** 
+ 528              		.loc 1 253 51 is_stmt 0 view .LVU146
+ 529 0034 0F20     		movs	r0, #15
+ 530 0036 FFF7FEFF 		bl	MMU_Malloc
+ 531              	.LVL43:
+ 255:Task/Task_Telemetry.c ****     {
+ 532              		.loc 1 255 5 is_stmt 1 view .LVU147
+ 255:Task/Task_Telemetry.c ****     {
+ 533              		.loc 1 255 8 is_stmt 0 view .LVU148
+ 534 003a 0146     		mov	r1, r0
+ 535 003c 90B1     		cbz	r0, .L34
+ 261:Task/Task_Telemetry.c ****     channel_set->max = max_range;
+ 536              		.loc 1 261 5 is_stmt 1 view .LVU149
+ 261:Task/Task_Telemetry.c ****     channel_set->max = max_range;
+ 537              		.loc 1 261 30 is_stmt 0 view .LVU150
+ 538 003e C0F80980 		str	r8, [r0, #9]	@ unaligned
+ 262:Task/Task_Telemetry.c ****     channel_set->min = min_range;
+ 539              		.loc 1 262 5 is_stmt 1 view .LVU151
+ 262:Task/Task_Telemetry.c ****     channel_set->min = min_range;
+ 540              		.loc 1 262 22 is_stmt 0 view .LVU152
+ 541 0042 A0F80770 		strh	r7, [r0, #7]	@ unaligned
+ 263:Task/Task_Telemetry.c **** 
+ 542              		.loc 1 263 5 is_stmt 1 view .LVU153
+ 263:Task/Task_Telemetry.c **** 
+ 543              		.loc 1 263 22 is_stmt 0 view .LVU154
+ 544 0046 A0F80360 		strh	r6, [r0, #3]	@ unaligned
+ 265:Task/Task_Telemetry.c ****     toggle->combo_list.mode = by_order;
+ 545              		.loc 1 265 5 is_stmt 1 view .LVU155
+ 265:Task/Task_Telemetry.c ****     toggle->combo_list.mode = by_order;
+ 546              		.loc 1 265 23 is_stmt 0 view .LVU156
+ 547 004a 0124     		movs	r4, #1
+ 548 004c 2C75     		strb	r4, [r5, #20]
+ 266:Task/Task_Telemetry.c ****     toggle->combo_list.compare_callback = NULL;
+ 549              		.loc 1 266 5 is_stmt 1 view .LVU157
+ 266:Task/Task_Telemetry.c ****     toggle->combo_list.compare_callback = NULL;
+ 550              		.loc 1 266 29 is_stmt 0 view .LVU158
+ 551 004e 2C70     		strb	r4, [r5]
+ 267:Task/Task_Telemetry.c ****     List_ItemInit(&(toggle->combo_list), channel_set);
+ 552              		.loc 1 267 5 is_stmt 1 view .LVU159
+ 267:Task/Task_Telemetry.c ****     List_ItemInit(&(toggle->combo_list), channel_set);
+ 553              		.loc 1 267 41 is_stmt 0 view .LVU160
+ 554 0050 0023     		movs	r3, #0
+ 555 0052 2B71     		strb	r3, [r5, #4]
+ 556 0054 6B71     		strb	r3, [r5, #5]
+ 557 0056 AB71     		strb	r3, [r5, #6]
+ 558 0058 EB71     		strb	r3, [r5, #7]
+ 268:Task/Task_Telemetry.c **** 
+ 559              		.loc 1 268 5 is_stmt 1 view .LVU161
+ 560 005a 2846     		mov	r0, r5
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 20
+
+
+ 561              	.LVL44:
+ 268:Task/Task_Telemetry.c **** 
+ 562              		.loc 1 268 5 is_stmt 0 view .LVU162
+ 563 005c FFF7FEFF 		bl	List_ItemInit
+ 564              	.LVL45:
+ 270:Task/Task_Telemetry.c **** }
+ 565              		.loc 1 270 5 is_stmt 1 view .LVU163
+ 270:Task/Task_Telemetry.c **** }
+ 566              		.loc 1 270 12 is_stmt 0 view .LVU164
+ 567 0060 2046     		mov	r0, r4
+ 568 0062 04E0     		b	.L30
+ 569              	.LVL46:
+ 570              	.L34:
+ 257:Task/Task_Telemetry.c ****         return false;
+ 571              		.loc 1 257 9 is_stmt 1 view .LVU165
+ 572 0064 FFF7FEFF 		bl	MMU_Free
+ 573              	.LVL47:
+ 258:Task/Task_Telemetry.c ****     }
+ 574              		.loc 1 258 9 view .LVU166
+ 258:Task/Task_Telemetry.c ****     }
+ 575              		.loc 1 258 16 is_stmt 0 view .LVU167
+ 576 0068 2046     		mov	r0, r4
+ 577 006a 00E0     		b	.L30
+ 578              	.LVL48:
+ 579              	.L32:
+ 251:Task/Task_Telemetry.c **** 
+ 580              		.loc 1 251 16 view .LVU168
+ 581 006c 0020     		movs	r0, #0
+ 582              	.LVL49:
+ 583              	.L30:
+ 271:Task/Task_Telemetry.c **** 
+ 584              		.loc 1 271 1 view .LVU169
+ 585 006e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 271:Task/Task_Telemetry.c **** 
+ 586              		.loc 1 271 1 view .LVU170
+ 587              		.cfi_endproc
+ 588              	.LFE2003:
+ 590              		.section	.text.Telemetry_AddToggleCombo,"ax",%progbits
+ 591              		.align	1
+ 592              		.syntax unified
+ 593              		.thumb
+ 594              		.thumb_func
+ 595              		.fpu fpv5-d16
+ 597              	Telemetry_AddToggleCombo:
+ 598              	.LVL50:
+ 599              	.LFB2004:
+ 274:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+ 600              		.loc 1 274 1 is_stmt 1 view -0
+ 601              		.cfi_startproc
+ 602              		@ args = 4, pretend = 0, frame = 0
+ 603              		@ frame_needed = 0, uses_anonymous_args = 0
+ 274:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
+ 604              		.loc 1 274 1 is_stmt 0 view .LVU172
+ 605 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 606              	.LCFI8:
+ 607              		.cfi_def_cfa_offset 32
+ 608              		.cfi_offset 4, -32
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 21
+
+
+ 609              		.cfi_offset 5, -28
+ 610              		.cfi_offset 6, -24
+ 611              		.cfi_offset 7, -20
+ 612              		.cfi_offset 8, -16
+ 613              		.cfi_offset 9, -12
+ 614              		.cfi_offset 10, -8
+ 615              		.cfi_offset 14, -4
+ 616 0004 BDF82070 		ldrh	r7, [sp, #32]
+ 275:Task/Task_Telemetry.c ****     item_obj *item = NULL;
+ 617              		.loc 1 275 5 is_stmt 1 view .LVU173
+ 618              	.LVL51:
+ 276:Task/Task_Telemetry.c **** 
+ 619              		.loc 1 276 5 view .LVU174
+ 278:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 620              		.loc 1 278 5 view .LVU175
+ 279:Task/Task_Telemetry.c ****         (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+ 621              		.loc 1 279 10 is_stmt 0 view .LVU176
+ 622 0008 8846     		mov	r8, r1
+ 623 000a B1FA81F1 		clz	r1, r1
+ 624              	.LVL52:
+ 279:Task/Task_Telemetry.c ****         (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
+ 625              		.loc 1 279 10 view .LVU177
+ 626 000e 4909     		lsrs	r1, r1, #5
+ 278:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 627              		.loc 1 278 25 view .LVU178
+ 628 0010 0028     		cmp	r0, #0
+ 629 0012 14BF     		ite	ne
+ 630 0014 0846     		movne	r0, r1
+ 631 0016 0120     		moveq	r0, #1
+ 632              	.LVL53:
+ 278:Task/Task_Telemetry.c ****         (!data_obj) ||
+ 633              		.loc 1 278 8 view .LVU179
+ 634 0018 80BB     		cbnz	r0, .L39
+ 635 001a 1646     		mov	r6, r2
+ 636 001c 1D46     		mov	r5, r3
+ 281:Task/Task_Telemetry.c ****         return false;
+ 637              		.loc 1 281 20 view .LVU180
+ 638 001e 40F26C74 		movw	r4, #1900
+ 639 0022 A742     		cmp	r7, r4
+ 640 0024 94BF     		ite	ls
+ 641 0026 0024     		movls	r4, #0
+ 642 0028 0124     		movhi	r4, #1
+ 280:Task/Task_Telemetry.c ****         (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+ 643              		.loc 1 280 54 view .LVU181
+ 644 002a 632B     		cmp	r3, #99
+ 645 002c 98BF     		it	ls
+ 646 002e 44F00104 		orrls	r4, r4, #1
+ 647 0032 24BB     		cbnz	r4, .L36
+ 284:Task/Task_Telemetry.c **** 
+ 648              		.loc 1 284 5 is_stmt 1 view .LVU182
+ 284:Task/Task_Telemetry.c **** 
+ 649              		.loc 1 284 51 is_stmt 0 view .LVU183
+ 650 0034 0F20     		movs	r0, #15
+ 651 0036 FFF7FEFF 		bl	MMU_Malloc
+ 652              	.LVL54:
+ 286:Task/Task_Telemetry.c ****     {
+ 653              		.loc 1 286 5 is_stmt 1 view .LVU184
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 22
+
+
+ 286:Task/Task_Telemetry.c ****     {
+ 654              		.loc 1 286 8 is_stmt 0 view .LVU185
+ 655 003a 8146     		mov	r9, r0
+ 656 003c B0B1     		cbz	r0, .L41
+ 292:Task/Task_Telemetry.c **** 
+ 657              		.loc 1 292 5 is_stmt 1 view .LVU186
+ 292:Task/Task_Telemetry.c **** 
+ 658              		.loc 1 292 24 is_stmt 0 view .LVU187
+ 659 003e 1420     		movs	r0, #20
+ 660              	.LVL55:
+ 292:Task/Task_Telemetry.c **** 
+ 661              		.loc 1 292 24 view .LVU188
+ 662 0040 FFF7FEFF 		bl	MMU_Malloc
+ 663              	.LVL56:
+ 294:Task/Task_Telemetry.c ****     {
+ 664              		.loc 1 294 5 is_stmt 1 view .LVU189
+ 294:Task/Task_Telemetry.c ****     {
+ 665              		.loc 1 294 8 is_stmt 0 view .LVU190
+ 666 0044 8246     		mov	r10, r0
+ 667 0046 A8B1     		cbz	r0, .L42
+ 300:Task/Task_Telemetry.c ****     channel_set->max = max_range;
+ 668              		.loc 1 300 5 is_stmt 1 view .LVU191
+ 300:Task/Task_Telemetry.c ****     channel_set->max = max_range;
+ 669              		.loc 1 300 30 is_stmt 0 view .LVU192
+ 670 0048 C9F80980 		str	r8, [r9, #9]	@ unaligned
+ 301:Task/Task_Telemetry.c ****     channel_set->min = min_range;
+ 671              		.loc 1 301 5 is_stmt 1 view .LVU193
+ 301:Task/Task_Telemetry.c ****     channel_set->min = min_range;
+ 672              		.loc 1 301 22 is_stmt 0 view .LVU194
+ 673 004c A9F80770 		strh	r7, [r9, #7]	@ unaligned
+ 302:Task/Task_Telemetry.c **** 
+ 674              		.loc 1 302 5 is_stmt 1 view .LVU195
+ 302:Task/Task_Telemetry.c **** 
+ 675              		.loc 1 302 22 is_stmt 0 view .LVU196
+ 676 0050 A9F80350 		strh	r5, [r9, #3]	@ unaligned
+ 304:Task/Task_Telemetry.c ****     List_ItemInit(item, channel_set);
+ 677              		.loc 1 304 5 is_stmt 1 view .LVU197
+ 304:Task/Task_Telemetry.c ****     List_ItemInit(item, channel_set);
+ 678              		.loc 1 304 11 is_stmt 0 view .LVU198
+ 679 0054 337D     		ldrb	r3, [r6, #20]	@ zero_extendqisi2
+ 304:Task/Task_Telemetry.c ****     List_ItemInit(item, channel_set);
+ 680              		.loc 1 304 22 view .LVU199
+ 681 0056 0133     		adds	r3, r3, #1
+ 682 0058 3375     		strb	r3, [r6, #20]
+ 305:Task/Task_Telemetry.c ****     List_Insert_Item(&toggle->combo_list, item);
+ 683              		.loc 1 305 5 is_stmt 1 view .LVU200
+ 684 005a 4946     		mov	r1, r9
+ 685 005c FFF7FEFF 		bl	List_ItemInit
+ 686              	.LVL57:
+ 306:Task/Task_Telemetry.c **** 
+ 687              		.loc 1 306 5 view .LVU201
+ 688 0060 5146     		mov	r1, r10
+ 689 0062 3046     		mov	r0, r6
+ 690 0064 FFF7FEFF 		bl	List_Insert_Item
+ 691              	.LVL58:
+ 308:Task/Task_Telemetry.c **** }
+ 692              		.loc 1 308 5 view .LVU202
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 23
+
+
+ 308:Task/Task_Telemetry.c **** }
+ 693              		.loc 1 308 12 is_stmt 0 view .LVU203
+ 694 0068 0120     		movs	r0, #1
+ 695 006a 08E0     		b	.L36
+ 696              	.LVL59:
+ 697              	.L41:
+ 288:Task/Task_Telemetry.c ****         return false;
+ 698              		.loc 1 288 9 is_stmt 1 view .LVU204
+ 699 006c FFF7FEFF 		bl	MMU_Free
+ 700              	.LVL60:
+ 289:Task/Task_Telemetry.c ****     }
+ 701              		.loc 1 289 9 view .LVU205
+ 289:Task/Task_Telemetry.c ****     }
+ 702              		.loc 1 289 16 is_stmt 0 view .LVU206
+ 703 0070 2046     		mov	r0, r4
+ 704 0072 04E0     		b	.L36
+ 705              	.LVL61:
+ 706              	.L42:
+ 296:Task/Task_Telemetry.c ****         return false;
+ 707              		.loc 1 296 9 is_stmt 1 view .LVU207
+ 708 0074 FFF7FEFF 		bl	MMU_Free
+ 709              	.LVL62:
+ 297:Task/Task_Telemetry.c ****     }
+ 710              		.loc 1 297 9 view .LVU208
+ 297:Task/Task_Telemetry.c ****     }
+ 711              		.loc 1 297 16 is_stmt 0 view .LVU209
+ 712 0078 2046     		mov	r0, r4
+ 713 007a 00E0     		b	.L36
+ 714              	.LVL63:
+ 715              	.L39:
+ 282:Task/Task_Telemetry.c **** 
+ 716              		.loc 1 282 16 view .LVU210
+ 717 007c 0020     		movs	r0, #0
+ 718              	.LVL64:
+ 719              	.L36:
+ 309:Task/Task_Telemetry.c **** 
+ 720              		.loc 1 309 1 view .LVU211
+ 721 007e BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 309:Task/Task_Telemetry.c **** 
+ 722              		.loc 1 309 1 view .LVU212
+ 723              		.cfi_endproc
+ 724              	.LFE2004:
+ 726              		.section	.text.Telemetry_Toggle_Check,"ax",%progbits
+ 727              		.align	1
+ 728              		.syntax unified
+ 729              		.thumb
+ 730              		.thumb_func
+ 731              		.fpu fpv5-d16
+ 733              	Telemetry_Toggle_Check:
+ 734              	.LVL65:
+ 735              	.LFB2005:
+ 312:Task/Task_Telemetry.c ****     Telemetry_ToggleData_TypeDef toggle_val;
+ 736              		.loc 1 312 1 is_stmt 1 view -0
+ 737              		.cfi_startproc
+ 738              		@ args = 0, pretend = 0, frame = 8
+ 739              		@ frame_needed = 0, uses_anonymous_args = 0
+ 312:Task/Task_Telemetry.c ****     Telemetry_ToggleData_TypeDef toggle_val;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 24
+
+
+ 740              		.loc 1 312 1 is_stmt 0 view .LVU214
+ 741 0000 30B5     		push	{r4, r5, lr}
+ 742              	.LCFI9:
+ 743              		.cfi_def_cfa_offset 12
+ 744              		.cfi_offset 4, -12
+ 745              		.cfi_offset 5, -8
+ 746              		.cfi_offset 14, -4
+ 747 0002 83B0     		sub	sp, sp, #12
+ 748              	.LCFI10:
+ 749              		.cfi_def_cfa_offset 24
+ 313:Task/Task_Telemetry.c ****     uint8_t pos_reg = 0;
+ 750              		.loc 1 313 5 is_stmt 1 view .LVU215
+ 314:Task/Task_Telemetry.c **** 
+ 751              		.loc 1 314 5 view .LVU216
+ 752              	.LVL66:
+ 316:Task/Task_Telemetry.c ****     toggle_val.cnt = 0;
+ 753              		.loc 1 316 5 view .LVU217
+ 316:Task/Task_Telemetry.c ****     toggle_val.cnt = 0;
+ 754              		.loc 1 316 20 is_stmt 0 view .LVU218
+ 755 0004 0023     		movs	r3, #0
+ 756 0006 ADF80230 		strh	r3, [sp, #2]	@ movhi
+ 317:Task/Task_Telemetry.c ****     toggle_val.state = false;
+ 757              		.loc 1 317 5 is_stmt 1 view .LVU219
+ 317:Task/Task_Telemetry.c ****     toggle_val.state = false;
+ 758              		.loc 1 317 20 is_stmt 0 view .LVU220
+ 759 000a 8DF80030 		strb	r3, [sp]
+ 318:Task/Task_Telemetry.c ****     item_obj *nxt = &toggle->combo_list;
+ 760              		.loc 1 318 5 is_stmt 1 view .LVU221
+ 318:Task/Task_Telemetry.c ****     item_obj *nxt = &toggle->combo_list;
+ 761              		.loc 1 318 22 is_stmt 0 view .LVU222
+ 762 000e 8DF80130 		strb	r3, [sp, #1]
+ 319:Task/Task_Telemetry.c ****     Telemetry_ChannelSet_TypeDef *channel_data = NULL;
+ 763              		.loc 1 319 5 is_stmt 1 view .LVU223
+ 764              	.LVL67:
+ 320:Task/Task_Telemetry.c **** 
+ 765              		.loc 1 320 5 view .LVU224
+ 322:Task/Task_Telemetry.c ****         return toggle_val;
+ 766              		.loc 1 322 5 view .LVU225
+ 322:Task/Task_Telemetry.c ****         return toggle_val;
+ 767              		.loc 1 322 8 is_stmt 0 view .LVU226
+ 768 0012 18B1     		cbz	r0, .L54
+ 769 0014 0446     		mov	r4, r0
+ 770 0016 0346     		mov	r3, r0
+ 314:Task/Task_Telemetry.c **** 
+ 771              		.loc 1 314 13 view .LVU227
+ 772 0018 0025     		movs	r5, #0
+ 773 001a 13E0     		b	.L44
+ 774              	.L54:
+ 323:Task/Task_Telemetry.c **** 
+ 775              		.loc 1 323 9 is_stmt 1 view .LVU228
+ 323:Task/Task_Telemetry.c **** 
+ 776              		.loc 1 323 16 is_stmt 0 view .LVU229
+ 777 001c 009B     		ldr	r3, [sp]
+ 778 001e 0193     		str	r3, [sp, #4]
+ 779 0020 2FE0     		b	.L45
+ 780              	.LVL68:
+ 781              	.L46:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 25
+
+
+ 334:Task/Task_Telemetry.c ****             toggle_val.cnt++;
+ 782              		.loc 1 334 13 is_stmt 1 view .LVU230
+ 334:Task/Task_Telemetry.c ****             toggle_val.cnt++;
+ 783              		.loc 1 334 39 is_stmt 0 view .LVU231
+ 784 0022 BDF80210 		ldrh	r1, [sp, #2]
+ 334:Task/Task_Telemetry.c ****             toggle_val.cnt++;
+ 785              		.loc 1 334 26 view .LVU232
+ 786 0026 0122     		movs	r2, #1
+ 787 0028 8A40     		lsls	r2, r2, r1
+ 334:Task/Task_Telemetry.c ****             toggle_val.cnt++;
+ 788              		.loc 1 334 21 view .LVU233
+ 789 002a 2A43     		orrs	r2, r2, r5
+ 790 002c D5B2     		uxtb	r5, r2
+ 791              	.LVL69:
+ 335:Task/Task_Telemetry.c ****         }
+ 792              		.loc 1 335 13 is_stmt 1 view .LVU234
+ 335:Task/Task_Telemetry.c ****         }
+ 793              		.loc 1 335 23 is_stmt 0 view .LVU235
+ 794 002e 9DF80020 		ldrb	r2, [sp]	@ zero_extendqisi2
+ 335:Task/Task_Telemetry.c ****         }
+ 795              		.loc 1 335 27 view .LVU236
+ 796 0032 0132     		adds	r2, r2, #1
+ 797 0034 8DF80020 		strb	r2, [sp]
+ 798              	.L47:
+ 338:Task/Task_Telemetry.c ****         nxt = nxt->nxt;
+ 799              		.loc 1 338 9 is_stmt 1 view .LVU237
+ 338:Task/Task_Telemetry.c ****         nxt = nxt->nxt;
+ 800              		.loc 1 338 19 is_stmt 0 view .LVU238
+ 801 0038 BDF80220 		ldrh	r2, [sp, #2]
+ 338:Task/Task_Telemetry.c ****         nxt = nxt->nxt;
+ 802              		.loc 1 338 23 view .LVU239
+ 803 003c 0132     		adds	r2, r2, #1
+ 804 003e ADF80220 		strh	r2, [sp, #2]	@ movhi
+ 339:Task/Task_Telemetry.c ****     }
+ 805              		.loc 1 339 9 is_stmt 1 view .LVU240
+ 339:Task/Task_Telemetry.c ****     }
+ 806              		.loc 1 339 13 is_stmt 0 view .LVU241
+ 807 0042 DB68     		ldr	r3, [r3, #12]
+ 808              	.LVL70:
+ 809              	.L44:
+ 326:Task/Task_Telemetry.c ****     {
+ 810              		.loc 1 326 11 is_stmt 1 view .LVU242
+ 811 0044 73B1     		cbz	r3, .L55
+ 328:Task/Task_Telemetry.c **** 
+ 812              		.loc 1 328 9 view .LVU243
+ 328:Task/Task_Telemetry.c **** 
+ 813              		.loc 1 328 22 is_stmt 0 view .LVU244
+ 814 0046 1A69     		ldr	r2, [r3, #16]
+ 815              	.LVL71:
+ 330:Task/Task_Telemetry.c ****             (((*(uint16_t *)channel_data->channel_ptr) < channel_data->max) &&
+ 816              		.loc 1 330 9 is_stmt 1 view .LVU245
+ 330:Task/Task_Telemetry.c ****             (((*(uint16_t *)channel_data->channel_ptr) < channel_data->max) &&
+ 817              		.loc 1 330 12 is_stmt 0 view .LVU246
+ 818 0048 002A     		cmp	r2, #0
+ 819 004a EAD0     		beq	.L46
+ 331:Task/Task_Telemetry.c ****              ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
+ 820              		.loc 1 331 41 discriminator 1 view .LVU247
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 26
+
+
+ 821 004c D2F80910 		ldr	r1, [r2, #9]	@ unaligned
+ 331:Task/Task_Telemetry.c ****              ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
+ 822              		.loc 1 331 16 discriminator 1 view .LVU248
+ 823 0050 0988     		ldrh	r1, [r1]
+ 331:Task/Task_Telemetry.c ****              ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
+ 824              		.loc 1 331 70 discriminator 1 view .LVU249
+ 825 0052 B2F80700 		ldrh	r0, [r2, #7]	@ unaligned
+ 330:Task/Task_Telemetry.c ****             (((*(uint16_t *)channel_data->channel_ptr) < channel_data->max) &&
+ 826              		.loc 1 330 27 discriminator 1 view .LVU250
+ 827 0056 8142     		cmp	r1, r0
+ 828 0058 EED2     		bcs	.L47
+ 332:Task/Task_Telemetry.c ****         {
+ 829              		.loc 1 332 70 view .LVU251
+ 830 005a B2F80320 		ldrh	r2, [r2, #3]	@ unaligned
+ 831              	.LVL72:
+ 331:Task/Task_Telemetry.c ****              ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
+ 832              		.loc 1 331 77 view .LVU252
+ 833 005e 9142     		cmp	r1, r2
+ 834 0060 EAD9     		bls	.L47
+ 835 0062 DEE7     		b	.L46
+ 836              	.LVL73:
+ 837              	.L55:
+ 343:Task/Task_Telemetry.c ****     {
+ 838              		.loc 1 343 5 is_stmt 1 view .LVU253
+ 343:Task/Task_Telemetry.c ****     {
+ 839              		.loc 1 343 9 is_stmt 0 view .LVU254
+ 840 0064 2846     		mov	r0, r5
+ 841 0066 FFF7FEFF 		bl	Get_OnSet_Bit_Num
+ 842              	.LVL74:
+ 343:Task/Task_Telemetry.c ****     {
+ 843              		.loc 1 343 8 view .LVU255
+ 844 006a 0128     		cmp	r0, #1
+ 845 006c 1CD0     		beq	.L56
+ 351:Task/Task_Telemetry.c ****     }
+ 846              		.loc 1 351 9 is_stmt 1 view .LVU256
+ 351:Task/Task_Telemetry.c ****     }
+ 847              		.loc 1 351 24 is_stmt 0 view .LVU257
+ 848 006e 0023     		movs	r3, #0
+ 849 0070 ADF80230 		strh	r3, [sp, #2]	@ movhi
+ 850              	.L50:
+ 354:Task/Task_Telemetry.c ****         toggle_val.state = true;
+ 851              		.loc 1 354 5 is_stmt 1 view .LVU258
+ 354:Task/Task_Telemetry.c ****         toggle_val.state = true;
+ 852              		.loc 1 354 19 is_stmt 0 view .LVU259
+ 853 0074 9DF80020 		ldrb	r2, [sp]	@ zero_extendqisi2
+ 354:Task/Task_Telemetry.c ****         toggle_val.state = true;
+ 854              		.loc 1 354 33 view .LVU260
+ 855 0078 237D     		ldrb	r3, [r4, #20]	@ zero_extendqisi2
+ 354:Task/Task_Telemetry.c ****         toggle_val.state = true;
+ 856              		.loc 1 354 8 view .LVU261
+ 857 007a 9A42     		cmp	r2, r3
+ 858 007c 1AD0     		beq	.L57
+ 859              	.L51:
+ 357:Task/Task_Telemetry.c **** }
+ 860              		.loc 1 357 5 is_stmt 1 view .LVU262
+ 357:Task/Task_Telemetry.c **** }
+ 861              		.loc 1 357 12 is_stmt 0 view .LVU263
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 27
+
+
+ 862 007e 009B     		ldr	r3, [sp]
+ 863 0080 0193     		str	r3, [sp, #4]
+ 864              	.LVL75:
+ 865              	.L45:
+ 357:Task/Task_Telemetry.c **** }
+ 866              		.loc 1 357 12 view .LVU264
+ 867 0082 0020     		movs	r0, #0
+ 868 0084 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 869 0088 63F30700 		bfi	r0, r3, #0, #8
+ 870 008c 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 871 0090 63F30F20 		bfi	r0, r3, #8, #8
+ 872 0094 9DF80630 		ldrb	r3, [sp, #6]	@ zero_extendqisi2
+ 873 0098 63F31740 		bfi	r0, r3, #16, #8
+ 874 009c 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 875 00a0 63F31F60 		bfi	r0, r3, #24, #8
+ 358:Task/Task_Telemetry.c **** 
+ 876              		.loc 1 358 1 view .LVU265
+ 877 00a4 03B0     		add	sp, sp, #12
+ 878              	.LCFI11:
+ 879              		.cfi_remember_state
+ 880              		.cfi_def_cfa_offset 12
+ 881              		@ sp needed
+ 882 00a6 30BD     		pop	{r4, r5, pc}
+ 883              	.LVL76:
+ 884              	.L56:
+ 885              	.LCFI12:
+ 886              		.cfi_restore_state
+ 346:Task/Task_Telemetry.c ****     }
+ 887              		.loc 1 346 9 is_stmt 1 view .LVU266
+ 346:Task/Task_Telemetry.c ****     }
+ 888              		.loc 1 346 26 is_stmt 0 view .LVU267
+ 889 00a8 2846     		mov	r0, r5
+ 890 00aa FFF7FEFF 		bl	Get_Bit_Index
+ 891              	.LVL77:
+ 346:Task/Task_Telemetry.c ****     }
+ 892              		.loc 1 346 24 view .LVU268
+ 893 00ae ADF80200 		strh	r0, [sp, #2]	@ movhi
+ 894 00b2 DFE7     		b	.L50
+ 895              	.L57:
+ 355:Task/Task_Telemetry.c **** 
+ 896              		.loc 1 355 9 is_stmt 1 view .LVU269
+ 355:Task/Task_Telemetry.c **** 
+ 897              		.loc 1 355 26 is_stmt 0 view .LVU270
+ 898 00b4 0123     		movs	r3, #1
+ 899 00b6 8DF80130 		strb	r3, [sp, #1]
+ 900 00ba E0E7     		b	.L51
+ 901              		.cfi_endproc
+ 902              	.LFE2005:
+ 904              		.section	.text.Telemetry_RC_Sig_Update,"ax",%progbits
+ 905              		.align	1
+ 906              		.syntax unified
+ 907              		.thumb
+ 908              		.thumb_func
+ 909              		.fpu fpv5-d16
+ 911              	Telemetry_RC_Sig_Update:
+ 912              	.LVL78:
+ 913              	.LFB2009:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 28
+
+
+ 424:Task/Task_Telemetry.c **** 
+ 425:Task/Task_Telemetry.c **** static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, Srv
+ 426:Task/Task_Telemetry.c **** {
+ 914              		.loc 1 426 1 is_stmt 1 view -0
+ 915              		.cfi_startproc
+ 916              		@ args = 0, pretend = 0, frame = 136
+ 917              		@ frame_needed = 0, uses_anonymous_args = 0
+ 918              		.loc 1 426 1 is_stmt 0 view .LVU272
+ 919 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 920              	.LCFI13:
+ 921              		.cfi_def_cfa_offset 28
+ 922              		.cfi_offset 4, -28
+ 923              		.cfi_offset 5, -24
+ 924              		.cfi_offset 6, -20
+ 925              		.cfi_offset 7, -16
+ 926              		.cfi_offset 8, -12
+ 927              		.cfi_offset 9, -8
+ 928              		.cfi_offset 14, -4
+ 929 0004 A3B0     		sub	sp, sp, #140
+ 930              	.LCFI14:
+ 931              		.cfi_def_cfa_offset 168
+ 932 0006 8146     		mov	r9, r0
+ 933 0008 0D46     		mov	r5, r1
+ 934 000a 9046     		mov	r8, r2
+ 427:Task/Task_Telemetry.c ****     SrvReceiverData_TypeDef receiver_data;
+ 935              		.loc 1 427 5 is_stmt 1 view .LVU273
+ 428:Task/Task_Telemetry.c ****     Telemetry_RCSig_TypeDef sig_tmp;
+ 936              		.loc 1 428 5 view .LVU274
+ 429:Task/Task_Telemetry.c **** 
+ 430:Task/Task_Telemetry.c ****     memset(&receiver_data, 0, sizeof(receiver_data));
+ 937              		.loc 1 430 5 view .LVU275
+ 938 000c 0024     		movs	r4, #0
+ 939 000e 1A94     		str	r4, [sp, #104]
+ 940 0010 1B94     		str	r4, [sp, #108]
+ 941 0012 1C94     		str	r4, [sp, #112]
+ 942 0014 8DF87440 		strb	r4, [sp, #116]
+ 431:Task/Task_Telemetry.c ****     memset(&sig_tmp, 0, sizeof(sig_tmp));
+ 943              		.loc 1 431 5 view .LVU276
+ 944 0018 5822     		movs	r2, #88
+ 945              	.LVL79:
+ 946              		.loc 1 431 5 is_stmt 0 view .LVU277
+ 947 001a 2146     		mov	r1, r4
+ 948              	.LVL80:
+ 949              		.loc 1 431 5 view .LVU278
+ 950 001c 04A8     		add	r0, sp, #16
+ 951              	.LVL81:
+ 952              		.loc 1 431 5 view .LVU279
+ 953 001e FFF7FEFF 		bl	memset
+ 954              	.LVL82:
+ 432:Task/Task_Telemetry.c **** 
+ 433:Task/Task_Telemetry.c ****     sig_tmp.gimbal_percent[Telemetry_RC_Throttle] = 0;
+ 955              		.loc 1 433 5 is_stmt 1 view .LVU280
+ 956              		.loc 1 433 51 is_stmt 0 view .LVU281
+ 957 0022 ADF81440 		strh	r4, [sp, #20]	@ movhi
+ 434:Task/Task_Telemetry.c ****     sig_tmp.gimbal_percent[Telemetry_RC_Pitch] = 0;
+ 958              		.loc 1 434 5 is_stmt 1 view .LVU282
+ 959              		.loc 1 434 48 is_stmt 0 view .LVU283
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 29
+
+
+ 960 0026 ADF81640 		strh	r4, [sp, #22]	@ movhi
+ 435:Task/Task_Telemetry.c ****     sig_tmp.gimbal_percent[Telemetry_RC_Roll] = 0;
+ 961              		.loc 1 435 5 is_stmt 1 view .LVU284
+ 962              		.loc 1 435 47 is_stmt 0 view .LVU285
+ 963 002a ADF81840 		strh	r4, [sp, #24]	@ movhi
+ 436:Task/Task_Telemetry.c ****     sig_tmp.gimbal_percent[Telemetry_RC_Yaw] = 0;
+ 964              		.loc 1 436 5 is_stmt 1 view .LVU286
+ 965              		.loc 1 436 46 is_stmt 0 view .LVU287
+ 966 002e ADF81A40 		strh	r4, [sp, #26]	@ movhi
+ 437:Task/Task_Telemetry.c **** 
+ 438:Task/Task_Telemetry.c ****     if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
+ 967              		.loc 1 438 5 is_stmt 1 view .LVU288
+ 968              		.loc 1 438 29 is_stmt 0 view .LVU289
+ 969 0032 B8FA88F3 		clz	r3, r8
+ 970 0036 5B09     		lsrs	r3, r3, #5
+ 971              		.loc 1 438 25 view .LVU290
+ 972 0038 A542     		cmp	r5, r4
+ 973 003a 08BF     		it	eq
+ 974 003c 0123     		moveq	r3, #1
+ 975              		.loc 1 438 8 view .LVU291
+ 976 003e 5BBB     		cbnz	r3, .L59
+ 977              		.loc 1 438 61 discriminator 1 view .LVU292
+ 978 0040 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 979              		.loc 1 438 44 discriminator 1 view .LVU293
+ 980 0042 4BB3     		cbz	r3, .L59
+ 439:Task/Task_Telemetry.c ****         return sig_tmp;
+ 440:Task/Task_Telemetry.c **** 
+ 441:Task/Task_Telemetry.c ****     receiver_data = SrvReceiver.get(receiver_obj);
+ 981              		.loc 1 441 5 is_stmt 1 view .LVU294
+ 982              		.loc 1 441 32 is_stmt 0 view .LVU295
+ 983 0044 644B     		ldr	r3, .L78
+ 984 0046 DB68     		ldr	r3, [r3, #12]
+ 985              		.loc 1 441 21 view .LVU296
+ 986 0048 4146     		mov	r1, r8
+ 987 004a 6846     		mov	r0, sp
+ 988 004c 9847     		blx	r3
+ 989              	.LVL83:
+ 990 004e 1AAB     		add	r3, sp, #104
+ 991 0050 0098     		ldr	r0, [sp]	@ unaligned
+ 992 0052 0199     		ldr	r1, [sp, #4]	@ unaligned
+ 993 0054 029A     		ldr	r2, [sp, #8]	@ unaligned
+ 994 0056 07C3     		stmia	r3!, {r0, r1, r2}
+ 995 0058 9DF80C20 		ldrb	r2, [sp, #12]	@ zero_extendqisi2
+ 996 005c 1A70     		strb	r2, [r3]
+ 442:Task/Task_Telemetry.c ****     RC_Input_obj->rssi = 0;
+ 997              		.loc 1 442 5 is_stmt 1 view .LVU297
+ 998              		.loc 1 442 24 is_stmt 0 view .LVU298
+ 999 005e 0023     		movs	r3, #0
+ 1000 0060 85F86530 		strb	r3, [r5, #101]
+ 1001 0064 85F86630 		strb	r3, [r5, #102]
+ 443:Task/Task_Telemetry.c ****     RC_Input_obj->link_quality = 0;
+ 1002              		.loc 1 443 5 is_stmt 1 view .LVU299
+ 1003              		.loc 1 443 32 is_stmt 0 view .LVU300
+ 1004 0068 85F86730 		strb	r3, [r5, #103]
+ 1005 006c 85F86830 		strb	r3, [r5, #104]
+ 444:Task/Task_Telemetry.c **** 
+ 445:Task/Task_Telemetry.c ****     /* notic disarm and osd tune can not enable at the same time */
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 30
+
+
+ 446:Task/Task_Telemetry.c ****     /* when power on and arm toggle on remote is set on disarm we force it to arm */
+ 447:Task/Task_Telemetry.c **** 
+ 448:Task/Task_Telemetry.c ****     if (!receiver_data.failsafe)
+ 1006              		.loc 1 448 5 is_stmt 1 view .LVU301
+ 1007              		.loc 1 448 8 is_stmt 0 view .LVU302
+ 1008 0070 002A     		cmp	r2, #0
+ 1009 0072 40F09280 		bne	.L62
+ 449:Task/Task_Telemetry.c ****     {
+ 450:Task/Task_Telemetry.c ****         RC_Input_obj->rssi = receiver_data.rssi;
+ 1010              		.loc 1 450 9 is_stmt 1 view .LVU303
+ 1011              		.loc 1 450 28 is_stmt 0 view .LVU304
+ 1012 0076 BDF87030 		ldrh	r3, [sp, #112]
+ 1013 007a A5F86530 		strh	r3, [r5, #101]	@ unaligned
+ 451:Task/Task_Telemetry.c ****         RC_Input_obj->link_quality = receiver_data.link_quality;
+ 1014              		.loc 1 451 9 is_stmt 1 view .LVU305
+ 1015              		.loc 1 451 36 is_stmt 0 view .LVU306
+ 1016 007e BDF87230 		ldrh	r3, [sp, #114]
+ 1017 0082 A5F86730 		strh	r3, [r5, #103]	@ unaligned
+ 452:Task/Task_Telemetry.c ****         RC_Input_obj->sig.time_stamp = RC_Input_obj->update_rt;
+ 1018              		.loc 1 452 9 is_stmt 1 view .LVU307
+ 1019              		.loc 1 452 52 is_stmt 0 view .LVU308
+ 1020 0086 D5F80130 		ldr	r3, [r5, #1]	@ unaligned
+ 1021              		.loc 1 452 38 view .LVU309
+ 1022 008a EB61     		str	r3, [r5, #28]	@ unaligned
+ 453:Task/Task_Telemetry.c **** 
+ 454:Task/Task_Telemetry.c ****         RC_Input_obj->sig.channel_sum = Receiver_Obj.channel_num;
+ 1023              		.loc 1 454 9 is_stmt 1 view .LVU310
+ 1024              		.loc 1 454 53 is_stmt 0 view .LVU311
+ 1025 008c 534B     		ldr	r3, .L78+4
+ 1026 008e 9B7B     		ldrb	r3, [r3, #14]	@ zero_extendqisi2
+ 1027              		.loc 1 454 39 view .LVU312
+ 1028 0090 85F82030 		strb	r3, [r5, #32]
+ 455:Task/Task_Telemetry.c **** 
+ 456:Task/Task_Telemetry.c ****         /* get gimbal channel */
+ 457:Task/Task_Telemetry.c ****         for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
+ 1029              		.loc 1 457 9 is_stmt 1 view .LVU313
+ 1030              	.LBB4:
+ 1031              		.loc 1 457 14 view .LVU314
+ 1032              	.LVL84:
+ 1033              		.loc 1 457 22 is_stmt 0 view .LVU315
+ 1034 0094 0024     		movs	r4, #0
+ 1035              		.loc 1 457 9 view .LVU316
+ 1036 0096 13E0     		b	.L63
+ 1037              	.LVL85:
+ 1038              	.L59:
+ 1039              		.loc 1 457 9 view .LVU317
+ 1040              	.LBE4:
+ 439:Task/Task_Telemetry.c **** 
+ 1041              		.loc 1 439 9 is_stmt 1 view .LVU318
+ 439:Task/Task_Telemetry.c **** 
+ 1042              		.loc 1 439 16 is_stmt 0 view .LVU319
+ 1043 0098 5822     		movs	r2, #88
+ 1044 009a 04A9     		add	r1, sp, #16
+ 1045 009c 4846     		mov	r0, r9
+ 1046 009e FFF7FEFF 		bl	memcpy
+ 1047              	.LVL86:
+ 1048              	.L58:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 31
+
+
+ 458:Task/Task_Telemetry.c ****         {
+ 459:Task/Task_Telemetry.c ****             if (i < Telemetry_Gimbal_TagSum)
+ 460:Task/Task_Telemetry.c ****             {
+ 461:Task/Task_Telemetry.c ****                 Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
+ 462:Task/Task_Telemetry.c ****                 RC_Input_obj->sig.gimbal_percent[i] = Telemetry_GimbalToPercent(&RC_Input_obj->Gimb
+ 463:Task/Task_Telemetry.c ****             }
+ 464:Task/Task_Telemetry.c **** 
+ 465:Task/Task_Telemetry.c ****             RC_Input_obj->sig.channel[i] = receiver_data.val_list[i];
+ 466:Task/Task_Telemetry.c ****         }
+ 467:Task/Task_Telemetry.c **** 
+ 468:Task/Task_Telemetry.c ****         /* check buzzer toggle */
+ 469:Task/Task_Telemetry.c ****         RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
+ 470:Task/Task_Telemetry.c **** 
+ 471:Task/Task_Telemetry.c ****         if (!RC_Input_obj->sig.osd_tune_state)
+ 472:Task/Task_Telemetry.c ****         {
+ 473:Task/Task_Telemetry.c ****             /* check arm & disarm */
+ 474:Task/Task_Telemetry.c ****             RC_Input_obj->sig.arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
+ 475:Task/Task_Telemetry.c **** 
+ 476:Task/Task_Telemetry.c ****             /* check control mode */
+ 477:Task/Task_Telemetry.c ****             RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Togg
+ 478:Task/Task_Telemetry.c **** 
+ 479:Task/Task_Telemetry.c ****             /* check control mode inedx range */
+ 480:Task/Task_Telemetry.c ****             if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->si
+ 481:Task/Task_Telemetry.c ****                 RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+ 482:Task/Task_Telemetry.c ****         }
+ 483:Task/Task_Telemetry.c ****         else
+ 484:Task/Task_Telemetry.c ****         {
+ 485:Task/Task_Telemetry.c ****             /* doing osd tuning */
+ 486:Task/Task_Telemetry.c ****         }
+ 487:Task/Task_Telemetry.c **** 
+ 488:Task/Task_Telemetry.c ****         if (RC_Input_obj->sig.arm_state)
+ 489:Task/Task_Telemetry.c ****         {
+ 490:Task/Task_Telemetry.c ****             /* check osd tune toggle */
+ 491:Task/Task_Telemetry.c ****             if (Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state)
+ 492:Task/Task_Telemetry.c ****             {
+ 493:Task/Task_Telemetry.c ****                 if (Receiver_Obj.OSDTune_TriggerMs == 0)
+ 494:Task/Task_Telemetry.c ****                     Receiver_Obj.OSDTune_TriggerMs = Get_CurrentRunningMs();
+ 495:Task/Task_Telemetry.c **** 
+ 496:Task/Task_Telemetry.c ****                 if (Get_CurrentRunningMs() - Receiver_Obj.OSDTune_TriggerMs >= TELEMETRY_OSDTUNE_PO
+ 497:Task/Task_Telemetry.c ****                     RC_Input_obj->sig.osd_tune_state = true;
+ 498:Task/Task_Telemetry.c ****             }
+ 499:Task/Task_Telemetry.c ****             else
+ 500:Task/Task_Telemetry.c ****                 Receiver_Obj.OSDTune_TriggerMs = 0;
+ 501:Task/Task_Telemetry.c ****         }
+ 502:Task/Task_Telemetry.c **** 
+ 503:Task/Task_Telemetry.c ****         RC_Input_obj->update_rt = receiver_data.time_stamp;
+ 504:Task/Task_Telemetry.c ****         RC_Input_obj->sig.update_interval = RC_Input_obj->update_rt - RC_Input_obj->lst_update_rt;
+ 505:Task/Task_Telemetry.c **** 
+ 506:Task/Task_Telemetry.c ****         RC_Input_obj->lst_update_rt = RC_Input_obj->update_rt;
+ 507:Task/Task_Telemetry.c ****         RC_Input_obj->sig.failsafe = false;
+ 508:Task/Task_Telemetry.c ****     }
+ 509:Task/Task_Telemetry.c ****     else
+ 510:Task/Task_Telemetry.c ****     {
+ 511:Task/Task_Telemetry.c ****         RC_Input_obj->sig.failsafe = true;
+ 512:Task/Task_Telemetry.c ****         RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+ 513:Task/Task_Telemetry.c ****         RC_Input_obj->sig.osd_tune_state = false;
+ 514:Task/Task_Telemetry.c ****         RC_Input_obj->sig.buzz_state = false;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 32
+
+
+ 515:Task/Task_Telemetry.c ****         RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+ 516:Task/Task_Telemetry.c **** 
+ 517:Task/Task_Telemetry.c ****         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
+ 518:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 519:Task/Task_Telemetry.c ****     }
+ 520:Task/Task_Telemetry.c **** 
+ 521:Task/Task_Telemetry.c ****     memcpy(&sig_tmp, &RC_Input_obj->sig, sizeof(Telemetry_RCSig_TypeDef));
+ 522:Task/Task_Telemetry.c **** 
+ 523:Task/Task_Telemetry.c ****     return sig_tmp;
+ 524:Task/Task_Telemetry.c **** }
+ 1049              		.loc 1 524 1 view .LVU320
+ 1050 00a2 4846     		mov	r0, r9
+ 1051 00a4 23B0     		add	sp, sp, #140
+ 1052              	.LCFI15:
+ 1053              		.cfi_remember_state
+ 1054              		.cfi_def_cfa_offset 28
+ 1055              		@ sp needed
+ 1056 00a6 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 1057              	.LVL87:
+ 1058              	.L64:
+ 1059              	.LCFI16:
+ 1060              		.cfi_restore_state
+ 1061              	.LBB5:
+ 465:Task/Task_Telemetry.c ****         }
+ 1062              		.loc 1 465 13 is_stmt 1 discriminator 2 view .LVU321
+ 465:Task/Task_Telemetry.c ****         }
+ 1063              		.loc 1 465 42 is_stmt 0 discriminator 2 view .LVU322
+ 1064 00aa 04F11003 		add	r3, r4, #16
+ 1065 00ae 05EB4303 		add	r3, r5, r3, lsl #1
+ 1066 00b2 1B9A     		ldr	r2, [sp, #108]
+ 1067 00b4 32F81420 		ldrh	r2, [r2, r4, lsl #1]
+ 1068 00b8 A3F80120 		strh	r2, [r3, #1]	@ unaligned
+ 457:Task/Task_Telemetry.c ****         {
+ 1069              		.loc 1 457 60 is_stmt 1 discriminator 2 view .LVU323
+ 457:Task/Task_Telemetry.c ****         {
+ 1070              		.loc 1 457 61 is_stmt 0 discriminator 2 view .LVU324
+ 1071 00bc 0134     		adds	r4, r4, #1
+ 1072              	.LVL88:
+ 457:Task/Task_Telemetry.c ****         {
+ 1073              		.loc 1 457 61 discriminator 2 view .LVU325
+ 1074 00be E4B2     		uxtb	r4, r4
+ 1075              	.LVL89:
+ 1076              	.L63:
+ 457:Task/Task_Telemetry.c ****         {
+ 1077              		.loc 1 457 29 is_stmt 1 discriminator 1 view .LVU326
+ 457:Task/Task_Telemetry.c ****         {
+ 1078              		.loc 1 457 45 is_stmt 0 discriminator 1 view .LVU327
+ 1079 00c0 98F80E30 		ldrb	r3, [r8, #14]	@ zero_extendqisi2
+ 457:Task/Task_Telemetry.c ****         {
+ 1080              		.loc 1 457 9 discriminator 1 view .LVU328
+ 1081 00c4 A342     		cmp	r3, r4
+ 1082 00c6 10D9     		bls	.L74
+ 459:Task/Task_Telemetry.c ****             {
+ 1083              		.loc 1 459 13 is_stmt 1 view .LVU329
+ 459:Task/Task_Telemetry.c ****             {
+ 1084              		.loc 1 459 16 is_stmt 0 view .LVU330
+ 1085 00c8 032C     		cmp	r4, #3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 33
+
+
+ 1086 00ca EED8     		bhi	.L64
+ 461:Task/Task_Telemetry.c ****                 RC_Input_obj->sig.gimbal_percent[i] = Telemetry_GimbalToPercent(&RC_Input_obj->Gimb
+ 1087              		.loc 1 461 17 is_stmt 1 view .LVU331
+ 1088 00cc 04EB4403 		add	r3, r4, r4, lsl #1
+ 1089 00d0 C3EBC300 		rsb	r0, r3, r3, lsl #3
+ 1090 00d4 6830     		adds	r0, r0, #104
+ 1091 00d6 2844     		add	r0, r0, r5
+ 462:Task/Task_Telemetry.c ****             }
+ 1092              		.loc 1 462 17 view .LVU332
+ 462:Task/Task_Telemetry.c ****             }
+ 1093              		.loc 1 462 55 is_stmt 0 view .LVU333
+ 1094 00d8 0130     		adds	r0, r0, #1
+ 1095 00da FFF7FEFF 		bl	Telemetry_GimbalToPercent
+ 1096              	.LVL90:
+ 462:Task/Task_Telemetry.c ****             }
+ 1097              		.loc 1 462 53 view .LVU334
+ 1098 00de 231D     		adds	r3, r4, #4
+ 1099 00e0 05EB4303 		add	r3, r5, r3, lsl #1
+ 1100 00e4 A3F80500 		strh	r0, [r3, #5]	@ unaligned
+ 1101 00e8 DFE7     		b	.L64
+ 1102              	.L74:
+ 462:Task/Task_Telemetry.c ****             }
+ 1103              		.loc 1 462 53 view .LVU335
+ 1104              	.LBE5:
+ 469:Task/Task_Telemetry.c **** 
+ 1105              		.loc 1 469 9 is_stmt 1 view .LVU336
+ 469:Task/Task_Telemetry.c **** 
+ 1106              		.loc 1 469 40 is_stmt 0 view .LVU337
+ 1107 00ea 05F1E700 		add	r0, r5, #231
+ 1108 00ee FFF7FEFF 		bl	Telemetry_Toggle_Check
+ 1109              	.LVL91:
+ 469:Task/Task_Telemetry.c **** 
+ 1110              		.loc 1 469 92 view .LVU338
+ 1111 00f2 C0F30720 		ubfx	r0, r0, #8, #8
+ 469:Task/Task_Telemetry.c **** 
+ 1112              		.loc 1 469 38 view .LVU339
+ 1113 00f6 A872     		strb	r0, [r5, #10]
+ 471:Task/Task_Telemetry.c ****         {
+ 1114              		.loc 1 471 9 is_stmt 1 view .LVU340
+ 471:Task/Task_Telemetry.c ****         {
+ 1115              		.loc 1 471 31 is_stmt 0 view .LVU341
+ 1116 00f8 EB7A     		ldrb	r3, [r5, #11]	@ zero_extendqisi2
+ 471:Task/Task_Telemetry.c ****         {
+ 1117              		.loc 1 471 12 view .LVU342
+ 1118 00fa 6BB1     		cbz	r3, .L75
+ 1119              	.L66:
+ 486:Task/Task_Telemetry.c **** 
+ 1120              		.loc 1 486 9 is_stmt 1 view .LVU343
+ 488:Task/Task_Telemetry.c ****         {
+ 1121              		.loc 1 488 9 view .LVU344
+ 488:Task/Task_Telemetry.c ****         {
+ 1122              		.loc 1 488 30 is_stmt 0 view .LVU345
+ 1123 00fc 6B7A     		ldrb	r3, [r5, #9]	@ zero_extendqisi2
+ 488:Task/Task_Telemetry.c ****         {
+ 1124              		.loc 1 488 12 view .LVU346
+ 1125 00fe F3B9     		cbnz	r3, .L76
+ 1126              	.LVL92:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 34
+
+
+ 1127              	.L67:
+ 503:Task/Task_Telemetry.c ****         RC_Input_obj->sig.update_interval = RC_Input_obj->update_rt - RC_Input_obj->lst_update_rt;
+ 1128              		.loc 1 503 9 is_stmt 1 view .LVU347
+ 503:Task/Task_Telemetry.c ****         RC_Input_obj->sig.update_interval = RC_Input_obj->update_rt - RC_Input_obj->lst_update_rt;
+ 1129              		.loc 1 503 48 is_stmt 0 view .LVU348
+ 1130 0100 1A9B     		ldr	r3, [sp, #104]
+ 503:Task/Task_Telemetry.c ****         RC_Input_obj->sig.update_interval = RC_Input_obj->update_rt - RC_Input_obj->lst_update_rt;
+ 1131              		.loc 1 503 33 view .LVU349
+ 1132 0102 C5F80130 		str	r3, [r5, #1]	@ unaligned
+ 504:Task/Task_Telemetry.c **** 
+ 1133              		.loc 1 504 9 is_stmt 1 view .LVU350
+ 504:Task/Task_Telemetry.c **** 
+ 1134              		.loc 1 504 83 is_stmt 0 view .LVU351
+ 1135 0106 D5F80520 		ldr	r2, [r5, #5]	@ unaligned
+ 504:Task/Task_Telemetry.c **** 
+ 1136              		.loc 1 504 69 view .LVU352
+ 1137 010a 9A1A     		subs	r2, r3, r2
+ 504:Task/Task_Telemetry.c **** 
+ 1138              		.loc 1 504 43 view .LVU353
+ 1139 010c AA61     		str	r2, [r5, #24]	@ unaligned
+ 506:Task/Task_Telemetry.c ****         RC_Input_obj->sig.failsafe = false;
+ 1140              		.loc 1 506 9 is_stmt 1 view .LVU354
+ 506:Task/Task_Telemetry.c ****         RC_Input_obj->sig.failsafe = false;
+ 1141              		.loc 1 506 37 is_stmt 0 view .LVU355
+ 1142 010e C5F80530 		str	r3, [r5, #5]	@ unaligned
+ 507:Task/Task_Telemetry.c ****     }
+ 1143              		.loc 1 507 9 is_stmt 1 view .LVU356
+ 507:Task/Task_Telemetry.c ****     }
+ 1144              		.loc 1 507 36 is_stmt 0 view .LVU357
+ 1145 0112 0023     		movs	r3, #0
+ 1146 0114 2B73     		strb	r3, [r5, #12]
+ 1147 0116 52E0     		b	.L70
+ 1148              	.LVL93:
+ 1149              	.L75:
+ 474:Task/Task_Telemetry.c **** 
+ 1150              		.loc 1 474 13 is_stmt 1 view .LVU358
+ 474:Task/Task_Telemetry.c **** 
+ 1151              		.loc 1 474 43 is_stmt 0 view .LVU359
+ 1152 0118 05F1BD00 		add	r0, r5, #189
+ 1153 011c FFF7FEFF 		bl	Telemetry_Toggle_Check
+ 1154              	.LVL94:
+ 474:Task/Task_Telemetry.c **** 
+ 1155              		.loc 1 474 92 view .LVU360
+ 1156 0120 C0F30720 		ubfx	r0, r0, #8, #8
+ 474:Task/Task_Telemetry.c **** 
+ 1157              		.loc 1 474 41 view .LVU361
+ 1158 0124 6872     		strb	r0, [r5, #9]
+ 477:Task/Task_Telemetry.c **** 
+ 1159              		.loc 1 477 13 is_stmt 1 view .LVU362
+ 477:Task/Task_Telemetry.c **** 
+ 1160              		.loc 1 477 46 is_stmt 0 view .LVU363
+ 1161 0126 05F1D200 		add	r0, r5, #210
+ 1162 012a FFF7FEFF 		bl	Telemetry_Toggle_Check
+ 1163              	.LVL95:
+ 477:Task/Task_Telemetry.c **** 
+ 1164              		.loc 1 477 44 view .LVU364
+ 1165 012e C0F30740 		ubfx	r0, r0, #16, #8
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 35
+
+
+ 1166 0132 6875     		strb	r0, [r5, #21]
+ 480:Task/Task_Telemetry.c ****                 RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+ 1167              		.loc 1 480 13 is_stmt 1 view .LVU365
+ 480:Task/Task_Telemetry.c ****                 RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+ 1168              		.loc 1 480 16 is_stmt 0 view .LVU366
+ 1169 0134 0228     		cmp	r0, #2
+ 1170 0136 E1D9     		bls	.L66
+ 481:Task/Task_Telemetry.c ****         }
+ 1171              		.loc 1 481 17 is_stmt 1 view .LVU367
+ 481:Task/Task_Telemetry.c ****         }
+ 1172              		.loc 1 481 48 is_stmt 0 view .LVU368
+ 1173 0138 0123     		movs	r3, #1
+ 1174 013a 6B75     		strb	r3, [r5, #21]
+ 1175 013c DEE7     		b	.L66
+ 1176              	.L76:
+ 491:Task/Task_Telemetry.c ****             {
+ 1177              		.loc 1 491 13 is_stmt 1 view .LVU369
+ 491:Task/Task_Telemetry.c ****             {
+ 1178              		.loc 1 491 17 is_stmt 0 view .LVU370
+ 1179 013e 05F21110 		addw	r0, r5, #273
+ 1180 0142 FFF7FEFF 		bl	Telemetry_Toggle_Check
+ 1181              	.LVL96:
+ 491:Task/Task_Telemetry.c ****             {
+ 1182              		.loc 1 491 16 view .LVU371
+ 1183 0146 10F47F4F 		tst	r0, #65280
+ 1184 014a 1FD0     		beq	.L68
+ 493:Task/Task_Telemetry.c ****                     Receiver_Obj.OSDTune_TriggerMs = Get_CurrentRunningMs();
+ 1185              		.loc 1 493 17 is_stmt 1 view .LVU372
+ 493:Task/Task_Telemetry.c ****                     Receiver_Obj.OSDTune_TriggerMs = Get_CurrentRunningMs();
+ 1186              		.loc 1 493 33 is_stmt 0 view .LVU373
+ 1187 014c 2349     		ldr	r1, .L78+4
+ 1188 014e D1F82E20 		ldr	r2, [r1, #46]	@ unaligned
+ 1189 0152 D1F83230 		ldr	r3, [r1, #50]	@ unaligned
+ 493:Task/Task_Telemetry.c ****                     Receiver_Obj.OSDTune_TriggerMs = Get_CurrentRunningMs();
+ 1190              		.loc 1 493 20 view .LVU374
+ 1191 0156 1343     		orrs	r3, r2, r3
+ 1192 0158 10D0     		beq	.L77
+ 1193              	.L69:
+ 496:Task/Task_Telemetry.c ****                     RC_Input_obj->sig.osd_tune_state = true;
+ 1194              		.loc 1 496 17 is_stmt 1 view .LVU375
+ 496:Task/Task_Telemetry.c ****                     RC_Input_obj->sig.osd_tune_state = true;
+ 1195              		.loc 1 496 21 is_stmt 0 view .LVU376
+ 1196 015a FFF7FEFF 		bl	Get_CurrentRunningMs
+ 1197              	.LVL97:
+ 496:Task/Task_Telemetry.c ****                     RC_Input_obj->sig.osd_tune_state = true;
+ 1198              		.loc 1 496 58 view .LVU377
+ 1199 015e 1F4C     		ldr	r4, .L78+4
+ 1200              	.LVL98:
+ 496:Task/Task_Telemetry.c ****                     RC_Input_obj->sig.osd_tune_state = true;
+ 1201              		.loc 1 496 58 view .LVU378
+ 1202 0160 D4F82E30 		ldr	r3, [r4, #46]	@ unaligned
+ 1203 0164 D4F83220 		ldr	r2, [r4, #50]	@ unaligned
+ 496:Task/Task_Telemetry.c ****                     RC_Input_obj->sig.osd_tune_state = true;
+ 1204              		.loc 1 496 44 view .LVU379
+ 1205 0168 C61A     		subs	r6, r0, r3
+ 1206 016a 61EB0207 		sbc	r7, r1, r2
+ 496:Task/Task_Telemetry.c ****                     RC_Input_obj->sig.osd_tune_state = true;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 36
+
+
+ 1207              		.loc 1 496 20 view .LVU380
+ 1208 016e 002F     		cmp	r7, #0
+ 1209 0170 08BF     		it	eq
+ 1210 0172 642E     		cmpeq	r6, #100
+ 1211 0174 C4D3     		bcc	.L67
+ 497:Task/Task_Telemetry.c ****             }
+ 1212              		.loc 1 497 21 is_stmt 1 view .LVU381
+ 497:Task/Task_Telemetry.c ****             }
+ 1213              		.loc 1 497 54 is_stmt 0 view .LVU382
+ 1214 0176 0123     		movs	r3, #1
+ 1215 0178 EB72     		strb	r3, [r5, #11]
+ 1216 017a C1E7     		b	.L67
+ 1217              	.LVL99:
+ 1218              	.L77:
+ 494:Task/Task_Telemetry.c **** 
+ 1219              		.loc 1 494 21 is_stmt 1 view .LVU383
+ 494:Task/Task_Telemetry.c **** 
+ 1220              		.loc 1 494 54 is_stmt 0 view .LVU384
+ 1221 017c FFF7FEFF 		bl	Get_CurrentRunningMs
+ 1222              	.LVL100:
+ 494:Task/Task_Telemetry.c **** 
+ 1223              		.loc 1 494 52 view .LVU385
+ 1224 0180 164B     		ldr	r3, .L78+4
+ 1225 0182 C3F82E00 		str	r0, [r3, #46]	@ unaligned
+ 1226 0186 C3F83210 		str	r1, [r3, #50]	@ unaligned
+ 1227 018a E6E7     		b	.L69
+ 1228              	.L68:
+ 500:Task/Task_Telemetry.c ****         }
+ 1229              		.loc 1 500 17 is_stmt 1 view .LVU386
+ 500:Task/Task_Telemetry.c ****         }
+ 1230              		.loc 1 500 48 is_stmt 0 view .LVU387
+ 1231 018c 1349     		ldr	r1, .L78+4
+ 1232 018e 0023     		movs	r3, #0
+ 1233 0190 CB85     		strh	r3, [r1, #46]	@ movhi
+ 1234 0192 0B86     		strh	r3, [r1, #48]	@ movhi
+ 1235 0194 4B86     		strh	r3, [r1, #50]	@ movhi
+ 1236 0196 8B86     		strh	r3, [r1, #52]	@ movhi
+ 1237 0198 B2E7     		b	.L67
+ 1238              	.LVL101:
+ 1239              	.L62:
+ 511:Task/Task_Telemetry.c ****         RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+ 1240              		.loc 1 511 9 is_stmt 1 view .LVU388
+ 511:Task/Task_Telemetry.c ****         RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+ 1241              		.loc 1 511 36 is_stmt 0 view .LVU389
+ 1242 019a 0122     		movs	r2, #1
+ 1243 019c 2A73     		strb	r2, [r5, #12]
+ 512:Task/Task_Telemetry.c ****         RC_Input_obj->sig.osd_tune_state = false;
+ 1244              		.loc 1 512 9 is_stmt 1 view .LVU390
+ 512:Task/Task_Telemetry.c ****         RC_Input_obj->sig.osd_tune_state = false;
+ 1245              		.loc 1 512 37 is_stmt 0 view .LVU391
+ 1246 019e 6A72     		strb	r2, [r5, #9]
+ 513:Task/Task_Telemetry.c ****         RC_Input_obj->sig.buzz_state = false;
+ 1247              		.loc 1 513 9 is_stmt 1 view .LVU392
+ 513:Task/Task_Telemetry.c ****         RC_Input_obj->sig.buzz_state = false;
+ 1248              		.loc 1 513 42 is_stmt 0 view .LVU393
+ 1249 01a0 0023     		movs	r3, #0
+ 1250 01a2 EB72     		strb	r3, [r5, #11]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 37
+
+
+ 514:Task/Task_Telemetry.c ****         RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+ 1251              		.loc 1 514 9 is_stmt 1 view .LVU394
+ 514:Task/Task_Telemetry.c ****         RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+ 1252              		.loc 1 514 38 is_stmt 0 view .LVU395
+ 1253 01a4 AB72     		strb	r3, [r5, #10]
+ 515:Task/Task_Telemetry.c **** 
+ 1254              		.loc 1 515 9 is_stmt 1 view .LVU396
+ 515:Task/Task_Telemetry.c **** 
+ 1255              		.loc 1 515 40 is_stmt 0 view .LVU397
+ 1256 01a6 6A75     		strb	r2, [r5, #21]
+ 517:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 1257              		.loc 1 517 9 is_stmt 1 view .LVU398
+ 1258              	.LBB6:
+ 517:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 1259              		.loc 1 517 14 view .LVU399
+ 1260              	.LVL102:
+ 517:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 1261              		.loc 1 517 9 is_stmt 0 view .LVU400
+ 1262 01a8 07E0     		b	.L71
+ 1263              	.LVL103:
+ 1264              	.L72:
+ 518:Task/Task_Telemetry.c ****     }
+ 1265              		.loc 1 518 13 is_stmt 1 discriminator 3 view .LVU401
+ 518:Task/Task_Telemetry.c ****     }
+ 1266              		.loc 1 518 49 is_stmt 0 discriminator 3 view .LVU402
+ 1267 01aa 1A1D     		adds	r2, r3, #4
+ 1268 01ac 05EB4202 		add	r2, r5, r2, lsl #1
+ 1269 01b0 0021     		movs	r1, #0
+ 1270 01b2 5171     		strb	r1, [r2, #5]
+ 1271 01b4 9171     		strb	r1, [r2, #6]
+ 517:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 1272              		.loc 1 517 78 is_stmt 1 discriminator 3 view .LVU403
+ 517:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 1273              		.loc 1 517 79 is_stmt 0 discriminator 3 view .LVU404
+ 1274 01b6 0133     		adds	r3, r3, #1
+ 1275              	.LVL104:
+ 517:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 1276              		.loc 1 517 79 discriminator 3 view .LVU405
+ 1277 01b8 DBB2     		uxtb	r3, r3
+ 1278              	.LVL105:
+ 1279              	.L71:
+ 517:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 1280              		.loc 1 517 49 is_stmt 1 discriminator 1 view .LVU406
+ 517:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 1281              		.loc 1 517 9 is_stmt 0 discriminator 1 view .LVU407
+ 1282 01ba 032B     		cmp	r3, #3
+ 1283 01bc F5D9     		bls	.L72
+ 1284              	.LVL106:
+ 1285              	.L70:
+ 517:Task/Task_Telemetry.c ****             RC_Input_obj->sig.gimbal_percent[i] = 0;
+ 1286              		.loc 1 517 9 discriminator 1 view .LVU408
+ 1287              	.LBE6:
+ 521:Task/Task_Telemetry.c **** 
+ 1288              		.loc 1 521 5 is_stmt 1 view .LVU409
+ 1289 01be 5824     		movs	r4, #88
+ 1290 01c0 2246     		mov	r2, r4
+ 1291 01c2 05F10901 		add	r1, r5, #9
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 38
+
+
+ 1292 01c6 04A8     		add	r0, sp, #16
+ 1293 01c8 FFF7FEFF 		bl	memcpy
+ 1294              	.LVL107:
+ 523:Task/Task_Telemetry.c **** }
+ 1295              		.loc 1 523 5 view .LVU410
+ 523:Task/Task_Telemetry.c **** }
+ 1296              		.loc 1 523 12 is_stmt 0 view .LVU411
+ 1297 01cc 2246     		mov	r2, r4
+ 1298 01ce 04A9     		add	r1, sp, #16
+ 1299 01d0 4846     		mov	r0, r9
+ 1300 01d2 FFF7FEFF 		bl	memcpy
+ 1301              	.LVL108:
+ 1302 01d6 64E7     		b	.L58
+ 1303              	.L79:
+ 1304              		.align	2
+ 1305              	.L78:
+ 1306 01d8 00000000 		.word	SrvReceiver
+ 1307 01dc 00000000 		.word	.LANCHOR0
+ 1308              		.cfi_endproc
+ 1309              	.LFE2009:
+ 1311              		.section	.text.TaskTelemetry_Set_DataIO_Enable,"ax",%progbits
+ 1312              		.align	1
+ 1313              		.global	TaskTelemetry_Set_DataIO_Enable
+ 1314              		.syntax unified
+ 1315              		.thumb
+ 1316              		.thumb_func
+ 1317              		.fpu fpv5-d16
+ 1319              	TaskTelemetry_Set_DataIO_Enable:
+ 1320              	.LVL109:
+ 1321              	.LFB1997:
+  55:Task/Task_Telemetry.c ****     RCData_To_Configuretor = state;
+ 1322              		.loc 1 55 1 is_stmt 1 view -0
+ 1323              		.cfi_startproc
+ 1324              		@ args = 0, pretend = 0, frame = 0
+ 1325              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1326              		@ link register save eliminated.
+  56:Task/Task_Telemetry.c **** }
+ 1327              		.loc 1 56 5 view .LVU413
+  57:Task/Task_Telemetry.c **** 
+ 1328              		.loc 1 57 1 is_stmt 0 view .LVU414
+ 1329 0000 7047     		bx	lr
+ 1330              		.cfi_endproc
+ 1331              	.LFE1997:
+ 1333              		.section	.text.TaskTelemetry_Init,"ax",%progbits
+ 1334              		.align	1
+ 1335              		.global	TaskTelemetry_Init
+ 1336              		.syntax unified
+ 1337              		.thumb
+ 1338              		.thumb_func
+ 1339              		.fpu fpv5-d16
+ 1341              	TaskTelemetry_Init:
+ 1342              	.LFB1998:
+  60:Task/Task_Telemetry.c ****     SrvComProto.init(SrvComProto_Type_MAV, NULL);
+ 1343              		.loc 1 60 1 is_stmt 1 view -0
+ 1344              		.cfi_startproc
+ 1345              		@ args = 0, pretend = 0, frame = 0
+ 1346              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 39
+
+
+ 1347 0000 70B5     		push	{r4, r5, r6, lr}
+ 1348              	.LCFI17:
+ 1349              		.cfi_def_cfa_offset 16
+ 1350              		.cfi_offset 4, -16
+ 1351              		.cfi_offset 5, -12
+ 1352              		.cfi_offset 6, -8
+ 1353              		.cfi_offset 14, -4
+ 1354 0002 82B0     		sub	sp, sp, #8
+ 1355              	.LCFI18:
+ 1356              		.cfi_def_cfa_offset 24
+  61:Task/Task_Telemetry.c **** 
+ 1357              		.loc 1 61 5 view .LVU416
+  61:Task/Task_Telemetry.c **** 
+ 1358              		.loc 1 61 16 is_stmt 0 view .LVU417
+ 1359 0004 824B     		ldr	r3, .L85
+ 1360 0006 1B68     		ldr	r3, [r3]
+  61:Task/Task_Telemetry.c **** 
+ 1361              		.loc 1 61 5 view .LVU418
+ 1362 0008 0021     		movs	r1, #0
+ 1363 000a 0220     		movs	r0, #2
+ 1364 000c 9847     		blx	r3
+ 1365              	.LVL110:
+  64:Task/Task_Telemetry.c ****     {
+ 1366              		.loc 1 64 5 is_stmt 1 view .LVU419
+  64:Task/Task_Telemetry.c ****     {
+ 1367              		.loc 1 64 9 is_stmt 0 view .LVU420
+ 1368 000e 8149     		ldr	r1, .L85+4
+ 1369 0010 8148     		ldr	r0, .L85+8
+ 1370 0012 FFF7FEFF 		bl	Telemetry_RC_Sig_Init
+ 1371              	.LVL111:
+  64:Task/Task_Telemetry.c ****     {
+ 1372              		.loc 1 64 8 view .LVU421
+ 1373 0016 18B1     		cbz	r0, .L81
+  68:Task/Task_Telemetry.c ****         {
+ 1374              		.loc 1 68 9 is_stmt 1 view .LVU422
+  68:Task/Task_Telemetry.c ****         {
+ 1375              		.loc 1 68 25 is_stmt 0 view .LVU423
+ 1376 0018 7E4B     		ldr	r3, .L85+4
+ 1377 001a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  68:Task/Task_Telemetry.c ****         {
+ 1378              		.loc 1 68 12 view .LVU424
+ 1379 001c 012B     		cmp	r3, #1
+ 1380 001e 01D0     		beq	.L84
+ 1381              	.L81:
+ 109:Task/Task_Telemetry.c **** 
+ 1382              		.loc 1 109 1 view .LVU425
+ 1383 0020 02B0     		add	sp, sp, #8
+ 1384              	.LCFI19:
+ 1385              		.cfi_remember_state
+ 1386              		.cfi_def_cfa_offset 16
+ 1387              		@ sp needed
+ 1388 0022 70BD     		pop	{r4, r5, r6, pc}
+ 1389              	.L84:
+ 1390              	.LCFI20:
+ 1391              		.cfi_restore_state
+  72:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetr
+ 1392              		.loc 1 72 13 is_stmt 1 view .LVU426
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 40
+
+
+  72:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetr
+ 1393              		.loc 1 72 78 is_stmt 0 view .LVU427
+ 1394 0024 7B4B     		ldr	r3, .L85+4
+ 1395 0026 D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  72:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetr
+ 1396              		.loc 1 72 17 view .LVU428
+ 1397 002a 40F26C73 		movw	r3, #1900
+ 1398 002e 0193     		str	r3, [sp, #4]
+ 1399 0030 4FF47A73 		mov	r3, #1000
+ 1400 0034 0093     		str	r3, [sp]
+ 1401 0036 6423     		movs	r3, #100
+ 1402 0038 0022     		movs	r2, #0
+ 1403 003a 0431     		adds	r1, r1, #4
+ 1404 003c 7648     		ldr	r0, .L85+8
+ 1405 003e FFF7FEFF 		bl	Telemetry_BindGimbalToChannel
+ 1406              	.LVL112:
+  72:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetr
+ 1407              		.loc 1 72 16 view .LVU429
+ 1408 0042 0028     		cmp	r0, #0
+ 1409 0044 ECD0     		beq	.L81
+  73:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetr
+ 1410              		.loc 1 73 78 discriminator 1 view .LVU430
+ 1411 0046 734B     		ldr	r3, .L85+4
+ 1412 0048 D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  73:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetr
+ 1413              		.loc 1 73 17 discriminator 1 view .LVU431
+ 1414 004c 40F26C73 		movw	r3, #1900
+ 1415 0050 0193     		str	r3, [sp, #4]
+ 1416 0052 4FF47A73 		mov	r3, #1000
+ 1417 0056 0093     		str	r3, [sp]
+ 1418 0058 6423     		movs	r3, #100
+ 1419 005a 0122     		movs	r2, #1
+ 1420 005c 0231     		adds	r1, r1, #2
+ 1421 005e 6E48     		ldr	r0, .L85+8
+ 1422 0060 FFF7FEFF 		bl	Telemetry_BindGimbalToChannel
+ 1423              	.LVL113:
+  72:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetr
+ 1424              		.loc 1 72 211 discriminator 1 view .LVU432
+ 1425 0064 0028     		cmp	r0, #0
+ 1426 0066 DBD0     		beq	.L81
+  74:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetr
+ 1427              		.loc 1 74 17 view .LVU433
+ 1428 0068 40F26C73 		movw	r3, #1900
+ 1429 006c 0193     		str	r3, [sp, #4]
+ 1430 006e 4FF47A73 		mov	r3, #1000
+ 1431 0072 0093     		str	r3, [sp]
+ 1432 0074 6423     		movs	r3, #100
+ 1433 0076 0222     		movs	r2, #2
+ 1434 0078 6649     		ldr	r1, .L85+4
+ 1435 007a D1F81710 		ldr	r1, [r1, #23]	@ unaligned
+ 1436 007e 6648     		ldr	r0, .L85+8
+ 1437 0080 FFF7FEFF 		bl	Telemetry_BindGimbalToChannel
+ 1438              	.LVL114:
+  73:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetr
+ 1439              		.loc 1 73 208 view .LVU434
+ 1440 0084 0028     		cmp	r0, #0
+ 1441 0086 CBD0     		beq	.L81
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 41
+
+
+  75:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Sett
+ 1442              		.loc 1 75 78 view .LVU435
+ 1443 0088 624B     		ldr	r3, .L85+4
+ 1444 008a D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  75:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Sett
+ 1445              		.loc 1 75 17 view .LVU436
+ 1446 008e 40F26C73 		movw	r3, #1900
+ 1447 0092 0193     		str	r3, [sp, #4]
+ 1448 0094 4FF47A73 		mov	r3, #1000
+ 1449 0098 0093     		str	r3, [sp]
+ 1450 009a 6423     		movs	r3, #100
+ 1451 009c 0322     		movs	r2, #3
+ 1452 009e 0631     		adds	r1, r1, #6
+ 1453 00a0 5D48     		ldr	r0, .L85+8
+ 1454 00a2 FFF7FEFF 		bl	Telemetry_BindGimbalToChannel
+ 1455              	.LVL115:
+  74:Task/Task_Telemetry.c ****                 Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetr
+ 1456              		.loc 1 74 207 view .LVU437
+ 1457 00a6 0028     		cmp	r0, #0
+ 1458 00a8 BAD0     		beq	.L81
+  76:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Sett
+ 1459              		.loc 1 76 78 view .LVU438
+ 1460 00aa 5A4B     		ldr	r3, .L85+4
+ 1461 00ac D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  76:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Sett
+ 1462              		.loc 1 76 17 view .LVU439
+ 1463 00b0 5948     		ldr	r0, .L85+8
+ 1464 00b2 4FF47A73 		mov	r3, #1000
+ 1465 00b6 0093     		str	r3, [sp]
+ 1466 00b8 6423     		movs	r3, #100
+ 1467 00ba 00F1BD02 		add	r2, r0, #189
+ 1468 00be 0831     		adds	r1, r1, #8
+ 1469 00c0 FFF7FEFF 		bl	Telemetry_BindToggleToChannel
+ 1470              	.LVL116:
+  75:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Sett
+ 1471              		.loc 1 75 206 view .LVU440
+ 1472 00c4 0028     		cmp	r0, #0
+ 1473 00c6 ABD0     		beq	.L81
+  77:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Sett
+ 1474              		.loc 1 77 78 view .LVU441
+ 1475 00c8 524B     		ldr	r3, .L85+4
+ 1476 00ca D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  77:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Sett
+ 1477              		.loc 1 77 17 view .LVU442
+ 1478 00ce 5248     		ldr	r0, .L85+8
+ 1479 00d0 4FF47A73 		mov	r3, #1000
+ 1480 00d4 0093     		str	r3, [sp]
+ 1481 00d6 6423     		movs	r3, #100
+ 1482 00d8 00F1E702 		add	r2, r0, #231
+ 1483 00dc 0A31     		adds	r1, r1, #10
+ 1484 00de FFF7FEFF 		bl	Telemetry_BindToggleToChannel
+ 1485              	.LVL117:
+  76:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Sett
+ 1486              		.loc 1 76 180 view .LVU443
+ 1487 00e2 0028     		cmp	r0, #0
+ 1488 00e4 9CD0     		beq	.L81
+  78:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.C
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 42
+
+
+ 1489              		.loc 1 78 78 view .LVU444
+ 1490 00e6 4B4B     		ldr	r3, .L85+4
+ 1491 00e8 D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  78:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.C
+ 1492              		.loc 1 78 17 view .LVU445
+ 1493 00ec 4A48     		ldr	r0, .L85+8
+ 1494 00ee 4FF49673 		mov	r3, #300
+ 1495 00f2 0093     		str	r3, [sp]
+ 1496 00f4 6423     		movs	r3, #100
+ 1497 00f6 00F1D202 		add	r2, r0, #210
+ 1498 00fa 0C31     		adds	r1, r1, #12
+ 1499 00fc FFF7FEFF 		bl	Telemetry_BindToggleToChannel
+ 1500              	.LVL118:
+  77:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Sett
+ 1501              		.loc 1 77 183 view .LVU446
+ 1502 0100 0028     		cmp	r0, #0
+ 1503 0102 8DD0     		beq	.L81
+  79:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.C
+ 1504              		.loc 1 79 73 view .LVU447
+ 1505 0104 434B     		ldr	r3, .L85+4
+ 1506 0106 D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  79:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.C
+ 1507              		.loc 1 79 17 view .LVU448
+ 1508 010a 4348     		ldr	r0, .L85+8
+ 1509 010c 40F24C43 		movw	r3, #1100
+ 1510 0110 0093     		str	r3, [sp]
+ 1511 0112 4FF46173 		mov	r3, #900
+ 1512 0116 00F1D202 		add	r2, r0, #210
+ 1513 011a 0C31     		adds	r1, r1, #12
+ 1514 011c FFF7FEFF 		bl	Telemetry_AddToggleCombo
+ 1515              	.LVL119:
+  78:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.C
+ 1516              		.loc 1 78 161 view .LVU449
+ 1517 0120 0028     		cmp	r0, #0
+ 1518 0122 3FF47DAF 		beq	.L81
+  80:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Sett
+ 1519              		.loc 1 80 73 view .LVU450
+ 1520 0126 3B4B     		ldr	r3, .L85+4
+ 1521 0128 D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  80:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Sett
+ 1522              		.loc 1 80 17 view .LVU451
+ 1523 012c 3A48     		ldr	r0, .L85+8
+ 1524 012e 40F26C73 		movw	r3, #1900
+ 1525 0132 0093     		str	r3, [sp]
+ 1526 0134 40F27263 		movw	r3, #1650
+ 1527 0138 00F1D202 		add	r2, r0, #210
+ 1528 013c 0C31     		adds	r1, r1, #12
+ 1529 013e FFF7FEFF 		bl	Telemetry_AddToggleCombo
+ 1530              	.LVL120:
+  79:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.C
+ 1531              		.loc 1 79 130 view .LVU452
+ 1532 0142 0028     		cmp	r0, #0
+ 1533 0144 3FF46CAF 		beq	.L81
+  81:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.O
+ 1534              		.loc 1 81 78 view .LVU453
+ 1535 0148 324B     		ldr	r3, .L85+4
+ 1536 014a D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 43
+
+
+  81:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.O
+ 1537              		.loc 1 81 17 view .LVU454
+ 1538 014e 3248     		ldr	r0, .L85+8
+ 1539 0150 C823     		movs	r3, #200
+ 1540 0152 0093     		str	r3, [sp]
+ 1541 0154 6423     		movs	r3, #100
+ 1542 0156 00F21112 		addw	r2, r0, #273
+ 1543 015a 0431     		adds	r1, r1, #4
+ 1544 015c FFF7FEFF 		bl	Telemetry_BindToggleToChannel
+ 1545              	.LVL121:
+  80:Task/Task_Telemetry.c ****                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Sett
+ 1546              		.loc 1 80 157 view .LVU455
+ 1547 0160 0028     		cmp	r0, #0
+ 1548 0162 3FF45DAF 		beq	.L81
+  82:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.O
+ 1549              		.loc 1 82 73 view .LVU456
+ 1550 0166 2B4B     		ldr	r3, .L85+4
+ 1551 0168 D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  82:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.O
+ 1552              		.loc 1 82 17 view .LVU457
+ 1553 016c 2A48     		ldr	r0, .L85+8
+ 1554 016e C823     		movs	r3, #200
+ 1555 0170 0093     		str	r3, [sp]
+ 1556 0172 6423     		movs	r3, #100
+ 1557 0174 00F21112 		addw	r2, r0, #273
+ 1558 0178 0231     		adds	r1, r1, #2
+ 1559 017a FFF7FEFF 		bl	Telemetry_AddToggleCombo
+ 1560              	.LVL122:
+  81:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.O
+ 1561              		.loc 1 81 186 view .LVU458
+ 1562 017e 0028     		cmp	r0, #0
+ 1563 0180 3FF44EAF 		beq	.L81
+  83:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.O
+ 1564              		.loc 1 83 73 view .LVU459
+ 1565 0184 234B     		ldr	r3, .L85+4
+ 1566 0186 D3F81710 		ldr	r1, [r3, #23]	@ unaligned
+  83:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.O
+ 1567              		.loc 1 83 17 view .LVU460
+ 1568 018a 2348     		ldr	r0, .L85+8
+ 1569 018c 40F26C73 		movw	r3, #1900
+ 1570 0190 0093     		str	r3, [sp]
+ 1571 0192 4FF4E163 		mov	r3, #1800
+ 1572 0196 00F21112 		addw	r2, r0, #273
+ 1573 019a 0631     		adds	r1, r1, #6
+ 1574 019c FFF7FEFF 		bl	Telemetry_AddToggleCombo
+ 1575              	.LVL123:
+  82:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.O
+ 1576              		.loc 1 82 181 view .LVU461
+ 1577 01a0 0028     		cmp	r0, #0
+ 1578 01a2 3FF43DAF 		beq	.L81
+  84:Task/Task_Telemetry.c ****             {
+ 1579              		.loc 1 84 17 view .LVU462
+ 1580 01a6 1C48     		ldr	r0, .L85+8
+ 1581 01a8 C823     		movs	r3, #200
+ 1582 01aa 0093     		str	r3, [sp]
+ 1583 01ac 6423     		movs	r3, #100
+ 1584 01ae 00F21112 		addw	r2, r0, #273
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 44
+
+
+ 1585 01b2 1849     		ldr	r1, .L85+4
+ 1586 01b4 D1F81710 		ldr	r1, [r1, #23]	@ unaligned
+ 1587 01b8 FFF7FEFF 		bl	Telemetry_AddToggleCombo
+ 1588              	.LVL124:
+  83:Task/Task_Telemetry.c ****                 Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.O
+ 1589              		.loc 1 83 181 view .LVU463
+ 1590 01bc 0028     		cmp	r0, #0
+ 1591 01be 3FF42FAF 		beq	.L81
+  86:Task/Task_Telemetry.c **** 
+ 1592              		.loc 1 86 17 is_stmt 1 view .LVU464
+  86:Task/Task_Telemetry.c **** 
+ 1593              		.loc 1 86 42 is_stmt 0 view .LVU465
+ 1594 01c2 154C     		ldr	r4, .L85+8
+ 1595 01c4 0125     		movs	r5, #1
+ 1596 01c6 6572     		strb	r5, [r4, #9]
+  89:Task/Task_Telemetry.c ****                 Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Roll], 50);
+ 1597              		.loc 1 89 17 is_stmt 1 view .LVU466
+ 1598 01c8 3221     		movs	r1, #50
+ 1599 01ca 04F17E00 		add	r0, r4, #126
+ 1600 01ce FFF7FEFF 		bl	Telemetry_Enable_GimbalDeadZone
+ 1601              	.LVL125:
+  90:Task/Task_Telemetry.c ****                 Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Yaw], 50);
+ 1602              		.loc 1 90 17 view .LVU467
+ 1603 01d2 3221     		movs	r1, #50
+ 1604 01d4 04F19300 		add	r0, r4, #147
+ 1605 01d8 FFF7FEFF 		bl	Telemetry_Enable_GimbalDeadZone
+ 1606              	.LVL126:
+  91:Task/Task_Telemetry.c **** 
+ 1607              		.loc 1 91 17 view .LVU468
+ 1608 01dc 3221     		movs	r1, #50
+ 1609 01de 04F1A800 		add	r0, r4, #168
+ 1610 01e2 FFF7FEFF 		bl	Telemetry_Enable_GimbalDeadZone
+ 1611              	.LVL127:
+  94:Task/Task_Telemetry.c ****                 memset(DataPipe_DataObjAddr(Rc), 0, sizeof(Telemetry_RCSig_TypeDef));
+ 1612              		.loc 1 94 17 view .LVU469
+ 1613 01e6 0D4C     		ldr	r4, .L85+12
+ 1614 01e8 2B22     		movs	r2, #43
+ 1615 01ea 0021     		movs	r1, #0
+ 1616 01ec 2046     		mov	r0, r4
+ 1617 01ee FFF7FEFF 		bl	memset
+ 1618              	.LVL128:
+  95:Task/Task_Telemetry.c **** 
+ 1619              		.loc 1 95 17 view .LVU470
+ 1620 01f2 0B4E     		ldr	r6, .L85+16
+ 1621 01f4 5822     		movs	r2, #88
+ 1622 01f6 0021     		movs	r1, #0
+ 1623 01f8 3046     		mov	r0, r6
+ 1624 01fa FFF7FEFF 		bl	memset
+ 1625              	.LVL129:
+  97:Task/Task_Telemetry.c ****                 Receiver_Smp_DataPipe.data_size = DataPipe_DataSize(Rc);
+ 1626              		.loc 1 97 17 view .LVU471
+  97:Task/Task_Telemetry.c ****                 Receiver_Smp_DataPipe.data_size = DataPipe_DataSize(Rc);
+ 1627              		.loc 1 97 49 is_stmt 0 view .LVU472
+ 1628 01fe C4F81160 		str	r6, [r4, #17]	@ unaligned
+  98:Task/Task_Telemetry.c **** 
+ 1629              		.loc 1 98 17 is_stmt 1 view .LVU473
+  98:Task/Task_Telemetry.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 45
+
+
+ 1630              		.loc 1 98 49 is_stmt 0 view .LVU474
+ 1631 0202 5823     		movs	r3, #88
+ 1632 0204 6375     		strb	r3, [r4, #21]
+ 1633 0206 0023     		movs	r3, #0
+ 1634 0208 A375     		strb	r3, [r4, #22]
+ 100:Task/Task_Telemetry.c ****             }
+ 1635              		.loc 1 100 17 is_stmt 1 view .LVU475
+ 1636              	.LVL130:
+ 1637              	.LBB7:
+ 1638              	.LBI7:
+ 1639              		.file 2 "System/DataPipe/DataPipe.h"
+   1:System/DataPipe/DataPipe.h **** #ifndef __DATAPIPE_H
+   2:System/DataPipe/DataPipe.h **** #define __DATAPIPE_H
+   3:System/DataPipe/DataPipe.h **** 
+   4:System/DataPipe/DataPipe.h **** #include <stdint.h>
+   5:System/DataPipe/DataPipe.h **** #include <string.h>
+   6:System/DataPipe/DataPipe.h **** #include <stdbool.h>
+   7:System/DataPipe/DataPipe.h **** 
+   8:System/DataPipe/DataPipe.h **** typedef void (*Pipe_TransFinish_Callback)(void *pipe_obj);
+   9:System/DataPipe/DataPipe.h **** typedef void (*Pipe_TransError_Callback)(void *pipe_obj);
+  10:System/DataPipe/DataPipe.h **** typedef void (*Pipe_TimeOutProc_Callback)(void *pipe_obj);
+  11:System/DataPipe/DataPipe.h **** 
+  12:System/DataPipe/DataPipe.h **** #define DataPipeHandleToObj(x) ((DataPipeObj_TypeDef *)x)
+  13:System/DataPipe/DataPipe.h **** #define DataPipe_CreateDataObj(type, name) static type name##_##PipeDataObj __attribute__((section(
+  14:System/DataPipe/DataPipe.h **** #define DataPipe_DataObjAddr(name) &name##_##PipeDataObj
+  15:System/DataPipe/DataPipe.h **** #define DataPipe_DataObj(name) name##_##PipeDataObj
+  16:System/DataPipe/DataPipe.h **** #define DataPipe_DataSize(name) sizeof(name##_##PipeDataObj)
+  17:System/DataPipe/DataPipe.h **** 
+  18:System/DataPipe/DataPipe.h **** typedef enum
+  19:System/DataPipe/DataPipe.h **** {
+  20:System/DataPipe/DataPipe.h ****     Pipe_UnReady = 0,
+  21:System/DataPipe/DataPipe.h ****     Pipe_Ready,
+  22:System/DataPipe/DataPipe.h ****     Pipe_Busy,
+  23:System/DataPipe/DataPipe.h ****     Pipe_Error,
+  24:System/DataPipe/DataPipe.h **** } DataPipe_State_List;
+  25:System/DataPipe/DataPipe.h **** 
+  26:System/DataPipe/DataPipe.h **** #pragma pack(1)
+  27:System/DataPipe/DataPipe.h **** typedef struct
+  28:System/DataPipe/DataPipe.h **** {
+  29:System/DataPipe/DataPipe.h ****     uint32_t min_rx_interval;
+  30:System/DataPipe/DataPipe.h ****     uint32_t detect_interval;
+  31:System/DataPipe/DataPipe.h ****     uint64_t rx_us_rt;
+  32:System/DataPipe/DataPipe.h **** 
+  33:System/DataPipe/DataPipe.h ****     bool enable;
+  34:System/DataPipe/DataPipe.h **** 
+  35:System/DataPipe/DataPipe.h ****     uint32_t data_addr;
+  36:System/DataPipe/DataPipe.h ****     uint16_t data_size;
+  37:System/DataPipe/DataPipe.h **** 
+  38:System/DataPipe/DataPipe.h ****     Pipe_TransFinish_Callback trans_finish_cb;
+  39:System/DataPipe/DataPipe.h ****     Pipe_TransError_Callback trans_error_cb;
+  40:System/DataPipe/DataPipe.h **** 
+  41:System/DataPipe/DataPipe.h ****     uint32_t tx_cnt;
+  42:System/DataPipe/DataPipe.h ****     uint32_t rx_cnt;
+  43:System/DataPipe/DataPipe.h ****     uint32_t er_cnt;
+  44:System/DataPipe/DataPipe.h **** } DataPipeObj_TypeDef;
+  45:System/DataPipe/DataPipe.h **** #pragma pack()
+  46:System/DataPipe/DataPipe.h **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 46
+
+
+  47:System/DataPipe/DataPipe.h **** typedef struct
+  48:System/DataPipe/DataPipe.h **** {
+  49:System/DataPipe/DataPipe.h ****     DataPipeObj_TypeDef *org;
+  50:System/DataPipe/DataPipe.h ****     DataPipeObj_TypeDef *dst;
+  51:System/DataPipe/DataPipe.h **** } Data_PlugedPipeObj_TypeDef;
+  52:System/DataPipe/DataPipe.h **** 
+  53:System/DataPipe/DataPipe.h **** bool DataPipe_Init(void);
+  54:System/DataPipe/DataPipe.h **** bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst);
+  55:System/DataPipe/DataPipe.h **** bool DataPipe_DealError(void);
+  56:System/DataPipe/DataPipe.h **** 
+  57:System/DataPipe/DataPipe.h **** inline bool DataPipe_Enable(DataPipeObj_TypeDef *obj)
+ 1640              		.loc 2 57 13 view .LVU476
+ 1641              	.LBB8:
+  58:System/DataPipe/DataPipe.h **** {
+  59:System/DataPipe/DataPipe.h ****     if (obj == NULL)
+ 1642              		.loc 2 59 5 view .LVU477
+  60:System/DataPipe/DataPipe.h ****         return false;
+  61:System/DataPipe/DataPipe.h **** 
+  62:System/DataPipe/DataPipe.h ****     obj->enable = true;
+ 1643              		.loc 2 62 5 view .LVU478
+ 1644              		.loc 2 62 17 is_stmt 0 view .LVU479
+ 1645 020a 2574     		strb	r5, [r4, #16]
+  63:System/DataPipe/DataPipe.h **** 
+  64:System/DataPipe/DataPipe.h ****     return true;
+ 1646              		.loc 2 64 5 is_stmt 1 view .LVU480
+ 1647              	.LVL131:
+ 1648              		.loc 2 64 5 is_stmt 0 view .LVU481
+ 1649              	.LBE8:
+ 1650              	.LBE7:
+ 105:Task/Task_Telemetry.c ****     }
+ 1651              		.loc 1 105 9 is_stmt 1 view .LVU482
+ 109:Task/Task_Telemetry.c **** 
+ 1652              		.loc 1 109 1 is_stmt 0 view .LVU483
+ 1653 020c 08E7     		b	.L81
+ 1654              	.L86:
+ 1655 020e 00BF     		.align	2
+ 1656              	.L85:
+ 1657 0210 00000000 		.word	SrvComProto
+ 1658 0214 00000000 		.word	.LANCHOR0
+ 1659 0218 00000000 		.word	.LANCHOR1
+ 1660 021c 00000000 		.word	Receiver_Smp_DataPipe
+ 1661 0220 00000000 		.word	.LANCHOR2
+ 1662              		.cfi_endproc
+ 1663              	.LFE1998:
+ 1665              		.global	__aeabi_uldivmod
+ 1666              		.section	.text.Telemetry_blink,"ax",%progbits
+ 1667              		.align	1
+ 1668              		.global	Telemetry_blink
+ 1669              		.syntax unified
+ 1670              		.thumb
+ 1671              		.thumb_func
+ 1672              		.fpu fpv5-d16
+ 1674              	Telemetry_blink:
+ 1675              	.LFB1999:
+ 112:Task/Task_Telemetry.c ****     SYSTEM_RunTime Rt = 0;
+ 1676              		.loc 1 112 1 is_stmt 1 view -0
+ 1677              		.cfi_startproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 47
+
+
+ 1678              		@ args = 0, pretend = 0, frame = 0
+ 1679              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1680 0000 38B5     		push	{r3, r4, r5, lr}
+ 1681              	.LCFI21:
+ 1682              		.cfi_def_cfa_offset 16
+ 1683              		.cfi_offset 3, -16
+ 1684              		.cfi_offset 4, -12
+ 1685              		.cfi_offset 5, -8
+ 1686              		.cfi_offset 14, -4
+ 113:Task/Task_Telemetry.c ****     static SYSTEM_RunTime Lst_Rt = 0;
+ 1687              		.loc 1 113 5 view .LVU485
+ 1688              	.LVL132:
+ 114:Task/Task_Telemetry.c ****     static bool led_state = false;
+ 1689              		.loc 1 114 5 view .LVU486
+ 115:Task/Task_Telemetry.c **** 
+ 1690              		.loc 1 115 5 view .LVU487
+ 120:Task/Task_Telemetry.c **** 
+ 1691              		.loc 1 120 5 view .LVU488
+ 120:Task/Task_Telemetry.c **** 
+ 1692              		.loc 1 120 10 is_stmt 0 view .LVU489
+ 1693 0002 FFF7FEFF 		bl	Get_CurrentRunningMs
+ 1694              	.LVL133:
+ 1695 0006 0446     		mov	r4, r0
+ 1696 0008 0D46     		mov	r5, r1
+ 1697              	.LVL134:
+ 122:Task/Task_Telemetry.c ****     {
+ 1698              		.loc 1 122 5 is_stmt 1 view .LVU490
+ 122:Task/Task_Telemetry.c ****     {
+ 1699              		.loc 1 122 13 is_stmt 0 view .LVU491
+ 1700 000a 6422     		movs	r2, #100
+ 1701 000c 0023     		movs	r3, #0
+ 1702 000e FFF7FEFF 		bl	__aeabi_uldivmod
+ 1703              	.LVL135:
+ 122:Task/Task_Telemetry.c ****     {
+ 1704              		.loc 1 122 8 view .LVU492
+ 1705 0012 1343     		orrs	r3, r2, r3
+ 1706 0014 0ED1     		bne	.L88
+ 122:Task/Task_Telemetry.c ****     {
+ 1707              		.loc 1 122 36 discriminator 1 view .LVU493
+ 1708 0016 0B4B     		ldr	r3, .L90
+ 1709 0018 D3E90023 		ldrd	r2, [r3]
+ 122:Task/Task_Telemetry.c ****     {
+ 1710              		.loc 1 122 25 discriminator 1 view .LVU494
+ 1711 001c AB42     		cmp	r3, r5
+ 1712 001e 08BF     		it	eq
+ 1713 0020 A242     		cmpeq	r2, r4
+ 1714 0022 07D0     		beq	.L88
+ 124:Task/Task_Telemetry.c ****         Lst_Rt = Rt;
+ 1715              		.loc 1 124 9 is_stmt 1 view .LVU495
+ 1716 0024 084A     		ldr	r2, .L90+4
+ 1717 0026 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 1718 0028 83F00103 		eor	r3, r3, #1
+ 124:Task/Task_Telemetry.c ****         Lst_Rt = Rt;
+ 1719              		.loc 1 124 19 is_stmt 0 view .LVU496
+ 1720 002c 1370     		strb	r3, [r2]
+ 125:Task/Task_Telemetry.c ****     }
+ 1721              		.loc 1 125 9 is_stmt 1 view .LVU497
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 48
+
+
+ 125:Task/Task_Telemetry.c ****     }
+ 1722              		.loc 1 125 16 is_stmt 0 view .LVU498
+ 1723 002e 054B     		ldr	r3, .L90
+ 1724 0030 C3E90045 		strd	r4, [r3]
+ 1725              	.L88:
+ 128:Task/Task_Telemetry.c ****     // DevLED.ctl(Led3, led_state);
+ 1726              		.loc 1 128 5 is_stmt 1 view .LVU499
+ 128:Task/Task_Telemetry.c ****     // DevLED.ctl(Led3, led_state);
+ 1727              		.loc 1 128 11 is_stmt 0 view .LVU500
+ 1728 0034 054B     		ldr	r3, .L90+8
+ 1729 0036 5C68     		ldr	r4, [r3, #4]
+ 1730              	.LVL136:
+ 128:Task/Task_Telemetry.c ****     // DevLED.ctl(Led3, led_state);
+ 1731              		.loc 1 128 5 view .LVU501
+ 1732 0038 054A     		ldr	r2, .L90+12
+ 1733 003a 034B     		ldr	r3, .L90+4
+ 1734 003c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1735 003e 07CA     		ldm	r2, {r0, r1, r2}
+ 1736 0040 A047     		blx	r4
+ 1737              	.LVL137:
+ 130:Task/Task_Telemetry.c **** 
+ 1738              		.loc 1 130 1 view .LVU502
+ 1739 0042 38BD     		pop	{r3, r4, r5, pc}
+ 1740              	.L91:
+ 1741              		.align	2
+ 1742              	.L90:
+ 1743 0044 00000000 		.word	.LANCHOR3
+ 1744 0048 00000000 		.word	.LANCHOR4
+ 1745 004c 00000000 		.word	DevLED
+ 1746 0050 00000000 		.word	Led1
+ 1747              		.cfi_endproc
+ 1748              	.LFE1999:
+ 1750              		.section	.text.TaskTelemetry_Core,"ax",%progbits
+ 1751              		.align	1
+ 1752              		.global	TaskTelemetry_Core
+ 1753              		.syntax unified
+ 1754              		.thumb
+ 1755              		.thumb_func
+ 1756              		.fpu fpv5-d16
+ 1758              	TaskTelemetry_Core:
+ 1759              	.LVL138:
+ 1760              	.LFB2000:
+ 133:Task/Task_Telemetry.c ****     Telemetry_blink();
+ 1761              		.loc 1 133 1 is_stmt 1 view -0
+ 1762              		.cfi_startproc
+ 1763              		@ args = 0, pretend = 0, frame = 88
+ 1764              		@ frame_needed = 0, uses_anonymous_args = 0
+ 133:Task/Task_Telemetry.c ****     Telemetry_blink();
+ 1765              		.loc 1 133 1 is_stmt 0 view .LVU504
+ 1766 0000 00B5     		push	{lr}
+ 1767              	.LCFI22:
+ 1768              		.cfi_def_cfa_offset 4
+ 1769              		.cfi_offset 14, -4
+ 1770 0002 97B0     		sub	sp, sp, #92
+ 1771              	.LCFI23:
+ 1772              		.cfi_def_cfa_offset 96
+ 134:Task/Task_Telemetry.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 49
+
+
+ 1773              		.loc 1 134 5 is_stmt 1 view .LVU505
+ 1774 0004 FFF7FEFF 		bl	Telemetry_blink
+ 1775              	.LVL139:
+ 136:Task/Task_Telemetry.c **** 
+ 1776              		.loc 1 136 5 view .LVU506
+ 136:Task/Task_Telemetry.c **** 
+ 1777              		.loc 1 136 28 is_stmt 0 view .LVU507
+ 1778 0008 084A     		ldr	r2, .L94
+ 1779 000a 0949     		ldr	r1, .L94+4
+ 1780 000c 6846     		mov	r0, sp
+ 1781 000e FFF7FEFF 		bl	Telemetry_RC_Sig_Update
+ 1782              	.LVL140:
+ 1783 0012 5822     		movs	r2, #88
+ 1784 0014 6946     		mov	r1, sp
+ 1785 0016 0748     		ldr	r0, .L94+8
+ 1786 0018 FFF7FEFF 		bl	memcpy
+ 1787              	.LVL141:
+ 139:Task/Task_Telemetry.c **** }
+ 1788              		.loc 1 139 5 is_stmt 1 view .LVU508
+ 1789 001c 0649     		ldr	r1, .L94+12
+ 1790 001e 0748     		ldr	r0, .L94+16
+ 1791 0020 FFF7FEFF 		bl	DataPipe_SendTo
+ 1792              	.LVL142:
+ 140:Task/Task_Telemetry.c **** 
+ 1793              		.loc 1 140 1 is_stmt 0 view .LVU509
+ 1794 0024 17B0     		add	sp, sp, #92
+ 1795              	.LCFI24:
+ 1796              		.cfi_def_cfa_offset 4
+ 1797              		@ sp needed
+ 1798 0026 5DF804FB 		ldr	pc, [sp], #4
+ 1799              	.L95:
+ 1800 002a 00BF     		.align	2
+ 1801              	.L94:
+ 1802 002c 00000000 		.word	.LANCHOR0
+ 1803 0030 00000000 		.word	.LANCHOR1
+ 1804 0034 00000000 		.word	.LANCHOR2
+ 1805 0038 00000000 		.word	Receiver_hub_DataPipe
+ 1806 003c 00000000 		.word	Receiver_Smp_DataPipe
+ 1807              		.cfi_endproc
+ 1808              	.LFE2000:
+ 1810              		.section	.Perph_Section,"aw"
+ 1811              		.align	2
+ 1812              		.set	.LANCHOR2,. + 0
+ 1815              	Rc_PipeDataObj:
+ 1816 0000 00000000 		.space	88
+ 1816      00000000 
+ 1816      00000000 
+ 1816      00000000 
+ 1816      00000000 
+ 1817              		.section	.bss.Lst_Rt.27872,"aw",%nobits
+ 1818              		.align	3
+ 1819              		.set	.LANCHOR3,. + 0
+ 1822              	Lst_Rt.27872:
+ 1823 0000 00000000 		.space	8
+ 1823      00000000 
+ 1824              		.section	.bss.RC_Setting,"aw",%nobits
+ 1825              		.align	2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 50
+
+
+ 1826              		.set	.LANCHOR1,. + 0
+ 1829              	RC_Setting:
+ 1830 0000 00000000 		.space	294
+ 1830      00000000 
+ 1830      00000000 
+ 1830      00000000 
+ 1830      00000000 
+ 1831              		.section	.bss.Receiver_Obj,"aw",%nobits
+ 1832              		.align	2
+ 1833              		.set	.LANCHOR0,. + 0
+ 1836              	Receiver_Obj:
+ 1837 0000 00000000 		.space	74
+ 1837      00000000 
+ 1837      00000000 
+ 1837      00000000 
+ 1837      00000000 
+ 1838              		.section	.bss.led_state.27873,"aw",%nobits
+ 1839              		.set	.LANCHOR4,. + 0
+ 1842              	led_state.27873:
+ 1843 0000 00       		.space	1
+ 1844              		.text
+ 1845              	.Letext0:
+ 1846              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1847              		.file 4 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1848              		.file 5 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1849              		.file 6 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\lib\\gcc\\arm-none
+ 1850              		.file 7 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1851              		.file 8 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1852              		.file 9 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 1853              		.file 10 "System/runtime/runtime.h"
+ 1854              		.file 11 "DataStructure/linked_list.h"
+ 1855              		.file 12 "HAL_Lib/CMSIS/Core/Include/core_cm7.h"
+ 1856              		.file 13 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/system_stm32h7xx.h"
+ 1857              		.file 14 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1858              		.file 15 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\in
+ 1859              		.file 16 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1860              		.file 17 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1861              		.file 18 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1862              		.file 19 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h"
+ 1863              		.file 20 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h"
+ 1864              		.file 21 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 1865              		.file 22 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 1866              		.file 23 "Task/../System/scheduler/scheduler.h"
+ 1867              		.file 24 "Device/Dev_Sbus.h"
+ 1868              		.file 25 "Device/Dev_CRSF.h"
+ 1869              		.file 26 "Bsp/Bsp_GPIO.h"
+ 1870              		.file 27 "Bsp/Bsp_DMA.h"
+ 1871              		.file 28 "Bsp/Bsp_Uart.h"
+ 1872              		.file 29 "Service/Srv_Receiver.h"
+ 1873              		.file 30 "Task/Task_Telemetry.h"
+ 1874              		.file 31 "Bsp/Bsp_SPI.h"
+ 1875              		.file 32 "Device/Dev_Led.h"
+ 1876              		.file 33 "debug/debug_util.h"
+ 1877              		.file 34 "IO_Def/IO_Definition.h"
+ 1878              		.file 35 "Service/../MAVLink/common/../mavlink_types.h"
+ 1879              		.file 36 "Service/Srv_ComProto.h"
+ 1880              		.file 37 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 51
+
+
+ 1881              		.file 38 "Common/util.h"
+ 1882              		.file 39 "System/mmu/mmu.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 52
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_Telemetry.c
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:17     .text.Telemetry_Enable_GimbalDeadZone:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:24     .text.Telemetry_Enable_GimbalDeadZone:00000000 Telemetry_Enable_GimbalDeadZone
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:59     .text.Telemetry_GimbalToPercent:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:65     .text.Telemetry_GimbalToPercent:00000000 Telemetry_GimbalToPercent
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:206    .text.Telemetry_GimbalToPercent:0000007c $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:211    .text.Telemetry_RC_Sig_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:217    .text.Telemetry_RC_Sig_Init:00000000 Telemetry_RC_Sig_Init
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:329    .text.Telemetry_RC_Sig_Init:00000078 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:337    .text.Telemetry_BindGimbalToChannel:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:343    .text.Telemetry_BindGimbalToChannel:00000000 Telemetry_BindGimbalToChannel
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:473    .text.Telemetry_BindToggleToChannel:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:479    .text.Telemetry_BindToggleToChannel:00000000 Telemetry_BindToggleToChannel
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:591    .text.Telemetry_AddToggleCombo:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:597    .text.Telemetry_AddToggleCombo:00000000 Telemetry_AddToggleCombo
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:727    .text.Telemetry_Toggle_Check:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:733    .text.Telemetry_Toggle_Check:00000000 Telemetry_Toggle_Check
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:905    .text.Telemetry_RC_Sig_Update:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:911    .text.Telemetry_RC_Sig_Update:00000000 Telemetry_RC_Sig_Update
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1306   .text.Telemetry_RC_Sig_Update:000001d8 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1312   .text.TaskTelemetry_Set_DataIO_Enable:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1319   .text.TaskTelemetry_Set_DataIO_Enable:00000000 TaskTelemetry_Set_DataIO_Enable
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1334   .text.TaskTelemetry_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1341   .text.TaskTelemetry_Init:00000000 TaskTelemetry_Init
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1657   .text.TaskTelemetry_Init:00000210 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1667   .text.Telemetry_blink:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1674   .text.Telemetry_blink:00000000 Telemetry_blink
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1743   .text.Telemetry_blink:00000044 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1751   .text.TaskTelemetry_Core:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1758   .text.TaskTelemetry_Core:00000000 TaskTelemetry_Core
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1802   .text.TaskTelemetry_Core:0000002c $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1811   .Perph_Section:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1815   .Perph_Section:00000000 Rc_PipeDataObj
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1818   .bss.Lst_Rt.27872:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1822   .bss.Lst_Rt.27872:00000000 Lst_Rt.27872
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1825   .bss.RC_Setting:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1829   .bss.RC_Setting:00000000 RC_Setting
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1832   .bss.Receiver_Obj:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1836   .bss.Receiver_Obj:00000000 Receiver_Obj
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1842   .bss.led_state.27873:00000000 led_state.27873
+C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s:1843   .bss.led_state.27873:00000000 $d
+
+UNDEFINED SYMBOLS
+SrvReceiver
+Uart4_RxPin
+Uart4_TxPin
+MMU_Malloc
+MMU_Free
+List_ItemInit
+List_Insert_Item
+Get_OnSet_Bit_Num
+Get_Bit_Index
+memset
+memcpy
+Get_CurrentRunningMs
+SrvComProto
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpdXtps.s 			page 53
+
+
+Receiver_Smp_DataPipe
+__aeabi_uldivmod
+DevLED
+Led1
+DataPipe_SendTo
+Receiver_hub_DataPipe

@@ -1,0 +1,1132 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"usbd_desc.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.USBD_FS_DeviceDescriptor,"ax",%progbits
+  17              		.align	1
+  18              		.global	USBD_FS_DeviceDescriptor
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	USBD_FS_DeviceDescriptor:
+  26              	.LVL0:
+  27              	.LFB148:
+  28              		.file 1 "USB/USB_DEVICE/App/usbd_desc.c"
+   1:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE BEGIN Header */
+   2:USB/USB_DEVICE/App/usbd_desc.c **** /**
+   3:USB/USB_DEVICE/App/usbd_desc.c ****  ******************************************************************************
+   4:USB/USB_DEVICE/App/usbd_desc.c ****  * @file           : App/usbd_desc.c
+   5:USB/USB_DEVICE/App/usbd_desc.c ****  * @version        : v1.0_Cube
+   6:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief          : This file implements the USB device descriptors.
+   7:USB/USB_DEVICE/App/usbd_desc.c ****  ******************************************************************************
+   8:USB/USB_DEVICE/App/usbd_desc.c ****  * @attention
+   9:USB/USB_DEVICE/App/usbd_desc.c ****  *
+  10:USB/USB_DEVICE/App/usbd_desc.c ****  * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
+  11:USB/USB_DEVICE/App/usbd_desc.c ****  * All rights reserved.</center></h2>
+  12:USB/USB_DEVICE/App/usbd_desc.c ****  *
+  13:USB/USB_DEVICE/App/usbd_desc.c ****  * This software component is licensed by ST under Ultimate Liberty license
+  14:USB/USB_DEVICE/App/usbd_desc.c ****  * SLA0044, the "License"; You may not use this file except in compliance with
+  15:USB/USB_DEVICE/App/usbd_desc.c ****  * the License. You may obtain a copy of the License at:
+  16:USB/USB_DEVICE/App/usbd_desc.c ****  *                             www.st.com/SLA0044
+  17:USB/USB_DEVICE/App/usbd_desc.c ****  *
+  18:USB/USB_DEVICE/App/usbd_desc.c ****  ******************************************************************************
+  19:USB/USB_DEVICE/App/usbd_desc.c ****  */
+  20:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE END Header */
+  21:USB/USB_DEVICE/App/usbd_desc.c **** 
+  22:USB/USB_DEVICE/App/usbd_desc.c **** /* Includes ------------------------------------------------------------------*/
+  23:USB/USB_DEVICE/App/usbd_desc.c **** #include "usbd_core.h"
+  24:USB/USB_DEVICE/App/usbd_desc.c **** #include "usbd_desc.h"
+  25:USB/USB_DEVICE/App/usbd_desc.c **** #include "usbd_conf.h"
+  26:USB/USB_DEVICE/App/usbd_desc.c **** 
+  27:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE BEGIN INCLUDE */
+  28:USB/USB_DEVICE/App/usbd_desc.c **** 
+  29:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE END INCLUDE */
+  30:USB/USB_DEVICE/App/usbd_desc.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 2
+
+
+  31:USB/USB_DEVICE/App/usbd_desc.c **** /* Private typedef -----------------------------------------------------------*/
+  32:USB/USB_DEVICE/App/usbd_desc.c **** /* Private define ------------------------------------------------------------*/
+  33:USB/USB_DEVICE/App/usbd_desc.c **** /* Private macro -------------------------------------------------------------*/
+  34:USB/USB_DEVICE/App/usbd_desc.c **** 
+  35:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE BEGIN PV */
+  36:USB/USB_DEVICE/App/usbd_desc.c **** /* Private variables ---------------------------------------------------------*/
+  37:USB/USB_DEVICE/App/usbd_desc.c **** 
+  38:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE END PV */
+  39:USB/USB_DEVICE/App/usbd_desc.c **** 
+  40:USB/USB_DEVICE/App/usbd_desc.c **** /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
+  41:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+  42:USB/USB_DEVICE/App/usbd_desc.c ****  */
+  43:USB/USB_DEVICE/App/usbd_desc.c **** 
+  44:USB/USB_DEVICE/App/usbd_desc.c **** /** @addtogroup USBD_DESC
+  45:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+  46:USB/USB_DEVICE/App/usbd_desc.c ****  */
+  47:USB/USB_DEVICE/App/usbd_desc.c **** 
+  48:USB/USB_DEVICE/App/usbd_desc.c **** /** @defgroup USBD_DESC_Private_TypesDefinitions USBD_DESC_Private_TypesDefinitions
+  49:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief Private types.
+  50:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+  51:USB/USB_DEVICE/App/usbd_desc.c ****  */
+  52:USB/USB_DEVICE/App/usbd_desc.c **** 
+  53:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE BEGIN PRIVATE_TYPES */
+  54:USB/USB_DEVICE/App/usbd_desc.c **** 
+  55:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE END PRIVATE_TYPES */
+  56:USB/USB_DEVICE/App/usbd_desc.c **** 
+  57:USB/USB_DEVICE/App/usbd_desc.c **** /**
+  58:USB/USB_DEVICE/App/usbd_desc.c ****  * @}
+  59:USB/USB_DEVICE/App/usbd_desc.c ****  */
+  60:USB/USB_DEVICE/App/usbd_desc.c **** 
+  61:USB/USB_DEVICE/App/usbd_desc.c **** /** @defgroup USBD_DESC_Private_Defines USBD_DESC_Private_Defines
+  62:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief Private defines.
+  63:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+  64:USB/USB_DEVICE/App/usbd_desc.c ****  */
+  65:USB/USB_DEVICE/App/usbd_desc.c **** 
+  66:USB/USB_DEVICE/App/usbd_desc.c **** #define USBD_VID 1155
+  67:USB/USB_DEVICE/App/usbd_desc.c **** #define USBD_LANGID_STRING 1033
+  68:USB/USB_DEVICE/App/usbd_desc.c **** #define USBD_MANUFACTURER_STRING "8_B!T0"
+  69:USB/USB_DEVICE/App/usbd_desc.c **** #define USBD_PID_FS 22336
+  70:USB/USB_DEVICE/App/usbd_desc.c **** #define USBD_PRODUCT_STRING_FS "H7FC"
+  71:USB/USB_DEVICE/App/usbd_desc.c **** #define USBD_CONFIGURATION_STRING_FS "CDC Config"
+  72:USB/USB_DEVICE/App/usbd_desc.c **** #define USBD_INTERFACE_STRING_FS "CDC Interface"
+  73:USB/USB_DEVICE/App/usbd_desc.c **** 
+  74:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE BEGIN PRIVATE_DEFINES */
+  75:USB/USB_DEVICE/App/usbd_desc.c **** 
+  76:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE END PRIVATE_DEFINES */
+  77:USB/USB_DEVICE/App/usbd_desc.c **** 
+  78:USB/USB_DEVICE/App/usbd_desc.c **** /**
+  79:USB/USB_DEVICE/App/usbd_desc.c ****  * @}
+  80:USB/USB_DEVICE/App/usbd_desc.c ****  */
+  81:USB/USB_DEVICE/App/usbd_desc.c **** 
+  82:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE BEGIN 0 */
+  83:USB/USB_DEVICE/App/usbd_desc.c **** 
+  84:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE END 0 */
+  85:USB/USB_DEVICE/App/usbd_desc.c **** 
+  86:USB/USB_DEVICE/App/usbd_desc.c **** /** @defgroup USBD_DESC_Private_Macros USBD_DESC_Private_Macros
+  87:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief Private macros.
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 3
+
+
+  88:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+  89:USB/USB_DEVICE/App/usbd_desc.c ****  */
+  90:USB/USB_DEVICE/App/usbd_desc.c **** 
+  91:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE BEGIN PRIVATE_MACRO */
+  92:USB/USB_DEVICE/App/usbd_desc.c **** 
+  93:USB/USB_DEVICE/App/usbd_desc.c **** /* USER CODE END PRIVATE_MACRO */
+  94:USB/USB_DEVICE/App/usbd_desc.c **** 
+  95:USB/USB_DEVICE/App/usbd_desc.c **** /**
+  96:USB/USB_DEVICE/App/usbd_desc.c ****  * @}
+  97:USB/USB_DEVICE/App/usbd_desc.c ****  */
+  98:USB/USB_DEVICE/App/usbd_desc.c **** 
+  99:USB/USB_DEVICE/App/usbd_desc.c **** /** @defgroup USBD_DESC_Private_FunctionPrototypes USBD_DESC_Private_FunctionPrototypes
+ 100:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief Private functions declaration.
+ 101:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+ 102:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 103:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 104:USB/USB_DEVICE/App/usbd_desc.c **** static void Get_SerialNum(void);
+ 105:USB/USB_DEVICE/App/usbd_desc.c **** static void IntToUnicode(uint32_t value, uint8_t *pbuf, uint8_t len);
+ 106:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 107:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 108:USB/USB_DEVICE/App/usbd_desc.c ****  * @}
+ 109:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 110:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 111:USB/USB_DEVICE/App/usbd_desc.c **** /** @defgroup USBD_DESC_Private_FunctionPrototypes USBD_DESC_Private_FunctionPrototypes
+ 112:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief Private functions declaration for FS.
+ 113:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+ 114:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 115:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 116:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_DeviceDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
+ 117:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_LangIDStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
+ 118:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_ManufacturerStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
+ 119:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_ProductStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
+ 120:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_SerialStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
+ 121:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_ConfigStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
+ 122:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_InterfaceStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
+ 123:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 124:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 125:USB/USB_DEVICE/App/usbd_desc.c ****  * @}
+ 126:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 127:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 128:USB/USB_DEVICE/App/usbd_desc.c **** /** @defgroup USBD_DESC_Private_Variables USBD_DESC_Private_Variables
+ 129:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief Private variables.
+ 130:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+ 131:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 132:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 133:USB/USB_DEVICE/App/usbd_desc.c **** USBD_DescriptorsTypeDef FS_Desc =
+ 134:USB/USB_DEVICE/App/usbd_desc.c ****     {
+ 135:USB/USB_DEVICE/App/usbd_desc.c ****         USBD_FS_DeviceDescriptor, USBD_FS_LangIDStrDescriptor, USBD_FS_ManufacturerStrDescriptor, U
+ 136:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 137:USB/USB_DEVICE/App/usbd_desc.c **** #if defined(__ICCARM__) /* IAR Compiler */
+ 138:USB/USB_DEVICE/App/usbd_desc.c **** #pragma data_alignment = 4
+ 139:USB/USB_DEVICE/App/usbd_desc.c **** #endif /* defined ( __ICCARM__ ) */
+ 140:USB/USB_DEVICE/App/usbd_desc.c **** /** USB standard device descriptor. */
+ 141:USB/USB_DEVICE/App/usbd_desc.c **** __ALIGN_BEGIN uint8_t USBD_FS_DeviceDesc[USB_LEN_DEV_DESC] __ALIGN_END =
+ 142:USB/USB_DEVICE/App/usbd_desc.c ****     {
+ 143:USB/USB_DEVICE/App/usbd_desc.c ****         0x12,                 /*bLength */
+ 144:USB/USB_DEVICE/App/usbd_desc.c ****         USB_DESC_TYPE_DEVICE, /*bDescriptorType*/
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 4
+
+
+ 145:USB/USB_DEVICE/App/usbd_desc.c ****         0x00,                 /*bcdUSB */
+ 146:USB/USB_DEVICE/App/usbd_desc.c ****         0x02,
+ 147:USB/USB_DEVICE/App/usbd_desc.c ****         0x02,                /*bDeviceClass*/
+ 148:USB/USB_DEVICE/App/usbd_desc.c ****         0x02,                /*bDeviceSubClass*/
+ 149:USB/USB_DEVICE/App/usbd_desc.c ****         0x00,                /*bDeviceProtocol*/
+ 150:USB/USB_DEVICE/App/usbd_desc.c ****         USB_MAX_EP0_SIZE,    /*bMaxPacketSize*/
+ 151:USB/USB_DEVICE/App/usbd_desc.c ****         LOBYTE(USBD_VID),    /*idVendor*/
+ 152:USB/USB_DEVICE/App/usbd_desc.c ****         HIBYTE(USBD_VID),    /*idVendor*/
+ 153:USB/USB_DEVICE/App/usbd_desc.c ****         LOBYTE(USBD_PID_FS), /*idProduct*/
+ 154:USB/USB_DEVICE/App/usbd_desc.c ****         HIBYTE(USBD_PID_FS), /*idProduct*/
+ 155:USB/USB_DEVICE/App/usbd_desc.c ****         0x00,                /*bcdDevice rel. 2.00*/
+ 156:USB/USB_DEVICE/App/usbd_desc.c ****         0x02,
+ 157:USB/USB_DEVICE/App/usbd_desc.c ****         USBD_IDX_MFC_STR,          /*Index of manufacturer  string*/
+ 158:USB/USB_DEVICE/App/usbd_desc.c ****         USBD_IDX_PRODUCT_STR,      /*Index of product string*/
+ 159:USB/USB_DEVICE/App/usbd_desc.c ****         USBD_IDX_SERIAL_STR,       /*Index of serial number string*/
+ 160:USB/USB_DEVICE/App/usbd_desc.c ****         USBD_MAX_NUM_CONFIGURATION /*bNumConfigurations*/
+ 161:USB/USB_DEVICE/App/usbd_desc.c **** };
+ 162:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 163:USB/USB_DEVICE/App/usbd_desc.c **** /* USB_DeviceDescriptor */
+ 164:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 165:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 166:USB/USB_DEVICE/App/usbd_desc.c ****  * @}
+ 167:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 168:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 169:USB/USB_DEVICE/App/usbd_desc.c **** /** @defgroup USBD_DESC_Private_Variables USBD_DESC_Private_Variables
+ 170:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief Private variables.
+ 171:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+ 172:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 173:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 174:USB/USB_DEVICE/App/usbd_desc.c **** #if defined(__ICCARM__) /* IAR Compiler */
+ 175:USB/USB_DEVICE/App/usbd_desc.c **** #pragma data_alignment = 4
+ 176:USB/USB_DEVICE/App/usbd_desc.c **** #endif /* defined ( __ICCARM__ ) */
+ 177:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 178:USB/USB_DEVICE/App/usbd_desc.c **** /** USB lang indentifier descriptor. */
+ 179:USB/USB_DEVICE/App/usbd_desc.c **** __ALIGN_BEGIN uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END =
+ 180:USB/USB_DEVICE/App/usbd_desc.c ****     {
+ 181:USB/USB_DEVICE/App/usbd_desc.c ****         USB_LEN_LANGID_STR_DESC,
+ 182:USB/USB_DEVICE/App/usbd_desc.c ****         USB_DESC_TYPE_STRING,
+ 183:USB/USB_DEVICE/App/usbd_desc.c ****         LOBYTE(USBD_LANGID_STRING),
+ 184:USB/USB_DEVICE/App/usbd_desc.c ****         HIBYTE(USBD_LANGID_STRING)};
+ 185:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 186:USB/USB_DEVICE/App/usbd_desc.c **** #if defined(__ICCARM__) /* IAR Compiler */
+ 187:USB/USB_DEVICE/App/usbd_desc.c **** #pragma data_alignment = 4
+ 188:USB/USB_DEVICE/App/usbd_desc.c **** #endif /* defined ( __ICCARM__ ) */
+ 189:USB/USB_DEVICE/App/usbd_desc.c **** /* Internal string descriptor. */
+ 190:USB/USB_DEVICE/App/usbd_desc.c **** __ALIGN_BEGIN uint8_t USBD_StrDesc[USBD_MAX_STR_DESC_SIZ] __ALIGN_END;
+ 191:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 192:USB/USB_DEVICE/App/usbd_desc.c **** #if defined(__ICCARM__) /*!< IAR Compiler */
+ 193:USB/USB_DEVICE/App/usbd_desc.c **** #pragma data_alignment = 4
+ 194:USB/USB_DEVICE/App/usbd_desc.c **** #endif
+ 195:USB/USB_DEVICE/App/usbd_desc.c **** __ALIGN_BEGIN uint8_t USBD_StringSerial[USB_SIZ_STRING_SERIAL] __ALIGN_END = {
+ 196:USB/USB_DEVICE/App/usbd_desc.c ****     USB_SIZ_STRING_SERIAL,
+ 197:USB/USB_DEVICE/App/usbd_desc.c ****     USB_DESC_TYPE_STRING,
+ 198:USB/USB_DEVICE/App/usbd_desc.c **** };
+ 199:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 200:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 201:USB/USB_DEVICE/App/usbd_desc.c ****  * @}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 5
+
+
+ 202:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 203:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 204:USB/USB_DEVICE/App/usbd_desc.c **** /** @defgroup USBD_DESC_Private_Functions USBD_DESC_Private_Functions
+ 205:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief Private functions.
+ 206:USB/USB_DEVICE/App/usbd_desc.c ****  * @{
+ 207:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 208:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 209:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 210:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief  Return the device descriptor
+ 211:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  speed : Current device speed
+ 212:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  length : Pointer to data length variable
+ 213:USB/USB_DEVICE/App/usbd_desc.c ****  * @retval Pointer to descriptor buffer
+ 214:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 215:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_DeviceDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
+ 216:USB/USB_DEVICE/App/usbd_desc.c **** {
+  29              		.loc 1 216 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+ 217:USB/USB_DEVICE/App/usbd_desc.c ****   UNUSED(speed);
+  34              		.loc 1 217 3 view .LVU1
+ 218:USB/USB_DEVICE/App/usbd_desc.c ****   *length = sizeof(USBD_FS_DeviceDesc);
+  35              		.loc 1 218 3 view .LVU2
+  36              		.loc 1 218 11 is_stmt 0 view .LVU3
+  37 0000 1223     		movs	r3, #18
+  38 0002 0B80     		strh	r3, [r1]	@ movhi
+ 219:USB/USB_DEVICE/App/usbd_desc.c ****   return USBD_FS_DeviceDesc;
+  39              		.loc 1 219 3 is_stmt 1 view .LVU4
+ 220:USB/USB_DEVICE/App/usbd_desc.c **** }
+  40              		.loc 1 220 1 is_stmt 0 view .LVU5
+  41 0004 0048     		ldr	r0, .L2
+  42              	.LVL1:
+  43              		.loc 1 220 1 view .LVU6
+  44 0006 7047     		bx	lr
+  45              	.L3:
+  46              		.align	2
+  47              	.L2:
+  48 0008 00000000 		.word	.LANCHOR0
+  49              		.cfi_endproc
+  50              	.LFE148:
+  52              		.section	.text.USBD_FS_LangIDStrDescriptor,"ax",%progbits
+  53              		.align	1
+  54              		.global	USBD_FS_LangIDStrDescriptor
+  55              		.syntax unified
+  56              		.thumb
+  57              		.thumb_func
+  58              		.fpu fpv5-d16
+  60              	USBD_FS_LangIDStrDescriptor:
+  61              	.LVL2:
+  62              	.LFB149:
+ 221:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 222:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 223:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief  Return the LangID string descriptor
+ 224:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  speed : Current device speed
+ 225:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  length : Pointer to data length variable
+ 226:USB/USB_DEVICE/App/usbd_desc.c ****  * @retval Pointer to descriptor buffer
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 6
+
+
+ 227:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 228:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_LangIDStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
+ 229:USB/USB_DEVICE/App/usbd_desc.c **** {
+  63              		.loc 1 229 1 is_stmt 1 view -0
+  64              		.cfi_startproc
+  65              		@ args = 0, pretend = 0, frame = 0
+  66              		@ frame_needed = 0, uses_anonymous_args = 0
+  67              		@ link register save eliminated.
+ 230:USB/USB_DEVICE/App/usbd_desc.c ****   UNUSED(speed);
+  68              		.loc 1 230 3 view .LVU8
+ 231:USB/USB_DEVICE/App/usbd_desc.c ****   *length = sizeof(USBD_LangIDDesc);
+  69              		.loc 1 231 3 view .LVU9
+  70              		.loc 1 231 11 is_stmt 0 view .LVU10
+  71 0000 0423     		movs	r3, #4
+  72 0002 0B80     		strh	r3, [r1]	@ movhi
+ 232:USB/USB_DEVICE/App/usbd_desc.c ****   return USBD_LangIDDesc;
+  73              		.loc 1 232 3 is_stmt 1 view .LVU11
+ 233:USB/USB_DEVICE/App/usbd_desc.c **** }
+  74              		.loc 1 233 1 is_stmt 0 view .LVU12
+  75 0004 0048     		ldr	r0, .L5
+  76              	.LVL3:
+  77              		.loc 1 233 1 view .LVU13
+  78 0006 7047     		bx	lr
+  79              	.L6:
+  80              		.align	2
+  81              	.L5:
+  82 0008 00000000 		.word	.LANCHOR1
+  83              		.cfi_endproc
+  84              	.LFE149:
+  86              		.section	.text.IntToUnicode,"ax",%progbits
+  87              		.align	1
+  88              		.syntax unified
+  89              		.thumb
+  90              		.thumb_func
+  91              		.fpu fpv5-d16
+  93              	IntToUnicode:
+  94              	.LVL4:
+  95              	.LFB156:
+ 234:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 235:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 236:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief  Return the product string descriptor
+ 237:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  speed : Current device speed
+ 238:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  length : Pointer to data length variable
+ 239:USB/USB_DEVICE/App/usbd_desc.c ****  * @retval Pointer to descriptor buffer
+ 240:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 241:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_ProductStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
+ 242:USB/USB_DEVICE/App/usbd_desc.c **** {
+ 243:USB/USB_DEVICE/App/usbd_desc.c ****   if (speed == 0)
+ 244:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 245:USB/USB_DEVICE/App/usbd_desc.c ****     USBD_GetString((uint8_t *)USBD_PRODUCT_STRING_FS, USBD_StrDesc, length);
+ 246:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 247:USB/USB_DEVICE/App/usbd_desc.c ****   else
+ 248:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 249:USB/USB_DEVICE/App/usbd_desc.c ****     USBD_GetString((uint8_t *)USBD_PRODUCT_STRING_FS, USBD_StrDesc, length);
+ 250:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 251:USB/USB_DEVICE/App/usbd_desc.c ****   return USBD_StrDesc;
+ 252:USB/USB_DEVICE/App/usbd_desc.c **** }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 7
+
+
+ 253:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 254:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 255:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief  Return the manufacturer string descriptor
+ 256:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  speed : Current device speed
+ 257:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  length : Pointer to data length variable
+ 258:USB/USB_DEVICE/App/usbd_desc.c ****  * @retval Pointer to descriptor buffer
+ 259:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 260:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_ManufacturerStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
+ 261:USB/USB_DEVICE/App/usbd_desc.c **** {
+ 262:USB/USB_DEVICE/App/usbd_desc.c ****   UNUSED(speed);
+ 263:USB/USB_DEVICE/App/usbd_desc.c ****   USBD_GetString((uint8_t *)USBD_MANUFACTURER_STRING, USBD_StrDesc, length);
+ 264:USB/USB_DEVICE/App/usbd_desc.c ****   return USBD_StrDesc;
+ 265:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 266:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 267:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 268:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief  Return the serial number string descriptor
+ 269:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  speed : Current device speed
+ 270:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  length : Pointer to data length variable
+ 271:USB/USB_DEVICE/App/usbd_desc.c ****  * @retval Pointer to descriptor buffer
+ 272:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 273:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_SerialStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
+ 274:USB/USB_DEVICE/App/usbd_desc.c **** {
+ 275:USB/USB_DEVICE/App/usbd_desc.c ****   UNUSED(speed);
+ 276:USB/USB_DEVICE/App/usbd_desc.c ****   *length = USB_SIZ_STRING_SERIAL;
+ 277:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 278:USB/USB_DEVICE/App/usbd_desc.c ****   /* Update the serial number string descriptor with the data from the unique
+ 279:USB/USB_DEVICE/App/usbd_desc.c ****    * ID */
+ 280:USB/USB_DEVICE/App/usbd_desc.c ****   Get_SerialNum();
+ 281:USB/USB_DEVICE/App/usbd_desc.c ****   /* USER CODE BEGIN USBD_FS_SerialStrDescriptor */
+ 282:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 283:USB/USB_DEVICE/App/usbd_desc.c ****   /* USER CODE END USBD_FS_SerialStrDescriptor */
+ 284:USB/USB_DEVICE/App/usbd_desc.c ****   return (uint8_t *)USBD_StringSerial;
+ 285:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 286:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 287:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 288:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief  Return the configuration string descriptor
+ 289:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  speed : Current device speed
+ 290:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  length : Pointer to data length variable
+ 291:USB/USB_DEVICE/App/usbd_desc.c ****  * @retval Pointer to descriptor buffer
+ 292:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 293:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_ConfigStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
+ 294:USB/USB_DEVICE/App/usbd_desc.c **** {
+ 295:USB/USB_DEVICE/App/usbd_desc.c ****   if (speed == USBD_SPEED_HIGH)
+ 296:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 297:USB/USB_DEVICE/App/usbd_desc.c ****     USBD_GetString((uint8_t *)USBD_CONFIGURATION_STRING_FS, USBD_StrDesc, length);
+ 298:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 299:USB/USB_DEVICE/App/usbd_desc.c ****   else
+ 300:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 301:USB/USB_DEVICE/App/usbd_desc.c ****     USBD_GetString((uint8_t *)USBD_CONFIGURATION_STRING_FS, USBD_StrDesc, length);
+ 302:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 303:USB/USB_DEVICE/App/usbd_desc.c ****   return USBD_StrDesc;
+ 304:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 305:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 306:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 307:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief  Return the interface string descriptor
+ 308:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  speed : Current device speed
+ 309:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  length : Pointer to data length variable
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 8
+
+
+ 310:USB/USB_DEVICE/App/usbd_desc.c ****  * @retval Pointer to descriptor buffer
+ 311:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 312:USB/USB_DEVICE/App/usbd_desc.c **** uint8_t *USBD_FS_InterfaceStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
+ 313:USB/USB_DEVICE/App/usbd_desc.c **** {
+ 314:USB/USB_DEVICE/App/usbd_desc.c ****   if (speed == 0)
+ 315:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 316:USB/USB_DEVICE/App/usbd_desc.c ****     USBD_GetString((uint8_t *)USBD_INTERFACE_STRING_FS, USBD_StrDesc, length);
+ 317:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 318:USB/USB_DEVICE/App/usbd_desc.c ****   else
+ 319:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 320:USB/USB_DEVICE/App/usbd_desc.c ****     USBD_GetString((uint8_t *)USBD_INTERFACE_STRING_FS, USBD_StrDesc, length);
+ 321:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 322:USB/USB_DEVICE/App/usbd_desc.c ****   return USBD_StrDesc;
+ 323:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 324:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 325:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 326:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief  Create the serial number string descriptor
+ 327:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  None
+ 328:USB/USB_DEVICE/App/usbd_desc.c ****  * @retval None
+ 329:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 330:USB/USB_DEVICE/App/usbd_desc.c **** static void Get_SerialNum(void)
+ 331:USB/USB_DEVICE/App/usbd_desc.c **** {
+ 332:USB/USB_DEVICE/App/usbd_desc.c ****   uint32_t deviceserial0, deviceserial1, deviceserial2;
+ 333:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 334:USB/USB_DEVICE/App/usbd_desc.c ****   deviceserial0 = *(uint32_t *)DEVICE_ID1;
+ 335:USB/USB_DEVICE/App/usbd_desc.c ****   deviceserial1 = *(uint32_t *)DEVICE_ID2;
+ 336:USB/USB_DEVICE/App/usbd_desc.c ****   deviceserial2 = *(uint32_t *)DEVICE_ID3;
+ 337:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 338:USB/USB_DEVICE/App/usbd_desc.c ****   deviceserial0 += deviceserial2;
+ 339:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 340:USB/USB_DEVICE/App/usbd_desc.c ****   if (deviceserial0 != 0)
+ 341:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 342:USB/USB_DEVICE/App/usbd_desc.c ****     IntToUnicode(deviceserial0, &USBD_StringSerial[2], 8);
+ 343:USB/USB_DEVICE/App/usbd_desc.c ****     IntToUnicode(deviceserial1, &USBD_StringSerial[18], 4);
+ 344:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 345:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 346:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 347:USB/USB_DEVICE/App/usbd_desc.c **** /**
+ 348:USB/USB_DEVICE/App/usbd_desc.c ****  * @brief  Convert Hex 32Bits value into char
+ 349:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  value: value to convert
+ 350:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  pbuf: pointer to the buffer
+ 351:USB/USB_DEVICE/App/usbd_desc.c ****  * @param  len: buffer length
+ 352:USB/USB_DEVICE/App/usbd_desc.c ****  * @retval None
+ 353:USB/USB_DEVICE/App/usbd_desc.c ****  */
+ 354:USB/USB_DEVICE/App/usbd_desc.c **** static void IntToUnicode(uint32_t value, uint8_t *pbuf, uint8_t len)
+ 355:USB/USB_DEVICE/App/usbd_desc.c **** {
+  96              		.loc 1 355 1 is_stmt 1 view -0
+  97              		.cfi_startproc
+  98              		@ args = 0, pretend = 0, frame = 0
+  99              		@ frame_needed = 0, uses_anonymous_args = 0
+ 100              		@ link register save eliminated.
+ 356:USB/USB_DEVICE/App/usbd_desc.c ****   uint8_t idx = 0;
+ 101              		.loc 1 356 3 view .LVU15
+ 357:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 358:USB/USB_DEVICE/App/usbd_desc.c ****   for (idx = 0; idx < len; idx++)
+ 102              		.loc 1 358 3 view .LVU16
+ 103              		.loc 1 358 12 is_stmt 0 view .LVU17
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 9
+
+
+ 104 0000 0023     		movs	r3, #0
+ 105              	.LVL5:
+ 106              		.loc 1 358 17 is_stmt 1 view .LVU18
+ 107              		.loc 1 358 3 is_stmt 0 view .LVU19
+ 108 0002 9342     		cmp	r3, r2
+ 109 0004 17D2     		bcs	.L15
+ 355:USB/USB_DEVICE/App/usbd_desc.c ****   uint8_t idx = 0;
+ 110              		.loc 1 355 1 view .LVU20
+ 111 0006 30B4     		push	{r4, r5}
+ 112              	.LCFI0:
+ 113              		.cfi_def_cfa_offset 8
+ 114              		.cfi_offset 4, -8
+ 115              		.cfi_offset 5, -4
+ 116 0008 0BE0     		b	.L11
+ 117              	.L9:
+ 359:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 360:USB/USB_DEVICE/App/usbd_desc.c ****     if (((value >> 28)) < 0xA)
+ 361:USB/USB_DEVICE/App/usbd_desc.c ****     {
+ 362:USB/USB_DEVICE/App/usbd_desc.c ****       pbuf[2 * idx] = (value >> 28) + '0';
+ 363:USB/USB_DEVICE/App/usbd_desc.c ****     }
+ 364:USB/USB_DEVICE/App/usbd_desc.c ****     else
+ 365:USB/USB_DEVICE/App/usbd_desc.c ****     {
+ 366:USB/USB_DEVICE/App/usbd_desc.c ****       pbuf[2 * idx] = (value >> 28) + 'A' - 10;
+ 118              		.loc 1 366 7 is_stmt 1 view .LVU21
+ 119              		.loc 1 366 43 is_stmt 0 view .LVU22
+ 120 000a 3734     		adds	r4, r4, #55
+ 121              		.loc 1 366 21 view .LVU23
+ 122 000c 01F81340 		strb	r4, [r1, r3, lsl #1]
+ 123              	.L10:
+ 367:USB/USB_DEVICE/App/usbd_desc.c ****     }
+ 368:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 369:USB/USB_DEVICE/App/usbd_desc.c ****     value = value << 4;
+ 124              		.loc 1 369 5 is_stmt 1 discriminator 2 view .LVU24
+ 125              		.loc 1 369 11 is_stmt 0 discriminator 2 view .LVU25
+ 126 0010 0001     		lsls	r0, r0, #4
+ 127              	.LVL6:
+ 370:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 371:USB/USB_DEVICE/App/usbd_desc.c ****     pbuf[2 * idx + 1] = 0;
+ 128              		.loc 1 371 5 is_stmt 1 discriminator 2 view .LVU26
+ 129              		.loc 1 371 12 is_stmt 0 discriminator 2 view .LVU27
+ 130 0012 5C00     		lsls	r4, r3, #1
+ 131              		.loc 1 371 9 discriminator 2 view .LVU28
+ 132 0014 0134     		adds	r4, r4, #1
+ 133              		.loc 1 371 23 discriminator 2 view .LVU29
+ 134 0016 0025     		movs	r5, #0
+ 135 0018 0D55     		strb	r5, [r1, r4]
+ 358:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 136              		.loc 1 358 28 is_stmt 1 discriminator 2 view .LVU30
+ 358:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 137              		.loc 1 358 31 is_stmt 0 discriminator 2 view .LVU31
+ 138 001a 0133     		adds	r3, r3, #1
+ 139              	.LVL7:
+ 358:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 140              		.loc 1 358 31 discriminator 2 view .LVU32
+ 141 001c DBB2     		uxtb	r3, r3
+ 142              	.LVL8:
+ 358:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 10
+
+
+ 143              		.loc 1 358 17 is_stmt 1 discriminator 2 view .LVU33
+ 358:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 144              		.loc 1 358 3 is_stmt 0 discriminator 2 view .LVU34
+ 145 001e 9342     		cmp	r3, r2
+ 146 0020 07D2     		bcs	.L16
+ 147              	.L11:
+ 360:USB/USB_DEVICE/App/usbd_desc.c ****     {
+ 148              		.loc 1 360 5 is_stmt 1 view .LVU35
+ 360:USB/USB_DEVICE/App/usbd_desc.c ****     {
+ 149              		.loc 1 360 17 is_stmt 0 view .LVU36
+ 150 0022 040F     		lsrs	r4, r0, #28
+ 360:USB/USB_DEVICE/App/usbd_desc.c ****     {
+ 151              		.loc 1 360 8 view .LVU37
+ 152 0024 B0F1204F 		cmp	r0, #-1610612736
+ 153 0028 EFD2     		bcs	.L9
+ 362:USB/USB_DEVICE/App/usbd_desc.c ****     }
+ 154              		.loc 1 362 7 is_stmt 1 view .LVU38
+ 362:USB/USB_DEVICE/App/usbd_desc.c ****     }
+ 155              		.loc 1 362 37 is_stmt 0 view .LVU39
+ 156 002a 3034     		adds	r4, r4, #48
+ 362:USB/USB_DEVICE/App/usbd_desc.c ****     }
+ 157              		.loc 1 362 21 view .LVU40
+ 158 002c 01F81340 		strb	r4, [r1, r3, lsl #1]
+ 159 0030 EEE7     		b	.L10
+ 160              	.L16:
+ 372:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 373:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 161              		.loc 1 373 1 view .LVU41
+ 162 0032 30BC     		pop	{r4, r5}
+ 163              	.LCFI1:
+ 164              		.cfi_restore 5
+ 165              		.cfi_restore 4
+ 166              		.cfi_def_cfa_offset 0
+ 167 0034 7047     		bx	lr
+ 168              	.L15:
+ 169              		.loc 1 373 1 view .LVU42
+ 170 0036 7047     		bx	lr
+ 171              		.cfi_endproc
+ 172              	.LFE156:
+ 174              		.section	.text.Get_SerialNum,"ax",%progbits
+ 175              		.align	1
+ 176              		.syntax unified
+ 177              		.thumb
+ 178              		.thumb_func
+ 179              		.fpu fpv5-d16
+ 181              	Get_SerialNum:
+ 182              	.LFB155:
+ 331:USB/USB_DEVICE/App/usbd_desc.c ****   uint32_t deviceserial0, deviceserial1, deviceserial2;
+ 183              		.loc 1 331 1 is_stmt 1 view -0
+ 184              		.cfi_startproc
+ 185              		@ args = 0, pretend = 0, frame = 0
+ 186              		@ frame_needed = 0, uses_anonymous_args = 0
+ 187 0000 38B5     		push	{r3, r4, r5, lr}
+ 188              	.LCFI2:
+ 189              		.cfi_def_cfa_offset 16
+ 190              		.cfi_offset 3, -16
+ 191              		.cfi_offset 4, -12
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 11
+
+
+ 192              		.cfi_offset 5, -8
+ 193              		.cfi_offset 14, -4
+ 332:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 194              		.loc 1 332 3 view .LVU44
+ 334:USB/USB_DEVICE/App/usbd_desc.c ****   deviceserial1 = *(uint32_t *)DEVICE_ID2;
+ 195              		.loc 1 334 3 view .LVU45
+ 334:USB/USB_DEVICE/App/usbd_desc.c ****   deviceserial1 = *(uint32_t *)DEVICE_ID2;
+ 196              		.loc 1 334 17 is_stmt 0 view .LVU46
+ 197 0002 0A4B     		ldr	r3, .L21
+ 198 0004 1868     		ldr	r0, [r3]
+ 199              	.LVL9:
+ 335:USB/USB_DEVICE/App/usbd_desc.c ****   deviceserial2 = *(uint32_t *)DEVICE_ID3;
+ 200              		.loc 1 335 3 is_stmt 1 view .LVU47
+ 335:USB/USB_DEVICE/App/usbd_desc.c ****   deviceserial2 = *(uint32_t *)DEVICE_ID3;
+ 201              		.loc 1 335 17 is_stmt 0 view .LVU48
+ 202 0006 0433     		adds	r3, r3, #4
+ 203 0008 1C68     		ldr	r4, [r3]
+ 204              	.LVL10:
+ 336:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 205              		.loc 1 336 3 is_stmt 1 view .LVU49
+ 336:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 206              		.loc 1 336 17 is_stmt 0 view .LVU50
+ 207 000a 0433     		adds	r3, r3, #4
+ 208 000c 1B68     		ldr	r3, [r3]
+ 209              	.LVL11:
+ 338:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 210              		.loc 1 338 3 is_stmt 1 view .LVU51
+ 340:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 211              		.loc 1 340 3 view .LVU52
+ 340:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 212              		.loc 1 340 6 is_stmt 0 view .LVU53
+ 213 000e C018     		adds	r0, r0, r3
+ 214              	.LVL12:
+ 340:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 215              		.loc 1 340 6 view .LVU54
+ 216 0010 00D1     		bne	.L20
+ 217              	.LVL13:
+ 218              	.L17:
+ 345:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 219              		.loc 1 345 1 view .LVU55
+ 220 0012 38BD     		pop	{r3, r4, r5, pc}
+ 221              	.LVL14:
+ 222              	.L20:
+ 342:USB/USB_DEVICE/App/usbd_desc.c ****     IntToUnicode(deviceserial1, &USBD_StringSerial[18], 4);
+ 223              		.loc 1 342 5 is_stmt 1 view .LVU56
+ 224 0014 064D     		ldr	r5, .L21+4
+ 225 0016 0822     		movs	r2, #8
+ 226 0018 A91C     		adds	r1, r5, #2
+ 227 001a FFF7FEFF 		bl	IntToUnicode
+ 228              	.LVL15:
+ 343:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 229              		.loc 1 343 5 view .LVU57
+ 230 001e 0422     		movs	r2, #4
+ 231 0020 05F11201 		add	r1, r5, #18
+ 232 0024 2046     		mov	r0, r4
+ 233 0026 FFF7FEFF 		bl	IntToUnicode
+ 234              	.LVL16:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 12
+
+
+ 345:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 235              		.loc 1 345 1 is_stmt 0 view .LVU58
+ 236 002a F2E7     		b	.L17
+ 237              	.L22:
+ 238              		.align	2
+ 239              	.L21:
+ 240 002c 00E8F11F 		.word	535947264
+ 241 0030 00000000 		.word	.LANCHOR2
+ 242              		.cfi_endproc
+ 243              	.LFE155:
+ 245              		.section	.text.USBD_FS_SerialStrDescriptor,"ax",%progbits
+ 246              		.align	1
+ 247              		.global	USBD_FS_SerialStrDescriptor
+ 248              		.syntax unified
+ 249              		.thumb
+ 250              		.thumb_func
+ 251              		.fpu fpv5-d16
+ 253              	USBD_FS_SerialStrDescriptor:
+ 254              	.LVL17:
+ 255              	.LFB152:
+ 274:USB/USB_DEVICE/App/usbd_desc.c ****   UNUSED(speed);
+ 256              		.loc 1 274 1 is_stmt 1 view -0
+ 257              		.cfi_startproc
+ 258              		@ args = 0, pretend = 0, frame = 0
+ 259              		@ frame_needed = 0, uses_anonymous_args = 0
+ 274:USB/USB_DEVICE/App/usbd_desc.c ****   UNUSED(speed);
+ 260              		.loc 1 274 1 is_stmt 0 view .LVU60
+ 261 0000 08B5     		push	{r3, lr}
+ 262              	.LCFI3:
+ 263              		.cfi_def_cfa_offset 8
+ 264              		.cfi_offset 3, -8
+ 265              		.cfi_offset 14, -4
+ 275:USB/USB_DEVICE/App/usbd_desc.c ****   *length = USB_SIZ_STRING_SERIAL;
+ 266              		.loc 1 275 3 is_stmt 1 view .LVU61
+ 276:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 267              		.loc 1 276 3 view .LVU62
+ 276:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 268              		.loc 1 276 11 is_stmt 0 view .LVU63
+ 269 0002 1A23     		movs	r3, #26
+ 270 0004 0B80     		strh	r3, [r1]	@ movhi
+ 280:USB/USB_DEVICE/App/usbd_desc.c ****   /* USER CODE BEGIN USBD_FS_SerialStrDescriptor */
+ 271              		.loc 1 280 3 is_stmt 1 view .LVU64
+ 272 0006 FFF7FEFF 		bl	Get_SerialNum
+ 273              	.LVL18:
+ 284:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 274              		.loc 1 284 3 view .LVU65
+ 285:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 275              		.loc 1 285 1 is_stmt 0 view .LVU66
+ 276 000a 0148     		ldr	r0, .L25
+ 277 000c 08BD     		pop	{r3, pc}
+ 278              	.L26:
+ 279 000e 00BF     		.align	2
+ 280              	.L25:
+ 281 0010 00000000 		.word	.LANCHOR2
+ 282              		.cfi_endproc
+ 283              	.LFE152:
+ 285              		.section	.rodata.USBD_FS_ProductStrDescriptor.str1.4,"aMS",%progbits,1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 13
+
+
+ 286              		.align	2
+ 287              	.LC0:
+ 288 0000 48374643 		.ascii	"H7FC\000"
+ 288      00
+ 289              		.section	.text.USBD_FS_ProductStrDescriptor,"ax",%progbits
+ 290              		.align	1
+ 291              		.global	USBD_FS_ProductStrDescriptor
+ 292              		.syntax unified
+ 293              		.thumb
+ 294              		.thumb_func
+ 295              		.fpu fpv5-d16
+ 297              	USBD_FS_ProductStrDescriptor:
+ 298              	.LVL19:
+ 299              	.LFB150:
+ 242:USB/USB_DEVICE/App/usbd_desc.c ****   if (speed == 0)
+ 300              		.loc 1 242 1 is_stmt 1 view -0
+ 301              		.cfi_startproc
+ 302              		@ args = 0, pretend = 0, frame = 0
+ 303              		@ frame_needed = 0, uses_anonymous_args = 0
+ 242:USB/USB_DEVICE/App/usbd_desc.c ****   if (speed == 0)
+ 304              		.loc 1 242 1 is_stmt 0 view .LVU68
+ 305 0000 08B5     		push	{r3, lr}
+ 306              	.LCFI4:
+ 307              		.cfi_def_cfa_offset 8
+ 308              		.cfi_offset 3, -8
+ 309              		.cfi_offset 14, -4
+ 310 0002 0A46     		mov	r2, r1
+ 243:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 311              		.loc 1 243 3 is_stmt 1 view .LVU69
+ 243:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 312              		.loc 1 243 6 is_stmt 0 view .LVU70
+ 313 0004 28B9     		cbnz	r0, .L28
+ 245:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 314              		.loc 1 245 5 is_stmt 1 view .LVU71
+ 315 0006 0549     		ldr	r1, .L31
+ 316              	.LVL20:
+ 245:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 317              		.loc 1 245 5 is_stmt 0 view .LVU72
+ 318 0008 0548     		ldr	r0, .L31+4
+ 319              	.LVL21:
+ 245:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 320              		.loc 1 245 5 view .LVU73
+ 321 000a FFF7FEFF 		bl	USBD_GetString
+ 322              	.LVL22:
+ 323              	.L29:
+ 251:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 324              		.loc 1 251 3 is_stmt 1 view .LVU74
+ 252:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 325              		.loc 1 252 1 is_stmt 0 view .LVU75
+ 326 000e 0348     		ldr	r0, .L31
+ 327 0010 08BD     		pop	{r3, pc}
+ 328              	.LVL23:
+ 329              	.L28:
+ 249:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 330              		.loc 1 249 5 is_stmt 1 view .LVU76
+ 331 0012 0249     		ldr	r1, .L31
+ 332              	.LVL24:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 14
+
+
+ 249:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 333              		.loc 1 249 5 is_stmt 0 view .LVU77
+ 334 0014 0248     		ldr	r0, .L31+4
+ 335              	.LVL25:
+ 249:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 336              		.loc 1 249 5 view .LVU78
+ 337 0016 FFF7FEFF 		bl	USBD_GetString
+ 338              	.LVL26:
+ 249:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 339              		.loc 1 249 5 view .LVU79
+ 340 001a F8E7     		b	.L29
+ 341              	.L32:
+ 342              		.align	2
+ 343              	.L31:
+ 344 001c 00000000 		.word	USBD_StrDesc
+ 345 0020 00000000 		.word	.LC0
+ 346              		.cfi_endproc
+ 347              	.LFE150:
+ 349              		.section	.rodata.USBD_FS_ManufacturerStrDescriptor.str1.4,"aMS",%progbits,1
+ 350              		.align	2
+ 351              	.LC1:
+ 352 0000 385F4221 		.ascii	"8_B!T0\000"
+ 352      543000
+ 353              		.section	.text.USBD_FS_ManufacturerStrDescriptor,"ax",%progbits
+ 354              		.align	1
+ 355              		.global	USBD_FS_ManufacturerStrDescriptor
+ 356              		.syntax unified
+ 357              		.thumb
+ 358              		.thumb_func
+ 359              		.fpu fpv5-d16
+ 361              	USBD_FS_ManufacturerStrDescriptor:
+ 362              	.LVL27:
+ 363              	.LFB151:
+ 261:USB/USB_DEVICE/App/usbd_desc.c ****   UNUSED(speed);
+ 364              		.loc 1 261 1 is_stmt 1 view -0
+ 365              		.cfi_startproc
+ 366              		@ args = 0, pretend = 0, frame = 0
+ 367              		@ frame_needed = 0, uses_anonymous_args = 0
+ 261:USB/USB_DEVICE/App/usbd_desc.c ****   UNUSED(speed);
+ 368              		.loc 1 261 1 is_stmt 0 view .LVU81
+ 369 0000 10B5     		push	{r4, lr}
+ 370              	.LCFI5:
+ 371              		.cfi_def_cfa_offset 8
+ 372              		.cfi_offset 4, -8
+ 373              		.cfi_offset 14, -4
+ 374 0002 0A46     		mov	r2, r1
+ 262:USB/USB_DEVICE/App/usbd_desc.c ****   USBD_GetString((uint8_t *)USBD_MANUFACTURER_STRING, USBD_StrDesc, length);
+ 375              		.loc 1 262 3 is_stmt 1 view .LVU82
+ 263:USB/USB_DEVICE/App/usbd_desc.c ****   return USBD_StrDesc;
+ 376              		.loc 1 263 3 view .LVU83
+ 377 0004 034C     		ldr	r4, .L35
+ 378 0006 2146     		mov	r1, r4
+ 379              	.LVL28:
+ 263:USB/USB_DEVICE/App/usbd_desc.c ****   return USBD_StrDesc;
+ 380              		.loc 1 263 3 is_stmt 0 view .LVU84
+ 381 0008 0348     		ldr	r0, .L35+4
+ 382              	.LVL29:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 15
+
+
+ 263:USB/USB_DEVICE/App/usbd_desc.c ****   return USBD_StrDesc;
+ 383              		.loc 1 263 3 view .LVU85
+ 384 000a FFF7FEFF 		bl	USBD_GetString
+ 385              	.LVL30:
+ 264:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 386              		.loc 1 264 3 is_stmt 1 view .LVU86
+ 265:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 387              		.loc 1 265 1 is_stmt 0 view .LVU87
+ 388 000e 2046     		mov	r0, r4
+ 389 0010 10BD     		pop	{r4, pc}
+ 390              	.L36:
+ 391 0012 00BF     		.align	2
+ 392              	.L35:
+ 393 0014 00000000 		.word	USBD_StrDesc
+ 394 0018 00000000 		.word	.LC1
+ 395              		.cfi_endproc
+ 396              	.LFE151:
+ 398              		.section	.rodata.USBD_FS_ConfigStrDescriptor.str1.4,"aMS",%progbits,1
+ 399              		.align	2
+ 400              	.LC2:
+ 401 0000 43444320 		.ascii	"CDC Config\000"
+ 401      436F6E66 
+ 401      696700
+ 402              		.section	.text.USBD_FS_ConfigStrDescriptor,"ax",%progbits
+ 403              		.align	1
+ 404              		.global	USBD_FS_ConfigStrDescriptor
+ 405              		.syntax unified
+ 406              		.thumb
+ 407              		.thumb_func
+ 408              		.fpu fpv5-d16
+ 410              	USBD_FS_ConfigStrDescriptor:
+ 411              	.LVL31:
+ 412              	.LFB153:
+ 294:USB/USB_DEVICE/App/usbd_desc.c ****   if (speed == USBD_SPEED_HIGH)
+ 413              		.loc 1 294 1 is_stmt 1 view -0
+ 414              		.cfi_startproc
+ 415              		@ args = 0, pretend = 0, frame = 0
+ 416              		@ frame_needed = 0, uses_anonymous_args = 0
+ 294:USB/USB_DEVICE/App/usbd_desc.c ****   if (speed == USBD_SPEED_HIGH)
+ 417              		.loc 1 294 1 is_stmt 0 view .LVU89
+ 418 0000 08B5     		push	{r3, lr}
+ 419              	.LCFI6:
+ 420              		.cfi_def_cfa_offset 8
+ 421              		.cfi_offset 3, -8
+ 422              		.cfi_offset 14, -4
+ 423 0002 0A46     		mov	r2, r1
+ 295:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 424              		.loc 1 295 3 is_stmt 1 view .LVU90
+ 295:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 425              		.loc 1 295 6 is_stmt 0 view .LVU91
+ 426 0004 28B9     		cbnz	r0, .L38
+ 297:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 427              		.loc 1 297 5 is_stmt 1 view .LVU92
+ 428 0006 0549     		ldr	r1, .L41
+ 429              	.LVL32:
+ 297:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 430              		.loc 1 297 5 is_stmt 0 view .LVU93
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 16
+
+
+ 431 0008 0548     		ldr	r0, .L41+4
+ 432              	.LVL33:
+ 297:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 433              		.loc 1 297 5 view .LVU94
+ 434 000a FFF7FEFF 		bl	USBD_GetString
+ 435              	.LVL34:
+ 436              	.L39:
+ 303:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 437              		.loc 1 303 3 is_stmt 1 view .LVU95
+ 304:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 438              		.loc 1 304 1 is_stmt 0 view .LVU96
+ 439 000e 0348     		ldr	r0, .L41
+ 440 0010 08BD     		pop	{r3, pc}
+ 441              	.LVL35:
+ 442              	.L38:
+ 301:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 443              		.loc 1 301 5 is_stmt 1 view .LVU97
+ 444 0012 0249     		ldr	r1, .L41
+ 445              	.LVL36:
+ 301:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 446              		.loc 1 301 5 is_stmt 0 view .LVU98
+ 447 0014 0248     		ldr	r0, .L41+4
+ 448              	.LVL37:
+ 301:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 449              		.loc 1 301 5 view .LVU99
+ 450 0016 FFF7FEFF 		bl	USBD_GetString
+ 451              	.LVL38:
+ 301:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 452              		.loc 1 301 5 view .LVU100
+ 453 001a F8E7     		b	.L39
+ 454              	.L42:
+ 455              		.align	2
+ 456              	.L41:
+ 457 001c 00000000 		.word	USBD_StrDesc
+ 458 0020 00000000 		.word	.LC2
+ 459              		.cfi_endproc
+ 460              	.LFE153:
+ 462              		.section	.rodata.USBD_FS_InterfaceStrDescriptor.str1.4,"aMS",%progbits,1
+ 463              		.align	2
+ 464              	.LC3:
+ 465 0000 43444320 		.ascii	"CDC Interface\000"
+ 465      496E7465 
+ 465      72666163 
+ 465      6500
+ 466              		.section	.text.USBD_FS_InterfaceStrDescriptor,"ax",%progbits
+ 467              		.align	1
+ 468              		.global	USBD_FS_InterfaceStrDescriptor
+ 469              		.syntax unified
+ 470              		.thumb
+ 471              		.thumb_func
+ 472              		.fpu fpv5-d16
+ 474              	USBD_FS_InterfaceStrDescriptor:
+ 475              	.LVL39:
+ 476              	.LFB154:
+ 313:USB/USB_DEVICE/App/usbd_desc.c ****   if (speed == 0)
+ 477              		.loc 1 313 1 is_stmt 1 view -0
+ 478              		.cfi_startproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 17
+
+
+ 479              		@ args = 0, pretend = 0, frame = 0
+ 480              		@ frame_needed = 0, uses_anonymous_args = 0
+ 313:USB/USB_DEVICE/App/usbd_desc.c ****   if (speed == 0)
+ 481              		.loc 1 313 1 is_stmt 0 view .LVU102
+ 482 0000 08B5     		push	{r3, lr}
+ 483              	.LCFI7:
+ 484              		.cfi_def_cfa_offset 8
+ 485              		.cfi_offset 3, -8
+ 486              		.cfi_offset 14, -4
+ 487 0002 0A46     		mov	r2, r1
+ 314:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 488              		.loc 1 314 3 is_stmt 1 view .LVU103
+ 314:USB/USB_DEVICE/App/usbd_desc.c ****   {
+ 489              		.loc 1 314 6 is_stmt 0 view .LVU104
+ 490 0004 28B9     		cbnz	r0, .L44
+ 316:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 491              		.loc 1 316 5 is_stmt 1 view .LVU105
+ 492 0006 0549     		ldr	r1, .L47
+ 493              	.LVL40:
+ 316:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 494              		.loc 1 316 5 is_stmt 0 view .LVU106
+ 495 0008 0548     		ldr	r0, .L47+4
+ 496              	.LVL41:
+ 316:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 497              		.loc 1 316 5 view .LVU107
+ 498 000a FFF7FEFF 		bl	USBD_GetString
+ 499              	.LVL42:
+ 500              	.L45:
+ 322:USB/USB_DEVICE/App/usbd_desc.c **** }
+ 501              		.loc 1 322 3 is_stmt 1 view .LVU108
+ 323:USB/USB_DEVICE/App/usbd_desc.c **** 
+ 502              		.loc 1 323 1 is_stmt 0 view .LVU109
+ 503 000e 0348     		ldr	r0, .L47
+ 504 0010 08BD     		pop	{r3, pc}
+ 505              	.LVL43:
+ 506              	.L44:
+ 320:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 507              		.loc 1 320 5 is_stmt 1 view .LVU110
+ 508 0012 0249     		ldr	r1, .L47
+ 509              	.LVL44:
+ 320:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 510              		.loc 1 320 5 is_stmt 0 view .LVU111
+ 511 0014 0248     		ldr	r0, .L47+4
+ 512              	.LVL45:
+ 320:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 513              		.loc 1 320 5 view .LVU112
+ 514 0016 FFF7FEFF 		bl	USBD_GetString
+ 515              	.LVL46:
+ 320:USB/USB_DEVICE/App/usbd_desc.c ****   }
+ 516              		.loc 1 320 5 view .LVU113
+ 517 001a F8E7     		b	.L45
+ 518              	.L48:
+ 519              		.align	2
+ 520              	.L47:
+ 521 001c 00000000 		.word	USBD_StrDesc
+ 522 0020 00000000 		.word	.LC3
+ 523              		.cfi_endproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 18
+
+
+ 524              	.LFE154:
+ 526              		.global	USBD_StringSerial
+ 527              		.comm	USBD_StrDesc,1024,4
+ 528              		.global	USBD_LangIDDesc
+ 529              		.global	USBD_FS_DeviceDesc
+ 530              		.global	FS_Desc
+ 531              		.section	.data.FS_Desc,"aw"
+ 532              		.align	2
+ 535              	FS_Desc:
+ 536 0000 00000000 		.word	USBD_FS_DeviceDescriptor
+ 537 0004 00000000 		.word	USBD_FS_LangIDStrDescriptor
+ 538 0008 00000000 		.word	USBD_FS_ManufacturerStrDescriptor
+ 539 000c 00000000 		.word	USBD_FS_ProductStrDescriptor
+ 540 0010 00000000 		.word	USBD_FS_SerialStrDescriptor
+ 541 0014 00000000 		.word	USBD_FS_ConfigStrDescriptor
+ 542 0018 00000000 		.word	USBD_FS_InterfaceStrDescriptor
+ 543              		.section	.data.USBD_FS_DeviceDesc,"aw"
+ 544              		.align	2
+ 545              		.set	.LANCHOR0,. + 0
+ 548              	USBD_FS_DeviceDesc:
+ 549 0000 12010002 		.ascii	"\022\001\000\002\002\002\000@\203\004@W\000\002\001"
+ 549      02020040 
+ 549      83044057 
+ 549      000201
+ 550 000f 020301   		.ascii	"\002\003\001"
+ 551              		.section	.data.USBD_LangIDDesc,"aw"
+ 552              		.align	2
+ 553              		.set	.LANCHOR1,. + 0
+ 556              	USBD_LangIDDesc:
+ 557 0000 04030904 		.ascii	"\004\003\011\004"
+ 558              		.section	.data.USBD_StringSerial,"aw"
+ 559              		.align	2
+ 560              		.set	.LANCHOR2,. + 0
+ 563              	USBD_StringSerial:
+ 564 0000 1A0300   		.ascii	"\032\003\000"
+ 565 0003 00000000 		.space	23
+ 565      00000000 
+ 565      00000000 
+ 565      00000000 
+ 565      00000000 
+ 566              		.text
+ 567              	.Letext0:
+ 568              		.file 2 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 569              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 570              		.file 4 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 571              		.file 5 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\lib\\gcc\\arm-none
+ 572              		.file 6 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 573              		.file 7 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 574              		.file 8 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 575              		.file 9 "HAL_Lib/CMSIS/Core/Include/core_cm7.h"
+ 576              		.file 10 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/system_stm32h7xx.h"
+ 577              		.file 11 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\in
+ 578              		.file 12 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 579              		.file 13 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h"
+ 580              		.file 14 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 581              		.file 15 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 582              		.file 16 "USB/STM32_USB_Device_Library/Core/Inc/usbd_def.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 19
+
+
+ 583              		.file 17 "USB/USB_DEVICE/App/usbd_desc.h"
+ 584              		.file 18 "USB/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s 			page 20
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 usbd_desc.c
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:17     .text.USBD_FS_DeviceDescriptor:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:25     .text.USBD_FS_DeviceDescriptor:00000000 USBD_FS_DeviceDescriptor
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:48     .text.USBD_FS_DeviceDescriptor:00000008 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:53     .text.USBD_FS_LangIDStrDescriptor:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:60     .text.USBD_FS_LangIDStrDescriptor:00000000 USBD_FS_LangIDStrDescriptor
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:82     .text.USBD_FS_LangIDStrDescriptor:00000008 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:87     .text.IntToUnicode:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:93     .text.IntToUnicode:00000000 IntToUnicode
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:175    .text.Get_SerialNum:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:181    .text.Get_SerialNum:00000000 Get_SerialNum
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:240    .text.Get_SerialNum:0000002c $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:246    .text.USBD_FS_SerialStrDescriptor:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:253    .text.USBD_FS_SerialStrDescriptor:00000000 USBD_FS_SerialStrDescriptor
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:281    .text.USBD_FS_SerialStrDescriptor:00000010 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:286    .rodata.USBD_FS_ProductStrDescriptor.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:290    .text.USBD_FS_ProductStrDescriptor:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:297    .text.USBD_FS_ProductStrDescriptor:00000000 USBD_FS_ProductStrDescriptor
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:344    .text.USBD_FS_ProductStrDescriptor:0000001c $d
+                            *COM*:00000400 USBD_StrDesc
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:350    .rodata.USBD_FS_ManufacturerStrDescriptor.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:354    .text.USBD_FS_ManufacturerStrDescriptor:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:361    .text.USBD_FS_ManufacturerStrDescriptor:00000000 USBD_FS_ManufacturerStrDescriptor
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:393    .text.USBD_FS_ManufacturerStrDescriptor:00000014 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:399    .rodata.USBD_FS_ConfigStrDescriptor.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:403    .text.USBD_FS_ConfigStrDescriptor:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:410    .text.USBD_FS_ConfigStrDescriptor:00000000 USBD_FS_ConfigStrDescriptor
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:457    .text.USBD_FS_ConfigStrDescriptor:0000001c $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:463    .rodata.USBD_FS_InterfaceStrDescriptor.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:467    .text.USBD_FS_InterfaceStrDescriptor:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:474    .text.USBD_FS_InterfaceStrDescriptor:00000000 USBD_FS_InterfaceStrDescriptor
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:521    .text.USBD_FS_InterfaceStrDescriptor:0000001c $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:563    .data.USBD_StringSerial:00000000 USBD_StringSerial
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:556    .data.USBD_LangIDDesc:00000000 USBD_LangIDDesc
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:548    .data.USBD_FS_DeviceDesc:00000000 USBD_FS_DeviceDesc
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:535    .data.FS_Desc:00000000 FS_Desc
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:532    .data.FS_Desc:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:544    .data.USBD_FS_DeviceDesc:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:552    .data.USBD_LangIDDesc:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccoQ6I5f.s:559    .data.USBD_StringSerial:00000000 $d
+
+UNDEFINED SYMBOLS
+USBD_GetString

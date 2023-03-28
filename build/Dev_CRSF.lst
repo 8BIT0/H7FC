@@ -1,0 +1,1428 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Dev_CRSF.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.crsf_crc8,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	crsf_crc8:
+  25              	.LVL0:
+  26              	.LFB0:
+  27              		.file 1 "Device/Dev_CRSF.c"
+   1:Device/Dev_CRSF.c **** #include "Dev_CRSF.h"
+   2:Device/Dev_CRSF.c **** 
+   3:Device/Dev_CRSF.c **** /*
+   4:Device/Dev_CRSF.c ****  * CRSF protocol
+   5:Device/Dev_CRSF.c ****  *
+   6:Device/Dev_CRSF.c ****  * CRSF protocol uses a single wire half duplex uart connection.
+   7:Device/Dev_CRSF.c ****  * The master sends one frame every 4ms and the slave replies between two frames from the master.
+   8:Device/Dev_CRSF.c ****  *
+   9:Device/Dev_CRSF.c ****  * 420000 baud
+  10:Device/Dev_CRSF.c ****  * not inverted
+  11:Device/Dev_CRSF.c ****  * 8 Bit
+  12:Device/Dev_CRSF.c ****  * 1 Stop bit
+  13:Device/Dev_CRSF.c ****  * Big endian
+  14:Device/Dev_CRSF.c ****  * 420000 bit/s = 46667 byte/s (including stop bit) = 21.43us per byte
+  15:Device/Dev_CRSF.c ****  * Max frame size is 64 bytes
+  16:Device/Dev_CRSF.c ****  * A 64 byte frame plus 1 sync byte can be transmitted in 1393 microseconds.
+  17:Device/Dev_CRSF.c ****  *
+  18:Device/Dev_CRSF.c ****  * CRSF_TIME_NEEDED_PER_FRAME_US is set conservatively at 1500 microseconds
+  19:Device/Dev_CRSF.c ****  *
+  20:Device/Dev_CRSF.c ****  * Every frame has the structure:
+  21:Device/Dev_CRSF.c ****  * <Device address><Frame length><Type><Payload><CRC>
+  22:Device/Dev_CRSF.c ****  *
+  23:Device/Dev_CRSF.c ****  * Device address: (uint8_t)
+  24:Device/Dev_CRSF.c ****  * Frame length:   length in  bytes including Type (uint8_t)
+  25:Device/Dev_CRSF.c ****  * Type:           (uint8_t)
+  26:Device/Dev_CRSF.c ****  * Payload:        (uint8_t)
+  27:Device/Dev_CRSF.c ****  * CRC:            (uint8_t)
+  28:Device/Dev_CRSF.c ****  *
+  29:Device/Dev_CRSF.c ****  */
+  30:Device/Dev_CRSF.c **** 
+  31:Device/Dev_CRSF.c **** static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 2
+
+
+  32:Device/Dev_CRSF.c **** static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
+  33:Device/Dev_CRSF.c **** static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in);
+  34:Device/Dev_CRSF.c **** static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj);
+  35:Device/Dev_CRSF.c **** static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg);
+  36:Device/Dev_CRSF.c **** 
+  37:Device/Dev_CRSF.c **** DevCRSF_TypeDef DevCRSF = {
+  38:Device/Dev_CRSF.c ****     .init = DevCrsf_Init,
+  39:Device/Dev_CRSF.c ****     .decode = DevCRSF_FIFO_In,
+  40:Device/Dev_CRSF.c ****     .get_channel = DevCRSF_Get_Channel,
+  41:Device/Dev_CRSF.c ****     .get_statistics = DevCESF_Get_Statistics,
+  42:Device/Dev_CRSF.c **** };
+  43:Device/Dev_CRSF.c **** 
+  44:Device/Dev_CRSF.c **** static uint8_t crsf_crc8tab[256] = {
+  45:Device/Dev_CRSF.c ****     0x00, 0xD5, 0x7F, 0xAA, 0xFE, 0x2B, 0x81, 0x54, 0x29, 0xFC, 0x56, 0x83, 0xD7, 0x02, 0xA8, 0x7D,
+  46:Device/Dev_CRSF.c ****     0x52, 0x87, 0x2D, 0xF8, 0xAC, 0x79, 0xD3, 0x06, 0x7B, 0xAE, 0x04, 0xD1, 0x85, 0x50, 0xFA, 0x2F,
+  47:Device/Dev_CRSF.c ****     0xA4, 0x71, 0xDB, 0x0E, 0x5A, 0x8F, 0x25, 0xF0, 0x8D, 0x58, 0xF2, 0x27, 0x73, 0xA6, 0x0C, 0xD9,
+  48:Device/Dev_CRSF.c ****     0xF6, 0x23, 0x89, 0x5C, 0x08, 0xDD, 0x77, 0xA2, 0xDF, 0x0A, 0xA0, 0x75, 0x21, 0xF4, 0x5E, 0x8B,
+  49:Device/Dev_CRSF.c ****     0x9D, 0x48, 0xE2, 0x37, 0x63, 0xB6, 0x1C, 0xC9, 0xB4, 0x61, 0xCB, 0x1E, 0x4A, 0x9F, 0x35, 0xE0,
+  50:Device/Dev_CRSF.c ****     0xCF, 0x1A, 0xB0, 0x65, 0x31, 0xE4, 0x4E, 0x9B, 0xE6, 0x33, 0x99, 0x4C, 0x18, 0xCD, 0x67, 0xB2,
+  51:Device/Dev_CRSF.c ****     0x39, 0xEC, 0x46, 0x93, 0xC7, 0x12, 0xB8, 0x6D, 0x10, 0xC5, 0x6F, 0xBA, 0xEE, 0x3B, 0x91, 0x44,
+  52:Device/Dev_CRSF.c ****     0x6B, 0xBE, 0x14, 0xC1, 0x95, 0x40, 0xEA, 0x3F, 0x42, 0x97, 0x3D, 0xE8, 0xBC, 0x69, 0xC3, 0x16,
+  53:Device/Dev_CRSF.c ****     0xEF, 0x3A, 0x90, 0x45, 0x11, 0xC4, 0x6E, 0xBB, 0xC6, 0x13, 0xB9, 0x6C, 0x38, 0xED, 0x47, 0x92,
+  54:Device/Dev_CRSF.c ****     0xBD, 0x68, 0xC2, 0x17, 0x43, 0x96, 0x3C, 0xE9, 0x94, 0x41, 0xEB, 0x3E, 0x6A, 0xBF, 0x15, 0xC0,
+  55:Device/Dev_CRSF.c ****     0x4B, 0x9E, 0x34, 0xE1, 0xB5, 0x60, 0xCA, 0x1F, 0x62, 0xB7, 0x1D, 0xC8, 0x9C, 0x49, 0xE3, 0x36,
+  56:Device/Dev_CRSF.c ****     0x19, 0xCC, 0x66, 0xB3, 0xE7, 0x32, 0x98, 0x4D, 0x30, 0xE5, 0x4F, 0x9A, 0xCE, 0x1B, 0xB1, 0x64,
+  57:Device/Dev_CRSF.c ****     0x72, 0xA7, 0x0D, 0xD8, 0x8C, 0x59, 0xF3, 0x26, 0x5B, 0x8E, 0x24, 0xF1, 0xA5, 0x70, 0xDA, 0x0F,
+  58:Device/Dev_CRSF.c ****     0x20, 0xF5, 0x5F, 0x8A, 0xDE, 0x0B, 0xA1, 0x74, 0x09, 0xDC, 0x76, 0xA3, 0xF7, 0x22, 0x88, 0x5D,
+  59:Device/Dev_CRSF.c ****     0xD6, 0x03, 0xA9, 0x7C, 0x28, 0xFD, 0x57, 0x82, 0xFF, 0x2A, 0x80, 0x55, 0x01, 0xD4, 0x7E, 0xAB,
+  60:Device/Dev_CRSF.c ****     0x84, 0x51, 0xFB, 0x2E, 0x7A, 0xAF, 0x05, 0xD0, 0xAD, 0x78, 0xD2, 0x07, 0x53, 0x86, 0x2C, 0xF9}
+  61:Device/Dev_CRSF.c **** 
+  62:Device/Dev_CRSF.c **** static uint8_t crsf_crc8(uint8_t *ptr, uint16_t len)
+  63:Device/Dev_CRSF.c **** {
+  28              		.loc 1 63 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              		.loc 1 63 1 is_stmt 0 view .LVU1
+  34 0000 10B4     		push	{r4}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 4
+  37              		.cfi_offset 4, -4
+  38 0002 0346     		mov	r3, r0
+  64:Device/Dev_CRSF.c ****     uint8_t crc = 0;
+  39              		.loc 1 64 5 is_stmt 1 view .LVU2
+  40              	.LVL1:
+  65:Device/Dev_CRSF.c ****     for (uint8_t i = 0; i < len; i++)
+  41              		.loc 1 65 5 view .LVU3
+  42              	.LBB2:
+  43              		.loc 1 65 10 view .LVU4
+  44              		.loc 1 65 18 is_stmt 0 view .LVU5
+  45 0004 0022     		movs	r2, #0
+  46              	.LBE2:
+  64:Device/Dev_CRSF.c ****     uint8_t crc = 0;
+  47              		.loc 1 64 13 view .LVU6
+  48 0006 1046     		mov	r0, r2
+  49              	.LVL2:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 3
+
+
+  50              	.L2:
+  51              	.LBB3:
+  52              		.loc 1 65 25 is_stmt 1 discriminator 1 view .LVU7
+  53              		.loc 1 65 27 is_stmt 0 discriminator 1 view .LVU8
+  54 0008 94B2     		uxth	r4, r2
+  55              		.loc 1 65 5 discriminator 1 view .LVU9
+  56 000a 8C42     		cmp	r4, r1
+  57 000c 07D2     		bcs	.L5
+  66:Device/Dev_CRSF.c ****     {
+  67:Device/Dev_CRSF.c ****         crc = crsf_crc8tab[crc ^ *(ptr++)];
+  58              		.loc 1 67 9 is_stmt 1 discriminator 3 view .LVU10
+  59              	.LVL3:
+  60              		.loc 1 67 34 is_stmt 0 discriminator 3 view .LVU11
+  61 000e 13F8014B 		ldrb	r4, [r3], #1	@ zero_extendqisi2
+  62              	.LVL4:
+  63              		.loc 1 67 32 discriminator 3 view .LVU12
+  64 0012 4440     		eors	r4, r4, r0
+  65              		.loc 1 67 13 discriminator 3 view .LVU13
+  66 0014 0348     		ldr	r0, .L6
+  67              	.LVL5:
+  68              		.loc 1 67 13 discriminator 3 view .LVU14
+  69 0016 005D     		ldrb	r0, [r0, r4]	@ zero_extendqisi2
+  70              	.LVL6:
+  65:Device/Dev_CRSF.c ****     for (uint8_t i = 0; i < len; i++)
+  71              		.loc 1 65 34 is_stmt 1 discriminator 3 view .LVU15
+  65:Device/Dev_CRSF.c ****     for (uint8_t i = 0; i < len; i++)
+  72              		.loc 1 65 35 is_stmt 0 discriminator 3 view .LVU16
+  73 0018 0132     		adds	r2, r2, #1
+  74              	.LVL7:
+  65:Device/Dev_CRSF.c ****     for (uint8_t i = 0; i < len; i++)
+  75              		.loc 1 65 35 discriminator 3 view .LVU17
+  76 001a D2B2     		uxtb	r2, r2
+  77              	.LVL8:
+  65:Device/Dev_CRSF.c ****     for (uint8_t i = 0; i < len; i++)
+  78              		.loc 1 65 35 discriminator 3 view .LVU18
+  79 001c F4E7     		b	.L2
+  80              	.L5:
+  65:Device/Dev_CRSF.c ****     for (uint8_t i = 0; i < len; i++)
+  81              		.loc 1 65 35 discriminator 3 view .LVU19
+  82              	.LBE3:
+  68:Device/Dev_CRSF.c ****     }
+  69:Device/Dev_CRSF.c ****     return crc;
+  70:Device/Dev_CRSF.c **** }
+  83              		.loc 1 70 1 view .LVU20
+  84 001e 5DF8044B 		ldr	r4, [sp], #4
+  85              	.LCFI1:
+  86              		.cfi_restore 4
+  87              		.cfi_def_cfa_offset 0
+  88 0022 7047     		bx	lr
+  89              	.L7:
+  90              		.align	2
+  91              	.L6:
+  92 0024 00000000 		.word	.LANCHOR0
+  93              		.cfi_endproc
+  94              	.LFE0:
+  96              		.section	.text.DevCESF_Get_Statistics,"ax",%progbits
+  97              		.align	1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 4
+
+
+  98              		.syntax unified
+  99              		.thumb
+ 100              		.thumb_func
+ 101              		.fpu fpv5-d16
+ 103              	DevCESF_Get_Statistics:
+ 104              	.LVL9:
+ 105              	.LFB5:
+  71:Device/Dev_CRSF.c **** 
+  72:Device/Dev_CRSF.c **** static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
+  73:Device/Dev_CRSF.c **** {
+  74:Device/Dev_CRSF.c ****     if (obj == NULL)
+  75:Device/Dev_CRSF.c ****         return false;
+  76:Device/Dev_CRSF.c **** 
+  77:Device/Dev_CRSF.c ****     memset(obj, 0, sizeof(DevCRSFObj_TypeDef));
+  78:Device/Dev_CRSF.c **** 
+  79:Device/Dev_CRSF.c ****     obj->state = CRSF_State_LinkDown;
+  80:Device/Dev_CRSF.c ****     obj->rec_cnt = 0;
+  81:Device/Dev_CRSF.c ****     obj->rec_stage = CRSF_Stage_Header;
+  82:Device/Dev_CRSF.c **** 
+  83:Device/Dev_CRSF.c ****     return true;
+  84:Device/Dev_CRSF.c **** }
+  85:Device/Dev_CRSF.c **** 
+  86:Device/Dev_CRSF.c **** crsf_frame_t test;
+  87:Device/Dev_CRSF.c **** static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg)
+  88:Device/Dev_CRSF.c **** {
+  89:Device/Dev_CRSF.c ****     uint8_t decode_state = 0;
+  90:Device/Dev_CRSF.c **** 
+  91:Device/Dev_CRSF.c ****     if (obj)
+  92:Device/Dev_CRSF.c ****     {
+  93:Device/Dev_CRSF.c ****         switch ((uint8_t)(obj->rec_stage))
+  94:Device/Dev_CRSF.c ****         {
+  95:Device/Dev_CRSF.c ****         case CRSF_Stage_Header:
+  96:Device/Dev_CRSF.c ****             if (*p_data == CRSF_ADDRESS_FLIGHT_CONTROLLER)
+  97:Device/Dev_CRSF.c ****             {
+  98:Device/Dev_CRSF.c ****                 obj->rec_stage = CRSF_Stage_Size;
+  99:Device/Dev_CRSF.c **** 
+ 100:Device/Dev_CRSF.c ****                 obj->frame.addr = *p_data;
+ 101:Device/Dev_CRSF.c ****             }
+ 102:Device/Dev_CRSF.c ****             else
+ 103:Device/Dev_CRSF.c ****                 obj->rec_cnt = 0;
+ 104:Device/Dev_CRSF.c ****             break;
+ 105:Device/Dev_CRSF.c **** 
+ 106:Device/Dev_CRSF.c ****         case CRSF_Stage_Size:
+ 107:Device/Dev_CRSF.c ****             if (*p_data <= CRSF_PAYLOAD_SIZE_MAX)
+ 108:Device/Dev_CRSF.c ****             {
+ 109:Device/Dev_CRSF.c ****                 obj->rec_stage = CRSF_Stage_Type;
+ 110:Device/Dev_CRSF.c **** 
+ 111:Device/Dev_CRSF.c ****                 obj->frame.length = *p_data;
+ 112:Device/Dev_CRSF.c ****                 obj->rec_cnt = 0;
+ 113:Device/Dev_CRSF.c ****             }
+ 114:Device/Dev_CRSF.c ****             else
+ 115:Device/Dev_CRSF.c ****             {
+ 116:Device/Dev_CRSF.c ****                 obj->rec_cnt = 0;
+ 117:Device/Dev_CRSF.c ****                 obj->rec_stage = CRSF_Stage_Header;
+ 118:Device/Dev_CRSF.c ****             }
+ 119:Device/Dev_CRSF.c ****             break;
+ 120:Device/Dev_CRSF.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 5
+
+
+ 121:Device/Dev_CRSF.c ****         case CRSF_Stage_Type:
+ 122:Device/Dev_CRSF.c ****             obj->frame.type = *p_data;
+ 123:Device/Dev_CRSF.c ****             obj->frame.data[obj->rec_cnt] = *p_data;
+ 124:Device/Dev_CRSF.c ****             obj->rec_cnt++;
+ 125:Device/Dev_CRSF.c ****             obj->rec_stage = CRSF_Stage_Payload;
+ 126:Device/Dev_CRSF.c ****             break;
+ 127:Device/Dev_CRSF.c **** 
+ 128:Device/Dev_CRSF.c ****         case CRSF_Stage_Payload:
+ 129:Device/Dev_CRSF.c ****             if (obj->rec_cnt < obj->frame.length)
+ 130:Device/Dev_CRSF.c ****             {
+ 131:Device/Dev_CRSF.c ****                 obj->frame.data[obj->rec_cnt] = *p_data;
+ 132:Device/Dev_CRSF.c ****                 obj->rec_cnt++;
+ 133:Device/Dev_CRSF.c **** 
+ 134:Device/Dev_CRSF.c ****                 if (obj->rec_cnt == obj->frame.length)
+ 135:Device/Dev_CRSF.c ****                 {
+ 136:Device/Dev_CRSF.c ****                     decode_state = DevCRSF_Decode(obj, obj->frame.data, obj->frame.length);
+ 137:Device/Dev_CRSF.c ****                     memcpy(&test, &obj->frame, sizeof(test));
+ 138:Device/Dev_CRSF.c **** 
+ 139:Device/Dev_CRSF.c ****                     obj->rec_stage = CRSF_Stage_Header;
+ 140:Device/Dev_CRSF.c ****                     obj->rec_cnt = 0;
+ 141:Device/Dev_CRSF.c **** 
+ 142:Device/Dev_CRSF.c ****                     memset(&obj->frame, 0, sizeof(obj->frame));
+ 143:Device/Dev_CRSF.c **** 
+ 144:Device/Dev_CRSF.c ****                     return decode_state;
+ 145:Device/Dev_CRSF.c ****                 }
+ 146:Device/Dev_CRSF.c ****             }
+ 147:Device/Dev_CRSF.c ****             break;
+ 148:Device/Dev_CRSF.c ****         }
+ 149:Device/Dev_CRSF.c ****     }
+ 150:Device/Dev_CRSF.c **** 
+ 151:Device/Dev_CRSF.c ****     return 0;
+ 152:Device/Dev_CRSF.c **** }
+ 153:Device/Dev_CRSF.c **** 
+ 154:Device/Dev_CRSF.c **** /* serial receiver receive callback */
+ 155:Device/Dev_CRSF.c **** static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len)
+ 156:Device/Dev_CRSF.c **** {
+ 157:Device/Dev_CRSF.c ****     uint8_t frame_size = 0;
+ 158:Device/Dev_CRSF.c **** 
+ 159:Device/Dev_CRSF.c ****     if ((obj == NULL) || (obj->rec_cnt == 0) || (p_data == NULL) || (len <= 3))
+ 160:Device/Dev_CRSF.c ****         return false;
+ 161:Device/Dev_CRSF.c **** 
+ 162:Device/Dev_CRSF.c ****     /* check crc first */
+ 163:Device/Dev_CRSF.c ****     if (crsf_crc8(p_data, len - 1) == obj->frame.data[len - 1])
+ 164:Device/Dev_CRSF.c ****     {
+ 165:Device/Dev_CRSF.c ****         /* check frame type */
+ 166:Device/Dev_CRSF.c ****         switch (obj->frame.type)
+ 167:Device/Dev_CRSF.c ****         {
+ 168:Device/Dev_CRSF.c ****         case CRSF_FRAMETYPE_LINK_STATISTICS:
+ 169:Device/Dev_CRSF.c ****             if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr) &&
+ 170:Device/Dev_CRSF.c ****                 ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->fr
+ 171:Device/Dev_CRSF.c ****             {
+ 172:Device/Dev_CRSF.c ****                 const crsf_LinkStatistics_t *stats = (const crsf_LinkStatistics_t *)&(obj->frame.da
+ 173:Device/Dev_CRSF.c ****                 memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
+ 174:Device/Dev_CRSF.c ****                 obj->state = CRSF_State_LinkUp;
+ 175:Device/Dev_CRSF.c **** 
+ 176:Device/Dev_CRSF.c ****                 return CRSF_FRAMETYPE_LINK_STATISTICS;
+ 177:Device/Dev_CRSF.c ****             }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 6
+
+
+ 178:Device/Dev_CRSF.c ****             break;
+ 179:Device/Dev_CRSF.c **** 
+ 180:Device/Dev_CRSF.c ****         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+ 181:Device/Dev_CRSF.c ****             if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr)
+ 182:Device/Dev_CRSF.c ****             {
+ 183:Device/Dev_CRSF.c ****                 const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)(obj->frame.data + 1);
+ 184:Device/Dev_CRSF.c ****                 obj->channel[0] = channel_val_ptr->ch0;
+ 185:Device/Dev_CRSF.c ****                 obj->channel[1] = channel_val_ptr->ch1;
+ 186:Device/Dev_CRSF.c ****                 obj->channel[2] = channel_val_ptr->ch2;
+ 187:Device/Dev_CRSF.c ****                 obj->channel[3] = channel_val_ptr->ch3;
+ 188:Device/Dev_CRSF.c ****                 obj->channel[4] = channel_val_ptr->ch4;
+ 189:Device/Dev_CRSF.c ****                 obj->channel[5] = channel_val_ptr->ch5;
+ 190:Device/Dev_CRSF.c ****                 obj->channel[6] = channel_val_ptr->ch6;
+ 191:Device/Dev_CRSF.c ****                 obj->channel[7] = channel_val_ptr->ch7;
+ 192:Device/Dev_CRSF.c ****                 obj->channel[8] = channel_val_ptr->ch8;
+ 193:Device/Dev_CRSF.c ****                 obj->channel[9] = channel_val_ptr->ch9;
+ 194:Device/Dev_CRSF.c ****                 obj->channel[10] = channel_val_ptr->ch10;
+ 195:Device/Dev_CRSF.c ****                 obj->channel[11] = channel_val_ptr->ch11;
+ 196:Device/Dev_CRSF.c ****                 obj->channel[12] = channel_val_ptr->ch12;
+ 197:Device/Dev_CRSF.c ****                 obj->channel[13] = channel_val_ptr->ch13;
+ 198:Device/Dev_CRSF.c ****                 obj->channel[14] = channel_val_ptr->ch14;
+ 199:Device/Dev_CRSF.c ****                 obj->channel[15] = channel_val_ptr->ch15;
+ 200:Device/Dev_CRSF.c **** 
+ 201:Device/Dev_CRSF.c ****                 obj->state = CRSF_State_LinkUp;
+ 202:Device/Dev_CRSF.c **** 
+ 203:Device/Dev_CRSF.c ****                 return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
+ 204:Device/Dev_CRSF.c ****             }
+ 205:Device/Dev_CRSF.c ****             break;
+ 206:Device/Dev_CRSF.c **** 
+ 207:Device/Dev_CRSF.c ****         default:
+ 208:Device/Dev_CRSF.c ****             return CRSF_DECODE_ERROR;
+ 209:Device/Dev_CRSF.c ****         }
+ 210:Device/Dev_CRSF.c ****     }
+ 211:Device/Dev_CRSF.c **** 
+ 212:Device/Dev_CRSF.c ****     return CRSF_DECODE_ERROR;
+ 213:Device/Dev_CRSF.c **** }
+ 214:Device/Dev_CRSF.c **** 
+ 215:Device/Dev_CRSF.c **** static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in)
+ 216:Device/Dev_CRSF.c **** {
+ 217:Device/Dev_CRSF.c ****     if (obj && ch_in)
+ 218:Device/Dev_CRSF.c ****     {
+ 219:Device/Dev_CRSF.c ****         /* fresh new data */
+ 220:Device/Dev_CRSF.c ****         memcpy(ch_in, obj->channel, sizeof(obj->channel));
+ 221:Device/Dev_CRSF.c ****     }
+ 222:Device/Dev_CRSF.c **** }
+ 223:Device/Dev_CRSF.c **** 
+ 224:Device/Dev_CRSF.c **** static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj)
+ 225:Device/Dev_CRSF.c **** {
+ 106              		.loc 1 225 1 is_stmt 1 view -0
+ 107              		.cfi_startproc
+ 108              		@ args = 0, pretend = 0, frame = 16
+ 109              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110              		@ link register save eliminated.
+ 111              		.loc 1 225 1 is_stmt 0 view .LVU22
+ 112 0000 10B4     		push	{r4}
+ 113              	.LCFI2:
+ 114              		.cfi_def_cfa_offset 4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 7
+
+
+ 115              		.cfi_offset 4, -4
+ 116 0002 85B0     		sub	sp, sp, #20
+ 117              	.LCFI3:
+ 118              		.cfi_def_cfa_offset 24
+ 119 0004 0346     		mov	r3, r0
+ 226:Device/Dev_CRSF.c ****     crsf_LinkStatistics_t statistics;
+ 120              		.loc 1 226 5 is_stmt 1 view .LVU23
+ 227:Device/Dev_CRSF.c **** 
+ 228:Device/Dev_CRSF.c ****     memset(&statistics, 0, sizeof(crsf_LinkStatistics_t));
+ 121              		.loc 1 228 5 view .LVU24
+ 122 0006 0022     		movs	r2, #0
+ 123 0008 0192     		str	r2, [sp, #4]
+ 124 000a 0292     		str	r2, [sp, #8]
+ 125 000c ADF80C20 		strh	r2, [sp, #12]	@ movhi
+ 229:Device/Dev_CRSF.c **** 
+ 230:Device/Dev_CRSF.c ****     if (obj)
+ 126              		.loc 1 230 5 view .LVU25
+ 127              		.loc 1 230 8 is_stmt 0 view .LVU26
+ 128 0010 39B1     		cbz	r1, .L9
+ 129 0012 0A46     		mov	r2, r1
+ 231:Device/Dev_CRSF.c ****         memcpy(&statistics, &obj->statistics, sizeof(crsf_LinkStatistics_t));
+ 130              		.loc 1 231 9 is_stmt 1 view .LVU27
+ 131 0014 01AC     		add	r4, sp, #4
+ 132 0016 52F8430F 		ldr	r0, [r2, #67]!	@ unaligned
+ 133              	.LVL10:
+ 134              		.loc 1 231 9 is_stmt 0 view .LVU28
+ 135 001a 5168     		ldr	r1, [r2, #4]	@ unaligned
+ 136              	.LVL11:
+ 137              		.loc 1 231 9 view .LVU29
+ 138 001c 03C4     		stmia	r4!, {r0, r1}
+ 139 001e 1289     		ldrh	r2, [r2, #8]	@ unaligned
+ 140              	.LVL12:
+ 141              		.loc 1 231 9 view .LVU30
+ 142 0020 2280     		strh	r2, [r4]	@ unaligned
+ 143              	.L9:
+ 232:Device/Dev_CRSF.c **** 
+ 233:Device/Dev_CRSF.c ****     return statistics;
+ 144              		.loc 1 233 5 is_stmt 1 view .LVU31
+ 145              		.loc 1 233 12 is_stmt 0 view .LVU32
+ 146 0022 01AA     		add	r2, sp, #4
+ 147 0024 03CA     		ldmia	r2!, {r0, r1}
+ 148 0026 1860     		str	r0, [r3]	@ unaligned
+ 149 0028 5960     		str	r1, [r3, #4]	@ unaligned
+ 150 002a 1288     		ldrh	r2, [r2]	@ unaligned
+ 151 002c 1A81     		strh	r2, [r3, #8]	@ unaligned
+ 234:Device/Dev_CRSF.c **** }
+ 152              		.loc 1 234 1 view .LVU33
+ 153 002e 1846     		mov	r0, r3
+ 154 0030 05B0     		add	sp, sp, #20
+ 155              	.LCFI4:
+ 156              		.cfi_def_cfa_offset 4
+ 157              		@ sp needed
+ 158 0032 5DF8044B 		ldr	r4, [sp], #4
+ 159              	.LCFI5:
+ 160              		.cfi_restore 4
+ 161              		.cfi_def_cfa_offset 0
+ 162 0036 7047     		bx	lr
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 8
+
+
+ 163              		.cfi_endproc
+ 164              	.LFE5:
+ 166              		.section	.text.DevCrsf_Init,"ax",%progbits
+ 167              		.align	1
+ 168              		.syntax unified
+ 169              		.thumb
+ 170              		.thumb_func
+ 171              		.fpu fpv5-d16
+ 173              	DevCrsf_Init:
+ 174              	.LVL13:
+ 175              	.LFB1:
+  73:Device/Dev_CRSF.c ****     if (obj == NULL)
+ 176              		.loc 1 73 1 is_stmt 1 view -0
+ 177              		.cfi_startproc
+ 178              		@ args = 0, pretend = 0, frame = 0
+ 179              		@ frame_needed = 0, uses_anonymous_args = 0
+  74:Device/Dev_CRSF.c ****         return false;
+ 180              		.loc 1 74 5 view .LVU35
+  74:Device/Dev_CRSF.c ****         return false;
+ 181              		.loc 1 74 8 is_stmt 0 view .LVU36
+ 182 0000 70B1     		cbz	r0, .L13
+  73:Device/Dev_CRSF.c ****     if (obj == NULL)
+ 183              		.loc 1 73 1 view .LVU37
+ 184 0002 10B5     		push	{r4, lr}
+ 185              	.LCFI6:
+ 186              		.cfi_def_cfa_offset 8
+ 187              		.cfi_offset 4, -8
+ 188              		.cfi_offset 14, -4
+ 189 0004 0446     		mov	r4, r0
+  77:Device/Dev_CRSF.c **** 
+ 190              		.loc 1 77 5 is_stmt 1 view .LVU38
+ 191 0006 6E22     		movs	r2, #110
+ 192 0008 0021     		movs	r1, #0
+ 193 000a FFF7FEFF 		bl	memset
+ 194              	.LVL14:
+  79:Device/Dev_CRSF.c ****     obj->rec_cnt = 0;
+ 195              		.loc 1 79 5 view .LVU39
+  79:Device/Dev_CRSF.c ****     obj->rec_cnt = 0;
+ 196              		.loc 1 79 16 is_stmt 0 view .LVU40
+ 197 000e 0120     		movs	r0, #1
+ 198 0010 84F84200 		strb	r0, [r4, #66]
+  80:Device/Dev_CRSF.c ****     obj->rec_stage = CRSF_Stage_Header;
+ 199              		.loc 1 80 5 is_stmt 1 view .LVU41
+  80:Device/Dev_CRSF.c ****     obj->rec_stage = CRSF_Stage_Header;
+ 200              		.loc 1 80 18 is_stmt 0 view .LVU42
+ 201 0014 0023     		movs	r3, #0
+ 202 0016 84F84030 		strb	r3, [r4, #64]
+  81:Device/Dev_CRSF.c **** 
+ 203              		.loc 1 81 5 is_stmt 1 view .LVU43
+  81:Device/Dev_CRSF.c **** 
+ 204              		.loc 1 81 20 is_stmt 0 view .LVU44
+ 205 001a 84F84130 		strb	r3, [r4, #65]
+  83:Device/Dev_CRSF.c **** }
+ 206              		.loc 1 83 5 is_stmt 1 view .LVU45
+  84:Device/Dev_CRSF.c **** 
+ 207              		.loc 1 84 1 is_stmt 0 view .LVU46
+ 208 001e 10BD     		pop	{r4, pc}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 9
+
+
+ 209              	.LVL15:
+ 210              	.L13:
+ 211              	.LCFI7:
+ 212              		.cfi_def_cfa_offset 0
+ 213              		.cfi_restore 4
+ 214              		.cfi_restore 14
+  75:Device/Dev_CRSF.c **** 
+ 215              		.loc 1 75 16 view .LVU47
+ 216 0020 0020     		movs	r0, #0
+ 217              	.LVL16:
+  84:Device/Dev_CRSF.c **** 
+ 218              		.loc 1 84 1 view .LVU48
+ 219 0022 7047     		bx	lr
+ 220              		.cfi_endproc
+ 221              	.LFE1:
+ 223              		.section	.text.DevCRSF_Get_Channel,"ax",%progbits
+ 224              		.align	1
+ 225              		.syntax unified
+ 226              		.thumb
+ 227              		.thumb_func
+ 228              		.fpu fpv5-d16
+ 230              	DevCRSF_Get_Channel:
+ 231              	.LVL17:
+ 232              	.LFB4:
+ 216:Device/Dev_CRSF.c ****     if (obj && ch_in)
+ 233              		.loc 1 216 1 is_stmt 1 view -0
+ 234              		.cfi_startproc
+ 235              		@ args = 0, pretend = 0, frame = 0
+ 236              		@ frame_needed = 0, uses_anonymous_args = 0
+ 237              		@ link register save eliminated.
+ 217:Device/Dev_CRSF.c ****     {
+ 238              		.loc 1 217 5 view .LVU50
+ 217:Device/Dev_CRSF.c ****     {
+ 239              		.loc 1 217 13 is_stmt 0 view .LVU51
+ 240 0000 0A46     		mov	r2, r1
+ 241 0002 0039     		subs	r1, r1, #0
+ 242              	.LVL18:
+ 217:Device/Dev_CRSF.c ****     {
+ 243              		.loc 1 217 13 view .LVU52
+ 244 0004 18BF     		it	ne
+ 245 0006 0121     		movne	r1, #1
+ 246 0008 0028     		cmp	r0, #0
+ 247 000a 08BF     		it	eq
+ 248 000c 0021     		moveq	r1, #0
+ 217:Device/Dev_CRSF.c ****     {
+ 249              		.loc 1 217 8 view .LVU53
+ 250 000e 01B9     		cbnz	r1, .L24
+ 251 0010 7047     		bx	lr
+ 252              	.L24:
+ 216:Device/Dev_CRSF.c ****     if (obj && ch_in)
+ 253              		.loc 1 216 1 view .LVU54
+ 254 0012 30B4     		push	{r4, r5}
+ 255              	.LCFI8:
+ 256              		.cfi_def_cfa_offset 8
+ 257              		.cfi_offset 4, -8
+ 258              		.cfi_offset 5, -4
+ 259 0014 0346     		mov	r3, r0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 10
+
+
+ 220:Device/Dev_CRSF.c ****     }
+ 260              		.loc 1 220 9 is_stmt 1 view .LVU55
+ 261 0016 53F84E5F 		ldr	r5, [r3, #78]!	@ unaligned
+ 262 001a 5C68     		ldr	r4, [r3, #4]	@ unaligned
+ 263 001c 9868     		ldr	r0, [r3, #8]	@ unaligned
+ 264              	.LVL19:
+ 220:Device/Dev_CRSF.c ****     }
+ 265              		.loc 1 220 9 is_stmt 0 view .LVU56
+ 266 001e D968     		ldr	r1, [r3, #12]	@ unaligned
+ 267 0020 1560     		str	r5, [r2]	@ unaligned
+ 268 0022 5460     		str	r4, [r2, #4]	@ unaligned
+ 269 0024 9060     		str	r0, [r2, #8]	@ unaligned
+ 270 0026 D160     		str	r1, [r2, #12]	@ unaligned
+ 271 0028 1D69     		ldr	r5, [r3, #16]	@ unaligned
+ 272 002a 5C69     		ldr	r4, [r3, #20]	@ unaligned
+ 273 002c 9869     		ldr	r0, [r3, #24]	@ unaligned
+ 274 002e D969     		ldr	r1, [r3, #28]	@ unaligned
+ 275 0030 1561     		str	r5, [r2, #16]	@ unaligned
+ 276 0032 5461     		str	r4, [r2, #20]	@ unaligned
+ 277 0034 9061     		str	r0, [r2, #24]	@ unaligned
+ 278 0036 D161     		str	r1, [r2, #28]	@ unaligned
+ 222:Device/Dev_CRSF.c **** 
+ 279              		.loc 1 222 1 view .LVU57
+ 280 0038 30BC     		pop	{r4, r5}
+ 281              	.LCFI9:
+ 282              		.cfi_restore 5
+ 283              		.cfi_restore 4
+ 284              		.cfi_def_cfa_offset 0
+ 285 003a 7047     		bx	lr
+ 286              		.cfi_endproc
+ 287              	.LFE4:
+ 289              		.section	.text.DevCRSF_Decode,"ax",%progbits
+ 290              		.align	1
+ 291              		.syntax unified
+ 292              		.thumb
+ 293              		.thumb_func
+ 294              		.fpu fpv5-d16
+ 296              	DevCRSF_Decode:
+ 297              	.LVL20:
+ 298              	.LFB3:
+ 156:Device/Dev_CRSF.c ****     uint8_t frame_size = 0;
+ 299              		.loc 1 156 1 is_stmt 1 view -0
+ 300              		.cfi_startproc
+ 301              		@ args = 0, pretend = 0, frame = 0
+ 302              		@ frame_needed = 0, uses_anonymous_args = 0
+ 157:Device/Dev_CRSF.c **** 
+ 303              		.loc 1 157 5 view .LVU59
+ 159:Device/Dev_CRSF.c ****         return false;
+ 304              		.loc 1 159 5 view .LVU60
+ 159:Device/Dev_CRSF.c ****         return false;
+ 305              		.loc 1 159 8 is_stmt 0 view .LVU61
+ 306 0000 0028     		cmp	r0, #0
+ 307 0002 00F0CB80 		beq	.L29
+ 156:Device/Dev_CRSF.c ****     uint8_t frame_size = 0;
+ 308              		.loc 1 156 1 discriminator 1 view .LVU62
+ 309 0006 38B5     		push	{r3, r4, r5, lr}
+ 310              	.LCFI10:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 11
+
+
+ 311              		.cfi_def_cfa_offset 16
+ 312              		.cfi_offset 3, -16
+ 313              		.cfi_offset 4, -12
+ 314              		.cfi_offset 5, -8
+ 315              		.cfi_offset 14, -4
+ 316 0008 0B46     		mov	r3, r1
+ 317 000a 0546     		mov	r5, r0
+ 159:Device/Dev_CRSF.c ****         return false;
+ 318              		.loc 1 159 30 discriminator 1 view .LVU63
+ 319 000c 90F84000 		ldrb	r0, [r0, #64]	@ zero_extendqisi2
+ 320              	.LVL21:
+ 159:Device/Dev_CRSF.c ****         return false;
+ 321              		.loc 1 159 23 discriminator 1 view .LVU64
+ 322 0010 0028     		cmp	r0, #0
+ 323 0012 00F0C680 		beq	.L26
+ 159:Device/Dev_CRSF.c ****         return false;
+ 324              		.loc 1 159 74 discriminator 2 view .LVU65
+ 325 0016 032A     		cmp	r2, #3
+ 326 0018 8CBF     		ite	hi
+ 327 001a 0021     		movhi	r1, #0
+ 328              	.LVL22:
+ 159:Device/Dev_CRSF.c ****         return false;
+ 329              		.loc 1 159 74 discriminator 2 view .LVU66
+ 330 001c 0121     		movls	r1, #1
+ 159:Device/Dev_CRSF.c ****         return false;
+ 331              		.loc 1 159 66 discriminator 2 view .LVU67
+ 332 001e 002B     		cmp	r3, #0
+ 333 0020 00F0BE80 		beq	.L30
+ 334 0024 0029     		cmp	r1, #0
+ 335 0026 40F0BB80 		bne	.L30
+ 163:Device/Dev_CRSF.c ****     {
+ 336              		.loc 1 163 5 is_stmt 1 view .LVU68
+ 163:Device/Dev_CRSF.c ****     {
+ 337              		.loc 1 163 9 is_stmt 0 view .LVU69
+ 338 002a 541E     		subs	r4, r2, #1
+ 339 002c A1B2     		uxth	r1, r4
+ 340 002e 1846     		mov	r0, r3
+ 341 0030 FFF7FEFF 		bl	crsf_crc8
+ 342              	.LVL23:
+ 163:Device/Dev_CRSF.c ****     {
+ 343              		.loc 1 163 54 view .LVU70
+ 344 0034 2A19     		adds	r2, r5, r4
+ 345 0036 D378     		ldrb	r3, [r2, #3]	@ zero_extendqisi2
+ 163:Device/Dev_CRSF.c ****     {
+ 346              		.loc 1 163 8 view .LVU71
+ 347 0038 9842     		cmp	r0, r3
+ 348 003a 01D0     		beq	.L38
+ 212:Device/Dev_CRSF.c **** }
+ 349              		.loc 1 212 12 view .LVU72
+ 350 003c FF20     		movs	r0, #255
+ 351 003e B0E0     		b	.L26
+ 352              	.L38:
+ 166:Device/Dev_CRSF.c ****         {
+ 353              		.loc 1 166 9 is_stmt 1 view .LVU73
+ 166:Device/Dev_CRSF.c ****         {
+ 354              		.loc 1 166 27 is_stmt 0 view .LVU74
+ 355 0040 A878     		ldrb	r0, [r5, #2]	@ zero_extendqisi2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 12
+
+
+ 166:Device/Dev_CRSF.c ****         {
+ 356              		.loc 1 166 9 view .LVU75
+ 357 0042 1428     		cmp	r0, #20
+ 358 0044 03D0     		beq	.L27
+ 359 0046 1628     		cmp	r0, #22
+ 360 0048 17D0     		beq	.L28
+ 361 004a FF20     		movs	r0, #255
+ 362 004c A9E0     		b	.L26
+ 363              	.L27:
+ 169:Device/Dev_CRSF.c ****                 ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->fr
+ 364              		.loc 1 169 13 is_stmt 1 view .LVU76
+ 169:Device/Dev_CRSF.c ****                 ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->fr
+ 365              		.loc 1 169 69 is_stmt 0 view .LVU77
+ 366 004e 2A88     		ldrh	r2, [r5]	@ unaligned
+ 169:Device/Dev_CRSF.c ****                 ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->fr
+ 367              		.loc 1 169 16 view .LVU78
+ 368 0050 40F6C843 		movw	r3, #3272
+ 369 0054 9A42     		cmp	r2, r3
+ 370 0056 01D0     		beq	.L39
+ 212:Device/Dev_CRSF.c **** }
+ 371              		.loc 1 212 12 view .LVU79
+ 372 0058 FF20     		movs	r0, #255
+ 373 005a A2E0     		b	.L26
+ 374              	.L39:
+ 375              	.LBB4:
+ 172:Device/Dev_CRSF.c ****                 memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
+ 376              		.loc 1 172 17 is_stmt 1 view .LVU80
+ 172:Device/Dev_CRSF.c ****                 memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
+ 377              		.loc 1 172 46 is_stmt 0 view .LVU81
+ 378 005c 2B46     		mov	r3, r5
+ 379              	.LVL24:
+ 173:Device/Dev_CRSF.c ****                 obj->state = CRSF_State_LinkUp;
+ 380              		.loc 1 173 17 is_stmt 1 view .LVU82
+ 381 005e 53F8031F 		ldr	r1, [r3, #3]!	@ unaligned
+ 382              	.LVL25:
+ 173:Device/Dev_CRSF.c ****                 obj->state = CRSF_State_LinkUp;
+ 383              		.loc 1 173 17 is_stmt 0 view .LVU83
+ 384 0062 5A68     		ldr	r2, [r3, #4]	@ unaligned
+ 385 0064 C5F84310 		str	r1, [r5, #67]	@ unaligned
+ 386 0068 C5F84720 		str	r2, [r5, #71]	@ unaligned
+ 387 006c 1B89     		ldrh	r3, [r3, #8]	@ unaligned
+ 388              	.LVL26:
+ 173:Device/Dev_CRSF.c ****                 obj->state = CRSF_State_LinkUp;
+ 389              		.loc 1 173 17 view .LVU84
+ 390 006e A5F84B30 		strh	r3, [r5, #75]	@ unaligned
+ 174:Device/Dev_CRSF.c **** 
+ 391              		.loc 1 174 17 is_stmt 1 view .LVU85
+ 174:Device/Dev_CRSF.c **** 
+ 392              		.loc 1 174 28 is_stmt 0 view .LVU86
+ 393 0072 0023     		movs	r3, #0
+ 394 0074 85F84230 		strb	r3, [r5, #66]
+ 176:Device/Dev_CRSF.c ****             }
+ 395              		.loc 1 176 17 is_stmt 1 view .LVU87
+ 176:Device/Dev_CRSF.c ****             }
+ 396              		.loc 1 176 24 is_stmt 0 view .LVU88
+ 397 0078 93E0     		b	.L26
+ 398              	.LVL27:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 13
+
+
+ 399              	.L28:
+ 176:Device/Dev_CRSF.c ****             }
+ 400              		.loc 1 176 24 view .LVU89
+ 401              	.LBE4:
+ 181:Device/Dev_CRSF.c ****             {
+ 402              		.loc 1 181 13 is_stmt 1 view .LVU90
+ 181:Device/Dev_CRSF.c ****             {
+ 403              		.loc 1 181 61 is_stmt 0 view .LVU91
+ 404 007a 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 181:Device/Dev_CRSF.c ****             {
+ 405              		.loc 1 181 16 view .LVU92
+ 406 007c C82B     		cmp	r3, #200
+ 407 007e 01D0     		beq	.L40
+ 212:Device/Dev_CRSF.c **** }
+ 408              		.loc 1 212 12 view .LVU93
+ 409 0080 FF20     		movs	r0, #255
+ 410 0082 8EE0     		b	.L26
+ 411              	.L40:
+ 412              	.LBB5:
+ 183:Device/Dev_CRSF.c ****                 obj->channel[0] = channel_val_ptr->ch0;
+ 413              		.loc 1 183 17 is_stmt 1 view .LVU94
+ 414              	.LVL28:
+ 184:Device/Dev_CRSF.c ****                 obj->channel[1] = channel_val_ptr->ch1;
+ 415              		.loc 1 184 17 view .LVU95
+ 184:Device/Dev_CRSF.c ****                 obj->channel[1] = channel_val_ptr->ch1;
+ 416              		.loc 1 184 50 is_stmt 0 view .LVU96
+ 417 0084 2B79     		ldrb	r3, [r5, #4]	@ zero_extendqisi2
+ 418 0086 6979     		ldrb	r1, [r5, #5]	@ zero_extendqisi2
+ 419 0088 01F00702 		and	r2, r1, #7
+ 420 008c 43EA0223 		orr	r3, r3, r2, lsl #8
+ 184:Device/Dev_CRSF.c ****                 obj->channel[1] = channel_val_ptr->ch1;
+ 421              		.loc 1 184 33 view .LVU97
+ 422 0090 A5F84E30 		strh	r3, [r5, #78]	@ movhi
+ 185:Device/Dev_CRSF.c ****                 obj->channel[2] = channel_val_ptr->ch2;
+ 423              		.loc 1 185 17 is_stmt 1 view .LVU98
+ 185:Device/Dev_CRSF.c ****                 obj->channel[2] = channel_val_ptr->ch2;
+ 424              		.loc 1 185 50 is_stmt 0 view .LVU99
+ 425 0094 AA79     		ldrb	r2, [r5, #6]	@ zero_extendqisi2
+ 426 0096 02F03F03 		and	r3, r2, #63
+ 427 009a 5B01     		lsls	r3, r3, #5
+ 428 009c 43EAD103 		orr	r3, r3, r1, lsr #3
+ 185:Device/Dev_CRSF.c ****                 obj->channel[2] = channel_val_ptr->ch2;
+ 429              		.loc 1 185 33 view .LVU100
+ 430 00a0 A5F85030 		strh	r3, [r5, #80]	@ movhi
+ 186:Device/Dev_CRSF.c ****                 obj->channel[3] = channel_val_ptr->ch3;
+ 431              		.loc 1 186 17 is_stmt 1 view .LVU101
+ 186:Device/Dev_CRSF.c ****                 obj->channel[3] = channel_val_ptr->ch3;
+ 432              		.loc 1 186 50 is_stmt 0 view .LVU102
+ 433 00a4 EB79     		ldrb	r3, [r5, #7]	@ zero_extendqisi2
+ 434 00a6 9B00     		lsls	r3, r3, #2
+ 435 00a8 43EA9213 		orr	r3, r3, r2, lsr #6
+ 436 00ac 2A7A     		ldrb	r2, [r5, #8]	@ zero_extendqisi2
+ 437 00ae 02F00101 		and	r1, r2, #1
+ 438 00b2 43EA8123 		orr	r3, r3, r1, lsl #10
+ 186:Device/Dev_CRSF.c ****                 obj->channel[3] = channel_val_ptr->ch3;
+ 439              		.loc 1 186 33 view .LVU103
+ 440 00b6 A5F85230 		strh	r3, [r5, #82]	@ movhi
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 14
+
+
+ 187:Device/Dev_CRSF.c ****                 obj->channel[4] = channel_val_ptr->ch4;
+ 441              		.loc 1 187 17 is_stmt 1 view .LVU104
+ 187:Device/Dev_CRSF.c ****                 obj->channel[4] = channel_val_ptr->ch4;
+ 442              		.loc 1 187 50 is_stmt 0 view .LVU105
+ 443 00ba 697A     		ldrb	r1, [r5, #9]	@ zero_extendqisi2
+ 444 00bc 01F00F03 		and	r3, r1, #15
+ 445 00c0 DB01     		lsls	r3, r3, #7
+ 446 00c2 43EA5203 		orr	r3, r3, r2, lsr #1
+ 187:Device/Dev_CRSF.c ****                 obj->channel[4] = channel_val_ptr->ch4;
+ 447              		.loc 1 187 33 view .LVU106
+ 448 00c6 A5F85430 		strh	r3, [r5, #84]	@ movhi
+ 188:Device/Dev_CRSF.c ****                 obj->channel[5] = channel_val_ptr->ch5;
+ 449              		.loc 1 188 17 is_stmt 1 view .LVU107
+ 188:Device/Dev_CRSF.c ****                 obj->channel[5] = channel_val_ptr->ch5;
+ 450              		.loc 1 188 50 is_stmt 0 view .LVU108
+ 451 00ca AA7A     		ldrb	r2, [r5, #10]	@ zero_extendqisi2
+ 452 00cc 02F07F03 		and	r3, r2, #127
+ 453 00d0 1B01     		lsls	r3, r3, #4
+ 454 00d2 43EA1113 		orr	r3, r3, r1, lsr #4
+ 188:Device/Dev_CRSF.c ****                 obj->channel[5] = channel_val_ptr->ch5;
+ 455              		.loc 1 188 33 view .LVU109
+ 456 00d6 A5F85630 		strh	r3, [r5, #86]	@ movhi
+ 189:Device/Dev_CRSF.c ****                 obj->channel[6] = channel_val_ptr->ch6;
+ 457              		.loc 1 189 17 is_stmt 1 view .LVU110
+ 189:Device/Dev_CRSF.c ****                 obj->channel[6] = channel_val_ptr->ch6;
+ 458              		.loc 1 189 50 is_stmt 0 view .LVU111
+ 459 00da EB7A     		ldrb	r3, [r5, #11]	@ zero_extendqisi2
+ 460 00dc 5B00     		lsls	r3, r3, #1
+ 461 00de 43EAD213 		orr	r3, r3, r2, lsr #7
+ 462 00e2 297B     		ldrb	r1, [r5, #12]	@ zero_extendqisi2
+ 463 00e4 01F00302 		and	r2, r1, #3
+ 464 00e8 43EA4223 		orr	r3, r3, r2, lsl #9
+ 189:Device/Dev_CRSF.c ****                 obj->channel[6] = channel_val_ptr->ch6;
+ 465              		.loc 1 189 33 view .LVU112
+ 466 00ec A5F85830 		strh	r3, [r5, #88]	@ movhi
+ 190:Device/Dev_CRSF.c ****                 obj->channel[7] = channel_val_ptr->ch7;
+ 467              		.loc 1 190 17 is_stmt 1 view .LVU113
+ 190:Device/Dev_CRSF.c ****                 obj->channel[7] = channel_val_ptr->ch7;
+ 468              		.loc 1 190 50 is_stmt 0 view .LVU114
+ 469 00f0 6A7B     		ldrb	r2, [r5, #13]	@ zero_extendqisi2
+ 470 00f2 02F01F03 		and	r3, r2, #31
+ 471 00f6 9B01     		lsls	r3, r3, #6
+ 472 00f8 43EA9103 		orr	r3, r3, r1, lsr #2
+ 190:Device/Dev_CRSF.c ****                 obj->channel[7] = channel_val_ptr->ch7;
+ 473              		.loc 1 190 33 view .LVU115
+ 474 00fc A5F85A30 		strh	r3, [r5, #90]	@ movhi
+ 191:Device/Dev_CRSF.c ****                 obj->channel[8] = channel_val_ptr->ch8;
+ 475              		.loc 1 191 17 is_stmt 1 view .LVU116
+ 191:Device/Dev_CRSF.c ****                 obj->channel[8] = channel_val_ptr->ch8;
+ 476              		.loc 1 191 50 is_stmt 0 view .LVU117
+ 477 0100 AB7B     		ldrb	r3, [r5, #14]	@ zero_extendqisi2
+ 478 0102 DB00     		lsls	r3, r3, #3
+ 479 0104 43EA5213 		orr	r3, r3, r2, lsr #5
+ 191:Device/Dev_CRSF.c ****                 obj->channel[8] = channel_val_ptr->ch8;
+ 480              		.loc 1 191 33 view .LVU118
+ 481 0108 A5F85C30 		strh	r3, [r5, #92]	@ movhi
+ 192:Device/Dev_CRSF.c ****                 obj->channel[9] = channel_val_ptr->ch9;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 15
+
+
+ 482              		.loc 1 192 17 is_stmt 1 view .LVU119
+ 192:Device/Dev_CRSF.c ****                 obj->channel[9] = channel_val_ptr->ch9;
+ 483              		.loc 1 192 50 is_stmt 0 view .LVU120
+ 484 010c EB7B     		ldrb	r3, [r5, #15]	@ zero_extendqisi2
+ 485 010e 297C     		ldrb	r1, [r5, #16]	@ zero_extendqisi2
+ 486 0110 01F00702 		and	r2, r1, #7
+ 487 0114 43EA0223 		orr	r3, r3, r2, lsl #8
+ 192:Device/Dev_CRSF.c ****                 obj->channel[9] = channel_val_ptr->ch9;
+ 488              		.loc 1 192 33 view .LVU121
+ 489 0118 A5F85E30 		strh	r3, [r5, #94]	@ movhi
+ 193:Device/Dev_CRSF.c ****                 obj->channel[10] = channel_val_ptr->ch10;
+ 490              		.loc 1 193 17 is_stmt 1 view .LVU122
+ 193:Device/Dev_CRSF.c ****                 obj->channel[10] = channel_val_ptr->ch10;
+ 491              		.loc 1 193 50 is_stmt 0 view .LVU123
+ 492 011c 6A7C     		ldrb	r2, [r5, #17]	@ zero_extendqisi2
+ 493 011e 02F03F03 		and	r3, r2, #63
+ 494 0122 5B01     		lsls	r3, r3, #5
+ 495 0124 43EAD103 		orr	r3, r3, r1, lsr #3
+ 193:Device/Dev_CRSF.c ****                 obj->channel[10] = channel_val_ptr->ch10;
+ 496              		.loc 1 193 33 view .LVU124
+ 497 0128 A5F86030 		strh	r3, [r5, #96]	@ movhi
+ 194:Device/Dev_CRSF.c ****                 obj->channel[11] = channel_val_ptr->ch11;
+ 498              		.loc 1 194 17 is_stmt 1 view .LVU125
+ 194:Device/Dev_CRSF.c ****                 obj->channel[11] = channel_val_ptr->ch11;
+ 499              		.loc 1 194 51 is_stmt 0 view .LVU126
+ 500 012c AB7C     		ldrb	r3, [r5, #18]	@ zero_extendqisi2
+ 501 012e 9B00     		lsls	r3, r3, #2
+ 502 0130 43EA9213 		orr	r3, r3, r2, lsr #6
+ 503 0134 EA7C     		ldrb	r2, [r5, #19]	@ zero_extendqisi2
+ 504 0136 02F00101 		and	r1, r2, #1
+ 505 013a 43EA8123 		orr	r3, r3, r1, lsl #10
+ 194:Device/Dev_CRSF.c ****                 obj->channel[11] = channel_val_ptr->ch11;
+ 506              		.loc 1 194 34 view .LVU127
+ 507 013e A5F86230 		strh	r3, [r5, #98]	@ movhi
+ 195:Device/Dev_CRSF.c ****                 obj->channel[12] = channel_val_ptr->ch12;
+ 508              		.loc 1 195 17 is_stmt 1 view .LVU128
+ 195:Device/Dev_CRSF.c ****                 obj->channel[12] = channel_val_ptr->ch12;
+ 509              		.loc 1 195 51 is_stmt 0 view .LVU129
+ 510 0142 297D     		ldrb	r1, [r5, #20]	@ zero_extendqisi2
+ 511 0144 01F00F03 		and	r3, r1, #15
+ 512 0148 DB01     		lsls	r3, r3, #7
+ 513 014a 43EA5203 		orr	r3, r3, r2, lsr #1
+ 195:Device/Dev_CRSF.c ****                 obj->channel[12] = channel_val_ptr->ch12;
+ 514              		.loc 1 195 34 view .LVU130
+ 515 014e A5F86430 		strh	r3, [r5, #100]	@ movhi
+ 196:Device/Dev_CRSF.c ****                 obj->channel[13] = channel_val_ptr->ch13;
+ 516              		.loc 1 196 17 is_stmt 1 view .LVU131
+ 196:Device/Dev_CRSF.c ****                 obj->channel[13] = channel_val_ptr->ch13;
+ 517              		.loc 1 196 51 is_stmt 0 view .LVU132
+ 518 0152 6A7D     		ldrb	r2, [r5, #21]	@ zero_extendqisi2
+ 519 0154 02F07F03 		and	r3, r2, #127
+ 520 0158 1B01     		lsls	r3, r3, #4
+ 521 015a 43EA1113 		orr	r3, r3, r1, lsr #4
+ 196:Device/Dev_CRSF.c ****                 obj->channel[13] = channel_val_ptr->ch13;
+ 522              		.loc 1 196 34 view .LVU133
+ 523 015e A5F86630 		strh	r3, [r5, #102]	@ movhi
+ 197:Device/Dev_CRSF.c ****                 obj->channel[14] = channel_val_ptr->ch14;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 16
+
+
+ 524              		.loc 1 197 17 is_stmt 1 view .LVU134
+ 197:Device/Dev_CRSF.c ****                 obj->channel[14] = channel_val_ptr->ch14;
+ 525              		.loc 1 197 51 is_stmt 0 view .LVU135
+ 526 0162 AB7D     		ldrb	r3, [r5, #22]	@ zero_extendqisi2
+ 527 0164 5B00     		lsls	r3, r3, #1
+ 528 0166 43EAD213 		orr	r3, r3, r2, lsr #7
+ 529 016a E97D     		ldrb	r1, [r5, #23]	@ zero_extendqisi2
+ 530 016c 01F00302 		and	r2, r1, #3
+ 531 0170 43EA4223 		orr	r3, r3, r2, lsl #9
+ 197:Device/Dev_CRSF.c ****                 obj->channel[14] = channel_val_ptr->ch14;
+ 532              		.loc 1 197 34 view .LVU136
+ 533 0174 A5F86830 		strh	r3, [r5, #104]	@ movhi
+ 198:Device/Dev_CRSF.c ****                 obj->channel[15] = channel_val_ptr->ch15;
+ 534              		.loc 1 198 17 is_stmt 1 view .LVU137
+ 198:Device/Dev_CRSF.c ****                 obj->channel[15] = channel_val_ptr->ch15;
+ 535              		.loc 1 198 51 is_stmt 0 view .LVU138
+ 536 0178 2A7E     		ldrb	r2, [r5, #24]	@ zero_extendqisi2
+ 537 017a 02F01F03 		and	r3, r2, #31
+ 538 017e 9B01     		lsls	r3, r3, #6
+ 539 0180 43EA9103 		orr	r3, r3, r1, lsr #2
+ 198:Device/Dev_CRSF.c ****                 obj->channel[15] = channel_val_ptr->ch15;
+ 540              		.loc 1 198 34 view .LVU139
+ 541 0184 A5F86A30 		strh	r3, [r5, #106]	@ movhi
+ 199:Device/Dev_CRSF.c **** 
+ 542              		.loc 1 199 17 is_stmt 1 view .LVU140
+ 199:Device/Dev_CRSF.c **** 
+ 543              		.loc 1 199 51 is_stmt 0 view .LVU141
+ 544 0188 6B7E     		ldrb	r3, [r5, #25]	@ zero_extendqisi2
+ 545 018a DB00     		lsls	r3, r3, #3
+ 546 018c 43EA5213 		orr	r3, r3, r2, lsr #5
+ 199:Device/Dev_CRSF.c **** 
+ 547              		.loc 1 199 34 view .LVU142
+ 548 0190 A5F86C30 		strh	r3, [r5, #108]	@ movhi
+ 201:Device/Dev_CRSF.c **** 
+ 549              		.loc 1 201 17 is_stmt 1 view .LVU143
+ 201:Device/Dev_CRSF.c **** 
+ 550              		.loc 1 201 28 is_stmt 0 view .LVU144
+ 551 0194 0023     		movs	r3, #0
+ 552 0196 85F84230 		strb	r3, [r5, #66]
+ 203:Device/Dev_CRSF.c ****             }
+ 553              		.loc 1 203 17 is_stmt 1 view .LVU145
+ 203:Device/Dev_CRSF.c ****             }
+ 554              		.loc 1 203 24 is_stmt 0 view .LVU146
+ 555 019a 02E0     		b	.L26
+ 556              	.LVL29:
+ 557              	.L29:
+ 558              	.LCFI11:
+ 559              		.cfi_def_cfa_offset 0
+ 560              		.cfi_restore 3
+ 561              		.cfi_restore 4
+ 562              		.cfi_restore 5
+ 563              		.cfi_restore 14
+ 203:Device/Dev_CRSF.c ****             }
+ 564              		.loc 1 203 24 view .LVU147
+ 565              	.LBE5:
+ 160:Device/Dev_CRSF.c **** 
+ 566              		.loc 1 160 16 view .LVU148
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 17
+
+
+ 567 019c 0020     		movs	r0, #0
+ 568              	.LVL30:
+ 213:Device/Dev_CRSF.c **** 
+ 569              		.loc 1 213 1 view .LVU149
+ 570 019e 7047     		bx	lr
+ 571              	.LVL31:
+ 572              	.L30:
+ 573              	.LCFI12:
+ 574              		.cfi_def_cfa_offset 16
+ 575              		.cfi_offset 3, -16
+ 576              		.cfi_offset 4, -12
+ 577              		.cfi_offset 5, -8
+ 578              		.cfi_offset 14, -4
+ 160:Device/Dev_CRSF.c **** 
+ 579              		.loc 1 160 16 view .LVU150
+ 580 01a0 0020     		movs	r0, #0
+ 581              	.LVL32:
+ 582              	.L26:
+ 213:Device/Dev_CRSF.c **** 
+ 583              		.loc 1 213 1 view .LVU151
+ 584 01a2 38BD     		pop	{r3, r4, r5, pc}
+ 213:Device/Dev_CRSF.c **** 
+ 585              		.loc 1 213 1 view .LVU152
+ 586              		.cfi_endproc
+ 587              	.LFE3:
+ 589              		.section	.text.DevCRSF_FIFO_In,"ax",%progbits
+ 590              		.align	1
+ 591              		.syntax unified
+ 592              		.thumb
+ 593              		.thumb_func
+ 594              		.fpu fpv5-d16
+ 596              	DevCRSF_FIFO_In:
+ 597              	.LVL33:
+ 598              	.LFB2:
+  88:Device/Dev_CRSF.c ****     uint8_t decode_state = 0;
+ 599              		.loc 1 88 1 is_stmt 1 view -0
+ 600              		.cfi_startproc
+ 601              		@ args = 0, pretend = 0, frame = 0
+ 602              		@ frame_needed = 0, uses_anonymous_args = 0
+  88:Device/Dev_CRSF.c ****     uint8_t decode_state = 0;
+ 603              		.loc 1 88 1 is_stmt 0 view .LVU154
+ 604 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 605              	.LCFI13:
+ 606              		.cfi_def_cfa_offset 24
+ 607              		.cfi_offset 3, -24
+ 608              		.cfi_offset 4, -20
+ 609              		.cfi_offset 5, -16
+ 610              		.cfi_offset 6, -12
+ 611              		.cfi_offset 7, -8
+ 612              		.cfi_offset 14, -4
+  89:Device/Dev_CRSF.c **** 
+ 613              		.loc 1 89 5 is_stmt 1 view .LVU155
+ 614              	.LVL34:
+  91:Device/Dev_CRSF.c ****     {
+ 615              		.loc 1 91 5 view .LVU156
+  91:Device/Dev_CRSF.c ****     {
+ 616              		.loc 1 91 8 is_stmt 0 view .LVU157
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 18
+
+
+ 617 0002 0028     		cmp	r0, #0
+ 618 0004 65D0     		beq	.L51
+ 619 0006 0546     		mov	r5, r0
+  93:Device/Dev_CRSF.c ****         {
+ 620              		.loc 1 93 9 is_stmt 1 view .LVU158
+  93:Device/Dev_CRSF.c ****         {
+ 621              		.loc 1 93 30 is_stmt 0 view .LVU159
+ 622 0008 90F84140 		ldrb	r4, [r0, #65]	@ zero_extendqisi2
+ 623 000c 032C     		cmp	r4, #3
+ 624 000e 63D8     		bhi	.L52
+ 625 0010 DFE804F0 		tbb	[pc, r4]
+ 626              	.L44:
+ 627 0014 02       		.byte	(.L47-.L44)/2
+ 628 0015 0F       		.byte	(.L46-.L44)/2
+ 629 0016 21       		.byte	(.L45-.L44)/2
+ 630 0017 30       		.byte	(.L43-.L44)/2
+ 631              		.p2align 1
+ 632              	.L47:
+  96:Device/Dev_CRSF.c ****             {
+ 633              		.loc 1 96 13 is_stmt 1 view .LVU160
+  96:Device/Dev_CRSF.c ****             {
+ 634              		.loc 1 96 17 is_stmt 0 view .LVU161
+ 635 0018 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+  96:Device/Dev_CRSF.c ****             {
+ 636              		.loc 1 96 16 view .LVU162
+ 637 001a C82B     		cmp	r3, #200
+ 638 001c 03D0     		beq	.L56
+ 103:Device/Dev_CRSF.c ****             break;
+ 639              		.loc 1 103 17 is_stmt 1 view .LVU163
+ 103:Device/Dev_CRSF.c ****             break;
+ 640              		.loc 1 103 30 is_stmt 0 view .LVU164
+ 641 001e 0023     		movs	r3, #0
+ 642 0020 80F84030 		strb	r3, [r0, #64]
+ 643 0024 56E0     		b	.L42
+ 644              	.L56:
+  98:Device/Dev_CRSF.c **** 
+ 645              		.loc 1 98 17 is_stmt 1 view .LVU165
+  98:Device/Dev_CRSF.c **** 
+ 646              		.loc 1 98 32 is_stmt 0 view .LVU166
+ 647 0026 0123     		movs	r3, #1
+ 648 0028 80F84130 		strb	r3, [r0, #65]
+ 100:Device/Dev_CRSF.c ****             }
+ 649              		.loc 1 100 17 is_stmt 1 view .LVU167
+ 100:Device/Dev_CRSF.c ****             }
+ 650              		.loc 1 100 35 is_stmt 0 view .LVU168
+ 651 002c 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+ 100:Device/Dev_CRSF.c ****             }
+ 652              		.loc 1 100 33 view .LVU169
+ 653 002e 0370     		strb	r3, [r0]
+ 654 0030 50E0     		b	.L42
+ 655              	.L46:
+ 107:Device/Dev_CRSF.c ****             {
+ 656              		.loc 1 107 13 is_stmt 1 view .LVU170
+ 107:Device/Dev_CRSF.c ****             {
+ 657              		.loc 1 107 17 is_stmt 0 view .LVU171
+ 658 0032 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+ 107:Device/Dev_CRSF.c ****             {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 19
+
+
+ 659              		.loc 1 107 16 view .LVU172
+ 660 0034 3C2B     		cmp	r3, #60
+ 661 0036 08D8     		bhi	.L49
+ 109:Device/Dev_CRSF.c **** 
+ 662              		.loc 1 109 17 is_stmt 1 view .LVU173
+ 109:Device/Dev_CRSF.c **** 
+ 663              		.loc 1 109 32 is_stmt 0 view .LVU174
+ 664 0038 0223     		movs	r3, #2
+ 665 003a 80F84130 		strb	r3, [r0, #65]
+ 111:Device/Dev_CRSF.c ****                 obj->rec_cnt = 0;
+ 666              		.loc 1 111 17 is_stmt 1 view .LVU175
+ 111:Device/Dev_CRSF.c ****                 obj->rec_cnt = 0;
+ 667              		.loc 1 111 37 is_stmt 0 view .LVU176
+ 668 003e 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+ 111:Device/Dev_CRSF.c ****                 obj->rec_cnt = 0;
+ 669              		.loc 1 111 35 view .LVU177
+ 670 0040 4370     		strb	r3, [r0, #1]
+ 112:Device/Dev_CRSF.c ****             }
+ 671              		.loc 1 112 17 is_stmt 1 view .LVU178
+ 112:Device/Dev_CRSF.c ****             }
+ 672              		.loc 1 112 30 is_stmt 0 view .LVU179
+ 673 0042 0024     		movs	r4, #0
+ 674 0044 80F84040 		strb	r4, [r0, #64]
+ 675 0048 44E0     		b	.L42
+ 676              	.L49:
+ 116:Device/Dev_CRSF.c ****                 obj->rec_stage = CRSF_Stage_Header;
+ 677              		.loc 1 116 17 is_stmt 1 view .LVU180
+ 116:Device/Dev_CRSF.c ****                 obj->rec_stage = CRSF_Stage_Header;
+ 678              		.loc 1 116 30 is_stmt 0 view .LVU181
+ 679 004a 0024     		movs	r4, #0
+ 680 004c 80F84040 		strb	r4, [r0, #64]
+ 117:Device/Dev_CRSF.c ****             }
+ 681              		.loc 1 117 17 is_stmt 1 view .LVU182
+ 117:Device/Dev_CRSF.c ****             }
+ 682              		.loc 1 117 32 is_stmt 0 view .LVU183
+ 683 0050 80F84140 		strb	r4, [r0, #65]
+ 684 0054 3EE0     		b	.L42
+ 685              	.L45:
+ 122:Device/Dev_CRSF.c ****             obj->frame.data[obj->rec_cnt] = *p_data;
+ 686              		.loc 1 122 13 is_stmt 1 view .LVU184
+ 122:Device/Dev_CRSF.c ****             obj->frame.data[obj->rec_cnt] = *p_data;
+ 687              		.loc 1 122 31 is_stmt 0 view .LVU185
+ 688 0056 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+ 122:Device/Dev_CRSF.c ****             obj->frame.data[obj->rec_cnt] = *p_data;
+ 689              		.loc 1 122 29 view .LVU186
+ 690 0058 8370     		strb	r3, [r0, #2]
+ 123:Device/Dev_CRSF.c ****             obj->rec_cnt++;
+ 691              		.loc 1 123 13 is_stmt 1 view .LVU187
+ 123:Device/Dev_CRSF.c ****             obj->rec_cnt++;
+ 692              		.loc 1 123 32 is_stmt 0 view .LVU188
+ 693 005a 90F84030 		ldrb	r3, [r0, #64]	@ zero_extendqisi2
+ 123:Device/Dev_CRSF.c ****             obj->rec_cnt++;
+ 694              		.loc 1 123 45 view .LVU189
+ 695 005e 0978     		ldrb	r1, [r1]	@ zero_extendqisi2
+ 696              	.LVL35:
+ 123:Device/Dev_CRSF.c ****             obj->rec_cnt++;
+ 697              		.loc 1 123 43 view .LVU190
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 20
+
+
+ 698 0060 C218     		adds	r2, r0, r3
+ 699              	.LVL36:
+ 123:Device/Dev_CRSF.c ****             obj->rec_cnt++;
+ 700              		.loc 1 123 43 view .LVU191
+ 701 0062 D170     		strb	r1, [r2, #3]
+ 124:Device/Dev_CRSF.c ****             obj->rec_stage = CRSF_Stage_Payload;
+ 702              		.loc 1 124 13 is_stmt 1 view .LVU192
+ 124:Device/Dev_CRSF.c ****             obj->rec_stage = CRSF_Stage_Payload;
+ 703              		.loc 1 124 25 is_stmt 0 view .LVU193
+ 704 0064 0133     		adds	r3, r3, #1
+ 705 0066 80F84030 		strb	r3, [r0, #64]
+ 125:Device/Dev_CRSF.c ****             break;
+ 706              		.loc 1 125 13 is_stmt 1 view .LVU194
+ 125:Device/Dev_CRSF.c ****             break;
+ 707              		.loc 1 125 28 is_stmt 0 view .LVU195
+ 708 006a 0323     		movs	r3, #3
+ 709 006c 80F84130 		strb	r3, [r0, #65]
+ 126:Device/Dev_CRSF.c **** 
+ 710              		.loc 1 126 13 is_stmt 1 view .LVU196
+ 151:Device/Dev_CRSF.c **** }
+ 711              		.loc 1 151 12 is_stmt 0 view .LVU197
+ 712 0070 0024     		movs	r4, #0
+ 126:Device/Dev_CRSF.c **** 
+ 713              		.loc 1 126 13 view .LVU198
+ 714 0072 2FE0     		b	.L42
+ 715              	.LVL37:
+ 716              	.L43:
+ 129:Device/Dev_CRSF.c ****             {
+ 717              		.loc 1 129 13 is_stmt 1 view .LVU199
+ 129:Device/Dev_CRSF.c ****             {
+ 718              		.loc 1 129 20 is_stmt 0 view .LVU200
+ 719 0074 90F84030 		ldrb	r3, [r0, #64]	@ zero_extendqisi2
+ 129:Device/Dev_CRSF.c ****             {
+ 720              		.loc 1 129 42 view .LVU201
+ 721 0078 4278     		ldrb	r2, [r0, #1]	@ zero_extendqisi2
+ 722              	.LVL38:
+ 129:Device/Dev_CRSF.c ****             {
+ 723              		.loc 1 129 16 view .LVU202
+ 724 007a 9342     		cmp	r3, r2
+ 725 007c 2ED2     		bcs	.L53
+ 131:Device/Dev_CRSF.c ****                 obj->rec_cnt++;
+ 726              		.loc 1 131 17 is_stmt 1 view .LVU203
+ 131:Device/Dev_CRSF.c ****                 obj->rec_cnt++;
+ 727              		.loc 1 131 49 is_stmt 0 view .LVU204
+ 728 007e 0878     		ldrb	r0, [r1]	@ zero_extendqisi2
+ 729              	.LVL39:
+ 131:Device/Dev_CRSF.c ****                 obj->rec_cnt++;
+ 730              		.loc 1 131 47 view .LVU205
+ 731 0080 E918     		adds	r1, r5, r3
+ 732              	.LVL40:
+ 131:Device/Dev_CRSF.c ****                 obj->rec_cnt++;
+ 733              		.loc 1 131 47 view .LVU206
+ 734 0082 C870     		strb	r0, [r1, #3]
+ 132:Device/Dev_CRSF.c **** 
+ 735              		.loc 1 132 17 is_stmt 1 view .LVU207
+ 132:Device/Dev_CRSF.c **** 
+ 736              		.loc 1 132 29 is_stmt 0 view .LVU208
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 21
+
+
+ 737 0084 0133     		adds	r3, r3, #1
+ 738 0086 DBB2     		uxtb	r3, r3
+ 739 0088 85F84030 		strb	r3, [r5, #64]
+ 134:Device/Dev_CRSF.c ****                 {
+ 740              		.loc 1 134 17 is_stmt 1 view .LVU209
+ 134:Device/Dev_CRSF.c ****                 {
+ 741              		.loc 1 134 20 is_stmt 0 view .LVU210
+ 742 008c 9A42     		cmp	r2, r3
+ 743 008e 01D0     		beq	.L57
+ 151:Device/Dev_CRSF.c **** }
+ 744              		.loc 1 151 12 view .LVU211
+ 745 0090 0024     		movs	r4, #0
+ 746 0092 1FE0     		b	.L42
+ 747              	.L57:
+ 136:Device/Dev_CRSF.c ****                     memcpy(&test, &obj->frame, sizeof(test));
+ 748              		.loc 1 136 21 is_stmt 1 view .LVU212
+ 136:Device/Dev_CRSF.c ****                     memcpy(&test, &obj->frame, sizeof(test));
+ 749              		.loc 1 136 36 is_stmt 0 view .LVU213
+ 750 0094 E91C     		adds	r1, r5, #3
+ 751 0096 2846     		mov	r0, r5
+ 752 0098 FFF7FEFF 		bl	DevCRSF_Decode
+ 753              	.LVL41:
+ 754 009c 0446     		mov	r4, r0
+ 755              	.LVL42:
+ 137:Device/Dev_CRSF.c **** 
+ 756              		.loc 1 137 21 is_stmt 1 view .LVU214
+ 757 009e 2B46     		mov	r3, r5
+ 758 00a0 0F4A     		ldr	r2, .L58
+ 759 00a2 05F1400C 		add	ip, r5, #64
+ 760              	.L50:
+ 761 00a6 1F68     		ldr	r7, [r3]	@ unaligned
+ 762 00a8 5E68     		ldr	r6, [r3, #4]	@ unaligned
+ 763 00aa 9868     		ldr	r0, [r3, #8]	@ unaligned
+ 764 00ac D968     		ldr	r1, [r3, #12]	@ unaligned
+ 765 00ae 1760     		str	r7, [r2]	@ unaligned
+ 766 00b0 5660     		str	r6, [r2, #4]	@ unaligned
+ 767 00b2 9060     		str	r0, [r2, #8]	@ unaligned
+ 768 00b4 D160     		str	r1, [r2, #12]	@ unaligned
+ 769 00b6 1033     		adds	r3, r3, #16
+ 770 00b8 1032     		adds	r2, r2, #16
+ 771 00ba 6345     		cmp	r3, ip
+ 772 00bc F3D1     		bne	.L50
+ 139:Device/Dev_CRSF.c ****                     obj->rec_cnt = 0;
+ 773              		.loc 1 139 21 view .LVU215
+ 139:Device/Dev_CRSF.c ****                     obj->rec_cnt = 0;
+ 774              		.loc 1 139 36 is_stmt 0 view .LVU216
+ 775 00be 0021     		movs	r1, #0
+ 776 00c0 85F84110 		strb	r1, [r5, #65]
+ 140:Device/Dev_CRSF.c **** 
+ 777              		.loc 1 140 21 is_stmt 1 view .LVU217
+ 140:Device/Dev_CRSF.c **** 
+ 778              		.loc 1 140 34 is_stmt 0 view .LVU218
+ 779 00c4 85F84010 		strb	r1, [r5, #64]
+ 142:Device/Dev_CRSF.c **** 
+ 780              		.loc 1 142 21 is_stmt 1 view .LVU219
+ 781 00c8 4022     		movs	r2, #64
+ 782 00ca 2846     		mov	r0, r5
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 22
+
+
+ 783 00cc FFF7FEFF 		bl	memset
+ 784              	.LVL43:
+ 144:Device/Dev_CRSF.c ****                 }
+ 785              		.loc 1 144 21 view .LVU220
+ 144:Device/Dev_CRSF.c ****                 }
+ 786              		.loc 1 144 28 is_stmt 0 view .LVU221
+ 787 00d0 00E0     		b	.L42
+ 788              	.LVL44:
+ 789              	.L51:
+ 151:Device/Dev_CRSF.c **** }
+ 790              		.loc 1 151 12 view .LVU222
+ 791 00d2 0024     		movs	r4, #0
+ 792              	.LVL45:
+ 793              	.L42:
+ 152:Device/Dev_CRSF.c **** 
+ 794              		.loc 1 152 1 view .LVU223
+ 795 00d4 2046     		mov	r0, r4
+ 796 00d6 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 797              	.LVL46:
+ 798              	.L52:
+  93:Device/Dev_CRSF.c ****         {
+ 799              		.loc 1 93 30 view .LVU224
+ 800 00d8 0024     		movs	r4, #0
+ 801 00da FBE7     		b	.L42
+ 802              	.LVL47:
+ 803              	.L53:
+ 151:Device/Dev_CRSF.c **** }
+ 804              		.loc 1 151 12 view .LVU225
+ 805 00dc 0024     		movs	r4, #0
+ 806 00de F9E7     		b	.L42
+ 807              	.L59:
+ 808              		.align	2
+ 809              	.L58:
+ 810 00e0 00000000 		.word	test
+ 811              		.cfi_endproc
+ 812              	.LFE2:
+ 814              		.comm	test,64,4
+ 815              		.global	DevCRSF
+ 816              		.section	.data.DevCRSF,"aw"
+ 817              		.align	2
+ 820              	DevCRSF:
+ 821 0000 00000000 		.word	DevCrsf_Init
+ 822 0004 00000000 		.word	DevCRSF_FIFO_In
+ 823 0008 00000000 		.word	DevCRSF_Get_Channel
+ 824 000c 00000000 		.word	DevCESF_Get_Statistics
+ 825              		.section	.rodata.crsf_crc8tab,"a"
+ 826              		.align	2
+ 827              		.set	.LANCHOR0,. + 0
+ 830              	crsf_crc8tab:
+ 831 0000 00D57FAA 		.ascii	"\000\325\177\252\376+\201T)\374V\203\327\002\250}R\207"
+ 831      FE2B8154 
+ 831      29FC5683 
+ 831      D702A87D 
+ 831      5287
+ 832 0012 2DF8AC79 		.ascii	"-\370\254y\323\006{\256\004\321\205P\372/\244q\333\016"
+ 832      D3067BAE 
+ 832      04D18550 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 23
+
+
+ 832      FA2FA471 
+ 832      DB0E
+ 833 0024 5A8F25F0 		.ascii	"Z\217%\360\215X\362's\246\014\331\366#\211\\\010\335"
+ 833      8D58F227 
+ 833      73A60CD9 
+ 833      F623895C 
+ 833      08DD
+ 834 0036 77A2DF0A 		.ascii	"w\242\337\012\240u!\364^\213\235H\3427c\266\034\311"
+ 834      A07521F4 
+ 834      5E8B9D48 
+ 834      E23763B6 
+ 834      1CC9
+ 835 0048 B461CB1E 		.ascii	"\264a\313\036J\2375\340\317\032\260e1\344N\233\3463"
+ 835      4A9F35E0 
+ 835      CF1AB065 
+ 835      31E44E9B 
+ 835      E633
+ 836 005a 994C18CD 		.ascii	"\231L\030\315g\2629\354F\223\307\022\270m\020\305o\272"
+ 836      67B239EC 
+ 836      4693C712 
+ 836      B86D10C5 
+ 836      6FBA
+ 837 006c EE3B9144 		.ascii	"\356;\221Dk\276\024\301\225@\352?B\227=\350\274i\303"
+ 837      6BBE14C1 
+ 837      9540EA3F 
+ 837      42973DE8 
+ 837      BC69C3
+ 838 007f 16EF3A90 		.ascii	"\026\357:\220E\021\304n\273\306\023\271l8\355G\222\275"
+ 838      4511C46E 
+ 838      BBC613B9 
+ 838      6C38ED47 
+ 838      92BD
+ 839 0091 68C21743 		.ascii	"h\302\027C\226<\351\224A\353>j\277\025\300K\2364\341"
+ 839      963CE994 
+ 839      41EB3E6A 
+ 839      BF15C04B 
+ 839      9E34E1
+ 840 00a4 B560CA1F 		.ascii	"\265`\312\037b\267\035\310\234I\3436\031\314f\263\347"
+ 840      62B71DC8 
+ 840      9C49E336 
+ 840      19CC66B3 
+ 840      E7
+ 841 00b5 32984D30 		.ascii	"2\230M0\345O\232\316\033\261dr\247\015\330\214Y\363"
+ 841      E54F9ACE 
+ 841      1BB16472 
+ 841      A70DD88C 
+ 841      59F3
+ 842 00c7 265B8E24 		.ascii	"&[\216$\361\245p\332\017 \365_\212\336\013\241t\011"
+ 842      F1A570DA 
+ 842      0F20F55F 
+ 842      8ADE0BA1 
+ 842      7409
+ 843 00d9 DC76A3F7 		.ascii	"\334v\243\367\"\210]\326\003\251|(\375W\202\377*\200"
+ 843      22885DD6 
+ 843      03A97C28 
+ 843      FD5782FF 
+ 843      2A80
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 24
+
+
+ 844 00eb 5501D47E 		.ascii	"U\001\324~\253\204Q\373.z\257\005\320\255x\322\007S"
+ 844      AB8451FB 
+ 844      2E7AAF05 
+ 844      D0AD78D2 
+ 844      0753
+ 845 00fd 862CF9   		.ascii	"\206,\371"
+ 846              		.text
+ 847              	.Letext0:
+ 848              		.file 2 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 849              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 850              		.file 4 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 851              		.file 5 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\lib\\gcc\\arm-none
+ 852              		.file 6 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 853              		.file 7 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-9-2019-q4-major-win32\\arm-none-eabi\\inc
+ 854              		.file 8 "Device/Dev_CRSF.h"
+ 855              		.file 9 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s 			page 25
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_CRSF.c
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:17     .text.crsf_crc8:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:24     .text.crsf_crc8:00000000 crsf_crc8
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:92     .text.crsf_crc8:00000024 $d
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:97     .text.DevCESF_Get_Statistics:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:103    .text.DevCESF_Get_Statistics:00000000 DevCESF_Get_Statistics
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:167    .text.DevCrsf_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:173    .text.DevCrsf_Init:00000000 DevCrsf_Init
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:224    .text.DevCRSF_Get_Channel:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:230    .text.DevCRSF_Get_Channel:00000000 DevCRSF_Get_Channel
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:290    .text.DevCRSF_Decode:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:296    .text.DevCRSF_Decode:00000000 DevCRSF_Decode
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:590    .text.DevCRSF_FIFO_In:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:596    .text.DevCRSF_FIFO_In:00000000 DevCRSF_FIFO_In
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:627    .text.DevCRSF_FIFO_In:00000014 $d
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:631    .text.DevCRSF_FIFO_In:00000018 $t
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:810    .text.DevCRSF_FIFO_In:000000e0 $d
+                            *COM*:00000040 test
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:820    .data.DevCRSF:00000000 DevCRSF
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:817    .data.DevCRSF:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:826    .rodata.crsf_crc8tab:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccBDhUQK.s:830    .rodata.crsf_crc8tab:00000000 crsf_crc8tab
+
+UNDEFINED SYMBOLS
+memset
