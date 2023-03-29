@@ -426,6 +426,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 {
     SrvReceiverData_TypeDef receiver_data;
     Telemetry_RCSig_TypeDef sig_tmp;
+    static bool lst_arm_state = TELEMETRY_SET_ARM;
 
     memset(&receiver_data, 0, sizeof(receiver_data));
     memset(&sig_tmp, 0, sizeof(sig_tmp));
@@ -516,6 +517,19 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 
         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
             RC_Input_obj->sig.gimbal_percent[i] = 0;
+    }
+
+    /* if toggle set in disarm but throttle is upper then 1% percent input */
+    /* force throttle value to 0 */
+    /* only when physical throttle gimbal actually down to lowest we update lst_arm_state */
+    if ((RC_Input_obj->sig.arm_state == TELEMETRY_SET_DISARM) && (lst_arm_state == TELEMETRY_SET_ARM))
+    {
+        if (RC_Input_obj->sig.gimbal_percent[0] > 1)
+        {
+            RC_Input_obj->sig.gimbal_percent[0] = 0;
+        }
+        else
+            lst_arm_state = RC_Input_obj->sig.arm_state;
     }
 
     memcpy(&sig_tmp, &RC_Input_obj->sig, sizeof(Telemetry_RCSig_TypeDef));
