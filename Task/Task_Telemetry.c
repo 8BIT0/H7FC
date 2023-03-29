@@ -518,6 +518,8 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         {
             /* if current arm state equal to before fall into failsafe's
              * then sig is fine or else the arm signal has been change from recovered */
+
+            return;
         }
 
         /* if toggle switch into disarm but throttle currently is upper then 1% percent input
