@@ -22,7 +22,7 @@
 #define TELEMETRY_RC_CHANNEL_RANGE_MAX CHANNEL_RANGE_MAX
 
 #define TELEMETRY_RC_GIMBAL_ZERO_ZONE_RANGE 20
-#define TELEMETRY_OSDTUNE_POSHOLD 100 /* unit ms */ 
+#define TELEMETRY_OSDTUNE_POSHOLD 100 /* unit ms */
 
 #pragma pack(1)
 typedef enum
@@ -67,7 +67,7 @@ typedef struct
 {
     uint8_t cnt;
     bool state;
-    uint16_t pos; 
+    uint16_t pos;
 } Telemetry_ToggleData_TypeDef;
 
 typedef struct
@@ -79,7 +79,7 @@ typedef struct
     uint16_t mid;
     uint16_t max;
     uint16_t *channel_ptr;
-    uint16_t reg; 
+    uint16_t reg;
 } Telemetry_ChannelSet_TypeDef;
 
 typedef struct
@@ -107,6 +107,17 @@ typedef struct
     Telemetry_RCFuncMap_TypeDef Log_Toggle;
     Telemetry_RCFuncMap_TypeDef OSD_Toggle;
 } Telemetry_RCInput_TypeDef;
+
+typedef struct
+{
+    uint32_t Init_Rt;
+    uint32_t Start_RunCore_Rt;
+    uint32_t OnStart_SelfSDetect_Duration;
+
+    /* when power on and task detect arm set in disarm state in the first place */
+    /* throw arm_warning */
+    bool arm_warning;
+} Telemetry_Monitor_TypeDef;
 #pragma pack()
 
 void TaskTelemetry_Init(void);
