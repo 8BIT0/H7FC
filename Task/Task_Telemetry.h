@@ -119,7 +119,7 @@ typedef struct
     bool arm_alert;
 
     uint32_t failsafe_trigger_cnt;
-    bool on_failsafe;
+    bool recover_failsafe;
     bool lst_arm_state;
 } Telemetry_Monitor_TypeDef;
 #pragma pack()
