@@ -497,6 +497,19 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
                 Receiver_Obj.OSDTune_TriggerMs = 0;
         }
 
+        /* if toggle set in disarm but throttle is upper then 1% percent input */
+        /* force throttle value to 0 */
+        /* only when physical throttle gimbal actually down to lowest we update lst_arm_state */
+        if ((RC_Input_obj->sig.arm_state == TELEMETRY_SET_DISARM) && (lst_arm_state == TELEMETRY_SET_ARM))
+        {
+            if (RC_Input_obj->sig.gimbal_percent[0] > 1)
+            {
+                RC_Input_obj->sig.gimbal_percent[0] = 0;
+            }
+            else
+                lst_arm_state = RC_Input_obj->sig.arm_state;
+        }
+
         RC_Input_obj->update_rt = receiver_data.time_stamp;
         RC_Input_obj->sig.update_interval = RC_Input_obj->update_rt - RC_Input_obj->lst_update_rt;
 
@@ -513,19 +526,6 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 
         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
             RC_Input_obj->sig.gimbal_percent[i] = 0;
-    }
-
-    /* if toggle set in disarm but throttle is upper then 1% percent input */
-    /* force throttle value to 0 */
-    /* only when physical throttle gimbal actually down to lowest we update lst_arm_state */
-    if ((RC_Input_obj->sig.arm_state == TELEMETRY_SET_DISARM) && (lst_arm_state == TELEMETRY_SET_ARM))
-    {
-        if (RC_Input_obj->sig.gimbal_percent[0] > 1)
-        {
-            RC_Input_obj->sig.gimbal_percent[0] = 0;
-        }
-        else
-            lst_arm_state = RC_Input_obj->sig.arm_state;
     }
 
     memcpy(&sig_tmp, &RC_Input_obj->sig, sizeof(Telemetry_RCSig_TypeDef));
