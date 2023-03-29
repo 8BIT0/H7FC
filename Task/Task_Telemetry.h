@@ -116,7 +116,11 @@ typedef struct
 
     /* when power on and task detect arm set in disarm state in the first place */
     /* throw arm_warning */
-    bool arm_warning;
+    bool arm_alert;
+
+    uint32_t failsafe_trigger_cnt;
+    bool lst_state_failsafe;
+    bool lst_arm_state;
 } Telemetry_Monitor_TypeDef;
 #pragma pack()
 

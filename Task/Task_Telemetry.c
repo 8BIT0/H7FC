@@ -40,6 +40,7 @@
 /* internal variable */
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_RCInput_TypeDef RC_Setting;
+static Telemetry_Monitor_TypeDef Telemetry_Monitor;
 static bool RCData_To_Configuretor = false;
 DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
 
@@ -58,6 +59,9 @@ void TaskTelemetry_Set_DataIO_Enable(bool state)
 
 void TaskTelemetry_Init(void)
 {
+    memset(&Telemetry_Monitor, 0, sizeof(Telemetry_Monitor));
+
+    Telemetry_Monitor.Init_Rt = Get_CurrentRunningMs();
     SrvComProto.init(SrvComProto_Type_MAV, NULL);
 
     /* init receiver */
@@ -519,7 +523,11 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     else
     {
         RC_Input_obj->sig.failsafe = true;
-        RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+        /* when trigger failsafe */
+        /* check last time arm state */
+
+        // RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+
         RC_Input_obj->sig.osd_tune_state = false;
         RC_Input_obj->sig.buzz_state = false;
         RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
