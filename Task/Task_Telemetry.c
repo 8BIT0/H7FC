@@ -516,7 +516,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         /* is recover form failsafe */
         if (Telemetry_Monitor.recover_failsafe)
         {
-            /* if current arm state equal to before fall into failsafe
+            /* if current arm state equal to before fall into failsafe's
              * then sig is fine or else the arm signal has been change from recovered */
         }
 
