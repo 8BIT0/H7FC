@@ -481,10 +481,6 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
                 RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
         }
-        else
-        {
-            /* doing osd tuning */
-        }
 
         if (RC_Input_obj->sig.arm_state)
         {
