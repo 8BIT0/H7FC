@@ -135,9 +135,14 @@ void Telemetry_blink(void)
     // DevLED.ctl(Led3, led_state);
 }
 
+static bool Telemetry_Led_Control(bool state)
+{
+    DevLED.ctl(Led1, state);
+}
+
 void TaskTelemetry_Core(Task_Handle hdl)
 {
-    Telemetry_blink();
+    // Telemetry_blink();
 
     DataPipe_DataObj(Rc) = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
 
@@ -521,6 +526,8 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 
         RC_Input_obj->lst_update_rt = RC_Input_obj->update_rt;
         RC_Input_obj->sig.failsafe = false;
+
+        Telemetry_Led_Control(false);
     }
     else
     {
@@ -532,6 +539,8 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 
         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
             RC_Input_obj->sig.gimbal_percent[i] = 0;
+
+        Telemetry_Led_Control(true);
     }
 
     memcpy(&sig_tmp, &RC_Input_obj->sig, sizeof(Telemetry_RCSig_TypeDef));
