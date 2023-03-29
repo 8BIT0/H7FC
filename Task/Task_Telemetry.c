@@ -107,6 +107,8 @@ void TaskTelemetry_Init(void)
         else if (Receiver_Obj.Frame_type == Receiver_Type_Sbus)
         {
         }
+
+        Telemetry_Monitor.lst_arm_state = TELEMETRY_SET_ARM;
     }
 
     /* init radio */
@@ -523,11 +525,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     else
     {
         RC_Input_obj->sig.failsafe = true;
-        /* when trigger failsafe */
-        /* check last time arm state */
-
         // RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
-
         RC_Input_obj->sig.osd_tune_state = false;
         RC_Input_obj->sig.buzz_state = false;
         RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
