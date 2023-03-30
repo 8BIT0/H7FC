@@ -527,7 +527,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             Telemetry_Monitor.recover_failsafe = false;
         }
 
-        /* if toggle switch into disarm but throttle currently is upper then 1% percent input
+        /* if toggle switch into disarm but throttle currently is upper then 5% percent input
          * force throttle value to 0
          * only when physical throttle gimbal actually down to lowest so we update lst_arm_state */
         if ((RC_Input_obj->sig.arm_state == TELEMETRY_SET_DISARM) && (Telemetry_Monitor.lst_arm_state == TELEMETRY_SET_ARM))
