@@ -83,7 +83,6 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
     return true;
 }
 
-crsf_frame_t test;
 static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg)
 {
     uint8_t decode_state = 0;
@@ -134,7 +133,6 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
                 if (obj->rec_cnt == obj->frame.length)
                 {
                     decode_state = DevCRSF_Decode(obj, obj->frame.data, obj->frame.length);
-                    memcpy(&test, &obj->frame, sizeof(test));
 
                     obj->rec_stage = CRSF_Stage_Header;
                     obj->rec_cnt = 0;
