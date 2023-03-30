@@ -178,7 +178,7 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
             if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr)
             {
-                const crsf_channels_t *channel_val_ptr = (crsf_channels_t *)(obj->frame.data + 1);
+                const crsf_channels_t *channel_val_ptr = (const crsf_channels_t *)(obj->frame.data + 1);
                 obj->channel[0] = channel_val_ptr->ch0;
                 obj->channel[1] = channel_val_ptr->ch1;
                 obj->channel[2] = channel_val_ptr->ch2;
