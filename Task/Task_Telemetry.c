@@ -549,7 +549,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         // RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
         RC_Input_obj->sig.osd_tune_state = false;
         RC_Input_obj->sig.buzz_state = false;
-        RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+        // RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
 
         for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
             RC_Input_obj->sig.gimbal_percent[i] = 0;
