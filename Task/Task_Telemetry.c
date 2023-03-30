@@ -532,13 +532,14 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
          * only when physical throttle gimbal actually down to lowest so we update lst_arm_state */
         if ((RC_Input_obj->sig.arm_state == TELEMETRY_SET_DISARM) && (Telemetry_Monitor.lst_arm_state == TELEMETRY_SET_ARM))
         {
-            if (RC_Input_obj->sig.gimbal_percent[0] >= 1)
+            if (RC_Input_obj->sig.gimbal_percent[0] >= 6)
             {
                 RC_Input_obj->sig.gimbal_percent[0] = 0;
+                RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
             }
-            else
-                Telemetry_Monitor.lst_arm_state = RC_Input_obj->sig.arm_state;
         }
+
+        Telemetry_Monitor.lst_arm_state = RC_Input_obj->sig.arm_state;
 
         Telemetry_Led_Control(false);
     }
