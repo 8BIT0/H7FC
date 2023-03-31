@@ -126,6 +126,8 @@ void TaskControl_Core(Task_Handle hdl)
         if ((arm_state == TELEMETRY_SET_DISARM) && TaskControl_OverAngularSpeed_Detect())
         {
             /* use data pipe trans force telemetry task set arm_state from disarm to arm */
+
+            goto lock_moto;
         }
 
         // currently use gimbal input percent val for moto testing
