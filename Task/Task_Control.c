@@ -152,6 +152,7 @@ lock_moto:
     SrvActuator.lock();
 }
 
+/* do gyro scope angular speed detect in srv_mpu */
 static bool TaskControl_OverAngularSpeed_Detect(void)
 {
     return false;
