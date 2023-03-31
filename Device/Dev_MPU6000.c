@@ -24,6 +24,7 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
 static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
 static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
 static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef sensor_obj);
+static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_TypeDef sensor_obj);
 
 /* external MPU6000 Object */
 DevMPU6000_TypeDef DevMPU6000 = {
@@ -37,6 +38,7 @@ DevMPU6000_TypeDef DevMPU6000 = {
     .get_data = DevMPU6000_Get_Data,
     .get_error = DevMPU6000_Get_InitError,
     .get_scale = DevMPU6000_Get_Scale,
+    .get_gyr_angular_speed_diff = DevMPU6000_Get_Specified_AngularSpeed_Diff,
 };
 
 static bool Dev_MPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uint8_t *rx, uint8_t size)
@@ -150,18 +152,22 @@ static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_Samp
     {
     case MPU6000_Gyr_250DPS:
         sensor_obj->gyr_scale = MPU6000_GYR_250DPS_SCALE;
+        sensor_obj->PHY_GyrTrip_Val = 250;
         break;
 
     case MPU6000_Gyr_500DPS:
         sensor_obj->gyr_scale = MPU6000_GYR_500DPS_SCALE;
+        sensor_obj->PHY_GyrTrip_Val = 500;
         break;
 
     case MPU6000_Gyr_1000DPS:
         sensor_obj->gyr_scale = MPU6000_GYR_1000DPS_SCALE;
+        sensor_obj->PHY_GyrTrip_Val = 1000;
         break;
 
     case MPU6000_Gyr_2000DPS:
         sensor_obj->gyr_scale = MPU6000_GYR_2000DPS_SCALE;
+        sensor_obj->PHY_GyrTrip_Val = 2000;
         break;
 
     default:
@@ -366,4 +372,10 @@ static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef s
     scale_tmp.gyr_scale = sensor_obj.gyr_scale;
 
     return scale_tmp;
+}
+
+/* specified anguler speed per millsecond */
+static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_TypeDef sensor_obj)
+{
+    return sensor_obj.PHY_GyrTrip_Val / 1000.0f;
 }

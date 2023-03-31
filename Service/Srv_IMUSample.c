@@ -176,6 +176,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void);
 static bool SrvIMU_Sample(void);
 static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type);
 static void SrvIMU_ErrorProc(void);
+static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -192,6 +193,7 @@ SrvIMU_TypeDef SrvIMU = {
     .sample = SrvIMU_Sample,
     .get_data = SrvIMU_Get_Data,
     .error_proc = SrvIMU_ErrorProc,
+    .get_max_angular_speed_diff = SrvIMU_Get_MaxAngularSpeed_Diff,
 };
 
 static SrvIMU_ErrorCode_List SrvIMU_Init(void)
@@ -573,6 +575,28 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
     }
 
     return imu_data_tmp;
+}
+
+static float SrvIMU_Get_MaxAngularSpeed_Diff(void)
+{
+    const uint16_t accuracy = 1e3;
+    uint16_t pri_angular_diff = 0;
+    uint16_t sec_angular_diff = 0;
+
+    if (SrvMpu_Init_Reg.sec.Pri_State)
+    {
+        pri_angular_diff = (uint16_t)(DevMPU6000.get_gyr_angular_speed_diff(MPU6000Obj) * accuracy);
+    }
+
+    if (SrvMpu_Init_Reg.sec.Sec_State)
+    {
+        sec_angular_diff = (uint16_t)(DevICM20602.get_gyr_angular_speed_diff(ICM20602Obj) * accuracy);
+    }
+
+    if (pri_angular_diff >= sec_angular_diff)
+        return pri_angular_diff / (float)accuracy;
+
+    return sec_angular_diff / (float)accuracy;
 }
 
 static void SrvIMU_ErrorProc(void)

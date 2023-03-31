@@ -46,24 +46,19 @@ void TaskControl_Core(Task_Handle hdl)
     bool arm_state;
     bool failsafe;
 
-    float imu_tmpr = 0.0f;
-    float acc_scale = 0.0f;
-    float gyr_scale = 0.0f;
-    float acc_x = 0.0f;
-    float acc_y = 0.0f;
-    float acc_z = 0.0f;
-    float gyr_x = 0.0f;
-    float gyr_y = 0.0f;
-    float gyr_z = 0.0f;
-
     if (TaskControl_Monitor.init_state || !TaskControl_Monitor.control_abort)
     {
         // check imu filter gyro data update or not
         SrvDataHub.get_scaled_imu(&imu_update_time,
-                                  &acc_scale, &gyr_scale,
-                                  &acc_x, &acc_y, &acc_z,
-                                  &gyr_x, &gyr_y, &gyr_z,
-                                  &imu_tmpr);
+                                  &TaskControl_Monitor.acc_scale,
+                                  &TaskControl_Monitor.gyr_scale,
+                                  &TaskControl_Monitor.acc[Axis_X],
+                                  &TaskControl_Monitor.acc[Axis_Y],
+                                  &TaskControl_Monitor.acc[Axis_Z],
+                                  &TaskControl_Monitor.gyr[Axis_X],
+                                  &TaskControl_Monitor.gyr[Axis_Y],
+                                  &TaskControl_Monitor.gyr[Axis_Z],
+                                  &TaskControl_Monitor.imu_tmpr);
 
         // get rc channel and other toggle signal
         SrvDataHub.get_rc(&rc_update_time, rc_ch, &rc_channel_sum);
@@ -124,12 +119,23 @@ void TaskControl_Core(Task_Handle hdl)
         }
         // do drone control algorithm down below
 
+        // over diff angular speed over speed protect
+
         // currently use gimbal input percent val for moto testing
         gimbal[1] = 0;
         gimbal[2] = 0;
         gimbal[3] = 0;
 
         SrvActuator.moto_control(gimbal);
+
+        // update last time IMU data
+        for (uint8_t i = Axis_X; i < Axis_Sum; i++)
+        {
+            TaskControl_Monitor.lst_acc[i] = TaskControl_Monitor.acc[i];
+            TaskControl_Monitor.lst_gyr[i] = TaskControl_Monitor.gyr[i];
+        }
+        TaskControl_Monitor.lst_imu_tmpr = TaskControl_Monitor.imu_tmpr;
+
         return;
     }
 

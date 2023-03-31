@@ -66,6 +66,8 @@ typedef struct
     float org_gyr[Axis_Sum];
     float org_acc[Axis_Sum];
 
+    float max_gyr_angular_diff;
+
     SrvIMU_SampleErrorCode_List error_code;
     float acc_scale;
     float gyr_scale;
@@ -84,6 +86,7 @@ typedef struct
     SrvIMU_ErrorCode_List (*init)(void);
     bool (*sample)(void);
     SrvIMU_Data_TypeDef (*get_data)(SrvIMU_Module_Type type);
+    float (*get_max_angular_speed_diff)(void);
     void (*error_proc)(void);
 } SrvIMU_TypeDef;
 

@@ -20,6 +20,7 @@ static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj);
 static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj);
 static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj);
 static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef Obj);
+static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_TypeDef Obj);
 
 /* external variable */
 DevICM20602_TypeDef DevICM20602 = {
@@ -33,6 +34,7 @@ DevICM20602_TypeDef DevICM20602 = {
     .get_error = DevICM20602_Get_InitError,
     .get_data = DevICM20602_Get_Data,
     .get_scale = DevICM20602_Get_Scale,
+    .get_gyr_angular_speed_diff = DevICM20602_Get_Specified_AngularSpeed_Diff,
 };
 
 static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
@@ -145,18 +147,22 @@ static void DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_
     {
     case ICM20602_Gyr_250DPS:
         Obj->gyr_scale = ICM20602_GYR_250DPS_SCALE;
+        Obj->PHY_GyrTrip_Val = 250;
         break;
 
     case ICM20602_Gyr_500DPS:
         Obj->gyr_scale = ICM20602_GYR_500DPS_SCALE;
+        Obj->PHY_GyrTrip_Val = 500;
         break;
 
     case ICM20602_Gyr_1000DPS:
         Obj->gyr_scale = ICM20602_GYR_1000DPS_SCALE;
+        Obj->PHY_GyrTrip_Val = 1000;
         break;
 
     case ICM20602_Gyr_2000DPS:
         Obj->gyr_scale = ICM20602_GYR_2000DPS_SCALE;
+        Obj->PHY_GyrTrip_Val = 2000;
         break;
 
     default:
@@ -355,4 +361,10 @@ static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef
     scale.gyr_scale = Obj.gyr_scale;
 
     return scale;
+}
+
+/* get specified angular speed diff per sec */
+static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_TypeDef Obj)
+{
+    return Obj.PHY_GyrTrip_Val / 1000.0f;
 }
