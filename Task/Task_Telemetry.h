@@ -130,6 +130,5 @@ typedef struct
 
 void TaskTelemetry_Init(void);
 void TaskTelemetry_Core(Task_Handle hdl);
-void TaskTelemetry_Force_ARM(void);
 
 #endif

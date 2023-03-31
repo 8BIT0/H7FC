@@ -27,6 +27,9 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .RC_Rt = 0,
 };
 
+/* internal function */
+static bool TaskControl_OverAngularSpeed_Detect(void);
+
 void TaskControl_Init(void)
 {
     // init monitor
@@ -119,7 +122,14 @@ void TaskControl_Core(Task_Handle hdl)
         }
         // do drone control algorithm down below
 
-        // over diff angular speed over speed protect
+        // over diff angular speed over speed protect during the flight time
+        if (!arm_state)
+        {
+            if (TaskControl_OverAngularSpeed_Detect())
+            {
+                /* use data pipe trans force telemetry task set arm_state from disarm to arm */
+            }
+        }
 
         // currently use gimbal input percent val for moto testing
         gimbal[1] = 0;
@@ -141,4 +151,9 @@ void TaskControl_Core(Task_Handle hdl)
 
 lock_moto:
     SrvActuator.lock();
+}
+
+static bool TaskControl_OverAngularSpeed_Detect(void)
+{
+    return false;
 }
