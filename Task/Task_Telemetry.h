@@ -120,6 +120,8 @@ typedef struct
     /* throw arm_warning */
     bool arm_alert;
 
+    bool force_arm;
+
     uint32_t failsafe_trigger_cnt;
     bool recover_failsafe;
     bool lst_arm_state;
@@ -128,5 +130,6 @@ typedef struct
 
 void TaskTelemetry_Init(void);
 void TaskTelemetry_Core(Task_Handle hdl);
+void TaskTelemetry_Force_ARM(void);
 
 #endif

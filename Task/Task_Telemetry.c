@@ -563,4 +563,8 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     return sig_tmp;
 }
 
+void TaskTelemetry_Force_ARM(void)
+{
+}
+
 /************************************** telemetry radio section ********************************************/
