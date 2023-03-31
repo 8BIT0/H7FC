@@ -24,6 +24,8 @@
 #define TELEMETRY_RC_GIMBAL_ZERO_ZONE_RANGE 20
 #define TELEMETRY_OSDTUNE_POSHOLD 100 /* unit ms */
 
+#define TELEMETRY_RC_THROTTLE_PERCENT_ALERT 5
+
 #pragma pack(1)
 typedef enum
 {

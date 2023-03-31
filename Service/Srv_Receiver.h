@@ -14,6 +14,10 @@
 #define CHANNEL_RANGE_MID 1000
 #define CHANNEL_RANGE_MAX 1900
 
+#define SRV_RECEIVER_MIN_RSSI 10
+#define SRV_RECEIVER_MIN_LINKQUALITY 10
+#define SRV_RECEIVER_MIN_ANTENNA_VALUE 5
+
 typedef enum
 {
     Receiver_Port_Serial = 1,
