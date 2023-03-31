@@ -66,6 +66,7 @@ typedef struct
     uint16_t *val_list;
     uint16_t rssi;
     uint16_t link_quality;
+    uint8_t active_antenna;
 
     bool failsafe;
 } SrvReceiverData_TypeDef;

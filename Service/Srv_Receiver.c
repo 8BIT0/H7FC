@@ -284,8 +284,9 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                 switch (decode_out)
                 {
                 case CRSF_FRAMETYPE_LINK_STATISTICS:
-                    receiver_obj->data.rssi = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).uplink_RSSI_1;
-                    receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).uplink_Link_quality;
+                    receiver_obj->data.rssi = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).downlink_RSSI;
+                    receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).downlink_Link_quality;
+                    receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).active_antenna;
                     break;
 
                 case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
@@ -366,7 +367,22 @@ static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
             return false;
     }
 
-    /* other check */
+    /* check RSSI Or Statistics Data */
+    if (receiver_obj->Frame_type == Receiver_Type_CRSF)
+    {
+        /* check CRSF Statistics Data */
+        if ((receiver_obj->data.rssi < 10) ||
+            (receiver_obj->data.link_quality < 10) ||
+            (receiver_obj->data.active_antenna < 5))
+            return false;
+    }
+    else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
+    {
+        /* check SBUS Last Byte Functional Bit Or check RSSI */
+        /* currently we don't have any sbus device for testing */
+        /* return false currently */
+        return false;
+    }
 
     return true;
 }
