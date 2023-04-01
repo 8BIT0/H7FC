@@ -30,10 +30,6 @@ typedef struct
     float acc[Axis_Sum];
     float gyr[Axis_Sum];
     float imu_tmpr;
-
-    float lst_acc[Axis_Sum];
-    float lst_gyr[Axis_Sum];
-    float lst_imu_tmpr;
 } TaskControl_Monitor_TypeDef;
 
 void TaskControl_Init(void);

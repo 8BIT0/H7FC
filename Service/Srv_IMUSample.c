@@ -19,8 +19,7 @@
  * Angular Speed Over Speed Threshold
  * Angular Speed Per Millscond
  */
-#define ANGULAR_ACCECLERATION_THRESHOLD 2000 / 500.0f // 2000 deg/s -> 2 deg/ms^2
-
+#define ANGULAR_ACCECLERATION_THRESHOLD 500 / 20.0f // angular speed accelerate from 0 to 400 deg/s in 20 Ms
 
 /* test var */
 static uint32_t SrvIMU_PriIMU_Init_Error_CNT = 0;
@@ -469,7 +468,8 @@ static bool SrvIMU_Sample(void)
                         MPU6000Obj.OriData.gyr_int_lst[i] = MPU6000Obj.OriData.gyr_int[i];
                     }
 
-                    if(SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.flt_gyr[i], PriIMU_Data_Lst.flt_gyr[i], Sample_MsDiff))
+                    /* over angular accelerate above 20Ms then throw Angular Accelerate error */
+                    if(SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.org_gyr[i], PriIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
                         PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
 
@@ -537,7 +537,7 @@ static bool SrvIMU_Sample(void)
                         ICM20602Obj.OriData.gyr_int_lst[i] = ICM20602Obj.OriData.gyr_int[i];
                     }
 
-                    if(SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.flt_gyr[i], SecIMU_Data_Lst.flt_gyr[i], Sample_MsDiff))
+                    if(SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.org_gyr[i], SecIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
                         SecIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
 

@@ -18,6 +18,7 @@ DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, SecIMU_Data);
 
 /* internal function */
 static void TaskInertical_Blink_Notification(uint16_t duration);
+static void TaskInertical_Led_Control(bool state);
 
 /* external function */
 
@@ -56,6 +57,13 @@ void TaskInertical_Core(Task_Handle hdl)
 
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe); /* to control task */
+
+            if(DataPipe_DataObj(PriIMU_Data).data.error_code == SrvIMU_Sample_Over_Angular_Accelerate)
+            {
+                TaskInertical_Led_Control(true);
+            }
+            else
+                TaskInertical_Led_Control(false);
         }
         break;
 
@@ -86,4 +94,9 @@ static void TaskInertical_Blink_Notification(uint16_t duration)
 
     DevLED.ctl(Led2, led_state);
     // test_PC1_ctl();
+}
+
+static void TaskInertical_Led_Control(bool state)
+{
+    DevLED.ctl(Led2, state);
 }

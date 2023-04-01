@@ -52,6 +52,8 @@ void TaskControl_Core(Task_Handle hdl)
 
     if (TaskControl_Monitor.init_state || !TaskControl_Monitor.control_abort)
     {
+        TaskControl_Monitor.auto_control = true;
+
         // check imu filter gyro data update or not
         SrvDataHub.get_scaled_imu(&imu_update_time,
                                   &TaskControl_Monitor.acc_scale,
@@ -86,53 +88,49 @@ void TaskControl_Core(Task_Handle hdl)
                 if (TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)
                     TaskControl_Monitor.control_abort = true;
             }
+
+            switch(imu_err_code)
+            {
+                case SrvIMU_Sample_Module_UnReady:
+                case SrvIMU_Sample_Data_Acc_Blunt:
+                case SrvIMU_Sample_Data_Gyr_Blunt:
+                case SrvIMU_Sample_Data_Acc_OverRange:
+                case SrvIMU_Sample_Data_Gyr_OverRange:
+                    goto lock_moto;
+
+                case SrvIMU_Sample_Over_Angular_Accelerate:
+                    break;
+
+                default:
+                    TaskControl_Monitor.control_abort = true;
+                    goto lock_moto;
+            }
+        }
+        else
+        {
+            /* check keep time to abort drone control */
+            
+            goto lock_moto;
         }
 
         /* only manipulate esc or servo when disarm */
-        if (rc_update_time)
+        if (rc_update_time && !failsafe)
         {
-            if (!failsafe)
+            if (rc_update_time >= TaskControl_Monitor.RC_Rt)
             {
-                if (rc_update_time < TaskControl_Monitor.RC_Rt)
-                {
-                    TaskControl_Monitor.auto_control = true;
-
-                    goto lock_moto;
-                }
-
+                TaskControl_Monitor.auto_control = false;
                 TaskControl_Monitor.RC_Rt = rc_update_time;
 
                 if (arm_state != TELEMETRY_SET_DISARM)
                     goto lock_moto;
             }
-            else
-            {
-                // do drone return to liftoff spot or do auto control
-                TaskControl_Monitor.auto_control = true;
-
-                /* currently moto for safety */
-                goto lock_moto;
-            }
         }
-        else
-        {
-            // do drone return to liftoff spot or do auto control
-            TaskControl_Monitor.auto_control = true;
-
-            /* currently moto for safety */
+        
+        /* currently lock moto */
+        if(TaskControl_Monitor.auto_control)
             goto lock_moto;
-        }
-        // do drone control algorithm down below
 
-        // over diff angular speed over speed protect during the flight time
-        if (arm_state == TELEMETRY_SET_DISARM)
-        {
-            /* use data pipe trans force telemetry task set arm_state from disarm to arm */
-            if(imu_err_code == SrvIMU_Sample_Over_Angular_Accelerate)
-            {
-                goto lock_moto;
-            }
-        }
+        // do drone control algorithm down below
 
         // currently use gimbal input percent val for moto testing
         gimbal[1] = 0;
@@ -140,15 +138,6 @@ void TaskControl_Core(Task_Handle hdl)
         gimbal[3] = 0;
 
         SrvActuator.moto_control(gimbal);
-
-        // update last time IMU data
-        for (uint8_t i = Axis_X; i < Axis_Sum; i++)
-        {
-            TaskControl_Monitor.lst_acc[i] = TaskControl_Monitor.acc[i];
-            TaskControl_Monitor.lst_gyr[i] = TaskControl_Monitor.gyr[i];
-        }
-        TaskControl_Monitor.lst_imu_tmpr = TaskControl_Monitor.imu_tmpr;
-
         return;
     }
 
