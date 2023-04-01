@@ -469,8 +469,9 @@ static bool SrvIMU_Sample(void)
                         MPU6000Obj.OriData.gyr_int_lst[i] = MPU6000Obj.OriData.gyr_int[i];
                     }
 
-                    SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.flt_gyr[i], PriIMU_Data_Lst.flt_gyr[i], Sample_MsDiff);
-                };
+                    if(SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.flt_gyr[i], PriIMU_Data_Lst.flt_gyr[i], Sample_MsDiff))
+                        PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
+                }
 
                 /* filter Pri IMU Module data */
 
@@ -536,7 +537,8 @@ static bool SrvIMU_Sample(void)
                         ICM20602Obj.OriData.gyr_int_lst[i] = ICM20602Obj.OriData.gyr_int[i];
                     }
 
-                    SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.flt_gyr[i], SecIMU_Data_Lst.flt_gyr[i], Sample_MsDiff);
+                    if(SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.flt_gyr[i], SecIMU_Data_Lst.flt_gyr[i], Sample_MsDiff))
+                        SecIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
 
                 /* filter Sec IMU Module data */
