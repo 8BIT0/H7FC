@@ -19,7 +19,7 @@
  * Angular Speed Over Speed Threshold
  * Angular Speed Per Millscond
  */
-#define ANGULAR_SPEED_PER_MS_THRESHOLD 200 / 1000.0f // 200 deg/s -> 0.2 deg/ms
+#define ANGULAR_ACCECLERATION_THRESHOLD 2000 / 500.0f // 2000 deg/s -> 2 deg/ms^2
 
 
 /* test var */
@@ -195,6 +195,7 @@ static void SrvIMU_PriIMU_CS_Ctl(bool state);
 static void SrvIMU_SecIMU_CS_Ctl(bool state);
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
+static bool SrvIMU_Detect_AngularOverSpeed(float angular_speed, float lst_angular_speed, float ms_diff);
 
 SrvIMU_TypeDef SrvIMU = {
     .init = SrvIMU_Init,
@@ -418,6 +419,7 @@ static bool SrvIMU_Sample(void)
     bool sec_sample_state = true;
     IMUModuleScale_TypeDef pri_imu_scale;
     IMUModuleScale_TypeDef sec_imu_scale;
+    float Sample_MsDiff = 0.0f;
 
     /* don`t use error tree down below it may decrease code efficient */
     /* trigger error directly */
@@ -452,6 +454,7 @@ static bool SrvIMU_Sample(void)
 
                 /* Pri imu data validation check */
                 PriIMU_Data.error_code = SrvIMU_DataCheck(&MPU6000Obj.OriData, MPU6000Obj.AccTrip, MPU6000Obj.GyrTrip);
+                Sample_MsDiff = (PriIMU_Data.time_stamp - PriSample_Rt_Lst) / 1000.0f;
 
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
@@ -465,6 +468,8 @@ static bool SrvIMU_Sample(void)
                         MPU6000Obj.OriData.acc_int_lst[i] = MPU6000Obj.OriData.acc_int[i];
                         MPU6000Obj.OriData.gyr_int_lst[i] = MPU6000Obj.OriData.gyr_int[i];
                     }
+
+                    SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.flt_gyr[i], PriIMU_Data_Lst.flt_gyr[i], Sample_MsDiff);
                 };
 
                 /* filter Pri IMU Module data */
@@ -516,6 +521,7 @@ static bool SrvIMU_Sample(void)
 
                 /* Sec imu data validation check */
                 SecIMU_Data.error_code = SrvIMU_DataCheck(&ICM20602Obj.OriData, ICM20602Obj.AccTrip, ICM20602Obj.GyrTrip);
+                Sample_MsDiff = (SecIMU_Data.time_stamp - SecSample_Rt_Lst) / 1000.0f;
 
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
@@ -529,6 +535,8 @@ static bool SrvIMU_Sample(void)
                         ICM20602Obj.OriData.acc_int_lst[i] = ICM20602Obj.OriData.acc_int[i];
                         ICM20602Obj.OriData.gyr_int_lst[i] = ICM20602Obj.OriData.gyr_int[i];
                     }
+
+                    SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.flt_gyr[i], SecIMU_Data_Lst.flt_gyr[i], Sample_MsDiff);
                 }
 
                 /* filter Sec IMU Module data */
@@ -606,32 +614,13 @@ static float SrvIMU_Get_MaxAngularSpeed_Diff(void)
     return sec_angular_diff / (float)ANGULAR_SPEED_ACCURACY;
 }
 
-static bool SrvIMU_Detect_AngularOverSpeed(void)
+static bool SrvIMU_Detect_AngularOverSpeed(float angular_speed, float lst_angular_speed, float ms_diff)
 {
-    uint16_t Max_Diff_PerMS = (uint16_t)(SrvIMU_Get_MaxAngularSpeed_Diff() * ANGULAR_SPEED_ACCURACY);
-    uint16_t AngularSpeed_Diff = 0;
+    uint16_t Specified_Anuglar_Acceleration = (uint16_t)(SrvIMU_Get_MaxAngularSpeed_Diff() * ANGULAR_SPEED_ACCURACY);
+    uint16_t AngularSpeed_Diff = (uint16_t)(fabs(angular_speed - lst_angular_speed) / ms_diff * ANGULAR_SPEED_ACCURACY);
 
-
-    for(uint8_t i = 0; i < Axis_Sum; i++)
-    {
-        if(SrvMpu_Init_Reg.sec.Pri_State)
-        {
-            AngularSpeed_Diff = (uint16_t)(fabs(PriIMU_Data.org_gyr[i] - PriIMU_Data_Lst.org_gyr[i]) * ANGULAR_SPEED_ACCURACY);
-
-            if(AngularSpeed_Diff >= Max_Diff_PerMS)
-                return true;
-        }
-
-        AngularSpeed_Diff = 0;
-
-        if(SrvMpu_Init_Reg.sec.Sec_State)
-        {
-            AngularSpeed_Diff = (uint16_t)(fabs(SecIMU_Data.org_gyr[i] - SecIMU_Data_Lst.org_gyr[i]) * ANGULAR_SPEED_ACCURACY);
-
-            if(AngularSpeed_Diff >= Max_Diff_PerMS)
-                return true;
-        }
-    }
+    if(AngularSpeed_Diff >= (uint16_t)(ANGULAR_ACCECLERATION_THRESHOLD * ANGULAR_SPEED_ACCURACY))
+        return true;
 
     return false;
 }

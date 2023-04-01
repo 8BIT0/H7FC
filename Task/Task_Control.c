@@ -123,7 +123,7 @@ void TaskControl_Core(Task_Handle hdl)
         // do drone control algorithm down below
 
         // over diff angular speed over speed protect during the flight time
-        if ((arm_state == TELEMETRY_SET_DISARM) && TaskControl_OverAngularSpeed_Detect())
+        if (arm_state == TELEMETRY_SET_DISARM)
         {
             /* use data pipe trans force telemetry task set arm_state from disarm to arm */
 
