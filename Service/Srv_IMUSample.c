@@ -13,6 +13,14 @@
 
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
+#define ANGULAR_SPEED_ACCURACY 1e3
+
+/*
+ * Angular Speed Over Speed Threshold
+ * Angular Speed Per Millscond
+ */
+#define ANGULAR_SPEED_PER_MS_THRESHOLD 200 / 1000.0f // 200 deg/s -> 0.2 deg/ms
+
 
 /* test var */
 static uint32_t SrvIMU_PriIMU_Init_Error_CNT = 0;
@@ -579,24 +587,53 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
 
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void)
 {
-    const uint16_t accuracy = 1e3;
     uint16_t pri_angular_diff = 0;
     uint16_t sec_angular_diff = 0;
 
     if (SrvMpu_Init_Reg.sec.Pri_State)
     {
-        pri_angular_diff = (uint16_t)(DevMPU6000.get_gyr_angular_speed_diff(MPU6000Obj) * accuracy);
+        pri_angular_diff = (uint16_t)(DevMPU6000.get_gyr_angular_speed_diff(MPU6000Obj) * ANGULAR_SPEED_ACCURACY);
     }
 
     if (SrvMpu_Init_Reg.sec.Sec_State)
     {
-        sec_angular_diff = (uint16_t)(DevICM20602.get_gyr_angular_speed_diff(ICM20602Obj) * accuracy);
+        sec_angular_diff = (uint16_t)(DevICM20602.get_gyr_angular_speed_diff(ICM20602Obj) * ANGULAR_SPEED_ACCURACY);
     }
 
     if (pri_angular_diff >= sec_angular_diff)
-        return pri_angular_diff / (float)accuracy;
+        return pri_angular_diff / (float)ANGULAR_SPEED_ACCURACY;
 
-    return sec_angular_diff / (float)accuracy;
+    return sec_angular_diff / (float)ANGULAR_SPEED_ACCURACY;
+}
+
+static bool SrvIMU_Detect_AngularOverSpeed(void)
+{
+    uint16_t Max_Diff_PerMS = (uint16_t)(SrvIMU_Get_MaxAngularSpeed_Diff() * ANGULAR_SPEED_ACCURACY);
+    uint16_t AngularSpeed_Diff = 0;
+
+
+    for(uint8_t i = 0; i < Axis_Sum; i++)
+    {
+        if(SrvMpu_Init_Reg.sec.Pri_State)
+        {
+            AngularSpeed_Diff = (uint16_t)(fabs(PriIMU_Data.org_gyr[i] - PriIMU_Data_Lst.org_gyr[i]) * ANGULAR_SPEED_ACCURACY);
+
+            if(AngularSpeed_Diff >= Max_Diff_PerMS)
+                return true;
+        }
+
+        AngularSpeed_Diff = 0;
+
+        if(SrvMpu_Init_Reg.sec.Sec_State)
+        {
+            AngularSpeed_Diff = (uint16_t)(fabs(SecIMU_Data.org_gyr[i] - SecIMU_Data_Lst.org_gyr[i]) * ANGULAR_SPEED_ACCURACY);
+
+            if(AngularSpeed_Diff >= Max_Diff_PerMS)
+                return true;
+        }
+    }
+
+    return false;
 }
 
 static void SrvIMU_ErrorProc(void)
