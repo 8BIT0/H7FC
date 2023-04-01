@@ -50,6 +50,7 @@ typedef enum
     SrvIMU_Sample_Data_Gyr_Blunt,
     SrvIMU_Sample_Data_Acc_OverRange,
     SrvIMU_Sample_Data_Gyr_OverRange,
+    SrvIMU_Sample_Over_Angular_Accelerate,
 } SrvIMU_SampleErrorCode_List;
 
 #pragma pack(1)
