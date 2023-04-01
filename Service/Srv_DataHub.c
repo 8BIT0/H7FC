@@ -16,10 +16,10 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
 
 /* external function */
 static void SrvDataHub_Init(void);
-static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr);
-static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr);
-static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
-static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
+static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr, uint8_t *err);
+static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr, uint8_t *err);
+static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
+static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
 static bool SrvDataHub_Get_Arm(bool *arm);
 static bool SrvDataHub_Get_Failsafe(bool *failsafe);
 static bool SrvDataHub_Get_ControlMode(uint8_t *mode);
@@ -132,6 +132,8 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         SrvDataHub_Monitor.data.org_gyr_y = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Y];
         SrvDataHub_Monitor.data.org_gyr_z = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Z];
 
+        SrvDataHub_Monitor.data.imu_error_code = DataPipe_DataObj(PtlPriIMU_Data).data.error_code;
+
         SrvDataHub_Monitor.update_reg.bit.raw_imu = false;
         SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
     }
@@ -163,7 +165,7 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
 }
 
-static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
+static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr, uint8_t *err)
 {
     if ((time_stamp == NULL) ||
         (acc_scale == NULL) ||
@@ -174,7 +176,8 @@ static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float
         (gyr_x == NULL) ||
         (gyr_y == NULL) ||
         (gyr_z == NULL) ||
-        (tmpr == NULL))
+        (tmpr == NULL) ||
+        (err == NULL))
         return false;
 
 reupdate_raw_imu:
@@ -190,6 +193,7 @@ reupdate_raw_imu:
     *gyr_y = SrvDataHub_Monitor.data.org_gyr_y;
     *gyr_z = SrvDataHub_Monitor.data.org_gyr_z;
     *tmpr = SrvDataHub_Monitor.data.imu_temp;
+    *err = SrvDataHub_Monitor.data.imu_error_code;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.raw_imu)
         goto reupdate_raw_imu;
@@ -199,7 +203,7 @@ reupdate_raw_imu:
     return true;
 }
 
-static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr)
+static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr, uint8_t *err)
 {
     if ((time_stamp == NULL) ||
         (acc_scale == NULL) ||
@@ -210,7 +214,8 @@ static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, fl
         (gyr_x == NULL) ||
         (gyr_y == NULL) ||
         (gyr_z == NULL) ||
-        (tmpr == NULL))
+        (tmpr == NULL) ||
+        (err == NULL))
         return false;
 
 reupdate_scaled_imu:
@@ -226,6 +231,7 @@ reupdate_scaled_imu:
     *gyr_y = SrvDataHub_Monitor.data.flt_gyr_y;
     *gyr_z = SrvDataHub_Monitor.data.flt_gyr_z;
     *tmpr = SrvDataHub_Monitor.data.imu_temp;
+    *err = SrvDataHub_Monitor.data.imu_error_code;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_imu)
         goto reupdate_scaled_imu;
@@ -235,12 +241,13 @@ reupdate_scaled_imu:
     return true;
 }
 
-static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z)
+static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err)
 {
     if ((time_stamp == NULL) ||
         (mag_x == NULL) ||
         (mag_y == NULL) ||
-        (mag_z == NULL))
+        (mag_z == NULL) ||
+        (err == NULL))
         return false;
 
 reupdate_raw_mag:
@@ -251,6 +258,7 @@ reupdate_raw_mag:
     *mag_x = SrvDataHub_Monitor.data.org_mag_x;
     *mag_y = SrvDataHub_Monitor.data.org_mag_y;
     *mag_z = SrvDataHub_Monitor.data.org_mag_z;
+    *err = SrvDataHub_Monitor.data.mag_error_code;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.raw_mag)
         goto reupdate_raw_mag;
@@ -258,12 +266,13 @@ reupdate_raw_mag:
     return true;
 }
 
-static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z)
+static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err)
 {
     if ((time_stamp == NULL) ||
         (mag_x == NULL) ||
         (mag_y == NULL) ||
-        (mag_z == NULL))
+        (mag_z == NULL) ||
+        (err == NULL))
         return false;
 
 reupdate_scaled_mag:
@@ -274,6 +283,7 @@ reupdate_scaled_mag:
     *mag_x = SrvDataHub_Monitor.data.flt_mag_x;
     *mag_y = SrvDataHub_Monitor.data.flt_mag_y;
     *mag_z = SrvDataHub_Monitor.data.flt_mag_z;
+    *err = SrvDataHub_Monitor.data.mag_error_code;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_mag)
         goto reupdate_scaled_mag;

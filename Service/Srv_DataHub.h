@@ -60,6 +60,7 @@ typedef struct
     float org_acc_z;
 
     float imu_temp;
+    uint8_t imu_error_code;
 
     uint32_t mag_update_time;
     float mag_scale;
@@ -73,23 +74,28 @@ typedef struct
     float org_mag_z;
 
     float mag_temp;
+    uint8_t mag_error_code;
 
     uint32_t baro_update_time;
     float baro_scale;
     float baro;
+    uint8_t baro_error_code;
 
     uint32_t sonar_update_time;
     float sonar_scale;
     float sonar;
+    uint8_t conar_error_code;
 
     uint32_t tof_update_time;
     float tof_scale;
     float tof;
+    uint8_t tof_error_code;
 
     uint32_t att_update_time;
     float att_roll;
     float att_pitch;
     float att_yaw;
+    uint8_t att_error_code;
 
     uint32_t rc_update_time;
     bool arm;
@@ -101,7 +107,9 @@ typedef struct
     uint8_t channel_sum;
     uint16_t ch[32];
     uint16_t gimbal[4];
-
+    uint16_t link_quality;
+    uint16_t rssi;
+    
     uint32_t gnss_update_time;
     double lon;
     double lat;
@@ -122,6 +130,8 @@ typedef struct
     uint16_t utc_min;
     uint16_t utc_s;
     uint16_t utc_ms;
+
+    uint8_t gnss_error_code;
 
     uint32_t actuator_update_time;
     uint8_t moto_num;
@@ -144,10 +154,10 @@ typedef struct
 typedef struct
 {
     void (*init)(void);
-    bool (*get_raw_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp);
-    bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp);
-    bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
-    bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z);
+    bool (*get_raw_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
+    bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
+    bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
+    bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
     bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cnt);
     bool (*get_gimbal_percent)(uint16_t *gimbal);
     bool (*get_arm_state)(bool *arm);

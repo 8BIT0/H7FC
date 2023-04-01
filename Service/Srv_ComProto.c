@@ -223,8 +223,9 @@ static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck)
     float gyr_y = 0.0f;
     float gyr_z = 0.0f;
     float tmpr = 0.0f;
+    uint8_t imu_err_code = 0;
 
-    SrvDataHub.get_raw_imu(&time_stamp, &acc_scale, &gyr_scale, &acc_x, &acc_y, &acc_z, &gyr_x, &gyr_y, &gyr_z, &tmpr);
+    SrvDataHub.get_raw_imu(&time_stamp, &acc_scale, &gyr_scale, &acc_x, &acc_y, &acc_z, &gyr_x, &gyr_y, &gyr_z, &tmpr, &imu_err_code);
 
     int16_t i_acc_x = (int16_t)(acc_x * acc_scale);
     int16_t i_acc_y = (int16_t)(acc_y * acc_scale);

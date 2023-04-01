@@ -46,6 +46,7 @@ void TaskControl_Core(Task_Handle hdl)
     uint16_t rc_ch[32];
     uint16_t gimbal[4];
     uint8_t rc_channel_sum;
+    uint8_t imu_err_code;
     bool arm_state;
     bool failsafe;
 
@@ -61,7 +62,8 @@ void TaskControl_Core(Task_Handle hdl)
                                   &TaskControl_Monitor.gyr[Axis_X],
                                   &TaskControl_Monitor.gyr[Axis_Y],
                                   &TaskControl_Monitor.gyr[Axis_Z],
-                                  &TaskControl_Monitor.imu_tmpr);
+                                  &TaskControl_Monitor.imu_tmpr,
+                                  &imu_err_code);
 
         // get rc channel and other toggle signal
         SrvDataHub.get_rc(&rc_update_time, rc_ch, &rc_channel_sum);
@@ -126,8 +128,10 @@ void TaskControl_Core(Task_Handle hdl)
         if (arm_state == TELEMETRY_SET_DISARM)
         {
             /* use data pipe trans force telemetry task set arm_state from disarm to arm */
-
-            goto lock_moto;
+            if(imu_err_code == SrvIMU_Sample_Over_Angular_Accelerate)
+            {
+                goto lock_moto;
+            }
         }
 
         // currently use gimbal input percent val for moto testing
