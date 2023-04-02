@@ -47,6 +47,7 @@ void TaskControl_Core(Task_Handle hdl)
     uint16_t gimbal[4];
     uint8_t rc_channel_sum;
     uint8_t imu_err_code;
+    uint8_t axis = Axis_X;
     bool arm_state;
     bool failsafe;
 
@@ -89,27 +90,47 @@ void TaskControl_Core(Task_Handle hdl)
                     TaskControl_Monitor.control_abort = true;
             }
 
-            switch(imu_err_code)
+            if(imu_err_code != SrvIMU_Sample_NoError)
             {
-                case SrvIMU_Sample_Module_UnReady:
-                case SrvIMU_Sample_Data_Acc_Blunt:
-                case SrvIMU_Sample_Data_Gyr_Blunt:
-                case SrvIMU_Sample_Data_Acc_OverRange:
-                case SrvIMU_Sample_Data_Gyr_OverRange:
-                    goto lock_moto;
+                switch(imu_err_code)
+                {
+                    case SrvIMU_Sample_Module_UnReady:
+                    case SrvIMU_Sample_Data_Acc_Blunt:
+                    case SrvIMU_Sample_Data_Gyr_Blunt:
+                    case SrvIMU_Sample_Data_Acc_OverRange:
+                    case SrvIMU_Sample_Data_Gyr_OverRange:
+                        TaskControl_Monitor.imu_none_update_cnt++;
+                        if(TaskControl_Monitor.imu_none_update_cnt >= IMU_NONE_UPDATE_THRESHOLD)
+                        {
+                            TaskControl_Monitor.control_abort = true;
+                            goto lock_moto;
+                        }
+                        else
+                        {
+                            /* use last time sample imu data for control */
+                            for(axis = Axis_X; axis < Axis_Sum; axis++)
+                            {
+                                TaskControl_Monitor.acc[axis] = TaskControl_Monitor.acc_lst[axis];
+                                TaskControl_Monitor.gyr[axis] = TaskControl_Monitor.gyr_lst[axis];
+                            }
+                        }
+                        break;
 
-                case SrvIMU_Sample_Over_Angular_Accelerate:
-                    break;
-
-                default:
-                    TaskControl_Monitor.control_abort = true;
-                    goto lock_moto;
+                    case SrvIMU_Sample_Over_Angular_Accelerate:
+                        break;
+                }
             }
+            else
+                TaskControl_Monitor.imu_none_update_cnt = 0;
         }
         else
         {
             /* check keep time to abort drone control */
-            
+            TaskControl_Monitor.imu_none_update_cnt ++;
+
+            if(TaskControl_Monitor.imu_none_update_cnt >= IMU_NONE_UPDATE_THRESHOLD)
+                TaskControl_Monitor.control_abort = true;
+
             goto lock_moto;
         }
 
@@ -138,6 +159,15 @@ void TaskControl_Core(Task_Handle hdl)
         gimbal[3] = 0;
 
         SrvActuator.moto_control(gimbal);
+
+        if(imu_err_code == SrvIMU_Sample_NoError)
+        {
+            for(axis = Axis_X; axis < Axis_Sum; axis ++)
+            {
+                TaskControl_Monitor.acc_lst[axis] = TaskControl_Monitor.acc[axis];
+                TaskControl_Monitor.gyr_lst[axis] = TaskControl_Monitor.gyr[axis];
+            }
+        }
         return;
     }
 

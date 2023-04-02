@@ -10,6 +10,7 @@
 
 #define TASKCONTROL_SET_BIT(x) UTIL_SET_BIT(x)
 #define IMU_ERROR_UPDATE_MAX_COUNT 10
+#define IMU_NONE_UPDATE_THRESHOLD 10
 
 typedef union
 {
@@ -60,6 +61,13 @@ typedef struct
     float acc[Axis_Sum];
     float gyr[Axis_Sum];
     float imu_tmpr;
+
+    float acc_lst[Axis_Sum];
+    float gyr_lst[Axis_Sum];
+
+    uint32_t error_code;
+    uint8_t imu_none_update_cnt;
+    uint8_t over_angular_accelerate_cnt;
 } TaskControl_Monitor_TypeDef;
 
 void TaskControl_Init(void);
