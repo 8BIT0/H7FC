@@ -51,7 +51,7 @@ void TaskControl_Core(Task_Handle hdl)
     bool arm_state;
     bool failsafe;
 
-    if (TaskControl_Monitor.init_state || !TaskControl_Monitor.control_abort)
+    if (TaskControl_Monitor.init_state && !TaskControl_Monitor.control_abort)
     {
         TaskControl_Monitor.auto_control = true;
 
