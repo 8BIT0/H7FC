@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define UTIL_SET_BIT(x) (1 << x)
+
 int16_t Common_CRC16(const uint8_t *pBuf, const uint32_t len);
 uint8_t Get_Bit_Index(uint16_t val);
 uint8_t Get_OnSet_Bit_Num(uint32_t value);

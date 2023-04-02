@@ -7,8 +7,9 @@
 #include "../System/scheduler/scheduler.h"
 #include "Srv_Receiver.h"
 #include "linked_list.h"
+#include "../common/util.h"
 
-#define Telemetry_SetBit(x) (1 << x)
+#define Telemetry_SetBit(x) UTIL_SET_BIT(x)
 
 #define TELEMETRY_SET_ARM 1
 #define TELEMETRY_SET_DISARM 0

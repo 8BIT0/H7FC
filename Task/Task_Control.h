@@ -6,8 +6,38 @@
 #include <stdlib.h>
 #include "scheduler.h"
 #include "imu_data.h"
+#include "../common/util.h"
 
+#define TASKCONTROL_SET_BIT(x) UTIL_SET_BIT(x)
 #define IMU_ERROR_UPDATE_MAX_COUNT 10
+
+typedef union
+{
+    struct
+    {
+        uint32_t rc : 1;
+        uint32_t imu : 1;
+
+        uint32_t reserve : 30;
+    }Sec;
+
+    uint32_t val;
+}TaskControl_ErrReg_TypeDef;
+
+typedef enum
+{
+    TaskControl_None_Error = 0,
+
+    /* IMU Section */
+    TaskControl_IMU_NoneUpdate = TASKCONTROL_SET_BIT(0),
+    TaskControl_IMU_DataBlunt = TASKCONTROL_SET_BIT(1),
+    TaskControl_IMU_OverAngularAcc = TASKCONTROL_SET_BIT(2),
+    
+    /* RC Section */
+    TaskControl_RC_FailSafe = TASKCONTROL_SET_BIT(3),
+    TaskControl_RC_LowSig = TASKCONTROL_SET_BIT(4),
+    TaskControl_RC_ErrInput = TASKCONTROL_SET_BIT(5),
+}TaskControl_ErrorCode_List;
 
 typedef struct
 {
