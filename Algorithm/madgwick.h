@@ -17,6 +17,7 @@
 #ifndef MadgwickAHRS_h
 #define MadgwickAHRS_h
 #include <math.h>
+#include "imu_data.h"
 #include "../common/util.h"
 
 typedef enum

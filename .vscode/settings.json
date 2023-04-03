@@ -117,7 +117,8 @@
                 "datapath.h": "c",
                 "srv_actuator.h": "c",
                 "srv_comproto.h": "c",
-                "srv_datahub.h": "c"
+                "srv_datahub.h": "c",
+                "madgwick.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false
