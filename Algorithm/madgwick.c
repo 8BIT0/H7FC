@@ -28,6 +28,8 @@
 #define sampleFreqDef 512.0f // sample frequency in Hz
 #define betaDef 0.1f         // 2 * proportional gain
 
+static Madgwick_Monitor_TypeDef Madgwick_Monitor;
+
 //============================================================================================
 // Functions
 
@@ -36,12 +38,14 @@
 
 static void Madgwick_Init(uint32_t sample_freq)
 {
+    memset(&Madgwick_Monitor, 0, sizeof(Madgwick_Monitor));
+
     beta = betaDef;
     q0 = 1.0f;
     q1 = 0.0f;
     q2 = 0.0f;
     q3 = 0.0f;
-    invSampleFreq = 1.0f / sampleFreqDef;
+    invSampleFreq = 1.0f / sample_freq;
     anglesComputed = 0;
 }
 

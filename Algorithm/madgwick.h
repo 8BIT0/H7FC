@@ -65,7 +65,7 @@ typedef struct
     float att_offset[Att_Sum];
 
     float att[Att_Sum];
-} MadgwickData_TypeDef;
+} Madgwick_Monitor_TypeDef;
 
 //--------------------------------------------------------------------------------------------
 
