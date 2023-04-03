@@ -17,6 +17,27 @@
 #ifndef MadgwickAHRS_h
 #define MadgwickAHRS_h
 #include <math.h>
+#include "../common/util.h"
+
+typedef enum
+{
+    q0 = 0,
+    q1,
+    q2,
+    q3,
+    q_sum,
+} MadgwickQuat_List;
+
+typedef struct
+{
+    float beta;
+    float q[q_sum];
+    float imu_freq;
+
+    float pitch;
+    float roll;
+    float yaw;
+} MadgwickData_TypeDef;
 
 //--------------------------------------------------------------------------------------------
 // Variable declaration
