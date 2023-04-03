@@ -19,7 +19,7 @@
  * Angular Speed Over Speed Threshold
  * Angular Speed Per Millscond
  */
-#define ANGULAR_ACCECLERATION_THRESHOLD 500 / 20.0f // angular speed accelerate from 0 to 400 deg/s in 20 Ms
+#define ANGULAR_ACCECLERATION_THRESHOLD 300 / 10.0f // angular speed accelerate from 0 to 300 deg/s in 10 Ms
 
 /* test var */
 static uint32_t SrvIMU_PriIMU_Init_Error_CNT = 0;

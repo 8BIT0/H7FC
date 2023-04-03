@@ -117,6 +117,20 @@ void TaskControl_Core(Task_Handle hdl)
                         break;
 
                     case SrvIMU_Sample_Over_Angular_Accelerate:
+                        if(TaskControl_Monitor.angular_warning_cnt < OVER_ANGULAR_ACCELERATE_COUNT)
+                        {
+                            TaskControl_Monitor.angular_warning_cnt++;
+
+                            for(axis = Axis_X; axis < Axis_Sum; axis++)
+                            {
+                                TaskControl_Monitor.acc[axis] = TaskControl_Monitor.acc_lst[axis];
+                                TaskControl_Monitor.gyr[axis] = TaskControl_Monitor.gyr_lst[axis];
+                            }
+                        }
+                        else
+                        {
+                            TaskControl_Monitor.angular_protect = true;
+                        }
                         break;
                 }
             }
@@ -147,6 +161,17 @@ void TaskControl_Core(Task_Handle hdl)
             }
         }
         
+        if(TaskControl_Monitor.angular_protect)
+        {
+            if(arm_state == TELEMETRY_SET_ARM)
+            {
+                TaskControl_Monitor.angular_protect = false;
+                TaskControl_Monitor.angular_warning_cnt = 0;
+            }
+            else
+                goto lock_moto;
+        }
+
         /* currently lock moto */
         if(TaskControl_Monitor.auto_control)
             goto lock_moto;

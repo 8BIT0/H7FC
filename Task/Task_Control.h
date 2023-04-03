@@ -11,6 +11,7 @@
 #define TASKCONTROL_SET_BIT(x) UTIL_SET_BIT(x)
 #define IMU_ERROR_UPDATE_MAX_COUNT 10
 #define IMU_NONE_UPDATE_THRESHOLD 10
+#define OVER_ANGULAR_ACCELERATE_COUNT 5
 
 typedef union
 {
@@ -44,6 +45,9 @@ typedef struct
 {
     bool init_state;
     bool control_abort;
+    bool angular_protect;
+
+    uint8_t angular_warning_cnt;
 
     uint8_t ctl_model;
 
