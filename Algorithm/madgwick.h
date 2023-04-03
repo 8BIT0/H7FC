@@ -52,7 +52,7 @@ typedef union
     } Att;
 
     uint8_t Att_Int[28];
-} Madgwick_Attitude_TypeDef;
+} Madgwick_AttitudeData_TypeDef;
 #pragma pack()
 
 typedef struct
