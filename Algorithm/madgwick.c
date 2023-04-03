@@ -40,12 +40,12 @@ static void Madgwick_Init(uint32_t sample_freq)
 {
     memset(&Madgwick_Monitor, 0, sizeof(Madgwick_Monitor));
 
-    beta = betaDef;
-    q0 = 1.0f;
-    q1 = 0.0f;
-    q2 = 0.0f;
-    q3 = 0.0f;
-    invSampleFreq = 1.0f / sample_freq;
+    Madgwick_Monitor.beta = betaDef;
+    Madgwick_Monitor.q[q0] = 1.0f;
+    Madgwick_Monitor.q[q1] = 0.0f;
+    Madgwick_Monitor.q[q2] = 0.0f;
+    Madgwick_Monitor.q[q3] = 0.0f;
+    Madgwick_Monitor.imu_period = 1.0f / sample_freq;
     anglesComputed = 0;
 }
 

@@ -45,10 +45,10 @@ typedef union
         float roll;
         float yaw;
 
+        float q0;
         float q1;
         float q2;
         float q3;
-        float q4
     } Att;
 
     uint8_t Att_Int[28];
