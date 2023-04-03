@@ -34,7 +34,7 @@
 //-------------------------------------------------------------------------------------------
 // AHRS algorithm update
 
-Madgwick::Madgwick()
+static void Madgwick_Init(uint32_t sample_freq)
 {
     beta = betaDef;
     q0 = 1.0f;

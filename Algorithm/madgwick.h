@@ -28,18 +28,54 @@ typedef enum
     q_sum,
 } MadgwickQuat_List;
 
+typedef enum
+{
+    Att_Pitch = 0,
+    Att_Roll,
+    Att_Yaw,
+    Att_Sum,
+} Magwick_Attitude_List;
+
+#pragma pack(1)
+typedef union
+{
+    struct
+    {
+        float pitch;
+        float roll;
+        float yaw;
+
+        float q1;
+        float q2;
+        float q3;
+        float q4
+    } Att;
+
+    uint8_t Att_Int[28];
+} Madgwick_Attitude_TypeDef;
+#pragma pack()
+
 typedef struct
 {
     float beta;
     float q[q_sum];
-    float imu_freq;
+    float imu_period;
+    uint32_t imu_sample_rate;
 
-    float pitch;
-    float roll;
-    float yaw;
+    float att_offset[Att_Sum];
+
+    float att[Att_Sum];
 } MadgwickData_TypeDef;
 
 //--------------------------------------------------------------------------------------------
+
+typedef struct
+{
+    void (*init)(uint32_t sample_freq);
+    void (*imu_angle_update)(float *gyr, float *acc, float *att, float *q_buff);
+    void (*imu_mag_angle_update)(float *gyr, float *acc, float *mag, float *att, float *q_buf);
+} Madgwick_TypeDef;
+
 // Variable declaration
 class Madgwick
 {
