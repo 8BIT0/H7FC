@@ -13,14 +13,13 @@
 #pragma pack(1)
 typedef struct
 {
-    float delta_s;
-    uint8_t item_cnt;
-    uint32_t max_val_addr;
-    uint32_t min_val_addr;
-    float val_buf[SMOOTH_WINDOW_SIZE];
-    float smooth_value;
-    float mid_value;
-}Filter_GenParam_TypeDef;
+    uint32_t sample_freq;
+    uint32_t stop_freq;
+
+    uint8_t order;
+    float *p_data_cache;
+    float *p_para_cache;
+}Filter_ButterworthParam_TypeDef;
 
 typedef struct
 {
