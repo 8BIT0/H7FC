@@ -8,7 +8,6 @@
 
 static BWF_Object_TypeDef Buterworth_Filter_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para)
 {
-    BWF_Object_TypeDef obj = 0;
     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
 
     if(sample_freq && order)
@@ -44,7 +43,7 @@ static BWF_Object_TypeDef Buterworth_Filter_Init(uint32_t sample_freq, uint8_t s
         BWF_Obj->e_para_buf = e_para;
         BWF_Obj->u_para_buf = u_para;
 
-        return obj;
+        return (uint32_t)BWF_Obj;
     }
 
     return 0;
