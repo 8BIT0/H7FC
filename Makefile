@@ -83,6 +83,7 @@ System/shell/shell_companion.c \
 System/shell/shell_ext.c \
 System/shell/shell_port.c \
 System/shell/shell.c \
+Algorithm/filter.c \
 USB/USB_DEVICE/App/usb_device.c \
 USB/USB_DEVICE/App/usbd_desc.c \
 USB/USB_DEVICE/App/usbd_cdc_if.c \
@@ -188,6 +189,7 @@ C_INCLUDES =  \
 -ISystem/diskio \
 -Idebug \
 -IMAVLink \
+-IAlgorithm \
 -IMAVLink/common \
 -IMAVLink/minimal \
 -IMAVLink/standard \
