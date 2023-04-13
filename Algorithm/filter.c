@@ -6,7 +6,16 @@
 #include "system_cfg.h"
 #include "mmu.h"
 
-static BWF_Object_TypeDef Buterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para)
+/* external function */
+static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para);
+static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e);
+
+Butterworth_Filter_TypeDef Butterworth = {
+    .init = Butterworth_Init,
+    .update = Butterworth_Filter_Update,
+};
+
+static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para)
 {
     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
 
@@ -49,7 +58,7 @@ static BWF_Object_TypeDef Buterworth_Init(uint32_t sample_freq, uint8_t stop_fre
     return 0;
 }
 
-static float Butterworth_Filter(BWF_Object_TypeDef obj, float cur_e)
+static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e)
 {
     float u_tmp = 0.0f;
 

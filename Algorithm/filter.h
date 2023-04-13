@@ -43,5 +43,13 @@ typedef struct
 }Filter_KalmenParam_TypeDef;
 #pragma pack()
 
+typedef struct
+{
+    BWF_Object_TypeDef (*init)(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para);
+    float (*update)(BWF_Object_TypeDef obj, float cur_e);
+}Butterworth_Filter_TypeDef;
+
+extern Butterworth_Filter_TypeDef Butterworth;
+
 #endif
 
