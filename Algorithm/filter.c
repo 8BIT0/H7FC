@@ -6,7 +6,7 @@
 #include "system_cfg.h"
 #include "mmu.h"
 
-static BWF_Object_TypeDef Buterworth_Filter_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para)
+static BWF_Object_TypeDef Buterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para)
 {
     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
 
@@ -47,4 +47,16 @@ static BWF_Object_TypeDef Buterworth_Filter_Init(uint32_t sample_freq, uint8_t s
     }
 
     return 0;
+}
+
+static float Butterworth_Filter(BWF_Object_TypeDef obj, float cur_e)
+{
+    float u_tmp = 0.0f;
+
+    if(obj)
+    {
+
+    }
+
+    return u_tmp;
 }
