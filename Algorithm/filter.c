@@ -61,10 +61,12 @@ static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_fr
 static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e)
 {
     float u_tmp = 0.0f;
+    float E_Additive = 0.0f;
+    float U_Additive = 0.0f;
 
     if(obj)
     {
-
+        
     }
 
     return u_tmp;
