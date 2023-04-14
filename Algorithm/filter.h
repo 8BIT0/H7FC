@@ -31,21 +31,6 @@ typedef struct
     item_obj *p_e_data_cache;
     item_obj *p_u_data_cache;
 }Filter_ButterworthParam_TypeDef;
-
-typedef struct
-{
-    
-}Filter_LowPassParam_TypeDef;
-
-typedef struct
-{
-    
-}Filter_HighPassParam_TypeDef;
-
-typedef struct
-{
-
-}Filter_KalmenParam_TypeDef;
 #pragma pack()
 
 typedef struct

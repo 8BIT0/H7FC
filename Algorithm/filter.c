@@ -6,6 +6,10 @@
 #include "system_cfg.h"
 #include "mmu.h"
 
+/* internal function */
+static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *header, item_obj *ender);
+static void Butterworth_Item_Update(item_obj *header, item_obj *ender, float cur_data);
+
 /* external function */
 static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para);
 static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e);
@@ -32,10 +36,11 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *hea
             *u_temp = 0.0f;
         }
 
-        /* set first element as list head */
+        /* link element */
         if(i > 0)
         {
             item[i - 1].nxt = &item[i];
+            item[i].prv = &item[i - 1];
         }
         else
             header = &item[0];
@@ -115,9 +120,26 @@ static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_fr
     return 0;
 }
 
+static void Butterworth_Item_Update(item_obj *header, item_obj *ender, float cur_data)
+{
+    item_obj *i_tmp = NULL;
+
+    *((float *)(ender->data)) = cur_data;
+    ender->prv->nxt = NULL;
+    i_tmp = ender->prv;
+    ender->prv = NULL;
+    header->prv = ender;
+    ender->nxt = header;
+    header = ender;
+    ender = i_tmp;
+}
+
 static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e)
 {
     Filter_ButterworthParam_TypeDef *filter_obj = NULL;
+    item_obj *u_item = NULL;
+    item_obj *e_item = NULL;
+
     float u_tmp = 0.0f;
     float E_Additive = 0.0f;
     float U_Additive = 0.0f;
@@ -125,6 +147,31 @@ static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e)
     if(obj)
     {
         filter_obj = (Filter_ButterworthParam_TypeDef *)obj;
+        Butterworth_Item_Update(filter_obj->p_e_list_header, filter_obj->p_e_list_ender, cur_e);
+
+        u_item = filter_obj->p_u_list_header;
+        e_item = filter_obj->p_e_list_header;
+
+        for(uint8_t i = 0; i < filter_obj->order; i++)
+        {
+            /* comput U additive */
+            if(i < (filter_obj->order - 1) && u_item)
+            {
+                U_Additive += filter_obj->u_para_buf[i] * (*(float *)(u_item->data));
+                u_item = u_item->nxt;
+            }
+
+            /* comput E additive */
+            if(e_item)
+            {
+                E_Additive += filter_obj->e_para_buf[i] * (*(float *)(e_item->data));
+                e_item = e_item->nxt;
+            }
+        }
+
+        u_tmp = E_Additive - U_Additive;
+        /* update last time filted data */
+        Butterworth_Item_Update(filter_obj->p_u_list_header, filter_obj->p_u_list_ender, u_tmp);
     }
 
     return u_tmp;
