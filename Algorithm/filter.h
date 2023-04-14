@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
-#include "queue.h"
+#include "linked_list.h"
 
 #define SMOOTH_WINDOW_SIZE 5
 
@@ -23,8 +23,13 @@ typedef struct
     float *e_para_buf;
     float *u_para_buf;
 
-    float *p_e_data_cache;
-    float *p_u_data_cache;
+    list_obj *p_e_list_header;
+    item_obj *p_e_list_ender;
+    list_obj *p_u_list_header;
+    item_obj *p_u_list_ender;
+
+    item_obj *p_e_data_cache;
+    item_obj *p_u_data_cache;
 }Filter_ButterworthParam_TypeDef;
 
 typedef struct
