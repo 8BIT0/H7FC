@@ -54,8 +54,8 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *hea
 static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para)
 {
     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
-    uint8_t e_cnt = order;
-    uint8_t u_cnt = order - 1;
+    uint8_t e_cnt = order + 1;
+    uint8_t u_cnt = order;
 
 
     if(sample_freq && (order > 1))
@@ -152,10 +152,10 @@ static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e)
         u_item = filter_obj->p_u_list_header;
         e_item = filter_obj->p_e_list_header;
 
-        for(uint8_t i = 0; i < filter_obj->order; i++)
+        for(uint8_t i = 0; i < filter_obj->order + 1; i++)
         {
             /* comput U additive */
-            if(i < (filter_obj->order - 1) && u_item)
+            if(i <= filter_obj->order && u_item)
             {
                 U_Additive += filter_obj->u_para_buf[i] * (*(float *)(u_item->data));
                 u_item = u_item->nxt;

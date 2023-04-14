@@ -239,6 +239,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     memset(&PriIMU_Data_Lst, NULL, sizeof(PriIMU_Data_Lst));
     memset(&SecIMU_Data_Lst, NULL, sizeof(SecIMU_Data_Lst));
 
+    /* init filter */
+    Butterworth.init();
+
     if (!SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
         ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, &SrvIMU_ALLModule_Init_Error_CNT, sizeof(SrvIMU_ALLModule_Init_Error_CNT));
