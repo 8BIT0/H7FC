@@ -11,8 +11,8 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *hea
 static void Butterworth_Item_Update(item_obj *header, item_obj *ender, float cur_data);
 
 /* external function */
-static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para);
-static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e);
+static BWF_Object_Handle Butterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para);
+static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e);
 
 Butterworth_Filter_TypeDef Butterworth = {
     .init = Butterworth_Init,
@@ -21,11 +21,11 @@ Butterworth_Filter_TypeDef Butterworth = {
 
 static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *header, item_obj *ender)
 {
-    for(uint8_t i = 0; i < order; i++)
+    for (uint8_t i = 0; i < order; i++)
     {
         float *u_temp = (float *)MMU_Malloc(sizeof(float));
 
-        if(u_temp == NULL)
+        if (u_temp == NULL)
         {
             MMU_Free(u_temp);
             return false;
@@ -37,7 +37,7 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *hea
         }
 
         /* link element */
-        if(i > 0)
+        if (i > 0)
         {
             item[i - 1].nxt = &item[i];
             item[i].prv = &item[i - 1];
@@ -51,28 +51,27 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *hea
     return true;
 }
 
-static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para)
+static BWF_Object_Handle Butterworth_Init(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para)
 {
     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
     uint8_t e_cnt = order + 1;
     uint8_t u_cnt = order;
 
-
-    if(sample_freq && (order > 1))
+    if (sample_freq && (order > 1))
     {
-        if((e_para == NULL) || (u_para == NULL))
+        if ((e_para == NULL) || (u_para == NULL))
             return 0;
 
         BWF_Obj = MMU_Malloc(sizeof(Filter_ButterworthParam_TypeDef));
-        
-        if(BWF_Obj == NULL)
+
+        if (BWF_Obj == NULL)
         {
             MMU_Free(BWF_Obj);
             return 0;
         }
 
         BWF_Obj->p_e_data_cache = MMU_Malloc(sizeof(item_obj) * e_cnt);
-        if(BWF_Obj->p_e_data_cache == NULL)
+        if (BWF_Obj->p_e_data_cache == NULL)
         {
             MMU_Free(BWF_Obj);
             MMU_Free(BWF_Obj->p_e_data_cache);
@@ -80,7 +79,7 @@ static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_fr
         }
         else
         {
-            if(!Butterworth_List_Create(e_cnt, BWF_Obj->p_e_data_cache, BWF_Obj->p_e_list_header, BWF_Obj->p_e_list_ender))
+            if (!Butterworth_List_Create(e_cnt, BWF_Obj->p_e_data_cache, BWF_Obj->p_e_list_header, BWF_Obj->p_e_list_ender))
             {
                 MMU_Free(BWF_Obj);
                 MMU_Free(BWF_Obj->p_e_data_cache);
@@ -89,7 +88,7 @@ static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_fr
         }
 
         BWF_Obj->p_u_data_cache = MMU_Malloc(sizeof(item_obj) * u_cnt);
-        if(BWF_Obj->p_u_data_cache == NULL)
+        if (BWF_Obj->p_u_data_cache == NULL)
         {
             MMU_Free(BWF_Obj);
             MMU_Free(BWF_Obj->p_e_data_cache);
@@ -98,7 +97,7 @@ static BWF_Object_TypeDef Butterworth_Init(uint32_t sample_freq, uint8_t stop_fr
         }
         else
         {
-            if(!Butterworth_List_Create(u_cnt, BWF_Obj->p_u_data_cache, BWF_Obj->p_u_list_header, BWF_Obj->p_u_list_ender))
+            if (!Butterworth_List_Create(u_cnt, BWF_Obj->p_u_data_cache, BWF_Obj->p_u_list_header, BWF_Obj->p_u_list_ender))
             {
                 MMU_Free(BWF_Obj);
                 MMU_Free(BWF_Obj->p_e_data_cache);
@@ -134,7 +133,7 @@ static void Butterworth_Item_Update(item_obj *header, item_obj *ender, float cur
     ender = i_tmp;
 }
 
-static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e)
+static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
 {
     Filter_ButterworthParam_TypeDef *filter_obj = NULL;
     item_obj *u_item = NULL;
@@ -144,7 +143,7 @@ static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e)
     float E_Additive = 0.0f;
     float U_Additive = 0.0f;
 
-    if(obj)
+    if (obj)
     {
         filter_obj = (Filter_ButterworthParam_TypeDef *)obj;
         Butterworth_Item_Update(filter_obj->p_e_list_header, filter_obj->p_e_list_ender, cur_e);
@@ -152,17 +151,17 @@ static float Butterworth_Filter_Update(BWF_Object_TypeDef obj, float cur_e)
         u_item = filter_obj->p_u_list_header;
         e_item = filter_obj->p_e_list_header;
 
-        for(uint8_t i = 0; i < filter_obj->order + 1; i++)
+        for (uint8_t i = 0; i < filter_obj->order + 1; i++)
         {
             /* comput U additive */
-            if(i <= filter_obj->order && u_item)
+            if (i <= filter_obj->order && u_item)
             {
                 U_Additive += filter_obj->u_para_buf[i] * (*(float *)(u_item->data));
                 u_item = u_item->nxt;
             }
 
             /* comput E additive */
-            if(e_item)
+            if (e_item)
             {
                 E_Additive += filter_obj->e_para_buf[i] * (*(float *)(e_item->data));
                 e_item = e_item->nxt;

@@ -10,7 +10,7 @@
 
 #define SMOOTH_WINDOW_SIZE 5
 
-typedef uint32_t BWF_Object_TypeDef; /* butterworth filter object */
+typedef uint32_t BWF_Object_Handle; /* butterworth filter object */
 
 #pragma pack(1)
 typedef struct
@@ -30,16 +30,15 @@ typedef struct
 
     item_obj *p_e_data_cache;
     item_obj *p_u_data_cache;
-}Filter_ButterworthParam_TypeDef;
+} Filter_ButterworthParam_TypeDef;
 #pragma pack()
 
 typedef struct
 {
-    BWF_Object_TypeDef (*init)(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para);
-    float (*update)(BWF_Object_TypeDef obj, float cur_e);
-}Butterworth_Filter_TypeDef;
+    BWF_Object_Handle (*init)(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para);
+    float (*update)(BWF_Object_Handle obj, float cur_e);
+} Butterworth_Filter_TypeDef;
 
 extern Butterworth_Filter_TypeDef Butterworth;
 
 #endif
-

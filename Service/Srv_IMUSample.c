@@ -27,6 +27,16 @@ static uint32_t SrvIMU_PriIMU_Init_Error_CNT = 0;
 static uint32_t SrvIMU_SecIMU_Init_Error_CNT = 0;
 static uint32_t SrvIMU_ALLModule_Init_Error_CNT = 0;
 
+/* PriIMU Butterworth filter object handle */
+static BWF_Object_Handle PriIMU_GyrX_LPF_Handle = 0;
+static BWF_Object_Handle PriIMU_GyrY_LPF_Handle = 0;
+static BWF_Object_Handle PriIMU_GyrZ_LPF_Handle = 0;
+
+/* SecIMU Butterworth filter object handle */
+static BWF_Object_Handle SecIMU_GyrX_LPF_Handle = 0;
+static BWF_Object_Handle SecIMU_GyrY_LPF_Handle = 0;
+static BWF_Object_Handle SecIMU_GyrZ_LPF_Handle = 0;
+
 /*
  *   PriIMU -> MPU6000
  *   SecIMU -> ICM20602
@@ -222,6 +232,11 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     if (PriIMU_Init_State == SrvIMU_No_Error)
     {
         SrvMpu_Init_Reg.sec.Pri_State = true;
+
+        /* init filter */
+        PriIMU_GyrX_LPF_Handle = Butterworth.init();
+        PriIMU_GyrY_LPF_Handle = Butterworth.init();
+        PriIMU_GyrZ_LPF_Handle = Butterworth.init();
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, &SrvIMU_PriIMU_Init_Error_CNT, sizeof(SrvIMU_PriIMU_Init_Error_CNT));
@@ -229,6 +244,11 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
         SrvMpu_Init_Reg.sec.Sec_State = true;
+
+        /* init filter */
+        SecIMU_GyrX_LPF_Handle = Butterworth.init();
+        SecIMU_GyrY_LPF_Handle = Butterworth.init();
+        SecIMU_GyrZ_LPF_Handle = Butterworth.init();
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, &SrvIMU_SecIMU_Init_Error_CNT, sizeof(SrvIMU_SecIMU_Init_Error_CNT));
@@ -238,9 +258,6 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     memset(&PriIMU_Data_Lst, NULL, sizeof(PriIMU_Data_Lst));
     memset(&SecIMU_Data_Lst, NULL, sizeof(SecIMU_Data_Lst));
-
-    /* init filter */
-    Butterworth.init();
 
     if (!SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
@@ -473,7 +490,7 @@ static bool SrvIMU_Sample(void)
                     }
 
                     /* over angular accelerate above 20Ms then throw Angular Accelerate error */
-                    if(SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.org_gyr[i], PriIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
+                    if (SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.org_gyr[i], PriIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
                         PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
 
@@ -541,7 +558,7 @@ static bool SrvIMU_Sample(void)
                         ICM20602Obj.OriData.gyr_int_lst[i] = ICM20602Obj.OriData.gyr_int[i];
                     }
 
-                    if(SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.org_gyr[i], SecIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
+                    if (SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.org_gyr[i], SecIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
                         SecIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
 
@@ -625,7 +642,7 @@ static bool SrvIMU_Detect_AngularOverSpeed(float angular_speed, float lst_angula
     uint16_t Specified_Anuglar_Acceleration = (uint16_t)(SrvIMU_Get_MaxAngularSpeed_Diff() * ANGULAR_SPEED_ACCURACY);
     uint16_t AngularSpeed_Diff = (uint16_t)(fabs(angular_speed - lst_angular_speed) / ms_diff * ANGULAR_SPEED_ACCURACY);
 
-    if(AngularSpeed_Diff >= (uint16_t)(ANGULAR_ACCECLERATION_THRESHOLD * ANGULAR_SPEED_ACCURACY))
+    if (AngularSpeed_Diff >= (uint16_t)(ANGULAR_ACCECLERATION_THRESHOLD * ANGULAR_SPEED_ACCURACY))
         return true;
 
     return false;
