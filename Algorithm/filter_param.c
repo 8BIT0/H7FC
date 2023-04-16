@@ -1,0 +1,75 @@
+#include "filter_param.h"
+
+/*
+ *  low pass filter parameter section
+ */
+
+/*
+ * 1K Sample Rate Section
+ */
+/* 2 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 1K */
+const float BTF_E_2O_30Hz_1K[3];
+const float BTF_U_2O_30Hz_1K[2];
+
+/* 2 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 1K */
+const float BTF_E_2O_50Hz_1K[3];
+const float BTF_U_2O_50Hz_1K[2];
+
+/* 3 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 1K */
+const float BTF_E_3O_30Hz_1K[4];
+const float BTF_U_3O_30Hz_1K[3];
+
+/* 3 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 1K */
+const float BTF_E_3O_50Hz_1K[4];
+const float BTF_U_3O_50Hz_1K[3];
+
+/* 4 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 1K */
+const float BTF_E_4O_30Hz_1K[5];
+const float BTF_U_4O_30Hz_1K[4];
+
+/* 4 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 1K */
+const float BTF_E_4O_50Hz_1K[5];
+const float BTF_U_4O_50Hz_1K[4];
+
+/* 5 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 1K */
+const float BTF_E_5O_30Hz_1K[6];
+const float BTF_U_5O_30Hz_1K[5];
+
+/* 5 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 1K */
+const float BTF_E_5O_50Hz_1K[6];
+const float BTF_U_5O_50Hz_1K[5];
+
+/*
+ * 2K Sample Rate section
+ */
+/* 2 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 2K */
+const float BTF_E_2O_30Hz_2K[3];
+const float BTF_U_2O_30Hz_2K[2];
+
+/* 2 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 2K */
+const float BTF_E_2O_50Hz_2K[3];
+const float BTF_U_2O_50Hz_2K[2];
+
+/* 3 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 2K */
+const float BTF_E_3O_30Hz_2K[4];
+const float BTF_U_3O_30Hz_2K[3];
+
+/* 3 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 2K */
+const float BTF_E_3O_50Hz_2K[4];
+const float BTF_U_3O_50Hz_2K[3];
+
+/* 4 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 2K */
+const float BTF_E_4O_30Hz_2K[5];
+const float BTF_U_4O_30Hz_2K[4];
+
+/* 4 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 2K */
+const float BTF_E_4O_50Hz_2K[5];
+const float BTF_U_4O_50Hz_2K[4];
+
+/* 5 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 2K */
+const float BTF_E_5O_30Hz_2K[5];
+const float BTF_U_5O_30Hz_2K[4];
+
+/* 5 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 2K */
+const float BTF_E_5O_50Hz_2K[5];
+const float BTF_U_5O_50Hz_2K[4];
