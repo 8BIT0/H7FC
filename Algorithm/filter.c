@@ -153,18 +153,18 @@ static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
 
         for (uint8_t i = 0; i < filter_obj->order + 1; i++)
         {
-            /* comput U additive */
-            if (i <= filter_obj->order && u_item)
-            {
-                U_Additive += filter_obj->u_para_buf[i] * (*(float *)(u_item->data));
-                u_item = u_item->nxt;
-            }
-
             /* comput E additive */
             if (e_item)
             {
                 E_Additive += filter_obj->e_para_buf[i] * (*(float *)(e_item->data));
                 e_item = e_item->nxt;
+            }
+
+            /* comput U additive */
+            if (i <= filter_obj->order && u_item)
+            {
+                U_Additive += filter_obj->u_para_buf[i] * (*(float *)(u_item->data));
+                u_item = u_item->nxt;
             }
         }
 
