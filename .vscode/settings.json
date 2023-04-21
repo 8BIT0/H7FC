@@ -118,7 +118,8 @@
                 "srv_actuator.h": "c",
                 "srv_comproto.h": "c",
                 "srv_datahub.h": "c",
-                "madgwick.h": "c"
+                "madgwick.h": "c",
+                "filter_param.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false
