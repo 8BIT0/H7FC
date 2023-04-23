@@ -73,16 +73,16 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef param_ob
         BWF_Obj->p_e_data_cache = MMU_Malloc(sizeof(item_obj) * e_cnt);
         if (BWF_Obj->p_e_data_cache == NULL)
         {
-            MMU_Free(BWF_Obj);
             MMU_Free(BWF_Obj->p_e_data_cache);
+            MMU_Free(BWF_Obj);
             return 0;
         }
         else
         {
             if (!Butterworth_List_Create(e_cnt, BWF_Obj->p_e_data_cache, BWF_Obj->p_e_list_header, BWF_Obj->p_e_list_ender))
             {
-                MMU_Free(BWF_Obj);
                 MMU_Free(BWF_Obj->p_e_data_cache);
+                MMU_Free(BWF_Obj);
                 return 0;
             }
         }
@@ -90,25 +90,54 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef param_ob
         BWF_Obj->p_u_data_cache = MMU_Malloc(sizeof(item_obj) * u_cnt);
         if (BWF_Obj->p_u_data_cache == NULL)
         {
-            MMU_Free(BWF_Obj);
             MMU_Free(BWF_Obj->p_e_data_cache);
             MMU_Free(BWF_Obj->p_u_data_cache);
+            MMU_Free(BWF_Obj);
             return 0;
         }
         else
         {
             if (!Butterworth_List_Create(u_cnt, BWF_Obj->p_u_data_cache, BWF_Obj->p_u_list_header, BWF_Obj->p_u_list_ender))
             {
-                MMU_Free(BWF_Obj);
                 MMU_Free(BWF_Obj->p_e_data_cache);
                 MMU_Free(BWF_Obj->p_u_data_cache);
+                MMU_Free(BWF_Obj);
                 return 0;
             }
         }
 
+        BWF_Obj->e_para_buf = MMU_Malloc(sizeof(float) * e_cnt);
+        if(BWF_Obj->e_para_buf == NULL)
+        {
+            MMU_Free(BWF_Obj->e_para_buf);
+            MMU_Free(BWF_Obj->p_e_data_cache);
+            MMU_Free(BWF_Obj->p_u_data_cache);
+            MMU_Free(BWF_Obj);
+            return 0;
+        }
+
+        BWF_Obj->u_para_buf = MMU_Malloc(sizeof(float) * u_cnt);
+        if(BWF_Obj->u_para_buf == NULL)
+        {
+            MMU_Free(BWF_Obj->e_para_buf);
+            MMU_Free(BWF_Obj->u_para_buf);
+            MMU_Free(BWF_Obj->p_e_data_cache);
+            MMU_Free(BWF_Obj->p_u_data_cache);
+            MMU_Free(BWF_Obj);
+            return 0;
+        }
+
         BWF_Obj->order = param_obj.order;
-        BWF_Obj->e_para_buf = param_obj.ep_list;
-        BWF_Obj->u_para_buf = param_obj.up_list;
+
+        for(uint8_t i = 0; i < e_cnt; i++)
+        {
+            BWF_Obj->e_para_buf[i] = param_obj.ep_list[i].p * param_obj.ep_list[i].scale;
+        
+            if(i < u_cnt)
+            {
+                BWF_Obj->u_para_buf[i] = param_obj.up_list[i].p * param_obj.up_list[i].scale;
+            }
+        }
     }
 
     return (uint32_t)BWF_Obj;

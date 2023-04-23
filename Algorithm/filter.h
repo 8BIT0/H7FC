@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "linked_list.h"
+#include "filter_param.h"
 
 #define SMOOTH_WINDOW_SIZE 5
 
@@ -24,8 +25,8 @@ typedef struct
 {
     uint8_t order;
 
-    void *e_para_buf;
-    void *u_para_buf;
+    float *e_para_buf;
+    float *u_para_buf;
 
     list_obj *p_e_list_header;
     item_obj *p_e_list_ender;
