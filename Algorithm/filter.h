@@ -15,13 +15,17 @@ typedef uint32_t BWF_Object_Handle; /* butterworth filter object */
 #pragma pack(1)
 typedef struct
 {
-    uint32_t sample_freq;
-    uint32_t stop_freq;
+    uint8_t order;
+    BTF_Para_TypeDef *ep_list;
+    BTF_Para_TypeDef *up_list;
+}FilterParam_Obj_TypeDef;
 
+typedef struct
+{
     uint8_t order;
 
-    float *e_para_buf;
-    float *u_para_buf;
+    void *e_para_buf;
+    void *u_para_buf;
 
     list_obj *p_e_list_header;
     item_obj *p_e_list_ender;
@@ -35,7 +39,7 @@ typedef struct
 
 typedef struct
 {
-    BWF_Object_Handle (*init)(uint32_t sample_freq, uint8_t stop_freq, uint8_t order, float *e_para, float *u_para);
+    BWF_Object_Handle (*init)(const FilterParam_Obj_TypeDef param_obj);
     float (*update)(BWF_Object_Handle obj, float cur_e);
 } Butterworth_Filter_TypeDef;
 
