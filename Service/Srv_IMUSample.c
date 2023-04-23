@@ -249,9 +249,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         SrvMpu_Init_Reg.sec.Sec_State = true;
 
         /* init filter */
-        // SecIMU_GyrX_LPF_Handle = Butterworth.init();
-        // SecIMU_GyrY_LPF_Handle = Butterworth.init();
-        // SecIMU_GyrZ_LPF_Handle = Butterworth.init();
+        SecIMU_GyrX_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
+        SecIMU_GyrY_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
+        SecIMU_GyrZ_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, &SrvIMU_SecIMU_Init_Error_CNT, sizeof(SrvIMU_SecIMU_Init_Error_CNT));
