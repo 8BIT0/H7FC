@@ -109,6 +109,6 @@ const BTF_Para_TypeDef BTF_U_4O_50Hz_4K[4];
 const BTF_Para_TypeDef BTF_E_5O_30Hz_4K[6];
 const BTF_Para_TypeDef BTF_U_5O_30Hz_4K[5];
 
-/* 5 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 4K */
+// /* 5 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 4K */
 const BTF_Para_TypeDef BTF_E_5O_50Hz_4K[6];
 const BTF_Para_TypeDef BTF_U_5O_50Hz_4K[5];

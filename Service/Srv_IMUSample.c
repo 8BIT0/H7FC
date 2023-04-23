@@ -234,9 +234,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         SrvMpu_Init_Reg.sec.Pri_State = true;
 
         /* init filter */
-        PriIMU_GyrX_LPF_Handle = Butterworth.init();
-        PriIMU_GyrY_LPF_Handle = Butterworth.init();
-        PriIMU_GyrZ_LPF_Handle = Butterworth.init();
+        // PriIMU_GyrX_LPF_Handle = Butterworth.init();
+        // PriIMU_GyrY_LPF_Handle = Butterworth.init();
+        // PriIMU_GyrZ_LPF_Handle = Butterworth.init();
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, &SrvIMU_PriIMU_Init_Error_CNT, sizeof(SrvIMU_PriIMU_Init_Error_CNT));
@@ -246,9 +246,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         SrvMpu_Init_Reg.sec.Sec_State = true;
 
         /* init filter */
-        SecIMU_GyrX_LPF_Handle = Butterworth.init();
-        SecIMU_GyrY_LPF_Handle = Butterworth.init();
-        SecIMU_GyrZ_LPF_Handle = Butterworth.init();
+        // SecIMU_GyrX_LPF_Handle = Butterworth.init();
+        // SecIMU_GyrY_LPF_Handle = Butterworth.init();
+        // SecIMU_GyrZ_LPF_Handle = Butterworth.init();
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, &SrvIMU_SecIMU_Init_Error_CNT, sizeof(SrvIMU_SecIMU_Init_Error_CNT));

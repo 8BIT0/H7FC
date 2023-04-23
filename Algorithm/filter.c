@@ -11,7 +11,7 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *hea
 static void Butterworth_Item_Update(item_obj *header, item_obj *ender, float cur_data);
 
 /* external function */
-static BWF_Object_Handle Butterworth_Init(uint8_t order, float *e_para, float *u_para);
+static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef param_obj);
 static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e);
 
 Butterworth_Filter_TypeDef Butterworth = {
