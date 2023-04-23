@@ -32,10 +32,18 @@ static BWF_Object_Handle PriIMU_GyrX_LPF_Handle = 0;
 static BWF_Object_Handle PriIMU_GyrY_LPF_Handle = 0;
 static BWF_Object_Handle PriIMU_GyrZ_LPF_Handle = 0;
 
+static BWF_Object_Handle PriIMU_AccX_LPF_Handle = 0;
+static BWF_Object_Handle PriIMU_AccY_LPF_Handle = 0;
+static BWF_Object_Handle PriIMU_AccZ_LPF_Handle = 0;
+
 /* SecIMU Butterworth filter object handle */
 static BWF_Object_Handle SecIMU_GyrX_LPF_Handle = 0;
 static BWF_Object_Handle SecIMU_GyrY_LPF_Handle = 0;
 static BWF_Object_Handle SecIMU_GyrZ_LPF_Handle = 0;
+
+static BWF_Object_Handle SecIMU_AccX_LPF_Handle = 0;
+static BWF_Object_Handle SecIMU_AccY_LPF_Handle = 0;
+static BWF_Object_Handle SecIMU_AccZ_LPF_Handle = 0;
 
 /*
  *   PriIMU -> MPU6000
@@ -218,7 +226,10 @@ SrvIMU_TypeDef SrvIMU = {
 static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
     FilterParam_Obj_TypeDef *Gyr_Filter_Ptr = NULL;
-    CREATE_FILTER_PARAM_OBJ(5, 50Hz, 2K, Gyr_Filter_Ptr);
+    FilterParam_Obj_TypeDef *Acc_Filter_Ptr = NULL;
+
+    CREATE_FILTER_PARAM_OBJ(Gyr, 5, 50Hz, 2K, Gyr_Filter_Ptr);
+    CREATE_FILTER_PARAM_OBJ(Acc, 5, 50Hz, 2K, Acc_Filter_Ptr);
 
     /* create error log handle */
     SrvMPU_Error_Handle = ErrorLog.create("SrvIMU_Error");
@@ -241,9 +252,16 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         PriIMU_GyrY_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
         PriIMU_GyrZ_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
 
+        PriIMU_AccX_LPF_Handle = Butterworth.init(Acc_Filter_Ptr);
+        PriIMU_AccY_LPF_Handle = Butterworth.init(Acc_Filter_Ptr);
+        PriIMU_AccZ_LPF_Handle = Butterworth.init(Acc_Filter_Ptr);
+
         if( (PriIMU_GyrX_LPF_Handle == 0) || 
             (PriIMU_GyrY_LPF_Handle == 0) || 
-            (PriIMU_GyrZ_LPF_Handle == 0))
+            (PriIMU_GyrZ_LPF_Handle == 0) ||
+            (PriIMU_AccX_LPF_Handle == 0) ||
+            (PriIMU_AccY_LPF_Handle == 0) ||
+            (PriIMU_AccZ_LPF_Handle == 0))
             return SrvIMU_PriIMU_Filter_Init_Error;
     }
     else
@@ -258,9 +276,16 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         SecIMU_GyrY_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
         SecIMU_GyrZ_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
 
+        SecIMU_AccX_LPF_Handle = Butterworth.init(Acc_Filter_Ptr);
+        SecIMU_AccY_LPF_Handle = Butterworth.init(Acc_Filter_Ptr);
+        SecIMU_AccZ_LPF_Handle = Butterworth.init(Acc_Filter_Ptr);
+
         if( (SecIMU_GyrX_LPF_Handle == 0) || 
             (SecIMU_GyrY_LPF_Handle == 0) || 
-            (SecIMU_GyrZ_LPF_Handle == 0))
+            (SecIMU_GyrZ_LPF_Handle == 0) ||
+            (SecIMU_AccX_LPF_Handle == 0) ||
+            (SecIMU_AccY_LPF_Handle == 0) ||
+            (SecIMU_AccZ_LPF_Handle == 0))
             return SrvIMU_SecIMU_Filter_Init_Error;
     }
     else

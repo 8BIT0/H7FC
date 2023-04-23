@@ -38,13 +38,13 @@ typedef struct
 } Filter_ButterworthParam_TypeDef;
 #pragma pack()
 
-#define CREATE_FILTER_PARAM_OBJ(_order, _stop_freq, _sample_rate, obj_ptr)      \
-FilterParam_Obj_TypeDef FilterObj_##_order##o_##_stop_freq##_##_sample_rate = { \
+#define CREATE_FILTER_PARAM_OBJ(_name ,_order, _stop_freq, _sample_rate, obj_ptr)      \
+FilterParam_Obj_TypeDef FilterObj_##_name##_##_order##o_##_stop_freq##_##_sample_rate = { \
     .order = _order,                                                            \
     .ep_list = BTF_E_##_order##O_##_stop_freq##_##_sample_rate,                 \
     .up_list = BTF_U_##_order##O_##_stop_freq##_##_sample_rate                  \
 };                                                                              \
-obj_ptr = &FilterObj_##_order##o_##_stop_freq##_##_sample_rate                  \
+obj_ptr = &FilterObj_##_name##_##_order##o_##_stop_freq##_##_sample_rate        \
 
 typedef struct
 {
