@@ -11,7 +11,7 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *hea
 static void Butterworth_Item_Update(item_obj *header, item_obj *ender, float cur_data);
 
 /* external function */
-static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef param_obj);
+static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_obj);
 static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e);
 
 Butterworth_Filter_TypeDef Butterworth = {
@@ -51,15 +51,21 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *hea
     return true;
 }
 
-static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef param_obj)
+static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_obj)
 {
     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
-    uint8_t e_cnt = param_obj.order + 1;
-    uint8_t u_cnt = param_obj.order;
+    uint8_t e_cnt = 0;
+    uint8_t u_cnt = 0;
 
-    if (param_obj.order > 1)
+    if(param_obj == NULL)
+        return 0;
+
+    if (param_obj->order > 1)
     {
-        if ((param_obj.ep_list == NULL) || (param_obj.up_list == NULL))
+        e_cnt = param_obj->order + 1;
+        u_cnt = param_obj->order;
+        
+        if ((param_obj->ep_list == NULL) || (param_obj->up_list == NULL))
             return 0;
 
         BWF_Obj = MMU_Malloc(sizeof(Filter_ButterworthParam_TypeDef));
@@ -127,15 +133,15 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef param_ob
             return 0;
         }
 
-        BWF_Obj->order = param_obj.order;
+        BWF_Obj->order = param_obj->order;
 
         for(uint8_t i = 0; i < e_cnt; i++)
         {
-            BWF_Obj->e_para_buf[i] = param_obj.ep_list[i].p * param_obj.ep_list[i].scale;
+            BWF_Obj->e_para_buf[i] = param_obj->ep_list[i].p * param_obj->ep_list[i].scale;
         
             if(i < u_cnt)
             {
-                BWF_Obj->u_para_buf[i] = param_obj.up_list[i].p * param_obj.up_list[i].scale;
+                BWF_Obj->u_para_buf[i] = param_obj->up_list[i].p * param_obj->up_list[i].scale;
             }
         }
     }

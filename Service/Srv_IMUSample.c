@@ -217,6 +217,9 @@ SrvIMU_TypeDef SrvIMU = {
 
 static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 {
+    FilterParam_Obj_TypeDef *Gyr_Filter_Ptr = NULL;
+    CREATE_FILTER_PARAM_OBJ(5, 50Hz, 2K, Gyr_Filter_Ptr);
+
     /* create error log handle */
     SrvMPU_Error_Handle = ErrorLog.create("SrvIMU_Error");
 
@@ -234,9 +237,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         SrvMpu_Init_Reg.sec.Pri_State = true;
 
         /* init filter */
-        // PriIMU_GyrX_LPF_Handle = Butterworth.init();
-        // PriIMU_GyrY_LPF_Handle = Butterworth.init();
-        // PriIMU_GyrZ_LPF_Handle = Butterworth.init();
+        PriIMU_GyrX_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
+        PriIMU_GyrY_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
+        PriIMU_GyrZ_LPF_Handle = Butterworth.init(Gyr_Filter_Ptr);
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, &SrvIMU_PriIMU_Init_Error_CNT, sizeof(SrvIMU_PriIMU_Init_Error_CNT));
