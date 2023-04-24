@@ -521,7 +521,7 @@ static bool SrvIMU_Sample(void)
                         MPU6000Obj.OriData.gyr_int_lst[i] = MPU6000Obj.OriData.gyr_int[i];
                     }
 
-                    /* over angular accelerate above 20Ms then throw Angular Accelerate error */
+                    /* over angular accelerate error detect */
                     if (SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.org_gyr[i], PriIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
                         PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
