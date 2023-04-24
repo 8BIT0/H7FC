@@ -670,7 +670,6 @@ static float SrvIMU_Get_MaxAngularSpeed_Diff(void)
 
 static bool SrvIMU_Detect_AngularOverSpeed(float angular_speed, float lst_angular_speed, float ms_diff)
 {
-    uint16_t Specified_Anuglar_Acceleration = (uint16_t)(SrvIMU_Get_MaxAngularSpeed_Diff() * ANGULAR_SPEED_ACCURACY);
     uint16_t AngularSpeed_Diff = (uint16_t)(fabs(angular_speed - lst_angular_speed) / ms_diff * ANGULAR_SPEED_ACCURACY);
 
     if (AngularSpeed_Diff >= (uint16_t)(ANGULAR_ACCECLERATION_THRESHOLD * ANGULAR_SPEED_ACCURACY))
