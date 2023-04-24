@@ -526,8 +526,6 @@ static bool SrvIMU_Sample(void)
                         PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
 
-                /* filter Pri IMU Module data */
-
                 /* unlock */
                 SrvMpu_Update_Reg.sec.Pri_State = false;
                 PriIMU_Data_Lst = PriIMU_Data;
@@ -596,8 +594,6 @@ static bool SrvIMU_Sample(void)
                     if (SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.org_gyr[i], SecIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
                         SecIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
-
-                /* filter Sec IMU Module data */
 
                 /* unlock */
                 SrvMpu_Update_Reg.sec.Sec_State = false;
