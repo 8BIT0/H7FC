@@ -4,6 +4,7 @@
 #include "Task_Control.h"
 #include "Task_SensorInertial.h"
 #include "Task_Telemetry.h"
+#include "Task_OSD.h"
 #include "scheduler.h"
 #include "debug_util.h"
 #include "IO_Definition.h"
@@ -16,7 +17,8 @@ Task_Handle TaskProtocol_Handle = NULL;
 Task_Handle TaskInertial_Handle = NULL;
 Task_Handle TaskControl_Handle = NULL;
 Task_Handle TaskLog_Handle = NULL;
-Task_Handle TestTelemetry_Handle = NULL;
+Task_Handle TaskTelemetry_Handle = NULL;
+Task_Handle TaskOSD_Handle = NULL;
 
 void Test2(Task_Handle handle);
 
@@ -54,8 +56,6 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PB6);
     DebugPin.init(Debug_PB10);
 
-    /* ESC port init */
-
     /* vol ADC init */
 
     /* cur ADC init */
@@ -67,6 +67,7 @@ void Task_Manager_Init(void)
     TaskTelemetry_Init();
     TaskControl_Init();
     TaskLog_Init();
+    TaskOSD_Init();
 }
 
 void Task_Manager_CreateTask(void)
@@ -75,5 +76,6 @@ void Task_Manager_CreateTask(void)
     TaskControl_Handle = Os_CreateTask("Control", TASK_EXEC_1KHZ, Task_Group_0, Task_Priority_1, TaskControl_Core, 1024);
     TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_100HZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 1024);
     TaskLog_Handle = Os_CreateTask("Data Log", TASK_EXEC_200HZ, Task_Group_2, Task_Priority_0, TaskLog_Core, 1024);
-    TestTelemetry_Handle = Os_CreateTask("Telemetry", TASK_EXEC_100HZ, Task_Group_0, Task_Priority_2, TaskTelemetry_Core, 512);
+    TaskTelemetry_Handle = Os_CreateTask("Telemetry", TASK_EXEC_100HZ, Task_Group_0, Task_Priority_2, TaskTelemetry_Core, 512);
+    TaskOSD_Handle = Os_CreateTask("OSD", TASK_EXEC_50HZ, Task_Group_2, Task_Priority_1, TaskOSD_Core, 512);
 }
