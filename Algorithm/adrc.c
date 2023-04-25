@@ -14,8 +14,8 @@ static float adrc_sign(float val)
 {
     if (val >= 0.0f)
         return 1.0f;
-    else
-        return -1.0f;
+    
+    return -1.0f;
 }
 
 float adrc_fhan(float v1, float v2, float r0, float h0)
@@ -38,10 +38,8 @@ float adrc_fal(float e, float alpha, float delta)
     {
         return e / (powf(delta, 1.0f - alpha));
     }
-    else
-    {
-        return powf(fabsf(e), alpha) * adrc_sign(e);
-    }
+
+    return powf(fabsf(e), alpha) * adrc_sign(e);
 }
 
 void adrc_td_init(ADRC_TD_Def *td_t, float h, float r0, float h0)
