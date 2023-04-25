@@ -9,6 +9,7 @@
 #include "scheduler.h"
 #include "Srv_Actuator.h"
 #include "mmu.h"
+#include "adrc.h"
 
 #define DEFAULT_CONTROL_MODEL Model_Quad
 #define DEFAULT_ESC_TYPE DevDshot_600
