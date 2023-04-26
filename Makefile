@@ -44,6 +44,8 @@ Task/Task_SensorInertial.c \
 Task/Task_Log.c \
 Task/Task_Telemetry.c \
 Task/Task_Control.c \
+Task/Task_OSD.c \
+Task/Task_Attitude.c \
 IO_Def/IO_Definition.c \
 Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \

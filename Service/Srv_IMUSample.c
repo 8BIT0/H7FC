@@ -510,8 +510,8 @@ static bool SrvIMU_Sample(void)
                     PriIMU_Data.org_gyr[i] = MPU6000Obj.OriData.gyr_flt[i];
 
                     /* filted imu data */
-                    PriIMU_Data.flt_gyr[i] = Butterworth.update(PriIMU_Gyr_LPF_Handle[i], PriIMU_Data.OriData.org_gyr[i]);
-                    PriIMU_Data.flt_acc[i] = Butterworth.update(PriIMU_Acc_LPF_Handle[i], PriIMU_Data.OriData.org_acc[i]);
+                    PriIMU_Data.flt_gyr[i] = Butterworth.update(PriIMU_Gyr_LPF_Handle[i], PriIMU_Data.org_gyr[i]);
+                    PriIMU_Data.flt_acc[i] = Butterworth.update(PriIMU_Acc_LPF_Handle[i], PriIMU_Data.org_acc[i]);
 
                     /* update last time value */
                     if ((PriIMU_Data.error_code != SrvIMU_Sample_Data_Acc_OverRange) &&
@@ -580,8 +580,8 @@ static bool SrvIMU_Sample(void)
                     SecIMU_Data.org_acc[i] = ICM20602Obj.OriData.acc_flt[i];
                     SecIMU_Data.org_gyr[i] = ICM20602Obj.OriData.gyr_flt[i];
 
-                    SecIMU_Data.flt_gyr[i] = Butterworth.update(SecIMU_Gyr_LPF_Handle[i], SecIMU_Data.OriData.org_gyr[i]);
-                    SecIMU_Data.flt_acc[i] = Butterworth.update(SecIMU_Acc_LPF_Handle[i], SecIMU_Data.OriData.org_acc[i]);
+                    SecIMU_Data.flt_gyr[i] = Butterworth.update(SecIMU_Gyr_LPF_Handle[i], SecIMU_Data.org_gyr[i]);
+                    SecIMU_Data.flt_acc[i] = Butterworth.update(SecIMU_Acc_LPF_Handle[i], SecIMU_Data.org_acc[i]);
 
                     /* update Sec last value */
                     if ((SecIMU_Data.error_code != SrvIMU_Sample_Data_Acc_OverRange) &&
