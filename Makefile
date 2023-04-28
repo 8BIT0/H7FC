@@ -87,6 +87,7 @@ System/shell/shell_port.c \
 System/shell/shell.c \
 Algorithm/filter.c \
 Algorithm/filter_param.c \
+Algorithm/adrc.c \
 USB/USB_DEVICE/App/usb_device.c \
 USB/USB_DEVICE/App/usbd_desc.c \
 USB/USB_DEVICE/App/usbd_cdc_if.c \

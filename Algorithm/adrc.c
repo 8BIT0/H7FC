@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include "adrc.h"
 
 static float adrc_sign(float val)
 {
