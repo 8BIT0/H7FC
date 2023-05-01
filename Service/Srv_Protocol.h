@@ -16,9 +16,8 @@ typedef struct
 {
     SrvProto_Port_TypeList port_type;
 
-    void *obj;
-    void *obj_cfg;
-    void *api;
+    void *port_obj;
+    void *port_api;
 
     bool is_active;
     bool in_using;
