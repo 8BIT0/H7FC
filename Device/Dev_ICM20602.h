@@ -155,15 +155,9 @@ typedef struct
 
 typedef struct
 {
-    void (*config)(DevICM20602Obj_TypeDef *Obj,
-                   ICM20602_SampleRate_List rate,
-                   ICM20602_GyrTrip_List GyrTrip,
-                   ICM20602_AccTrip_List AccTrip);
-    void (*pre_init)(DevICM20602Obj_TypeDef *Obj,
-                     cs_ctl_callback cs_ctl,
-                     bus_trans_callback bus_trans,
-                     delay_callback delay,
-                     get_time_stamp_callback get_time_stamp);
+    bool (*detect)(bus_trans_callback trans, cs_ctl_callback cs_ctl);
+    void (*config)(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate, ICM20602_GyrTrip_List GyrTrip, ICM20602_AccTrip_List AccTrip);
+    void (*pre_init)(DevICM20602Obj_TypeDef *Obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay, get_time_stamp_callback get_time_stamp);
     bool (*init)(DevICM20602Obj_TypeDef *Obj);
     void (*set_ready)(DevICM20602Obj_TypeDef *Obj);
     bool (*get_ready)(DevICM20602Obj_TypeDef *Obj);

@@ -1,0 +1,193 @@
+#ifndef __DEV_ICM426XX_H
+#define __DEV_ICM426XX_H
+
+#include <stdbool.h>
+#include <stdint.h>
+#include "imu_data.h"
+
+// 24 MHz max SPI frequency
+#define ICM426XX_MAX_SPI_CLK_HZ 24000000
+
+#define ICM42605_WHO_AM_I 0x42
+#define ICM42688P_WHO_AM_I 0x47
+
+#define ICM426XX_RA_REG_BANK_SEL 0x76
+#define ICM426XX_BANK_SELECT0 0x00
+#define ICM426XX_BANK_SELECT1 0x01
+#define ICM426XX_BANK_SELECT2 0x02
+#define ICM426XX_BANK_SELECT3 0x03
+#define ICM426XX_BANK_SELECT4 0x04
+
+#define ICM426XX_RA_PWR_MGMT0 0x4E // User Bank 0
+#define ICM426XX_PWR_MGMT0_ACCEL_MODE_LN (3 << 0)
+#define ICM426XX_PWR_MGMT0_GYRO_MODE_LN (3 << 2)
+#define ICM426XX_PWR_MGMT0_GYRO_ACCEL_MODE_OFF ((0 << 0) | (0 << 2))
+#define ICM426XX_PWR_MGMT0_TEMP_DISABLE_OFF (0 << 5)
+#define ICM426XX_PWR_MGMT0_TEMP_DISABLE_ON (1 << 5)
+
+#define ICM426XX_RA_GYRO_CONFIG0 0x4F
+#define ICM426XX_RA_ACCEL_CONFIG0 0x50
+
+// --- Registers for gyro and acc Anti-Alias Filter ---------
+#define ICM426XX_RA_GYRO_CONFIG_STATIC3 0x0C  // User Bank 1
+#define ICM426XX_RA_GYRO_CONFIG_STATIC4 0x0D  // User Bank 1
+#define ICM426XX_RA_GYRO_CONFIG_STATIC5 0x0E  // User Bank 1
+#define ICM426XX_RA_ACCEL_CONFIG_STATIC2 0x03 // User Bank 2
+#define ICM426XX_RA_ACCEL_CONFIG_STATIC3 0x04 // User Bank 2
+#define ICM426XX_RA_ACCEL_CONFIG_STATIC4 0x05 // User Bank 2
+// --- Register & setting for gyro and acc UI Filter --------
+#define ICM426XX_RA_GYRO_ACCEL_CONFIG0 0x52 // User Bank 0
+#define ICM426XX_ACCEL_UI_FILT_BW_LOW_LATENCY (15 << 4)
+#define ICM426XX_GYRO_UI_FILT_BW_LOW_LATENCY (15 << 0)
+// ----------------------------------------------------------
+
+#define ICM426XX_RA_GYRO_DATA_X1 0x25  // User Bank 0
+#define ICM426XX_RA_ACCEL_DATA_X1 0x1F // User Bank 0
+
+#define ICM426XX_RA_INT_CONFIG 0x14 // User Bank 0
+#define ICM426XX_INT1_MODE_PULSED (0 << 2)
+#define ICM426XX_INT1_MODE_LATCHED (1 << 2)
+#define ICM426XX_INT1_DRIVE_CIRCUIT_OD (0 << 1)
+#define ICM426XX_INT1_DRIVE_CIRCUIT_PP (1 << 1)
+#define ICM426XX_INT1_POLARITY_ACTIVE_LOW (0 << 0)
+#define ICM426XX_INT1_POLARITY_ACTIVE_HIGH (1 << 0)
+
+#define ICM426XX_RA_INT_CONFIG0 0x63 // User Bank 0
+#define ICM426XX_UI_DRDY_INT_CLEAR_ON_SBR ((0 << 5) || (0 << 4))
+#define ICM426XX_UI_DRDY_INT_CLEAR_ON_SBR_DUPLICATE ((0 << 5) || (0 << 4)) // duplicate settings in datasheet, Rev 1.2.
+#define ICM426XX_UI_DRDY_INT_CLEAR_ON_F1BR ((1 << 5) || (0 << 4))
+#define ICM426XX_UI_DRDY_INT_CLEAR_ON_SBR_AND_F1BR ((1 << 5) || (1 << 4))
+
+#define ICM426XX_RA_INT_CONFIG1 0x64 // User Bank 0
+#define ICM426XX_INT_ASYNC_RESET_BIT 4
+#define ICM426XX_INT_TDEASSERT_DISABLE_BIT 5
+#define ICM426XX_INT_TDEASSERT_ENABLED (0 << ICM426XX_INT_TDEASSERT_DISABLE_BIT)
+#define ICM426XX_INT_TDEASSERT_DISABLED (1 << ICM426XX_INT_TDEASSERT_DISABLE_BIT)
+#define ICM426XX_INT_TPULSE_DURATION_BIT 6
+#define ICM426XX_INT_TPULSE_DURATION_100 (0 << ICM426XX_INT_TPULSE_DURATION_BIT)
+#define ICM426XX_INT_TPULSE_DURATION_8 (1 << ICM426XX_INT_TPULSE_DURATION_BIT)
+
+#define ICM426XX_RA_INT_SOURCE0 0x65 // User Bank 0
+#define ICM426XX_UI_DRDY_INT1_EN_DISABLED (0 << 3)
+#define ICM426XX_UI_DRDY_INT1_EN_ENABLED (1 << 3)
+
+typedef enum
+{
+    ICM42688P = 0,
+    ICM42605,
+    ICM_NONE,
+} ICM426xx_Sensor_TypeList;
+
+typedef enum
+{
+    ICM426xx_No_Error = 0,
+    ICM426xx_Obj_Error,
+    ICM426xx_SampleRate_Error,
+    ICM426xx_BusCommunicate_Error,
+    ICM426xx_DevID_Error,
+} ICM426xx_Error_List;
+
+typedef enum
+{
+    ICM426xx_SampleRate_8K = 0,
+    ICM426xx_SampleRate_4K,
+    ICM426xx_SampleRate_2K,
+    ICM426xx_SampleRate_1K,
+    ICM426xx_SampleRate_Sum,
+} ICM426xx_SampleRate_List;
+
+typedef enum
+{
+    ICM426xx_AAF_256Hz = 0,
+    ICM426xx_AAF_836Hz,
+    ICM426xx_AAF_997Hz,
+    ICM426xx_AAF_1962Hz,
+    ICM426xx_AAF_Sum,
+} ICM426xx_AAF_List;
+
+typedef struct
+{
+    uint8_t delt;
+    uint16_t deltSqr;
+    uint8_t bitshif;
+} ICM426xx_AAF_Config_TypeDef;
+
+typedef enum
+{
+    ICM426xx_ODR_8K = 3,
+    ICM426xx_ODR_3K,
+    ICM426xx_ODR_2K,
+    ICM426xx_ODR_1K,
+} ICM426xx_ConfigODR_ValList;
+
+#define ICM42688P_AAF_256Hz_Cfg \
+    {                           \
+        6, 36, 10               \
+    }
+
+#define ICM42688P_AAF_536Hz_Cfg \
+    {                           \
+        12, 144, 8              \
+    }
+
+#define ICM42688P_AAF_997Hz_Cfg \
+    {                           \
+        21, 440, 6              \
+    }
+
+#define ICM42688P_AAF_1962Hz_Cfg \
+    {                            \
+        37, 1376, 4              \
+    }
+
+// actually 249 Hz
+#define ICM42605_AAF_256Hz_Cfg \
+    {                          \
+        21, 440, 6             \
+    }
+
+// actually 524 Hz
+#define ICM42605_AAF_536Hz_Cfg \
+    {                          \
+        39, 1536, 4            \
+    }
+
+// actually 995 Hz
+#define ICM42605_AAF_997Hz_Cfg \
+    {                          \
+        63, 3968, 3            \
+    }
+
+// 995 Hz is the max cutoff on the 42605
+#define ICM42605_AAF_1962Hz_Cfg \
+    {                           \
+        63, 3968, 3             \
+    }
+
+typedef struct
+{
+    cs_ctl_callback cs_ctl;
+    bus_trans_callback bus_trans;
+    get_time_stamp_callback get_timestamp;
+
+    uint8_t AccTrip;
+    uint8_t GyrTrip;
+
+    uint16_t PHY_GyrTrip_Val;
+
+    float acc_scale;
+    float gyr_scale;
+
+    bool drdy;
+    ICM426xx_SampleRate_List rate;
+
+    IMUData_TypeDef OriData;
+
+} DevICM426xxObj_TypeDef;
+
+typedef struct
+{
+    bool (*detect)(bus_trans_callback trans, cs_ctl_callback cs_ctl);
+} DevICM426xx_TypeDef;
+
+#endif

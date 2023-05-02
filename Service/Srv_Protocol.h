@@ -26,4 +26,11 @@ typedef struct
     uint32_t p_buf_size;
 } SrvProto_PortObj_TypeDef;
 
+typedef struct
+{
+    bool (*init)(void);
+    bool (*bind)(SrvProto_Port_TypeList type, void *port_obj);
+}SrvProto_TypeDef;
+
+
 #endif

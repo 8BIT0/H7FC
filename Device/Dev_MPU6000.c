@@ -5,6 +5,7 @@ static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr,
 static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx);
 
 /* external function */
+static bool DevMPU6000_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
 static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
                                cs_ctl_callback cs_ctl,
                                bus_trans_callback bus_trans,
@@ -28,6 +29,7 @@ static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_Type
 
 /* external MPU6000 Object */
 DevMPU6000_TypeDef DevMPU6000 = {
+    .detect = DevMPU6000_Detect,
     .pre_init = DevMPU6000_PreInit,
     .init = DevMPU6000_Init,
     .config = DevMPU6000_Config,
@@ -40,6 +42,32 @@ DevMPU6000_TypeDef DevMPU6000 = {
     .get_scale = DevMPU6000_Get_Scale,
     .get_gyr_angular_speed_diff = DevMPU6000_Get_Specified_AngularSpeed_Diff,
 };
+
+static bool DevMPU6000_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
+{
+    bool state = false;
+    uint8_t addr_tmp = MPU6000_WHOAMI | MPU6000_WRITE_MASK;;
+    uint8_t read_tmp = 0;
+
+    if((trans == NULL) || (cs_ctl == NULL))
+        return false;
+
+    /* CS Low */
+    cs_ctl(false);
+
+    state = trans(&addr_tmp, &read_tmp, 1);
+
+    /* CS High */
+    cs_ctl(true);
+
+    if(!state)
+        return false;
+
+    if(read_tmp == MPU6000_DEV_ID)
+        return true;
+
+    return false;
+}
 
 static bool Dev_MPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uint8_t *rx, uint8_t size)
 {

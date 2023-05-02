@@ -6,6 +6,7 @@ static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint
 static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t tx);
 
 /* external function */
+static bool DevICM20602_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
 static void DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate, ICM20602_GyrTrip_List GyrTrip, ICM20602_AccTrip_List AccTrip);
 static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
                                 cs_ctl_callback cs_ctl,
@@ -24,6 +25,7 @@ static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_Ty
 
 /* external variable */
 DevICM20602_TypeDef DevICM20602 = {
+    .detect = DevICM20602_Detect,
     .config = DevICM20602_Config,
     .init = DevICM20602_Init,
     .pre_init = DevICM20602_PreInit,
@@ -36,6 +38,32 @@ DevICM20602_TypeDef DevICM20602 = {
     .get_scale = DevICM20602_Get_Scale,
     .get_gyr_angular_speed_diff = DevICM20602_Get_Specified_AngularSpeed_Diff,
 };
+
+static bool DevICM20602_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
+{
+    bool state = false;
+    uint8_t addr_tmp = ICM20602_WHO_AM_I | ICM20602_READ_MASK;
+    uint8_t read_tmp = 0;
+
+    if((trans == NULL) || (cs_ctl == NULL))
+        return false;
+
+    /* CS Low */
+    cs_ctl(false);
+
+    state = trans(&addr_tmp, &read_tmp, 1);
+
+    /* CS High */
+    cs_ctl(true);
+
+    if(!state)
+        return false;
+
+    if(read_tmp == ICM20602_DEV_ID)
+        return true;
+
+    return false;
+}
 
 static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
 {

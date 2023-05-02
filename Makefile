@@ -55,6 +55,7 @@ Bsp/Bsp_DMA.c \
 Bsp/Bsp_Timer.c \
 Device/Dev_MPU6000.c \
 Device/Dev_ICM20602.c \
+Device/Dev_ICM426xx.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 Device/Dev_Card.c \
