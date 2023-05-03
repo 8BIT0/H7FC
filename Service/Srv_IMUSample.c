@@ -308,6 +308,8 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 /* init primary IMU Device */
 static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 {
+    SrvIMU_SensorID_List SensorID;
+
     /* primary IMU Pin & Bus Init */
     if (!BspGPIO.out_init(PriIMU_CSPin))
         return SrvIMU_PriCSPin_Init_Error;
@@ -319,21 +321,48 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
     if (!BspSPI.init(PriIMU_BusCfg, &PriIMU_Bus_Instance))
         return SrvIMU_PriBus_Init_Error;
 
-    SrvIMU_AutoDetect(SrvIMU_PriIMU_BusTrans_Rec, SrvIMU_PriIMU_CS_Ctl);
+    SensorID = SrvIMU_AutoDetect(SrvIMU_PriIMU_BusTrans_Rec, SrvIMU_PriIMU_CS_Ctl);
 
-    DevMPU6000.pre_init(&MPU6000Obj,
-                        SrvIMU_PriIMU_CS_Ctl,
-                        SrvIMU_PriIMU_BusTrans_Rec,
-                        Runtime_DelayMs,
-                        Get_CurrentRunningUs);
+    switch(SensorID)
+    {
+        case SrvIMU_Dev_MPU6000:
+            DevMPU6000.pre_init(&MPU6000Obj,
+                                SrvIMU_PriIMU_CS_Ctl,
+                                SrvIMU_PriIMU_BusTrans_Rec,
+                                Runtime_DelayMs,
+                                Get_CurrentRunningUs);
 
-    DevMPU6000.config(&MPU6000Obj,
-                      MPU6000_SampleRate_4K,
-                      MPU6000_Acc_16G,
-                      MPU6000_Gyr_2000DPS);
+            DevMPU6000.config(&MPU6000Obj,
+                            MPU6000_SampleRate_4K,
+                            MPU6000_Acc_16G,
+                            MPU6000_Gyr_2000DPS);
 
-    if (!DevMPU6000.init(&MPU6000Obj))
-        return SrvIMU_PriDev_Init_Error;
+            if (!DevMPU6000.init(&MPU6000Obj))
+                return SrvIMU_PriDev_Init_Error;
+        break;
+
+        case SrvIMU_Dev_ICM20602:
+            DevICM20602.pre_init(&ICM20602Obj,
+                                 SrvIMU_PriIMU_CS_Ctl,
+                                 SrvIMU_PriIMU_BusTrans_Rec,
+                                 Runtime_DelayMs,
+                                 Get_CurrentRunningUs);
+
+            DevICM20602.config(&ICM20602Obj,
+                                ICM20602_SampleRate_4K,
+                                ICM20602_Acc_16G,
+                                ICM20602_Gyr_2000DPS);
+
+            if (!DevICM20602.init(&ICM20602Obj))
+                return SrvIMU_PriDev_Init_Error;
+        break;
+
+        case SrvIMU_Dev_ICM42688P:
+        case SrvIMU_Dev_ICM42605:
+        break;
+
+        default: return SrvIMU_PriDev_Init_Error;
+    }
 
     return SrvIMU_No_Error;
 }
@@ -341,6 +370,8 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 /* init primary IMU Device */
 static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 {
+    SrvIMU_SensorID_List SensorID;
+
     /* primary IMU Pin & Bus Init */
     if (!BspGPIO.out_init(SecIMU_CSPin))
         return SrvIMU_SecCSPin_Init_Error;
@@ -352,21 +383,48 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
     if (!BspSPI.init(SecIMU_BusCfg, &SecIMU_Bus_Instance))
         return SrvIMU_SecBus_Init_Error;
 
-    SrvIMU_AutoDetect(SrvIMU_SecIMU_BusTrans_Rec, SrvIMU_SecIMU_CS_Ctl);
+    SensorID = SrvIMU_AutoDetect(SrvIMU_SecIMU_BusTrans_Rec, SrvIMU_SecIMU_CS_Ctl);
 
-    DevICM20602.pre_init(&ICM20602Obj,
-                         SrvIMU_SecIMU_CS_Ctl,
-                         SrvIMU_SecIMU_BusTrans_Rec,
-                         Runtime_DelayMs,
-                         Get_CurrentRunningUs);
+    switch(SensorID)
+    {
+        case SrvIMU_Dev_MPU6000:
+            DevMPU6000.pre_init(&MPU6000Obj,
+                                SrvIMU_SecIMU_CS_Ctl,
+                                SrvIMU_SecIMU_BusTrans_Rec,
+                                Runtime_DelayMs,
+                                Get_CurrentRunningUs);
 
-    DevICM20602.config(&ICM20602Obj,
-                       ICM20602_SampleRate_4K,
-                       ICM20602_Acc_16G,
-                       ICM20602_Gyr_2000DPS);
+            DevMPU6000.config(&MPU6000Obj,
+                            MPU6000_SampleRate_4K,
+                            MPU6000_Acc_16G,
+                            MPU6000_Gyr_2000DPS);
 
-    if (!DevICM20602.init(&ICM20602Obj))
-        return SrvIMU_SecDev_Init_Error;
+            if (!DevMPU6000.init(&MPU6000Obj))
+                return SrvIMU_SecDev_Init_Error;
+        break;
+
+        case SrvIMU_Dev_ICM20602:
+            DevICM20602.pre_init(&ICM20602Obj,
+                                 SrvIMU_SecIMU_CS_Ctl,
+                                 SrvIMU_SecIMU_BusTrans_Rec,
+                                 Runtime_DelayMs,
+                                 Get_CurrentRunningUs);
+
+            DevICM20602.config(&ICM20602Obj,
+                                ICM20602_SampleRate_4K,
+                                ICM20602_Acc_16G,
+                                ICM20602_Gyr_2000DPS);
+
+            if (!DevICM20602.init(&ICM20602Obj))
+                return SrvIMU_SecDev_Init_Error;
+        break;
+
+        case SrvIMU_Dev_ICM42688P:
+        case SrvIMU_Dev_ICM42605:
+        break;
+
+        default: return SrvIMU_SecDev_Init_Error;
+    }
 
     return SrvIMU_No_Error;
 }
