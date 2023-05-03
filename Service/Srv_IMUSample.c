@@ -1,3 +1,6 @@
+/*
+ * CODE: 8_B!T0
+ */
 #include "Srv_IMUSample.h"
 #include "Dev_MPU6000.h"
 #include "Dev_ICM20602.h"
@@ -21,6 +24,16 @@
  * Angular Speed Per Millscond
  */
 #define ANGULAR_ACCECLERATION_THRESHOLD 300 / 10.0f // angular speed accelerate from 0 to 300 deg/s in 10 Ms
+
+typedef struct
+{
+    SrvIMU_SensorID_List type;
+    void *obj_ptr;
+    IMUData_TypeDef *OriData_ptr;
+
+    bool (*get_drdy)(void *obj);
+    void (*set_drdy)(void *obj);
+}SrvIMU_InuseSensorObj_TypeDef;
 
 /* test var */
 static uint32_t SrvIMU_PriIMU_Init_Error_CNT = 0;
