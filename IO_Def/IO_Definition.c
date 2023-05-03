@@ -73,28 +73,28 @@ DevLedObj_TypeDef Led3 = {
     .init_state = true,
 };
 
-BspGPIO_Obj_TypeDef MPU6000_CSPin = {
+BspGPIO_Obj_TypeDef PriIMU_CSPin = {
     .init_state = true,
-    .pin = MPU6000_CS_PIN,
-    .port = MPU6000_CS_PORT,
+    .pin = PriIMU_CS_PIN,
+    .port = PriIMU_CS_PORT,
 };
 
-BspGPIO_Obj_TypeDef MPU6000_INTPin = {
+BspGPIO_Obj_TypeDef PriIMU_INTPin = {
     .init_state = true,
-    .pin = MPU6000_INT_PIN,
-    .port = MPU6000_INT_PORT,
+    .pin = PriIMU_INT_PIN,
+    .port = PriIMU_INT_PORT,
 };
 
-BspGPIO_Obj_TypeDef ICM20602_CSPin = {
+BspGPIO_Obj_TypeDef SecIMU_CSPin = {
     .init_state = true,
-    .pin = ICM20602_CS_PIN,
-    .port = ICM20602_CS_PORT,
+    .pin = SecIMU_CS_PIN,
+    .port = SecIMU_CS_PORT,
 };
 
-BspGPIO_Obj_TypeDef ICM20602_INTPin = {
+BspGPIO_Obj_TypeDef SecIMU_INTPin = {
     .init_state = true,
-    .pin = ICM20602_INT_PIN,
-    .port = ICM20602_INT_PORT,
+    .pin = SecIMU_INT_PIN,
+    .port = SecIMU_INT_PORT,
 };
 
 BspGPIO_Obj_TypeDef Uart4_TxPin = {
@@ -109,28 +109,28 @@ BspGPIO_Obj_TypeDef Uart4_RxPin = {
     .alternate = GPIO_AF8_UART4,
 };
 
-BspSPI_PinConfig_TypeDef MPU6000_BusPin = {
+BspSPI_PinConfig_TypeDef PriIMU_BusPin = {
     .pin_Alternate = GPIO_AF5_SPI1,
 
-    .port_clk = MPU6000_CLK_PORT,
-    .port_miso = MPU6000_MISO_PORT,
-    .port_mosi = MPU6000_MOSI_PORT,
+    .port_clk = PriIMU_CLK_PORT,
+    .port_miso = PriIMU_MISO_PORT,
+    .port_mosi = PriIMU_MOSI_PORT,
 
-    .pin_clk = MPU6000_CLK_PIN,
-    .pin_miso = MPU6000_MISO_PIN,
-    .pin_mosi = MPU6000_MOSI_PIN,
+    .pin_clk = PriIMU_CLK_PIN,
+    .pin_miso = PriIMU_MISO_PIN,
+    .pin_mosi = PriIMU_MOSI_PIN,
 };
 
-BspSPI_PinConfig_TypeDef ICM20602_BusPin = {
+BspSPI_PinConfig_TypeDef SecIMU_BusPin = {
     .pin_Alternate = GPIO_AF5_SPI4,
 
-    .port_clk = ICM20602_CLK_PORT,
-    .port_miso = ICM20602_MISO_PORT,
-    .port_mosi = ICM20602_MOSI_PORT,
+    .port_clk = SecIMU_CLK_PORT,
+    .port_miso = SecIMU_MISO_PORT,
+    .port_mosi = SecIMU_MOSI_PORT,
 
-    .pin_clk = ICM20602_CLK_PIN,
-    .pin_miso = ICM20602_MISO_PIN,
-    .pin_mosi = ICM20602_MOSI_PIN,
+    .pin_clk = SecIMU_CLK_PIN,
+    .pin_miso = SecIMU_MISO_PIN,
+    .pin_mosi = SecIMU_MOSI_PIN,
 };
 
 BspGPIO_Obj_TypeDef USB_DctPin = {

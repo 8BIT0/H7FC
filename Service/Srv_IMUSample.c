@@ -49,20 +49,20 @@ static Error_Handler SrvMPU_Error_Handle = NULL;
 
 /* internal variable */
 /* MPU6000 Instance */
-static SPI_HandleTypeDef MPU6000_Bus_Instance;
-static BspSPI_NorModeConfig_TypeDef MPU6000_BusCfg = {
-    .Instance = MPU6000_SPI_BUS,
+static SPI_HandleTypeDef PriIMU_Bus_Instance;
+static BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg = {
+    .Instance = PriIMU_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4,
 };
 
 /* ICM20602 Instance */
-static SPI_HandleTypeDef ICM20602_Bus_Instance;
-static BspSPI_NorModeConfig_TypeDef ICM20602_BusCfg = {
-    .Instance = ICM20602_SPI_BUS,
-    .CLKPolarity = SPI_POLARITY_HIGH,
-    .CLKPhase = SPI_PHASE_2EDGE,
+static SPI_HandleTypeDef SecIMU_Bus_Instance;
+static BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg = {
+    .Instance = SecIMU_SPI_BUS,
+    .CLKPolarity = SPI_POLARITY_LOW,
+    .CLKPhase = SPI_PHASE_1EDGE,
     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8,
 };
 
@@ -204,6 +204,7 @@ static void SrvIMU_SecIMU_CS_Ctl(bool state);
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 static bool SrvIMU_Detect_AngularOverSpeed(float angular_speed, float lst_angular_speed, float ms_diff);
+static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
 
 SrvIMU_TypeDef SrvIMU = {
     .init = SrvIMU_Init,
@@ -308,13 +309,17 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 {
     /* primary IMU Pin & Bus Init */
-    if (!BspGPIO.out_init(MPU6000_CSPin))
+    if (!BspGPIO.out_init(PriIMU_CSPin))
         return SrvIMU_PriCSPin_Init_Error;
 
-    if (!BspGPIO.exti_init(MPU6000_INTPin, SrvIMU_PriIMU_ExtiCallback))
+    if (!BspGPIO.exti_init(PriIMU_INTPin, SrvIMU_PriIMU_ExtiCallback))
         return SrvIMU_PriExtiPin_Init_Error;
 
-    MPU6000_BusCfg.Pin = MPU6000_BusPin;
+    PriIMU_BusCfg.Pin = PriIMU_BusPin;
+    if (!BspSPI.init(PriIMU_BusCfg, &PriIMU_Bus_Instance))
+        return SrvIMU_PriBus_Init_Error;
+
+    SrvIMU_AutoDetect(SrvIMU_PriIMU_BusTrans_Rec, SrvIMU_PriIMU_CS_Ctl);
 
     DevMPU6000.pre_init(&MPU6000Obj,
                         SrvIMU_PriIMU_CS_Ctl,
@@ -327,9 +332,6 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
                       MPU6000_Acc_16G,
                       MPU6000_Gyr_2000DPS);
 
-    if (!BspSPI.init(MPU6000_BusCfg, &MPU6000_Bus_Instance))
-        return SrvIMU_PriBus_Init_Error;
-
     if (!DevMPU6000.init(&MPU6000Obj))
         return SrvIMU_PriDev_Init_Error;
 
@@ -340,13 +342,18 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 {
     /* primary IMU Pin & Bus Init */
-    if (!BspGPIO.out_init(ICM20602_CSPin))
+    if (!BspGPIO.out_init(SecIMU_CSPin))
         return SrvIMU_SecCSPin_Init_Error;
 
-    if (!BspGPIO.exti_init(ICM20602_INTPin, SrvIMU_SecIMU_ExtiCallback))
+    if (!BspGPIO.exti_init(SecIMU_INTPin, SrvIMU_SecIMU_ExtiCallback))
         return SrvIMU_SecExtiPin_Init_Error;
 
-    ICM20602_BusCfg.Pin = ICM20602_BusPin;
+    SecIMU_BusCfg.Pin = SecIMU_BusPin;
+    if (!BspSPI.init(SecIMU_BusCfg, &SecIMU_Bus_Instance))
+        return SrvIMU_SecBus_Init_Error;
+
+    SrvIMU_AutoDetect(SrvIMU_SecIMU_BusTrans_Rec, SrvIMU_SecIMU_CS_Ctl);
+
     DevICM20602.pre_init(&ICM20602Obj,
                          SrvIMU_SecIMU_CS_Ctl,
                          SrvIMU_SecIMU_BusTrans_Rec,
@@ -358,9 +365,6 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                        ICM20602_Acc_16G,
                        ICM20602_Gyr_2000DPS);
 
-    if (!BspSPI.init(ICM20602_BusCfg, &ICM20602_Bus_Instance))
-        return SrvIMU_SecBus_Init_Error;
-
     if (!DevICM20602.init(&ICM20602Obj))
         return SrvIMU_SecDev_Init_Error;
 
@@ -370,22 +374,22 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 /* input true selected / false deselected */
 static void SrvIMU_PriIMU_CS_Ctl(bool state)
 {
-    BspGPIO.write(MPU6000_CSPin.port, MPU6000_CSPin.pin, state);
+    BspGPIO.write(PriIMU_CSPin.port, PriIMU_CSPin.pin, state);
 }
 
 static void SrvIMU_SecIMU_CS_Ctl(bool state)
 {
-    BspGPIO.write(ICM20602_CSPin.port, ICM20602_CSPin.pin, state);
+    BspGPIO.write(SecIMU_CSPin.port, SecIMU_CSPin.pin, state);
 }
 
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 {
-    return BspSPI.trans_receive(&MPU6000_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
+    return BspSPI.trans_receive(&PriIMU_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
 }
 
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 {
-    return BspSPI.trans_receive(&ICM20602_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
+    return BspSPI.trans_receive(&SecIMU_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
 }
 
 int8_t SrvIMU_GetPri_InitError(void)
@@ -681,6 +685,17 @@ static bool SrvIMU_Detect_AngularOverSpeed(float angular_speed, float lst_angula
 static void SrvIMU_ErrorProc(void)
 {
     ErrorLog.proc(SrvMPU_Error_Handle);
+}
+
+static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
+{
+    if(DevMPU6000.detect(trans, cs_ctl))
+        return SrvIMU_Dev_MPU6000;
+
+    if(DevICM20602.detect(trans, cs_ctl))
+        return SrvIMU_Dev_ICM20602;
+
+    return SrvIMU_Dev_None;
 }
 
 /************************************************************ DataReady Pin Exti Callback *****************************************************************************/

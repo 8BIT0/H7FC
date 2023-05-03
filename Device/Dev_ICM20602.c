@@ -41,25 +41,27 @@ DevICM20602_TypeDef DevICM20602 = {
 
 static bool DevICM20602_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
 {
+    uint8_t Rx_Tmp[2] = {0};
+    uint8_t Tx_Tmp[2] = {0};
     bool state = false;
-    uint8_t addr_tmp = ICM20602_WHO_AM_I | ICM20602_READ_MASK;
-    uint8_t read_tmp = 0;
 
-    if((trans == NULL) || (cs_ctl == NULL))
+    if (cs_ctl == NULL || trans == NULL)
         return false;
 
-    /* CS Low */
+    Tx_Tmp[0] = ICM20602_WHO_AM_I | ICM20602_READ_MASK;
+
+    /* cs low */
     cs_ctl(false);
 
-    state = trans(&addr_tmp, &read_tmp, 1);
+    state = trans(Tx_Tmp, Rx_Tmp, 2);
 
-    /* CS High */
+    /* cs high */
     cs_ctl(true);
 
     if(!state)
         return false;
 
-    if(read_tmp == ICM20602_DEV_ID)
+    if(Rx_Tmp[1] == ICM20602_DEV_ID)
         return true;
 
     return false;

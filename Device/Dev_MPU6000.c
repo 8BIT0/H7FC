@@ -45,17 +45,20 @@ DevMPU6000_TypeDef DevMPU6000 = {
 
 static bool DevMPU6000_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
 {
-    bool state = false;
-    uint8_t addr_tmp = MPU6000_WHOAMI | MPU6000_WRITE_MASK;;
     uint8_t read_tmp = 0;
+    uint8_t write_buff[2] = {0};
+    uint8_t read_buff[2] = {0};
+    bool state = false;
 
-    if((trans == NULL) || (cs_ctl == NULL))
+    if (cs_ctl == NULL || trans == NULL)
         return false;
+
+    write_buff[0] = MPU6000_WHOAMI | MPU6000_WRITE_MASK;
 
     /* CS Low */
     cs_ctl(false);
 
-    state = trans(&addr_tmp, &read_tmp, 1);
+    state = trans(write_buff, read_buff, 2);
 
     /* CS High */
     cs_ctl(true);
@@ -63,7 +66,7 @@ static bool DevMPU6000_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
     if(!state)
         return false;
 
-    if(read_tmp == MPU6000_DEV_ID)
+    if(read_buff[1] == MPU6000_DEV_ID)
         return true;
 
     return false;

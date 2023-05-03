@@ -26,40 +26,40 @@
 #define RESERVE_SPI_MOSI_PIN GPIO_PIN_5
 
 /* MPU6000 Pin */
-#define MPU6000_SPI_BUS SPI1
+#define PriIMU_SPI_BUS SPI1
 
-#define MPU6000_CS_PORT GPIOC
-#define MPU6000_CS_PIN GPIO_PIN_15
+#define PriIMU_CS_PORT GPIOC
+#define PriIMU_CS_PIN GPIO_PIN_15
 
-#define MPU6000_INT_PORT GPIOB
-#define MPU6000_INT_PIN GPIO_PIN_2
+#define PriIMU_INT_PORT GPIOB
+#define PriIMU_INT_PIN GPIO_PIN_2
 
-#define MPU6000_CLK_PORT GPIOA
-#define MPU6000_CLK_PIN GPIO_PIN_5
+#define PriIMU_CLK_PORT GPIOA
+#define PriIMU_CLK_PIN GPIO_PIN_5
 
-#define MPU6000_MISO_PORT GPIOA
-#define MPU6000_MISO_PIN GPIO_PIN_6
+#define PriIMU_MISO_PORT GPIOA
+#define PriIMU_MISO_PIN GPIO_PIN_6
 
-#define MPU6000_MOSI_PORT GPIOD
-#define MPU6000_MOSI_PIN GPIO_PIN_7
+#define PriIMU_MOSI_PORT GPIOD
+#define PriIMU_MOSI_PIN GPIO_PIN_7
 
 /* ICM20602 Pin */
-#define ICM20602_SPI_BUS SPI4
+#define SecIMU_SPI_BUS SPI4
 
-#define ICM20602_CS_PORT GPIOE
-#define ICM20602_CS_PIN GPIO_PIN_11
+#define SecIMU_CS_PORT GPIOC
+#define SecIMU_CS_PIN GPIO_PIN_13
 
-#define ICM20602_INT_PORT GPIOE
-#define ICM20602_INT_PIN GPIO_PIN_15
+#define SecIMU_INT_PORT GPIOC
+#define SecIMU_INT_PIN GPIO_PIN_14
 
-#define ICM20602_CLK_PORT GPIOE
-#define ICM20602_CLK_PIN GPIO_PIN_12
+#define SecIMU_CLK_PORT GPIOE
+#define SecIMU_CLK_PIN GPIO_PIN_12
 
-#define ICM20602_MISO_PORT GPIOE
-#define ICM20602_MISO_PIN GPIO_PIN_13
+#define SecIMU_MISO_PORT GPIOE
+#define SecIMU_MISO_PIN GPIO_PIN_13
 
-#define ICM20602_MOSI_PORT GPIOE
-#define ICM20602_MOSI_PIN GPIO_PIN_14
+#define SecIMU_MOSI_PORT GPIOE
+#define SecIMU_MOSI_PIN GPIO_PIN_14
 
 #define SDMMC_CLK_PORT GPIOC
 #define SDMMC_CLK_PIN GPIO_PIN_12
@@ -141,14 +141,14 @@ extern DevLedObj_TypeDef Led2;
 extern DevLedObj_TypeDef Led3;
 
 extern BspGPIO_Obj_TypeDef USB_DctPin;
-extern BspGPIO_Obj_TypeDef MPU6000_CSPin;
-extern BspGPIO_Obj_TypeDef ICM20602_CSPin;
-extern BspGPIO_Obj_TypeDef MPU6000_INTPin;
-extern BspGPIO_Obj_TypeDef ICM20602_INTPin;
+extern BspGPIO_Obj_TypeDef PriIMU_CSPin;
+extern BspGPIO_Obj_TypeDef SecIMU_CSPin;
+extern BspGPIO_Obj_TypeDef PriIMU_INTPin;
+extern BspGPIO_Obj_TypeDef SecIMU_INTPin;
 extern BspGPIO_Obj_TypeDef Uart4_TxPin;
 extern BspGPIO_Obj_TypeDef Uart4_RxPin;
 
-extern BspSPI_PinConfig_TypeDef MPU6000_BusPin;
-extern BspSPI_PinConfig_TypeDef ICM20602_BusPin;
+extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
+extern BspSPI_PinConfig_TypeDef SecIMU_BusPin;
 
 #endif
