@@ -308,8 +308,6 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 /* init primary IMU Device */
 static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 {
-    SrvIMU_SensorID_List SensorID;
-
     /* primary IMU Pin & Bus Init */
     if (!BspGPIO.out_init(PriIMU_CSPin))
         return SrvIMU_PriCSPin_Init_Error;
@@ -321,9 +319,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
     if (!BspSPI.init(PriIMU_BusCfg, &PriIMU_Bus_Instance))
         return SrvIMU_PriBus_Init_Error;
 
-    SensorID = SrvIMU_AutoDetect(SrvIMU_PriIMU_BusTrans_Rec, SrvIMU_PriIMU_CS_Ctl);
-
-    switch(SensorID)
+    switch(SrvIMU_AutoDetect(SrvIMU_PriIMU_BusTrans_Rec, SrvIMU_PriIMU_CS_Ctl))
     {
         case SrvIMU_Dev_MPU6000:
             DevMPU6000.pre_init(&MPU6000Obj,
@@ -370,8 +366,6 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 /* init primary IMU Device */
 static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 {
-    SrvIMU_SensorID_List SensorID;
-
     /* primary IMU Pin & Bus Init */
     if (!BspGPIO.out_init(SecIMU_CSPin))
         return SrvIMU_SecCSPin_Init_Error;
@@ -383,9 +377,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
     if (!BspSPI.init(SecIMU_BusCfg, &SecIMU_Bus_Instance))
         return SrvIMU_SecBus_Init_Error;
 
-    SensorID = SrvIMU_AutoDetect(SrvIMU_SecIMU_BusTrans_Rec, SrvIMU_SecIMU_CS_Ctl);
-
-    switch(SensorID)
+    switch(SrvIMU_AutoDetect(SrvIMU_SecIMU_BusTrans_Rec, SrvIMU_SecIMU_CS_Ctl))
     {
         case SrvIMU_Dev_MPU6000:
             DevMPU6000.pre_init(&MPU6000Obj,
