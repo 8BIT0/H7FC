@@ -1,5 +1,7 @@
 #include "Dev_ICM20602.h"
 
+#define ConvertToICM20602Trip_Reg(x) (x << 3)
+
 /* internal function */
 static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size);
 static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t *rx);
@@ -213,8 +215,8 @@ static bool DevICM20602_Config(DevICM20602Obj_TypeDef *Obj,
     }
 
     // set Trip Reg val
-    Obj->AccTrip = ConvertToTrip_Reg(AccTrip);
-    Obj->GyrTrip = ConvertToTrip_Reg(GyrTrip);
+    Obj->AccTrip = ConvertToICM20602Trip_Reg(AccTrip);
+    Obj->GyrTrip = ConvertToICM20602Trip_Reg(GyrTrip);
 
     return true;
 }

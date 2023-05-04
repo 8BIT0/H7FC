@@ -5,8 +5,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#define ConvertToTrip_Reg(x) (x << 3)
-
 /*
  *  CNT 100 in 2K Sample Frequence is about keeping 50Ms abnormality data
  */

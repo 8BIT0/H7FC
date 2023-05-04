@@ -1,5 +1,7 @@
 #include "Dev_MPU6000.h"
 
+#define ConvertToMPU6000Trip_Reg(x) (x << 3)
+
 /* internal function */
 static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx);
 static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx);
@@ -215,8 +217,8 @@ static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj,
         return false;
     }
 
-    sensor_obj->AccTrip = ConvertToTrip_Reg(AccTrip);
-    sensor_obj->GyrTrip = ConvertToTrip_Reg(GyrTrip);
+    sensor_obj->AccTrip = ConvertToMPU6000Trip_Reg(AccTrip);
+    sensor_obj->GyrTrip = ConvertToMPU6000Trip_Reg(GyrTrip);
 
     return true;
 }

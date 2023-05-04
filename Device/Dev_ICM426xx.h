@@ -74,6 +74,16 @@
 #define ICM426XX_UI_DRDY_INT1_EN_DISABLED (0 << 3)
 #define ICM426XX_UI_DRDY_INT1_EN_ENABLED (1 << 3)
 
+#define ICM426XX_ACC_16G_SCALE 2048.0
+#define ICM426XX_ACC_8G_SCALE 4096.0
+#define ICM426XX_ACC_4G_SCALE 8192.0
+#define ICM426XX_ACC_2G_SCALE 16384.0
+
+#define ICM426XX_GYR_2000DPS_SCALE 16.4
+#define ICM426XX_GYR_1000DPS_SCALE 32.8
+#define ICM426XX_GYR_500DPS_SCALE 65.5
+#define ICM426XX_GYR_250DPS_SCALE 131.0
+
 typedef enum
 {
     ICM42688P = 0,
@@ -88,6 +98,8 @@ typedef enum
     ICM426xx_SampleRate_Error,
     ICM426xx_BusCommunicate_Error,
     ICM426xx_DevID_Error,
+    ICM426xx_AccGyr_TurnOff_Error,
+    ICM426xx_AccGyr_TurnOn_Error,
 } ICM426xx_Error_List;
 
 typedef enum
@@ -185,6 +197,8 @@ typedef enum
 
 typedef struct
 {
+    ICM426xx_Sensor_TypeList type;
+
     cs_ctl_callback cs_ctl;
     bus_trans_callback bus_trans;
     delay_callback delay;
@@ -211,7 +225,7 @@ typedef struct
 typedef struct
 {
     ICM426xx_Sensor_TypeList (*detect)(bus_trans_callback trans, cs_ctl_callback cs_ctl);
-    void (*config)(DevICM426xxObj_TypeDef *Obj, ICM426xx_SampleRate_List rate, ICM426xx_GyrTrip_List GyrTrip, ICM426xx_AccTrip_List AccTrip);
+    bool (*config)(DevICM426xxObj_TypeDef *Obj, ICM426xx_SampleRate_List rate, ICM426xx_GyrTrip_List GyrTrip, ICM426xx_AccTrip_List AccTrip);
     void (*pre_init)(DevICM426xxObj_TypeDef *Obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay, get_time_stamp_callback get_time_stamp);
     bool (*init)(DevICM426xxObj_TypeDef *Obj);
     void (*set_ready)(DevICM426xxObj_TypeDef *Obj);
