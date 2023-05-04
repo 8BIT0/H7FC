@@ -214,6 +214,8 @@ typedef struct
     void (*config)(DevICM426xxObj_TypeDef *Obj, ICM426xx_SampleRate_List rate, ICM426xx_GyrTrip_List GyrTrip, ICM426xx_AccTrip_List AccTrip);
     void (*pre_init)(DevICM426xxObj_TypeDef *Obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay, get_time_stamp_callback get_time_stamp);
     bool (*init)(DevICM426xxObj_TypeDef *Obj);
+    void (*set_ready)(DevICM426xxObj_TypeDef *Obj);
+    bool (*get_ready)(DevICM426xxObj_TypeDef *Obj);
 } DevICM426xx_TypeDef;
 
 extern DevICM426xx_TypeDef DevICM426xx;
