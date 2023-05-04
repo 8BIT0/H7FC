@@ -4,6 +4,7 @@
 #include "Srv_IMUSample.h"
 #include "Dev_MPU6000.h"
 #include "Dev_ICM20602.h"
+#include "Dev_ICM426xx.h"
 #include "IO_Definition.h"
 #include "runtime.h"
 #include "debug_util.h"
@@ -83,6 +84,9 @@ static BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg = {
 
 static DevMPU6000Obj_TypeDef MPU6000Obj;
 static DevICM20602Obj_TypeDef ICM20602Obj;
+
+static SrvIMU_InuseSensorObj_TypeDef InUse_PriIMU_Obj;
+static SrvIMU_InuseSensorObj_TypeDef InUse_SecIMU_Obj;
 
 /************************************************************************ Error Tree Item ************************************************************************/
 static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
@@ -302,6 +306,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     memset(&PriIMU_Data_Lst, NULL, sizeof(PriIMU_Data_Lst));
     memset(&SecIMU_Data_Lst, NULL, sizeof(SecIMU_Data_Lst));
+
+    memset(&InUse_PriIMU_Obj, 0, sizeof(InUse_PriIMU_Obj));
+    memset(&InUse_SecIMU_Obj, 0, sizeof(InUse_SecIMU_Obj));
 
     if (!SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
