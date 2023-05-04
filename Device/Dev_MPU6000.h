@@ -174,7 +174,7 @@ typedef struct
 {
     bool (*detect)(bus_trans_callback trans, cs_ctl_callback cs_ctl);
     void (*pre_init)(DevMPU6000Obj_TypeDef *sensor_obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay, get_time_stamp_callback ge_time_stamp);
-    void (*config)(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate, DevMPU6000_AccTrip_List AccTrip, DevMPU6000_GyrTrip_List GyrTrip);
+    bool (*config)(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate, DevMPU6000_AccTrip_List AccTrip, DevMPU6000_GyrTrip_List GyrTrip);
     bool (*init)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*reset)(DevMPU6000Obj_TypeDef *snesor_obj);
     bool (*get_ready)(DevMPU6000Obj_TypeDef *sensor_obj);
