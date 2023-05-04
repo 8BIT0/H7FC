@@ -12,8 +12,8 @@ static ICM426xx_AAF_Config_TypeDef aafLUT42688[ICM426xx_AAF_Sum] = {
     [ICM426xx_AAF_1962Hz] = { 37, 1376,  4 },
 };
 
-// Possible gyro Anti-Alias Filter (AAF) cutoffs for ICM-42688P
-// actual cutoff differs slightly from those of the 42688P
+// Possible gyro Anti-Alias Filter (AAF) cutoffs for ICM-42605
+// actual cutoff differs slightly from those of the 42605
   // see table in section 5.3
 static ICM426xx_AAF_Config_TypeDef aafLUT42605[ICM426xx_AAF_Sum] = {
     [ICM426xx_AAF_258Hz]  = { 21,  440,  6 }, // actually 249 Hz
