@@ -3,6 +3,25 @@
 #define ConvertToICM426xxTrip_Reg(trip, odr) ((3 - trip) << 5 | (odr & 0x0F))
 #define UserBankToReg(x) (x & 7) 
 
+// Possible gyro Anti-Alias Filter (AAF) cutoffs for ICM-42688P
+// see table in section 5.3
+static ICM426xx_AAF_Config_TypeDef aafLUT42688[ICM426xx_AAF_Sum] = {
+    [ICM426xx_AAF_256Hz]  = {  6,   36, 10 },
+    [ICM426xx_AAF_536Hz]  = { 12,  144,  8 },
+    [ICM426xx_AAF_997Hz]  = { 21,  440,  6 },
+    [ICM426xx_AAF_1962Hz] = { 37, 1376,  4 },
+};
+
+// Possible gyro Anti-Alias Filter (AAF) cutoffs for ICM-42688P
+// actual cutoff differs slightly from those of the 42688P
+  // see table in section 5.3
+static ICM426xx_AAF_Config_TypeDef aafLUT42605[ICM426xx_AAF_Sum] = {
+    [ICM426xx_AAF_256Hz]  = { 21,  440,  6 }, // actually 249 Hz
+    [ICM426xx_AAF_536Hz]  = { 39, 1536,  4 }, // actually 524 Hz
+    [ICM426xx_AAF_997Hz]  = { 63, 3968,  3 }, // actually 995 Hz
+    [ICM426xx_AAF_1962Hz] = { 63, 3968,  3 }, // 995 Hz is the max cutoff on the 42605
+};
+
 /* internal function */
 static bool DevICM426xx_Regs_Read(DevICM426xxObj_TypeDef *sensor_obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size);
 static bool DevICM426xx_Reg_Write(DevICM426xxObj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx);
@@ -301,6 +320,7 @@ static bool DevICM426xx_TurnOn_AccGyro(DevICM426xxObj_TypeDef *sensor_obj)
 static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
 {
     uint8_t read_out = 0;
+    ICM426xx_AAF_Config_TypeDef *aaf_tab = NULL;
 
     if((sensor_obj == NULL) || 
        (sensor_obj->cs_ctl == NULL) || 
@@ -317,10 +337,12 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
     {
         case ICM42605:
             sensor_obj->type = ICM42605;
+            aaf_tab = aafLUT42605;
             break;
 
         case ICM42688P:
             sensor_obj->type = ICM42688P;
+            aaf_tab = aafLUT42688;
             break; 
 
         default:
@@ -342,7 +364,9 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
 
     /* config acc */
 
-    /* turn acc gyro on for setting */
+    /* config interrupt */
+
+    /* turn acc gyro on */
     if(!DevICM426xx_TurnOn_AccGyro(sensor_obj))
     {
         sensor_obj->error = ICM426xx_AccGyr_TurnOn_Error;

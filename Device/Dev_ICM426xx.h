@@ -116,7 +116,7 @@ typedef enum
 typedef enum
 {
     ICM426xx_AAF_256Hz = 0,
-    ICM426xx_AAF_836Hz,
+    ICM426xx_AAF_536Hz,
     ICM426xx_AAF_997Hz,
     ICM426xx_AAF_1962Hz,
     ICM426xx_AAF_Sum,
@@ -152,50 +152,6 @@ typedef enum
     ICM426xx_Acc_8G,
     ICM426xx_Acc_16G,
 } ICM426xx_AccTrip_List;
-
-#define ICM42688P_AAF_256Hz_Cfg \
-    {                           \
-        6, 36, 10               \
-    }
-
-#define ICM42688P_AAF_536Hz_Cfg \
-    {                           \
-        12, 144, 8              \
-    }
-
-#define ICM42688P_AAF_997Hz_Cfg \
-    {                           \
-        21, 440, 6              \
-    }
-
-#define ICM42688P_AAF_1962Hz_Cfg \
-    {                            \
-        37, 1376, 4              \
-    }
-
-// actually 249 Hz
-#define ICM42605_AAF_256Hz_Cfg \
-    {                          \
-        21, 440, 6             \
-    }
-
-// actually 524 Hz
-#define ICM42605_AAF_536Hz_Cfg \
-    {                          \
-        39, 1536, 4            \
-    }
-
-// actually 995 Hz
-#define ICM42605_AAF_997Hz_Cfg \
-    {                          \
-        63, 3968, 3            \
-    }
-
-// 995 Hz is the max cutoff on the 42605
-#define ICM42605_AAF_1962Hz_Cfg \
-    {                           \
-        63, 3968, 3             \
-    }
 
 typedef struct
 {
