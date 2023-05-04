@@ -66,9 +66,9 @@ typedef enum
 
 typedef enum
 {
-    SrvIMU_Priori_Pri = 0,  /* primary IMU sample Only */
-    SrvIMU_Priori_Sec,      /* secondary IMU sample Only */
-    SrvIMU_Both_Sample,     /* both primary and secondary IMU sample */
+    SrvIMU_Priori_Pri = SET_BIT(0),                             /* primary IMU sample Only */
+    SrvIMU_Priori_Sec = SET_BIT(1),                             /* secondary IMU sample Only */
+    SrvIMU_Both_Sample = SrvIMU_Priori_Pri | SrvIMU_Priori_Sec, /* both primary and secondary IMU sample */
 }SrvIMU_SampleMode_List;
 
 #pragma pack(1)
