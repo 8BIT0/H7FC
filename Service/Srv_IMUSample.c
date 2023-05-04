@@ -299,15 +299,14 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         PriIMU_Acc_LPF_Handle[Axis_Y] = Butterworth.init(Acc_Filter_Ptr);
         PriIMU_Acc_LPF_Handle[Axis_Z] = Butterworth.init(Acc_Filter_Ptr);
 
-        if( (PriIMU_Gyr_LPF_Handle[Axis_X] == 0) || 
-            (PriIMU_Gyr_LPF_Handle[Axis_Y] == 0) || 
-            (PriIMU_Gyr_LPF_Handle[Axis_Z] == 0) ||
-            (PriIMU_Acc_LPF_Handle[Axis_X] == 0) ||
-            (PriIMU_Acc_LPF_Handle[Axis_Y] == 0) ||
-            (PriIMU_Acc_LPF_Handle[Axis_Z] == 0))
+        for(uint8_t i = Axis_X; i < Axis_Sum; i++)
         {
-            ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriIMU_Filter_Init_Error, NULL, 0);
-            return SrvIMU_PriIMU_Filter_Init_Error;
+            if( (PriIMU_Gyr_LPF_Handle[i] == 0) || 
+                (PriIMU_Acc_LPF_Handle[i] == 0))
+            {
+                ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriIMU_Filter_Init_Error, NULL, 0);
+                return SrvIMU_PriIMU_Filter_Init_Error;
+            }
         }
     }
     else
@@ -326,15 +325,14 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         SecIMU_Acc_LPF_Handle[Axis_Y] = Butterworth.init(Acc_Filter_Ptr);
         SecIMU_Acc_LPF_Handle[Axis_Z] = Butterworth.init(Acc_Filter_Ptr);
 
-        if( (SecIMU_Gyr_LPF_Handle[Axis_X] == 0) || 
-            (SecIMU_Gyr_LPF_Handle[Axis_Y] == 0) || 
-            (SecIMU_Gyr_LPF_Handle[Axis_Z] == 0) ||
-            (SecIMU_Acc_LPF_Handle[Axis_X] == 0) ||
-            (SecIMU_Acc_LPF_Handle[Axis_Y] == 0) ||
-            (SecIMU_Acc_LPF_Handle[Axis_Z] == 0))
+        for(uint8_t i = Axis_X; i < Axis_Sum; i++)
         {
-            ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecIMU_Filter_Init_Error, NULL, 0);
-            return SrvIMU_SecIMU_Filter_Init_Error;
+            if( (SecIMU_Gyr_LPF_Handle[i] == 0) || 
+                (SecIMU_Acc_LPF_Handle[i] == 0))
+            {
+                ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecIMU_Filter_Init_Error, NULL, 0);
+                return SrvIMU_SecIMU_Filter_Init_Error;
+            }
         }
     }
     else
