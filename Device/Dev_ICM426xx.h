@@ -96,6 +96,10 @@ typedef enum
     ICM426xx_No_Error = 0,
     ICM426xx_Obj_Error,
     ICM426xx_SampleRate_Error,
+    ICM426xx_UI_Filter_Error,
+    ICM426xx_INT_Set_Error,
+    ICM426xx_AccAAF_Error,
+    ICM426xx_GyrAAF_Error,
     ICM426xx_Reg_RW_Error,
     ICM426xx_BusCommunicate_Error,
     ICM426xx_DevID_Error,
@@ -116,7 +120,7 @@ typedef enum
 
 typedef enum
 {
-    ICM426xx_AAF_256Hz = 0,
+    ICM426xx_AAF_258Hz = 0,
     ICM426xx_AAF_536Hz,
     ICM426xx_AAF_997Hz,
     ICM426xx_AAF_1962Hz,
@@ -127,7 +131,7 @@ typedef struct
 {
     uint8_t delt;
     uint16_t deltSqr;
-    uint8_t bitshif;
+    uint8_t bitshift;
 } ICM426xx_AAF_Config_TypeDef;
 
 typedef enum
@@ -184,13 +188,17 @@ typedef struct
 typedef struct
 {
     ICM426xx_Sensor_TypeList (*detect)(bus_trans_callback trans, cs_ctl_callback cs_ctl);
-    bool (*config)(DevICM426xxObj_TypeDef *Obj, ICM426xx_SampleRate_List rate, ICM426xx_GyrTrip_List GyrTrip, ICM426xx_AccTrip_List AccTrip);
-    void (*pre_init)(DevICM426xxObj_TypeDef *Obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay, get_time_stamp_callback get_time_stamp);
-    bool (*init)(DevICM426xxObj_TypeDef *Obj);
-    void (*set_ready)(DevICM426xxObj_TypeDef *Obj);
-    bool (*get_ready)(DevICM426xxObj_TypeDef *Obj);
-    bool (*reset)(DevICM426xxObj_TypeDef *Obj);
-    bool (*sample)(DevICM426xxObj_TypeDef *Obj);
+    bool (*config)(DevICM426xxObj_TypeDef *sensor_obj, ICM426xx_SampleRate_List rate, ICM426xx_GyrTrip_List GyrTrip, ICM426xx_AccTrip_List AccTrip);
+    void (*pre_init)(DevICM426xxObj_TypeDef *sensor_obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay, get_time_stamp_callback get_time_stamp);
+    bool (*init)(DevICM426xxObj_TypeDef *sensor_obj);
+    void (*set_ready)(DevICM426xxObj_TypeDef *sensor_obj);
+    bool (*get_ready)(DevICM426xxObj_TypeDef *sensor_obj);
+    bool (*sample)(DevICM426xxObj_TypeDef *sensor_obj);
+    uint8_t (*get_error)(DevICM426xxObj_TypeDef *sensor_obj);
+    ICM426xx_Sensor_TypeList (*get_type)(DevICM426xxObj_TypeDef *sensor_obj);
+    IMUData_TypeDef (*get_data)(DevICM426xxObj_TypeDef *sensor_obj);
+    IMUModuleScale_TypeDef (*get_scale)(const DevICM426xxObj_TypeDef *sensor_obj);
+    float (*get_gyr_angular_speed_diff)(const DevICM426xxObj_TypeDef *sensor_obj);
 } DevICM426xx_TypeDef;
 
 extern DevICM426xx_TypeDef DevICM426xx;

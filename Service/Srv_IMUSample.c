@@ -439,8 +439,6 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
         break;
 
         case SrvIMU_Dev_ICM42688P:
-        break;
-
         case SrvIMU_Dev_ICM42605:
         break;
 
@@ -523,8 +521,6 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
         break;
 
         case SrvIMU_Dev_ICM42688P:
-        break;
-
         case SrvIMU_Dev_ICM42605:
         break;
 

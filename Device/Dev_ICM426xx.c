@@ -6,7 +6,7 @@
 // Possible gyro Anti-Alias Filter (AAF) cutoffs for ICM-42688P
 // see table in section 5.3
 static ICM426xx_AAF_Config_TypeDef aafLUT42688[ICM426xx_AAF_Sum] = {
-    [ICM426xx_AAF_256Hz]  = {  6,   36, 10 },
+    [ICM426xx_AAF_258Hz]  = {  6,   36, 10 },
     [ICM426xx_AAF_536Hz]  = { 12,  144,  8 },
     [ICM426xx_AAF_997Hz]  = { 21,  440,  6 },
     [ICM426xx_AAF_1962Hz] = { 37, 1376,  4 },
@@ -16,7 +16,7 @@ static ICM426xx_AAF_Config_TypeDef aafLUT42688[ICM426xx_AAF_Sum] = {
 // actual cutoff differs slightly from those of the 42688P
   // see table in section 5.3
 static ICM426xx_AAF_Config_TypeDef aafLUT42605[ICM426xx_AAF_Sum] = {
-    [ICM426xx_AAF_256Hz]  = { 21,  440,  6 }, // actually 249 Hz
+    [ICM426xx_AAF_258Hz]  = { 21,  440,  6 }, // actually 249 Hz
     [ICM426xx_AAF_536Hz]  = { 39, 1536,  4 }, // actually 524 Hz
     [ICM426xx_AAF_997Hz]  = { 63, 3968,  3 }, // actually 995 Hz
     [ICM426xx_AAF_1962Hz] = { 63, 3968,  3 }, // 995 Hz is the max cutoff on the 42605
@@ -42,12 +42,30 @@ static void DevICM426xx_PreInit(DevICM426xxObj_TypeDef *sensor_obj,
                                bus_trans_callback bus_trans,
                                delay_callback delay,
                                get_time_stamp_callback get_time_stamp);
+static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj);
+static void DevICM426xx_SetDRDY(DevICM426xxObj_TypeDef *sensor_obj);
+static bool DevICM426xx_GetDRDY(DevICM426xxObj_TypeDef *sensor_obj);
+static uint8_t DevICM426xx_GetError(DevICM426xxObj_TypeDef *sensor_obj);
+static ICM426xx_Sensor_TypeList DevICM426xx_GetType(DevICM426xxObj_TypeDef *sensor_obj);
+static bool DevICM426xx_Sample(DevICM426xxObj_TypeDef *sensor_obj);
+static IMUData_TypeDef DevICM426xx_Get_Data(DevICM426xxObj_TypeDef *sensor_obj);
+static IMUModuleScale_TypeDef DevICM426xx_Get_Scale(const DevICM426xxObj_TypeDef *sensor_obj);
+static float DevICM426xx_Get_Specified_AngularSpeed_Diff(const DevICM426xxObj_TypeDef *sensor_obj);
 
 /* external variable */
 DevICM426xx_TypeDef DevICM426xx = {
     .detect = DevICM426xx_Detect,
     .config = DevICM426xx_Config,
+    .init = DevICM426xx_Init,
     .pre_init = DevICM426xx_PreInit,
+    .set_ready = DevICM426xx_SetDRDY,
+    .get_ready = DevICM426xx_GetDRDY,
+    .get_error = DevICM426xx_GetError,
+    .get_type = DevICM426xx_GetType,
+    .get_data = DevICM426xx_Get_Data,
+    .get_gyr_angular_speed_diff = DevICM426xx_Get_Specified_AngularSpeed_Diff,
+    .get_scale = DevICM426xx_Get_Scale,
+    .sample = DevICM426xx_Sample,
 };
 
 static ICM426xx_Sensor_TypeList DevICM426xx_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
@@ -320,6 +338,7 @@ static bool DevICM426xx_TurnOn_AccGyro(DevICM426xxObj_TypeDef *sensor_obj)
 static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
 {
     uint8_t read_out = 0;
+    uint8_t intConfig1Value = 0;
     ICM426xx_AAF_Config_TypeDef *aaf_tab = NULL;
 
     if((sensor_obj == NULL) || 
@@ -369,10 +388,178 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
     }
 
     /* config gyro */
+    if(!DevICM426xx_SetUserBank(sensor_obj, ICM426XX_BANK_SELECT1))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC3, aaf_tab[ICM426xx_AAF_258Hz].delt) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC3, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != aaf_tab[ICM426xx_AAF_258Hz].delt)
+    {
+        sensor_obj->error = ICM426xx_GyrAAF_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC4, aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC4, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF)
+    {
+        sensor_obj->error = ICM426xx_GyrAAF_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC5, (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4)) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC5, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4))
+    {
+        sensor_obj->error = ICM426xx_GyrAAF_Error;
+        return false;
+    }
 
     /* config acc */
+    if(!DevICM426xx_SetUserBank(sensor_obj, ICM426XX_BANK_SELECT2))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC2, aaf_tab[ICM426xx_AAF_258Hz].delt << 1) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC2, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != aaf_tab[ICM426xx_AAF_258Hz].delt << 1)
+    {
+        sensor_obj->error = ICM426xx_AccAAF_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC3, aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC3, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF)
+    {
+        sensor_obj->error = ICM426xx_AccAAF_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC4, (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4)) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC4, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4))
+    {
+        sensor_obj->error = ICM426xx_AccAAF_Error;
+        return false;
+    }
+
+    /* config UI filter */
+    if(!DevICM426xx_SetUserBank(sensor_obj, ICM426XX_BANK_SELECT0))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_ACCEL_CONFIG0, ICM426XX_ACCEL_UI_FILT_BW_LOW_LATENCY | ICM426XX_GYRO_UI_FILT_BW_LOW_LATENCY) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_ACCEL_CONFIG0, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != ICM426XX_ACCEL_UI_FILT_BW_LOW_LATENCY | ICM426XX_GYRO_UI_FILT_BW_LOW_LATENCY)
+    {
+        sensor_obj->error = ICM426xx_UI_Filter_Error;
+        return false;
+    }
 
     /* config interrupt */
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_INT_CONFIG, ICM426XX_INT1_MODE_PULSED | ICM426XX_INT1_DRIVE_CIRCUIT_PP | ICM426XX_INT1_POLARITY_ACTIVE_HIGH) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_CONFIG, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != ICM426XX_INT1_MODE_PULSED | ICM426XX_INT1_DRIVE_CIRCUIT_PP | ICM426XX_INT1_POLARITY_ACTIVE_HIGH)
+    {
+        sensor_obj->error = ICM426xx_INT_Set_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_INT_CONFIG0, ICM426XX_UI_DRDY_INT_CLEAR_ON_SBR) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_CONFIG0, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != ICM426XX_UI_DRDY_INT_CLEAR_ON_SBR)
+    {
+        sensor_obj->error = ICM426xx_INT_Set_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_INT_SOURCE0, ICM426XX_UI_DRDY_INT1_EN_ENABLED) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_SOURCE0, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != ICM426XX_UI_DRDY_INT1_EN_ENABLED)
+    {
+        sensor_obj->error = ICM426xx_INT_Set_Error;
+        return false;
+    }
+
+    if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_CONFIG1, &intConfig1Value))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+    // Datasheet says: "User should change setting to 0 from default setting of 1, for proper INT1 and INT2 pin operation"
+    intConfig1Value &= ~(1 << ICM426XX_INT_ASYNC_RESET_BIT);
+    intConfig1Value |= (ICM426XX_INT_TPULSE_DURATION_8 | ICM426XX_INT_TDEASSERT_DISABLED);
+
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_INT_CONFIG1, intConfig1Value) ||
+       !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_CONFIG1, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
+
+    if(read_out != intConfig1Value)
+    {
+        sensor_obj->error = ICM426xx_INT_Set_Error;
+        return false;
+    }
 
     /* turn acc gyro on */
     if(!DevICM426xx_TurnOn_AccGyro(sensor_obj))
@@ -384,14 +571,14 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
     /* config sample data range and odr */
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, sensor_obj->GyrTrip))
     {
-        sensor_obj->error = ICM426xx_AccGyr_TurnOff_Error;
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
         return false;
     }
     sensor_obj->delay(15);
 
     if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, &read_out))
     {
-        sensor_obj->error = ICM426xx_AccGyr_TurnOff_Error;
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
         return false;
     }
 
@@ -403,14 +590,14 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, sensor_obj->AccTrip))
     {
-        sensor_obj->error = ICM426xx_AccGyr_TurnOff_Error;
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
         return false;
     }
     sensor_obj->delay(15);
 
     if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, &read_out))
     {
-        sensor_obj->error = ICM426xx_AccGyr_TurnOff_Error;
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
         return false;
     }
 
@@ -420,9 +607,96 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
         return false;
     }
 
+    sensor_obj->error = ICM426xx_No_Error;
     return true;
 }
 
+static bool DevICM426xx_Sample(DevICM426xxObj_TypeDef *sensor_obj)
+{
+    uint8_t Acc_Tx[6] = {0};
+    uint8_t Gyr_Tx[6] = {0};
+    uint8_t Rx[12] = {0};
 
+    if ((sensor_obj->error == ICM426xx_No_Error) && (sensor_obj->drdy))
+    {
+        sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
+
+        DevICM426xx_Regs_Read(sensor_obj, ICM426XX_RA_ACCEL_DATA_X1, Acc_Tx, Rx, 6);
+        DevICM426xx_Regs_Read(sensor_obj, ICM426XX_RA_GYRO_DATA_X1, Gyr_Tx, (Rx + 6), 6);
+
+        for (uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
+        {
+            sensor_obj->OriData.acc_int[axis] = (int16_t)((Rx[axis * 2] << 8) | Rx[axis * 2 + 1]);
+            sensor_obj->OriData.gyr_int[axis] = (int16_t)((Rx[axis * 2 + 6] << 8) | Rx[axis * 2 + 7]);
+
+            /* convert int data to float */
+            sensor_obj->OriData.acc_flt[axis] = ((float)sensor_obj->OriData.acc_int[axis] / sensor_obj->acc_scale);
+            sensor_obj->OriData.gyr_flt[axis] = ((float)sensor_obj->OriData.gyr_int[axis] / sensor_obj->gyr_scale);
+        }
+
+        sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
+        sensor_obj->drdy = false;
+        return true;
+    }
+
+    return false;
+}
+
+static void DevICM426xx_SetDRDY(DevICM426xxObj_TypeDef *sensor_obj)
+{
+    if(sensor_obj)
+        sensor_obj->drdy = true;
+}
+
+static bool DevICM426xx_GetDRDY(DevICM426xxObj_TypeDef *sensor_obj)
+{
+    if(!sensor_obj)
+        return false;
+    
+    return sensor_obj->drdy;
+}
+
+static uint8_t DevICM426xx_GetError(DevICM426xxObj_TypeDef *sensor_obj)
+{
+    if(sensor_obj == NULL)
+        return ICM426xx_Obj_Error;
+
+    return sensor_obj->error;
+}
+
+static ICM426xx_Sensor_TypeList DevICM426xx_GetType(DevICM426xxObj_TypeDef *sensor_obj)
+{
+    if(sensor_obj == NULL)
+        return ICM_NONE;
+
+    return sensor_obj->type;
+} 
+
+static IMUData_TypeDef DevICM426xx_Get_Data(DevICM426xxObj_TypeDef *sensor_obj)
+{
+    IMUData_TypeDef tmp;
+
+    memset(&tmp, NULL, sizeof(tmp));
+    if (sensor_obj->error == ICM426xx_No_Error)
+        return sensor_obj->OriData;
+
+    return tmp;
+}
+
+static IMUModuleScale_TypeDef DevICM426xx_Get_Scale(const DevICM426xxObj_TypeDef *sensor_obj)
+{
+    IMUModuleScale_TypeDef scale_tmp;
+
+    scale_tmp.acc_scale = sensor_obj->acc_scale;
+    scale_tmp.gyr_scale = sensor_obj->gyr_scale;
+
+    return scale_tmp;
+}
+
+/* specified anguler speed per millsecond */
+static float DevICM426xx_Get_Specified_AngularSpeed_Diff(const DevICM426xxObj_TypeDef *sensor_obj)
+{
+    return sensor_obj->PHY_GyrTrip_Val / 1000.0f;
+}
 
 
