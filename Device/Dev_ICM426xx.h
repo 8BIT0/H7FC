@@ -216,6 +216,8 @@ typedef struct
     bool (*init)(DevICM426xxObj_TypeDef *Obj);
     void (*set_ready)(DevICM426xxObj_TypeDef *Obj);
     bool (*get_ready)(DevICM426xxObj_TypeDef *Obj);
+    bool (*reset)(DevICM426xxObj_TypeDef *Obj);
+    bool (*sample)(DevICM426xxObj_TypeDef *Obj);
 } DevICM426xx_TypeDef;
 
 extern DevICM426xx_TypeDef DevICM426xx;
