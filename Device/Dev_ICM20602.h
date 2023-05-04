@@ -124,6 +124,7 @@ typedef enum
     ICM20602_OSC_Error,
     ICM20602_InertialEnable_Error,
     ICM20602_InterfaceSet_Error,
+    ICM20602_IntPinSet_Error,
     ICM20602_AccSet_Error,
     ICM20602_GyrSet_Error,
     ICM20602_RateSet_Error,

@@ -964,6 +964,8 @@ static void SrvIMU_ErrorProc(void)
 
 static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
 {
+    Runtime_DelayMs(20);
+
     if(DevMPU6000.detect(trans, cs_ctl))
         return SrvIMU_Dev_MPU6000;
 
@@ -1038,11 +1040,13 @@ static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
     if(p_arg && size)
     {
-        ErrorLog.add_desc("PriIMU Type: %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
-        ErrorLog.add_desc("error code:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).code);
-        ErrorLog.add_desc("error func:  %s\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).function);
-        ErrorLog.add_desc("error line:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).line);
-        ErrorLog.add_desc("error reg:   %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg);
+        ErrorLog.add_desc("PriIMU Type:  %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
+        ErrorLog.add_desc("error code:   %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).code);
+        ErrorLog.add_desc("error func:   %s\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).function);
+        ErrorLog.add_desc("error line:   %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).line);
+        ErrorLog.add_desc("error reg:    %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).tar_reg);
+        ErrorLog.add_desc("error reg rx: %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg_r_val);
+        ErrorLog.add_desc("error reg tx: %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg_t_val);
 
         ErrorLog.add_desc("\r\n");
     }
@@ -1052,11 +1056,13 @@ static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
     if(p_arg && size)
     {
-        ErrorLog.add_desc("PriIMU Type: %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
+        ErrorLog.add_desc("SecIMU Type: %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
         ErrorLog.add_desc("error code:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).code);
         ErrorLog.add_desc("error func:  %s\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).function);
         ErrorLog.add_desc("error line:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).line);
-        ErrorLog.add_desc("error reg:   %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg);
+        ErrorLog.add_desc("error reg:    %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).tar_reg);
+        ErrorLog.add_desc("error reg rx: %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg_r_val);
+        ErrorLog.add_desc("error reg tx: %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg_t_val);
 
         ErrorLog.add_desc("\r\n");
     }

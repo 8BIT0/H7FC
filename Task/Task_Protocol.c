@@ -189,9 +189,9 @@ void TaskProtocol_Core(Task_Handle hdl)
                 Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
 
                 TaskProtocol_TransBuff(p_buf, p_buf_size);
-
-                MMU_Free(p_buf);
             }
+
+            MMU_Free(p_buf);
         }
         
         /* test proto mavlink raw imu data */

@@ -326,7 +326,7 @@ static bool DevICM426xx_TurnOn_AccGyro(DevICM426xxObj_TypeDef *sensor_obj)
         return false;
 
     state = DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_PWR_MGMT0, &read_out);
-    if((!state) || (read_out != ICM426XX_PWR_MGMT0_TEMP_DISABLE_OFF | ICM426XX_PWR_MGMT0_ACCEL_MODE_LN | ICM426XX_PWR_MGMT0_GYRO_MODE_LN))
+    if((!state) || (read_out != (ICM426XX_PWR_MGMT0_TEMP_DISABLE_OFF | ICM426XX_PWR_MGMT0_ACCEL_MODE_LN | ICM426XX_PWR_MGMT0_GYRO_MODE_LN)))
         return false;
 
     return true;
@@ -342,20 +342,14 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
        (sensor_obj->cs_ctl == NULL) || 
        (sensor_obj->bus_trans == NULL))
     {
-        sensor_obj->error.code = ICM426xx_Obj_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Obj_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     /* get sensor type first */
     if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_WHO_AM_I, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
@@ -379,183 +373,131 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
 
     if(!DevICM426xx_SetUserBank(sensor_obj, ICM426XX_BANK_SELECT0))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     /* turn acc gyro off for setting */
     if(!DevICM426xx_TurnOff_AccGyro(sensor_obj))
     {
-        sensor_obj->error.code = ICM426xx_AccGyr_TurnOff_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_AccGyr_TurnOff_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     /* config gyro */
     if(!DevICM426xx_SetUserBank(sensor_obj, ICM426XX_BANK_SELECT1))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC3, aaf_tab[ICM426xx_AAF_258Hz].delt) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC3, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     if(read_out != aaf_tab[ICM426xx_AAF_258Hz].delt)
     {
-        sensor_obj->error.code = ICM426xx_GyrAAF_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_GyrAAF_Error, __FUNCTION__, __LINE__, ICM426XX_RA_GYRO_CONFIG_STATIC3, read_out, aaf_tab[ICM426xx_AAF_258Hz].delt);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC4, aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC4, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
-    if(read_out != aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF)
+    if(read_out != (aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF))
     {
-        sensor_obj->error.code = ICM426xx_GyrAAF_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_GyrAAF_Error, __FUNCTION__, __LINE__, ICM426XX_RA_GYRO_CONFIG_STATIC4, read_out, 
+                         aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC5, (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4)) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG_STATIC5, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
-    if(read_out != (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4))
+    if(read_out != ((aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4)))
     {
-        sensor_obj->error.code = ICM426xx_GyrAAF_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_GyrAAF_Error, __FUNCTION__, __LINE__, ICM426XX_RA_GYRO_CONFIG_STATIC5, read_out, 
+                         (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4));
         return false;
     }
 
     /* config acc */
     if(!DevICM426xx_SetUserBank(sensor_obj, ICM426XX_BANK_SELECT2))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC2, aaf_tab[ICM426xx_AAF_258Hz].delt << 1) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC2, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
-    if(read_out != aaf_tab[ICM426xx_AAF_258Hz].delt << 1)
+    if(read_out != (aaf_tab[ICM426xx_AAF_258Hz].delt << 1))
     {
-        sensor_obj->error.code = ICM426xx_AccAAF_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_AccAAF_Error, __FUNCTION__, __LINE__, ICM426XX_RA_ACCEL_CONFIG_STATIC2, read_out, aaf_tab[ICM426xx_AAF_258Hz].delt << 1);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC3, aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC3, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
-    if(read_out != aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF)
+    if(read_out != (aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF))
     {
-        sensor_obj->error.code = ICM426xx_AccAAF_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_AccAAF_Error, __FUNCTION__, __LINE__, ICM426XX_RA_ACCEL_CONFIG_STATIC3, read_out, 
+                         aaf_tab[ICM426xx_AAF_258Hz].deltSqr & 0xFF);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC4, (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4)) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG_STATIC4, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
-    if(read_out != (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4))
+    if(read_out != ((aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4)))
     {
-        sensor_obj->error.code = ICM426xx_AccAAF_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_AccAAF_Error, __FUNCTION__, __LINE__, ICM426XX_RA_ACCEL_CONFIG_STATIC4, read_out, 
+                         (aaf_tab[ICM426xx_AAF_258Hz].deltSqr >> 8) | (aaf_tab[ICM426xx_AAF_258Hz].bitshift << 4));
         return false;
     }
 
     /* config UI filter */
     if(!DevICM426xx_SetUserBank(sensor_obj, ICM426XX_BANK_SELECT0))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_ACCEL_CONFIG0, ICM426XX_ACCEL_UI_FILT_BW_LOW_LATENCY | ICM426XX_GYRO_UI_FILT_BW_LOW_LATENCY) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_ACCEL_CONFIG0, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
-    if(read_out != ICM426XX_ACCEL_UI_FILT_BW_LOW_LATENCY | ICM426XX_GYRO_UI_FILT_BW_LOW_LATENCY)
+    if(read_out != (ICM426XX_ACCEL_UI_FILT_BW_LOW_LATENCY | ICM426XX_GYRO_UI_FILT_BW_LOW_LATENCY))
     {
-        sensor_obj->error.code = ICM426xx_UI_Filter_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_UI_Filter_Error, __FUNCTION__, __LINE__, ICM426XX_RA_GYRO_ACCEL_CONFIG0, read_out, 
+                         ICM426XX_ACCEL_UI_FILT_BW_LOW_LATENCY | ICM426XX_GYRO_UI_FILT_BW_LOW_LATENCY);
         return false;
     }
 
@@ -563,66 +505,46 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_INT_CONFIG, ICM426XX_INT1_MODE_PULSED | ICM426XX_INT1_DRIVE_CIRCUIT_PP | ICM426XX_INT1_POLARITY_ACTIVE_HIGH) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_CONFIG, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
-    if(read_out != ICM426XX_INT1_MODE_PULSED | ICM426XX_INT1_DRIVE_CIRCUIT_PP | ICM426XX_INT1_POLARITY_ACTIVE_HIGH)
+    if(read_out != (ICM426XX_INT1_MODE_PULSED | ICM426XX_INT1_DRIVE_CIRCUIT_PP | ICM426XX_INT1_POLARITY_ACTIVE_HIGH))
     {
-        sensor_obj->error.code = ICM426xx_INT_Set_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_INT_Set_Error, __FUNCTION__, __LINE__, ICM426XX_RA_INT_CONFIG, read_out, 
+                         ICM426XX_INT1_MODE_PULSED | ICM426XX_INT1_DRIVE_CIRCUIT_PP | ICM426XX_INT1_POLARITY_ACTIVE_HIGH);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_INT_CONFIG0, ICM426XX_UI_DRDY_INT_CLEAR_ON_SBR) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_CONFIG0, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     if(read_out != ICM426XX_UI_DRDY_INT_CLEAR_ON_SBR)
     {
-        sensor_obj->error.code = ICM426xx_INT_Set_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_INT_Set_Error, __FUNCTION__, __LINE__, ICM426XX_RA_INT_CONFIG0, read_out, ICM426XX_UI_DRDY_INT_CLEAR_ON_SBR);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_INT_SOURCE0, ICM426XX_UI_DRDY_INT1_EN_ENABLED) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_SOURCE0, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     if(read_out != ICM426XX_UI_DRDY_INT1_EN_ENABLED)
     {
-        sensor_obj->error.code = ICM426xx_INT_Set_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_INT_Set_Error, __FUNCTION__, __LINE__, ICM426XX_RA_INT_SOURCE0, read_out, ICM426XX_UI_DRDY_INT1_EN_ENABLED);
         return false;
     }
 
     if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_CONFIG1, &intConfig1Value))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
     // Datasheet says: "User should change setting to 0 from default setting of 1, for proper INT1 and INT2 pin operation"
@@ -632,93 +554,64 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_INT_CONFIG1, intConfig1Value) ||
        !DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_INT_CONFIG1, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     if(read_out != intConfig1Value)
     {
-        sensor_obj->error.code = ICM426xx_INT_Set_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_INT_Set_Error, __FUNCTION__, __LINE__, ICM426XX_RA_INT_CONFIG1, read_out, intConfig1Value);
         return false;
     }
 
     /* turn acc gyro on */
     if(!DevICM426xx_TurnOn_AccGyro(sensor_obj))
     {
-        sensor_obj->error.code = ICM426xx_AccGyr_TurnOn_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_AccGyr_TurnOn_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     /* config sample data range and odr */
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, sensor_obj->GyrTrip))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
     sensor_obj->delay(15);
 
     if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     if(read_out != sensor_obj->GyrTrip)
     {
-        sensor_obj->error.code = ICM426xx_GyrRangeOdr_Set_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_GyrRangeOdr_Set_Error, __FUNCTION__, __LINE__, ICM426XX_RA_GYRO_CONFIG0, read_out, sensor_obj->GyrTrip);
         return false;
     }
 
     if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, sensor_obj->AccTrip))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
+
         return false;
     }
     sensor_obj->delay(15);
 
     if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, &read_out))
     {
-        sensor_obj->error.code = ICM426xx_Reg_RW_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = 0;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_Reg_RW_Error, __FUNCTION__, __LINE__, 0, 0, 0);
         return false;
     }
 
     if(read_out != sensor_obj->AccTrip)
     {
-        sensor_obj->error.code = ICM426xx_AccRangeOdr_Set_Error;
-        sensor_obj->error.function = __FUNCTION__;
-        sensor_obj->error.line = __LINE__;
-        sensor_obj->error.reg = read_out;
+        IMUData_SetError(&(sensor_obj->error), ICM426xx_AccRangeOdr_Set_Error, __FUNCTION__, __LINE__, ICM426XX_RA_ACCEL_CONFIG0, read_out, sensor_obj->AccTrip);
         return false;
     }
 
-    sensor_obj->error.code = ICM426xx_No_Error;
-    sensor_obj->error.function = "";
-    sensor_obj->error.line = 0;
-    sensor_obj->error.reg = 0;
+    IMUData_SetError(&(sensor_obj->error), ICM426xx_No_Error, "", 0, 0, 0, 0);
     return true;
 }
 
