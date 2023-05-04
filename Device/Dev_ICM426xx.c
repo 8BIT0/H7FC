@@ -353,8 +353,24 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
     DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, sensor_obj->GyrTrip);
     sensor_obj->delay(15);
 
+    DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, &read_out);
+    if(read_out != sensor_obj->GyrTrip)
+    {
+        sensor_obj->error = ICM426xx_GyrRangeOdr_Set_Error;
+        return false;
+    }
+
     DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, sensor_obj->AccTrip);
     sensor_obj->delay(15);
+
+    DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, &read_out);
+    if(read_out != sensor_obj->AccTrip)
+    {
+        sensor_obj->error = ICM426xx_AccRangeOdr_Set_Error;
+        return false;
+    }
+
+    return true;
 }
 
 

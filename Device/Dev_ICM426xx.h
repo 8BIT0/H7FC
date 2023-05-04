@@ -98,6 +98,8 @@ typedef enum
     ICM426xx_SampleRate_Error,
     ICM426xx_BusCommunicate_Error,
     ICM426xx_DevID_Error,
+    ICM426xx_AccRangeOdr_Set_Error,
+    ICM426xx_GyrRangeOdr_Set_Error,
     ICM426xx_AccGyr_TurnOff_Error,
     ICM426xx_AccGyr_TurnOn_Error,
 } ICM426xx_Error_List;
