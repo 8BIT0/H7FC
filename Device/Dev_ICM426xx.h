@@ -195,7 +195,6 @@ typedef struct
     bool (*get_ready)(DevICM426xxObj_TypeDef *sensor_obj);
     bool (*sample)(DevICM426xxObj_TypeDef *sensor_obj);
     uint8_t (*get_error)(DevICM426xxObj_TypeDef *sensor_obj);
-    ICM426xx_Sensor_TypeList (*get_type)(DevICM426xxObj_TypeDef *sensor_obj);
     IMUData_TypeDef (*get_data)(DevICM426xxObj_TypeDef *sensor_obj);
     IMUModuleScale_TypeDef (*get_scale)(const DevICM426xxObj_TypeDef *sensor_obj);
     float (*get_gyr_angular_speed_diff)(const DevICM426xxObj_TypeDef *sensor_obj);

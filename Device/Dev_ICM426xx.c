@@ -46,7 +46,6 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj);
 static void DevICM426xx_SetDRDY(DevICM426xxObj_TypeDef *sensor_obj);
 static bool DevICM426xx_GetDRDY(DevICM426xxObj_TypeDef *sensor_obj);
 static uint8_t DevICM426xx_GetError(DevICM426xxObj_TypeDef *sensor_obj);
-static ICM426xx_Sensor_TypeList DevICM426xx_GetType(DevICM426xxObj_TypeDef *sensor_obj);
 static bool DevICM426xx_Sample(DevICM426xxObj_TypeDef *sensor_obj);
 static IMUData_TypeDef DevICM426xx_Get_Data(DevICM426xxObj_TypeDef *sensor_obj);
 static IMUModuleScale_TypeDef DevICM426xx_Get_Scale(const DevICM426xxObj_TypeDef *sensor_obj);
@@ -61,7 +60,6 @@ DevICM426xx_TypeDef DevICM426xx = {
     .set_ready = DevICM426xx_SetDRDY,
     .get_ready = DevICM426xx_GetDRDY,
     .get_error = DevICM426xx_GetError,
-    .get_type = DevICM426xx_GetType,
     .get_data = DevICM426xx_Get_Data,
     .get_gyr_angular_speed_diff = DevICM426xx_Get_Specified_AngularSpeed_Diff,
     .get_scale = DevICM426xx_Get_Scale,
@@ -663,14 +661,6 @@ static uint8_t DevICM426xx_GetError(DevICM426xxObj_TypeDef *sensor_obj)
 
     return sensor_obj->error;
 }
-
-static ICM426xx_Sensor_TypeList DevICM426xx_GetType(DevICM426xxObj_TypeDef *sensor_obj)
-{
-    if(sensor_obj == NULL)
-        return ICM_NONE;
-
-    return sensor_obj->type;
-} 
 
 static IMUData_TypeDef DevICM426xx_Get_Data(DevICM426xxObj_TypeDef *sensor_obj)
 {
