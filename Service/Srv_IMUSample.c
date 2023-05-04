@@ -107,6 +107,30 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
     {
         .out = true,
         .log = false,
+        .prc_callback = NULL,
+        .code = SrvIMU_SecDev_Detect_Error,
+        .desc = "Sec IMU None Detected\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = NULL,
+        .code = SrvIMU_PriDev_Detect_Error,
+        .desc = "Pri IMU None Detected\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
         .prc_callback = SrvIMU_SecDev_Filter_InitError,
         .code = SrvIMU_SecIMU_Filter_Init_Error,
         .desc = "Sec IMU Filter Init Failed\r\n",
@@ -310,7 +334,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         }
     }
     else
-        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, &SrvIMU_PriIMU_Init_Error_CNT, sizeof(SrvIMU_PriIMU_Init_Error_CNT));
+        ErrorLog.trigger(SrvMPU_Error_Handle, PriIMU_Init_State, &SrvIMU_PriIMU_Init_Error_CNT, sizeof(SrvIMU_PriIMU_Init_Error_CNT));
 
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
@@ -336,7 +360,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         }
     }
     else
-        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, &SrvIMU_SecIMU_Init_Error_CNT, sizeof(SrvIMU_SecIMU_Init_Error_CNT));
+        ErrorLog.trigger(SrvMPU_Error_Handle, SecIMU_Init_State, &SrvIMU_SecIMU_Init_Error_CNT, sizeof(SrvIMU_SecIMU_Init_Error_CNT));
 
     memset(&PriIMU_Data, NULL, sizeof(PriIMU_Data));
     memset(&SecIMU_Data, NULL, sizeof(SecIMU_Data));
@@ -492,7 +516,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
             InUse_PriIMU_Obj.get_error = DevICM426xx.get_error;
         break;
 
-        default: return SrvIMU_PriDev_Init_Error;
+        default: return SrvIMU_PriDev_Detect_Error;
     }
 
     return SrvIMU_No_Error;
@@ -626,7 +650,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
             InUse_SecIMU_Obj.get_error = DevICM426xx.get_error;
         break;
 
-        default: return SrvIMU_SecDev_Init_Error;
+        default: return SrvIMU_SecDev_Detect_Error;
     }
 
     return SrvIMU_No_Error;

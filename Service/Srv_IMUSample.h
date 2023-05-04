@@ -31,6 +31,8 @@ typedef enum
 
 typedef enum
 {
+    SrvIMU_PriDev_Detect_Error = -12,
+    SrvIMU_SecDev_Detect_Error = -11,
     SrvIMU_SecIMU_Filter_Init_Error = -10,
     SrvIMU_PriIMU_Filter_Init_Error = -9,
     SrvIMU_PriCSPin_Init_Error = -8,
