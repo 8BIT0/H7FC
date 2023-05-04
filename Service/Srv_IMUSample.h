@@ -64,6 +64,13 @@ typedef enum
     SrvIMU_Dev_None,
 }SrvIMU_SensorID_List;
 
+typedef enum
+{
+    SrvIMU_Priori_Pri = 0,  /* primary IMU sample Only */
+    SrvIMU_Priori_Sec,      /* secondary IMU sample Only */
+    SrvIMU_Both_Sample,     /* both primary and secondary IMU sample */
+}SrvIMU_SampleMode_List;
+
 #pragma pack(1)
 typedef struct
 {

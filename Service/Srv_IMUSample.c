@@ -95,6 +95,8 @@ static SrvIMU_InuseSensorObj_TypeDef InUse_PriIMU_Obj;
 static SrvIMU_InuseSensorObj_TypeDef InUse_SecIMU_Obj;
 
 /************************************************************************ Error Tree Item ************************************************************************/
+static void SrvIMU_PriDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
+static void SrvIMU_SecDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_AllModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
@@ -103,7 +105,31 @@ static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size);
 
 static Error_Obj_Typedef SrvIMU_ErrorList[] = {
     {
-        .out = false,
+        .out = true,
+        .log = false,
+        .prc_callback = SrvIMU_SecDev_Filter_InitError,
+        .code = SrvIMU_SecIMU_Filter_Init_Error,
+        .desc = "Sec IMU Filter Init Failed\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = SrvIMU_PriDev_Filter_InitError,
+        .code = SrvIMU_PriIMU_Filter_Init_Error,
+        .desc = "Pri IMU Filter Init Failed\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
         .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_PriCSPin_Init_Error,
@@ -115,7 +141,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         },
     },
     {
-        .out = false,
+        .out = true,
         .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_PriExtiPin_Init_Error,
@@ -127,7 +153,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         },
     },
     {
-        .out = false,
+        .out = true,
         .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_PriBus_Init_Error,
@@ -140,7 +166,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
     },
     {
         .out = true,
-        .log = true,
+        .log = false,
         .prc_callback = SrvIMU_PriDev_InitError,
         .code = SrvIMU_PriDev_Init_Error,
         .desc = "Pri Dev Init Failed\r\n",
@@ -151,7 +177,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         },
     },
     {
-        .out = false,
+        .out = true,
         .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_SecCSPin_Init_Error,
@@ -163,7 +189,8 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         },
     },
     {
-        .out = false,
+        .out = true,
+        .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_SecExtiPin_Init_Error,
         .desc = "Sec Ext Pin Init Failed\r\n",
@@ -174,7 +201,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
         },
     },
     {
-        .out = false,
+        .out = true,
         .log = false,
         .prc_callback = NULL,
         .code = SrvIMU_SecBus_Init_Error,
@@ -278,7 +305,10 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
             (PriIMU_Acc_LPF_Handle[Axis_X] == 0) ||
             (PriIMU_Acc_LPF_Handle[Axis_Y] == 0) ||
             (PriIMU_Acc_LPF_Handle[Axis_Z] == 0))
+        {
+            ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriIMU_Filter_Init_Error, NULL, 0);
             return SrvIMU_PriIMU_Filter_Init_Error;
+        }
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_PriDev_Init_Error, &SrvIMU_PriIMU_Init_Error_CNT, sizeof(SrvIMU_PriIMU_Init_Error_CNT));
@@ -302,7 +332,10 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
             (SecIMU_Acc_LPF_Handle[Axis_X] == 0) ||
             (SecIMU_Acc_LPF_Handle[Axis_Y] == 0) ||
             (SecIMU_Acc_LPF_Handle[Axis_Z] == 0))
+        {
+            ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecIMU_Filter_Init_Error, NULL, 0);
             return SrvIMU_SecIMU_Filter_Init_Error;
+        }
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_SecDev_Init_Error, &SrvIMU_SecIMU_Init_Error_CNT, sizeof(SrvIMU_SecIMU_Init_Error_CNT));
@@ -407,7 +440,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 
         case SrvIMU_Dev_ICM42688P:
         break;
-        
+
         case SrvIMU_Dev_ICM42605:
         break;
 
@@ -849,6 +882,16 @@ static void SrvIMU_SecIMU_ExtiCallback(void)
 }
 
 /*************************************************************** Error Process Callback *******************************************************************************/
+static void SrvIMU_PriDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
+{
+
+}
+
+static void SrvIMU_SecDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
+{
+
+}
+
 static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
     (*(uint32_t *)p_arg)++;
