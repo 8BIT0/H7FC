@@ -40,3 +40,15 @@ static ICM426xx_Sensor_TypeList DevICM426xx_Detect(bus_trans_callback trans, cs_
 
     return ICM_NONE;
 }
+
+static void DevICM426xx_PreInit(DevICM426xxObj_TypeDef *sensor_obj,
+                               cs_ctl_callback cs_ctl,
+                               bus_trans_callback bus_trans,
+                               delay_callback delay,
+                               get_time_stamp_callback get_time_stamp)
+{
+    sensor_obj->cs_ctl = cs_ctl;
+    sensor_obj->bus_trans = bus_trans;
+    sensor_obj->delay = delay;
+    sensor_obj->get_timestamp = get_time_stamp;
+}

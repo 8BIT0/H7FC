@@ -187,7 +187,11 @@ typedef struct
 {
     cs_ctl_callback cs_ctl;
     bus_trans_callback bus_trans;
+    delay_callback delay;
     get_time_stamp_callback get_timestamp;
+
+    bool drdy;
+    bool update;
 
     uint8_t AccTrip;
     uint8_t GyrTrip;
@@ -198,11 +202,10 @@ typedef struct
     float acc_scale;
     float gyr_scale;
 
-    bool drdy;
+    ICM426xx_Error_List error;
     ICM426xx_SampleRate_List rate;
 
     IMUData_TypeDef OriData;
-
 } DevICM426xxObj_TypeDef;
 
 typedef struct
