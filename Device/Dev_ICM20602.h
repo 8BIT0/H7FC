@@ -142,6 +142,7 @@ typedef struct
     uint8_t AccTrip;
     uint8_t GyrTrip;
 
+    uint8_t PHY_AccTrip_Val;
     uint16_t PHY_GyrTrip_Val;
 
     float acc_scale;
@@ -165,8 +166,8 @@ typedef struct
     bool (*sample)(DevICM20602Obj_TypeDef *Obj);
     IMUData_TypeDef (*get_data)(DevICM20602Obj_TypeDef *Obj);
     ICM20602_Error_List (*get_error)(DevICM20602Obj_TypeDef *Obj);
-    IMUModuleScale_TypeDef (*get_scale)(const DevICM20602Obj_TypeDef sensor_obj);
-    float (*get_gyr_angular_speed_diff)(const DevICM20602Obj_TypeDef sensor_obj);
+    IMUModuleScale_TypeDef (*get_scale)(const DevICM20602Obj_TypeDef *sensor_obj);
+    float (*get_gyr_angular_speed_diff)(const DevICM20602Obj_TypeDef *sensor_obj);
 } DevICM20602_TypeDef;
 
 extern DevICM20602_TypeDef DevICM20602;

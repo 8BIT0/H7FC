@@ -32,6 +32,9 @@ typedef struct
     void *obj_ptr;
     IMUData_TypeDef *OriData_ptr;
 
+    uint8_t acc_trip;
+    uint16_t gyr_trip;
+
     bool (*get_drdy)(void *obj);
     bool (*sample)(void *obj);
     IMUModuleScale_TypeDef (*get_scale)(void *obj);
@@ -360,6 +363,9 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 
             InUse_PriIMU_Obj.type = SrvIMU_Dev_MPU6000;
             InUse_PriIMU_Obj.obj_ptr = &MPU6000Obj;
+            InUse_PriIMU_Obj.OriData_ptr = &(MPU6000Obj.OriData);
+            InUse_PriIMU_Obj.acc_trip = MPU6000Obj.PHY_AccTrip_Val;
+            InUse_PriIMU_Obj.gyr_trip = MPU6000Obj.PHY_GyrTrip_Val;
             
             InUse_PriIMU_Obj.set_drdy = DevMPU6000.set_ready;
             InUse_PriIMU_Obj.get_drdy = DevMPU6000.get_ready;
@@ -384,7 +390,10 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 
             InUse_PriIMU_Obj.type = SrvIMU_Dev_ICM20602;
             InUse_PriIMU_Obj.obj_ptr = &ICM20602Obj;
-            
+            InUse_PriIMU_Obj.OriData_ptr = &(ICM20602Obj.OriData);
+            InUse_PriIMU_Obj.acc_trip = ICM20602Obj.PHY_AccTrip_Val;
+            InUse_PriIMU_Obj.gyr_trip = ICM20602Obj.PHY_GyrTrip_Val;
+
             InUse_PriIMU_Obj.set_drdy = DevICM20602.set_ready;
             InUse_PriIMU_Obj.get_drdy = DevICM20602.get_ready;
             InUse_PriIMU_Obj.get_scale = DevICM20602.get_scale;
@@ -434,7 +443,10 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 
             InUse_SecIMU_Obj.type = SrvIMU_Dev_MPU6000;
             InUse_SecIMU_Obj.obj_ptr = &MPU6000Obj;
-            
+            InUse_SecIMU_Obj.OriData_ptr = &(MPU6000Obj.OriData);
+            InUse_SecIMU_Obj.acc_trip = MPU6000Obj.PHY_AccTrip_Val;
+            InUse_SecIMU_Obj.gyr_trip = MPU6000Obj.PHY_GyrTrip_Val;
+
             InUse_SecIMU_Obj.set_drdy = DevMPU6000.set_ready;
             InUse_SecIMU_Obj.get_drdy = DevMPU6000.get_ready;
             InUse_SecIMU_Obj.get_scale = DevMPU6000.get_scale;
@@ -458,7 +470,10 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 
             InUse_SecIMU_Obj.type = SrvIMU_Dev_ICM20602;
             InUse_SecIMU_Obj.obj_ptr = &ICM20602Obj;
-            
+            InUse_SecIMU_Obj.OriData_ptr = &(ICM20602Obj.OriData);
+            InUse_SecIMU_Obj.acc_trip = ICM20602Obj.PHY_AccTrip_Val;
+            InUse_SecIMU_Obj.gyr_trip = ICM20602Obj.PHY_GyrTrip_Val;
+
             InUse_SecIMU_Obj.set_drdy = DevICM20602.set_ready;
             InUse_SecIMU_Obj.get_drdy = DevICM20602.get_ready;
             InUse_SecIMU_Obj.get_scale = DevICM20602.get_scale;
@@ -583,18 +598,18 @@ static bool SrvIMU_Sample(void)
     /* pri imu init successed */
     if (SrvMpu_Init_Reg.sec.Pri_State)
     {
-        pri_imu_scale = DevMPU6000.get_scale(MPU6000Obj);
+        pri_imu_scale = InUse_PriIMU_Obj.get_scale(InUse_PriIMU_Obj.obj_ptr);
         PriIMU_Data.acc_scale = pri_imu_scale.acc_scale;
         PriIMU_Data.gyr_scale = pri_imu_scale.gyr_scale;
 
         /* pri imu module data ready triggered */
-        if (DevMPU6000.get_ready(&MPU6000Obj) && DevMPU6000.sample(&MPU6000Obj))
+        if (InUse_PriIMU_Obj.get_drdy(InUse_PriIMU_Obj.obj_ptr) && InUse_PriIMU_Obj.sample(InUse_PriIMU_Obj.obj_ptr))
         {
             /* lock */
             SrvMpu_Update_Reg.sec.Pri_State = true;
 
             PriIMU_Data.cycle_cnt++;
-            PriIMU_Data.time_stamp = MPU6000Obj.OriData.time_stamp;
+            PriIMU_Data.time_stamp = InUse_PriIMU_Obj.OriData_ptr->time_stamp;
 
             /* check Primary IMU module Sample is correct or not */
             if (PriSample_Rt_Lst)
@@ -606,16 +621,16 @@ static bool SrvIMU_Sample(void)
             if (pri_sample_state)
             {
                 /* update pri imu data */
-                PriIMU_Data.tempera = MPU6000Obj.OriData.temp_flt;
+                PriIMU_Data.tempera = InUse_PriIMU_Obj.OriData_ptr->temp_flt;
 
                 /* Pri imu data validation check */
-                PriIMU_Data.error_code = SrvIMU_DataCheck(&MPU6000Obj.OriData, MPU6000Obj.AccTrip, MPU6000Obj.PHY_GyrTrip_Val);
+                PriIMU_Data.error_code = SrvIMU_DataCheck(InUse_PriIMU_Obj.OriData_ptr, InUse_PriIMU_Obj.acc_trip, InUse_PriIMU_Obj.gyr_trip);
                 Sample_MsDiff = (PriIMU_Data.time_stamp - PriSample_Rt_Lst) / 1000.0f;
 
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
-                    PriIMU_Data.org_acc[i] = MPU6000Obj.OriData.acc_flt[i];
-                    PriIMU_Data.org_gyr[i] = MPU6000Obj.OriData.gyr_flt[i];
+                    PriIMU_Data.org_acc[i] = InUse_PriIMU_Obj.OriData_ptr->acc_flt[i];
+                    PriIMU_Data.org_gyr[i] = InUse_PriIMU_Obj.OriData_ptr->gyr_flt[i];
 
                     /* filted imu data */
                     PriIMU_Data.flt_gyr[i] = Butterworth.update(PriIMU_Gyr_LPF_Handle[i], PriIMU_Data.org_gyr[i]);
@@ -625,8 +640,8 @@ static bool SrvIMU_Sample(void)
                     if ((PriIMU_Data.error_code != SrvIMU_Sample_Data_Acc_OverRange) &&
                         (PriIMU_Data.error_code != SrvIMU_Sample_Data_Gyr_OverRange))
                     {
-                        MPU6000Obj.OriData.acc_int_lst[i] = MPU6000Obj.OriData.acc_int[i];
-                        MPU6000Obj.OriData.gyr_int_lst[i] = MPU6000Obj.OriData.gyr_int[i];
+                        InUse_PriIMU_Obj.OriData_ptr->acc_int_lst[i] = InUse_PriIMU_Obj.OriData_ptr->acc_int[i];
+                        InUse_PriIMU_Obj.OriData_ptr->gyr_int_lst[i] = InUse_PriIMU_Obj.OriData_ptr->gyr_int[i];
                     }
 
                     /* over angular accelerate error detect */
@@ -654,7 +669,7 @@ static bool SrvIMU_Sample(void)
     /* sec imu init successed */
     if (SrvMpu_Init_Reg.sec.Sec_State)
     {
-        sec_imu_scale = DevICM20602.get_scale(ICM20602Obj);
+        sec_imu_scale = DevICM20602.get_scale(&ICM20602Obj);
         SecIMU_Data.acc_scale = sec_imu_scale.acc_scale;
         SecIMU_Data.gyr_scale = sec_imu_scale.gyr_scale;
 
@@ -762,12 +777,12 @@ static float SrvIMU_Get_MaxAngularSpeed_Diff(void)
 
     if (SrvMpu_Init_Reg.sec.Pri_State)
     {
-        pri_angular_diff = (uint16_t)(DevMPU6000.get_gyr_angular_speed_diff(MPU6000Obj) * ANGULAR_SPEED_ACCURACY);
+        pri_angular_diff = (uint16_t)(DevMPU6000.get_gyr_angular_speed_diff(&MPU6000Obj) * ANGULAR_SPEED_ACCURACY);
     }
 
     if (SrvMpu_Init_Reg.sec.Sec_State)
     {
-        sec_angular_diff = (uint16_t)(DevICM20602.get_gyr_angular_speed_diff(ICM20602Obj) * ANGULAR_SPEED_ACCURACY);
+        sec_angular_diff = (uint16_t)(DevICM20602.get_gyr_angular_speed_diff(&ICM20602Obj) * ANGULAR_SPEED_ACCURACY);
     }
 
     if (pri_angular_diff >= sec_angular_diff)

@@ -24,8 +24,8 @@ static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
 static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
 static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
-static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef sensor_obj);
-static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_TypeDef sensor_obj);
+static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef *sensor_obj);
+static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_TypeDef *sensor_obj);
 
 /* external MPU6000 Object */
 DevMPU6000_TypeDef DevMPU6000 = {
@@ -161,18 +161,22 @@ static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_Samp
     {
     case MPU6000_Acc_2G:
         sensor_obj->acc_scale = MPU6000_ACC_2G_SCALE;
+        sensor_obj->PHY_AccTrip_Val = 2;
         break;
 
     case MPU6000_Acc_4G:
         sensor_obj->acc_scale = MPU6000_ACC_4G_SCALE;
+        sensor_obj->PHY_AccTrip_Val = 4;
         break;
 
     case MPU6000_Acc_8G:
         sensor_obj->acc_scale = MPU6000_ACC_8G_SCALE;
+        sensor_obj->PHY_AccTrip_Val = 8;
         break;
 
     case MPU6000_Acc_16G:
         sensor_obj->acc_scale = MPU6000_ACC_16G_SCALE;
+        sensor_obj->PHY_AccTrip_Val = 16;
         break;
 
     default:
@@ -395,18 +399,18 @@ static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
     return tmp;
 }
 
-static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef sensor_obj)
+static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef *sensor_obj)
 {
     IMUModuleScale_TypeDef scale_tmp;
 
-    scale_tmp.acc_scale = sensor_obj.acc_scale;
-    scale_tmp.gyr_scale = sensor_obj.gyr_scale;
+    scale_tmp.acc_scale = sensor_obj->acc_scale;
+    scale_tmp.gyr_scale = sensor_obj->gyr_scale;
 
     return scale_tmp;
 }
 
 /* specified anguler speed per millsecond */
-static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_TypeDef sensor_obj)
+static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_TypeDef *sensor_obj)
 {
-    return sensor_obj.PHY_GyrTrip_Val / 1000.0f;
+    return sensor_obj->PHY_GyrTrip_Val / 1000.0f;
 }

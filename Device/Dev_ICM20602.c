@@ -20,8 +20,8 @@ static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj);
 static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj);
 static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj);
 static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj);
-static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef Obj);
-static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_TypeDef Obj);
+static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef *Obj);
+static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_TypeDef *Obj);
 
 /* external variable */
 DevICM20602_TypeDef DevICM20602 = {
@@ -155,18 +155,22 @@ static void DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_
     {
     case ICM20602_Acc_2G:
         Obj->acc_scale = ICM20602_ACC_2G_SCALE;
+        Obj->PHY_AccTrip_Val = 2;
         break;
 
     case ICM20602_Acc_4G:
         Obj->acc_scale = ICM20602_ACC_4G_SCALE;
+        Obj->PHY_AccTrip_Val = 4;
         break;
 
     case ICM20602_Acc_8G:
         Obj->acc_scale = ICM20602_ACC_8G_SCALE;
+        Obj->PHY_AccTrip_Val = 8;
         break;
 
     case ICM20602_Acc_16G:
         Obj->acc_scale = ICM20602_ACC_16G_SCALE;
+        Obj->PHY_AccTrip_Val = 16;
         break;
 
     default:
@@ -383,18 +387,18 @@ static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj
     return Obj->error;
 }
 
-static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef Obj)
+static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef *Obj)
 {
     IMUModuleScale_TypeDef scale;
 
-    scale.acc_scale = Obj.acc_scale;
-    scale.gyr_scale = Obj.gyr_scale;
+    scale.acc_scale = Obj->acc_scale;
+    scale.gyr_scale = Obj->gyr_scale;
 
     return scale;
 }
 
 /* get specified angular speed diff per sec */
-static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_TypeDef Obj)
+static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_TypeDef *Obj)
 {
-    return Obj.PHY_GyrTrip_Val / 1000.0f;
+    return Obj->PHY_GyrTrip_Val / 1000.0f;
 }
