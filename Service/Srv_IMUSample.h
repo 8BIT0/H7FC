@@ -6,6 +6,7 @@
 #include <string.h>
 #include "runtime.h"
 #include "imu_data.h"
+#include "util.h"
 
 #define MPU_RANGE_MAX_THRESHOLD 1.2f
 #define MPU_RANGE_MIN_THRESHOLD 0.9f
@@ -66,8 +67,8 @@ typedef enum
 
 typedef enum
 {
-    SrvIMU_Priori_Pri = SET_BIT(0),                             /* primary IMU sample Only */
-    SrvIMU_Priori_Sec = SET_BIT(1),                             /* secondary IMU sample Only */
+    SrvIMU_Priori_Pri = UTIL_SET_BIT(0),                        /* primary IMU sample Only */
+    SrvIMU_Priori_Sec = UTIL_SET_BIT(1),                        /* secondary IMU sample Only */
     SrvIMU_Both_Sample = SrvIMU_Priori_Pri | SrvIMU_Priori_Sec, /* both primary and secondary IMU sample */
 }SrvIMU_SampleMode_List;
 
