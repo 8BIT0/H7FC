@@ -452,6 +452,12 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 
             if (!DevICM426xx.init(&ICM42688PObj))
                 return SrvIMU_PriDev_Init_Error;
+
+            InUse_PriIMU_Obj.type = SrvIMU_Dev_ICM42688P;
+            InUse_PriIMU_Obj.obj_ptr = &ICM42688PObj;
+            InUse_PriIMU_Obj.OriData_ptr = &(ICM42688PObj.OriData);
+            InUse_PriIMU_Obj.acc_trip = ICM42688PObj.PHY_AccTrip_Val;
+            InUse_PriIMU_Obj.gyr_trip = ICM42688PObj.PHY_GyrTrip_Val;
         break;
 
         case SrvIMU_Dev_ICM42605:
@@ -468,6 +474,12 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 
             if (!DevICM426xx.init(&ICM42605Obj))
                 return SrvIMU_PriDev_Init_Error;
+
+            InUse_PriIMU_Obj.type = SrvIMU_Dev_ICM42605;
+            InUse_PriIMU_Obj.obj_ptr = &ICM42605Obj;
+            InUse_PriIMU_Obj.OriData_ptr = &(ICM42605Obj.OriData);
+            InUse_PriIMU_Obj.acc_trip = ICM42605Obj.PHY_AccTrip_Val;
+            InUse_PriIMU_Obj.gyr_trip = ICM42605Obj.PHY_GyrTrip_Val;
         break;
 
         default: return SrvIMU_PriDev_Init_Error;
@@ -562,6 +574,12 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 
             if (!DevICM426xx.init(&ICM42688PObj))
                 return SrvIMU_SecDev_Init_Error;
+
+            InUse_SecIMU_Obj.type = SrvIMU_Dev_ICM42688P;
+            InUse_SecIMU_Obj.obj_ptr = &ICM42688PObj;
+            InUse_SecIMU_Obj.OriData_ptr = &(ICM42688PObj.OriData);
+            InUse_SecIMU_Obj.acc_trip = ICM42688PObj.PHY_AccTrip_Val;
+            InUse_SecIMU_Obj.gyr_trip = ICM42688PObj.PHY_GyrTrip_Val;
         break;
 
         case SrvIMU_Dev_ICM42605:
@@ -578,6 +596,12 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 
             if (!DevICM426xx.init(&ICM42605Obj))
                 return SrvIMU_SecDev_Init_Error;
+
+            InUse_SecIMU_Obj.type = SrvIMU_Dev_ICM42605;
+            InUse_SecIMU_Obj.obj_ptr = &ICM42605Obj;
+            InUse_SecIMU_Obj.OriData_ptr = &(ICM42605Obj.OriData);
+            InUse_SecIMU_Obj.acc_trip = ICM42605Obj.PHY_AccTrip_Val;
+            InUse_SecIMU_Obj.gyr_trip = ICM42605Obj.PHY_GyrTrip_Val;
         break;
 
         default: return SrvIMU_SecDev_Init_Error;
