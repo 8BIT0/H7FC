@@ -88,6 +88,8 @@ static BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg = {
 
 static DevMPU6000Obj_TypeDef MPU6000Obj;
 static DevICM20602Obj_TypeDef ICM20602Obj;
+static DevICM426xxObj_TypeDef ICM42688PObj;
+static DevICM426xxObj_TypeDef ICM42605Obj;
 
 static SrvIMU_InuseSensorObj_TypeDef InUse_PriIMU_Obj;
 static SrvIMU_InuseSensorObj_TypeDef InUse_SecIMU_Obj;
@@ -404,6 +406,8 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
         break;
 
         case SrvIMU_Dev_ICM42688P:
+        break;
+        
         case SrvIMU_Dev_ICM42605:
         break;
 
@@ -486,6 +490,8 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
         break;
 
         case SrvIMU_Dev_ICM42688P:
+        break;
+
         case SrvIMU_Dev_ICM42605:
         break;
 
@@ -818,6 +824,13 @@ static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_c
 
     if(DevICM20602.detect(trans, cs_ctl))
         return SrvIMU_Dev_ICM20602;
+
+    switch(DevICM426xx.detect(trans, cs_ctl))
+    {
+        case ICM42605: return SrvIMU_Dev_ICM42605;
+        case ICM42688P: return SrvIMU_Dev_ICM42688P;
+        default: break;
+    }
 
     return SrvIMU_Dev_None;
 }

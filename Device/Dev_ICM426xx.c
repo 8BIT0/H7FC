@@ -1,7 +1,14 @@
 #include "Dev_ICM426xx.h"
 
+/* external function */
+static ICM426xx_Sensor_TypeList DevICM426xx_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
 
-static bool DevICM426xx_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
+/* external variable */
+DevICM426xx_TypeDef DevICM426xx = {
+    .detect = DevICM426xx_Detect,
+};
+
+static ICM426xx_Sensor_TypeList DevICM426xx_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
 {
     uint8_t read_tmp = 0;
     uint8_t write_buff[2] = {0};
@@ -22,11 +29,14 @@ static bool DevICM426xx_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
     cs_ctl(true);
 
     if(!state)
-        return false;
+        return ICM_NONE;
 
-    if( (read_buff[1] == ICM42605_DEV_ID) || 
-        (read_buff[1] == ICM42688P_DEV_ID))
-        return true;
+    switch(read_buff[1])
+    {
+        case ICM42605_DEV_ID: return ICM42605;
+        case ICM42688P_DEV_ID: return ICM42688P;
+        default: return ICM_NONE;
+    }
 
-    return false;
+    return ICM_NONE;
 }

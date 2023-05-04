@@ -118,10 +118,26 @@ typedef struct
 typedef enum
 {
     ICM426xx_ODR_8K = 3,
-    ICM426xx_ODR_3K,
+    ICM426xx_ODR_4K,
     ICM426xx_ODR_2K,
     ICM426xx_ODR_1K,
 } ICM426xx_ConfigODR_ValList;
+
+typedef enum
+{
+    ICM426xx_Gyr_250DPS = 0,
+    ICM426xx_Gyr_500DPS,
+    ICM426xx_Gyr_1000DPS,
+    ICM426xx_Gyr_2000DPS
+} ICM426xx_GyrTrip_List;
+
+typedef enum
+{
+    ICM426xx_Acc_2G = 0,
+    ICM426xx_Acc_4G,
+    ICM426xx_Acc_8G,
+    ICM426xx_Acc_16G,
+} ICM426xx_AccTrip_List;
 
 #define ICM42688P_AAF_256Hz_Cfg \
     {                           \
@@ -176,6 +192,7 @@ typedef struct
     uint8_t AccTrip;
     uint8_t GyrTrip;
 
+    uint8_t PHY_AccTrip_Val;
     uint16_t PHY_GyrTrip_Val;
 
     float acc_scale;
@@ -190,7 +207,12 @@ typedef struct
 
 typedef struct
 {
-    bool (*detect)(bus_trans_callback trans, cs_ctl_callback cs_ctl);
+    ICM426xx_Sensor_TypeList (*detect)(bus_trans_callback trans, cs_ctl_callback cs_ctl);
+    void (*config)(DevICM426xxObj_TypeDef *Obj, ICM426xx_SampleRate_List rate, ICM426xx_GyrTrip_List GyrTrip, ICM426xx_AccTrip_List AccTrip);
+    void (*pre_init)(DevICM426xxObj_TypeDef *Obj, cs_ctl_callback cs_ctl, bus_trans_callback bus_trans, delay_callback delay, get_time_stamp_callback get_time_stamp);
+    bool (*init)(DevICM426xxObj_TypeDef *Obj);
 } DevICM426xx_TypeDef;
+
+extern DevICM426xx_TypeDef DevICM426xx;
 
 #endif
