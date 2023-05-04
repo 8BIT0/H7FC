@@ -894,17 +894,20 @@ static void SrvIMU_SecDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_
 
 static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
-    (*(uint32_t *)p_arg)++;
+    if(p_arg && size)
+        (*(uint32_t *)p_arg)++;
 }
 
 static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
-    (*(uint32_t *)p_arg)++;
+    if(p_arg && size)
+        (*(uint32_t *)p_arg)++;
 }
 
 static void SrvIMU_AllModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
-    (*(uint32_t *)p_arg)++;
+    if(p_arg && size)
+        (*(uint32_t *)p_arg)++;
 }
 
 static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size)
