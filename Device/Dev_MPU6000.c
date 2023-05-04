@@ -25,7 +25,7 @@ static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj);
 static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
 static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
-static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
+static IMU_Error_TypeDef DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
 static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef *sensor_obj);
 static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_TypeDef *sensor_obj);
 
@@ -243,34 +243,45 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
         (sensor_obj->bus_trans == NULL) ||
         (sensor_obj->cs_ctl == NULL))
     {
-        sensor_obj->error = MPU6000_Obj_Error;
+        sensor_obj->error.code = MPU6000_Obj_Error;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
 
     /* reset power manage register first */
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, BIT_H_RESET))
     {
-        sensor_obj->error = MPU6000_BusCommunicate_Error;
+        sensor_obj->error.code = MPU6000_BusCommunicate_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
 
     if (!DevMPU6000_Reg_Read(sensor_obj, MPU6000_WHOAMI, &read_out))
     {
-        sensor_obj->error = MPU6000_BusCommunicate_Error;
+        sensor_obj->error.code = MPU6000_BusCommunicate_Error;
         return false;
     }
 
     if (read_out != MPU6000_DEV_ID)
     {
-        sensor_obj->error = MPU6000_DevID_Error;
+        sensor_obj->error.code = MPU6000_DevID_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = read_out;
         sensor_obj->delay(15);
         return false;
     }
 
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_SIGNAL_PATH_RESET, BIT_GYRO | BIT_ACC | BIT_TEMP))
     {
-        sensor_obj->error = MPU6000_SignalPathReset_Error;
+        sensor_obj->error.code = MPU6000_SignalPathReset_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
@@ -278,7 +289,10 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     /* Clock Source PPL with Z axis gyro reference */
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, MPU_CLK_SEL_PLLGYROZ))
     {
-        sensor_obj->error = MPU6000_SignalPathReset_Error;
+        sensor_obj->error.code = MPU6000_SignalPathReset_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
@@ -286,21 +300,30 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     /* Disable Primary I2C Interface */
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_USER_CTRL, BIT_I2C_IF_DIS))
     {
-        sensor_obj->error = MPU6000_DisableI2C_Error;
+        sensor_obj->error.code = MPU6000_DisableI2C_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
 
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_2, 0x00))
     {
-        sensor_obj->error = MPU6000_PWRMNG2_Set_Error;
+        sensor_obj->error.code = MPU6000_PWRMNG2_Set_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
 
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_SMPLRT_DIV, sensor_obj->rate))
     {
-        sensor_obj->error = MPU6000_DIV_Set_Error;
+        sensor_obj->error.code = MPU6000_DIV_Set_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
@@ -308,7 +331,10 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     /* set gyro range 2000dps */
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_GYRO_CONFIG, sensor_obj->GyrTrip))
     {
-        sensor_obj->error = MPU6000_Gyr_Cfg_Error;
+        sensor_obj->error.code = MPU6000_Gyr_Cfg_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
@@ -316,7 +342,10 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     /* set acc range 16G */
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_ACCEL_CONFIG, sensor_obj->AccTrip))
     {
-        sensor_obj->error = MPU6000_Acc_Cfg_Error;
+        sensor_obj->error.code = MPU6000_Acc_Cfg_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
@@ -324,7 +353,10 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     /* interrupt pin config */
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_INT_PIN_CFG, 0 << 7 | 0 << 6 | 0 << 5 | 1 << 4 | 0 << 3 | 0 << 2 | 0 << 1 | 0 << 0))
     {
-        sensor_obj->error = MPU6000_IntPin_Set_Error;
+        sensor_obj->error.code = MPU6000_IntPin_Set_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
@@ -332,16 +364,22 @@ static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
     /* enable interrupt */
     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_INT_ENABLE, MPU_RF_DATA_RDY_EN))
     {
-        sensor_obj->error = MPU6000_EnableInt_Error;
+        sensor_obj->error.code = MPU6000_EnableInt_Error;
+        sensor_obj->error.function = __FUNCTION__;
+        sensor_obj->error.line = __LINE__;
+        sensor_obj->error.reg = 0;
         return false;
     }
     sensor_obj->delay(15);
 
-    sensor_obj->error = MPU6000_No_Error;
+    sensor_obj->error.code = MPU6000_No_Error;
+    sensor_obj->error.function = "";
+    sensor_obj->error.line = 0;
+    sensor_obj->error.reg = 0;
     return true;
 }
 
-static DevMPU6000_Error_List DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj)
+static IMU_Error_TypeDef DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     return sensor_obj->error;
 }
@@ -372,7 +410,7 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
     uint8_t Tx[14] = {0};
     uint8_t Rx[14] = {0};
 
-    if ((sensor_obj->error == MPU6000_No_Error) && (sensor_obj->drdy))
+    if ((sensor_obj->error.code == MPU6000_No_Error) && (sensor_obj->drdy))
     {
         sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
 
@@ -401,7 +439,7 @@ static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
     IMUData_TypeDef tmp;
 
     memset(&tmp, NULL, sizeof(tmp));
-    if (sensor_obj->error == MPU6000_No_Error)
+    if (sensor_obj->error.code == MPU6000_No_Error)
         return sensor_obj->OriData;
 
     return tmp;

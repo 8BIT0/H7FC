@@ -49,6 +49,14 @@ typedef struct
     float acc_scale;
     float gyr_scale;
 } IMUModuleScale_TypeDef;
+
+typedef struct
+{
+    uint8_t code;
+    char* function;
+    uint16_t line;
+    uint16_t reg;
+}IMU_Error_TypeDef;
 #pragma pack()
 
 #endif

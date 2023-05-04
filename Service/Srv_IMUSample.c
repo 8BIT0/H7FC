@@ -39,7 +39,7 @@ typedef struct
     bool (*sample)(void *obj);
     IMUModuleScale_TypeDef (*get_scale)(void *obj);
     void (*set_drdy)(void *obj);
-    int8_t (*get_error)(void *obj);
+    IMU_Error_TypeDef (*get_error)(void *obj);
 }SrvIMU_InuseSensorObj_TypeDef;
 
 /* test var */
@@ -677,16 +677,6 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
     return BspSPI.trans_receive(&SecIMU_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
 }
 
-int8_t SrvIMU_GetPri_InitError(void)
-{
-    return InUse_PriIMU_Obj.get_error(InUse_PriIMU_Obj.obj_ptr);
-}
-
-int8_t SrvIMU_GetSec_InitError(void)
-{
-    return InUse_SecIMU_Obj.get_error(InUse_SecIMU_Obj.obj_ptr);
-}
-
 /************************************************************ Module Sample API Function *****************************************************************************/
 static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t gyr_range)
 {
@@ -990,6 +980,36 @@ static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_c
     return SrvIMU_Dev_None;
 }
 
+/************************************************************ general function *****************************************************************************/
+static char* SrvIMU_GetSensorType_Str(SrvIMU_SensorID_List type)
+{
+    switch(type)
+    {
+        case SrvIMU_Dev_MPU6000:
+            return "MPU6000\r\n";
+        break;
+
+        case SrvIMU_Dev_ICM20602:
+            return "ICM20602\r\n";
+        break;
+
+        case SrvIMU_Dev_ICM42688P:
+            return "ICM42688P\r\n";
+        break;
+
+        case SrvIMU_Dev_ICM42605:
+            return "ICM42605\r\n";
+        break;
+
+        case SrvIMU_Dev_None:
+            return "None\r\n";
+        break;
+
+        default:
+            return "None\r\n";
+    }
+}
+
 /************************************************************ DataReady Pin Exti Callback *****************************************************************************/
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
@@ -1018,34 +1038,10 @@ static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
     if(p_arg && size)
     {
-        ErrorLog.add_desc("PriIMU Type: ");
-
-        switch(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type)
-        {
-            case SrvIMU_Dev_MPU6000:
-                ErrorLog.add_desc("MPU6000\r\n");
-            break;
-
-            case SrvIMU_Dev_ICM20602:
-                ErrorLog.add_desc("ICM20602\r\n");
-            break;
-
-            case SrvIMU_Dev_ICM42688P:
-                ErrorLog.add_desc("ICM42688P\r\n");
-            break;
-
-            case SrvIMU_Dev_ICM42605:
-                ErrorLog.add_desc("ICM42605\r\n");
-            break;
-
-            case SrvIMU_Dev_None:
-                ErrorLog.add_desc("None\r\n");
-            break;
-
-            default:return;
-        }
-
+        ErrorLog.add_desc("PriIMU Type: %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
         ErrorLog.add_desc("error code: %d\r\n", InUse_PriIMU_Obj.get_error(InUse_PriIMU_Obj.obj_ptr));
+
+        ErrorLog.add_desc("\r\n");
     }
 }
 
@@ -1053,34 +1049,10 @@ static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
     if(p_arg && size)
     {
-        ErrorLog.add_desc("SecIMU Type: ");
-
-        switch(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type)
-        {
-            case SrvIMU_Dev_MPU6000:
-                ErrorLog.add_desc("MPU6000\r\n");
-            break;
-
-            case SrvIMU_Dev_ICM20602:
-                ErrorLog.add_desc("ICM20602\r\n");
-            break;
-
-            case SrvIMU_Dev_ICM42688P:
-                ErrorLog.add_desc("ICM42688P\r\n");
-            break;
-
-            case SrvIMU_Dev_ICM42605:
-                ErrorLog.add_desc("ICM42605\r\n");
-            break;
-
-            case SrvIMU_Dev_None:
-                ErrorLog.add_desc("None\r\n");
-            break;
-
-            default:return;
-        }
-
+        ErrorLog.add_desc("PriIMU Type: %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
         ErrorLog.add_desc("error code: %d\r\n", InUse_SecIMU_Obj.get_error(InUse_SecIMU_Obj.obj_ptr));
+
+        ErrorLog.add_desc("\r\n");
     }
 }
 
