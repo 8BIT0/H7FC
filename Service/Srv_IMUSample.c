@@ -458,6 +458,12 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
             InUse_PriIMU_Obj.OriData_ptr = &(ICM42688PObj.OriData);
             InUse_PriIMU_Obj.acc_trip = ICM42688PObj.PHY_AccTrip_Val;
             InUse_PriIMU_Obj.gyr_trip = ICM42688PObj.PHY_GyrTrip_Val;
+
+            InUse_PriIMU_Obj.set_drdy = DevICM426xx.set_ready;
+            InUse_PriIMU_Obj.get_drdy = DevICM426xx.get_ready;
+            InUse_PriIMU_Obj.get_scale = DevICM426xx.get_scale;
+            InUse_PriIMU_Obj.sample = DevICM426xx.sample;
+            InUse_PriIMU_Obj.get_error = DevICM426xx.get_error;
         break;
 
         case SrvIMU_Dev_ICM42605:
@@ -480,6 +486,12 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
             InUse_PriIMU_Obj.OriData_ptr = &(ICM42605Obj.OriData);
             InUse_PriIMU_Obj.acc_trip = ICM42605Obj.PHY_AccTrip_Val;
             InUse_PriIMU_Obj.gyr_trip = ICM42605Obj.PHY_GyrTrip_Val;
+
+            InUse_PriIMU_Obj.set_drdy = DevICM426xx.set_ready;
+            InUse_PriIMU_Obj.get_drdy = DevICM426xx.get_ready;
+            InUse_PriIMU_Obj.get_scale = DevICM426xx.get_scale;
+            InUse_PriIMU_Obj.sample = DevICM426xx.sample;
+            InUse_PriIMU_Obj.get_error = DevICM426xx.get_error;
         break;
 
         default: return SrvIMU_PriDev_Init_Error;
@@ -580,6 +592,12 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
             InUse_SecIMU_Obj.OriData_ptr = &(ICM42688PObj.OriData);
             InUse_SecIMU_Obj.acc_trip = ICM42688PObj.PHY_AccTrip_Val;
             InUse_SecIMU_Obj.gyr_trip = ICM42688PObj.PHY_GyrTrip_Val;
+
+            InUse_SecIMU_Obj.set_drdy = DevICM426xx.set_ready;
+            InUse_SecIMU_Obj.get_drdy = DevICM426xx.get_ready;
+            InUse_SecIMU_Obj.get_scale = DevICM426xx.get_scale;
+            InUse_SecIMU_Obj.sample = DevICM426xx.sample;
+            InUse_SecIMU_Obj.get_error = DevICM426xx.get_error;
         break;
 
         case SrvIMU_Dev_ICM42605:
@@ -602,6 +620,12 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
             InUse_SecIMU_Obj.OriData_ptr = &(ICM42605Obj.OriData);
             InUse_SecIMU_Obj.acc_trip = ICM42605Obj.PHY_AccTrip_Val;
             InUse_SecIMU_Obj.gyr_trip = ICM42605Obj.PHY_GyrTrip_Val;
+
+            InUse_SecIMU_Obj.set_drdy = DevICM426xx.set_ready;
+            InUse_SecIMU_Obj.get_drdy = DevICM426xx.get_ready;
+            InUse_SecIMU_Obj.get_scale = DevICM426xx.get_scale;
+            InUse_SecIMU_Obj.sample = DevICM426xx.sample;
+            InUse_SecIMU_Obj.get_error = DevICM426xx.get_error;
         break;
 
         default: return SrvIMU_SecDev_Init_Error;
