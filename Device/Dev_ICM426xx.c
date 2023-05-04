@@ -1,6 +1,6 @@
 #include "Dev_ICM426xx.h"
 
-#define ConvertToICM426xxTrip_Reg(trip, odr) ((3 - trip) | (odr & 0x0F))
+#define ConvertToICM426xxTrip_Reg(trip, odr) ((3 - trip) << 5 | (odr & 0x0F))
 #define UserBankToReg(x) (x & 7) 
 
 /* internal function */
@@ -341,6 +341,20 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
     /* config gyro */
 
     /* config acc */
+
+    /* turn acc gyro on for setting */
+    if(!DevICM426xx_TurnOn_AccGyro(sensor_obj))
+    {
+        sensor_obj->error = ICM426xx_AccGyr_TurnOn_Error;
+        return false;
+    }
+
+    /* config sample data range and odr */
+    DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, sensor_obj->GyrTrip);
+    sensor_obj->delay(15);
+
+    DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, sensor_obj->AccTrip);
+    sensor_obj->delay(15);
 }
 
 

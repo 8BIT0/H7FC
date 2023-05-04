@@ -83,7 +83,7 @@ static BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg = {
     .Instance = SecIMU_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_LOW,
     .CLKPhase = SPI_PHASE_1EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8,
+    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2,
 };
 
 static DevMPU6000Obj_TypeDef MPU6000Obj;
