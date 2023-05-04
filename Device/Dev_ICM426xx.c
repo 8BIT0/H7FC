@@ -68,7 +68,6 @@ DevICM426xx_TypeDef DevICM426xx = {
 
 static ICM426xx_Sensor_TypeList DevICM426xx_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
 {
-    uint8_t read_tmp = 0;
     uint8_t write_buff[2] = {0};
     uint8_t read_buff[2] = {0};
     bool state = false;
@@ -356,12 +355,12 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
 
     switch (read_out)
     {
-        case ICM42605:
+        case ICM42605_DEV_ID:
             sensor_obj->type = ICM42605;
             aaf_tab = aafLUT42605;
             break;
 
-        case ICM42688P:
+        case ICM42688P_DEV_ID:
             sensor_obj->type = ICM42688P;
             aaf_tab = aafLUT42688;
             break; 
