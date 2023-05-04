@@ -39,6 +39,7 @@ typedef struct
     bool (*sample)(void *obj);
     IMUModuleScale_TypeDef (*get_scale)(void *obj);
     void (*set_drdy)(void *obj);
+    int8_t (*get_error)(void *obj);
 }SrvIMU_InuseSensorObj_TypeDef;
 
 /* test var */
@@ -371,6 +372,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
             InUse_PriIMU_Obj.get_drdy = DevMPU6000.get_ready;
             InUse_PriIMU_Obj.get_scale = DevMPU6000.get_scale;
             InUse_PriIMU_Obj.sample = DevMPU6000.sample;
+            InUse_PriIMU_Obj.get_error = DevMPU6000.get_error;
         break;
 
         case SrvIMU_Dev_ICM20602:
@@ -398,6 +400,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
             InUse_PriIMU_Obj.get_drdy = DevICM20602.get_ready;
             InUse_PriIMU_Obj.get_scale = DevICM20602.get_scale;
             InUse_PriIMU_Obj.sample = DevICM20602.sample;
+            InUse_PriIMU_Obj.get_error = DevICM20602.get_error;
         break;
 
         case SrvIMU_Dev_ICM42688P:
@@ -451,6 +454,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
             InUse_SecIMU_Obj.get_drdy = DevMPU6000.get_ready;
             InUse_SecIMU_Obj.get_scale = DevMPU6000.get_scale;
             InUse_SecIMU_Obj.sample = DevMPU6000.sample;
+            InUse_SecIMU_Obj.get_error = DevMPU6000.get_error;
         break;
 
         case SrvIMU_Dev_ICM20602:
@@ -478,6 +482,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
             InUse_SecIMU_Obj.get_drdy = DevICM20602.get_ready;
             InUse_SecIMU_Obj.get_scale = DevICM20602.get_scale;
             InUse_SecIMU_Obj.sample = DevICM20602.sample;
+            InUse_SecIMU_Obj.get_error = DevICM20602.get_error;
         break;
 
         case SrvIMU_Dev_ICM42688P:
@@ -513,12 +518,12 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 
 int8_t SrvIMU_GetPri_InitError(void)
 {
-    return DevMPU6000.get_error(&MPU6000Obj);
+    return InUse_PriIMU_Obj.get_error(InUse_PriIMU_Obj.obj_ptr);
 }
 
 int8_t SrvIMU_GetSec_InitError(void)
 {
-    return DevICM20602.get_error(&ICM20602Obj);
+    return InUse_SecIMU_Obj.get_error(InUse_SecIMU_Obj.obj_ptr);
 }
 
 /************************************************************ Module Sample API Function *****************************************************************************/
@@ -669,18 +674,18 @@ static bool SrvIMU_Sample(void)
     /* sec imu init successed */
     if (SrvMpu_Init_Reg.sec.Sec_State)
     {
-        sec_imu_scale = DevICM20602.get_scale(&ICM20602Obj);
+        sec_imu_scale = InUse_SecIMU_Obj.get_scale(InUse_SecIMU_Obj.obj_ptr);
         SecIMU_Data.acc_scale = sec_imu_scale.acc_scale;
         SecIMU_Data.gyr_scale = sec_imu_scale.gyr_scale;
 
         /* sec imu module data ready triggered */
-        if (DevICM20602.get_ready(&ICM20602Obj) && DevICM20602.sample(&ICM20602Obj))
+        if (InUse_SecIMU_Obj.get_drdy(InUse_SecIMU_Obj.obj_ptr) && InUse_SecIMU_Obj.sample(InUse_SecIMU_Obj.obj_ptr))
         {
             /* lock */
             SrvMpu_Update_Reg.sec.Sec_State = true;
 
             SecIMU_Data.cycle_cnt++;
-            SecIMU_Data.time_stamp = ICM20602Obj.OriData.time_stamp;
+            SecIMU_Data.time_stamp = InUse_SecIMU_Obj.OriData_ptr->time_stamp;
 
             /* check Secondry IMU module Sample is correct or not */
             if (SecSample_Rt_Lst)
@@ -692,16 +697,16 @@ static bool SrvIMU_Sample(void)
             if (sec_sample_state)
             {
                 /* update sec imu data */
-                SecIMU_Data.tempera = ICM20602Obj.OriData.temp_flt;
+                SecIMU_Data.tempera = InUse_SecIMU_Obj.OriData_ptr->temp_flt;
 
                 /* Sec imu data validation check */
-                SecIMU_Data.error_code = SrvIMU_DataCheck(&ICM20602Obj.OriData, ICM20602Obj.AccTrip, ICM20602Obj.PHY_GyrTrip_Val);
+                SecIMU_Data.error_code = SrvIMU_DataCheck(InUse_SecIMU_Obj.OriData_ptr, InUse_SecIMU_Obj.acc_trip, InUse_SecIMU_Obj.gyr_trip);
                 Sample_MsDiff = (SecIMU_Data.time_stamp - SecSample_Rt_Lst) / 1000.0f;
 
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
-                    SecIMU_Data.org_acc[i] = ICM20602Obj.OriData.acc_flt[i];
-                    SecIMU_Data.org_gyr[i] = ICM20602Obj.OriData.gyr_flt[i];
+                    SecIMU_Data.org_acc[i] = InUse_SecIMU_Obj.OriData_ptr->acc_flt[i];
+                    SecIMU_Data.org_gyr[i] = InUse_SecIMU_Obj.OriData_ptr->gyr_flt[i];
 
                     SecIMU_Data.flt_gyr[i] = Butterworth.update(SecIMU_Gyr_LPF_Handle[i], SecIMU_Data.org_gyr[i]);
                     SecIMU_Data.flt_acc[i] = Butterworth.update(SecIMU_Acc_LPF_Handle[i], SecIMU_Data.org_acc[i]);
@@ -710,8 +715,8 @@ static bool SrvIMU_Sample(void)
                     if ((SecIMU_Data.error_code != SrvIMU_Sample_Data_Acc_OverRange) &&
                         (SecIMU_Data.error_code != SrvIMU_Sample_Data_Gyr_OverRange))
                     {
-                        ICM20602Obj.OriData.acc_int_lst[i] = ICM20602Obj.OriData.acc_int[i];
-                        ICM20602Obj.OriData.gyr_int_lst[i] = ICM20602Obj.OriData.gyr_int[i];
+                        InUse_SecIMU_Obj.OriData_ptr->acc_int_lst[i] = InUse_SecIMU_Obj.OriData_ptr->acc_int[i];
+                        InUse_SecIMU_Obj.OriData_ptr->gyr_int_lst[i] = InUse_SecIMU_Obj.OriData_ptr->gyr_int[i];
                     }
 
                     if (SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.org_gyr[i], SecIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
@@ -821,13 +826,13 @@ static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_c
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
     if (SrvMpu_Init_Reg.sec.Pri_State)
-        DevMPU6000.set_ready(&MPU6000Obj);
+        InUse_PriIMU_Obj.set_drdy(InUse_PriIMU_Obj.obj_ptr);
 }
 
 static void SrvIMU_SecIMU_ExtiCallback(void)
 {
     if (SrvMpu_Init_Reg.sec.Sec_State)
-        DevICM20602.set_ready(&ICM20602Obj);
+        InUse_SecIMU_Obj.set_drdy(InUse_SecIMU_Obj.obj_ptr);
 }
 
 /*************************************************************** Error Process Callback *******************************************************************************/
