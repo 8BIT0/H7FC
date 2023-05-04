@@ -357,6 +357,14 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 
             if (!DevMPU6000.init(&MPU6000Obj))
                 return SrvIMU_PriDev_Init_Error;
+
+            InUse_PriIMU_Obj.type = SrvIMU_Dev_MPU6000;
+            InUse_PriIMU_Obj.obj_ptr = &MPU6000Obj;
+            
+            InUse_PriIMU_Obj.set_drdy = DevMPU6000.set_ready;
+            InUse_PriIMU_Obj.get_drdy = DevMPU6000.get_ready;
+            InUse_PriIMU_Obj.get_scale = DevMPU6000.get_scale;
+            InUse_PriIMU_Obj.sample = DevMPU6000.sample;
         break;
 
         case SrvIMU_Dev_ICM20602:
@@ -373,6 +381,14 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 
             if (!DevICM20602.init(&ICM20602Obj))
                 return SrvIMU_PriDev_Init_Error;
+
+            InUse_PriIMU_Obj.type = SrvIMU_Dev_ICM20602;
+            InUse_PriIMU_Obj.obj_ptr = &ICM20602Obj;
+            
+            InUse_PriIMU_Obj.set_drdy = DevICM20602.set_ready;
+            InUse_PriIMU_Obj.get_drdy = DevICM20602.get_ready;
+            InUse_PriIMU_Obj.get_scale = DevICM20602.get_scale;
+            InUse_PriIMU_Obj.sample = DevICM20602.sample;
         break;
 
         case SrvIMU_Dev_ICM42688P:
@@ -415,6 +431,14 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 
             if (!DevMPU6000.init(&MPU6000Obj))
                 return SrvIMU_SecDev_Init_Error;
+
+            InUse_SecIMU_Obj.type = SrvIMU_Dev_MPU6000;
+            InUse_SecIMU_Obj.obj_ptr = &MPU6000Obj;
+            
+            InUse_SecIMU_Obj.set_drdy = DevMPU6000.set_ready;
+            InUse_SecIMU_Obj.get_drdy = DevMPU6000.get_ready;
+            InUse_SecIMU_Obj.get_scale = DevMPU6000.get_scale;
+            InUse_SecIMU_Obj.sample = DevMPU6000.sample;
         break;
 
         case SrvIMU_Dev_ICM20602:
@@ -431,6 +455,14 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 
             if (!DevICM20602.init(&ICM20602Obj))
                 return SrvIMU_SecDev_Init_Error;
+
+            InUse_SecIMU_Obj.type = SrvIMU_Dev_ICM20602;
+            InUse_SecIMU_Obj.obj_ptr = &ICM20602Obj;
+            
+            InUse_SecIMU_Obj.set_drdy = DevICM20602.set_ready;
+            InUse_SecIMU_Obj.get_drdy = DevICM20602.get_ready;
+            InUse_SecIMU_Obj.get_scale = DevICM20602.get_scale;
+            InUse_SecIMU_Obj.sample = DevICM20602.sample;
         break;
 
         case SrvIMU_Dev_ICM42688P:
@@ -556,7 +588,7 @@ static bool SrvIMU_Sample(void)
         PriIMU_Data.gyr_scale = pri_imu_scale.gyr_scale;
 
         /* pri imu module data ready triggered */
-        if (DevMPU6000.get_drdy(&MPU6000Obj) && DevMPU6000.sample(&MPU6000Obj))
+        if (DevMPU6000.get_ready(&MPU6000Obj) && DevMPU6000.sample(&MPU6000Obj))
         {
             /* lock */
             SrvMpu_Update_Reg.sec.Pri_State = true;
@@ -774,7 +806,7 @@ static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_c
 static void SrvIMU_PriIMU_ExtiCallback(void)
 {
     if (SrvMpu_Init_Reg.sec.Pri_State)
-        DevMPU6000.set_drdy(&MPU6000Obj);
+        DevMPU6000.set_ready(&MPU6000Obj);
 }
 
 static void SrvIMU_SecIMU_ExtiCallback(void)

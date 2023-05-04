@@ -176,8 +176,8 @@ typedef struct
     void (*config)(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate, DevMPU6000_AccTrip_List AccTrip, DevMPU6000_GyrTrip_List GyrTrip);
     bool (*init)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*reset)(DevMPU6000Obj_TypeDef *snesor_obj);
-    bool (*get_drdy)(DevMPU6000Obj_TypeDef *sensor_obj);
-    void (*set_drdy)(DevMPU6000Obj_TypeDef *sensor_obj);
+    bool (*get_ready)(DevMPU6000Obj_TypeDef *sensor_obj);
+    void (*set_ready)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*sample)(DevMPU6000Obj_TypeDef *sensor_obj);
     IMUData_TypeDef (*get_data)(DevMPU6000Obj_TypeDef *sensor_obj);
     DevMPU6000_Error_List (*get_error)(DevMPU6000Obj_TypeDef *sensor_obj);
