@@ -1039,10 +1039,10 @@ static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
     if(p_arg && size)
     {
         ErrorLog.add_desc("PriIMU Type: %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
-        ErrorLog.add_desc("error code:  %d\r\n", InUse_PriIMU_Obj.get_error(InUse_PriIMU_Obj.obj_ptr).code);
-        ErrorLog.add_desc("error func:  %s\r\n", InUse_PriIMU_Obj.get_error(InUse_PriIMU_Obj.obj_ptr).function);
-        ErrorLog.add_desc("error line:  %d\r\n", InUse_PriIMU_Obj.get_error(InUse_PriIMU_Obj.obj_ptr).line);
-        ErrorLog.add_desc("error reg:   %02x\r\n", InUse_PriIMU_Obj.get_error(InUse_PriIMU_Obj.obj_ptr).reg);
+        ErrorLog.add_desc("error code:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).code);
+        ErrorLog.add_desc("error func:  %s\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).function);
+        ErrorLog.add_desc("error line:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).line);
+        ErrorLog.add_desc("error reg:   %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg);
 
         ErrorLog.add_desc("\r\n");
     }
@@ -1053,10 +1053,10 @@ static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
     if(p_arg && size)
     {
         ErrorLog.add_desc("PriIMU Type: %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
-        ErrorLog.add_desc("error code:  %d\r\n", InUse_SecIMU_Obj.get_error(InUse_SecIMU_Obj.obj_ptr).code);
-        ErrorLog.add_desc("error func:  %s\r\n", InUse_SecIMU_Obj.get_error(InUse_SecIMU_Obj.obj_ptr).function);
-        ErrorLog.add_desc("error line:  %d\r\n", InUse_SecIMU_Obj.get_error(InUse_SecIMU_Obj.obj_ptr).line);
-        ErrorLog.add_desc("error reg:   %02x\r\n", InUse_SecIMU_Obj.get_error(InUse_SecIMU_Obj.obj_ptr).reg);
+        ErrorLog.add_desc("error code:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).code);
+        ErrorLog.add_desc("error func:  %s\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).function);
+        ErrorLog.add_desc("error line:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).line);
+        ErrorLog.add_desc("error reg:   %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg);
 
         ErrorLog.add_desc("\r\n");
     }
