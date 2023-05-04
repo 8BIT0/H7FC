@@ -32,6 +32,8 @@ typedef struct
     IMUData_TypeDef *OriData_ptr;
 
     bool (*get_drdy)(void *obj);
+    bool (*sample)(void *obj);
+    IMUModuleScale_TypeDef (*get_scale)(void *obj);
     void (*set_drdy)(void *obj);
 }SrvIMU_InuseSensorObj_TypeDef;
 
@@ -568,7 +570,7 @@ static bool SrvIMU_Sample(void)
                 PriIMU_Data.tempera = MPU6000Obj.OriData.temp_flt;
 
                 /* Pri imu data validation check */
-                PriIMU_Data.error_code = SrvIMU_DataCheck(&MPU6000Obj.OriData, MPU6000Obj.AccTrip, MPU6000Obj.GyrTrip);
+                PriIMU_Data.error_code = SrvIMU_DataCheck(&MPU6000Obj.OriData, MPU6000Obj.AccTrip, MPU6000Obj.PHY_GyrTrip_Val);
                 Sample_MsDiff = (PriIMU_Data.time_stamp - PriSample_Rt_Lst) / 1000.0f;
 
                 for (i = Axis_X; i < Axis_Sum; i++)
@@ -639,7 +641,7 @@ static bool SrvIMU_Sample(void)
                 SecIMU_Data.tempera = ICM20602Obj.OriData.temp_flt;
 
                 /* Sec imu data validation check */
-                SecIMU_Data.error_code = SrvIMU_DataCheck(&ICM20602Obj.OriData, ICM20602Obj.AccTrip, ICM20602Obj.GyrTrip);
+                SecIMU_Data.error_code = SrvIMU_DataCheck(&ICM20602Obj.OriData, ICM20602Obj.AccTrip, ICM20602Obj.PHY_GyrTrip_Val);
                 Sample_MsDiff = (SecIMU_Data.time_stamp - SecSample_Rt_Lst) / 1000.0f;
 
                 for (i = Axis_X; i < Axis_Sum; i++)
