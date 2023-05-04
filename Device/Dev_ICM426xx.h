@@ -96,6 +96,7 @@ typedef enum
     ICM426xx_No_Error = 0,
     ICM426xx_Obj_Error,
     ICM426xx_SampleRate_Error,
+    ICM426xx_Reg_RW_Error,
     ICM426xx_BusCommunicate_Error,
     ICM426xx_DevID_Error,
     ICM426xx_AccRangeOdr_Set_Error,

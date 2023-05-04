@@ -331,7 +331,11 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
     }
 
     /* get sensor type first */
-    DevICM426xx_Reg_Read(sensor_obj, ICM426XX_WHO_AM_I, &read_out);
+    if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_WHO_AM_I, &read_out))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
 
     switch (read_out)
     {
@@ -351,7 +355,11 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
             return false;
     }
 
-    DevICM426xx_SetUserBank(sensor_obj, ICM426XX_BANK_SELECT0);
+    if(!DevICM426xx_SetUserBank(sensor_obj, ICM426XX_BANK_SELECT0))
+    {
+        sensor_obj->error = ICM426xx_Reg_RW_Error;
+        return false;
+    }
 
     /* turn acc gyro off for setting */
     if(!DevICM426xx_TurnOff_AccGyro(sensor_obj))
@@ -374,20 +382,38 @@ static bool DevICM426xx_Init(DevICM426xxObj_TypeDef *sensor_obj)
     }
 
     /* config sample data range and odr */
-    DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, sensor_obj->GyrTrip);
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, sensor_obj->GyrTrip))
+    {
+        sensor_obj->error = ICM426xx_AccGyr_TurnOff_Error;
+        return false;
+    }
     sensor_obj->delay(15);
 
-    DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, &read_out);
+    if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_GYRO_CONFIG0, &read_out))
+    {
+        sensor_obj->error = ICM426xx_AccGyr_TurnOff_Error;
+        return false;
+    }
+
     if(read_out != sensor_obj->GyrTrip)
     {
         sensor_obj->error = ICM426xx_GyrRangeOdr_Set_Error;
         return false;
     }
 
-    DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, sensor_obj->AccTrip);
+    if(!DevICM426xx_Reg_Write(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, sensor_obj->AccTrip))
+    {
+        sensor_obj->error = ICM426xx_AccGyr_TurnOff_Error;
+        return false;
+    }
     sensor_obj->delay(15);
 
-    DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, &read_out);
+    if(!DevICM426xx_Reg_Read(sensor_obj, ICM426XX_RA_ACCEL_CONFIG0, &read_out))
+    {
+        sensor_obj->error = ICM426xx_AccGyr_TurnOff_Error;
+        return false;
+    }
+
     if(read_out != sensor_obj->AccTrip)
     {
         sensor_obj->error = ICM426xx_AccRangeOdr_Set_Error;
