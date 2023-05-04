@@ -7,7 +7,10 @@ static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uin
 
 /* external function */
 static bool DevICM20602_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
-static bool DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate, ICM20602_GyrTrip_List GyrTrip, ICM20602_AccTrip_List AccTrip);
+static bool DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, 
+                               ICM20602_SampleRate_List rate, 
+                               ICM20602_GyrTrip_List GyrTrip, 
+                               ICM20602_AccTrip_List AccTrip);
 static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
                                 cs_ctl_callback cs_ctl,
                                 bus_trans_callback bus_trans,
@@ -135,7 +138,10 @@ static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uin
     return state;
 }
 
-static bool DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, ICM20602_SampleRate_List rate, ICM20602_GyrTrip_List GyrTrip, ICM20602_AccTrip_List AccTrip)
+static bool DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, 
+                               ICM20602_SampleRate_List rate, 
+                               ICM20602_GyrTrip_List GyrTrip, 
+                               ICM20602_AccTrip_List AccTrip)
 {
     if(Obj == NULL)
         return false;

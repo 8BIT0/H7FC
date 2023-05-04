@@ -2,6 +2,10 @@
 
 /* external function */
 static ICM426xx_Sensor_TypeList DevICM426xx_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
+static bool DevICM426xx_Config(DevICM426xxObj_TypeDef *Obj, 
+                               ICM426xx_SampleRate_List rate, 
+                               ICM426xx_GyrTrip_List GyrTrip, 
+                               ICM426xx_AccTrip_List AccTrip);
 static void DevICM426xx_PreInit(DevICM426xxObj_TypeDef *sensor_obj,
                                cs_ctl_callback cs_ctl,
                                bus_trans_callback bus_trans,
@@ -47,7 +51,10 @@ static ICM426xx_Sensor_TypeList DevICM426xx_Detect(bus_trans_callback trans, cs_
     return ICM_NONE;
 }
 
-static void DevICM426xx_Config(DevICM426xxObj_TypeDef *Obj, ICM426xx_SampleRate_List rate, ICM426xx_GyrTrip_List GyrTrip, ICM426xx_AccTrip_List AccTrip)
+static bool DevICM426xx_Config(DevICM426xxObj_TypeDef *Obj, 
+                               ICM426xx_SampleRate_List rate, 
+                               ICM426xx_GyrTrip_List GyrTrip, 
+                               ICM426xx_AccTrip_List AccTrip)
 {
 
 }

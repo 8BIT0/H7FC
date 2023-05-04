@@ -141,7 +141,10 @@ static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr
     return state;
 }
 
-static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, DevMPU6000_SampleRate_List rate, DevMPU6000_AccTrip_List AccTrip, DevMPU6000_GyrTrip_List GyrTrip)
+static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, 
+                              DevMPU6000_SampleRate_List rate, 
+                              DevMPU6000_AccTrip_List AccTrip, 
+                              DevMPU6000_GyrTrip_List GyrTrip)
 {
     if(sensor_obj == NULL)
         return false;
