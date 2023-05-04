@@ -56,7 +56,22 @@ static bool DevICM426xx_Config(DevICM426xxObj_TypeDef *Obj,
                                ICM426xx_GyrTrip_List GyrTrip, 
                                ICM426xx_AccTrip_List AccTrip)
 {
+    if(Obj == NULL)
+        return false;
 
+    switch ((uint8_t)Obj->rate)
+    {
+    case ICM426xx_SampleRate_8K:
+    case ICM426xx_SampleRate_4K:
+    case ICM426xx_SampleRate_2K:
+    case ICM426xx_SampleRate_1K:
+        break;
+
+    default:
+        return false;
+    }
+
+    Obj->rate = rate;
 }
 
 static void DevICM426xx_PreInit(DevICM426xxObj_TypeDef *sensor_obj,
