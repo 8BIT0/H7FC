@@ -439,7 +439,35 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
         break;
 
         case SrvIMU_Dev_ICM42688P:
+            DevICM426xx.pre_init(&ICM42688PObj,
+                                 SrvIMU_PriIMU_CS_Ctl,
+                                 SrvIMU_PriIMU_BusTrans_Rec,
+                                 Runtime_DelayMs,
+                                 Get_CurrentRunningUs);
+
+            DevICM426xx.config(&ICM42688PObj,
+                                ICM426xx_SampleRate_4K,
+                                ICM426xx_Acc_16G,
+                                ICM426xx_Gyr_2000DPS);
+
+            if (!DevICM426xx.init(&ICM42688PObj))
+                return SrvIMU_PriDev_Init_Error;
+        break;
+
         case SrvIMU_Dev_ICM42605:
+            DevICM426xx.pre_init(&ICM42605Obj,
+                                 SrvIMU_PriIMU_CS_Ctl,
+                                 SrvIMU_PriIMU_BusTrans_Rec,
+                                 Runtime_DelayMs,
+                                 Get_CurrentRunningUs);
+
+            DevICM426xx.config(&ICM42605Obj,
+                                ICM426xx_SampleRate_4K,
+                                ICM426xx_Acc_16G,
+                                ICM426xx_Gyr_2000DPS);
+
+            if (!DevICM426xx.init(&ICM42605Obj))
+                return SrvIMU_PriDev_Init_Error;
         break;
 
         default: return SrvIMU_PriDev_Init_Error;
@@ -521,7 +549,35 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
         break;
 
         case SrvIMU_Dev_ICM42688P:
+            DevICM426xx.pre_init(&ICM42688PObj,
+                                 SrvIMU_SecIMU_CS_Ctl,
+                                 SrvIMU_SecIMU_BusTrans_Rec,
+                                 Runtime_DelayMs,
+                                 Get_CurrentRunningUs);
+
+            DevICM426xx.config(&ICM42688PObj,
+                                ICM426xx_SampleRate_4K,
+                                ICM426xx_Acc_16G,
+                                ICM426xx_Gyr_2000DPS);
+
+            if (!DevICM426xx.init(&ICM42688PObj))
+                return SrvIMU_SecDev_Init_Error;
+        break;
+
         case SrvIMU_Dev_ICM42605:
+            DevICM426xx.pre_init(&ICM42605Obj,
+                                 SrvIMU_SecIMU_CS_Ctl,
+                                 SrvIMU_SecIMU_BusTrans_Rec,
+                                 Runtime_DelayMs,
+                                 Get_CurrentRunningUs);
+
+            DevICM426xx.config(&ICM42605Obj,
+                                ICM426xx_SampleRate_4K,
+                                ICM426xx_Acc_16G,
+                                ICM426xx_Gyr_2000DPS);
+
+            if (!DevICM426xx.init(&ICM42605Obj))
+                return SrvIMU_SecDev_Init_Error;
         break;
 
         default: return SrvIMU_SecDev_Init_Error;
