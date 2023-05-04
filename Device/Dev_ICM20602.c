@@ -18,13 +18,13 @@ static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
                                 bus_trans_callback bus_trans,
                                 delay_callback delay,
                                 get_time_stamp_callback get_time_stamp);
-static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj);
+static bool DevICM20602_Init(DevICM20602Obj_TypeDef *Obj);
 static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj);
 static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj);
 static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj);
 static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj);
 static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj);
-static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj);
+static IMU_Error_TypeDef DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj);
 static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef *Obj);
 static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_TypeDef *Obj);
 
@@ -233,7 +233,7 @@ static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
     Obj->get_timestamp = get_time_stamp;
 }
 
-static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
+static bool DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
 {
     uint8_t read_out = 0;
 
@@ -241,14 +241,20 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
         (Obj->bus_trans == NULL) ||
         (Obj->cs_ctl == NULL))
     {
-        Obj->error = ICM20602_Obj_Error;
+        Obj->error.code = ICM20602_Obj_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = 0;
         return false;
     }
 
     /* reset device */
     if (!DevICM20602_SwReset(Obj))
     {
-        Obj->error = ICM20602_Reset_Error;
+        Obj->error.code = ICM20602_Reset_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = 0;
         return false;
     }
 
@@ -257,7 +263,10 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
 
     if (read_out != ICM20602_DEV_ID)
     {
-        Obj->error = ICM20602_DevID_Error;
+        Obj->error.code = ICM20602_DevID_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = read_out;
         return false;
     }
 
@@ -268,7 +277,10 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_1, &read_out);
     if (read_out != 0x01)
     {
-        Obj->error = ICM20602_OSC_Error;
+        Obj->error.code = ICM20602_OSC_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = read_out;
         return false;
     }
 
@@ -279,7 +291,10 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_2, &read_out);
     if (read_out != 0x00)
     {
-        Obj->error = ICM20602_InertialEnable_Error;
+        Obj->error.code = ICM20602_InertialEnable_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = read_out;
         return false;
     }
 
@@ -290,7 +305,10 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     DevICM20602_Reg_Read(Obj, ICM20602_I2C_IF, &read_out);
     if (read_out != 0x40)
     {
-        Obj->error = ICM20602_InterfaceSet_Error;
+        Obj->error.code = ICM20602_InterfaceSet_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = read_out;
         return false;
     }
 
@@ -301,7 +319,10 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     DevICM20602_Reg_Read(Obj, ICM20602_SMPLRT_DIV, &read_out);
     if (read_out != Obj->rate)
     {
-        Obj->error = ICM20602_RateSet_Error;
+        Obj->error.code = ICM20602_RateSet_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = read_out;
         return false;
     }
 
@@ -312,7 +333,10 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     DevICM20602_Reg_Read(Obj, ICM20602_ACCEL_CONFIG, &read_out);
     if (read_out != Obj->AccTrip)
     {
-        Obj->error = ICM20602_AccSet_Error;
+        Obj->error.code = ICM20602_AccSet_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = read_out;
         return false;
     }
 
@@ -323,7 +347,10 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     DevICM20602_Reg_Read(Obj, ICM20602_GYRO_CONFIG, &read_out);
     if (read_out != Obj->GyrTrip)
     {
-        Obj->error = ICM20602_GyrSet_Error;
+        Obj->error.code = ICM20602_GyrSet_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = read_out;
         return false;
     }
 
@@ -334,10 +361,14 @@ static ICM20602_Error_List DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
     DevICM20602_Reg_Read(Obj, ICM20602_INT_PIN_CFG, &read_out);
     if (read_out != 0x60)
     {
-        Obj->error = ICM20602_GyrSet_Error;
+        Obj->error.code = ICM20602_GyrSet_Error;
+        Obj->error.function = __FUNCTION__;
+        Obj->error.line = __LINE__;
+        Obj->error.reg = read_out;
         return false;
     }
 
+    Obj->error.code = ICM20602_No_Error;
     return true;
 }
 
@@ -388,7 +419,7 @@ static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj)
     IMUData_TypeDef tmp;
     memset(&tmp, NULL, sizeof(tmp));
 
-    if ((Obj->error == ICM20602_No_Error) && !Obj->update)
+    if ((Obj->error.code == ICM20602_No_Error) && !Obj->update)
     {
         Obj->drdy = false;
         return Obj->OriData;
@@ -397,7 +428,7 @@ static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj)
     return tmp;
 }
 
-static ICM20602_Error_List DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj)
+static IMU_Error_TypeDef DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj)
 {
     return Obj->error;
 }

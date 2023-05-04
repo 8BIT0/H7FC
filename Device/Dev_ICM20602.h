@@ -148,7 +148,7 @@ typedef struct
     float acc_scale;
     float gyr_scale;
 
-    ICM20602_Error_List error;
+    IMU_Error_TypeDef error;
     ICM20602_SampleRate_List rate;
 
     IMUData_TypeDef OriData;
@@ -165,7 +165,7 @@ typedef struct
     bool (*reset)(DevICM20602Obj_TypeDef *Obj);
     bool (*sample)(DevICM20602Obj_TypeDef *Obj);
     IMUData_TypeDef (*get_data)(DevICM20602Obj_TypeDef *Obj);
-    ICM20602_Error_List (*get_error)(DevICM20602Obj_TypeDef *Obj);
+    IMU_Error_TypeDef (*get_error)(DevICM20602Obj_TypeDef *Obj);
     IMUModuleScale_TypeDef (*get_scale)(const DevICM20602Obj_TypeDef *sensor_obj);
     float (*get_gyr_angular_speed_diff)(const DevICM20602Obj_TypeDef *sensor_obj);
 } DevICM20602_TypeDef;
