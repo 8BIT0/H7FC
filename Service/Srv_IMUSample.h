@@ -69,6 +69,13 @@ typedef enum
 
 typedef enum
 {
+    SrvIMU_Gyr_Calibarting,
+    SrvIMU_Gyr_CalibFailed,
+    SrvIMU_Gyr_CalibDone,
+}SrvIMU_GyroCalib_State_List;
+
+typedef enum
+{
     SrvIMU_Priori_Pri = UTIL_SET_BIT(0),                        /* primary IMU sample Only */
     SrvIMU_Priori_Sec = UTIL_SET_BIT(1),                        /* secondary IMU sample Only */
     SrvIMU_Both_Sample = SrvIMU_Priori_Pri | SrvIMU_Priori_Sec, /* both primary and secondary IMU sample */
@@ -110,6 +117,7 @@ typedef struct
     SrvIMU_Data_TypeDef (*get_data)(SrvIMU_Module_Type type);
     float (*get_max_angular_speed_diff)(void);
     void (*error_proc)(void);
+    SrvIMU_GyroCalib_State_List (*calib)(float *pri_gyr, float *sec_gyr);
 } SrvIMU_TypeDef;
 
 extern SrvIMU_TypeDef SrvIMU;

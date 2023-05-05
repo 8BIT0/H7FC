@@ -20,6 +20,11 @@
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
 #define ANGULAR_SPEED_ACCURACY 1e3
 
+#define GYR_STATIC_CALIB_CYCLE 100
+#define GYR_STATIC_CALIB_ACCURACY ANGULAR_SPEED_ACCURACY
+#define GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD (3 * GYR_STATIC_CALIB_ACCURACY)
+#define GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD (2 * GYR_STATIC_CALIB_ACCURACY)
+
 /*
  * Angular Speed Over Speed Threshold
  * Angular Speed Per Millscond
@@ -54,6 +59,10 @@ static BWF_Object_Handle PriIMU_Acc_LPF_Handle[Axis_Sum] = {0};
 /* SecIMU Butterworth filter object handle */
 static BWF_Object_Handle SecIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
 static BWF_Object_Handle SecIMU_Acc_LPF_Handle[Axis_Sum] = {0};
+
+/* Gyro Calibration Zero Offset Val */
+static float PriIMU_Gyr_ZeroOffset[Axis_Sum] = {0.0f};
+static float SecIMU_Gyr_ZeroOffset[Axis_Sum] = {0.0f};
 
 /*
  *   PriIMU -> MPU6000
@@ -97,8 +106,7 @@ static SrvIMU_InuseSensorObj_TypeDef InUse_SecIMU_Obj;
 /************************************************************************ Error Tree Item ************************************************************************/
 static void SrvIMU_PriDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_SecDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
-static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
-static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
+static void SrvIMU_Dev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_AllModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size);
 static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size);
@@ -191,7 +199,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
     {
         .out = true,
         .log = false,
-        .prc_callback = SrvIMU_PriDev_InitError,
+        .prc_callback = SrvIMU_Dev_InitError,
         .code = SrvIMU_PriDev_Init_Error,
         .desc = "Pri Dev Init Failed\r\n",
         .proc_type = Error_Proc_Immd,
@@ -239,7 +247,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
     {
         .out = true,
         .log = false,
-        .prc_callback = SrvIMU_SecDev_InitError,
+        .prc_callback = SrvIMU_Dev_InitError,
         .code = SrvIMU_SecDev_Init_Error,
         .desc = "Sec Dev Init Failed\r\n",
         .proc_type = Error_Proc_Immd,
@@ -269,6 +277,7 @@ static bool SrvIMU_Sample(void);
 static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type);
 static void SrvIMU_ErrorProc(void);
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
+static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(float *pri_gyr, float *sec_gyr);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -287,6 +296,7 @@ SrvIMU_TypeDef SrvIMU = {
     .sample = SrvIMU_Sample,
     .get_data = SrvIMU_Get_Data,
     .error_proc = SrvIMU_ErrorProc,
+    .calib = SrvIMU_Calib_GyroZeroOffset,
     .get_max_angular_speed_diff = SrvIMU_Get_MaxAngularSpeed_Diff,
 };
 
@@ -737,6 +747,84 @@ static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8
     return SrvIMU_Sample_NoError;
 }
 
+static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(float *pri_gyr, float *sec_gyr)
+{
+    uint8_t i = Axis_X;
+    SrvIMU_GyroCalib_State_List state = SrvIMU_Gyr_CalibFailed;
+    static uint8_t Gyr_Static_Calib = GYR_STATIC_CALIB_CYCLE;
+    static int16_t lst_pri_gyr[Axis_Sum] = {0};
+    static int16_t lst_sec_gyr[Axis_Sum] = {0};
+    static int16_t PriIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};
+    static int16_t SecIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};
+
+    int16_t pri_gyr_tmp[Axis_Sum] = {0};
+    int16_t sec_gyr_tmp[Axis_Sum] = {0};
+
+    if((pri_gyr == NULL) || 
+       (sec_gyr == NULL))
+        goto reset_calib_var;
+
+    if(Gyr_Static_Calib)
+    {
+        for(; i < Axis_Sum; i++)
+        {
+            pri_gyr_tmp[i] = (int16_t)(pri_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
+            sec_gyr_tmp[i] = (int16_t)(sec_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
+
+            /* motion detect */
+            if((pri_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) || 
+               (sec_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) ||
+               (abs(pri_gyr_tmp[i] - lst_pri_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD) ||
+               (abs(sec_gyr_tmp[i] - lst_sec_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD))
+            {
+                /* reset variable */
+                state = SrvIMU_Gyr_CalibFailed;
+                goto reset_calib_var;
+            }
+
+            /* we need to keep sensor for static statment for entiry calibration proce */
+
+            PriIMU_Prc_Gyr_ZeroOffset[i] += pri_gyr_tmp[i];
+            SecIMU_Prc_Gyr_ZeroOffset[i] += sec_gyr_tmp[i];
+
+            lst_pri_gyr[i] = pri_gyr_tmp[i];
+            lst_sec_gyr[i] = sec_gyr_tmp[i];
+        }
+
+        Gyr_Static_Calib--;
+
+        /* calib done */
+        if(Gyr_Static_Calib == 0)
+        {
+            for(i = Axis_X; i < Axis_Sum; i++)
+            {
+                PriIMU_Gyr_ZeroOffset[i] = (PriIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / GYR_STATIC_CALIB_CYCLE;
+                SecIMU_Gyr_ZeroOffset[i] = (SecIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / GYR_STATIC_CALIB_CYCLE;
+            }
+
+            state = SrvIMU_Gyr_CalibDone;
+        }
+        else
+            return SrvIMU_Gyr_Calibarting;
+    }
+
+reset_calib_var:
+    /* for test */
+    for(i = Axis_X; i < Axis_Sum; i++)
+    {
+        PriIMU_Prc_Gyr_ZeroOffset[i] = 0;
+        SecIMU_Prc_Gyr_ZeroOffset[i] = 0;
+
+        lst_pri_gyr[i] = 0;
+        lst_sec_gyr[i] = 0;
+    }
+            
+    /* reset calib cycle count for next */
+    Gyr_Static_Calib = GYR_STATIC_CALIB_CYCLE;
+
+    return state;
+}
+
 static bool SrvIMU_Sample(void)
 {
     static SYSTEM_RunTime PriSample_Rt_Lst = 0;
@@ -749,7 +837,7 @@ static bool SrvIMU_Sample(void)
     float Sample_MsDiff = 0.0f;
 
     /* don`t use error tree down below it may decrease code efficient */
-    /* trigger error directly */
+    /* trigger error directly when sampling */
 
     /* pri imu init successed */
     if (SrvMpu_Init_Reg.sec.Pri_State)
@@ -786,7 +874,7 @@ static bool SrvIMU_Sample(void)
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
                     PriIMU_Data.org_acc[i] = InUse_PriIMU_Obj.OriData_ptr->acc_flt[i];
-                    PriIMU_Data.org_gyr[i] = InUse_PriIMU_Obj.OriData_ptr->gyr_flt[i];
+                    PriIMU_Data.org_gyr[i] = InUse_PriIMU_Obj.OriData_ptr->gyr_flt[i] - PriIMU_Gyr_ZeroOffset[i];
 
                     /* filted imu data */
                     PriIMU_Data.flt_gyr[i] = Butterworth.update(PriIMU_Gyr_LPF_Handle[i], PriIMU_Data.org_gyr[i]);
@@ -857,7 +945,7 @@ static bool SrvIMU_Sample(void)
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
                     SecIMU_Data.org_acc[i] = InUse_SecIMU_Obj.OriData_ptr->acc_flt[i];
-                    SecIMU_Data.org_gyr[i] = InUse_SecIMU_Obj.OriData_ptr->gyr_flt[i];
+                    SecIMU_Data.org_gyr[i] = InUse_SecIMU_Obj.OriData_ptr->gyr_flt[i] - SecIMU_Gyr_ZeroOffset[i];
 
                     SecIMU_Data.flt_gyr[i] = Butterworth.update(SecIMU_Gyr_LPF_Handle[i], SecIMU_Data.org_gyr[i]);
                     SecIMU_Data.flt_acc[i] = Butterworth.update(SecIMU_Acc_LPF_Handle[i], SecIMU_Data.org_acc[i]);
@@ -1036,33 +1124,21 @@ static void SrvIMU_SecDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_
 
 }
 
-static void SrvIMU_PriDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
+static void SrvIMU_Dev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
+    SrvIMU_InuseSensorObj_TypeDef *InUseObj_Ptr = NULL;
+
     if(p_arg && size)
     {
-        ErrorLog.add_desc("PriIMU Type:  %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
-        ErrorLog.add_desc("error code:   %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).code);
-        ErrorLog.add_desc("error func:   %s\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).function);
-        ErrorLog.add_desc("error line:   %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).line);
-        ErrorLog.add_desc("error reg:    %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).tar_reg);
-        ErrorLog.add_desc("error reg rx: %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg_r_val);
-        ErrorLog.add_desc("error reg tx: %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg_t_val);
-
-        ErrorLog.add_desc("\r\n");
-    }
-}
-
-static void SrvIMU_SecDev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
-{
-    if(p_arg && size)
-    {
-        ErrorLog.add_desc("SecIMU Type: %s", SrvIMU_GetSensorType_Str(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->type));
-        ErrorLog.add_desc("error code:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).code);
-        ErrorLog.add_desc("error func:  %s\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).function);
-        ErrorLog.add_desc("error line:  %d\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).line);
-        ErrorLog.add_desc("error reg:    %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).tar_reg);
-        ErrorLog.add_desc("error reg rx: %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg_r_val);
-        ErrorLog.add_desc("error reg tx: %02x\r\n", ((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->get_error(((SrvIMU_InuseSensorObj_TypeDef *)p_arg)->obj_ptr).reg_t_val);
+        InUseObj_Ptr = (SrvIMU_InuseSensorObj_TypeDef *)p_arg;
+        
+        ErrorLog.add_desc("IMU   Type:   %s", SrvIMU_GetSensorType_Str(InUseObj_Ptr->type));
+        ErrorLog.add_desc("error code:   %d\r\n", InUseObj_Ptr->get_error(InUseObj_Ptr->obj_ptr).code);
+        ErrorLog.add_desc("error func:   %s\r\n", InUseObj_Ptr->get_error(InUseObj_Ptr->obj_ptr).function);
+        ErrorLog.add_desc("error line:   %d\r\n", InUseObj_Ptr->get_error(InUseObj_Ptr->obj_ptr).line);
+        ErrorLog.add_desc("error reg:    %02x\r\n", InUseObj_Ptr->get_error(InUseObj_Ptr->obj_ptr).tar_reg);
+        ErrorLog.add_desc("error reg rx: %02x\r\n", InUseObj_Ptr->get_error(InUseObj_Ptr->obj_ptr).reg_r_val);
+        ErrorLog.add_desc("error reg tx: %02x\r\n", InUseObj_Ptr->get_error(InUseObj_Ptr->obj_ptr).reg_t_val);
 
         ErrorLog.add_desc("\r\n");
     }

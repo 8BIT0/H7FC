@@ -195,7 +195,7 @@ void TaskProtocol_Core(Task_Handle hdl)
         }
         
         /* test proto mavlink raw imu data */
-        // SrvComProto.mav_msg_stream(TaskProto_MAV_RawIMU, &MavStream, TaskProtocol_TransBuff);
+        SrvComProto.mav_msg_stream(TaskProto_MAV_RawIMU, &MavStream, TaskProtocol_TransBuff);
 
         break;
 
