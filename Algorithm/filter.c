@@ -7,7 +7,7 @@
 #include "mmu.h"
 
 /* internal function */
-static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *header, item_obj *ender);
+static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender);
 static void Butterworth_Item_Update(item_obj *header, item_obj *ender, float cur_data);
 
 /* external function */
@@ -19,7 +19,7 @@ Butterworth_Filter_TypeDef Butterworth = {
     .update = Butterworth_Filter_Update,
 };
 
-static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *header, item_obj *ender)
+static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender)
 {
     for (uint8_t i = 0; i < order; i++)
     {
@@ -43,10 +43,10 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj *hea
             item[i].prv = &item[i - 1];
         }
         else
-            header = &item[0];
+            *header = &item[0];
     }
 
-    ender = &item[order - 1];
+    *ender = &item[order - 1];
 
     return true;
 }
@@ -85,7 +85,7 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_o
         }
         else
         {
-            if (!Butterworth_List_Create(e_cnt, BWF_Obj->p_e_data_cache, BWF_Obj->p_e_list_header, BWF_Obj->p_e_list_ender))
+            if (!Butterworth_List_Create(e_cnt, BWF_Obj->p_e_data_cache, &(BWF_Obj->p_e_list_header), &(BWF_Obj->p_e_list_ender)))
             {
                 MMU_Free(BWF_Obj->p_e_data_cache);
                 MMU_Free(BWF_Obj);
@@ -103,7 +103,7 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_o
         }
         else
         {
-            if (!Butterworth_List_Create(u_cnt, BWF_Obj->p_u_data_cache, BWF_Obj->p_u_list_header, BWF_Obj->p_u_list_ender))
+            if (!Butterworth_List_Create(u_cnt, BWF_Obj->p_u_data_cache, &(BWF_Obj->p_u_list_header), &(BWF_Obj->p_u_list_ender)))
             {
                 MMU_Free(BWF_Obj->p_e_data_cache);
                 MMU_Free(BWF_Obj->p_u_data_cache);

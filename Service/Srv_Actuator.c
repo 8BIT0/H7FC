@@ -190,7 +190,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     memset(&Actuator_cal_DataPipe, 0, sizeof(Actuator_cal_DataPipe));
     memset(DataPipe_DataObjAddr(Actuator_Data), NULL, sizeof(DataPipe_DataObj(Actuator_Data)));
 
-    Actuator_cal_DataPipe.data_addr = (uint32_t)&DataPipe_DataObj(Actuator_Data);
+    Actuator_cal_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Actuator_Data);
     Actuator_cal_DataPipe.data_size = sizeof(DataPipe_DataObj(Actuator_Data));
     DataPipe_Enable(&Actuator_cal_DataPipe);
 
