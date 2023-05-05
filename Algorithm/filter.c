@@ -8,7 +8,7 @@
 
 /* internal function */
 static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender);
-static void Butterworth_Item_Update(item_obj *header, item_obj *ender, float cur_data);
+static void Butterworth_Item_Update(item_obj **header, item_obj **ender, float cur_data);
 
 /* external function */
 static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_obj);
@@ -149,18 +149,18 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_o
     return (uint32_t)BWF_Obj;
 }
 
-static void Butterworth_Item_Update(item_obj *header, item_obj *ender, float cur_data)
+static void Butterworth_Item_Update(item_obj **header, item_obj **ender, float cur_data)
 {
     item_obj *i_tmp = NULL;
 
-    *((float *)(ender->data)) = cur_data;
-    ender->prv->nxt = NULL;
-    i_tmp = ender->prv;
-    ender->prv = NULL;
-    header->prv = ender;
-    ender->nxt = header;
-    header = ender;
-    ender = i_tmp;
+    *((float *)((*ender)->data)) = cur_data;
+    (*ender)->prv->nxt = NULL;
+    i_tmp = (*ender)->prv;
+    (*ender)->prv = NULL;
+    (*header)->prv = *ender;
+    (*ender)->nxt = *header;
+    *header = *ender;
+    *ender = i_tmp;
 }
 
 static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
@@ -176,7 +176,7 @@ static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
     if (obj)
     {
         filter_obj = (Filter_ButterworthParam_TypeDef *)obj;
-        Butterworth_Item_Update(filter_obj->p_e_list_header, filter_obj->p_e_list_ender, cur_e);
+        Butterworth_Item_Update(&(filter_obj->p_e_list_header), &(filter_obj->p_e_list_ender), cur_e);
 
         u_item = filter_obj->p_u_list_header;
         e_item = filter_obj->p_e_list_header;
@@ -200,7 +200,7 @@ static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
 
         u_tmp = E_Additive - U_Additive;
         /* update last time filted data */
-        Butterworth_Item_Update(filter_obj->p_u_list_header, filter_obj->p_u_list_ender, u_tmp);
+        Butterworth_Item_Update(&(filter_obj->p_u_list_header), &(filter_obj->p_u_list_ender), u_tmp);
     }
 
     return u_tmp;
