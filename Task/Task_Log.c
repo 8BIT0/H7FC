@@ -115,7 +115,7 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
                 if (rt - rt_lst >= 200)
                 {
                     led_state = !led_state;
-                    DevLED.ctl(Led2, led_state);
+                    DevLED.ctl(Led1, led_state);
                     rt_lst = rt;
                 }
             }
@@ -124,14 +124,14 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
         {
             LogObj_Set_Reg._sec.IMU_Sec = false;
 
-            DevLED.ctl(Led2, false);
+            DevLED.ctl(Led1, false);
         }
         else
         {
             if (rt - rt_lst >= 500)
             {
                 led_state = !led_state;
-                DevLED.ctl(Led2, led_state);
+                DevLED.ctl(Led1, led_state);
                 rt_lst = rt;
             }
         }
