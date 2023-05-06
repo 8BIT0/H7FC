@@ -25,6 +25,8 @@
 #define GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD (3 * GYR_STATIC_CALIB_ACCURACY)
 #define GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD (2 * GYR_STATIC_CALIB_ACCURACY)
 
+#define IMU_DATA_SIZE IMU_DATA_SIZE
+
 /*
  * Angular Speed Over Speed Threshold
  * Angular Speed Per Millscond
@@ -1020,29 +1022,34 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
 {
     SrvIMU_Data_TypeDef imu_data_tmp;
 
-    memset(&imu_data_tmp, NULL, sizeof(SrvIMU_Data_TypeDef));
+    memset(&imu_data_tmp, NULL, IMU_DATA_SIZE);
 
     if (type == SrvIMU_PriModule)
     {
         if (!SrvMpu_Update_Reg.sec.Pri_State)
         {
-            memcpy(&imu_data_tmp, &PriIMU_Data, sizeof(SrvIMU_Data_TypeDef));
+            memcpy(&imu_data_tmp, &PriIMU_Data, IMU_DATA_SIZE);
         }
         else
-            memcpy(&imu_data_tmp, &PriIMU_Data_Lst, sizeof(SrvIMU_Data_TypeDef));
+            memcpy(&imu_data_tmp, &PriIMU_Data_Lst, IMU_DATA_SIZE);
     }
     else if (type == SrvIMU_SecModule)
     {
         if (!SrvMpu_Update_Reg.sec.Sec_State)
         {
-            memcpy(&imu_data_tmp, &SecIMU_Data, sizeof(SrvIMU_Data_TypeDef));
+            memcpy(&imu_data_tmp, &SecIMU_Data, IMU_DATA_SIZE);
         }
         else
-            memcpy(&imu_data_tmp, &SecIMU_Data_Lst, sizeof(SrvIMU_Data_TypeDef));
+            memcpy(&imu_data_tmp, &SecIMU_Data_Lst, IMU_DATA_SIZE);
     }
     else if(type == SrvIMU_FusModule)
     {
-
+        if(!SrvMpu_Update_Reg.sec.Fus_State)
+        {
+            memcpy(&imu_data_tmp, IMU_Data, IMU_DATA_SIZE);
+        }
+        else
+            memcpy(&imu_data_tmp, IMU_Data_Lst, IMU_DATA_SIZE);
     }
 
     return imu_data_tmp;
