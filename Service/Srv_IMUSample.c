@@ -1003,16 +1003,21 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
         break;
 
         case SrvIMU_Both_Sample:
-            if(PriIMU_Data.error_code == SrvIMU_Sample_NoError)
+            if((PriIMU_Data.error_code == SrvIMU_Sample_NoError) || 
+               (PriIMU_Data.error_code == SrvIMU_Sample_Data_Acc_Blunt))
             {
                 IMU_Data = PriIMU_Data;
             }
-            else if(SecIMU_Data.error_code == SrvIMU_Sample_NoError)
+            else if((SecIMU_Data.error_code == SrvIMU_Sample_NoError) || 
+                    (SecIMU_Data.error_code == SrvIMU_Sample_Data_Acc_Blunt))
             {
                 IMU_Data = SecIMU_Data;
             }
             else
+            {
                 IMU_Data = IMU_Data_Lst;
+                IMU_Data.time_stamp = Get_CurrentRunningUs();
+            }
         break;
 
         default:
