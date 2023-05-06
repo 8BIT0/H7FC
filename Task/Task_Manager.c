@@ -19,8 +19,6 @@ Task_Handle TaskInertial_Handle = NULL;
 Task_Handle TaskControl_Handle = NULL;
 Task_Handle TaskLog_Handle = NULL;
 Task_Handle TaskTelemetry_Handle = NULL;
-Task_Handle TaskOSD_Handle = NULL;
-Task_Handle TasKAttitude_Handle = NULL;
 
 void Test2(Task_Handle handle);
 
@@ -76,9 +74,7 @@ void Task_Manager_CreateTask(void)
 {
     TaskInertial_Handle = Os_CreateTask("Inertial Sample", TASK_EXEC_2KHZ, Task_Group_0, Task_Priority_0, TaskInertical_Core, 1024);
     TaskControl_Handle = Os_CreateTask("Control", TASK_EXEC_1KHZ, Task_Group_0, Task_Priority_1, TaskControl_Core, 1024);
-    TasKAttitude_Handle = Os_CreateTask("Attitude", TASK_EXEC_100HZ, Task_Group_0, Task_Priority_2, TaskAttitude_Core, 512);
     TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_100HZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 1024);
     TaskLog_Handle = Os_CreateTask("Data Log", TASK_EXEC_200HZ, Task_Group_2, Task_Priority_0, TaskLog_Core, 1024);
     TaskTelemetry_Handle = Os_CreateTask("Telemetry", TASK_EXEC_100HZ, Task_Group_0, Task_Priority_2, TaskTelemetry_Core, 512);
-    TaskOSD_Handle = Os_CreateTask("OSD", TASK_EXEC_50HZ, Task_Group_2, Task_Priority_1, TaskOSD_Core, 512);
 }
