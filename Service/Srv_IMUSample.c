@@ -53,6 +53,7 @@ typedef struct
 static uint32_t SrvIMU_PriIMU_Init_Error_CNT = 0;
 static uint32_t SrvIMU_SecIMU_Init_Error_CNT = 0;
 static uint32_t SrvIMU_ALLModule_Init_Error_CNT = 0;
+static uint32_t SrvIMU_Reupdate_Statistics_CNT = 0;
 
 /* PriIMU Butterworth filter object handle */
 static BWF_Object_Handle PriIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
@@ -1039,7 +1040,7 @@ reupdate_imu:
             memcpy(&imu_data_tmp, &PriIMU_Data, IMU_DATA_SIZE);
         }
         else
-            goto reupdate_imu;
+            goto reupdate_imu_statistics;
     }
     else if (type == SrvIMU_SecModule)
     {
@@ -1048,7 +1049,7 @@ reupdate_imu:
             memcpy(&imu_data_tmp, &SecIMU_Data, IMU_DATA_SIZE);
         }
         else
-            goto reupdate_imu;
+            goto reupdate_imu_statistics;
     }
     else if(type == SrvIMU_FusModule)
     {
@@ -1057,10 +1058,14 @@ reupdate_imu:
             memcpy(&imu_data_tmp, &IMU_Data, IMU_DATA_SIZE);
         }
         else
-            goto reupdate_imu;
+            goto reupdate_imu_statistics;
     }
 
     return imu_data_tmp;
+
+reupdate_imu_statistics:
+    SrvIMU_Reupdate_Statistics_CNT ++;
+    goto reupdate_imu;
 }
 
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void)
