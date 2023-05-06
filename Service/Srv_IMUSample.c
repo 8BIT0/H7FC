@@ -1031,6 +1031,7 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
 
     memset(&imu_data_tmp, NULL, IMU_DATA_SIZE);
 
+reupdate_imu:
     if (type == SrvIMU_PriModule)
     {
         if (!SrvMpu_Update_Reg.sec.Pri_State)
@@ -1038,7 +1039,7 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
             memcpy(&imu_data_tmp, &PriIMU_Data, IMU_DATA_SIZE);
         }
         else
-            memcpy(&imu_data_tmp, &PriIMU_Data_Lst, IMU_DATA_SIZE);
+            goto reupdate_imu;
     }
     else if (type == SrvIMU_SecModule)
     {
@@ -1047,7 +1048,7 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
             memcpy(&imu_data_tmp, &SecIMU_Data, IMU_DATA_SIZE);
         }
         else
-            memcpy(&imu_data_tmp, &SecIMU_Data_Lst, IMU_DATA_SIZE);
+            goto reupdate_imu;
     }
     else if(type == SrvIMU_FusModule)
     {
@@ -1056,7 +1057,7 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
             memcpy(&imu_data_tmp, &IMU_Data, IMU_DATA_SIZE);
         }
         else
-            memcpy(&imu_data_tmp, &IMU_Data_Lst, IMU_DATA_SIZE);
+            goto reupdate_imu;
     }
 
     return imu_data_tmp;
