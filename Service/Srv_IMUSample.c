@@ -277,7 +277,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
 
 /* external function */
 static SrvIMU_ErrorCode_List SrvIMU_Init(void);
-static bool SrvIMU_Sample(void);
+static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode);
 static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type);
 static void SrvIMU_ErrorProc(void);
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
@@ -1002,18 +1002,25 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
         break;
 
         case SrvIMU_Both_Sample:
-            /* if sample value bias is over 5deg/s between two sensors */
-            /* then i don`t know how to deal with it */
-            /* kiss my ass lol */
-
+            if(PriIMU_Data.error_code == SrvIMU_Sample_NoError)
+            {
+                IMU_Data = PriIMU_Data;
+            }
+            else if(SecIMU_Data.error_code == SrvIMU_Sample_NoError)
+            {
+                IMU_Data = SecIMU_Data;
+            }
+            else
+                IMU_Data = IMU_Data_Lst;
         break;
 
         default:
             return false;
     }
-    IMU_Data_Lst = IMU_Data;
+
     /* unlock fus data */
     SrvMpu_Update_Reg.sec.Fus_State = false;
+    IMU_Data_Lst = IMU_Data;
 
     return (pri_sample_state | sec_sample_state);
 }

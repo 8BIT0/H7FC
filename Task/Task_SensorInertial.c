@@ -44,7 +44,7 @@ void TaskInertical_Core(Task_Handle hdl)
     {
     case Task_SensorInertial_Core:
         // TaskInertical_Blink_Notification(100);
-        if (SrvIMU.sample())
+        if (SrvIMU.sample(SrvIMU_Priori_Pri))
         {
             DataPipe_DataObj(PriIMU_Data).data = SrvIMU.get_data(SrvIMU_PriModule);
             DataPipe_DataObj(SecIMU_Data).data = SrvIMU.get_data(SrvIMU_SecModule);

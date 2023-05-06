@@ -116,7 +116,7 @@ typedef union
 typedef struct
 {
     SrvIMU_ErrorCode_List (*init)(void);
-    bool (*sample)(void);
+    bool (*sample)(SrvIMU_SampleMode_List mode);
     SrvIMU_Data_TypeDef (*get_data)(SrvIMU_Module_Type type);
     float (*get_max_angular_speed_diff)(void);
     void (*error_proc)(void);
