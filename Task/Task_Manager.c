@@ -4,8 +4,6 @@
 #include "Task_Control.h"
 #include "Task_SensorInertial.h"
 #include "Task_Telemetry.h"
-#include "Task_OSD.h"
-#include "Task_Attitude.h"
 #include "scheduler.h"
 #include "debug_util.h"
 #include "IO_Definition.h"
@@ -67,7 +65,6 @@ void Task_Manager_Init(void)
     TaskTelemetry_Init();
     TaskControl_Init();
     TaskLog_Init();
-    TaskOSD_Init();
 }
 
 void Task_Manager_CreateTask(void)
