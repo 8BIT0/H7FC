@@ -53,7 +53,7 @@ static uint8_t LogQueueBuff_Trail[MAX_FILE_SIZE_K(1) / 2] = {0};
 
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
-static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg);
+static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_TypeDef *log_reg);
 static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len);
 
 void TaskLog_Init(void)
@@ -107,7 +107,7 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
     {
         if (LogObj_Set_Reg._sec.IMU_Sec)
         {
-            state = LogData_ToFile(&IMULog_Queue, IMU_Log_DataPipe, &LogObj_Logging_Reg);
+            state = LogData_ToFile(&IMULog_Queue, &LogObj_Logging_Reg);
             rt = Get_CurrentRunningMs();
 
             if (state == Disk_Write_Contiguous)
@@ -145,7 +145,7 @@ void TaskLog_Core(Task_Handle hdl)
     // DebugPin.ctl(Debug_PB4, false);
 }
 
-static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, DataPipeObj_TypeDef pipe_obj, LogData_Reg_TypeDef *log_reg)
+static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_TypeDef *log_reg)
 {
     uint16_t log_size = 0;
     uint16_t queue_size = 0;

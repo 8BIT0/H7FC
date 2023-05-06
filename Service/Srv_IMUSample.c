@@ -74,6 +74,8 @@ static SrvIMU_Data_TypeDef PriIMU_Data;
 static SrvIMU_Data_TypeDef SecIMU_Data;
 static SrvIMU_Data_TypeDef PriIMU_Data_Lst;
 static SrvIMU_Data_TypeDef SecIMU_Data_Lst;
+static SrvIMU_Data_TypeDef IMU_Data;
+static SrvIMU_Data_TypeDef IMU_Data_Lst;
 static Error_Handler SrvMPU_Error_Handle = NULL;
 
 /* internal variable */
@@ -825,7 +827,7 @@ reset_calib_var:
     return state;
 }
 
-static bool SrvIMU_Sample(void)
+static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
 {
     static SYSTEM_RunTime PriSample_Rt_Lst = 0;
     static SYSTEM_RunTime SecSample_Rt_Lst = 0;
@@ -835,12 +837,20 @@ static bool SrvIMU_Sample(void)
     IMUModuleScale_TypeDef pri_imu_scale;
     IMUModuleScale_TypeDef sec_imu_scale;
     float Sample_MsDiff = 0.0f;
+    bool PriSample_Enable = mode & SrvIMU_Priori_Pri;
+    bool SecSample_Enable = mode & SrvIMU_Priori_Sec;
 
     /* don`t use error tree down below it may decrease code efficient */
     /* trigger error directly when sampling */
 
+    if(mode > SrvIMU_Both_Sample)
+        return false;
+
+    /* lock fus data */
+    SrvMpu_Update_Reg.sec.Fus_State = true;
+
     /* pri imu init successed */
-    if (SrvMpu_Init_Reg.sec.Pri_State)
+    if (SrvMpu_Init_Reg.sec.Pri_State & PriSample_Enable)
     {
         pri_imu_scale = InUse_PriIMU_Obj.get_scale(InUse_PriIMU_Obj.obj_ptr);
         PriIMU_Data.acc_scale = pri_imu_scale.acc_scale;
@@ -886,11 +896,11 @@ static bool SrvIMU_Sample(void)
                     {
                         InUse_PriIMU_Obj.OriData_ptr->acc_int_lst[i] = InUse_PriIMU_Obj.OriData_ptr->acc_int[i];
                         InUse_PriIMU_Obj.OriData_ptr->gyr_int_lst[i] = InUse_PriIMU_Obj.OriData_ptr->gyr_int[i];
+                    
+                        /* over angular accelerate error detect */
+                        if (SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.org_gyr[i], PriIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
+                            PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                     }
-
-                    /* over angular accelerate error detect */
-                    if (SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.org_gyr[i], PriIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
-                        PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
 
                 /* unlock */
@@ -911,7 +921,7 @@ static bool SrvIMU_Sample(void)
         pri_sample_state = false;
 
     /* sec imu init successed */
-    if (SrvMpu_Init_Reg.sec.Sec_State)
+    if (SrvMpu_Init_Reg.sec.Sec_State & SecSample_Enable)
     {
         sec_imu_scale = InUse_SecIMU_Obj.get_scale(InUse_SecIMU_Obj.obj_ptr);
         SecIMU_Data.acc_scale = sec_imu_scale.acc_scale;
@@ -956,10 +966,10 @@ static bool SrvIMU_Sample(void)
                     {
                         InUse_SecIMU_Obj.OriData_ptr->acc_int_lst[i] = InUse_SecIMU_Obj.OriData_ptr->acc_int[i];
                         InUse_SecIMU_Obj.OriData_ptr->gyr_int_lst[i] = InUse_SecIMU_Obj.OriData_ptr->gyr_int[i];
+                    
+                        if (SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.org_gyr[i], SecIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
+                            SecIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                     }
-
-                    if (SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.org_gyr[i], SecIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
-                        SecIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                 }
 
                 /* unlock */
@@ -979,11 +989,31 @@ static bool SrvIMU_Sample(void)
     else
         sec_sample_state = false;
 
-    return (pri_sample_state | sec_sample_state);
-}
+    switch(mode)
+    {
+        case SrvIMU_Priori_Pri:
+            IMU_Data = PriIMU_Data;
+        break;
 
-static bool SrvIMU_Calibration(void)
-{
+        case SrvIMU_Priori_Sec:
+            IMU_Data = SecIMU_Data;
+        break;
+
+        case SrvIMU_Both_Sample:
+            /* if sample value bias is over 5deg/s between two sensors */
+            /* then i don`t know how to deal with it */
+            /* kiss my ass lol */
+
+        break;
+
+        default:
+            return false;
+    }
+    IMU_Data_Lst = IMU_Data;
+    /* unlock fus data */
+    SrvMpu_Update_Reg.sec.Fus_State = false;
+
+    return (pri_sample_state | sec_sample_state);
 }
 
 static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
@@ -1009,6 +1039,10 @@ static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
         }
         else
             memcpy(&imu_data_tmp, &SecIMU_Data_Lst, sizeof(SrvIMU_Data_TypeDef));
+    }
+    else if(type == SrvIMU_FusModule)
+    {
+
     }
 
     return imu_data_tmp;

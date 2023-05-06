@@ -16,8 +16,10 @@ typedef union
 {
     struct
     {
-        uint8_t Pri_State : 4;
-        uint8_t Sec_State : 4;
+        uint8_t Pri_State : 2;
+        uint8_t Sec_State : 2;
+        uint8_t Fus_State : 2;
+        uint8_t res       : 2;
     } sec;
 
     uint8_t val;
@@ -27,6 +29,7 @@ typedef enum
 {
     SrvIMU_PriModule = 1,
     SrvIMU_SecModule,
+    SrvIMU_FusModule,
 } SrvIMU_Module_Type;
 
 typedef enum
