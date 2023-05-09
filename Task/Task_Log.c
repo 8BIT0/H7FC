@@ -34,6 +34,8 @@ typedef struct
 {
     SYSTEM_RunTime max_rt_diff;     // unit: us
     SYSTEM_RunTime period;          // unit: us
+    SYSTEM_RunTime start_rt;
+    SYSTEM_RunTime end_rt;
     uint32_t err_interval_cnt;
     uint64_t push_cnt;
 }LogSummary_TypeDef;
@@ -64,6 +66,8 @@ static LogSummary_TypeDef LogIMU_Summary = {
     .period = 500,
     .err_interval_cnt = 0,
     .push_cnt = 0,
+    .start_rt = 0,
+    .end_rt = 0,
 };
 
 /* internal function */
@@ -90,19 +94,30 @@ void TaskLog_Init(void)
     if (Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
     {
         LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, LOG_FOLDER, ROOT_CLUSTER_ADDR);
-        LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M(2));
-        Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
-        /* create cache queue for IMU Data */
-        if (Queue.create_auto(&IMUData_Queue, "queue imu data", MAX_FILE_SIZE_K(10)) &&
-            Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_L2_Buf)))
+        if(LogFolder_Cluster)
         {
-            LogFile_Ready = true;
-            LogObj_Enable_Reg._sec.IMU_Sec = true;
-            LogObj_Set_Reg._sec.IMU_Sec = true;
-        }
+            LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M(2));
+            Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
-        DataPipe_Enable(&IMU_Log_DataPipe);
+            /* create cache queue for IMU Data */
+            if (Queue.create_auto(&IMUData_Queue, "queue imu data", MAX_FILE_SIZE_K(10)) &&
+                Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_L2_Buf)))
+            {
+                LogFile_Ready = true;
+                LogObj_Enable_Reg._sec.IMU_Sec = true;
+                LogObj_Set_Reg._sec.IMU_Sec = true;
+            }
+
+            DataPipe_Enable(&IMU_Log_DataPipe);
+        }
+        else
+        {
+            LogFile_Ready = false;
+            LogObj_Enable_Reg._sec.IMU_Sec = false;
+            LogObj_Set_Reg._sec.IMU_Sec = false;
+            DataPipe_Disable(&IMU_Log_DataPipe);
+        }
     }
     else
         DataPipe_Disable(&IMU_Log_DataPipe);
@@ -197,9 +212,10 @@ static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_Type
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
-    volatile uint64_t imu_pipe_rt_diff = 0;
+    uint64_t imu_pipe_rt_diff = 0;
     static uint64_t lst_imu_pipe_rt = 0;
     static uint32_t err_time_diff = 0;
+    static uint32_t opy_cnt = 0;
 
     if ((obj == NULL) || !LogFile_Ready)
         return;
@@ -211,6 +227,10 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         {
             Queue.push(&IMUData_Queue, &LogIMU_Header, LOG_HEADER_SIZE);
             Queue.push(&IMUData_Queue, (uint8_t *)(IMU_Log_DataPipe.data_addr), IMU_Log_DataPipe.data_size);
+
+            if(LogIMU_Summary.start_rt == 0)
+                LogIMU_Summary.start_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;
+
             LogIMU_Summary.push_cnt ++;
 
             imu_pipe_rt_diff = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp - lst_imu_pipe_rt;
@@ -223,7 +243,12 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
                 LogIMU_Summary.err_interval_cnt ++;
             }
 
+            LogIMU_Summary.end_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;
             lst_imu_pipe_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;
+        }
+        else
+        {
+            opy_cnt++;
         }
 
         if (!LogObj_Logging_Reg._sec.IMU_Sec)

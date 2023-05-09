@@ -1122,7 +1122,8 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                 {
                     if (Disk_SFN_Match(FFInfo.Info[FF_index].name, name_tmp))
                     {
-                        return FFInfo.Info[FF_index].start_cluster;
+                        if(FFInfo.Info[FF_index].start_cluster)
+                            return FFInfo.Info[FF_index].start_cluster;
                         // return target_file_cluster;
                     }
                 }

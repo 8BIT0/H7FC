@@ -1,14 +1,15 @@
 #include "../inc/var_def.h"
 #include "../inc/file_decode.h"
 
-uint64_t err = 0;
-uint64_t done = 0;
+uint32_t err = 0;
+uint32_t done = 0;
 
 static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t size);
 
 bool LogFile_Decode(LogFileObj_TypeDef *file)
 {
     LogData_Header_TypeDef header;
+    uint16_t offset = 0;
 
     if ((file == NULL) || (file->bin_data == NULL) || (file->logfile_size.total_byte == 0))
         return false;
@@ -31,10 +32,16 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
                 {
                     if (file->decode_remain >= LOG_IMU_DATA_SIZE)
                     {
-                        if (LogFile_Decode_IMUData(file->cnv_log_file, &file->bin_data[i], file->decode_remain) > 0)
+                        offset = LogFile_Decode_IMUData(file->cnv_log_file, &file->bin_data[i], file->decode_remain);
+                        if (offset > 0)
                         {
-                            file->decode_remain -= LOG_IMU_DATA_SIZE;
-                            i += LOG_IMU_DATA_SIZE - 1;
+                            file->decode_remain -= offset;
+                            i += offset - 1;
+                        }
+                        else
+                        {
+                            file->decode_remain -= LOG_HEADER_SIZE;
+                            i += LOG_HEADER_SIZE - 1;
                         }
                     }
                     else
@@ -42,13 +49,17 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
                 }
                 else
                 {
+                    printf("[ INVALID DATA SIZE ]\r\n");
                     file->error_data_block_cnt++;
+                    i += LOG_HEADER_SIZE - 1;
+                    file->decode_remain -= LOG_HEADER_SIZE - 1;
                     file->abandon_byte_cnt += LOG_HEADER_SIZE;
                 }
                 break;
 
             default:
-                file->decode_remain -= 2;
+                i += 1;
+                file->decode_remain -= 1;
                 file->error_data_block_cnt++;
                 break;
             }
@@ -125,6 +136,22 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
     else
     {
         err++;
-        return -1;
+
+        printf("[ ERROR DECODE ] %lld %f %f %f %f %f %f %f %f %f %f %f %f\r\n",
+                IMU_Data.data.time_stamp,
+                IMU_Data.data.org_gyr[Axis_X],
+                IMU_Data.data.org_gyr[Axis_Y],
+                IMU_Data.data.org_gyr[Axis_Z],
+                IMU_Data.data.org_acc[Axis_X],
+                IMU_Data.data.org_acc[Axis_Y],
+                IMU_Data.data.org_acc[Axis_Z],
+                IMU_Data.data.flt_gyr[Axis_X],
+                IMU_Data.data.flt_gyr[Axis_Y],
+                IMU_Data.data.flt_gyr[Axis_Z],
+                IMU_Data.data.flt_acc[Axis_X],
+                IMU_Data.data.flt_acc[Axis_Y],
+                IMU_Data.data.flt_acc[Axis_Z]);
+
+        return 0;
     }
 }

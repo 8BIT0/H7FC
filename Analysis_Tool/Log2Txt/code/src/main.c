@@ -98,11 +98,7 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
                 printf("[INFO]\tLogFile Name:\t\t\t%s\r\n", obj->log_file_name);
                 printf("[INFO]\tCNVFile Name:\t\t\t%s\r\n", obj->cnv_file_name);
                 printf("[INFO]\tFile Total Byte Size:\t\t%lld\r\n", obj->logfile_size.total_byte);
-
                 printf("\r\n");
-                printf("[INFO]\tFile Byte Size:\t\t\t%d\r\n", obj->logfile_size.b);
-                printf("[INFO]\tFile KByte Size:\t\t%d\r\n", obj->logfile_size.kb);
-                printf("[INFO]\tFile MByte Size:\t\t%d\r\n", obj->logfile_size.mb);
 
                 /* create convert file */
                 obj->cnv_log_file = fopen(cnvfile_path, "w");
