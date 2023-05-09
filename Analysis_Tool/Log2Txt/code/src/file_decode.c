@@ -71,7 +71,7 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
     if ((cnv_file == NULL) || (data == NULL) || (size == 0) || (size < sizeof(IMU_Data)))
         return -1;
 
-    memcpy(&IMU_Data, data, sizeof(IMU_Data));
+    memcpy(IMU_Data.buff, data, sizeof(IMU_Data));
 
     /* check sum */
     for (uint8_t i = 0; i < (sizeof(IMU_Data) - sizeof(uint16_t)); i++)
@@ -93,14 +93,29 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
         done++;
 
         /* write convert file */
-        fprintf(cnv_file, "%lld %f %f %f %f %f %f\r\n",
+        // fprintf(cnv_file, "%lld %f %f %f %f %f %f\r\n",
+        //         IMU_Data.data.time_stamp,
+        //         IMU_Data.data.gyr[Axis_X],
+        //         IMU_Data.data.gyr[Axis_Y],
+        //         IMU_Data.data.gyr[Axis_Z],
+        //         IMU_Data.data.acc[Axis_X],
+        //         IMU_Data.data.acc[Axis_Y],
+        //         IMU_Data.data.acc[Axis_Z]);
+
+        fprintf(cnv_file, "%lld %f %f %f %f %f %f %f %f %f %f %f %f\r\n",
                 IMU_Data.data.time_stamp,
-                IMU_Data.data.gyr[Axis_X],
-                IMU_Data.data.gyr[Axis_Y],
-                IMU_Data.data.gyr[Axis_Z],
-                IMU_Data.data.acc[Axis_X],
-                IMU_Data.data.acc[Axis_Y],
-                IMU_Data.data.acc[Axis_Z]);
+                IMU_Data.data.org_gyr[Axis_X],
+                IMU_Data.data.org_gyr[Axis_Y],
+                IMU_Data.data.org_gyr[Axis_Z],
+                IMU_Data.data.org_acc[Axis_X],
+                IMU_Data.data.org_acc[Axis_Y],
+                IMU_Data.data.org_acc[Axis_Z],
+                IMU_Data.data.flt_gyr[Axis_X],
+                IMU_Data.data.flt_gyr[Axis_Y],
+                IMU_Data.data.flt_gyr[Axis_Z],
+                IMU_Data.data.flt_acc[Axis_X],
+                IMU_Data.data.flt_acc[Axis_Y],
+                IMU_Data.data.flt_acc[Axis_Z]);
 
         return sizeof(IMU_Data);
     }

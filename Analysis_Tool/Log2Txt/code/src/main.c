@@ -40,10 +40,10 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
     struct stat file_stat;
     bool state = false;
     uint16_t offset = 0;
-    char *path_tmp = NULL;
+    char path_tmp[128] = "";
     char *logfile_name_tmp = NULL;
     char *cnvfile_name_tmp = NULL;
-    char *cnvfile_path = NULL;
+    char cnvfile_path[1024] = "";
 
     if (path && obj)
     {
@@ -63,7 +63,6 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
                         offset = i + 1;
                 }
 
-                path_tmp = malloc(offset);
                 memset(path_tmp, '\0', offset);
                 memcpy(path_tmp, path, offset);
 
@@ -89,7 +88,6 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
                 obj->logfile_size.kb = FILE_GET_KB(obj->logfile_size.total_byte);
                 obj->logfile_size.mb = FILE_GET_MB(obj->logfile_size.total_byte);
 
-                cnvfile_path = malloc(strlen(obj->path) + strlen(obj->cnv_file_name));
                 memcpy(cnvfile_path, obj->path, strlen(obj->path));
                 memcpy(cnvfile_path + strlen(obj->path), obj->cnv_file_name, strlen(obj->cnv_file_name));
 
@@ -165,7 +163,7 @@ static bool Load_File(char *path, LogFileObj_TypeDef *obj)
 
 int main()
 {
-    char *path;
+    char path[1024] = "";
     memset(&LogFile, 0, sizeof(LogFile));
 
     while (!Load_File(path, &LogFile))

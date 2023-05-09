@@ -11,8 +11,8 @@ typedef uint64_t SYSTEM_RunTime;
 #define LOG_HEADER 0xBA
 #define LOG_DATATYPE_IMU 0x00
 
-#define LOG_HEADER_SIZE sizeof(LogData_Header_TypeDef)
-#define LOG_IMU_DATA_SIZE sizeof(IMU_LogUnionData_TypeDef)
+#define LOG_HEADER_SIZE 3//sizeof(LogData_Header_TypeDef)
+#define LOG_IMU_DATA_SIZE 83//sizeof(IMU_LogUnionData_TypeDef)
 
 typedef enum
 {
@@ -42,20 +42,38 @@ typedef struct
 
 typedef struct
 {
-    SYSTEM_RunTime time_stamp;
+    // SYSTEM_RunTime time_stamp;
+    // uint64_t cycle_cnt;
+
+    // float tempera;
+    // float gyr[Axis_Sum];
+    // float acc[Axis_Sum];
+
+    // uint8_t error_code;
+    // uint16_t chk_sum;
+
+    uint64_t time_stamp;
     uint64_t cycle_cnt;
 
     float tempera;
-    float gyr[Axis_Sum];
-    float acc[Axis_Sum];
+
+    float flt_gyr[Axis_Sum];
+    float flt_acc[Axis_Sum];
+
+    float org_gyr[Axis_Sum];
+    float org_acc[Axis_Sum];
+
+    float max_gyr_angular_diff;
 
     uint8_t error_code;
+    float acc_scale;
+    float gyr_scale;
     uint16_t chk_sum;
 } IMU_Data_TypeDef;
 
 typedef union
 {
-    uint8_t buff[sizeof(IMU_Data_TypeDef)];
+    uint8_t buff[LOG_IMU_DATA_SIZE];
     IMU_Data_TypeDef data;
 } IMU_LogUnionData_TypeDef;
 #pragma pack()

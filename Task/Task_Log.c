@@ -75,7 +75,7 @@ void TaskLog_Init(void)
     if (Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
     {
         LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, LOG_FOLDER, ROOT_CLUSTER_ADDR);
-        LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M(16));
+        LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M(2));
         Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
         /* create cache queue for IMU Data */
@@ -86,6 +86,8 @@ void TaskLog_Init(void)
             LogObj_Enable_Reg._sec.IMU_Sec = true;
             LogObj_Set_Reg._sec.IMU_Sec = true;
         }
+
+        DataPipe_Enable(&IMU_Log_DataPipe);
     }
     else
         DataPipe_Disable(&IMU_Log_DataPipe);
