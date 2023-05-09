@@ -21,11 +21,12 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
         {
             memcpy(&header, &file->bin_data[i], LOG_HEADER_SIZE);
             i += LOG_HEADER_SIZE;
-            file->decode_remain -= LOG_HEADER_SIZE;
 
             switch (header.type)
             {
             case LOG_DATATYPE_IMU:
+                file->decode_remain -= LOG_HEADER_SIZE;
+
                 if ((uint8_t)header.size == LOG_IMU_DATA_SIZE)
                 {
                     if (file->decode_remain >= LOG_IMU_DATA_SIZE)
@@ -47,10 +48,13 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
                 break;
 
             default:
+                file->decode_remain -= 2;
                 file->error_data_block_cnt++;
                 break;
             }
         }
+        else
+            file->decode_remain --;
     }
 
     printf("[INFO]\tDecode Success Count:%d\tError Count:%d\r\n", done, err);
@@ -65,7 +69,6 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
 {
     uint16_t chk_sum = 0;
     IMU_LogUnionData_TypeDef IMU_Data;
-    char log_string[512] = {'\0'};
     uint16_t log_size = 0;
 
     if ((cnv_file == NULL) || (data == NULL) || (size == 0) || (size < sizeof(IMU_Data)))

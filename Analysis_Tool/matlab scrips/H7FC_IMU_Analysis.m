@@ -1,6 +1,6 @@
 Data = load('C:\Users\HUAV\Desktop\8B!T0\H7FC_V0.02\Analysis_Tool\Log2Txt\logfile\imu.txt');
 
-Data = Data(1:10370,:);
+% Data = Data(1:10370,:);
 
 Fs = 2000;
 T = [0:1/Fs:2000];
