@@ -185,29 +185,22 @@ static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_Type
     uint16_t queue_size = 0;
 
     if ((queue == NULL) || (Queue.size(*queue) == 0))
-        return;
+        return Disk_Write_Error;
 
     log_reg->_sec.IMU_Sec = true;
     queue_size = Queue.size(*queue);
 
-    if (queue_size > sizeof(LogQueueBuff_Trail))
+    if (queue_size >= sizeof(LogQueueBuff_Trail))
     {
         log_size = sizeof(LogQueueBuff_Trail);
     }
     else
         log_size = queue_size;
 
-    if (log_size)
-        Queue.pop(queue, LogQueueBuff_Trail, log_size);
-
+    Queue.pop(queue, LogQueueBuff_Trail, log_size);
     log_reg->_sec.IMU_Sec = false;
 
-    if (log_size)
-        return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
-
-    // __DSB();
-
-    return false;
+    return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)

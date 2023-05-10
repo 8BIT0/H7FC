@@ -93,27 +93,7 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
 
     if (chk_sum == IMU_Data.data.chk_sum)
     {
-        // printf("Rt: %lld\t Gyr[X]:%f\t Gyr[Y]:%f \tGyr[Z]:%f \tAcc[X]:%f \tAcc[Y]:%f \tAcc[Z]:%f\r\n",
-        //        IMU_Data.data.time_stamp,
-        //        IMU_Data.data.gyr[Axis_X],
-        //        IMU_Data.data.gyr[Axis_Y],
-        //        IMU_Data.data.gyr[Axis_Z],
-        //        IMU_Data.data.acc[Axis_X],
-        //        IMU_Data.data.acc[Axis_Y],
-        //        IMU_Data.data.acc[Axis_Z]);
-
         done++;
-
-        /* write convert file */
-        // fprintf(cnv_file, "%lld %f %f %f %f %f %f\r\n",
-        //         IMU_Data.data.time_stamp,
-        //         IMU_Data.data.gyr[Axis_X],
-        //         IMU_Data.data.gyr[Axis_Y],
-        //         IMU_Data.data.gyr[Axis_Z],
-        //         IMU_Data.data.acc[Axis_X],
-        //         IMU_Data.data.acc[Axis_Y],
-        //         IMU_Data.data.acc[Axis_Z]);
-
         fprintf(cnv_file, "%lld %lld %f %f %f %f %f %f %f %f %f %f %f %f\r\n",
                 IMU_Data.data.time_stamp,
                 IMU_Data.data.cycle_cnt,
@@ -136,21 +116,9 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
     {
         err++;
 
-        printf("[ ERROR DECODE ] %lld %lld %f %f %f %f %f %f %f %f %f %f %f %f\r\n",
+        printf("[ ERROR DECODE ] %lld %lld\r\n",
                 IMU_Data.data.time_stamp,
-                IMU_Data.data.cycle_cnt,
-                IMU_Data.data.org_gyr[Axis_X],
-                IMU_Data.data.org_gyr[Axis_Y],
-                IMU_Data.data.org_gyr[Axis_Z],
-                IMU_Data.data.org_acc[Axis_X],
-                IMU_Data.data.org_acc[Axis_Y],
-                IMU_Data.data.org_acc[Axis_Z],
-                IMU_Data.data.flt_gyr[Axis_X],
-                IMU_Data.data.flt_gyr[Axis_Y],
-                IMU_Data.data.flt_gyr[Axis_Z],
-                IMU_Data.data.flt_acc[Axis_X],
-                IMU_Data.data.flt_acc[Axis_Y],
-                IMU_Data.data.flt_acc[Axis_Z]);
+                IMU_Data.data.cycle_cnt,);
 
         return -1;
     }
