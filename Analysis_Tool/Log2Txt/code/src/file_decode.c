@@ -15,21 +15,20 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
         return false;
 
     /* create convert file */
-
     for (uint64_t i = 0; i < file->logfile_size.total_byte; i++)
     {
         if (file->bin_data[i] == LOG_HEADER)
         {
             memcpy(&header, &file->bin_data[i], LOG_HEADER_SIZE);
-            i += LOG_HEADER_SIZE;
 
             switch (header.type)
             {
             case LOG_DATATYPE_IMU:
-                file->decode_remain -= LOG_HEADER_SIZE;
-
                 if ((uint8_t)header.size == LOG_IMU_DATA_SIZE)
                 {
+                    i += LOG_HEADER_SIZE;
+                    file->decode_remain -= LOG_HEADER_SIZE;
+
                     if (file->decode_remain >= LOG_IMU_DATA_SIZE)
                     {
                         offset = LogFile_Decode_IMUData(file->cnv_log_file, &file->bin_data[i], file->decode_remain);
@@ -41,7 +40,6 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
                         else
                         {
                             file->decode_remain -= LOG_HEADER_SIZE;
-                            i += LOG_HEADER_SIZE - 1;
                         }
                     }
                     else
