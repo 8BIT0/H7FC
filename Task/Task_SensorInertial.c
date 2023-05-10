@@ -57,16 +57,20 @@ void TaskInertical_Core(Task_Handle hdl)
             DataPipe_DataObj(IMU_Data).data.flt_acc[Axis_X] = 1;
             DataPipe_DataObj(IMU_Data).data.flt_acc[Axis_Y] = 2;
             DataPipe_DataObj(IMU_Data).data.flt_acc[Axis_Z] = 3;
+
             DataPipe_DataObj(IMU_Data).data.flt_gyr[Axis_X] = 4;
             DataPipe_DataObj(IMU_Data).data.flt_gyr[Axis_Y] = 5;
             DataPipe_DataObj(IMU_Data).data.flt_gyr[Axis_Z] = 6;
+
             DataPipe_DataObj(IMU_Data).data.org_acc[Axis_X] = 7;
             DataPipe_DataObj(IMU_Data).data.org_acc[Axis_Y] = 8;
             DataPipe_DataObj(IMU_Data).data.org_acc[Axis_Z] = 9;
+
             DataPipe_DataObj(IMU_Data).data.org_gyr[Axis_X] = 10;
             DataPipe_DataObj(IMU_Data).data.org_gyr[Axis_Y] = 11;
             DataPipe_DataObj(IMU_Data).data.org_gyr[Axis_Z] = 12;
-
+            /* for test */
+            
             for (uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(IMU_Data)) - sizeof(uint16_t); chk++)
             {
                 DataPipe_DataObj(IMU_Data).data.chk_sum += DataPipe_DataObj(IMU_Data).buff[chk];
