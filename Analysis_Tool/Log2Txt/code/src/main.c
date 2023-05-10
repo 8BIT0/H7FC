@@ -174,11 +174,6 @@ int main()
     // printf("[INFO]\tFile Name:\t\t\t%s\r\n", LogFile.file_name);
     // printf("[INFO]\tFile Total Byte Size:\t\t%lld\r\n", LogFile.logfile_size.total_byte);
 
-    // printf("\r\n");
-    // printf("[INFO]\tFile Byte Size:\t\t\t%d\r\n", LogFile.logfile_size.b);
-    // printf("[INFO]\tFile KByte Size:\t\t%d\r\n", LogFile.logfile_size.kb);
-    // printf("[INFO]\tFile MByte Size:\t\t%d\r\n", LogFile.logfile_size.mb);
-
     LogFile_Decode(&LogFile);
 
     while (1)

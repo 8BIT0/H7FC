@@ -114,8 +114,9 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
         //         IMU_Data.data.acc[Axis_Y],
         //         IMU_Data.data.acc[Axis_Z]);
 
-        fprintf(cnv_file, "%lld %f %f %f %f %f %f %f %f %f %f %f %f\r\n",
+        fprintf(cnv_file, "%lld %lld %f %f %f %f %f %f %f %f %f %f %f %f\r\n",
                 IMU_Data.data.time_stamp,
+                IMU_Data.data.cycle_cnt,
                 IMU_Data.data.org_gyr[Axis_X],
                 IMU_Data.data.org_gyr[Axis_Y],
                 IMU_Data.data.org_gyr[Axis_Z],
@@ -135,8 +136,9 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
     {
         err++;
 
-        printf("[ ERROR DECODE ] %lld %f %f %f %f %f %f %f %f %f %f %f %f\r\n",
+        printf("[ ERROR DECODE ] %lld %lld %f %f %f %f %f %f %f %f %f %f %f %f\r\n",
                 IMU_Data.data.time_stamp,
+                IMU_Data.data.cycle_cnt,
                 IMU_Data.data.org_gyr[Axis_X],
                 IMU_Data.data.org_gyr[Axis_Y],
                 IMU_Data.data.org_gyr[Axis_Z],
@@ -150,6 +152,6 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
                 IMU_Data.data.flt_acc[Axis_Y],
                 IMU_Data.data.flt_acc[Axis_Z]);
 
-        return 0;
+        return -1;
     }
 }
