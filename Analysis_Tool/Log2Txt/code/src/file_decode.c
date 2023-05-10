@@ -5,15 +5,14 @@ uint32_t err = 0;
 uint32_t done = 0;
 
 static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t size);
-// c:/Users/HUAV/Desktop/8B!T0/H7FC_V0.02/Analysis_Tool/Log2Txt/logfile/imu2.log
+
 bool LogFile_Decode(LogFileObj_TypeDef *file)
 {
     LogData_Header_TypeDef header;
     uint16_t offset = 0;
-    uint64_t header_cnt = 0;
+    uint64_t imu_header_cnt = 0;
     uint64_t log_imu_cnt = 0;
-    uint64_t frame_start = 0;
-    uint64_t frame_end = 0;
+    uint64_t imU_data_start = 0;
 
     if ((file == NULL) || (file->bin_data == NULL) || (file->logfile_size.total_byte == 0))
         return false;
@@ -25,21 +24,21 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
         {
             if((file->bin_data[i + 1] == LOG_DATATYPE_IMU) && (file->bin_data[i + 2] == LOG_IMU_DATA_SIZE))
             {
-                if(i - frame_start == LOG_IMU_DATA_SIZE)
+                if(i - imU_data_start == LOG_IMU_DATA_SIZE)
                 {
                     log_imu_cnt ++;
-                    LogFile_Decode_IMUData(file->cnv_log_file, &file->bin_data[frame_start], LOG_IMU_DATA_SIZE);
+                    LogFile_Decode_IMUData(file->cnv_log_file, &file->bin_data[imU_data_start], LOG_IMU_DATA_SIZE);
                 }
 
-                frame_start = i + LOG_HEADER_SIZE;
-                header_cnt ++;
+                imU_data_start = i + LOG_HEADER_SIZE;
+                imu_header_cnt ++;
             }
         }
         else
             file->decode_remain --;
     }
 
-    printf("[INFO]\tfind %lld header\r\n", header_cnt);
+    printf("[INFO]\tfind %lld imu header\r\n", imu_header_cnt);
     printf("[INFO]\tfind %lld log imu data\r\n", log_imu_cnt);
     printf("[INFO]\tDecode Success Count:%d\tError Count:%d\r\n", done, err);
 
