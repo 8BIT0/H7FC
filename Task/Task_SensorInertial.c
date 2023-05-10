@@ -70,7 +70,7 @@ void TaskInertical_Core(Task_Handle hdl)
             DataPipe_DataObj(IMU_Data).data.org_gyr[Axis_Y] = 11;
             DataPipe_DataObj(IMU_Data).data.org_gyr[Axis_Z] = 12;
             /* for test */
-            
+
             for (uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(IMU_Data)) - sizeof(uint16_t); chk++)
             {
                 DataPipe_DataObj(IMU_Data).data.chk_sum += DataPipe_DataObj(IMU_Data).buff[chk];
@@ -119,5 +119,5 @@ static void TaskInertical_Blink_Notification(uint16_t duration)
 
 static void TaskInertical_Led_Control(bool state)
 {
-    DevLED.ctl(Led2, state);
+    // DevLED.ctl(Led2, state);
 }
