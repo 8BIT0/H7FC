@@ -51,7 +51,6 @@ void TaskInertical_Core(Task_Handle hdl)
             DataPipe_DataObj(IMU_Data).data.gyr_scale = 0;
             DataPipe_DataObj(IMU_Data).data.error_code = 0;
             DataPipe_DataObj(IMU_Data).data.max_gyr_angular_diff = 0;
-            DataPipe_DataObj(IMU_Data).data.cycle_cnt = 0;
             DataPipe_DataObj(IMU_Data).data.tempera = 0;
 
             DataPipe_DataObj(IMU_Data).data.flt_acc[Axis_X] = 1;
