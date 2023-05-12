@@ -88,7 +88,7 @@ typedef enum
 typedef struct
 {
     SYSTEM_RunTime time_stamp;
-    uint64_t cycle_cnt;
+    uint32_t cycle_cnt;
 
     float tempera;
 
@@ -105,6 +105,30 @@ typedef struct
     float gyr_scale;
     uint16_t chk_sum;
 } SrvIMU_Data_TypeDef;
+
+/* total 38 Byte */
+typedef struct
+{
+    int8_t us_diff; //unit: 10us
+
+    uint32_t cyc;
+    float acc_scale;
+    float gyr_scale;
+
+    uint16_t flt_gyr[Axis_Sum];
+    uint16_t flt_acc[Axis_Sum];
+
+    uint16_t org_gyr[Axis_Sum];
+    uint16_t org_acc[Axis_Sum];
+
+    uint8_t check_sum;
+}SrvIMU_LogData_TypeDef;
+
+typedef union
+{
+    uint8_t buff[sizeof(SrvIMU_LogData_TypeDef)];
+    SrvIMU_LogData_TypeDef data;
+}SrvIMU_UnionLogData_TypeDef;
 
 typedef union
 {

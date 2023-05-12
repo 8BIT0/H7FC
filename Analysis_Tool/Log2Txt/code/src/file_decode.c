@@ -24,7 +24,7 @@ bool LogFile_Decode(LogFileObj_TypeDef *file)
         {
             if((file->bin_data[i + 1] == LOG_DATATYPE_IMU) && (file->bin_data[i + 2] == LOG_IMU_DATA_SIZE))
             {
-                if(i - imU_data_start == LOG_IMU_DATA_SIZE)
+                if(i - imU_data_start >= LOG_IMU_DATA_SIZE)
                 {
                     log_imu_cnt ++;
                     LogFile_Decode_IMUData(file->cnv_log_file, &file->bin_data[imU_data_start], LOG_IMU_DATA_SIZE);
@@ -68,9 +68,8 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
     if (chk_sum == IMU_Data.data.chk_sum)
     {
         done++;
-        fprintf(cnv_file, "%lld %lld %f %f %f %f %f %f %f %f %f %f %f %f\r\n",
-                IMU_Data.data.time_stamp,
-                IMU_Data.data.cycle_cnt,
+        fprintf(cnv_file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %lld\r\n",
+                IMU_Data.data.time_stamp / 1000.0f,
                 IMU_Data.data.org_gyr[Axis_X],
                 IMU_Data.data.org_gyr[Axis_Y],
                 IMU_Data.data.org_gyr[Axis_Z],
@@ -82,7 +81,8 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
                 IMU_Data.data.flt_gyr[Axis_Z],
                 IMU_Data.data.flt_acc[Axis_X],
                 IMU_Data.data.flt_acc[Axis_Y],
-                IMU_Data.data.flt_acc[Axis_Z]);
+                IMU_Data.data.flt_acc[Axis_Z],
+                IMU_Data.data.cycle_cnt);
 
         return sizeof(IMU_Data);
     }

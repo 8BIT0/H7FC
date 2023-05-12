@@ -6,8 +6,7 @@ SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor = {
 };
 
 /* Pipe Object */
-DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlPriIMU_Data);
-DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlSecIMU_Data);
+DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlIMU_Data);
 DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, PtlActuator_Data);
 DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
 
@@ -52,9 +51,9 @@ static void SrvDataHub_Init(void)
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
 
     /* init pipe object */
-    memset(DataPipe_DataObjAddr(PtlPriIMU_Data), NULL, DataPipe_DataSize(PtlPriIMU_Data));
-    IMU_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlPriIMU_Data);
-    IMU_hub_DataPipe.data_size = DataPipe_DataSize(PtlPriIMU_Data);
+    memset(DataPipe_DataObjAddr(PtlIMU_Data), NULL, DataPipe_DataSize(PtlIMU_Data));
+    IMU_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlIMU_Data);
+    IMU_hub_DataPipe.data_size = DataPipe_DataSize(PtlIMU_Data);
     IMU_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
     // DataPipe_Set_RxInterval(&IMU_hub_DataPipe, Runtime_MsToUs(5)); /* limit pipe frequence to 200Hz */
     DataPipe_Enable(&IMU_hub_DataPipe);
@@ -111,28 +110,28 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
         if (SrvDataHub_Monitor.update_reg.bit.scaled_imu)
             SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
 
-        SrvDataHub_Monitor.data.imu_update_time = DataPipe_DataObj(PtlPriIMU_Data).data.time_stamp;
-        SrvDataHub_Monitor.data.acc_scale = DataPipe_DataObj(PtlPriIMU_Data).data.acc_scale;
-        SrvDataHub_Monitor.data.gyr_scale = DataPipe_DataObj(PtlPriIMU_Data).data.gyr_scale;
-        SrvDataHub_Monitor.data.imu_temp = DataPipe_DataObj(PtlPriIMU_Data).data.tempera;
+        SrvDataHub_Monitor.data.imu_update_time = DataPipe_DataObj(PtlIMU_Data).data.time_stamp;
+        SrvDataHub_Monitor.data.acc_scale = DataPipe_DataObj(PtlIMU_Data).data.acc_scale;
+        SrvDataHub_Monitor.data.gyr_scale = DataPipe_DataObj(PtlIMU_Data).data.gyr_scale;
+        SrvDataHub_Monitor.data.imu_temp = DataPipe_DataObj(PtlIMU_Data).data.tempera;
 
-        SrvDataHub_Monitor.data.flt_acc_x = DataPipe_DataObj(PtlPriIMU_Data).data.flt_acc[Axis_X];
-        SrvDataHub_Monitor.data.flt_acc_y = DataPipe_DataObj(PtlPriIMU_Data).data.flt_acc[Axis_Y];
-        SrvDataHub_Monitor.data.flt_acc_z = DataPipe_DataObj(PtlPriIMU_Data).data.flt_acc[Axis_Z];
+        SrvDataHub_Monitor.data.flt_acc_x = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_X];
+        SrvDataHub_Monitor.data.flt_acc_y = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_Y];
+        SrvDataHub_Monitor.data.flt_acc_z = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_Z];
 
-        SrvDataHub_Monitor.data.flt_gyr_x = DataPipe_DataObj(PtlPriIMU_Data).data.flt_gyr[Axis_X];
-        SrvDataHub_Monitor.data.flt_gyr_y = DataPipe_DataObj(PtlPriIMU_Data).data.flt_gyr[Axis_Y];
-        SrvDataHub_Monitor.data.flt_gyr_z = DataPipe_DataObj(PtlPriIMU_Data).data.flt_gyr[Axis_Z];
+        SrvDataHub_Monitor.data.flt_gyr_x = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_X];
+        SrvDataHub_Monitor.data.flt_gyr_y = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_Y];
+        SrvDataHub_Monitor.data.flt_gyr_z = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_Z];
 
-        SrvDataHub_Monitor.data.org_acc_x = DataPipe_DataObj(PtlPriIMU_Data).data.org_acc[Axis_X];
-        SrvDataHub_Monitor.data.org_acc_y = DataPipe_DataObj(PtlPriIMU_Data).data.org_acc[Axis_Y];
-        SrvDataHub_Monitor.data.org_acc_z = DataPipe_DataObj(PtlPriIMU_Data).data.org_acc[Axis_Z];
+        SrvDataHub_Monitor.data.org_acc_x = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_X];
+        SrvDataHub_Monitor.data.org_acc_y = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_Y];
+        SrvDataHub_Monitor.data.org_acc_z = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_Z];
 
-        SrvDataHub_Monitor.data.org_gyr_x = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_X];
-        SrvDataHub_Monitor.data.org_gyr_y = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Y];
-        SrvDataHub_Monitor.data.org_gyr_z = DataPipe_DataObj(PtlPriIMU_Data).data.org_gyr[Axis_Z];
+        SrvDataHub_Monitor.data.org_gyr_x = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_X];
+        SrvDataHub_Monitor.data.org_gyr_y = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_Y];
+        SrvDataHub_Monitor.data.org_gyr_z = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_Z];
 
-        SrvDataHub_Monitor.data.imu_error_code = DataPipe_DataObj(PtlPriIMU_Data).data.error_code;
+        SrvDataHub_Monitor.data.imu_error_code = DataPipe_DataObj(PtlIMU_Data).data.error_code;
 
         SrvDataHub_Monitor.update_reg.bit.raw_imu = false;
         SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;

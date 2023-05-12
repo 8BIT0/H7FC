@@ -5,7 +5,7 @@ ENTRY(Reset_Handler)
 _estack = 0x20020000;    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x2000;      /* required amount of heap  */
-_Min_Stack_Size = 0x800; /* required amount of stack */
+_Min_Stack_Size = 0x2000; /* required amount of stack */
 
 /* Specify the memory areas */
 MEMORY
@@ -60,8 +60,7 @@ SECTIONS
     
     . = ALIGN(4);
     fast_mem_e = .;
-
-  }>ITCMRAM AT>FLASH
+  } >DTCMRAM AT>FLASH
 
   /* The program code and other data goes into FLASH */
   .text :

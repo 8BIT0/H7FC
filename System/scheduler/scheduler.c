@@ -27,7 +27,7 @@ group7     |_______|_______|_______|_______|_______|_______|_______|_______|
 #define GET_TASKGROUP_PRIORITY(x) x >> 3
 #define GET_TASKINGROUP_PRIORITY(y) y & 0X07
 #define IS_IDLETASK(x) x & 0x80
-#define IDLE_TASK_STACK 1024
+#define IDLE_TASK_STACK 2048
 #define IDLE_TASK_PRIORITY 0x80
 
 /* internal variable */

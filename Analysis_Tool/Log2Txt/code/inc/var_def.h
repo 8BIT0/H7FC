@@ -42,18 +42,8 @@ typedef struct
 
 typedef struct
 {
-    // SYSTEM_RunTime time_stamp;
-    // uint64_t cycle_cnt;
-
-    // float tempera;
-    // float gyr[Axis_Sum];
-    // float acc[Axis_Sum];
-
-    // uint8_t error_code;
-    // uint16_t chk_sum;
-
     uint64_t time_stamp;
-    uint64_t cycle_cnt;
+    uint32_t cycle_cnt;
 
     float tempera;
 
