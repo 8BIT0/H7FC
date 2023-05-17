@@ -69,9 +69,10 @@ DataStructure/Data_Convert_Util.c \
 DataStructure/queue.c \
 DataStructure/linked_list.c \
 DataStructure/binary_tree.c \
-Common/reboot.c \
-Common/error_log.c \
-Common/util.c \
+common/reboot.c \
+common/error_log.c \
+common/util.c \
+common/compess/minilzo.c \
 System/DataPipe/DataPipe.c \
 System/DataPipe/DataPipe_Def.c \
 System/mmu/mmu.c \
@@ -184,7 +185,8 @@ C_INCLUDES =  \
 -IBsp/ \
 -ITask/ \
 -IDevice/ \
--ICommon/ \
+-Icommon/ \
+-Icommon/compess \
 -IService/ \
 -ISystem/ \
 -ISystem/mmu/ \

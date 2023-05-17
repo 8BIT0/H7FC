@@ -19,6 +19,7 @@
 #include "Task_SensorInertial.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
+#include "minilzo.h"
 #include <stdio.h>
 
 #define LOG_FOLDER "log/"
@@ -52,6 +53,7 @@ static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static volatile Disk_FileObj_TypeDef LogFile_Obj;
 static Disk_FATFileSys_TypeDef FATFS_Obj;
 static bool LogFile_Ready = false;
+static bool enable_compess = true;
 static SrvIMU_UnionData_TypeDef LogIMU_Data __attribute__((section(".Perph_Section")));
 static uint8_t LogCache_L2_Buf[MAX_FILE_SIZE_K(10)] TCM_ATTRIBUTE;
 static uint8_t LogCache_L1_Buf[MAX_FILE_SIZE_K(32)] TCM_ATTRIBUTE;
@@ -77,9 +79,46 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
 static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_TypeDef *log_reg);
 static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len);
 
+#define HEAP_ALLOC(var,size) \
+    lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ]
+
+static HEAP_ALLOC(wrkmem, 512);
+
 void TaskLog_Init(void)
 {
     Os_Idle_DataStream_TypeDef LogData_Stream;
+
+    uint16_t compess_in[512] = {0};
+    uint16_t compess_out[512] = {0};
+    uint16_t compess_tmp[512] = {0};
+    uint16_t compess_tmp_len = 0;
+    uint16_t compess_out_len = 0;
+
+    if (lzo_init() != LZO_E_OK)
+        enable_compess = false;
+
+    /* test code */
+    if(enable_compess)
+    {
+        for(uint16_t i = 0; i < 512; i++)
+        {
+            compess_in[i] = i;
+        }
+    
+        if(lzo1x_1_compress(compess_in, sizeof(compess_in), compess_out, &compess_out_len, wrkmem) == LZO_E_OK)
+        {
+            /* check for an incompressible block */
+            if (compess_out_len >= sizeof(compess_in))
+                return 0;
+        }
+
+        if(lzo1x_decompress(compess_out, compess_out_len, compess_tmp, &compess_tmp_len, NULL) != LZO_E_OK)
+        {
+            return 0;
+        }
+    }
+
+    /* data compess test */
 
     memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
