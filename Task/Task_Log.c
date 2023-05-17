@@ -43,11 +43,24 @@ typedef struct
     uint64_t push_cnt;
 }LogSummary_TypeDef;
 
+typedef struct
+{
+    uint8_t mark;
+    uint16_t size;
+    uint8_t cmps_buf[512];
+}LogCompess_StreamTypeDef;
+
+typedef union
+{
+    LogCompess_StreamTypeDef stream;
+    uint8_t buff[sizeof(LogCompess_StreamTypeDef)];
+}LogCompess_UnionTypeDef;
+
 /* internal variable */
 static const LogData_Header_TypeDef LogIMU_Header = {
     .header = LOG_HEADER,
     .type = LOG_DATATYPE_IMU,
-    .size = sizeof(SrvIMU_UnionLogData_TypeDef),
+    .size = sizeof(SrvIMU_UnionData_TypeDef),
 };
 static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static volatile Disk_FileObj_TypeDef LogFile_Obj;
@@ -55,7 +68,6 @@ static Disk_FATFileSys_TypeDef FATFS_Obj;
 static bool LogFile_Ready = false;
 static bool enable_compess = true;
 static SrvIMU_UnionData_TypeDef LogIMU_Data __attribute__((section(".Perph_Section")));
-static uint8_t LogCache_L2_Buf[MAX_FILE_SIZE_K(10)] TCM_ATTRIBUTE;
 static uint8_t LogCache_L1_Buf[MAX_FILE_SIZE_K(32)] TCM_ATTRIBUTE;
 static QueueObj_TypeDef IMULog_Queue;
 static QueueObj_TypeDef IMUData_Queue;
@@ -77,7 +89,6 @@ static LogSummary_TypeDef LogIMU_Summary = {
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
 static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_TypeDef *log_reg);
-static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len);
 
 #define HEAP_ALLOC(var,size) \
     lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ]
@@ -88,37 +99,8 @@ void TaskLog_Init(void)
 {
     Os_Idle_DataStream_TypeDef LogData_Stream;
 
-    uint16_t compess_in[512] = {0};
-    uint16_t compess_out[512] = {0};
-    uint16_t compess_tmp[512] = {0};
-    uint16_t compess_tmp_len = 0;
-    uint16_t compess_out_len = 0;
-
     if (lzo_init() != LZO_E_OK)
         enable_compess = false;
-
-    /* test code */
-    if(enable_compess)
-    {
-        for(uint16_t i = 0; i < 512; i++)
-        {
-            compess_in[i] = i;
-        }
-    
-        if(lzo1x_1_compress(compess_in, sizeof(compess_in), compess_out, &compess_out_len, wrkmem) == LZO_E_OK)
-        {
-            /* check for an incompressible block */
-            if (compess_out_len >= sizeof(compess_in))
-                return 0;
-        }
-
-        if(lzo1x_decompress(compess_out, compess_out_len, compess_tmp, &compess_tmp_len, NULL) != LZO_E_OK)
-        {
-            return 0;
-        }
-    }
-
-    /* data compess test */
 
     memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
@@ -142,8 +124,7 @@ void TaskLog_Init(void)
             Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
             /* create cache queue for IMU Data */
-            if (Queue.create_with_buf(&IMUData_Queue, "queue imu data", LogCache_L1_Buf, sizeof(LogCache_L1_Buf)) &&
-                Queue.create_with_buf(&IMULog_Queue, "queue imu log", LogCache_L2_Buf, sizeof(LogCache_L2_Buf)))
+            if (Queue.create_with_buf(&IMUData_Queue, "queue imu data", LogCache_L1_Buf, sizeof(LogCache_L1_Buf)))
             {
                 LogFile_Ready = true;
                 LogObj_Enable_Reg._sec.IMU_Sec = true;
@@ -165,8 +146,6 @@ void TaskLog_Init(void)
 
     LogData_Stream.ptr = NULL;
     LogData_Stream.size = 0;
-
-    Os_Regist_IdleObj(&LogIdleObj, LogData_Stream, OsIdle_Callback_LogModule);
 }
 
 static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
@@ -266,7 +245,6 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     static uint32_t err_time_diff = 0;
     static uint32_t imu_opy_cnt = 0;
     static uint32_t imu_log_queue_err = 0;
-    SrvIMU_UnionLogData_TypeDef LogIMU_Data_tmp;
 
     if ((obj == NULL) || !LogFile_Ready)
         return;
@@ -276,29 +254,8 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         if ((Queue.state(IMUData_Queue) == Queue_ok) ||
             (Queue.state(IMUData_Queue) == Queue_empty))
         {
-            /* convert imu data to log data format */
-            LogIMU_Data_tmp.data.us_diff = (((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp - lst_imu_pipe_rt) / 10;
-            LogIMU_Data_tmp.data.acc_scale = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.acc_scale;
-            LogIMU_Data_tmp.data.gyr_scale = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.gyr_scale;
-
-            LogIMU_Data_tmp.data.cyc = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.cycle_cnt;
-
-            for(uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
-            {
-                LogIMU_Data_tmp.data.flt_acc[axis] = (int16_t)(((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.flt_acc[axis] * LogIMU_Data_tmp.data.acc_scale);
-                LogIMU_Data_tmp.data.flt_gyr[axis] = (int16_t)(((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.flt_gyr[axis] * LogIMU_Data_tmp.data.gyr_scale);
-
-                LogIMU_Data_tmp.data.org_acc[axis] = (int16_t)(((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.org_acc[axis] * LogIMU_Data_tmp.data.acc_scale);
-                LogIMU_Data_tmp.data.org_gyr[axis] = (int16_t)(((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.org_gyr[axis] * LogIMU_Data_tmp.data.gyr_scale);
-            }
-
-            for(uint8_t i = 0; i < sizeof(LogIMU_Data_tmp) - sizeof(LogIMU_Data_tmp.data.check_sum); i++)
-            {
-                LogIMU_Data_tmp.data.check_sum += LogIMU_Data_tmp.buff[i];
-            }
-
             if((Queue.push(&IMUData_Queue, &LogIMU_Header, LOG_HEADER_SIZE) == Queue_ok) &&
-               (Queue.push(&IMUData_Queue, LogIMU_Data_tmp.buff, sizeof(LogIMU_Data_tmp)) == Queue_ok))
+               (Queue.push(&IMUData_Queue, LogIMU_Data.buff, sizeof(LogIMU_Data)) == Queue_ok))
             {
                 if(LogIMU_Summary.start_rt == 0)
                     LogIMU_Summary.start_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;

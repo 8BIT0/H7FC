@@ -170,11 +170,11 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
 {
     IRQn_Type irq = SDMMC1_IRQn;
 
-    BspSDMMC_PortCLK_Init(obj->instance);
-    BspSDMMC_Pin_Init(obj->instance, obj->pin);
-
     if (obj == NULL)
         return false;
+        
+    BspSDMMC_PortCLK_Init(obj->instance);
+    BspSDMMC_Pin_Init(obj->instance, obj->pin);
 
     if (obj->instance == SDMMC1)
     {
