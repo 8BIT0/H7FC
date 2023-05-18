@@ -60,7 +60,7 @@ SECTIONS
     
     . = ALIGN(4);
     fast_mem_e = .;
-  } >DTCMRAM AT>FLASH
+  } >RAM_D2 AT>FLASH
 
   /* The program code and other data goes into FLASH */
   .text :

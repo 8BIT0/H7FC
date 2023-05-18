@@ -31,7 +31,13 @@
 #define MAX_FILE_SIZE_K(x) (x * K_BYTE)
 #define MIN_CACHE_NUM 2
 
-// redesign log data structure include log imu data structure 
+#define LOG_COMPESS_HEADER 0xCA
+#define LOG_COMPESS_ENDER 0xED
+
+#define HEAP_ALLOC(var,size) \
+    lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ] TCM_ATTRIBUTE
+
+static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 
 typedef struct
 {
@@ -43,11 +49,12 @@ typedef struct
     uint64_t push_cnt;
 }LogSummary_TypeDef;
 
+#pragma pack(1)
 typedef struct
 {
-    uint8_t mark;
+    const uint8_t mark;
     uint16_t size;
-    uint8_t cmps_buf[512];
+    uint8_t cmps_buf[MAX_FILE_SIZE_K(1)];
 }LogCompess_StreamTypeDef;
 
 typedef union
@@ -55,12 +62,19 @@ typedef union
     LogCompess_StreamTypeDef stream;
     uint8_t buff[sizeof(LogCompess_StreamTypeDef)];
 }LogCompess_UnionTypeDef;
+#pragma pack()
 
 /* internal variable */
 static const LogData_Header_TypeDef LogIMU_Header = {
     .header = LOG_HEADER,
     .type = LOG_DATATYPE_IMU,
-    .size = sizeof(SrvIMU_UnionData_TypeDef),
+    .size = sizeof(LogIMUDataUnion_TypeDef),
+};
+static LogCompess_UnionTypeDef LogCompess_Stream TCM_ATTRIBUTE = {
+    .stream = {
+        .mark = LOG_COMPESS_HEADER,
+        .size = 0,
+    },
 };
 static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static volatile Disk_FileObj_TypeDef LogFile_Obj;
@@ -68,14 +82,16 @@ static Disk_FATFileSys_TypeDef FATFS_Obj;
 static bool LogFile_Ready = false;
 static bool enable_compess = true;
 static SrvIMU_UnionData_TypeDef LogIMU_Data __attribute__((section(".Perph_Section")));
-static uint8_t LogCache_L1_Buf[MAX_FILE_SIZE_K(32)] TCM_ATTRIBUTE;
-static QueueObj_TypeDef IMULog_Queue;
+static uint8_t LogCache_L1_Buf[MAX_FILE_SIZE_K(4)] TCM_ATTRIBUTE;
+static uint8_t LogCache_L2_Buf[MAX_FILE_SIZE_K(4)] TCM_ATTRIBUTE;
 static QueueObj_TypeDef IMUData_Queue;
 static LogData_Reg_TypeDef LogObj_Set_Reg;
 static LogData_Reg_TypeDef LogObj_Enable_Reg;
 static LogData_Reg_TypeDef LogObj_Logging_Reg;
 static Os_IdleObj_TypeDef LogIdleObj;
 static uint8_t LogQueueBuff_Trail[MAX_FILE_SIZE_K(1) / 2] = {0};
+static uint16_t QueueIMU_PopSize = 0;
+
 
 static LogSummary_TypeDef LogIMU_Summary = {
     .max_rt_diff = 0,
@@ -89,11 +105,6 @@ static LogSummary_TypeDef LogIMU_Summary = {
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
 static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_TypeDef *log_reg);
-
-#define HEAP_ALLOC(var,size) \
-    lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ]
-
-static HEAP_ALLOC(wrkmem, 512);
 
 void TaskLog_Init(void)
 {
@@ -159,7 +170,7 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
     {
         if (LogObj_Set_Reg._sec.IMU_Sec)
         {
-            state = LogData_ToFile(&IMULog_Queue, &LogObj_Logging_Reg);
+            // state = LogData_ToFile(&IMULog_Queue, &LogObj_Logging_Reg);
             rt = Get_CurrentRunningMs();
 
             if (state == Disk_Write_Contiguous)
@@ -195,7 +206,18 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
 void TaskLog_Core(Task_Handle hdl)
 {
     // DebugPin.ctl(Debug_PB4, true);
-
+    LogObj_Logging_Reg._sec.IMU_Sec = true;
+    if(QueueIMU_PopSize)
+    {
+        if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, LogCompess_Stream.stream.cmps_buf, &LogCompess_Stream.stream.size, wrkmem) != LZO_E_OK)
+        {
+            enable_compess = false;
+            DataPipe_Disable(&IMU_Log_DataPipe);
+        }
+        
+        QueueIMU_PopSize = 0;
+    }
+    LogObj_Logging_Reg._sec.IMU_Sec = false;
     // DebugPin.ctl(Debug_PB4, false);
 }
 
@@ -206,10 +228,6 @@ static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_Type
 
     if ((queue == NULL) || (Queue.size(*queue) == 0))
         return Disk_Write_Error;
-
-    log_reg->_sec.IMU_Sec = true;
-    queue_size = Queue.size(*queue);
-    log_reg->_sec.IMU_Sec = false;
 
     // while (queue_size >= sizeof(LogQueueBuff_Trail))
     // {
@@ -223,7 +241,7 @@ static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_Type
     //         return Disk_Write_Finish;
     // }
     
-    log_reg->_sec.IMU_Sec = true;
+    
     // log_size = Queue.size(*queue);
 
     // if(log_size)
@@ -233,7 +251,6 @@ static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_Type
 
     //     return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
     // }
-    log_reg->_sec.IMU_Sec = false;
 
     return Disk_Write_Contiguous;
 }
@@ -242,20 +259,38 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
     uint64_t imu_pipe_rt_diff = 0;
     static uint64_t lst_imu_pipe_rt = 0;
-    static uint32_t err_time_diff = 0;
     static uint32_t imu_opy_cnt = 0;
-    static uint32_t imu_log_queue_err = 0;
+    LogIMUDataUnion_TypeDef Log_Buf;
 
     if ((obj == NULL) || !LogFile_Ready)
         return;
 
     if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe) && LogObj_Enable_Reg._sec.IMU_Sec)
     {
+        Log_Buf.data.time = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;
+        Log_Buf.data.acc_scale = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.acc_scale;
+        Log_Buf.data.gyr_scale = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.gyr_scale;
+        Log_Buf.data.cyc = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.cycle_cnt & 0x000000FF;
+        
+        for(uint8_t axis = Axis_X; axis < Axis_Sum; axis ++)
+        {
+            Log_Buf.data.flt_acc[axis] = (int16_t)(Log_Buf.data.acc_scale * ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.flt_acc[axis]);
+            Log_Buf.data.flt_gyr[axis] = (int16_t)(Log_Buf.data.gyr_scale * ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.flt_gyr[axis]);
+        
+            Log_Buf.data.org_acc[axis] = (int16_t)(Log_Buf.data.acc_scale * ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.org_acc[axis]);
+            Log_Buf.data.org_gyr[axis] = (int16_t)(Log_Buf.data.gyr_scale * ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.org_gyr[axis]);
+        }
+
+        for(uint8_t i = 0; i < sizeof(LogIMUDataUnion_TypeDef) - sizeof(uint8_t); i++)
+        {
+            Log_Buf.data.check_sum += Log_Buf.buff[i];
+        }
+
         if ((Queue.state(IMUData_Queue) == Queue_ok) ||
             (Queue.state(IMUData_Queue) == Queue_empty))
         {
             if((Queue.push(&IMUData_Queue, &LogIMU_Header, LOG_HEADER_SIZE) == Queue_ok) &&
-               (Queue.push(&IMUData_Queue, LogIMU_Data.buff, sizeof(LogIMU_Data)) == Queue_ok))
+               (Queue.push(&IMUData_Queue, Log_Buf.buff, sizeof(Log_Buf)) == Queue_ok))
             {
                 if(LogIMU_Summary.start_rt == 0)
                     LogIMU_Summary.start_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;
@@ -281,11 +316,14 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             imu_opy_cnt++;
         }
 
-        if (!LogObj_Logging_Reg._sec.IMU_Sec)
+        if(!LogObj_Logging_Reg._sec.IMU_Sec && 
+            enable_compess && 
+            Queue.size(IMUData_Queue) >= MAX_FILE_SIZE_K(1))
         {
-            if(!Queue.pop_to_queue(&IMUData_Queue, &IMULog_Queue))
+            QueueIMU_PopSize = (MAX_FILE_SIZE_K(1) / (LOG_HEADER_SIZE + sizeof(Log_Buf))) * (LOG_HEADER_SIZE + sizeof(Log_Buf));
+            if(QueueIMU_PopSize <= sizeof(LogCache_L2_Buf))
             {
-                imu_log_queue_err++;
+                Queue.pop(&IMUData_Queue, LogCache_L2_Buf, QueueIMU_PopSize);
             }
         }
     }

@@ -122,7 +122,8 @@
                 "filter_param.h": "c",
                 "task_osd.h": "c",
                 "task_attitude.h": "c",
-                "filter.h": "c"
+                "filter.h": "c",
+                "minilzo.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false

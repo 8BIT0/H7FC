@@ -63,7 +63,7 @@ static volatile Task_List_s TskRdy_RegList = {.num = 0, .list = {.prv = NULL, .n
 
 static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 
-static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum];
+static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum] = {{NULL}};
 static Task *Idle_Task;
 static Idle_Callback_List_s Idle_List;
 
