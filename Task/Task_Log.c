@@ -205,23 +205,31 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
 
 void TaskLog_Core(Task_Handle hdl)
 {
+    static bool compess = false;
+
     // DebugPin.ctl(Debug_PB4, true);
     LogObj_Logging_Reg._sec.IMU_Sec = true;
-    if(QueueIMU_PopSize)
+    if(enable_compess && QueueIMU_PopSize)
     {
-        if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, LogCompess_Stream.stream.cmps_buf, &LogCompess_Stream.stream.size, wrkmem) != LZO_E_OK)
+        if(!compess)
         {
-            enable_compess = false;
-            DataPipe_Disable(&IMU_Log_DataPipe);
+            if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, LogCompess_Stream.stream.cmps_buf, &LogCompess_Stream.stream.size, wrkmem) != LZO_E_OK)
+            {
+                enable_compess = false;
+                DataPipe_Disable(&IMU_Log_DataPipe);
+            }
+            else
+                compess = true;
         }
         
         if(QueueIMU_PopSize >= 512)
         {
-
+            QueueIMU_PopSize -= 512;
         }
         else
         {
             QueueIMU_PopSize = 0;
+            compess = false;
         }
 
         if(QueueIMU_PopSize == 0)
