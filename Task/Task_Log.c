@@ -215,9 +215,18 @@ void TaskLog_Core(Task_Handle hdl)
             DataPipe_Disable(&IMU_Log_DataPipe);
         }
         
-        QueueIMU_PopSize = 0;
+        if(QueueIMU_PopSize >= 512)
+        {
+
+        }
+        else
+        {
+            QueueIMU_PopSize = 0;
+        }
+
+        if(QueueIMU_PopSize == 0)
+            LogObj_Logging_Reg._sec.IMU_Sec = false;
     }
-    LogObj_Logging_Reg._sec.IMU_Sec = false;
     // DebugPin.ctl(Debug_PB4, false);
 }
 
