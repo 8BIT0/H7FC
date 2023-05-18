@@ -89,7 +89,6 @@ static LogData_Reg_TypeDef LogObj_Set_Reg;
 static LogData_Reg_TypeDef LogObj_Enable_Reg;
 static LogData_Reg_TypeDef LogObj_Logging_Reg;
 static Os_IdleObj_TypeDef LogIdleObj;
-static uint8_t LogQueueBuff_Trail[MAX_FILE_SIZE_K(1) / 2] = {0};
 static uint16_t QueueIMU_PopSize = 0;
 
 
@@ -205,71 +204,64 @@ static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
 
 void TaskLog_Core(Task_Handle hdl)
 {
-    static bool compess = false;
+    static bool compess_flag = false;
+    uint16_t log_len = 0;
 
     // DebugPin.ctl(Debug_PB4, true);
     LogObj_Logging_Reg._sec.IMU_Sec = true;
-    if(enable_compess && QueueIMU_PopSize)
+    if(enable_compess)
     {
-        if(!compess)
+        if(!compess_flag)
         {
             if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, LogCompess_Stream.stream.cmps_buf, &LogCompess_Stream.stream.size, wrkmem) != LZO_E_OK)
             {
-                enable_compess = false;
-                DataPipe_Disable(&IMU_Log_DataPipe);
+                goto disable_compass_log;
             }
             else
-                compess = true;
+            {
+                compess_flag = true;
+            
+                if(LogCompess_Stream.stream.size >= sizeof(LogCompess_Stream.stream.cmps_buf) - sizeof(uint8_t))
+                {
+                    goto disable_compass_log;
+                }
+                else
+                {
+                    LogCompess_Stream.stream.cmps_buf[LogCompess_Stream.stream.szie] = LOG_COMPESS_ENDER;
+                    LogCompess_Stream.stream.size += 1;
+                }
+            }
         }
         
-        if(QueueIMU_PopSize >= 512)
+        if(LogCompess_Stream.stream.size + sizeof(LogCompess_Stream.stream.mark) + sizeof(LogCompess_Stream.stream.size) >= 512)
         {
-            QueueIMU_PopSize -= 512;
+            log_len = 512;
+            LogCompess_Stream.stream.size -= 512 - sizeof(LogCompess_Stream.stream.mark) - sizeof(LogCompess_Stream.stream.size);
         }
         else
         {
-            QueueIMU_PopSize = 0;
-            compess = false;
+            log_len = LogCompess_Stream.stream.size;
+            LogCompess_Stream.stream.size = 0;
+            compess_flag = false;
         }
+            
+        // if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, sizeof(LogQueueBuff_Trail)) == Disk_Write_Finish)
+        //     DataPipe_Disable(&IMU_Log_DataPipe);
 
-        if(QueueIMU_PopSize == 0)
+        if(LogCompess_Stream.stream.size == 0)
+        {
             LogObj_Logging_Reg._sec.IMU_Sec = false;
+        }
+        else
+        {
+            // memmove(LogCompess_Stream.buff, LogCompess_Stream.buff, );
+        }
     }
     // DebugPin.ctl(Debug_PB4, false);
-}
 
-static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_TypeDef *log_reg)
-{
-    uint16_t log_size = 0;
-    uint16_t queue_size = 0;
-
-    if ((queue == NULL) || (Queue.size(*queue) == 0))
-        return Disk_Write_Error;
-
-    // while (queue_size >= sizeof(LogQueueBuff_Trail))
-    // {
-    //     log_reg->_sec.IMU_Sec = true;
-
-    //     Queue.pop(queue, LogQueueBuff_Trail, sizeof(LogQueueBuff_Trail));
-    //     queue_size = Queue.size(*queue);
-
-    //     log_reg->_sec.IMU_Sec = false;
-    //     if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, sizeof(LogQueueBuff_Trail)) == Disk_Write_Finish)
-    //         return Disk_Write_Finish;
-    // }
-    
-    
-    // log_size = Queue.size(*queue);
-
-    // if(log_size)
-    // {
-    //     Queue.pop(queue, LogQueueBuff_Trail, log_size);
-    //     log_reg->_sec.IMU_Sec = false;
-
-    //     return Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, log_size);
-    // }
-
-    return Disk_Write_Contiguous;
+disable_compass_log:
+    enable_compess = false;
+    DataPipe_Disable(&IMU_Log_DataPipe);
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
