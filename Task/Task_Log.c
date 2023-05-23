@@ -206,6 +206,7 @@ void TaskLog_Core(Task_Handle hdl)
 {
     static bool compess_flag = false;
     uint16_t log_len = 0;
+    static uint8_t *log_pos = NULL;
 
     // DebugPin.ctl(Debug_PB4, true);
     LogObj_Logging_Reg._sec.IMU_Sec = true;
@@ -213,6 +214,8 @@ void TaskLog_Core(Task_Handle hdl)
     {
         if(!compess_flag)
         {
+            log_pos = NULL;
+
             if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, LogCompess_Stream.stream.cmps_buf, &LogCompess_Stream.stream.size, wrkmem) != LZO_E_OK)
             {
                 goto disable_compass_log;
@@ -227,7 +230,7 @@ void TaskLog_Core(Task_Handle hdl)
                 }
                 else
                 {
-                    LogCompess_Stream.stream.cmps_buf[LogCompess_Stream.stream.szie] = LOG_COMPESS_ENDER;
+                    LogCompess_Stream.stream.cmps_buf[LogCompess_Stream.stream.size] = LOG_COMPESS_ENDER;
                     LogCompess_Stream.stream.size += 1;
                 }
             }
@@ -236,6 +239,7 @@ void TaskLog_Core(Task_Handle hdl)
         if(LogCompess_Stream.stream.size + sizeof(LogCompess_Stream.stream.mark) + sizeof(LogCompess_Stream.stream.size) >= 512)
         {
             log_len = 512;
+            log_pos = LogCompess_Stream.buff;
             LogCompess_Stream.stream.size -= 512 - sizeof(LogCompess_Stream.stream.mark) - sizeof(LogCompess_Stream.stream.size);
         }
         else
@@ -245,16 +249,17 @@ void TaskLog_Core(Task_Handle hdl)
             compess_flag = false;
         }
             
-        // if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogQueueBuff_Trail, sizeof(LogQueueBuff_Trail)) == Disk_Write_Finish)
-        //     DataPipe_Disable(&IMU_Log_DataPipe);
+        if(Disk.write(&FATFS_Obj, &LogFile_Obj,  log_pos, log_len) == Disk_Write_Finish)
+            DataPipe_Disable(&IMU_Log_DataPipe);
 
         if(LogCompess_Stream.stream.size == 0)
         {
             LogObj_Logging_Reg._sec.IMU_Sec = false;
+            log_pos = NULL;
         }
         else
         {
-            // memmove(LogCompess_Stream.buff, LogCompess_Stream.buff, );
+            log_pos = LogCompess_Stream.buff + log_len;
         }
     }
     // DebugPin.ctl(Debug_PB4, false);
