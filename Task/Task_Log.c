@@ -248,8 +248,8 @@ void TaskLog_Core(Task_Handle hdl)
             LogCompess_Stream.stream.size = 0;
             compess_flag = false;
         }
-            
-        if(Disk.write(&FATFS_Obj, &LogFile_Obj,  log_pos, log_len) == Disk_Write_Finish)
+
+        if(log_pos && Disk.write(&FATFS_Obj, &LogFile_Obj,  log_pos, log_len) == Disk_Write_Finish)
             DataPipe_Disable(&IMU_Log_DataPipe);
 
         if(LogCompess_Stream.stream.size == 0)
