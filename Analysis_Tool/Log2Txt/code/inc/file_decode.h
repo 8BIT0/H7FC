@@ -8,6 +8,17 @@
 #include <stdlib.h>
 #include "../inc/logfile.h"
 
-bool LogFile_Decode(LogFileObj_TypeDef *file);
+#define DEFAULT_DECOMPESS_BUF_SIZE 1024
+#define LOG_COMPESS_HEADER 0xCA
+#define LOG_COMPESS_ENDER 0xED
+
+typedef struct
+{
+    uint8_t buff[DEFAULT_DECOMPESS_BUF_SIZE];
+    uint16_t size;
+}decompess_io_stream;
+
+decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file);
+bool LogFile_Decode(decompess_io_stream *stream, LogFileObj_TypeDef *file);
 
 #endif

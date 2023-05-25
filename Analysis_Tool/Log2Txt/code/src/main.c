@@ -173,9 +173,14 @@ int main()
     // printf("[INFO]\tFile Path\t\t\t%s\r\n", LogFile.path);
     // printf("[INFO]\tFile Name:\t\t\t%s\r\n", LogFile.file_name);
     // printf("[INFO]\tFile Total Byte Size:\t\t%lld\r\n", LogFile.logfile_size.total_byte);
+    
+    decompess_io_stream *decompess_steam = LogFile_Decompess_Init((const LogFileObj_TypeDef)LogFile);
 
-    LogFile_Decode(&LogFile);
-
+    if(decompess_steam)
+    {
+        LogFile_Decode(decompess_steam, &LogFile);
+    }
+    
     while (1)
     {
     }

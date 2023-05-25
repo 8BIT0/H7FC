@@ -49,32 +49,22 @@ typedef struct
     uint64_t push_cnt;
 }LogSummary_TypeDef;
 
-#pragma pack(1)
-typedef struct
-{
-    const uint8_t mark;
-    uint16_t size;
-    uint8_t cmps_buf[MAX_FILE_SIZE_K(1)];
-}LogCompess_StreamTypeDef;
-
-typedef union
-{
-    LogCompess_StreamTypeDef stream;
-    uint8_t buff[sizeof(LogCompess_StreamTypeDef)];
-}LogCompess_UnionTypeDef;
-#pragma pack()
-
 /* internal variable */
 static const LogData_Header_TypeDef LogIMU_Header = {
     .header = LOG_HEADER,
     .type = LOG_DATATYPE_IMU,
     .size = sizeof(LogIMUDataUnion_TypeDef),
 };
-static LogCompess_UnionTypeDef LogCompess_Stream TCM_ATTRIBUTE = {
-    .stream = {
-        .mark = LOG_COMPESS_HEADER,
-        .size = 0,
-    },
+
+typedef struct
+{
+    uint8_t buf[MAX_FILE_SIZE_K(1)];
+    uint16_t compess_size;
+    uint8_t total;
+}LogCompess_Data_TypeDef;
+
+static LogCompess_Data_TypeDef LogCompess_Data = {
+    .total = MAX_FILE_SIZE_K(1);
 };
 static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static volatile Disk_FileObj_TypeDef LogFile_Obj;
@@ -109,9 +99,6 @@ void TaskLog_Init(void)
 {
     Os_Idle_DataStream_TypeDef LogData_Stream;
 
-    if (lzo_init() != LZO_E_OK)
-        enable_compess = false;
-
     memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
     memset(&FATFS_Obj, NULL, sizeof(FATFS_Obj));
@@ -139,9 +126,12 @@ void TaskLog_Init(void)
                 LogFile_Ready = true;
                 LogObj_Enable_Reg._sec.IMU_Sec = true;
                 LogObj_Set_Reg._sec.IMU_Sec = true;
-            }
+            
+                DataPipe_Enable(&IMU_Log_DataPipe);
 
-            DataPipe_Enable(&IMU_Log_DataPipe);
+                if (lzo_init() != LZO_E_OK)
+                    enable_compess = false;
+            }
         }
         else
         {
@@ -158,115 +148,61 @@ void TaskLog_Init(void)
     LogData_Stream.size = 0;
 }
 
-static void OsIdle_Callback_LogModule(uint8_t *ptr, uint16_t len)
-{
-    Disk_Write_State state;
-    static uint32_t rt = 0;
-    static uint32_t rt_lst = 0;
-    static bool led_state = false;
-
-    if (LogFile_Ready)
-    {
-        if (LogObj_Set_Reg._sec.IMU_Sec)
-        {
-            // state = LogData_ToFile(&IMULog_Queue, &LogObj_Logging_Reg);
-            rt = Get_CurrentRunningMs();
-
-            if (state == Disk_Write_Contiguous)
-            {
-                if (rt - rt_lst >= 200)
-                {
-                    led_state = !led_state;
-                    DevLED.ctl(Led1, led_state);
-                    rt_lst = rt;
-                }
-            }
-        }
-        
-        if (state == Disk_Write_Finish)
-        {
-            LogObj_Set_Reg._sec.IMU_Sec = false;
-            DataPipe_Disable(&IMU_Log_DataPipe);
-
-            DevLED.ctl(Led1, false);
-        }
-        else
-        {
-            if (rt - rt_lst >= 500)
-            {
-                led_state = !led_state;
-                DevLED.ctl(Led1, led_state);
-                rt_lst = rt;
-            }
-        }
-    }
-}
-
 void TaskLog_Core(Task_Handle hdl)
 {
-    static bool compess_flag = false;
-    uint16_t log_len = 0;
-    static uint8_t *log_pos = NULL;
-
     // DebugPin.ctl(Debug_PB4, true);
     LogObj_Logging_Reg._sec.IMU_Sec = true;
-    if(enable_compess)
+    if(LogFile_Ready && enable_compess)
     {
-        if(!compess_flag)
+        if(QueueIMU_PopSize)
         {
-            log_pos = NULL;
+            uint8_t *compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + 2);
+            uint16_t cur_compess_size = 0;
 
-            if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, LogCompess_Stream.stream.cmps_buf, &LogCompess_Stream.stream.size, wrkmem) != LZO_E_OK)
+            LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
+
+            if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, compess_buf_ptr, &cur_compess_size, wrkmem) != LZO_E_OK)
             {
-                goto disable_compass_log;
+                enable_compess = false;
+                DataPipe_Disable(&IMU_Log_DataPipe);
             }
             else
             {
-                compess_flag = true;
-            
-                if(LogCompess_Stream.stream.size >= sizeof(LogCompess_Stream.stream.cmps_buf) - sizeof(uint8_t))
+                if(QueueIMU_PopSize >= LogCompess_Data.compess_size)
                 {
-                    goto disable_compass_log;
+                    enable_compess = false;
+                    DataPipe_Disable(&IMU_Log_DataPipe);
                 }
                 else
                 {
-                    LogCompess_Stream.stream.cmps_buf[LogCompess_Stream.stream.size] = LOG_COMPESS_ENDER;
-                    LogCompess_Stream.stream.size += 1;
+                    LogCompess_Data.buf[LogCompess_Data.compess_size + 1] = cur_compess_size;
+
+                    LogCompess_Data.compess_size ++;
+                    LogCompess_Data.compess_size += cur_compess_size;
+
+                    LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
                 }
+            
+                if(LogCompess_Data.compess_size >= 512)
+                {
+                    if(Disk.write(&FATFS_Obj, &LogFile_Obj,  LogCompess_Stream.buff, 512) == Disk_Write_Finish)
+                    {
+                        LogFile_Ready = false;
+                        DataPipe_Disable(&IMU_Log_DataPipe);
+                    }
+
+                    LogCompess_Stream.stream.size -= 512;
+                }
+
+                DevLED.ctl(Led1, true);
             }
         }
-        
-        if(LogCompess_Stream.stream.size + sizeof(LogCompess_Stream.stream.mark) + sizeof(LogCompess_Stream.stream.size) >= 512)
-        {
-            log_len = 512;
-            log_pos = LogCompess_Stream.buff;
-            LogCompess_Stream.stream.size -= 512 - sizeof(LogCompess_Stream.stream.mark) - sizeof(LogCompess_Stream.stream.size);
-        }
-        else
-        {
-            log_len = LogCompess_Stream.stream.size;
-            LogCompess_Stream.stream.size = 0;
-            compess_flag = false;
-        }
-
-        if(log_pos && Disk.write(&FATFS_Obj, &LogFile_Obj,  log_pos, log_len) == Disk_Write_Finish)
-            DataPipe_Disable(&IMU_Log_DataPipe);
-
-        if(LogCompess_Stream.stream.size == 0)
-        {
-            LogObj_Logging_Reg._sec.IMU_Sec = false;
-            log_pos = NULL;
-        }
-        else
-        {
-            log_pos = LogCompess_Stream.buff + log_len;
-        }
+    }
+    else
+    {
+        DevLED.ctl(Led1, false);
     }
     // DebugPin.ctl(Debug_PB4, false);
-
-disable_compass_log:
-    enable_compess = false;
-    DataPipe_Disable(&IMU_Log_DataPipe);
 }
 
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
