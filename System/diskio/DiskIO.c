@@ -1493,9 +1493,9 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
                             if (file_tmp.fast_mode)
                             {
-                                file_tmp.info.size = file_tmp.total_byte_remain;
                                 /* update file size */
                                 Disk_FileSize_Update(&file_tmp);
+                                file_tmp.info.size = 0;
 
                                 memcpy(&file_tmp.cur_cluster_item, &file_tmp.cluster_list, sizeof(item_obj));
                             }
@@ -1712,6 +1712,7 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
             if (FileObj->total_byte_remain >= write_len)
             {
                 FileObj->total_byte_remain -= write_len;
+                FileObj->info.size += write_len;
             }
             else
                 return Disk_Write_Finish;

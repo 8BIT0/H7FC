@@ -11,6 +11,8 @@ static decompess_io_stream decompess_stream = {.size = DEFAULT_DECOMPESS_BUF_SIZ
 
 static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 
+uint8_t compess_buf[2048] = {0};
+
 uint32_t err = 0;
 uint32_t done = 0;
 

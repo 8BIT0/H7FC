@@ -64,7 +64,7 @@ typedef struct
 }LogCompess_Data_TypeDef;
 
 static LogCompess_Data_TypeDef LogCompess_Data = {
-    .total = MAX_FILE_SIZE_K(1);
+    .total = MAX_FILE_SIZE_K(1),
 };
 static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static volatile Disk_FileObj_TypeDef LogFile_Obj;
@@ -154,11 +154,11 @@ void TaskLog_Core(Task_Handle hdl)
     LogObj_Logging_Reg._sec.IMU_Sec = true;
     if(LogFile_Ready && enable_compess)
     {
+        uint8_t *compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + 2);
+        uint16_t cur_compess_size = 0;
+
         if(QueueIMU_PopSize)
         {
-            uint8_t *compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + 2);
-            uint16_t cur_compess_size = 0;
-
             LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
 
             if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, compess_buf_ptr, &cur_compess_size, wrkmem) != LZO_E_OK)
@@ -168,7 +168,7 @@ void TaskLog_Core(Task_Handle hdl)
             }
             else
             {
-                if(QueueIMU_PopSize >= LogCompess_Data.compess_size)
+                if(QueueIMU_PopSize <= LogCompess_Data.compess_size)
                 {
                     enable_compess = false;
                     DataPipe_Disable(&IMU_Log_DataPipe);
@@ -176,32 +176,31 @@ void TaskLog_Core(Task_Handle hdl)
                 else
                 {
                     LogCompess_Data.buf[LogCompess_Data.compess_size + 1] = cur_compess_size;
-
-                    LogCompess_Data.compess_size ++;
                     LogCompess_Data.compess_size += cur_compess_size;
-
                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
-                }
-            
-                if(LogCompess_Data.compess_size >= 512)
-                {
-                    if(Disk.write(&FATFS_Obj, &LogFile_Obj,  LogCompess_Stream.buff, 512) == Disk_Write_Finish)
+                    LogCompess_Data.compess_size ++;
+
+                    if(LogCompess_Data.compess_size >= 512)
                     {
-                        LogFile_Ready = false;
-                        DataPipe_Disable(&IMU_Log_DataPipe);
+                        if(Disk.write(&FATFS_Obj, &LogFile_Obj,  LogCompess_Data.buf, 512) == Disk_Write_Finish)
+                        {
+                            LogFile_Ready = false;
+                            DataPipe_Disable(&IMU_Log_DataPipe);
+                        }
+
+                        LogCompess_Data.compess_size -= 512;
+                        memmove(LogCompess_Data.buf, LogCompess_Data.buf + 512, 512);
                     }
-
-                    LogCompess_Stream.stream.size -= 512;
                 }
-
-                DevLED.ctl(Led1, true);
             }
+
+            DevLED.ctl(Led1, true);
         }
+        else
+            LogObj_Logging_Reg._sec.IMU_Sec = false;
     }
     else
-    {
         DevLED.ctl(Led1, false);
-    }
     // DebugPin.ctl(Debug_PB4, false);
 }
 
