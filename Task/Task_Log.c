@@ -152,9 +152,11 @@ void TaskLog_Core(Task_Handle hdl)
 {
     // DebugPin.ctl(Debug_PB4, true);
     LogObj_Logging_Reg._sec.IMU_Sec = true;
+    uint32_t compess_size_tmp = 0;
+
     if(LogFile_Ready && enable_compess)
     {
-        uint8_t *compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + 2);
+        uint8_t *compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + sizeof(uint32_t) + sizeof(uint8_t));
         uint16_t cur_compess_size = 0;
 
         if(QueueIMU_PopSize)
@@ -175,8 +177,10 @@ void TaskLog_Core(Task_Handle hdl)
                 }
                 else
                 {
-                    LogCompess_Data.buf[LogCompess_Data.compess_size + 1] = cur_compess_size;
-                    LogCompess_Data.compess_size += cur_compess_size;
+                    compess_size_tmp = LogCompess_Data.compess_size + cur_compess_size;
+                    memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_size, sizeof(uint32_t));
+
+                    LogCompess_Data.compess_size = compess_size_tmp + 3;
                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
                     LogCompess_Data.compess_size ++;
 

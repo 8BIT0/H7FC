@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "file_decode.h": "c",
+        "var_def.h": "c"
+    }
+}
