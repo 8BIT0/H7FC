@@ -11,6 +11,7 @@ static decompess_io_stream decompess_stream = {.size = DEFAULT_DECOMPESS_BUF_SIZ
 
 static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 
+uint8_t decompess_buf[2048] = {0};
 uint32_t err = 0;
 uint32_t done = 0;
 
@@ -18,7 +19,6 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
 
 decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
 {
-    uint8_t decompess_buf[2048] = {0};
     uint32_t first_header_match = 0;
     uint32_t first_ender_match = 0;
 
@@ -32,6 +32,7 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
     uint32_t err_pck_cnt = 0;
     uint32_t nor_pck_cnt = 0;
 
+    /* init decompress module */
     if (lzo_init() != LZO_E_OK)
         return NULL;
 
@@ -69,7 +70,7 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
                 {
                     nor_pck_cnt ++;
                 
-                    /* decompess data and decode log imu data */
+                    /* decompess data */
                 }
 
                 compess_ender_cnt ++;
@@ -77,8 +78,8 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
         }
     }
 
-    printf("[INFO]  Error  Length Pack Num         : %d\r\n", err_pck_cnt);
-    printf("[INFO]  Normal Length Pack Num         : %d\r\n", nor_pck_cnt);
+    printf("[INFO]  Error  Length Pack Num        : %d\r\n", err_pck_cnt);
+    printf("[INFO]  Normal Length Pack Num        : %d\r\n", nor_pck_cnt);
 
     printf("[INFO]  First Match Compess Header At : %d\r\n", first_header_match);
     printf("[INFO]  First Match Compess Ender  At : %d\r\n", first_ender_match);
