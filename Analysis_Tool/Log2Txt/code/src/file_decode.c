@@ -11,8 +11,6 @@ static decompess_io_stream decompess_stream = {.size = DEFAULT_DECOMPESS_BUF_SIZ
 
 static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 
-uint8_t decompess_buf[2048] = {0};
-
 uint32_t err = 0;
 uint32_t done = 0;
 
@@ -20,6 +18,7 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
 
 decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
 {
+    uint8_t decompess_buf[2048] = {0};
     uint32_t first_header_match = 0;
     uint32_t first_ender_match = 0;
 
@@ -67,7 +66,11 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
                     err_pck_cnt ++;
                 }
                 else
+                {
                     nor_pck_cnt ++;
+                
+                    /* decompess data and decode log imu data */
+                }
 
                 compess_ender_cnt ++;
             }
