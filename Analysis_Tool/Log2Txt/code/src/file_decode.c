@@ -76,13 +76,19 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
                 
                     memcpy(compess_buff, &file.bin_data[cur_header_pos + 5], check_pck_size);
 
-                    printf("[INFO] In Addr start 0x%08x, Out Addr start 0x%08x\r\n", compess_buff, decompess_file_buff);
-                    printf("[INFO] In Addr End   0x%08x, Out Addr End   0x%08x\r\n", &compess_buff[2047], &decompess_file_buff[4095]);
-
                     /* decompess data */
                     if(lzo1x_decompress(compess_buff, check_pck_size, decompess_file_buff, &decompess_len, NULL) == LZO_E_OK)
                     {
                         /* decode data */
+                        IMU_LogUnionData_TypeDef IMU_Data;
+                        LogData_Header_TypeDef header;
+
+                        memcpy(&header, decompess_file_buff, sizeof(LogData_Header_TypeDef));
+                        memcpy(IMU_Data.buff, decompess_file_buff + sizeof(LogData_Header_TypeDef), sizeof(IMU_LogUnionData_TypeDef));
+
+                        uint32_t offset = sizeof(LogData_Header_TypeDef) + sizeof(IMU_LogUnionData_TypeDef);
+                        memcpy(&header, decompess_file_buff + offset, sizeof(LogData_Header_TypeDef));
+                        memcpy(IMU_Data.buff, decompess_file_buff + offset + sizeof(LogData_Header_TypeDef), sizeof(IMU_LogUnionData_TypeDef));
                     }
                     else
                         decompess_err_cnt ++;

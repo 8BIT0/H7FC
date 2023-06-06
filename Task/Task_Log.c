@@ -186,14 +186,16 @@ void TaskLog_Core(Task_Handle hdl)
 
                     if(LogCompess_Data.compess_size >= 512)
                     {
-                        if(Disk.write(&FATFS_Obj, &LogFile_Obj,  LogCompess_Data.buf, 512) == Disk_Write_Finish)
+                        if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_Write_Finish)
                         {
                             LogFile_Ready = false;
                             DataPipe_Disable(&IMU_Log_DataPipe);
                         }
-
-                        LogCompess_Data.compess_size -= 512;
-                        memmove(LogCompess_Data.buf, LogCompess_Data.buf + 512, 512);
+                        else
+                        {
+                            LogCompess_Data.compess_size -= 512;
+                            memmove(LogCompess_Data.buf, LogCompess_Data.buf + 512, 512);
+                        }
                     }
                 }
             }
