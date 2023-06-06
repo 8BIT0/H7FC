@@ -42,6 +42,7 @@
 #ifdef MINILZO_HAVE_CONFIG_H
 #  include <config.h>
 #endif
+#include <stdio.h>
 #include <limits.h>
 #include <stddef.h>
 #if defined(MINILZO_CFG_USE_INTERNAL_LZODEFS)
@@ -5473,6 +5474,7 @@ DO_DECOMPRESS  ( const lzo_bytep in , lzo_uint  in_len,
         if (t >= 8) do
         {
             UA_COPY8(op,ip);
+
             op += 8; ip += 8; t -= 8;
         } while (t >= 8);
         if (t >= 4)

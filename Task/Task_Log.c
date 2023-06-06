@@ -180,7 +180,7 @@ void TaskLog_Core(Task_Handle hdl)
                     compess_size_tmp = LogCompess_Data.compess_size + cur_compess_size;
                     memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_size, sizeof(uint32_t));
 
-                    LogCompess_Data.compess_size = compess_size_tmp + 3;
+                    LogCompess_Data.compess_size = compess_size_tmp + 5;
                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
                     LogCompess_Data.compess_size ++;
 

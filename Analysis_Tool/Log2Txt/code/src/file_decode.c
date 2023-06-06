@@ -2,8 +2,8 @@
 #include "../inc/file_decode.h"
 #include "minilzo.h"
 
-/* create a 64M buffer */
-static uint8_t decompess_file_buff[1024 * 1024 * 64] = {0};
+/* create a 64K buffer */
+static uint8_t decompess_file_buff[4096] __attribute__((align(32))) = {0};
 static decompess_io_stream decompess_stream = {.size = DEFAULT_DECOMPESS_BUF_SIZE};
 
 #define HEAP_ALLOC(var,size) \
@@ -11,7 +11,6 @@ static decompess_io_stream decompess_stream = {.size = DEFAULT_DECOMPESS_BUF_SIZ
 
 static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 
-uint8_t decompess_buf[2048] = {0};
 uint32_t err = 0;
 uint32_t done = 0;
 
@@ -31,6 +30,11 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
     uint32_t check_pck_size = 0;
     uint32_t err_pck_cnt = 0;
     uint32_t nor_pck_cnt = 0;
+
+    uint32_t decompess_err_cnt = 0;
+    uint32_t decompess_len = 0;
+
+    uint8_t compess_buff[2048] __attribute__((align(32))) = {0};
 
     /* init decompress module */
     if (lzo_init() != LZO_E_OK)
@@ -60,7 +64,7 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
                 if(compess_header_cnt == 1)
                     first_ender_match = i;
                 
-                check_pck_size = i - cur_header_pos - 3;
+                check_pck_size = i - cur_header_pos - 5;
 
                 if(check_pck_size != cur_pck_size)
                 {
@@ -70,13 +74,26 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
                 {
                     nor_pck_cnt ++;
                 
+                    memcpy(compess_buff, &file.bin_data[cur_header_pos + 5], check_pck_size);
+
+                    printf("[INFO] In Addr start 0x%08x, Out Addr start 0x%08x\r\n", compess_buff, decompess_file_buff);
+                    printf("[INFO] In Addr End   0x%08x, Out Addr End   0x%08x\r\n", &compess_buff[2047], &decompess_file_buff[4095]);
+
                     /* decompess data */
+                    if(lzo1x_decompress(compess_buff, check_pck_size, decompess_file_buff, &decompess_len, NULL) == LZO_E_OK)
+                    {
+                        /* decode data */
+                    }
+                    else
+                        decompess_err_cnt ++;
                 }
 
                 compess_ender_cnt ++;
             }
         }
     }
+
+    printf("[INFO]  Decompess Error Num           : %d\r\n", decompess_err_cnt);
 
     printf("[INFO]  Error  Length Pack Num        : %d\r\n", err_pck_cnt);
     printf("[INFO]  Normal Length Pack Num        : %d\r\n", nor_pck_cnt);
