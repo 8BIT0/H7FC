@@ -54,8 +54,12 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
             ((uint8_t *)&cur_pck_size)[3] = file.bin_data[i + 4];
 
             cur_header_pos = i;
+            i += cur_pck_size + 5;
             compess_header_cnt ++;
         }
+
+        if(i >= file.logfile_size.total_byte)
+            break;
 
         if(compess_header_cnt)
         {
@@ -83,12 +87,13 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
                         IMU_LogUnionData_TypeDef IMU_Data;
                         LogData_Header_TypeDef header;
 
-                        memcpy(&header, decompess_file_buff, sizeof(LogData_Header_TypeDef));
-                        memcpy(IMU_Data.buff, decompess_file_buff + sizeof(LogData_Header_TypeDef), sizeof(IMU_LogUnionData_TypeDef));
+                        for(uint16_t offset = 0; offset < decompess_len; offset += sizeof(LogData_Header_TypeDef) + sizeof(IMU_LogUnionData_TypeDef))
+                        {
+                            memcpy(&header, decompess_file_buff + offset, sizeof(LogData_Header_TypeDef));
+                            memcpy(IMU_Data.buff, decompess_file_buff + offset + sizeof(LogData_Header_TypeDef), sizeof(IMU_LogUnionData_TypeDef));
 
-                        uint32_t offset = sizeof(LogData_Header_TypeDef) + sizeof(IMU_LogUnionData_TypeDef);
-                        memcpy(&header, decompess_file_buff + offset, sizeof(LogData_Header_TypeDef));
-                        memcpy(IMU_Data.buff, decompess_file_buff + offset + sizeof(LogData_Header_TypeDef), sizeof(IMU_LogUnionData_TypeDef));
+                            printf("[INFO] Runtime %lld \t Cycle Cnt %d\r\n", IMU_Data.data.time, IMU_Data.data.cyc);
+                        }
                     }
                     else
                         decompess_err_cnt ++;

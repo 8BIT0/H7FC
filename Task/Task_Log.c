@@ -194,7 +194,7 @@ void TaskLog_Core(Task_Handle hdl)
                         else
                         {
                             LogCompess_Data.compess_size -= 512;
-                            memmove(LogCompess_Data.buf, LogCompess_Data.buf + 512, 512);
+                            memmove(LogCompess_Data.buf, LogCompess_Data.buf + 512, LogCompess_Data.compess_size);
                         }
                     }
                 }
