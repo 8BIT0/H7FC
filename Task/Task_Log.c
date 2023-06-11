@@ -58,13 +58,13 @@ static const LogData_Header_TypeDef LogIMU_Header = {
 
 typedef struct
 {
-    uint8_t buf[MAX_FILE_SIZE_K(1)];
+    uint8_t buf[MAX_FILE_SIZE_K(2)];
     uint16_t compess_size;
     uint8_t total;
 }LogCompess_Data_TypeDef;
 
 static LogCompess_Data_TypeDef LogCompess_Data = {
-    .total = MAX_FILE_SIZE_K(1),
+    .total = MAX_FILE_SIZE_K(2),
 };
 static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static volatile Disk_FileObj_TypeDef LogFile_Obj;
@@ -72,8 +72,8 @@ static Disk_FATFileSys_TypeDef FATFS_Obj;
 static bool LogFile_Ready = false;
 static bool enable_compess = true;
 static SrvIMU_UnionData_TypeDef LogIMU_Data __attribute__((section(".Perph_Section")));
-static uint8_t LogCache_L1_Buf[MAX_FILE_SIZE_K(4)] TCM_ATTRIBUTE;
-static uint8_t LogCache_L2_Buf[MAX_FILE_SIZE_K(4)] TCM_ATTRIBUTE;
+static uint8_t LogCache_L1_Buf[MAX_FILE_SIZE_K(3)] TCM_ATTRIBUTE;
+static uint8_t LogCache_L2_Buf[MAX_FILE_SIZE_K(3)] TCM_ATTRIBUTE;
 static QueueObj_TypeDef IMUData_Queue;
 static LogData_Reg_TypeDef LogObj_Set_Reg;
 static LogData_Reg_TypeDef LogObj_Enable_Reg;
@@ -148,19 +148,32 @@ void TaskLog_Init(void)
     LogData_Stream.size = 0;
 }
 
+static uint32_t cyc_cnt = 0;
+static uint32_t test_size = 0;
+static uint32_t compess_cnt = 0;
+static uint32_t total_log_byte = 0;
+static uint32_t org_pop_size = 0;
+static uint32_t org_compess_size = 0;
 void TaskLog_Core(Task_Handle hdl)
 {
+    uint8_t *compess_buf_ptr = NULL;
+    uint16_t cur_compess_size = 0;
+
     // DebugPin.ctl(Debug_PB4, true);
-    LogObj_Logging_Reg._sec.IMU_Sec = true;
     uint32_t compess_size_tmp = 0;
 
     if(LogFile_Ready && enable_compess)
     {
-        uint8_t *compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + sizeof(uint32_t) + sizeof(uint8_t));
-        uint16_t cur_compess_size = 0;
+        compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + sizeof(uint32_t) + sizeof(uint8_t));
+        cur_compess_size = 0;
 
-        if(QueueIMU_PopSize)
+        if(QueueIMU_PopSize != 0)
         {
+            /* test section */
+            org_pop_size = QueueIMU_PopSize;
+            org_compess_size = LogCompess_Data.compess_size;
+
+            LogObj_Logging_Reg._sec.IMU_Sec = true;
             LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
 
             if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, compess_buf_ptr, &cur_compess_size, wrkmem) != LZO_E_OK)
@@ -170,31 +183,44 @@ void TaskLog_Core(Task_Handle hdl)
             }
             else
             {
-                if(QueueIMU_PopSize <= LogCompess_Data.compess_size)
+                if(QueueIMU_PopSize <= cur_compess_size)
                 {
                     enable_compess = false;
                     DataPipe_Disable(&IMU_Log_DataPipe);
                 }
                 else
                 {
+                    compess_cnt++;
+                    memset(LogCache_L2_Buf, 0, QueueIMU_PopSize);
                     compess_size_tmp = LogCompess_Data.compess_size + cur_compess_size;
+
                     memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_size, sizeof(uint32_t));
 
                     LogCompess_Data.compess_size = compess_size_tmp + 5;
                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
                     LogCompess_Data.compess_size ++;
 
-                    if(LogCompess_Data.compess_size >= 512)
+                    QueueIMU_PopSize = 0;
+                    LogObj_Logging_Reg._sec.IMU_Sec = false;
+
+                    while(LogCompess_Data.compess_size >= 512)
                     {
                         if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_Write_Finish)
                         {
                             LogFile_Ready = false;
                             DataPipe_Disable(&IMU_Log_DataPipe);
+                            break;
                         }
                         else
                         {
+                            cyc_cnt ++;
                             LogCompess_Data.compess_size -= 512;
-                            memmove(LogCompess_Data.buf, LogCompess_Data.buf + 512, LogCompess_Data.compess_size);
+                            total_log_byte += 512;
+                            for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
+                            {
+                                LogCompess_Data.buf[t] = LogCompess_Data.buf[t + 512];
+                                LogCompess_Data.buf[t + 512] = 0;
+                            }
                         }
                     }
                 }
@@ -210,11 +236,12 @@ void TaskLog_Core(Task_Handle hdl)
     // DebugPin.ctl(Debug_PB4, false);
 }
 
+static uint32_t pop_cnt = 0;
+static uint32_t imu_opy_cnt = 0;
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
     uint64_t imu_pipe_rt_diff = 0;
     static uint64_t lst_imu_pipe_rt = 0;
-    static uint32_t imu_opy_cnt = 0;
     LogIMUDataUnion_TypeDef Log_Buf;
 
     if ((obj == NULL) || !LogFile_Ready)
@@ -271,13 +298,13 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             imu_opy_cnt++;
         }
 
-        if(!LogObj_Logging_Reg._sec.IMU_Sec && 
-            enable_compess && 
+        if(!LogObj_Logging_Reg._sec.IMU_Sec && enable_compess && 
             Queue.size(IMUData_Queue) >= MAX_FILE_SIZE_K(1))
         {
             QueueIMU_PopSize = (MAX_FILE_SIZE_K(1) / (LOG_HEADER_SIZE + sizeof(Log_Buf))) * (LOG_HEADER_SIZE + sizeof(Log_Buf));
             if(QueueIMU_PopSize <= sizeof(LogCache_L2_Buf))
             {
+                pop_cnt ++;
                 Queue.pop(&IMUData_Queue, LogCache_L2_Buf, QueueIMU_PopSize);
             }
         }

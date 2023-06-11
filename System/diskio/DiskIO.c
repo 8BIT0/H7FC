@@ -1597,8 +1597,9 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
-
-    Disk_Update_File_Cluster(FileObj, FATObj->free_cluster);
+    
+    if(!FileObj->fast_mode)
+        Disk_Update_File_Cluster(FileObj, FATObj->free_cluster);
 
     // use_cluster = len / FATObj->cluster_byte_size;
 
@@ -1641,16 +1642,23 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
         }
     }
 
-    Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
-    Disk_Update_FreeCluster(FATObj);
+    if(!FileObj->fast_mode)
+    {
+        Disk_Establish_ClusterLink(FATObj, FileObj->info.start_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
+        Disk_Update_FreeCluster(FATObj);
+    }
+    
     Disk_ClearCluster(FATObj, FATObj->free_cluster);
 
     FileObj->info.size = len;
     FileObj->cursor_pos = len;
     FileObj->remain_byte_in_sec -= len;
 
-    /* update file size */
-    Disk_FileSize_Update(FileObj);
+    if(!FileObj->fast_mode)
+    {
+        /* update file size */
+        Disk_FileSize_Update(FileObj);
+    }
 
     return true;
 }

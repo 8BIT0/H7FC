@@ -36,6 +36,18 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
 
     uint8_t compess_buff[2048] __attribute__((align(32))) = {0};
 
+    static uint8_t lst_cyc = 0;
+    static uint64_t lst_Rt = 0;
+    static uint64_t start_rt = 0;
+    static uint64_t end_rt = 0;
+    uint32_t pck_lost_cnt = 0;
+    uint32_t decompess_pck_cnt = 0;
+
+    uint32_t bad_ender_cnt = 0;
+    uint64_t compess_pck_byte = 0;
+    IMU_LogUnionData_TypeDef IMU_Data;
+    LogData_Header_TypeDef header;
+
     /* init decompress module */
     if (lzo_init() != LZO_E_OK)
         return NULL;
@@ -54,56 +66,99 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
             ((uint8_t *)&cur_pck_size)[3] = file.bin_data[i + 4];
 
             cur_header_pos = i;
-            i += cur_pck_size + 5;
-            compess_header_cnt ++;
-        }
-
-        if(i >= file.logfile_size.total_byte)
-            break;
-
-        if(compess_header_cnt)
-        {
-            if(file.bin_data[i] == LOG_COMPESS_ENDER)
+            
+            /* percheck ender */
+            if((i + 5 + cur_pck_size) < file.logfile_size.total_byte)
             {
-                if(compess_header_cnt == 1)
-                    first_ender_match = i;
-                
-                check_pck_size = i - cur_header_pos - 5;
-
-                if(check_pck_size != cur_pck_size)
+                if(file.bin_data[i + 5 + cur_pck_size] == LOG_COMPESS_ENDER)
                 {
-                    err_pck_cnt ++;
+                    i += 5 + cur_pck_size;
+                    compess_pck_byte += 5 + cur_pck_size;
                 }
                 else
                 {
-                    nor_pck_cnt ++;
-                
-                    memcpy(compess_buff, &file.bin_data[cur_header_pos + 5], check_pck_size);
-
-                    /* decompess data */
-                    if(lzo1x_decompress(compess_buff, check_pck_size, decompess_file_buff, &decompess_len, NULL) == LZO_E_OK)
-                    {
-                        /* decode data */
-                        IMU_LogUnionData_TypeDef IMU_Data;
-                        LogData_Header_TypeDef header;
-
-                        for(uint16_t offset = 0; offset < decompess_len; offset += sizeof(LogData_Header_TypeDef) + sizeof(IMU_LogUnionData_TypeDef))
-                        {
-                            memcpy(&header, decompess_file_buff + offset, sizeof(LogData_Header_TypeDef));
-                            memcpy(IMU_Data.buff, decompess_file_buff + offset + sizeof(LogData_Header_TypeDef), sizeof(IMU_LogUnionData_TypeDef));
-
-                            printf("[INFO] Runtime %lld \t Cycle Cnt %d\r\n", IMU_Data.data.time, IMU_Data.data.cyc);
-                        }
-                    }
-                    else
-                        decompess_err_cnt ++;
+                    bad_ender_cnt++;
                 }
-
-                compess_ender_cnt ++;
             }
+            else
+                goto Decode_EOF;
+
+            compess_header_cnt ++;
+        }
+
+        if(compess_header_cnt && (file.bin_data[i] == LOG_COMPESS_ENDER))
+        {
+            if(compess_header_cnt == 1)
+                first_ender_match = i;
+            
+            check_pck_size = i - cur_header_pos - 5;
+
+            // printf("[INFO] Pack Length check_len: %d\tpck_len: %d\r\n", check_pck_size, cur_pck_size);
+            if(check_pck_size != cur_pck_size)
+            {
+                err_pck_cnt ++;
+            }
+            else
+            {
+                nor_pck_cnt ++;
+            
+                memcpy(compess_buff, &file.bin_data[cur_header_pos + 5], check_pck_size);
+
+                /* decompess data */
+                if(lzo1x_decompress(compess_buff, check_pck_size, decompess_file_buff, &decompess_len, NULL) == LZO_E_OK)
+                {
+                    /* decode data */
+                    for(uint16_t offset = 0; offset < decompess_len; offset += sizeof(LogData_Header_TypeDef) + sizeof(IMU_LogUnionData_TypeDef))
+                    {
+                        memcpy(&header, decompess_file_buff + offset, sizeof(LogData_Header_TypeDef));
+                        memset(IMU_Data.buff, 0, sizeof(IMU_LogUnionData_TypeDef));
+                        memcpy(IMU_Data.buff, decompess_file_buff + offset + sizeof(LogData_Header_TypeDef), sizeof(IMU_LogUnionData_TypeDef));
+
+                        // printf("[INFO] Runtime %lld \t Cycle Cnt %d\r\n", IMU_Data.data.time, IMU_Data.data.cyc);
+                    
+                        if(lst_Rt)
+                        {
+                            if(((IMU_Data.data.time - lst_Rt) > 500) && ((IMU_Data.data.cyc - lst_cyc) > 1))
+                            {
+                                printf("[INFO]  Occur Pack Index %d\r\n", nor_pck_cnt);
+                                printf("[INFO]  Current Decompess Size: %lld\r\n", compess_pck_byte);
+                                printf("[INFO]  runtime:\t\t%d\ttime_diff:\t\t%d\r\n", IMU_Data.data.time, IMU_Data.data.time - lst_Rt);
+                                printf("[INFO]  cycle:\t\t\t%d\tCycle_diff:\t\t%d\r\n", IMU_Data.data.cyc, IMU_Data.data.cyc - lst_cyc);
+                                printf("\r\n");
+
+                                pck_lost_cnt += IMU_Data.data.cyc - lst_cyc;
+                            }
+                            else
+                                decompess_pck_cnt ++;
+                        }
+                        else
+                            start_rt = IMU_Data.data.time;
+
+                        end_rt = IMU_Data.data.time;
+                        lst_Rt = IMU_Data.data.time;
+                        lst_cyc = IMU_Data.data.cyc;
+                    }
+                }
+                else
+                    decompess_err_cnt ++;
+            }
+
+            compess_ender_cnt ++;
         }
     }
 
+Decode_EOF:
+    printf("\r\n");
+    
+    printf("[INFO]  Bad Ender                     : %d\r\n", bad_ender_cnt);
+    printf("[INFO]  Total Lost Pack Number        : %d\r\n", pck_lost_cnt);
+    printf("[INFO]  Decompess Pack Number         : %d\r\n", decompess_pck_cnt);
+
+    printf("[INFO]  StartRunTime                  : %d\r\n", start_rt);
+    printf("[INFO]  EndRunTime                    : %d\r\n", end_rt);
+
+    printf("[INFO]  Total Byte                    : %lld\r\n", file.logfile_size.total_byte);
+    printf("[INFO]  Compess Comput                : %lld\r\n", compess_pck_byte);
     printf("[INFO]  Decompess Error Num           : %d\r\n", decompess_err_cnt);
 
     printf("[INFO]  Error  Length Pack Num        : %d\r\n", err_pck_cnt);
