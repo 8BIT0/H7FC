@@ -80,7 +80,7 @@ static LogData_Reg_TypeDef LogObj_Enable_Reg;
 static LogData_Reg_TypeDef LogObj_Logging_Reg;
 static Os_IdleObj_TypeDef LogIdleObj;
 static uint16_t QueueIMU_PopSize = 0;
-
+static Log_Statistics_TypeDef Log_Statistics;
 
 static LogSummary_TypeDef LogIMU_Summary = {
     .max_rt_diff = 0,
@@ -99,6 +99,7 @@ void TaskLog_Init(void)
 {
     Os_Idle_DataStream_TypeDef LogData_Stream;
 
+    memset(&Log_Statistics, 0, sizeof(Log_Statistics_TypeDef));
     memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
     memset(&FATFS_Obj, NULL, sizeof(FATFS_Obj));
@@ -148,19 +149,12 @@ void TaskLog_Init(void)
     LogData_Stream.size = 0;
 }
 
-static uint32_t cyc_cnt = 0;
-static uint32_t test_size = 0;
-static uint32_t compess_cnt = 0;
-static uint32_t total_log_byte = 0;
-static uint32_t org_pop_size = 0;
-static uint32_t org_compess_size = 0;
 void TaskLog_Core(Task_Handle hdl)
 {
     uint8_t *compess_buf_ptr = NULL;
     uint16_t cur_compess_size = 0;
 
     // DebugPin.ctl(Debug_PB4, true);
-    uint32_t compess_size_tmp = 0;
 
     if(LogFile_Ready && enable_compess)
     {
@@ -169,10 +163,6 @@ void TaskLog_Core(Task_Handle hdl)
 
         if(QueueIMU_PopSize != 0)
         {
-            /* test section */
-            org_pop_size = QueueIMU_PopSize;
-            org_compess_size = LogCompess_Data.compess_size;
-
             LogObj_Logging_Reg._sec.IMU_Sec = true;
             LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
 
@@ -190,13 +180,12 @@ void TaskLog_Core(Task_Handle hdl)
                 }
                 else
                 {
-                    compess_cnt++;
+                    Log_Statistics.compess_cnt++;
                     memset(LogCache_L2_Buf, 0, QueueIMU_PopSize);
-                    compess_size_tmp = LogCompess_Data.compess_size + cur_compess_size;
 
                     memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_size, sizeof(uint32_t));
 
-                    LogCompess_Data.compess_size = compess_size_tmp + 5;
+                    LogCompess_Data.compess_size = LogCompess_Data.compess_size + cur_compess_size + 5;
                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
                     LogCompess_Data.compess_size ++;
 
@@ -213,9 +202,10 @@ void TaskLog_Core(Task_Handle hdl)
                         }
                         else
                         {
-                            cyc_cnt ++;
+                            Log_Statistics.write_file_cnt ++;
+                            Log_Statistics.log_byte_sum += 512;
                             LogCompess_Data.compess_size -= 512;
-                            total_log_byte += 512;
+
                             for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
                             {
                                 LogCompess_Data.buf[t] = LogCompess_Data.buf[t + 512];
@@ -236,8 +226,6 @@ void TaskLog_Core(Task_Handle hdl)
     // DebugPin.ctl(Debug_PB4, false);
 }
 
-static uint32_t pop_cnt = 0;
-static uint32_t imu_opy_cnt = 0;
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
     uint64_t imu_pipe_rt_diff = 0;
@@ -295,18 +283,17 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         }
         else
         {
-            imu_opy_cnt++;
+            Log_Statistics.queue_push_err_cnt++;
         }
 
         if(!LogObj_Logging_Reg._sec.IMU_Sec && enable_compess && 
             Queue.size(IMUData_Queue) >= MAX_FILE_SIZE_K(1))
         {
             QueueIMU_PopSize = (MAX_FILE_SIZE_K(1) / (LOG_HEADER_SIZE + sizeof(Log_Buf))) * (LOG_HEADER_SIZE + sizeof(Log_Buf));
-            if(QueueIMU_PopSize <= sizeof(LogCache_L2_Buf))
-            {
-                pop_cnt ++;
-                Queue.pop(&IMUData_Queue, LogCache_L2_Buf, QueueIMU_PopSize);
-            }
+
+            /* queue pop count should equal to compess count */
+            Log_Statistics.queue_pop_cnt ++;
+            Queue.pop(&IMUData_Queue, LogCache_L2_Buf, QueueIMU_PopSize);
         }
     }
 }

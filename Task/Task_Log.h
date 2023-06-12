@@ -50,6 +50,15 @@ typedef struct
     uint8_t check_sum;
 }LogIMUData_TypeDef;
 
+typedef struct
+{
+    uint32_t queue_push_err_cnt;
+    uint32_t queue_pop_cnt;
+    uint32_t compess_cnt;
+    uint32_t write_file_cnt;
+    uint32_t log_byte_sum;
+}Log_Statistics_TypeDef;
+
 typedef union
 {
     uint8_t buff[sizeof(LogIMUData_TypeDef)];
