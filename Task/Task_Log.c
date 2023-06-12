@@ -180,6 +180,7 @@ void TaskLog_Core(Task_Handle hdl)
                 }
                 else
                 {
+                    /* compess count should equal to queue pop count */
                     Log_Statistics.compess_cnt++;
                     memset(LogCache_L2_Buf, 0, QueueIMU_PopSize);
 
