@@ -254,27 +254,6 @@ static bool Disk_Init(Disk_FATFileSys_TypeDef *FATObj, Disk_Printf_Callback Call
     Disk_ParseFSINFO(FATObj);
     Disk_Search_FreeCluster(FATObj);
 
-    /* test code */
-    // volatile FATCluster_Addr test_folder1_cluster;
-
-    // memset(&test1_file, NULL, sizeof(test1_file));
-    // test_folder1_cluster = Disk_Create_Folder(&FATFs_Obj, "test4/", ROOT_CLUSTER_ADDR);
-    // // test_folder2_cluster = Disk_Create_Folder(&FATFs_Obj, "test5/", ROOT_CLUSTER_ADDR);
-    // // test_folder3_cluster = Disk_Create_Folder(&FATFs_Obj, "test6/", ROOT_CLUSTER_ADDR);
-
-    // test1_file = Disk_Create_File(&FATFs_Obj, "test.txt", test_folder1_cluster);
-    // Disk_Open(&FATFs_Obj, "test4/", "test.txt", &test1_file);
-
-    // for (uint16_t i = 0; i < 1024; i++)
-    // {
-    //     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 1\r\n", strlen("test 8_B!T0 1\r\n"));
-    //     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 2\r\n", strlen("test 8_B!T0 2\r\n"));
-    //     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "test_8_B!T0 3\r\n", strlen("test 8_B!T0 3\r\n"));
-    //     Disk_WriteData_ToFile(&FATFs_Obj, &test1_file, "\r\n", strlen("\r\n"));
-    // }
-
-    /* test code */
-
     MIN_write_unit = Disk_GetCard_Info().BlockSize;
 #endif
     return true;

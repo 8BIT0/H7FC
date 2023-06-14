@@ -1,4 +1,5 @@
 #include "Bsp_SDMMC.h"
+#include "runtime.h"
 
 static const GPIO_InitTypeDef BspSDMMC_PinCfg = {
     .Mode = GPIO_MODE_AF_PP,
@@ -242,6 +243,8 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
 {
     volatile HAL_SD_StateTypeDef opr_state;
     uint32_t retry_cnt = SDMMC_OPR_RETRY_MAX_CNT;
+    uint32_t ms = 0;
+    static uint32_t test = 0;
 
     // if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
@@ -250,6 +253,7 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
     HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
     Kernel_ExitCritical();
 
+    ms = Get_CurrentRunningMs();
     if (state == HAL_OK)
     {
         while (retry_cnt)
@@ -259,7 +263,13 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
                 SD_Tx_Cplt = false;
                 
                 if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) //HAL_SD_STATE_RESET
+                {
+                    if(Get_CurrentRunningMs() - ms > 7)
+                    {
+                        test ++;
+                    }
                     return true;
+                }
 
                 return false;
             }

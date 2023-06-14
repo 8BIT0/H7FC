@@ -181,7 +181,7 @@ SYSTEM_RunTime Get_CurrentRunningUs(void)
 
 SYSTEM_RunTime Get_CurrentRunningMs(void)
 {
-    return RunTime.Use_Us / REAL_1MS;
+    return RunTime.Use_Ms;
 }
 
 SYSTEM_RunTime Get_CurrentRunningS(void)
