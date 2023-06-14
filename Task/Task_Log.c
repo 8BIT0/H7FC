@@ -164,76 +164,65 @@ void TaskLog_Core(Task_Handle hdl)
         compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + sizeof(uint32_t) + sizeof(uint8_t));
         cur_compess_size = 0;
 
-        /* test section */
-        if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_Write_Finish)
+        if(input_compess_size != 0)
         {
-            LogFile_Ready = false;
-            Log_Statistics.halt_type = Log_Finish_Halt;
-            DataPipe_Disable(&IMU_Log_DataPipe);
+            QueueIMU_PopSize = 0;
+            LogObj_Logging_Reg._sec.IMU_Sec = true;
+            LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
+
+            ret = lzo1x_1_compress(LogCache_L2_Buf, input_compess_size, compess_buf_ptr, &cur_compess_size, wrkmem);
+            if(ret != LZO_E_OK)
+            {
+                enable_compess = false;
+                Log_Statistics.halt_type = Log_CompessFunc_Halt;
+                DataPipe_Disable(&IMU_Log_DataPipe);
+            }
+            else
+            {
+                if(input_compess_size <= cur_compess_size)
+                {
+                    enable_compess = false;
+                    Log_Statistics.halt_type = Log_CompessSize_Halt;
+                    DataPipe_Disable(&IMU_Log_DataPipe);
+                }
+                else
+                {
+                    /* compess count should equal to queue pop count */
+                    Log_Statistics.compess_cnt++;
+                    memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_size, sizeof(uint32_t));
+
+                    LogCompess_Data.compess_size = LogCompess_Data.compess_size + cur_compess_size + 5;
+                    LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
+                    LogCompess_Data.compess_size ++;
+                    LogObj_Logging_Reg._sec.IMU_Sec = false;
+
+                    while(LogCompess_Data.compess_size >= 512)
+                    {
+                        if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_Write_Finish)
+                        {
+                            LogFile_Ready = false;
+                            Log_Statistics.halt_type = Log_Finish_Halt;
+                            DataPipe_Disable(&IMU_Log_DataPipe);
+                            break;
+                        }
+                        else
+                        {
+                            Log_Statistics.write_file_cnt ++;
+                            Log_Statistics.log_byte_sum += 512;
+                            LogCompess_Data.compess_size -= 512;
+
+                            for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
+                            {
+                                LogCompess_Data.buf[t] = LogCompess_Data.buf[t + 512];
+                                LogCompess_Data.buf[t + 512] = 0;
+                            }
+                        }
+                    }
+                }
+            }
+
+            DevLED.ctl(Led1, true);
         }
-        /* test section */
-
-        // if(input_compess_size != 0)
-        // {
-        //     QueueIMU_PopSize = 0;
-        //     LogObj_Logging_Reg._sec.IMU_Sec = true;
-        //     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
-
-        //     ret = lzo1x_1_compress(LogCache_L2_Buf, input_compess_size, compess_buf_ptr, &cur_compess_size, wrkmem);
-        //     if(ret != LZO_E_OK)
-        //     {
-        //         enable_compess = false;
-        //         Log_Statistics.halt_type = Log_CompessFunc_Halt;
-        //         DataPipe_Disable(&IMU_Log_DataPipe);
-        //     }
-        //     else
-        //     {
-        //         if(input_compess_size <= cur_compess_size)
-        //         {
-        //             enable_compess = false;
-        //             Log_Statistics.halt_type = Log_CompessSize_Halt;
-        //             DataPipe_Disable(&IMU_Log_DataPipe);
-        //         }
-        //         else
-        //         {
-        //             /* compess count should equal to queue pop count */
-        //             Log_Statistics.compess_cnt++;
-        //             memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_size, sizeof(uint32_t));
-
-        //             LogCompess_Data.compess_size = LogCompess_Data.compess_size + cur_compess_size + 5;
-        //             LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
-        //             LogCompess_Data.compess_size ++;
-        //             LogObj_Logging_Reg._sec.IMU_Sec = false;
-
-        //             while(LogCompess_Data.compess_size >= 512)
-        //             {
-        //                 if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_Write_Finish)
-        //                 {
-        //                     LogFile_Ready = false;
-        //                     Log_Statistics.halt_type = Log_Finish_Halt;
-        //                     DataPipe_Disable(&IMU_Log_DataPipe);
-        //                     break;
-        //                 }
-        //                 else
-        //                 {
-        //                     Log_Statistics.write_file_cnt ++;
-        //                     Log_Statistics.log_byte_sum += 512;
-        //                     LogCompess_Data.compess_size -= 512;
-
-        //                     for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
-        //                     {
-        //                         LogCompess_Data.buf[t] = LogCompess_Data.buf[t + 512];
-        //                         LogCompess_Data.buf[t + 512] = 0;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-
-        //     DevLED.ctl(Led1, true);
-        // }
-        // else
-        //     LogObj_Logging_Reg._sec.IMU_Sec = false;
     }
     else
         DevLED.ctl(Led1, false);

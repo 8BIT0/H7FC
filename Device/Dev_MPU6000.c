@@ -377,6 +377,7 @@ static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
     {
         sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
 
+        /* 14Byte I/O overhead 18Us then average overhead is 1.3Us/Byte */
         Dev_MPU6000_Regs_Read(sensor_obj, MPU6000_ACCEL_XOUT_H, Tx, Rx, 14);
 
         for (uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
