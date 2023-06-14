@@ -1734,8 +1734,10 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
 
         if (FileObj->remain_byte_in_sec == 0)
         {
-            DebugPin.ctl(Debug_PB4, true);
+            // DebugPin.ctl(Debug_PB4, true);
             DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
+            // DebugPin.ctl(Debug_PB4, false);
+
             memset(Disk_FileSection_DataCache, '\0', DISK_CARD_SECTION_SZIE);
 
             if (FileObj->end_sec == cluster_end_section)
@@ -1781,8 +1783,6 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
                 FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
                 cluster_end_section = FileObj->end_sec + FATObj->SecPerCluster;
             }
-
-            DebugPin.ctl(Debug_PB4, false);
 
             /* update end section */
             FileObj->end_sec++;

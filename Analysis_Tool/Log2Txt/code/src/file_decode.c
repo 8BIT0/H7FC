@@ -40,6 +40,7 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
     static uint64_t lst_Rt = 0;
     static uint64_t start_rt = 0;
     static uint64_t end_rt = 0;
+    uint32_t test = 0;
     uint32_t pck_lost_cnt = 0;
     uint32_t decompess_pck_cnt = 0;
 
@@ -120,6 +121,8 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
                         {
                             if(((IMU_Data.data.time - lst_Rt) > 500) && ((IMU_Data.data.cyc - lst_cyc) > 1))
                             {
+                                test ++;
+
                                 printf("[INFO]  Occur Pack Index %d\r\n", nor_pck_cnt);
                                 printf("[INFO]  Current Decompess Size: %lld\r\n", compess_pck_byte);
                                 printf("[INFO]  runtime:\t\t%d\ttime_diff:\t\t%d\r\n", IMU_Data.data.time, IMU_Data.data.time - lst_Rt);
@@ -149,6 +152,8 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
 
 Decode_EOF:
     printf("\r\n");
+    
+    printf("[INFO]  test                          : %d\r\n", test);
     
     printf("[INFO]  Bad Ender                     : %d\r\n", bad_ender_cnt);
     printf("[INFO]  Total Lost Pack Number        : %d\r\n", pck_lost_cnt);

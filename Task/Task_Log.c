@@ -153,80 +153,96 @@ void TaskLog_Core(Task_Handle hdl)
 {
     uint8_t *compess_buf_ptr = NULL;
     uint16_t cur_compess_size = 0;
+    uint16_t input_compess_size = 0;
+    int ret = 0;
 
-    // DebugPin.ctl(Debug_PB4, true);
+    input_compess_size = QueueIMU_PopSize;
+    DebugPin.ctl(Debug_PB4, true);
 
     if(LogFile_Ready && enable_compess)
     {
         compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + sizeof(uint32_t) + sizeof(uint8_t));
         cur_compess_size = 0;
 
-        if(QueueIMU_PopSize != 0)
+        /* test section */
+        if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_Write_Finish)
         {
-            LogObj_Logging_Reg._sec.IMU_Sec = true;
-            LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
-
-            if(lzo1x_1_compress(LogCache_L2_Buf, QueueIMU_PopSize, compess_buf_ptr, &cur_compess_size, wrkmem) != LZO_E_OK)
-            {
-                enable_compess = false;
-                DataPipe_Disable(&IMU_Log_DataPipe);
-            }
-            else
-            {
-                if(QueueIMU_PopSize <= cur_compess_size)
-                {
-                    enable_compess = false;
-                    DataPipe_Disable(&IMU_Log_DataPipe);
-                }
-                else
-                {
-                    /* compess count should equal to queue pop count */
-                    Log_Statistics.compess_cnt++;
-                    memset(LogCache_L2_Buf, 0, QueueIMU_PopSize);
-
-                    memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_size, sizeof(uint32_t));
-
-                    LogCompess_Data.compess_size = LogCompess_Data.compess_size + cur_compess_size + 5;
-                    LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
-                    LogCompess_Data.compess_size ++;
-
-                    QueueIMU_PopSize = 0;
-                    LogObj_Logging_Reg._sec.IMU_Sec = false;
-
-                    while(LogCompess_Data.compess_size >= 512)
-                    {
-                        if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_Write_Finish)
-                        {
-                            LogFile_Ready = false;
-                            DataPipe_Disable(&IMU_Log_DataPipe);
-                            break;
-                        }
-                        else
-                        {
-                            Log_Statistics.write_file_cnt ++;
-                            Log_Statistics.log_byte_sum += 512;
-                            LogCompess_Data.compess_size -= 512;
-
-                            for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
-                            {
-                                LogCompess_Data.buf[t] = LogCompess_Data.buf[t + 512];
-                                LogCompess_Data.buf[t + 512] = 0;
-                            }
-                        }
-                    }
-                }
-            }
-
-            DevLED.ctl(Led1, true);
+            LogFile_Ready = false;
+            Log_Statistics.halt_type = Log_Finish_Halt;
+            DataPipe_Disable(&IMU_Log_DataPipe);
         }
-        else
-            LogObj_Logging_Reg._sec.IMU_Sec = false;
+        /* test section */
+
+        // if(input_compess_size != 0)
+        // {
+        //     QueueIMU_PopSize = 0;
+        //     LogObj_Logging_Reg._sec.IMU_Sec = true;
+        //     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
+
+        //     ret = lzo1x_1_compress(LogCache_L2_Buf, input_compess_size, compess_buf_ptr, &cur_compess_size, wrkmem);
+        //     if(ret != LZO_E_OK)
+        //     {
+        //         enable_compess = false;
+        //         Log_Statistics.halt_type = Log_CompessFunc_Halt;
+        //         DataPipe_Disable(&IMU_Log_DataPipe);
+        //     }
+        //     else
+        //     {
+        //         if(input_compess_size <= cur_compess_size)
+        //         {
+        //             enable_compess = false;
+        //             Log_Statistics.halt_type = Log_CompessSize_Halt;
+        //             DataPipe_Disable(&IMU_Log_DataPipe);
+        //         }
+        //         else
+        //         {
+        //             /* compess count should equal to queue pop count */
+        //             Log_Statistics.compess_cnt++;
+        //             memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_size, sizeof(uint32_t));
+
+        //             LogCompess_Data.compess_size = LogCompess_Data.compess_size + cur_compess_size + 5;
+        //             LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
+        //             LogCompess_Data.compess_size ++;
+        //             LogObj_Logging_Reg._sec.IMU_Sec = false;
+
+        //             while(LogCompess_Data.compess_size >= 512)
+        //             {
+        //                 if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_Write_Finish)
+        //                 {
+        //                     LogFile_Ready = false;
+        //                     Log_Statistics.halt_type = Log_Finish_Halt;
+        //                     DataPipe_Disable(&IMU_Log_DataPipe);
+        //                     break;
+        //                 }
+        //                 else
+        //                 {
+        //                     Log_Statistics.write_file_cnt ++;
+        //                     Log_Statistics.log_byte_sum += 512;
+        //                     LogCompess_Data.compess_size -= 512;
+
+        //                     for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
+        //                     {
+        //                         LogCompess_Data.buf[t] = LogCompess_Data.buf[t + 512];
+        //                         LogCompess_Data.buf[t + 512] = 0;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+
+        //     DevLED.ctl(Led1, true);
+        // }
+        // else
+        //     LogObj_Logging_Reg._sec.IMU_Sec = false;
     }
     else
         DevLED.ctl(Led1, false);
-    // DebugPin.ctl(Debug_PB4, false);
+
+    DebugPin.ctl(Debug_PB4, false);
 }
 
+static uint32_t in_queue_size = 0;
+static uint32_t out_queue_size = 0;
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
     uint64_t imu_pipe_rt_diff = 0;
@@ -238,6 +254,19 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 
     if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe) && LogObj_Enable_Reg._sec.IMU_Sec)
     {
+        if(!LogObj_Logging_Reg._sec.IMU_Sec && enable_compess && 
+            Queue.size(IMUData_Queue) >= MAX_FILE_SIZE_K(1))
+        {
+            Log_Statistics.queue_pop_cnt ++;
+
+            in_queue_size = Queue.size(IMUData_Queue);
+            QueueIMU_PopSize = (Queue.size(IMUData_Queue) / (LOG_HEADER_SIZE + sizeof(Log_Buf))) * (LOG_HEADER_SIZE + sizeof(Log_Buf));
+
+            /* queue pop count should equal to compess count */
+            Queue.pop(&IMUData_Queue, LogCache_L2_Buf, Queue.size(IMUData_Queue));
+            out_queue_size = Queue.size(IMUData_Queue);
+        }
+
         memset(Log_Buf.data.const_res, 0, sizeof(Log_Buf.data.const_res));
         Log_Buf.data.time = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;
         Log_Buf.data.acc_scale = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.acc_scale;
@@ -286,16 +315,6 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         else
         {
             Log_Statistics.queue_push_err_cnt++;
-        }
-
-        if(!LogObj_Logging_Reg._sec.IMU_Sec && enable_compess && 
-            Queue.size(IMUData_Queue) >= MAX_FILE_SIZE_K(1))
-        {
-            QueueIMU_PopSize = (MAX_FILE_SIZE_K(1) / (LOG_HEADER_SIZE + sizeof(Log_Buf))) * (LOG_HEADER_SIZE + sizeof(Log_Buf));
-
-            /* queue pop count should equal to compess count */
-            Log_Statistics.queue_pop_cnt ++;
-            Queue.pop(&IMUData_Queue, LogCache_L2_Buf, QueueIMU_PopSize);
         }
     }
 }

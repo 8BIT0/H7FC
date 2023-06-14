@@ -145,16 +145,16 @@ static bool BspSDMMC_MDMA_Init(MDMA_HandleTypeDef *mdma)
 
     mdma->Instance = MDMA_Channel0;
     mdma->Init.TransferTriggerMode = MDMA_BLOCK_TRANSFER;
-    mdma->Init.Priority = MDMA_PRIORITY_LOW;
+    mdma->Init.Priority = MDMA_PRIORITY_HIGH;
     mdma->Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
-    mdma->Init.SourceInc = MDMA_SRC_INC_BYTE;
-    mdma->Init.DestinationInc = MDMA_DEST_INC_BYTE;
-    mdma->Init.SourceDataSize = MDMA_SRC_DATASIZE_BYTE;
-    mdma->Init.DestDataSize = MDMA_DEST_DATASIZE_BYTE;
+    mdma->Init.SourceInc = MDMA_SRC_INC_WORD;//MDMA_SRC_INC_BYTE;
+    mdma->Init.DestinationInc = MDMA_DEST_INC_WORD;//MDMA_DEST_INC_BYTE;
+    mdma->Init.SourceDataSize = MDMA_SRC_DATASIZE_WORD;//MDMA_SRC_DATASIZE_BYTE;
+    mdma->Init.DestDataSize = MDMA_DEST_DATASIZE_WORD;//MDMA_DEST_DATASIZE_BYTE;
     mdma->Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
     mdma->Init.BufferTransferLength = 1;
-    mdma->Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
-    mdma->Init.DestBurst = MDMA_DEST_BURST_SINGLE;
+    mdma->Init.SourceBurst = MDMA_SOURCE_BURST_8BEATS;//MDMA_SOURCE_BURST_SINGLE;
+    mdma->Init.DestBurst = MDMA_DEST_BURST_8BEATS;//MDMA_DEST_BURST_SINGLE;
     mdma->Init.SourceBlockAddressOffset = 0;
     mdma->Init.DestBlockAddressOffset = 0;
     if (HAL_MDMA_Init(mdma) != HAL_OK)
@@ -190,9 +190,9 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     obj->hdl.Instance = obj->instance; // SDMMC1;
     obj->hdl.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
     obj->hdl.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
-    obj->hdl.Init.BusWide = SDMMC_BUS_WIDE_1B;
-    obj->hdl.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
-    obj->hdl.Init.ClockDiv = 2;
+    obj->hdl.Init.BusWide = SDMMC_BUS_WIDE_4B;
+    obj->hdl.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
+    obj->hdl.Init.ClockDiv = 1;
     obj->hdl.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
 
     if (!BspSDMMC_MDMA_Init(&(obj->mdma)) || (HAL_SD_Init(&(obj->hdl)) != HAL_OK))
@@ -263,7 +263,6 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
 
                 return false;
             }
-            __DSB();
 
             retry_cnt--;
         }

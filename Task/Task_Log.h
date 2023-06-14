@@ -15,6 +15,14 @@
 
 #define LOG_HEADER_SIZE sizeof(LogData_Header_TypeDef)
 
+typedef enum
+{
+    Log_None_Halt = 0,
+    Log_CompessFunc_Halt,
+    Log_CompessSize_Halt,
+    Log_Finish_Halt,
+}Log_halt_Type;
+
 typedef union
 {
     struct
@@ -45,7 +53,7 @@ typedef struct
     uint16_t flt_acc[Axis_Sum];
     uint16_t flt_gyr[Axis_Sum];
 
-    uint8_t const_res[30];
+    uint8_t const_res[24];
 
     uint8_t check_sum;
 }LogIMUData_TypeDef;
@@ -57,6 +65,8 @@ typedef struct
     uint32_t compess_cnt;
     uint32_t write_file_cnt;
     uint32_t log_byte_sum;
+
+    Log_halt_Type halt_type;
 }Log_Statistics_TypeDef;
 
 typedef union
