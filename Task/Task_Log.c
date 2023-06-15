@@ -149,6 +149,7 @@ void TaskLog_Init(void)
     LogData_Stream.size = 0;
 }
 
+uint32_t core_cnt = 0;
 void TaskLog_Core(Task_Handle hdl)
 {
     uint8_t *compess_buf_ptr = NULL;
@@ -158,6 +159,8 @@ void TaskLog_Core(Task_Handle hdl)
 
     input_compess_size = QueueIMU_PopSize;
     DebugPin.ctl(Debug_PB4, true);
+
+    core_cnt ++;
 
     if(LogFile_Ready && enable_compess)
     {

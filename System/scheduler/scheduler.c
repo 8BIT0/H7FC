@@ -4,6 +4,9 @@
 #include "linked_list.h"
 #include "mmu.h"
 
+#include "debug_util.h"
+#include "IO_Definition.h"
+
 // coder: 8_B!T0
 // bref:
 // estabishment a task running system with priority calling functional
@@ -571,10 +574,20 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 
             NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
             NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
-
-            /* trigger pendsv to switch task */
-            Kernel_TriggerPendSV();
         }
+        else
+        {
+            // NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
+
+            // if(NxtRunTsk_Ptr)
+            // {
+            //     NxtTsk_TCB.Top_Stk_Ptr = &NxtRunTsk_Ptr->TCB.Top_Stk_Ptr;
+            //     NxtTsk_TCB.Stack = NxtRunTsk_Ptr->TCB.Stack;
+            // }
+        }
+
+        /* trigger pendsv to switch task */
+        Kernel_TriggerPendSV();
     }
 }
 
@@ -683,12 +696,32 @@ static Task *Os_Get_HighestRank_PndTask(void)
 // return high priority task pointer
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
 {
+    bool l_match = false;
+    bool r_match = false;
+
     volatile uint8_t grp_l = GET_TASKGROUP_PRIORITY(tsk_l->priority);
     volatile uint8_t grp_r = GET_TASKGROUP_PRIORITY(tsk_r->priority);
     volatile uint8_t pri_l = GET_TASKINGROUP_PRIORITY(tsk_l->priority);
     volatile uint8_t pri_r = GET_TASKINGROUP_PRIORITY(tsk_r->priority);
 
     if ((tsk_l == NULL) && (tsk_r == NULL))
+    {
+        return NULL;
+    }
+
+    for(uint8_t g = Task_Group_0; g < Task_Group_Sum; g ++)
+    {
+        for(uint8_t p = Task_Priority_0; p < Task_Priority_Sum; p ++)
+        {
+            if((!l_match) && (tsk_l == TaskPtr_Map[g][p]))
+                l_match = true;
+
+            if((!r_match) && (tsk_r == TaskPtr_Map[g][p]))
+                r_match = true;
+        }
+    }
+
+    if(!l_match && !r_match)
     {
         return NULL;
     }
@@ -788,10 +821,15 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
     }
 }
 
+uint32_t call_cnt = 0;
 static void Os_TaskExec(Task *tsk_ptr)
 {
-    volatile SYSTEM_RunTime time_diff;
-    volatile SYSTEM_RunTime func_cast;
+    SYSTEM_RunTime time_diff;
+    volatile  func_cast;
+    volatile uint64_t task_func_start_rt = 0;
+    volatile uint64_t task_func_finish_rt = 0;
+    volatile uint64_t interval = 0;
+    volatile uint64_t exec_time = 0;
     RuntimeObj_Reset(&time_diff);
 
     if (tsk_ptr->State == Task_Ready)
@@ -808,18 +846,35 @@ static void Os_TaskExec(Task *tsk_ptr)
         if ((tsk_ptr->Exec_status.Exec_cnt == 0) && (tsk_ptr != Idle_Task))
         {
             tsk_ptr->Exec_status.Start_Time = Get_CurrentRunningUs();
-            tsk_ptr->Exec_status.Exec_Time = tsk_ptr->Exec_status.Start_Time;
         }
 
         if (tsk_ptr->Exec_Func != NULL)
         {
             tsk_ptr->State = Task_Running;
 
-            func_cast = Get_CurrentRunningUs();
-            tsk_ptr->Exec_status.Exec_Time = Get_CurrentRunningUs();
+            task_func_start_rt = Get_CurrentRunningUs();
+            tsk_ptr->Exec_status.Exec_Time = task_func_start_rt;
+
             // execute task funtion
             tsk_ptr->Exec_Func(*&tsk_ptr);
-            func_cast = Get_CurrentRunningUs() - func_cast;
+            task_func_finish_rt = Get_CurrentRunningUs();
+            func_cast = task_func_finish_rt - task_func_start_rt;
+
+            interval = tsk_ptr->exec_interval_us;
+
+            Kernel_EnterCritical();
+            if (tsk_ptr != Idle_Task)
+            {
+                if(interval && (func_cast > interval))
+                {
+                    interval = tsk_ptr->exec_interval_us - (func_cast % interval);
+                }
+                else
+                    interval = tsk_ptr->exec_interval_us - func_cast;
+
+                tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(interval);
+            }
+            Kernel_ExitCritical();
         }
         else
         {
@@ -836,8 +891,6 @@ static void Os_TaskExec(Task *tsk_ptr)
         // get task total execute time unit in us
         tsk_ptr->Exec_status.Running_Time += tsk_ptr->TskFuncUing_US;
         time_diff = Get_TimeDifference_Between(tsk_ptr->Exec_status.Start_Time, tsk_ptr->Exec_status.Exec_Time);
-        // tsk_ptr->Exec_status.Exec_Time = Get_TargetRunTime(tsk_ptr->exec_interval_us);
-        tsk_ptr->Exec_status.Exec_Time += tsk_ptr->exec_interval_us;
 
         tsk_ptr->Exec_status.cpu_opy = tsk_ptr->Exec_status.Running_Time / (float)time_diff;
         tsk_ptr->Exec_status.cpu_opy *= 100;
@@ -882,8 +935,8 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
     {
         // get current highest priority task handler AKA NxtRunTsk_Ptr
         if ((scheduler_state == Scheduler_Start) &&
-            ((((Task *)data)->State == Task_Ready) ||
-             (((Task *)data)->State == Task_Stop) ||
+            ((((Task *)data)->State == Task_Stop) ||
+             (((Task *)data)->State == Task_Ready) ||
              (((Task *)data)->State == Task_DelayBlock)) &&
             (RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
