@@ -176,12 +176,16 @@ bool Runtime_Tick(void)
 
 SYSTEM_RunTime Get_CurrentRunningUs(void)
 {
-    return RunTime.Use_Us;
+    uint64_t rt = RunTime.Use_Us;
+
+    return rt;
 }
 
 SYSTEM_RunTime Get_CurrentRunningMs(void)
 {
-    return RunTime.Use_Ms;
+    uint64_t rt = RunTime.Use_Ms;
+
+    return rt;
 }
 
 SYSTEM_RunTime Get_CurrentRunningS(void)
@@ -191,12 +195,16 @@ SYSTEM_RunTime Get_CurrentRunningS(void)
 
 SYSTEM_RunTime Get_TimeDifference(uint64_t time_in)
 {
-    return (RunTime.Use_Us - time_in);
+    uint64_t rt = (RunTime.Use_Us - time_in);
+    
+    return rt;
 }
 
 SYSTEM_RunTime Get_TargetRunTime(uint16_t duration)
 {
-    return (RunTime.Use_Us + duration);
+    uint64_t rt = (RunTime.Use_Us + duration);
+    
+    return rt;
 }
 
 /* return the object addr for the longer one */
