@@ -66,6 +66,8 @@ static volatile Task_List_s TskRdy_RegList = {.num = 0, .list = {.prv = NULL, .n
 
 static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 
+static bool TasK_Scheduler_Running = false;
+
 static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum] = {{NULL}};
 static Task *Idle_Task;
 static Idle_Callback_List_s Idle_List;
@@ -523,6 +525,13 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     SYSTEM_RunTime CurRt_US = Rt;
     Task *TskPtr_Tmp = NULL;
 
+    Kernel_EnterCritical();
+
+    if(TasK_Scheduler_Running)
+        return ;
+
+    TasK_Scheduler_Running = true;
+
     if (TskCrt_RegList.num)
     {
         /* check task state ready or not */
@@ -589,6 +598,9 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
         /* trigger pendsv to switch task */
         Kernel_TriggerPendSV();
     }
+
+    TasK_Scheduler_Running = false;
+    Kernel_ExitCritical();
 }
 
 /* still got bug down below */
