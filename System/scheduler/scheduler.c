@@ -821,7 +821,6 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
     }
 }
 
-uint32_t call_cnt = 0;
 static void Os_TaskExec(Task *tsk_ptr)
 {
     SYSTEM_RunTime time_diff;
