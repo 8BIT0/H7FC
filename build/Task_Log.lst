@@ -1,0 +1,2207 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Task_Log.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.TaskLog_PipeTransFinish_Callback,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	TaskLog_PipeTransFinish_Callback:
+  25              	.LVL0:
+  26              	.LFB153:
+  27              		.file 1 "Task/Task_Log.c"
+   1:Task/Task_Log.c **** /*
+   2:Task/Task_Log.c ****  *  coder: 8_B!T0
+   3:Task/Task_Log.c ****  *  bref: use this task Log Gyro and Acc Data
+   4:Task/Task_Log.c ****  *
+   5:Task/Task_Log.c ****  *  this task and module can be improved and optimized in a big but way we use it in short time tem
+   6:Task/Task_Log.c ****  *  after when the main fundamental ability was accomplished we go back in this file and do improve
+   7:Task/Task_Log.c ****  */
+   8:Task/Task_Log.c **** #include "Task_Log.h"
+   9:Task/Task_Log.c **** #include "scheduler.h"
+  10:Task/Task_Log.c **** #include "shell.h"
+  11:Task/Task_Log.c **** #include "debug_util.h"
+  12:Task/Task_Log.c **** #include <stdio.h>
+  13:Task/Task_Log.c **** #include "queue.h"
+  14:Task/Task_Log.c **** #include "error_log.h"
+  15:Task/Task_Log.c **** #include "mmu.h"
+  16:Task/Task_Log.c **** #include "DiskIO.h"
+  17:Task/Task_Log.c **** #include "DataPipe/DataPipe.h"
+  18:Task/Task_Log.c **** #include "Task_Protocol.h"
+  19:Task/Task_Log.c **** #include "Task_SensorInertial.h"
+  20:Task/Task_Log.c **** #include "Dev_Led.h"
+  21:Task/Task_Log.c **** #include "IO_Definition.h"
+  22:Task/Task_Log.c **** #include "minilzo.h"
+  23:Task/Task_Log.c **** #include <stdio.h>
+  24:Task/Task_Log.c **** 
+  25:Task/Task_Log.c **** #define LOG_FOLDER "log/"
+  26:Task/Task_Log.c **** #define IMU_LOG_FILE "imu.log"
+  27:Task/Task_Log.c **** 
+  28:Task/Task_Log.c **** #define K_BYTE 1024
+  29:Task/Task_Log.c **** #define M_BYTE (K_BYTE * K_BYTE)
+  30:Task/Task_Log.c **** #define MAX_FILE_SIZE_M(x) (x * M_BYTE)
+  31:Task/Task_Log.c **** #define MAX_FILE_SIZE_K(x) (x * K_BYTE)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 2
+
+
+  32:Task/Task_Log.c **** #define MIN_CACHE_NUM 2
+  33:Task/Task_Log.c **** 
+  34:Task/Task_Log.c **** #define LOG_COMPESS_HEADER 0xCA
+  35:Task/Task_Log.c **** #define LOG_COMPESS_ENDER 0xED
+  36:Task/Task_Log.c **** 
+  37:Task/Task_Log.c **** #define HEAP_ALLOC(var,size) \
+  38:Task/Task_Log.c ****     lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ] TCM
+  39:Task/Task_Log.c **** 
+  40:Task/Task_Log.c **** static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
+  41:Task/Task_Log.c **** 
+  42:Task/Task_Log.c **** typedef struct
+  43:Task/Task_Log.c **** {
+  44:Task/Task_Log.c ****     SYSTEM_RunTime max_rt_diff;     // unit: us
+  45:Task/Task_Log.c ****     SYSTEM_RunTime period;          // unit: us
+  46:Task/Task_Log.c ****     SYSTEM_RunTime start_rt;
+  47:Task/Task_Log.c ****     SYSTEM_RunTime end_rt;
+  48:Task/Task_Log.c ****     uint32_t err_interval_cnt;
+  49:Task/Task_Log.c ****     uint64_t push_cnt;
+  50:Task/Task_Log.c **** }LogSummary_TypeDef;
+  51:Task/Task_Log.c **** 
+  52:Task/Task_Log.c **** /* internal variable */
+  53:Task/Task_Log.c **** static const LogData_Header_TypeDef LogIMU_Header = {
+  54:Task/Task_Log.c ****     .header = LOG_HEADER,
+  55:Task/Task_Log.c ****     .type = LOG_DATATYPE_IMU,
+  56:Task/Task_Log.c ****     .size = sizeof(LogIMUDataUnion_TypeDef),
+  57:Task/Task_Log.c **** };
+  58:Task/Task_Log.c **** 
+  59:Task/Task_Log.c **** typedef struct
+  60:Task/Task_Log.c **** {
+  61:Task/Task_Log.c ****     uint8_t buf[MAX_FILE_SIZE_K(2)];
+  62:Task/Task_Log.c ****     uint16_t compess_size;
+  63:Task/Task_Log.c ****     uint8_t total;
+  64:Task/Task_Log.c **** }LogCompess_Data_TypeDef;
+  65:Task/Task_Log.c **** 
+  66:Task/Task_Log.c **** static LogCompess_Data_TypeDef LogCompess_Data = {
+  67:Task/Task_Log.c ****     .total = MAX_FILE_SIZE_K(2),
+  68:Task/Task_Log.c **** };
+  69:Task/Task_Log.c **** static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
+  70:Task/Task_Log.c **** static volatile Disk_FileObj_TypeDef LogFile_Obj;
+  71:Task/Task_Log.c **** static Disk_FATFileSys_TypeDef FATFS_Obj;
+  72:Task/Task_Log.c **** static bool LogFile_Ready = false;
+  73:Task/Task_Log.c **** static bool enable_compess = true;
+  74:Task/Task_Log.c **** static SrvIMU_UnionData_TypeDef LogIMU_Data __attribute__((section(".Perph_Section")));
+  75:Task/Task_Log.c **** static uint8_t LogCache_L1_Buf[MAX_FILE_SIZE_K(3)] TCM_ATTRIBUTE;
+  76:Task/Task_Log.c **** static uint8_t LogCache_L2_Buf[MAX_FILE_SIZE_K(3)] TCM_ATTRIBUTE;
+  77:Task/Task_Log.c **** static QueueObj_TypeDef IMUData_Queue;
+  78:Task/Task_Log.c **** static LogData_Reg_TypeDef LogObj_Set_Reg;
+  79:Task/Task_Log.c **** static LogData_Reg_TypeDef LogObj_Enable_Reg;
+  80:Task/Task_Log.c **** static LogData_Reg_TypeDef LogObj_Logging_Reg;
+  81:Task/Task_Log.c **** static Os_IdleObj_TypeDef LogIdleObj;
+  82:Task/Task_Log.c **** static uint16_t QueueIMU_PopSize = 0;
+  83:Task/Task_Log.c **** static Log_Statistics_TypeDef Log_Statistics;
+  84:Task/Task_Log.c **** 
+  85:Task/Task_Log.c **** static LogSummary_TypeDef LogIMU_Summary = {
+  86:Task/Task_Log.c ****     .max_rt_diff = 0,
+  87:Task/Task_Log.c ****     .period = 500,
+  88:Task/Task_Log.c ****     .err_interval_cnt = 0,
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 3
+
+
+  89:Task/Task_Log.c ****     .push_cnt = 0,
+  90:Task/Task_Log.c ****     .start_rt = 0,
+  91:Task/Task_Log.c ****     .end_rt = 0,
+  92:Task/Task_Log.c **** };
+  93:Task/Task_Log.c **** 
+  94:Task/Task_Log.c **** /* internal function */
+  95:Task/Task_Log.c **** static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
+  96:Task/Task_Log.c **** static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_TypeDef *log_reg);
+  97:Task/Task_Log.c **** 
+  98:Task/Task_Log.c **** void TaskLog_Init(void)
+  99:Task/Task_Log.c **** {
+ 100:Task/Task_Log.c ****     Os_Idle_DataStream_TypeDef LogData_Stream;
+ 101:Task/Task_Log.c **** 
+ 102:Task/Task_Log.c ****     memset(&Log_Statistics, 0, sizeof(Log_Statistics_TypeDef));
+ 103:Task/Task_Log.c ****     memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
+ 104:Task/Task_Log.c ****     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
+ 105:Task/Task_Log.c ****     memset(&FATFS_Obj, NULL, sizeof(FATFS_Obj));
+ 106:Task/Task_Log.c **** 
+ 107:Task/Task_Log.c ****     IMU_Log_DataPipe.data_addr = (uint32_t)&LogIMU_Data;
+ 108:Task/Task_Log.c ****     IMU_Log_DataPipe.data_size = sizeof(LogIMU_Data);
+ 109:Task/Task_Log.c ****     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
+ 110:Task/Task_Log.c **** 
+ 111:Task/Task_Log.c ****     LogObj_Set_Reg.reg_val = 0;
+ 112:Task/Task_Log.c ****     LogObj_Logging_Reg.reg_val = 0;
+ 113:Task/Task_Log.c **** 
+ 114:Task/Task_Log.c ****     /* init module first then init task */
+ 115:Task/Task_Log.c ****     if (Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
+ 116:Task/Task_Log.c ****     {
+ 117:Task/Task_Log.c ****         LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, LOG_FOLDER, ROOT_CLUSTER_ADDR);
+ 118:Task/Task_Log.c **** 
+ 119:Task/Task_Log.c ****         if(LogFolder_Cluster)
+ 120:Task/Task_Log.c ****         {
+ 121:Task/Task_Log.c ****             LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SI
+ 122:Task/Task_Log.c ****             Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
+ 123:Task/Task_Log.c **** 
+ 124:Task/Task_Log.c ****             /* create cache queue for IMU Data */
+ 125:Task/Task_Log.c ****             if (Queue.create_with_buf(&IMUData_Queue, "queue imu data", LogCache_L1_Buf, sizeof(Log
+ 126:Task/Task_Log.c ****             {
+ 127:Task/Task_Log.c ****                 LogFile_Ready = true;
+ 128:Task/Task_Log.c ****                 LogObj_Enable_Reg._sec.IMU_Sec = true;
+ 129:Task/Task_Log.c ****                 LogObj_Set_Reg._sec.IMU_Sec = true;
+ 130:Task/Task_Log.c ****             
+ 131:Task/Task_Log.c ****                 DataPipe_Enable(&IMU_Log_DataPipe);
+ 132:Task/Task_Log.c **** 
+ 133:Task/Task_Log.c ****                 if (lzo_init() != LZO_E_OK)
+ 134:Task/Task_Log.c ****                     enable_compess = false;
+ 135:Task/Task_Log.c ****             }
+ 136:Task/Task_Log.c ****         }
+ 137:Task/Task_Log.c ****         else
+ 138:Task/Task_Log.c ****         {
+ 139:Task/Task_Log.c ****             LogFile_Ready = false;
+ 140:Task/Task_Log.c ****             LogObj_Enable_Reg._sec.IMU_Sec = false;
+ 141:Task/Task_Log.c ****             LogObj_Set_Reg._sec.IMU_Sec = false;
+ 142:Task/Task_Log.c ****             DataPipe_Disable(&IMU_Log_DataPipe);
+ 143:Task/Task_Log.c ****         }
+ 144:Task/Task_Log.c ****     }
+ 145:Task/Task_Log.c ****     else
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 4
+
+
+ 146:Task/Task_Log.c ****         DataPipe_Disable(&IMU_Log_DataPipe);
+ 147:Task/Task_Log.c **** 
+ 148:Task/Task_Log.c ****     LogData_Stream.ptr = NULL;
+ 149:Task/Task_Log.c ****     LogData_Stream.size = 0;
+ 150:Task/Task_Log.c **** }
+ 151:Task/Task_Log.c **** 
+ 152:Task/Task_Log.c **** uint32_t core_cnt = 0;
+ 153:Task/Task_Log.c **** void TaskLog_Core(Task_Handle hdl)
+ 154:Task/Task_Log.c **** {
+ 155:Task/Task_Log.c ****     uint8_t *compess_buf_ptr = NULL;
+ 156:Task/Task_Log.c ****     uint16_t cur_compess_size = 0;
+ 157:Task/Task_Log.c ****     uint16_t input_compess_size = 0;
+ 158:Task/Task_Log.c ****     int ret = 0;
+ 159:Task/Task_Log.c **** 
+ 160:Task/Task_Log.c ****     input_compess_size = QueueIMU_PopSize;
+ 161:Task/Task_Log.c ****     DebugPin.ctl(Debug_PB4, true);
+ 162:Task/Task_Log.c **** 
+ 163:Task/Task_Log.c ****     core_cnt ++;
+ 164:Task/Task_Log.c **** 
+ 165:Task/Task_Log.c ****     if(LogFile_Ready && enable_compess)
+ 166:Task/Task_Log.c ****     {
+ 167:Task/Task_Log.c ****         compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + sizeof(uint32_t) + 
+ 168:Task/Task_Log.c ****         cur_compess_size = 0;
+ 169:Task/Task_Log.c **** 
+ 170:Task/Task_Log.c ****         if(input_compess_size != 0)
+ 171:Task/Task_Log.c ****         {
+ 172:Task/Task_Log.c ****             QueueIMU_PopSize = 0;
+ 173:Task/Task_Log.c ****             LogObj_Logging_Reg._sec.IMU_Sec = true;
+ 174:Task/Task_Log.c ****             LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
+ 175:Task/Task_Log.c **** 
+ 176:Task/Task_Log.c ****             ret = lzo1x_1_compress(LogCache_L2_Buf, input_compess_size, compess_buf_ptr, &cur_compe
+ 177:Task/Task_Log.c ****             if(ret != LZO_E_OK)
+ 178:Task/Task_Log.c ****             {
+ 179:Task/Task_Log.c ****                 enable_compess = false;
+ 180:Task/Task_Log.c ****                 Log_Statistics.halt_type = Log_CompessFunc_Halt;
+ 181:Task/Task_Log.c ****                 DataPipe_Disable(&IMU_Log_DataPipe);
+ 182:Task/Task_Log.c ****             }
+ 183:Task/Task_Log.c ****             else
+ 184:Task/Task_Log.c ****             {
+ 185:Task/Task_Log.c ****                 if(input_compess_size <= cur_compess_size)
+ 186:Task/Task_Log.c ****                 {
+ 187:Task/Task_Log.c ****                     enable_compess = false;
+ 188:Task/Task_Log.c ****                     Log_Statistics.halt_type = Log_CompessSize_Halt;
+ 189:Task/Task_Log.c ****                     DataPipe_Disable(&IMU_Log_DataPipe);
+ 190:Task/Task_Log.c ****                 }
+ 191:Task/Task_Log.c ****                 else
+ 192:Task/Task_Log.c ****                 {
+ 193:Task/Task_Log.c ****                     /* compess count should equal to queue pop count */
+ 194:Task/Task_Log.c ****                     Log_Statistics.compess_cnt++;
+ 195:Task/Task_Log.c ****                     memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_siz
+ 196:Task/Task_Log.c **** 
+ 197:Task/Task_Log.c ****                     LogCompess_Data.compess_size = LogCompess_Data.compess_size + cur_compess_size 
+ 198:Task/Task_Log.c ****                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
+ 199:Task/Task_Log.c ****                     LogCompess_Data.compess_size ++;
+ 200:Task/Task_Log.c ****                     LogObj_Logging_Reg._sec.IMU_Sec = false;
+ 201:Task/Task_Log.c **** 
+ 202:Task/Task_Log.c ****                     while(LogCompess_Data.compess_size >= 512)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 5
+
+
+ 203:Task/Task_Log.c ****                     {
+ 204:Task/Task_Log.c ****                         if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_W
+ 205:Task/Task_Log.c ****                         {
+ 206:Task/Task_Log.c ****                             LogFile_Ready = false;
+ 207:Task/Task_Log.c ****                             Log_Statistics.halt_type = Log_Finish_Halt;
+ 208:Task/Task_Log.c ****                             DataPipe_Disable(&IMU_Log_DataPipe);
+ 209:Task/Task_Log.c ****                             break;
+ 210:Task/Task_Log.c ****                         }
+ 211:Task/Task_Log.c ****                         else
+ 212:Task/Task_Log.c ****                         {
+ 213:Task/Task_Log.c ****                             Log_Statistics.write_file_cnt ++;
+ 214:Task/Task_Log.c ****                             Log_Statistics.log_byte_sum += 512;
+ 215:Task/Task_Log.c ****                             LogCompess_Data.compess_size -= 512;
+ 216:Task/Task_Log.c **** 
+ 217:Task/Task_Log.c ****                             for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
+ 218:Task/Task_Log.c ****                             {
+ 219:Task/Task_Log.c ****                                 LogCompess_Data.buf[t] = LogCompess_Data.buf[t + 512];
+ 220:Task/Task_Log.c ****                                 LogCompess_Data.buf[t + 512] = 0;
+ 221:Task/Task_Log.c ****                             }
+ 222:Task/Task_Log.c ****                         }
+ 223:Task/Task_Log.c ****                     }
+ 224:Task/Task_Log.c ****                 }
+ 225:Task/Task_Log.c ****             }
+ 226:Task/Task_Log.c **** 
+ 227:Task/Task_Log.c ****             DevLED.ctl(Led1, true);
+ 228:Task/Task_Log.c ****         }
+ 229:Task/Task_Log.c ****     }
+ 230:Task/Task_Log.c ****     else
+ 231:Task/Task_Log.c ****         DevLED.ctl(Led1, false);
+ 232:Task/Task_Log.c **** 
+ 233:Task/Task_Log.c ****     DebugPin.ctl(Debug_PB4, false);
+ 234:Task/Task_Log.c **** }
+ 235:Task/Task_Log.c **** 
+ 236:Task/Task_Log.c **** static uint32_t in_queue_size = 0;
+ 237:Task/Task_Log.c **** static uint32_t out_queue_size = 0;
+ 238:Task/Task_Log.c **** static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
+ 239:Task/Task_Log.c **** {
+  28              		.loc 1 239 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 72
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+ 240:Task/Task_Log.c ****     uint64_t imu_pipe_rt_diff = 0;
+  32              		.loc 1 240 5 view .LVU1
+ 241:Task/Task_Log.c ****     static uint64_t lst_imu_pipe_rt = 0;
+  33              		.loc 1 241 5 view .LVU2
+ 242:Task/Task_Log.c ****     LogIMUDataUnion_TypeDef Log_Buf;
+  34              		.loc 1 242 5 view .LVU3
+ 243:Task/Task_Log.c **** 
+ 244:Task/Task_Log.c ****     if ((obj == NULL) || !LogFile_Ready)
+  35              		.loc 1 244 5 view .LVU4
+  36              		.loc 1 244 8 is_stmt 0 view .LVU5
+  37 0000 50B1     		cbz	r0, .L17
+  38              		.loc 1 244 26 discriminator 1 view .LVU6
+  39 0002 9D4B     		ldr	r3, .L21
+  40 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  41              		.loc 1 244 23 discriminator 1 view .LVU7
+  42 0006 3BB1     		cbz	r3, .L17
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 6
+
+
+ 245:Task/Task_Log.c ****         return;
+ 246:Task/Task_Log.c **** 
+ 247:Task/Task_Log.c ****     if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe) && LogObj_Enable_Reg._sec.IMU_Sec
+  43              		.loc 1 247 5 is_stmt 1 view .LVU8
+  44              		.loc 1 247 9 is_stmt 0 view .LVU9
+  45 0008 9C4B     		ldr	r3, .L21+4
+  46 000a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  47              		.loc 1 247 8 view .LVU10
+  48 000c 13F0010F 		tst	r3, #1
+  49 0010 02D0     		beq	.L17
+  50              		.loc 1 247 37 discriminator 1 view .LVU11
+  51 0012 9B4B     		ldr	r3, .L21+8
+  52 0014 9842     		cmp	r0, r3
+  53 0016 00D0     		beq	.L20
+  54              	.L17:
+  55 0018 7047     		bx	lr
+  56              	.L20:
+  57              		.loc 1 247 67 discriminator 2 view .LVU12
+  58 001a 9A4B     		ldr	r3, .L21+12
+  59 001c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  60 001e 13F0010F 		tst	r3, #1
+  61 0022 F9D0     		beq	.L17
+ 239:Task/Task_Log.c ****     uint64_t imu_pipe_rt_diff = 0;
+  62              		.loc 1 239 1 view .LVU13
+  63 0024 F0B5     		push	{r4, r5, r6, r7, lr}
+  64              	.LCFI0:
+  65              		.cfi_def_cfa_offset 20
+  66              		.cfi_offset 4, -20
+  67              		.cfi_offset 5, -16
+  68              		.cfi_offset 6, -12
+  69              		.cfi_offset 7, -8
+  70              		.cfi_offset 14, -4
+  71 0026 95B0     		sub	sp, sp, #84
+  72              	.LCFI1:
+  73              		.cfi_def_cfa_offset 104
+ 248:Task/Task_Log.c ****     {
+ 249:Task/Task_Log.c ****         if(!LogObj_Logging_Reg._sec.IMU_Sec && enable_compess && 
+  74              		.loc 1 249 9 is_stmt 1 view .LVU14
+  75              		.loc 1 249 12 is_stmt 0 view .LVU15
+  76 0028 974B     		ldr	r3, .L21+16
+  77 002a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  78              		.loc 1 249 11 view .LVU16
+  79 002c 13F0010F 		tst	r3, #1
+  80 0030 43D1     		bne	.L6
+  81              		.loc 1 249 45 discriminator 1 view .LVU17
+  82 0032 964B     		ldr	r3, .L21+20
+  83 0034 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  84 0036 002B     		cmp	r3, #0
+  85 0038 3FD0     		beq	.L6
+ 250:Task/Task_Log.c ****             Queue.size(IMUData_Queue) >= MAX_FILE_SIZE_K(1))
+  86              		.loc 1 250 18 discriminator 2 view .LVU18
+  87 003a 954B     		ldr	r3, .L21+24
+  88 003c 1C68     		ldr	r4, [r3]
+  89              		.loc 1 250 13 discriminator 2 view .LVU19
+  90 003e 954B     		ldr	r3, .L21+28
+  91 0040 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+  92 0042 8DF80020 		strb	r2, [sp]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 7
+
+
+  93 0046 0FCB     		ldm	r3, {r0, r1, r2, r3}
+  94              	.LVL1:
+  95              		.loc 1 250 13 discriminator 2 view .LVU20
+  96 0048 A047     		blx	r4
+  97              	.LVL2:
+ 249:Task/Task_Log.c ****             Queue.size(IMUData_Queue) >= MAX_FILE_SIZE_K(1))
+  98              		.loc 1 249 63 discriminator 2 view .LVU21
+  99 004a B0F5806F 		cmp	r0, #1024
+ 100 004e 34D3     		bcc	.L6
+ 251:Task/Task_Log.c ****         {
+ 252:Task/Task_Log.c ****             Log_Statistics.queue_pop_cnt ++;
+ 101              		.loc 1 252 13 is_stmt 1 view .LVU22
+ 102              		.loc 1 252 27 is_stmt 0 view .LVU23
+ 103 0050 914A     		ldr	r2, .L21+32
+ 104 0052 5368     		ldr	r3, [r2, #4]
+ 105              		.loc 1 252 42 view .LVU24
+ 106 0054 0133     		adds	r3, r3, #1
+ 107 0056 5360     		str	r3, [r2, #4]
+ 253:Task/Task_Log.c **** 
+ 254:Task/Task_Log.c ****             in_queue_size = Queue.size(IMUData_Queue);
+ 108              		.loc 1 254 13 is_stmt 1 view .LVU25
+ 109              		.loc 1 254 34 is_stmt 0 view .LVU26
+ 110 0058 8D4D     		ldr	r5, .L21+24
+ 111 005a 2E68     		ldr	r6, [r5]
+ 112              		.loc 1 254 29 view .LVU27
+ 113 005c 8D4C     		ldr	r4, .L21+28
+ 114 005e 237C     		ldrb	r3, [r4, #16]	@ zero_extendqisi2
+ 115 0060 8DF80030 		strb	r3, [sp]
+ 116 0064 94E80F00 		ldm	r4, {r0, r1, r2, r3}
+ 117 0068 B047     		blx	r6
+ 118              	.LVL3:
+ 119              		.loc 1 254 27 view .LVU28
+ 120 006a 8C4B     		ldr	r3, .L21+36
+ 121 006c 1860     		str	r0, [r3]
+ 255:Task/Task_Log.c ****             QueueIMU_PopSize = (Queue.size(IMUData_Queue) / (LOG_HEADER_SIZE + sizeof(Log_Buf))) * 
+ 122              		.loc 1 255 13 is_stmt 1 view .LVU29
+ 123              		.loc 1 255 38 is_stmt 0 view .LVU30
+ 124 006e 2E68     		ldr	r6, [r5]
+ 125              		.loc 1 255 33 view .LVU31
+ 126 0070 237C     		ldrb	r3, [r4, #16]	@ zero_extendqisi2
+ 127 0072 8DF80030 		strb	r3, [sp]
+ 128 0076 94E80F00 		ldm	r4, {r0, r1, r2, r3}
+ 129 007a B047     		blx	r6
+ 130              	.LVL4:
+ 131              		.loc 1 255 98 view .LVU32
+ 132 007c 884A     		ldr	r2, .L21+40
+ 133 007e A2FB0023 		umull	r2, r3, r2, r0
+ 134 0082 5B09     		lsrs	r3, r3, #5
+ 135 0084 03EB0312 		add	r2, r3, r3, lsl #4
+ 136 0088 03EB8203 		add	r3, r3, r2, lsl #2
+ 137              		.loc 1 255 30 view .LVU33
+ 138 008c 854A     		ldr	r2, .L21+44
+ 139 008e 1380     		strh	r3, [r2]	@ movhi
+ 256:Task/Task_Log.c **** 
+ 257:Task/Task_Log.c ****             /* queue pop count should equal to compess count */
+ 258:Task/Task_Log.c ****             Queue.pop(&IMUData_Queue, LogCache_L2_Buf, Queue.size(IMUData_Queue));
+ 140              		.loc 1 258 13 is_stmt 1 view .LVU34
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 8
+
+
+ 141              		.loc 1 258 18 is_stmt 0 view .LVU35
+ 142 0090 EE69     		ldr	r6, [r5, #28]
+ 143              		.loc 1 258 13 view .LVU36
+ 144 0092 237C     		ldrb	r3, [r4, #16]	@ zero_extendqisi2
+ 145 0094 8DF80030 		strb	r3, [sp]
+ 146 0098 94E80F00 		ldm	r4, {r0, r1, r2, r3}
+ 147 009c 2F68     		ldr	r7, [r5]
+ 148 009e B847     		blx	r7
+ 149              	.LVL5:
+ 150 00a0 0246     		mov	r2, r0
+ 151 00a2 8149     		ldr	r1, .L21+48
+ 152 00a4 2046     		mov	r0, r4
+ 153 00a6 B047     		blx	r6
+ 154              	.LVL6:
+ 259:Task/Task_Log.c ****             out_queue_size = Queue.size(IMUData_Queue);
+ 155              		.loc 1 259 13 is_stmt 1 view .LVU37
+ 156              		.loc 1 259 35 is_stmt 0 view .LVU38
+ 157 00a8 2D68     		ldr	r5, [r5]
+ 158              		.loc 1 259 30 view .LVU39
+ 159 00aa 237C     		ldrb	r3, [r4, #16]	@ zero_extendqisi2
+ 160 00ac 8DF80030 		strb	r3, [sp]
+ 161 00b0 94E80F00 		ldm	r4, {r0, r1, r2, r3}
+ 162 00b4 A847     		blx	r5
+ 163              	.LVL7:
+ 164              		.loc 1 259 28 view .LVU40
+ 165 00b6 7D4B     		ldr	r3, .L21+52
+ 166 00b8 1860     		str	r0, [r3]
+ 167              	.L6:
+ 260:Task/Task_Log.c ****         }
+ 261:Task/Task_Log.c **** 
+ 262:Task/Task_Log.c ****         memset(Log_Buf.data.const_res, 0, sizeof(Log_Buf.data.const_res));
+ 168              		.loc 1 262 9 is_stmt 1 view .LVU41
+ 169 00ba 0023     		movs	r3, #0
+ 170 00bc CDF83530 		str	r3, [sp, #53]	@ unaligned
+ 171 00c0 CDF83930 		str	r3, [sp, #57]	@ unaligned
+ 172 00c4 CDF83D30 		str	r3, [sp, #61]	@ unaligned
+ 173 00c8 CDF84130 		str	r3, [sp, #65]	@ unaligned
+ 174 00cc CDF84530 		str	r3, [sp, #69]	@ unaligned
+ 175 00d0 CDF84930 		str	r3, [sp, #73]	@ unaligned
+ 263:Task/Task_Log.c ****         Log_Buf.data.time = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_s
+ 176              		.loc 1 263 9 view .LVU42
+ 177              		.loc 1 263 75 is_stmt 0 view .LVU43
+ 178 00d4 6A4A     		ldr	r2, .L21+8
+ 179 00d6 D2F81120 		ldr	r2, [r2, #17]	@ unaligned
+ 180              		.loc 1 263 93 view .LVU44
+ 181 00da 1068     		ldr	r0, [r2]	@ unaligned
+ 182 00dc 5168     		ldr	r1, [r2, #4]	@ unaligned
+ 183              		.loc 1 263 27 view .LVU45
+ 184 00de 0390     		str	r0, [sp, #12]
+ 185 00e0 0491     		str	r1, [sp, #16]
+ 264:Task/Task_Log.c ****         Log_Buf.data.acc_scale = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.a
+ 186              		.loc 1 264 9 is_stmt 1 view .LVU46
+ 187              		.loc 1 264 98 is_stmt 0 view .LVU47
+ 188 00e2 D2F84510 		ldr	r1, [r2, #69]	@ unaligned
+ 189 00e6 06EE901A 		vmov	s13, r1	@ int
+ 190              		.loc 1 264 32 view .LVU48
+ 191 00ea CDF81510 		str	r1, [sp, #21]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 9
+
+
+ 265:Task/Task_Log.c ****         Log_Buf.data.gyr_scale = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.g
+ 192              		.loc 1 265 9 is_stmt 1 view .LVU49
+ 193              		.loc 1 265 98 is_stmt 0 view .LVU50
+ 194 00ee D2F84910 		ldr	r1, [r2, #73]	@ unaligned
+ 195 00f2 07EE101A 		vmov	s14, r1	@ int
+ 196              		.loc 1 265 32 view .LVU51
+ 197 00f6 CDF81910 		str	r1, [sp, #25]	@ unaligned
+ 266:Task/Task_Log.c ****         Log_Buf.data.cyc = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.cycle_c
+ 198              		.loc 1 266 9 is_stmt 1 view .LVU52
+ 199              		.loc 1 266 92 is_stmt 0 view .LVU53
+ 200 00fa 9168     		ldr	r1, [r2, #8]	@ unaligned
+ 201              		.loc 1 266 26 view .LVU54
+ 202 00fc 8DF81410 		strb	r1, [sp, #20]
+ 267:Task/Task_Log.c ****         
+ 268:Task/Task_Log.c ****         for(uint8_t axis = Axis_X; axis < Axis_Sum; axis ++)
+ 203              		.loc 1 268 9 is_stmt 1 view .LVU55
+ 204              	.LBB15:
+ 205              		.loc 1 268 13 view .LVU56
+ 206              	.LVL8:
+ 207              		.loc 1 268 9 is_stmt 0 view .LVU57
+ 208 0100 46E0     		b	.L7
+ 209              	.LVL9:
+ 210              	.L8:
+ 269:Task/Task_Log.c ****         {
+ 270:Task/Task_Log.c ****             Log_Buf.data.flt_acc[axis] = (int16_t)(Log_Buf.data.acc_scale * ((SrvIMU_UnionData_Type
+ 211              		.loc 1 270 13 is_stmt 1 discriminator 3 view .LVU58
+ 212              		.loc 1 270 149 is_stmt 0 discriminator 3 view .LVU59
+ 213 0102 991D     		adds	r1, r3, #6
+ 214 0104 02EB8101 		add	r1, r2, r1, lsl #2
+ 215 0108 4968     		ldr	r1, [r1, #4]	@ unaligned
+ 216 010a 07EE901A 		vmov	s15, r1	@ int
+ 217              		.loc 1 270 75 discriminator 3 view .LVU60
+ 218 010e 66EEA77A 		vmul.f32	s15, s13, s15
+ 219              		.loc 1 270 42 discriminator 3 view .LVU61
+ 220 0112 FDEEE77A 		vcvt.s32.f32	s15, s15
+ 221              		.loc 1 270 40 discriminator 3 view .LVU62
+ 222 0116 03F10C01 		add	r1, r3, #12
+ 223 011a 14A8     		add	r0, sp, #80
+ 224 011c 00EB4100 		add	r0, r0, r1, lsl #1
+ 225 0120 17EE904A 		vmov	r4, s15	@ int
+ 226 0124 20F83F4C 		strh	r4, [r0, #-63]	@ unaligned
+ 271:Task/Task_Log.c ****             Log_Buf.data.flt_gyr[axis] = (int16_t)(Log_Buf.data.gyr_scale * ((SrvIMU_UnionData_Type
+ 227              		.loc 1 271 13 is_stmt 1 discriminator 3 view .LVU63
+ 228              		.loc 1 271 149 is_stmt 0 discriminator 3 view .LVU64
+ 229 0128 181D     		adds	r0, r3, #4
+ 230 012a 52F82000 		ldr	r0, [r2, r0, lsl #2]	@ unaligned
+ 231 012e 07EE900A 		vmov	s15, r0	@ int
+ 232              		.loc 1 271 75 discriminator 3 view .LVU65
+ 233 0132 67EE277A 		vmul.f32	s15, s14, s15
+ 234              		.loc 1 271 42 discriminator 3 view .LVU66
+ 235 0136 FDEEE77A 		vcvt.s32.f32	s15, s15
+ 236              		.loc 1 271 40 discriminator 3 view .LVU67
+ 237 013a 03F11000 		add	r0, r3, #16
+ 238 013e 14AC     		add	r4, sp, #80
+ 239 0140 04EB4000 		add	r0, r4, r0, lsl #1
+ 240 0144 17EE904A 		vmov	r4, s15	@ int
+ 241 0148 20F8414C 		strh	r4, [r0, #-65]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 10
+
+
+ 272:Task/Task_Log.c ****         
+ 273:Task/Task_Log.c ****             Log_Buf.data.org_acc[axis] = (int16_t)(Log_Buf.data.acc_scale * ((SrvIMU_UnionData_Type
+ 242              		.loc 1 273 13 is_stmt 1 discriminator 3 view .LVU68
+ 243              		.loc 1 273 149 is_stmt 0 discriminator 3 view .LVU69
+ 244 014c 02EB8101 		add	r1, r2, r1, lsl #2
+ 245 0150 4968     		ldr	r1, [r1, #4]	@ unaligned
+ 246 0152 07EE901A 		vmov	s15, r1	@ int
+ 247              		.loc 1 273 75 discriminator 3 view .LVU70
+ 248 0156 66EEA77A 		vmul.f32	s15, s13, s15
+ 249              		.loc 1 273 42 discriminator 3 view .LVU71
+ 250 015a FDEEE77A 		vcvt.s32.f32	s15, s15
+ 251              		.loc 1 273 40 discriminator 3 view .LVU72
+ 252 015e 03F10801 		add	r1, r3, #8
+ 253 0162 14A8     		add	r0, sp, #80
+ 254 0164 00EB4101 		add	r1, r0, r1, lsl #1
+ 255 0168 17EE900A 		vmov	r0, s15	@ int
+ 256 016c 21F8430C 		strh	r0, [r1, #-67]	@ unaligned
+ 274:Task/Task_Log.c ****             Log_Buf.data.org_gyr[axis] = (int16_t)(Log_Buf.data.gyr_scale * ((SrvIMU_UnionData_Type
+ 257              		.loc 1 274 13 is_stmt 1 discriminator 3 view .LVU73
+ 258              		.loc 1 274 149 is_stmt 0 discriminator 3 view .LVU74
+ 259 0170 03F10A00 		add	r0, r3, #10
+ 260 0174 52F82000 		ldr	r0, [r2, r0, lsl #2]	@ unaligned
+ 261 0178 07EE900A 		vmov	s15, r0	@ int
+ 262              		.loc 1 274 75 discriminator 3 view .LVU75
+ 263 017c 67EE277A 		vmul.f32	s15, s14, s15
+ 264              		.loc 1 274 42 discriminator 3 view .LVU76
+ 265 0180 FDEEE77A 		vcvt.s32.f32	s15, s15
+ 266              		.loc 1 274 40 discriminator 3 view .LVU77
+ 267 0184 17EE900A 		vmov	r0, s15	@ int
+ 268 0188 21F83D0C 		strh	r0, [r1, #-61]	@ unaligned
+ 268:Task/Task_Log.c ****         {
+ 269              		.loc 1 268 53 is_stmt 1 discriminator 3 view .LVU78
+ 268:Task/Task_Log.c ****         {
+ 270              		.loc 1 268 58 is_stmt 0 discriminator 3 view .LVU79
+ 271 018c 0133     		adds	r3, r3, #1
+ 272              	.LVL10:
+ 268:Task/Task_Log.c ****         {
+ 273              		.loc 1 268 58 discriminator 3 view .LVU80
+ 274 018e DBB2     		uxtb	r3, r3
+ 275              	.LVL11:
+ 276              	.L7:
+ 268:Task/Task_Log.c ****         {
+ 277              		.loc 1 268 36 is_stmt 1 discriminator 1 view .LVU81
+ 268:Task/Task_Log.c ****         {
+ 278              		.loc 1 268 9 is_stmt 0 discriminator 1 view .LVU82
+ 279 0190 022B     		cmp	r3, #2
+ 280 0192 B6D9     		bls	.L8
+ 281              	.LBE15:
+ 282              	.LBB16:
+ 275:Task/Task_Log.c ****         }
+ 276:Task/Task_Log.c **** 
+ 277:Task/Task_Log.c ****         for(uint8_t i = 0; i < sizeof(LogIMUDataUnion_TypeDef) - sizeof(uint8_t); i++)
+ 283              		.loc 1 277 21 view .LVU83
+ 284 0194 0023     		movs	r3, #0
+ 285              	.LVL12:
+ 286              		.loc 1 277 21 view .LVU84
+ 287 0196 0AE0     		b	.L9
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 11
+
+
+ 288              	.LVL13:
+ 289              	.L10:
+ 278:Task/Task_Log.c ****         {
+ 279:Task/Task_Log.c ****             Log_Buf.data.check_sum += Log_Buf.buff[i];
+ 290              		.loc 1 279 13 is_stmt 1 discriminator 3 view .LVU85
+ 291              		.loc 1 279 51 is_stmt 0 discriminator 3 view .LVU86
+ 292 0198 14AA     		add	r2, sp, #80
+ 293 019a 1A44     		add	r2, r2, r3
+ 294 019c 12F8442C 		ldrb	r2, [r2, #-68]	@ zero_extendqisi2
+ 295              		.loc 1 279 36 discriminator 3 view .LVU87
+ 296 01a0 9DF84D10 		ldrb	r1, [sp, #77]	@ zero_extendqisi2
+ 297 01a4 0A44     		add	r2, r2, r1
+ 298 01a6 8DF84D20 		strb	r2, [sp, #77]
+ 277:Task/Task_Log.c ****         {
+ 299              		.loc 1 277 83 is_stmt 1 discriminator 3 view .LVU88
+ 277:Task/Task_Log.c ****         {
+ 300              		.loc 1 277 84 is_stmt 0 discriminator 3 view .LVU89
+ 301 01aa 0133     		adds	r3, r3, #1
+ 302              	.LVL14:
+ 277:Task/Task_Log.c ****         {
+ 303              		.loc 1 277 84 discriminator 3 view .LVU90
+ 304 01ac DBB2     		uxtb	r3, r3
+ 305              	.LVL15:
+ 306              	.L9:
+ 277:Task/Task_Log.c ****         {
+ 307              		.loc 1 277 28 is_stmt 1 discriminator 1 view .LVU91
+ 277:Task/Task_Log.c ****         {
+ 308              		.loc 1 277 9 is_stmt 0 discriminator 1 view .LVU92
+ 309 01ae 402B     		cmp	r3, #64
+ 310 01b0 F2D9     		bls	.L10
+ 311              	.LBE16:
+ 280:Task/Task_Log.c ****         }
+ 281:Task/Task_Log.c **** 
+ 282:Task/Task_Log.c ****         if ((Queue.state(IMUData_Queue) == Queue_ok) ||
+ 312              		.loc 1 282 9 is_stmt 1 view .LVU93
+ 313              		.loc 1 282 19 is_stmt 0 view .LVU94
+ 314 01b2 374B     		ldr	r3, .L21+24
+ 315              	.LVL16:
+ 316              		.loc 1 282 19 view .LVU95
+ 317 01b4 1C6A     		ldr	r4, [r3, #32]
+ 318              		.loc 1 282 14 view .LVU96
+ 319 01b6 374B     		ldr	r3, .L21+28
+ 320 01b8 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 321 01ba 8DF80020 		strb	r2, [sp]
+ 322 01be 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 323 01c0 A047     		blx	r4
+ 324              	.LVL17:
+ 325              		.loc 1 282 12 view .LVU97
+ 326 01c2 78B1     		cbz	r0, .L11
+ 283:Task/Task_Log.c ****             (Queue.state(IMUData_Queue) == Queue_empty))
+ 327              		.loc 1 283 19 discriminator 1 view .LVU98
+ 328 01c4 324B     		ldr	r3, .L21+24
+ 329 01c6 1C6A     		ldr	r4, [r3, #32]
+ 330              		.loc 1 283 14 discriminator 1 view .LVU99
+ 331 01c8 324B     		ldr	r3, .L21+28
+ 332 01ca 1A7C     		ldrb	r2, [r3, #16]	@ zero_extendqisi2
+ 333 01cc 8DF80020 		strb	r2, [sp]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 12
+
+
+ 334 01d0 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 335 01d2 A047     		blx	r4
+ 336              	.LVL18:
+ 282:Task/Task_Log.c ****             (Queue.state(IMUData_Queue) == Queue_empty))
+ 337              		.loc 1 282 54 discriminator 1 view .LVU100
+ 338 01d4 0328     		cmp	r0, #3
+ 339 01d6 05D0     		beq	.L11
+ 284:Task/Task_Log.c ****         {
+ 285:Task/Task_Log.c ****             if((Queue.push(&IMUData_Queue, &LogIMU_Header, LOG_HEADER_SIZE) == Queue_ok) &&
+ 286:Task/Task_Log.c ****                (Queue.push(&IMUData_Queue, Log_Buf.buff, sizeof(Log_Buf)) == Queue_ok))
+ 287:Task/Task_Log.c ****             {
+ 288:Task/Task_Log.c ****                 if(LogIMU_Summary.start_rt == 0)
+ 289:Task/Task_Log.c ****                     LogIMU_Summary.start_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_a
+ 290:Task/Task_Log.c **** 
+ 291:Task/Task_Log.c ****                 LogIMU_Summary.push_cnt ++;
+ 292:Task/Task_Log.c **** 
+ 293:Task/Task_Log.c ****                 imu_pipe_rt_diff = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data
+ 294:Task/Task_Log.c **** 
+ 295:Task/Task_Log.c ****                 if(imu_pipe_rt_diff > LogIMU_Summary.period)
+ 296:Task/Task_Log.c ****                 {
+ 297:Task/Task_Log.c ****                     if(imu_pipe_rt_diff > LogIMU_Summary.max_rt_diff)
+ 298:Task/Task_Log.c ****                         LogIMU_Summary.max_rt_diff = imu_pipe_rt_diff;
+ 299:Task/Task_Log.c **** 
+ 300:Task/Task_Log.c ****                     LogIMU_Summary.err_interval_cnt ++;
+ 301:Task/Task_Log.c ****                 }
+ 302:Task/Task_Log.c **** 
+ 303:Task/Task_Log.c ****                 LogIMU_Summary.end_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))-
+ 304:Task/Task_Log.c ****                 lst_imu_pipe_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.
+ 305:Task/Task_Log.c ****             }
+ 306:Task/Task_Log.c ****         }
+ 307:Task/Task_Log.c ****         else
+ 308:Task/Task_Log.c ****         {
+ 309:Task/Task_Log.c ****             Log_Statistics.queue_push_err_cnt++;
+ 340              		.loc 1 309 13 is_stmt 1 view .LVU101
+ 341              		.loc 1 309 27 is_stmt 0 view .LVU102
+ 342 01d8 2F4A     		ldr	r2, .L21+32
+ 343 01da 1368     		ldr	r3, [r2]
+ 344              		.loc 1 309 46 view .LVU103
+ 345 01dc 0133     		adds	r3, r3, #1
+ 346 01de 1360     		str	r3, [r2]
+ 347              	.LVL19:
+ 348              	.L1:
+ 310:Task/Task_Log.c ****         }
+ 311:Task/Task_Log.c ****     }
+ 312:Task/Task_Log.c **** }
+ 349              		.loc 1 312 1 view .LVU104
+ 350 01e0 15B0     		add	sp, sp, #84
+ 351              	.LCFI2:
+ 352              		.cfi_remember_state
+ 353              		.cfi_def_cfa_offset 20
+ 354              		@ sp needed
+ 355 01e2 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 356              	.LVL20:
+ 357              	.L11:
+ 358              	.LCFI3:
+ 359              		.cfi_restore_state
+ 285:Task/Task_Log.c ****                (Queue.push(&IMUData_Queue, Log_Buf.buff, sizeof(Log_Buf)) == Queue_ok))
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 13
+
+
+ 360              		.loc 1 285 13 is_stmt 1 view .LVU105
+ 285:Task/Task_Log.c ****                (Queue.push(&IMUData_Queue, Log_Buf.buff, sizeof(Log_Buf)) == Queue_ok))
+ 361              		.loc 1 285 22 is_stmt 0 view .LVU106
+ 362 01e4 2A4B     		ldr	r3, .L21+24
+ 363 01e6 9B69     		ldr	r3, [r3, #24]
+ 285:Task/Task_Log.c ****                (Queue.push(&IMUData_Queue, Log_Buf.buff, sizeof(Log_Buf)) == Queue_ok))
+ 364              		.loc 1 285 17 view .LVU107
+ 365 01e8 0322     		movs	r2, #3
+ 366 01ea 3149     		ldr	r1, .L21+56
+ 367 01ec 2948     		ldr	r0, .L21+28
+ 368 01ee 9847     		blx	r3
+ 369              	.LVL21:
+ 285:Task/Task_Log.c ****                (Queue.push(&IMUData_Queue, Log_Buf.buff, sizeof(Log_Buf)) == Queue_ok))
+ 370              		.loc 1 285 15 view .LVU108
+ 371 01f0 0028     		cmp	r0, #0
+ 372 01f2 F5D1     		bne	.L1
+ 286:Task/Task_Log.c ****             {
+ 373              		.loc 1 286 22 discriminator 1 view .LVU109
+ 374 01f4 264B     		ldr	r3, .L21+24
+ 375 01f6 9B69     		ldr	r3, [r3, #24]
+ 286:Task/Task_Log.c ****             {
+ 376              		.loc 1 286 17 discriminator 1 view .LVU110
+ 377 01f8 4222     		movs	r2, #66
+ 378 01fa 03A9     		add	r1, sp, #12
+ 379 01fc 2548     		ldr	r0, .L21+28
+ 380 01fe 9847     		blx	r3
+ 381              	.LVL22:
+ 285:Task/Task_Log.c ****                (Queue.push(&IMUData_Queue, Log_Buf.buff, sizeof(Log_Buf)) == Queue_ok))
+ 382              		.loc 1 285 90 discriminator 1 view .LVU111
+ 383 0200 0028     		cmp	r0, #0
+ 384 0202 EDD1     		bne	.L1
+ 288:Task/Task_Log.c ****                     LogIMU_Summary.start_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_a
+ 385              		.loc 1 288 17 is_stmt 1 view .LVU112
+ 288:Task/Task_Log.c ****                     LogIMU_Summary.start_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_a
+ 386              		.loc 1 288 34 is_stmt 0 view .LVU113
+ 387 0204 2B4B     		ldr	r3, .L21+60
+ 388 0206 1A69     		ldr	r2, [r3, #16]
+ 389 0208 5B69     		ldr	r3, [r3, #20]
+ 288:Task/Task_Log.c ****                     LogIMU_Summary.start_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_a
+ 390              		.loc 1 288 19 view .LVU114
+ 391 020a 1343     		orrs	r3, r2, r3
+ 392 020c 07D1     		bne	.L13
+ 289:Task/Task_Log.c **** 
+ 393              		.loc 1 289 21 is_stmt 1 view .LVU115
+ 289:Task/Task_Log.c **** 
+ 394              		.loc 1 289 93 is_stmt 0 view .LVU116
+ 395 020e 1C4B     		ldr	r3, .L21+8
+ 396 0210 D3F81130 		ldr	r3, [r3, #17]	@ unaligned
+ 289:Task/Task_Log.c **** 
+ 397              		.loc 1 289 111 view .LVU117
+ 398 0214 1968     		ldr	r1, [r3]	@ unaligned
+ 399 0216 5A68     		ldr	r2, [r3, #4]	@ unaligned
+ 289:Task/Task_Log.c **** 
+ 400              		.loc 1 289 45 view .LVU118
+ 401 0218 264B     		ldr	r3, .L21+60
+ 402 021a 1961     		str	r1, [r3, #16]
+ 403 021c 5A61     		str	r2, [r3, #20]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 14
+
+
+ 404              	.L13:
+ 291:Task/Task_Log.c **** 
+ 405              		.loc 1 291 17 is_stmt 1 view .LVU119
+ 291:Task/Task_Log.c **** 
+ 406              		.loc 1 291 31 is_stmt 0 view .LVU120
+ 407 021e 254B     		ldr	r3, .L21+60
+ 408 0220 9A6A     		ldr	r2, [r3, #40]
+ 409 0222 D96A     		ldr	r1, [r3, #44]
+ 291:Task/Task_Log.c **** 
+ 410              		.loc 1 291 41 view .LVU121
+ 411 0224 0132     		adds	r2, r2, #1
+ 412 0226 41F10001 		adc	r1, r1, #0
+ 413 022a 9A62     		str	r2, [r3, #40]
+ 414 022c D962     		str	r1, [r3, #44]
+ 293:Task/Task_Log.c **** 
+ 415              		.loc 1 293 17 is_stmt 1 view .LVU122
+ 293:Task/Task_Log.c **** 
+ 416              		.loc 1 293 82 is_stmt 0 view .LVU123
+ 417 022e 144A     		ldr	r2, .L21+8
+ 418 0230 D2F81120 		ldr	r2, [r2, #17]	@ unaligned
+ 293:Task/Task_Log.c **** 
+ 419              		.loc 1 293 100 view .LVU124
+ 420 0234 1168     		ldr	r1, [r2]	@ unaligned
+ 421 0236 5468     		ldr	r4, [r2, #4]	@ unaligned
+ 293:Task/Task_Log.c **** 
+ 422              		.loc 1 293 112 view .LVU125
+ 423 0238 1F48     		ldr	r0, .L21+64
+ 424 023a 0268     		ldr	r2, [r0]
+ 425 023c 4068     		ldr	r0, [r0, #4]
+ 293:Task/Task_Log.c **** 
+ 426              		.loc 1 293 34 view .LVU126
+ 427 023e 8A1A     		subs	r2, r1, r2
+ 428 0240 64EB0000 		sbc	r0, r4, r0
+ 429              	.LVL23:
+ 295:Task/Task_Log.c ****                 {
+ 430              		.loc 1 295 17 is_stmt 1 view .LVU127
+ 295:Task/Task_Log.c ****                 {
+ 431              		.loc 1 295 53 is_stmt 0 view .LVU128
+ 432 0244 9D68     		ldr	r5, [r3, #8]
+ 433 0246 DB68     		ldr	r3, [r3, #12]
+ 295:Task/Task_Log.c ****                 {
+ 434              		.loc 1 295 19 view .LVU129
+ 435 0248 9542     		cmp	r5, r2
+ 436 024a 8341     		sbcs	r3, r3, r0
+ 437 024c 0CD2     		bcs	.L14
+ 297:Task/Task_Log.c ****                         LogIMU_Summary.max_rt_diff = imu_pipe_rt_diff;
+ 438              		.loc 1 297 21 is_stmt 1 view .LVU130
+ 297:Task/Task_Log.c ****                         LogIMU_Summary.max_rt_diff = imu_pipe_rt_diff;
+ 439              		.loc 1 297 57 is_stmt 0 view .LVU131
+ 440 024e 194B     		ldr	r3, .L21+60
+ 441 0250 1D68     		ldr	r5, [r3]
+ 442 0252 5B68     		ldr	r3, [r3, #4]
+ 297:Task/Task_Log.c ****                         LogIMU_Summary.max_rt_diff = imu_pipe_rt_diff;
+ 443              		.loc 1 297 23 view .LVU132
+ 444 0254 9542     		cmp	r5, r2
+ 445 0256 8341     		sbcs	r3, r3, r0
+ 446 0258 02D2     		bcs	.L15
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 15
+
+
+ 298:Task/Task_Log.c **** 
+ 447              		.loc 1 298 25 is_stmt 1 view .LVU133
+ 298:Task/Task_Log.c **** 
+ 448              		.loc 1 298 52 is_stmt 0 view .LVU134
+ 449 025a 164B     		ldr	r3, .L21+60
+ 450 025c 1A60     		str	r2, [r3]
+ 451 025e 5860     		str	r0, [r3, #4]
+ 452              	.L15:
+ 300:Task/Task_Log.c ****                 }
+ 453              		.loc 1 300 21 is_stmt 1 view .LVU135
+ 300:Task/Task_Log.c ****                 }
+ 454              		.loc 1 300 35 is_stmt 0 view .LVU136
+ 455 0260 144A     		ldr	r2, .L21+60
+ 456              	.LVL24:
+ 300:Task/Task_Log.c ****                 }
+ 457              		.loc 1 300 35 view .LVU137
+ 458 0262 136A     		ldr	r3, [r2, #32]
+ 300:Task/Task_Log.c ****                 }
+ 459              		.loc 1 300 53 view .LVU138
+ 460 0264 0133     		adds	r3, r3, #1
+ 461 0266 1362     		str	r3, [r2, #32]
+ 462              	.L14:
+ 303:Task/Task_Log.c ****                 lst_imu_pipe_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.
+ 463              		.loc 1 303 17 is_stmt 1 view .LVU139
+ 303:Task/Task_Log.c ****                 lst_imu_pipe_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.
+ 464              		.loc 1 303 39 is_stmt 0 view .LVU140
+ 465 0268 124B     		ldr	r3, .L21+60
+ 466 026a 9961     		str	r1, [r3, #24]
+ 467 026c DC61     		str	r4, [r3, #28]
+ 304:Task/Task_Log.c ****             }
+ 468              		.loc 1 304 17 is_stmt 1 view .LVU141
+ 304:Task/Task_Log.c ****             }
+ 469              		.loc 1 304 33 is_stmt 0 view .LVU142
+ 470 026e 124B     		ldr	r3, .L21+64
+ 471 0270 1960     		str	r1, [r3]
+ 472              	.LVL25:
+ 304:Task/Task_Log.c ****             }
+ 473              		.loc 1 304 33 view .LVU143
+ 474 0272 5C60     		str	r4, [r3, #4]
+ 475 0274 B4E7     		b	.L1
+ 476              	.L22:
+ 477 0276 00BF     		.align	2
+ 478              	.L21:
+ 479 0278 00000000 		.word	.LANCHOR0
+ 480 027c 00000000 		.word	.LANCHOR1
+ 481 0280 00000000 		.word	IMU_Log_DataPipe
+ 482 0284 00000000 		.word	.LANCHOR2
+ 483 0288 00000000 		.word	.LANCHOR3
+ 484 028c 00000000 		.word	.LANCHOR4
+ 485 0290 00000000 		.word	Queue
+ 486 0294 00000000 		.word	.LANCHOR5
+ 487 0298 00000000 		.word	.LANCHOR6
+ 488 029c 00000000 		.word	.LANCHOR7
+ 489 02a0 DB81B976 		.word	1991868891
+ 490 02a4 00000000 		.word	.LANCHOR8
+ 491 02a8 00000000 		.word	.LANCHOR9
+ 492 02ac 00000000 		.word	.LANCHOR10
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 16
+
+
+ 493 02b0 00000000 		.word	.LANCHOR11
+ 494 02b4 00000000 		.word	.LANCHOR12
+ 495 02b8 00000000 		.word	.LANCHOR13
+ 496              		.cfi_endproc
+ 497              	.LFE153:
+ 499              		.section	.rodata.TaskLog_Init.str1.4,"aMS",%progbits,1
+ 500              		.align	2
+ 501              	.LC0:
+ 502 0000 6C6F672F 		.ascii	"log/\000"
+ 502      00
+ 503 0005 000000   		.align	2
+ 504              	.LC1:
+ 505 0008 696D752E 		.ascii	"imu.log\000"
+ 505      6C6F6700 
+ 506              		.align	2
+ 507              	.LC2:
+ 508 0010 71756575 		.ascii	"queue imu data\000"
+ 508      6520696D 
+ 508      75206461 
+ 508      746100
+ 509              		.section	.text.TaskLog_Init,"ax",%progbits
+ 510              		.align	1
+ 511              		.global	TaskLog_Init
+ 512              		.syntax unified
+ 513              		.thumb
+ 514              		.thumb_func
+ 515              		.fpu fpv5-d16
+ 517              	TaskLog_Init:
+ 518              	.LFB151:
+  99:Task/Task_Log.c ****     Os_Idle_DataStream_TypeDef LogData_Stream;
+ 519              		.loc 1 99 1 is_stmt 1 view -0
+ 520              		.cfi_startproc
+ 521              		@ args = 0, pretend = 0, frame = 112
+ 522              		@ frame_needed = 0, uses_anonymous_args = 0
+ 523 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 524              	.LCFI4:
+ 525              		.cfi_def_cfa_offset 24
+ 526              		.cfi_offset 4, -24
+ 527              		.cfi_offset 5, -20
+ 528              		.cfi_offset 6, -16
+ 529              		.cfi_offset 7, -12
+ 530              		.cfi_offset 8, -8
+ 531              		.cfi_offset 14, -4
+ 532 0004 A2B0     		sub	sp, sp, #136
+ 533              	.LCFI5:
+ 534              		.cfi_def_cfa_offset 160
+ 100:Task/Task_Log.c **** 
+ 535              		.loc 1 100 5 view .LVU145
+ 102:Task/Task_Log.c ****     memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
+ 536              		.loc 1 102 5 view .LVU146
+ 537 0006 4A4B     		ldr	r3, .L28
+ 538 0008 0024     		movs	r4, #0
+ 539 000a 1C60     		str	r4, [r3]
+ 540 000c 5C60     		str	r4, [r3, #4]
+ 541 000e 9C60     		str	r4, [r3, #8]
+ 542 0010 DC60     		str	r4, [r3, #12]
+ 543 0012 1C61     		str	r4, [r3, #16]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 17
+
+
+ 544 0014 1C75     		strb	r4, [r3, #20]
+ 103:Task/Task_Log.c ****     memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
+ 545              		.loc 1 103 5 view .LVU147
+ 546 0016 474D     		ldr	r5, .L28+4
+ 547 0018 2B22     		movs	r2, #43
+ 548 001a 2146     		mov	r1, r4
+ 549 001c 2846     		mov	r0, r5
+ 550 001e FFF7FEFF 		bl	memset
+ 551              	.LVL26:
+ 104:Task/Task_Log.c ****     memset(&FATFS_Obj, NULL, sizeof(FATFS_Obj));
+ 552              		.loc 1 104 5 view .LVU148
+ 553 0022 6622     		movs	r2, #102
+ 554 0024 2146     		mov	r1, r4
+ 555 0026 4448     		ldr	r0, .L28+8
+ 556 0028 FFF7FEFF 		bl	memset
+ 557              	.LVL27:
+ 105:Task/Task_Log.c **** 
+ 558              		.loc 1 105 5 view .LVU149
+ 559 002c 434E     		ldr	r6, .L28+12
+ 560 002e C822     		movs	r2, #200
+ 561 0030 2146     		mov	r1, r4
+ 562 0032 3046     		mov	r0, r6
+ 563 0034 FFF7FEFF 		bl	memset
+ 564              	.LVL28:
+ 107:Task/Task_Log.c ****     IMU_Log_DataPipe.data_size = sizeof(LogIMU_Data);
+ 565              		.loc 1 107 5 view .LVU150
+ 107:Task/Task_Log.c ****     IMU_Log_DataPipe.data_size = sizeof(LogIMU_Data);
+ 566              		.loc 1 107 34 is_stmt 0 view .LVU151
+ 567 0038 414B     		ldr	r3, .L28+16
+ 107:Task/Task_Log.c ****     IMU_Log_DataPipe.data_size = sizeof(LogIMU_Data);
+ 568              		.loc 1 107 32 view .LVU152
+ 569 003a C5F81130 		str	r3, [r5, #17]	@ unaligned
+ 108:Task/Task_Log.c ****     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
+ 570              		.loc 1 108 5 is_stmt 1 view .LVU153
+ 108:Task/Task_Log.c ****     IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
+ 571              		.loc 1 108 32 is_stmt 0 view .LVU154
+ 572 003e 4F23     		movs	r3, #79
+ 573 0040 6B75     		strb	r3, [r5, #21]
+ 574 0042 AC75     		strb	r4, [r5, #22]
+ 109:Task/Task_Log.c **** 
+ 575              		.loc 1 109 5 is_stmt 1 view .LVU155
+ 109:Task/Task_Log.c **** 
+ 576              		.loc 1 109 38 is_stmt 0 view .LVU156
+ 577 0044 3F4B     		ldr	r3, .L28+20
+ 578 0046 C5F81730 		str	r3, [r5, #23]	@ unaligned
+ 111:Task/Task_Log.c ****     LogObj_Logging_Reg.reg_val = 0;
+ 579              		.loc 1 111 5 is_stmt 1 view .LVU157
+ 111:Task/Task_Log.c ****     LogObj_Logging_Reg.reg_val = 0;
+ 580              		.loc 1 111 28 is_stmt 0 view .LVU158
+ 581 004a 3F4B     		ldr	r3, .L28+24
+ 582 004c 1C80     		strh	r4, [r3]	@ movhi
+ 112:Task/Task_Log.c **** 
+ 583              		.loc 1 112 5 is_stmt 1 view .LVU159
+ 112:Task/Task_Log.c **** 
+ 584              		.loc 1 112 32 is_stmt 0 view .LVU160
+ 585 004e 3F4B     		ldr	r3, .L28+28
+ 586 0050 1C80     		strh	r4, [r3]	@ movhi
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 18
+
+
+ 115:Task/Task_Log.c ****     {
+ 587              		.loc 1 115 5 is_stmt 1 view .LVU161
+ 115:Task/Task_Log.c ****     {
+ 588              		.loc 1 115 13 is_stmt 0 view .LVU162
+ 589 0052 3F4B     		ldr	r3, .L28+32
+ 590 0054 1B68     		ldr	r3, [r3]
+ 115:Task/Task_Log.c ****     {
+ 591              		.loc 1 115 9 view .LVU163
+ 592 0056 3F49     		ldr	r1, .L28+36
+ 593 0058 3046     		mov	r0, r6
+ 594 005a 9847     		blx	r3
+ 595              	.LVL29:
+ 115:Task/Task_Log.c ****     {
+ 596              		.loc 1 115 8 view .LVU164
+ 597 005c 0028     		cmp	r0, #0
+ 598 005e 5CD0     		beq	.L24
+ 117:Task/Task_Log.c **** 
+ 599              		.loc 1 117 9 is_stmt 1 view .LVU165
+ 117:Task/Task_Log.c **** 
+ 600              		.loc 1 117 33 is_stmt 0 view .LVU166
+ 601 0060 3B4B     		ldr	r3, .L28+32
+ 602 0062 5B68     		ldr	r3, [r3, #4]
+ 117:Task/Task_Log.c **** 
+ 603              		.loc 1 117 29 view .LVU167
+ 604 0064 0222     		movs	r2, #2
+ 605 0066 3C49     		ldr	r1, .L28+40
+ 606 0068 3046     		mov	r0, r6
+ 607 006a 9847     		blx	r3
+ 608              	.LVL30:
+ 609 006c 0346     		mov	r3, r0
+ 117:Task/Task_Log.c **** 
+ 610              		.loc 1 117 27 view .LVU168
+ 611 006e 3B4A     		ldr	r2, .L28+44
+ 612 0070 1060     		str	r0, [r2]
+ 119:Task/Task_Log.c ****         {
+ 613              		.loc 1 119 9 is_stmt 1 view .LVU169
+ 119:Task/Task_Log.c ****         {
+ 614              		.loc 1 119 11 is_stmt 0 view .LVU170
+ 615 0072 0028     		cmp	r0, #0
+ 616 0074 41D0     		beq	.L25
+ 121:Task/Task_Log.c ****             Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
+ 617              		.loc 1 121 13 is_stmt 1 view .LVU171
+ 121:Task/Task_Log.c ****             Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
+ 618              		.loc 1 121 31 is_stmt 0 view .LVU172
+ 619 0076 364E     		ldr	r6, .L28+32
+ 121:Task/Task_Log.c ****             Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
+ 620              		.loc 1 121 27 view .LVU173
+ 621 0078 2F4F     		ldr	r7, .L28+8
+ 622 007a 394D     		ldr	r5, .L28+48
+ 623 007c DFF8BC80 		ldr	r8, .L28+12
+ 624 0080 4FF40012 		mov	r2, #2097152
+ 625 0084 0092     		str	r2, [sp]
+ 626 0086 2A46     		mov	r2, r5
+ 627 0088 4146     		mov	r1, r8
+ 628 008a 06A8     		add	r0, sp, #24
+ 629 008c B468     		ldr	r4, [r6, #8]
+ 630 008e A047     		blx	r4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 19
+
+
+ 631              	.LVL31:
+ 632 0090 6622     		movs	r2, #102
+ 633 0092 06A9     		add	r1, sp, #24
+ 634 0094 3846     		mov	r0, r7
+ 635 0096 FFF7FEFF 		bl	memcpy
+ 636              	.LVL32:
+ 122:Task/Task_Log.c **** 
+ 637              		.loc 1 122 13 is_stmt 1 view .LVU174
+ 122:Task/Task_Log.c **** 
+ 638              		.loc 1 122 17 is_stmt 0 view .LVU175
+ 639 009a F668     		ldr	r6, [r6, #12]
+ 122:Task/Task_Log.c **** 
+ 640              		.loc 1 122 13 view .LVU176
+ 641 009c 3B46     		mov	r3, r7
+ 642 009e 2A46     		mov	r2, r5
+ 643 00a0 2D49     		ldr	r1, .L28+40
+ 644 00a2 4046     		mov	r0, r8
+ 645 00a4 B047     		blx	r6
+ 646              	.LVL33:
+ 125:Task/Task_Log.c ****             {
+ 647              		.loc 1 125 13 is_stmt 1 view .LVU177
+ 125:Task/Task_Log.c ****             {
+ 648              		.loc 1 125 22 is_stmt 0 view .LVU178
+ 649 00a6 2F4B     		ldr	r3, .L28+52
+ 650 00a8 DC68     		ldr	r4, [r3, #12]
+ 125:Task/Task_Log.c ****             {
+ 651              		.loc 1 125 17 view .LVU179
+ 652 00aa 4FF44063 		mov	r3, #3072
+ 653 00ae 2E4A     		ldr	r2, .L28+56
+ 654 00b0 2E49     		ldr	r1, .L28+60
+ 655 00b2 2F48     		ldr	r0, .L28+64
+ 656 00b4 A047     		blx	r4
+ 657              	.LVL34:
+ 125:Task/Task_Log.c ****             {
+ 658              		.loc 1 125 16 view .LVU180
+ 659 00b6 0028     		cmp	r0, #0
+ 660 00b8 32D0     		beq	.L26
+ 127:Task/Task_Log.c ****                 LogObj_Enable_Reg._sec.IMU_Sec = true;
+ 661              		.loc 1 127 17 is_stmt 1 view .LVU181
+ 127:Task/Task_Log.c ****                 LogObj_Enable_Reg._sec.IMU_Sec = true;
+ 662              		.loc 1 127 31 is_stmt 0 view .LVU182
+ 663 00ba 0122     		movs	r2, #1
+ 664 00bc 2D4B     		ldr	r3, .L28+68
+ 665 00be 1A70     		strb	r2, [r3]
+ 128:Task/Task_Log.c ****                 LogObj_Set_Reg._sec.IMU_Sec = true;
+ 666              		.loc 1 128 17 is_stmt 1 view .LVU183
+ 128:Task/Task_Log.c ****                 LogObj_Set_Reg._sec.IMU_Sec = true;
+ 667              		.loc 1 128 48 is_stmt 0 view .LVU184
+ 668 00c0 2D49     		ldr	r1, .L28+72
+ 669 00c2 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+ 670 00c4 1343     		orrs	r3, r3, r2
+ 671 00c6 0B70     		strb	r3, [r1]
+ 129:Task/Task_Log.c ****             
+ 672              		.loc 1 129 17 is_stmt 1 view .LVU185
+ 129:Task/Task_Log.c ****             
+ 673              		.loc 1 129 45 is_stmt 0 view .LVU186
+ 674 00c8 1F49     		ldr	r1, .L28+24
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 20
+
+
+ 675 00ca 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+ 676 00cc 1343     		orrs	r3, r3, r2
+ 677 00ce 0B70     		strb	r3, [r1]
+ 131:Task/Task_Log.c **** 
+ 678              		.loc 1 131 17 is_stmt 1 view .LVU187
+ 679              	.LVL35:
+ 680              	.LBB17:
+ 681              	.LBI17:
+ 682              		.file 2 "System/DataPipe/DataPipe.h"
+   1:System/DataPipe/DataPipe.h **** #ifndef __DATAPIPE_H
+   2:System/DataPipe/DataPipe.h **** #define __DATAPIPE_H
+   3:System/DataPipe/DataPipe.h **** 
+   4:System/DataPipe/DataPipe.h **** #include <stdint.h>
+   5:System/DataPipe/DataPipe.h **** #include <string.h>
+   6:System/DataPipe/DataPipe.h **** #include <stdbool.h>
+   7:System/DataPipe/DataPipe.h **** 
+   8:System/DataPipe/DataPipe.h **** typedef void (*Pipe_TransFinish_Callback)(void *pipe_obj);
+   9:System/DataPipe/DataPipe.h **** typedef void (*Pipe_TransError_Callback)(void *pipe_obj);
+  10:System/DataPipe/DataPipe.h **** typedef void (*Pipe_TimeOutProc_Callback)(void *pipe_obj);
+  11:System/DataPipe/DataPipe.h **** 
+  12:System/DataPipe/DataPipe.h **** #define DataPipeHandleToObj(x) ((DataPipeObj_TypeDef *)x)
+  13:System/DataPipe/DataPipe.h **** #define DataPipe_CreateDataObj(type, name) static type name##_##PipeDataObj __attribute__((section(
+  14:System/DataPipe/DataPipe.h **** #define DataPipe_DataObjAddr(name) (&name##_##PipeDataObj)
+  15:System/DataPipe/DataPipe.h **** #define DataPipe_DataObj(name) name##_##PipeDataObj
+  16:System/DataPipe/DataPipe.h **** #define DataPipe_DataSize(name) sizeof(name##_##PipeDataObj)
+  17:System/DataPipe/DataPipe.h **** 
+  18:System/DataPipe/DataPipe.h **** typedef enum
+  19:System/DataPipe/DataPipe.h **** {
+  20:System/DataPipe/DataPipe.h ****     Pipe_UnReady = 0,
+  21:System/DataPipe/DataPipe.h ****     Pipe_Ready,
+  22:System/DataPipe/DataPipe.h ****     Pipe_Busy,
+  23:System/DataPipe/DataPipe.h ****     Pipe_Error,
+  24:System/DataPipe/DataPipe.h **** } DataPipe_State_List;
+  25:System/DataPipe/DataPipe.h **** 
+  26:System/DataPipe/DataPipe.h **** #pragma pack(1)
+  27:System/DataPipe/DataPipe.h **** typedef struct
+  28:System/DataPipe/DataPipe.h **** {
+  29:System/DataPipe/DataPipe.h ****     uint32_t min_rx_interval;
+  30:System/DataPipe/DataPipe.h ****     uint32_t detect_interval;
+  31:System/DataPipe/DataPipe.h ****     uint64_t rx_us_rt;
+  32:System/DataPipe/DataPipe.h **** 
+  33:System/DataPipe/DataPipe.h ****     bool enable;
+  34:System/DataPipe/DataPipe.h **** 
+  35:System/DataPipe/DataPipe.h ****     uint32_t data_addr;
+  36:System/DataPipe/DataPipe.h ****     uint16_t data_size;
+  37:System/DataPipe/DataPipe.h **** 
+  38:System/DataPipe/DataPipe.h ****     Pipe_TransFinish_Callback trans_finish_cb;
+  39:System/DataPipe/DataPipe.h ****     Pipe_TransError_Callback trans_error_cb;
+  40:System/DataPipe/DataPipe.h **** 
+  41:System/DataPipe/DataPipe.h ****     uint32_t tx_cnt;
+  42:System/DataPipe/DataPipe.h ****     uint32_t rx_cnt;
+  43:System/DataPipe/DataPipe.h ****     uint32_t er_cnt;
+  44:System/DataPipe/DataPipe.h **** } DataPipeObj_TypeDef;
+  45:System/DataPipe/DataPipe.h **** #pragma pack()
+  46:System/DataPipe/DataPipe.h **** 
+  47:System/DataPipe/DataPipe.h **** typedef struct
+  48:System/DataPipe/DataPipe.h **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 21
+
+
+  49:System/DataPipe/DataPipe.h ****     DataPipeObj_TypeDef *org;
+  50:System/DataPipe/DataPipe.h ****     DataPipeObj_TypeDef *dst;
+  51:System/DataPipe/DataPipe.h **** } Data_PlugedPipeObj_TypeDef;
+  52:System/DataPipe/DataPipe.h **** 
+  53:System/DataPipe/DataPipe.h **** bool DataPipe_Init(void);
+  54:System/DataPipe/DataPipe.h **** bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst);
+  55:System/DataPipe/DataPipe.h **** bool DataPipe_DealError(void);
+  56:System/DataPipe/DataPipe.h **** 
+  57:System/DataPipe/DataPipe.h **** inline bool DataPipe_Enable(DataPipeObj_TypeDef *obj)
+ 683              		.loc 2 57 13 view .LVU188
+ 684              	.LBB18:
+  58:System/DataPipe/DataPipe.h **** {
+  59:System/DataPipe/DataPipe.h ****     if (obj == NULL)
+ 685              		.loc 2 59 5 view .LVU189
+  60:System/DataPipe/DataPipe.h ****         return false;
+  61:System/DataPipe/DataPipe.h **** 
+  62:System/DataPipe/DataPipe.h ****     obj->enable = true;
+ 686              		.loc 2 62 5 view .LVU190
+ 687              		.loc 2 62 17 is_stmt 0 view .LVU191
+ 688 00d0 184B     		ldr	r3, .L28+4
+ 689 00d2 1A74     		strb	r2, [r3, #16]
+  63:System/DataPipe/DataPipe.h **** 
+  64:System/DataPipe/DataPipe.h ****     return true;
+ 690              		.loc 2 64 5 is_stmt 1 view .LVU192
+ 691              	.LVL36:
+ 692              		.loc 2 64 5 is_stmt 0 view .LVU193
+ 693              	.LBE18:
+ 694              	.LBE17:
+ 133:Task/Task_Log.c ****                     enable_compess = false;
+ 695              		.loc 1 133 17 is_stmt 1 view .LVU194
+ 133:Task/Task_Log.c ****                     enable_compess = false;
+ 696              		.loc 1 133 21 is_stmt 0 view .LVU195
+ 697 00d4 1823     		movs	r3, #24
+ 698 00d6 0593     		str	r3, [sp, #20]
+ 699 00d8 0422     		movs	r2, #4
+ 700 00da 0492     		str	r2, [sp, #16]
+ 701 00dc 0392     		str	r2, [sp, #12]
+ 702 00de 0292     		str	r2, [sp, #8]
+ 703 00e0 0192     		str	r2, [sp, #4]
+ 704 00e2 0092     		str	r2, [sp]
+ 705 00e4 1346     		mov	r3, r2
+ 706 00e6 0221     		movs	r1, #2
+ 707 00e8 42F2A000 		movw	r0, #8352
+ 708 00ec FFF7FEFF 		bl	__lzo_init_v2
+ 709              	.LVL37:
+ 133:Task/Task_Log.c ****                     enable_compess = false;
+ 710              		.loc 1 133 20 view .LVU196
+ 711 00f0 B0B1     		cbz	r0, .L26
+ 134:Task/Task_Log.c ****             }
+ 712              		.loc 1 134 21 is_stmt 1 view .LVU197
+ 134:Task/Task_Log.c ****             }
+ 713              		.loc 1 134 36 is_stmt 0 view .LVU198
+ 714 00f2 224B     		ldr	r3, .L28+76
+ 715 00f4 0022     		movs	r2, #0
+ 716 00f6 1A70     		strb	r2, [r3]
+ 717 00f8 12E0     		b	.L26
+ 718              	.L25:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 22
+
+
+ 139:Task/Task_Log.c ****             LogObj_Enable_Reg._sec.IMU_Sec = false;
+ 719              		.loc 1 139 13 is_stmt 1 view .LVU199
+ 139:Task/Task_Log.c ****             LogObj_Enable_Reg._sec.IMU_Sec = false;
+ 720              		.loc 1 139 27 is_stmt 0 view .LVU200
+ 721 00fa 0023     		movs	r3, #0
+ 722 00fc 1D4A     		ldr	r2, .L28+68
+ 723 00fe 1370     		strb	r3, [r2]
+ 140:Task/Task_Log.c ****             LogObj_Set_Reg._sec.IMU_Sec = false;
+ 724              		.loc 1 140 13 is_stmt 1 view .LVU201
+ 140:Task/Task_Log.c ****             LogObj_Set_Reg._sec.IMU_Sec = false;
+ 725              		.loc 1 140 44 is_stmt 0 view .LVU202
+ 726 0100 1D4A     		ldr	r2, .L28+72
+ 727 0102 1178     		ldrb	r1, [r2]	@ zero_extendqisi2
+ 728 0104 63F30001 		bfi	r1, r3, #0, #1
+ 729 0108 1170     		strb	r1, [r2]
+ 141:Task/Task_Log.c ****             DataPipe_Disable(&IMU_Log_DataPipe);
+ 730              		.loc 1 141 13 is_stmt 1 view .LVU203
+ 141:Task/Task_Log.c ****             DataPipe_Disable(&IMU_Log_DataPipe);
+ 731              		.loc 1 141 41 is_stmt 0 view .LVU204
+ 732 010a 0F4A     		ldr	r2, .L28+24
+ 733 010c 1178     		ldrb	r1, [r2]	@ zero_extendqisi2
+ 734 010e 63F30001 		bfi	r1, r3, #0, #1
+ 735 0112 1170     		strb	r1, [r2]
+ 142:Task/Task_Log.c ****         }
+ 736              		.loc 1 142 13 is_stmt 1 view .LVU205
+ 737              	.LVL38:
+ 738              	.LBB19:
+ 739              	.LBI19:
+  65:System/DataPipe/DataPipe.h **** }
+  66:System/DataPipe/DataPipe.h **** 
+  67:System/DataPipe/DataPipe.h **** inline bool DataPipe_Disable(DataPipeObj_TypeDef *obj)
+ 740              		.loc 2 67 13 view .LVU206
+ 741              	.LBB20:
+  68:System/DataPipe/DataPipe.h **** {
+  69:System/DataPipe/DataPipe.h ****     if (obj == NULL)
+ 742              		.loc 2 69 5 view .LVU207
+  70:System/DataPipe/DataPipe.h ****         return false;
+  71:System/DataPipe/DataPipe.h **** 
+  72:System/DataPipe/DataPipe.h ****     obj->enable = false;
+ 743              		.loc 2 72 5 view .LVU208
+ 744              		.loc 2 72 17 is_stmt 0 view .LVU209
+ 745 0114 074A     		ldr	r2, .L28+4
+ 746 0116 1374     		strb	r3, [r2, #16]
+  73:System/DataPipe/DataPipe.h **** 
+  74:System/DataPipe/DataPipe.h ****     return true;
+ 747              		.loc 2 74 5 is_stmt 1 view .LVU210
+ 748 0118 02E0     		b	.L26
+ 749              	.LVL39:
+ 750              	.L24:
+ 751              		.loc 2 74 5 is_stmt 0 view .LVU211
+ 752              	.LBE20:
+ 753              	.LBE19:
+ 146:Task/Task_Log.c **** 
+ 754              		.loc 1 146 9 is_stmt 1 view .LVU212
+ 755              	.LBB21:
+ 756              	.LBI21:
+  67:System/DataPipe/DataPipe.h **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 23
+
+
+ 757              		.loc 2 67 13 view .LVU213
+ 758              	.LBB22:
+  69:System/DataPipe/DataPipe.h ****         return false;
+ 759              		.loc 2 69 5 view .LVU214
+  72:System/DataPipe/DataPipe.h **** 
+ 760              		.loc 2 72 5 view .LVU215
+  72:System/DataPipe/DataPipe.h **** 
+ 761              		.loc 2 72 17 is_stmt 0 view .LVU216
+ 762 011a 064B     		ldr	r3, .L28+4
+ 763 011c 0022     		movs	r2, #0
+ 764 011e 1A74     		strb	r2, [r3, #16]
+ 765              		.loc 2 74 5 is_stmt 1 view .LVU217
+ 766              	.LVL40:
+ 767              	.L26:
+ 768              		.loc 2 74 5 is_stmt 0 view .LVU218
+ 769              	.LBE22:
+ 770              	.LBE21:
+ 148:Task/Task_Log.c ****     LogData_Stream.size = 0;
+ 771              		.loc 1 148 5 is_stmt 1 view .LVU219
+ 148:Task/Task_Log.c ****     LogData_Stream.size = 0;
+ 772              		.loc 1 148 24 is_stmt 0 view .LVU220
+ 773 0120 0023     		movs	r3, #0
+ 774 0122 2093     		str	r3, [sp, #128]
+ 149:Task/Task_Log.c **** }
+ 775              		.loc 1 149 5 is_stmt 1 view .LVU221
+ 149:Task/Task_Log.c **** }
+ 776              		.loc 1 149 25 is_stmt 0 view .LVU222
+ 777 0124 ADF88430 		strh	r3, [sp, #132]	@ movhi
+ 150:Task/Task_Log.c **** 
+ 778              		.loc 1 150 1 view .LVU223
+ 779 0128 22B0     		add	sp, sp, #136
+ 780              	.LCFI6:
+ 781              		.cfi_def_cfa_offset 24
+ 782              		@ sp needed
+ 783 012a BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 784              	.L29:
+ 785 012e 00BF     		.align	2
+ 786              	.L28:
+ 787 0130 00000000 		.word	.LANCHOR6
+ 788 0134 00000000 		.word	IMU_Log_DataPipe
+ 789 0138 00000000 		.word	.LANCHOR14
+ 790 013c 00000000 		.word	.LANCHOR15
+ 791 0140 00000000 		.word	.LANCHOR16
+ 792 0144 00000000 		.word	TaskLog_PipeTransFinish_Callback
+ 793 0148 00000000 		.word	.LANCHOR1
+ 794 014c 00000000 		.word	.LANCHOR3
+ 795 0150 00000000 		.word	Disk
+ 796 0154 00000000 		.word	TaskProto_PushProtocolQueue
+ 797 0158 00000000 		.word	.LC0
+ 798 015c 00000000 		.word	.LANCHOR17
+ 799 0160 08000000 		.word	.LC1
+ 800 0164 00000000 		.word	Queue
+ 801 0168 000C0000 		.word	.LANCHOR9+3072
+ 802 016c 10000000 		.word	.LC2
+ 803 0170 00000000 		.word	.LANCHOR5
+ 804 0174 00000000 		.word	.LANCHOR0
+ 805 0178 00000000 		.word	.LANCHOR2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 24
+
+
+ 806 017c 00000000 		.word	.LANCHOR4
+ 807              		.cfi_endproc
+ 808              	.LFE151:
+ 810              		.section	.text.TaskLog_Core,"ax",%progbits
+ 811              		.align	1
+ 812              		.global	TaskLog_Core
+ 813              		.syntax unified
+ 814              		.thumb
+ 815              		.thumb_func
+ 816              		.fpu fpv5-d16
+ 818              	TaskLog_Core:
+ 819              	.LVL41:
+ 820              	.LFB152:
+ 154:Task/Task_Log.c ****     uint8_t *compess_buf_ptr = NULL;
+ 821              		.loc 1 154 1 is_stmt 1 view -0
+ 822              		.cfi_startproc
+ 823              		@ args = 0, pretend = 0, frame = 8
+ 824              		@ frame_needed = 0, uses_anonymous_args = 0
+ 154:Task/Task_Log.c ****     uint8_t *compess_buf_ptr = NULL;
+ 825              		.loc 1 154 1 is_stmt 0 view .LVU225
+ 826 0000 30B5     		push	{r4, r5, lr}
+ 827              	.LCFI7:
+ 828              		.cfi_def_cfa_offset 12
+ 829              		.cfi_offset 4, -12
+ 830              		.cfi_offset 5, -8
+ 831              		.cfi_offset 14, -4
+ 832 0002 85B0     		sub	sp, sp, #20
+ 833              	.LCFI8:
+ 834              		.cfi_def_cfa_offset 32
+ 155:Task/Task_Log.c ****     uint16_t cur_compess_size = 0;
+ 835              		.loc 1 155 5 is_stmt 1 view .LVU226
+ 836              	.LVL42:
+ 156:Task/Task_Log.c ****     uint16_t input_compess_size = 0;
+ 837              		.loc 1 156 5 view .LVU227
+ 156:Task/Task_Log.c ****     uint16_t input_compess_size = 0;
+ 838              		.loc 1 156 14 is_stmt 0 view .LVU228
+ 839 0004 0023     		movs	r3, #0
+ 840 0006 ADF80E30 		strh	r3, [sp, #14]	@ movhi
+ 157:Task/Task_Log.c ****     int ret = 0;
+ 841              		.loc 1 157 5 is_stmt 1 view .LVU229
+ 842              	.LVL43:
+ 158:Task/Task_Log.c **** 
+ 843              		.loc 1 158 5 view .LVU230
+ 160:Task/Task_Log.c ****     DebugPin.ctl(Debug_PB4, true);
+ 844              		.loc 1 160 5 view .LVU231
+ 160:Task/Task_Log.c ****     DebugPin.ctl(Debug_PB4, true);
+ 845              		.loc 1 160 24 is_stmt 0 view .LVU232
+ 846 000a 594B     		ldr	r3, .L43
+ 847 000c 1D88     		ldrh	r5, [r3]
+ 848              	.LVL44:
+ 161:Task/Task_Log.c **** 
+ 849              		.loc 1 161 5 is_stmt 1 view .LVU233
+ 161:Task/Task_Log.c **** 
+ 850              		.loc 1 161 13 is_stmt 0 view .LVU234
+ 851 000e 594B     		ldr	r3, .L43+4
+ 852 0010 5C68     		ldr	r4, [r3, #4]
+ 161:Task/Task_Log.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 25
+
+
+ 853              		.loc 1 161 5 view .LVU235
+ 854 0012 594A     		ldr	r2, .L43+8
+ 855 0014 0123     		movs	r3, #1
+ 856 0016 07CA     		ldm	r2, {r0, r1, r2}
+ 857              	.LVL45:
+ 161:Task/Task_Log.c **** 
+ 858              		.loc 1 161 5 view .LVU236
+ 859 0018 A047     		blx	r4
+ 860              	.LVL46:
+ 163:Task/Task_Log.c **** 
+ 861              		.loc 1 163 5 is_stmt 1 view .LVU237
+ 163:Task/Task_Log.c **** 
+ 862              		.loc 1 163 14 is_stmt 0 view .LVU238
+ 863 001a 584A     		ldr	r2, .L43+12
+ 864 001c 1368     		ldr	r3, [r2]
+ 865 001e 0133     		adds	r3, r3, #1
+ 866 0020 1360     		str	r3, [r2]
+ 165:Task/Task_Log.c ****     {
+ 867              		.loc 1 165 5 is_stmt 1 view .LVU239
+ 165:Task/Task_Log.c ****     {
+ 868              		.loc 1 165 8 is_stmt 0 view .LVU240
+ 869 0022 574B     		ldr	r3, .L43+16
+ 870 0024 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 165:Task/Task_Log.c ****     {
+ 871              		.loc 1 165 7 view .LVU241
+ 872 0026 002B     		cmp	r3, #0
+ 873 0028 00F09480 		beq	.L31
+ 165:Task/Task_Log.c ****     {
+ 874              		.loc 1 165 22 discriminator 1 view .LVU242
+ 875 002c 554B     		ldr	r3, .L43+20
+ 876 002e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 877 0030 002B     		cmp	r3, #0
+ 878 0032 00F08F80 		beq	.L31
+ 167:Task/Task_Log.c ****         cur_compess_size = 0;
+ 879              		.loc 1 167 9 is_stmt 1 view .LVU243
+ 167:Task/Task_Log.c ****         cur_compess_size = 0;
+ 880              		.loc 1 167 65 is_stmt 0 view .LVU244
+ 881 0036 544A     		ldr	r2, .L43+24
+ 882 0038 B2F80038 		ldrh	r3, [r2, #2048]
+ 167:Task/Task_Log.c ****         cur_compess_size = 0;
+ 883              		.loc 1 167 47 view .LVU245
+ 884 003c 591D     		adds	r1, r3, #5
+ 167:Task/Task_Log.c ****         cur_compess_size = 0;
+ 885              		.loc 1 167 25 view .LVU246
+ 886 003e 0A44     		add	r2, r2, r1
+ 887              	.LVL47:
+ 168:Task/Task_Log.c **** 
+ 888              		.loc 1 168 9 is_stmt 1 view .LVU247
+ 168:Task/Task_Log.c **** 
+ 889              		.loc 1 168 26 is_stmt 0 view .LVU248
+ 890 0040 0021     		movs	r1, #0
+ 891 0042 ADF80E10 		strh	r1, [sp, #14]	@ movhi
+ 170:Task/Task_Log.c ****         {
+ 892              		.loc 1 170 9 is_stmt 1 view .LVU249
+ 170:Task/Task_Log.c ****         {
+ 893              		.loc 1 170 11 is_stmt 0 view .LVU250
+ 894 0046 002D     		cmp	r5, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 26
+
+
+ 895 0048 00F08A80 		beq	.L32
+ 172:Task/Task_Log.c ****             LogObj_Logging_Reg._sec.IMU_Sec = true;
+ 896              		.loc 1 172 13 is_stmt 1 view .LVU251
+ 172:Task/Task_Log.c ****             LogObj_Logging_Reg._sec.IMU_Sec = true;
+ 897              		.loc 1 172 30 is_stmt 0 view .LVU252
+ 898 004c 4849     		ldr	r1, .L43
+ 899 004e 0020     		movs	r0, #0
+ 900 0050 0880     		strh	r0, [r1]	@ movhi
+ 173:Task/Task_Log.c ****             LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
+ 901              		.loc 1 173 13 is_stmt 1 view .LVU253
+ 173:Task/Task_Log.c ****             LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
+ 902              		.loc 1 173 45 is_stmt 0 view .LVU254
+ 903 0052 4E48     		ldr	r0, .L43+28
+ 904 0054 0178     		ldrb	r1, [r0]	@ zero_extendqisi2
+ 905 0056 41F00101 		orr	r1, r1, #1
+ 906 005a 0170     		strb	r1, [r0]
+ 174:Task/Task_Log.c **** 
+ 907              		.loc 1 174 13 is_stmt 1 view .LVU255
+ 174:Task/Task_Log.c **** 
+ 908              		.loc 1 174 63 is_stmt 0 view .LVU256
+ 909 005c 4A49     		ldr	r1, .L43+24
+ 910 005e CA20     		movs	r0, #202
+ 911 0060 C854     		strb	r0, [r1, r3]
+ 176:Task/Task_Log.c ****             if(ret != LZO_E_OK)
+ 912              		.loc 1 176 13 is_stmt 1 view .LVU257
+ 176:Task/Task_Log.c ****             if(ret != LZO_E_OK)
+ 913              		.loc 1 176 19 is_stmt 0 view .LVU258
+ 914 0062 4B4B     		ldr	r3, .L43+32
+ 915 0064 0093     		str	r3, [sp]
+ 916 0066 0DF10E03 		add	r3, sp, #14
+ 917 006a 2946     		mov	r1, r5
+ 918 006c 4948     		ldr	r0, .L43+36
+ 919 006e FFF7FEFF 		bl	lzo1x_1_compress
+ 920              	.LVL48:
+ 177:Task/Task_Log.c ****             {
+ 921              		.loc 1 177 13 is_stmt 1 view .LVU259
+ 177:Task/Task_Log.c ****             {
+ 922              		.loc 1 177 15 is_stmt 0 view .LVU260
+ 923 0072 70B1     		cbz	r0, .L33
+ 179:Task/Task_Log.c ****                 Log_Statistics.halt_type = Log_CompessFunc_Halt;
+ 924              		.loc 1 179 17 is_stmt 1 view .LVU261
+ 179:Task/Task_Log.c ****                 Log_Statistics.halt_type = Log_CompessFunc_Halt;
+ 925              		.loc 1 179 32 is_stmt 0 view .LVU262
+ 926 0074 0023     		movs	r3, #0
+ 927 0076 434A     		ldr	r2, .L43+20
+ 928 0078 1370     		strb	r3, [r2]
+ 180:Task/Task_Log.c ****                 DataPipe_Disable(&IMU_Log_DataPipe);
+ 929              		.loc 1 180 17 is_stmt 1 view .LVU263
+ 180:Task/Task_Log.c ****                 DataPipe_Disable(&IMU_Log_DataPipe);
+ 930              		.loc 1 180 42 is_stmt 0 view .LVU264
+ 931 007a 474A     		ldr	r2, .L43+40
+ 932 007c 0121     		movs	r1, #1
+ 933 007e 1175     		strb	r1, [r2, #20]
+ 181:Task/Task_Log.c ****             }
+ 934              		.loc 1 181 17 is_stmt 1 view .LVU265
+ 935              	.LVL49:
+ 936              	.LBB23:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 27
+
+
+ 937              	.LBI23:
+  67:System/DataPipe/DataPipe.h **** {
+ 938              		.loc 2 67 13 view .LVU266
+ 939              	.LBB24:
+  69:System/DataPipe/DataPipe.h ****         return false;
+ 940              		.loc 2 69 5 view .LVU267
+  72:System/DataPipe/DataPipe.h **** 
+ 941              		.loc 2 72 5 view .LVU268
+  72:System/DataPipe/DataPipe.h **** 
+ 942              		.loc 2 72 17 is_stmt 0 view .LVU269
+ 943 0080 464A     		ldr	r2, .L43+44
+ 944 0082 1374     		strb	r3, [r2, #16]
+ 945              		.loc 2 74 5 is_stmt 1 view .LVU270
+ 946              	.LVL50:
+ 947              	.L34:
+ 948              		.loc 2 74 5 is_stmt 0 view .LVU271
+ 949              	.LBE24:
+ 950              	.LBE23:
+ 227:Task/Task_Log.c ****         }
+ 951              		.loc 1 227 13 is_stmt 1 view .LVU272
+ 227:Task/Task_Log.c ****         }
+ 952              		.loc 1 227 19 is_stmt 0 view .LVU273
+ 953 0084 464B     		ldr	r3, .L43+48
+ 954 0086 5C68     		ldr	r4, [r3, #4]
+ 227:Task/Task_Log.c ****         }
+ 955              		.loc 1 227 13 view .LVU274
+ 956 0088 464A     		ldr	r2, .L43+52
+ 957 008a 0123     		movs	r3, #1
+ 958 008c 07CA     		ldm	r2, {r0, r1, r2}
+ 959 008e A047     		blx	r4
+ 960              	.LVL51:
+ 961 0090 66E0     		b	.L32
+ 962              	.LVL52:
+ 963              	.L33:
+ 185:Task/Task_Log.c ****                 {
+ 964              		.loc 1 185 17 is_stmt 1 view .LVU275
+ 185:Task/Task_Log.c ****                 {
+ 965              		.loc 1 185 39 is_stmt 0 view .LVU276
+ 966 0092 BDF80E30 		ldrh	r3, [sp, #14]
+ 185:Task/Task_Log.c ****                 {
+ 967              		.loc 1 185 19 view .LVU277
+ 968 0096 AB42     		cmp	r3, r5
+ 969 0098 08D3     		bcc	.L35
+ 187:Task/Task_Log.c ****                     Log_Statistics.halt_type = Log_CompessSize_Halt;
+ 970              		.loc 1 187 21 is_stmt 1 view .LVU278
+ 187:Task/Task_Log.c ****                     Log_Statistics.halt_type = Log_CompessSize_Halt;
+ 971              		.loc 1 187 36 is_stmt 0 view .LVU279
+ 972 009a 0023     		movs	r3, #0
+ 973 009c 394A     		ldr	r2, .L43+20
+ 974 009e 1370     		strb	r3, [r2]
+ 188:Task/Task_Log.c ****                     DataPipe_Disable(&IMU_Log_DataPipe);
+ 975              		.loc 1 188 21 is_stmt 1 view .LVU280
+ 188:Task/Task_Log.c ****                     DataPipe_Disable(&IMU_Log_DataPipe);
+ 976              		.loc 1 188 46 is_stmt 0 view .LVU281
+ 977 00a0 3D4A     		ldr	r2, .L43+40
+ 978 00a2 0221     		movs	r1, #2
+ 979 00a4 1175     		strb	r1, [r2, #20]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 28
+
+
+ 189:Task/Task_Log.c ****                 }
+ 980              		.loc 1 189 21 is_stmt 1 view .LVU282
+ 981              	.LVL53:
+ 982              	.LBB25:
+ 983              	.LBI25:
+  67:System/DataPipe/DataPipe.h **** {
+ 984              		.loc 2 67 13 view .LVU283
+ 985              	.LBB26:
+  69:System/DataPipe/DataPipe.h ****         return false;
+ 986              		.loc 2 69 5 view .LVU284
+  72:System/DataPipe/DataPipe.h **** 
+ 987              		.loc 2 72 5 view .LVU285
+  72:System/DataPipe/DataPipe.h **** 
+ 988              		.loc 2 72 17 is_stmt 0 view .LVU286
+ 989 00a6 3D4A     		ldr	r2, .L43+44
+ 990 00a8 1374     		strb	r3, [r2, #16]
+ 991              		.loc 2 74 5 is_stmt 1 view .LVU287
+ 992 00aa EBE7     		b	.L34
+ 993              	.LVL54:
+ 994              	.L35:
+ 995              		.loc 2 74 5 is_stmt 0 view .LVU288
+ 996              	.LBE26:
+ 997              	.LBE25:
+ 194:Task/Task_Log.c ****                     memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_siz
+ 998              		.loc 1 194 21 is_stmt 1 view .LVU289
+ 194:Task/Task_Log.c ****                     memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_siz
+ 999              		.loc 1 194 35 is_stmt 0 view .LVU290
+ 1000 00ac 3A49     		ldr	r1, .L43+40
+ 1001 00ae 8A68     		ldr	r2, [r1, #8]
+ 194:Task/Task_Log.c ****                     memcpy(&LogCompess_Data.buf[LogCompess_Data.compess_size + 1], &cur_compess_siz
+ 1002              		.loc 1 194 47 view .LVU291
+ 1003 00b0 0132     		adds	r2, r2, #1
+ 1004 00b2 8A60     		str	r2, [r1, #8]
+ 195:Task/Task_Log.c **** 
+ 1005              		.loc 1 195 21 is_stmt 1 view .LVU292
+ 195:Task/Task_Log.c **** 
+ 1006              		.loc 1 195 64 is_stmt 0 view .LVU293
+ 1007 00b4 344A     		ldr	r2, .L43+24
+ 195:Task/Task_Log.c **** 
+ 1008              		.loc 1 195 64 view .LVU294
+ 1009 00b6 B2F80018 		ldrh	r1, [r2, #2048]
+ 195:Task/Task_Log.c **** 
+ 1010              		.loc 1 195 78 view .LVU295
+ 1011 00ba 0131     		adds	r1, r1, #1
+ 195:Task/Task_Log.c **** 
+ 1012              		.loc 1 195 21 view .LVU296
+ 1013 00bc DDF80E00 		ldr	r0, [sp, #14]	@ unaligned
+ 1014              	.LVL55:
+ 195:Task/Task_Log.c **** 
+ 1015              		.loc 1 195 21 view .LVU297
+ 1016 00c0 5050     		str	r0, [r2, r1]	@ unaligned
+ 197:Task/Task_Log.c ****                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
+ 1017              		.loc 1 197 21 is_stmt 1 view .LVU298
+ 197:Task/Task_Log.c ****                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
+ 1018              		.loc 1 197 67 is_stmt 0 view .LVU299
+ 1019 00c2 B2F80018 		ldrh	r1, [r2, #2048]
+ 197:Task/Task_Log.c ****                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 29
+
+
+ 1020              		.loc 1 197 81 view .LVU300
+ 1021 00c6 0B44     		add	r3, r3, r1
+ 1022 00c8 9BB2     		uxth	r3, r3
+ 197:Task/Task_Log.c ****                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
+ 1023              		.loc 1 197 100 view .LVU301
+ 1024 00ca 0533     		adds	r3, r3, #5
+ 1025 00cc 9BB2     		uxth	r3, r3
+ 197:Task/Task_Log.c ****                     LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_ENDER;
+ 1026              		.loc 1 197 50 view .LVU302
+ 1027 00ce A2F80038 		strh	r3, [r2, #2048]	@ movhi
+ 198:Task/Task_Log.c ****                     LogCompess_Data.compess_size ++;
+ 1028              		.loc 1 198 21 is_stmt 1 view .LVU303
+ 198:Task/Task_Log.c ****                     LogCompess_Data.compess_size ++;
+ 1029              		.loc 1 198 71 is_stmt 0 view .LVU304
+ 1030 00d2 ED21     		movs	r1, #237
+ 1031 00d4 D154     		strb	r1, [r2, r3]
+ 199:Task/Task_Log.c ****                     LogObj_Logging_Reg._sec.IMU_Sec = false;
+ 1032              		.loc 1 199 21 is_stmt 1 view .LVU305
+ 199:Task/Task_Log.c ****                     LogObj_Logging_Reg._sec.IMU_Sec = false;
+ 1033              		.loc 1 199 50 is_stmt 0 view .LVU306
+ 1034 00d6 0133     		adds	r3, r3, #1
+ 1035 00d8 A2F80038 		strh	r3, [r2, #2048]	@ movhi
+ 200:Task/Task_Log.c **** 
+ 1036              		.loc 1 200 21 is_stmt 1 view .LVU307
+ 200:Task/Task_Log.c **** 
+ 1037              		.loc 1 200 53 is_stmt 0 view .LVU308
+ 1038 00dc 2B4B     		ldr	r3, .L43+28
+ 1039 00de 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 200:Task/Task_Log.c **** 
+ 1040              		.loc 1 200 53 view .LVU309
+ 1041 00e0 6FF30002 		bfc	r2, #0, #1
+ 1042 00e4 1A70     		strb	r2, [r3]
+ 202:Task/Task_Log.c ****                     {
+ 1043              		.loc 1 202 21 is_stmt 1 view .LVU310
+ 202:Task/Task_Log.c ****                     {
+ 1044              		.loc 1 202 26 is_stmt 0 view .LVU311
+ 1045 00e6 13E0     		b	.L36
+ 1046              	.L42:
+ 206:Task/Task_Log.c ****                             Log_Statistics.halt_type = Log_Finish_Halt;
+ 1047              		.loc 1 206 29 is_stmt 1 view .LVU312
+ 206:Task/Task_Log.c ****                             Log_Statistics.halt_type = Log_Finish_Halt;
+ 1048              		.loc 1 206 43 is_stmt 0 view .LVU313
+ 1049 00e8 0023     		movs	r3, #0
+ 1050 00ea 254A     		ldr	r2, .L43+16
+ 1051 00ec 1370     		strb	r3, [r2]
+ 207:Task/Task_Log.c ****                             DataPipe_Disable(&IMU_Log_DataPipe);
+ 1052              		.loc 1 207 29 is_stmt 1 view .LVU314
+ 207:Task/Task_Log.c ****                             DataPipe_Disable(&IMU_Log_DataPipe);
+ 1053              		.loc 1 207 54 is_stmt 0 view .LVU315
+ 1054 00ee 2A4A     		ldr	r2, .L43+40
+ 1055 00f0 0321     		movs	r1, #3
+ 1056 00f2 1175     		strb	r1, [r2, #20]
+ 208:Task/Task_Log.c ****                             break;
+ 1057              		.loc 1 208 29 is_stmt 1 view .LVU316
+ 1058              	.LVL56:
+ 1059              	.LBB27:
+ 1060              	.LBI27:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 30
+
+
+  67:System/DataPipe/DataPipe.h **** {
+ 1061              		.loc 2 67 13 view .LVU317
+ 1062              	.LBB28:
+  69:System/DataPipe/DataPipe.h ****         return false;
+ 1063              		.loc 2 69 5 view .LVU318
+  72:System/DataPipe/DataPipe.h **** 
+ 1064              		.loc 2 72 5 view .LVU319
+  72:System/DataPipe/DataPipe.h **** 
+ 1065              		.loc 2 72 17 is_stmt 0 view .LVU320
+ 1066 00f4 294A     		ldr	r2, .L43+44
+ 1067 00f6 1374     		strb	r3, [r2, #16]
+ 1068              		.loc 2 74 5 is_stmt 1 view .LVU321
+ 1069 00f8 C4E7     		b	.L34
+ 1070              	.LVL57:
+ 1071              	.L39:
+ 1072              		.loc 2 74 5 is_stmt 0 view .LVU322
+ 1073              	.LBE28:
+ 1074              	.LBE27:
+ 1075              	.LBB29:
+ 219:Task/Task_Log.c ****                                 LogCompess_Data.buf[t + 512] = 0;
+ 1076              		.loc 1 219 33 is_stmt 1 discriminator 3 view .LVU323
+ 219:Task/Task_Log.c ****                                 LogCompess_Data.buf[t + 512] = 0;
+ 1077              		.loc 1 219 80 is_stmt 0 discriminator 3 view .LVU324
+ 1078 00fa 03F50071 		add	r1, r3, #512
+ 219:Task/Task_Log.c ****                                 LogCompess_Data.buf[t + 512] = 0;
+ 1079              		.loc 1 219 77 discriminator 3 view .LVU325
+ 1080 00fe 224A     		ldr	r2, .L43+24
+ 219:Task/Task_Log.c ****                                 LogCompess_Data.buf[t + 512] = 0;
+ 1081              		.loc 1 219 77 discriminator 3 view .LVU326
+ 1082 0100 505C     		ldrb	r0, [r2, r1]	@ zero_extendqisi2
+ 219:Task/Task_Log.c ****                                 LogCompess_Data.buf[t + 512] = 0;
+ 1083              		.loc 1 219 56 discriminator 3 view .LVU327
+ 1084 0102 D054     		strb	r0, [r2, r3]
+ 220:Task/Task_Log.c ****                             }
+ 1085              		.loc 1 220 33 is_stmt 1 discriminator 3 view .LVU328
+ 220:Task/Task_Log.c ****                             }
+ 1086              		.loc 1 220 62 is_stmt 0 discriminator 3 view .LVU329
+ 1087 0104 0020     		movs	r0, #0
+ 1088 0106 5054     		strb	r0, [r2, r1]
+ 217:Task/Task_Log.c ****                             {
+ 1089              		.loc 1 217 83 is_stmt 1 discriminator 3 view .LVU330
+ 217:Task/Task_Log.c ****                             {
+ 1090              		.loc 1 217 84 is_stmt 0 discriminator 3 view .LVU331
+ 1091 0108 0133     		adds	r3, r3, #1
+ 1092              	.LVL58:
+ 217:Task/Task_Log.c ****                             {
+ 1093              		.loc 1 217 84 discriminator 3 view .LVU332
+ 1094 010a 9BB2     		uxth	r3, r3
+ 1095              	.LVL59:
+ 1096              	.L38:
+ 217:Task/Task_Log.c ****                             {
+ 1097              		.loc 1 217 49 is_stmt 1 discriminator 1 view .LVU333
+ 217:Task/Task_Log.c ****                             {
+ 1098              		.loc 1 217 29 is_stmt 0 discriminator 1 view .LVU334
+ 1099 010c 9C42     		cmp	r4, r3
+ 1100 010e F4D8     		bhi	.L39
+ 1101              	.LVL60:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 31
+
+
+ 1102              	.L36:
+ 217:Task/Task_Log.c ****                             {
+ 1103              		.loc 1 217 29 discriminator 1 view .LVU335
+ 1104              	.LBE29:
+ 202:Task/Task_Log.c ****                     {
+ 1105              		.loc 1 202 26 is_stmt 1 view .LVU336
+ 202:Task/Task_Log.c ****                     {
+ 1106              		.loc 1 202 42 is_stmt 0 view .LVU337
+ 1107 0110 1D4B     		ldr	r3, .L43+24
+ 202:Task/Task_Log.c ****                     {
+ 1108              		.loc 1 202 42 view .LVU338
+ 1109 0112 B3F80038 		ldrh	r3, [r3, #2048]
+ 202:Task/Task_Log.c ****                     {
+ 1110              		.loc 1 202 26 view .LVU339
+ 1111 0116 B3F5007F 		cmp	r3, #512
+ 1112 011a B3D3     		bcc	.L34
+ 204:Task/Task_Log.c ****                         {
+ 1113              		.loc 1 204 25 is_stmt 1 view .LVU340
+ 204:Task/Task_Log.c ****                         {
+ 1114              		.loc 1 204 32 is_stmt 0 view .LVU341
+ 1115 011c 224B     		ldr	r3, .L43+56
+ 1116 011e 1C69     		ldr	r4, [r3, #16]
+ 204:Task/Task_Log.c ****                         {
+ 1117              		.loc 1 204 28 view .LVU342
+ 1118 0120 4FF40073 		mov	r3, #512
+ 1119 0124 184A     		ldr	r2, .L43+24
+ 204:Task/Task_Log.c ****                         {
+ 1120              		.loc 1 204 28 view .LVU343
+ 1121 0126 2149     		ldr	r1, .L43+60
+ 1122 0128 2148     		ldr	r0, .L43+64
+ 1123 012a A047     		blx	r4
+ 1124              	.LVL61:
+ 204:Task/Task_Log.c ****                         {
+ 1125              		.loc 1 204 27 view .LVU344
+ 1126 012c 0228     		cmp	r0, #2
+ 1127 012e DBD0     		beq	.L42
+ 213:Task/Task_Log.c ****                             Log_Statistics.log_byte_sum += 512;
+ 1128              		.loc 1 213 29 is_stmt 1 view .LVU345
+ 213:Task/Task_Log.c ****                             Log_Statistics.log_byte_sum += 512;
+ 1129              		.loc 1 213 43 is_stmt 0 view .LVU346
+ 1130 0130 194B     		ldr	r3, .L43+40
+ 1131 0132 DA68     		ldr	r2, [r3, #12]
+ 213:Task/Task_Log.c ****                             Log_Statistics.log_byte_sum += 512;
+ 1132              		.loc 1 213 59 view .LVU347
+ 1133 0134 0132     		adds	r2, r2, #1
+ 1134 0136 DA60     		str	r2, [r3, #12]
+ 214:Task/Task_Log.c ****                             LogCompess_Data.compess_size -= 512;
+ 1135              		.loc 1 214 29 is_stmt 1 view .LVU348
+ 214:Task/Task_Log.c ****                             LogCompess_Data.compess_size -= 512;
+ 1136              		.loc 1 214 57 is_stmt 0 view .LVU349
+ 1137 0138 1A69     		ldr	r2, [r3, #16]
+ 1138 013a 02F50072 		add	r2, r2, #512
+ 1139 013e 1A61     		str	r2, [r3, #16]
+ 215:Task/Task_Log.c **** 
+ 1140              		.loc 1 215 29 is_stmt 1 view .LVU350
+ 215:Task/Task_Log.c **** 
+ 1141              		.loc 1 215 58 is_stmt 0 view .LVU351
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 32
+
+
+ 1142 0140 114B     		ldr	r3, .L43+24
+ 215:Task/Task_Log.c **** 
+ 1143              		.loc 1 215 58 view .LVU352
+ 1144 0142 B3F80048 		ldrh	r4, [r3, #2048]
+ 1145 0146 A4F50074 		sub	r4, r4, #512
+ 1146 014a A4B2     		uxth	r4, r4
+ 1147 014c A3F80048 		strh	r4, [r3, #2048]	@ movhi
+ 217:Task/Task_Log.c ****                             {
+ 1148              		.loc 1 217 29 is_stmt 1 view .LVU353
+ 1149              	.LBB30:
+ 217:Task/Task_Log.c ****                             {
+ 1150              		.loc 1 217 33 view .LVU354
+ 1151              	.LVL62:
+ 217:Task/Task_Log.c ****                             {
+ 1152              		.loc 1 217 42 is_stmt 0 view .LVU355
+ 1153 0150 0023     		movs	r3, #0
+ 217:Task/Task_Log.c ****                             {
+ 1154              		.loc 1 217 29 view .LVU356
+ 1155 0152 DBE7     		b	.L38
+ 1156              	.LVL63:
+ 1157              	.L31:
+ 217:Task/Task_Log.c ****                             {
+ 1158              		.loc 1 217 29 view .LVU357
+ 1159              	.LBE30:
+ 231:Task/Task_Log.c **** 
+ 1160              		.loc 1 231 9 is_stmt 1 view .LVU358
+ 231:Task/Task_Log.c **** 
+ 1161              		.loc 1 231 15 is_stmt 0 view .LVU359
+ 1162 0154 124B     		ldr	r3, .L43+48
+ 1163 0156 5C68     		ldr	r4, [r3, #4]
+ 231:Task/Task_Log.c **** 
+ 1164              		.loc 1 231 9 view .LVU360
+ 1165 0158 124A     		ldr	r2, .L43+52
+ 1166 015a 0023     		movs	r3, #0
+ 1167 015c 07CA     		ldm	r2, {r0, r1, r2}
+ 1168 015e A047     		blx	r4
+ 1169              	.LVL64:
+ 1170              	.L32:
+ 233:Task/Task_Log.c **** }
+ 1171              		.loc 1 233 5 is_stmt 1 view .LVU361
+ 233:Task/Task_Log.c **** }
+ 1172              		.loc 1 233 13 is_stmt 0 view .LVU362
+ 1173 0160 044B     		ldr	r3, .L43+4
+ 1174 0162 5C68     		ldr	r4, [r3, #4]
+ 233:Task/Task_Log.c **** }
+ 1175              		.loc 1 233 5 view .LVU363
+ 1176 0164 044A     		ldr	r2, .L43+8
+ 1177 0166 0023     		movs	r3, #0
+ 1178 0168 07CA     		ldm	r2, {r0, r1, r2}
+ 1179 016a A047     		blx	r4
+ 1180              	.LVL65:
+ 234:Task/Task_Log.c **** 
+ 1181              		.loc 1 234 1 view .LVU364
+ 1182 016c 05B0     		add	sp, sp, #20
+ 1183              	.LCFI9:
+ 1184              		.cfi_def_cfa_offset 12
+ 1185              		@ sp needed
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 33
+
+
+ 1186 016e 30BD     		pop	{r4, r5, pc}
+ 1187              	.LVL66:
+ 1188              	.L44:
+ 234:Task/Task_Log.c **** 
+ 1189              		.loc 1 234 1 view .LVU365
+ 1190              		.align	2
+ 1191              	.L43:
+ 1192 0170 00000000 		.word	.LANCHOR8
+ 1193 0174 00000000 		.word	DebugPin
+ 1194 0178 00000000 		.word	Debug_PB4
+ 1195 017c 00000000 		.word	.LANCHOR18
+ 1196 0180 00000000 		.word	.LANCHOR0
+ 1197 0184 00000000 		.word	.LANCHOR4
+ 1198 0188 00000000 		.word	.LANCHOR19
+ 1199 018c 00000000 		.word	.LANCHOR3
+ 1200 0190 00180000 		.word	wrkmem
+ 1201 0194 00000000 		.word	.LANCHOR9
+ 1202 0198 00000000 		.word	.LANCHOR6
+ 1203 019c 00000000 		.word	IMU_Log_DataPipe
+ 1204 01a0 00000000 		.word	DevLED
+ 1205 01a4 00000000 		.word	Led1
+ 1206 01a8 00000000 		.word	Disk
+ 1207 01ac 00000000 		.word	.LANCHOR14
+ 1208 01b0 00000000 		.word	.LANCHOR15
+ 1209              		.cfi_endproc
+ 1210              	.LFE152:
+ 1212              		.global	core_cnt
+ 1213              		.section	.Fast_Mem_Section,"aw"
+ 1214              		.align	3
+ 1215              		.set	.LANCHOR9,. + 0
+ 1218              	LogCache_L2_Buf:
+ 1219 0000 00000000 		.space	3072
+ 1219      00000000 
+ 1219      00000000 
+ 1219      00000000 
+ 1219      00000000 
+ 1222              	LogCache_L1_Buf:
+ 1223 0c00 00000000 		.space	3072
+ 1223      00000000 
+ 1223      00000000 
+ 1223      00000000 
+ 1223      00000000 
+ 1226              	wrkmem:
+ 1227 1800 00000000 		.space	65536
+ 1227      00000000 
+ 1227      00000000 
+ 1227      00000000 
+ 1227      00000000 
+ 1228              		.section	.Perph_Section,"aw"
+ 1229              		.align	2
+ 1230              		.set	.LANCHOR16,. + 0
+ 1233              	LogIMU_Data:
+ 1234 0000 00000000 		.space	79
+ 1234      00000000 
+ 1234      00000000 
+ 1234      00000000 
+ 1234      00000000 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 34
+
+
+ 1235              		.section	.bss.FATFS_Obj,"aw",%nobits
+ 1236              		.align	2
+ 1237              		.set	.LANCHOR15,. + 0
+ 1240              	FATFS_Obj:
+ 1241 0000 00000000 		.space	200
+ 1241      00000000 
+ 1241      00000000 
+ 1241      00000000 
+ 1241      00000000 
+ 1242              		.section	.bss.IMUData_Queue,"aw",%nobits
+ 1243              		.align	2
+ 1244              		.set	.LANCHOR5,. + 0
+ 1247              	IMUData_Queue:
+ 1248 0000 00000000 		.space	17
+ 1248      00000000 
+ 1248      00000000 
+ 1248      00000000 
+ 1248      00
+ 1249              		.section	.bss.LogCompess_Data,"aw",%nobits
+ 1250              		.align	2
+ 1251              		.set	.LANCHOR19,. + 0
+ 1254              	LogCompess_Data:
+ 1255 0000 00000000 		.space	2052
+ 1255      00000000 
+ 1255      00000000 
+ 1255      00000000 
+ 1255      00000000 
+ 1256              		.section	.bss.LogFile_Obj,"aw",%nobits
+ 1257              		.align	2
+ 1258              		.set	.LANCHOR14,. + 0
+ 1261              	LogFile_Obj:
+ 1262 0000 00000000 		.space	102
+ 1262      00000000 
+ 1262      00000000 
+ 1262      00000000 
+ 1262      00000000 
+ 1263              		.section	.bss.LogFile_Ready,"aw",%nobits
+ 1264              		.set	.LANCHOR0,. + 0
+ 1267              	LogFile_Ready:
+ 1268 0000 00       		.space	1
+ 1269              		.section	.bss.LogFolder_Cluster,"aw",%nobits
+ 1270              		.align	2
+ 1271              		.set	.LANCHOR17,. + 0
+ 1274              	LogFolder_Cluster:
+ 1275 0000 00000000 		.space	4
+ 1276              		.section	.bss.LogObj_Enable_Reg,"aw",%nobits
+ 1277              		.align	2
+ 1278              		.set	.LANCHOR2,. + 0
+ 1281              	LogObj_Enable_Reg:
+ 1282 0000 0000     		.space	2
+ 1283              		.section	.bss.LogObj_Logging_Reg,"aw",%nobits
+ 1284              		.align	2
+ 1285              		.set	.LANCHOR3,. + 0
+ 1288              	LogObj_Logging_Reg:
+ 1289 0000 0000     		.space	2
+ 1290              		.section	.bss.LogObj_Set_Reg,"aw",%nobits
+ 1291              		.align	2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 35
+
+
+ 1292              		.set	.LANCHOR1,. + 0
+ 1295              	LogObj_Set_Reg:
+ 1296 0000 0000     		.space	2
+ 1297              		.section	.bss.Log_Statistics,"aw",%nobits
+ 1298              		.align	2
+ 1299              		.set	.LANCHOR6,. + 0
+ 1302              	Log_Statistics:
+ 1303 0000 00000000 		.space	21
+ 1303      00000000 
+ 1303      00000000 
+ 1303      00000000 
+ 1303      00000000 
+ 1304              		.section	.bss.QueueIMU_PopSize,"aw",%nobits
+ 1305              		.align	1
+ 1306              		.set	.LANCHOR8,. + 0
+ 1309              	QueueIMU_PopSize:
+ 1310 0000 0000     		.space	2
+ 1311              		.section	.bss.core_cnt,"aw",%nobits
+ 1312              		.align	2
+ 1313              		.set	.LANCHOR18,. + 0
+ 1316              	core_cnt:
+ 1317 0000 00000000 		.space	4
+ 1318              		.section	.bss.in_queue_size,"aw",%nobits
+ 1319              		.align	2
+ 1320              		.set	.LANCHOR7,. + 0
+ 1323              	in_queue_size:
+ 1324 0000 00000000 		.space	4
+ 1325              		.section	.bss.lst_imu_pipe_rt.0,"aw",%nobits
+ 1326              		.align	3
+ 1327              		.set	.LANCHOR13,. + 0
+ 1330              	lst_imu_pipe_rt.0:
+ 1331 0000 00000000 		.space	8
+ 1331      00000000 
+ 1332              		.section	.bss.out_queue_size,"aw",%nobits
+ 1333              		.align	2
+ 1334              		.set	.LANCHOR10,. + 0
+ 1337              	out_queue_size:
+ 1338 0000 00000000 		.space	4
+ 1339              		.section	.data.LogIMU_Summary,"aw"
+ 1340              		.align	3
+ 1341              		.set	.LANCHOR12,. + 0
+ 1344              	LogIMU_Summary:
+ 1345 0000 00000000 		.word	0
+ 1346 0004 00000000 		.word	0
+ 1347 0008 F4010000 		.word	500
+ 1348 000c 00000000 		.word	0
+ 1349 0010 00000000 		.word	0
+ 1350 0014 00000000 		.word	0
+ 1351 0018 00000000 		.word	0
+ 1352 001c 00000000 		.word	0
+ 1353 0020 00000000 		.word	0
+ 1354 0024 00000000 		.space	4
+ 1355 0028 00000000 		.word	0
+ 1356 002c 00000000 		.word	0
+ 1357              		.section	.data.enable_compess,"aw"
+ 1358              		.set	.LANCHOR4,. + 0
+ 1361              	enable_compess:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 36
+
+
+ 1362 0000 01       		.byte	1
+ 1363              		.section	.rodata.LogIMU_Header,"a"
+ 1364              		.align	2
+ 1365              		.set	.LANCHOR11,. + 0
+ 1368              	LogIMU_Header:
+ 1369 0000 BA       		.byte	-70
+ 1370 0001 00       		.byte	0
+ 1371 0002 42       		.byte	66
+ 1372              		.text
+ 1373              	.Letext0:
+ 1374              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\lib\\gcc\\arm-none-eabi
+ 1375              		.file 4 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 1376              		.file 5 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 1377              		.file 6 "System/runtime/runtime.h"
+ 1378              		.file 7 "DataStructure/linked_list.h"
+ 1379              		.file 8 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1380              		.file 9 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1381              		.file 10 "System/scheduler/scheduler.h"
+ 1382              		.file 11 "Service/imu_data.h"
+ 1383              		.file 12 "Task/Task_Log.h"
+ 1384              		.file 13 "Bsp/Bsp_GPIO.h"
+ 1385              		.file 14 "debug/debug_util.h"
+ 1386              		.file 15 "DataStructure/queue.h"
+ 1387              		.file 16 "System/diskio/DiskIO.h"
+ 1388              		.file 17 "Service/Srv_IMUSample.h"
+ 1389              		.file 18 "Device/Dev_Led.h"
+ 1390              		.file 19 "IO_Def/IO_Definition.h"
+ 1391              		.file 20 "common/compess/lzodefs.h"
+ 1392              		.file 21 "common/compess/lzoconf.h"
+ 1393              		.file 22 "<built-in>"
+ 1394              		.file 23 "common/compess/minilzo.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 37
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_Log.c
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:17     .text.TaskLog_PipeTransFinish_Callback:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:24     .text.TaskLog_PipeTransFinish_Callback:00000000 TaskLog_PipeTransFinish_Callback
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:479    .text.TaskLog_PipeTransFinish_Callback:00000278 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:500    .rodata.TaskLog_Init.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:510    .text.TaskLog_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:517    .text.TaskLog_Init:00000000 TaskLog_Init
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:787    .text.TaskLog_Init:00000130 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:811    .text.TaskLog_Core:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:818    .text.TaskLog_Core:00000000 TaskLog_Core
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1192   .text.TaskLog_Core:00000170 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1226   .Fast_Mem_Section:00001800 wrkmem
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1316   .bss.core_cnt:00000000 core_cnt
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1214   .Fast_Mem_Section:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1218   .Fast_Mem_Section:00000000 LogCache_L2_Buf
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1222   .Fast_Mem_Section:00000c00 LogCache_L1_Buf
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1229   .Perph_Section:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1233   .Perph_Section:00000000 LogIMU_Data
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1236   .bss.FATFS_Obj:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1240   .bss.FATFS_Obj:00000000 FATFS_Obj
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1243   .bss.IMUData_Queue:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1247   .bss.IMUData_Queue:00000000 IMUData_Queue
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1250   .bss.LogCompess_Data:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1254   .bss.LogCompess_Data:00000000 LogCompess_Data
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1257   .bss.LogFile_Obj:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1261   .bss.LogFile_Obj:00000000 LogFile_Obj
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1267   .bss.LogFile_Ready:00000000 LogFile_Ready
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1268   .bss.LogFile_Ready:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1270   .bss.LogFolder_Cluster:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1274   .bss.LogFolder_Cluster:00000000 LogFolder_Cluster
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1277   .bss.LogObj_Enable_Reg:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1281   .bss.LogObj_Enable_Reg:00000000 LogObj_Enable_Reg
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1284   .bss.LogObj_Logging_Reg:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1288   .bss.LogObj_Logging_Reg:00000000 LogObj_Logging_Reg
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1291   .bss.LogObj_Set_Reg:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1295   .bss.LogObj_Set_Reg:00000000 LogObj_Set_Reg
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1298   .bss.Log_Statistics:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1302   .bss.Log_Statistics:00000000 Log_Statistics
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1305   .bss.QueueIMU_PopSize:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1309   .bss.QueueIMU_PopSize:00000000 QueueIMU_PopSize
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1312   .bss.core_cnt:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1319   .bss.in_queue_size:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1323   .bss.in_queue_size:00000000 in_queue_size
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1326   .bss.lst_imu_pipe_rt.0:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1330   .bss.lst_imu_pipe_rt.0:00000000 lst_imu_pipe_rt.0
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1333   .bss.out_queue_size:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1337   .bss.out_queue_size:00000000 out_queue_size
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1340   .data.LogIMU_Summary:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1344   .data.LogIMU_Summary:00000000 LogIMU_Summary
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1361   .data.enable_compess:00000000 enable_compess
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1364   .rodata.LogIMU_Header:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s:1368   .rodata.LogIMU_Header:00000000 LogIMU_Header
+
+UNDEFINED SYMBOLS
+IMU_Log_DataPipe
+Queue
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccVSYLiI.s 			page 38
+
+
+memset
+memcpy
+__lzo_init_v2
+Disk
+TaskProto_PushProtocolQueue
+lzo1x_1_compress
+DebugPin
+Debug_PB4
+DevLED
+Led1

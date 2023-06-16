@@ -71,6 +71,9 @@ static bool TasK_Scheduler_Running = false;
 static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum] = {{NULL}};
 static Task *Idle_Task;
 static Idle_Callback_List_s Idle_List;
+static list_obj *rdy_tsk_list = NULL;
+static list_obj *pnd_tsk_list = NULL;
+static list_obj *blk_tsk_list = NULL;
 
 /* internal function */
 static void Os_ResetTask_Data(Task *task);
@@ -520,6 +523,7 @@ static void Os_Clr_TaskBlock(Task *tsk)
     }
 }
 
+/* redesign and coding section */
 static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 {
     SYSTEM_RunTime CurRt_US = Rt;
@@ -602,6 +606,7 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     TasK_Scheduler_Running = false;
     Kernel_ExitCritical();
 }
+/* redesign and coding section */
 
 /* still got bug down below */
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
@@ -947,7 +952,7 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
         // get current highest priority task handler AKA NxtRunTsk_Ptr
         if ((scheduler_state == Scheduler_Start) &&
             ((((Task *)data)->State == Task_Stop) ||
-             (((Task *)data)->State == Task_Ready) ||
+            //  (((Task *)data)->State == Task_Ready) ||
              (((Task *)data)->State == Task_DelayBlock)) &&
             (RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {

@@ -1,0 +1,544 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"usbd_ioreq.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.USBD_CtlSendData,"ax",%progbits
+  17              		.align	1
+  18              		.global	USBD_CtlSendData
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv5-d16
+  25              	USBD_CtlSendData:
+  26              	.LVL0:
+  27              	.LFB148:
+  28              		.file 1 "USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c"
+   1:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+   2:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   ******************************************************************************
+   3:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @file    usbd_ioreq.c
+   4:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @author  MCD Application Team
+   5:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @brief   This file provides the IO requests APIs for control endpoints.
+   6:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   ******************************************************************************
+   7:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @attention
+   8:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   *
+   9:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
+  10:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * All rights reserved.</center></h2>
+  11:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   *
+  12:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * This software component is licensed by ST under Ultimate Liberty license
+  13:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * SLA0044, the "License"; You may not use this file except in compliance with
+  14:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * the License. You may obtain a copy of the License at:
+  15:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   *                      www.st.com/SLA0044
+  16:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   *
+  17:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   ******************************************************************************
+  18:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  19:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  20:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /* Includes ------------------------------------------------------------------*/
+  21:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** #include "usbd_ioreq.h"
+  22:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  23:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /** @addtogroup STM32_USB_DEVICE_LIBRARY
+  24:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @{
+  25:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  26:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  27:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  28:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /** @defgroup USBD_IOREQ
+  29:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @brief control I/O requests module
+  30:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @{
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 2
+
+
+  31:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  32:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  33:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /** @defgroup USBD_IOREQ_Private_TypesDefinitions
+  34:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @{
+  35:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  36:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+  37:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @}
+  38:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  39:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  40:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  41:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /** @defgroup USBD_IOREQ_Private_Defines
+  42:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @{
+  43:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  44:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  45:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+  46:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @}
+  47:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  48:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  49:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  50:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /** @defgroup USBD_IOREQ_Private_Macros
+  51:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @{
+  52:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  53:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+  54:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @}
+  55:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  56:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  57:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  58:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /** @defgroup USBD_IOREQ_Private_Variables
+  59:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @{
+  60:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  61:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  62:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+  63:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @}
+  64:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  65:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  66:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  67:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /** @defgroup USBD_IOREQ_Private_FunctionPrototypes
+  68:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @{
+  69:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  70:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+  71:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @}
+  72:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  73:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  74:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  75:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /** @defgroup USBD_IOREQ_Private_Functions
+  76:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   * @{
+  77:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   */
+  78:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  79:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+  80:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @brief  USBD_CtlSendData
+  81:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** *         send data on the ctl pipe
+  82:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  pdev: device instance
+  83:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  buff: pointer to data buffer
+  84:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  len: length of data to be sent
+  85:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @retval status
+  86:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** */
+  87:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** USBD_StatusTypeDef USBD_CtlSendData(USBD_HandleTypeDef *pdev,
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 3
+
+
+  88:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****                                     uint8_t *pbuf, uint32_t len)
+  89:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** {
+  29              		.loc 1 89 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 89 1 is_stmt 0 view .LVU1
+  34 0000 08B5     		push	{r3, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 8
+  37              		.cfi_offset 3, -8
+  38              		.cfi_offset 14, -4
+  39 0002 1346     		mov	r3, r2
+  90:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   /* Set EP0 State */
+  91:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   pdev->ep0_state = USBD_EP0_DATA_IN;
+  40              		.loc 1 91 3 is_stmt 1 view .LVU2
+  41              		.loc 1 91 19 is_stmt 0 view .LVU3
+  42 0004 0222     		movs	r2, #2
+  43              	.LVL1:
+  44              		.loc 1 91 19 view .LVU4
+  45 0006 C0F89422 		str	r2, [r0, #660]
+  92:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   pdev->ep_in[0].total_length = len;
+  46              		.loc 1 92 3 is_stmt 1 view .LVU5
+  47              		.loc 1 92 31 is_stmt 0 view .LVU6
+  48 000a 8361     		str	r3, [r0, #24]
+  93:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   pdev->ep_in[0].rem_length = len;
+  49              		.loc 1 93 3 is_stmt 1 view .LVU7
+  50              		.loc 1 93 29 is_stmt 0 view .LVU8
+  51 000c C361     		str	r3, [r0, #28]
+  94:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  95:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   /* Start the transfer */
+  96:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   (void)USBD_LL_Transmit(pdev, 0x00U, pbuf, len);
+  52              		.loc 1 96 3 is_stmt 1 view .LVU9
+  53              		.loc 1 96 9 is_stmt 0 view .LVU10
+  54 000e 0A46     		mov	r2, r1
+  55 0010 0021     		movs	r1, #0
+  56              	.LVL2:
+  57              		.loc 1 96 9 view .LVU11
+  58 0012 FFF7FEFF 		bl	USBD_LL_Transmit
+  59              	.LVL3:
+  97:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+  98:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   return USBD_OK;
+  60              		.loc 1 98 3 is_stmt 1 view .LVU12
+  99:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** }
+  61              		.loc 1 99 1 is_stmt 0 view .LVU13
+  62 0016 0020     		movs	r0, #0
+  63 0018 08BD     		pop	{r3, pc}
+  64              		.cfi_endproc
+  65              	.LFE148:
+  67              		.section	.text.USBD_CtlContinueSendData,"ax",%progbits
+  68              		.align	1
+  69              		.global	USBD_CtlContinueSendData
+  70              		.syntax unified
+  71              		.thumb
+  72              		.thumb_func
+  73              		.fpu fpv5-d16
+  75              	USBD_CtlContinueSendData:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 4
+
+
+  76              	.LVL4:
+  77              	.LFB149:
+ 100:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 101:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+ 102:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @brief  USBD_CtlContinueSendData
+ 103:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** *         continue sending data on the ctl pipe
+ 104:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  pdev: device instance
+ 105:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  buff: pointer to data buffer
+ 106:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  len: length of data to be sent
+ 107:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @retval status
+ 108:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** */
+ 109:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** USBD_StatusTypeDef USBD_CtlContinueSendData(USBD_HandleTypeDef *pdev,
+ 110:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****                                             uint8_t *pbuf, uint32_t len)
+ 111:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** {
+  78              		.loc 1 111 1 is_stmt 1 view -0
+  79              		.cfi_startproc
+  80              		@ args = 0, pretend = 0, frame = 0
+  81              		@ frame_needed = 0, uses_anonymous_args = 0
+  82              		.loc 1 111 1 is_stmt 0 view .LVU15
+  83 0000 08B5     		push	{r3, lr}
+  84              	.LCFI1:
+  85              		.cfi_def_cfa_offset 8
+  86              		.cfi_offset 3, -8
+  87              		.cfi_offset 14, -4
+  88 0002 1346     		mov	r3, r2
+ 112:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   /* Start the next transfer */
+ 113:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   (void)USBD_LL_Transmit(pdev, 0x00U, pbuf, len);
+  89              		.loc 1 113 3 is_stmt 1 view .LVU16
+  90              		.loc 1 113 9 is_stmt 0 view .LVU17
+  91 0004 0A46     		mov	r2, r1
+  92              	.LVL5:
+  93              		.loc 1 113 9 view .LVU18
+  94 0006 0021     		movs	r1, #0
+  95              	.LVL6:
+  96              		.loc 1 113 9 view .LVU19
+  97 0008 FFF7FEFF 		bl	USBD_LL_Transmit
+  98              	.LVL7:
+ 114:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 115:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   return USBD_OK;
+  99              		.loc 1 115 3 is_stmt 1 view .LVU20
+ 116:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** }
+ 100              		.loc 1 116 1 is_stmt 0 view .LVU21
+ 101 000c 0020     		movs	r0, #0
+ 102 000e 08BD     		pop	{r3, pc}
+ 103              		.cfi_endproc
+ 104              	.LFE149:
+ 106              		.section	.text.USBD_CtlPrepareRx,"ax",%progbits
+ 107              		.align	1
+ 108              		.global	USBD_CtlPrepareRx
+ 109              		.syntax unified
+ 110              		.thumb
+ 111              		.thumb_func
+ 112              		.fpu fpv5-d16
+ 114              	USBD_CtlPrepareRx:
+ 115              	.LVL8:
+ 116              	.LFB150:
+ 117:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 5
+
+
+ 118:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+ 119:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @brief  USBD_CtlPrepareRx
+ 120:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** *         receive data on the ctl pipe
+ 121:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  pdev: device instance
+ 122:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  buff: pointer to data buffer
+ 123:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  len: length of data to be received
+ 124:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @retval status
+ 125:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** */
+ 126:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** USBD_StatusTypeDef USBD_CtlPrepareRx(USBD_HandleTypeDef *pdev,
+ 127:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****                                      uint8_t *pbuf, uint32_t len)
+ 128:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** {
+ 117              		.loc 1 128 1 is_stmt 1 view -0
+ 118              		.cfi_startproc
+ 119              		@ args = 0, pretend = 0, frame = 0
+ 120              		@ frame_needed = 0, uses_anonymous_args = 0
+ 121              		.loc 1 128 1 is_stmt 0 view .LVU23
+ 122 0000 08B5     		push	{r3, lr}
+ 123              	.LCFI2:
+ 124              		.cfi_def_cfa_offset 8
+ 125              		.cfi_offset 3, -8
+ 126              		.cfi_offset 14, -4
+ 127 0002 1346     		mov	r3, r2
+ 129:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   /* Set EP0 State */
+ 130:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   pdev->ep0_state = USBD_EP0_DATA_OUT;
+ 128              		.loc 1 130 3 is_stmt 1 view .LVU24
+ 129              		.loc 1 130 19 is_stmt 0 view .LVU25
+ 130 0004 0322     		movs	r2, #3
+ 131              	.LVL9:
+ 132              		.loc 1 130 19 view .LVU26
+ 133 0006 C0F89422 		str	r2, [r0, #660]
+ 131:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   pdev->ep_out[0].total_length = len;
+ 134              		.loc 1 131 3 is_stmt 1 view .LVU27
+ 135              		.loc 1 131 32 is_stmt 0 view .LVU28
+ 136 000a C0F85831 		str	r3, [r0, #344]
+ 132:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   pdev->ep_out[0].rem_length = len;
+ 137              		.loc 1 132 3 is_stmt 1 view .LVU29
+ 138              		.loc 1 132 30 is_stmt 0 view .LVU30
+ 139 000e C0F85C31 		str	r3, [r0, #348]
+ 133:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 134:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   /* Start the transfer */
+ 135:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   (void)USBD_LL_PrepareReceive(pdev, 0U, pbuf, len);
+ 140              		.loc 1 135 3 is_stmt 1 view .LVU31
+ 141              		.loc 1 135 9 is_stmt 0 view .LVU32
+ 142 0012 0A46     		mov	r2, r1
+ 143 0014 0021     		movs	r1, #0
+ 144              	.LVL10:
+ 145              		.loc 1 135 9 view .LVU33
+ 146 0016 FFF7FEFF 		bl	USBD_LL_PrepareReceive
+ 147              	.LVL11:
+ 136:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 137:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   return USBD_OK;
+ 148              		.loc 1 137 3 is_stmt 1 view .LVU34
+ 138:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** }
+ 149              		.loc 1 138 1 is_stmt 0 view .LVU35
+ 150 001a 0020     		movs	r0, #0
+ 151 001c 08BD     		pop	{r3, pc}
+ 152              		.cfi_endproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 6
+
+
+ 153              	.LFE150:
+ 155              		.section	.text.USBD_CtlContinueRx,"ax",%progbits
+ 156              		.align	1
+ 157              		.global	USBD_CtlContinueRx
+ 158              		.syntax unified
+ 159              		.thumb
+ 160              		.thumb_func
+ 161              		.fpu fpv5-d16
+ 163              	USBD_CtlContinueRx:
+ 164              	.LVL12:
+ 165              	.LFB151:
+ 139:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 140:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+ 141:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @brief  USBD_CtlContinueRx
+ 142:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** *         continue receive data on the ctl pipe
+ 143:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  pdev: device instance
+ 144:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  buff: pointer to data buffer
+ 145:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  len: length of data to be received
+ 146:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @retval status
+ 147:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** */
+ 148:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** USBD_StatusTypeDef USBD_CtlContinueRx(USBD_HandleTypeDef *pdev,
+ 149:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****                                       uint8_t *pbuf, uint32_t len)
+ 150:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** {
+ 166              		.loc 1 150 1 is_stmt 1 view -0
+ 167              		.cfi_startproc
+ 168              		@ args = 0, pretend = 0, frame = 0
+ 169              		@ frame_needed = 0, uses_anonymous_args = 0
+ 170              		.loc 1 150 1 is_stmt 0 view .LVU37
+ 171 0000 08B5     		push	{r3, lr}
+ 172              	.LCFI3:
+ 173              		.cfi_def_cfa_offset 8
+ 174              		.cfi_offset 3, -8
+ 175              		.cfi_offset 14, -4
+ 176 0002 1346     		mov	r3, r2
+ 151:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   (void)USBD_LL_PrepareReceive(pdev, 0U, pbuf, len);
+ 177              		.loc 1 151 3 is_stmt 1 view .LVU38
+ 178              		.loc 1 151 9 is_stmt 0 view .LVU39
+ 179 0004 0A46     		mov	r2, r1
+ 180              	.LVL13:
+ 181              		.loc 1 151 9 view .LVU40
+ 182 0006 0021     		movs	r1, #0
+ 183              	.LVL14:
+ 184              		.loc 1 151 9 view .LVU41
+ 185 0008 FFF7FEFF 		bl	USBD_LL_PrepareReceive
+ 186              	.LVL15:
+ 152:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 153:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   return USBD_OK;
+ 187              		.loc 1 153 3 is_stmt 1 view .LVU42
+ 154:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** }
+ 188              		.loc 1 154 1 is_stmt 0 view .LVU43
+ 189 000c 0020     		movs	r0, #0
+ 190 000e 08BD     		pop	{r3, pc}
+ 191              		.cfi_endproc
+ 192              	.LFE151:
+ 194              		.section	.text.USBD_CtlSendStatus,"ax",%progbits
+ 195              		.align	1
+ 196              		.global	USBD_CtlSendStatus
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 7
+
+
+ 197              		.syntax unified
+ 198              		.thumb
+ 199              		.thumb_func
+ 200              		.fpu fpv5-d16
+ 202              	USBD_CtlSendStatus:
+ 203              	.LVL16:
+ 204              	.LFB152:
+ 155:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 156:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+ 157:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @brief  USBD_CtlSendStatus
+ 158:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** *         send zero lzngth packet on the ctl pipe
+ 159:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  pdev: device instance
+ 160:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @retval status
+ 161:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** */
+ 162:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** USBD_StatusTypeDef USBD_CtlSendStatus(USBD_HandleTypeDef *pdev)
+ 163:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** {
+ 205              		.loc 1 163 1 is_stmt 1 view -0
+ 206              		.cfi_startproc
+ 207              		@ args = 0, pretend = 0, frame = 0
+ 208              		@ frame_needed = 0, uses_anonymous_args = 0
+ 209              		.loc 1 163 1 is_stmt 0 view .LVU45
+ 210 0000 08B5     		push	{r3, lr}
+ 211              	.LCFI4:
+ 212              		.cfi_def_cfa_offset 8
+ 213              		.cfi_offset 3, -8
+ 214              		.cfi_offset 14, -4
+ 164:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   /* Set EP0 State */
+ 165:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   pdev->ep0_state = USBD_EP0_STATUS_IN;
+ 215              		.loc 1 165 3 is_stmt 1 view .LVU46
+ 216              		.loc 1 165 19 is_stmt 0 view .LVU47
+ 217 0002 0423     		movs	r3, #4
+ 218 0004 C0F89432 		str	r3, [r0, #660]
+ 166:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 167:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   /* Start the transfer */
+ 168:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   (void)USBD_LL_Transmit(pdev, 0x00U, NULL, 0U);
+ 219              		.loc 1 168 3 is_stmt 1 view .LVU48
+ 220              		.loc 1 168 9 is_stmt 0 view .LVU49
+ 221 0008 0023     		movs	r3, #0
+ 222 000a 1A46     		mov	r2, r3
+ 223 000c 1946     		mov	r1, r3
+ 224 000e FFF7FEFF 		bl	USBD_LL_Transmit
+ 225              	.LVL17:
+ 169:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 170:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   return USBD_OK;
+ 226              		.loc 1 170 3 is_stmt 1 view .LVU50
+ 171:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** }
+ 227              		.loc 1 171 1 is_stmt 0 view .LVU51
+ 228 0012 0020     		movs	r0, #0
+ 229 0014 08BD     		pop	{r3, pc}
+ 230              		.cfi_endproc
+ 231              	.LFE152:
+ 233              		.section	.text.USBD_CtlReceiveStatus,"ax",%progbits
+ 234              		.align	1
+ 235              		.global	USBD_CtlReceiveStatus
+ 236              		.syntax unified
+ 237              		.thumb
+ 238              		.thumb_func
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 8
+
+
+ 239              		.fpu fpv5-d16
+ 241              	USBD_CtlReceiveStatus:
+ 242              	.LVL18:
+ 243              	.LFB153:
+ 172:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 173:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+ 174:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @brief  USBD_CtlReceiveStatus
+ 175:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** *         receive zero lzngth packet on the ctl pipe
+ 176:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  pdev: device instance
+ 177:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @retval status
+ 178:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** */
+ 179:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** USBD_StatusTypeDef USBD_CtlReceiveStatus(USBD_HandleTypeDef *pdev)
+ 180:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** {
+ 244              		.loc 1 180 1 is_stmt 1 view -0
+ 245              		.cfi_startproc
+ 246              		@ args = 0, pretend = 0, frame = 0
+ 247              		@ frame_needed = 0, uses_anonymous_args = 0
+ 248              		.loc 1 180 1 is_stmt 0 view .LVU53
+ 249 0000 08B5     		push	{r3, lr}
+ 250              	.LCFI5:
+ 251              		.cfi_def_cfa_offset 8
+ 252              		.cfi_offset 3, -8
+ 253              		.cfi_offset 14, -4
+ 181:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   /* Set EP0 State */
+ 182:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   pdev->ep0_state = USBD_EP0_STATUS_OUT;
+ 254              		.loc 1 182 3 is_stmt 1 view .LVU54
+ 255              		.loc 1 182 19 is_stmt 0 view .LVU55
+ 256 0002 0523     		movs	r3, #5
+ 257 0004 C0F89432 		str	r3, [r0, #660]
+ 183:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 184:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   /* Start the transfer */
+ 185:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   (void)USBD_LL_PrepareReceive(pdev, 0U, NULL, 0U);
+ 258              		.loc 1 185 3 is_stmt 1 view .LVU56
+ 259              		.loc 1 185 9 is_stmt 0 view .LVU57
+ 260 0008 0023     		movs	r3, #0
+ 261 000a 1A46     		mov	r2, r3
+ 262 000c 1946     		mov	r1, r3
+ 263 000e FFF7FEFF 		bl	USBD_LL_PrepareReceive
+ 264              	.LVL19:
+ 186:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 187:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   return USBD_OK;
+ 265              		.loc 1 187 3 is_stmt 1 view .LVU58
+ 188:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** }
+ 266              		.loc 1 188 1 is_stmt 0 view .LVU59
+ 267 0012 0020     		movs	r0, #0
+ 268 0014 08BD     		pop	{r3, pc}
+ 269              		.cfi_endproc
+ 270              	.LFE153:
+ 272              		.section	.text.USBD_GetRxCount,"ax",%progbits
+ 273              		.align	1
+ 274              		.global	USBD_GetRxCount
+ 275              		.syntax unified
+ 276              		.thumb
+ 277              		.thumb_func
+ 278              		.fpu fpv5-d16
+ 280              	USBD_GetRxCount:
+ 281              	.LVL20:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 9
+
+
+ 282              	.LFB154:
+ 189:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** 
+ 190:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** /**
+ 191:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @brief  USBD_GetRxCount
+ 192:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** *         returns the received data length
+ 193:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  pdev: device instance
+ 194:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @param  ep_addr: endpoint address
+ 195:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** * @retval Rx Data blength
+ 196:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** */
+ 197:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** uint32_t USBD_GetRxCount(USBD_HandleTypeDef *pdev, uint8_t ep_addr)
+ 198:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** {
+ 283              		.loc 1 198 1 is_stmt 1 view -0
+ 284              		.cfi_startproc
+ 285              		@ args = 0, pretend = 0, frame = 0
+ 286              		@ frame_needed = 0, uses_anonymous_args = 0
+ 287              		.loc 1 198 1 is_stmt 0 view .LVU61
+ 288 0000 08B5     		push	{r3, lr}
+ 289              	.LCFI6:
+ 290              		.cfi_def_cfa_offset 8
+ 291              		.cfi_offset 3, -8
+ 292              		.cfi_offset 14, -4
+ 199:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c ****   return USBD_LL_GetRxDataSize(pdev, ep_addr);
+ 293              		.loc 1 199 3 is_stmt 1 view .LVU62
+ 294              		.loc 1 199 10 is_stmt 0 view .LVU63
+ 295 0002 FFF7FEFF 		bl	USBD_LL_GetRxDataSize
+ 296              	.LVL21:
+ 200:USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c **** }
+ 297              		.loc 1 200 1 view .LVU64
+ 298 0006 08BD     		pop	{r3, pc}
+ 299              		.cfi_endproc
+ 300              	.LFE154:
+ 302              		.text
+ 303              	.Letext0:
+ 304              		.file 2 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 305              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 306              		.file 4 "USB/STM32_USB_Device_Library/Core/Inc/usbd_def.h"
+ 307              		.file 5 "USB/STM32_USB_Device_Library/Core/Inc/usbd_core.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s 			page 10
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 usbd_ioreq.c
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:17     .text.USBD_CtlSendData:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:25     .text.USBD_CtlSendData:00000000 USBD_CtlSendData
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:68     .text.USBD_CtlContinueSendData:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:75     .text.USBD_CtlContinueSendData:00000000 USBD_CtlContinueSendData
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:107    .text.USBD_CtlPrepareRx:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:114    .text.USBD_CtlPrepareRx:00000000 USBD_CtlPrepareRx
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:156    .text.USBD_CtlContinueRx:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:163    .text.USBD_CtlContinueRx:00000000 USBD_CtlContinueRx
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:195    .text.USBD_CtlSendStatus:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:202    .text.USBD_CtlSendStatus:00000000 USBD_CtlSendStatus
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:234    .text.USBD_CtlReceiveStatus:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:241    .text.USBD_CtlReceiveStatus:00000000 USBD_CtlReceiveStatus
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:273    .text.USBD_GetRxCount:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc5LHVFs.s:280    .text.USBD_GetRxCount:00000000 USBD_GetRxCount
+
+UNDEFINED SYMBOLS
+USBD_LL_Transmit
+USBD_LL_PrepareReceive
+USBD_LL_GetRxDataSize

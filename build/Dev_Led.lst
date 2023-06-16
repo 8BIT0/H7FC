@@ -1,0 +1,207 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Dev_Led.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.DevLed_Init,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	DevLed_Init:
+  25              	.LFB144:
+  26              		.file 1 "Device/Dev_Led.c"
+   1:Device/Dev_Led.c **** #include "Dev_Led.h"
+   2:Device/Dev_Led.c **** #include "Bsp_GPIO.h"
+   3:Device/Dev_Led.c **** #include "system_cfg.h"
+   4:Device/Dev_Led.c **** 
+   5:Device/Dev_Led.c **** DevLed_TypeDef DevLED;
+   6:Device/Dev_Led.c **** 
+   7:Device/Dev_Led.c **** static bool DevLed_Init(DevLedObj_TypeDef LedObj);
+   8:Device/Dev_Led.c **** static bool DevLed_Ctl(DevLedObj_TypeDef LedObj, bool state);
+   9:Device/Dev_Led.c **** 
+  10:Device/Dev_Led.c **** DevLed_TypeDef DevLED = {
+  11:Device/Dev_Led.c ****     .init = DevLed_Init,
+  12:Device/Dev_Led.c ****     .ctl = DevLed_Ctl,
+  13:Device/Dev_Led.c **** };
+  14:Device/Dev_Led.c **** 
+  15:Device/Dev_Led.c **** static bool DevLed_Init(DevLedObj_TypeDef LedObj)
+  16:Device/Dev_Led.c **** {
+  27              		.loc 1 16 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 16
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31 0000 00B5     		push	{lr}
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 14, -4
+  35 0002 85B0     		sub	sp, sp, #20
+  36              	.LCFI1:
+  37              		.cfi_def_cfa_offset 24
+  38 0004 04AB     		add	r3, sp, #16
+  39 0006 03E90700 		stmdb	r3, {r0, r1, r2}
+  17:Device/Dev_Led.c ****     if (BspGPIO.out_init == NULL)
+  40              		.loc 1 17 5 view .LVU1
+  41              		.loc 1 17 16 is_stmt 0 view .LVU2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s 			page 2
+
+
+  42 000a 064B     		ldr	r3, .L5
+  43 000c 5B68     		ldr	r3, [r3, #4]
+  44              		.loc 1 17 8 view .LVU3
+  45 000e 3BB1     		cbz	r3, .L3
+  18:Device/Dev_Led.c ****         return false;
+  19:Device/Dev_Led.c **** 
+  20:Device/Dev_Led.c ****     BspGPIO.out_init(LedObj);
+  46              		.loc 1 20 5 is_stmt 1 view .LVU4
+  47 0010 04AA     		add	r2, sp, #16
+  48 0012 12E90700 		ldmdb	r2, {r0, r1, r2}
+  49 0016 9847     		blx	r3
+  50              	.LVL0:
+  21:Device/Dev_Led.c **** 
+  22:Device/Dev_Led.c ****     return true;
+  51              		.loc 1 22 5 view .LVU5
+  52              		.loc 1 22 12 is_stmt 0 view .LVU6
+  53 0018 0120     		movs	r0, #1
+  54              	.L2:
+  23:Device/Dev_Led.c **** }
+  55              		.loc 1 23 1 view .LVU7
+  56 001a 05B0     		add	sp, sp, #20
+  57              	.LCFI2:
+  58              		.cfi_remember_state
+  59              		.cfi_def_cfa_offset 4
+  60              		@ sp needed
+  61 001c 5DF804FB 		ldr	pc, [sp], #4
+  62              	.L3:
+  63              	.LCFI3:
+  64              		.cfi_restore_state
+  18:Device/Dev_Led.c ****         return false;
+  65              		.loc 1 18 16 view .LVU8
+  66 0020 0020     		movs	r0, #0
+  67 0022 FAE7     		b	.L2
+  68              	.L6:
+  69              		.align	2
+  70              	.L5:
+  71 0024 00000000 		.word	BspGPIO
+  72              		.cfi_endproc
+  73              	.LFE144:
+  75              		.section	.text.DevLed_Ctl,"ax",%progbits
+  76              		.align	1
+  77              		.syntax unified
+  78              		.thumb
+  79              		.thumb_func
+  80              		.fpu fpv5-d16
+  82              	DevLed_Ctl:
+  83              	.LVL1:
+  84              	.LFB145:
+  24:Device/Dev_Led.c **** 
+  25:Device/Dev_Led.c **** static bool DevLed_Ctl(DevLedObj_TypeDef LedObj, bool state)
+  26:Device/Dev_Led.c **** {
+  85              		.loc 1 26 1 is_stmt 1 view -0
+  86              		.cfi_startproc
+  87              		@ args = 0, pretend = 0, frame = 16
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+  89              		.loc 1 26 1 is_stmt 0 view .LVU10
+  90 0000 00B5     		push	{lr}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s 			page 3
+
+
+  91              	.LCFI4:
+  92              		.cfi_def_cfa_offset 4
+  93              		.cfi_offset 14, -4
+  94 0002 85B0     		sub	sp, sp, #20
+  95              	.LCFI5:
+  96              		.cfi_def_cfa_offset 24
+  97 0004 0DF1100C 		add	ip, sp, #16
+  98 0008 0CE90700 		stmdb	ip, {r0, r1, r2}
+  99 000c 1A46     		mov	r2, r3
+  27:Device/Dev_Led.c ****     if (BspGPIO.write == NULL)
+ 100              		.loc 1 27 5 is_stmt 1 view .LVU11
+ 101              		.loc 1 27 16 is_stmt 0 view .LVU12
+ 102 000e 064B     		ldr	r3, .L11
+ 103              	.LVL2:
+ 104              		.loc 1 27 16 view .LVU13
+ 105 0010 DB69     		ldr	r3, [r3, #28]
+ 106              		.loc 1 27 8 view .LVU14
+ 107 0012 33B1     		cbz	r3, .L9
+  28:Device/Dev_Led.c ****         return false;
+  29:Device/Dev_Led.c **** 
+  30:Device/Dev_Led.c ****     BspGPIO.write(LedObj.port, LedObj.pin, state);
+ 108              		.loc 1 30 5 is_stmt 1 view .LVU15
+ 109 0014 BDF80810 		ldrh	r1, [sp, #8]
+ 110 0018 9847     		blx	r3
+ 111              	.LVL3:
+  31:Device/Dev_Led.c ****     return true;
+ 112              		.loc 1 31 5 view .LVU16
+ 113              		.loc 1 31 12 is_stmt 0 view .LVU17
+ 114 001a 0120     		movs	r0, #1
+ 115              	.L8:
+  32:Device/Dev_Led.c **** }
+ 116              		.loc 1 32 1 view .LVU18
+ 117 001c 05B0     		add	sp, sp, #20
+ 118              	.LCFI6:
+ 119              		.cfi_remember_state
+ 120              		.cfi_def_cfa_offset 4
+ 121              		@ sp needed
+ 122 001e 5DF804FB 		ldr	pc, [sp], #4
+ 123              	.L9:
+ 124              	.LCFI7:
+ 125              		.cfi_restore_state
+  28:Device/Dev_Led.c ****         return false;
+ 126              		.loc 1 28 16 view .LVU19
+ 127 0022 0020     		movs	r0, #0
+ 128 0024 FAE7     		b	.L8
+ 129              	.L12:
+ 130 0026 00BF     		.align	2
+ 131              	.L11:
+ 132 0028 00000000 		.word	BspGPIO
+ 133              		.cfi_endproc
+ 134              	.LFE145:
+ 136              		.global	DevLED
+ 137              		.section	.data.DevLED,"aw"
+ 138              		.align	2
+ 141              	DevLED:
+ 142 0000 00000000 		.word	DevLed_Init
+ 143 0004 00000000 		.word	DevLed_Ctl
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s 			page 4
+
+
+ 144              		.text
+ 145              	.Letext0:
+ 146              		.file 2 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 147              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 148              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 149              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 150              		.file 6 "Bsp/Bsp_GPIO.h"
+ 151              		.file 7 "Device/Dev_Led.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_Led.c
+C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s:17     .text.DevLed_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s:24     .text.DevLed_Init:00000000 DevLed_Init
+C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s:71     .text.DevLed_Init:00000024 $d
+C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s:76     .text.DevLed_Ctl:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s:82     .text.DevLed_Ctl:00000000 DevLed_Ctl
+C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s:132    .text.DevLed_Ctl:00000028 $d
+C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s:141    .data.DevLED:00000000 DevLED
+C:\Users\HUAV\AppData\Local\Temp\ccRShCsY.s:138    .data.DevLED:00000000 $d
+
+UNDEFINED SYMBOLS
+BspGPIO

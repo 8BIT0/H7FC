@@ -1,0 +1,3010 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Dev_MPU6000.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.DevMPU6000_Detect,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	DevMPU6000_Detect:
+  25              	.LVL0:
+  26              	.LFB1:
+  27              		.file 1 "Device/Dev_MPU6000.c"
+   1:Device/Dev_MPU6000.c **** #include "Dev_MPU6000.h"
+   2:Device/Dev_MPU6000.c **** 
+   3:Device/Dev_MPU6000.c **** #define ConvertToMPU6000Trip_Reg(x) (x << 3)
+   4:Device/Dev_MPU6000.c **** 
+   5:Device/Dev_MPU6000.c **** /* internal function */
+   6:Device/Dev_MPU6000.c **** static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx);
+   7:Device/Dev_MPU6000.c **** static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx);
+   8:Device/Dev_MPU6000.c **** 
+   9:Device/Dev_MPU6000.c **** /* external function */
+  10:Device/Dev_MPU6000.c **** static bool DevMPU6000_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
+  11:Device/Dev_MPU6000.c **** static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
+  12:Device/Dev_MPU6000.c ****                                cs_ctl_callback cs_ctl,
+  13:Device/Dev_MPU6000.c ****                                bus_trans_callback bus_trans,
+  14:Device/Dev_MPU6000.c ****                                delay_callback delay,
+  15:Device/Dev_MPU6000.c ****                                get_time_stamp_callback ge_time_stamp);
+  16:Device/Dev_MPU6000.c **** 
+  17:Device/Dev_MPU6000.c **** static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj,
+  18:Device/Dev_MPU6000.c ****                               DevMPU6000_SampleRate_List rate,
+  19:Device/Dev_MPU6000.c ****                               DevMPU6000_AccTrip_List AccTrip,
+  20:Device/Dev_MPU6000.c ****                               DevMPU6000_GyrTrip_List GyrTrip);
+  21:Device/Dev_MPU6000.c **** 
+  22:Device/Dev_MPU6000.c **** static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj);
+  23:Device/Dev_MPU6000.c **** static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj);
+  24:Device/Dev_MPU6000.c **** static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj);
+  25:Device/Dev_MPU6000.c **** static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj);
+  26:Device/Dev_MPU6000.c **** static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj);
+  27:Device/Dev_MPU6000.c **** static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj);
+  28:Device/Dev_MPU6000.c **** static IMU_Error_TypeDef DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj);
+  29:Device/Dev_MPU6000.c **** static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef *sensor_obj);
+  30:Device/Dev_MPU6000.c **** static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_TypeDef *sensor_obj);
+  31:Device/Dev_MPU6000.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 2
+
+
+  32:Device/Dev_MPU6000.c **** /* external MPU6000 Object */
+  33:Device/Dev_MPU6000.c **** DevMPU6000_TypeDef DevMPU6000 = {
+  34:Device/Dev_MPU6000.c ****     .detect = DevMPU6000_Detect,
+  35:Device/Dev_MPU6000.c ****     .pre_init = DevMPU6000_PreInit,
+  36:Device/Dev_MPU6000.c ****     .init = DevMPU6000_Init,
+  37:Device/Dev_MPU6000.c ****     .config = DevMPU6000_Config,
+  38:Device/Dev_MPU6000.c ****     .reset = DevMPU6000_SwReset,
+  39:Device/Dev_MPU6000.c ****     .set_ready = DevMPU6000_SetDRDY,
+  40:Device/Dev_MPU6000.c ****     .get_ready = DevMPU6000_GetReady,
+  41:Device/Dev_MPU6000.c ****     .sample = DevMPU6000_Sample,
+  42:Device/Dev_MPU6000.c ****     .get_data = DevMPU6000_Get_Data,
+  43:Device/Dev_MPU6000.c ****     .get_error = DevMPU6000_Get_InitError,
+  44:Device/Dev_MPU6000.c ****     .get_scale = DevMPU6000_Get_Scale,
+  45:Device/Dev_MPU6000.c ****     .get_gyr_angular_speed_diff = DevMPU6000_Get_Specified_AngularSpeed_Diff,
+  46:Device/Dev_MPU6000.c **** };
+  47:Device/Dev_MPU6000.c **** 
+  48:Device/Dev_MPU6000.c **** static bool DevMPU6000_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
+  49:Device/Dev_MPU6000.c **** {
+  28              		.loc 1 49 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 8
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 49 1 is_stmt 0 view .LVU1
+  33 0000 70B5     		push	{r4, r5, r6, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 4, -16
+  37              		.cfi_offset 5, -12
+  38              		.cfi_offset 6, -8
+  39              		.cfi_offset 14, -4
+  40 0002 82B0     		sub	sp, sp, #8
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 24
+  50:Device/Dev_MPU6000.c ****     uint8_t read_tmp = 0;
+  43              		.loc 1 50 5 is_stmt 1 view .LVU2
+  44              	.LVL1:
+  51:Device/Dev_MPU6000.c ****     uint8_t write_buff[2] = {0};
+  45              		.loc 1 51 5 view .LVU3
+  46              		.loc 1 51 13 is_stmt 0 view .LVU4
+  47 0004 0023     		movs	r3, #0
+  48 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+  52:Device/Dev_MPU6000.c ****     uint8_t read_buff[2] = {0};
+  49              		.loc 1 52 5 is_stmt 1 view .LVU5
+  50              		.loc 1 52 13 is_stmt 0 view .LVU6
+  51 000a ADF80030 		strh	r3, [sp]	@ movhi
+  53:Device/Dev_MPU6000.c ****     bool state = false;
+  52              		.loc 1 53 5 is_stmt 1 view .LVU7
+  53              	.LVL2:
+  54:Device/Dev_MPU6000.c **** 
+  55:Device/Dev_MPU6000.c ****     if (cs_ctl == NULL || trans == NULL)
+  54              		.loc 1 55 5 view .LVU8
+  55              		.loc 1 55 8 is_stmt 0 view .LVU9
+  56 000e 9842     		cmp	r0, r3
+  57 0010 18BF     		it	ne
+  58 0012 9942     		cmpne	r1, r3
+  59 0014 0CBF     		ite	eq
+  60 0016 0124     		moveq	r4, #1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 3
+
+
+  61 0018 0024     		movne	r4, #0
+  62 001a 16D0     		beq	.L3
+  63 001c 0E46     		mov	r6, r1
+  64 001e 0546     		mov	r5, r0
+  56:Device/Dev_MPU6000.c ****         return false;
+  57:Device/Dev_MPU6000.c **** 
+  58:Device/Dev_MPU6000.c ****     write_buff[0] = MPU6000_WHOAMI | MPU6000_WRITE_MASK;
+  65              		.loc 1 58 5 is_stmt 1 view .LVU10
+  66              		.loc 1 58 19 is_stmt 0 view .LVU11
+  67 0020 F523     		movs	r3, #245
+  68 0022 8DF80430 		strb	r3, [sp, #4]
+  59:Device/Dev_MPU6000.c ****     write_buff[1] = 0;
+  69              		.loc 1 59 5 is_stmt 1 view .LVU12
+  60:Device/Dev_MPU6000.c **** 
+  61:Device/Dev_MPU6000.c ****     /* CS Low */
+  62:Device/Dev_MPU6000.c ****     cs_ctl(false);
+  70              		.loc 1 62 5 view .LVU13
+  71 0026 0020     		movs	r0, #0
+  72              	.LVL3:
+  73              		.loc 1 62 5 is_stmt 0 view .LVU14
+  74 0028 8847     		blx	r1
+  75              	.LVL4:
+  63:Device/Dev_MPU6000.c **** 
+  64:Device/Dev_MPU6000.c ****     state = trans(write_buff, read_buff, 2);
+  76              		.loc 1 64 5 is_stmt 1 view .LVU15
+  77              		.loc 1 64 13 is_stmt 0 view .LVU16
+  78 002a 0222     		movs	r2, #2
+  79 002c 6946     		mov	r1, sp
+  80 002e 01A8     		add	r0, sp, #4
+  81 0030 A847     		blx	r5
+  82              	.LVL5:
+  83 0032 0546     		mov	r5, r0
+  84              	.LVL6:
+  65:Device/Dev_MPU6000.c **** 
+  66:Device/Dev_MPU6000.c ****     /* CS High */
+  67:Device/Dev_MPU6000.c ****     cs_ctl(true);
+  85              		.loc 1 67 5 is_stmt 1 view .LVU17
+  86 0034 0120     		movs	r0, #1
+  87 0036 B047     		blx	r6
+  88              	.LVL7:
+  68:Device/Dev_MPU6000.c **** 
+  69:Device/Dev_MPU6000.c ****     if(!state)
+  89              		.loc 1 69 5 view .LVU18
+  90              		.loc 1 69 7 is_stmt 0 view .LVU19
+  91 0038 25B1     		cbz	r5, .L2
+  70:Device/Dev_MPU6000.c ****         return false;
+  71:Device/Dev_MPU6000.c **** 
+  72:Device/Dev_MPU6000.c ****     if(read_buff[1] == MPU6000_DEV_ID)
+  92              		.loc 1 72 5 is_stmt 1 view .LVU20
+  93              		.loc 1 72 17 is_stmt 0 view .LVU21
+  94 003a 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+  95              		.loc 1 72 7 view .LVU22
+  96 003e 682B     		cmp	r3, #104
+  97 0040 00D0     		beq	.L2
+  73:Device/Dev_MPU6000.c ****         return true;
+  74:Device/Dev_MPU6000.c **** 
+  75:Device/Dev_MPU6000.c ****     return false;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 4
+
+
+  98              		.loc 1 75 12 view .LVU23
+  99 0042 2546     		mov	r5, r4
+ 100              	.LVL8:
+ 101              	.L2:
+  76:Device/Dev_MPU6000.c **** }
+ 102              		.loc 1 76 1 view .LVU24
+ 103 0044 2846     		mov	r0, r5
+ 104 0046 02B0     		add	sp, sp, #8
+ 105              	.LCFI2:
+ 106              		.cfi_remember_state
+ 107              		.cfi_def_cfa_offset 16
+ 108              		@ sp needed
+ 109 0048 70BD     		pop	{r4, r5, r6, pc}
+ 110              	.LVL9:
+ 111              	.L3:
+ 112              	.LCFI3:
+ 113              		.cfi_restore_state
+  56:Device/Dev_MPU6000.c **** 
+ 114              		.loc 1 56 16 view .LVU25
+ 115 004a 0025     		movs	r5, #0
+ 116 004c FAE7     		b	.L2
+ 117              		.cfi_endproc
+ 118              	.LFE1:
+ 120              		.section	.text.Dev_MPU6000_Regs_Read,"ax",%progbits
+ 121              		.align	1
+ 122              		.syntax unified
+ 123              		.thumb
+ 124              		.thumb_func
+ 125              		.fpu fpv5-d16
+ 127              	Dev_MPU6000_Regs_Read:
+ 128              	.LVL10:
+ 129              	.LFB2:
+  77:Device/Dev_MPU6000.c **** 
+  78:Device/Dev_MPU6000.c **** static bool Dev_MPU6000_Regs_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *tx, uin
+  79:Device/Dev_MPU6000.c **** {
+ 130              		.loc 1 79 1 is_stmt 1 view -0
+ 131              		.cfi_startproc
+ 132              		@ args = 4, pretend = 0, frame = 8
+ 133              		@ frame_needed = 0, uses_anonymous_args = 0
+ 134              		.loc 1 79 1 is_stmt 0 view .LVU27
+ 135 0000 70B5     		push	{r4, r5, r6, lr}
+ 136              	.LCFI4:
+ 137              		.cfi_def_cfa_offset 16
+ 138              		.cfi_offset 4, -16
+ 139              		.cfi_offset 5, -12
+ 140              		.cfi_offset 6, -8
+ 141              		.cfi_offset 14, -4
+ 142 0002 82B0     		sub	sp, sp, #8
+ 143              	.LCFI5:
+ 144              		.cfi_def_cfa_offset 24
+ 145 0004 1546     		mov	r5, r2
+  80:Device/Dev_MPU6000.c ****     bool state = false;
+ 146              		.loc 1 80 5 is_stmt 1 view .LVU28
+ 147              	.LVL11:
+  81:Device/Dev_MPU6000.c ****     uint8_t addr_tmp = addr | MPU6000_WRITE_MASK;
+ 148              		.loc 1 81 5 view .LVU29
+ 149              		.loc 1 81 13 is_stmt 0 view .LVU30
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 5
+
+
+ 150 0006 61F07F01 		orn	r1, r1, #127
+ 151              	.LVL12:
+ 152              		.loc 1 81 13 view .LVU31
+ 153 000a 8DF80710 		strb	r1, [sp, #7]
+  82:Device/Dev_MPU6000.c ****     uint8_t read_tmp = 0;
+ 154              		.loc 1 82 5 is_stmt 1 view .LVU32
+ 155              		.loc 1 82 13 is_stmt 0 view .LVU33
+ 156 000e 0022     		movs	r2, #0
+ 157              	.LVL13:
+ 158              		.loc 1 82 13 view .LVU34
+ 159 0010 8DF80620 		strb	r2, [sp, #6]
+  83:Device/Dev_MPU6000.c **** 
+  84:Device/Dev_MPU6000.c ****     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
+ 160              		.loc 1 84 5 is_stmt 1 view .LVU35
+ 161              		.loc 1 84 8 is_stmt 0 view .LVU36
+ 162 0014 D8B1     		cbz	r0, .L7
+ 163 0016 1E46     		mov	r6, r3
+ 164 0018 0446     		mov	r4, r0
+ 165              		.loc 1 84 41 discriminator 1 view .LVU37
+ 166 001a 0268     		ldr	r2, [r0]
+ 167              		.loc 1 84 28 discriminator 1 view .LVU38
+ 168 001c CAB1     		cbz	r2, .L8
+ 169              		.loc 1 84 71 discriminator 2 view .LVU39
+ 170 001e 4368     		ldr	r3, [r0, #4]
+ 171              	.LVL14:
+ 172              		.loc 1 84 58 discriminator 2 view .LVU40
+ 173 0020 CBB1     		cbz	r3, .L9
+  85:Device/Dev_MPU6000.c ****         return false;
+  86:Device/Dev_MPU6000.c **** 
+  87:Device/Dev_MPU6000.c ****     /* CS Low */
+  88:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(false);
+ 174              		.loc 1 88 5 is_stmt 1 view .LVU41
+ 175 0022 0020     		movs	r0, #0
+ 176              	.LVL15:
+ 177              		.loc 1 88 5 is_stmt 0 view .LVU42
+ 178 0024 9047     		blx	r2
+ 179              	.LVL16:
+  89:Device/Dev_MPU6000.c **** 
+  90:Device/Dev_MPU6000.c ****     state = sensor_obj->bus_trans(&addr_tmp, &read_tmp, 1);
+ 180              		.loc 1 90 5 is_stmt 1 view .LVU43
+ 181              		.loc 1 90 23 is_stmt 0 view .LVU44
+ 182 0026 6368     		ldr	r3, [r4, #4]
+ 183              		.loc 1 90 13 view .LVU45
+ 184 0028 0122     		movs	r2, #1
+ 185 002a 0DF10601 		add	r1, sp, #6
+ 186 002e 0DF10700 		add	r0, sp, #7
+ 187 0032 9847     		blx	r3
+ 188              	.LVL17:
+  91:Device/Dev_MPU6000.c ****     state = sensor_obj->bus_trans(tx, rx, size);
+ 189              		.loc 1 91 5 is_stmt 1 view .LVU46
+ 190              		.loc 1 91 23 is_stmt 0 view .LVU47
+ 191 0034 6368     		ldr	r3, [r4, #4]
+ 192              		.loc 1 91 13 view .LVU48
+ 193 0036 9DF81820 		ldrb	r2, [sp, #24]	@ zero_extendqisi2
+ 194 003a 3146     		mov	r1, r6
+ 195 003c 2846     		mov	r0, r5
+ 196 003e 9847     		blx	r3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 6
+
+
+ 197              	.LVL18:
+ 198 0040 0546     		mov	r5, r0
+ 199              	.LVL19:
+  92:Device/Dev_MPU6000.c **** 
+  93:Device/Dev_MPU6000.c ****     /* CS High */
+  94:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(true);
+ 200              		.loc 1 94 5 is_stmt 1 view .LVU49
+ 201              		.loc 1 94 15 is_stmt 0 view .LVU50
+ 202 0042 2368     		ldr	r3, [r4]
+ 203              		.loc 1 94 5 view .LVU51
+ 204 0044 0120     		movs	r0, #1
+ 205 0046 9847     		blx	r3
+ 206              	.LVL20:
+  95:Device/Dev_MPU6000.c **** 
+  96:Device/Dev_MPU6000.c ****     return state;
+ 207              		.loc 1 96 5 is_stmt 1 view .LVU52
+ 208              	.L6:
+  97:Device/Dev_MPU6000.c **** }
+ 209              		.loc 1 97 1 is_stmt 0 view .LVU53
+ 210 0048 2846     		mov	r0, r5
+ 211 004a 02B0     		add	sp, sp, #8
+ 212              	.LCFI6:
+ 213              		.cfi_remember_state
+ 214              		.cfi_def_cfa_offset 16
+ 215              		@ sp needed
+ 216 004c 70BD     		pop	{r4, r5, r6, pc}
+ 217              	.LVL21:
+ 218              	.L7:
+ 219              	.LCFI7:
+ 220              		.cfi_restore_state
+  85:Device/Dev_MPU6000.c **** 
+ 221              		.loc 1 85 16 view .LVU54
+ 222 004e 0025     		movs	r5, #0
+ 223              	.LVL22:
+  85:Device/Dev_MPU6000.c **** 
+ 224              		.loc 1 85 16 view .LVU55
+ 225 0050 FAE7     		b	.L6
+ 226              	.LVL23:
+ 227              	.L8:
+  85:Device/Dev_MPU6000.c **** 
+ 228              		.loc 1 85 16 view .LVU56
+ 229 0052 0025     		movs	r5, #0
+ 230              	.LVL24:
+  85:Device/Dev_MPU6000.c **** 
+ 231              		.loc 1 85 16 view .LVU57
+ 232 0054 F8E7     		b	.L6
+ 233              	.LVL25:
+ 234              	.L9:
+  85:Device/Dev_MPU6000.c **** 
+ 235              		.loc 1 85 16 view .LVU58
+ 236 0056 0025     		movs	r5, #0
+ 237              	.LVL26:
+  85:Device/Dev_MPU6000.c **** 
+ 238              		.loc 1 85 16 view .LVU59
+ 239 0058 F6E7     		b	.L6
+ 240              		.cfi_endproc
+ 241              	.LFE2:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 7
+
+
+ 243              		.section	.text.DevMPU6000_Reg_Read,"ax",%progbits
+ 244              		.align	1
+ 245              		.syntax unified
+ 246              		.thumb
+ 247              		.thumb_func
+ 248              		.fpu fpv5-d16
+ 250              	DevMPU6000_Reg_Read:
+ 251              	.LVL27:
+ 252              	.LFB3:
+  98:Device/Dev_MPU6000.c **** 
+  99:Device/Dev_MPU6000.c **** static bool DevMPU6000_Reg_Read(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t *rx)
+ 100:Device/Dev_MPU6000.c **** {
+ 253              		.loc 1 100 1 is_stmt 1 view -0
+ 254              		.cfi_startproc
+ 255              		@ args = 0, pretend = 0, frame = 8
+ 256              		@ frame_needed = 0, uses_anonymous_args = 0
+ 257              		.loc 1 100 1 is_stmt 0 view .LVU61
+ 258 0000 70B5     		push	{r4, r5, r6, lr}
+ 259              	.LCFI8:
+ 260              		.cfi_def_cfa_offset 16
+ 261              		.cfi_offset 4, -16
+ 262              		.cfi_offset 5, -12
+ 263              		.cfi_offset 6, -8
+ 264              		.cfi_offset 14, -4
+ 265 0002 82B0     		sub	sp, sp, #8
+ 266              	.LCFI9:
+ 267              		.cfi_def_cfa_offset 24
+ 101:Device/Dev_MPU6000.c ****     uint8_t write_buff[2] = {0};
+ 268              		.loc 1 101 5 is_stmt 1 view .LVU62
+ 269              		.loc 1 101 13 is_stmt 0 view .LVU63
+ 270 0004 0023     		movs	r3, #0
+ 271 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 102:Device/Dev_MPU6000.c ****     uint8_t read_buff[2] = {0};
+ 272              		.loc 1 102 5 is_stmt 1 view .LVU64
+ 273              		.loc 1 102 13 is_stmt 0 view .LVU65
+ 274 000a ADF80030 		strh	r3, [sp]	@ movhi
+ 103:Device/Dev_MPU6000.c ****     bool state = false;
+ 275              		.loc 1 103 5 is_stmt 1 view .LVU66
+ 276              	.LVL28:
+ 104:Device/Dev_MPU6000.c **** 
+ 105:Device/Dev_MPU6000.c ****     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
+ 277              		.loc 1 105 5 view .LVU67
+ 278              		.loc 1 105 8 is_stmt 0 view .LVU68
+ 279 000e D8B1     		cbz	r0, .L13
+ 280 0010 1646     		mov	r6, r2
+ 281 0012 0446     		mov	r4, r0
+ 282              		.loc 1 105 41 discriminator 1 view .LVU69
+ 283 0014 0368     		ldr	r3, [r0]
+ 284              		.loc 1 105 28 discriminator 1 view .LVU70
+ 285 0016 CBB1     		cbz	r3, .L14
+ 286              		.loc 1 105 71 discriminator 2 view .LVU71
+ 287 0018 4368     		ldr	r3, [r0, #4]
+ 288              		.loc 1 105 58 discriminator 2 view .LVU72
+ 289 001a CBB1     		cbz	r3, .L15
+ 106:Device/Dev_MPU6000.c ****         return false;
+ 107:Device/Dev_MPU6000.c **** 
+ 108:Device/Dev_MPU6000.c ****     write_buff[0] = addr | MPU6000_WRITE_MASK;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 8
+
+
+ 290              		.loc 1 108 5 is_stmt 1 view .LVU73
+ 291              		.loc 1 108 19 is_stmt 0 view .LVU74
+ 292 001c 61F07F01 		orn	r1, r1, #127
+ 293              	.LVL29:
+ 294              		.loc 1 108 19 view .LVU75
+ 295 0020 8DF80410 		strb	r1, [sp, #4]
+ 109:Device/Dev_MPU6000.c **** 
+ 110:Device/Dev_MPU6000.c ****     /* CS Low */
+ 111:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(false);
+ 296              		.loc 1 111 5 is_stmt 1 view .LVU76
+ 297              		.loc 1 111 15 is_stmt 0 view .LVU77
+ 298 0024 0368     		ldr	r3, [r0]
+ 299              		.loc 1 111 5 view .LVU78
+ 300 0026 0020     		movs	r0, #0
+ 301              	.LVL30:
+ 302              		.loc 1 111 5 view .LVU79
+ 303 0028 9847     		blx	r3
+ 304              	.LVL31:
+ 112:Device/Dev_MPU6000.c **** 
+ 113:Device/Dev_MPU6000.c ****     state = sensor_obj->bus_trans(write_buff, read_buff, 2);
+ 305              		.loc 1 113 5 is_stmt 1 view .LVU80
+ 306              		.loc 1 113 23 is_stmt 0 view .LVU81
+ 307 002a 6368     		ldr	r3, [r4, #4]
+ 308              		.loc 1 113 13 view .LVU82
+ 309 002c 0222     		movs	r2, #2
+ 310 002e 6946     		mov	r1, sp
+ 311 0030 01A8     		add	r0, sp, #4
+ 312 0032 9847     		blx	r3
+ 313              	.LVL32:
+ 314 0034 0546     		mov	r5, r0
+ 315              	.LVL33:
+ 114:Device/Dev_MPU6000.c **** 
+ 115:Device/Dev_MPU6000.c ****     /* CS High */
+ 116:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(true);
+ 316              		.loc 1 116 5 is_stmt 1 view .LVU83
+ 317              		.loc 1 116 15 is_stmt 0 view .LVU84
+ 318 0036 2368     		ldr	r3, [r4]
+ 319              		.loc 1 116 5 view .LVU85
+ 320 0038 0120     		movs	r0, #1
+ 321 003a 9847     		blx	r3
+ 322              	.LVL34:
+ 117:Device/Dev_MPU6000.c **** 
+ 118:Device/Dev_MPU6000.c ****     *rx = read_buff[1];
+ 323              		.loc 1 118 5 is_stmt 1 view .LVU86
+ 324              		.loc 1 118 20 is_stmt 0 view .LVU87
+ 325 003c 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 326              		.loc 1 118 9 view .LVU88
+ 327 0040 3370     		strb	r3, [r6]
+ 119:Device/Dev_MPU6000.c **** 
+ 120:Device/Dev_MPU6000.c ****     return state;
+ 328              		.loc 1 120 5 is_stmt 1 view .LVU89
+ 329              	.LVL35:
+ 330              	.L12:
+ 121:Device/Dev_MPU6000.c **** }
+ 331              		.loc 1 121 1 is_stmt 0 view .LVU90
+ 332 0042 2846     		mov	r0, r5
+ 333 0044 02B0     		add	sp, sp, #8
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 9
+
+
+ 334              	.LCFI10:
+ 335              		.cfi_remember_state
+ 336              		.cfi_def_cfa_offset 16
+ 337              		@ sp needed
+ 338 0046 70BD     		pop	{r4, r5, r6, pc}
+ 339              	.LVL36:
+ 340              	.L13:
+ 341              	.LCFI11:
+ 342              		.cfi_restore_state
+ 106:Device/Dev_MPU6000.c **** 
+ 343              		.loc 1 106 16 view .LVU91
+ 344 0048 0025     		movs	r5, #0
+ 345 004a FAE7     		b	.L12
+ 346              	.L14:
+ 106:Device/Dev_MPU6000.c **** 
+ 347              		.loc 1 106 16 view .LVU92
+ 348 004c 0025     		movs	r5, #0
+ 349 004e F8E7     		b	.L12
+ 350              	.L15:
+ 351 0050 0025     		movs	r5, #0
+ 352 0052 F6E7     		b	.L12
+ 353              		.cfi_endproc
+ 354              	.LFE3:
+ 356              		.section	.text.DevMPU6000_Reg_Write,"ax",%progbits
+ 357              		.align	1
+ 358              		.syntax unified
+ 359              		.thumb
+ 360              		.thumb_func
+ 361              		.fpu fpv5-d16
+ 363              	DevMPU6000_Reg_Write:
+ 364              	.LVL37:
+ 365              	.LFB4:
+ 122:Device/Dev_MPU6000.c **** 
+ 123:Device/Dev_MPU6000.c **** /* MAX Byte I&O Speed 20k */
+ 124:Device/Dev_MPU6000.c **** static bool DevMPU6000_Reg_Write(DevMPU6000Obj_TypeDef *sensor_obj, uint8_t addr, uint8_t tx)
+ 125:Device/Dev_MPU6000.c **** {
+ 366              		.loc 1 125 1 is_stmt 1 view -0
+ 367              		.cfi_startproc
+ 368              		@ args = 0, pretend = 0, frame = 8
+ 369              		@ frame_needed = 0, uses_anonymous_args = 0
+ 370              		.loc 1 125 1 is_stmt 0 view .LVU94
+ 371 0000 30B5     		push	{r4, r5, lr}
+ 372              	.LCFI12:
+ 373              		.cfi_def_cfa_offset 12
+ 374              		.cfi_offset 4, -12
+ 375              		.cfi_offset 5, -8
+ 376              		.cfi_offset 14, -4
+ 377 0002 83B0     		sub	sp, sp, #12
+ 378              	.LCFI13:
+ 379              		.cfi_def_cfa_offset 24
+ 126:Device/Dev_MPU6000.c ****     uint8_t write_buff[2] = {0};
+ 380              		.loc 1 126 5 is_stmt 1 view .LVU95
+ 381              		.loc 1 126 13 is_stmt 0 view .LVU96
+ 382 0004 0023     		movs	r3, #0
+ 383 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 127:Device/Dev_MPU6000.c ****     uint8_t read_buff[2] = {0};
+ 384              		.loc 1 127 5 is_stmt 1 view .LVU97
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 10
+
+
+ 385              		.loc 1 127 13 is_stmt 0 view .LVU98
+ 386 000a ADF80030 		strh	r3, [sp]	@ movhi
+ 128:Device/Dev_MPU6000.c ****     bool state = false;
+ 387              		.loc 1 128 5 is_stmt 1 view .LVU99
+ 388              	.LVL38:
+ 129:Device/Dev_MPU6000.c **** 
+ 130:Device/Dev_MPU6000.c ****     if (sensor_obj == NULL || sensor_obj->cs_ctl == NULL || sensor_obj->bus_trans == NULL)
+ 389              		.loc 1 130 5 view .LVU100
+ 390              		.loc 1 130 8 is_stmt 0 view .LVU101
+ 391 000e B8B1     		cbz	r0, .L19
+ 392 0010 0446     		mov	r4, r0
+ 393              		.loc 1 130 41 discriminator 1 view .LVU102
+ 394 0012 0368     		ldr	r3, [r0]
+ 395              		.loc 1 130 28 discriminator 1 view .LVU103
+ 396 0014 B3B1     		cbz	r3, .L20
+ 397              		.loc 1 130 71 discriminator 2 view .LVU104
+ 398 0016 4368     		ldr	r3, [r0, #4]
+ 399              		.loc 1 130 58 discriminator 2 view .LVU105
+ 400 0018 B3B1     		cbz	r3, .L21
+ 131:Device/Dev_MPU6000.c ****         return false;
+ 132:Device/Dev_MPU6000.c **** 
+ 133:Device/Dev_MPU6000.c ****     write_buff[0] = addr;
+ 401              		.loc 1 133 5 is_stmt 1 view .LVU106
+ 402              		.loc 1 133 19 is_stmt 0 view .LVU107
+ 403 001a 8DF80410 		strb	r1, [sp, #4]
+ 134:Device/Dev_MPU6000.c ****     write_buff[1] = tx;
+ 404              		.loc 1 134 5 is_stmt 1 view .LVU108
+ 405              		.loc 1 134 19 is_stmt 0 view .LVU109
+ 406 001e 8DF80520 		strb	r2, [sp, #5]
+ 135:Device/Dev_MPU6000.c **** 
+ 136:Device/Dev_MPU6000.c ****     /* CS Low */
+ 137:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(false);
+ 407              		.loc 1 137 5 is_stmt 1 view .LVU110
+ 408              		.loc 1 137 15 is_stmt 0 view .LVU111
+ 409 0022 0368     		ldr	r3, [r0]
+ 410              		.loc 1 137 5 view .LVU112
+ 411 0024 0020     		movs	r0, #0
+ 412              	.LVL39:
+ 413              		.loc 1 137 5 view .LVU113
+ 414 0026 9847     		blx	r3
+ 415              	.LVL40:
+ 138:Device/Dev_MPU6000.c **** 
+ 139:Device/Dev_MPU6000.c ****     state = sensor_obj->bus_trans(write_buff, read_buff, 2);
+ 416              		.loc 1 139 5 is_stmt 1 view .LVU114
+ 417              		.loc 1 139 23 is_stmt 0 view .LVU115
+ 418 0028 6368     		ldr	r3, [r4, #4]
+ 419              		.loc 1 139 13 view .LVU116
+ 420 002a 0222     		movs	r2, #2
+ 421 002c 6946     		mov	r1, sp
+ 422 002e 01A8     		add	r0, sp, #4
+ 423 0030 9847     		blx	r3
+ 424              	.LVL41:
+ 425 0032 0546     		mov	r5, r0
+ 426              	.LVL42:
+ 140:Device/Dev_MPU6000.c **** 
+ 141:Device/Dev_MPU6000.c ****     /* CS High */
+ 142:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl(true);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 11
+
+
+ 427              		.loc 1 142 5 is_stmt 1 view .LVU117
+ 428              		.loc 1 142 15 is_stmt 0 view .LVU118
+ 429 0034 2368     		ldr	r3, [r4]
+ 430              		.loc 1 142 5 view .LVU119
+ 431 0036 0120     		movs	r0, #1
+ 432 0038 9847     		blx	r3
+ 433              	.LVL43:
+ 143:Device/Dev_MPU6000.c **** 
+ 144:Device/Dev_MPU6000.c ****     return state;
+ 434              		.loc 1 144 5 is_stmt 1 view .LVU120
+ 435              	.L18:
+ 145:Device/Dev_MPU6000.c **** }
+ 436              		.loc 1 145 1 is_stmt 0 view .LVU121
+ 437 003a 2846     		mov	r0, r5
+ 438 003c 03B0     		add	sp, sp, #12
+ 439              	.LCFI14:
+ 440              		.cfi_remember_state
+ 441              		.cfi_def_cfa_offset 12
+ 442              		@ sp needed
+ 443 003e 30BD     		pop	{r4, r5, pc}
+ 444              	.LVL44:
+ 445              	.L19:
+ 446              	.LCFI15:
+ 447              		.cfi_restore_state
+ 131:Device/Dev_MPU6000.c **** 
+ 448              		.loc 1 131 16 view .LVU122
+ 449 0040 0025     		movs	r5, #0
+ 450 0042 FAE7     		b	.L18
+ 451              	.L20:
+ 131:Device/Dev_MPU6000.c **** 
+ 452              		.loc 1 131 16 view .LVU123
+ 453 0044 0025     		movs	r5, #0
+ 454 0046 F8E7     		b	.L18
+ 455              	.L21:
+ 456 0048 0025     		movs	r5, #0
+ 457 004a F6E7     		b	.L18
+ 458              		.cfi_endproc
+ 459              	.LFE4:
+ 461              		.section	.text.DevMPU6000_Config,"ax",%progbits
+ 462              		.align	1
+ 463              		.syntax unified
+ 464              		.thumb
+ 465              		.thumb_func
+ 466              		.fpu fpv5-d16
+ 468              	DevMPU6000_Config:
+ 469              	.LVL45:
+ 470              	.LFB5:
+ 146:Device/Dev_MPU6000.c **** 
+ 147:Device/Dev_MPU6000.c **** static bool DevMPU6000_Config(DevMPU6000Obj_TypeDef *sensor_obj, 
+ 148:Device/Dev_MPU6000.c ****                               DevMPU6000_SampleRate_List rate, 
+ 149:Device/Dev_MPU6000.c ****                               DevMPU6000_AccTrip_List AccTrip, 
+ 150:Device/Dev_MPU6000.c ****                               DevMPU6000_GyrTrip_List GyrTrip)
+ 151:Device/Dev_MPU6000.c **** {
+ 471              		.loc 1 151 1 is_stmt 1 view -0
+ 472              		.cfi_startproc
+ 473              		@ args = 0, pretend = 0, frame = 0
+ 474              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 12
+
+
+ 152:Device/Dev_MPU6000.c ****     if(sensor_obj == NULL)
+ 475              		.loc 1 152 5 view .LVU125
+ 476              		.loc 1 152 7 is_stmt 0 view .LVU126
+ 477 0000 0028     		cmp	r0, #0
+ 478 0002 65D0     		beq	.L37
+ 151:Device/Dev_MPU6000.c ****     if(sensor_obj == NULL)
+ 479              		.loc 1 151 1 view .LVU127
+ 480 0004 10B5     		push	{r4, lr}
+ 481              	.LCFI16:
+ 482              		.cfi_def_cfa_offset 8
+ 483              		.cfi_offset 4, -8
+ 484              		.cfi_offset 14, -4
+ 485 0006 8646     		mov	lr, r0
+ 153:Device/Dev_MPU6000.c ****         return false;
+ 154:Device/Dev_MPU6000.c **** 
+ 155:Device/Dev_MPU6000.c ****     switch ((uint8_t)sensor_obj->rate)
+ 486              		.loc 1 155 5 is_stmt 1 view .LVU128
+ 487              		.loc 1 155 32 is_stmt 0 view .LVU129
+ 488 0008 90F821C0 		ldrb	ip, [r0, #33]	@ zero_extendqisi2
+ 489 000c BCF1070F 		cmp	ip, #7
+ 490 0010 94BF     		ite	ls
+ 491 0012 0024     		movls	r4, #0
+ 492 0014 0124     		movhi	r4, #1
+ 493 0016 002C     		cmp	r4, #0
+ 494 0018 5CD1     		bne	.L38
+ 495 001a 0120     		movs	r0, #1
+ 496              	.LVL46:
+ 497              		.loc 1 155 32 view .LVU130
+ 498 001c 00FA0CF0 		lsl	r0, r0, ip
+ 499 0020 10F08B0F 		tst	r0, #139
+ 500 0024 14BF     		ite	ne
+ 501 0026 0120     		movne	r0, #1
+ 502 0028 0020     		moveq	r0, #0
+ 503 002a 38D0     		beq	.L24
+ 156:Device/Dev_MPU6000.c ****     {
+ 157:Device/Dev_MPU6000.c ****     case MPU6000_SampleRate_8K:
+ 158:Device/Dev_MPU6000.c ****     case MPU6000_SampleRate_4K:
+ 159:Device/Dev_MPU6000.c ****     case MPU6000_SampleRate_2K:
+ 160:Device/Dev_MPU6000.c ****     case MPU6000_SampleRate_1K:
+ 161:Device/Dev_MPU6000.c ****         break;
+ 504              		.loc 1 161 9 is_stmt 1 view .LVU131
+ 162:Device/Dev_MPU6000.c **** 
+ 163:Device/Dev_MPU6000.c ****     default:
+ 164:Device/Dev_MPU6000.c ****         return false;
+ 165:Device/Dev_MPU6000.c ****     }
+ 166:Device/Dev_MPU6000.c **** 
+ 167:Device/Dev_MPU6000.c ****     sensor_obj->rate = rate;
+ 505              		.loc 1 167 5 view .LVU132
+ 506              		.loc 1 167 22 is_stmt 0 view .LVU133
+ 507 002c 8EF82110 		strb	r1, [lr, #33]
+ 168:Device/Dev_MPU6000.c **** 
+ 169:Device/Dev_MPU6000.c ****     switch ((uint8_t)AccTrip)
+ 508              		.loc 1 169 5 is_stmt 1 view .LVU134
+ 509 0030 032A     		cmp	r2, #3
+ 510 0032 51D8     		bhi	.L39
+ 511 0034 DFE802F0 		tbb	[pc, r2]
+ 512              	.LVL47:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 13
+
+
+ 513              	.L26:
+ 514 0038 02       		.byte	(.L29-.L26)/2
+ 515 0039 0F       		.byte	(.L28-.L26)/2
+ 516 003a 17       		.byte	(.L27-.L26)/2
+ 517 003b 1F       		.byte	(.L25-.L26)/2
+ 518              		.p2align 1
+ 519              	.L29:
+ 170:Device/Dev_MPU6000.c ****     {
+ 171:Device/Dev_MPU6000.c ****     case MPU6000_Acc_2G:
+ 172:Device/Dev_MPU6000.c ****         sensor_obj->acc_scale = MPU6000_ACC_2G_SCALE;
+ 520              		.loc 1 172 9 view .LVU135
+ 521              		.loc 1 172 31 is_stmt 0 view .LVU136
+ 522 003c 4FF08D41 		mov	r1, #1182793728
+ 523 0040 CEF81810 		str	r1, [lr, #24]	@ float
+ 173:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 2;
+ 524              		.loc 1 173 9 is_stmt 1 view .LVU137
+ 525              		.loc 1 173 37 is_stmt 0 view .LVU138
+ 526 0044 0221     		movs	r1, #2
+ 527 0046 8EF81210 		strb	r1, [lr, #18]
+ 174:Device/Dev_MPU6000.c ****         break;
+ 528              		.loc 1 174 9 is_stmt 1 view .LVU139
+ 529              	.L30:
+ 175:Device/Dev_MPU6000.c **** 
+ 176:Device/Dev_MPU6000.c ****     case MPU6000_Acc_4G:
+ 177:Device/Dev_MPU6000.c ****         sensor_obj->acc_scale = MPU6000_ACC_4G_SCALE;
+ 178:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 4;
+ 179:Device/Dev_MPU6000.c ****         break;
+ 180:Device/Dev_MPU6000.c **** 
+ 181:Device/Dev_MPU6000.c ****     case MPU6000_Acc_8G:
+ 182:Device/Dev_MPU6000.c ****         sensor_obj->acc_scale = MPU6000_ACC_8G_SCALE;
+ 183:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 8;
+ 184:Device/Dev_MPU6000.c ****         break;
+ 185:Device/Dev_MPU6000.c **** 
+ 186:Device/Dev_MPU6000.c ****     case MPU6000_Acc_16G:
+ 187:Device/Dev_MPU6000.c ****         sensor_obj->acc_scale = MPU6000_ACC_16G_SCALE;
+ 188:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 16;
+ 189:Device/Dev_MPU6000.c ****         break;
+ 190:Device/Dev_MPU6000.c **** 
+ 191:Device/Dev_MPU6000.c ****     default:
+ 192:Device/Dev_MPU6000.c ****         return false;
+ 193:Device/Dev_MPU6000.c ****     }
+ 194:Device/Dev_MPU6000.c **** 
+ 195:Device/Dev_MPU6000.c ****     switch ((uint8_t)GyrTrip)
+ 530              		.loc 1 195 5 view .LVU140
+ 531 004a 032B     		cmp	r3, #3
+ 532 004c 46D8     		bhi	.L40
+ 533 004e DFE803F0 		tbb	[pc, r3]
+ 534              	.L32:
+ 535 0052 1A       		.byte	(.L35-.L32)/2
+ 536 0053 27       		.byte	(.L34-.L32)/2
+ 537 0054 2F       		.byte	(.L33-.L32)/2
+ 538 0055 37       		.byte	(.L31-.L32)/2
+ 539              		.p2align 1
+ 540              	.L28:
+ 177:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 4;
+ 541              		.loc 1 177 9 view .LVU141
+ 177:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 4;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 14
+
+
+ 542              		.loc 1 177 31 is_stmt 0 view .LVU142
+ 543 0056 4FF08C41 		mov	r1, #1174405120
+ 544 005a CEF81810 		str	r1, [lr, #24]	@ float
+ 178:Device/Dev_MPU6000.c ****         break;
+ 545              		.loc 1 178 9 is_stmt 1 view .LVU143
+ 178:Device/Dev_MPU6000.c ****         break;
+ 546              		.loc 1 178 37 is_stmt 0 view .LVU144
+ 547 005e 0421     		movs	r1, #4
+ 548 0060 8EF81210 		strb	r1, [lr, #18]
+ 179:Device/Dev_MPU6000.c **** 
+ 549              		.loc 1 179 9 is_stmt 1 view .LVU145
+ 550 0064 F1E7     		b	.L30
+ 551              	.L27:
+ 182:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 8;
+ 552              		.loc 1 182 9 view .LVU146
+ 182:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 8;
+ 553              		.loc 1 182 31 is_stmt 0 view .LVU147
+ 554 0066 4FF08B41 		mov	r1, #1166016512
+ 555 006a CEF81810 		str	r1, [lr, #24]	@ float
+ 183:Device/Dev_MPU6000.c ****         break;
+ 556              		.loc 1 183 9 is_stmt 1 view .LVU148
+ 183:Device/Dev_MPU6000.c ****         break;
+ 557              		.loc 1 183 37 is_stmt 0 view .LVU149
+ 558 006e 0821     		movs	r1, #8
+ 559 0070 8EF81210 		strb	r1, [lr, #18]
+ 184:Device/Dev_MPU6000.c **** 
+ 560              		.loc 1 184 9 is_stmt 1 view .LVU150
+ 561 0074 E9E7     		b	.L30
+ 562              	.L25:
+ 187:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 16;
+ 563              		.loc 1 187 9 view .LVU151
+ 187:Device/Dev_MPU6000.c ****         sensor_obj->PHY_AccTrip_Val = 16;
+ 564              		.loc 1 187 31 is_stmt 0 view .LVU152
+ 565 0076 4FF08A41 		mov	r1, #1157627904
+ 566 007a CEF81810 		str	r1, [lr, #24]	@ float
+ 188:Device/Dev_MPU6000.c ****         break;
+ 567              		.loc 1 188 9 is_stmt 1 view .LVU153
+ 188:Device/Dev_MPU6000.c ****         break;
+ 568              		.loc 1 188 37 is_stmt 0 view .LVU154
+ 569 007e 1021     		movs	r1, #16
+ 570 0080 8EF81210 		strb	r1, [lr, #18]
+ 189:Device/Dev_MPU6000.c **** 
+ 571              		.loc 1 189 9 is_stmt 1 view .LVU155
+ 572 0084 E1E7     		b	.L30
+ 573              	.L35:
+ 196:Device/Dev_MPU6000.c ****     {
+ 197:Device/Dev_MPU6000.c ****     case MPU6000_Gyr_250DPS:
+ 198:Device/Dev_MPU6000.c ****         sensor_obj->gyr_scale = MPU6000_GYR_250DPS_SCALE;
+ 574              		.loc 1 198 9 view .LVU156
+ 575              		.loc 1 198 31 is_stmt 0 view .LVU157
+ 576 0086 1649     		ldr	r1, .L45
+ 577 0088 CEF81C10 		str	r1, [lr, #28]	@ float
+ 199:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 250;
+ 578              		.loc 1 199 9 is_stmt 1 view .LVU158
+ 579              		.loc 1 199 37 is_stmt 0 view .LVU159
+ 580 008c FA21     		movs	r1, #250
+ 581 008e AEF81410 		strh	r1, [lr, #20]	@ movhi
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 15
+
+
+ 200:Device/Dev_MPU6000.c ****         break;
+ 582              		.loc 1 200 9 is_stmt 1 view .LVU160
+ 583              	.L36:
+ 201:Device/Dev_MPU6000.c **** 
+ 202:Device/Dev_MPU6000.c ****     case MPU6000_Gyr_500DPS:
+ 203:Device/Dev_MPU6000.c ****         sensor_obj->gyr_scale = MPU6000_GYR_500DPS_SCALE;
+ 204:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 500;
+ 205:Device/Dev_MPU6000.c ****         break;
+ 206:Device/Dev_MPU6000.c **** 
+ 207:Device/Dev_MPU6000.c ****     case MPU6000_Gyr_1000DPS:
+ 208:Device/Dev_MPU6000.c ****         sensor_obj->gyr_scale = MPU6000_GYR_1000DPS_SCALE;
+ 209:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 1000;
+ 210:Device/Dev_MPU6000.c ****         break;
+ 211:Device/Dev_MPU6000.c **** 
+ 212:Device/Dev_MPU6000.c ****     case MPU6000_Gyr_2000DPS:
+ 213:Device/Dev_MPU6000.c ****         sensor_obj->gyr_scale = MPU6000_GYR_2000DPS_SCALE;
+ 214:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 2000;
+ 215:Device/Dev_MPU6000.c ****         break;
+ 216:Device/Dev_MPU6000.c **** 
+ 217:Device/Dev_MPU6000.c ****     default:
+ 218:Device/Dev_MPU6000.c ****         return false;
+ 219:Device/Dev_MPU6000.c ****     }
+ 220:Device/Dev_MPU6000.c **** 
+ 221:Device/Dev_MPU6000.c ****     sensor_obj->AccTrip = ConvertToMPU6000Trip_Reg(AccTrip);
+ 584              		.loc 1 221 5 view .LVU161
+ 585              		.loc 1 221 27 is_stmt 0 view .LVU162
+ 586 0092 D200     		lsls	r2, r2, #3
+ 587              	.LVL48:
+ 588              		.loc 1 221 25 view .LVU163
+ 589 0094 8EF81020 		strb	r2, [lr, #16]
+ 222:Device/Dev_MPU6000.c ****     sensor_obj->GyrTrip = ConvertToMPU6000Trip_Reg(GyrTrip);
+ 590              		.loc 1 222 5 is_stmt 1 view .LVU164
+ 591              		.loc 1 222 27 is_stmt 0 view .LVU165
+ 592 0098 DB00     		lsls	r3, r3, #3
+ 593              	.LVL49:
+ 594              		.loc 1 222 25 view .LVU166
+ 595 009a 8EF81130 		strb	r3, [lr, #17]
+ 223:Device/Dev_MPU6000.c **** 
+ 224:Device/Dev_MPU6000.c ****     return true;
+ 596              		.loc 1 224 5 is_stmt 1 view .LVU167
+ 597              	.LVL50:
+ 598              	.L24:
+ 225:Device/Dev_MPU6000.c **** }
+ 599              		.loc 1 225 1 is_stmt 0 view .LVU168
+ 600 009e 10BD     		pop	{r4, pc}
+ 601              	.LVL51:
+ 602              	.L34:
+ 203:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 500;
+ 603              		.loc 1 203 9 is_stmt 1 view .LVU169
+ 203:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 500;
+ 604              		.loc 1 203 31 is_stmt 0 view .LVU170
+ 605 00a0 1049     		ldr	r1, .L45+4
+ 606 00a2 CEF81C10 		str	r1, [lr, #28]	@ float
+ 204:Device/Dev_MPU6000.c ****         break;
+ 607              		.loc 1 204 9 is_stmt 1 view .LVU171
+ 204:Device/Dev_MPU6000.c ****         break;
+ 608              		.loc 1 204 37 is_stmt 0 view .LVU172
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 16
+
+
+ 609 00a6 4FF4FA71 		mov	r1, #500
+ 610 00aa AEF81410 		strh	r1, [lr, #20]	@ movhi
+ 205:Device/Dev_MPU6000.c **** 
+ 611              		.loc 1 205 9 is_stmt 1 view .LVU173
+ 612 00ae F0E7     		b	.L36
+ 613              	.L33:
+ 208:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 1000;
+ 614              		.loc 1 208 9 view .LVU174
+ 208:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 1000;
+ 615              		.loc 1 208 31 is_stmt 0 view .LVU175
+ 616 00b0 0D49     		ldr	r1, .L45+8
+ 617 00b2 CEF81C10 		str	r1, [lr, #28]	@ float
+ 209:Device/Dev_MPU6000.c ****         break;
+ 618              		.loc 1 209 9 is_stmt 1 view .LVU176
+ 209:Device/Dev_MPU6000.c ****         break;
+ 619              		.loc 1 209 37 is_stmt 0 view .LVU177
+ 620 00b6 4FF47A71 		mov	r1, #1000
+ 621 00ba AEF81410 		strh	r1, [lr, #20]	@ movhi
+ 210:Device/Dev_MPU6000.c **** 
+ 622              		.loc 1 210 9 is_stmt 1 view .LVU178
+ 623 00be E8E7     		b	.L36
+ 624              	.L31:
+ 213:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 2000;
+ 625              		.loc 1 213 9 view .LVU179
+ 213:Device/Dev_MPU6000.c ****         sensor_obj->PHY_GyrTrip_Val = 2000;
+ 626              		.loc 1 213 31 is_stmt 0 view .LVU180
+ 627 00c0 0A49     		ldr	r1, .L45+12
+ 628 00c2 CEF81C10 		str	r1, [lr, #28]	@ float
+ 214:Device/Dev_MPU6000.c ****         break;
+ 629              		.loc 1 214 9 is_stmt 1 view .LVU181
+ 214:Device/Dev_MPU6000.c ****         break;
+ 630              		.loc 1 214 37 is_stmt 0 view .LVU182
+ 631 00c6 4FF4FA61 		mov	r1, #2000
+ 632 00ca AEF81410 		strh	r1, [lr, #20]	@ movhi
+ 215:Device/Dev_MPU6000.c **** 
+ 633              		.loc 1 215 9 is_stmt 1 view .LVU183
+ 634 00ce E0E7     		b	.L36
+ 635              	.LVL52:
+ 636              	.L37:
+ 637              	.LCFI17:
+ 638              		.cfi_def_cfa_offset 0
+ 639              		.cfi_restore 4
+ 640              		.cfi_restore 14
+ 153:Device/Dev_MPU6000.c **** 
+ 641              		.loc 1 153 16 is_stmt 0 view .LVU184
+ 642 00d0 0020     		movs	r0, #0
+ 643              	.LVL53:
+ 644              		.loc 1 225 1 view .LVU185
+ 645 00d2 7047     		bx	lr
+ 646              	.LVL54:
+ 647              	.L38:
+ 648              	.LCFI18:
+ 649              		.cfi_def_cfa_offset 8
+ 650              		.cfi_offset 4, -8
+ 651              		.cfi_offset 14, -4
+ 155:Device/Dev_MPU6000.c ****     {
+ 652              		.loc 1 155 32 view .LVU186
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 17
+
+
+ 653 00d4 0020     		movs	r0, #0
+ 654              	.LVL55:
+ 155:Device/Dev_MPU6000.c ****     {
+ 655              		.loc 1 155 32 view .LVU187
+ 656 00d6 E2E7     		b	.L24
+ 657              	.LVL56:
+ 658              	.L39:
+ 167:Device/Dev_MPU6000.c **** 
+ 659              		.loc 1 167 22 view .LVU188
+ 660 00d8 2046     		mov	r0, r4
+ 661 00da E0E7     		b	.L24
+ 662              	.L40:
+ 155:Device/Dev_MPU6000.c ****     {
+ 663              		.loc 1 155 32 view .LVU189
+ 664 00dc 2046     		mov	r0, r4
+ 665 00de DEE7     		b	.L24
+ 666              	.L46:
+ 667              		.align	2
+ 668              	.L45:
+ 669 00e0 00000343 		.word	1124270080
+ 670 00e4 00008342 		.word	1115881472
+ 671 00e8 33330342 		.word	1107505971
+ 672 00ec 33338341 		.word	1099117363
+ 673              		.cfi_endproc
+ 674              	.LFE5:
+ 676              		.section	.text.DevMPU6000_PreInit,"ax",%progbits
+ 677              		.align	1
+ 678              		.syntax unified
+ 679              		.thumb
+ 680              		.thumb_func
+ 681              		.fpu fpv5-d16
+ 683              	DevMPU6000_PreInit:
+ 684              	.LVL57:
+ 685              	.LFB6:
+ 226:Device/Dev_MPU6000.c **** 
+ 227:Device/Dev_MPU6000.c **** static void DevMPU6000_PreInit(DevMPU6000Obj_TypeDef *sensor_obj,
+ 228:Device/Dev_MPU6000.c ****                                cs_ctl_callback cs_ctl,
+ 229:Device/Dev_MPU6000.c ****                                bus_trans_callback bus_trans,
+ 230:Device/Dev_MPU6000.c ****                                delay_callback delay,
+ 231:Device/Dev_MPU6000.c ****                                get_time_stamp_callback get_time_stamp)
+ 232:Device/Dev_MPU6000.c **** {
+ 686              		.loc 1 232 1 is_stmt 1 view -0
+ 687              		.cfi_startproc
+ 688              		@ args = 4, pretend = 0, frame = 0
+ 689              		@ frame_needed = 0, uses_anonymous_args = 0
+ 690              		@ link register save eliminated.
+ 233:Device/Dev_MPU6000.c ****     sensor_obj->cs_ctl = cs_ctl;
+ 691              		.loc 1 233 5 view .LVU191
+ 692              		.loc 1 233 24 is_stmt 0 view .LVU192
+ 693 0000 0160     		str	r1, [r0]
+ 234:Device/Dev_MPU6000.c ****     sensor_obj->bus_trans = bus_trans;
+ 694              		.loc 1 234 5 is_stmt 1 view .LVU193
+ 695              		.loc 1 234 27 is_stmt 0 view .LVU194
+ 696 0002 4260     		str	r2, [r0, #4]
+ 235:Device/Dev_MPU6000.c ****     sensor_obj->delay = delay;
+ 697              		.loc 1 235 5 is_stmt 1 view .LVU195
+ 698              		.loc 1 235 23 is_stmt 0 view .LVU196
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 18
+
+
+ 699 0004 8360     		str	r3, [r0, #8]
+ 236:Device/Dev_MPU6000.c ****     sensor_obj->get_timestamp = get_time_stamp;
+ 700              		.loc 1 236 5 is_stmt 1 view .LVU197
+ 701              		.loc 1 236 31 is_stmt 0 view .LVU198
+ 702 0006 009B     		ldr	r3, [sp]
+ 703              	.LVL58:
+ 704              		.loc 1 236 31 view .LVU199
+ 705 0008 C360     		str	r3, [r0, #12]
+ 237:Device/Dev_MPU6000.c **** }
+ 706              		.loc 1 237 1 view .LVU200
+ 707 000a 7047     		bx	lr
+ 708              		.cfi_endproc
+ 709              	.LFE6:
+ 711              		.section	.rodata.DevMPU6000_Init.str1.4,"aMS",%progbits,1
+ 712              		.align	2
+ 713              	.LC0:
+ 714 0000 00       		.ascii	"\000"
+ 715              		.section	.text.DevMPU6000_Init,"ax",%progbits
+ 716              		.align	1
+ 717              		.syntax unified
+ 718              		.thumb
+ 719              		.thumb_func
+ 720              		.fpu fpv5-d16
+ 722              	DevMPU6000_Init:
+ 723              	.LVL59:
+ 724              	.LFB7:
+ 238:Device/Dev_MPU6000.c **** 
+ 239:Device/Dev_MPU6000.c **** static bool DevMPU6000_Init(DevMPU6000Obj_TypeDef *sensor_obj)
+ 240:Device/Dev_MPU6000.c **** {
+ 725              		.loc 1 240 1 is_stmt 1 view -0
+ 726              		.cfi_startproc
+ 727              		@ args = 0, pretend = 0, frame = 8
+ 728              		@ frame_needed = 0, uses_anonymous_args = 0
+ 729              		.loc 1 240 1 is_stmt 0 view .LVU202
+ 730 0000 30B5     		push	{r4, r5, lr}
+ 731              	.LCFI19:
+ 732              		.cfi_def_cfa_offset 12
+ 733              		.cfi_offset 4, -12
+ 734              		.cfi_offset 5, -8
+ 735              		.cfi_offset 14, -4
+ 736 0002 83B0     		sub	sp, sp, #12
+ 737              	.LCFI20:
+ 738              		.cfi_def_cfa_offset 24
+ 241:Device/Dev_MPU6000.c ****     uint8_t read_out = 0;
+ 739              		.loc 1 241 5 is_stmt 1 view .LVU203
+ 740              		.loc 1 241 13 is_stmt 0 view .LVU204
+ 741 0004 0023     		movs	r3, #0
+ 742 0006 8DF80730 		strb	r3, [sp, #7]
+ 242:Device/Dev_MPU6000.c **** 
+ 243:Device/Dev_MPU6000.c ****     if ((sensor_obj == NULL) ||
+ 743              		.loc 1 243 5 is_stmt 1 view .LVU205
+ 744              		.loc 1 243 8 is_stmt 0 view .LVU206
+ 745 000a 0446     		mov	r4, r0
+ 746 000c 98B3     		cbz	r0, .L49
+ 244:Device/Dev_MPU6000.c ****         (sensor_obj->bus_trans == NULL) ||
+ 747              		.loc 1 244 20 discriminator 1 view .LVU207
+ 748 000e 4368     		ldr	r3, [r0, #4]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 19
+
+
+ 243:Device/Dev_MPU6000.c ****         (sensor_obj->bus_trans == NULL) ||
+ 749              		.loc 1 243 30 discriminator 1 view .LVU208
+ 750 0010 8BB3     		cbz	r3, .L49
+ 245:Device/Dev_MPU6000.c ****         (sensor_obj->cs_ctl == NULL))
+ 751              		.loc 1 245 20 view .LVU209
+ 752 0012 0368     		ldr	r3, [r0]
+ 244:Device/Dev_MPU6000.c ****         (sensor_obj->bus_trans == NULL) ||
+ 753              		.loc 1 244 41 view .LVU210
+ 754 0014 7BB3     		cbz	r3, .L49
+ 246:Device/Dev_MPU6000.c ****     {
+ 247:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_Obj_Error, __FUNCTION__, __LINE__, 0, 0, 0);
+ 248:Device/Dev_MPU6000.c ****         return false;
+ 249:Device/Dev_MPU6000.c ****     }
+ 250:Device/Dev_MPU6000.c **** 
+ 251:Device/Dev_MPU6000.c ****     /* reset power manage register first */
+ 252:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, BIT_H_RESET))
+ 755              		.loc 1 252 5 is_stmt 1 view .LVU211
+ 756              		.loc 1 252 10 is_stmt 0 view .LVU212
+ 757 0016 8022     		movs	r2, #128
+ 758 0018 6B21     		movs	r1, #107
+ 759 001a FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 760              	.LVL60:
+ 761              		.loc 1 252 8 view .LVU213
+ 762 001e 0546     		mov	r5, r0
+ 763 0020 0028     		cmp	r0, #0
+ 764 0022 3ED0     		beq	.L78
+ 253:Device/Dev_MPU6000.c ****     {
+ 254:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_BusCommunicate_Error, __FUNCTION__, __LINE__
+ 255:Device/Dev_MPU6000.c ****         return false;
+ 256:Device/Dev_MPU6000.c ****     }
+ 257:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 765              		.loc 1 257 5 is_stmt 1 view .LVU214
+ 766              		.loc 1 257 15 is_stmt 0 view .LVU215
+ 767 0024 A368     		ldr	r3, [r4, #8]
+ 768              		.loc 1 257 5 view .LVU216
+ 769 0026 0F20     		movs	r0, #15
+ 770 0028 9847     		blx	r3
+ 771              	.LVL61:
+ 258:Device/Dev_MPU6000.c **** 
+ 259:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Read(sensor_obj, MPU6000_WHOAMI, &read_out))
+ 772              		.loc 1 259 5 is_stmt 1 view .LVU217
+ 773              		.loc 1 259 10 is_stmt 0 view .LVU218
+ 774 002a 0DF10702 		add	r2, sp, #7
+ 775 002e 7521     		movs	r1, #117
+ 776 0030 2046     		mov	r0, r4
+ 777 0032 FFF7FEFF 		bl	DevMPU6000_Reg_Read
+ 778              	.LVL62:
+ 779              		.loc 1 259 8 view .LVU219
+ 780 0036 0546     		mov	r5, r0
+ 781 0038 0028     		cmp	r0, #0
+ 782 003a 45D0     		beq	.L79
+ 260:Device/Dev_MPU6000.c ****     {
+ 261:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_BusCommunicate_Error, __FUNCTION__, __LINE__
+ 262:Device/Dev_MPU6000.c ****         return false;
+ 263:Device/Dev_MPU6000.c ****     }
+ 264:Device/Dev_MPU6000.c **** 
+ 265:Device/Dev_MPU6000.c ****     if (read_out != MPU6000_DEV_ID)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 20
+
+
+ 783              		.loc 1 265 5 is_stmt 1 view .LVU220
+ 784              		.loc 1 265 18 is_stmt 0 view .LVU221
+ 785 003c 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 786              		.loc 1 265 8 view .LVU222
+ 787 0040 682B     		cmp	r3, #104
+ 788 0042 55D0     		beq	.L57
+ 266:Device/Dev_MPU6000.c ****     {
+ 267:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_DevID_Error, __FUNCTION__, __LINE__, MPU6000
+ 789              		.loc 1 267 9 is_stmt 1 view .LVU223
+ 790              	.LVL63:
+ 791              	.LBB30:
+ 792              	.LBI30:
+ 793              		.file 2 "Service/imu_data.h"
+   1:Service/imu_data.h **** #ifndef __IMU_DATA_H
+   2:Service/imu_data.h **** #define __IMU_DATA_H
+   3:Service/imu_data.h **** 
+   4:Service/imu_data.h **** #include <stdbool.h>
+   5:Service/imu_data.h **** #include <stdint.h>
+   6:Service/imu_data.h **** #include <string.h>
+   7:Service/imu_data.h **** 
+   8:Service/imu_data.h **** /*
+   9:Service/imu_data.h ****  *  CNT 100 in 2K Sample Frequence is about keeping 50Ms abnormality data
+  10:Service/imu_data.h ****  */
+  11:Service/imu_data.h **** #define IMU_BLUNT_SAMPLE_CNT 100
+  12:Service/imu_data.h **** 
+  13:Service/imu_data.h **** typedef void (*cs_ctl_callback)(bool state);
+  14:Service/imu_data.h **** typedef bool (*bus_trans_callback)(uint8_t *tx, uint8_t *rx, uint16_t len);
+  15:Service/imu_data.h **** typedef void (*delay_callback)(uint32_t ms);
+  16:Service/imu_data.h **** typedef uint64_t (*get_time_stamp_callback)(void);
+  17:Service/imu_data.h **** 
+  18:Service/imu_data.h **** typedef enum
+  19:Service/imu_data.h **** {
+  20:Service/imu_data.h ****     Axis_X = 0,
+  21:Service/imu_data.h ****     Axis_Y,
+  22:Service/imu_data.h ****     Axis_Z,
+  23:Service/imu_data.h ****     Axis_Sum,
+  24:Service/imu_data.h **** } Axis_List;
+  25:Service/imu_data.h **** 
+  26:Service/imu_data.h **** #pragma pack(1)
+  27:Service/imu_data.h **** typedef struct
+  28:Service/imu_data.h **** {
+  29:Service/imu_data.h ****     uint64_t time_stamp;
+  30:Service/imu_data.h ****     uint64_t cycle_cnt;
+  31:Service/imu_data.h **** 
+  32:Service/imu_data.h ****     int16_t temp_int;
+  33:Service/imu_data.h ****     int16_t gyr_int[Axis_Sum];
+  34:Service/imu_data.h ****     int16_t acc_int[Axis_Sum];
+  35:Service/imu_data.h **** 
+  36:Service/imu_data.h ****     float temp_flt;
+  37:Service/imu_data.h ****     float gyr_flt[Axis_Sum];
+  38:Service/imu_data.h ****     float acc_flt[Axis_Sum];
+  39:Service/imu_data.h **** 
+  40:Service/imu_data.h ****     int16_t gyr_int_lst[Axis_Sum];
+  41:Service/imu_data.h ****     int16_t acc_int_lst[Axis_Sum];
+  42:Service/imu_data.h **** 
+  43:Service/imu_data.h ****     uint8_t gyr_blunt_cnt[Axis_Sum];
+  44:Service/imu_data.h ****     uint8_t acc_blunt_cnt[Axis_Sum];
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 21
+
+
+  45:Service/imu_data.h **** } IMUData_TypeDef;
+  46:Service/imu_data.h **** 
+  47:Service/imu_data.h **** typedef struct
+  48:Service/imu_data.h **** {
+  49:Service/imu_data.h ****     float acc_scale;
+  50:Service/imu_data.h ****     float gyr_scale;
+  51:Service/imu_data.h **** } IMUModuleScale_TypeDef;
+  52:Service/imu_data.h **** #pragma pack()
+  53:Service/imu_data.h **** 
+  54:Service/imu_data.h **** typedef struct
+  55:Service/imu_data.h **** {
+  56:Service/imu_data.h ****     uint8_t code;
+  57:Service/imu_data.h ****     char* function;
+  58:Service/imu_data.h ****     uint16_t line;
+  59:Service/imu_data.h **** 
+  60:Service/imu_data.h ****     uint8_t tar_reg;
+  61:Service/imu_data.h ****     uint8_t reg_r_val;
+  62:Service/imu_data.h ****     uint8_t reg_t_val;
+  63:Service/imu_data.h **** }IMU_Error_TypeDef;
+  64:Service/imu_data.h **** 
+  65:Service/imu_data.h **** inline void IMUData_SetError(IMU_Error_TypeDef *error, uint8_t code, char* func, uint16_t line, uin
+ 794              		.loc 2 65 13 view .LVU224
+ 795              	.LBB31:
+  66:Service/imu_data.h **** {
+  67:Service/imu_data.h ****     if(error)
+ 796              		.loc 2 67 5 view .LVU225
+ 797              		.loc 2 67 7 is_stmt 0 view .LVU226
+ 798 0044 14F1700F 		cmn	r4, #112
+ 799 0048 10D0     		beq	.L58
+  68:Service/imu_data.h ****     {
+  69:Service/imu_data.h ****         error->code = code;
+ 800              		.loc 2 69 9 is_stmt 1 view .LVU227
+ 801              		.loc 2 69 21 is_stmt 0 view .LVU228
+ 802 004a 0422     		movs	r2, #4
+ 803 004c 84F87020 		strb	r2, [r4, #112]
+  70:Service/imu_data.h ****         error->function = func;
+ 804              		.loc 2 70 9 is_stmt 1 view .LVU229
+ 805              		.loc 2 70 25 is_stmt 0 view .LVU230
+ 806 0050 C44A     		ldr	r2, .L89
+ 807 0052 6267     		str	r2, [r4, #116]
+  71:Service/imu_data.h ****         error->line = line;
+ 808              		.loc 2 71 9 is_stmt 1 view .LVU231
+ 809              		.loc 2 71 21 is_stmt 0 view .LVU232
+ 810 0054 40F20B12 		movw	r2, #267
+ 811 0058 A4F87820 		strh	r2, [r4, #120]	@ movhi
+  72:Service/imu_data.h **** 
+  73:Service/imu_data.h ****         error->tar_reg = reg;
+ 812              		.loc 2 73 9 is_stmt 1 view .LVU233
+ 813              		.loc 2 73 24 is_stmt 0 view .LVU234
+ 814 005c 7522     		movs	r2, #117
+ 815 005e 84F87A20 		strb	r2, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 816              		.loc 2 74 9 is_stmt 1 view .LVU235
+ 817              		.loc 2 74 26 is_stmt 0 view .LVU236
+ 818 0062 84F87B30 		strb	r3, [r4, #123]
+  75:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 819              		.loc 2 75 9 is_stmt 1 view .LVU237
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 22
+
+
+ 820              		.loc 2 75 26 is_stmt 0 view .LVU238
+ 821 0066 6823     		movs	r3, #104
+ 822              	.LVL64:
+ 823              		.loc 2 75 26 view .LVU239
+ 824 0068 84F87C30 		strb	r3, [r4, #124]
+ 825              	.LVL65:
+ 826              	.L58:
+ 827              		.loc 2 75 26 view .LVU240
+ 828              	.LBE31:
+ 829              	.LBE30:
+ 268:Device/Dev_MPU6000.c ****         sensor_obj->delay(15);
+ 830              		.loc 1 268 9 is_stmt 1 view .LVU241
+ 831              		.loc 1 268 19 is_stmt 0 view .LVU242
+ 832 006c A368     		ldr	r3, [r4, #8]
+ 833              		.loc 1 268 9 view .LVU243
+ 834 006e 0F20     		movs	r0, #15
+ 835 0070 9847     		blx	r3
+ 836              	.LVL66:
+ 269:Device/Dev_MPU6000.c ****         return false;
+ 837              		.loc 1 269 9 is_stmt 1 view .LVU244
+ 838              		.loc 1 269 16 is_stmt 0 view .LVU245
+ 839 0072 0025     		movs	r5, #0
+ 840 0074 12E0     		b	.L52
+ 841              	.LVL67:
+ 842              	.L49:
+ 247:Device/Dev_MPU6000.c ****         return false;
+ 843              		.loc 1 247 9 is_stmt 1 view .LVU246
+ 844              	.LBB32:
+ 845              	.LBI32:
+  65:Service/imu_data.h **** {
+ 846              		.loc 2 65 13 view .LVU247
+ 847              	.LBB33:
+  67:Service/imu_data.h ****     {
+ 848              		.loc 2 67 5 view .LVU248
+  67:Service/imu_data.h ****     {
+ 849              		.loc 2 67 7 is_stmt 0 view .LVU249
+ 850 0076 14F1700F 		cmn	r4, #112
+ 851 007a 0ED0     		beq	.L51
+  69:Service/imu_data.h ****         error->function = func;
+ 852              		.loc 2 69 9 is_stmt 1 view .LVU250
+  69:Service/imu_data.h ****         error->function = func;
+ 853              		.loc 2 69 21 is_stmt 0 view .LVU251
+ 854 007c 0123     		movs	r3, #1
+ 855 007e 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 856              		.loc 2 70 9 is_stmt 1 view .LVU252
+  70:Service/imu_data.h ****         error->line = line;
+ 857              		.loc 2 70 25 is_stmt 0 view .LVU253
+ 858 0082 B84B     		ldr	r3, .L89
+ 859 0084 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 860              		.loc 2 71 9 is_stmt 1 view .LVU254
+  71:Service/imu_data.h **** 
+ 861              		.loc 2 71 21 is_stmt 0 view .LVU255
+ 862 0086 F723     		movs	r3, #247
+ 863 0088 A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 23
+
+
+ 864              		.loc 2 73 9 is_stmt 1 view .LVU256
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 865              		.loc 2 73 24 is_stmt 0 view .LVU257
+ 866 008c 0023     		movs	r3, #0
+ 867 008e 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 868              		.loc 2 74 9 is_stmt 1 view .LVU258
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 869              		.loc 2 74 26 is_stmt 0 view .LVU259
+ 870 0092 84F87B30 		strb	r3, [r4, #123]
+ 871              		.loc 2 75 9 is_stmt 1 view .LVU260
+ 872              		.loc 2 75 26 is_stmt 0 view .LVU261
+ 873 0096 84F87C30 		strb	r3, [r4, #124]
+ 874              	.L51:
+ 875              	.LVL68:
+ 876              		.loc 2 75 26 view .LVU262
+ 877              	.LBE33:
+ 878              	.LBE32:
+ 248:Device/Dev_MPU6000.c ****     }
+ 879              		.loc 1 248 9 is_stmt 1 view .LVU263
+ 248:Device/Dev_MPU6000.c ****     }
+ 880              		.loc 1 248 16 is_stmt 0 view .LVU264
+ 881 009a 0025     		movs	r5, #0
+ 882              	.LVL69:
+ 883              	.L52:
+ 270:Device/Dev_MPU6000.c ****     }
+ 271:Device/Dev_MPU6000.c **** 
+ 272:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_SIGNAL_PATH_RESET, BIT_GYRO | BIT_ACC | BIT_TEMP)
+ 273:Device/Dev_MPU6000.c ****     {
+ 274:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_SignalPathReset_Error, __FUNCTION__, __LINE_
+ 275:Device/Dev_MPU6000.c ****         return false;
+ 276:Device/Dev_MPU6000.c ****     }
+ 277:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 278:Device/Dev_MPU6000.c **** 
+ 279:Device/Dev_MPU6000.c ****     /* Clock Source PPL with Z axis gyro reference */
+ 280:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_1, MPU_CLK_SEL_PLLGYROZ))
+ 281:Device/Dev_MPU6000.c ****     {
+ 282:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_SignalPathReset_Error, __FUNCTION__, __LINE_
+ 283:Device/Dev_MPU6000.c ****         return false;
+ 284:Device/Dev_MPU6000.c ****     }
+ 285:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 286:Device/Dev_MPU6000.c **** 
+ 287:Device/Dev_MPU6000.c ****     /* Disable Primary I2C Interface */
+ 288:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_USER_CTRL, BIT_I2C_IF_DIS))
+ 289:Device/Dev_MPU6000.c ****     {
+ 290:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_DisableI2C_Error, __FUNCTION__, __LINE__, 0,
+ 291:Device/Dev_MPU6000.c ****         return false;
+ 292:Device/Dev_MPU6000.c ****     }
+ 293:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 294:Device/Dev_MPU6000.c **** 
+ 295:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_PWR_MGMT_2, 0x00))
+ 296:Device/Dev_MPU6000.c ****     {
+ 297:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_PWRMNG2_Set_Error, __FUNCTION__, __LINE__, 0
+ 298:Device/Dev_MPU6000.c ****         return false;
+ 299:Device/Dev_MPU6000.c ****     }
+ 300:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 301:Device/Dev_MPU6000.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 24
+
+
+ 302:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_SMPLRT_DIV, sensor_obj->rate))
+ 303:Device/Dev_MPU6000.c ****     {
+ 304:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_DIV_Set_Error, __FUNCTION__, __LINE__, 0, 0,
+ 305:Device/Dev_MPU6000.c ****         return false;
+ 306:Device/Dev_MPU6000.c ****     }
+ 307:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 308:Device/Dev_MPU6000.c **** 
+ 309:Device/Dev_MPU6000.c ****     /* set gyro range 2000dps */
+ 310:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_GYRO_CONFIG, sensor_obj->GyrTrip))
+ 311:Device/Dev_MPU6000.c ****     {
+ 312:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_Gyr_Cfg_Error, __FUNCTION__, __LINE__, 0, 0,
+ 313:Device/Dev_MPU6000.c ****         return false;
+ 314:Device/Dev_MPU6000.c ****     }
+ 315:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 316:Device/Dev_MPU6000.c **** 
+ 317:Device/Dev_MPU6000.c ****     /* set acc range 16G */
+ 318:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_ACCEL_CONFIG, sensor_obj->AccTrip))
+ 319:Device/Dev_MPU6000.c ****     {
+ 320:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_Acc_Cfg_Error, __FUNCTION__, __LINE__, 0, 0,
+ 321:Device/Dev_MPU6000.c ****         return false;
+ 322:Device/Dev_MPU6000.c ****     }
+ 323:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 324:Device/Dev_MPU6000.c **** 
+ 325:Device/Dev_MPU6000.c ****     /* interrupt pin config */
+ 326:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_INT_PIN_CFG, 0 << 7 | 0 << 6 | 0 << 5 | 1 << 4 | 
+ 327:Device/Dev_MPU6000.c ****     {
+ 328:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_IntPin_Set_Error, __FUNCTION__, __LINE__, 0,
+ 329:Device/Dev_MPU6000.c ****         return false;
+ 330:Device/Dev_MPU6000.c ****     }
+ 331:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 332:Device/Dev_MPU6000.c **** 
+ 333:Device/Dev_MPU6000.c ****     /* enable interrupt */
+ 334:Device/Dev_MPU6000.c ****     if (!DevMPU6000_Reg_Write(sensor_obj, MPU6000_INT_ENABLE, MPU_RF_DATA_RDY_EN))
+ 335:Device/Dev_MPU6000.c ****     {
+ 336:Device/Dev_MPU6000.c ****         IMUData_SetError(&(sensor_obj->error), MPU6000_EnableInt_Error, __FUNCTION__, __LINE__, 0, 
+ 337:Device/Dev_MPU6000.c ****         return false;
+ 338:Device/Dev_MPU6000.c ****     }
+ 339:Device/Dev_MPU6000.c ****     sensor_obj->delay(15);
+ 340:Device/Dev_MPU6000.c **** 
+ 341:Device/Dev_MPU6000.c ****     IMUData_SetError(&(sensor_obj->error), MPU6000_No_Error, "", 0, 0, 0, 0);
+ 342:Device/Dev_MPU6000.c ****     return true;
+ 343:Device/Dev_MPU6000.c **** }
+ 884              		.loc 1 343 1 view .LVU265
+ 885 009c 2846     		mov	r0, r5
+ 886 009e 03B0     		add	sp, sp, #12
+ 887              	.LCFI21:
+ 888              		.cfi_remember_state
+ 889              		.cfi_def_cfa_offset 12
+ 890              		@ sp needed
+ 891 00a0 30BD     		pop	{r4, r5, pc}
+ 892              	.LVL70:
+ 893              	.L78:
+ 894              	.LCFI22:
+ 895              		.cfi_restore_state
+ 254:Device/Dev_MPU6000.c ****         return false;
+ 896              		.loc 1 254 9 is_stmt 1 view .LVU266
+ 897              	.LBB34:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 25
+
+
+ 898              	.LBI34:
+  65:Service/imu_data.h **** {
+ 899              		.loc 2 65 13 view .LVU267
+ 900              	.LBB35:
+  67:Service/imu_data.h ****     {
+ 901              		.loc 2 67 5 view .LVU268
+  67:Service/imu_data.h ****     {
+ 902              		.loc 2 67 7 is_stmt 0 view .LVU269
+ 903 00a2 14F1700F 		cmn	r4, #112
+ 904 00a6 F9D0     		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 905              		.loc 2 69 9 is_stmt 1 view .LVU270
+  69:Service/imu_data.h ****         error->function = func;
+ 906              		.loc 2 69 21 is_stmt 0 view .LVU271
+ 907 00a8 0323     		movs	r3, #3
+ 908 00aa 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 909              		.loc 2 70 9 is_stmt 1 view .LVU272
+  70:Service/imu_data.h ****         error->line = line;
+ 910              		.loc 2 70 25 is_stmt 0 view .LVU273
+ 911 00ae AD4B     		ldr	r3, .L89
+ 912 00b0 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 913              		.loc 2 71 9 is_stmt 1 view .LVU274
+  71:Service/imu_data.h **** 
+ 914              		.loc 2 71 21 is_stmt 0 view .LVU275
+ 915 00b2 FE23     		movs	r3, #254
+ 916 00b4 A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 917              		.loc 2 73 9 is_stmt 1 view .LVU276
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 918              		.loc 2 73 24 is_stmt 0 view .LVU277
+ 919 00b8 0023     		movs	r3, #0
+ 920 00ba 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 921              		.loc 2 74 9 is_stmt 1 view .LVU278
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 922              		.loc 2 74 26 is_stmt 0 view .LVU279
+ 923 00be 84F87B30 		strb	r3, [r4, #123]
+ 924              		.loc 2 75 9 is_stmt 1 view .LVU280
+ 925              		.loc 2 75 26 is_stmt 0 view .LVU281
+ 926 00c2 84F87C30 		strb	r3, [r4, #124]
+ 927              	.LVL71:
+ 928              		.loc 2 75 26 view .LVU282
+ 929              	.LBE35:
+ 930              	.LBE34:
+ 255:Device/Dev_MPU6000.c ****     }
+ 931              		.loc 1 255 9 is_stmt 1 view .LVU283
+ 255:Device/Dev_MPU6000.c ****     }
+ 932              		.loc 1 255 16 is_stmt 0 view .LVU284
+ 933 00c6 E9E7     		b	.L52
+ 934              	.L79:
+ 261:Device/Dev_MPU6000.c ****         return false;
+ 935              		.loc 1 261 9 is_stmt 1 view .LVU285
+ 936              	.LVL72:
+ 937              	.LBB36:
+ 938              	.LBI36:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 26
+
+
+  65:Service/imu_data.h **** {
+ 939              		.loc 2 65 13 view .LVU286
+ 940              	.LBB37:
+  67:Service/imu_data.h ****     {
+ 941              		.loc 2 67 5 view .LVU287
+  67:Service/imu_data.h ****     {
+ 942              		.loc 2 67 7 is_stmt 0 view .LVU288
+ 943 00c8 14F1700F 		cmn	r4, #112
+ 944 00cc E6D0     		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 945              		.loc 2 69 9 is_stmt 1 view .LVU289
+  69:Service/imu_data.h ****         error->function = func;
+ 946              		.loc 2 69 21 is_stmt 0 view .LVU290
+ 947 00ce 0323     		movs	r3, #3
+ 948 00d0 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 949              		.loc 2 70 9 is_stmt 1 view .LVU291
+  70:Service/imu_data.h ****         error->line = line;
+ 950              		.loc 2 70 25 is_stmt 0 view .LVU292
+ 951 00d4 A34B     		ldr	r3, .L89
+ 952 00d6 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 953              		.loc 2 71 9 is_stmt 1 view .LVU293
+  71:Service/imu_data.h **** 
+ 954              		.loc 2 71 21 is_stmt 0 view .LVU294
+ 955 00d8 40F20513 		movw	r3, #261
+ 956 00dc A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 957              		.loc 2 73 9 is_stmt 1 view .LVU295
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 958              		.loc 2 73 24 is_stmt 0 view .LVU296
+ 959 00e0 0023     		movs	r3, #0
+ 960 00e2 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 961              		.loc 2 74 9 is_stmt 1 view .LVU297
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 962              		.loc 2 74 26 is_stmt 0 view .LVU298
+ 963 00e6 84F87B30 		strb	r3, [r4, #123]
+ 964              		.loc 2 75 9 is_stmt 1 view .LVU299
+ 965              		.loc 2 75 26 is_stmt 0 view .LVU300
+ 966 00ea 84F87C30 		strb	r3, [r4, #124]
+ 967              	.LVL73:
+ 968              		.loc 2 75 26 view .LVU301
+ 969              	.LBE37:
+ 970              	.LBE36:
+ 262:Device/Dev_MPU6000.c ****     }
+ 971              		.loc 1 262 9 is_stmt 1 view .LVU302
+ 262:Device/Dev_MPU6000.c ****     }
+ 972              		.loc 1 262 16 is_stmt 0 view .LVU303
+ 973 00ee D5E7     		b	.L52
+ 974              	.L57:
+ 272:Device/Dev_MPU6000.c ****     {
+ 975              		.loc 1 272 5 is_stmt 1 view .LVU304
+ 272:Device/Dev_MPU6000.c ****     {
+ 976              		.loc 1 272 10 is_stmt 0 view .LVU305
+ 977 00f0 0322     		movs	r2, #3
+ 978 00f2 6821     		movs	r1, #104
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 27
+
+
+ 979 00f4 2046     		mov	r0, r4
+ 980 00f6 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 981              	.LVL74:
+ 272:Device/Dev_MPU6000.c ****     {
+ 982              		.loc 1 272 8 view .LVU306
+ 983 00fa 0546     		mov	r5, r0
+ 984 00fc 0028     		cmp	r0, #0
+ 985 00fe 74D0     		beq	.L80
+ 277:Device/Dev_MPU6000.c **** 
+ 986              		.loc 1 277 5 is_stmt 1 view .LVU307
+ 277:Device/Dev_MPU6000.c **** 
+ 987              		.loc 1 277 15 is_stmt 0 view .LVU308
+ 988 0100 A368     		ldr	r3, [r4, #8]
+ 277:Device/Dev_MPU6000.c **** 
+ 989              		.loc 1 277 5 view .LVU309
+ 990 0102 0F20     		movs	r0, #15
+ 991 0104 9847     		blx	r3
+ 992              	.LVL75:
+ 280:Device/Dev_MPU6000.c ****     {
+ 993              		.loc 1 280 5 is_stmt 1 view .LVU310
+ 280:Device/Dev_MPU6000.c ****     {
+ 994              		.loc 1 280 10 is_stmt 0 view .LVU311
+ 995 0106 0322     		movs	r2, #3
+ 996 0108 6B21     		movs	r1, #107
+ 997 010a 2046     		mov	r0, r4
+ 998 010c FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 999              	.LVL76:
+ 280:Device/Dev_MPU6000.c ****     {
+ 1000              		.loc 1 280 8 view .LVU312
+ 1001 0110 0546     		mov	r5, r0
+ 1002 0112 0028     		cmp	r0, #0
+ 1003 0114 7ED0     		beq	.L81
+ 285:Device/Dev_MPU6000.c **** 
+ 1004              		.loc 1 285 5 is_stmt 1 view .LVU313
+ 285:Device/Dev_MPU6000.c **** 
+ 1005              		.loc 1 285 15 is_stmt 0 view .LVU314
+ 1006 0116 A368     		ldr	r3, [r4, #8]
+ 285:Device/Dev_MPU6000.c **** 
+ 1007              		.loc 1 285 5 view .LVU315
+ 1008 0118 0F20     		movs	r0, #15
+ 1009 011a 9847     		blx	r3
+ 1010              	.LVL77:
+ 288:Device/Dev_MPU6000.c ****     {
+ 1011              		.loc 1 288 5 is_stmt 1 view .LVU316
+ 288:Device/Dev_MPU6000.c ****     {
+ 1012              		.loc 1 288 10 is_stmt 0 view .LVU317
+ 1013 011c 1022     		movs	r2, #16
+ 1014 011e 6A21     		movs	r1, #106
+ 1015 0120 2046     		mov	r0, r4
+ 1016 0122 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 1017              	.LVL78:
+ 288:Device/Dev_MPU6000.c ****     {
+ 1018              		.loc 1 288 8 view .LVU318
+ 1019 0126 0546     		mov	r5, r0
+ 1020 0128 0028     		cmp	r0, #0
+ 1021 012a 00F08880 		beq	.L82
+ 293:Device/Dev_MPU6000.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 28
+
+
+ 1022              		.loc 1 293 5 is_stmt 1 view .LVU319
+ 293:Device/Dev_MPU6000.c **** 
+ 1023              		.loc 1 293 15 is_stmt 0 view .LVU320
+ 1024 012e A368     		ldr	r3, [r4, #8]
+ 293:Device/Dev_MPU6000.c **** 
+ 1025              		.loc 1 293 5 view .LVU321
+ 1026 0130 0F20     		movs	r0, #15
+ 1027 0132 9847     		blx	r3
+ 1028              	.LVL79:
+ 295:Device/Dev_MPU6000.c ****     {
+ 1029              		.loc 1 295 5 is_stmt 1 view .LVU322
+ 295:Device/Dev_MPU6000.c ****     {
+ 1030              		.loc 1 295 10 is_stmt 0 view .LVU323
+ 1031 0134 0022     		movs	r2, #0
+ 1032 0136 6C21     		movs	r1, #108
+ 1033 0138 2046     		mov	r0, r4
+ 1034 013a FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 1035              	.LVL80:
+ 295:Device/Dev_MPU6000.c ****     {
+ 1036              		.loc 1 295 8 view .LVU324
+ 1037 013e 0546     		mov	r5, r0
+ 1038 0140 0028     		cmp	r0, #0
+ 1039 0142 00F09180 		beq	.L83
+ 300:Device/Dev_MPU6000.c **** 
+ 1040              		.loc 1 300 5 is_stmt 1 view .LVU325
+ 300:Device/Dev_MPU6000.c **** 
+ 1041              		.loc 1 300 15 is_stmt 0 view .LVU326
+ 1042 0146 A368     		ldr	r3, [r4, #8]
+ 300:Device/Dev_MPU6000.c **** 
+ 1043              		.loc 1 300 5 view .LVU327
+ 1044 0148 0F20     		movs	r0, #15
+ 1045 014a 9847     		blx	r3
+ 1046              	.LVL81:
+ 302:Device/Dev_MPU6000.c ****     {
+ 1047              		.loc 1 302 5 is_stmt 1 view .LVU328
+ 302:Device/Dev_MPU6000.c ****     {
+ 1048              		.loc 1 302 10 is_stmt 0 view .LVU329
+ 1049 014c 94F82120 		ldrb	r2, [r4, #33]	@ zero_extendqisi2
+ 1050 0150 1921     		movs	r1, #25
+ 1051 0152 2046     		mov	r0, r4
+ 1052 0154 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 1053              	.LVL82:
+ 302:Device/Dev_MPU6000.c ****     {
+ 1054              		.loc 1 302 8 view .LVU330
+ 1055 0158 0546     		mov	r5, r0
+ 1056 015a 0028     		cmp	r0, #0
+ 1057 015c 00F09980 		beq	.L84
+ 307:Device/Dev_MPU6000.c **** 
+ 1058              		.loc 1 307 5 is_stmt 1 view .LVU331
+ 307:Device/Dev_MPU6000.c **** 
+ 1059              		.loc 1 307 15 is_stmt 0 view .LVU332
+ 1060 0160 A368     		ldr	r3, [r4, #8]
+ 307:Device/Dev_MPU6000.c **** 
+ 1061              		.loc 1 307 5 view .LVU333
+ 1062 0162 0F20     		movs	r0, #15
+ 1063 0164 9847     		blx	r3
+ 1064              	.LVL83:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 29
+
+
+ 310:Device/Dev_MPU6000.c ****     {
+ 1065              		.loc 1 310 5 is_stmt 1 view .LVU334
+ 310:Device/Dev_MPU6000.c ****     {
+ 1066              		.loc 1 310 10 is_stmt 0 view .LVU335
+ 1067 0166 627C     		ldrb	r2, [r4, #17]	@ zero_extendqisi2
+ 1068 0168 1B21     		movs	r1, #27
+ 1069 016a 2046     		mov	r0, r4
+ 1070 016c FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 1071              	.LVL84:
+ 310:Device/Dev_MPU6000.c ****     {
+ 1072              		.loc 1 310 8 view .LVU336
+ 1073 0170 0546     		mov	r5, r0
+ 1074 0172 0028     		cmp	r0, #0
+ 1075 0174 00F0A280 		beq	.L85
+ 315:Device/Dev_MPU6000.c **** 
+ 1076              		.loc 1 315 5 is_stmt 1 view .LVU337
+ 315:Device/Dev_MPU6000.c **** 
+ 1077              		.loc 1 315 15 is_stmt 0 view .LVU338
+ 1078 0178 A368     		ldr	r3, [r4, #8]
+ 315:Device/Dev_MPU6000.c **** 
+ 1079              		.loc 1 315 5 view .LVU339
+ 1080 017a 0F20     		movs	r0, #15
+ 1081 017c 9847     		blx	r3
+ 1082              	.LVL85:
+ 318:Device/Dev_MPU6000.c ****     {
+ 1083              		.loc 1 318 5 is_stmt 1 view .LVU340
+ 318:Device/Dev_MPU6000.c ****     {
+ 1084              		.loc 1 318 10 is_stmt 0 view .LVU341
+ 1085 017e 227C     		ldrb	r2, [r4, #16]	@ zero_extendqisi2
+ 1086 0180 1C21     		movs	r1, #28
+ 1087 0182 2046     		mov	r0, r4
+ 1088 0184 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 1089              	.LVL86:
+ 318:Device/Dev_MPU6000.c ****     {
+ 1090              		.loc 1 318 8 view .LVU342
+ 1091 0188 0546     		mov	r5, r0
+ 1092 018a 0028     		cmp	r0, #0
+ 1093 018c 00F0AB80 		beq	.L86
+ 323:Device/Dev_MPU6000.c **** 
+ 1094              		.loc 1 323 5 is_stmt 1 view .LVU343
+ 323:Device/Dev_MPU6000.c **** 
+ 1095              		.loc 1 323 15 is_stmt 0 view .LVU344
+ 1096 0190 A368     		ldr	r3, [r4, #8]
+ 323:Device/Dev_MPU6000.c **** 
+ 1097              		.loc 1 323 5 view .LVU345
+ 1098 0192 0F20     		movs	r0, #15
+ 1099 0194 9847     		blx	r3
+ 1100              	.LVL87:
+ 326:Device/Dev_MPU6000.c ****     {
+ 1101              		.loc 1 326 5 is_stmt 1 view .LVU346
+ 326:Device/Dev_MPU6000.c ****     {
+ 1102              		.loc 1 326 10 is_stmt 0 view .LVU347
+ 1103 0196 1022     		movs	r2, #16
+ 1104 0198 3721     		movs	r1, #55
+ 1105 019a 2046     		mov	r0, r4
+ 1106 019c FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 1107              	.LVL88:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 30
+
+
+ 326:Device/Dev_MPU6000.c ****     {
+ 1108              		.loc 1 326 8 view .LVU348
+ 1109 01a0 0546     		mov	r5, r0
+ 1110 01a2 0028     		cmp	r0, #0
+ 1111 01a4 00F0B480 		beq	.L87
+ 331:Device/Dev_MPU6000.c **** 
+ 1112              		.loc 1 331 5 is_stmt 1 view .LVU349
+ 331:Device/Dev_MPU6000.c **** 
+ 1113              		.loc 1 331 15 is_stmt 0 view .LVU350
+ 1114 01a8 A368     		ldr	r3, [r4, #8]
+ 331:Device/Dev_MPU6000.c **** 
+ 1115              		.loc 1 331 5 view .LVU351
+ 1116 01aa 0F20     		movs	r0, #15
+ 1117 01ac 9847     		blx	r3
+ 1118              	.LVL89:
+ 334:Device/Dev_MPU6000.c ****     {
+ 1119              		.loc 1 334 5 is_stmt 1 view .LVU352
+ 334:Device/Dev_MPU6000.c ****     {
+ 1120              		.loc 1 334 10 is_stmt 0 view .LVU353
+ 1121 01ae 0122     		movs	r2, #1
+ 1122 01b0 3821     		movs	r1, #56
+ 1123 01b2 2046     		mov	r0, r4
+ 1124 01b4 FFF7FEFF 		bl	DevMPU6000_Reg_Write
+ 1125              	.LVL90:
+ 334:Device/Dev_MPU6000.c ****     {
+ 1126              		.loc 1 334 8 view .LVU354
+ 1127 01b8 0546     		mov	r5, r0
+ 1128 01ba 0028     		cmp	r0, #0
+ 1129 01bc 00F0BD80 		beq	.L88
+ 339:Device/Dev_MPU6000.c **** 
+ 1130              		.loc 1 339 5 is_stmt 1 view .LVU355
+ 339:Device/Dev_MPU6000.c **** 
+ 1131              		.loc 1 339 15 is_stmt 0 view .LVU356
+ 1132 01c0 A368     		ldr	r3, [r4, #8]
+ 339:Device/Dev_MPU6000.c **** 
+ 1133              		.loc 1 339 5 view .LVU357
+ 1134 01c2 0F20     		movs	r0, #15
+ 1135 01c4 9847     		blx	r3
+ 1136              	.LVL91:
+ 341:Device/Dev_MPU6000.c ****     return true;
+ 1137              		.loc 1 341 5 is_stmt 1 view .LVU358
+ 1138              	.LBB38:
+ 1139              	.LBI38:
+  65:Service/imu_data.h **** {
+ 1140              		.loc 2 65 13 view .LVU359
+ 1141              	.LBB39:
+  67:Service/imu_data.h ****     {
+ 1142              		.loc 2 67 5 view .LVU360
+  67:Service/imu_data.h ****     {
+ 1143              		.loc 2 67 7 is_stmt 0 view .LVU361
+ 1144 01c6 14F1700F 		cmn	r4, #112
+ 1145 01ca 3FF467AF 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1146              		.loc 2 69 9 is_stmt 1 view .LVU362
+  69:Service/imu_data.h ****         error->function = func;
+ 1147              		.loc 2 69 21 is_stmt 0 view .LVU363
+ 1148 01ce 0023     		movs	r3, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 31
+
+
+ 1149 01d0 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1150              		.loc 2 70 9 is_stmt 1 view .LVU364
+  70:Service/imu_data.h ****         error->line = line;
+ 1151              		.loc 2 70 25 is_stmt 0 view .LVU365
+ 1152 01d4 644A     		ldr	r2, .L89+4
+ 1153 01d6 6267     		str	r2, [r4, #116]
+  71:Service/imu_data.h **** 
+ 1154              		.loc 2 71 9 is_stmt 1 view .LVU366
+  71:Service/imu_data.h **** 
+ 1155              		.loc 2 71 21 is_stmt 0 view .LVU367
+ 1156 01d8 A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1157              		.loc 2 73 9 is_stmt 1 view .LVU368
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1158              		.loc 2 73 24 is_stmt 0 view .LVU369
+ 1159 01dc 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1160              		.loc 2 74 9 is_stmt 1 view .LVU370
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1161              		.loc 2 74 26 is_stmt 0 view .LVU371
+ 1162 01e0 84F87B30 		strb	r3, [r4, #123]
+ 1163              		.loc 2 75 9 is_stmt 1 view .LVU372
+ 1164              		.loc 2 75 26 is_stmt 0 view .LVU373
+ 1165 01e4 84F87C30 		strb	r3, [r4, #124]
+ 1166 01e8 58E7     		b	.L52
+ 1167              	.LVL92:
+ 1168              	.L80:
+ 1169              		.loc 2 75 26 view .LVU374
+ 1170              	.LBE39:
+ 1171              	.LBE38:
+ 274:Device/Dev_MPU6000.c ****         return false;
+ 1172              		.loc 1 274 9 is_stmt 1 view .LVU375
+ 1173              	.LBB40:
+ 1174              	.LBI40:
+  65:Service/imu_data.h **** {
+ 1175              		.loc 2 65 13 view .LVU376
+ 1176              	.LBB41:
+  67:Service/imu_data.h ****     {
+ 1177              		.loc 2 67 5 view .LVU377
+  67:Service/imu_data.h ****     {
+ 1178              		.loc 2 67 7 is_stmt 0 view .LVU378
+ 1179 01ea 14F1700F 		cmn	r4, #112
+ 1180 01ee 3FF455AF 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1181              		.loc 2 69 9 is_stmt 1 view .LVU379
+  69:Service/imu_data.h ****         error->function = func;
+ 1182              		.loc 2 69 21 is_stmt 0 view .LVU380
+ 1183 01f2 0523     		movs	r3, #5
+ 1184 01f4 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1185              		.loc 2 70 9 is_stmt 1 view .LVU381
+  70:Service/imu_data.h ****         error->line = line;
+ 1186              		.loc 2 70 25 is_stmt 0 view .LVU382
+ 1187 01f8 5A4B     		ldr	r3, .L89
+ 1188 01fa 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 32
+
+
+ 1189              		.loc 2 71 9 is_stmt 1 view .LVU383
+  71:Service/imu_data.h **** 
+ 1190              		.loc 2 71 21 is_stmt 0 view .LVU384
+ 1191 01fc 4FF48973 		mov	r3, #274
+ 1192 0200 A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1193              		.loc 2 73 9 is_stmt 1 view .LVU385
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1194              		.loc 2 73 24 is_stmt 0 view .LVU386
+ 1195 0204 0023     		movs	r3, #0
+ 1196 0206 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1197              		.loc 2 74 9 is_stmt 1 view .LVU387
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1198              		.loc 2 74 26 is_stmt 0 view .LVU388
+ 1199 020a 84F87B30 		strb	r3, [r4, #123]
+ 1200              		.loc 2 75 9 is_stmt 1 view .LVU389
+ 1201              		.loc 2 75 26 is_stmt 0 view .LVU390
+ 1202 020e 84F87C30 		strb	r3, [r4, #124]
+ 1203              	.LVL93:
+ 1204              		.loc 2 75 26 view .LVU391
+ 1205              	.LBE41:
+ 1206              	.LBE40:
+ 275:Device/Dev_MPU6000.c ****     }
+ 1207              		.loc 1 275 9 is_stmt 1 view .LVU392
+ 275:Device/Dev_MPU6000.c ****     }
+ 1208              		.loc 1 275 16 is_stmt 0 view .LVU393
+ 1209 0212 43E7     		b	.L52
+ 1210              	.L81:
+ 282:Device/Dev_MPU6000.c ****         return false;
+ 1211              		.loc 1 282 9 is_stmt 1 view .LVU394
+ 1212              	.LVL94:
+ 1213              	.LBB42:
+ 1214              	.LBI42:
+  65:Service/imu_data.h **** {
+ 1215              		.loc 2 65 13 view .LVU395
+ 1216              	.LBB43:
+  67:Service/imu_data.h ****     {
+ 1217              		.loc 2 67 5 view .LVU396
+  67:Service/imu_data.h ****     {
+ 1218              		.loc 2 67 7 is_stmt 0 view .LVU397
+ 1219 0214 14F1700F 		cmn	r4, #112
+ 1220 0218 3FF440AF 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1221              		.loc 2 69 9 is_stmt 1 view .LVU398
+  69:Service/imu_data.h ****         error->function = func;
+ 1222              		.loc 2 69 21 is_stmt 0 view .LVU399
+ 1223 021c 0523     		movs	r3, #5
+ 1224 021e 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1225              		.loc 2 70 9 is_stmt 1 view .LVU400
+  70:Service/imu_data.h ****         error->line = line;
+ 1226              		.loc 2 70 25 is_stmt 0 view .LVU401
+ 1227 0222 504B     		ldr	r3, .L89
+ 1228 0224 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 1229              		.loc 2 71 9 is_stmt 1 view .LVU402
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 33
+
+
+  71:Service/imu_data.h **** 
+ 1230              		.loc 2 71 21 is_stmt 0 view .LVU403
+ 1231 0226 4FF48D73 		mov	r3, #282
+ 1232 022a A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1233              		.loc 2 73 9 is_stmt 1 view .LVU404
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1234              		.loc 2 73 24 is_stmt 0 view .LVU405
+ 1235 022e 0023     		movs	r3, #0
+ 1236 0230 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1237              		.loc 2 74 9 is_stmt 1 view .LVU406
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1238              		.loc 2 74 26 is_stmt 0 view .LVU407
+ 1239 0234 84F87B30 		strb	r3, [r4, #123]
+ 1240              		.loc 2 75 9 is_stmt 1 view .LVU408
+ 1241              		.loc 2 75 26 is_stmt 0 view .LVU409
+ 1242 0238 84F87C30 		strb	r3, [r4, #124]
+ 1243              	.LVL95:
+ 1244              		.loc 2 75 26 view .LVU410
+ 1245              	.LBE43:
+ 1246              	.LBE42:
+ 283:Device/Dev_MPU6000.c ****     }
+ 1247              		.loc 1 283 9 is_stmt 1 view .LVU411
+ 283:Device/Dev_MPU6000.c ****     }
+ 1248              		.loc 1 283 16 is_stmt 0 view .LVU412
+ 1249 023c 2EE7     		b	.L52
+ 1250              	.L82:
+ 290:Device/Dev_MPU6000.c ****         return false;
+ 1251              		.loc 1 290 9 is_stmt 1 view .LVU413
+ 1252              	.LVL96:
+ 1253              	.LBB44:
+ 1254              	.LBI44:
+  65:Service/imu_data.h **** {
+ 1255              		.loc 2 65 13 view .LVU414
+ 1256              	.LBB45:
+  67:Service/imu_data.h ****     {
+ 1257              		.loc 2 67 5 view .LVU415
+  67:Service/imu_data.h ****     {
+ 1258              		.loc 2 67 7 is_stmt 0 view .LVU416
+ 1259 023e 14F1700F 		cmn	r4, #112
+ 1260 0242 3FF42BAF 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1261              		.loc 2 69 9 is_stmt 1 view .LVU417
+  69:Service/imu_data.h ****         error->function = func;
+ 1262              		.loc 2 69 21 is_stmt 0 view .LVU418
+ 1263 0246 0623     		movs	r3, #6
+ 1264 0248 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1265              		.loc 2 70 9 is_stmt 1 view .LVU419
+  70:Service/imu_data.h ****         error->line = line;
+ 1266              		.loc 2 70 25 is_stmt 0 view .LVU420
+ 1267 024c 454B     		ldr	r3, .L89
+ 1268 024e 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 1269              		.loc 2 71 9 is_stmt 1 view .LVU421
+  71:Service/imu_data.h **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 34
+
+
+ 1270              		.loc 2 71 21 is_stmt 0 view .LVU422
+ 1271 0250 4FF49173 		mov	r3, #290
+ 1272 0254 A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1273              		.loc 2 73 9 is_stmt 1 view .LVU423
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1274              		.loc 2 73 24 is_stmt 0 view .LVU424
+ 1275 0258 0023     		movs	r3, #0
+ 1276 025a 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1277              		.loc 2 74 9 is_stmt 1 view .LVU425
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1278              		.loc 2 74 26 is_stmt 0 view .LVU426
+ 1279 025e 84F87B30 		strb	r3, [r4, #123]
+ 1280              		.loc 2 75 9 is_stmt 1 view .LVU427
+ 1281              		.loc 2 75 26 is_stmt 0 view .LVU428
+ 1282 0262 84F87C30 		strb	r3, [r4, #124]
+ 1283              	.LVL97:
+ 1284              		.loc 2 75 26 view .LVU429
+ 1285              	.LBE45:
+ 1286              	.LBE44:
+ 291:Device/Dev_MPU6000.c ****     }
+ 1287              		.loc 1 291 9 is_stmt 1 view .LVU430
+ 291:Device/Dev_MPU6000.c ****     }
+ 1288              		.loc 1 291 16 is_stmt 0 view .LVU431
+ 1289 0266 19E7     		b	.L52
+ 1290              	.L83:
+ 297:Device/Dev_MPU6000.c ****         return false;
+ 1291              		.loc 1 297 9 is_stmt 1 view .LVU432
+ 1292              	.LVL98:
+ 1293              	.LBB46:
+ 1294              	.LBI46:
+  65:Service/imu_data.h **** {
+ 1295              		.loc 2 65 13 view .LVU433
+ 1296              	.LBB47:
+  67:Service/imu_data.h ****     {
+ 1297              		.loc 2 67 5 view .LVU434
+  67:Service/imu_data.h ****     {
+ 1298              		.loc 2 67 7 is_stmt 0 view .LVU435
+ 1299 0268 14F1700F 		cmn	r4, #112
+ 1300 026c 3FF416AF 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1301              		.loc 2 69 9 is_stmt 1 view .LVU436
+  69:Service/imu_data.h ****         error->function = func;
+ 1302              		.loc 2 69 21 is_stmt 0 view .LVU437
+ 1303 0270 0723     		movs	r3, #7
+ 1304 0272 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1305              		.loc 2 70 9 is_stmt 1 view .LVU438
+  70:Service/imu_data.h ****         error->line = line;
+ 1306              		.loc 2 70 25 is_stmt 0 view .LVU439
+ 1307 0276 3B4B     		ldr	r3, .L89
+ 1308 0278 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 1309              		.loc 2 71 9 is_stmt 1 view .LVU440
+  71:Service/imu_data.h **** 
+ 1310              		.loc 2 71 21 is_stmt 0 view .LVU441
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 35
+
+
+ 1311 027a 40F22913 		movw	r3, #297
+ 1312 027e A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1313              		.loc 2 73 9 is_stmt 1 view .LVU442
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1314              		.loc 2 73 24 is_stmt 0 view .LVU443
+ 1315 0282 0023     		movs	r3, #0
+ 1316 0284 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1317              		.loc 2 74 9 is_stmt 1 view .LVU444
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1318              		.loc 2 74 26 is_stmt 0 view .LVU445
+ 1319 0288 84F87B30 		strb	r3, [r4, #123]
+ 1320              		.loc 2 75 9 is_stmt 1 view .LVU446
+ 1321              		.loc 2 75 26 is_stmt 0 view .LVU447
+ 1322 028c 84F87C30 		strb	r3, [r4, #124]
+ 1323              	.LVL99:
+ 1324              		.loc 2 75 26 view .LVU448
+ 1325              	.LBE47:
+ 1326              	.LBE46:
+ 298:Device/Dev_MPU6000.c ****     }
+ 1327              		.loc 1 298 9 is_stmt 1 view .LVU449
+ 298:Device/Dev_MPU6000.c ****     }
+ 1328              		.loc 1 298 16 is_stmt 0 view .LVU450
+ 1329 0290 04E7     		b	.L52
+ 1330              	.L84:
+ 304:Device/Dev_MPU6000.c ****         return false;
+ 1331              		.loc 1 304 9 is_stmt 1 view .LVU451
+ 1332              	.LVL100:
+ 1333              	.LBB48:
+ 1334              	.LBI48:
+  65:Service/imu_data.h **** {
+ 1335              		.loc 2 65 13 view .LVU452
+ 1336              	.LBB49:
+  67:Service/imu_data.h ****     {
+ 1337              		.loc 2 67 5 view .LVU453
+  67:Service/imu_data.h ****     {
+ 1338              		.loc 2 67 7 is_stmt 0 view .LVU454
+ 1339 0292 14F1700F 		cmn	r4, #112
+ 1340 0296 3FF401AF 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1341              		.loc 2 69 9 is_stmt 1 view .LVU455
+  69:Service/imu_data.h ****         error->function = func;
+ 1342              		.loc 2 69 21 is_stmt 0 view .LVU456
+ 1343 029a 0823     		movs	r3, #8
+ 1344 029c 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1345              		.loc 2 70 9 is_stmt 1 view .LVU457
+  70:Service/imu_data.h ****         error->line = line;
+ 1346              		.loc 2 70 25 is_stmt 0 view .LVU458
+ 1347 02a0 304B     		ldr	r3, .L89
+ 1348 02a2 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 1349              		.loc 2 71 9 is_stmt 1 view .LVU459
+  71:Service/imu_data.h **** 
+ 1350              		.loc 2 71 21 is_stmt 0 view .LVU460
+ 1351 02a4 4FF49873 		mov	r3, #304
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 36
+
+
+ 1352 02a8 A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1353              		.loc 2 73 9 is_stmt 1 view .LVU461
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1354              		.loc 2 73 24 is_stmt 0 view .LVU462
+ 1355 02ac 0023     		movs	r3, #0
+ 1356 02ae 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1357              		.loc 2 74 9 is_stmt 1 view .LVU463
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1358              		.loc 2 74 26 is_stmt 0 view .LVU464
+ 1359 02b2 84F87B30 		strb	r3, [r4, #123]
+ 1360              		.loc 2 75 9 is_stmt 1 view .LVU465
+ 1361              		.loc 2 75 26 is_stmt 0 view .LVU466
+ 1362 02b6 84F87C30 		strb	r3, [r4, #124]
+ 1363              	.LVL101:
+ 1364              		.loc 2 75 26 view .LVU467
+ 1365              	.LBE49:
+ 1366              	.LBE48:
+ 305:Device/Dev_MPU6000.c ****     }
+ 1367              		.loc 1 305 9 is_stmt 1 view .LVU468
+ 305:Device/Dev_MPU6000.c ****     }
+ 1368              		.loc 1 305 16 is_stmt 0 view .LVU469
+ 1369 02ba EFE6     		b	.L52
+ 1370              	.L85:
+ 312:Device/Dev_MPU6000.c ****         return false;
+ 1371              		.loc 1 312 9 is_stmt 1 view .LVU470
+ 1372              	.LVL102:
+ 1373              	.LBB50:
+ 1374              	.LBI50:
+  65:Service/imu_data.h **** {
+ 1375              		.loc 2 65 13 view .LVU471
+ 1376              	.LBB51:
+  67:Service/imu_data.h ****     {
+ 1377              		.loc 2 67 5 view .LVU472
+  67:Service/imu_data.h ****     {
+ 1378              		.loc 2 67 7 is_stmt 0 view .LVU473
+ 1379 02bc 14F1700F 		cmn	r4, #112
+ 1380 02c0 3FF4ECAE 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1381              		.loc 2 69 9 is_stmt 1 view .LVU474
+  69:Service/imu_data.h ****         error->function = func;
+ 1382              		.loc 2 69 21 is_stmt 0 view .LVU475
+ 1383 02c4 0923     		movs	r3, #9
+ 1384 02c6 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1385              		.loc 2 70 9 is_stmt 1 view .LVU476
+  70:Service/imu_data.h ****         error->line = line;
+ 1386              		.loc 2 70 25 is_stmt 0 view .LVU477
+ 1387 02ca 264B     		ldr	r3, .L89
+ 1388 02cc 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 1389              		.loc 2 71 9 is_stmt 1 view .LVU478
+  71:Service/imu_data.h **** 
+ 1390              		.loc 2 71 21 is_stmt 0 view .LVU479
+ 1391 02ce 4FF49C73 		mov	r3, #312
+ 1392 02d2 A4F87830 		strh	r3, [r4, #120]	@ movhi
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 37
+
+
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1393              		.loc 2 73 9 is_stmt 1 view .LVU480
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1394              		.loc 2 73 24 is_stmt 0 view .LVU481
+ 1395 02d6 0023     		movs	r3, #0
+ 1396 02d8 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1397              		.loc 2 74 9 is_stmt 1 view .LVU482
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1398              		.loc 2 74 26 is_stmt 0 view .LVU483
+ 1399 02dc 84F87B30 		strb	r3, [r4, #123]
+ 1400              		.loc 2 75 9 is_stmt 1 view .LVU484
+ 1401              		.loc 2 75 26 is_stmt 0 view .LVU485
+ 1402 02e0 84F87C30 		strb	r3, [r4, #124]
+ 1403              	.LVL103:
+ 1404              		.loc 2 75 26 view .LVU486
+ 1405              	.LBE51:
+ 1406              	.LBE50:
+ 313:Device/Dev_MPU6000.c ****     }
+ 1407              		.loc 1 313 9 is_stmt 1 view .LVU487
+ 313:Device/Dev_MPU6000.c ****     }
+ 1408              		.loc 1 313 16 is_stmt 0 view .LVU488
+ 1409 02e4 DAE6     		b	.L52
+ 1410              	.L86:
+ 320:Device/Dev_MPU6000.c ****         return false;
+ 1411              		.loc 1 320 9 is_stmt 1 view .LVU489
+ 1412              	.LVL104:
+ 1413              	.LBB52:
+ 1414              	.LBI52:
+  65:Service/imu_data.h **** {
+ 1415              		.loc 2 65 13 view .LVU490
+ 1416              	.LBB53:
+  67:Service/imu_data.h ****     {
+ 1417              		.loc 2 67 5 view .LVU491
+  67:Service/imu_data.h ****     {
+ 1418              		.loc 2 67 7 is_stmt 0 view .LVU492
+ 1419 02e6 14F1700F 		cmn	r4, #112
+ 1420 02ea 3FF4D7AE 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1421              		.loc 2 69 9 is_stmt 1 view .LVU493
+  69:Service/imu_data.h ****         error->function = func;
+ 1422              		.loc 2 69 21 is_stmt 0 view .LVU494
+ 1423 02ee 0A23     		movs	r3, #10
+ 1424 02f0 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1425              		.loc 2 70 9 is_stmt 1 view .LVU495
+  70:Service/imu_data.h ****         error->line = line;
+ 1426              		.loc 2 70 25 is_stmt 0 view .LVU496
+ 1427 02f4 1B4B     		ldr	r3, .L89
+ 1428 02f6 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 1429              		.loc 2 71 9 is_stmt 1 view .LVU497
+  71:Service/imu_data.h **** 
+ 1430              		.loc 2 71 21 is_stmt 0 view .LVU498
+ 1431 02f8 4FF4A073 		mov	r3, #320
+ 1432 02fc A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 38
+
+
+ 1433              		.loc 2 73 9 is_stmt 1 view .LVU499
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1434              		.loc 2 73 24 is_stmt 0 view .LVU500
+ 1435 0300 0023     		movs	r3, #0
+ 1436 0302 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1437              		.loc 2 74 9 is_stmt 1 view .LVU501
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1438              		.loc 2 74 26 is_stmt 0 view .LVU502
+ 1439 0306 84F87B30 		strb	r3, [r4, #123]
+ 1440              		.loc 2 75 9 is_stmt 1 view .LVU503
+ 1441              		.loc 2 75 26 is_stmt 0 view .LVU504
+ 1442 030a 84F87C30 		strb	r3, [r4, #124]
+ 1443              	.LVL105:
+ 1444              		.loc 2 75 26 view .LVU505
+ 1445              	.LBE53:
+ 1446              	.LBE52:
+ 321:Device/Dev_MPU6000.c ****     }
+ 1447              		.loc 1 321 9 is_stmt 1 view .LVU506
+ 321:Device/Dev_MPU6000.c ****     }
+ 1448              		.loc 1 321 16 is_stmt 0 view .LVU507
+ 1449 030e C5E6     		b	.L52
+ 1450              	.L87:
+ 328:Device/Dev_MPU6000.c ****         return false;
+ 1451              		.loc 1 328 9 is_stmt 1 view .LVU508
+ 1452              	.LVL106:
+ 1453              	.LBB54:
+ 1454              	.LBI54:
+  65:Service/imu_data.h **** {
+ 1455              		.loc 2 65 13 view .LVU509
+ 1456              	.LBB55:
+  67:Service/imu_data.h ****     {
+ 1457              		.loc 2 67 5 view .LVU510
+  67:Service/imu_data.h ****     {
+ 1458              		.loc 2 67 7 is_stmt 0 view .LVU511
+ 1459 0310 14F1700F 		cmn	r4, #112
+ 1460 0314 3FF4C2AE 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1461              		.loc 2 69 9 is_stmt 1 view .LVU512
+  69:Service/imu_data.h ****         error->function = func;
+ 1462              		.loc 2 69 21 is_stmt 0 view .LVU513
+ 1463 0318 0B23     		movs	r3, #11
+ 1464 031a 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1465              		.loc 2 70 9 is_stmt 1 view .LVU514
+  70:Service/imu_data.h ****         error->line = line;
+ 1466              		.loc 2 70 25 is_stmt 0 view .LVU515
+ 1467 031e 114B     		ldr	r3, .L89
+ 1468 0320 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 1469              		.loc 2 71 9 is_stmt 1 view .LVU516
+  71:Service/imu_data.h **** 
+ 1470              		.loc 2 71 21 is_stmt 0 view .LVU517
+ 1471 0322 4FF4A473 		mov	r3, #328
+ 1472 0326 A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1473              		.loc 2 73 9 is_stmt 1 view .LVU518
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 39
+
+
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1474              		.loc 2 73 24 is_stmt 0 view .LVU519
+ 1475 032a 0023     		movs	r3, #0
+ 1476 032c 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1477              		.loc 2 74 9 is_stmt 1 view .LVU520
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1478              		.loc 2 74 26 is_stmt 0 view .LVU521
+ 1479 0330 84F87B30 		strb	r3, [r4, #123]
+ 1480              		.loc 2 75 9 is_stmt 1 view .LVU522
+ 1481              		.loc 2 75 26 is_stmt 0 view .LVU523
+ 1482 0334 84F87C30 		strb	r3, [r4, #124]
+ 1483              	.LVL107:
+ 1484              		.loc 2 75 26 view .LVU524
+ 1485              	.LBE55:
+ 1486              	.LBE54:
+ 329:Device/Dev_MPU6000.c ****     }
+ 1487              		.loc 1 329 9 is_stmt 1 view .LVU525
+ 329:Device/Dev_MPU6000.c ****     }
+ 1488              		.loc 1 329 16 is_stmt 0 view .LVU526
+ 1489 0338 B0E6     		b	.L52
+ 1490              	.L88:
+ 336:Device/Dev_MPU6000.c ****         return false;
+ 1491              		.loc 1 336 9 is_stmt 1 view .LVU527
+ 1492              	.LVL108:
+ 1493              	.LBB56:
+ 1494              	.LBI56:
+  65:Service/imu_data.h **** {
+ 1495              		.loc 2 65 13 view .LVU528
+ 1496              	.LBB57:
+  67:Service/imu_data.h ****     {
+ 1497              		.loc 2 67 5 view .LVU529
+  67:Service/imu_data.h ****     {
+ 1498              		.loc 2 67 7 is_stmt 0 view .LVU530
+ 1499 033a 14F1700F 		cmn	r4, #112
+ 1500 033e 3FF4ADAE 		beq	.L52
+  69:Service/imu_data.h ****         error->function = func;
+ 1501              		.loc 2 69 9 is_stmt 1 view .LVU531
+  69:Service/imu_data.h ****         error->function = func;
+ 1502              		.loc 2 69 21 is_stmt 0 view .LVU532
+ 1503 0342 0C23     		movs	r3, #12
+ 1504 0344 84F87030 		strb	r3, [r4, #112]
+  70:Service/imu_data.h ****         error->line = line;
+ 1505              		.loc 2 70 9 is_stmt 1 view .LVU533
+  70:Service/imu_data.h ****         error->line = line;
+ 1506              		.loc 2 70 25 is_stmt 0 view .LVU534
+ 1507 0348 064B     		ldr	r3, .L89
+ 1508 034a 6367     		str	r3, [r4, #116]
+  71:Service/imu_data.h **** 
+ 1509              		.loc 2 71 9 is_stmt 1 view .LVU535
+  71:Service/imu_data.h **** 
+ 1510              		.loc 2 71 21 is_stmt 0 view .LVU536
+ 1511 034c 4FF4A873 		mov	r3, #336
+ 1512 0350 A4F87830 		strh	r3, [r4, #120]	@ movhi
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ 1513              		.loc 2 73 9 is_stmt 1 view .LVU537
+  73:Service/imu_data.h ****         error->reg_r_val = reg_r;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 40
+
+
+ 1514              		.loc 2 73 24 is_stmt 0 view .LVU538
+ 1515 0354 0023     		movs	r3, #0
+ 1516 0356 84F87A30 		strb	r3, [r4, #122]
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1517              		.loc 2 74 9 is_stmt 1 view .LVU539
+  74:Service/imu_data.h ****         error->reg_t_val = reg_t;
+ 1518              		.loc 2 74 26 is_stmt 0 view .LVU540
+ 1519 035a 84F87B30 		strb	r3, [r4, #123]
+ 1520              		.loc 2 75 9 is_stmt 1 view .LVU541
+ 1521              		.loc 2 75 26 is_stmt 0 view .LVU542
+ 1522 035e 84F87C30 		strb	r3, [r4, #124]
+ 1523              	.LVL109:
+ 1524              		.loc 2 75 26 view .LVU543
+ 1525              	.LBE57:
+ 1526              	.LBE56:
+ 337:Device/Dev_MPU6000.c ****     }
+ 1527              		.loc 1 337 9 is_stmt 1 view .LVU544
+ 337:Device/Dev_MPU6000.c ****     }
+ 1528              		.loc 1 337 16 is_stmt 0 view .LVU545
+ 1529 0362 9BE6     		b	.L52
+ 1530              	.L90:
+ 1531              		.align	2
+ 1532              	.L89:
+ 1533 0364 00000000 		.word	.LANCHOR0
+ 1534 0368 00000000 		.word	.LC0
+ 1535              		.cfi_endproc
+ 1536              	.LFE7:
+ 1538              		.section	.text.DevMPU6000_Get_InitError,"ax",%progbits
+ 1539              		.align	1
+ 1540              		.syntax unified
+ 1541              		.thumb
+ 1542              		.thumb_func
+ 1543              		.fpu fpv5-d16
+ 1545              	DevMPU6000_Get_InitError:
+ 1546              	.LVL110:
+ 1547              	.LFB8:
+ 344:Device/Dev_MPU6000.c **** 
+ 345:Device/Dev_MPU6000.c **** static IMU_Error_TypeDef DevMPU6000_Get_InitError(DevMPU6000Obj_TypeDef *sensor_obj)
+ 346:Device/Dev_MPU6000.c **** {
+ 1548              		.loc 1 346 1 is_stmt 1 view -0
+ 1549              		.cfi_startproc
+ 1550              		@ args = 0, pretend = 0, frame = 0
+ 1551              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1552              		@ link register save eliminated.
+ 1553              		.loc 1 346 1 is_stmt 0 view .LVU547
+ 1554 0000 8446     		mov	ip, r0
+ 347:Device/Dev_MPU6000.c ****     return sensor_obj->error;
+ 1555              		.loc 1 347 5 is_stmt 1 view .LVU548
+ 1556              		.loc 1 347 22 is_stmt 0 view .LVU549
+ 1557 0002 7031     		adds	r1, r1, #112
+ 1558              	.LVL111:
+ 1559              		.loc 1 347 22 view .LVU550
+ 1560 0004 0FC9     		ldm	r1, {r0, r1, r2, r3}
+ 1561              	.LVL112:
+ 1562              		.loc 1 347 22 view .LVU551
+ 1563 0006 8CE80F00 		stm	ip, {r0, r1, r2, r3}
+ 348:Device/Dev_MPU6000.c **** }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 41
+
+
+ 1564              		.loc 1 348 1 view .LVU552
+ 1565 000a 6046     		mov	r0, ip
+ 1566 000c 7047     		bx	lr
+ 1567              		.cfi_endproc
+ 1568              	.LFE8:
+ 1570              		.section	.text.DevMPU6000_SetDRDY,"ax",%progbits
+ 1571              		.align	1
+ 1572              		.syntax unified
+ 1573              		.thumb
+ 1574              		.thumb_func
+ 1575              		.fpu fpv5-d16
+ 1577              	DevMPU6000_SetDRDY:
+ 1578              	.LVL113:
+ 1579              	.LFB9:
+ 349:Device/Dev_MPU6000.c **** 
+ 350:Device/Dev_MPU6000.c **** static void DevMPU6000_SetDRDY(DevMPU6000Obj_TypeDef *sensor_obj)
+ 351:Device/Dev_MPU6000.c **** {
+ 1580              		.loc 1 351 1 is_stmt 1 view -0
+ 1581              		.cfi_startproc
+ 1582              		@ args = 0, pretend = 0, frame = 0
+ 1583              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1584              		@ link register save eliminated.
+ 352:Device/Dev_MPU6000.c ****     sensor_obj->drdy = true;
+ 1585              		.loc 1 352 5 view .LVU554
+ 1586              		.loc 1 352 22 is_stmt 0 view .LVU555
+ 1587 0000 0123     		movs	r3, #1
+ 1588 0002 80F82030 		strb	r3, [r0, #32]
+ 353:Device/Dev_MPU6000.c **** }
+ 1589              		.loc 1 353 1 view .LVU556
+ 1590 0006 7047     		bx	lr
+ 1591              		.cfi_endproc
+ 1592              	.LFE9:
+ 1594              		.section	.text.DevMPU6000_GetReady,"ax",%progbits
+ 1595              		.align	1
+ 1596              		.syntax unified
+ 1597              		.thumb
+ 1598              		.thumb_func
+ 1599              		.fpu fpv5-d16
+ 1601              	DevMPU6000_GetReady:
+ 1602              	.LVL114:
+ 1603              	.LFB10:
+ 354:Device/Dev_MPU6000.c **** 
+ 355:Device/Dev_MPU6000.c **** static bool DevMPU6000_GetReady(DevMPU6000Obj_TypeDef *sensor_obj)
+ 356:Device/Dev_MPU6000.c **** {
+ 1604              		.loc 1 356 1 is_stmt 1 view -0
+ 1605              		.cfi_startproc
+ 1606              		@ args = 0, pretend = 0, frame = 0
+ 1607              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1608              		@ link register save eliminated.
+ 357:Device/Dev_MPU6000.c ****     return sensor_obj->drdy;
+ 1609              		.loc 1 357 5 view .LVU558
+ 358:Device/Dev_MPU6000.c **** }
+ 1610              		.loc 1 358 1 is_stmt 0 view .LVU559
+ 1611 0000 90F82000 		ldrb	r0, [r0, #32]	@ zero_extendqisi2
+ 1612              	.LVL115:
+ 1613              		.loc 1 358 1 view .LVU560
+ 1614 0004 7047     		bx	lr
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 42
+
+
+ 1615              		.cfi_endproc
+ 1616              	.LFE10:
+ 1618              		.section	.text.DevMPU6000_SwReset,"ax",%progbits
+ 1619              		.align	1
+ 1620              		.syntax unified
+ 1621              		.thumb
+ 1622              		.thumb_func
+ 1623              		.fpu fpv5-d16
+ 1625              	DevMPU6000_SwReset:
+ 1626              	.LVL116:
+ 1627              	.LFB11:
+ 359:Device/Dev_MPU6000.c **** 
+ 360:Device/Dev_MPU6000.c **** /* half develop */
+ 361:Device/Dev_MPU6000.c **** static bool DevMPU6000_SwReset(DevMPU6000Obj_TypeDef *sensor_obj)
+ 362:Device/Dev_MPU6000.c **** {
+ 1628              		.loc 1 362 1 is_stmt 1 view -0
+ 1629              		.cfi_startproc
+ 1630              		@ args = 0, pretend = 0, frame = 0
+ 1631              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1632              		@ link register save eliminated.
+ 363:Device/Dev_MPU6000.c ****     bool state = false;
+ 1633              		.loc 1 363 5 view .LVU562
+ 364:Device/Dev_MPU6000.c **** 
+ 365:Device/Dev_MPU6000.c ****     if (sensor_obj == NULL)
+ 1634              		.loc 1 365 5 view .LVU563
+ 366:Device/Dev_MPU6000.c ****         return false;
+ 367:Device/Dev_MPU6000.c **** 
+ 368:Device/Dev_MPU6000.c ****     return state;
+ 369:Device/Dev_MPU6000.c **** }
+ 1635              		.loc 1 369 1 is_stmt 0 view .LVU564
+ 1636 0000 0020     		movs	r0, #0
+ 1637              	.LVL117:
+ 1638              		.loc 1 369 1 view .LVU565
+ 1639 0002 7047     		bx	lr
+ 1640              		.cfi_endproc
+ 1641              	.LFE11:
+ 1643              		.section	.text.DevMPU6000_Sample,"ax",%progbits
+ 1644              		.align	1
+ 1645              		.syntax unified
+ 1646              		.thumb
+ 1647              		.thumb_func
+ 1648              		.fpu fpv5-d16
+ 1650              	DevMPU6000_Sample:
+ 1651              	.LVL118:
+ 1652              	.LFB12:
+ 370:Device/Dev_MPU6000.c **** 
+ 371:Device/Dev_MPU6000.c **** static bool DevMPU6000_Sample(DevMPU6000Obj_TypeDef *sensor_obj)
+ 372:Device/Dev_MPU6000.c **** {
+ 1653              		.loc 1 372 1 is_stmt 1 view -0
+ 1654              		.cfi_startproc
+ 1655              		@ args = 0, pretend = 0, frame = 32
+ 1656              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1657              		.loc 1 372 1 is_stmt 0 view .LVU567
+ 1658 0000 70B5     		push	{r4, r5, r6, lr}
+ 1659              	.LCFI23:
+ 1660              		.cfi_def_cfa_offset 16
+ 1661              		.cfi_offset 4, -16
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 43
+
+
+ 1662              		.cfi_offset 5, -12
+ 1663              		.cfi_offset 6, -8
+ 1664              		.cfi_offset 14, -4
+ 1665 0002 8AB0     		sub	sp, sp, #40
+ 1666              	.LCFI24:
+ 1667              		.cfi_def_cfa_offset 56
+ 373:Device/Dev_MPU6000.c ****     uint8_t Tx[14] = {0};
+ 1668              		.loc 1 373 5 is_stmt 1 view .LVU568
+ 1669              		.loc 1 373 13 is_stmt 0 view .LVU569
+ 1670 0004 0023     		movs	r3, #0
+ 1671 0006 0693     		str	r3, [sp, #24]
+ 1672 0008 0793     		str	r3, [sp, #28]
+ 1673 000a 0893     		str	r3, [sp, #32]
+ 1674 000c ADF82430 		strh	r3, [sp, #36]	@ movhi
+ 374:Device/Dev_MPU6000.c ****     uint8_t Rx[14] = {0};
+ 1675              		.loc 1 374 5 is_stmt 1 view .LVU570
+ 1676              		.loc 1 374 13 is_stmt 0 view .LVU571
+ 1677 0010 0293     		str	r3, [sp, #8]
+ 1678 0012 0393     		str	r3, [sp, #12]
+ 1679 0014 0493     		str	r3, [sp, #16]
+ 1680 0016 ADF81430 		strh	r3, [sp, #20]	@ movhi
+ 375:Device/Dev_MPU6000.c **** 
+ 376:Device/Dev_MPU6000.c ****     if ((sensor_obj->error.code == MPU6000_No_Error) && (sensor_obj->drdy))
+ 1681              		.loc 1 376 5 is_stmt 1 view .LVU572
+ 1682              		.loc 1 376 27 is_stmt 0 view .LVU573
+ 1683 001a 90F87050 		ldrb	r5, [r0, #112]	@ zero_extendqisi2
+ 1684              		.loc 1 376 8 view .LVU574
+ 1685 001e 002D     		cmp	r5, #0
+ 1686 0020 63D1     		bne	.L99
+ 1687 0022 0446     		mov	r4, r0
+ 1688              		.loc 1 376 68 discriminator 1 view .LVU575
+ 1689 0024 90F82060 		ldrb	r6, [r0, #32]	@ zero_extendqisi2
+ 1690              		.loc 1 376 54 discriminator 1 view .LVU576
+ 1691 0028 002E     		cmp	r6, #0
+ 1692 002a 5FD0     		beq	.L96
+ 377:Device/Dev_MPU6000.c ****     {
+ 378:Device/Dev_MPU6000.c ****         sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
+ 1693              		.loc 1 378 9 is_stmt 1 view .LVU577
+ 1694              		.loc 1 378 52 is_stmt 0 view .LVU578
+ 1695 002c C368     		ldr	r3, [r0, #12]
+ 1696              		.loc 1 378 42 view .LVU579
+ 1697 002e 9847     		blx	r3
+ 1698              	.LVL119:
+ 1699              		.loc 1 378 40 view .LVU580
+ 1700 0030 C4F82200 		str	r0, [r4, #34]	@ unaligned
+ 1701 0034 C4F82610 		str	r1, [r4, #38]	@ unaligned
+ 379:Device/Dev_MPU6000.c **** 
+ 380:Device/Dev_MPU6000.c ****         /* 14Byte I/O overhead 18Us then average overhead is 1.3Us/Byte */
+ 381:Device/Dev_MPU6000.c ****         Dev_MPU6000_Regs_Read(sensor_obj, MPU6000_ACCEL_XOUT_H, Tx, Rx, 14);
+ 1702              		.loc 1 381 9 is_stmt 1 view .LVU581
+ 1703 0038 0E23     		movs	r3, #14
+ 1704 003a 0093     		str	r3, [sp]
+ 1705 003c 02AB     		add	r3, sp, #8
+ 1706 003e 06AA     		add	r2, sp, #24
+ 1707 0040 3B21     		movs	r1, #59
+ 1708 0042 2046     		mov	r0, r4
+ 1709 0044 FFF7FEFF 		bl	Dev_MPU6000_Regs_Read
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 44
+
+
+ 1710              	.LVL120:
+ 382:Device/Dev_MPU6000.c **** 
+ 383:Device/Dev_MPU6000.c ****         for (uint8_t axis = Axis_X; axis < Axis_Sum; axis++)
+ 1711              		.loc 1 383 9 view .LVU582
+ 1712              	.LBB58:
+ 1713              		.loc 1 383 14 view .LVU583
+ 1714              		.loc 1 383 9 is_stmt 0 view .LVU584
+ 1715 0048 43E0     		b	.L97
+ 1716              	.LVL121:
+ 1717              	.L98:
+ 384:Device/Dev_MPU6000.c ****         {
+ 385:Device/Dev_MPU6000.c ****             sensor_obj->OriData.acc_int[axis] = (int16_t)((Rx[axis * 2] << 8) | Rx[axis * 2 + 1]);
+ 1718              		.loc 1 385 13 is_stmt 1 discriminator 3 view .LVU585
+ 1719              		.loc 1 385 68 is_stmt 0 discriminator 3 view .LVU586
+ 1720 004a 6900     		lsls	r1, r5, #1
+ 1721              		.loc 1 385 62 discriminator 3 view .LVU587
+ 1722 004c 0AAB     		add	r3, sp, #40
+ 1723 004e 03EB4503 		add	r3, r3, r5, lsl #1
+ 1724 0052 13F8200C 		ldrb	r0, [r3, #-32]	@ zero_extendqisi2
+ 1725              		.loc 1 385 93 discriminator 3 view .LVU588
+ 1726 0056 4B1C     		adds	r3, r1, #1
+ 1727              		.loc 1 385 83 discriminator 3 view .LVU589
+ 1728 0058 0AAA     		add	r2, sp, #40
+ 1729 005a 1344     		add	r3, r3, r2
+ 1730 005c 13F8202C 		ldrb	r2, [r3, #-32]	@ zero_extendqisi2
+ 1731              		.loc 1 385 49 discriminator 3 view .LVU590
+ 1732 0060 42EA0022 		orr	r2, r2, r0, lsl #8
+ 1733 0064 12B2     		sxth	r2, r2
+ 1734              		.loc 1 385 47 discriminator 3 view .LVU591
+ 1735 0066 05F11C03 		add	r3, r5, #28
+ 1736 006a 04EB4303 		add	r3, r4, r3, lsl #1
+ 1737 006e 5A80     		strh	r2, [r3, #2]	@ movhi
+ 386:Device/Dev_MPU6000.c ****             sensor_obj->OriData.gyr_int[axis] = (int16_t)((Rx[axis * 2 + 8] << 8) | Rx[axis * 2 + 9
+ 1738              		.loc 1 386 13 is_stmt 1 discriminator 3 view .LVU592
+ 1739              		.loc 1 386 72 is_stmt 0 discriminator 3 view .LVU593
+ 1740 0070 2B1D     		adds	r3, r5, #4
+ 1741              		.loc 1 386 62 discriminator 3 view .LVU594
+ 1742 0072 0AA8     		add	r0, sp, #40
+ 1743 0074 00EB4303 		add	r3, r0, r3, lsl #1
+ 1744 0078 13F8200C 		ldrb	r0, [r3, #-32]	@ zero_extendqisi2
+ 1745              		.loc 1 386 97 discriminator 3 view .LVU595
+ 1746 007c 0931     		adds	r1, r1, #9
+ 1747              		.loc 1 386 87 discriminator 3 view .LVU596
+ 1748 007e 0AAB     		add	r3, sp, #40
+ 1749 0080 1944     		add	r1, r1, r3
+ 1750 0082 11F8203C 		ldrb	r3, [r1, #-32]	@ zero_extendqisi2
+ 1751              		.loc 1 386 49 discriminator 3 view .LVU597
+ 1752 0086 43EA0023 		orr	r3, r3, r0, lsl #8
+ 1753 008a 1BB2     		sxth	r3, r3
+ 1754              		.loc 1 386 47 discriminator 3 view .LVU598
+ 1755 008c 05F11801 		add	r1, r5, #24
+ 1756 0090 04EB4101 		add	r1, r4, r1, lsl #1
+ 1757 0094 8B80     		strh	r3, [r1, #4]	@ movhi
+ 387:Device/Dev_MPU6000.c **** 
+ 388:Device/Dev_MPU6000.c ****             /* convert int data to float */
+ 389:Device/Dev_MPU6000.c ****             sensor_obj->OriData.acc_flt[axis] = ((float)sensor_obj->OriData.acc_int[axis] / sensor_
+ 1758              		.loc 1 389 13 is_stmt 1 discriminator 3 view .LVU599
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 45
+
+
+ 1759              		.loc 1 389 50 is_stmt 0 discriminator 3 view .LVU600
+ 1760 0096 07EE902A 		vmov	s15, r2	@ int
+ 1761 009a F8EEE77A 		vcvt.f32.s32	s15, s15
+ 1762              		.loc 1 389 103 discriminator 3 view .LVU601
+ 1763 009e D4ED066A 		vldr.32	s13, [r4, #24]
+ 1764              		.loc 1 389 91 discriminator 3 view .LVU602
+ 1765 00a2 87EEA67A 		vdiv.f32	s14, s15, s13
+ 1766              		.loc 1 389 47 discriminator 3 view .LVU603
+ 1767 00a6 05F11202 		add	r2, r5, #18
+ 1768 00aa 04EB8202 		add	r2, r4, r2, lsl #2
+ 1769 00ae 82ED027A 		vstr.32	s14, [r2, #8]
+ 390:Device/Dev_MPU6000.c ****             sensor_obj->OriData.gyr_flt[axis] = ((float)sensor_obj->OriData.gyr_int[axis] / sensor_
+ 1770              		.loc 1 390 13 is_stmt 1 discriminator 3 view .LVU604
+ 1771              		.loc 1 390 50 is_stmt 0 discriminator 3 view .LVU605
+ 1772 00b2 07EE903A 		vmov	s15, r3	@ int
+ 1773 00b6 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 1774              		.loc 1 390 103 discriminator 3 view .LVU606
+ 1775 00ba D4ED076A 		vldr.32	s13, [r4, #28]
+ 1776              		.loc 1 390 91 discriminator 3 view .LVU607
+ 1777 00be 87EEA67A 		vdiv.f32	s14, s15, s13
+ 1778              		.loc 1 390 47 discriminator 3 view .LVU608
+ 1779 00c2 05F11003 		add	r3, r5, #16
+ 1780 00c6 04EB8303 		add	r3, r4, r3, lsl #2
+ 1781 00ca 83ED017A 		vstr.32	s14, [r3, #4]
+ 383:Device/Dev_MPU6000.c ****         {
+ 1782              		.loc 1 383 54 is_stmt 1 discriminator 3 view .LVU609
+ 383:Device/Dev_MPU6000.c ****         {
+ 1783              		.loc 1 383 58 is_stmt 0 discriminator 3 view .LVU610
+ 1784 00ce 0135     		adds	r5, r5, #1
+ 1785              	.LVL122:
+ 383:Device/Dev_MPU6000.c ****         {
+ 1786              		.loc 1 383 58 discriminator 3 view .LVU611
+ 1787 00d0 EDB2     		uxtb	r5, r5
+ 1788              	.LVL123:
+ 1789              	.L97:
+ 383:Device/Dev_MPU6000.c ****         {
+ 1790              		.loc 1 383 37 is_stmt 1 discriminator 1 view .LVU612
+ 383:Device/Dev_MPU6000.c ****         {
+ 1791              		.loc 1 383 9 is_stmt 0 discriminator 1 view .LVU613
+ 1792 00d2 022D     		cmp	r5, #2
+ 1793 00d4 B9D9     		bls	.L98
+ 1794              	.LBE58:
+ 391:Device/Dev_MPU6000.c ****         }
+ 392:Device/Dev_MPU6000.c **** 
+ 393:Device/Dev_MPU6000.c ****         sensor_obj->OriData.time_stamp = sensor_obj->get_timestamp();
+ 1795              		.loc 1 393 9 is_stmt 1 view .LVU614
+ 1796              		.loc 1 393 52 is_stmt 0 view .LVU615
+ 1797 00d6 E368     		ldr	r3, [r4, #12]
+ 1798              		.loc 1 393 42 view .LVU616
+ 1799 00d8 9847     		blx	r3
+ 1800              	.LVL124:
+ 1801              		.loc 1 393 40 view .LVU617
+ 1802 00da C4F82200 		str	r0, [r4, #34]	@ unaligned
+ 1803 00de C4F82610 		str	r1, [r4, #38]	@ unaligned
+ 394:Device/Dev_MPU6000.c ****         sensor_obj->drdy = false;
+ 1804              		.loc 1 394 9 is_stmt 1 view .LVU618
+ 1805              		.loc 1 394 26 is_stmt 0 view .LVU619
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 46
+
+
+ 1806 00e2 0023     		movs	r3, #0
+ 1807 00e4 84F82030 		strb	r3, [r4, #32]
+ 395:Device/Dev_MPU6000.c ****         return true;
+ 1808              		.loc 1 395 9 is_stmt 1 view .LVU620
+ 1809              		.loc 1 395 16 is_stmt 0 view .LVU621
+ 1810 00e8 00E0     		b	.L96
+ 1811              	.LVL125:
+ 1812              	.L99:
+ 396:Device/Dev_MPU6000.c ****     }
+ 397:Device/Dev_MPU6000.c **** 
+ 398:Device/Dev_MPU6000.c ****     return false;
+ 1813              		.loc 1 398 12 view .LVU622
+ 1814 00ea 0026     		movs	r6, #0
+ 1815              	.LVL126:
+ 1816              	.L96:
+ 399:Device/Dev_MPU6000.c **** }
+ 1817              		.loc 1 399 1 view .LVU623
+ 1818 00ec 3046     		mov	r0, r6
+ 1819 00ee 0AB0     		add	sp, sp, #40
+ 1820              	.LCFI25:
+ 1821              		.cfi_def_cfa_offset 16
+ 1822              		@ sp needed
+ 1823 00f0 70BD     		pop	{r4, r5, r6, pc}
+ 1824              		.cfi_endproc
+ 1825              	.LFE12:
+ 1827              		.section	.text.DevMPU6000_Get_Scale,"ax",%progbits
+ 1828              		.align	1
+ 1829              		.syntax unified
+ 1830              		.thumb
+ 1831              		.thumb_func
+ 1832              		.fpu fpv5-d16
+ 1834              	DevMPU6000_Get_Scale:
+ 1835              	.LVL127:
+ 1836              	.LFB14:
+ 400:Device/Dev_MPU6000.c **** 
+ 401:Device/Dev_MPU6000.c **** static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
+ 402:Device/Dev_MPU6000.c **** {
+ 403:Device/Dev_MPU6000.c ****     IMUData_TypeDef tmp;
+ 404:Device/Dev_MPU6000.c **** 
+ 405:Device/Dev_MPU6000.c ****     memset(&tmp, NULL, sizeof(tmp));
+ 406:Device/Dev_MPU6000.c ****     if (sensor_obj->error.code == MPU6000_No_Error)
+ 407:Device/Dev_MPU6000.c ****         return sensor_obj->OriData;
+ 408:Device/Dev_MPU6000.c **** 
+ 409:Device/Dev_MPU6000.c ****     return tmp;
+ 410:Device/Dev_MPU6000.c **** }
+ 411:Device/Dev_MPU6000.c **** 
+ 412:Device/Dev_MPU6000.c **** static IMUModuleScale_TypeDef DevMPU6000_Get_Scale(const DevMPU6000Obj_TypeDef *sensor_obj)
+ 413:Device/Dev_MPU6000.c **** {
+ 1837              		.loc 1 413 1 is_stmt 1 view -0
+ 1838              		.cfi_startproc
+ 1839              		@ args = 0, pretend = 0, frame = 24
+ 1840              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1841              		@ link register save eliminated.
+ 1842              		.loc 1 413 1 is_stmt 0 view .LVU625
+ 1843 0000 86B0     		sub	sp, sp, #24
+ 1844              	.LCFI26:
+ 1845              		.cfi_def_cfa_offset 24
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 47
+
+
+ 414:Device/Dev_MPU6000.c ****     IMUModuleScale_TypeDef scale_tmp;
+ 1846              		.loc 1 414 5 is_stmt 1 view .LVU626
+ 415:Device/Dev_MPU6000.c **** 
+ 416:Device/Dev_MPU6000.c ****     scale_tmp.acc_scale = sensor_obj->acc_scale;
+ 1847              		.loc 1 416 5 view .LVU627
+ 1848              		.loc 1 416 37 is_stmt 0 view .LVU628
+ 1849 0002 8369     		ldr	r3, [r0, #24]	@ float
+ 1850              		.loc 1 416 25 view .LVU629
+ 1851 0004 0293     		str	r3, [sp, #8]	@ float
+ 417:Device/Dev_MPU6000.c ****     scale_tmp.gyr_scale = sensor_obj->gyr_scale;
+ 1852              		.loc 1 417 5 is_stmt 1 view .LVU630
+ 1853              		.loc 1 417 37 is_stmt 0 view .LVU631
+ 1854 0006 C369     		ldr	r3, [r0, #28]	@ float
+ 1855              		.loc 1 417 25 view .LVU632
+ 1856 0008 0393     		str	r3, [sp, #12]	@ float
+ 418:Device/Dev_MPU6000.c **** 
+ 419:Device/Dev_MPU6000.c ****     return scale_tmp;
+ 1857              		.loc 1 419 5 is_stmt 1 view .LVU633
+ 1858              		.loc 1 419 12 is_stmt 0 view .LVU634
+ 1859 000a 02AB     		add	r3, sp, #8
+ 1860 000c 93E80300 		ldm	r3, {r0, r1}
+ 1861              	.LVL128:
+ 1862              		.loc 1 419 12 view .LVU635
+ 1863 0010 06AB     		add	r3, sp, #24
+ 1864 0012 03E90300 		stmdb	r3, {r0, r1}
+ 420:Device/Dev_MPU6000.c **** }
+ 1865              		.loc 1 420 1 view .LVU636
+ 1866 0016 9DED040A 		vldr.32	s0, [sp, #16]
+ 1867 001a DDED050A 		vldr.32	s1, [sp, #20]
+ 1868 001e 06B0     		add	sp, sp, #24
+ 1869              	.LCFI27:
+ 1870              		.cfi_def_cfa_offset 0
+ 1871              		@ sp needed
+ 1872 0020 7047     		bx	lr
+ 1873              		.cfi_endproc
+ 1874              	.LFE14:
+ 1876              		.section	.text.DevMPU6000_Get_Specified_AngularSpeed_Diff,"ax",%progbits
+ 1877              		.align	1
+ 1878              		.syntax unified
+ 1879              		.thumb
+ 1880              		.thumb_func
+ 1881              		.fpu fpv5-d16
+ 1883              	DevMPU6000_Get_Specified_AngularSpeed_Diff:
+ 1884              	.LVL129:
+ 1885              	.LFB15:
+ 421:Device/Dev_MPU6000.c **** 
+ 422:Device/Dev_MPU6000.c **** /* specified anguler speed per millsecond */
+ 423:Device/Dev_MPU6000.c **** static float DevMPU6000_Get_Specified_AngularSpeed_Diff(const DevMPU6000Obj_TypeDef *sensor_obj)
+ 424:Device/Dev_MPU6000.c **** {
+ 1886              		.loc 1 424 1 is_stmt 1 view -0
+ 1887              		.cfi_startproc
+ 1888              		@ args = 0, pretend = 0, frame = 0
+ 1889              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1890              		@ link register save eliminated.
+ 425:Device/Dev_MPU6000.c ****     return sensor_obj->PHY_GyrTrip_Val / 1000.0f;
+ 1891              		.loc 1 425 5 view .LVU638
+ 1892              		.loc 1 425 22 is_stmt 0 view .LVU639
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 48
+
+
+ 1893 0000 838A     		ldrh	r3, [r0, #20]
+ 1894 0002 07EE903A 		vmov	s15, r3	@ int
+ 1895              		.loc 1 425 40 view .LVU640
+ 1896 0006 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 426:Device/Dev_MPU6000.c **** }...
+ 1897              		.loc 1 426 1 view .LVU641
+ 1898 000a 9FED020A 		vldr.32	s0, .L104
+ 1899 000e 87EE800A 		vdiv.f32	s0, s15, s0
+ 1900 0012 7047     		bx	lr
+ 1901              	.L105:
+ 1902              		.align	2
+ 1903              	.L104:
+ 1904 0014 00007A44 		.word	1148846080
+ 1905              		.cfi_endproc
+ 1906              	.LFE15:
+ 1908              		.section	.text.DevMPU6000_Get_Data,"ax",%progbits
+ 1909              		.align	1
+ 1910              		.syntax unified
+ 1911              		.thumb
+ 1912              		.thumb_func
+ 1913              		.fpu fpv5-d16
+ 1915              	DevMPU6000_Get_Data:
+ 1916              	.LVL130:
+ 1917              	.LFB13:
+ 402:Device/Dev_MPU6000.c **** {
+ 1918              		.loc 1 402 1 is_stmt 1 view -0
+ 1919              		.cfi_startproc
+ 1920              		@ args = 0, pretend = 0, frame = 80
+ 1921              		@ frame_needed = 0, uses_anonymous_args = 0
+ 402:Device/Dev_MPU6000.c **** {
+ 1922              		.loc 1 402 1 is_stmt 0 view .LVU643
+ 1923 0000 30B5     		push	{r4, r5, lr}
+ 1924              	.LCFI28:
+ 1925              		.cfi_def_cfa_offset 12
+ 1926              		.cfi_offset 4, -12
+ 1927              		.cfi_offset 5, -8
+ 1928              		.cfi_offset 14, -4
+ 1929 0002 95B0     		sub	sp, sp, #84
+ 1930              	.LCFI29:
+ 1931              		.cfi_def_cfa_offset 96
+ 1932 0004 0446     		mov	r4, r0
+ 1933 0006 0D46     		mov	r5, r1
+ 403:Device/Dev_MPU6000.c ****     IMUData_TypeDef tmp;
+ 1934              		.loc 1 403 5 is_stmt 1 view .LVU644
+ 405:Device/Dev_MPU6000.c ****     memset(&tmp, NULL, sizeof(tmp));
+ 1935              		.loc 1 405 5 view .LVU645
+ 1936 0008 4C22     		movs	r2, #76
+ 1937 000a 0021     		movs	r1, #0
+ 1938              	.LVL131:
+ 405:Device/Dev_MPU6000.c ****     memset(&tmp, NULL, sizeof(tmp));
+ 1939              		.loc 1 405 5 is_stmt 0 view .LVU646
+ 1940 000c 01A8     		add	r0, sp, #4
+ 1941              	.LVL132:
+ 405:Device/Dev_MPU6000.c ****     memset(&tmp, NULL, sizeof(tmp));
+ 1942              		.loc 1 405 5 view .LVU647
+ 1943 000e FFF7FEFF 		bl	memset
+ 1944              	.LVL133:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 49
+
+
+ 406:Device/Dev_MPU6000.c ****     if (sensor_obj->error.code == MPU6000_No_Error)
+ 1945              		.loc 1 406 5 is_stmt 1 view .LVU648
+ 406:Device/Dev_MPU6000.c ****     if (sensor_obj->error.code == MPU6000_No_Error)
+ 1946              		.loc 1 406 26 is_stmt 0 view .LVU649
+ 1947 0012 95F87030 		ldrb	r3, [r5, #112]	@ zero_extendqisi2
+ 406:Device/Dev_MPU6000.c ****     if (sensor_obj->error.code == MPU6000_No_Error)
+ 1948              		.loc 1 406 8 view .LVU650
+ 1949 0016 3BB1     		cbz	r3, .L110
+ 409:Device/Dev_MPU6000.c ****     return tmp;
+ 1950              		.loc 1 409 5 is_stmt 1 view .LVU651
+ 409:Device/Dev_MPU6000.c ****     return tmp;
+ 1951              		.loc 1 409 12 is_stmt 0 view .LVU652
+ 1952 0018 4C22     		movs	r2, #76
+ 1953 001a 0021     		movs	r1, #0
+ 1954 001c 2046     		mov	r0, r4
+ 1955 001e FFF7FEFF 		bl	memset
+ 1956              	.LVL134:
+ 1957              	.L106:
+ 410:Device/Dev_MPU6000.c **** }
+ 1958              		.loc 1 410 1 view .LVU653
+ 1959 0022 2046     		mov	r0, r4
+ 1960 0024 15B0     		add	sp, sp, #84
+ 1961              	.LCFI30:
+ 1962              		.cfi_remember_state
+ 1963              		.cfi_def_cfa_offset 12
+ 1964              		@ sp needed
+ 1965 0026 30BD     		pop	{r4, r5, pc}
+ 1966              	.LVL135:
+ 1967              	.L110:
+ 1968              	.LCFI31:
+ 1969              		.cfi_restore_state
+ 407:Device/Dev_MPU6000.c ****         return sensor_obj->OriData;
+ 1970              		.loc 1 407 9 is_stmt 1 view .LVU654
+ 407:Device/Dev_MPU6000.c ****         return sensor_obj->OriData;
+ 1971              		.loc 1 407 26 is_stmt 0 view .LVU655
+ 1972 0028 4C22     		movs	r2, #76
+ 1973 002a 05F12201 		add	r1, r5, #34
+ 1974 002e 2046     		mov	r0, r4
+ 1975 0030 FFF7FEFF 		bl	memcpy
+ 1976              	.LVL136:
+ 1977 0034 F5E7     		b	.L106
+ 1978              		.cfi_endproc
+ 1979              	.LFE13:
+ 1981              		.global	DevMPU6000
+ 1982              		.section	.data.DevMPU6000,"aw"
+ 1983              		.align	2
+ 1986              	DevMPU6000:
+ 1987 0000 00000000 		.word	DevMPU6000_Detect
+ 1988 0004 00000000 		.word	DevMPU6000_PreInit
+ 1989 0008 00000000 		.word	DevMPU6000_Config
+ 1990 000c 00000000 		.word	DevMPU6000_Init
+ 1991 0010 00000000 		.word	DevMPU6000_SwReset
+ 1992 0014 00000000 		.word	DevMPU6000_GetReady
+ 1993 0018 00000000 		.word	DevMPU6000_SetDRDY
+ 1994 001c 00000000 		.word	DevMPU6000_Sample
+ 1995 0020 00000000 		.word	DevMPU6000_Get_Data
+ 1996 0024 00000000 		.word	DevMPU6000_Get_InitError
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 50
+
+
+ 1997 0028 00000000 		.word	DevMPU6000_Get_Scale
+ 1998 002c 00000000 		.word	DevMPU6000_Get_Specified_AngularSpeed_Diff
+ 1999              		.section	.rodata.__FUNCTION__.0,"a"
+ 2000              		.align	2
+ 2001              		.set	.LANCHOR0,. + 0
+ 2004              	__FUNCTION__.0:
+ 2005 0000 4465764D 		.ascii	"DevMPU6000_Init\000"
+ 2005      50553630 
+ 2005      30305F49 
+ 2005      6E697400 
+ 2006              		.text
+ 2007              	.Letext0:
+ 2008              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 2009              		.file 4 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 2010              		.file 5 "Device/Dev_MPU6000.h"
+ 2011              		.file 6 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s 			page 51
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_MPU6000.c
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:17     .text.DevMPU6000_Detect:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:24     .text.DevMPU6000_Detect:00000000 DevMPU6000_Detect
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:121    .text.Dev_MPU6000_Regs_Read:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:127    .text.Dev_MPU6000_Regs_Read:00000000 Dev_MPU6000_Regs_Read
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:244    .text.DevMPU6000_Reg_Read:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:250    .text.DevMPU6000_Reg_Read:00000000 DevMPU6000_Reg_Read
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:357    .text.DevMPU6000_Reg_Write:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:363    .text.DevMPU6000_Reg_Write:00000000 DevMPU6000_Reg_Write
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:462    .text.DevMPU6000_Config:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:468    .text.DevMPU6000_Config:00000000 DevMPU6000_Config
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:514    .text.DevMPU6000_Config:00000038 $d
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:518    .text.DevMPU6000_Config:0000003c $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:535    .text.DevMPU6000_Config:00000052 $d
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:539    .text.DevMPU6000_Config:00000056 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:669    .text.DevMPU6000_Config:000000e0 $d
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:677    .text.DevMPU6000_PreInit:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:683    .text.DevMPU6000_PreInit:00000000 DevMPU6000_PreInit
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:712    .rodata.DevMPU6000_Init.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:716    .text.DevMPU6000_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:722    .text.DevMPU6000_Init:00000000 DevMPU6000_Init
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1533   .text.DevMPU6000_Init:00000364 $d
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1539   .text.DevMPU6000_Get_InitError:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1545   .text.DevMPU6000_Get_InitError:00000000 DevMPU6000_Get_InitError
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1571   .text.DevMPU6000_SetDRDY:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1577   .text.DevMPU6000_SetDRDY:00000000 DevMPU6000_SetDRDY
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1595   .text.DevMPU6000_GetReady:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1601   .text.DevMPU6000_GetReady:00000000 DevMPU6000_GetReady
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1619   .text.DevMPU6000_SwReset:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1625   .text.DevMPU6000_SwReset:00000000 DevMPU6000_SwReset
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1644   .text.DevMPU6000_Sample:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1650   .text.DevMPU6000_Sample:00000000 DevMPU6000_Sample
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1828   .text.DevMPU6000_Get_Scale:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1834   .text.DevMPU6000_Get_Scale:00000000 DevMPU6000_Get_Scale
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1877   .text.DevMPU6000_Get_Specified_AngularSpeed_Diff:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1883   .text.DevMPU6000_Get_Specified_AngularSpeed_Diff:00000000 DevMPU6000_Get_Specified_AngularSpeed_Diff
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1904   .text.DevMPU6000_Get_Specified_AngularSpeed_Diff:00000014 $d
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1909   .text.DevMPU6000_Get_Data:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1915   .text.DevMPU6000_Get_Data:00000000 DevMPU6000_Get_Data
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1986   .data.DevMPU6000:00000000 DevMPU6000
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:1983   .data.DevMPU6000:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:2000   .rodata.__FUNCTION__.0:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccWdN0KU.s:2004   .rodata.__FUNCTION__.0:00000000 __FUNCTION__.0
+
+UNDEFINED SYMBOLS
+memset
+memcpy

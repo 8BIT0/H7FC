@@ -1,0 +1,1115 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"DataPipe.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.DataPipe_TransError_Callback,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	DataPipe_TransError_Callback:
+  25              	.LVL0:
+  26              	.LFB154:
+  27              		.file 1 "System/DataPipe/DataPipe.c"
+   1:System/DataPipe/DataPipe.c **** #include "DataPipe.h"
+   2:System/DataPipe/DataPipe.c **** #include "mmu.h"
+   3:System/DataPipe/DataPipe.c **** #include "kernel.h"
+   4:System/DataPipe/DataPipe.c **** #include "stm32h743xx.h"
+   5:System/DataPipe/DataPipe.c **** #include "stm32h7xx_hal_rcc.h"
+   6:System/DataPipe/DataPipe.c **** #include "stm32h7xx_hal_dma.h"
+   7:System/DataPipe/DataPipe.c **** #include "queue.h"
+   8:System/DataPipe/DataPipe.c **** #include "runtime.h"
+   9:System/DataPipe/DataPipe.c **** 
+  10:System/DataPipe/DataPipe.c **** #define MAX_RETRY_CNT 200
+  11:System/DataPipe/DataPipe.c **** #define MAX_PIPE_FREQ 2000
+  12:System/DataPipe/DataPipe.c **** 
+  13:System/DataPipe/DataPipe.c **** DMA_HandleTypeDef DataPipe_DMA;
+  14:System/DataPipe/DataPipe.c **** 
+  15:System/DataPipe/DataPipe.c **** /* internal variable */
+  16:System/DataPipe/DataPipe.c **** static Data_PlugedPipeObj_TypeDef Cur_Pluged_PipeObj = {.org = NULL, .dst = NULL};
+  17:System/DataPipe/DataPipe.c **** static DataPipe_State_List Pipe_State = Pipe_UnReady;
+  18:System/DataPipe/DataPipe.c **** 
+  19:System/DataPipe/DataPipe.c **** /* internal function */
+  20:System/DataPipe/DataPipe.c **** static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl);
+  21:System/DataPipe/DataPipe.c **** static void DataPipe_TransError_Callback(DMA_HandleTypeDef *dma_hdl);
+  22:System/DataPipe/DataPipe.c **** 
+  23:System/DataPipe/DataPipe.c **** bool DataPipe_Init(void)
+  24:System/DataPipe/DataPipe.c **** {
+  25:System/DataPipe/DataPipe.c ****     /* DMA controller clock enable */
+  26:System/DataPipe/DataPipe.c ****     __HAL_RCC_DMA2_CLK_ENABLE();
+  27:System/DataPipe/DataPipe.c **** 
+  28:System/DataPipe/DataPipe.c ****     /* Configure DMA request DataPipe_DMA on DMA2_Stream7 */
+  29:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Instance = DMA2_Stream7;
+  30:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Request = DMA_REQUEST_MEM2MEM;
+  31:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Direction = DMA_MEMORY_TO_MEMORY;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 2
+
+
+  32:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.PeriphInc = DMA_PINC_ENABLE;
+  33:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.MemInc = DMA_MINC_ENABLE;
+  34:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  35:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  36:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Mode = DMA_NORMAL;
+  37:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+  38:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  39:System/DataPipe/DataPipe.c **** 
+  40:System/DataPipe/DataPipe.c ****     if (HAL_DMA_Init(&DataPipe_DMA) != HAL_OK)
+  41:System/DataPipe/DataPipe.c ****         return false;
+  42:System/DataPipe/DataPipe.c **** 
+  43:System/DataPipe/DataPipe.c ****     /* set transmit process callback */
+  44:System/DataPipe/DataPipe.c ****     HAL_DMA_RegisterCallback(&DataPipe_DMA, HAL_DMA_XFER_CPLT_CB_ID, DataPipe_TransFinish_Callback)
+  45:System/DataPipe/DataPipe.c ****     HAL_DMA_RegisterCallback(&DataPipe_DMA, HAL_DMA_XFER_ERROR_CB_ID, DataPipe_TransError_Callback)
+  46:System/DataPipe/DataPipe.c **** 
+  47:System/DataPipe/DataPipe.c ****     /* DMA interrupt init */
+  48:System/DataPipe/DataPipe.c ****     /* DMA2_Stream7_IRQn interrupt configuration */
+  49:System/DataPipe/DataPipe.c ****     HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
+  50:System/DataPipe/DataPipe.c ****     HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+  51:System/DataPipe/DataPipe.c **** 
+  52:System/DataPipe/DataPipe.c ****     Pipe_State = Pipe_Ready;
+  53:System/DataPipe/DataPipe.c **** 
+  54:System/DataPipe/DataPipe.c ****     return true;
+  55:System/DataPipe/DataPipe.c **** }
+  56:System/DataPipe/DataPipe.c **** 
+  57:System/DataPipe/DataPipe.c **** bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
+  58:System/DataPipe/DataPipe.c **** {
+  59:System/DataPipe/DataPipe.c ****     uint8_t retry_cnt = 5;
+  60:System/DataPipe/DataPipe.c **** 
+  61:System/DataPipe/DataPipe.c ****     if ((p_org == NULL) ||
+  62:System/DataPipe/DataPipe.c ****         (p_dst == NULL) ||
+  63:System/DataPipe/DataPipe.c ****         (p_org->data_size != p_dst->data_size) ||
+  64:System/DataPipe/DataPipe.c ****         !p_org->enable ||
+  65:System/DataPipe/DataPipe.c ****         !p_dst->enable ||
+  66:System/DataPipe/DataPipe.c ****         (p_dst->min_rx_interval &&
+  67:System/DataPipe/DataPipe.c ****          p_dst->rx_us_rt &&
+  68:System/DataPipe/DataPipe.c ****          (Get_CurrentRunningUs() - p_dst->rx_us_rt < p_dst->min_rx_interval)))
+  69:System/DataPipe/DataPipe.c ****         return false;
+  70:System/DataPipe/DataPipe.c **** 
+  71:System/DataPipe/DataPipe.c ****     retry_cnt = MAX_RETRY_CNT;
+  72:System/DataPipe/DataPipe.c ****     while (Pipe_State != Pipe_Ready)
+  73:System/DataPipe/DataPipe.c ****     {
+  74:System/DataPipe/DataPipe.c ****         retry_cnt--;
+  75:System/DataPipe/DataPipe.c **** 
+  76:System/DataPipe/DataPipe.c ****         if (retry_cnt == 0)
+  77:System/DataPipe/DataPipe.c ****             return false;
+  78:System/DataPipe/DataPipe.c ****     }
+  79:System/DataPipe/DataPipe.c **** 
+  80:System/DataPipe/DataPipe.c ****     Cur_Pluged_PipeObj.dst = p_dst;
+  81:System/DataPipe/DataPipe.c ****     Cur_Pluged_PipeObj.org = p_org;
+  82:System/DataPipe/DataPipe.c **** 
+  83:System/DataPipe/DataPipe.c ****     Kernel_EnterCritical();
+  84:System/DataPipe/DataPipe.c **** 
+  85:System/DataPipe/DataPipe.c **** retry:
+  86:System/DataPipe/DataPipe.c ****     Pipe_State = Pipe_Busy;
+  87:System/DataPipe/DataPipe.c ****     if (HAL_DMA_Start_IT(&DataPipe_DMA, p_org->data_addr, p_dst->data_addr, p_org->data_size) != HA
+  88:System/DataPipe/DataPipe.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 3
+
+
+  89:System/DataPipe/DataPipe.c ****         retry_cnt--;
+  90:System/DataPipe/DataPipe.c **** 
+  91:System/DataPipe/DataPipe.c ****         if (HAL_DMA_Abort_IT(&DataPipe_DMA) != HAL_OK)
+  92:System/DataPipe/DataPipe.c ****         {
+  93:System/DataPipe/DataPipe.c ****             if (retry_cnt)
+  94:System/DataPipe/DataPipe.c ****                 goto retry;
+  95:System/DataPipe/DataPipe.c ****         }
+  96:System/DataPipe/DataPipe.c **** 
+  97:System/DataPipe/DataPipe.c ****         Pipe_State = Pipe_Error;
+  98:System/DataPipe/DataPipe.c ****         p_org->er_cnt++;
+  99:System/DataPipe/DataPipe.c ****         p_dst->er_cnt++;
+ 100:System/DataPipe/DataPipe.c ****     }
+ 101:System/DataPipe/DataPipe.c **** 
+ 102:System/DataPipe/DataPipe.c ****     Kernel_ExitCritical();
+ 103:System/DataPipe/DataPipe.c **** 
+ 104:System/DataPipe/DataPipe.c ****     return true;
+ 105:System/DataPipe/DataPipe.c **** }
+ 106:System/DataPipe/DataPipe.c **** 
+ 107:System/DataPipe/DataPipe.c **** /* still in developing */
+ 108:System/DataPipe/DataPipe.c **** bool DataPipe_DealError(void)
+ 109:System/DataPipe/DataPipe.c **** {
+ 110:System/DataPipe/DataPipe.c ****     if (Pipe_State == Pipe_Error)
+ 111:System/DataPipe/DataPipe.c ****     {
+ 112:System/DataPipe/DataPipe.c ****     }
+ 113:System/DataPipe/DataPipe.c **** 
+ 114:System/DataPipe/DataPipe.c ****     return true;
+ 115:System/DataPipe/DataPipe.c **** }
+ 116:System/DataPipe/DataPipe.c **** 
+ 117:System/DataPipe/DataPipe.c **** /* transmit completely callback */
+ 118:System/DataPipe/DataPipe.c **** static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl)
+ 119:System/DataPipe/DataPipe.c **** {
+ 120:System/DataPipe/DataPipe.c ****     uint64_t cur_us = Get_CurrentRunningUs();
+ 121:System/DataPipe/DataPipe.c **** 
+ 122:System/DataPipe/DataPipe.c ****     if (dma_hdl == &DataPipe_DMA)
+ 123:System/DataPipe/DataPipe.c ****     {
+ 124:System/DataPipe/DataPipe.c ****         Pipe_State = Pipe_Ready;
+ 125:System/DataPipe/DataPipe.c **** 
+ 126:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.dst->rx_cnt++;
+ 127:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org->tx_cnt++;
+ 128:System/DataPipe/DataPipe.c **** 
+ 129:System/DataPipe/DataPipe.c ****         if (Cur_Pluged_PipeObj.org->trans_finish_cb)
+ 130:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.org->trans_finish_cb(Cur_Pluged_PipeObj.org);
+ 131:System/DataPipe/DataPipe.c **** 
+ 132:System/DataPipe/DataPipe.c ****         if (Cur_Pluged_PipeObj.dst->trans_finish_cb)
+ 133:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->trans_finish_cb(Cur_Pluged_PipeObj.dst);
+ 134:System/DataPipe/DataPipe.c **** 
+ 135:System/DataPipe/DataPipe.c ****         if (Cur_Pluged_PipeObj.dst->rx_us_rt)
+ 136:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->detect_interval = cur_us - Cur_Pluged_PipeObj.dst->rx_us_rt;
+ 137:System/DataPipe/DataPipe.c **** 
+ 138:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.dst->rx_us_rt = cur_us;
+ 139:System/DataPipe/DataPipe.c **** 
+ 140:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.dst = NULL;
+ 141:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org = NULL;
+ 142:System/DataPipe/DataPipe.c ****     }
+ 143:System/DataPipe/DataPipe.c **** }
+ 144:System/DataPipe/DataPipe.c **** 
+ 145:System/DataPipe/DataPipe.c **** /* transmit error callback */
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 4
+
+
+ 146:System/DataPipe/DataPipe.c **** static void DataPipe_TransError_Callback(DMA_HandleTypeDef *dma_hdl)
+ 147:System/DataPipe/DataPipe.c **** {
+  28              		.loc 1 147 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+ 148:System/DataPipe/DataPipe.c ****     if (dma_hdl == &DataPipe_DMA)
+  32              		.loc 1 148 5 view .LVU1
+  33              		.loc 1 148 8 is_stmt 0 view .LVU2
+  34 0000 174B     		ldr	r3, .L10
+  35 0002 9842     		cmp	r0, r3
+  36 0004 00D0     		beq	.L9
+  37 0006 7047     		bx	lr
+  38              	.L9:
+ 147:System/DataPipe/DataPipe.c ****     if (dma_hdl == &DataPipe_DMA)
+  39              		.loc 1 147 1 view .LVU3
+  40 0008 10B5     		push	{r4, lr}
+  41              	.LCFI0:
+  42              		.cfi_def_cfa_offset 8
+  43              		.cfi_offset 4, -8
+  44              		.cfi_offset 14, -4
+  45 000a 0446     		mov	r4, r0
+ 149:System/DataPipe/DataPipe.c ****     {
+ 150:System/DataPipe/DataPipe.c ****         Pipe_State = Pipe_Error;
+  46              		.loc 1 150 9 is_stmt 1 view .LVU4
+  47              		.loc 1 150 20 is_stmt 0 view .LVU5
+  48 000c 154B     		ldr	r3, .L10+4
+  49 000e 0322     		movs	r2, #3
+  50 0010 1A70     		strb	r2, [r3]
+ 151:System/DataPipe/DataPipe.c **** 
+ 152:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.dst->er_cnt++;
+  51              		.loc 1 152 9 is_stmt 1 view .LVU6
+  52              		.loc 1 152 27 is_stmt 0 view .LVU7
+  53 0012 154A     		ldr	r2, .L10+8
+  54 0014 5168     		ldr	r1, [r2, #4]
+  55              		.loc 1 152 31 view .LVU8
+  56 0016 D1F82730 		ldr	r3, [r1, #39]	@ unaligned
+  57              		.loc 1 152 39 view .LVU9
+  58 001a 0133     		adds	r3, r3, #1
+  59 001c C1F82730 		str	r3, [r1, #39]	@ unaligned
+ 153:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org->er_cnt++;
+  60              		.loc 1 153 9 is_stmt 1 view .LVU10
+  61              		.loc 1 153 27 is_stmt 0 view .LVU11
+  62 0020 1068     		ldr	r0, [r2]
+  63              	.LVL1:
+  64              		.loc 1 153 31 view .LVU12
+  65 0022 D0F82730 		ldr	r3, [r0, #39]	@ unaligned
+  66              		.loc 1 153 39 view .LVU13
+  67 0026 0133     		adds	r3, r3, #1
+  68 0028 C0F82730 		str	r3, [r0, #39]	@ unaligned
+ 154:System/DataPipe/DataPipe.c **** 
+ 155:System/DataPipe/DataPipe.c ****         if (Cur_Pluged_PipeObj.org->trans_error_cb)
+  69              		.loc 1 155 9 is_stmt 1 view .LVU14
+  70              		.loc 1 155 35 is_stmt 0 view .LVU15
+  71 002c D0F81B30 		ldr	r3, [r0, #27]	@ unaligned
+  72              		.loc 1 155 12 view .LVU16
+  73 0030 03B1     		cbz	r3, .L3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 5
+
+
+ 156:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.org->trans_error_cb(Cur_Pluged_PipeObj.org);
+  74              		.loc 1 156 13 is_stmt 1 view .LVU17
+  75 0032 9847     		blx	r3
+  76              	.LVL2:
+  77              	.L3:
+ 157:System/DataPipe/DataPipe.c **** 
+ 158:System/DataPipe/DataPipe.c ****         if (Cur_Pluged_PipeObj.dst->trans_error_cb)
+  78              		.loc 1 158 9 view .LVU18
+  79              		.loc 1 158 31 is_stmt 0 view .LVU19
+  80 0034 0C4B     		ldr	r3, .L10+8
+  81 0036 5868     		ldr	r0, [r3, #4]
+  82              		.loc 1 158 35 view .LVU20
+  83 0038 D0F81B30 		ldr	r3, [r0, #27]	@ unaligned
+  84              		.loc 1 158 12 view .LVU21
+  85 003c 03B1     		cbz	r3, .L4
+ 159:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->trans_error_cb(Cur_Pluged_PipeObj.dst);
+  86              		.loc 1 159 13 is_stmt 1 view .LVU22
+  87 003e 9847     		blx	r3
+  88              	.LVL3:
+  89              	.L4:
+ 160:System/DataPipe/DataPipe.c **** 
+ 161:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.dst = NULL;
+  90              		.loc 1 161 9 view .LVU23
+  91              		.loc 1 161 32 is_stmt 0 view .LVU24
+  92 0040 094B     		ldr	r3, .L10+8
+  93 0042 0022     		movs	r2, #0
+  94 0044 5A60     		str	r2, [r3, #4]
+ 162:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org = NULL;
+  95              		.loc 1 162 9 is_stmt 1 view .LVU25
+  96              		.loc 1 162 32 is_stmt 0 view .LVU26
+  97 0046 1A60     		str	r2, [r3]
+ 163:System/DataPipe/DataPipe.c **** 
+ 164:System/DataPipe/DataPipe.c ****         /*!< Transfer error */
+ 165:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_TE)
+  98              		.loc 1 165 9 is_stmt 1 view .LVU27
+  99              		.loc 1 165 20 is_stmt 0 view .LVU28
+ 100 0048 636D     		ldr	r3, [r4, #84]
+ 166:System/DataPipe/DataPipe.c ****         {
+ 167:System/DataPipe/DataPipe.c ****         }
+ 101              		.loc 1 167 9 is_stmt 1 view .LVU29
+ 168:System/DataPipe/DataPipe.c **** 
+ 169:System/DataPipe/DataPipe.c ****         /*!< FIFO error */
+ 170:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_FE)
+ 102              		.loc 1 170 9 view .LVU30
+ 103              		.loc 1 170 20 is_stmt 0 view .LVU31
+ 104 004a 636D     		ldr	r3, [r4, #84]
+ 171:System/DataPipe/DataPipe.c ****         {
+ 172:System/DataPipe/DataPipe.c ****         }
+ 105              		.loc 1 172 9 is_stmt 1 view .LVU32
+ 173:System/DataPipe/DataPipe.c **** 
+ 174:System/DataPipe/DataPipe.c ****         /*!< Direct Mode error */
+ 175:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_DME)
+ 106              		.loc 1 175 9 view .LVU33
+ 107              		.loc 1 175 20 is_stmt 0 view .LVU34
+ 108 004c 636D     		ldr	r3, [r4, #84]
+ 176:System/DataPipe/DataPipe.c ****         {
+ 177:System/DataPipe/DataPipe.c ****         }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 6
+
+
+ 109              		.loc 1 177 9 is_stmt 1 view .LVU35
+ 178:System/DataPipe/DataPipe.c **** 
+ 179:System/DataPipe/DataPipe.c ****         /*!< Timeout error */
+ 180:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_TIMEOUT)
+ 110              		.loc 1 180 9 view .LVU36
+ 111              		.loc 1 180 20 is_stmt 0 view .LVU37
+ 112 004e 636D     		ldr	r3, [r4, #84]
+ 181:System/DataPipe/DataPipe.c ****         {
+ 182:System/DataPipe/DataPipe.c ****         }
+ 113              		.loc 1 182 9 is_stmt 1 view .LVU38
+ 183:System/DataPipe/DataPipe.c **** 
+ 184:System/DataPipe/DataPipe.c ****         /*!< Parameter error */
+ 185:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_PARAM)
+ 114              		.loc 1 185 9 view .LVU39
+ 115              		.loc 1 185 20 is_stmt 0 view .LVU40
+ 116 0050 636D     		ldr	r3, [r4, #84]
+ 186:System/DataPipe/DataPipe.c ****         {
+ 187:System/DataPipe/DataPipe.c ****         }
+ 117              		.loc 1 187 9 is_stmt 1 view .LVU41
+ 188:System/DataPipe/DataPipe.c **** 
+ 189:System/DataPipe/DataPipe.c ****         /*!< Abort requested with no Xfer ongoing */
+ 190:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_PARAM)
+ 118              		.loc 1 190 9 view .LVU42
+ 119              		.loc 1 190 20 is_stmt 0 view .LVU43
+ 120 0052 636D     		ldr	r3, [r4, #84]
+ 191:System/DataPipe/DataPipe.c ****         {
+ 192:System/DataPipe/DataPipe.c ****         }
+ 121              		.loc 1 192 9 is_stmt 1 view .LVU44
+ 193:System/DataPipe/DataPipe.c **** 
+ 194:System/DataPipe/DataPipe.c ****         /*!< Not supported mode */
+ 195:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_NOT_SUPPORTED)
+ 122              		.loc 1 195 9 view .LVU45
+ 123              		.loc 1 195 20 is_stmt 0 view .LVU46
+ 124 0054 636D     		ldr	r3, [r4, #84]
+ 196:System/DataPipe/DataPipe.c ****         {
+ 197:System/DataPipe/DataPipe.c ****         }
+ 125              		.loc 1 197 9 is_stmt 1 view .LVU47
+ 198:System/DataPipe/DataPipe.c **** 
+ 199:System/DataPipe/DataPipe.c ****         /*!< DMAMUX sync overrun  error */
+ 200:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_SYNC)
+ 126              		.loc 1 200 9 view .LVU48
+ 127              		.loc 1 200 20 is_stmt 0 view .LVU49
+ 128 0056 636D     		ldr	r3, [r4, #84]
+ 201:System/DataPipe/DataPipe.c ****         {
+ 202:System/DataPipe/DataPipe.c ****         }
+ 129              		.loc 1 202 9 is_stmt 1 view .LVU50
+ 203:System/DataPipe/DataPipe.c **** 
+ 204:System/DataPipe/DataPipe.c ****         /*!< DMAMUX request generator overrun  error */
+ 205:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_REQGEN)
+ 130              		.loc 1 205 9 view .LVU51
+ 131              		.loc 1 205 20 is_stmt 0 view .LVU52
+ 132 0058 636D     		ldr	r3, [r4, #84]
+ 206:System/DataPipe/DataPipe.c ****         {
+ 207:System/DataPipe/DataPipe.c ****         }
+ 133              		.loc 1 207 9 is_stmt 1 view .LVU53
+ 208:System/DataPipe/DataPipe.c **** 
+ 209:System/DataPipe/DataPipe.c ****         /*!< DMA Busy error */
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 7
+
+
+ 210:System/DataPipe/DataPipe.c ****         if (dma_hdl->ErrorCode & HAL_DMA_ERROR_BUSY)
+ 134              		.loc 1 210 9 view .LVU54
+ 135              		.loc 1 210 20 is_stmt 0 view .LVU55
+ 136 005a 636D     		ldr	r3, [r4, #84]
+ 211:System/DataPipe/DataPipe.c ****         {
+ 212:System/DataPipe/DataPipe.c ****         }
+ 137              		.loc 1 212 9 is_stmt 1 view .LVU56
+ 213:System/DataPipe/DataPipe.c **** 
+ 214:System/DataPipe/DataPipe.c ****         /* recover from error */
+ 215:System/DataPipe/DataPipe.c ****     }
+ 216:System/DataPipe/DataPipe.c **** }
+ 138              		.loc 1 216 1 is_stmt 0 view .LVU57
+ 139 005c 10BD     		pop	{r4, pc}
+ 140              	.LVL4:
+ 141              	.L11:
+ 142              		.loc 1 216 1 view .LVU58
+ 143 005e 00BF     		.align	2
+ 144              	.L10:
+ 145 0060 00000000 		.word	.LANCHOR0
+ 146 0064 00000000 		.word	.LANCHOR1
+ 147 0068 00000000 		.word	.LANCHOR2
+ 148              		.cfi_endproc
+ 149              	.LFE154:
+ 151              		.section	.text.DataPipe_TransFinish_Callback,"ax",%progbits
+ 152              		.align	1
+ 153              		.syntax unified
+ 154              		.thumb
+ 155              		.thumb_func
+ 156              		.fpu fpv5-d16
+ 158              	DataPipe_TransFinish_Callback:
+ 159              	.LVL5:
+ 160              	.LFB153:
+ 119:System/DataPipe/DataPipe.c ****     uint64_t cur_us = Get_CurrentRunningUs();
+ 161              		.loc 1 119 1 is_stmt 1 view -0
+ 162              		.cfi_startproc
+ 163              		@ args = 0, pretend = 0, frame = 0
+ 164              		@ frame_needed = 0, uses_anonymous_args = 0
+ 119:System/DataPipe/DataPipe.c ****     uint64_t cur_us = Get_CurrentRunningUs();
+ 165              		.loc 1 119 1 is_stmt 0 view .LVU60
+ 166 0000 70B5     		push	{r4, r5, r6, lr}
+ 167              	.LCFI1:
+ 168              		.cfi_def_cfa_offset 16
+ 169              		.cfi_offset 4, -16
+ 170              		.cfi_offset 5, -12
+ 171              		.cfi_offset 6, -8
+ 172              		.cfi_offset 14, -4
+ 173 0002 0446     		mov	r4, r0
+ 120:System/DataPipe/DataPipe.c **** 
+ 174              		.loc 1 120 5 is_stmt 1 view .LVU61
+ 120:System/DataPipe/DataPipe.c **** 
+ 175              		.loc 1 120 23 is_stmt 0 view .LVU62
+ 176 0004 FFF7FEFF 		bl	Get_CurrentRunningUs
+ 177              	.LVL6:
+ 122:System/DataPipe/DataPipe.c ****     {
+ 178              		.loc 1 122 5 is_stmt 1 view .LVU63
+ 122:System/DataPipe/DataPipe.c ****     {
+ 179              		.loc 1 122 8 is_stmt 0 view .LVU64
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 8
+
+
+ 180 0008 174B     		ldr	r3, .L19
+ 181 000a 9C42     		cmp	r4, r3
+ 182 000c 00D0     		beq	.L18
+ 183              	.LVL7:
+ 184              	.L12:
+ 143:System/DataPipe/DataPipe.c **** 
+ 185              		.loc 1 143 1 view .LVU65
+ 186 000e 70BD     		pop	{r4, r5, r6, pc}
+ 187              	.LVL8:
+ 188              	.L18:
+ 143:System/DataPipe/DataPipe.c **** 
+ 189              		.loc 1 143 1 view .LVU66
+ 190 0010 0646     		mov	r6, r0
+ 191 0012 0D46     		mov	r5, r1
+ 124:System/DataPipe/DataPipe.c **** 
+ 192              		.loc 1 124 9 is_stmt 1 view .LVU67
+ 124:System/DataPipe/DataPipe.c **** 
+ 193              		.loc 1 124 20 is_stmt 0 view .LVU68
+ 194 0014 154B     		ldr	r3, .L19+4
+ 195 0016 0122     		movs	r2, #1
+ 196 0018 1A70     		strb	r2, [r3]
+ 126:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org->tx_cnt++;
+ 197              		.loc 1 126 9 is_stmt 1 view .LVU69
+ 126:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org->tx_cnt++;
+ 198              		.loc 1 126 27 is_stmt 0 view .LVU70
+ 199 001a 154A     		ldr	r2, .L19+8
+ 200 001c 5168     		ldr	r1, [r2, #4]
+ 201              	.LVL9:
+ 126:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org->tx_cnt++;
+ 202              		.loc 1 126 31 view .LVU71
+ 203 001e D1F82330 		ldr	r3, [r1, #35]	@ unaligned
+ 126:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org->tx_cnt++;
+ 204              		.loc 1 126 39 view .LVU72
+ 205 0022 0133     		adds	r3, r3, #1
+ 206 0024 C1F82330 		str	r3, [r1, #35]	@ unaligned
+ 127:System/DataPipe/DataPipe.c **** 
+ 207              		.loc 1 127 9 is_stmt 1 view .LVU73
+ 127:System/DataPipe/DataPipe.c **** 
+ 208              		.loc 1 127 27 is_stmt 0 view .LVU74
+ 209 0028 1068     		ldr	r0, [r2]
+ 210              	.LVL10:
+ 127:System/DataPipe/DataPipe.c **** 
+ 211              		.loc 1 127 31 view .LVU75
+ 212 002a D0F81F30 		ldr	r3, [r0, #31]	@ unaligned
+ 127:System/DataPipe/DataPipe.c **** 
+ 213              		.loc 1 127 39 view .LVU76
+ 214 002e 0133     		adds	r3, r3, #1
+ 215 0030 C0F81F30 		str	r3, [r0, #31]	@ unaligned
+ 129:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.org->trans_finish_cb(Cur_Pluged_PipeObj.org);
+ 216              		.loc 1 129 9 is_stmt 1 view .LVU77
+ 129:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.org->trans_finish_cb(Cur_Pluged_PipeObj.org);
+ 217              		.loc 1 129 35 is_stmt 0 view .LVU78
+ 218 0034 D0F81730 		ldr	r3, [r0, #23]	@ unaligned
+ 129:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.org->trans_finish_cb(Cur_Pluged_PipeObj.org);
+ 219              		.loc 1 129 12 view .LVU79
+ 220 0038 03B1     		cbz	r3, .L14
+ 130:System/DataPipe/DataPipe.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 9
+
+
+ 221              		.loc 1 130 13 is_stmt 1 view .LVU80
+ 222 003a 9847     		blx	r3
+ 223              	.LVL11:
+ 224              	.L14:
+ 132:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->trans_finish_cb(Cur_Pluged_PipeObj.dst);
+ 225              		.loc 1 132 9 view .LVU81
+ 132:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->trans_finish_cb(Cur_Pluged_PipeObj.dst);
+ 226              		.loc 1 132 31 is_stmt 0 view .LVU82
+ 227 003c 0C4B     		ldr	r3, .L19+8
+ 228 003e 5868     		ldr	r0, [r3, #4]
+ 132:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->trans_finish_cb(Cur_Pluged_PipeObj.dst);
+ 229              		.loc 1 132 35 view .LVU83
+ 230 0040 D0F81730 		ldr	r3, [r0, #23]	@ unaligned
+ 132:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->trans_finish_cb(Cur_Pluged_PipeObj.dst);
+ 231              		.loc 1 132 12 view .LVU84
+ 232 0044 03B1     		cbz	r3, .L15
+ 133:System/DataPipe/DataPipe.c **** 
+ 233              		.loc 1 133 13 is_stmt 1 view .LVU85
+ 234 0046 9847     		blx	r3
+ 235              	.LVL12:
+ 236              	.L15:
+ 135:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->detect_interval = cur_us - Cur_Pluged_PipeObj.dst->rx_us_rt;
+ 237              		.loc 1 135 9 view .LVU86
+ 135:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->detect_interval = cur_us - Cur_Pluged_PipeObj.dst->rx_us_rt;
+ 238              		.loc 1 135 31 is_stmt 0 view .LVU87
+ 239 0048 094B     		ldr	r3, .L19+8
+ 240 004a 5B68     		ldr	r3, [r3, #4]
+ 135:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->detect_interval = cur_us - Cur_Pluged_PipeObj.dst->rx_us_rt;
+ 241              		.loc 1 135 35 view .LVU88
+ 242 004c 9A68     		ldr	r2, [r3, #8]	@ unaligned
+ 243 004e D968     		ldr	r1, [r3, #12]	@ unaligned
+ 135:System/DataPipe/DataPipe.c ****             Cur_Pluged_PipeObj.dst->detect_interval = cur_us - Cur_Pluged_PipeObj.dst->rx_us_rt;
+ 244              		.loc 1 135 12 view .LVU89
+ 245 0050 1143     		orrs	r1, r2, r1
+ 246 0052 01D0     		beq	.L16
+ 136:System/DataPipe/DataPipe.c **** 
+ 247              		.loc 1 136 13 is_stmt 1 view .LVU90
+ 136:System/DataPipe/DataPipe.c **** 
+ 248              		.loc 1 136 62 is_stmt 0 view .LVU91
+ 249 0054 B21A     		subs	r2, r6, r2
+ 136:System/DataPipe/DataPipe.c **** 
+ 250              		.loc 1 136 53 view .LVU92
+ 251 0056 5A60     		str	r2, [r3, #4]	@ unaligned
+ 252              	.L16:
+ 138:System/DataPipe/DataPipe.c **** 
+ 253              		.loc 1 138 9 is_stmt 1 view .LVU93
+ 138:System/DataPipe/DataPipe.c **** 
+ 254              		.loc 1 138 42 is_stmt 0 view .LVU94
+ 255 0058 9E60     		str	r6, [r3, #8]	@ unaligned
+ 256 005a DD60     		str	r5, [r3, #12]	@ unaligned
+ 140:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org = NULL;
+ 257              		.loc 1 140 9 is_stmt 1 view .LVU95
+ 140:System/DataPipe/DataPipe.c ****         Cur_Pluged_PipeObj.org = NULL;
+ 258              		.loc 1 140 32 is_stmt 0 view .LVU96
+ 259 005c 044B     		ldr	r3, .L19+8
+ 260 005e 0022     		movs	r2, #0
+ 261 0060 5A60     		str	r2, [r3, #4]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 10
+
+
+ 141:System/DataPipe/DataPipe.c ****     }
+ 262              		.loc 1 141 9 is_stmt 1 view .LVU97
+ 141:System/DataPipe/DataPipe.c ****     }
+ 263              		.loc 1 141 32 is_stmt 0 view .LVU98
+ 264 0062 1A60     		str	r2, [r3]
+ 143:System/DataPipe/DataPipe.c **** 
+ 265              		.loc 1 143 1 view .LVU99
+ 266 0064 D3E7     		b	.L12
+ 267              	.L20:
+ 268 0066 00BF     		.align	2
+ 269              	.L19:
+ 270 0068 00000000 		.word	.LANCHOR0
+ 271 006c 00000000 		.word	.LANCHOR1
+ 272 0070 00000000 		.word	.LANCHOR2
+ 273              		.cfi_endproc
+ 274              	.LFE153:
+ 276              		.section	.text.DataPipe_Init,"ax",%progbits
+ 277              		.align	1
+ 278              		.global	DataPipe_Init
+ 279              		.syntax unified
+ 280              		.thumb
+ 281              		.thumb_func
+ 282              		.fpu fpv5-d16
+ 284              	DataPipe_Init:
+ 285              	.LFB150:
+  24:System/DataPipe/DataPipe.c ****     /* DMA controller clock enable */
+ 286              		.loc 1 24 1 is_stmt 1 view -0
+ 287              		.cfi_startproc
+ 288              		@ args = 0, pretend = 0, frame = 8
+ 289              		@ frame_needed = 0, uses_anonymous_args = 0
+ 290 0000 10B5     		push	{r4, lr}
+ 291              	.LCFI2:
+ 292              		.cfi_def_cfa_offset 8
+ 293              		.cfi_offset 4, -8
+ 294              		.cfi_offset 14, -4
+ 295 0002 82B0     		sub	sp, sp, #8
+ 296              	.LCFI3:
+ 297              		.cfi_def_cfa_offset 16
+  26:System/DataPipe/DataPipe.c **** 
+ 298              		.loc 1 26 5 view .LVU101
+ 299              	.LBB2:
+  26:System/DataPipe/DataPipe.c **** 
+ 300              		.loc 1 26 5 view .LVU102
+  26:System/DataPipe/DataPipe.c **** 
+ 301              		.loc 1 26 5 view .LVU103
+ 302 0004 1F4B     		ldr	r3, .L26
+ 303 0006 D3F8D820 		ldr	r2, [r3, #216]
+ 304 000a 42F00202 		orr	r2, r2, #2
+ 305 000e C3F8D820 		str	r2, [r3, #216]
+  26:System/DataPipe/DataPipe.c **** 
+ 306              		.loc 1 26 5 view .LVU104
+ 307 0012 D3F8D830 		ldr	r3, [r3, #216]
+ 308 0016 03F00203 		and	r3, r3, #2
+ 309 001a 0193     		str	r3, [sp, #4]
+  26:System/DataPipe/DataPipe.c **** 
+ 310              		.loc 1 26 5 view .LVU105
+ 311 001c 019B     		ldr	r3, [sp, #4]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 11
+
+
+ 312              	.LBE2:
+  26:System/DataPipe/DataPipe.c **** 
+ 313              		.loc 1 26 5 view .LVU106
+  29:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Request = DMA_REQUEST_MEM2MEM;
+ 314              		.loc 1 29 5 view .LVU107
+  29:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Request = DMA_REQUEST_MEM2MEM;
+ 315              		.loc 1 29 27 is_stmt 0 view .LVU108
+ 316 001e 1A48     		ldr	r0, .L26+4
+ 317 0020 1A4B     		ldr	r3, .L26+8
+ 318 0022 0360     		str	r3, [r0]
+  30:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Direction = DMA_MEMORY_TO_MEMORY;
+ 319              		.loc 1 30 5 is_stmt 1 view .LVU109
+  30:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Direction = DMA_MEMORY_TO_MEMORY;
+ 320              		.loc 1 30 31 is_stmt 0 view .LVU110
+ 321 0024 0023     		movs	r3, #0
+ 322 0026 4360     		str	r3, [r0, #4]
+  31:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.PeriphInc = DMA_PINC_ENABLE;
+ 323              		.loc 1 31 5 is_stmt 1 view .LVU111
+  31:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.PeriphInc = DMA_PINC_ENABLE;
+ 324              		.loc 1 31 33 is_stmt 0 view .LVU112
+ 325 0028 8022     		movs	r2, #128
+ 326 002a 8260     		str	r2, [r0, #8]
+  32:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.MemInc = DMA_MINC_ENABLE;
+ 327              		.loc 1 32 5 is_stmt 1 view .LVU113
+  32:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.MemInc = DMA_MINC_ENABLE;
+ 328              		.loc 1 32 33 is_stmt 0 view .LVU114
+ 329 002c 4FF40072 		mov	r2, #512
+ 330 0030 C260     		str	r2, [r0, #12]
+  33:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+ 331              		.loc 1 33 5 is_stmt 1 view .LVU115
+  33:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+ 332              		.loc 1 33 30 is_stmt 0 view .LVU116
+ 333 0032 4FF48062 		mov	r2, #1024
+ 334 0036 0261     		str	r2, [r0, #16]
+  34:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+ 335              		.loc 1 34 5 is_stmt 1 view .LVU117
+  34:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+ 336              		.loc 1 34 43 is_stmt 0 view .LVU118
+ 337 0038 4361     		str	r3, [r0, #20]
+  35:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Mode = DMA_NORMAL;
+ 338              		.loc 1 35 5 is_stmt 1 view .LVU119
+  35:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Mode = DMA_NORMAL;
+ 339              		.loc 1 35 40 is_stmt 0 view .LVU120
+ 340 003a 8361     		str	r3, [r0, #24]
+  36:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+ 341              		.loc 1 36 5 is_stmt 1 view .LVU121
+  36:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+ 342              		.loc 1 36 28 is_stmt 0 view .LVU122
+ 343 003c C361     		str	r3, [r0, #28]
+  37:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+ 344              		.loc 1 37 5 is_stmt 1 view .LVU123
+  37:System/DataPipe/DataPipe.c ****     DataPipe_DMA.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+ 345              		.loc 1 37 32 is_stmt 0 view .LVU124
+ 346 003e 4FF44033 		mov	r3, #196608
+ 347 0042 0362     		str	r3, [r0, #32]
+  38:System/DataPipe/DataPipe.c **** 
+ 348              		.loc 1 38 5 is_stmt 1 view .LVU125
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 12
+
+
+  38:System/DataPipe/DataPipe.c **** 
+ 349              		.loc 1 38 32 is_stmt 0 view .LVU126
+ 350 0044 0423     		movs	r3, #4
+ 351 0046 4362     		str	r3, [r0, #36]
+  40:System/DataPipe/DataPipe.c ****         return false;
+ 352              		.loc 1 40 5 is_stmt 1 view .LVU127
+  40:System/DataPipe/DataPipe.c ****         return false;
+ 353              		.loc 1 40 9 is_stmt 0 view .LVU128
+ 354 0048 FFF7FEFF 		bl	HAL_DMA_Init
+ 355              	.LVL13:
+  40:System/DataPipe/DataPipe.c ****         return false;
+ 356              		.loc 1 40 8 view .LVU129
+ 357 004c 10B1     		cbz	r0, .L25
+  41:System/DataPipe/DataPipe.c **** 
+ 358              		.loc 1 41 16 view .LVU130
+ 359 004e 0020     		movs	r0, #0
+ 360              	.L22:
+  55:System/DataPipe/DataPipe.c **** 
+ 361              		.loc 1 55 1 view .LVU131
+ 362 0050 02B0     		add	sp, sp, #8
+ 363              	.LCFI4:
+ 364              		.cfi_remember_state
+ 365              		.cfi_def_cfa_offset 8
+ 366              		@ sp needed
+ 367 0052 10BD     		pop	{r4, pc}
+ 368              	.L25:
+ 369              	.LCFI5:
+ 370              		.cfi_restore_state
+  44:System/DataPipe/DataPipe.c ****     HAL_DMA_RegisterCallback(&DataPipe_DMA, HAL_DMA_XFER_ERROR_CB_ID, DataPipe_TransError_Callback)
+ 371              		.loc 1 44 5 is_stmt 1 view .LVU132
+ 372 0054 0C4C     		ldr	r4, .L26+4
+ 373 0056 0E4A     		ldr	r2, .L26+12
+ 374 0058 0021     		movs	r1, #0
+ 375 005a 2046     		mov	r0, r4
+ 376 005c FFF7FEFF 		bl	HAL_DMA_RegisterCallback
+ 377              	.LVL14:
+  45:System/DataPipe/DataPipe.c **** 
+ 378              		.loc 1 45 5 view .LVU133
+ 379 0060 0C4A     		ldr	r2, .L26+16
+ 380 0062 0421     		movs	r1, #4
+ 381 0064 2046     		mov	r0, r4
+ 382 0066 FFF7FEFF 		bl	HAL_DMA_RegisterCallback
+ 383              	.LVL15:
+  49:System/DataPipe/DataPipe.c ****     HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+ 384              		.loc 1 49 5 view .LVU134
+ 385 006a 0022     		movs	r2, #0
+ 386 006c 1146     		mov	r1, r2
+ 387 006e 4620     		movs	r0, #70
+ 388 0070 FFF7FEFF 		bl	HAL_NVIC_SetPriority
+ 389              	.LVL16:
+  50:System/DataPipe/DataPipe.c **** 
+ 390              		.loc 1 50 5 view .LVU135
+ 391 0074 4620     		movs	r0, #70
+ 392 0076 FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 393              	.LVL17:
+  52:System/DataPipe/DataPipe.c **** 
+ 394              		.loc 1 52 5 view .LVU136
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 13
+
+
+  52:System/DataPipe/DataPipe.c **** 
+ 395              		.loc 1 52 16 is_stmt 0 view .LVU137
+ 396 007a 0120     		movs	r0, #1
+ 397 007c 064B     		ldr	r3, .L26+20
+ 398 007e 1870     		strb	r0, [r3]
+  54:System/DataPipe/DataPipe.c **** }
+ 399              		.loc 1 54 5 is_stmt 1 view .LVU138
+  54:System/DataPipe/DataPipe.c **** }
+ 400              		.loc 1 54 12 is_stmt 0 view .LVU139
+ 401 0080 E6E7     		b	.L22
+ 402              	.L27:
+ 403 0082 00BF     		.align	2
+ 404              	.L26:
+ 405 0084 00440258 		.word	1476543488
+ 406 0088 00000000 		.word	.LANCHOR0
+ 407 008c B8040240 		.word	1073874104
+ 408 0090 00000000 		.word	DataPipe_TransFinish_Callback
+ 409 0094 00000000 		.word	DataPipe_TransError_Callback
+ 410 0098 00000000 		.word	.LANCHOR1
+ 411              		.cfi_endproc
+ 412              	.LFE150:
+ 414              		.section	.text.DataPipe_SendTo,"ax",%progbits
+ 415              		.align	1
+ 416              		.global	DataPipe_SendTo
+ 417              		.syntax unified
+ 418              		.thumb
+ 419              		.thumb_func
+ 420              		.fpu fpv5-d16
+ 422              	DataPipe_SendTo:
+ 423              	.LVL18:
+ 424              	.LFB151:
+  58:System/DataPipe/DataPipe.c ****     uint8_t retry_cnt = 5;
+ 425              		.loc 1 58 1 is_stmt 1 view -0
+ 426              		.cfi_startproc
+ 427              		@ args = 0, pretend = 0, frame = 0
+ 428              		@ frame_needed = 0, uses_anonymous_args = 0
+  58:System/DataPipe/DataPipe.c ****     uint8_t retry_cnt = 5;
+ 429              		.loc 1 58 1 is_stmt 0 view .LVU141
+ 430 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 431              	.LCFI6:
+ 432              		.cfi_def_cfa_offset 24
+ 433              		.cfi_offset 4, -24
+ 434              		.cfi_offset 5, -20
+ 435              		.cfi_offset 6, -16
+ 436              		.cfi_offset 7, -12
+ 437              		.cfi_offset 8, -8
+ 438              		.cfi_offset 14, -4
+  59:System/DataPipe/DataPipe.c **** 
+ 439              		.loc 1 59 5 is_stmt 1 view .LVU142
+ 440              	.LVL19:
+  61:System/DataPipe/DataPipe.c ****         (p_dst == NULL) ||
+ 441              		.loc 1 61 5 view .LVU143
+  61:System/DataPipe/DataPipe.c ****         (p_dst == NULL) ||
+ 442              		.loc 1 61 8 is_stmt 0 view .LVU144
+ 443 0004 0029     		cmp	r1, #0
+ 444 0006 18BF     		it	ne
+ 445 0008 0028     		cmpne	r0, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 14
+
+
+ 446 000a 0CBF     		ite	eq
+ 447 000c 0127     		moveq	r7, #1
+ 448 000e 0027     		movne	r7, #0
+ 449 0010 2BD0     		beq	.L29
+ 450 0012 0546     		mov	r5, r0
+ 451 0014 0E46     		mov	r6, r1
+  63:System/DataPipe/DataPipe.c ****         !p_org->enable ||
+ 452              		.loc 1 63 15 view .LVU145
+ 453 0016 B0F81520 		ldrh	r2, [r0, #21]	@ unaligned
+  63:System/DataPipe/DataPipe.c ****         !p_org->enable ||
+ 454              		.loc 1 63 35 view .LVU146
+ 455 001a B1F81530 		ldrh	r3, [r1, #21]	@ unaligned
+  62:System/DataPipe/DataPipe.c ****         (p_org->data_size != p_dst->data_size) ||
+ 456              		.loc 1 62 25 view .LVU147
+ 457 001e 9A42     		cmp	r2, r3
+ 458 0020 23D1     		bne	.L29
+  64:System/DataPipe/DataPipe.c ****         !p_dst->enable ||
+ 459              		.loc 1 64 15 view .LVU148
+ 460 0022 037C     		ldrb	r3, [r0, #16]	@ zero_extendqisi2
+  63:System/DataPipe/DataPipe.c ****         !p_org->enable ||
+ 461              		.loc 1 63 48 view .LVU149
+ 462 0024 0BB3     		cbz	r3, .L29
+  65:System/DataPipe/DataPipe.c ****         (p_dst->min_rx_interval &&
+ 463              		.loc 1 65 15 view .LVU150
+ 464 0026 91F81080 		ldrb	r8, [r1, #16]	@ zero_extendqisi2
+  64:System/DataPipe/DataPipe.c ****         !p_dst->enable ||
+ 465              		.loc 1 64 24 view .LVU151
+ 466 002a B8F1000F 		cmp	r8, #0
+ 467 002e 1CD0     		beq	.L29
+  66:System/DataPipe/DataPipe.c ****          p_dst->rx_us_rt &&
+ 468              		.loc 1 66 15 view .LVU152
+ 469 0030 0B68     		ldr	r3, [r1]	@ unaligned
+  65:System/DataPipe/DataPipe.c ****         (p_dst->min_rx_interval &&
+ 470              		.loc 1 65 24 view .LVU153
+ 471 0032 1BB1     		cbz	r3, .L30
+  67:System/DataPipe/DataPipe.c ****          (Get_CurrentRunningUs() - p_dst->rx_us_rt < p_dst->min_rx_interval)))
+ 472              		.loc 1 67 15 view .LVU154
+ 473 0034 8A68     		ldr	r2, [r1, #8]	@ unaligned
+ 474 0036 CB68     		ldr	r3, [r1, #12]	@ unaligned
+  66:System/DataPipe/DataPipe.c ****          p_dst->rx_us_rt &&
+ 475              		.loc 1 66 33 view .LVU155
+ 476 0038 1343     		orrs	r3, r2, r3
+ 477 003a 0AD1     		bne	.L39
+ 478              	.LVL20:
+ 479              	.L30:
+  71:System/DataPipe/DataPipe.c ****     while (Pipe_State != Pipe_Ready)
+ 480              		.loc 1 71 5 is_stmt 1 view .LVU156
+  72:System/DataPipe/DataPipe.c ****     {
+ 481              		.loc 1 72 5 view .LVU157
+  71:System/DataPipe/DataPipe.c ****     while (Pipe_State != Pipe_Ready)
+ 482              		.loc 1 71 15 is_stmt 0 view .LVU158
+ 483 003c C824     		movs	r4, #200
+ 484              	.LVL21:
+ 485              	.L32:
+  72:System/DataPipe/DataPipe.c ****     {
+ 486              		.loc 1 72 11 is_stmt 1 view .LVU159
+  72:System/DataPipe/DataPipe.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 15
+
+
+ 487              		.loc 1 72 23 is_stmt 0 view .LVU160
+ 488 003e 224B     		ldr	r3, .L41
+ 489 0040 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  72:System/DataPipe/DataPipe.c ****     {
+ 490              		.loc 1 72 11 view .LVU161
+ 491 0042 012B     		cmp	r3, #1
+ 492 0044 16D0     		beq	.L40
+  74:System/DataPipe/DataPipe.c **** 
+ 493              		.loc 1 74 9 is_stmt 1 view .LVU162
+  74:System/DataPipe/DataPipe.c **** 
+ 494              		.loc 1 74 18 is_stmt 0 view .LVU163
+ 495 0046 013C     		subs	r4, r4, #1
+ 496              	.LVL22:
+  76:System/DataPipe/DataPipe.c ****             return false;
+ 497              		.loc 1 76 9 is_stmt 1 view .LVU164
+  76:System/DataPipe/DataPipe.c ****             return false;
+ 498              		.loc 1 76 12 is_stmt 0 view .LVU165
+ 499 0048 14F0FF04 		ands	r4, r4, #255
+ 500              	.LVL23:
+  76:System/DataPipe/DataPipe.c ****             return false;
+ 501              		.loc 1 76 12 view .LVU166
+ 502 004c F7D1     		bne	.L32
+  77:System/DataPipe/DataPipe.c ****     }
+ 503              		.loc 1 77 20 view .LVU167
+ 504 004e B846     		mov	r8, r7
+ 505 0050 0DE0     		b	.L31
+ 506              	.LVL24:
+ 507              	.L39:
+  68:System/DataPipe/DataPipe.c ****         return false;
+ 508              		.loc 1 68 11 view .LVU168
+ 509 0052 FFF7FEFF 		bl	Get_CurrentRunningUs
+ 510              	.LVL25:
+  68:System/DataPipe/DataPipe.c ****         return false;
+ 511              		.loc 1 68 41 view .LVU169
+ 512 0056 B368     		ldr	r3, [r6, #8]	@ unaligned
+ 513 0058 F268     		ldr	r2, [r6, #12]	@ unaligned
+  68:System/DataPipe/DataPipe.c ****         return false;
+ 514              		.loc 1 68 34 view .LVU170
+ 515 005a C01A     		subs	r0, r0, r3
+ 516 005c 61EB0201 		sbc	r1, r1, r2
+  68:System/DataPipe/DataPipe.c ****         return false;
+ 517              		.loc 1 68 59 view .LVU171
+ 518 0060 3368     		ldr	r3, [r6]	@ unaligned
+  67:System/DataPipe/DataPipe.c ****          (Get_CurrentRunningUs() - p_dst->rx_us_rt < p_dst->min_rx_interval)))
+ 519              		.loc 1 67 26 view .LVU172
+ 520 0062 9842     		cmp	r0, r3
+ 521 0064 71F10003 		sbcs	r3, r1, #0
+ 522 0068 E8D2     		bcs	.L30
+ 523              	.LVL26:
+ 524              	.L29:
+  69:System/DataPipe/DataPipe.c **** 
+ 525              		.loc 1 69 9 is_stmt 1 view .LVU173
+  69:System/DataPipe/DataPipe.c **** 
+ 526              		.loc 1 69 16 is_stmt 0 view .LVU174
+ 527 006a 4FF00008 		mov	r8, #0
+ 528              	.LVL27:
+ 529              	.L31:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 16
+
+
+ 105:System/DataPipe/DataPipe.c **** 
+ 530              		.loc 1 105 1 view .LVU175
+ 531 006e 4046     		mov	r0, r8
+ 532 0070 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 533              	.LVL28:
+ 534              	.L40:
+  80:System/DataPipe/DataPipe.c ****     Cur_Pluged_PipeObj.org = p_org;
+ 535              		.loc 1 80 5 is_stmt 1 view .LVU176
+  80:System/DataPipe/DataPipe.c ****     Cur_Pluged_PipeObj.org = p_org;
+ 536              		.loc 1 80 28 is_stmt 0 view .LVU177
+ 537 0074 154B     		ldr	r3, .L41+4
+ 538 0076 5E60     		str	r6, [r3, #4]
+  81:System/DataPipe/DataPipe.c **** 
+ 539              		.loc 1 81 5 is_stmt 1 view .LVU178
+  81:System/DataPipe/DataPipe.c **** 
+ 540              		.loc 1 81 28 is_stmt 0 view .LVU179
+ 541 0078 1D60     		str	r5, [r3]
+  83:System/DataPipe/DataPipe.c **** 
+ 542              		.loc 1 83 5 is_stmt 1 view .LVU180
+ 543 007a FFF7FEFF 		bl	Kernel_EnterCritical
+ 544              	.LVL29:
+ 545              	.L34:
+  86:System/DataPipe/DataPipe.c ****     if (HAL_DMA_Start_IT(&DataPipe_DMA, p_org->data_addr, p_dst->data_addr, p_org->data_size) != HA
+ 546              		.loc 1 86 5 view .LVU181
+  86:System/DataPipe/DataPipe.c ****     if (HAL_DMA_Start_IT(&DataPipe_DMA, p_org->data_addr, p_dst->data_addr, p_org->data_size) != HA
+ 547              		.loc 1 86 16 is_stmt 0 view .LVU182
+ 548 007e 124B     		ldr	r3, .L41
+ 549 0080 0222     		movs	r2, #2
+ 550 0082 1A70     		strb	r2, [r3]
+  87:System/DataPipe/DataPipe.c ****     {
+ 551              		.loc 1 87 5 is_stmt 1 view .LVU183
+  87:System/DataPipe/DataPipe.c ****     {
+ 552              		.loc 1 87 9 is_stmt 0 view .LVU184
+ 553 0084 B5F81530 		ldrh	r3, [r5, #21]	@ unaligned
+ 554 0088 D6F81120 		ldr	r2, [r6, #17]	@ unaligned
+ 555 008c D5F81110 		ldr	r1, [r5, #17]	@ unaligned
+ 556 0090 0F48     		ldr	r0, .L41+8
+ 557 0092 FFF7FEFF 		bl	HAL_DMA_Start_IT
+ 558              	.LVL30:
+  87:System/DataPipe/DataPipe.c ****     {
+ 559              		.loc 1 87 8 view .LVU185
+ 560 0096 A0B1     		cbz	r0, .L35
+  89:System/DataPipe/DataPipe.c **** 
+ 561              		.loc 1 89 9 is_stmt 1 view .LVU186
+  89:System/DataPipe/DataPipe.c **** 
+ 562              		.loc 1 89 18 is_stmt 0 view .LVU187
+ 563 0098 013C     		subs	r4, r4, #1
+ 564              	.LVL31:
+  89:System/DataPipe/DataPipe.c **** 
+ 565              		.loc 1 89 18 view .LVU188
+ 566 009a E4B2     		uxtb	r4, r4
+ 567              	.LVL32:
+  91:System/DataPipe/DataPipe.c ****         {
+ 568              		.loc 1 91 9 is_stmt 1 view .LVU189
+  91:System/DataPipe/DataPipe.c ****         {
+ 569              		.loc 1 91 13 is_stmt 0 view .LVU190
+ 570 009c 0C48     		ldr	r0, .L41+8
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 17
+
+
+ 571 009e FFF7FEFF 		bl	HAL_DMA_Abort_IT
+ 572              	.LVL33:
+  91:System/DataPipe/DataPipe.c ****         {
+ 573              		.loc 1 91 12 view .LVU191
+ 574 00a2 08B1     		cbz	r0, .L36
+  93:System/DataPipe/DataPipe.c ****                 goto retry;
+ 575              		.loc 1 93 13 is_stmt 1 view .LVU192
+  93:System/DataPipe/DataPipe.c ****                 goto retry;
+ 576              		.loc 1 93 16 is_stmt 0 view .LVU193
+ 577 00a4 002C     		cmp	r4, #0
+ 578 00a6 EAD1     		bne	.L34
+ 579              	.L36:
+  97:System/DataPipe/DataPipe.c ****         p_org->er_cnt++;
+ 580              		.loc 1 97 9 is_stmt 1 view .LVU194
+  97:System/DataPipe/DataPipe.c ****         p_org->er_cnt++;
+ 581              		.loc 1 97 20 is_stmt 0 view .LVU195
+ 582 00a8 074B     		ldr	r3, .L41
+ 583 00aa 0322     		movs	r2, #3
+ 584 00ac 1A70     		strb	r2, [r3]
+  98:System/DataPipe/DataPipe.c ****         p_dst->er_cnt++;
+ 585              		.loc 1 98 9 is_stmt 1 view .LVU196
+  98:System/DataPipe/DataPipe.c ****         p_dst->er_cnt++;
+ 586              		.loc 1 98 14 is_stmt 0 view .LVU197
+ 587 00ae D5F82730 		ldr	r3, [r5, #39]	@ unaligned
+  98:System/DataPipe/DataPipe.c ****         p_dst->er_cnt++;
+ 588              		.loc 1 98 22 view .LVU198
+ 589 00b2 0133     		adds	r3, r3, #1
+ 590 00b4 C5F82730 		str	r3, [r5, #39]	@ unaligned
+  99:System/DataPipe/DataPipe.c ****     }
+ 591              		.loc 1 99 9 is_stmt 1 view .LVU199
+  99:System/DataPipe/DataPipe.c ****     }
+ 592              		.loc 1 99 14 is_stmt 0 view .LVU200
+ 593 00b8 D6F82730 		ldr	r3, [r6, #39]	@ unaligned
+  99:System/DataPipe/DataPipe.c ****     }
+ 594              		.loc 1 99 22 view .LVU201
+ 595 00bc 0133     		adds	r3, r3, #1
+ 596 00be C6F82730 		str	r3, [r6, #39]	@ unaligned
+ 597              	.L35:
+ 102:System/DataPipe/DataPipe.c **** 
+ 598              		.loc 1 102 5 is_stmt 1 view .LVU202
+ 599 00c2 FFF7FEFF 		bl	Kernel_ExitCritical
+ 600              	.LVL34:
+ 104:System/DataPipe/DataPipe.c **** }
+ 601              		.loc 1 104 5 view .LVU203
+ 104:System/DataPipe/DataPipe.c **** }
+ 602              		.loc 1 104 12 is_stmt 0 view .LVU204
+ 603 00c6 D2E7     		b	.L31
+ 604              	.L42:
+ 605              		.align	2
+ 606              	.L41:
+ 607 00c8 00000000 		.word	.LANCHOR1
+ 608 00cc 00000000 		.word	.LANCHOR2
+ 609 00d0 00000000 		.word	.LANCHOR0
+ 610              		.cfi_endproc
+ 611              	.LFE151:
+ 613              		.section	.text.DataPipe_DealError,"ax",%progbits
+ 614              		.align	1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 18
+
+
+ 615              		.global	DataPipe_DealError
+ 616              		.syntax unified
+ 617              		.thumb
+ 618              		.thumb_func
+ 619              		.fpu fpv5-d16
+ 621              	DataPipe_DealError:
+ 622              	.LFB152:
+ 109:System/DataPipe/DataPipe.c ****     if (Pipe_State == Pipe_Error)
+ 623              		.loc 1 109 1 is_stmt 1 view -0
+ 624              		.cfi_startproc
+ 625              		@ args = 0, pretend = 0, frame = 0
+ 626              		@ frame_needed = 0, uses_anonymous_args = 0
+ 627              		@ link register save eliminated.
+ 110:System/DataPipe/DataPipe.c ****     {
+ 628              		.loc 1 110 5 view .LVU206
+ 112:System/DataPipe/DataPipe.c **** 
+ 629              		.loc 1 112 5 view .LVU207
+ 114:System/DataPipe/DataPipe.c **** }
+ 630              		.loc 1 114 5 view .LVU208
+ 115:System/DataPipe/DataPipe.c **** 
+ 631              		.loc 1 115 1 is_stmt 0 view .LVU209
+ 632 0000 0120     		movs	r0, #1
+ 633 0002 7047     		bx	lr
+ 634              		.cfi_endproc
+ 635              	.LFE152:
+ 637              		.global	DataPipe_DMA
+ 638              		.section	.bss.Cur_Pluged_PipeObj,"aw",%nobits
+ 639              		.align	2
+ 640              		.set	.LANCHOR2,. + 0
+ 643              	Cur_Pluged_PipeObj:
+ 644 0000 00000000 		.space	8
+ 644      00000000 
+ 645              		.section	.bss.DataPipe_DMA,"aw",%nobits
+ 646              		.align	2
+ 647              		.set	.LANCHOR0,. + 0
+ 650              	DataPipe_DMA:
+ 651 0000 00000000 		.space	120
+ 651      00000000 
+ 651      00000000 
+ 651      00000000 
+ 651      00000000 
+ 652              		.section	.bss.Pipe_State,"aw",%nobits
+ 653              		.set	.LANCHOR1,. + 0
+ 656              	Pipe_State:
+ 657 0000 00       		.space	1
+ 658              		.text
+ 659              	.Letext0:
+ 660              		.file 2 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 661              		.file 3 "d:\\software\\zephyr_env_gcc\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\
+ 662              		.file 4 "System/DataPipe/DataPipe.h"
+ 663              		.file 5 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 664              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 665              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 666              		.file 8 "System/runtime/runtime.h"
+ 667              		.file 9 "System/kernel/kernel.h"
+ 668              		.file 10 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cortex.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s 			page 19
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 DataPipe.c
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:17     .text.DataPipe_TransError_Callback:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:24     .text.DataPipe_TransError_Callback:00000000 DataPipe_TransError_Callback
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:145    .text.DataPipe_TransError_Callback:00000060 $d
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:152    .text.DataPipe_TransFinish_Callback:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:158    .text.DataPipe_TransFinish_Callback:00000000 DataPipe_TransFinish_Callback
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:270    .text.DataPipe_TransFinish_Callback:00000068 $d
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:277    .text.DataPipe_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:284    .text.DataPipe_Init:00000000 DataPipe_Init
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:405    .text.DataPipe_Init:00000084 $d
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:415    .text.DataPipe_SendTo:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:422    .text.DataPipe_SendTo:00000000 DataPipe_SendTo
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:607    .text.DataPipe_SendTo:000000c8 $d
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:614    .text.DataPipe_DealError:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:621    .text.DataPipe_DealError:00000000 DataPipe_DealError
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:650    .bss.DataPipe_DMA:00000000 DataPipe_DMA
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:639    .bss.Cur_Pluged_PipeObj:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:643    .bss.Cur_Pluged_PipeObj:00000000 Cur_Pluged_PipeObj
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:646    .bss.DataPipe_DMA:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:656    .bss.Pipe_State:00000000 Pipe_State
+C:\Users\HUAV\AppData\Local\Temp\ccKoG329.s:657    .bss.Pipe_State:00000000 $d
+
+UNDEFINED SYMBOLS
+Get_CurrentRunningUs
+HAL_DMA_Init
+HAL_DMA_RegisterCallback
+HAL_NVIC_SetPriority
+HAL_NVIC_EnableIRQ
+Kernel_EnterCritical
+HAL_DMA_Start_IT
+HAL_DMA_Abort_IT
+Kernel_ExitCritical
