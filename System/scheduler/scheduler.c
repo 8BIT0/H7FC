@@ -417,6 +417,20 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     if (TskCrt_RegList.num == 0)
     {
         List_Init(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
+
+        if((rdy_tsk_list == NULL) || (pnd_tsk_list == NULL) || (blk_tsk_list == NULL))
+        {
+            rdy_tsk_list = MMU_Malloc(sizeof(list_obj));
+            pnd_tsk_list = MMU_Malloc(sizeof(list_obj));
+            blk_tsk_list = MMU_Malloc(sizeof(list_obj));
+
+            while((rdy_tsk_list == NULL) || (pnd_tsk_list == NULL) || (blk_tsk_list == NULL));
+
+            /* init list object */
+            List_Init(rdy_tsk_list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
+            List_Init(pnd_tsk_list, NULL, by_condition, Os_TaskPri_Compare);
+            List_Init(blk_tsk_list, NULL, by_condition, Os_TaskPri_Compare);
+        }
     }
     else
     {
