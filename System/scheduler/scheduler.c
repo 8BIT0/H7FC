@@ -555,6 +555,7 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     {
         /* check task state ready or not */
         List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
+        TskPtr_Tmp = List_PopFirst(&TskRdy_RegList);
     }
 
     TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
@@ -962,6 +963,7 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
             (RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
             Os_Set_TaskReady((Task *)data);
+            List_Insert_Item(((Task *)data)->item_ptr);
         }
     }
 
