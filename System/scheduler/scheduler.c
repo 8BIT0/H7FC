@@ -61,8 +61,10 @@ static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .Ts
 static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_BlkMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 
-static volatile Task_List_s TskCrt_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
-static volatile Task_List_s TskRdy_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
+static volatile Task_List_s TskCrt_RegList = {.num = 0, .list = NULL};
+static volatile Task_List_s TskRdy_RegList = {.num = 0, .list = NULL};
+static volatile Task_List_s TskPnd_RegList = {.num = 0, .list = NULL};
+static volatile Task_List_s TskBlk_RegList = {.num = 0, .list = NULL};
 
 static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 
@@ -71,9 +73,6 @@ static bool TasK_Scheduler_Running = false;
 static Task *TaskPtr_Map[Task_Group_Sum][Task_Priority_Sum] = {{NULL}};
 static Task *Idle_Task;
 static Idle_Callback_List_s Idle_List;
-static list_obj *rdy_tsk_list = NULL;
-static list_obj *pnd_tsk_list = NULL;
-static list_obj *blk_tsk_list = NULL;
 
 /* internal function */
 static void Os_ResetTask_Data(Task *task);
@@ -219,11 +218,6 @@ void Os_Init(uint32_t TickFRQ)
         }
     }
 
-    TskCrt_RegList.num = 0;
-    TskCrt_RegList.list.data = NULL;
-    TskCrt_RegList.list.nxt = NULL;
-    TskCrt_RegList.list.prv = NULL;
-
     Os_ResetTask_Data(CurRunTsk_Ptr);
     Os_ResetTask_Data(NxtRunTsk_Ptr);
 
@@ -241,7 +235,7 @@ void Os_Start(void)
 {
     // NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
 
-    NxtRunTsk_Ptr = List_PopFirst(rdy_tsk_list);
+    NxtRunTsk_Ptr = List_PopFirst(TskRdy_RegList.list);
 
     if (NxtRunTsk_Ptr != NULL)
     {
@@ -418,28 +412,32 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     List_ItemInit(TaskPtr_Map[group][priority]->item_ptr, TaskPtr_Map[group][priority]);
     if (TskCrt_RegList.num == 0)
     {
-        List_Init(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
+        TskCrt_RegList.list = MMU_Malloc(sizeof(list_obj));
+        while(TskCrt_RegList.list == NULL);
 
-        if((rdy_tsk_list == NULL) || (pnd_tsk_list == NULL) || (blk_tsk_list == NULL))
+        List_Init(TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
+
+        if((TskRdy_RegList.list == NULL) || (TskPnd_RegList.list == NULL) || (TskBlk_RegList.list == NULL))
         {
-            rdy_tsk_list = MMU_Malloc(sizeof(list_obj));
-            pnd_tsk_list = MMU_Malloc(sizeof(list_obj));
-            blk_tsk_list = MMU_Malloc(sizeof(list_obj));
+            TskRdy_RegList.list = MMU_Malloc(sizeof(list_obj));
+            TskPnd_RegList.list = MMU_Malloc(sizeof(list_obj));
+            TskBlk_RegList.list = MMU_Malloc(sizeof(list_obj));
 
-            while((rdy_tsk_list == NULL) || (pnd_tsk_list == NULL) || (blk_tsk_list == NULL));
+            while((TskRdy_RegList.list == NULL) || (TskPnd_RegList.list == NULL) || (TskBlk_RegList.list == NULL));
 
             /* init list object */
-            List_Init(rdy_tsk_list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
-            List_Init(pnd_tsk_list, NULL, by_condition, Os_TaskPri_Compare);
-            List_Init(blk_tsk_list, NULL, by_condition, Os_TaskPri_Compare);
+            List_Init(TskRdy_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
+            List_Init(TskPnd_RegList.list, NULL, by_condition, Os_TaskPri_Compare);
+            List_Init(TskBlk_RegList.list, NULL, by_condition, Os_TaskPri_Compare);
         }
     }
     else
     {
         List_Insert_Item(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr);
-        List_Insert_Item(rdy_tsk_list, TaskPtr_Map[group][priority]->item_ptr);
+        List_Insert_Item(&TskRdy_RegList.list, TaskPtr_Map[group][priority]->item_ptr);
     }
 
+    TskRdy_RegList.num++;
     TskCrt_RegList.num++;
 
     return handle;
