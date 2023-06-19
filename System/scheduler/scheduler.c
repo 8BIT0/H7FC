@@ -435,6 +435,7 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     else
     {
         List_Insert_Item(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr);
+        List_Insert_Item(rdy_tsk_list, TaskPtr_Map[group][priority]->item_ptr);
     }
 
     TskCrt_RegList.num++;
