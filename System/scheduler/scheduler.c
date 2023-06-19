@@ -603,16 +603,6 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
             NxtTsk_TCB.Top_Stk_Ptr = &Idle_Task->TCB.Top_Stk_Ptr;
             NxtTsk_TCB.Stack = Idle_Task->TCB.Stack;
         }
-        else
-        {
-            // NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
-
-            // if(NxtRunTsk_Ptr)
-            // {
-            //     NxtTsk_TCB.Top_Stk_Ptr = &NxtRunTsk_Ptr->TCB.Top_Stk_Ptr;
-            //     NxtTsk_TCB.Stack = NxtRunTsk_Ptr->TCB.Stack;
-            // }
-        }
 
         /* trigger pendsv to switch task */
         Kernel_TriggerPendSV();
