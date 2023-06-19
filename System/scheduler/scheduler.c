@@ -239,7 +239,9 @@ Scheduler_State_List Os_State(void)
 
 void Os_Start(void)
 {
-    NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
+    // NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
+
+    NxtRunTsk_Ptr = List_PopFirst(rdy_tsk_list);
 
     if (NxtRunTsk_Ptr != NULL)
     {
