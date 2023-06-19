@@ -51,7 +51,7 @@ typedef struct
     uint16_t flt_acc[Axis_Sum];
     uint16_t flt_gyr[Axis_Sum];
 
-    uint8_t const_res[8];
+    uint8_t const_res[30];
 
     uint8_t check_sum;
 }LogIMUData_TypeDef;
