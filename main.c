@@ -6,7 +6,7 @@
 void main(void)
 {
     /* using 8M External Oscillator */
-    Os_Init(RUNTIME_TICK_FRQ_4K);
+    Os_Init(RUNTIME_TICK_FRQ_8K);
 
     /* create task down below */
     Task_Manager_Init();

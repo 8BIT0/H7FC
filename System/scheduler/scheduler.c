@@ -474,6 +474,9 @@ static void Os_Set_TaskReady(Task *tsk)
     TskHdl_RdyMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
 
     tsk->State = Task_Ready;
+
+    List_Insert_Item(TskRdy_RegList.list, ((Task *)data)->item_ptr);
+    TskRdy_RegList.num ++;
 }
 
 void Os_Set_TaskPending(Task *tsk)
@@ -973,7 +976,6 @@ static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg
             (RuntimeObj_CompareWithCurrent(((Task *)data)->Exec_status.Exec_Time)))
         {
             Os_Set_TaskReady((Task *)data);
-            List_Insert_Item(((Task *)data)->item_ptr);
         }
     }
 
