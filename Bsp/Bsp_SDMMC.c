@@ -211,20 +211,18 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
     // if (HAL_SD_ReadBlocks(&(obj->hdl), (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    __asm("cpsid i");
-    HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
-    __asm("cpsie i");
-
     if (state == HAL_OK)
     {
         while (retry_cnt)
         {
             if (SD_Rx_Cplt)
             {
-                SD_Rx_Cplt = false;
+                // SD_Rx_Cplt = false;
 
                 if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) 
-                    return true;
+                {
+                    break;
+                }
 
                 return false;
             }
@@ -234,51 +232,49 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
         }
     }
 
+    __asm("cpsid i");
+    HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
+    __asm("cpsie i");
+
     SD_Rx_Cplt = false;
-    return false;
+    return true;
 }
 
 static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
     volatile HAL_SD_StateTypeDef opr_state;
     uint32_t retry_cnt = SDMMC_OPR_RETRY_MAX_CNT;
-    uint32_t ms = 0;
-    static uint32_t test = 0;
 
     // if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    __asm("cpsid i");
-    HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
-    __asm("cpsie i");
-
-    ms = Get_CurrentRunningMs();
     if (state == HAL_OK)
     {
         while (retry_cnt)
         {
             if (SD_Tx_Cplt)
             {                
-                SD_Tx_Cplt = false;
+                // SD_Tx_Cplt = false;
                 
                 if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) //HAL_SD_STATE_RESET
                 {
-                    if(Get_CurrentRunningMs() - ms > 7)
-                    {
-                        test ++;
-                    }
-                    return true;
+                    break;
                 }
 
                 return false;
             }
+            __DSB();
 
             retry_cnt--;
         }
     }
 
+    __asm("cpsid i");
+    HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
+    __asm("cpsie i");
+
     SD_Tx_Cplt = false;
-    return false;
+    return true;
 }
 
 static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr)
