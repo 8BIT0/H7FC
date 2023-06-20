@@ -716,6 +716,11 @@ static Task *Os_Get_HighestRank_PndTask(void)
     }
 }
 
+static Item_Obj *Os_TaskPri_ItemCompare(const item_obj *item_r, const item_obj *item_l)
+{
+
+}
+
 // return high priority task pointer
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
 {
