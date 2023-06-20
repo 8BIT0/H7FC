@@ -424,6 +424,7 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
             TskPnd_RegList.list = MMU_Malloc(sizeof(list_obj));
             TskBlk_RegList.list = MMU_Malloc(sizeof(list_obj));
 
+            /* if any of those variable failed malloc then do infinity loop down below */
             while((TskRdy_RegList.list == NULL) || (TskPnd_RegList.list == NULL) || (TskBlk_RegList.list == NULL));
 
             /* init list object */
