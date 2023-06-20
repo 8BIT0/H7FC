@@ -81,6 +81,7 @@ static void Os_Clr_TaskReady(Task *tsk);
 static void Os_SchedulerRun(SYSTEM_RunTime Rt);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
+static item_obj *Os_TaskPri_ItemCompare(const item_obj *item_l, const item_obj *item_r)
 static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg);
 static void Os_TaskCaller(void);
 static Task *Os_Get_HighestRank_PndTask(void);
@@ -415,7 +416,7 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
         TskCrt_RegList.list = MMU_Malloc(sizeof(list_obj));
         while(TskCrt_RegList.list == NULL);
 
-        List_Init(TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
+        List_Init(TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_ItemCompare);
 
         if((TskRdy_RegList.list == NULL) || (TskPnd_RegList.list == NULL) || (TskBlk_RegList.list == NULL))
         {
@@ -426,9 +427,9 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
             while((TskRdy_RegList.list == NULL) || (TskPnd_RegList.list == NULL) || (TskBlk_RegList.list == NULL));
 
             /* init list object */
-            List_Init(TskRdy_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
-            List_Init(TskPnd_RegList.list, NULL, by_condition, Os_TaskPri_Compare);
-            List_Init(TskBlk_RegList.list, NULL, by_condition, Os_TaskPri_Compare);
+            List_Init(TskRdy_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_ItemCompare);
+            List_Init(TskPnd_RegList.list, NULL, by_condition, Os_TaskPri_ItemCompare);
+            List_Init(TskBlk_RegList.list, NULL, by_condition, Os_TaskPri_ItemCompare);
         }
     }
     else
@@ -716,11 +717,6 @@ static Task *Os_Get_HighestRank_PndTask(void)
     }
 }
 
-static Item_Obj *Os_TaskPri_ItemCompare(const item_obj *item_r, const item_obj *item_l)
-{
-
-}
-
 // return high priority task pointer
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
 {
@@ -847,6 +843,23 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
             return NULL;
         }
     }
+}
+
+static item_obj *Os_TaskPri_ItemCompare(const item_obj *item_l, const item_obj *item_r)
+{
+    Task *tsk_tmp = NULL;
+
+    if((Task *)(item_l->data) != (Task *)(item_r->data))
+    {
+        tsk_tmp = Os_TaskPri_Compare((Task *)(item_l->data), (Task *)(item_r->data));
+
+        if(tsk_tmp == (Task *)(item_l->data))
+            return item_l;
+
+        return item_r;
+    }
+    
+    return NULL
 }
 
 static void Os_TaskExec(Task *tsk_ptr)
