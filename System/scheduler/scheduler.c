@@ -849,6 +849,15 @@ static item_obj *Os_TaskPri_ItemCompare(const item_obj *item_l, const item_obj *
 {
     Task *tsk_tmp = NULL;
 
+    if((item_l == NULL) && (item_r == NULL))
+        return NULL;
+
+    if((item_l == NULL) && (item_r != NULL))
+        return item_r;
+
+    if((item_l != NULL) && (item_r == NULL))
+        return item_l;
+
     if((Task *)(item_l->data) != (Task *)(item_r->data))
     {
         tsk_tmp = Os_TaskPri_Compare((Task *)(item_l->data), (Task *)(item_r->data));
@@ -859,6 +868,7 @@ static item_obj *Os_TaskPri_ItemCompare(const item_obj *item_l, const item_obj *
         return item_r;
     }
     
+    /* left item equal to right item return NULL */
     return NULL;
 }
 
