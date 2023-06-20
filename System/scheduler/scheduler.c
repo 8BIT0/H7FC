@@ -517,6 +517,8 @@ static void Os_Clr_TaskReady(Task *tsk)
     {
         TskHdl_RdyMap.Grp.Flg &= ~(1 << grp_id);
     }
+
+    TskRdy_RegList.num --;
 }
 
 static void Os_Clr_TaskPending(Task *tsk)
@@ -529,6 +531,8 @@ static void Os_Clr_TaskPending(Task *tsk)
     {
         TskHdl_PndMap.Grp.Flg &= ~(1 << grp_id);
     }
+
+    TskPnd_RegList.num --;
 }
 
 static void Os_Clr_TaskBlock(Task *tsk)
