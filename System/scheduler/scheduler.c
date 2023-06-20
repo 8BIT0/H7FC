@@ -859,7 +859,7 @@ static item_obj *Os_TaskPri_ItemCompare(const item_obj *item_l, const item_obj *
         return item_r;
     }
     
-    return NULL
+    return NULL;
 }
 
 static void Os_TaskExec(Task *tsk_ptr)
