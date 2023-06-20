@@ -475,7 +475,7 @@ static void Os_Set_TaskReady(Task *tsk)
 
     tsk->State = Task_Ready;
 
-    List_Insert_Item(TskRdy_RegList.list, ((Task *)data)->item_ptr);
+    List_Insert_Item(TskRdy_RegList.list, tsk->item_ptr);
     TskRdy_RegList.num ++;
 }
 

@@ -211,25 +211,22 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
     // if (HAL_SD_ReadBlocks(&(obj->hdl), (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    if (state == HAL_OK)
+    while (retry_cnt)
     {
-        while (retry_cnt)
+        if (SD_Rx_Cplt)
         {
-            if (SD_Rx_Cplt)
+            // SD_Rx_Cplt = false;
+
+            if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) 
             {
-                // SD_Rx_Cplt = false;
-
-                if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) 
-                {
-                    break;
-                }
-
-                return false;
+                break;
             }
-            __DSB();
 
-            retry_cnt--;
+            return false;
         }
+        __DSB();
+
+        retry_cnt--;
     }
 
     __asm("cpsid i");
@@ -237,7 +234,11 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
     __asm("cpsie i");
 
     SD_Rx_Cplt = false;
-    return true;
+
+    if(HAL_OK == state)
+        return true;
+
+    return false;
 }
 
 static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
@@ -248,25 +249,22 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
     // if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    if (state == HAL_OK)
+    while (retry_cnt)
     {
-        while (retry_cnt)
-        {
-            if (SD_Tx_Cplt)
-            {                
-                // SD_Tx_Cplt = false;
-                
-                if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) //HAL_SD_STATE_RESET
-                {
-                    break;
-                }
-
-                return false;
+        if (SD_Tx_Cplt)
+        {                
+            // SD_Tx_Cplt = false;
+            
+            if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) //HAL_SD_STATE_RESET
+            {
+                break;
             }
-            __DSB();
 
-            retry_cnt--;
+            return false;
         }
+        __DSB();
+
+        retry_cnt--;
     }
 
     __asm("cpsid i");
@@ -274,7 +272,11 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
     __asm("cpsie i");
 
     SD_Tx_Cplt = false;
-    return true;
+
+    if(HAL_OK == state)
+        return true;
+
+    return false;
 }
 
 static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr)
