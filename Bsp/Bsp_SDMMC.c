@@ -229,9 +229,7 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
         retry_cnt--;
     }
 
-    __asm("cpsid i");
     HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
-    __asm("cpsie i");
 
     SD_Rx_Cplt = false;
 
@@ -267,9 +265,7 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
         retry_cnt--;
     }
 
-    __asm("cpsid i");
     HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
-    __asm("cpsie i");
 
     SD_Tx_Cplt = false;
 
