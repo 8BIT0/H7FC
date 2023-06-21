@@ -135,7 +135,7 @@ typedef struct
 typedef struct
 {
     uint8_t num;
-    list_obj *list;
+    list_obj list;
 } Task_List_s;
 
 typedef Task_List_s Idle_Callback_List_s;

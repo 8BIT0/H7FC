@@ -61,7 +61,10 @@ static volatile TaskMap_TypeDef TskHdl_RdyMap = {.Grp = 0, .TskInGrp[0] = 0, .Ts
 static volatile TaskMap_TypeDef TskHdl_PndMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 static volatile TaskMap_TypeDef TskHdl_BlkMap = {.Grp = 0, .TskInGrp[0] = 0, .TskInGrp[1] = 0, .TskInGrp[2] = 0, .TskInGrp[3] = 0, .TskInGrp[4] = 0, .TskInGrp[5] = 0, .TskInGrp[6] = 0, .TskInGrp[7] = 0};
 
-static volatile Task_List_s TskCrt_RegList = {.num = 0, .list = {.prv = NULL, .nxt = NULL, .data = NULL}};
+static volatile Task_List_s TskCrt_RegList = {.num = 0, .list = NULL};
+static volatile Task_List_s TskRdy_RegList = {.num = 0, .list = NULL};
+static volatile Task_List_s TskPnd_RegList = {.num = 0, .list = NULL};
+static volatile Task_List_s TskBlk_RegList = {.num = 0, .list = NULL};
 
 static volatile Scheduler_State_List scheduler_state = Scheduler_Initial;
 
@@ -78,6 +81,7 @@ static void Os_Clr_TaskReady(Task *tsk);
 static void Os_SchedulerRun(SYSTEM_RunTime Rt);
 static void Os_TaskExit(void);
 static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r);
+static Task *Os_TaskItem_PriCompare_Callback(const Task *tsk_l, const Task *tsk_r);
 static int Os_TaskCrtList_TraverseCallback(item_obj *item, void *data, void *arg);
 static void Os_TaskCaller(void);
 static Task *Os_Get_HighestRank_PndTask(void);
@@ -215,11 +219,6 @@ void Os_Init(uint32_t TickFRQ)
         }
     }
 
-    TskCrt_RegList.num = 0;
-    TskCrt_RegList.list.data = NULL;
-    TskCrt_RegList.list.nxt = NULL;
-    TskCrt_RegList.list.prv = NULL;
-
     Os_ResetTask_Data(CurRunTsk_Ptr);
     Os_ResetTask_Data(NxtRunTsk_Ptr);
 
@@ -235,7 +234,9 @@ Scheduler_State_List Os_State(void)
 
 void Os_Start(void)
 {
-    NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
+    // NxtRunTsk_Ptr = Os_Get_HighestRank_RdyTask();
+
+    NxtRunTsk_Ptr = List_PopFirst(TskRdy_RegList.list);
 
     if (NxtRunTsk_Ptr != NULL)
     {
@@ -412,13 +413,33 @@ Task_Handle Os_CreateTask(const char *name, uint32_t frq, Task_Group group, Task
     List_ItemInit(TaskPtr_Map[group][priority]->item_ptr, TaskPtr_Map[group][priority]);
     if (TskCrt_RegList.num == 0)
     {
-        List_Init(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskPri_Compare);
+        TskCrt_RegList.list = MMU_Malloc(sizeof(list_obj));
+        while(TskCrt_RegList.list == NULL);
+
+        List_Init(TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskItem_PriCompare_Callback);
+
+        if((TskRdy_RegList.list == NULL) || (TskPnd_RegList.list == NULL) || (TskBlk_RegList.list == NULL))
+        {
+            TskRdy_RegList.list = MMU_Malloc(sizeof(list_obj));
+            TskPnd_RegList.list = MMU_Malloc(sizeof(list_obj));
+            TskBlk_RegList.list = MMU_Malloc(sizeof(list_obj));
+
+            /* if any of those variable failed malloc then do infinity loop down below */
+            while((TskRdy_RegList.list == NULL) || (TskPnd_RegList.list == NULL) || (TskBlk_RegList.list == NULL));
+
+            /* init list object */
+            List_Init(TskRdy_RegList.list, TaskPtr_Map[group][priority]->item_ptr, by_condition, Os_TaskItem_PriCompare_Callback);
+            List_Init(TskPnd_RegList.list, NULL, by_condition, Os_TaskItem_PriCompare_Callback);
+            List_Init(TskBlk_RegList.list, NULL, by_condition, Os_TaskItem_PriCompare_Callback);
+        }
     }
     else
     {
         List_Insert_Item(&TskCrt_RegList.list, TaskPtr_Map[group][priority]->item_ptr);
+        List_Insert_Item(&TskRdy_RegList.list, TaskPtr_Map[group][priority]->item_ptr);
     }
 
+    TskRdy_RegList.num++;
     TskCrt_RegList.num++;
 
     return handle;
@@ -453,6 +474,9 @@ static void Os_Set_TaskReady(Task *tsk)
     TskHdl_RdyMap.TskInGrp[grp_id].Flg |= 1 << tsk_id;
 
     tsk->State = Task_Ready;
+
+    List_Insert_Item(TskRdy_RegList.list, tsk->item_ptr);
+    TskRdy_RegList.num ++;
 }
 
 void Os_Set_TaskPending(Task *tsk)
@@ -493,6 +517,8 @@ static void Os_Clr_TaskReady(Task *tsk)
     {
         TskHdl_RdyMap.Grp.Flg &= ~(1 << grp_id);
     }
+
+    TskRdy_RegList.num --;
 }
 
 static void Os_Clr_TaskPending(Task *tsk)
@@ -505,6 +531,8 @@ static void Os_Clr_TaskPending(Task *tsk)
     {
         TskHdl_PndMap.Grp.Flg &= ~(1 << grp_id);
     }
+
+    TskPnd_RegList.num --;
 }
 
 static void Os_Clr_TaskBlock(Task *tsk)
@@ -519,6 +547,7 @@ static void Os_Clr_TaskBlock(Task *tsk)
     }
 }
 
+/* redesign and coding section */
 static void Os_SchedulerRun(SYSTEM_RunTime Rt)
 {
     SYSTEM_RunTime CurRt_US = Rt;
@@ -535,36 +564,39 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     {
         /* check task state ready or not */
         List_traverse(&TskCrt_RegList.list, Os_TaskCrtList_TraverseCallback, &CurRt_US, pre_callback);
+        TskPtr_Tmp = List_PopFirst(&TskRdy_RegList);
     }
 
     TskPtr_Tmp = Os_TaskPri_Compare(Os_TaskPri_Compare(Os_Get_HighestRank_RdyTask(), Os_Get_HighestRank_PndTask()), CurRunTsk_Ptr);
 
-    if ((TskPtr_Tmp != NULL) &&
-        (TskPtr_Tmp != CurRunTsk_Ptr))
+    if (TskPtr_Tmp != CurRunTsk_Ptr)
     {
-        if (TskPtr_Tmp->State == Task_Pending)
+        if (TskPtr_Tmp != NULL)
         {
-            /* got problem after priority preemption */
+            if (TskPtr_Tmp->State == Task_Pending)
+            {
+                /* got problem after priority preemption */
 
-            Os_Clr_TaskPending(TskPtr_Tmp);
-            TskPtr_Tmp->State = Task_Running;
-        }
+                Os_Clr_TaskPending(TskPtr_Tmp);
+                Os_Set_TaskReady(TskPtr_Tmp);
+            }
 
-        if ((CurRunTsk_Ptr != NULL) && (CurRunTsk_Ptr != Idle_Task) && (CurRunTsk_Ptr->State == Task_Running))
-        {
-            /* set current task in pending list */
-            Os_Set_TaskPending(CurRunTsk_Ptr);
-        }
+            if ((CurRunTsk_Ptr != NULL) && (CurRunTsk_Ptr != Idle_Task) && (CurRunTsk_Ptr->State == Task_Running))
+            {
+                /* set current task in pending list */
+                Os_Set_TaskPending(CurRunTsk_Ptr);
+            }
 
-        if ((TskPtr_Tmp->State != Task_DelayBlock) && (TskPtr_Tmp->State != Task_SignalBlock))
-        {
-            NxtRunTsk_Ptr = TskPtr_Tmp;
+            if ((TskPtr_Tmp->State != Task_DelayBlock) && (TskPtr_Tmp->State != Task_SignalBlock))
+            {
+                NxtRunTsk_Ptr = TskPtr_Tmp;
 
-            NxtTsk_TCB.Top_Stk_Ptr = &NxtRunTsk_Ptr->TCB.Top_Stk_Ptr;
-            NxtTsk_TCB.Stack = NxtRunTsk_Ptr->TCB.Stack;
+                NxtTsk_TCB.Top_Stk_Ptr = &NxtRunTsk_Ptr->TCB.Top_Stk_Ptr;
+                NxtTsk_TCB.Stack = NxtRunTsk_Ptr->TCB.Stack;
 
-            /* trigger pendsv to switch task */
-            Kernel_TriggerPendSV();
+                /* trigger pendsv to switch task */
+                Kernel_TriggerPendSV();
+            }
         }
     }
     else
@@ -589,6 +621,7 @@ static void Os_SchedulerRun(SYSTEM_RunTime Rt)
     TasK_Scheduler_Running = false;
     Kernel_ExitCritical();
 }
+/* redesign and coding section */
 
 /* still got bug down below */
 void Os_TaskDelay_Ms(Task_Handle hdl, uint32_t Ms)
@@ -820,6 +853,13 @@ static Task *Os_TaskPri_Compare(const Task *tsk_l, const Task *tsk_r)
     }
 }
 
+static Task *Os_TaskItem_PriCompare_Callback(const Task *tsk_l, const Task *tsk_r)
+{
+    if(tsk_l == tsk_r)
+        return NULL;
+
+    return Os_TaskPri_Compare(tsk_l, tsk_r);
+}
 
 static void Os_TaskExec(Task *tsk_ptr)
 {
@@ -923,7 +963,7 @@ static void Os_TaskCaller(void)
             }
 
             // get net task
-            // Os_SchedulerRun(Get_CurrentRunningUs());
+            Os_SchedulerRun(Get_CurrentRunningUs());
         }
     }
 }

@@ -193,12 +193,8 @@ void Kernel_ExitCritical(void)
     if (CriticalNasting_Cnt > 0)
     {
         CriticalNasting_Cnt--;
-
-        if (CriticalNasting_Cnt == 0)
-        {
-            Kernel_SetBASEPRI(0);
-        }
     }
-    else if(CriticalNasting_Cnt == 0)
+    
+    if(CriticalNasting_Cnt == 0)
         Kernel_SetBASEPRI(0);
 }

@@ -230,6 +230,12 @@ void TaskLog_Core(Task_Handle hdl)
     else
         DevLED.ctl(Led1, false);
 
+    /* test section */
+    uint32_t t = 0x00030000;
+
+    while(t--);
+    /* test section */
+
     DebugPin.ctl(Debug_PB4, false);
 }
 
