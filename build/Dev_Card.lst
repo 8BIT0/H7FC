@@ -1,0 +1,615 @@
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Dev_Card.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.DevCard_Init,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	DevCard_Init:
+  25              	.LVL0:
+  26              	.LFB147:
+  27              		.file 1 "Device/Dev_Card.c"
+   1:Device/Dev_Card.c **** #include "Dev_Card.h"
+   2:Device/Dev_Card.c **** #include "IO_Definition.h"
+   3:Device/Dev_Card.c **** 
+   4:Device/Dev_Card.c **** /* External Function */
+   5:Device/Dev_Card.c **** static DevCard_Error_List DevCard_Init(DevCard_Obj_TypeDef *Instance);
+   6:Device/Dev_Card.c **** static DevCard_Error_List DevCard_GetError(DevCard_Obj_TypeDef *Instance);
+   7:Device/Dev_Card.c **** static DevCard_Info_TypeDef DevCard_GetInfo(DevCard_Obj_TypeDef *Instance);
+   8:Device/Dev_Card.c **** static bool DevCard_Read(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t d
+   9:Device/Dev_Card.c **** static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t 
+  10:Device/Dev_Card.c **** 
+  11:Device/Dev_Card.c **** DevCard_TypeDef DevCard = {
+  12:Device/Dev_Card.c ****     .Init = DevCard_Init,
+  13:Device/Dev_Card.c ****     .Get_ErrorCode = DevCard_GetError,
+  14:Device/Dev_Card.c ****     .Get_Info = DevCard_GetInfo,
+  15:Device/Dev_Card.c ****     .read = DevCard_Read,
+  16:Device/Dev_Card.c ****     .write = DevCard_Write,
+  17:Device/Dev_Card.c **** };
+  18:Device/Dev_Card.c **** 
+  19:Device/Dev_Card.c **** static DevCard_Error_List DevCard_Init(DevCard_Obj_TypeDef *Instance)
+  20:Device/Dev_Card.c **** {
+  28              		.loc 1 20 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  21:Device/Dev_Card.c ****     if (Instance == NULL)
+  32              		.loc 1 21 5 view .LVU1
+  33              		.loc 1 21 8 is_stmt 0 view .LVU2
+  34 0000 0028     		cmp	r0, #0
+  35 0002 48D0     		beq	.L5
+  20:Device/Dev_Card.c ****     if (Instance == NULL)
+  36              		.loc 1 20 1 view .LVU3
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 2
+
+
+  37 0004 10B5     		push	{r4, lr}
+  38              	.LCFI0:
+  39              		.cfi_def_cfa_offset 8
+  40              		.cfi_offset 4, -8
+  41              		.cfi_offset 14, -4
+  42 0006 0446     		mov	r4, r0
+  22:Device/Dev_Card.c ****         return DevCard_Obj_Error;
+  23:Device/Dev_Card.c **** 
+  24:Device/Dev_Card.c ****     if (!BspSDMMC.init(&(Instance->SDMMC_Obj)))
+  43              		.loc 1 24 5 is_stmt 1 view .LVU4
+  44              		.loc 1 24 18 is_stmt 0 view .LVU5
+  45 0008 244B     		ldr	r3, .L12
+  46 000a 1B68     		ldr	r3, [r3]
+  47              		.loc 1 24 10 view .LVU6
+  48 000c 9847     		blx	r3
+  49              	.LVL1:
+  50              		.loc 1 24 8 view .LVU7
+  51 000e B8B3     		cbz	r0, .L10
+  25:Device/Dev_Card.c ****     {
+  26:Device/Dev_Card.c ****         Instance->error_code = DevCard_Bus_Error;
+  27:Device/Dev_Card.c ****         return DevCard_Bus_Error;
+  28:Device/Dev_Card.c ****     }
+  29:Device/Dev_Card.c **** 
+  30:Device/Dev_Card.c ****     if (!BspSDMMC.info(&(Instance->SDMMC_Obj), &(Instance->SDMMC_Obj.info)))
+  52              		.loc 1 30 5 is_stmt 1 view .LVU8
+  53              		.loc 1 30 18 is_stmt 0 view .LVU9
+  54 0010 224B     		ldr	r3, .L12
+  55 0012 5B69     		ldr	r3, [r3, #20]
+  56              		.loc 1 30 10 view .LVU10
+  57 0014 04F1F401 		add	r1, r4, #244
+  58 0018 2046     		mov	r0, r4
+  59 001a 9847     		blx	r3
+  60              	.LVL2:
+  61              		.loc 1 30 8 view .LVU11
+  62 001c A0B3     		cbz	r0, .L11
+  31:Device/Dev_Card.c ****     {
+  32:Device/Dev_Card.c ****         Instance->info.valid = false;
+  33:Device/Dev_Card.c ****         Instance->error_code = DevCard_Info_Error;
+  34:Device/Dev_Card.c ****         return DevCard_Info_Error;
+  35:Device/Dev_Card.c ****     }
+  36:Device/Dev_Card.c **** 
+  37:Device/Dev_Card.c ****     Instance->info.BlockNbr = Instance->SDMMC_Obj.info.BlockNbr;
+  63              		.loc 1 37 5 is_stmt 1 view .LVU12
+  64              		.loc 1 37 55 is_stmt 0 view .LVU13
+  65 001e D4F80431 		ldr	r3, [r4, #260]	@ unaligned
+  66              		.loc 1 37 29 view .LVU14
+  67 0022 C4F82A31 		str	r3, [r4, #298]	@ unaligned
+  38:Device/Dev_Card.c ****     Instance->info.BlockSize = Instance->SDMMC_Obj.info.BlockSize;
+  68              		.loc 1 38 5 is_stmt 1 view .LVU15
+  69              		.loc 1 38 56 is_stmt 0 view .LVU16
+  70 0026 D4F80821 		ldr	r2, [r4, #264]	@ unaligned
+  71              		.loc 1 38 30 view .LVU17
+  72 002a C4F82E21 		str	r2, [r4, #302]	@ unaligned
+  39:Device/Dev_Card.c ****     Instance->info.CardSpeed = Instance->SDMMC_Obj.info.CardSpeed;
+  73              		.loc 1 39 5 is_stmt 1 view .LVU18
+  74              		.loc 1 39 56 is_stmt 0 view .LVU19
+  75 002e D4F81421 		ldr	r2, [r4, #276]	@ unaligned
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 3
+
+
+  76              		.loc 1 39 30 view .LVU20
+  77 0032 C4F83A21 		str	r2, [r4, #314]	@ unaligned
+  40:Device/Dev_Card.c ****     Instance->info.CardType = Instance->SDMMC_Obj.info.CardType;
+  78              		.loc 1 40 5 is_stmt 1 view .LVU21
+  79              		.loc 1 40 55 is_stmt 0 view .LVU22
+  80 0036 D4F8F420 		ldr	r2, [r4, #244]	@ unaligned
+  81              		.loc 1 40 29 view .LVU23
+  82 003a C4F81A21 		str	r2, [r4, #282]	@ unaligned
+  41:Device/Dev_Card.c ****     Instance->info.CardVersion = Instance->info.CardVersion;
+  83              		.loc 1 41 5 is_stmt 1 view .LVU24
+  42:Device/Dev_Card.c ****     Instance->info.Class = Instance->info.Class;
+  84              		.loc 1 42 5 view .LVU25
+  43:Device/Dev_Card.c ****     Instance->info.LogBlockNbr = Instance->SDMMC_Obj.info.LogBlockNbr;
+  85              		.loc 1 43 5 view .LVU26
+  86              		.loc 1 43 58 is_stmt 0 view .LVU27
+  87 003e D4F80C21 		ldr	r2, [r4, #268]	@ unaligned
+  88              		.loc 1 43 32 view .LVU28
+  89 0042 C4F83221 		str	r2, [r4, #306]	@ unaligned
+  44:Device/Dev_Card.c ****     Instance->info.LogBlockSize = Instance->SDMMC_Obj.info.LogBlockSize;
+  90              		.loc 1 44 5 is_stmt 1 view .LVU29
+  91              		.loc 1 44 59 is_stmt 0 view .LVU30
+  92 0046 D4F81021 		ldr	r2, [r4, #272]	@ unaligned
+  93              		.loc 1 44 33 view .LVU31
+  94 004a C4F83621 		str	r2, [r4, #310]	@ unaligned
+  45:Device/Dev_Card.c ****     Instance->info.RelCardAdd = Instance->SDMMC_Obj.info.RelCardAdd;
+  95              		.loc 1 45 5 is_stmt 1 view .LVU32
+  96              		.loc 1 45 57 is_stmt 0 view .LVU33
+  97 004e D4F80021 		ldr	r2, [r4, #256]	@ unaligned
+  98              		.loc 1 45 31 view .LVU34
+  99 0052 C4F82621 		str	r2, [r4, #294]	@ unaligned
+  46:Device/Dev_Card.c **** 
+  47:Device/Dev_Card.c ****     Instance->info.valid = true;
+ 100              		.loc 1 47 5 is_stmt 1 view .LVU35
+ 101              		.loc 1 47 26 is_stmt 0 view .LVU36
+ 102 0056 0122     		movs	r2, #1
+ 103 0058 84F81921 		strb	r2, [r4, #281]
+  48:Device/Dev_Card.c ****     Instance->info.RmnByteInCurBlock = 0;
+ 104              		.loc 1 48 5 is_stmt 1 view .LVU37
+ 105              		.loc 1 48 38 is_stmt 0 view .LVU38
+ 106 005c 0020     		movs	r0, #0
+ 107 005e 84F84601 		strb	r0, [r4, #326]
+ 108 0062 84F84701 		strb	r0, [r4, #327]
+  49:Device/Dev_Card.c ****     Instance->info.UsdBlockNbr = 0;
+ 109              		.loc 1 49 5 is_stmt 1 view .LVU39
+ 110              		.loc 1 49 32 is_stmt 0 view .LVU40
+ 111 0066 84F83E01 		strb	r0, [r4, #318]
+ 112 006a 84F83F01 		strb	r0, [r4, #319]
+ 113 006e 84F84001 		strb	r0, [r4, #320]
+ 114 0072 84F84101 		strb	r0, [r4, #321]
+  50:Device/Dev_Card.c ****     Instance->info.RmnBlockNbr = Instance->info.BlockNbr;
+ 115              		.loc 1 50 5 is_stmt 1 view .LVU41
+ 116              		.loc 1 50 32 is_stmt 0 view .LVU42
+ 117 0076 C4F84231 		str	r3, [r4, #322]	@ unaligned
+  51:Device/Dev_Card.c **** 
+  52:Device/Dev_Card.c ****     Instance->error_code = DevCard_No_Error;
+ 118              		.loc 1 52 5 is_stmt 1 view .LVU43
+ 119              		.loc 1 52 26 is_stmt 0 view .LVU44
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 4
+
+
+ 120 007a 84F81801 		strb	r0, [r4, #280]
+  53:Device/Dev_Card.c ****     return DevCard_No_Error;
+ 121              		.loc 1 53 5 is_stmt 1 view .LVU45
+ 122              	.L2:
+  54:Device/Dev_Card.c **** }
+ 123              		.loc 1 54 1 is_stmt 0 view .LVU46
+ 124 007e 10BD     		pop	{r4, pc}
+ 125              	.LVL3:
+ 126              	.L10:
+  26:Device/Dev_Card.c ****         return DevCard_Bus_Error;
+ 127              		.loc 1 26 9 is_stmt 1 view .LVU47
+  26:Device/Dev_Card.c ****         return DevCard_Bus_Error;
+ 128              		.loc 1 26 30 is_stmt 0 view .LVU48
+ 129 0080 0220     		movs	r0, #2
+ 130 0082 84F81801 		strb	r0, [r4, #280]
+  27:Device/Dev_Card.c ****     }
+ 131              		.loc 1 27 9 is_stmt 1 view .LVU49
+  27:Device/Dev_Card.c ****     }
+ 132              		.loc 1 27 16 is_stmt 0 view .LVU50
+ 133 0086 FAE7     		b	.L2
+ 134              	.L11:
+  32:Device/Dev_Card.c ****         Instance->error_code = DevCard_Info_Error;
+ 135              		.loc 1 32 9 is_stmt 1 view .LVU51
+  32:Device/Dev_Card.c ****         Instance->error_code = DevCard_Info_Error;
+ 136              		.loc 1 32 30 is_stmt 0 view .LVU52
+ 137 0088 0023     		movs	r3, #0
+ 138 008a 84F81931 		strb	r3, [r4, #281]
+  33:Device/Dev_Card.c ****         return DevCard_Info_Error;
+ 139              		.loc 1 33 9 is_stmt 1 view .LVU53
+  33:Device/Dev_Card.c ****         return DevCard_Info_Error;
+ 140              		.loc 1 33 30 is_stmt 0 view .LVU54
+ 141 008e 0320     		movs	r0, #3
+ 142 0090 84F81801 		strb	r0, [r4, #280]
+  34:Device/Dev_Card.c ****     }
+ 143              		.loc 1 34 9 is_stmt 1 view .LVU55
+  34:Device/Dev_Card.c ****     }
+ 144              		.loc 1 34 16 is_stmt 0 view .LVU56
+ 145 0094 F3E7     		b	.L2
+ 146              	.LVL4:
+ 147              	.L5:
+ 148              	.LCFI1:
+ 149              		.cfi_def_cfa_offset 0
+ 150              		.cfi_restore 4
+ 151              		.cfi_restore 14
+  22:Device/Dev_Card.c **** 
+ 152              		.loc 1 22 16 view .LVU57
+ 153 0096 0120     		movs	r0, #1
+ 154              	.LVL5:
+ 155              		.loc 1 54 1 view .LVU58
+ 156 0098 7047     		bx	lr
+ 157              	.L13:
+ 158 009a 00BF     		.align	2
+ 159              	.L12:
+ 160 009c 00000000 		.word	BspSDMMC
+ 161              		.cfi_endproc
+ 162              	.LFE147:
+ 164              		.section	.text.DevCard_GetError,"ax",%progbits
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 5
+
+
+ 165              		.align	1
+ 166              		.syntax unified
+ 167              		.thumb
+ 168              		.thumb_func
+ 169              		.fpu fpv5-d16
+ 171              	DevCard_GetError:
+ 172              	.LVL6:
+ 173              	.LFB148:
+  55:Device/Dev_Card.c **** 
+  56:Device/Dev_Card.c **** static DevCard_Error_List DevCard_GetError(DevCard_Obj_TypeDef *Instance)
+  57:Device/Dev_Card.c **** {
+ 174              		.loc 1 57 1 is_stmt 1 view -0
+ 175              		.cfi_startproc
+ 176              		@ args = 0, pretend = 0, frame = 0
+ 177              		@ frame_needed = 0, uses_anonymous_args = 0
+ 178              		@ link register save eliminated.
+  58:Device/Dev_Card.c ****     if (Instance == NULL)
+ 179              		.loc 1 58 5 view .LVU60
+ 180              		.loc 1 58 8 is_stmt 0 view .LVU61
+ 181 0000 10B1     		cbz	r0, .L16
+  59:Device/Dev_Card.c ****         return DevCard_Obj_Error;
+  60:Device/Dev_Card.c **** 
+  61:Device/Dev_Card.c ****     return Instance->error_code;
+ 182              		.loc 1 61 5 is_stmt 1 view .LVU62
+ 183              		.loc 1 61 20 is_stmt 0 view .LVU63
+ 184 0002 90F81801 		ldrb	r0, [r0, #280]	@ zero_extendqisi2
+ 185              	.LVL7:
+ 186              		.loc 1 61 20 view .LVU64
+ 187 0006 7047     		bx	lr
+ 188              	.LVL8:
+ 189              	.L16:
+  59:Device/Dev_Card.c ****         return DevCard_Obj_Error;
+ 190              		.loc 1 59 16 view .LVU65
+ 191 0008 0120     		movs	r0, #1
+ 192              	.LVL9:
+  62:Device/Dev_Card.c **** }
+ 193              		.loc 1 62 1 view .LVU66
+ 194 000a 7047     		bx	lr
+ 195              		.cfi_endproc
+ 196              	.LFE148:
+ 198              		.section	.text.DevCard_GetInfo,"ax",%progbits
+ 199              		.align	1
+ 200              		.syntax unified
+ 201              		.thumb
+ 202              		.thumb_func
+ 203              		.fpu fpv5-d16
+ 205              	DevCard_GetInfo:
+ 206              	.LVL10:
+ 207              	.LFB149:
+  63:Device/Dev_Card.c **** 
+  64:Device/Dev_Card.c **** static DevCard_Info_TypeDef DevCard_GetInfo(DevCard_Obj_TypeDef *Instance)
+  65:Device/Dev_Card.c **** {
+ 208              		.loc 1 65 1 is_stmt 1 view -0
+ 209              		.cfi_startproc
+ 210              		@ args = 0, pretend = 0, frame = 0
+ 211              		@ frame_needed = 0, uses_anonymous_args = 0
+ 212              		.loc 1 65 1 is_stmt 0 view .LVU68
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 6
+
+
+ 213 0000 38B5     		push	{r3, r4, r5, lr}
+ 214              	.LCFI2:
+ 215              		.cfi_def_cfa_offset 16
+ 216              		.cfi_offset 3, -16
+ 217              		.cfi_offset 4, -12
+ 218              		.cfi_offset 5, -8
+ 219              		.cfi_offset 14, -4
+ 220 0002 0546     		mov	r5, r0
+ 221 0004 0C46     		mov	r4, r1
+  66:Device/Dev_Card.c ****     DevCard_Info_TypeDef info_tmp = {0};
+ 222              		.loc 1 66 5 is_stmt 1 view .LVU69
+ 223              		.loc 1 66 26 is_stmt 0 view .LVU70
+ 224 0006 2F22     		movs	r2, #47
+ 225 0008 0021     		movs	r1, #0
+ 226              	.LVL11:
+ 227              		.loc 1 66 26 view .LVU71
+ 228 000a FFF7FEFF 		bl	memset
+ 229              	.LVL12:
+  67:Device/Dev_Card.c **** 
+  68:Device/Dev_Card.c ****     if (Instance != NULL)
+ 230              		.loc 1 68 5 is_stmt 1 view .LVU72
+ 231              		.loc 1 68 8 is_stmt 0 view .LVU73
+ 232 000e F4B1     		cbz	r4, .L17
+  69:Device/Dev_Card.c ****     {
+  70:Device/Dev_Card.c ****         info_tmp = Instance->info;
+ 233              		.loc 1 70 9 is_stmt 1 view .LVU74
+ 234              		.loc 1 70 18 is_stmt 0 view .LVU75
+ 235 0010 04F21913 		addw	r3, r4, #281
+ 236 0014 2A46     		mov	r2, r5
+ 237 0016 04F23914 		addw	r4, r4, #313
+ 238              	.LVL13:
+ 239              	.L19:
+ 240              		.loc 1 70 18 view .LVU76
+ 241 001a D3F800E0 		ldr	lr, [r3]	@ unaligned
+ 242 001e D3F804C0 		ldr	ip, [r3, #4]	@ unaligned
+ 243 0022 9868     		ldr	r0, [r3, #8]	@ unaligned
+ 244 0024 D968     		ldr	r1, [r3, #12]	@ unaligned
+ 245 0026 C2F800E0 		str	lr, [r2]	@ unaligned
+ 246 002a C2F804C0 		str	ip, [r2, #4]	@ unaligned
+ 247 002e 9060     		str	r0, [r2, #8]	@ unaligned
+ 248 0030 D160     		str	r1, [r2, #12]	@ unaligned
+ 249 0032 1033     		adds	r3, r3, #16
+ 250 0034 1032     		adds	r2, r2, #16
+ 251 0036 A342     		cmp	r3, r4
+ 252 0038 EFD1     		bne	.L19
+ 253 003a 1C68     		ldr	r4, [r3]	@ unaligned
+ 254              	.LVL14:
+ 255              		.loc 1 70 18 view .LVU77
+ 256 003c 5868     		ldr	r0, [r3, #4]	@ unaligned
+ 257 003e 9968     		ldr	r1, [r3, #8]	@ unaligned
+ 258 0040 1460     		str	r4, [r2]	@ unaligned
+ 259 0042 5060     		str	r0, [r2, #4]	@ unaligned
+ 260 0044 9160     		str	r1, [r2, #8]	@ unaligned
+ 261 0046 9989     		ldrh	r1, [r3, #12]	@ unaligned
+ 262 0048 9B7B     		ldrb	r3, [r3, #14]	@ zero_extendqisi2
+ 263 004a 9181     		strh	r1, [r2, #12]	@ unaligned
+ 264 004c 9373     		strb	r3, [r2, #14]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 7
+
+
+  71:Device/Dev_Card.c ****     }
+  72:Device/Dev_Card.c **** 
+  73:Device/Dev_Card.c ****     return info_tmp;
+ 265              		.loc 1 73 5 is_stmt 1 view .LVU78
+ 266              	.L17:
+  74:Device/Dev_Card.c **** }
+ 267              		.loc 1 74 1 is_stmt 0 view .LVU79
+ 268 004e 2846     		mov	r0, r5
+ 269 0050 38BD     		pop	{r3, r4, r5, pc}
+ 270              		.loc 1 74 1 view .LVU80
+ 271              		.cfi_endproc
+ 272              	.LFE149:
+ 274              		.section	.text.DevCard_Write,"ax",%progbits
+ 275              		.align	1
+ 276              		.syntax unified
+ 277              		.thumb
+ 278              		.thumb_func
+ 279              		.fpu fpv5-d16
+ 281              	DevCard_Write:
+ 282              	.LVL15:
+ 283              	.LFB150:
+  75:Device/Dev_Card.c **** 
+  76:Device/Dev_Card.c **** static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t 
+  77:Device/Dev_Card.c **** {
+ 284              		.loc 1 77 1 is_stmt 1 view -0
+ 285              		.cfi_startproc
+ 286              		@ args = 4, pretend = 0, frame = 0
+ 287              		@ frame_needed = 0, uses_anonymous_args = 0
+ 288              		.loc 1 77 1 is_stmt 0 view .LVU82
+ 289 0000 10B5     		push	{r4, lr}
+ 290              	.LCFI3:
+ 291              		.cfi_def_cfa_offset 8
+ 292              		.cfi_offset 4, -8
+ 293              		.cfi_offset 14, -4
+ 294 0002 BDF80830 		ldrh	r3, [sp, #8]
+ 295              	.LVL16:
+  78:Device/Dev_Card.c ****     if ((Instance == NULL) || (p_data == NULL) || (block_num == 0) || (block == 0) || (block > Inst
+ 296              		.loc 1 78 5 is_stmt 1 view .LVU83
+ 297              		.loc 1 78 19 is_stmt 0 view .LVU84
+ 298 0006 8646     		mov	lr, r0
+ 299              		.loc 1 78 8 view .LVU85
+ 300 0008 002A     		cmp	r2, #0
+ 301 000a 18BF     		it	ne
+ 302 000c 0028     		cmpne	r0, #0
+ 303 000e 0CBF     		ite	eq
+ 304 0010 0120     		moveq	r0, #1
+ 305              	.LVL17:
+ 306              		.loc 1 78 8 view .LVU86
+ 307 0012 0020     		movne	r0, #0
+ 308 0014 13D0     		beq	.L23
+ 309 0016 8C46     		mov	ip, r1
+ 310 0018 1146     		mov	r1, r2
+ 311              	.LVL18:
+ 312              		.loc 1 78 68 discriminator 1 view .LVU87
+ 313 001a BCF1000F 		cmp	ip, #0
+ 314 001e 18BF     		it	ne
+ 315 0020 002B     		cmpne	r3, #0
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 8
+
+
+ 316 0022 0CBF     		ite	eq
+ 317 0024 0124     		moveq	r4, #1
+ 318 0026 0024     		movne	r4, #0
+ 319 0028 0AD0     		beq	.L22
+ 320              		.loc 1 78 110 discriminator 2 view .LVU88
+ 321 002a DEF82A21 		ldr	r2, [lr, #298]	@ unaligned
+ 322              	.LVL19:
+ 323              		.loc 1 78 84 discriminator 2 view .LVU89
+ 324 002e 6245     		cmp	r2, ip
+ 325 0030 07D3     		bcc	.L24
+  79:Device/Dev_Card.c ****         return false;
+  80:Device/Dev_Card.c **** 
+  81:Device/Dev_Card.c ****     return BspSDMMC.write(&(Instance->SDMMC_Obj), p_data, block, block_num);
+ 326              		.loc 1 81 5 is_stmt 1 view .LVU90
+ 327              		.loc 1 81 20 is_stmt 0 view .LVU91
+ 328 0032 054A     		ldr	r2, .L26
+ 329 0034 9468     		ldr	r4, [r2, #8]
+ 330              		.loc 1 81 12 view .LVU92
+ 331 0036 6246     		mov	r2, ip
+ 332 0038 7046     		mov	r0, lr
+ 333 003a A047     		blx	r4
+ 334              	.LVL20:
+ 335              		.loc 1 81 12 view .LVU93
+ 336 003c 00E0     		b	.L22
+ 337              	.LVL21:
+ 338              	.L23:
+  79:Device/Dev_Card.c ****         return false;
+ 339              		.loc 1 79 16 view .LVU94
+ 340 003e 0020     		movs	r0, #0
+ 341              	.LVL22:
+ 342              	.L22:
+  82:Device/Dev_Card.c **** }
+ 343              		.loc 1 82 1 view .LVU95
+ 344 0040 10BD     		pop	{r4, pc}
+ 345              	.LVL23:
+ 346              	.L24:
+  79:Device/Dev_Card.c ****         return false;
+ 347              		.loc 1 79 16 view .LVU96
+ 348 0042 2046     		mov	r0, r4
+ 349 0044 FCE7     		b	.L22
+ 350              	.L27:
+ 351 0046 00BF     		.align	2
+ 352              	.L26:
+ 353 0048 00000000 		.word	BspSDMMC
+ 354              		.cfi_endproc
+ 355              	.LFE150:
+ 357              		.section	.text.DevCard_Read,"ax",%progbits
+ 358              		.align	1
+ 359              		.syntax unified
+ 360              		.thumb
+ 361              		.thumb_func
+ 362              		.fpu fpv5-d16
+ 364              	DevCard_Read:
+ 365              	.LVL24:
+ 366              	.LFB151:
+  83:Device/Dev_Card.c **** 
+  84:Device/Dev_Card.c **** static bool DevCard_Read(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t d
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 9
+
+
+  85:Device/Dev_Card.c **** {
+ 367              		.loc 1 85 1 is_stmt 1 view -0
+ 368              		.cfi_startproc
+ 369              		@ args = 4, pretend = 0, frame = 0
+ 370              		@ frame_needed = 0, uses_anonymous_args = 0
+ 371              		.loc 1 85 1 is_stmt 0 view .LVU98
+ 372 0000 38B5     		push	{r3, r4, r5, lr}
+ 373              	.LCFI4:
+ 374              		.cfi_def_cfa_offset 16
+ 375              		.cfi_offset 3, -16
+ 376              		.cfi_offset 4, -12
+ 377              		.cfi_offset 5, -8
+ 378              		.cfi_offset 14, -4
+ 379 0002 BDF81040 		ldrh	r4, [sp, #16]
+  86:Device/Dev_Card.c ****     if ((Instance == NULL) || (p_data == NULL) || (block_num == 0) || (block > Instance->info.Block
+ 380              		.loc 1 86 5 is_stmt 1 view .LVU99
+ 381              		.loc 1 86 19 is_stmt 0 view .LVU100
+ 382 0006 8446     		mov	ip, r0
+ 383              		.loc 1 86 8 view .LVU101
+ 384 0008 002A     		cmp	r2, #0
+ 385 000a 18BF     		it	ne
+ 386 000c 0028     		cmpne	r0, #0
+ 387 000e 0CBF     		ite	eq
+ 388 0010 0120     		moveq	r0, #1
+ 389              	.LVL25:
+ 390              		.loc 1 86 8 view .LVU102
+ 391 0012 0020     		movne	r0, #0
+ 392 0014 13D0     		beq	.L30
+ 393 0016 9646     		mov	lr, r2
+ 394              		.loc 1 86 48 discriminator 1 view .LVU103
+ 395 0018 94B1     		cbz	r4, .L29
+ 396              		.loc 1 86 94 discriminator 2 view .LVU104
+ 397 001a DCF82A21 		ldr	r2, [ip, #298]	@ unaligned
+ 398              	.LVL26:
+ 399              		.loc 1 86 68 discriminator 2 view .LVU105
+ 400 001e 8A42     		cmp	r2, r1
+ 401 0020 0ED3     		bcc	.L29
+ 402              		.loc 1 86 147 discriminator 3 view .LVU106
+ 403 0022 DCF82E21 		ldr	r2, [ip, #302]	@ unaligned
+ 404              		.loc 1 86 131 discriminator 3 view .LVU107
+ 405 0026 04FB02F2 		mul	r2, r4, r2
+ 406              		.loc 1 86 105 discriminator 3 view .LVU108
+ 407 002a 9342     		cmp	r3, r2
+ 408 002c 08D3     		bcc	.L29
+  87:Device/Dev_Card.c ****         return false;
+  88:Device/Dev_Card.c **** 
+  89:Device/Dev_Card.c ****     return BspSDMMC.read(&(Instance->SDMMC_Obj), p_data, block, block_num);
+ 409              		.loc 1 89 5 is_stmt 1 view .LVU109
+ 410              		.loc 1 89 20 is_stmt 0 view .LVU110
+ 411 002e 054B     		ldr	r3, .L32
+ 412              	.LVL27:
+ 413              		.loc 1 89 20 view .LVU111
+ 414 0030 5D68     		ldr	r5, [r3, #4]
+ 415              		.loc 1 89 12 view .LVU112
+ 416 0032 2346     		mov	r3, r4
+ 417 0034 0A46     		mov	r2, r1
+ 418 0036 7146     		mov	r1, lr
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 10
+
+
+ 419              	.LVL28:
+ 420              		.loc 1 89 12 view .LVU113
+ 421 0038 6046     		mov	r0, ip
+ 422 003a A847     		blx	r5
+ 423              	.LVL29:
+ 424              		.loc 1 89 12 view .LVU114
+ 425 003c 00E0     		b	.L29
+ 426              	.LVL30:
+ 427              	.L30:
+  87:Device/Dev_Card.c ****         return false;
+ 428              		.loc 1 87 16 view .LVU115
+ 429 003e 0020     		movs	r0, #0
+ 430              	.LVL31:
+ 431              	.L29:
+  90:Device/Dev_Card.c **** }
+ 432              		.loc 1 90 1 view .LVU116
+ 433 0040 38BD     		pop	{r3, r4, r5, pc}
+ 434              	.LVL32:
+ 435              	.L33:
+ 436              		.loc 1 90 1 view .LVU117
+ 437 0042 00BF     		.align	2
+ 438              	.L32:
+ 439 0044 00000000 		.word	BspSDMMC
+ 440              		.cfi_endproc
+ 441              	.LFE151:
+ 443              		.global	DevCard
+ 444              		.section	.data.DevCard,"aw"
+ 445              		.align	2
+ 448              	DevCard:
+ 449 0000 00000000 		.word	DevCard_Init
+ 450 0004 00000000 		.space	8
+ 450      00000000 
+ 451 000c 00000000 		.word	DevCard_GetError
+ 452 0010 00000000 		.word	DevCard_GetInfo
+ 453 0014 00000000 		.word	DevCard_Read
+ 454 0018 00000000 		.word	DevCard_Write
+ 455              		.text
+ 456              	.Letext0:
+ 457              		.file 2 "/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.07/gcc/arm-none-eabi/include/machine/_de
+ 458              		.file 3 "/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.07/gcc/arm-none-eabi/include/sys/_stdint
+ 459              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 460              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 461              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mdma.h"
+ 462              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_sdmmc.h"
+ 463              		.file 8 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sd.h"
+ 464              		.file 9 "Bsp/Bsp_SDMMC.h"
+ 465              		.file 10 "Device/Dev_Card.h"
+ 466              		.file 11 "<built-in>"
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 Dev_Card.c
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:17     .text.DevCard_Init:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:24     .text.DevCard_Init:0000000000000000 DevCard_Init
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:160    .text.DevCard_Init:000000000000009c $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:165    .text.DevCard_GetError:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:171    .text.DevCard_GetError:0000000000000000 DevCard_GetError
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:199    .text.DevCard_GetInfo:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:205    .text.DevCard_GetInfo:0000000000000000 DevCard_GetInfo
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:275    .text.DevCard_Write:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:281    .text.DevCard_Write:0000000000000000 DevCard_Write
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:353    .text.DevCard_Write:0000000000000048 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:358    .text.DevCard_Read:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:364    .text.DevCard_Read:0000000000000000 DevCard_Read
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:439    .text.DevCard_Read:0000000000000044 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:448    .data.DevCard:0000000000000000 DevCard
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cchAlPaj.s:445    .data.DevCard:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+BspSDMMC
+memset

@@ -1,0 +1,999 @@
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"adrc.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.adrc_sign,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	adrc_sign:
+  25              	.LVL0:
+  26              	.LFB0:
+  27              		.file 1 "Algorithm/adrc.c"
+   1:Algorithm/adrc.c **** /*
+   2:Algorithm/adrc.c ****  * File      : adrc.c
+   3:Algorithm/adrc.c ****  *
+   4:Algorithm/adrc.c ****  *
+   5:Algorithm/adrc.c ****  * Change Logs:
+   6:Algorithm/adrc.c ****  * Date           Author       	Notes
+   7:Algorithm/adrc.c ****  * 2018-03-18     zoujiachi   	the first version
+   8:Algorithm/adrc.c ****  */
+   9:Algorithm/adrc.c **** 
+  10:Algorithm/adrc.c **** #include <stdlib.h>
+  11:Algorithm/adrc.c **** #include <math.h>
+  12:Algorithm/adrc.c **** #include "adrc.h"
+  13:Algorithm/adrc.c **** 
+  14:Algorithm/adrc.c **** static float adrc_sign(float val)
+  15:Algorithm/adrc.c **** {
+  28              		.loc 1 15 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  16:Algorithm/adrc.c ****     if (val >= 0.0f)
+  33              		.loc 1 16 5 view .LVU1
+  34              		.loc 1 16 8 is_stmt 0 view .LVU2
+  35 0000 B5EEC00A 		vcmpe.f32	s0, #0
+  36 0004 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  37 0008 02DA     		bge	.L3
+  17:Algorithm/adrc.c ****         return 1.0f;
+  18:Algorithm/adrc.c ****     
+  19:Algorithm/adrc.c ****     return -1.0f;
+  38              		.loc 1 19 12 view .LVU3
+  39 000a BFEE000A 		vmov.f32	s0, #-1.0e+0
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 2
+
+
+  40              	.LVL1:
+  41              		.loc 1 19 12 view .LVU4
+  42 000e 7047     		bx	lr
+  43              	.LVL2:
+  44              	.L3:
+  17:Algorithm/adrc.c ****         return 1.0f;
+  45              		.loc 1 17 16 view .LVU5
+  46 0010 B7EE000A 		vmov.f32	s0, #1.0e+0
+  47              	.LVL3:
+  20:Algorithm/adrc.c **** }
+  48              		.loc 1 20 1 view .LVU6
+  49 0014 7047     		bx	lr
+  50              		.cfi_endproc
+  51              	.LFE0:
+  53              		.section	.text.adrc_fhan,"ax",%progbits
+  54              		.align	1
+  55              		.global	adrc_fhan
+  56              		.syntax unified
+  57              		.thumb
+  58              		.thumb_func
+  59              		.fpu fpv5-d16
+  61              	adrc_fhan:
+  62              	.LVL4:
+  63              	.LFB1:
+  21:Algorithm/adrc.c **** 
+  22:Algorithm/adrc.c **** float adrc_fhan(float v1, float v2, float r0, float h0)
+  23:Algorithm/adrc.c **** {
+  64              		.loc 1 23 1 is_stmt 1 view -0
+  65              		.cfi_startproc
+  66              		@ args = 0, pretend = 0, frame = 0
+  67              		@ frame_needed = 0, uses_anonymous_args = 0
+  68              		.loc 1 23 1 is_stmt 0 view .LVU8
+  69 0000 08B5     		push	{r3, lr}
+  70              	.LCFI0:
+  71              		.cfi_def_cfa_offset 8
+  72              		.cfi_offset 3, -8
+  73              		.cfi_offset 14, -4
+  74 0002 2DED088B 		vpush.64	{d8, d9, d10, d11}
+  75              	.LCFI1:
+  76              		.cfi_def_cfa_offset 40
+  77              		.cfi_offset 80, -40
+  78              		.cfi_offset 81, -36
+  79              		.cfi_offset 82, -32
+  80              		.cfi_offset 83, -28
+  81              		.cfi_offset 84, -24
+  82              		.cfi_offset 85, -20
+  83              		.cfi_offset 86, -16
+  84              		.cfi_offset 87, -12
+  85 0006 F0EE41AA 		vmov.f32	s21, s2
+  24:Algorithm/adrc.c ****     float d = h0 * h0 * r0;
+  86              		.loc 1 24 5 is_stmt 1 view .LVU9
+  87              		.loc 1 24 18 is_stmt 0 view .LVU10
+  88 000a 21EEA19A 		vmul.f32	s18, s3, s3
+  89              		.loc 1 24 11 view .LVU11
+  90 000e 29EE019A 		vmul.f32	s18, s18, s2
+  91              	.LVL5:
+  25:Algorithm/adrc.c ****     float a0 = h0 * v2;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 3
+
+
+  92              		.loc 1 25 5 is_stmt 1 view .LVU12
+  93              		.loc 1 25 11 is_stmt 0 view .LVU13
+  94 0012 61EEA08A 		vmul.f32	s17, s3, s1
+  95              	.LVL6:
+  26:Algorithm/adrc.c ****     float y = v1 + a0;
+  96              		.loc 1 26 5 is_stmt 1 view .LVU14
+  97              		.loc 1 26 11 is_stmt 0 view .LVU15
+  98 0016 38EE808A 		vadd.f32	s16, s17, s0
+  99              	.LVL7:
+  27:Algorithm/adrc.c ****     float a1 = sqrtf(d * (d + 8.0f * fabsf(y)));
+ 100              		.loc 1 27 5 is_stmt 1 view .LVU16
+ 101              		.loc 1 27 38 is_stmt 0 view .LVU17
+ 102 001a B0EEC80A 		vabs.f32	s0, s16
+ 103              	.LVL8:
+ 104              		.loc 1 27 36 view .LVU18
+ 105 001e F2EE007A 		vmov.f32	s15, #8.0e+0
+ 106 0022 20EE270A 		vmul.f32	s0, s0, s15
+ 107              		.loc 1 27 29 view .LVU19
+ 108 0026 30EE090A 		vadd.f32	s0, s0, s18
+ 109              		.loc 1 27 16 view .LVU20
+ 110 002a 20EE090A 		vmul.f32	s0, s0, s18
+ 111 002e FFF7FEFF 		bl	sqrtf
+ 112              	.LVL9:
+ 113              		.loc 1 27 16 view .LVU21
+ 114 0032 F0EE409A 		vmov.f32	s19, s0
+ 115              	.LVL10:
+  28:Algorithm/adrc.c ****     float a2 = a0 + adrc_sign(y) * (a1 - d) * 0.5f;
+ 116              		.loc 1 28 5 is_stmt 1 view .LVU22
+ 117              		.loc 1 28 21 is_stmt 0 view .LVU23
+ 118 0036 B0EE480A 		vmov.f32	s0, s16
+ 119              	.LVL11:
+ 120              		.loc 1 28 21 view .LVU24
+ 121 003a FFF7FEFF 		bl	adrc_sign
+ 122              	.LVL12:
+ 123              		.loc 1 28 40 view .LVU25
+ 124 003e 79EEC99A 		vsub.f32	s19, s19, s18
+ 125              	.LVL13:
+ 126              		.loc 1 28 34 view .LVU26
+ 127 0042 60EE299A 		vmul.f32	s19, s0, s19
+ 128              		.loc 1 28 45 view .LVU27
+ 129 0046 B6EE00BA 		vmov.f32	s22, #5.0e-1
+ 130 004a 69EE8B9A 		vmul.f32	s19, s19, s22
+ 131              		.loc 1 28 11 view .LVU28
+ 132 004e 79EEA89A 		vadd.f32	s19, s19, s17
+ 133              	.LVL14:
+  29:Algorithm/adrc.c ****     float sy = (adrc_sign(y + d) - adrc_sign(y - d)) * 0.5f;
+ 134              		.loc 1 29 5 is_stmt 1 view .LVU29
+ 135              		.loc 1 29 17 is_stmt 0 view .LVU30
+ 136 0052 39EE080A 		vadd.f32	s0, s18, s16
+ 137 0056 FFF7FEFF 		bl	adrc_sign
+ 138              	.LVL15:
+ 139 005a B0EE40AA 		vmov.f32	s20, s0
+ 140              		.loc 1 29 36 view .LVU31
+ 141 005e 38EE490A 		vsub.f32	s0, s16, s18
+ 142 0062 FFF7FEFF 		bl	adrc_sign
+ 143              	.LVL16:
+ 144              		.loc 1 29 34 view .LVU32
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 4
+
+
+ 145 0066 3AEE40AA 		vsub.f32	s20, s20, s0
+ 146              		.loc 1 29 11 view .LVU33
+ 147 006a 2AEE0BAA 		vmul.f32	s20, s20, s22
+ 148              	.LVL17:
+  30:Algorithm/adrc.c ****     float a = (a0 + y - a2) * sy + a2;
+ 149              		.loc 1 30 5 is_stmt 1 view .LVU34
+ 150              		.loc 1 30 19 is_stmt 0 view .LVU35
+ 151 006e 38EE888A 		vadd.f32	s16, s17, s16
+ 152              	.LVL18:
+ 153              		.loc 1 30 23 view .LVU36
+ 154 0072 38EE698A 		vsub.f32	s16, s16, s19
+ 155              		.loc 1 30 29 view .LVU37
+ 156 0076 28EE0A8A 		vmul.f32	s16, s16, s20
+ 157              		.loc 1 30 11 view .LVU38
+ 158 007a 38EE298A 		vadd.f32	s16, s16, s19
+ 159              	.LVL19:
+  31:Algorithm/adrc.c ****     float sa = (adrc_sign(a + d) - adrc_sign(a - d)) * 0.5f;
+ 160              		.loc 1 31 5 is_stmt 1 view .LVU39
+ 161              		.loc 1 31 17 is_stmt 0 view .LVU40
+ 162 007e 39EE080A 		vadd.f32	s0, s18, s16
+ 163 0082 FFF7FEFF 		bl	adrc_sign
+ 164              	.LVL20:
+ 165 0086 F0EE408A 		vmov.f32	s17, s0
+ 166              	.LVL21:
+ 167              		.loc 1 31 36 view .LVU41
+ 168 008a 38EE490A 		vsub.f32	s0, s16, s18
+ 169 008e FFF7FEFF 		bl	adrc_sign
+ 170              	.LVL22:
+ 171              		.loc 1 31 34 view .LVU42
+ 172 0092 78EEC08A 		vsub.f32	s17, s17, s0
+ 173              		.loc 1 31 11 view .LVU43
+ 174 0096 68EE8B8A 		vmul.f32	s17, s17, s22
+ 175              	.LVL23:
+  32:Algorithm/adrc.c **** 
+  33:Algorithm/adrc.c ****     return -r0 * (a / d - adrc_sign(a)) * sa - r0 * adrc_sign(a);
+ 176              		.loc 1 33 5 is_stmt 1 view .LVU44
+ 177              		.loc 1 33 12 is_stmt 0 view .LVU45
+ 178 009a F1EE6A9A 		vneg.f32	s19, s21
+ 179              	.LVL24:
+ 180              		.loc 1 33 21 view .LVU46
+ 181 009e 88EE09AA 		vdiv.f32	s20, s16, s18
+ 182              	.LVL25:
+ 183              		.loc 1 33 27 view .LVU47
+ 184 00a2 B0EE480A 		vmov.f32	s0, s16
+ 185 00a6 FFF7FEFF 		bl	adrc_sign
+ 186              	.LVL26:
+ 187              		.loc 1 33 25 view .LVU48
+ 188 00aa 3AEE40AA 		vsub.f32	s20, s20, s0
+ 189              		.loc 1 33 16 view .LVU49
+ 190 00ae 69EE8A9A 		vmul.f32	s19, s19, s20
+ 191              		.loc 1 33 41 view .LVU50
+ 192 00b2 69EEA88A 		vmul.f32	s17, s19, s17
+ 193              	.LVL27:
+ 194              		.loc 1 33 51 view .LVU51
+ 195 00b6 20EE2A0A 		vmul.f32	s0, s0, s21
+  34:Algorithm/adrc.c **** }
+ 196              		.loc 1 34 1 view .LVU52
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 5
+
+
+ 197 00ba 38EEC00A 		vsub.f32	s0, s17, s0
+ 198 00be BDEC088B 		vldm	sp!, {d8-d11}
+ 199              	.LCFI2:
+ 200              		.cfi_restore 86
+ 201              		.cfi_restore 87
+ 202              		.cfi_restore 84
+ 203              		.cfi_restore 85
+ 204              		.cfi_restore 82
+ 205              		.cfi_restore 83
+ 206              		.cfi_restore 80
+ 207              		.cfi_restore 81
+ 208              		.cfi_def_cfa_offset 8
+ 209              	.LVL28:
+ 210              		.loc 1 34 1 view .LVU53
+ 211 00c2 08BD     		pop	{r3, pc}
+ 212              		.cfi_endproc
+ 213              	.LFE1:
+ 215              		.section	.text.adrc_fal,"ax",%progbits
+ 216              		.align	1
+ 217              		.global	adrc_fal
+ 218              		.syntax unified
+ 219              		.thumb
+ 220              		.thumb_func
+ 221              		.fpu fpv5-d16
+ 223              	adrc_fal:
+ 224              	.LVL29:
+ 225              	.LFB2:
+  35:Algorithm/adrc.c **** 
+  36:Algorithm/adrc.c **** float adrc_fal(float e, float alpha, float delta)
+  37:Algorithm/adrc.c **** {
+ 226              		.loc 1 37 1 is_stmt 1 view -0
+ 227              		.cfi_startproc
+ 228              		@ args = 0, pretend = 0, frame = 0
+ 229              		@ frame_needed = 0, uses_anonymous_args = 0
+ 230              		.loc 1 37 1 is_stmt 0 view .LVU55
+ 231 0000 08B5     		push	{r3, lr}
+ 232              	.LCFI3:
+ 233              		.cfi_def_cfa_offset 8
+ 234              		.cfi_offset 3, -8
+ 235              		.cfi_offset 14, -4
+ 236 0002 2DED028B 		vpush.64	{d8}
+ 237              	.LCFI4:
+ 238              		.cfi_def_cfa_offset 16
+ 239              		.cfi_offset 80, -16
+ 240              		.cfi_offset 81, -12
+ 241 0006 B0EE408A 		vmov.f32	s16, s0
+  38:Algorithm/adrc.c ****     if (fabsf(e) <= delta)
+ 242              		.loc 1 38 5 is_stmt 1 view .LVU56
+ 243              		.loc 1 38 9 is_stmt 0 view .LVU57
+ 244 000a B0EEC00A 		vabs.f32	s0, s0
+ 245              	.LVL30:
+ 246              		.loc 1 38 8 view .LVU58
+ 247 000e B4EEC10A 		vcmpe.f32	s0, s2
+ 248 0012 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 249 0016 0CD9     		bls	.L13
+  39:Algorithm/adrc.c ****     {
+  40:Algorithm/adrc.c ****         return e / (powf(delta, 1.0f - alpha));
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 6
+
+
+  41:Algorithm/adrc.c ****     }
+  42:Algorithm/adrc.c **** 
+  43:Algorithm/adrc.c ****     return powf(fabsf(e), alpha) * adrc_sign(e);
+ 250              		.loc 1 43 5 is_stmt 1 view .LVU59
+ 251              		.loc 1 43 12 is_stmt 0 view .LVU60
+ 252 0018 FFF7FEFF 		bl	powf
+ 253              	.LVL31:
+ 254              		.loc 1 43 12 view .LVU61
+ 255 001c F0EE408A 		vmov.f32	s17, s0
+ 256              		.loc 1 43 36 view .LVU62
+ 257 0020 B0EE480A 		vmov.f32	s0, s16
+ 258 0024 FFF7FEFF 		bl	adrc_sign
+ 259              	.LVL32:
+ 260              		.loc 1 43 34 view .LVU63
+ 261 0028 28EE800A 		vmul.f32	s0, s17, s0
+ 262              	.L6:
+  44:Algorithm/adrc.c **** }
+ 263              		.loc 1 44 1 view .LVU64
+ 264 002c BDEC028B 		vldm	sp!, {d8}
+ 265              	.LCFI5:
+ 266              		.cfi_remember_state
+ 267              		.cfi_restore 80
+ 268              		.cfi_restore 81
+ 269              		.cfi_def_cfa_offset 8
+ 270              	.LVL33:
+ 271              		.loc 1 44 1 view .LVU65
+ 272 0030 08BD     		pop	{r3, pc}
+ 273              	.LVL34:
+ 274              	.L13:
+ 275              	.LCFI6:
+ 276              		.cfi_restore_state
+  40:Algorithm/adrc.c ****     }
+ 277              		.loc 1 40 9 is_stmt 1 view .LVU66
+  40:Algorithm/adrc.c ****     }
+ 278              		.loc 1 40 21 is_stmt 0 view .LVU67
+ 279 0032 F7EE007A 		vmov.f32	s15, #1.0e+0
+ 280 0036 77EEE00A 		vsub.f32	s1, s15, s1
+ 281              	.LVL35:
+  40:Algorithm/adrc.c ****     }
+ 282              		.loc 1 40 21 view .LVU68
+ 283 003a B0EE410A 		vmov.f32	s0, s2
+ 284 003e FFF7FEFF 		bl	powf
+ 285              	.LVL36:
+  40:Algorithm/adrc.c ****     }
+ 286              		.loc 1 40 21 view .LVU69
+ 287 0042 F0EE407A 		vmov.f32	s15, s0
+  40:Algorithm/adrc.c ****     }
+ 288              		.loc 1 40 18 view .LVU70
+ 289 0046 88EE270A 		vdiv.f32	s0, s16, s15
+ 290 004a EFE7     		b	.L6
+ 291              		.cfi_endproc
+ 292              	.LFE2:
+ 294              		.section	.text.adrc_td_init,"ax",%progbits
+ 295              		.align	1
+ 296              		.global	adrc_td_init
+ 297              		.syntax unified
+ 298              		.thumb
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 7
+
+
+ 299              		.thumb_func
+ 300              		.fpu fpv5-d16
+ 302              	adrc_td_init:
+ 303              	.LVL37:
+ 304              	.LFB3:
+  45:Algorithm/adrc.c **** 
+  46:Algorithm/adrc.c **** void adrc_td_init(ADRC_TD_Def *td_t, float h, float r0, float h0)
+  47:Algorithm/adrc.c **** {
+ 305              		.loc 1 47 1 is_stmt 1 view -0
+ 306              		.cfi_startproc
+ 307              		@ args = 0, pretend = 0, frame = 0
+ 308              		@ frame_needed = 0, uses_anonymous_args = 0
+ 309              		@ link register save eliminated.
+  48:Algorithm/adrc.c ****     td_t->h = h;
+ 310              		.loc 1 48 5 view .LVU72
+ 311              		.loc 1 48 13 is_stmt 0 view .LVU73
+ 312 0000 80ED040A 		vstr.32	s0, [r0, #16]
+  49:Algorithm/adrc.c ****     td_t->r0 = r0;
+ 313              		.loc 1 49 5 is_stmt 1 view .LVU74
+ 314              		.loc 1 49 14 is_stmt 0 view .LVU75
+ 315 0004 C0ED020A 		vstr.32	s1, [r0, #8]
+  50:Algorithm/adrc.c ****     td_t->h0 = h0;
+ 316              		.loc 1 50 5 is_stmt 1 view .LVU76
+ 317              		.loc 1 50 14 is_stmt 0 view .LVU77
+ 318 0008 80ED031A 		vstr.32	s2, [r0, #12]
+  51:Algorithm/adrc.c ****     td_t->v1 = td_t->v2 = 0.0f;
+ 319              		.loc 1 51 5 is_stmt 1 view .LVU78
+ 320              		.loc 1 51 25 is_stmt 0 view .LVU79
+ 321 000c 0023     		movs	r3, #0
+ 322 000e 4360     		str	r3, [r0, #4]	@ float
+ 323              		.loc 1 51 14 view .LVU80
+ 324 0010 0360     		str	r3, [r0]	@ float
+  52:Algorithm/adrc.c **** }
+ 325              		.loc 1 52 1 view .LVU81
+ 326 0012 7047     		bx	lr
+ 327              		.cfi_endproc
+ 328              	.LFE3:
+ 330              		.section	.text.adrc_td,"ax",%progbits
+ 331              		.align	1
+ 332              		.global	adrc_td
+ 333              		.syntax unified
+ 334              		.thumb
+ 335              		.thumb_func
+ 336              		.fpu fpv5-d16
+ 338              	adrc_td:
+ 339              	.LVL38:
+ 340              	.LFB4:
+  53:Algorithm/adrc.c **** 
+  54:Algorithm/adrc.c **** void adrc_td(ADRC_TD_Def *td, float v)
+  55:Algorithm/adrc.c **** {
+ 341              		.loc 1 55 1 is_stmt 1 view -0
+ 342              		.cfi_startproc
+ 343              		@ args = 0, pretend = 0, frame = 0
+ 344              		@ frame_needed = 0, uses_anonymous_args = 0
+ 345              		.loc 1 55 1 is_stmt 0 view .LVU83
+ 346 0000 10B5     		push	{r4, lr}
+ 347              	.LCFI7:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 8
+
+
+ 348              		.cfi_def_cfa_offset 8
+ 349              		.cfi_offset 4, -8
+ 350              		.cfi_offset 14, -4
+ 351 0002 0446     		mov	r4, r0
+  56:Algorithm/adrc.c ****     float fv = adrc_fhan(td->v1 - v, td->v2, td->r0, td->h0);
+ 352              		.loc 1 56 5 is_stmt 1 view .LVU84
+ 353              		.loc 1 56 28 is_stmt 0 view .LVU85
+ 354 0004 D0ED007A 		vldr.32	s15, [r0]
+ 355              		.loc 1 56 16 view .LVU86
+ 356 0008 D0ED031A 		vldr.32	s3, [r0, #12]
+ 357 000c 90ED021A 		vldr.32	s2, [r0, #8]
+ 358 0010 D0ED010A 		vldr.32	s1, [r0, #4]
+ 359 0014 37EEC00A 		vsub.f32	s0, s15, s0
+ 360              	.LVL39:
+ 361              		.loc 1 56 16 view .LVU87
+ 362 0018 FFF7FEFF 		bl	adrc_fhan
+ 363              	.LVL40:
+  57:Algorithm/adrc.c **** 
+  58:Algorithm/adrc.c ****     td->v1 += td->h * td->v2;
+ 364              		.loc 1 58 5 is_stmt 1 view .LVU88
+ 365              		.loc 1 58 17 is_stmt 0 view .LVU89
+ 366 001c 94ED047A 		vldr.32	s14, [r4, #16]
+ 367              		.loc 1 58 25 view .LVU90
+ 368 0020 D4ED017A 		vldr.32	s15, [r4, #4]
+ 369              		.loc 1 58 21 view .LVU91
+ 370 0024 27EE276A 		vmul.f32	s12, s14, s15
+ 371              		.loc 1 58 12 view .LVU92
+ 372 0028 D4ED006A 		vldr.32	s13, [r4]
+ 373 002c 76EE866A 		vadd.f32	s13, s13, s12
+ 374 0030 C4ED006A 		vstr.32	s13, [r4]
+  59:Algorithm/adrc.c ****     td->v2 += td->h * fv;
+ 375              		.loc 1 59 5 is_stmt 1 view .LVU93
+ 376              		.loc 1 59 21 is_stmt 0 view .LVU94
+ 377 0034 27EE007A 		vmul.f32	s14, s14, s0
+ 378              		.loc 1 59 12 view .LVU95
+ 379 0038 77EE877A 		vadd.f32	s15, s15, s14
+ 380 003c C4ED017A 		vstr.32	s15, [r4, #4]
+  60:Algorithm/adrc.c **** }
+ 381              		.loc 1 60 1 view .LVU96
+ 382 0040 10BD     		pop	{r4, pc}
+ 383              		.loc 1 60 1 view .LVU97
+ 384              		.cfi_endproc
+ 385              	.LFE4:
+ 387              		.section	.text.adrc_td_control_init,"ax",%progbits
+ 388              		.align	1
+ 389              		.global	adrc_td_control_init
+ 390              		.syntax unified
+ 391              		.thumb
+ 392              		.thumb_func
+ 393              		.fpu fpv5-d16
+ 395              	adrc_td_control_init:
+ 396              	.LVL41:
+ 397              	.LFB5:
+  61:Algorithm/adrc.c **** 
+  62:Algorithm/adrc.c **** void adrc_td_control_init(TD_Controller_Def *td_controller, float h, float r2, float h2)
+  63:Algorithm/adrc.c **** {
+ 398              		.loc 1 63 1 is_stmt 1 view -0
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 9
+
+
+ 399              		.cfi_startproc
+ 400              		@ args = 0, pretend = 0, frame = 0
+ 401              		@ frame_needed = 0, uses_anonymous_args = 0
+ 402              		@ link register save eliminated.
+  64:Algorithm/adrc.c ****     td_controller->v1 = 0.0f;
+ 403              		.loc 1 64 5 view .LVU99
+ 404              		.loc 1 64 23 is_stmt 0 view .LVU100
+ 405 0000 0023     		movs	r3, #0
+ 406 0002 0360     		str	r3, [r0]	@ float
+  65:Algorithm/adrc.c ****     td_controller->v2 = 0.0f;
+ 407              		.loc 1 65 5 is_stmt 1 view .LVU101
+ 408              		.loc 1 65 23 is_stmt 0 view .LVU102
+ 409 0004 4360     		str	r3, [r0, #4]	@ float
+  66:Algorithm/adrc.c ****     td_controller->r2 = r2;
+ 410              		.loc 1 66 5 is_stmt 1 view .LVU103
+ 411              		.loc 1 66 23 is_stmt 0 view .LVU104
+ 412 0006 C0ED020A 		vstr.32	s1, [r0, #8]
+  67:Algorithm/adrc.c ****     td_controller->h2 = h2;
+ 413              		.loc 1 67 5 is_stmt 1 view .LVU105
+ 414              		.loc 1 67 23 is_stmt 0 view .LVU106
+ 415 000a 80ED031A 		vstr.32	s2, [r0, #12]
+  68:Algorithm/adrc.c ****     td_controller->h = h;
+ 416              		.loc 1 68 5 is_stmt 1 view .LVU107
+ 417              		.loc 1 68 22 is_stmt 0 view .LVU108
+ 418 000e 80ED040A 		vstr.32	s0, [r0, #16]
+  69:Algorithm/adrc.c **** }
+ 419              		.loc 1 69 1 view .LVU109
+ 420 0012 7047     		bx	lr
+ 421              		.cfi_endproc
+ 422              	.LFE5:
+ 424              		.section	.text.adrc_td_control,"ax",%progbits
+ 425              		.align	1
+ 426              		.global	adrc_td_control
+ 427              		.syntax unified
+ 428              		.thumb
+ 429              		.thumb_func
+ 430              		.fpu fpv5-d16
+ 432              	adrc_td_control:
+ 433              	.LVL42:
+ 434              	.LFB6:
+  70:Algorithm/adrc.c **** 
+  71:Algorithm/adrc.c **** float adrc_td_control(TD_Controller_Def *td_controller, float err)
+  72:Algorithm/adrc.c **** {
+ 435              		.loc 1 72 1 is_stmt 1 view -0
+ 436              		.cfi_startproc
+ 437              		@ args = 0, pretend = 0, frame = 0
+ 438              		@ frame_needed = 0, uses_anonymous_args = 0
+ 439              		.loc 1 72 1 is_stmt 0 view .LVU111
+ 440 0000 10B5     		push	{r4, lr}
+ 441              	.LCFI8:
+ 442              		.cfi_def_cfa_offset 8
+ 443              		.cfi_offset 4, -8
+ 444              		.cfi_offset 14, -4
+ 445 0002 0446     		mov	r4, r0
+  73:Algorithm/adrc.c ****     float fv = adrc_fhan(-err, td_controller->v2, td_controller->r2, td_controller->h2);
+ 446              		.loc 1 73 5 is_stmt 1 view .LVU112
+ 447              		.loc 1 73 16 is_stmt 0 view .LVU113
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 10
+
+
+ 448 0004 D0ED031A 		vldr.32	s3, [r0, #12]
+ 449 0008 90ED021A 		vldr.32	s2, [r0, #8]
+ 450 000c D0ED010A 		vldr.32	s1, [r0, #4]
+ 451 0010 B1EE400A 		vneg.f32	s0, s0
+ 452              	.LVL43:
+ 453              		.loc 1 73 16 view .LVU114
+ 454 0014 FFF7FEFF 		bl	adrc_fhan
+ 455              	.LVL44:
+  74:Algorithm/adrc.c ****     td_controller->v1 += td_controller->h * td_controller->v2;
+ 456              		.loc 1 74 5 is_stmt 1 view .LVU115
+ 457              		.loc 1 74 39 is_stmt 0 view .LVU116
+ 458 0018 94ED047A 		vldr.32	s14, [r4, #16]
+ 459              		.loc 1 74 58 view .LVU117
+ 460 001c D4ED017A 		vldr.32	s15, [r4, #4]
+ 461              		.loc 1 74 43 view .LVU118
+ 462 0020 27EE276A 		vmul.f32	s12, s14, s15
+ 463              		.loc 1 74 23 view .LVU119
+ 464 0024 D4ED006A 		vldr.32	s13, [r4]
+ 465 0028 76EE866A 		vadd.f32	s13, s13, s12
+ 466 002c C4ED006A 		vstr.32	s13, [r4]
+  75:Algorithm/adrc.c ****     td_controller->v2 += td_controller->h * fv;
+ 467              		.loc 1 75 5 is_stmt 1 view .LVU120
+ 468              		.loc 1 75 43 is_stmt 0 view .LVU121
+ 469 0030 27EE000A 		vmul.f32	s0, s14, s0
+ 470              	.LVL45:
+ 471              		.loc 1 75 23 view .LVU122
+ 472 0034 37EE800A 		vadd.f32	s0, s15, s0
+ 473 0038 84ED010A 		vstr.32	s0, [r4, #4]
+  76:Algorithm/adrc.c **** 
+  77:Algorithm/adrc.c ****     return td_controller->v2;
+ 474              		.loc 1 77 5 is_stmt 1 view .LVU123
+  78:Algorithm/adrc.c **** }
+ 475              		.loc 1 78 1 is_stmt 0 view .LVU124
+ 476 003c 10BD     		pop	{r4, pc}
+ 477              		.loc 1 78 1 view .LVU125
+ 478              		.cfi_endproc
+ 479              	.LFE6:
+ 481              		.section	.text.adrc_eso_init,"ax",%progbits
+ 482              		.align	1
+ 483              		.global	adrc_eso_init
+ 484              		.syntax unified
+ 485              		.thumb
+ 486              		.thumb_func
+ 487              		.fpu fpv5-d16
+ 489              	adrc_eso_init:
+ 490              	.LVL46:
+ 491              	.LFB7:
+  79:Algorithm/adrc.c **** 
+  80:Algorithm/adrc.c **** void adrc_eso_init(ADRC_ESO_Def *eso_t, float h, float beta1, float beta2, float alpha, float delta
+  81:Algorithm/adrc.c **** {
+ 492              		.loc 1 81 1 is_stmt 1 view -0
+ 493              		.cfi_startproc
+ 494              		@ args = 0, pretend = 0, frame = 0
+ 495              		@ frame_needed = 0, uses_anonymous_args = 0
+ 496              		@ link register save eliminated.
+  82:Algorithm/adrc.c ****     eso_t->h = h;
+ 497              		.loc 1 82 5 view .LVU127
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 11
+
+
+ 498              		.loc 1 82 14 is_stmt 0 view .LVU128
+ 499 0000 80ED000A 		vstr.32	s0, [r0]
+  83:Algorithm/adrc.c ****     eso_t->beta1 = beta1;
+ 500              		.loc 1 83 5 is_stmt 1 view .LVU129
+ 501              		.loc 1 83 18 is_stmt 0 view .LVU130
+ 502 0004 C0ED010A 		vstr.32	s1, [r0, #4]
+  84:Algorithm/adrc.c ****     eso_t->beta2 = beta2;
+ 503              		.loc 1 84 5 is_stmt 1 view .LVU131
+ 504              		.loc 1 84 18 is_stmt 0 view .LVU132
+ 505 0008 80ED021A 		vstr.32	s2, [r0, #8]
+  85:Algorithm/adrc.c ****     eso_t->u = 0.0f;
+ 506              		.loc 1 85 5 is_stmt 1 view .LVU133
+ 507              		.loc 1 85 14 is_stmt 0 view .LVU134
+ 508 000c 0023     		movs	r3, #0
+ 509 000e 4361     		str	r3, [r0, #20]	@ float
+  86:Algorithm/adrc.c ****     eso_t->alpha = alpha;
+ 510              		.loc 1 86 5 is_stmt 1 view .LVU135
+ 511              		.loc 1 86 18 is_stmt 0 view .LVU136
+ 512 0010 C0ED031A 		vstr.32	s3, [r0, #12]
+  87:Algorithm/adrc.c ****     eso_t->delta = delta;
+ 513              		.loc 1 87 5 is_stmt 1 view .LVU137
+ 514              		.loc 1 87 18 is_stmt 0 view .LVU138
+ 515 0014 80ED042A 		vstr.32	s4, [r0, #16]
+  88:Algorithm/adrc.c ****     eso_t->b0 = b0;
+ 516              		.loc 1 88 5 is_stmt 1 view .LVU139
+ 517              		.loc 1 88 15 is_stmt 0 view .LVU140
+ 518 0018 C0ED062A 		vstr.32	s5, [r0, #24]
+  89:Algorithm/adrc.c **** 
+  90:Algorithm/adrc.c ****     eso_t->z1 = eso_t->z2 = 0.0f;
+ 519              		.loc 1 90 5 is_stmt 1 view .LVU141
+ 520              		.loc 1 90 27 is_stmt 0 view .LVU142
+ 521 001c 0362     		str	r3, [r0, #32]	@ float
+ 522              		.loc 1 90 15 view .LVU143
+ 523 001e C361     		str	r3, [r0, #28]	@ float
+  91:Algorithm/adrc.c **** }
+ 524              		.loc 1 91 1 view .LVU144
+ 525 0020 7047     		bx	lr
+ 526              		.cfi_endproc
+ 527              	.LFE7:
+ 529              		.section	.text.adrc_eso,"ax",%progbits
+ 530              		.align	1
+ 531              		.global	adrc_eso
+ 532              		.syntax unified
+ 533              		.thumb
+ 534              		.thumb_func
+ 535              		.fpu fpv5-d16
+ 537              	adrc_eso:
+ 538              	.LVL47:
+ 539              	.LFB8:
+  92:Algorithm/adrc.c **** 
+  93:Algorithm/adrc.c **** void adrc_eso(ADRC_ESO_Def *eso_t, float y)
+  94:Algorithm/adrc.c **** {
+ 540              		.loc 1 94 1 is_stmt 1 view -0
+ 541              		.cfi_startproc
+ 542              		@ args = 0, pretend = 0, frame = 0
+ 543              		@ frame_needed = 0, uses_anonymous_args = 0
+ 544              		.loc 1 94 1 is_stmt 0 view .LVU146
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 12
+
+
+ 545 0000 10B5     		push	{r4, lr}
+ 546              	.LCFI9:
+ 547              		.cfi_def_cfa_offset 8
+ 548              		.cfi_offset 4, -8
+ 549              		.cfi_offset 14, -4
+ 550 0002 2DED028B 		vpush.64	{d8}
+ 551              	.LCFI10:
+ 552              		.cfi_def_cfa_offset 16
+ 553              		.cfi_offset 80, -16
+ 554              		.cfi_offset 81, -12
+ 555 0006 0446     		mov	r4, r0
+  95:Algorithm/adrc.c ****     float e = eso_t->z1 - y;
+ 556              		.loc 1 95 5 is_stmt 1 view .LVU147
+ 557              		.loc 1 95 20 is_stmt 0 view .LVU148
+ 558 0008 90ED078A 		vldr.32	s16, [r0, #28]
+ 559              		.loc 1 95 11 view .LVU149
+ 560 000c 38EE408A 		vsub.f32	s16, s16, s0
+ 561              	.LVL48:
+  96:Algorithm/adrc.c ****     float fe = adrc_fal(e, eso_t->alpha, eso_t->delta);
+ 562              		.loc 1 96 5 is_stmt 1 view .LVU150
+ 563              		.loc 1 96 16 is_stmt 0 view .LVU151
+ 564 0010 90ED041A 		vldr.32	s2, [r0, #16]
+ 565 0014 D0ED030A 		vldr.32	s1, [r0, #12]
+ 566 0018 B0EE480A 		vmov.f32	s0, s16
+ 567              	.LVL49:
+ 568              		.loc 1 96 16 view .LVU152
+ 569 001c FFF7FEFF 		bl	adrc_fal
+ 570              	.LVL50:
+  97:Algorithm/adrc.c **** 
+  98:Algorithm/adrc.c ****     eso_t->z1 += eso_t->h * (eso_t->z2 + eso_t->b0 * eso_t->u - eso_t->beta1 * e);
+ 571              		.loc 1 98 5 is_stmt 1 view .LVU153
+ 572              		.loc 1 98 23 is_stmt 0 view .LVU154
+ 573 0020 94ED007A 		vldr.32	s14, [r4]
+ 574              		.loc 1 98 35 view .LVU155
+ 575 0024 D4ED086A 		vldr.32	s13, [r4, #32]
+ 576              		.loc 1 98 47 view .LVU156
+ 577 0028 D4ED067A 		vldr.32	s15, [r4, #24]
+ 578              		.loc 1 98 59 view .LVU157
+ 579 002c 94ED056A 		vldr.32	s12, [r4, #20]
+ 580              		.loc 1 98 52 view .LVU158
+ 581 0030 67EE867A 		vmul.f32	s15, s15, s12
+ 582              		.loc 1 98 40 view .LVU159
+ 583 0034 76EEA77A 		vadd.f32	s15, s13, s15
+ 584              		.loc 1 98 70 view .LVU160
+ 585 0038 94ED016A 		vldr.32	s12, [r4, #4]
+ 586              		.loc 1 98 78 view .LVU161
+ 587 003c 26EE088A 		vmul.f32	s16, s12, s16
+ 588              	.LVL51:
+ 589              		.loc 1 98 63 view .LVU162
+ 590 0040 77EEC87A 		vsub.f32	s15, s15, s16
+ 591              		.loc 1 98 27 view .LVU163
+ 592 0044 67EE277A 		vmul.f32	s15, s14, s15
+ 593              		.loc 1 98 15 view .LVU164
+ 594 0048 94ED076A 		vldr.32	s12, [r4, #28]
+ 595 004c 76EE277A 		vadd.f32	s15, s12, s15
+ 596 0050 C4ED077A 		vstr.32	s15, [r4, #28]
+  99:Algorithm/adrc.c ****     eso_t->z2 -= eso_t->h * eso_t->beta2 * fe;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 13
+
+
+ 597              		.loc 1 99 5 is_stmt 1 view .LVU165
+ 598              		.loc 1 99 34 is_stmt 0 view .LVU166
+ 599 0054 D4ED027A 		vldr.32	s15, [r4, #8]
+ 600              		.loc 1 99 27 view .LVU167
+ 601 0058 27EE277A 		vmul.f32	s14, s14, s15
+ 602              		.loc 1 99 42 view .LVU168
+ 603 005c 27EE007A 		vmul.f32	s14, s14, s0
+ 604              		.loc 1 99 15 view .LVU169
+ 605 0060 36EEC77A 		vsub.f32	s14, s13, s14
+ 606 0064 84ED087A 		vstr.32	s14, [r4, #32]
+ 100:Algorithm/adrc.c **** }
+ 607              		.loc 1 100 1 view .LVU170
+ 608 0068 BDEC028B 		vldm	sp!, {d8}
+ 609              	.LCFI11:
+ 610              		.cfi_restore 80
+ 611              		.cfi_restore 81
+ 612              		.cfi_def_cfa_offset 8
+ 613 006c 10BD     		pop	{r4, pc}
+ 614              		.loc 1 100 1 view .LVU171
+ 615              		.cfi_endproc
+ 616              	.LFE8:
+ 618              		.section	.text.adrc_leso_init,"ax",%progbits
+ 619              		.align	1
+ 620              		.global	adrc_leso_init
+ 621              		.syntax unified
+ 622              		.thumb
+ 623              		.thumb_func
+ 624              		.fpu fpv5-d16
+ 626              	adrc_leso_init:
+ 627              	.LVL52:
+ 628              	.LFB9:
+ 101:Algorithm/adrc.c **** 
+ 102:Algorithm/adrc.c **** void adrc_leso_init(ADRC_LESO_Def *leso_t, float h, float w, float b0)
+ 103:Algorithm/adrc.c **** {
+ 629              		.loc 1 103 1 is_stmt 1 view -0
+ 630              		.cfi_startproc
+ 631              		@ args = 0, pretend = 0, frame = 0
+ 632              		@ frame_needed = 0, uses_anonymous_args = 0
+ 633              		@ link register save eliminated.
+ 104:Algorithm/adrc.c ****     leso_t->h = h;
+ 634              		.loc 1 104 5 view .LVU173
+ 635              		.loc 1 104 15 is_stmt 0 view .LVU174
+ 636 0000 80ED000A 		vstr.32	s0, [r0]
+ 105:Algorithm/adrc.c ****     // (s + w)^2 = s^2 + beta_1 * s + beta_2
+ 106:Algorithm/adrc.c ****     leso_t->beta1 = 2.0f * w;
+ 637              		.loc 1 106 5 is_stmt 1 view .LVU175
+ 638              		.loc 1 106 26 is_stmt 0 view .LVU176
+ 639 0004 70EEA07A 		vadd.f32	s15, s1, s1
+ 640              		.loc 1 106 19 view .LVU177
+ 641 0008 C0ED017A 		vstr.32	s15, [r0, #4]
+ 107:Algorithm/adrc.c ****     leso_t->beta2 = w * w;
+ 642              		.loc 1 107 5 is_stmt 1 view .LVU178
+ 643              		.loc 1 107 23 is_stmt 0 view .LVU179
+ 644 000c 60EEA00A 		vmul.f32	s1, s1, s1
+ 645              	.LVL53:
+ 646              		.loc 1 107 19 view .LVU180
+ 647 0010 C0ED020A 		vstr.32	s1, [r0, #8]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 14
+
+
+ 108:Algorithm/adrc.c ****     leso_t->u = 0.0f;
+ 648              		.loc 1 108 5 is_stmt 1 view .LVU181
+ 649              		.loc 1 108 15 is_stmt 0 view .LVU182
+ 650 0014 0023     		movs	r3, #0
+ 651 0016 C360     		str	r3, [r0, #12]	@ float
+ 109:Algorithm/adrc.c ****     leso_t->b0 = b0;
+ 652              		.loc 1 109 5 is_stmt 1 view .LVU183
+ 653              		.loc 1 109 16 is_stmt 0 view .LVU184
+ 654 0018 80ED041A 		vstr.32	s2, [r0, #16]
+ 110:Algorithm/adrc.c **** 
+ 111:Algorithm/adrc.c ****     leso_t->z1 = leso_t->z2 = 0.0f;
+ 655              		.loc 1 111 5 is_stmt 1 view .LVU185
+ 656              		.loc 1 111 29 is_stmt 0 view .LVU186
+ 657 001c 8361     		str	r3, [r0, #24]	@ float
+ 658              		.loc 1 111 16 view .LVU187
+ 659 001e 4361     		str	r3, [r0, #20]	@ float
+ 112:Algorithm/adrc.c **** }
+ 660              		.loc 1 112 1 view .LVU188
+ 661 0020 7047     		bx	lr
+ 662              		.cfi_endproc
+ 663              	.LFE9:
+ 665              		.section	.text.adrc_leso,"ax",%progbits
+ 666              		.align	1
+ 667              		.global	adrc_leso
+ 668              		.syntax unified
+ 669              		.thumb
+ 670              		.thumb_func
+ 671              		.fpu fpv5-d16
+ 673              	adrc_leso:
+ 674              	.LVL54:
+ 675              	.LFB10:
+ 113:Algorithm/adrc.c **** 
+ 114:Algorithm/adrc.c **** void adrc_leso(ADRC_LESO_Def *leso_t, float y)
+ 115:Algorithm/adrc.c **** {
+ 676              		.loc 1 115 1 is_stmt 1 view -0
+ 677              		.cfi_startproc
+ 678              		@ args = 0, pretend = 0, frame = 0
+ 679              		@ frame_needed = 0, uses_anonymous_args = 0
+ 680              		@ link register save eliminated.
+ 116:Algorithm/adrc.c ****     float e = leso_t->z1 - y;
+ 681              		.loc 1 116 5 view .LVU190
+ 682              		.loc 1 116 21 is_stmt 0 view .LVU191
+ 683 0000 90ED056A 		vldr.32	s12, [r0, #20]
+ 684              		.loc 1 116 11 view .LVU192
+ 685 0004 36EE400A 		vsub.f32	s0, s12, s0
+ 686              	.LVL55:
+ 117:Algorithm/adrc.c **** 
+ 118:Algorithm/adrc.c ****     leso_t->z1 += leso_t->h * (leso_t->z2 + leso_t->b0 * leso_t->u - leso_t->beta1 * e);
+ 687              		.loc 1 118 5 is_stmt 1 view .LVU193
+ 688              		.loc 1 118 25 is_stmt 0 view .LVU194
+ 689 0008 90ED007A 		vldr.32	s14, [r0]
+ 690              		.loc 1 118 38 view .LVU195
+ 691 000c D0ED066A 		vldr.32	s13, [r0, #24]
+ 692              		.loc 1 118 51 view .LVU196
+ 693 0010 D0ED047A 		vldr.32	s15, [r0, #16]
+ 694              		.loc 1 118 64 view .LVU197
+ 695 0014 D0ED035A 		vldr.32	s11, [r0, #12]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 15
+
+
+ 696              		.loc 1 118 56 view .LVU198
+ 697 0018 67EEA57A 		vmul.f32	s15, s15, s11
+ 698              		.loc 1 118 43 view .LVU199
+ 699 001c 76EEA77A 		vadd.f32	s15, s13, s15
+ 700              		.loc 1 118 76 view .LVU200
+ 701 0020 D0ED015A 		vldr.32	s11, [r0, #4]
+ 702              		.loc 1 118 84 view .LVU201
+ 703 0024 65EE805A 		vmul.f32	s11, s11, s0
+ 704              		.loc 1 118 68 view .LVU202
+ 705 0028 77EEE57A 		vsub.f32	s15, s15, s11
+ 706              		.loc 1 118 29 view .LVU203
+ 707 002c 67EE277A 		vmul.f32	s15, s14, s15
+ 708              		.loc 1 118 16 view .LVU204
+ 709 0030 76EE277A 		vadd.f32	s15, s12, s15
+ 710 0034 C0ED057A 		vstr.32	s15, [r0, #20]
+ 119:Algorithm/adrc.c ****     leso_t->z2 -= leso_t->h * leso_t->beta2 * e;
+ 711              		.loc 1 119 5 is_stmt 1 view .LVU205
+ 712              		.loc 1 119 37 is_stmt 0 view .LVU206
+ 713 0038 D0ED027A 		vldr.32	s15, [r0, #8]
+ 714              		.loc 1 119 29 view .LVU207
+ 715 003c 27EE277A 		vmul.f32	s14, s14, s15
+ 716              		.loc 1 119 45 view .LVU208
+ 717 0040 27EE007A 		vmul.f32	s14, s14, s0
+ 718              		.loc 1 119 16 view .LVU209
+ 719 0044 36EEC77A 		vsub.f32	s14, s13, s14
+ 720 0048 80ED067A 		vstr.32	s14, [r0, #24]
+ 120:Algorithm/adrc.c **** }
+ 721              		.loc 1 120 1 view .LVU210
+ 722 004c 7047     		bx	lr
+ 723              		.cfi_endproc
+ 724              	.LFE10:
+ 726              		.section	.text.adrc_nlsef_init,"ax",%progbits
+ 727              		.align	1
+ 728              		.global	adrc_nlsef_init
+ 729              		.syntax unified
+ 730              		.thumb
+ 731              		.thumb_func
+ 732              		.fpu fpv5-d16
+ 734              	adrc_nlsef_init:
+ 735              	.LVL56:
+ 736              	.LFB11:
+ 121:Algorithm/adrc.c **** 
+ 122:Algorithm/adrc.c **** void adrc_nlsef_init(ADRC_NLSEF_Def *nlsef_t, float h, float r1, float h1, float c)
+ 123:Algorithm/adrc.c **** {
+ 737              		.loc 1 123 1 is_stmt 1 view -0
+ 738              		.cfi_startproc
+ 739              		@ args = 0, pretend = 0, frame = 0
+ 740              		@ frame_needed = 0, uses_anonymous_args = 0
+ 741              		@ link register save eliminated.
+ 124:Algorithm/adrc.c ****     nlsef_t->h = h;
+ 742              		.loc 1 124 5 view .LVU212
+ 743              		.loc 1 124 16 is_stmt 0 view .LVU213
+ 744 0000 80ED000A 		vstr.32	s0, [r0]
+ 125:Algorithm/adrc.c ****     nlsef_t->h1 = h1;
+ 745              		.loc 1 125 5 is_stmt 1 view .LVU214
+ 746              		.loc 1 125 17 is_stmt 0 view .LVU215
+ 747 0004 80ED011A 		vstr.32	s2, [r0, #4]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 16
+
+
+ 126:Algorithm/adrc.c ****     nlsef_t->r1 = r1;
+ 748              		.loc 1 126 5 is_stmt 1 view .LVU216
+ 749              		.loc 1 126 17 is_stmt 0 view .LVU217
+ 750 0008 C0ED020A 		vstr.32	s1, [r0, #8]
+ 127:Algorithm/adrc.c ****     nlsef_t->c = c;
+ 751              		.loc 1 127 5 is_stmt 1 view .LVU218
+ 752              		.loc 1 127 16 is_stmt 0 view .LVU219
+ 753 000c C0ED031A 		vstr.32	s3, [r0, #12]
+ 128:Algorithm/adrc.c **** }
+ 754              		.loc 1 128 1 view .LVU220
+ 755 0010 7047     		bx	lr
+ 756              		.cfi_endproc
+ 757              	.LFE11:
+ 759              		.section	.text.adrc_nlsef,"ax",%progbits
+ 760              		.align	1
+ 761              		.global	adrc_nlsef
+ 762              		.syntax unified
+ 763              		.thumb
+ 764              		.thumb_func
+ 765              		.fpu fpv5-d16
+ 767              	adrc_nlsef:
+ 768              	.LVL57:
+ 769              	.LFB12:
+ 129:Algorithm/adrc.c **** 
+ 130:Algorithm/adrc.c **** float adrc_nlsef(ADRC_NLSEF_Def *nlsef_t, float e1, float e2)
+ 131:Algorithm/adrc.c **** {
+ 770              		.loc 1 131 1 is_stmt 1 view -0
+ 771              		.cfi_startproc
+ 772              		@ args = 0, pretend = 0, frame = 0
+ 773              		@ frame_needed = 0, uses_anonymous_args = 0
+ 774              		.loc 1 131 1 is_stmt 0 view .LVU222
+ 775 0000 08B5     		push	{r3, lr}
+ 776              	.LCFI12:
+ 777              		.cfi_def_cfa_offset 8
+ 778              		.cfi_offset 3, -8
+ 779              		.cfi_offset 14, -4
+ 132:Algorithm/adrc.c ****     return -adrc_fhan(e1, nlsef_t->c * e2, nlsef_t->r1, nlsef_t->h1);
+ 780              		.loc 1 132 5 is_stmt 1 view .LVU223
+ 781              		.loc 1 132 34 is_stmt 0 view .LVU224
+ 782 0002 D0ED037A 		vldr.32	s15, [r0, #12]
+ 783              		.loc 1 132 13 view .LVU225
+ 784 0006 D0ED011A 		vldr.32	s3, [r0, #4]
+ 785 000a 90ED021A 		vldr.32	s2, [r0, #8]
+ 786 000e 67EEA00A 		vmul.f32	s1, s15, s1
+ 787              	.LVL58:
+ 788              		.loc 1 132 13 view .LVU226
+ 789 0012 FFF7FEFF 		bl	adrc_fhan
+ 790              	.LVL59:
+ 133:Algorithm/adrc.c **** }
+ 791              		.loc 1 133 1 view .LVU227
+ 792 0016 B1EE400A 		vneg.f32	s0, s0
+ 793 001a 08BD     		pop	{r3, pc}
+ 794              		.cfi_endproc
+ 795              	.LFE12:
+ 797              		.text
+ 798              	.Letext0:
+ 799              		.file 2 "Algorithm/adrc.h"
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 17
+
+
+ 800              		.file 3 "/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.07/gcc/arm-none-eabi/include/math.h"
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s 			page 18
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 adrc.c
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:17     .text.adrc_sign:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:24     .text.adrc_sign:0000000000000000 adrc_sign
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:54     .text.adrc_fhan:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:61     .text.adrc_fhan:0000000000000000 adrc_fhan
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:216    .text.adrc_fal:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:223    .text.adrc_fal:0000000000000000 adrc_fal
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:295    .text.adrc_td_init:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:302    .text.adrc_td_init:0000000000000000 adrc_td_init
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:331    .text.adrc_td:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:338    .text.adrc_td:0000000000000000 adrc_td
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:388    .text.adrc_td_control_init:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:395    .text.adrc_td_control_init:0000000000000000 adrc_td_control_init
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:425    .text.adrc_td_control:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:432    .text.adrc_td_control:0000000000000000 adrc_td_control
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:482    .text.adrc_eso_init:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:489    .text.adrc_eso_init:0000000000000000 adrc_eso_init
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:530    .text.adrc_eso:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:537    .text.adrc_eso:0000000000000000 adrc_eso
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:619    .text.adrc_leso_init:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:626    .text.adrc_leso_init:0000000000000000 adrc_leso_init
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:666    .text.adrc_leso:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:673    .text.adrc_leso:0000000000000000 adrc_leso
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:727    .text.adrc_nlsef_init:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:734    .text.adrc_nlsef_init:0000000000000000 adrc_nlsef_init
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:760    .text.adrc_nlsef:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//cctVAUHb.s:767    .text.adrc_nlsef:0000000000000000 adrc_nlsef
+
+UNDEFINED SYMBOLS
+sqrtf
+powf

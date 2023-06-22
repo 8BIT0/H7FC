@@ -1,0 +1,2828 @@
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Srv_DataHub.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.SrvDataHub_Get_Raw_IMU,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	SrvDataHub_Get_Raw_IMU:
+  25              	.LVL0:
+  26              	.LFB153:
+  27              		.file 1 "Service/Srv_DataHub.c"
+   1:Service/Srv_DataHub.c **** #include "Srv_DataHub.h"
+   2:Service/Srv_DataHub.c **** 
+   3:Service/Srv_DataHub.c **** /* internal variable */
+   4:Service/Srv_DataHub.c **** SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor = {
+   5:Service/Srv_DataHub.c ****     .init_state = false,
+   6:Service/Srv_DataHub.c **** };
+   7:Service/Srv_DataHub.c **** 
+   8:Service/Srv_DataHub.c **** /* Pipe Object */
+   9:Service/Srv_DataHub.c **** DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlIMU_Data);
+  10:Service/Srv_DataHub.c **** DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, PtlActuator_Data);
+  11:Service/Srv_DataHub.c **** DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
+  12:Service/Srv_DataHub.c **** 
+  13:Service/Srv_DataHub.c **** /* internal function */
+  14:Service/Srv_DataHub.c **** static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
+  15:Service/Srv_DataHub.c **** 
+  16:Service/Srv_DataHub.c **** /* external function */
+  17:Service/Srv_DataHub.c **** static void SrvDataHub_Init(void);
+  18:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float 
+  19:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, flo
+  20:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, 
+  21:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_
+  22:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Arm(bool *arm);
+  23:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Failsafe(bool *failsafe);
+  24:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_ControlMode(uint8_t *mode);
+  25:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cum);
+  26:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_GimbalPercent(uint16_t *gimbal);
+  27:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8
+  28:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uin
+  29:Service/Srv_DataHub.c **** 
+  30:Service/Srv_DataHub.c **** /* external variable */
+  31:Service/Srv_DataHub.c **** SrvDataHub_TypeDef SrvDataHub = {
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 2
+
+
+  32:Service/Srv_DataHub.c ****     .init = SrvDataHub_Init,
+  33:Service/Srv_DataHub.c ****     .get_raw_imu = SrvDataHub_Get_Raw_IMU,
+  34:Service/Srv_DataHub.c ****     .get_scaled_imu = SrvDataHub_Get_Scaled_IMU,
+  35:Service/Srv_DataHub.c ****     .get_raw_mag = SrvDataHub_Get_Raw_Mag,
+  36:Service/Srv_DataHub.c ****     .get_scaled_mag = SrvDataHub_Get_Scaled_Mag,
+  37:Service/Srv_DataHub.c ****     .get_arm_state = SrvDataHub_Get_Arm,
+  38:Service/Srv_DataHub.c ****     .get_failsafe = SrvDataHub_Get_Failsafe,
+  39:Service/Srv_DataHub.c ****     .get_control_mode = SrvDataHub_Get_ControlMode,
+  40:Service/Srv_DataHub.c ****     .get_rc = SrvDataHub_Get_RcChannel,
+  41:Service/Srv_DataHub.c ****     .get_gimbal_percent = SrvDataHub_Get_GimbalPercent,
+  42:Service/Srv_DataHub.c ****     .get_moto = SrvDataHub_Get_MotoChannel,
+  43:Service/Srv_DataHub.c ****     .get_servo = SrvDataHub_Get_ServoChannel,
+  44:Service/Srv_DataHub.c **** };
+  45:Service/Srv_DataHub.c **** 
+  46:Service/Srv_DataHub.c **** static void SrvDataHub_Init(void)
+  47:Service/Srv_DataHub.c **** {
+  48:Service/Srv_DataHub.c ****     if (SrvDataHub_Monitor.init_state)
+  49:Service/Srv_DataHub.c ****         return;
+  50:Service/Srv_DataHub.c **** 
+  51:Service/Srv_DataHub.c ****     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
+  52:Service/Srv_DataHub.c **** 
+  53:Service/Srv_DataHub.c ****     /* init pipe object */
+  54:Service/Srv_DataHub.c ****     memset(DataPipe_DataObjAddr(PtlIMU_Data), NULL, DataPipe_DataSize(PtlIMU_Data));
+  55:Service/Srv_DataHub.c ****     IMU_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlIMU_Data);
+  56:Service/Srv_DataHub.c ****     IMU_hub_DataPipe.data_size = DataPipe_DataSize(PtlIMU_Data);
+  57:Service/Srv_DataHub.c ****     IMU_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+  58:Service/Srv_DataHub.c ****     // DataPipe_Set_RxInterval(&IMU_hub_DataPipe, Runtime_MsToUs(5)); /* limit pipe frequence to 20
+  59:Service/Srv_DataHub.c ****     DataPipe_Enable(&IMU_hub_DataPipe);
+  60:Service/Srv_DataHub.c **** 
+  61:Service/Srv_DataHub.c ****     /* init pipe object */
+  62:Service/Srv_DataHub.c ****     memset(DataPipe_DataObjAddr(Proto_Rc), 0, DataPipe_DataSize(Proto_Rc));
+  63:Service/Srv_DataHub.c ****     Receiver_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
+  64:Service/Srv_DataHub.c ****     Receiver_hub_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
+  65:Service/Srv_DataHub.c ****     Receiver_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+  66:Service/Srv_DataHub.c ****     // DataPipe_Set_RxInterval(&Receiver_hub_DataPipe, Runtime_MsToUs(20)); /* limit pipe frequence
+  67:Service/Srv_DataHub.c ****     DataPipe_Enable(&Receiver_hub_DataPipe);
+  68:Service/Srv_DataHub.c **** 
+  69:Service/Srv_DataHub.c ****     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
+  70:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.init_state = true;
+  71:Service/Srv_DataHub.c **** }
+  72:Service/Srv_DataHub.c **** 
+  73:Service/Srv_DataHub.c **** static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj)
+  74:Service/Srv_DataHub.c **** {
+  75:Service/Srv_DataHub.c ****     if ((!SrvDataHub_Monitor.init_state) || (obj == NULL))
+  76:Service/Srv_DataHub.c ****         return;
+  77:Service/Srv_DataHub.c **** 
+  78:Service/Srv_DataHub.c ****     if (obj == &Receiver_hub_DataPipe)
+  79:Service/Srv_DataHub.c ****     {
+  80:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.rc = true;
+  81:Service/Srv_DataHub.c **** 
+  82:Service/Srv_DataHub.c ****         if (SrvDataHub_Monitor.inuse_reg.bit.rc)
+  83:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+  84:Service/Srv_DataHub.c **** 
+  85:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.rc_update_time = DataPipe_DataObj(Proto_Rc).time_stamp;
+  86:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Proto_Rc).arm_state;
+  87:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.mode = DataPipe_DataObj(Proto_Rc).control_mode;
+  88:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.buzz = DataPipe_DataObj(Proto_Rc).buzz_state;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 3
+
+
+  89:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Proto_Rc).failsafe;
+  90:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.channel_sum = DataPipe_DataObj(Proto_Rc).channel_sum;
+  91:Service/Srv_DataHub.c **** 
+  92:Service/Srv_DataHub.c ****         for (uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
+  93:Service/Srv_DataHub.c ****         {
+  94:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.data.ch[i] = DataPipe_DataObj(Proto_Rc).channel[i];
+  95:Service/Srv_DataHub.c **** 
+  96:Service/Srv_DataHub.c ****             if (i < 4)
+  97:Service/Srv_DataHub.c ****                 SrvDataHub_Monitor.data.gimbal[i] = DataPipe_DataObj(Proto_Rc).gimbal_percent[i];
+  98:Service/Srv_DataHub.c ****         }
+  99:Service/Srv_DataHub.c **** 
+ 100:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.rc = false;
+ 101:Service/Srv_DataHub.c ****     }
+ 102:Service/Srv_DataHub.c ****     else if (obj == &IMU_hub_DataPipe)
+ 103:Service/Srv_DataHub.c ****     {
+ 104:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.raw_imu = true;
+ 105:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.scaled_imu = true;
+ 106:Service/Srv_DataHub.c **** 
+ 107:Service/Srv_DataHub.c ****         if (SrvDataHub_Monitor.inuse_reg.bit.raw_imu)
+ 108:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.raw_imu = false;
+ 109:Service/Srv_DataHub.c **** 
+ 110:Service/Srv_DataHub.c ****         if (SrvDataHub_Monitor.update_reg.bit.scaled_imu)
+ 111:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
+ 112:Service/Srv_DataHub.c **** 
+ 113:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.imu_update_time = DataPipe_DataObj(PtlIMU_Data).data.time_stamp;
+ 114:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.acc_scale = DataPipe_DataObj(PtlIMU_Data).data.acc_scale;
+ 115:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.gyr_scale = DataPipe_DataObj(PtlIMU_Data).data.gyr_scale;
+ 116:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.imu_temp = DataPipe_DataObj(PtlIMU_Data).data.tempera;
+ 117:Service/Srv_DataHub.c **** 
+ 118:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_acc_x = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_X];
+ 119:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_acc_y = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_Y];
+ 120:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_acc_z = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_Z];
+ 121:Service/Srv_DataHub.c **** 
+ 122:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_gyr_x = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_X];
+ 123:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_gyr_y = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_Y];
+ 124:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_gyr_z = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_Z];
+ 125:Service/Srv_DataHub.c **** 
+ 126:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_acc_x = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_X];
+ 127:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_acc_y = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_Y];
+ 128:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_acc_z = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_Z];
+ 129:Service/Srv_DataHub.c **** 
+ 130:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_gyr_x = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_X];
+ 131:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_gyr_y = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_Y];
+ 132:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_gyr_z = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_Z];
+ 133:Service/Srv_DataHub.c **** 
+ 134:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.imu_error_code = DataPipe_DataObj(PtlIMU_Data).data.error_code;
+ 135:Service/Srv_DataHub.c **** 
+ 136:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.raw_imu = false;
+ 137:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
+ 138:Service/Srv_DataHub.c ****     }
+ 139:Service/Srv_DataHub.c ****     else if (obj == &Actuator_hub_DataPipe)
+ 140:Service/Srv_DataHub.c ****     {
+ 141:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.actuator = true;
+ 142:Service/Srv_DataHub.c **** 
+ 143:Service/Srv_DataHub.c ****         if (SrvDataHub_Monitor.inuse_reg.bit.actuator)
+ 144:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
+ 145:Service/Srv_DataHub.c **** 
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 4
+
+
+ 146:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.actuator_update_time = DataPipe_DataObj(PtlActuator_Data).time_stam
+ 147:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(PtlActuator_Data).moto_cnt;
+ 148:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(PtlActuator_Data).servo_cnt;
+ 149:Service/Srv_DataHub.c **** 
+ 150:Service/Srv_DataHub.c ****         memset(SrvDataHub_Monitor.data.moto_dir, 0, sizeof(SrvDataHub_Monitor.data.moto_dir));
+ 151:Service/Srv_DataHub.c ****         memset(SrvDataHub_Monitor.data.servo_dir, 0, sizeof(SrvDataHub_Monitor.data.servo_dir));
+ 152:Service/Srv_DataHub.c ****         memset(SrvDataHub_Monitor.data.moto, 0, sizeof(SrvDataHub_Monitor.data.moto));
+ 153:Service/Srv_DataHub.c ****         memset(SrvDataHub_Monitor.data.servo, 0, sizeof(SrvDataHub_Monitor.data.servo));
+ 154:Service/Srv_DataHub.c **** 
+ 155:Service/Srv_DataHub.c ****         for (uint8_t moto_i = 0; moto_i < SrvDataHub_Monitor.data.moto_num; moto_i++)
+ 156:Service/Srv_DataHub.c ****         {
+ 157:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.data.moto[moto_i] = DataPipe_DataObj(PtlActuator_Data).moto[moto_i];
+ 158:Service/Srv_DataHub.c ****         }
+ 159:Service/Srv_DataHub.c **** 
+ 160:Service/Srv_DataHub.c ****         for (uint8_t servo_i = 0; servo_i < SrvDataHub_Monitor.data.servo_num; servo_i++)
+ 161:Service/Srv_DataHub.c ****         {
+ 162:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.data.servo[servo_i] = DataPipe_DataObj(PtlActuator_Data).servo[servo
+ 163:Service/Srv_DataHub.c ****         }
+ 164:Service/Srv_DataHub.c ****     }
+ 165:Service/Srv_DataHub.c **** }
+ 166:Service/Srv_DataHub.c **** 
+ 167:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float 
+ 168:Service/Srv_DataHub.c **** {
+  28              		.loc 1 168 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 28, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              		.loc 1 168 1 is_stmt 0 view .LVU1
+  34 0000 2DE9F006 		push	{r4, r5, r6, r7, r9, r10}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 24
+  37              		.cfi_offset 4, -24
+  38              		.cfi_offset 5, -20
+  39              		.cfi_offset 6, -16
+  40              		.cfi_offset 7, -12
+  41              		.cfi_offset 9, -8
+  42              		.cfi_offset 10, -4
+  43 0004 069F     		ldr	r7, [sp, #24]
+  44 0006 079E     		ldr	r6, [sp, #28]
+  45 0008 DDF820C0 		ldr	ip, [sp, #32]
+  46 000c 099D     		ldr	r5, [sp, #36]
+ 169:Service/Srv_DataHub.c ****     if ((time_stamp == NULL) ||
+  47              		.loc 1 169 5 is_stmt 1 view .LVU2
+  48              		.loc 1 169 21 is_stmt 0 view .LVU3
+  49 000e 8146     		mov	r9, r0
+  50              		.loc 1 169 8 view .LVU4
+  51 0010 0029     		cmp	r1, #0
+  52 0012 18BF     		it	ne
+  53 0014 0028     		cmpne	r0, #0
+  54 0016 0CBF     		ite	eq
+  55 0018 0120     		moveq	r0, #1
+  56              	.LVL1:
+  57              		.loc 1 169 8 view .LVU5
+  58 001a 0020     		movne	r0, #0
+  59 001c 59D0     		beq	.L4
+  60 001e 8A46     		mov	r10, r1
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 5
+
+
+ 170:Service/Srv_DataHub.c ****         (acc_scale == NULL) ||
+ 171:Service/Srv_DataHub.c ****         (gyr_scale == NULL) ||
+  61              		.loc 1 171 29 view .LVU6
+  62 0020 002B     		cmp	r3, #0
+  63 0022 18BF     		it	ne
+  64 0024 002A     		cmpne	r2, #0
+  65 0026 0CBF     		ite	eq
+  66 0028 0121     		moveq	r1, #1
+  67              	.LVL2:
+  68              		.loc 1 171 29 view .LVU7
+  69 002a 0021     		movne	r1, #0
+  70 002c 52D0     		beq	.L2
+ 172:Service/Srv_DataHub.c ****         (acc_x == NULL) ||
+ 173:Service/Srv_DataHub.c ****         (acc_y == NULL) ||
+  71              		.loc 1 173 25 view .LVU8
+  72 002e 002E     		cmp	r6, #0
+  73 0030 18BF     		it	ne
+  74 0032 002F     		cmpne	r7, #0
+  75 0034 0CBF     		ite	eq
+  76 0036 0120     		moveq	r0, #1
+  77 0038 0020     		movne	r0, #0
+  78 003a 4ED0     		beq	.L5
+ 174:Service/Srv_DataHub.c ****         (acc_z == NULL) ||
+ 175:Service/Srv_DataHub.c ****         (gyr_x == NULL) ||
+  79              		.loc 1 175 25 view .LVU9
+  80 003c 002D     		cmp	r5, #0
+  81 003e 18BF     		it	ne
+  82 0040 BCF1000F 		cmpne	ip, #0
+  83 0044 0CBF     		ite	eq
+  84 0046 0121     		moveq	r1, #1
+  85 0048 0021     		movne	r1, #0
+  86 004a 43D0     		beq	.L2
+ 176:Service/Srv_DataHub.c ****         (gyr_y == NULL) ||
+ 177:Service/Srv_DataHub.c ****         (gyr_z == NULL) ||
+  87              		.loc 1 177 25 view .LVU10
+  88 004c 0A98     		ldr	r0, [sp, #40]
+  89 004e 0B9C     		ldr	r4, [sp, #44]
+  90 0050 002C     		cmp	r4, #0
+  91 0052 18BF     		it	ne
+  92 0054 0028     		cmpne	r0, #0
+  93 0056 0CBF     		ite	eq
+  94 0058 0120     		moveq	r0, #1
+  95 005a 0020     		movne	r0, #0
+  96 005c 3FD0     		beq	.L6
+ 178:Service/Srv_DataHub.c ****         (tmpr == NULL) ||
+  97              		.loc 1 178 24 view .LVU11
+  98 005e 0C99     		ldr	r1, [sp, #48]
+  99 0060 0029     		cmp	r1, #0
+ 100 0062 37D0     		beq	.L2
+ 101              	.L3:
+ 179:Service/Srv_DataHub.c ****         (err == NULL))
+ 180:Service/Srv_DataHub.c ****         return false;
+ 181:Service/Srv_DataHub.c **** 
+ 182:Service/Srv_DataHub.c **** reupdate_raw_imu:
+ 183:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.raw_imu = true;
+ 102              		.loc 1 183 5 is_stmt 1 view .LVU12
+ 103              		.loc 1 183 46 is_stmt 0 view .LVU13
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 6
+
+
+ 104 0064 1F49     		ldr	r1, .L8
+ 105 0066 4878     		ldrb	r0, [r1, #1]	@ zero_extendqisi2
+ 106 0068 40F00100 		orr	r0, r0, #1
+ 107 006c 4870     		strb	r0, [r1, #1]
+ 184:Service/Srv_DataHub.c **** 
+ 185:Service/Srv_DataHub.c ****     *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
+ 108              		.loc 1 185 5 is_stmt 1 view .LVU14
+ 109              		.loc 1 185 42 is_stmt 0 view .LVU15
+ 110 006e D1F80500 		ldr	r0, [r1, #5]	@ unaligned
+ 111              		.loc 1 185 17 view .LVU16
+ 112 0072 C9F80000 		str	r0, [r9]
+ 186:Service/Srv_DataHub.c ****     *acc_scale = SrvDataHub_Monitor.data.acc_scale;
+ 113              		.loc 1 186 5 is_stmt 1 view .LVU17
+ 114              		.loc 1 186 41 is_stmt 0 view .LVU18
+ 115 0076 D1F80900 		ldr	r0, [r1, #9]	@ unaligned
+ 116              		.loc 1 186 16 view .LVU19
+ 117 007a CAF80000 		str	r0, [r10]	@ float
+ 187:Service/Srv_DataHub.c ****     *gyr_scale = SrvDataHub_Monitor.data.gyr_scale;
+ 118              		.loc 1 187 5 is_stmt 1 view .LVU20
+ 119              		.loc 1 187 41 is_stmt 0 view .LVU21
+ 120 007e D1F80D00 		ldr	r0, [r1, #13]	@ unaligned
+ 121              		.loc 1 187 16 view .LVU22
+ 122 0082 1060     		str	r0, [r2]	@ float
+ 188:Service/Srv_DataHub.c ****     *acc_x = SrvDataHub_Monitor.data.org_acc_x;
+ 123              		.loc 1 188 5 is_stmt 1 view .LVU23
+ 124              		.loc 1 188 37 is_stmt 0 view .LVU24
+ 125 0084 D1F83500 		ldr	r0, [r1, #53]	@ unaligned
+ 126              		.loc 1 188 12 view .LVU25
+ 127 0088 1860     		str	r0, [r3]	@ float
+ 189:Service/Srv_DataHub.c ****     *acc_y = SrvDataHub_Monitor.data.org_acc_y;
+ 128              		.loc 1 189 5 is_stmt 1 view .LVU26
+ 129              		.loc 1 189 37 is_stmt 0 view .LVU27
+ 130 008a D1F83900 		ldr	r0, [r1, #57]	@ unaligned
+ 131              		.loc 1 189 12 view .LVU28
+ 132 008e 3860     		str	r0, [r7]	@ float
+ 190:Service/Srv_DataHub.c ****     *acc_z = SrvDataHub_Monitor.data.org_acc_z;
+ 133              		.loc 1 190 5 is_stmt 1 view .LVU29
+ 134              		.loc 1 190 37 is_stmt 0 view .LVU30
+ 135 0090 D1F83D00 		ldr	r0, [r1, #61]	@ unaligned
+ 136              		.loc 1 190 12 view .LVU31
+ 137 0094 3060     		str	r0, [r6]	@ float
+ 191:Service/Srv_DataHub.c ****     *gyr_x = SrvDataHub_Monitor.data.org_gyr_x;
+ 138              		.loc 1 191 5 is_stmt 1 view .LVU32
+ 139              		.loc 1 191 37 is_stmt 0 view .LVU33
+ 140 0096 D1F81D00 		ldr	r0, [r1, #29]	@ unaligned
+ 141              		.loc 1 191 12 view .LVU34
+ 142 009a CCF80000 		str	r0, [ip]	@ float
+ 192:Service/Srv_DataHub.c ****     *gyr_y = SrvDataHub_Monitor.data.org_gyr_y;
+ 143              		.loc 1 192 5 is_stmt 1 view .LVU35
+ 144              		.loc 1 192 37 is_stmt 0 view .LVU36
+ 145 009e D1F82100 		ldr	r0, [r1, #33]	@ unaligned
+ 146              		.loc 1 192 12 view .LVU37
+ 147 00a2 2860     		str	r0, [r5]	@ float
+ 193:Service/Srv_DataHub.c ****     *gyr_z = SrvDataHub_Monitor.data.org_gyr_z;
+ 148              		.loc 1 193 5 is_stmt 1 view .LVU38
+ 149              		.loc 1 193 37 is_stmt 0 view .LVU39
+ 150 00a4 D1F82500 		ldr	r0, [r1, #37]	@ unaligned
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 7
+
+
+ 151              		.loc 1 193 12 view .LVU40
+ 152 00a8 0A9C     		ldr	r4, [sp, #40]
+ 153 00aa 2060     		str	r0, [r4]	@ float
+ 194:Service/Srv_DataHub.c ****     *tmpr = SrvDataHub_Monitor.data.imu_temp;
+ 154              		.loc 1 194 5 is_stmt 1 view .LVU41
+ 155              		.loc 1 194 36 is_stmt 0 view .LVU42
+ 156 00ac D1F84100 		ldr	r0, [r1, #65]	@ unaligned
+ 157              		.loc 1 194 11 view .LVU43
+ 158 00b0 0B9C     		ldr	r4, [sp, #44]
+ 159 00b2 2060     		str	r0, [r4]	@ float
+ 195:Service/Srv_DataHub.c ****     *err = SrvDataHub_Monitor.data.imu_error_code;
+ 160              		.loc 1 195 5 is_stmt 1 view .LVU44
+ 161              		.loc 1 195 35 is_stmt 0 view .LVU45
+ 162 00b4 91F84500 		ldrb	r0, [r1, #69]	@ zero_extendqisi2
+ 163              		.loc 1 195 10 view .LVU46
+ 164 00b8 0C9C     		ldr	r4, [sp, #48]
+ 165 00ba 2070     		strb	r0, [r4]
+ 196:Service/Srv_DataHub.c **** 
+ 197:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.raw_imu)
+ 166              		.loc 1 197 5 is_stmt 1 view .LVU47
+ 167              		.loc 1 197 9 is_stmt 0 view .LVU48
+ 168 00bc 4978     		ldrb	r1, [r1, #1]	@ zero_extendqisi2
+ 169              		.loc 1 197 8 view .LVU49
+ 170 00be 11F0010F 		tst	r1, #1
+ 171 00c2 CFD0     		beq	.L3
+ 198:Service/Srv_DataHub.c ****         goto reupdate_raw_imu;
+ 199:Service/Srv_DataHub.c **** 
+ 200:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.raw_imu = false;
+ 172              		.loc 1 200 5 is_stmt 1 view .LVU50
+ 173              		.loc 1 200 46 is_stmt 0 view .LVU51
+ 174 00c4 074B     		ldr	r3, .L8
+ 175              	.LVL3:
+ 176              		.loc 1 200 46 view .LVU52
+ 177 00c6 5A78     		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 178              	.LVL4:
+ 179              		.loc 1 200 46 view .LVU53
+ 180 00c8 6FF30002 		bfc	r2, #0, #1
+ 181 00cc 5A70     		strb	r2, [r3, #1]
+ 201:Service/Srv_DataHub.c **** 
+ 202:Service/Srv_DataHub.c ****     return true;
+ 182              		.loc 1 202 5 is_stmt 1 view .LVU54
+ 183              		.loc 1 202 12 is_stmt 0 view .LVU55
+ 184 00ce 0120     		movs	r0, #1
+ 185 00d0 00E0     		b	.L2
+ 186              	.LVL5:
+ 187              	.L4:
+ 180:Service/Srv_DataHub.c **** 
+ 188              		.loc 1 180 16 view .LVU56
+ 189 00d2 0020     		movs	r0, #0
+ 190              	.LVL6:
+ 191              	.L2:
+ 203:Service/Srv_DataHub.c **** }
+ 192              		.loc 1 203 1 view .LVU57
+ 193 00d4 BDE8F006 		pop	{r4, r5, r6, r7, r9, r10}
+ 194              	.LCFI1:
+ 195              		.cfi_remember_state
+ 196              		.cfi_restore 10
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 8
+
+
+ 197              		.cfi_restore 9
+ 198              		.cfi_restore 7
+ 199              		.cfi_restore 6
+ 200              		.cfi_restore 5
+ 201              		.cfi_restore 4
+ 202              		.cfi_def_cfa_offset 0
+ 203              	.LVL7:
+ 204              		.loc 1 203 1 view .LVU58
+ 205 00d8 7047     		bx	lr
+ 206              	.LVL8:
+ 207              	.L5:
+ 208              	.LCFI2:
+ 209              		.cfi_restore_state
+ 180:Service/Srv_DataHub.c **** 
+ 210              		.loc 1 180 16 view .LVU59
+ 211 00da 0846     		mov	r0, r1
+ 212 00dc FAE7     		b	.L2
+ 213              	.L6:
+ 214 00de 0846     		mov	r0, r1
+ 215 00e0 F8E7     		b	.L2
+ 216              	.L9:
+ 217 00e2 00BF     		.align	2
+ 218              	.L8:
+ 219 00e4 00000000 		.word	.LANCHOR0
+ 220              		.cfi_endproc
+ 221              	.LFE153:
+ 223              		.section	.text.SrvDataHub_Get_Scaled_IMU,"ax",%progbits
+ 224              		.align	1
+ 225              		.syntax unified
+ 226              		.thumb
+ 227              		.thumb_func
+ 228              		.fpu fpv5-d16
+ 230              	SrvDataHub_Get_Scaled_IMU:
+ 231              	.LVL9:
+ 232              	.LFB154:
+ 204:Service/Srv_DataHub.c **** 
+ 205:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, flo
+ 206:Service/Srv_DataHub.c **** {
+ 233              		.loc 1 206 1 is_stmt 1 view -0
+ 234              		.cfi_startproc
+ 235              		@ args = 28, pretend = 0, frame = 0
+ 236              		@ frame_needed = 0, uses_anonymous_args = 0
+ 237              		@ link register save eliminated.
+ 238              		.loc 1 206 1 is_stmt 0 view .LVU61
+ 239 0000 2DE9F006 		push	{r4, r5, r6, r7, r9, r10}
+ 240              	.LCFI3:
+ 241              		.cfi_def_cfa_offset 24
+ 242              		.cfi_offset 4, -24
+ 243              		.cfi_offset 5, -20
+ 244              		.cfi_offset 6, -16
+ 245              		.cfi_offset 7, -12
+ 246              		.cfi_offset 9, -8
+ 247              		.cfi_offset 10, -4
+ 248 0004 069F     		ldr	r7, [sp, #24]
+ 249 0006 079E     		ldr	r6, [sp, #28]
+ 250 0008 DDF820C0 		ldr	ip, [sp, #32]
+ 251 000c 099D     		ldr	r5, [sp, #36]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 9
+
+
+ 207:Service/Srv_DataHub.c ****     if ((time_stamp == NULL) ||
+ 252              		.loc 1 207 5 is_stmt 1 view .LVU62
+ 253              		.loc 1 207 21 is_stmt 0 view .LVU63
+ 254 000e 8146     		mov	r9, r0
+ 255              		.loc 1 207 8 view .LVU64
+ 256 0010 0029     		cmp	r1, #0
+ 257 0012 18BF     		it	ne
+ 258 0014 0028     		cmpne	r0, #0
+ 259 0016 0CBF     		ite	eq
+ 260 0018 0120     		moveq	r0, #1
+ 261              	.LVL10:
+ 262              		.loc 1 207 8 view .LVU65
+ 263 001a 0020     		movne	r0, #0
+ 264 001c 59D0     		beq	.L13
+ 265 001e 8A46     		mov	r10, r1
+ 208:Service/Srv_DataHub.c ****         (acc_scale == NULL) ||
+ 209:Service/Srv_DataHub.c ****         (gyr_scale == NULL) ||
+ 266              		.loc 1 209 29 view .LVU66
+ 267 0020 002B     		cmp	r3, #0
+ 268 0022 18BF     		it	ne
+ 269 0024 002A     		cmpne	r2, #0
+ 270 0026 0CBF     		ite	eq
+ 271 0028 0121     		moveq	r1, #1
+ 272              	.LVL11:
+ 273              		.loc 1 209 29 view .LVU67
+ 274 002a 0021     		movne	r1, #0
+ 275 002c 52D0     		beq	.L11
+ 210:Service/Srv_DataHub.c ****         (acc_x == NULL) ||
+ 211:Service/Srv_DataHub.c ****         (acc_y == NULL) ||
+ 276              		.loc 1 211 25 view .LVU68
+ 277 002e 002E     		cmp	r6, #0
+ 278 0030 18BF     		it	ne
+ 279 0032 002F     		cmpne	r7, #0
+ 280 0034 0CBF     		ite	eq
+ 281 0036 0120     		moveq	r0, #1
+ 282 0038 0020     		movne	r0, #0
+ 283 003a 4ED0     		beq	.L14
+ 212:Service/Srv_DataHub.c ****         (acc_z == NULL) ||
+ 213:Service/Srv_DataHub.c ****         (gyr_x == NULL) ||
+ 284              		.loc 1 213 25 view .LVU69
+ 285 003c 002D     		cmp	r5, #0
+ 286 003e 18BF     		it	ne
+ 287 0040 BCF1000F 		cmpne	ip, #0
+ 288 0044 0CBF     		ite	eq
+ 289 0046 0121     		moveq	r1, #1
+ 290 0048 0021     		movne	r1, #0
+ 291 004a 43D0     		beq	.L11
+ 214:Service/Srv_DataHub.c ****         (gyr_y == NULL) ||
+ 215:Service/Srv_DataHub.c ****         (gyr_z == NULL) ||
+ 292              		.loc 1 215 25 view .LVU70
+ 293 004c 0A98     		ldr	r0, [sp, #40]
+ 294 004e 0B9C     		ldr	r4, [sp, #44]
+ 295 0050 002C     		cmp	r4, #0
+ 296 0052 18BF     		it	ne
+ 297 0054 0028     		cmpne	r0, #0
+ 298 0056 0CBF     		ite	eq
+ 299 0058 0120     		moveq	r0, #1
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 10
+
+
+ 300 005a 0020     		movne	r0, #0
+ 301 005c 3FD0     		beq	.L15
+ 216:Service/Srv_DataHub.c ****         (tmpr == NULL) ||
+ 302              		.loc 1 216 24 view .LVU71
+ 303 005e 0C99     		ldr	r1, [sp, #48]
+ 304 0060 0029     		cmp	r1, #0
+ 305 0062 37D0     		beq	.L11
+ 306              	.L12:
+ 217:Service/Srv_DataHub.c ****         (err == NULL))
+ 218:Service/Srv_DataHub.c ****         return false;
+ 219:Service/Srv_DataHub.c **** 
+ 220:Service/Srv_DataHub.c **** reupdate_scaled_imu:
+ 221:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.scaled_imu = true;
+ 307              		.loc 1 221 5 is_stmt 1 view .LVU72
+ 308              		.loc 1 221 49 is_stmt 0 view .LVU73
+ 309 0064 1F49     		ldr	r1, .L17
+ 310 0066 4878     		ldrb	r0, [r1, #1]	@ zero_extendqisi2
+ 311 0068 40F00200 		orr	r0, r0, #2
+ 312 006c 4870     		strb	r0, [r1, #1]
+ 222:Service/Srv_DataHub.c **** 
+ 223:Service/Srv_DataHub.c ****     *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
+ 313              		.loc 1 223 5 is_stmt 1 view .LVU74
+ 314              		.loc 1 223 42 is_stmt 0 view .LVU75
+ 315 006e D1F80500 		ldr	r0, [r1, #5]	@ unaligned
+ 316              		.loc 1 223 17 view .LVU76
+ 317 0072 C9F80000 		str	r0, [r9]
+ 224:Service/Srv_DataHub.c ****     *acc_scale = SrvDataHub_Monitor.data.acc_scale;
+ 318              		.loc 1 224 5 is_stmt 1 view .LVU77
+ 319              		.loc 1 224 41 is_stmt 0 view .LVU78
+ 320 0076 D1F80900 		ldr	r0, [r1, #9]	@ unaligned
+ 321              		.loc 1 224 16 view .LVU79
+ 322 007a CAF80000 		str	r0, [r10]	@ float
+ 225:Service/Srv_DataHub.c ****     *gyr_scale = SrvDataHub_Monitor.data.gyr_scale;
+ 323              		.loc 1 225 5 is_stmt 1 view .LVU80
+ 324              		.loc 1 225 41 is_stmt 0 view .LVU81
+ 325 007e D1F80D00 		ldr	r0, [r1, #13]	@ unaligned
+ 326              		.loc 1 225 16 view .LVU82
+ 327 0082 1060     		str	r0, [r2]	@ float
+ 226:Service/Srv_DataHub.c ****     *acc_x = SrvDataHub_Monitor.data.flt_acc_x;
+ 328              		.loc 1 226 5 is_stmt 1 view .LVU83
+ 329              		.loc 1 226 37 is_stmt 0 view .LVU84
+ 330 0084 D1F82900 		ldr	r0, [r1, #41]	@ unaligned
+ 331              		.loc 1 226 12 view .LVU85
+ 332 0088 1860     		str	r0, [r3]	@ float
+ 227:Service/Srv_DataHub.c ****     *acc_y = SrvDataHub_Monitor.data.flt_acc_y;
+ 333              		.loc 1 227 5 is_stmt 1 view .LVU86
+ 334              		.loc 1 227 37 is_stmt 0 view .LVU87
+ 335 008a D1F82D00 		ldr	r0, [r1, #45]	@ unaligned
+ 336              		.loc 1 227 12 view .LVU88
+ 337 008e 3860     		str	r0, [r7]	@ float
+ 228:Service/Srv_DataHub.c ****     *acc_z = SrvDataHub_Monitor.data.flt_acc_z;
+ 338              		.loc 1 228 5 is_stmt 1 view .LVU89
+ 339              		.loc 1 228 37 is_stmt 0 view .LVU90
+ 340 0090 D1F83100 		ldr	r0, [r1, #49]	@ unaligned
+ 341              		.loc 1 228 12 view .LVU91
+ 342 0094 3060     		str	r0, [r6]	@ float
+ 229:Service/Srv_DataHub.c ****     *gyr_x = SrvDataHub_Monitor.data.flt_gyr_x;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 11
+
+
+ 343              		.loc 1 229 5 is_stmt 1 view .LVU92
+ 344              		.loc 1 229 37 is_stmt 0 view .LVU93
+ 345 0096 D1F81100 		ldr	r0, [r1, #17]	@ unaligned
+ 346              		.loc 1 229 12 view .LVU94
+ 347 009a CCF80000 		str	r0, [ip]	@ float
+ 230:Service/Srv_DataHub.c ****     *gyr_y = SrvDataHub_Monitor.data.flt_gyr_y;
+ 348              		.loc 1 230 5 is_stmt 1 view .LVU95
+ 349              		.loc 1 230 37 is_stmt 0 view .LVU96
+ 350 009e D1F81500 		ldr	r0, [r1, #21]	@ unaligned
+ 351              		.loc 1 230 12 view .LVU97
+ 352 00a2 2860     		str	r0, [r5]	@ float
+ 231:Service/Srv_DataHub.c ****     *gyr_z = SrvDataHub_Monitor.data.flt_gyr_z;
+ 353              		.loc 1 231 5 is_stmt 1 view .LVU98
+ 354              		.loc 1 231 37 is_stmt 0 view .LVU99
+ 355 00a4 D1F81900 		ldr	r0, [r1, #25]	@ unaligned
+ 356              		.loc 1 231 12 view .LVU100
+ 357 00a8 0A9C     		ldr	r4, [sp, #40]
+ 358 00aa 2060     		str	r0, [r4]	@ float
+ 232:Service/Srv_DataHub.c ****     *tmpr = SrvDataHub_Monitor.data.imu_temp;
+ 359              		.loc 1 232 5 is_stmt 1 view .LVU101
+ 360              		.loc 1 232 36 is_stmt 0 view .LVU102
+ 361 00ac D1F84100 		ldr	r0, [r1, #65]	@ unaligned
+ 362              		.loc 1 232 11 view .LVU103
+ 363 00b0 0B9C     		ldr	r4, [sp, #44]
+ 364 00b2 2060     		str	r0, [r4]	@ float
+ 233:Service/Srv_DataHub.c ****     *err = SrvDataHub_Monitor.data.imu_error_code;
+ 365              		.loc 1 233 5 is_stmt 1 view .LVU104
+ 366              		.loc 1 233 35 is_stmt 0 view .LVU105
+ 367 00b4 91F84500 		ldrb	r0, [r1, #69]	@ zero_extendqisi2
+ 368              		.loc 1 233 10 view .LVU106
+ 369 00b8 0C9C     		ldr	r4, [sp, #48]
+ 370 00ba 2070     		strb	r0, [r4]
+ 234:Service/Srv_DataHub.c **** 
+ 235:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_imu)
+ 371              		.loc 1 235 5 is_stmt 1 view .LVU107
+ 372              		.loc 1 235 9 is_stmt 0 view .LVU108
+ 373 00bc 4978     		ldrb	r1, [r1, #1]	@ zero_extendqisi2
+ 374              		.loc 1 235 8 view .LVU109
+ 375 00be 11F0020F 		tst	r1, #2
+ 376 00c2 CFD0     		beq	.L12
+ 236:Service/Srv_DataHub.c ****         goto reupdate_scaled_imu;
+ 237:Service/Srv_DataHub.c **** 
+ 238:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.scaled_imu = false;
+ 377              		.loc 1 238 5 is_stmt 1 view .LVU110
+ 378              		.loc 1 238 49 is_stmt 0 view .LVU111
+ 379 00c4 074B     		ldr	r3, .L17
+ 380              	.LVL12:
+ 381              		.loc 1 238 49 view .LVU112
+ 382 00c6 5A78     		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 383              	.LVL13:
+ 384              		.loc 1 238 49 view .LVU113
+ 385 00c8 6FF34102 		bfc	r2, #1, #1
+ 386 00cc 5A70     		strb	r2, [r3, #1]
+ 239:Service/Srv_DataHub.c **** 
+ 240:Service/Srv_DataHub.c ****     return true;
+ 387              		.loc 1 240 5 is_stmt 1 view .LVU114
+ 388              		.loc 1 240 12 is_stmt 0 view .LVU115
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 12
+
+
+ 389 00ce 0120     		movs	r0, #1
+ 390 00d0 00E0     		b	.L11
+ 391              	.LVL14:
+ 392              	.L13:
+ 218:Service/Srv_DataHub.c **** 
+ 393              		.loc 1 218 16 view .LVU116
+ 394 00d2 0020     		movs	r0, #0
+ 395              	.LVL15:
+ 396              	.L11:
+ 241:Service/Srv_DataHub.c **** }
+ 397              		.loc 1 241 1 view .LVU117
+ 398 00d4 BDE8F006 		pop	{r4, r5, r6, r7, r9, r10}
+ 399              	.LCFI4:
+ 400              		.cfi_remember_state
+ 401              		.cfi_restore 10
+ 402              		.cfi_restore 9
+ 403              		.cfi_restore 7
+ 404              		.cfi_restore 6
+ 405              		.cfi_restore 5
+ 406              		.cfi_restore 4
+ 407              		.cfi_def_cfa_offset 0
+ 408              	.LVL16:
+ 409              		.loc 1 241 1 view .LVU118
+ 410 00d8 7047     		bx	lr
+ 411              	.LVL17:
+ 412              	.L14:
+ 413              	.LCFI5:
+ 414              		.cfi_restore_state
+ 218:Service/Srv_DataHub.c **** 
+ 415              		.loc 1 218 16 view .LVU119
+ 416 00da 0846     		mov	r0, r1
+ 417 00dc FAE7     		b	.L11
+ 418              	.L15:
+ 419 00de 0846     		mov	r0, r1
+ 420 00e0 F8E7     		b	.L11
+ 421              	.L18:
+ 422 00e2 00BF     		.align	2
+ 423              	.L17:
+ 424 00e4 00000000 		.word	.LANCHOR0
+ 425              		.cfi_endproc
+ 426              	.LFE154:
+ 428              		.section	.text.SrvDataHub_Get_Raw_Mag,"ax",%progbits
+ 429              		.align	1
+ 430              		.syntax unified
+ 431              		.thumb
+ 432              		.thumb_func
+ 433              		.fpu fpv5-d16
+ 435              	SrvDataHub_Get_Raw_Mag:
+ 436              	.LVL18:
+ 437              	.LFB155:
+ 242:Service/Srv_DataHub.c **** 
+ 243:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, 
+ 244:Service/Srv_DataHub.c **** {
+ 438              		.loc 1 244 1 is_stmt 1 view -0
+ 439              		.cfi_startproc
+ 440              		@ args = 8, pretend = 0, frame = 0
+ 441              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 13
+
+
+ 442              		.loc 1 244 1 is_stmt 0 view .LVU121
+ 443 0000 30B5     		push	{r4, r5, lr}
+ 444              	.LCFI6:
+ 445              		.cfi_def_cfa_offset 12
+ 446              		.cfi_offset 4, -12
+ 447              		.cfi_offset 5, -8
+ 448              		.cfi_offset 14, -4
+ 449 0002 039C     		ldr	r4, [sp, #12]
+ 450 0004 049D     		ldr	r5, [sp, #16]
+ 245:Service/Srv_DataHub.c ****     if ((time_stamp == NULL) ||
+ 451              		.loc 1 245 5 is_stmt 1 view .LVU122
+ 452              		.loc 1 245 21 is_stmt 0 view .LVU123
+ 453 0006 8446     		mov	ip, r0
+ 454              		.loc 1 245 8 view .LVU124
+ 455 0008 002A     		cmp	r2, #0
+ 456 000a 18BF     		it	ne
+ 457 000c 0028     		cmpne	r0, #0
+ 458 000e 0CBF     		ite	eq
+ 459 0010 0120     		moveq	r0, #1
+ 460              	.LVL19:
+ 461              		.loc 1 245 8 view .LVU125
+ 462 0012 0020     		movne	r0, #0
+ 463 0014 27D0     		beq	.L22
+ 464 0016 9646     		mov	lr, r2
+ 246:Service/Srv_DataHub.c ****         (mag_x == NULL) ||
+ 247:Service/Srv_DataHub.c ****         (mag_y == NULL) ||
+ 465              		.loc 1 247 25 view .LVU126
+ 466 0018 002C     		cmp	r4, #0
+ 467 001a 18BF     		it	ne
+ 468 001c 002B     		cmpne	r3, #0
+ 469 001e 0CBF     		ite	eq
+ 470 0020 0122     		moveq	r2, #1
+ 471              	.LVL20:
+ 472              		.loc 1 247 25 view .LVU127
+ 473 0022 0022     		movne	r2, #0
+ 474 0024 1ED0     		beq	.L20
+ 248:Service/Srv_DataHub.c ****         (mag_z == NULL) ||
+ 475              		.loc 1 248 25 view .LVU128
+ 476 0026 05B3     		cbz	r5, .L23
+ 477              	.L21:
+ 249:Service/Srv_DataHub.c ****         (err == NULL))
+ 250:Service/Srv_DataHub.c ****         return false;
+ 251:Service/Srv_DataHub.c **** 
+ 252:Service/Srv_DataHub.c **** reupdate_raw_mag:
+ 253:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.raw_mag = true;
+ 478              		.loc 1 253 5 is_stmt 1 view .LVU129
+ 479              		.loc 1 253 46 is_stmt 0 view .LVU130
+ 480 0028 114A     		ldr	r2, .L25
+ 481 002a 5078     		ldrb	r0, [r2, #1]	@ zero_extendqisi2
+ 482 002c 40F00400 		orr	r0, r0, #4
+ 483 0030 5070     		strb	r0, [r2, #1]
+ 254:Service/Srv_DataHub.c **** 
+ 255:Service/Srv_DataHub.c ****     *time_stamp = SrvDataHub_Monitor.data.mag_update_time;
+ 484              		.loc 1 255 5 is_stmt 1 view .LVU131
+ 485              		.loc 1 255 42 is_stmt 0 view .LVU132
+ 486 0032 D2F84600 		ldr	r0, [r2, #70]	@ unaligned
+ 487              		.loc 1 255 17 view .LVU133
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 14
+
+
+ 488 0036 CCF80000 		str	r0, [ip]
+ 256:Service/Srv_DataHub.c ****     *scale = SrvDataHub_Monitor.data.mag_scale;
+ 489              		.loc 1 256 5 is_stmt 1 view .LVU134
+ 490              		.loc 1 256 37 is_stmt 0 view .LVU135
+ 491 003a D2F84A00 		ldr	r0, [r2, #74]	@ unaligned
+ 492              		.loc 1 256 12 view .LVU136
+ 493 003e 0860     		str	r0, [r1]	@ float
+ 257:Service/Srv_DataHub.c ****     *mag_x = SrvDataHub_Monitor.data.org_mag_x;
+ 494              		.loc 1 257 5 is_stmt 1 view .LVU137
+ 495              		.loc 1 257 37 is_stmt 0 view .LVU138
+ 496 0040 D2F85A00 		ldr	r0, [r2, #90]	@ unaligned
+ 497              		.loc 1 257 12 view .LVU139
+ 498 0044 CEF80000 		str	r0, [lr]	@ float
+ 258:Service/Srv_DataHub.c ****     *mag_y = SrvDataHub_Monitor.data.org_mag_y;
+ 499              		.loc 1 258 5 is_stmt 1 view .LVU140
+ 500              		.loc 1 258 37 is_stmt 0 view .LVU141
+ 501 0048 D2F85E00 		ldr	r0, [r2, #94]	@ unaligned
+ 502              		.loc 1 258 12 view .LVU142
+ 503 004c 1860     		str	r0, [r3]	@ float
+ 259:Service/Srv_DataHub.c ****     *mag_z = SrvDataHub_Monitor.data.org_mag_z;
+ 504              		.loc 1 259 5 is_stmt 1 view .LVU143
+ 505              		.loc 1 259 37 is_stmt 0 view .LVU144
+ 506 004e D2F86200 		ldr	r0, [r2, #98]	@ unaligned
+ 507              		.loc 1 259 12 view .LVU145
+ 508 0052 2060     		str	r0, [r4]	@ float
+ 260:Service/Srv_DataHub.c ****     *err = SrvDataHub_Monitor.data.mag_error_code;
+ 509              		.loc 1 260 5 is_stmt 1 view .LVU146
+ 510              		.loc 1 260 35 is_stmt 0 view .LVU147
+ 511 0054 92F86A00 		ldrb	r0, [r2, #106]	@ zero_extendqisi2
+ 512              		.loc 1 260 10 view .LVU148
+ 513 0058 2870     		strb	r0, [r5]
+ 261:Service/Srv_DataHub.c **** 
+ 262:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.raw_mag)
+ 514              		.loc 1 262 5 is_stmt 1 view .LVU149
+ 515              		.loc 1 262 9 is_stmt 0 view .LVU150
+ 516 005a 5278     		ldrb	r2, [r2, #1]	@ zero_extendqisi2
+ 517              		.loc 1 262 8 view .LVU151
+ 518 005c 12F0040F 		tst	r2, #4
+ 519 0060 E2D0     		beq	.L21
+ 263:Service/Srv_DataHub.c ****         goto reupdate_raw_mag;
+ 264:Service/Srv_DataHub.c **** 
+ 265:Service/Srv_DataHub.c ****     return true;
+ 520              		.loc 1 265 12 view .LVU152
+ 521 0062 0120     		movs	r0, #1
+ 522              	.LVL21:
+ 523              	.L20:
+ 266:Service/Srv_DataHub.c **** }
+ 524              		.loc 1 266 1 view .LVU153
+ 525 0064 30BD     		pop	{r4, r5, pc}
+ 526              	.LVL22:
+ 527              	.L22:
+ 250:Service/Srv_DataHub.c **** 
+ 528              		.loc 1 250 16 view .LVU154
+ 529 0066 0020     		movs	r0, #0
+ 530 0068 FCE7     		b	.L20
+ 531              	.LVL23:
+ 532              	.L23:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 15
+
+
+ 250:Service/Srv_DataHub.c **** 
+ 533              		.loc 1 250 16 view .LVU155
+ 534 006a 1046     		mov	r0, r2
+ 535 006c FAE7     		b	.L20
+ 536              	.L26:
+ 537 006e 00BF     		.align	2
+ 538              	.L25:
+ 539 0070 00000000 		.word	.LANCHOR0
+ 540              		.cfi_endproc
+ 541              	.LFE155:
+ 543              		.section	.text.SrvDataHub_Get_Scaled_Mag,"ax",%progbits
+ 544              		.align	1
+ 545              		.syntax unified
+ 546              		.thumb
+ 547              		.thumb_func
+ 548              		.fpu fpv5-d16
+ 550              	SrvDataHub_Get_Scaled_Mag:
+ 551              	.LVL24:
+ 552              	.LFB156:
+ 267:Service/Srv_DataHub.c **** 
+ 268:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_
+ 269:Service/Srv_DataHub.c **** {
+ 553              		.loc 1 269 1 is_stmt 1 view -0
+ 554              		.cfi_startproc
+ 555              		@ args = 8, pretend = 0, frame = 0
+ 556              		@ frame_needed = 0, uses_anonymous_args = 0
+ 557              		.loc 1 269 1 is_stmt 0 view .LVU157
+ 558 0000 30B5     		push	{r4, r5, lr}
+ 559              	.LCFI7:
+ 560              		.cfi_def_cfa_offset 12
+ 561              		.cfi_offset 4, -12
+ 562              		.cfi_offset 5, -8
+ 563              		.cfi_offset 14, -4
+ 564 0002 039C     		ldr	r4, [sp, #12]
+ 565 0004 049D     		ldr	r5, [sp, #16]
+ 270:Service/Srv_DataHub.c ****     if ((time_stamp == NULL) ||
+ 566              		.loc 1 270 5 is_stmt 1 view .LVU158
+ 567              		.loc 1 270 21 is_stmt 0 view .LVU159
+ 568 0006 8446     		mov	ip, r0
+ 569              		.loc 1 270 8 view .LVU160
+ 570 0008 002A     		cmp	r2, #0
+ 571 000a 18BF     		it	ne
+ 572 000c 0028     		cmpne	r0, #0
+ 573 000e 0CBF     		ite	eq
+ 574 0010 0120     		moveq	r0, #1
+ 575              	.LVL25:
+ 576              		.loc 1 270 8 view .LVU161
+ 577 0012 0020     		movne	r0, #0
+ 578 0014 27D0     		beq	.L30
+ 579 0016 9646     		mov	lr, r2
+ 271:Service/Srv_DataHub.c ****         (mag_x == NULL) ||
+ 272:Service/Srv_DataHub.c ****         (mag_y == NULL) ||
+ 580              		.loc 1 272 25 view .LVU162
+ 581 0018 002C     		cmp	r4, #0
+ 582 001a 18BF     		it	ne
+ 583 001c 002B     		cmpne	r3, #0
+ 584 001e 0CBF     		ite	eq
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 16
+
+
+ 585 0020 0122     		moveq	r2, #1
+ 586              	.LVL26:
+ 587              		.loc 1 272 25 view .LVU163
+ 588 0022 0022     		movne	r2, #0
+ 589 0024 1ED0     		beq	.L28
+ 273:Service/Srv_DataHub.c ****         (mag_z == NULL) ||
+ 590              		.loc 1 273 25 view .LVU164
+ 591 0026 05B3     		cbz	r5, .L31
+ 592              	.L29:
+ 274:Service/Srv_DataHub.c ****         (err == NULL))
+ 275:Service/Srv_DataHub.c ****         return false;
+ 276:Service/Srv_DataHub.c **** 
+ 277:Service/Srv_DataHub.c **** reupdate_scaled_mag:
+ 278:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.scaled_mag = true;
+ 593              		.loc 1 278 5 is_stmt 1 view .LVU165
+ 594              		.loc 1 278 49 is_stmt 0 view .LVU166
+ 595 0028 114A     		ldr	r2, .L33
+ 596 002a 5078     		ldrb	r0, [r2, #1]	@ zero_extendqisi2
+ 597 002c 40F00800 		orr	r0, r0, #8
+ 598 0030 5070     		strb	r0, [r2, #1]
+ 279:Service/Srv_DataHub.c **** 
+ 280:Service/Srv_DataHub.c ****     *time_stamp = SrvDataHub_Monitor.data.mag_update_time;
+ 599              		.loc 1 280 5 is_stmt 1 view .LVU167
+ 600              		.loc 1 280 42 is_stmt 0 view .LVU168
+ 601 0032 D2F84600 		ldr	r0, [r2, #70]	@ unaligned
+ 602              		.loc 1 280 17 view .LVU169
+ 603 0036 CCF80000 		str	r0, [ip]
+ 281:Service/Srv_DataHub.c ****     *scale = SrvDataHub_Monitor.data.mag_scale;
+ 604              		.loc 1 281 5 is_stmt 1 view .LVU170
+ 605              		.loc 1 281 37 is_stmt 0 view .LVU171
+ 606 003a D2F84A00 		ldr	r0, [r2, #74]	@ unaligned
+ 607              		.loc 1 281 12 view .LVU172
+ 608 003e 0860     		str	r0, [r1]	@ float
+ 282:Service/Srv_DataHub.c ****     *mag_x = SrvDataHub_Monitor.data.flt_mag_x;
+ 609              		.loc 1 282 5 is_stmt 1 view .LVU173
+ 610              		.loc 1 282 37 is_stmt 0 view .LVU174
+ 611 0040 D2F84E00 		ldr	r0, [r2, #78]	@ unaligned
+ 612              		.loc 1 282 12 view .LVU175
+ 613 0044 CEF80000 		str	r0, [lr]	@ float
+ 283:Service/Srv_DataHub.c ****     *mag_y = SrvDataHub_Monitor.data.flt_mag_y;
+ 614              		.loc 1 283 5 is_stmt 1 view .LVU176
+ 615              		.loc 1 283 37 is_stmt 0 view .LVU177
+ 616 0048 D2F85200 		ldr	r0, [r2, #82]	@ unaligned
+ 617              		.loc 1 283 12 view .LVU178
+ 618 004c 1860     		str	r0, [r3]	@ float
+ 284:Service/Srv_DataHub.c ****     *mag_z = SrvDataHub_Monitor.data.flt_mag_z;
+ 619              		.loc 1 284 5 is_stmt 1 view .LVU179
+ 620              		.loc 1 284 37 is_stmt 0 view .LVU180
+ 621 004e D2F85600 		ldr	r0, [r2, #86]	@ unaligned
+ 622              		.loc 1 284 12 view .LVU181
+ 623 0052 2060     		str	r0, [r4]	@ float
+ 285:Service/Srv_DataHub.c ****     *err = SrvDataHub_Monitor.data.mag_error_code;
+ 624              		.loc 1 285 5 is_stmt 1 view .LVU182
+ 625              		.loc 1 285 35 is_stmt 0 view .LVU183
+ 626 0054 92F86A00 		ldrb	r0, [r2, #106]	@ zero_extendqisi2
+ 627              		.loc 1 285 10 view .LVU184
+ 628 0058 2870     		strb	r0, [r5]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 17
+
+
+ 286:Service/Srv_DataHub.c **** 
+ 287:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_mag)
+ 629              		.loc 1 287 5 is_stmt 1 view .LVU185
+ 630              		.loc 1 287 9 is_stmt 0 view .LVU186
+ 631 005a 5278     		ldrb	r2, [r2, #1]	@ zero_extendqisi2
+ 632              		.loc 1 287 8 view .LVU187
+ 633 005c 12F0080F 		tst	r2, #8
+ 634 0060 E2D0     		beq	.L29
+ 288:Service/Srv_DataHub.c ****         goto reupdate_scaled_mag;
+ 289:Service/Srv_DataHub.c **** 
+ 290:Service/Srv_DataHub.c ****     return true;
+ 635              		.loc 1 290 12 view .LVU188
+ 636 0062 0120     		movs	r0, #1
+ 637              	.LVL27:
+ 638              	.L28:
+ 291:Service/Srv_DataHub.c **** }
+ 639              		.loc 1 291 1 view .LVU189
+ 640 0064 30BD     		pop	{r4, r5, pc}
+ 641              	.LVL28:
+ 642              	.L30:
+ 275:Service/Srv_DataHub.c **** 
+ 643              		.loc 1 275 16 view .LVU190
+ 644 0066 0020     		movs	r0, #0
+ 645 0068 FCE7     		b	.L28
+ 646              	.LVL29:
+ 647              	.L31:
+ 275:Service/Srv_DataHub.c **** 
+ 648              		.loc 1 275 16 view .LVU191
+ 649 006a 1046     		mov	r0, r2
+ 650 006c FAE7     		b	.L28
+ 651              	.L34:
+ 652 006e 00BF     		.align	2
+ 653              	.L33:
+ 654 0070 00000000 		.word	.LANCHOR0
+ 655              		.cfi_endproc
+ 656              	.LFE156:
+ 658              		.section	.text.SrvDataHub_Get_Arm,"ax",%progbits
+ 659              		.align	1
+ 660              		.syntax unified
+ 661              		.thumb
+ 662              		.thumb_func
+ 663              		.fpu fpv5-d16
+ 665              	SrvDataHub_Get_Arm:
+ 666              	.LVL30:
+ 667              	.LFB157:
+ 292:Service/Srv_DataHub.c **** 
+ 293:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Arm(bool *arm)
+ 294:Service/Srv_DataHub.c **** {
+ 668              		.loc 1 294 1 is_stmt 1 view -0
+ 669              		.cfi_startproc
+ 670              		@ args = 0, pretend = 0, frame = 0
+ 671              		@ frame_needed = 0, uses_anonymous_args = 0
+ 672              		@ link register save eliminated.
+ 295:Service/Srv_DataHub.c ****     if (arm == NULL)
+ 673              		.loc 1 295 5 view .LVU193
+ 674              		.loc 1 295 8 is_stmt 0 view .LVU194
+ 675 0000 0146     		mov	r1, r0
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 18
+
+
+ 676 0002 90B1     		cbz	r0, .L38
+ 677              	.L37:
+ 296:Service/Srv_DataHub.c ****         return false;
+ 297:Service/Srv_DataHub.c **** 
+ 298:Service/Srv_DataHub.c **** reupdate_arm:
+ 299:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+ 678              		.loc 1 299 5 is_stmt 1 view .LVU195
+ 679              		.loc 1 299 41 is_stmt 0 view .LVU196
+ 680 0004 0A4B     		ldr	r3, .L39
+ 681 0006 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 682 0008 42F00402 		orr	r2, r2, #4
+ 683 000c 9A70     		strb	r2, [r3, #2]
+ 300:Service/Srv_DataHub.c ****     *arm = SrvDataHub_Monitor.data.arm;
+ 684              		.loc 1 300 5 is_stmt 1 view .LVU197
+ 685              		.loc 1 300 35 is_stmt 0 view .LVU198
+ 686 000e 93F8A720 		ldrb	r2, [r3, #167]	@ zero_extendqisi2
+ 687              		.loc 1 300 10 view .LVU199
+ 688 0012 0A70     		strb	r2, [r1]
+ 301:Service/Srv_DataHub.c **** 
+ 302:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
+ 689              		.loc 1 302 5 is_stmt 1 view .LVU200
+ 690              		.loc 1 302 9 is_stmt 0 view .LVU201
+ 691 0014 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 692              		.loc 1 302 8 view .LVU202
+ 693 0016 13F0040F 		tst	r3, #4
+ 694 001a F3D0     		beq	.L37
+ 303:Service/Srv_DataHub.c ****         goto reupdate_arm;
+ 304:Service/Srv_DataHub.c **** 
+ 305:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+ 695              		.loc 1 305 5 is_stmt 1 view .LVU203
+ 696              		.loc 1 305 41 is_stmt 0 view .LVU204
+ 697 001c 044B     		ldr	r3, .L39
+ 698 001e 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 699 0020 6FF38202 		bfc	r2, #2, #1
+ 700 0024 9A70     		strb	r2, [r3, #2]
+ 306:Service/Srv_DataHub.c **** 
+ 307:Service/Srv_DataHub.c ****     return true;
+ 701              		.loc 1 307 5 is_stmt 1 view .LVU205
+ 702              		.loc 1 307 12 is_stmt 0 view .LVU206
+ 703 0026 0120     		movs	r0, #1
+ 704              	.LVL31:
+ 705              		.loc 1 307 12 view .LVU207
+ 706 0028 7047     		bx	lr
+ 707              	.LVL32:
+ 708              	.L38:
+ 296:Service/Srv_DataHub.c **** 
+ 709              		.loc 1 296 16 view .LVU208
+ 710 002a 0020     		movs	r0, #0
+ 711              	.LVL33:
+ 308:Service/Srv_DataHub.c **** }
+ 712              		.loc 1 308 1 view .LVU209
+ 713 002c 7047     		bx	lr
+ 714              	.L40:
+ 715 002e 00BF     		.align	2
+ 716              	.L39:
+ 717 0030 00000000 		.word	.LANCHOR0
+ 718              		.cfi_endproc
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 19
+
+
+ 719              	.LFE157:
+ 721              		.section	.text.SrvDataHub_Get_Failsafe,"ax",%progbits
+ 722              		.align	1
+ 723              		.syntax unified
+ 724              		.thumb
+ 725              		.thumb_func
+ 726              		.fpu fpv5-d16
+ 728              	SrvDataHub_Get_Failsafe:
+ 729              	.LVL34:
+ 730              	.LFB158:
+ 309:Service/Srv_DataHub.c **** 
+ 310:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_Failsafe(bool *failsafe)
+ 311:Service/Srv_DataHub.c **** {
+ 731              		.loc 1 311 1 is_stmt 1 view -0
+ 732              		.cfi_startproc
+ 733              		@ args = 0, pretend = 0, frame = 0
+ 734              		@ frame_needed = 0, uses_anonymous_args = 0
+ 735              		@ link register save eliminated.
+ 312:Service/Srv_DataHub.c ****     if (failsafe == NULL)
+ 736              		.loc 1 312 5 view .LVU211
+ 737              		.loc 1 312 8 is_stmt 0 view .LVU212
+ 738 0000 0146     		mov	r1, r0
+ 739 0002 90B1     		cbz	r0, .L44
+ 740              	.L43:
+ 313:Service/Srv_DataHub.c ****         return false;
+ 314:Service/Srv_DataHub.c **** 
+ 315:Service/Srv_DataHub.c **** reupdate_failsafe:
+ 316:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+ 741              		.loc 1 316 5 is_stmt 1 view .LVU213
+ 742              		.loc 1 316 41 is_stmt 0 view .LVU214
+ 743 0004 0A4B     		ldr	r3, .L45
+ 744 0006 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 745 0008 42F00402 		orr	r2, r2, #4
+ 746 000c 9A70     		strb	r2, [r3, #2]
+ 317:Service/Srv_DataHub.c ****     *failsafe = SrvDataHub_Monitor.data.failsafe;
+ 747              		.loc 1 317 5 is_stmt 1 view .LVU215
+ 748              		.loc 1 317 40 is_stmt 0 view .LVU216
+ 749 000e 93F8A820 		ldrb	r2, [r3, #168]	@ zero_extendqisi2
+ 750              		.loc 1 317 15 view .LVU217
+ 751 0012 0A70     		strb	r2, [r1]
+ 318:Service/Srv_DataHub.c **** 
+ 319:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
+ 752              		.loc 1 319 5 is_stmt 1 view .LVU218
+ 753              		.loc 1 319 9 is_stmt 0 view .LVU219
+ 754 0014 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 755              		.loc 1 319 8 view .LVU220
+ 756 0016 13F0040F 		tst	r3, #4
+ 757 001a F3D0     		beq	.L43
+ 320:Service/Srv_DataHub.c ****         goto reupdate_failsafe;
+ 321:Service/Srv_DataHub.c **** 
+ 322:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+ 758              		.loc 1 322 5 is_stmt 1 view .LVU221
+ 759              		.loc 1 322 41 is_stmt 0 view .LVU222
+ 760 001c 044B     		ldr	r3, .L45
+ 761 001e 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 762 0020 6FF38202 		bfc	r2, #2, #1
+ 763 0024 9A70     		strb	r2, [r3, #2]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 20
+
+
+ 323:Service/Srv_DataHub.c **** 
+ 324:Service/Srv_DataHub.c ****     return true;
+ 764              		.loc 1 324 5 is_stmt 1 view .LVU223
+ 765              		.loc 1 324 12 is_stmt 0 view .LVU224
+ 766 0026 0120     		movs	r0, #1
+ 767              	.LVL35:
+ 768              		.loc 1 324 12 view .LVU225
+ 769 0028 7047     		bx	lr
+ 770              	.LVL36:
+ 771              	.L44:
+ 313:Service/Srv_DataHub.c **** 
+ 772              		.loc 1 313 16 view .LVU226
+ 773 002a 0020     		movs	r0, #0
+ 774              	.LVL37:
+ 325:Service/Srv_DataHub.c **** }
+ 775              		.loc 1 325 1 view .LVU227
+ 776 002c 7047     		bx	lr
+ 777              	.L46:
+ 778 002e 00BF     		.align	2
+ 779              	.L45:
+ 780 0030 00000000 		.word	.LANCHOR0
+ 781              		.cfi_endproc
+ 782              	.LFE158:
+ 784              		.section	.text.SrvDataHub_Get_ControlMode,"ax",%progbits
+ 785              		.align	1
+ 786              		.syntax unified
+ 787              		.thumb
+ 788              		.thumb_func
+ 789              		.fpu fpv5-d16
+ 791              	SrvDataHub_Get_ControlMode:
+ 792              	.LVL38:
+ 793              	.LFB159:
+ 326:Service/Srv_DataHub.c **** 
+ 327:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_ControlMode(uint8_t *mode)
+ 328:Service/Srv_DataHub.c **** {
+ 794              		.loc 1 328 1 is_stmt 1 view -0
+ 795              		.cfi_startproc
+ 796              		@ args = 0, pretend = 0, frame = 0
+ 797              		@ frame_needed = 0, uses_anonymous_args = 0
+ 798              		@ link register save eliminated.
+ 329:Service/Srv_DataHub.c ****     if (mode == NULL)
+ 799              		.loc 1 329 5 view .LVU229
+ 800              		.loc 1 329 8 is_stmt 0 view .LVU230
+ 801 0000 0146     		mov	r1, r0
+ 802 0002 90B1     		cbz	r0, .L50
+ 803              	.L49:
+ 330:Service/Srv_DataHub.c ****         return false;
+ 331:Service/Srv_DataHub.c **** 
+ 332:Service/Srv_DataHub.c **** reupdate_control_mode:
+ 333:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+ 804              		.loc 1 333 5 is_stmt 1 view .LVU231
+ 805              		.loc 1 333 41 is_stmt 0 view .LVU232
+ 806 0004 0A4B     		ldr	r3, .L51
+ 807 0006 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 808 0008 42F00402 		orr	r2, r2, #4
+ 809 000c 9A70     		strb	r2, [r3, #2]
+ 334:Service/Srv_DataHub.c ****     *mode = SrvDataHub_Monitor.data.mode;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 21
+
+
+ 810              		.loc 1 334 5 is_stmt 1 view .LVU233
+ 811              		.loc 1 334 36 is_stmt 0 view .LVU234
+ 812 000e 93F8AC20 		ldrb	r2, [r3, #172]	@ zero_extendqisi2
+ 813              		.loc 1 334 11 view .LVU235
+ 814 0012 0A70     		strb	r2, [r1]
+ 335:Service/Srv_DataHub.c **** 
+ 336:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
+ 815              		.loc 1 336 5 is_stmt 1 view .LVU236
+ 816              		.loc 1 336 9 is_stmt 0 view .LVU237
+ 817 0014 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 818              		.loc 1 336 8 view .LVU238
+ 819 0016 13F0040F 		tst	r3, #4
+ 820 001a F3D0     		beq	.L49
+ 337:Service/Srv_DataHub.c ****         goto reupdate_control_mode;
+ 338:Service/Srv_DataHub.c **** 
+ 339:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+ 821              		.loc 1 339 5 is_stmt 1 view .LVU239
+ 822              		.loc 1 339 41 is_stmt 0 view .LVU240
+ 823 001c 044B     		ldr	r3, .L51
+ 824 001e 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 825 0020 6FF38202 		bfc	r2, #2, #1
+ 826 0024 9A70     		strb	r2, [r3, #2]
+ 340:Service/Srv_DataHub.c **** 
+ 341:Service/Srv_DataHub.c ****     return true;
+ 827              		.loc 1 341 5 is_stmt 1 view .LVU241
+ 828              		.loc 1 341 12 is_stmt 0 view .LVU242
+ 829 0026 0120     		movs	r0, #1
+ 830              	.LVL39:
+ 831              		.loc 1 341 12 view .LVU243
+ 832 0028 7047     		bx	lr
+ 833              	.LVL40:
+ 834              	.L50:
+ 330:Service/Srv_DataHub.c **** 
+ 835              		.loc 1 330 16 view .LVU244
+ 836 002a 0020     		movs	r0, #0
+ 837              	.LVL41:
+ 342:Service/Srv_DataHub.c **** }
+ 838              		.loc 1 342 1 view .LVU245
+ 839 002c 7047     		bx	lr
+ 840              	.L52:
+ 841 002e 00BF     		.align	2
+ 842              	.L51:
+ 843 0030 00000000 		.word	.LANCHOR0
+ 844              		.cfi_endproc
+ 845              	.LFE159:
+ 847              		.section	.text.SrvDataHub_Get_RcChannel,"ax",%progbits
+ 848              		.align	1
+ 849              		.syntax unified
+ 850              		.thumb
+ 851              		.thumb_func
+ 852              		.fpu fpv5-d16
+ 854              	SrvDataHub_Get_RcChannel:
+ 855              	.LVL42:
+ 856              	.LFB160:
+ 343:Service/Srv_DataHub.c **** 
+ 344:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_sum)
+ 345:Service/Srv_DataHub.c **** {
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 22
+
+
+ 857              		.loc 1 345 1 is_stmt 1 view -0
+ 858              		.cfi_startproc
+ 859              		@ args = 0, pretend = 0, frame = 0
+ 860              		@ frame_needed = 0, uses_anonymous_args = 0
+ 861              		.loc 1 345 1 is_stmt 0 view .LVU247
+ 862 0000 00B5     		push	{lr}
+ 863              	.LCFI8:
+ 864              		.cfi_def_cfa_offset 4
+ 865              		.cfi_offset 14, -4
+ 346:Service/Srv_DataHub.c ****     if ((time_stamp == NULL) || (ch == NULL) || (ch_sum == NULL))
+ 866              		.loc 1 346 5 is_stmt 1 view .LVU248
+ 867              		.loc 1 346 21 is_stmt 0 view .LVU249
+ 868 0002 8646     		mov	lr, r0
+ 869              		.loc 1 346 8 view .LVU250
+ 870 0004 0029     		cmp	r1, #0
+ 871 0006 18BF     		it	ne
+ 872 0008 0028     		cmpne	r0, #0
+ 873 000a 0CBF     		ite	eq
+ 874 000c 0120     		moveq	r0, #1
+ 875              	.LVL43:
+ 876              		.loc 1 346 8 view .LVU251
+ 877 000e 0020     		movne	r0, #0
+ 878 0010 2CD0     		beq	.L58
+ 879 0012 8C46     		mov	ip, r1
+ 880              		.loc 1 346 46 discriminator 1 view .LVU252
+ 881 0014 A2B9     		cbnz	r2, .L55
+ 882 0016 27E0     		b	.L54
+ 883              	.LVL44:
+ 884              	.L57:
+ 885              	.LBB6:
+ 347:Service/Srv_DataHub.c ****         return false;
+ 348:Service/Srv_DataHub.c **** 
+ 349:Service/Srv_DataHub.c **** reupdate_rc_channel:
+ 350:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+ 351:Service/Srv_DataHub.c ****     *time_stamp = SrvDataHub_Monitor.data.rc_update_time;
+ 352:Service/Srv_DataHub.c ****     *ch_sum = SrvDataHub_Monitor.data.channel_sum;
+ 353:Service/Srv_DataHub.c **** 
+ 354:Service/Srv_DataHub.c ****     for (uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
+ 355:Service/Srv_DataHub.c ****     {
+ 356:Service/Srv_DataHub.c ****         ch[i] = SrvDataHub_Monitor.data.ch[i];
+ 886              		.loc 1 356 9 is_stmt 1 discriminator 3 view .LVU253
+ 887              		.loc 1 356 43 is_stmt 0 discriminator 3 view .LVU254
+ 888 0018 03F15400 		add	r0, r3, #84
+ 889 001c 1449     		ldr	r1, .L61
+ 890 001e 01EB4001 		add	r1, r1, r0, lsl #1
+ 891 0022 C988     		ldrh	r1, [r1, #6]
+ 892              		.loc 1 356 15 discriminator 3 view .LVU255
+ 893 0024 2CF81310 		strh	r1, [ip, r3, lsl #1]	@ movhi
+ 354:Service/Srv_DataHub.c ****     {
+ 894              		.loc 1 354 66 is_stmt 1 discriminator 3 view .LVU256
+ 354:Service/Srv_DataHub.c ****     {
+ 895              		.loc 1 354 67 is_stmt 0 discriminator 3 view .LVU257
+ 896 0028 0133     		adds	r3, r3, #1
+ 897              	.LVL45:
+ 354:Service/Srv_DataHub.c ****     {
+ 898              		.loc 1 354 67 discriminator 3 view .LVU258
+ 899 002a DBB2     		uxtb	r3, r3
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 23
+
+
+ 900              	.LVL46:
+ 901              	.L56:
+ 354:Service/Srv_DataHub.c ****     {
+ 902              		.loc 1 354 25 is_stmt 1 discriminator 1 view .LVU259
+ 354:Service/Srv_DataHub.c ****     {
+ 903              		.loc 1 354 52 is_stmt 0 discriminator 1 view .LVU260
+ 904 002c 1049     		ldr	r1, .L61
+ 905 002e 91F8AD10 		ldrb	r1, [r1, #173]	@ zero_extendqisi2
+ 354:Service/Srv_DataHub.c ****     {
+ 906              		.loc 1 354 5 discriminator 1 view .LVU261
+ 907 0032 9942     		cmp	r1, r3
+ 908 0034 F0D8     		bhi	.L57
+ 909              	.LBE6:
+ 357:Service/Srv_DataHub.c ****     }
+ 358:Service/Srv_DataHub.c **** 
+ 359:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
+ 910              		.loc 1 359 5 is_stmt 1 view .LVU262
+ 911              		.loc 1 359 9 is_stmt 0 view .LVU263
+ 912 0036 0E4B     		ldr	r3, .L61
+ 913              	.LVL47:
+ 914              		.loc 1 359 9 view .LVU264
+ 915 0038 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 916              		.loc 1 359 8 view .LVU265
+ 917 003a 13F0040F 		tst	r3, #4
+ 918 003e 0DD1     		bne	.L60
+ 919              	.L55:
+ 350:Service/Srv_DataHub.c ****     *time_stamp = SrvDataHub_Monitor.data.rc_update_time;
+ 920              		.loc 1 350 5 is_stmt 1 view .LVU266
+ 350:Service/Srv_DataHub.c ****     *time_stamp = SrvDataHub_Monitor.data.rc_update_time;
+ 921              		.loc 1 350 41 is_stmt 0 view .LVU267
+ 922 0040 0B4B     		ldr	r3, .L61
+ 923 0042 9978     		ldrb	r1, [r3, #2]	@ zero_extendqisi2
+ 924 0044 41F00401 		orr	r1, r1, #4
+ 925 0048 9970     		strb	r1, [r3, #2]
+ 351:Service/Srv_DataHub.c ****     *ch_sum = SrvDataHub_Monitor.data.channel_sum;
+ 926              		.loc 1 351 5 is_stmt 1 view .LVU268
+ 351:Service/Srv_DataHub.c ****     *ch_sum = SrvDataHub_Monitor.data.channel_sum;
+ 927              		.loc 1 351 42 is_stmt 0 view .LVU269
+ 928 004a D3F8A310 		ldr	r1, [r3, #163]	@ unaligned
+ 351:Service/Srv_DataHub.c ****     *ch_sum = SrvDataHub_Monitor.data.channel_sum;
+ 929              		.loc 1 351 17 view .LVU270
+ 930 004e CEF80010 		str	r1, [lr]
+ 352:Service/Srv_DataHub.c **** 
+ 931              		.loc 1 352 5 is_stmt 1 view .LVU271
+ 352:Service/Srv_DataHub.c **** 
+ 932              		.loc 1 352 38 is_stmt 0 view .LVU272
+ 933 0052 93F8AD30 		ldrb	r3, [r3, #173]	@ zero_extendqisi2
+ 352:Service/Srv_DataHub.c **** 
+ 934              		.loc 1 352 13 view .LVU273
+ 935 0056 1370     		strb	r3, [r2]
+ 354:Service/Srv_DataHub.c ****     {
+ 936              		.loc 1 354 5 is_stmt 1 view .LVU274
+ 937              	.LBB7:
+ 354:Service/Srv_DataHub.c ****     {
+ 938              		.loc 1 354 10 view .LVU275
+ 939              	.LVL48:
+ 354:Service/Srv_DataHub.c ****     {
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 24
+
+
+ 940              		.loc 1 354 18 is_stmt 0 view .LVU276
+ 941 0058 0023     		movs	r3, #0
+ 354:Service/Srv_DataHub.c ****     {
+ 942              		.loc 1 354 5 view .LVU277
+ 943 005a E7E7     		b	.L56
+ 944              	.LVL49:
+ 945              	.L60:
+ 354:Service/Srv_DataHub.c ****     {
+ 946              		.loc 1 354 5 view .LVU278
+ 947              	.LBE7:
+ 360:Service/Srv_DataHub.c ****         goto reupdate_rc_channel;
+ 361:Service/Srv_DataHub.c **** 
+ 362:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+ 948              		.loc 1 362 5 is_stmt 1 view .LVU279
+ 949              		.loc 1 362 41 is_stmt 0 view .LVU280
+ 950 005c 044B     		ldr	r3, .L61
+ 951 005e 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 952              	.LVL50:
+ 953              		.loc 1 362 41 view .LVU281
+ 954 0060 6FF38202 		bfc	r2, #2, #1
+ 955 0064 9A70     		strb	r2, [r3, #2]
+ 363:Service/Srv_DataHub.c **** 
+ 364:Service/Srv_DataHub.c ****     return true;
+ 956              		.loc 1 364 5 is_stmt 1 view .LVU282
+ 957              		.loc 1 364 12 is_stmt 0 view .LVU283
+ 958 0066 0120     		movs	r0, #1
+ 959              	.LVL51:
+ 960              	.L54:
+ 365:Service/Srv_DataHub.c **** }
+ 961              		.loc 1 365 1 view .LVU284
+ 962 0068 5DF804FB 		ldr	pc, [sp], #4
+ 963              	.LVL52:
+ 964              	.L58:
+ 347:Service/Srv_DataHub.c **** 
+ 965              		.loc 1 347 16 view .LVU285
+ 966 006c 0020     		movs	r0, #0
+ 967 006e FBE7     		b	.L54
+ 968              	.L62:
+ 969              		.align	2
+ 970              	.L61:
+ 971 0070 00000000 		.word	.LANCHOR0
+ 972              		.cfi_endproc
+ 973              	.LFE160:
+ 975              		.section	.text.SrvDataHub_Get_GimbalPercent,"ax",%progbits
+ 976              		.align	1
+ 977              		.syntax unified
+ 978              		.thumb
+ 979              		.thumb_func
+ 980              		.fpu fpv5-d16
+ 982              	SrvDataHub_Get_GimbalPercent:
+ 983              	.LVL53:
+ 984              	.LFB161:
+ 366:Service/Srv_DataHub.c **** 
+ 367:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_GimbalPercent(uint16_t *gimbal)
+ 368:Service/Srv_DataHub.c **** {
+ 985              		.loc 1 368 1 is_stmt 1 view -0
+ 986              		.cfi_startproc
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 25
+
+
+ 987              		@ args = 0, pretend = 0, frame = 0
+ 988              		@ frame_needed = 0, uses_anonymous_args = 0
+ 989              		@ link register save eliminated.
+ 369:Service/Srv_DataHub.c ****     if (gimbal == NULL)
+ 990              		.loc 1 369 5 view .LVU287
+ 991              		.loc 1 369 8 is_stmt 0 view .LVU288
+ 992 0000 8446     		mov	ip, r0
+ 993 0002 90B9     		cbnz	r0, .L65
+ 370:Service/Srv_DataHub.c ****         return false;
+ 994              		.loc 1 370 16 view .LVU289
+ 995 0004 0020     		movs	r0, #0
+ 996              	.LVL54:
+ 371:Service/Srv_DataHub.c **** 
+ 372:Service/Srv_DataHub.c **** reupdate_gimbal:
+ 373:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+ 374:Service/Srv_DataHub.c **** 
+ 375:Service/Srv_DataHub.c ****     for (uint8_t i = 0; i < 4; i++)
+ 376:Service/Srv_DataHub.c ****     {
+ 377:Service/Srv_DataHub.c ****         gimbal[i] = SrvDataHub_Monitor.data.gimbal[i];
+ 378:Service/Srv_DataHub.c ****     }
+ 379:Service/Srv_DataHub.c **** 
+ 380:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
+ 381:Service/Srv_DataHub.c ****         goto reupdate_gimbal;
+ 382:Service/Srv_DataHub.c **** 
+ 383:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+ 384:Service/Srv_DataHub.c **** 
+ 385:Service/Srv_DataHub.c ****     return true;
+ 386:Service/Srv_DataHub.c **** }
+ 997              		.loc 1 386 1 view .LVU290
+ 998 0006 7047     		bx	lr
+ 999              	.LVL55:
+ 1000              	.L67:
+ 1001              	.LBB8:
+ 377:Service/Srv_DataHub.c ****     }
+ 1002              		.loc 1 377 9 is_stmt 1 discriminator 3 view .LVU291
+ 377:Service/Srv_DataHub.c ****     }
+ 1003              		.loc 1 377 51 is_stmt 0 discriminator 3 view .LVU292
+ 1004 0008 03F17401 		add	r1, r3, #116
+ 1005 000c 0E4A     		ldr	r2, .L70
+ 1006 000e 02EB4102 		add	r2, r2, r1, lsl #1
+ 1007 0012 D288     		ldrh	r2, [r2, #6]
+ 377:Service/Srv_DataHub.c ****     }
+ 1008              		.loc 1 377 19 discriminator 3 view .LVU293
+ 1009 0014 2CF81320 		strh	r2, [ip, r3, lsl #1]	@ movhi
+ 375:Service/Srv_DataHub.c ****     {
+ 1010              		.loc 1 375 32 is_stmt 1 discriminator 3 view .LVU294
+ 375:Service/Srv_DataHub.c ****     {
+ 1011              		.loc 1 375 33 is_stmt 0 discriminator 3 view .LVU295
+ 1012 0018 0133     		adds	r3, r3, #1
+ 1013              	.LVL56:
+ 375:Service/Srv_DataHub.c ****     {
+ 1014              		.loc 1 375 33 discriminator 3 view .LVU296
+ 1015 001a DBB2     		uxtb	r3, r3
+ 1016              	.LVL57:
+ 1017              	.L66:
+ 375:Service/Srv_DataHub.c ****     {
+ 1018              		.loc 1 375 25 is_stmt 1 discriminator 1 view .LVU297
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 26
+
+
+ 375:Service/Srv_DataHub.c ****     {
+ 1019              		.loc 1 375 5 is_stmt 0 discriminator 1 view .LVU298
+ 1020 001c 032B     		cmp	r3, #3
+ 1021 001e F3D9     		bls	.L67
+ 1022              	.LBE8:
+ 380:Service/Srv_DataHub.c ****         goto reupdate_gimbal;
+ 1023              		.loc 1 380 5 is_stmt 1 view .LVU299
+ 380:Service/Srv_DataHub.c ****         goto reupdate_gimbal;
+ 1024              		.loc 1 380 9 is_stmt 0 view .LVU300
+ 1025 0020 094B     		ldr	r3, .L70
+ 1026              	.LVL58:
+ 380:Service/Srv_DataHub.c ****         goto reupdate_gimbal;
+ 1027              		.loc 1 380 9 view .LVU301
+ 1028 0022 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 380:Service/Srv_DataHub.c ****         goto reupdate_gimbal;
+ 1029              		.loc 1 380 8 view .LVU302
+ 1030 0024 13F0040F 		tst	r3, #4
+ 1031 0028 06D1     		bne	.L69
+ 1032              	.L65:
+ 373:Service/Srv_DataHub.c **** 
+ 1033              		.loc 1 373 5 is_stmt 1 view .LVU303
+ 373:Service/Srv_DataHub.c **** 
+ 1034              		.loc 1 373 41 is_stmt 0 view .LVU304
+ 1035 002a 074A     		ldr	r2, .L70
+ 1036 002c 9378     		ldrb	r3, [r2, #2]	@ zero_extendqisi2
+ 1037 002e 43F00403 		orr	r3, r3, #4
+ 1038 0032 9370     		strb	r3, [r2, #2]
+ 375:Service/Srv_DataHub.c ****     {
+ 1039              		.loc 1 375 5 is_stmt 1 view .LVU305
+ 1040              	.LBB9:
+ 375:Service/Srv_DataHub.c ****     {
+ 1041              		.loc 1 375 10 view .LVU306
+ 1042              	.LVL59:
+ 375:Service/Srv_DataHub.c ****     {
+ 1043              		.loc 1 375 18 is_stmt 0 view .LVU307
+ 1044 0034 0023     		movs	r3, #0
+ 375:Service/Srv_DataHub.c ****     {
+ 1045              		.loc 1 375 5 view .LVU308
+ 1046 0036 F1E7     		b	.L66
+ 1047              	.LVL60:
+ 1048              	.L69:
+ 375:Service/Srv_DataHub.c ****     {
+ 1049              		.loc 1 375 5 view .LVU309
+ 1050              	.LBE9:
+ 383:Service/Srv_DataHub.c **** 
+ 1051              		.loc 1 383 5 is_stmt 1 view .LVU310
+ 383:Service/Srv_DataHub.c **** 
+ 1052              		.loc 1 383 41 is_stmt 0 view .LVU311
+ 1053 0038 034B     		ldr	r3, .L70
+ 1054 003a 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 1055 003c 6FF38202 		bfc	r2, #2, #1
+ 1056 0040 9A70     		strb	r2, [r3, #2]
+ 385:Service/Srv_DataHub.c **** }
+ 1057              		.loc 1 385 5 is_stmt 1 view .LVU312
+ 385:Service/Srv_DataHub.c **** }
+ 1058              		.loc 1 385 12 is_stmt 0 view .LVU313
+ 1059 0042 0120     		movs	r0, #1
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 27
+
+
+ 1060              	.LVL61:
+ 385:Service/Srv_DataHub.c **** }
+ 1061              		.loc 1 385 12 view .LVU314
+ 1062 0044 7047     		bx	lr
+ 1063              	.L71:
+ 1064 0046 00BF     		.align	2
+ 1065              	.L70:
+ 1066 0048 00000000 		.word	.LANCHOR0
+ 1067              		.cfi_endproc
+ 1068              	.LFE161:
+ 1070              		.section	.text.SrvDataHub_Get_ServoChannel,"ax",%progbits
+ 1071              		.align	1
+ 1072              		.syntax unified
+ 1073              		.thumb
+ 1074              		.thumb_func
+ 1075              		.fpu fpv5-d16
+ 1077              	SrvDataHub_Get_ServoChannel:
+ 1078              	.LVL62:
+ 1079              	.LFB163:
+ 387:Service/Srv_DataHub.c **** 
+ 388:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8
+ 389:Service/Srv_DataHub.c **** {
+ 390:Service/Srv_DataHub.c ****     if ((cnt == NULL) || (moto_ch == NULL))
+ 391:Service/Srv_DataHub.c ****         return false;
+ 392:Service/Srv_DataHub.c **** 
+ 393:Service/Srv_DataHub.c **** reupdate_moto_channel:
+ 394:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.actuator = true;
+ 395:Service/Srv_DataHub.c **** 
+ 396:Service/Srv_DataHub.c ****     *time_stamp = SrvDataHub_Monitor.data.actuator_update_time;
+ 397:Service/Srv_DataHub.c ****     *cnt = SrvDataHub_Monitor.data.moto_num;
+ 398:Service/Srv_DataHub.c **** 
+ 399:Service/Srv_DataHub.c ****     if (*cnt)
+ 400:Service/Srv_DataHub.c ****     {
+ 401:Service/Srv_DataHub.c ****         memcpy(moto_ch, SrvDataHub_Monitor.data.moto, *cnt);
+ 402:Service/Srv_DataHub.c ****         memcpy(moto_dir, SrvDataHub_Monitor.data.moto_dir, *cnt);
+ 403:Service/Srv_DataHub.c ****     }
+ 404:Service/Srv_DataHub.c **** 
+ 405:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.actuator)
+ 406:Service/Srv_DataHub.c ****         goto reupdate_moto_channel;
+ 407:Service/Srv_DataHub.c **** 
+ 408:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
+ 409:Service/Srv_DataHub.c **** 
+ 410:Service/Srv_DataHub.c ****     return true;
+ 411:Service/Srv_DataHub.c **** }
+ 412:Service/Srv_DataHub.c **** 
+ 413:Service/Srv_DataHub.c **** static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uin
+ 414:Service/Srv_DataHub.c **** {
+ 1080              		.loc 1 414 1 is_stmt 1 view -0
+ 1081              		.cfi_startproc
+ 1082              		@ args = 0, pretend = 0, frame = 0
+ 1083              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1084              		.loc 1 414 1 is_stmt 0 view .LVU316
+ 1085 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 1086              	.LCFI9:
+ 1087              		.cfi_def_cfa_offset 24
+ 1088              		.cfi_offset 4, -24
+ 1089              		.cfi_offset 5, -20
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 28
+
+
+ 1090              		.cfi_offset 6, -16
+ 1091              		.cfi_offset 7, -12
+ 1092              		.cfi_offset 8, -8
+ 1093              		.cfi_offset 14, -4
+ 1094 0004 0446     		mov	r4, r0
+ 415:Service/Srv_DataHub.c ****     if ((cnt == NULL) || (servo_ch == NULL) || (servo_dir == NULL))
+ 1095              		.loc 1 415 5 is_stmt 1 view .LVU317
+ 1096              		.loc 1 415 8 is_stmt 0 view .LVU318
+ 1097 0006 002A     		cmp	r2, #0
+ 1098 0008 18BF     		it	ne
+ 1099 000a 0029     		cmpne	r1, #0
+ 1100 000c 0CBF     		ite	eq
+ 1101 000e 0120     		moveq	r0, #1
+ 1102              	.LVL63:
+ 1103              		.loc 1 415 8 view .LVU319
+ 1104 0010 0020     		movne	r0, #0
+ 1105 0012 2CD0     		beq	.L76
+ 1106 0014 1E46     		mov	r6, r3
+ 1107 0016 0D46     		mov	r5, r1
+ 1108 0018 1746     		mov	r7, r2
+ 1109              		.loc 1 415 45 discriminator 1 view .LVU320
+ 1110 001a 2BB9     		cbnz	r3, .L74
+ 1111 001c 25E0     		b	.L73
+ 1112              	.LVL64:
+ 1113              	.L75:
+ 416:Service/Srv_DataHub.c ****         return false;
+ 417:Service/Srv_DataHub.c **** 
+ 418:Service/Srv_DataHub.c **** reupdate_servo_channel:
+ 419:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.actuator = true;
+ 420:Service/Srv_DataHub.c **** 
+ 421:Service/Srv_DataHub.c ****     *time_stamp = SrvDataHub_Monitor.data.actuator_update_time;
+ 422:Service/Srv_DataHub.c ****     *cnt = SrvDataHub_Monitor.data.servo_num;
+ 423:Service/Srv_DataHub.c **** 
+ 424:Service/Srv_DataHub.c ****     if (*cnt)
+ 425:Service/Srv_DataHub.c ****     {
+ 426:Service/Srv_DataHub.c ****         memcpy(servo_ch, SrvDataHub_Monitor.data.servo, *cnt);
+ 427:Service/Srv_DataHub.c ****         memcpy(servo_dir, SrvDataHub_Monitor.data.servo_dir, *cnt);
+ 428:Service/Srv_DataHub.c ****     }
+ 429:Service/Srv_DataHub.c **** 
+ 430:Service/Srv_DataHub.c ****     if (!SrvDataHub_Monitor.inuse_reg.bit.actuator)
+ 1114              		.loc 1 430 5 is_stmt 1 view .LVU321
+ 1115              		.loc 1 430 9 is_stmt 0 view .LVU322
+ 1116 001e 154B     		ldr	r3, .L79
+ 1117 0020 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 1118              		.loc 1 430 8 view .LVU323
+ 1119 0022 13F0080F 		tst	r3, #8
+ 1120 0026 1AD1     		bne	.L78
+ 1121              	.L74:
+ 419:Service/Srv_DataHub.c **** 
+ 1122              		.loc 1 419 5 is_stmt 1 view .LVU324
+ 419:Service/Srv_DataHub.c **** 
+ 1123              		.loc 1 419 47 is_stmt 0 view .LVU325
+ 1124 0028 124A     		ldr	r2, .L79
+ 1125 002a 9178     		ldrb	r1, [r2, #2]	@ zero_extendqisi2
+ 1126 002c 41F00801 		orr	r1, r1, #8
+ 1127 0030 9170     		strb	r1, [r2, #2]
+ 421:Service/Srv_DataHub.c ****     *cnt = SrvDataHub_Monitor.data.servo_num;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 29
+
+
+ 1128              		.loc 1 421 5 is_stmt 1 view .LVU326
+ 421:Service/Srv_DataHub.c ****     *cnt = SrvDataHub_Monitor.data.servo_num;
+ 1129              		.loc 1 421 42 is_stmt 0 view .LVU327
+ 1130 0032 D2F85531 		ldr	r3, [r2, #341]	@ unaligned
+ 421:Service/Srv_DataHub.c ****     *cnt = SrvDataHub_Monitor.data.servo_num;
+ 1131              		.loc 1 421 17 view .LVU328
+ 1132 0036 2360     		str	r3, [r4]
+ 422:Service/Srv_DataHub.c **** 
+ 1133              		.loc 1 422 5 is_stmt 1 view .LVU329
+ 422:Service/Srv_DataHub.c **** 
+ 1134              		.loc 1 422 35 is_stmt 0 view .LVU330
+ 1135 0038 92F85A21 		ldrb	r2, [r2, #346]	@ zero_extendqisi2
+ 422:Service/Srv_DataHub.c **** 
+ 1136              		.loc 1 422 10 view .LVU331
+ 1137 003c 2A70     		strb	r2, [r5]
+ 424:Service/Srv_DataHub.c ****     {
+ 1138              		.loc 1 424 5 is_stmt 1 view .LVU332
+ 424:Service/Srv_DataHub.c ****     {
+ 1139              		.loc 1 424 8 is_stmt 0 view .LVU333
+ 1140 003e 002A     		cmp	r2, #0
+ 1141 0040 EDD0     		beq	.L75
+ 426:Service/Srv_DataHub.c ****         memcpy(servo_dir, SrvDataHub_Monitor.data.servo_dir, *cnt);
+ 1142              		.loc 1 426 9 is_stmt 1 view .LVU334
+ 1143 0042 DFF83080 		ldr	r8, .L79
+ 1144 0046 08F27B11 		addw	r1, r8, #379
+ 1145 004a 3846     		mov	r0, r7
+ 1146 004c FFF7FEFF 		bl	memcpy
+ 1147              	.LVL65:
+ 427:Service/Srv_DataHub.c ****     }
+ 1148              		.loc 1 427 9 view .LVU335
+ 1149 0050 2A78     		ldrb	r2, [r5]	@ zero_extendqisi2
+ 1150 0052 08F26311 		addw	r1, r8, #355
+ 1151 0056 3046     		mov	r0, r6
+ 1152 0058 FFF7FEFF 		bl	memcpy
+ 1153              	.LVL66:
+ 1154 005c DFE7     		b	.L75
+ 1155              	.L78:
+ 431:Service/Srv_DataHub.c ****         goto reupdate_servo_channel;
+ 432:Service/Srv_DataHub.c **** 
+ 433:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
+ 1156              		.loc 1 433 5 view .LVU336
+ 1157              		.loc 1 433 47 is_stmt 0 view .LVU337
+ 1158 005e 054B     		ldr	r3, .L79
+ 1159 0060 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 1160 0062 6FF3C302 		bfc	r2, #3, #1
+ 1161 0066 9A70     		strb	r2, [r3, #2]
+ 434:Service/Srv_DataHub.c **** 
+ 435:Service/Srv_DataHub.c ****     return true;
+ 1162              		.loc 1 435 5 is_stmt 1 view .LVU338
+ 1163              		.loc 1 435 12 is_stmt 0 view .LVU339
+ 1164 0068 0120     		movs	r0, #1
+ 1165              	.LVL67:
+ 1166              	.L73:
+ 436:Service/Srv_DataHub.c **** }
+ 1167              		.loc 1 436 1 view .LVU340
+ 1168 006a BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 1169              	.LVL68:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 30
+
+
+ 1170              	.L76:
+ 416:Service/Srv_DataHub.c **** 
+ 1171              		.loc 1 416 16 view .LVU341
+ 1172 006e 0020     		movs	r0, #0
+ 1173 0070 FBE7     		b	.L73
+ 1174              	.L80:
+ 1175 0072 00BF     		.align	2
+ 1176              	.L79:
+ 1177 0074 00000000 		.word	.LANCHOR0
+ 1178              		.cfi_endproc
+ 1179              	.LFE163:
+ 1181              		.section	.text.SrvDataHub_Get_MotoChannel,"ax",%progbits
+ 1182              		.align	1
+ 1183              		.syntax unified
+ 1184              		.thumb
+ 1185              		.thumb_func
+ 1186              		.fpu fpv5-d16
+ 1188              	SrvDataHub_Get_MotoChannel:
+ 1189              	.LVL69:
+ 1190              	.LFB162:
+ 389:Service/Srv_DataHub.c ****     if ((cnt == NULL) || (moto_ch == NULL))
+ 1191              		.loc 1 389 1 is_stmt 1 view -0
+ 1192              		.cfi_startproc
+ 1193              		@ args = 0, pretend = 0, frame = 0
+ 1194              		@ frame_needed = 0, uses_anonymous_args = 0
+ 389:Service/Srv_DataHub.c ****     if ((cnt == NULL) || (moto_ch == NULL))
+ 1195              		.loc 1 389 1 is_stmt 0 view .LVU343
+ 1196 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 1197              	.LCFI10:
+ 1198              		.cfi_def_cfa_offset 24
+ 1199              		.cfi_offset 4, -24
+ 1200              		.cfi_offset 5, -20
+ 1201              		.cfi_offset 6, -16
+ 1202              		.cfi_offset 7, -12
+ 1203              		.cfi_offset 8, -8
+ 1204              		.cfi_offset 14, -4
+ 1205 0004 0446     		mov	r4, r0
+ 1206 0006 1E46     		mov	r6, r3
+ 390:Service/Srv_DataHub.c ****         return false;
+ 1207              		.loc 1 390 5 is_stmt 1 view .LVU344
+ 390:Service/Srv_DataHub.c ****         return false;
+ 1208              		.loc 1 390 14 is_stmt 0 view .LVU345
+ 1209 0008 0D46     		mov	r5, r1
+ 390:Service/Srv_DataHub.c ****         return false;
+ 1210              		.loc 1 390 35 view .LVU346
+ 1211 000a 1746     		mov	r7, r2
+ 390:Service/Srv_DataHub.c ****         return false;
+ 1212              		.loc 1 390 8 view .LVU347
+ 1213 000c 002A     		cmp	r2, #0
+ 1214 000e 18BF     		it	ne
+ 1215 0010 0029     		cmpne	r1, #0
+ 1216 0012 06D1     		bne	.L83
+ 391:Service/Srv_DataHub.c **** 
+ 1217              		.loc 1 391 16 view .LVU348
+ 1218 0014 0020     		movs	r0, #0
+ 1219              	.LVL70:
+ 391:Service/Srv_DataHub.c **** 
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 31
+
+
+ 1220              		.loc 1 391 16 view .LVU349
+ 1221 0016 25E0     		b	.L82
+ 1222              	.LVL71:
+ 1223              	.L84:
+ 405:Service/Srv_DataHub.c ****         goto reupdate_moto_channel;
+ 1224              		.loc 1 405 5 is_stmt 1 view .LVU350
+ 405:Service/Srv_DataHub.c ****         goto reupdate_moto_channel;
+ 1225              		.loc 1 405 9 is_stmt 0 view .LVU351
+ 1226 0018 134B     		ldr	r3, .L88
+ 1227 001a 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 405:Service/Srv_DataHub.c ****         goto reupdate_moto_channel;
+ 1228              		.loc 1 405 8 view .LVU352
+ 1229 001c 13F0080F 		tst	r3, #8
+ 1230 0020 1AD1     		bne	.L87
+ 1231              	.L83:
+ 394:Service/Srv_DataHub.c **** 
+ 1232              		.loc 1 394 5 is_stmt 1 view .LVU353
+ 394:Service/Srv_DataHub.c **** 
+ 1233              		.loc 1 394 47 is_stmt 0 view .LVU354
+ 1234 0022 114A     		ldr	r2, .L88
+ 1235 0024 9178     		ldrb	r1, [r2, #2]	@ zero_extendqisi2
+ 1236 0026 41F00801 		orr	r1, r1, #8
+ 1237 002a 9170     		strb	r1, [r2, #2]
+ 396:Service/Srv_DataHub.c ****     *cnt = SrvDataHub_Monitor.data.moto_num;
+ 1238              		.loc 1 396 5 is_stmt 1 view .LVU355
+ 396:Service/Srv_DataHub.c ****     *cnt = SrvDataHub_Monitor.data.moto_num;
+ 1239              		.loc 1 396 42 is_stmt 0 view .LVU356
+ 1240 002c D2F85531 		ldr	r3, [r2, #341]	@ unaligned
+ 396:Service/Srv_DataHub.c ****     *cnt = SrvDataHub_Monitor.data.moto_num;
+ 1241              		.loc 1 396 17 view .LVU357
+ 1242 0030 2360     		str	r3, [r4]
+ 397:Service/Srv_DataHub.c **** 
+ 1243              		.loc 1 397 5 is_stmt 1 view .LVU358
+ 397:Service/Srv_DataHub.c **** 
+ 1244              		.loc 1 397 35 is_stmt 0 view .LVU359
+ 1245 0032 92F85921 		ldrb	r2, [r2, #345]	@ zero_extendqisi2
+ 397:Service/Srv_DataHub.c **** 
+ 1246              		.loc 1 397 10 view .LVU360
+ 1247 0036 2A70     		strb	r2, [r5]
+ 399:Service/Srv_DataHub.c ****     {
+ 1248              		.loc 1 399 5 is_stmt 1 view .LVU361
+ 399:Service/Srv_DataHub.c ****     {
+ 1249              		.loc 1 399 8 is_stmt 0 view .LVU362
+ 1250 0038 002A     		cmp	r2, #0
+ 1251 003a EDD0     		beq	.L84
+ 401:Service/Srv_DataHub.c ****         memcpy(moto_dir, SrvDataHub_Monitor.data.moto_dir, *cnt);
+ 1252              		.loc 1 401 9 is_stmt 1 view .LVU363
+ 1253 003c DFF82880 		ldr	r8, .L88
+ 1254 0040 08F26B11 		addw	r1, r8, #363
+ 1255 0044 3846     		mov	r0, r7
+ 1256 0046 FFF7FEFF 		bl	memcpy
+ 1257              	.LVL72:
+ 402:Service/Srv_DataHub.c ****     }
+ 1258              		.loc 1 402 9 view .LVU364
+ 1259 004a 2A78     		ldrb	r2, [r5]	@ zero_extendqisi2
+ 1260 004c 08F25B11 		addw	r1, r8, #347
+ 1261 0050 3046     		mov	r0, r6
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 32
+
+
+ 1262 0052 FFF7FEFF 		bl	memcpy
+ 1263              	.LVL73:
+ 1264 0056 DFE7     		b	.L84
+ 1265              	.L87:
+ 408:Service/Srv_DataHub.c **** 
+ 1266              		.loc 1 408 5 view .LVU365
+ 408:Service/Srv_DataHub.c **** 
+ 1267              		.loc 1 408 47 is_stmt 0 view .LVU366
+ 1268 0058 034B     		ldr	r3, .L88
+ 1269 005a 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 1270 005c 6FF3C302 		bfc	r2, #3, #1
+ 1271 0060 9A70     		strb	r2, [r3, #2]
+ 410:Service/Srv_DataHub.c **** }
+ 1272              		.loc 1 410 5 is_stmt 1 view .LVU367
+ 410:Service/Srv_DataHub.c **** }
+ 1273              		.loc 1 410 12 is_stmt 0 view .LVU368
+ 1274 0062 0120     		movs	r0, #1
+ 1275              	.L82:
+ 411:Service/Srv_DataHub.c **** 
+ 1276              		.loc 1 411 1 view .LVU369
+ 1277 0064 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 1278              	.LVL74:
+ 1279              	.L89:
+ 411:Service/Srv_DataHub.c **** 
+ 1280              		.loc 1 411 1 view .LVU370
+ 1281              		.align	2
+ 1282              	.L88:
+ 1283 0068 00000000 		.word	.LANCHOR0
+ 1284              		.cfi_endproc
+ 1285              	.LFE162:
+ 1287              		.section	.text.SrvDataHub_Init,"ax",%progbits
+ 1288              		.align	1
+ 1289              		.syntax unified
+ 1290              		.thumb
+ 1291              		.thumb_func
+ 1292              		.fpu fpv5-d16
+ 1294              	SrvDataHub_Init:
+ 1295              	.LFB151:
+  47:Service/Srv_DataHub.c ****     if (SrvDataHub_Monitor.init_state)
+ 1296              		.loc 1 47 1 is_stmt 1 view -0
+ 1297              		.cfi_startproc
+ 1298              		@ args = 0, pretend = 0, frame = 0
+ 1299              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1300 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 1301              	.LCFI11:
+ 1302              		.cfi_def_cfa_offset 32
+ 1303              		.cfi_offset 3, -32
+ 1304              		.cfi_offset 4, -28
+ 1305              		.cfi_offset 5, -24
+ 1306              		.cfi_offset 6, -20
+ 1307              		.cfi_offset 7, -16
+ 1308              		.cfi_offset 8, -12
+ 1309              		.cfi_offset 9, -8
+ 1310              		.cfi_offset 14, -4
+  48:Service/Srv_DataHub.c ****         return;
+ 1311              		.loc 1 48 5 view .LVU372
+  48:Service/Srv_DataHub.c ****         return;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 33
+
+
+ 1312              		.loc 1 48 27 is_stmt 0 view .LVU373
+ 1313 0004 1A4B     		ldr	r3, .L94
+ 1314 0006 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  48:Service/Srv_DataHub.c ****         return;
+ 1315              		.loc 1 48 8 view .LVU374
+ 1316 0008 0BB1     		cbz	r3, .L93
+ 1317              	.L90:
+  71:Service/Srv_DataHub.c **** 
+ 1318              		.loc 1 71 1 view .LVU375
+ 1319 000a BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 1320              	.L93:
+  51:Service/Srv_DataHub.c **** 
+ 1321              		.loc 1 51 5 is_stmt 1 view .LVU376
+ 1322 000e 184E     		ldr	r6, .L94
+ 1323 0010 40F28318 		movw	r8, #387
+ 1324 0014 4246     		mov	r2, r8
+ 1325 0016 0021     		movs	r1, #0
+ 1326 0018 3046     		mov	r0, r6
+ 1327 001a FFF7FEFF 		bl	memset
+ 1328              	.LVL75:
+  54:Service/Srv_DataHub.c ****     IMU_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlIMU_Data);
+ 1329              		.loc 1 54 5 view .LVU377
+ 1330 001e 154C     		ldr	r4, .L94+4
+ 1331 0020 4F22     		movs	r2, #79
+ 1332 0022 0021     		movs	r1, #0
+ 1333 0024 2046     		mov	r0, r4
+ 1334 0026 FFF7FEFF 		bl	memset
+ 1335              	.LVL76:
+  55:Service/Srv_DataHub.c ****     IMU_hub_DataPipe.data_size = DataPipe_DataSize(PtlIMU_Data);
+ 1336              		.loc 1 55 5 view .LVU378
+  55:Service/Srv_DataHub.c ****     IMU_hub_DataPipe.data_size = DataPipe_DataSize(PtlIMU_Data);
+ 1337              		.loc 1 55 32 is_stmt 0 view .LVU379
+ 1338 002a 134B     		ldr	r3, .L94+8
+ 1339 002c C3F81140 		str	r4, [r3, #17]	@ unaligned
+  56:Service/Srv_DataHub.c ****     IMU_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+ 1340              		.loc 1 56 5 is_stmt 1 view .LVU380
+  56:Service/Srv_DataHub.c ****     IMU_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+ 1341              		.loc 1 56 32 is_stmt 0 view .LVU381
+ 1342 0030 0025     		movs	r5, #0
+ 1343 0032 4F22     		movs	r2, #79
+ 1344 0034 5A75     		strb	r2, [r3, #21]
+ 1345 0036 9D75     		strb	r5, [r3, #22]
+  57:Service/Srv_DataHub.c ****     // DataPipe_Set_RxInterval(&IMU_hub_DataPipe, Runtime_MsToUs(5)); /* limit pipe frequence to 20
+ 1346              		.loc 1 57 5 is_stmt 1 view .LVU382
+  57:Service/Srv_DataHub.c ****     // DataPipe_Set_RxInterval(&IMU_hub_DataPipe, Runtime_MsToUs(5)); /* limit pipe frequence to 20
+ 1347              		.loc 1 57 38 is_stmt 0 view .LVU383
+ 1348 0038 DFF84490 		ldr	r9, .L94+16
+ 1349 003c C3F81790 		str	r9, [r3, #23]	@ unaligned
+  59:Service/Srv_DataHub.c **** 
+ 1350              		.loc 1 59 5 is_stmt 1 view .LVU384
+ 1351              	.LVL77:
+ 1352              	.LBB10:
+ 1353              	.LBI10:
+ 1354              		.file 2 "System/DataPipe/DataPipe.h"
+   1:System/DataPipe/DataPipe.h **** #ifndef __DATAPIPE_H
+   2:System/DataPipe/DataPipe.h **** #define __DATAPIPE_H
+   3:System/DataPipe/DataPipe.h **** 
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 34
+
+
+   4:System/DataPipe/DataPipe.h **** #include <stdint.h>
+   5:System/DataPipe/DataPipe.h **** #include <string.h>
+   6:System/DataPipe/DataPipe.h **** #include <stdbool.h>
+   7:System/DataPipe/DataPipe.h **** 
+   8:System/DataPipe/DataPipe.h **** typedef void (*Pipe_TransFinish_Callback)(void *pipe_obj);
+   9:System/DataPipe/DataPipe.h **** typedef void (*Pipe_TransError_Callback)(void *pipe_obj);
+  10:System/DataPipe/DataPipe.h **** typedef void (*Pipe_TimeOutProc_Callback)(void *pipe_obj);
+  11:System/DataPipe/DataPipe.h **** 
+  12:System/DataPipe/DataPipe.h **** #define DataPipeHandleToObj(x) ((DataPipeObj_TypeDef *)x)
+  13:System/DataPipe/DataPipe.h **** #define DataPipe_CreateDataObj(type, name) static type name##_##PipeDataObj __attribute__((section(
+  14:System/DataPipe/DataPipe.h **** #define DataPipe_DataObjAddr(name) (&name##_##PipeDataObj)
+  15:System/DataPipe/DataPipe.h **** #define DataPipe_DataObj(name) name##_##PipeDataObj
+  16:System/DataPipe/DataPipe.h **** #define DataPipe_DataSize(name) sizeof(name##_##PipeDataObj)
+  17:System/DataPipe/DataPipe.h **** 
+  18:System/DataPipe/DataPipe.h **** typedef enum
+  19:System/DataPipe/DataPipe.h **** {
+  20:System/DataPipe/DataPipe.h ****     Pipe_UnReady = 0,
+  21:System/DataPipe/DataPipe.h ****     Pipe_Ready,
+  22:System/DataPipe/DataPipe.h ****     Pipe_Busy,
+  23:System/DataPipe/DataPipe.h ****     Pipe_Error,
+  24:System/DataPipe/DataPipe.h **** } DataPipe_State_List;
+  25:System/DataPipe/DataPipe.h **** 
+  26:System/DataPipe/DataPipe.h **** #pragma pack(1)
+  27:System/DataPipe/DataPipe.h **** typedef struct
+  28:System/DataPipe/DataPipe.h **** {
+  29:System/DataPipe/DataPipe.h ****     uint32_t min_rx_interval;
+  30:System/DataPipe/DataPipe.h ****     uint32_t detect_interval;
+  31:System/DataPipe/DataPipe.h ****     uint64_t rx_us_rt;
+  32:System/DataPipe/DataPipe.h **** 
+  33:System/DataPipe/DataPipe.h ****     bool enable;
+  34:System/DataPipe/DataPipe.h **** 
+  35:System/DataPipe/DataPipe.h ****     uint32_t data_addr;
+  36:System/DataPipe/DataPipe.h ****     uint16_t data_size;
+  37:System/DataPipe/DataPipe.h **** 
+  38:System/DataPipe/DataPipe.h ****     Pipe_TransFinish_Callback trans_finish_cb;
+  39:System/DataPipe/DataPipe.h ****     Pipe_TransError_Callback trans_error_cb;
+  40:System/DataPipe/DataPipe.h **** 
+  41:System/DataPipe/DataPipe.h ****     uint32_t tx_cnt;
+  42:System/DataPipe/DataPipe.h ****     uint32_t rx_cnt;
+  43:System/DataPipe/DataPipe.h ****     uint32_t er_cnt;
+  44:System/DataPipe/DataPipe.h **** } DataPipeObj_TypeDef;
+  45:System/DataPipe/DataPipe.h **** #pragma pack()
+  46:System/DataPipe/DataPipe.h **** 
+  47:System/DataPipe/DataPipe.h **** typedef struct
+  48:System/DataPipe/DataPipe.h **** {
+  49:System/DataPipe/DataPipe.h ****     DataPipeObj_TypeDef *org;
+  50:System/DataPipe/DataPipe.h ****     DataPipeObj_TypeDef *dst;
+  51:System/DataPipe/DataPipe.h **** } Data_PlugedPipeObj_TypeDef;
+  52:System/DataPipe/DataPipe.h **** 
+  53:System/DataPipe/DataPipe.h **** bool DataPipe_Init(void);
+  54:System/DataPipe/DataPipe.h **** bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst);
+  55:System/DataPipe/DataPipe.h **** bool DataPipe_DealError(void);
+  56:System/DataPipe/DataPipe.h **** 
+  57:System/DataPipe/DataPipe.h **** inline bool DataPipe_Enable(DataPipeObj_TypeDef *obj)
+ 1355              		.loc 2 57 13 view .LVU385
+ 1356              	.LBB11:
+  58:System/DataPipe/DataPipe.h **** {
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 35
+
+
+  59:System/DataPipe/DataPipe.h ****     if (obj == NULL)
+ 1357              		.loc 2 59 5 view .LVU386
+  60:System/DataPipe/DataPipe.h ****         return false;
+  61:System/DataPipe/DataPipe.h **** 
+  62:System/DataPipe/DataPipe.h ****     obj->enable = true;
+ 1358              		.loc 2 62 5 view .LVU387
+ 1359              		.loc 2 62 17 is_stmt 0 view .LVU388
+ 1360 0040 0127     		movs	r7, #1
+ 1361 0042 1F74     		strb	r7, [r3, #16]
+  63:System/DataPipe/DataPipe.h **** 
+  64:System/DataPipe/DataPipe.h ****     return true;
+ 1362              		.loc 2 64 5 is_stmt 1 view .LVU389
+ 1363              	.LVL78:
+ 1364              		.loc 2 64 5 is_stmt 0 view .LVU390
+ 1365              	.LBE11:
+ 1366              	.LBE10:
+  62:Service/Srv_DataHub.c ****     Receiver_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
+ 1367              		.loc 1 62 5 is_stmt 1 view .LVU391
+ 1368 0044 5034     		adds	r4, r4, #80
+ 1369 0046 5822     		movs	r2, #88
+ 1370 0048 2946     		mov	r1, r5
+ 1371 004a 2046     		mov	r0, r4
+ 1372 004c FFF7FEFF 		bl	memset
+ 1373              	.LVL79:
+  63:Service/Srv_DataHub.c ****     Receiver_hub_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
+ 1374              		.loc 1 63 5 view .LVU392
+  63:Service/Srv_DataHub.c ****     Receiver_hub_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
+ 1375              		.loc 1 63 37 is_stmt 0 view .LVU393
+ 1376 0050 0A4B     		ldr	r3, .L94+12
+ 1377 0052 C3F81140 		str	r4, [r3, #17]	@ unaligned
+  64:Service/Srv_DataHub.c ****     Receiver_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+ 1378              		.loc 1 64 5 is_stmt 1 view .LVU394
+  64:Service/Srv_DataHub.c ****     Receiver_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+ 1379              		.loc 1 64 37 is_stmt 0 view .LVU395
+ 1380 0056 5822     		movs	r2, #88
+ 1381 0058 5A75     		strb	r2, [r3, #21]
+ 1382 005a 9D75     		strb	r5, [r3, #22]
+  65:Service/Srv_DataHub.c ****     // DataPipe_Set_RxInterval(&Receiver_hub_DataPipe, Runtime_MsToUs(20)); /* limit pipe frequence
+ 1383              		.loc 1 65 5 is_stmt 1 view .LVU396
+  65:Service/Srv_DataHub.c ****     // DataPipe_Set_RxInterval(&Receiver_hub_DataPipe, Runtime_MsToUs(20)); /* limit pipe frequence
+ 1384              		.loc 1 65 43 is_stmt 0 view .LVU397
+ 1385 005c C3F81790 		str	r9, [r3, #23]	@ unaligned
+  67:Service/Srv_DataHub.c **** 
+ 1386              		.loc 1 67 5 is_stmt 1 view .LVU398
+ 1387              	.LVL80:
+ 1388              	.LBB12:
+ 1389              	.LBI12:
+  57:System/DataPipe/DataPipe.h **** {
+ 1390              		.loc 2 57 13 view .LVU399
+ 1391              	.LBB13:
+  59:System/DataPipe/DataPipe.h ****         return false;
+ 1392              		.loc 2 59 5 view .LVU400
+  62:System/DataPipe/DataPipe.h **** 
+ 1393              		.loc 2 62 5 view .LVU401
+  62:System/DataPipe/DataPipe.h **** 
+ 1394              		.loc 2 62 17 is_stmt 0 view .LVU402
+ 1395 0060 1F74     		strb	r7, [r3, #16]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 36
+
+
+ 1396              		.loc 2 64 5 is_stmt 1 view .LVU403
+ 1397              	.LVL81:
+ 1398              		.loc 2 64 5 is_stmt 0 view .LVU404
+ 1399              	.LBE13:
+ 1400              	.LBE12:
+  69:Service/Srv_DataHub.c ****     SrvDataHub_Monitor.init_state = true;
+ 1401              		.loc 1 69 5 is_stmt 1 view .LVU405
+ 1402 0062 4246     		mov	r2, r8
+ 1403 0064 2946     		mov	r1, r5
+ 1404 0066 3046     		mov	r0, r6
+ 1405 0068 FFF7FEFF 		bl	memset
+ 1406              	.LVL82:
+  70:Service/Srv_DataHub.c **** }
+ 1407              		.loc 1 70 5 view .LVU406
+  70:Service/Srv_DataHub.c **** }
+ 1408              		.loc 1 70 35 is_stmt 0 view .LVU407
+ 1409 006c 3770     		strb	r7, [r6]
+ 1410 006e CCE7     		b	.L90
+ 1411              	.L95:
+ 1412              		.align	2
+ 1413              	.L94:
+ 1414 0070 00000000 		.word	.LANCHOR0
+ 1415 0074 00000000 		.word	.LANCHOR1
+ 1416 0078 00000000 		.word	IMU_hub_DataPipe
+ 1417 007c 00000000 		.word	Receiver_hub_DataPipe
+ 1418 0080 00000000 		.word	SrvComProto_PipeRcTelemtryDataFinish_Callback
+ 1419              		.cfi_endproc
+ 1420              	.LFE151:
+ 1422              		.section	.text.SrvComProto_PipeRcTelemtryDataFinish_Callback,"ax",%progbits
+ 1423              		.align	1
+ 1424              		.syntax unified
+ 1425              		.thumb
+ 1426              		.thumb_func
+ 1427              		.fpu fpv5-d16
+ 1429              	SrvComProto_PipeRcTelemtryDataFinish_Callback:
+ 1430              	.LVL83:
+ 1431              	.LFB152:
+  74:Service/Srv_DataHub.c ****     if ((!SrvDataHub_Monitor.init_state) || (obj == NULL))
+ 1432              		.loc 1 74 1 is_stmt 1 view -0
+ 1433              		.cfi_startproc
+ 1434              		@ args = 0, pretend = 0, frame = 0
+ 1435              		@ frame_needed = 0, uses_anonymous_args = 0
+  75:Service/Srv_DataHub.c ****         return;
+ 1436              		.loc 1 75 5 view .LVU409
+  75:Service/Srv_DataHub.c ****         return;
+ 1437              		.loc 1 75 29 is_stmt 0 view .LVU410
+ 1438 0000 834B     		ldr	r3, .L118
+ 1439 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  75:Service/Srv_DataHub.c ****         return;
+ 1440              		.loc 1 75 8 view .LVU411
+ 1441 0004 53B1     		cbz	r3, .L111
+  75:Service/Srv_DataHub.c ****         return;
+ 1442              		.loc 1 75 42 discriminator 1 view .LVU412
+ 1443 0006 48B1     		cbz	r0, .L111
+  78:Service/Srv_DataHub.c ****     {
+ 1444              		.loc 1 78 5 is_stmt 1 view .LVU413
+  78:Service/Srv_DataHub.c ****     {
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 37
+
+
+ 1445              		.loc 1 78 8 is_stmt 0 view .LVU414
+ 1446 0008 824B     		ldr	r3, .L118+4
+ 1447 000a 9842     		cmp	r0, r3
+ 1448 000c 07D0     		beq	.L114
+ 102:Service/Srv_DataHub.c ****     {
+ 1449              		.loc 1 102 10 is_stmt 1 view .LVU415
+ 102:Service/Srv_DataHub.c ****     {
+ 1450              		.loc 1 102 13 is_stmt 0 view .LVU416
+ 1451 000e 824B     		ldr	r3, .L118+8
+ 1452 0010 9842     		cmp	r0, r3
+ 1453 0012 52D0     		beq	.L115
+ 139:Service/Srv_DataHub.c ****     {
+ 1454              		.loc 1 139 10 is_stmt 1 view .LVU417
+ 139:Service/Srv_DataHub.c ****     {
+ 1455              		.loc 1 139 13 is_stmt 0 view .LVU418
+ 1456 0014 814B     		ldr	r3, .L118+12
+ 1457 0016 9842     		cmp	r0, r3
+ 1458 0018 00F0A280 		beq	.L116
+ 1459              	.L111:
+ 1460 001c 7047     		bx	lr
+ 1461              	.L114:
+  80:Service/Srv_DataHub.c **** 
+ 1462              		.loc 1 80 9 is_stmt 1 view .LVU419
+  80:Service/Srv_DataHub.c **** 
+ 1463              		.loc 1 80 46 is_stmt 0 view .LVU420
+ 1464 001e 7C4B     		ldr	r3, .L118
+ 1465 0020 1A79     		ldrb	r2, [r3, #4]	@ zero_extendqisi2
+ 1466 0022 42F00402 		orr	r2, r2, #4
+ 1467 0026 1A71     		strb	r2, [r3, #4]
+  82:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+ 1468              		.loc 1 82 9 is_stmt 1 view .LVU421
+  82:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+ 1469              		.loc 1 82 13 is_stmt 0 view .LVU422
+ 1470 0028 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+  82:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+ 1471              		.loc 1 82 12 view .LVU423
+ 1472 002a 13F0040F 		tst	r3, #4
+ 1473 002e 04D0     		beq	.L99
+  83:Service/Srv_DataHub.c **** 
+ 1474              		.loc 1 83 13 is_stmt 1 view .LVU424
+  83:Service/Srv_DataHub.c **** 
+ 1475              		.loc 1 83 49 is_stmt 0 view .LVU425
+ 1476 0030 774B     		ldr	r3, .L118
+ 1477 0032 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 1478 0034 6FF38202 		bfc	r2, #2, #1
+ 1479 0038 9A70     		strb	r2, [r3, #2]
+ 1480              	.L99:
+  85:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Proto_Rc).arm_state;
+ 1481              		.loc 1 85 9 is_stmt 1 view .LVU426
+  85:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Proto_Rc).arm_state;
+ 1482              		.loc 1 85 76 is_stmt 0 view .LVU427
+ 1483 003a 794A     		ldr	r2, .L118+16
+ 1484 003c D2F86310 		ldr	r1, [r2, #99]	@ unaligned
+  85:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Proto_Rc).arm_state;
+ 1485              		.loc 1 85 48 view .LVU428
+ 1486 0040 734B     		ldr	r3, .L118
+ 1487 0042 C3F8A310 		str	r1, [r3, #163]	@ unaligned
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 38
+
+
+  86:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.mode = DataPipe_DataObj(Proto_Rc).control_mode;
+ 1488              		.loc 1 86 9 is_stmt 1 view .LVU429
+  86:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.mode = DataPipe_DataObj(Proto_Rc).control_mode;
+ 1489              		.loc 1 86 65 is_stmt 0 view .LVU430
+ 1490 0046 92F85010 		ldrb	r1, [r2, #80]	@ zero_extendqisi2
+  86:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.mode = DataPipe_DataObj(Proto_Rc).control_mode;
+ 1491              		.loc 1 86 37 view .LVU431
+ 1492 004a 83F8A710 		strb	r1, [r3, #167]
+  87:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.buzz = DataPipe_DataObj(Proto_Rc).buzz_state;
+ 1493              		.loc 1 87 9 is_stmt 1 view .LVU432
+  87:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.buzz = DataPipe_DataObj(Proto_Rc).buzz_state;
+ 1494              		.loc 1 87 66 is_stmt 0 view .LVU433
+ 1495 004e 92F85C10 		ldrb	r1, [r2, #92]	@ zero_extendqisi2
+  87:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.buzz = DataPipe_DataObj(Proto_Rc).buzz_state;
+ 1496              		.loc 1 87 38 view .LVU434
+ 1497 0052 83F8AC10 		strb	r1, [r3, #172]
+  88:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Proto_Rc).failsafe;
+ 1498              		.loc 1 88 9 is_stmt 1 view .LVU435
+  88:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Proto_Rc).failsafe;
+ 1499              		.loc 1 88 66 is_stmt 0 view .LVU436
+ 1500 0056 92F85110 		ldrb	r1, [r2, #81]	@ zero_extendqisi2
+  88:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Proto_Rc).failsafe;
+ 1501              		.loc 1 88 38 view .LVU437
+ 1502 005a 83F8AA10 		strb	r1, [r3, #170]
+  89:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.channel_sum = DataPipe_DataObj(Proto_Rc).channel_sum;
+ 1503              		.loc 1 89 9 is_stmt 1 view .LVU438
+  89:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.channel_sum = DataPipe_DataObj(Proto_Rc).channel_sum;
+ 1504              		.loc 1 89 70 is_stmt 0 view .LVU439
+ 1505 005e 92F85310 		ldrb	r1, [r2, #83]	@ zero_extendqisi2
+  89:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.channel_sum = DataPipe_DataObj(Proto_Rc).channel_sum;
+ 1506              		.loc 1 89 42 view .LVU440
+ 1507 0062 83F8A810 		strb	r1, [r3, #168]
+  90:Service/Srv_DataHub.c **** 
+ 1508              		.loc 1 90 9 is_stmt 1 view .LVU441
+  90:Service/Srv_DataHub.c **** 
+ 1509              		.loc 1 90 73 is_stmt 0 view .LVU442
+ 1510 0066 92F867C0 		ldrb	ip, [r2, #103]	@ zero_extendqisi2
+  90:Service/Srv_DataHub.c **** 
+ 1511              		.loc 1 90 45 view .LVU443
+ 1512 006a 83F8ADC0 		strb	ip, [r3, #173]
+  92:Service/Srv_DataHub.c ****         {
+ 1513              		.loc 1 92 9 is_stmt 1 view .LVU444
+ 1514              	.LBB14:
+  92:Service/Srv_DataHub.c ****         {
+ 1515              		.loc 1 92 14 view .LVU445
+ 1516              	.LVL84:
+  92:Service/Srv_DataHub.c ****         {
+ 1517              		.loc 1 92 22 is_stmt 0 view .LVU446
+ 1518 006e 0023     		movs	r3, #0
+  92:Service/Srv_DataHub.c ****         {
+ 1519              		.loc 1 92 9 view .LVU447
+ 1520 0070 01E0     		b	.L100
+ 1521              	.LVL85:
+ 1522              	.L101:
+  92:Service/Srv_DataHub.c ****         {
+ 1523              		.loc 1 92 70 is_stmt 1 discriminator 2 view .LVU448
+  92:Service/Srv_DataHub.c ****         {
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 39
+
+
+ 1524              		.loc 1 92 71 is_stmt 0 discriminator 2 view .LVU449
+ 1525 0072 0133     		adds	r3, r3, #1
+ 1526              	.LVL86:
+  92:Service/Srv_DataHub.c ****         {
+ 1527              		.loc 1 92 71 discriminator 2 view .LVU450
+ 1528 0074 DBB2     		uxtb	r3, r3
+ 1529              	.LVL87:
+ 1530              	.L100:
+  92:Service/Srv_DataHub.c ****         {
+ 1531              		.loc 1 92 29 is_stmt 1 discriminator 1 view .LVU451
+  92:Service/Srv_DataHub.c ****         {
+ 1532              		.loc 1 92 9 is_stmt 0 discriminator 1 view .LVU452
+ 1533 0076 9C45     		cmp	ip, r3
+ 1534 0078 19D9     		bls	.L117
+  94:Service/Srv_DataHub.c **** 
+ 1535              		.loc 1 94 13 is_stmt 1 view .LVU453
+  94:Service/Srv_DataHub.c **** 
+ 1536              		.loc 1 94 79 is_stmt 0 view .LVU454
+ 1537 007a 03F10C02 		add	r2, r3, #12
+ 1538 007e 6849     		ldr	r1, .L118+16
+ 1539 0080 01EB4202 		add	r2, r1, r2, lsl #1
+ 1540 0084 B2F85000 		ldrh	r0, [r2, #80]
+  94:Service/Srv_DataHub.c **** 
+ 1541              		.loc 1 94 43 view .LVU455
+ 1542 0088 03F15402 		add	r2, r3, #84
+ 1543 008c 6049     		ldr	r1, .L118
+ 1544 008e 01EB4202 		add	r2, r1, r2, lsl #1
+ 1545 0092 D080     		strh	r0, [r2, #6]	@ movhi
+  96:Service/Srv_DataHub.c ****                 SrvDataHub_Monitor.data.gimbal[i] = DataPipe_DataObj(Proto_Rc).gimbal_percent[i];
+ 1546              		.loc 1 96 13 is_stmt 1 view .LVU456
+  96:Service/Srv_DataHub.c ****                 SrvDataHub_Monitor.data.gimbal[i] = DataPipe_DataObj(Proto_Rc).gimbal_percent[i];
+ 1547              		.loc 1 96 16 is_stmt 0 view .LVU457
+ 1548 0094 032B     		cmp	r3, #3
+ 1549 0096 ECD8     		bhi	.L101
+  97:Service/Srv_DataHub.c ****         }
+ 1550              		.loc 1 97 17 is_stmt 1 view .LVU458
+  97:Service/Srv_DataHub.c ****         }
+ 1551              		.loc 1 97 94 is_stmt 0 view .LVU459
+ 1552 0098 614A     		ldr	r2, .L118+16
+ 1553 009a 02EB4302 		add	r2, r2, r3, lsl #1
+ 1554 009e B2F85400 		ldrh	r0, [r2, #84]
+  97:Service/Srv_DataHub.c ****         }
+ 1555              		.loc 1 97 51 view .LVU460
+ 1556 00a2 03F17402 		add	r2, r3, #116
+ 1557 00a6 01EB4202 		add	r2, r1, r2, lsl #1
+ 1558 00aa D080     		strh	r0, [r2, #6]	@ movhi
+ 1559 00ac E1E7     		b	.L101
+ 1560              	.L117:
+ 1561              	.LBE14:
+ 100:Service/Srv_DataHub.c ****     }
+ 1562              		.loc 1 100 9 is_stmt 1 view .LVU461
+ 100:Service/Srv_DataHub.c ****     }
+ 1563              		.loc 1 100 46 is_stmt 0 view .LVU462
+ 1564 00ae 584B     		ldr	r3, .L118
+ 1565              	.LVL88:
+ 100:Service/Srv_DataHub.c ****     }
+ 1566              		.loc 1 100 46 view .LVU463
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 40
+
+
+ 1567 00b0 1A79     		ldrb	r2, [r3, #4]	@ zero_extendqisi2
+ 1568 00b2 6FF38202 		bfc	r2, #2, #1
+ 1569 00b6 1A71     		strb	r2, [r3, #4]
+ 1570 00b8 7047     		bx	lr
+ 1571              	.LVL89:
+ 1572              	.L115:
+ 104:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.scaled_imu = true;
+ 1573              		.loc 1 104 9 is_stmt 1 view .LVU464
+ 104:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.scaled_imu = true;
+ 1574              		.loc 1 104 51 is_stmt 0 view .LVU465
+ 1575 00ba 554B     		ldr	r3, .L118
+ 1576 00bc DA78     		ldrb	r2, [r3, #3]	@ zero_extendqisi2
+ 1577 00be 42F00102 		orr	r2, r2, #1
+ 1578 00c2 DA70     		strb	r2, [r3, #3]
+ 105:Service/Srv_DataHub.c **** 
+ 1579              		.loc 1 105 9 is_stmt 1 view .LVU466
+ 105:Service/Srv_DataHub.c **** 
+ 1580              		.loc 1 105 54 is_stmt 0 view .LVU467
+ 1581 00c4 D2B2     		uxtb	r2, r2
+ 1582 00c6 42F00202 		orr	r2, r2, #2
+ 1583 00ca DA70     		strb	r2, [r3, #3]
+ 107:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.raw_imu = false;
+ 1584              		.loc 1 107 9 is_stmt 1 view .LVU468
+ 107:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.raw_imu = false;
+ 1585              		.loc 1 107 13 is_stmt 0 view .LVU469
+ 1586 00cc 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 107:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.raw_imu = false;
+ 1587              		.loc 1 107 12 view .LVU470
+ 1588 00ce 13F0010F 		tst	r3, #1
+ 1589 00d2 04D0     		beq	.L104
+ 108:Service/Srv_DataHub.c **** 
+ 1590              		.loc 1 108 13 is_stmt 1 view .LVU471
+ 108:Service/Srv_DataHub.c **** 
+ 1591              		.loc 1 108 54 is_stmt 0 view .LVU472
+ 1592 00d4 4E4B     		ldr	r3, .L118
+ 1593 00d6 5A78     		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 1594 00d8 6FF30002 		bfc	r2, #0, #1
+ 1595 00dc 5A70     		strb	r2, [r3, #1]
+ 1596              	.L104:
+ 110:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
+ 1597              		.loc 1 110 9 is_stmt 1 view .LVU473
+ 111:Service/Srv_DataHub.c **** 
+ 1598              		.loc 1 111 13 view .LVU474
+ 111:Service/Srv_DataHub.c **** 
+ 1599              		.loc 1 111 58 is_stmt 0 view .LVU475
+ 1600 00de 4C4B     		ldr	r3, .L118
+ 1601 00e0 DA78     		ldrb	r2, [r3, #3]	@ zero_extendqisi2
+ 1602 00e2 6FF34102 		bfc	r2, #1, #1
+ 1603 00e6 DA70     		strb	r2, [r3, #3]
+ 113:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.acc_scale = DataPipe_DataObj(PtlIMU_Data).data.acc_scale;
+ 1604              		.loc 1 113 9 is_stmt 1 view .LVU476
+ 113:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.acc_scale = DataPipe_DataObj(PtlIMU_Data).data.acc_scale;
+ 1605              		.loc 1 113 85 is_stmt 0 view .LVU477
+ 1606 00e8 4D4A     		ldr	r2, .L118+16
+ 1607 00ea 1168     		ldr	r1, [r2]
+ 113:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.acc_scale = DataPipe_DataObj(PtlIMU_Data).data.acc_scale;
+ 1608              		.loc 1 113 49 view .LVU478
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 41
+
+
+ 1609 00ec C3F80510 		str	r1, [r3, #5]	@ unaligned
+ 114:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.gyr_scale = DataPipe_DataObj(PtlIMU_Data).data.gyr_scale;
+ 1610              		.loc 1 114 9 is_stmt 1 view .LVU479
+ 114:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.gyr_scale = DataPipe_DataObj(PtlIMU_Data).data.gyr_scale;
+ 1611              		.loc 1 114 79 is_stmt 0 view .LVU480
+ 1612 00f0 D2F84510 		ldr	r1, [r2, #69]	@ unaligned
+ 114:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.gyr_scale = DataPipe_DataObj(PtlIMU_Data).data.gyr_scale;
+ 1613              		.loc 1 114 43 view .LVU481
+ 1614 00f4 C3F80910 		str	r1, [r3, #9]	@ unaligned
+ 115:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.imu_temp = DataPipe_DataObj(PtlIMU_Data).data.tempera;
+ 1615              		.loc 1 115 9 is_stmt 1 view .LVU482
+ 115:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.imu_temp = DataPipe_DataObj(PtlIMU_Data).data.tempera;
+ 1616              		.loc 1 115 79 is_stmt 0 view .LVU483
+ 1617 00f8 D2F84910 		ldr	r1, [r2, #73]	@ unaligned
+ 115:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.imu_temp = DataPipe_DataObj(PtlIMU_Data).data.tempera;
+ 1618              		.loc 1 115 43 view .LVU484
+ 1619 00fc C3F80D10 		str	r1, [r3, #13]	@ unaligned
+ 116:Service/Srv_DataHub.c **** 
+ 1620              		.loc 1 116 9 is_stmt 1 view .LVU485
+ 116:Service/Srv_DataHub.c **** 
+ 1621              		.loc 1 116 42 is_stmt 0 view .LVU486
+ 1622 0100 D168     		ldr	r1, [r2, #12]	@ float
+ 1623 0102 C3F84110 		str	r1, [r3, #65]	@ unaligned
+ 118:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_acc_y = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_Y];
+ 1624              		.loc 1 118 9 is_stmt 1 view .LVU487
+ 118:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_acc_y = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_Y];
+ 1625              		.loc 1 118 43 is_stmt 0 view .LVU488
+ 1626 0106 D169     		ldr	r1, [r2, #28]	@ float
+ 1627 0108 C3F82910 		str	r1, [r3, #41]	@ unaligned
+ 119:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_acc_z = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_Z];
+ 1628              		.loc 1 119 9 is_stmt 1 view .LVU489
+ 119:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_acc_z = DataPipe_DataObj(PtlIMU_Data).data.flt_acc[Axis_Z];
+ 1629              		.loc 1 119 43 is_stmt 0 view .LVU490
+ 1630 010c 116A     		ldr	r1, [r2, #32]	@ float
+ 1631 010e C3F82D10 		str	r1, [r3, #45]	@ unaligned
+ 120:Service/Srv_DataHub.c **** 
+ 1632              		.loc 1 120 9 is_stmt 1 view .LVU491
+ 120:Service/Srv_DataHub.c **** 
+ 1633              		.loc 1 120 43 is_stmt 0 view .LVU492
+ 1634 0112 516A     		ldr	r1, [r2, #36]	@ float
+ 1635 0114 C3F83110 		str	r1, [r3, #49]	@ unaligned
+ 122:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_gyr_y = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_Y];
+ 1636              		.loc 1 122 9 is_stmt 1 view .LVU493
+ 122:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_gyr_y = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_Y];
+ 1637              		.loc 1 122 43 is_stmt 0 view .LVU494
+ 1638 0118 1169     		ldr	r1, [r2, #16]	@ float
+ 1639 011a C3F81110 		str	r1, [r3, #17]	@ unaligned
+ 123:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_gyr_z = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_Z];
+ 1640              		.loc 1 123 9 is_stmt 1 view .LVU495
+ 123:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.flt_gyr_z = DataPipe_DataObj(PtlIMU_Data).data.flt_gyr[Axis_Z];
+ 1641              		.loc 1 123 43 is_stmt 0 view .LVU496
+ 1642 011e 5169     		ldr	r1, [r2, #20]	@ float
+ 1643 0120 C3F81510 		str	r1, [r3, #21]	@ unaligned
+ 124:Service/Srv_DataHub.c **** 
+ 1644              		.loc 1 124 9 is_stmt 1 view .LVU497
+ 124:Service/Srv_DataHub.c **** 
+ 1645              		.loc 1 124 43 is_stmt 0 view .LVU498
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 42
+
+
+ 1646 0124 9169     		ldr	r1, [r2, #24]	@ float
+ 1647 0126 C3F81910 		str	r1, [r3, #25]	@ unaligned
+ 126:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_acc_y = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_Y];
+ 1648              		.loc 1 126 9 is_stmt 1 view .LVU499
+ 126:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_acc_y = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_Y];
+ 1649              		.loc 1 126 43 is_stmt 0 view .LVU500
+ 1650 012a 516B     		ldr	r1, [r2, #52]	@ float
+ 1651 012c C3F83510 		str	r1, [r3, #53]	@ unaligned
+ 127:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_acc_z = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_Z];
+ 1652              		.loc 1 127 9 is_stmt 1 view .LVU501
+ 127:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_acc_z = DataPipe_DataObj(PtlIMU_Data).data.org_acc[Axis_Z];
+ 1653              		.loc 1 127 43 is_stmt 0 view .LVU502
+ 1654 0130 916B     		ldr	r1, [r2, #56]	@ float
+ 1655 0132 C3F83910 		str	r1, [r3, #57]	@ unaligned
+ 128:Service/Srv_DataHub.c **** 
+ 1656              		.loc 1 128 9 is_stmt 1 view .LVU503
+ 128:Service/Srv_DataHub.c **** 
+ 1657              		.loc 1 128 43 is_stmt 0 view .LVU504
+ 1658 0136 D16B     		ldr	r1, [r2, #60]	@ float
+ 1659 0138 C3F83D10 		str	r1, [r3, #61]	@ unaligned
+ 130:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_gyr_y = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_Y];
+ 1660              		.loc 1 130 9 is_stmt 1 view .LVU505
+ 130:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_gyr_y = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_Y];
+ 1661              		.loc 1 130 43 is_stmt 0 view .LVU506
+ 1662 013c 916A     		ldr	r1, [r2, #40]	@ float
+ 1663 013e C3F81D10 		str	r1, [r3, #29]	@ unaligned
+ 131:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_gyr_z = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_Z];
+ 1664              		.loc 1 131 9 is_stmt 1 view .LVU507
+ 131:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.org_gyr_z = DataPipe_DataObj(PtlIMU_Data).data.org_gyr[Axis_Z];
+ 1665              		.loc 1 131 43 is_stmt 0 view .LVU508
+ 1666 0142 D16A     		ldr	r1, [r2, #44]	@ float
+ 1667 0144 C3F82110 		str	r1, [r3, #33]	@ unaligned
+ 132:Service/Srv_DataHub.c **** 
+ 1668              		.loc 1 132 9 is_stmt 1 view .LVU509
+ 132:Service/Srv_DataHub.c **** 
+ 1669              		.loc 1 132 43 is_stmt 0 view .LVU510
+ 1670 0148 116B     		ldr	r1, [r2, #48]	@ float
+ 1671 014a C3F82510 		str	r1, [r3, #37]	@ unaligned
+ 134:Service/Srv_DataHub.c **** 
+ 1672              		.loc 1 134 9 is_stmt 1 view .LVU511
+ 134:Service/Srv_DataHub.c **** 
+ 1673              		.loc 1 134 84 is_stmt 0 view .LVU512
+ 1674 014e 92F84420 		ldrb	r2, [r2, #68]	@ zero_extendqisi2
+ 134:Service/Srv_DataHub.c **** 
+ 1675              		.loc 1 134 48 view .LVU513
+ 1676 0152 83F84520 		strb	r2, [r3, #69]
+ 136:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
+ 1677              		.loc 1 136 9 is_stmt 1 view .LVU514
+ 136:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.update_reg.bit.scaled_imu = false;
+ 1678              		.loc 1 136 51 is_stmt 0 view .LVU515
+ 1679 0156 DA78     		ldrb	r2, [r3, #3]	@ zero_extendqisi2
+ 1680 0158 6FF30002 		bfc	r2, #0, #1
+ 1681 015c DA70     		strb	r2, [r3, #3]
+ 137:Service/Srv_DataHub.c ****     }
+ 1682              		.loc 1 137 9 is_stmt 1 view .LVU516
+ 1683 015e 7047     		bx	lr
+ 1684              	.L116:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 43
+
+
+  74:Service/Srv_DataHub.c ****     if ((!SrvDataHub_Monitor.init_state) || (obj == NULL))
+ 1685              		.loc 1 74 1 is_stmt 0 view .LVU517
+ 1686 0160 00B5     		push	{lr}
+ 1687              	.LCFI12:
+ 1688              		.cfi_def_cfa_offset 4
+ 1689              		.cfi_offset 14, -4
+ 141:Service/Srv_DataHub.c **** 
+ 1690              		.loc 1 141 9 is_stmt 1 view .LVU518
+ 141:Service/Srv_DataHub.c **** 
+ 1691              		.loc 1 141 52 is_stmt 0 view .LVU519
+ 1692 0162 2B4B     		ldr	r3, .L118
+ 1693 0164 1A79     		ldrb	r2, [r3, #4]	@ zero_extendqisi2
+ 1694 0166 42F00802 		orr	r2, r2, #8
+ 1695 016a 1A71     		strb	r2, [r3, #4]
+ 143:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
+ 1696              		.loc 1 143 9 is_stmt 1 view .LVU520
+ 143:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
+ 1697              		.loc 1 143 13 is_stmt 0 view .LVU521
+ 1698 016c 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 143:Service/Srv_DataHub.c ****             SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
+ 1699              		.loc 1 143 12 view .LVU522
+ 1700 016e 13F0080F 		tst	r3, #8
+ 1701 0172 04D0     		beq	.L105
+ 144:Service/Srv_DataHub.c **** 
+ 1702              		.loc 1 144 13 is_stmt 1 view .LVU523
+ 144:Service/Srv_DataHub.c **** 
+ 1703              		.loc 1 144 55 is_stmt 0 view .LVU524
+ 1704 0174 264B     		ldr	r3, .L118
+ 1705 0176 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 1706 0178 6FF3C302 		bfc	r2, #3, #1
+ 1707 017c 9A70     		strb	r2, [r3, #2]
+ 1708              	.L105:
+ 146:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(PtlActuator_Data).moto_cnt;
+ 1709              		.loc 1 146 9 is_stmt 1 view .LVU525
+ 146:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(PtlActuator_Data).moto_cnt;
+ 1710              		.loc 1 146 90 is_stmt 0 view .LVU526
+ 1711 017e 284B     		ldr	r3, .L118+16
+ 1712 0180 D3F8A810 		ldr	r1, [r3, #168]
+ 146:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(PtlActuator_Data).moto_cnt;
+ 1713              		.loc 1 146 54 view .LVU527
+ 1714 0184 224A     		ldr	r2, .L118
+ 1715 0186 C2F85511 		str	r1, [r2, #341]	@ unaligned
+ 147:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(PtlActuator_Data).servo_cnt;
+ 1716              		.loc 1 147 9 is_stmt 1 view .LVU528
+ 147:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(PtlActuator_Data).servo_cnt;
+ 1717              		.loc 1 147 78 is_stmt 0 view .LVU529
+ 1718 018a 93F8B0E0 		ldrb	lr, [r3, #176]	@ zero_extendqisi2
+ 147:Service/Srv_DataHub.c ****         SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(PtlActuator_Data).servo_cnt;
+ 1719              		.loc 1 147 42 view .LVU530
+ 1720 018e 82F859E1 		strb	lr, [r2, #345]
+ 148:Service/Srv_DataHub.c **** 
+ 1721              		.loc 1 148 9 is_stmt 1 view .LVU531
+ 148:Service/Srv_DataHub.c **** 
+ 1722              		.loc 1 148 79 is_stmt 0 view .LVU532
+ 1723 0192 93F8B110 		ldrb	r1, [r3, #177]	@ zero_extendqisi2
+ 148:Service/Srv_DataHub.c **** 
+ 1724              		.loc 1 148 43 view .LVU533
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 44
+
+
+ 1725 0196 82F85A11 		strb	r1, [r2, #346]
+ 150:Service/Srv_DataHub.c ****         memset(SrvDataHub_Monitor.data.servo_dir, 0, sizeof(SrvDataHub_Monitor.data.servo_dir));
+ 1726              		.loc 1 150 9 is_stmt 1 view .LVU534
+ 1727 019a 0023     		movs	r3, #0
+ 1728 019c C2F85B31 		str	r3, [r2, #347]	@ unaligned
+ 1729 01a0 C2F85F31 		str	r3, [r2, #351]	@ unaligned
+ 151:Service/Srv_DataHub.c ****         memset(SrvDataHub_Monitor.data.moto, 0, sizeof(SrvDataHub_Monitor.data.moto));
+ 1730              		.loc 1 151 9 view .LVU535
+ 1731 01a4 C2F86331 		str	r3, [r2, #355]	@ unaligned
+ 1732 01a8 C2F86731 		str	r3, [r2, #359]	@ unaligned
+ 152:Service/Srv_DataHub.c ****         memset(SrvDataHub_Monitor.data.servo, 0, sizeof(SrvDataHub_Monitor.data.servo));
+ 1733              		.loc 1 152 9 view .LVU536
+ 1734 01ac C2F86B31 		str	r3, [r2, #363]	@ unaligned
+ 1735 01b0 C2F86F31 		str	r3, [r2, #367]	@ unaligned
+ 1736 01b4 C2F87331 		str	r3, [r2, #371]	@ unaligned
+ 1737 01b8 C2F87731 		str	r3, [r2, #375]	@ unaligned
+ 153:Service/Srv_DataHub.c **** 
+ 1738              		.loc 1 153 9 view .LVU537
+ 1739 01bc C2F87B31 		str	r3, [r2, #379]	@ unaligned
+ 1740 01c0 C2F87F31 		str	r3, [r2, #383]	@ unaligned
+ 155:Service/Srv_DataHub.c ****         {
+ 1741              		.loc 1 155 9 view .LVU538
+ 1742              	.LBB15:
+ 155:Service/Srv_DataHub.c ****         {
+ 1743              		.loc 1 155 14 view .LVU539
+ 1744              	.LVL90:
+ 155:Service/Srv_DataHub.c ****         {
+ 1745              		.loc 1 155 9 is_stmt 0 view .LVU540
+ 1746 01c4 0EE0     		b	.L106
+ 1747              	.LVL91:
+ 1748              	.L107:
+ 157:Service/Srv_DataHub.c ****         }
+ 1749              		.loc 1 157 13 is_stmt 1 discriminator 3 view .LVU541
+ 157:Service/Srv_DataHub.c ****         }
+ 1750              		.loc 1 157 91 is_stmt 0 discriminator 3 view .LVU542
+ 1751 01c6 181D     		adds	r0, r3, #4
+ 1752 01c8 154A     		ldr	r2, .L118+16
+ 1753 01ca 02EB4002 		add	r2, r2, r0, lsl #1
+ 1754 01ce B2F8AA00 		ldrh	r0, [r2, #170]
+ 157:Service/Srv_DataHub.c ****         }
+ 1755              		.loc 1 157 50 discriminator 3 view .LVU543
+ 1756 01d2 03F1B00C 		add	ip, r3, #176
+ 1757 01d6 0E4A     		ldr	r2, .L118
+ 1758 01d8 02EB4C02 		add	r2, r2, ip, lsl #1
+ 1759 01dc A2F80B00 		strh	r0, [r2, #11]	@ unaligned
+ 155:Service/Srv_DataHub.c ****         {
+ 1760              		.loc 1 155 77 is_stmt 1 discriminator 3 view .LVU544
+ 155:Service/Srv_DataHub.c ****         {
+ 1761              		.loc 1 155 83 is_stmt 0 discriminator 3 view .LVU545
+ 1762 01e0 0133     		adds	r3, r3, #1
+ 1763              	.LVL92:
+ 155:Service/Srv_DataHub.c ****         {
+ 1764              		.loc 1 155 83 discriminator 3 view .LVU546
+ 1765 01e2 DBB2     		uxtb	r3, r3
+ 1766              	.LVL93:
+ 1767              	.L106:
+ 155:Service/Srv_DataHub.c ****         {
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 45
+
+
+ 1768              		.loc 1 155 34 is_stmt 1 discriminator 1 view .LVU547
+ 155:Service/Srv_DataHub.c ****         {
+ 1769              		.loc 1 155 9 is_stmt 0 discriminator 1 view .LVU548
+ 1770 01e4 9E45     		cmp	lr, r3
+ 1771 01e6 EED8     		bhi	.L107
+ 1772              	.LBE15:
+ 1773              	.LBB16:
+ 160:Service/Srv_DataHub.c ****         {
+ 1774              		.loc 1 160 22 view .LVU549
+ 1775 01e8 0023     		movs	r3, #0
+ 1776              	.LVL94:
+ 160:Service/Srv_DataHub.c ****         {
+ 1777              		.loc 1 160 22 view .LVU550
+ 1778 01ea 0CE0     		b	.L108
+ 1779              	.LVL95:
+ 1780              	.L109:
+ 162:Service/Srv_DataHub.c ****         }
+ 1781              		.loc 1 162 13 is_stmt 1 discriminator 3 view .LVU551
+ 162:Service/Srv_DataHub.c ****         }
+ 1782              		.loc 1 162 94 is_stmt 0 discriminator 3 view .LVU552
+ 1783 01ec 03F10C00 		add	r0, r3, #12
+ 1784 01f0 0B4A     		ldr	r2, .L118+16
+ 1785 01f2 02EB4002 		add	r2, r2, r0, lsl #1
+ 1786 01f6 B2F8AA00 		ldrh	r0, [r2, #170]
+ 162:Service/Srv_DataHub.c ****         }
+ 1787              		.loc 1 162 52 discriminator 3 view .LVU553
+ 1788 01fa 054A     		ldr	r2, .L118
+ 1789 01fc 1A44     		add	r2, r2, r3
+ 1790 01fe 82F87B01 		strb	r0, [r2, #379]
+ 160:Service/Srv_DataHub.c ****         {
+ 1791              		.loc 1 160 80 is_stmt 1 discriminator 3 view .LVU554
+ 160:Service/Srv_DataHub.c ****         {
+ 1792              		.loc 1 160 87 is_stmt 0 discriminator 3 view .LVU555
+ 1793 0202 0133     		adds	r3, r3, #1
+ 1794              	.LVL96:
+ 160:Service/Srv_DataHub.c ****         {
+ 1795              		.loc 1 160 87 discriminator 3 view .LVU556
+ 1796 0204 DBB2     		uxtb	r3, r3
+ 1797              	.LVL97:
+ 1798              	.L108:
+ 160:Service/Srv_DataHub.c ****         {
+ 1799              		.loc 1 160 35 is_stmt 1 discriminator 1 view .LVU557
+ 160:Service/Srv_DataHub.c ****         {
+ 1800              		.loc 1 160 9 is_stmt 0 discriminator 1 view .LVU558
+ 1801 0206 9942     		cmp	r1, r3
+ 1802 0208 F0D8     		bhi	.L109
+ 1803              	.LBE16:
+ 165:Service/Srv_DataHub.c **** 
+ 1804              		.loc 1 165 1 view .LVU559
+ 1805 020a 5DF804FB 		ldr	pc, [sp], #4
+ 1806              	.L119:
+ 1807 020e 00BF     		.align	2
+ 1808              	.L118:
+ 1809 0210 00000000 		.word	.LANCHOR0
+ 1810 0214 00000000 		.word	Receiver_hub_DataPipe
+ 1811 0218 00000000 		.word	IMU_hub_DataPipe
+ 1812 021c 00000000 		.word	Actuator_hub_DataPipe
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 46
+
+
+ 1813 0220 00000000 		.word	.LANCHOR1
+ 1814              		.cfi_endproc
+ 1815              	.LFE152:
+ 1817              		.global	SrvDataHub
+ 1818              		.global	SrvDataHub_Monitor
+ 1819              		.section	.Perph_Section,"aw"
+ 1820              		.align	2
+ 1821              		.set	.LANCHOR1,. + 0
+ 1824              	PtlIMU_Data_PipeDataObj:
+ 1825 0000 00000000 		.space	79
+ 1825      00000000 
+ 1825      00000000 
+ 1825      00000000 
+ 1825      00000000 
+ 1826 004f 00       		.space	1
+ 1829              	Proto_Rc_PipeDataObj:
+ 1830 0050 00000000 		.space	88
+ 1830      00000000 
+ 1830      00000000 
+ 1830      00000000 
+ 1830      00000000 
+ 1833              	PtlActuator_Data_PipeDataObj:
+ 1834 00a8 00000000 		.space	58
+ 1834      00000000 
+ 1834      00000000 
+ 1834      00000000 
+ 1834      00000000 
+ 1835              		.section	.bss.SrvDataHub_Monitor,"aw",%nobits
+ 1836              		.align	2
+ 1837              		.set	.LANCHOR0,. + 0
+ 1840              	SrvDataHub_Monitor:
+ 1841 0000 00000000 		.space	387
+ 1841      00000000 
+ 1841      00000000 
+ 1841      00000000 
+ 1841      00000000 
+ 1842              		.section	.data.SrvDataHub,"aw"
+ 1843              		.align	2
+ 1846              	SrvDataHub:
+ 1847 0000 00000000 		.word	SrvDataHub_Init
+ 1848 0004 00000000 		.word	SrvDataHub_Get_Raw_IMU
+ 1849 0008 00000000 		.word	SrvDataHub_Get_Scaled_IMU
+ 1850 000c 00000000 		.word	SrvDataHub_Get_Raw_Mag
+ 1851 0010 00000000 		.word	SrvDataHub_Get_Scaled_Mag
+ 1852 0014 00000000 		.word	SrvDataHub_Get_RcChannel
+ 1853 0018 00000000 		.word	SrvDataHub_Get_GimbalPercent
+ 1854 001c 00000000 		.word	SrvDataHub_Get_Arm
+ 1855 0020 00000000 		.word	SrvDataHub_Get_Failsafe
+ 1856 0024 00000000 		.word	SrvDataHub_Get_ControlMode
+ 1857 0028 00000000 		.word	SrvDataHub_Get_MotoChannel
+ 1858 002c 00000000 		.word	SrvDataHub_Get_ServoChannel
+ 1859              		.text
+ 1860              	.Letext0:
+ 1861              		.file 3 "/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.07/gcc/arm-none-eabi/include/machine/_de
+ 1862              		.file 4 "/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.07/gcc/arm-none-eabi/include/sys/_stdint
+ 1863              		.file 5 "Service/Srv_Actuator.h"
+ 1864              		.file 6 "System/runtime/runtime.h"
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 47
+
+
+ 1865              		.file 7 "Device/Dev_Dshot.h"
+ 1866              		.file 8 "Service/imu_data.h"
+ 1867              		.file 9 "Service/Srv_IMUSample.h"
+ 1868              		.file 10 "Service/Srv_Receiver.h"
+ 1869              		.file 11 "Service/Srv_DataHub.h"
+ 1870              		.file 12 "<built-in>"
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s 			page 48
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 Srv_DataHub.c
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:17     .text.SrvDataHub_Get_Raw_IMU:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:24     .text.SrvDataHub_Get_Raw_IMU:0000000000000000 SrvDataHub_Get_Raw_IMU
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:219    .text.SrvDataHub_Get_Raw_IMU:00000000000000e4 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:224    .text.SrvDataHub_Get_Scaled_IMU:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:230    .text.SrvDataHub_Get_Scaled_IMU:0000000000000000 SrvDataHub_Get_Scaled_IMU
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:424    .text.SrvDataHub_Get_Scaled_IMU:00000000000000e4 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:429    .text.SrvDataHub_Get_Raw_Mag:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:435    .text.SrvDataHub_Get_Raw_Mag:0000000000000000 SrvDataHub_Get_Raw_Mag
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:539    .text.SrvDataHub_Get_Raw_Mag:0000000000000070 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:544    .text.SrvDataHub_Get_Scaled_Mag:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:550    .text.SrvDataHub_Get_Scaled_Mag:0000000000000000 SrvDataHub_Get_Scaled_Mag
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:654    .text.SrvDataHub_Get_Scaled_Mag:0000000000000070 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:659    .text.SrvDataHub_Get_Arm:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:665    .text.SrvDataHub_Get_Arm:0000000000000000 SrvDataHub_Get_Arm
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:717    .text.SrvDataHub_Get_Arm:0000000000000030 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:722    .text.SrvDataHub_Get_Failsafe:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:728    .text.SrvDataHub_Get_Failsafe:0000000000000000 SrvDataHub_Get_Failsafe
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:780    .text.SrvDataHub_Get_Failsafe:0000000000000030 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:785    .text.SrvDataHub_Get_ControlMode:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:791    .text.SrvDataHub_Get_ControlMode:0000000000000000 SrvDataHub_Get_ControlMode
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:843    .text.SrvDataHub_Get_ControlMode:0000000000000030 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:848    .text.SrvDataHub_Get_RcChannel:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:854    .text.SrvDataHub_Get_RcChannel:0000000000000000 SrvDataHub_Get_RcChannel
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:971    .text.SrvDataHub_Get_RcChannel:0000000000000070 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:976    .text.SrvDataHub_Get_GimbalPercent:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:982    .text.SrvDataHub_Get_GimbalPercent:0000000000000000 SrvDataHub_Get_GimbalPercent
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1066   .text.SrvDataHub_Get_GimbalPercent:0000000000000048 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1071   .text.SrvDataHub_Get_ServoChannel:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1077   .text.SrvDataHub_Get_ServoChannel:0000000000000000 SrvDataHub_Get_ServoChannel
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1177   .text.SrvDataHub_Get_ServoChannel:0000000000000074 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1182   .text.SrvDataHub_Get_MotoChannel:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1188   .text.SrvDataHub_Get_MotoChannel:0000000000000000 SrvDataHub_Get_MotoChannel
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1283   .text.SrvDataHub_Get_MotoChannel:0000000000000068 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1288   .text.SrvDataHub_Init:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1294   .text.SrvDataHub_Init:0000000000000000 SrvDataHub_Init
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1414   .text.SrvDataHub_Init:0000000000000070 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1429   .text.SrvComProto_PipeRcTelemtryDataFinish_Callback:0000000000000000 SrvComProto_PipeRcTelemtryDataFinish_Callback
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1423   .text.SrvComProto_PipeRcTelemtryDataFinish_Callback:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1809   .text.SrvComProto_PipeRcTelemtryDataFinish_Callback:0000000000000210 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1846   .data.SrvDataHub:0000000000000000 SrvDataHub
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1840   .bss.SrvDataHub_Monitor:0000000000000000 SrvDataHub_Monitor
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1820   .Perph_Section:0000000000000000 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1824   .Perph_Section:0000000000000000 PtlIMU_Data_PipeDataObj
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1829   .Perph_Section:0000000000000050 Proto_Rc_PipeDataObj
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1833   .Perph_Section:00000000000000a8 PtlActuator_Data_PipeDataObj
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1836   .bss.SrvDataHub_Monitor:0000000000000000 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccywOx0P.s:1843   .data.SrvDataHub:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+memcpy
+memset
+IMU_hub_DataPipe
+Receiver_hub_DataPipe
+Actuator_hub_DataPipe

@@ -1,0 +1,2060 @@
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.eabi_attribute 28, 1
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 1
+  10              		.eabi_attribute 34, 1
+  11              		.eabi_attribute 18, 4
+  12              		.file	"Bsp_Timer.c"
+  13              		.text
+  14              	.Ltext0:
+  15              		.cfi_sections	.debug_frame
+  16              		.section	.text.BspTimer_Get_DMA_Request,"ax",%progbits
+  17              		.align	1
+  18              		.arch armv7e-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv5-d16
+  24              	BspTimer_Get_DMA_Request:
+  25              	.LVL0:
+  26              	.LFB145:
+  27              		.file 1 "Bsp/Bsp_Timer.c"
+   1:Bsp/Bsp_Timer.c **** #include "Bsp_Timer.h"
+   2:Bsp/Bsp_Timer.c **** 
+   3:Bsp/Bsp_Timer.c **** typedef struct
+   4:Bsp/Bsp_Timer.c **** {
+   5:Bsp/Bsp_Timer.c ****     TIM_TypeDef *list[32];
+   6:Bsp/Bsp_Timer.c ****     uint8_t init_cnt;
+   7:Bsp/Bsp_Timer.c ****     bool monitor_init;
+   8:Bsp/Bsp_Timer.c **** } BspTIM_PWMInitMonitor_TypeDef;
+   9:Bsp/Bsp_Timer.c **** 
+  10:Bsp/Bsp_Timer.c **** BspTIM_PWMInitMonitor_TypeDef monitor = {
+  11:Bsp/Bsp_Timer.c ****     .monitor_init = false,
+  12:Bsp/Bsp_Timer.c **** };
+  13:Bsp/Bsp_Timer.c **** 
+  14:Bsp/Bsp_Timer.c **** /* internal function */
+  15:Bsp/Bsp_Timer.c **** static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma);
+  16:Bsp/Bsp_Timer.c **** 
+  17:Bsp/Bsp_Timer.c **** /* external function */
+  18:Bsp/Bsp_Timer.c **** static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
+  19:Bsp/Bsp_Timer.c ****                               TIM_TypeDef *instance,
+  20:Bsp/Bsp_Timer.c ****                               uint32_t ch,
+  21:Bsp/Bsp_Timer.c ****                               BspGPIO_Obj_TypeDef pin,
+  22:Bsp/Bsp_Timer.c ****                               uint8_t dma,
+  23:Bsp/Bsp_Timer.c ****                               uint8_t stream,
+  24:Bsp/Bsp_Timer.c ****                               uint32_t buf_aadr,
+  25:Bsp/Bsp_Timer.c ****                               uint32_t buf_size);
+  26:Bsp/Bsp_Timer.c **** static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale);
+  27:Bsp/Bsp_Timer.c **** static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload);
+  28:Bsp/Bsp_Timer.c **** static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj);
+  29:Bsp/Bsp_Timer.c **** static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj);
+  30:Bsp/Bsp_Timer.c **** 
+  31:Bsp/Bsp_Timer.c **** BspTimerPWM_TypeDef BspTimer_PWM = {
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 2
+
+
+  32:Bsp/Bsp_Timer.c ****     .init = BspTimer_PWM_Init,
+  33:Bsp/Bsp_Timer.c ****     .set_prescaler = BspTimer_SetPreScale,
+  34:Bsp/Bsp_Timer.c ****     .set_autoreload = BspTimer_SetAutoReload,
+  35:Bsp/Bsp_Timer.c ****     .start_pwm = BspTimer_PWM_Start,
+  36:Bsp/Bsp_Timer.c ****     .dma_trans = BspTimer_DMA_Start,
+  37:Bsp/Bsp_Timer.c **** };
+  38:Bsp/Bsp_Timer.c **** 
+  39:Bsp/Bsp_Timer.c **** static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
+  40:Bsp/Bsp_Timer.c **** {
+  41:Bsp/Bsp_Timer.c ****     if (!monitor.monitor_init)
+  42:Bsp/Bsp_Timer.c ****     {
+  43:Bsp/Bsp_Timer.c ****         monitor.init_cnt = 0;
+  44:Bsp/Bsp_Timer.c ****         memset(monitor.list, NULL, sizeof(monitor.list) / sizeof(monitor.list[0]));
+  45:Bsp/Bsp_Timer.c ****         monitor.monitor_init = true;
+  46:Bsp/Bsp_Timer.c ****     }
+  47:Bsp/Bsp_Timer.c **** 
+  48:Bsp/Bsp_Timer.c ****     if (monitor.init_cnt)
+  49:Bsp/Bsp_Timer.c ****     {
+  50:Bsp/Bsp_Timer.c ****         for (uint8_t i = 0; i < monitor.init_cnt; i++)
+  51:Bsp/Bsp_Timer.c ****         {
+  52:Bsp/Bsp_Timer.c ****             if (tim == monitor.list[i])
+  53:Bsp/Bsp_Timer.c ****                 return false;
+  54:Bsp/Bsp_Timer.c ****         }
+  55:Bsp/Bsp_Timer.c ****     }
+  56:Bsp/Bsp_Timer.c **** 
+  57:Bsp/Bsp_Timer.c ****     if (monitor.init_cnt < sizeof(monitor.list) / sizeof(monitor.list[0]))
+  58:Bsp/Bsp_Timer.c ****     {
+  59:Bsp/Bsp_Timer.c ****         if (tim == TIM1)
+  60:Bsp/Bsp_Timer.c ****         {
+  61:Bsp/Bsp_Timer.c ****             __HAL_RCC_TIM1_CLK_ENABLE();
+  62:Bsp/Bsp_Timer.c ****         }
+  63:Bsp/Bsp_Timer.c ****         else if (tim == TIM2)
+  64:Bsp/Bsp_Timer.c ****         {
+  65:Bsp/Bsp_Timer.c ****             __HAL_RCC_TIM2_CLK_ENABLE();
+  66:Bsp/Bsp_Timer.c ****         }
+  67:Bsp/Bsp_Timer.c ****         else if (tim == TIM3)
+  68:Bsp/Bsp_Timer.c ****         {
+  69:Bsp/Bsp_Timer.c ****             __HAL_RCC_TIM3_CLK_ENABLE();
+  70:Bsp/Bsp_Timer.c ****         }
+  71:Bsp/Bsp_Timer.c ****         else if (tim == TIM4)
+  72:Bsp/Bsp_Timer.c ****         {
+  73:Bsp/Bsp_Timer.c ****             __HAL_RCC_TIM4_CLK_ENABLE();
+  74:Bsp/Bsp_Timer.c ****         }
+  75:Bsp/Bsp_Timer.c ****         else if (tim == TIM5)
+  76:Bsp/Bsp_Timer.c ****         {
+  77:Bsp/Bsp_Timer.c ****             __HAL_RCC_TIM5_CLK_ENABLE();
+  78:Bsp/Bsp_Timer.c ****         }
+  79:Bsp/Bsp_Timer.c ****         else if (tim == TIM6)
+  80:Bsp/Bsp_Timer.c ****         {
+  81:Bsp/Bsp_Timer.c ****             __HAL_RCC_TIM6_CLK_ENABLE();
+  82:Bsp/Bsp_Timer.c ****         }
+  83:Bsp/Bsp_Timer.c ****         else
+  84:Bsp/Bsp_Timer.c ****             return false;
+  85:Bsp/Bsp_Timer.c **** 
+  86:Bsp/Bsp_Timer.c ****         monitor.list[monitor.init_cnt] = tim;
+  87:Bsp/Bsp_Timer.c ****         monitor.init_cnt++;
+  88:Bsp/Bsp_Timer.c ****     }
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 3
+
+
+  89:Bsp/Bsp_Timer.c **** 
+  90:Bsp/Bsp_Timer.c ****     return true;
+  91:Bsp/Bsp_Timer.c **** }
+  92:Bsp/Bsp_Timer.c **** 
+  93:Bsp/Bsp_Timer.c **** static uint32_t BspTimer_Get_DMA_Request(TIM_TypeDef *instance, uint32_t ch)
+  94:Bsp/Bsp_Timer.c **** {
+  28              		.loc 1 94 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  95:Bsp/Bsp_Timer.c ****     switch ((uint32_t)instance)
+  33              		.loc 1 95 5 view .LVU1
+  34 0000 2F4B     		ldr	r3, .L32
+  35 0002 9842     		cmp	r0, r3
+  36 0004 22D0     		beq	.L2
+  37 0006 11D8     		bhi	.L3
+  38 0008 A3F50063 		sub	r3, r3, #2048
+  39 000c 9842     		cmp	r0, r3
+  40 000e 30D0     		beq	.L4
+  41 0010 03F58063 		add	r3, r3, #1024
+  42 0014 9842     		cmp	r0, r3
+  43 0016 07D1     		bne	.L29
+  96:Bsp/Bsp_Timer.c ****     {
+  97:Bsp/Bsp_Timer.c ****     case (uint32_t)TIM5:
+  98:Bsp/Bsp_Timer.c ****         switch (ch)
+  99:Bsp/Bsp_Timer.c ****         {
+ 100:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_1:
+ 101:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM5_CH1;
+ 102:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_2:
+ 103:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM5_CH2;
+ 104:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 105:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM5_CH3;
+ 106:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_4:
+ 107:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM5_CH4;
+ 108:Bsp/Bsp_Timer.c ****         default:
+ 109:Bsp/Bsp_Timer.c ****             return 0;
+ 110:Bsp/Bsp_Timer.c ****         }
+ 111:Bsp/Bsp_Timer.c ****         break;
+ 112:Bsp/Bsp_Timer.c **** 
+ 113:Bsp/Bsp_Timer.c ****     case (uint32_t)TIM3:
+ 114:Bsp/Bsp_Timer.c ****         switch (ch)
+ 115:Bsp/Bsp_Timer.c ****         {
+ 116:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_1:
+ 117:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM3_CH1;
+ 118:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_2:
+ 119:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM3_CH2;
+ 120:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 121:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM3_CH3;
+ 122:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_4:
+ 123:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM3_CH4;
+ 124:Bsp/Bsp_Timer.c ****         default:
+ 125:Bsp/Bsp_Timer.c ****             return 0;
+ 126:Bsp/Bsp_Timer.c ****         }
+ 127:Bsp/Bsp_Timer.c ****         break;
+  44              		.loc 1 127 9 view .LVU2
+ 128:Bsp/Bsp_Timer.c **** 
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 4
+
+
+ 129:Bsp/Bsp_Timer.c ****     case (uint32_t)TIM4:
+ 130:Bsp/Bsp_Timer.c ****         switch (ch)
+  45              		.loc 1 130 9 view .LVU3
+  46 0018 0429     		cmp	r1, #4
+  47 001a 4BD0     		beq	.L25
+  48 001c 0829     		cmp	r1, #8
+  49 001e 4BD0     		beq	.L26
+  50 0020 0029     		cmp	r1, #0
+  51 0022 39D0     		beq	.L30
+ 131:Bsp/Bsp_Timer.c ****         {
+ 132:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_1:
+ 133:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM4_CH1;
+ 134:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_2:
+ 135:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM4_CH2;
+ 136:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 137:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM4_CH3;
+ 138:Bsp/Bsp_Timer.c ****         default:
+ 139:Bsp/Bsp_Timer.c ****             return 0;
+  52              		.loc 1 139 20 is_stmt 0 view .LVU4
+  53 0024 0020     		movs	r0, #0
+  54              	.LVL1:
+  55              		.loc 1 139 20 view .LVU5
+  56 0026 7047     		bx	lr
+  57              	.LVL2:
+  58              	.L29:
+  95:Bsp/Bsp_Timer.c ****     {
+  59              		.loc 1 95 5 view .LVU6
+  60 0028 0020     		movs	r0, #0
+  61              	.LVL3:
+  95:Bsp/Bsp_Timer.c ****     {
+  62              		.loc 1 95 5 view .LVU7
+  63 002a 7047     		bx	lr
+  64              	.LVL4:
+  65              	.L3:
+  95:Bsp/Bsp_Timer.c ****     {
+  66              		.loc 1 95 5 view .LVU8
+  67 002c 254B     		ldr	r3, .L32+4
+  68 002e 9842     		cmp	r0, r3
+  69 0030 0AD1     		bne	.L31
+ 140:Bsp/Bsp_Timer.c ****         }
+ 141:Bsp/Bsp_Timer.c ****         break;
+  70              		.loc 1 141 9 is_stmt 1 view .LVU9
+ 142:Bsp/Bsp_Timer.c **** 
+ 143:Bsp/Bsp_Timer.c ****     case (uint32_t)TIM15:
+ 144:Bsp/Bsp_Timer.c ****         switch (ch)
+  71              		.loc 1 144 9 view .LVU10
+  72 0032 0C29     		cmp	r1, #12
+  73 0034 38D8     		bhi	.L18
+  74 0036 DFE801F0 		tbb	[pc, r1]
+  75              	.L20:
+  76 003a 31       		.byte	(.L22-.L20)/2
+  77 003b 37       		.byte	(.L18-.L20)/2
+  78 003c 37       		.byte	(.L18-.L20)/2
+  79 003d 37       		.byte	(.L18-.L20)/2
+  80 003e 41       		.byte	(.L28-.L20)/2
+  81 003f 37       		.byte	(.L18-.L20)/2
+  82 0040 37       		.byte	(.L18-.L20)/2
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 5
+
+
+  83 0041 37       		.byte	(.L18-.L20)/2
+  84 0042 33       		.byte	(.L21-.L20)/2
+  85 0043 37       		.byte	(.L18-.L20)/2
+  86 0044 37       		.byte	(.L18-.L20)/2
+  87 0045 37       		.byte	(.L18-.L20)/2
+  88 0046 35       		.byte	(.L19-.L20)/2
+  89 0047 00       		.p2align 1
+  90              	.L31:
+  95:Bsp/Bsp_Timer.c ****     {
+  91              		.loc 1 95 5 is_stmt 0 view .LVU11
+  92 0048 0020     		movs	r0, #0
+  93              	.LVL5:
+  95:Bsp/Bsp_Timer.c ****     {
+  94              		.loc 1 95 5 view .LVU12
+  95 004a 7047     		bx	lr
+  96              	.LVL6:
+  97              	.L2:
+  98:Bsp/Bsp_Timer.c ****         {
+  98              		.loc 1 98 9 is_stmt 1 view .LVU13
+  99 004c 0C29     		cmp	r1, #12
+ 100 004e 0ED8     		bhi	.L8
+ 101 0050 DFE801F0 		tbb	[pc, r1]
+ 102              	.L10:
+ 103 0054 07       		.byte	(.L12-.L10)/2
+ 104 0055 0D       		.byte	(.L8-.L10)/2
+ 105 0056 0D       		.byte	(.L8-.L10)/2
+ 106 0057 0D       		.byte	(.L8-.L10)/2
+ 107 0058 2C       		.byte	(.L23-.L10)/2
+ 108 0059 0D       		.byte	(.L8-.L10)/2
+ 109 005a 0D       		.byte	(.L8-.L10)/2
+ 110 005b 0D       		.byte	(.L8-.L10)/2
+ 111 005c 09       		.byte	(.L11-.L10)/2
+ 112 005d 0D       		.byte	(.L8-.L10)/2
+ 113 005e 0D       		.byte	(.L8-.L10)/2
+ 114 005f 0D       		.byte	(.L8-.L10)/2
+ 115 0060 0B       		.byte	(.L9-.L10)/2
+ 116 0061 00       		.p2align 1
+ 117              	.L12:
+ 118 0062 3720     		movs	r0, #55
+ 119              	.LVL7:
+  98:Bsp/Bsp_Timer.c ****         {
+ 120              		.loc 1 98 9 is_stmt 0 view .LVU14
+ 121 0064 7047     		bx	lr
+ 122              	.LVL8:
+ 123              	.L11:
+ 105:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_4:
+ 124              		.loc 1 105 13 is_stmt 1 view .LVU15
+ 105:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_4:
+ 125              		.loc 1 105 20 is_stmt 0 view .LVU16
+ 126 0066 3920     		movs	r0, #57
+ 127              	.LVL9:
+ 105:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_4:
+ 128              		.loc 1 105 20 view .LVU17
+ 129 0068 7047     		bx	lr
+ 130              	.LVL10:
+ 131              	.L9:
+ 107:Bsp/Bsp_Timer.c ****         default:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 6
+
+
+ 132              		.loc 1 107 13 is_stmt 1 view .LVU18
+ 107:Bsp/Bsp_Timer.c ****         default:
+ 133              		.loc 1 107 20 is_stmt 0 view .LVU19
+ 134 006a 3A20     		movs	r0, #58
+ 135              	.LVL11:
+ 107:Bsp/Bsp_Timer.c ****         default:
+ 136              		.loc 1 107 20 view .LVU20
+ 137 006c 7047     		bx	lr
+ 138              	.LVL12:
+ 139              	.L8:
+ 109:Bsp/Bsp_Timer.c ****         }
+ 140              		.loc 1 109 13 is_stmt 1 view .LVU21
+ 109:Bsp/Bsp_Timer.c ****         }
+ 141              		.loc 1 109 20 is_stmt 0 view .LVU22
+ 142 006e 0020     		movs	r0, #0
+ 143              	.LVL13:
+ 109:Bsp/Bsp_Timer.c ****         }
+ 144              		.loc 1 109 20 view .LVU23
+ 145 0070 7047     		bx	lr
+ 146              	.LVL14:
+ 147              	.L4:
+ 111:Bsp/Bsp_Timer.c **** 
+ 148              		.loc 1 111 9 is_stmt 1 view .LVU24
+ 114:Bsp/Bsp_Timer.c ****         {
+ 149              		.loc 1 114 9 view .LVU25
+ 150 0072 0C29     		cmp	r1, #12
+ 151 0074 0ED8     		bhi	.L13
+ 152 0076 DFE801F0 		tbb	[pc, r1]
+ 153              	.L15:
+ 154 007a 07       		.byte	(.L17-.L15)/2
+ 155 007b 0D       		.byte	(.L13-.L15)/2
+ 156 007c 0D       		.byte	(.L13-.L15)/2
+ 157 007d 0D       		.byte	(.L13-.L15)/2
+ 158 007e 1B       		.byte	(.L24-.L15)/2
+ 159 007f 0D       		.byte	(.L13-.L15)/2
+ 160 0080 0D       		.byte	(.L13-.L15)/2
+ 161 0081 0D       		.byte	(.L13-.L15)/2
+ 162 0082 09       		.byte	(.L16-.L15)/2
+ 163 0083 0D       		.byte	(.L13-.L15)/2
+ 164 0084 0D       		.byte	(.L13-.L15)/2
+ 165 0085 0D       		.byte	(.L13-.L15)/2
+ 166 0086 0B       		.byte	(.L14-.L15)/2
+ 167 0087 00       		.p2align 1
+ 168              	.L17:
+ 169 0088 1720     		movs	r0, #23
+ 170              	.LVL15:
+ 114:Bsp/Bsp_Timer.c ****         {
+ 171              		.loc 1 114 9 is_stmt 0 view .LVU26
+ 172 008a 7047     		bx	lr
+ 173              	.LVL16:
+ 174              	.L16:
+ 121:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_4:
+ 175              		.loc 1 121 13 is_stmt 1 view .LVU27
+ 121:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_4:
+ 176              		.loc 1 121 20 is_stmt 0 view .LVU28
+ 177 008c 1920     		movs	r0, #25
+ 178              	.LVL17:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 7
+
+
+ 121:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_4:
+ 179              		.loc 1 121 20 view .LVU29
+ 180 008e 7047     		bx	lr
+ 181              	.LVL18:
+ 182              	.L14:
+ 123:Bsp/Bsp_Timer.c ****         default:
+ 183              		.loc 1 123 13 is_stmt 1 view .LVU30
+ 123:Bsp/Bsp_Timer.c ****         default:
+ 184              		.loc 1 123 20 is_stmt 0 view .LVU31
+ 185 0090 1A20     		movs	r0, #26
+ 186              	.LVL19:
+ 123:Bsp/Bsp_Timer.c ****         default:
+ 187              		.loc 1 123 20 view .LVU32
+ 188 0092 7047     		bx	lr
+ 189              	.LVL20:
+ 190              	.L13:
+ 125:Bsp/Bsp_Timer.c ****         }
+ 191              		.loc 1 125 13 is_stmt 1 view .LVU33
+ 125:Bsp/Bsp_Timer.c ****         }
+ 192              		.loc 1 125 20 is_stmt 0 view .LVU34
+ 193 0094 0020     		movs	r0, #0
+ 194              	.LVL21:
+ 125:Bsp/Bsp_Timer.c ****         }
+ 195              		.loc 1 125 20 view .LVU35
+ 196 0096 7047     		bx	lr
+ 197              	.LVL22:
+ 198              	.L30:
+ 130:Bsp/Bsp_Timer.c ****         {
+ 199              		.loc 1 130 9 view .LVU36
+ 200 0098 1D20     		movs	r0, #29
+ 201              	.LVL23:
+ 130:Bsp/Bsp_Timer.c ****         {
+ 202              		.loc 1 130 9 view .LVU37
+ 203 009a 7047     		bx	lr
+ 204              	.LVL24:
+ 205              	.L22:
+ 206              		.loc 1 144 9 view .LVU38
+ 207 009c 6920     		movs	r0, #105
+ 208              	.LVL25:
+ 209              		.loc 1 144 9 view .LVU39
+ 210 009e 7047     		bx	lr
+ 211              	.LVL26:
+ 212              	.L21:
+ 145:Bsp/Bsp_Timer.c ****         {
+ 146:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_1:
+ 147:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM15_CH1;
+ 148:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_2:
+ 149:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM15_UP;
+ 150:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 151:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM15_TRIG;
+ 213              		.loc 1 151 13 is_stmt 1 view .LVU40
+ 214              		.loc 1 151 20 is_stmt 0 view .LVU41
+ 215 00a0 6B20     		movs	r0, #107
+ 216              	.LVL27:
+ 217              		.loc 1 151 20 view .LVU42
+ 218 00a2 7047     		bx	lr
+ 219              	.LVL28:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 8
+
+
+ 220              	.L19:
+ 152:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_4:
+ 153:Bsp/Bsp_Timer.c ****             return DMA_REQUEST_TIM15_COM;
+ 221              		.loc 1 153 13 is_stmt 1 view .LVU43
+ 222              		.loc 1 153 20 is_stmt 0 view .LVU44
+ 223 00a4 6C20     		movs	r0, #108
+ 224              	.LVL29:
+ 225              		.loc 1 153 20 view .LVU45
+ 226 00a6 7047     		bx	lr
+ 227              	.LVL30:
+ 228              	.L18:
+ 154:Bsp/Bsp_Timer.c ****         default:
+ 155:Bsp/Bsp_Timer.c ****             return 0;
+ 229              		.loc 1 155 13 is_stmt 1 view .LVU46
+ 230              		.loc 1 155 20 is_stmt 0 view .LVU47
+ 231 00a8 0020     		movs	r0, #0
+ 232              	.LVL31:
+ 233              		.loc 1 155 20 view .LVU48
+ 234 00aa 7047     		bx	lr
+ 235              	.LVL32:
+ 236              	.L23:
+ 103:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 237              		.loc 1 103 20 view .LVU49
+ 238 00ac 3820     		movs	r0, #56
+ 239              	.LVL33:
+ 103:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 240              		.loc 1 103 20 view .LVU50
+ 241 00ae 7047     		bx	lr
+ 242              	.LVL34:
+ 243              	.L24:
+ 119:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 244              		.loc 1 119 20 view .LVU51
+ 245 00b0 1820     		movs	r0, #24
+ 246              	.LVL35:
+ 119:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 247              		.loc 1 119 20 view .LVU52
+ 248 00b2 7047     		bx	lr
+ 249              	.LVL36:
+ 250              	.L25:
+ 135:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 251              		.loc 1 135 20 view .LVU53
+ 252 00b4 1E20     		movs	r0, #30
+ 253              	.LVL37:
+ 135:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 254              		.loc 1 135 20 view .LVU54
+ 255 00b6 7047     		bx	lr
+ 256              	.LVL38:
+ 257              	.L26:
+ 137:Bsp/Bsp_Timer.c ****         default:
+ 258              		.loc 1 137 20 view .LVU55
+ 259 00b8 1F20     		movs	r0, #31
+ 260              	.LVL39:
+ 137:Bsp/Bsp_Timer.c ****         default:
+ 261              		.loc 1 137 20 view .LVU56
+ 262 00ba 7047     		bx	lr
+ 263              	.LVL40:
+ 264              	.L28:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 9
+
+
+ 149:Bsp/Bsp_Timer.c ****         case TIM_CHANNEL_3:
+ 265              		.loc 1 149 20 view .LVU57
+ 266 00bc 6A20     		movs	r0, #106
+ 267              	.LVL41:
+ 156:Bsp/Bsp_Timer.c ****         }
+ 157:Bsp/Bsp_Timer.c ****         break;
+ 158:Bsp/Bsp_Timer.c **** 
+ 159:Bsp/Bsp_Timer.c ****     default:
+ 160:Bsp/Bsp_Timer.c ****         return 0;
+ 161:Bsp/Bsp_Timer.c ****     }
+ 162:Bsp/Bsp_Timer.c **** }
+ 268              		.loc 1 162 1 view .LVU58
+ 269 00be 7047     		bx	lr
+ 270              	.L33:
+ 271              		.align	2
+ 272              	.L32:
+ 273 00c0 000C0040 		.word	1073744896
+ 274 00c4 00400140 		.word	1073823744
+ 275              		.cfi_endproc
+ 276              	.LFE145:
+ 278              		.section	.text.BspTimer_SetPreScale,"ax",%progbits
+ 279              		.align	1
+ 280              		.syntax unified
+ 281              		.thumb
+ 282              		.thumb_func
+ 283              		.fpu fpv5-d16
+ 285              	BspTimer_SetPreScale:
+ 286              	.LVL42:
+ 287              	.LFB149:
+ 163:Bsp/Bsp_Timer.c **** 
+ 164:Bsp/Bsp_Timer.c **** static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
+ 165:Bsp/Bsp_Timer.c ****                               TIM_TypeDef *instance,
+ 166:Bsp/Bsp_Timer.c ****                               uint32_t ch,
+ 167:Bsp/Bsp_Timer.c ****                               BspGPIO_Obj_TypeDef pin,
+ 168:Bsp/Bsp_Timer.c ****                               uint8_t dma, uint8_t stream, uint32_t buf_aadr, uint32_t buf_size)
+ 169:Bsp/Bsp_Timer.c **** {
+ 170:Bsp/Bsp_Timer.c ****     TIM_MasterConfigTypeDef sMasterConfig = {0};
+ 171:Bsp/Bsp_Timer.c ****     TIM_OC_InitTypeDef sConfigOC = {0};
+ 172:Bsp/Bsp_Timer.c **** 
+ 173:Bsp/Bsp_Timer.c ****     if ((obj == NULL) || (instance == NULL) || (buf_aadr == 0) || (buf_size == 0))
+ 174:Bsp/Bsp_Timer.c ****         return false;
+ 175:Bsp/Bsp_Timer.c **** 
+ 176:Bsp/Bsp_Timer.c ****     obj->dma = dma;
+ 177:Bsp/Bsp_Timer.c ****     obj->stream = stream;
+ 178:Bsp/Bsp_Timer.c **** 
+ 179:Bsp/Bsp_Timer.c ****     switch (ch)
+ 180:Bsp/Bsp_Timer.c ****     {
+ 181:Bsp/Bsp_Timer.c ****     case TIM_CHANNEL_1:
+ 182:Bsp/Bsp_Timer.c ****         obj->tim_dma_id_cc = TIM_DMA_ID_CC1;
+ 183:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC1;
+ 184:Bsp/Bsp_Timer.c ****         break;
+ 185:Bsp/Bsp_Timer.c **** 
+ 186:Bsp/Bsp_Timer.c ****     case TIM_CHANNEL_2:
+ 187:Bsp/Bsp_Timer.c ****         obj->tim_dma_id_cc = TIM_DMA_ID_CC2;
+ 188:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC2;
+ 189:Bsp/Bsp_Timer.c ****         break;
+ 190:Bsp/Bsp_Timer.c **** 
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 10
+
+
+ 191:Bsp/Bsp_Timer.c ****     case TIM_CHANNEL_3:
+ 192:Bsp/Bsp_Timer.c ****         obj->tim_dma_id_cc = TIM_DMA_ID_CC3;
+ 193:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC3;
+ 194:Bsp/Bsp_Timer.c ****         break;
+ 195:Bsp/Bsp_Timer.c **** 
+ 196:Bsp/Bsp_Timer.c ****     case TIM_CHANNEL_4:
+ 197:Bsp/Bsp_Timer.c ****         obj->tim_dma_id_cc = TIM_DMA_ID_CC4;
+ 198:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC4;
+ 199:Bsp/Bsp_Timer.c ****         break;
+ 200:Bsp/Bsp_Timer.c **** 
+ 201:Bsp/Bsp_Timer.c ****     default:
+ 202:Bsp/Bsp_Timer.c ****         return false;
+ 203:Bsp/Bsp_Timer.c ****     }
+ 204:Bsp/Bsp_Timer.c **** 
+ 205:Bsp/Bsp_Timer.c ****     BspTimer_PWM_InitMonit(instance);
+ 206:Bsp/Bsp_Timer.c ****     obj->instance = instance;
+ 207:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Instance = instance;
+ 208:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.Prescaler = 0;
+ 209:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.CounterMode = TIM_COUNTERMODE_UP;
+ 210:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.Period = 0;
+ 211:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+ 212:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+ 213:Bsp/Bsp_Timer.c **** 
+ 214:Bsp/Bsp_Timer.c ****     /* dma init */
+ 215:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Instance = BspDMA.get_instance(dma, stream);
+ 216:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Request = BspTimer_Get_DMA_Request(instance, ch);
+ 217:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Direction = DMA_MEMORY_TO_PERIPH;
+ 218:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.PeriphInc = DMA_PINC_DISABLE;
+ 219:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.MemInc = DMA_MINC_ENABLE;
+ 220:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+ 221:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
+ 222:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Mode = DMA_NORMAL;
+ 223:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Priority = DMA_PRIORITY_HIGH;
+ 224:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+ 225:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
+ 226:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.MemBurst = DMA_MBURST_SINGLE;
+ 227:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.PeriphBurst = DMA_PBURST_SINGLE;
+ 228:Bsp/Bsp_Timer.c **** 
+ 229:Bsp/Bsp_Timer.c ****     if (HAL_DMA_Init(&obj->dma_hdl) != HAL_OK)
+ 230:Bsp/Bsp_Timer.c ****         return false;
+ 231:Bsp/Bsp_Timer.c **** 
+ 232:Bsp/Bsp_Timer.c ****     __HAL_LINKDMA(&(obj->tim_hdl), hdma[obj->tim_dma_id_cc], obj->dma_hdl);
+ 233:Bsp/Bsp_Timer.c **** 
+ 234:Bsp/Bsp_Timer.c ****     if (HAL_TIM_PWM_Init(&(obj->tim_hdl)) != HAL_OK)
+ 235:Bsp/Bsp_Timer.c ****         return false;
+ 236:Bsp/Bsp_Timer.c **** 
+ 237:Bsp/Bsp_Timer.c ****     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+ 238:Bsp/Bsp_Timer.c ****     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+ 239:Bsp/Bsp_Timer.c **** 
+ 240:Bsp/Bsp_Timer.c ****     if (HAL_TIMEx_MasterConfigSynchronization(&(obj->tim_hdl), &sMasterConfig) != HAL_OK)
+ 241:Bsp/Bsp_Timer.c ****         return false;
+ 242:Bsp/Bsp_Timer.c **** 
+ 243:Bsp/Bsp_Timer.c ****     sConfigOC.OCMode = TIM_OCMODE_PWM1;
+ 244:Bsp/Bsp_Timer.c ****     sConfigOC.Pulse = 0;
+ 245:Bsp/Bsp_Timer.c ****     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+ 246:Bsp/Bsp_Timer.c ****     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+ 247:Bsp/Bsp_Timer.c **** 
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 11
+
+
+ 248:Bsp/Bsp_Timer.c ****     if (HAL_TIM_PWM_ConfigChannel(&(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
+ 249:Bsp/Bsp_Timer.c ****         return false;
+ 250:Bsp/Bsp_Timer.c **** 
+ 251:Bsp/Bsp_Timer.c ****     obj->tim_channel = ch;
+ 252:Bsp/Bsp_Timer.c **** 
+ 253:Bsp/Bsp_Timer.c ****     /* pin init */
+ 254:Bsp/Bsp_Timer.c ****     BspGPIO.alt_init(pin);
+ 255:Bsp/Bsp_Timer.c **** 
+ 256:Bsp/Bsp_Timer.c ****     /* dma regist */
+ 257:Bsp/Bsp_Timer.c ****     if (BspDMA.regist(dma, stream, &obj->dma_hdl))
+ 258:Bsp/Bsp_Timer.c ****     {
+ 259:Bsp/Bsp_Timer.c ****         /* init DMA IRQ */
+ 260:Bsp/Bsp_Timer.c ****         BspDMA.enable_irq(dma, stream, 5, 0);
+ 261:Bsp/Bsp_Timer.c ****         return true;
+ 262:Bsp/Bsp_Timer.c ****     }
+ 263:Bsp/Bsp_Timer.c **** 
+ 264:Bsp/Bsp_Timer.c ****     return true;
+ 265:Bsp/Bsp_Timer.c **** }
+ 266:Bsp/Bsp_Timer.c **** 
+ 267:Bsp/Bsp_Timer.c **** static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
+ 268:Bsp/Bsp_Timer.c **** {
+ 269:Bsp/Bsp_Timer.c ****     obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
+ 270:Bsp/Bsp_Timer.c ****     HAL_TIM_PWM_Start(&obj->tim_hdl, obj->tim_channel);
+ 271:Bsp/Bsp_Timer.c **** }
+ 272:Bsp/Bsp_Timer.c **** 
+ 273:Bsp/Bsp_Timer.c **** static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
+ 274:Bsp/Bsp_Timer.c **** {
+ 275:Bsp/Bsp_Timer.c ****     uint32_t dst_addr = 0;
+ 276:Bsp/Bsp_Timer.c **** 
+ 277:Bsp/Bsp_Timer.c ****     if ((obj->buffer_addr == 0) || (obj->buffer_size == 0))
+ 278:Bsp/Bsp_Timer.c ****         return;
+ 279:Bsp/Bsp_Timer.c **** 
+ 280:Bsp/Bsp_Timer.c ****     switch (obj->tim_dma_id_cc)
+ 281:Bsp/Bsp_Timer.c ****     {
+ 282:Bsp/Bsp_Timer.c ****     case TIM_DMA_ID_CC1:
+ 283:Bsp/Bsp_Timer.c ****         dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR1;
+ 284:Bsp/Bsp_Timer.c ****         break;
+ 285:Bsp/Bsp_Timer.c **** 
+ 286:Bsp/Bsp_Timer.c ****     case TIM_DMA_ID_CC2:
+ 287:Bsp/Bsp_Timer.c ****         dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR2;
+ 288:Bsp/Bsp_Timer.c ****         break;
+ 289:Bsp/Bsp_Timer.c **** 
+ 290:Bsp/Bsp_Timer.c ****     case TIM_DMA_ID_CC3:
+ 291:Bsp/Bsp_Timer.c ****         dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR3;
+ 292:Bsp/Bsp_Timer.c ****         break;
+ 293:Bsp/Bsp_Timer.c **** 
+ 294:Bsp/Bsp_Timer.c ****     case TIM_DMA_ID_CC4:
+ 295:Bsp/Bsp_Timer.c ****         dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR4;
+ 296:Bsp/Bsp_Timer.c ****         break;
+ 297:Bsp/Bsp_Timer.c **** 
+ 298:Bsp/Bsp_Timer.c ****     default:
+ 299:Bsp/Bsp_Timer.c ****         return;
+ 300:Bsp/Bsp_Timer.c ****     }
+ 301:Bsp/Bsp_Timer.c **** 
+ 302:Bsp/Bsp_Timer.c ****     HAL_DMA_Start_IT(obj->tim_hdl.hdma[obj->tim_dma_id_cc], obj->buffer_addr, dst_addr, obj->buffer
+ 303:Bsp/Bsp_Timer.c ****     __HAL_TIM_ENABLE_DMA(&obj->tim_hdl, obj->tim_dma_cc);
+ 304:Bsp/Bsp_Timer.c **** }
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 12
+
+
+ 305:Bsp/Bsp_Timer.c **** 
+ 306:Bsp/Bsp_Timer.c **** static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
+ 307:Bsp/Bsp_Timer.c **** {
+ 288              		.loc 1 307 1 is_stmt 1 view -0
+ 289              		.cfi_startproc
+ 290              		@ args = 0, pretend = 0, frame = 0
+ 291              		@ frame_needed = 0, uses_anonymous_args = 0
+ 292              		@ link register save eliminated.
+ 308:Bsp/Bsp_Timer.c ****     obj->prescale = prescale;
+ 293              		.loc 1 308 5 view .LVU60
+ 294              		.loc 1 308 19 is_stmt 0 view .LVU61
+ 295 0000 C0F8D010 		str	r1, [r0, #208]
+ 309:Bsp/Bsp_Timer.c ****     __HAL_TIM_SET_PRESCALER(&obj->tim_hdl, prescale);
+ 296              		.loc 1 309 5 is_stmt 1 view .LVU62
+ 297 0004 D0F88430 		ldr	r3, [r0, #132]
+ 298 0008 9962     		str	r1, [r3, #40]
+ 310:Bsp/Bsp_Timer.c **** }
+ 299              		.loc 1 310 1 is_stmt 0 view .LVU63
+ 300 000a 7047     		bx	lr
+ 301              		.cfi_endproc
+ 302              	.LFE149:
+ 304              		.section	.text.BspTimer_SetAutoReload,"ax",%progbits
+ 305              		.align	1
+ 306              		.syntax unified
+ 307              		.thumb
+ 308              		.thumb_func
+ 309              		.fpu fpv5-d16
+ 311              	BspTimer_SetAutoReload:
+ 312              	.LVL43:
+ 313              	.LFB150:
+ 311:Bsp/Bsp_Timer.c **** 
+ 312:Bsp/Bsp_Timer.c **** static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload)
+ 313:Bsp/Bsp_Timer.c **** {
+ 314              		.loc 1 313 1 is_stmt 1 view -0
+ 315              		.cfi_startproc
+ 316              		@ args = 0, pretend = 0, frame = 0
+ 317              		@ frame_needed = 0, uses_anonymous_args = 0
+ 318              		@ link register save eliminated.
+ 314:Bsp/Bsp_Timer.c ****     obj->auto_reload = auto_reload;
+ 319              		.loc 1 314 5 view .LVU65
+ 320              		.loc 1 314 22 is_stmt 0 view .LVU66
+ 321 0000 C0F8D410 		str	r1, [r0, #212]
+ 315:Bsp/Bsp_Timer.c ****     __HAL_TIM_SET_AUTORELOAD(&obj->tim_hdl, auto_reload);
+ 322              		.loc 1 315 5 is_stmt 1 view .LVU67
+ 323              		.loc 1 315 5 view .LVU68
+ 324 0004 D0F88430 		ldr	r3, [r0, #132]
+ 325 0008 D962     		str	r1, [r3, #44]
+ 326              		.loc 1 315 5 view .LVU69
+ 327 000a C0F89010 		str	r1, [r0, #144]
+ 328              		.loc 1 315 5 view .LVU70
+ 316:Bsp/Bsp_Timer.c **** }
+ 329              		.loc 1 316 1 is_stmt 0 view .LVU71
+ 330 000e 7047     		bx	lr
+ 331              		.cfi_endproc
+ 332              	.LFE150:
+ 334              		.section	.text.BspTimer_DMA_Callback,"ax",%progbits
+ 335              		.align	1
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 13
+
+
+ 336              		.syntax unified
+ 337              		.thumb
+ 338              		.thumb_func
+ 339              		.fpu fpv5-d16
+ 341              	BspTimer_DMA_Callback:
+ 342              	.LVL44:
+ 343              	.LFB151:
+ 317:Bsp/Bsp_Timer.c **** 
+ 318:Bsp/Bsp_Timer.c **** static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma)
+ 319:Bsp/Bsp_Timer.c **** {
+ 344              		.loc 1 319 1 is_stmt 1 view -0
+ 345              		.cfi_startproc
+ 346              		@ args = 0, pretend = 0, frame = 0
+ 347              		@ frame_needed = 0, uses_anonymous_args = 0
+ 348              		@ link register save eliminated.
+ 320:Bsp/Bsp_Timer.c ****     TIM_HandleTypeDef *htim = (TIM_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
+ 349              		.loc 1 320 5 view .LVU73
+ 350              		.loc 1 320 24 is_stmt 0 view .LVU74
+ 351 0000 836B     		ldr	r3, [r0, #56]
+ 352              	.LVL45:
+ 321:Bsp/Bsp_Timer.c **** 
+ 322:Bsp/Bsp_Timer.c ****     if (hdma == htim->hdma[TIM_DMA_ID_CC1])
+ 353              		.loc 1 322 5 is_stmt 1 view .LVU75
+ 354              		.loc 1 322 27 is_stmt 0 view .LVU76
+ 355 0002 5A6A     		ldr	r2, [r3, #36]
+ 356              		.loc 1 322 8 view .LVU77
+ 357 0004 8242     		cmp	r2, r0
+ 358 0006 09D0     		beq	.L41
+ 323:Bsp/Bsp_Timer.c ****     {
+ 324:Bsp/Bsp_Timer.c ****         __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC1);
+ 325:Bsp/Bsp_Timer.c ****     }
+ 326:Bsp/Bsp_Timer.c ****     else if (hdma == htim->hdma[TIM_DMA_ID_CC2])
+ 359              		.loc 1 326 10 is_stmt 1 view .LVU78
+ 360              		.loc 1 326 32 is_stmt 0 view .LVU79
+ 361 0008 9A6A     		ldr	r2, [r3, #40]
+ 362              		.loc 1 326 13 view .LVU80
+ 363 000a 8242     		cmp	r2, r0
+ 364 000c 0CD0     		beq	.L42
+ 327:Bsp/Bsp_Timer.c ****     {
+ 328:Bsp/Bsp_Timer.c ****         __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC2);
+ 329:Bsp/Bsp_Timer.c ****     }
+ 330:Bsp/Bsp_Timer.c ****     else if (hdma == htim->hdma[TIM_DMA_ID_CC3])
+ 365              		.loc 1 330 10 is_stmt 1 view .LVU81
+ 366              		.loc 1 330 32 is_stmt 0 view .LVU82
+ 367 000e DA6A     		ldr	r2, [r3, #44]
+ 368              		.loc 1 330 13 view .LVU83
+ 369 0010 8242     		cmp	r2, r0
+ 370 0012 0FD0     		beq	.L43
+ 331:Bsp/Bsp_Timer.c ****     {
+ 332:Bsp/Bsp_Timer.c ****         __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC3);
+ 333:Bsp/Bsp_Timer.c ****     }
+ 334:Bsp/Bsp_Timer.c ****     else if (hdma == htim->hdma[TIM_DMA_ID_CC4])
+ 371              		.loc 1 334 10 is_stmt 1 view .LVU84
+ 372              		.loc 1 334 32 is_stmt 0 view .LVU85
+ 373 0014 1A6B     		ldr	r2, [r3, #48]
+ 374              		.loc 1 334 13 view .LVU86
+ 375 0016 8242     		cmp	r2, r0
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 14
+
+
+ 376 0018 12D0     		beq	.L44
+ 377              	.LVL46:
+ 378              	.L36:
+ 335:Bsp/Bsp_Timer.c ****     {
+ 336:Bsp/Bsp_Timer.c ****         __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC4);
+ 337:Bsp/Bsp_Timer.c ****     }
+ 338:Bsp/Bsp_Timer.c **** }
+ 379              		.loc 1 338 1 view .LVU87
+ 380 001a 7047     		bx	lr
+ 381              	.LVL47:
+ 382              	.L41:
+ 324:Bsp/Bsp_Timer.c ****     }
+ 383              		.loc 1 324 9 is_stmt 1 view .LVU88
+ 384 001c 1A68     		ldr	r2, [r3]
+ 385 001e D368     		ldr	r3, [r2, #12]
+ 386              	.LVL48:
+ 324:Bsp/Bsp_Timer.c ****     }
+ 387              		.loc 1 324 9 is_stmt 0 view .LVU89
+ 388 0020 23F40073 		bic	r3, r3, #512
+ 389 0024 D360     		str	r3, [r2, #12]
+ 390              	.LVL49:
+ 324:Bsp/Bsp_Timer.c ****     }
+ 391              		.loc 1 324 9 view .LVU90
+ 392 0026 7047     		bx	lr
+ 393              	.LVL50:
+ 394              	.L42:
+ 328:Bsp/Bsp_Timer.c ****     }
+ 395              		.loc 1 328 9 is_stmt 1 view .LVU91
+ 396 0028 1A68     		ldr	r2, [r3]
+ 397 002a D368     		ldr	r3, [r2, #12]
+ 398              	.LVL51:
+ 328:Bsp/Bsp_Timer.c ****     }
+ 399              		.loc 1 328 9 is_stmt 0 view .LVU92
+ 400 002c 23F48063 		bic	r3, r3, #1024
+ 401 0030 D360     		str	r3, [r2, #12]
+ 402              	.LVL52:
+ 328:Bsp/Bsp_Timer.c ****     }
+ 403              		.loc 1 328 9 view .LVU93
+ 404 0032 7047     		bx	lr
+ 405              	.LVL53:
+ 406              	.L43:
+ 332:Bsp/Bsp_Timer.c ****     }
+ 407              		.loc 1 332 9 is_stmt 1 view .LVU94
+ 408 0034 1A68     		ldr	r2, [r3]
+ 409 0036 D368     		ldr	r3, [r2, #12]
+ 410              	.LVL54:
+ 332:Bsp/Bsp_Timer.c ****     }
+ 411              		.loc 1 332 9 is_stmt 0 view .LVU95
+ 412 0038 23F40063 		bic	r3, r3, #2048
+ 413 003c D360     		str	r3, [r2, #12]
+ 414              	.LVL55:
+ 332:Bsp/Bsp_Timer.c ****     }
+ 415              		.loc 1 332 9 view .LVU96
+ 416 003e 7047     		bx	lr
+ 417              	.LVL56:
+ 418              	.L44:
+ 336:Bsp/Bsp_Timer.c ****     }
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 15
+
+
+ 419              		.loc 1 336 9 is_stmt 1 view .LVU97
+ 420 0040 1A68     		ldr	r2, [r3]
+ 421 0042 D368     		ldr	r3, [r2, #12]
+ 422              	.LVL57:
+ 336:Bsp/Bsp_Timer.c ****     }
+ 423              		.loc 1 336 9 is_stmt 0 view .LVU98
+ 424 0044 23F48053 		bic	r3, r3, #4096
+ 425 0048 D360     		str	r3, [r2, #12]
+ 426              	.LVL58:
+ 427              		.loc 1 338 1 view .LVU99
+ 428 004a E6E7     		b	.L36
+ 429              		.cfi_endproc
+ 430              	.LFE151:
+ 432              		.section	.text.BspTimer_DMA_Start,"ax",%progbits
+ 433              		.align	1
+ 434              		.syntax unified
+ 435              		.thumb
+ 436              		.thumb_func
+ 437              		.fpu fpv5-d16
+ 439              	BspTimer_DMA_Start:
+ 440              	.LVL59:
+ 441              	.LFB148:
+ 274:Bsp/Bsp_Timer.c ****     uint32_t dst_addr = 0;
+ 442              		.loc 1 274 1 is_stmt 1 view -0
+ 443              		.cfi_startproc
+ 444              		@ args = 0, pretend = 0, frame = 0
+ 445              		@ frame_needed = 0, uses_anonymous_args = 0
+ 275:Bsp/Bsp_Timer.c **** 
+ 446              		.loc 1 275 5 view .LVU101
+ 277:Bsp/Bsp_Timer.c ****         return;
+ 447              		.loc 1 277 5 view .LVU102
+ 277:Bsp/Bsp_Timer.c ****         return;
+ 448              		.loc 1 277 13 is_stmt 0 view .LVU103
+ 449 0000 D0F8E010 		ldr	r1, [r0, #224]
+ 277:Bsp/Bsp_Timer.c ****         return;
+ 450              		.loc 1 277 8 view .LVU104
+ 451 0004 51B3     		cbz	r1, .L54
+ 274:Bsp/Bsp_Timer.c ****     uint32_t dst_addr = 0;
+ 452              		.loc 1 274 1 discriminator 1 view .LVU105
+ 453 0006 10B5     		push	{r4, lr}
+ 454              	.LCFI0:
+ 455              		.cfi_def_cfa_offset 8
+ 456              		.cfi_offset 4, -8
+ 457              		.cfi_offset 14, -4
+ 458 0008 0446     		mov	r4, r0
+ 277:Bsp/Bsp_Timer.c ****         return;
+ 459              		.loc 1 277 40 discriminator 1 view .LVU106
+ 460 000a D0F8E430 		ldr	r3, [r0, #228]
+ 277:Bsp/Bsp_Timer.c ****         return;
+ 461              		.loc 1 277 33 discriminator 1 view .LVU107
+ 462 000e C3B1     		cbz	r3, .L45
+ 280:Bsp/Bsp_Timer.c ****     {
+ 463              		.loc 1 280 5 is_stmt 1 view .LVU108
+ 280:Bsp/Bsp_Timer.c ****     {
+ 464              		.loc 1 280 16 is_stmt 0 view .LVU109
+ 465 0010 D0F8D800 		ldr	r0, [r0, #216]
+ 466              	.LVL60:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 16
+
+
+ 280:Bsp/Bsp_Timer.c ****     {
+ 467              		.loc 1 280 5 view .LVU110
+ 468 0014 421E     		subs	r2, r0, #1
+ 469 0016 032A     		cmp	r2, #3
+ 470 0018 13D8     		bhi	.L45
+ 471 001a DFE802F0 		tbb	[pc, r2]
+ 472              	.L48:
+ 473 001e 02       		.byte	(.L51-.L48)/2
+ 474 001f 13       		.byte	(.L50-.L48)/2
+ 475 0020 17       		.byte	(.L49-.L48)/2
+ 476 0021 1B       		.byte	(.L47-.L48)/2
+ 477              		.p2align 1
+ 478              	.L51:
+ 283:Bsp/Bsp_Timer.c ****         break;
+ 479              		.loc 1 283 9 is_stmt 1 view .LVU111
+ 283:Bsp/Bsp_Timer.c ****         break;
+ 480              		.loc 1 283 43 is_stmt 0 view .LVU112
+ 481 0022 D4F88420 		ldr	r2, [r4, #132]
+ 283:Bsp/Bsp_Timer.c ****         break;
+ 482              		.loc 1 283 30 view .LVU113
+ 483 0026 3432     		adds	r2, r2, #52
+ 484              	.LVL61:
+ 284:Bsp/Bsp_Timer.c **** 
+ 485              		.loc 1 284 9 is_stmt 1 view .LVU114
+ 486              	.L52:
+ 302:Bsp/Bsp_Timer.c ****     __HAL_TIM_ENABLE_DMA(&obj->tim_hdl, obj->tim_dma_cc);
+ 487              		.loc 1 302 5 view .LVU115
+ 488 0028 2830     		adds	r0, r0, #40
+ 489 002a 04EB8000 		add	r0, r4, r0, lsl #2
+ 490 002e 4068     		ldr	r0, [r0, #4]
+ 491 0030 FFF7FEFF 		bl	HAL_DMA_Start_IT
+ 492              	.LVL62:
+ 303:Bsp/Bsp_Timer.c **** }
+ 493              		.loc 1 303 5 view .LVU116
+ 494 0034 D4F88420 		ldr	r2, [r4, #132]
+ 495 0038 D368     		ldr	r3, [r2, #12]
+ 496 003a D4F8DC10 		ldr	r1, [r4, #220]
+ 497 003e 0B43     		orrs	r3, r3, r1
+ 498 0040 D360     		str	r3, [r2, #12]
+ 499              	.L45:
+ 304:Bsp/Bsp_Timer.c **** 
+ 500              		.loc 1 304 1 is_stmt 0 view .LVU117
+ 501 0042 10BD     		pop	{r4, pc}
+ 502              	.LVL63:
+ 503              	.L50:
+ 287:Bsp/Bsp_Timer.c ****         break;
+ 504              		.loc 1 287 9 is_stmt 1 view .LVU118
+ 287:Bsp/Bsp_Timer.c ****         break;
+ 505              		.loc 1 287 43 is_stmt 0 view .LVU119
+ 506 0044 D4F88420 		ldr	r2, [r4, #132]
+ 287:Bsp/Bsp_Timer.c ****         break;
+ 507              		.loc 1 287 30 view .LVU120
+ 508 0048 3832     		adds	r2, r2, #56
+ 509              	.LVL64:
+ 288:Bsp/Bsp_Timer.c **** 
+ 510              		.loc 1 288 9 is_stmt 1 view .LVU121
+ 511 004a EDE7     		b	.L52
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 17
+
+
+ 512              	.LVL65:
+ 513              	.L49:
+ 291:Bsp/Bsp_Timer.c ****         break;
+ 514              		.loc 1 291 9 view .LVU122
+ 291:Bsp/Bsp_Timer.c ****         break;
+ 515              		.loc 1 291 43 is_stmt 0 view .LVU123
+ 516 004c D4F88420 		ldr	r2, [r4, #132]
+ 291:Bsp/Bsp_Timer.c ****         break;
+ 517              		.loc 1 291 30 view .LVU124
+ 518 0050 3C32     		adds	r2, r2, #60
+ 519              	.LVL66:
+ 292:Bsp/Bsp_Timer.c **** 
+ 520              		.loc 1 292 9 is_stmt 1 view .LVU125
+ 521 0052 E9E7     		b	.L52
+ 522              	.LVL67:
+ 523              	.L47:
+ 295:Bsp/Bsp_Timer.c ****         break;
+ 524              		.loc 1 295 9 view .LVU126
+ 295:Bsp/Bsp_Timer.c ****         break;
+ 525              		.loc 1 295 43 is_stmt 0 view .LVU127
+ 526 0054 D4F88420 		ldr	r2, [r4, #132]
+ 295:Bsp/Bsp_Timer.c ****         break;
+ 527              		.loc 1 295 30 view .LVU128
+ 528 0058 4032     		adds	r2, r2, #64
+ 529              	.LVL68:
+ 296:Bsp/Bsp_Timer.c **** 
+ 530              		.loc 1 296 9 is_stmt 1 view .LVU129
+ 531 005a E5E7     		b	.L52
+ 532              	.LVL69:
+ 533              	.L54:
+ 534              	.LCFI1:
+ 535              		.cfi_def_cfa_offset 0
+ 536              		.cfi_restore 4
+ 537              		.cfi_restore 14
+ 296:Bsp/Bsp_Timer.c **** 
+ 538              		.loc 1 296 9 is_stmt 0 view .LVU130
+ 539 005c 7047     		bx	lr
+ 540              		.cfi_endproc
+ 541              	.LFE148:
+ 543              		.section	.text.BspTimer_PWM_Start,"ax",%progbits
+ 544              		.align	1
+ 545              		.syntax unified
+ 546              		.thumb
+ 547              		.thumb_func
+ 548              		.fpu fpv5-d16
+ 550              	BspTimer_PWM_Start:
+ 551              	.LVL70:
+ 552              	.LFB147:
+ 268:Bsp/Bsp_Timer.c ****     obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
+ 553              		.loc 1 268 1 is_stmt 1 view -0
+ 554              		.cfi_startproc
+ 555              		@ args = 0, pretend = 0, frame = 0
+ 556              		@ frame_needed = 0, uses_anonymous_args = 0
+ 268:Bsp/Bsp_Timer.c ****     obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
+ 557              		.loc 1 268 1 is_stmt 0 view .LVU132
+ 558 0000 08B5     		push	{r3, lr}
+ 559              	.LCFI2:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 18
+
+
+ 560              		.cfi_def_cfa_offset 8
+ 561              		.cfi_offset 3, -8
+ 562              		.cfi_offset 14, -4
+ 269:Bsp/Bsp_Timer.c ****     HAL_TIM_PWM_Start(&obj->tim_hdl, obj->tim_channel);
+ 563              		.loc 1 269 5 is_stmt 1 view .LVU133
+ 269:Bsp/Bsp_Timer.c ****     HAL_TIM_PWM_Start(&obj->tim_hdl, obj->tim_channel);
+ 564              		.loc 1 269 26 is_stmt 0 view .LVU134
+ 565 0002 D0F8D830 		ldr	r3, [r0, #216]
+ 269:Bsp/Bsp_Timer.c ****     HAL_TIM_PWM_Start(&obj->tim_hdl, obj->tim_channel);
+ 566              		.loc 1 269 22 view .LVU135
+ 567 0006 2833     		adds	r3, r3, #40
+ 568 0008 00EB8303 		add	r3, r0, r3, lsl #2
+ 569 000c 5B68     		ldr	r3, [r3, #4]
+ 269:Bsp/Bsp_Timer.c ****     HAL_TIM_PWM_Start(&obj->tim_hdl, obj->tim_channel);
+ 570              		.loc 1 269 61 view .LVU136
+ 571 000e 034A     		ldr	r2, .L59
+ 572 0010 DA63     		str	r2, [r3, #60]
+ 270:Bsp/Bsp_Timer.c **** }
+ 573              		.loc 1 270 5 is_stmt 1 view .LVU137
+ 574 0012 4168     		ldr	r1, [r0, #4]
+ 575 0014 8430     		adds	r0, r0, #132
+ 576              	.LVL71:
+ 270:Bsp/Bsp_Timer.c **** }
+ 577              		.loc 1 270 5 is_stmt 0 view .LVU138
+ 578 0016 FFF7FEFF 		bl	HAL_TIM_PWM_Start
+ 579              	.LVL72:
+ 271:Bsp/Bsp_Timer.c **** 
+ 580              		.loc 1 271 1 view .LVU139
+ 581 001a 08BD     		pop	{r3, pc}
+ 582              	.L60:
+ 583              		.align	2
+ 584              	.L59:
+ 585 001c 00000000 		.word	BspTimer_DMA_Callback
+ 586              		.cfi_endproc
+ 587              	.LFE147:
+ 589              		.section	.text.BspTimer_PWM_InitMonit,"ax",%progbits
+ 590              		.align	1
+ 591              		.syntax unified
+ 592              		.thumb
+ 593              		.thumb_func
+ 594              		.fpu fpv5-d16
+ 596              	BspTimer_PWM_InitMonit:
+ 597              	.LVL73:
+ 598              	.LFB144:
+  40:Bsp/Bsp_Timer.c ****     if (!monitor.monitor_init)
+ 599              		.loc 1 40 1 is_stmt 1 view -0
+ 600              		.cfi_startproc
+ 601              		@ args = 0, pretend = 0, frame = 24
+ 602              		@ frame_needed = 0, uses_anonymous_args = 0
+  40:Bsp/Bsp_Timer.c ****     if (!monitor.monitor_init)
+ 603              		.loc 1 40 1 is_stmt 0 view .LVU141
+ 604 0000 30B5     		push	{r4, r5, lr}
+ 605              	.LCFI3:
+ 606              		.cfi_def_cfa_offset 12
+ 607              		.cfi_offset 4, -12
+ 608              		.cfi_offset 5, -8
+ 609              		.cfi_offset 14, -4
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 19
+
+
+ 610 0002 87B0     		sub	sp, sp, #28
+ 611              	.LCFI4:
+ 612              		.cfi_def_cfa_offset 40
+ 613 0004 0446     		mov	r4, r0
+  41:Bsp/Bsp_Timer.c ****     {
+ 614              		.loc 1 41 5 is_stmt 1 view .LVU142
+  41:Bsp/Bsp_Timer.c ****     {
+ 615              		.loc 1 41 17 is_stmt 0 view .LVU143
+ 616 0006 4B4B     		ldr	r3, .L86
+ 617 0008 93F88130 		ldrb	r3, [r3, #129]	@ zero_extendqisi2
+  41:Bsp/Bsp_Timer.c ****     {
+ 618              		.loc 1 41 8 view .LVU144
+ 619 000c D3B1     		cbz	r3, .L78
+ 620              	.LVL74:
+ 621              	.L62:
+  48:Bsp/Bsp_Timer.c ****     {
+ 622              		.loc 1 48 5 is_stmt 1 view .LVU145
+  48:Bsp/Bsp_Timer.c ****     {
+ 623              		.loc 1 48 16 is_stmt 0 view .LVU146
+ 624 000e 494B     		ldr	r3, .L86
+ 625 0010 93F88010 		ldrb	r1, [r3, #128]	@ zero_extendqisi2
+  48:Bsp/Bsp_Timer.c ****     {
+ 626              		.loc 1 48 8 view .LVU147
+ 627 0014 69BB     		cbnz	r1, .L73
+ 628              	.L64:
+  57:Bsp/Bsp_Timer.c ****     {
+ 629              		.loc 1 57 5 is_stmt 1 view .LVU148
+  57:Bsp/Bsp_Timer.c ****     {
+ 630              		.loc 1 57 8 is_stmt 0 view .LVU149
+ 631 0016 1F29     		cmp	r1, #31
+ 632 0018 00F28880 		bhi	.L75
+  59:Bsp/Bsp_Timer.c ****         {
+ 633              		.loc 1 59 9 is_stmt 1 view .LVU150
+  59:Bsp/Bsp_Timer.c ****         {
+ 634              		.loc 1 59 12 is_stmt 0 view .LVU151
+ 635 001c 464B     		ldr	r3, .L86+4
+ 636 001e 9C42     		cmp	r4, r3
+ 637 0020 29D0     		beq	.L79
+  63:Bsp/Bsp_Timer.c ****         {
+ 638              		.loc 1 63 14 is_stmt 1 view .LVU152
+  63:Bsp/Bsp_Timer.c ****         {
+ 639              		.loc 1 63 17 is_stmt 0 view .LVU153
+ 640 0022 B4F1804F 		cmp	r4, #1073741824
+ 641 0026 3BD0     		beq	.L80
+  67:Bsp/Bsp_Timer.c ****         {
+ 642              		.loc 1 67 14 is_stmt 1 view .LVU154
+  67:Bsp/Bsp_Timer.c ****         {
+ 643              		.loc 1 67 17 is_stmt 0 view .LVU155
+ 644 0028 444B     		ldr	r3, .L86+8
+ 645 002a 9C42     		cmp	r4, r3
+ 646 002c 46D0     		beq	.L81
+  71:Bsp/Bsp_Timer.c ****         {
+ 647              		.loc 1 71 14 is_stmt 1 view .LVU156
+  71:Bsp/Bsp_Timer.c ****         {
+ 648              		.loc 1 71 17 is_stmt 0 view .LVU157
+ 649 002e 444B     		ldr	r3, .L86+12
+ 650 0030 9C42     		cmp	r4, r3
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 20
+
+
+ 651 0032 51D0     		beq	.L82
+  75:Bsp/Bsp_Timer.c ****         {
+ 652              		.loc 1 75 14 is_stmt 1 view .LVU158
+  75:Bsp/Bsp_Timer.c ****         {
+ 653              		.loc 1 75 17 is_stmt 0 view .LVU159
+ 654 0034 434B     		ldr	r3, .L86+16
+ 655 0036 9C42     		cmp	r4, r3
+ 656 0038 5CD0     		beq	.L83
+  79:Bsp/Bsp_Timer.c ****         {
+ 657              		.loc 1 79 14 is_stmt 1 view .LVU160
+  79:Bsp/Bsp_Timer.c ****         {
+ 658              		.loc 1 79 17 is_stmt 0 view .LVU161
+ 659 003a 434B     		ldr	r3, .L86+20
+ 660 003c 9C42     		cmp	r4, r3
+ 661 003e 67D0     		beq	.L84
+  84:Bsp/Bsp_Timer.c **** 
+ 662              		.loc 1 84 20 view .LVU162
+ 663 0040 0020     		movs	r0, #0
+ 664 0042 74E0     		b	.L65
+ 665              	.LVL75:
+ 666              	.L78:
+  43:Bsp/Bsp_Timer.c ****         memset(monitor.list, NULL, sizeof(monitor.list) / sizeof(monitor.list[0]));
+ 667              		.loc 1 43 9 is_stmt 1 view .LVU163
+  43:Bsp/Bsp_Timer.c ****         memset(monitor.list, NULL, sizeof(monitor.list) / sizeof(monitor.list[0]));
+ 668              		.loc 1 43 26 is_stmt 0 view .LVU164
+ 669 0044 3B4D     		ldr	r5, .L86
+ 670 0046 0021     		movs	r1, #0
+ 671 0048 85F88010 		strb	r1, [r5, #128]
+  44:Bsp/Bsp_Timer.c ****         monitor.monitor_init = true;
+ 672              		.loc 1 44 9 is_stmt 1 view .LVU165
+ 673 004c 2022     		movs	r2, #32
+ 674 004e 2846     		mov	r0, r5
+ 675              	.LVL76:
+  44:Bsp/Bsp_Timer.c ****         monitor.monitor_init = true;
+ 676              		.loc 1 44 9 is_stmt 0 view .LVU166
+ 677 0050 FFF7FEFF 		bl	memset
+ 678              	.LVL77:
+  45:Bsp/Bsp_Timer.c ****     }
+ 679              		.loc 1 45 9 is_stmt 1 view .LVU167
+  45:Bsp/Bsp_Timer.c ****     }
+ 680              		.loc 1 45 30 is_stmt 0 view .LVU168
+ 681 0054 0123     		movs	r3, #1
+ 682 0056 85F88130 		strb	r3, [r5, #129]
+ 683 005a D8E7     		b	.L62
+ 684              	.LVL78:
+ 685              	.L85:
+ 686              	.LBB2:
+  50:Bsp/Bsp_Timer.c ****         {
+ 687              		.loc 1 50 51 is_stmt 1 discriminator 2 view .LVU169
+  50:Bsp/Bsp_Timer.c ****         {
+ 688              		.loc 1 50 52 is_stmt 0 discriminator 2 view .LVU170
+ 689 005c 0133     		adds	r3, r3, #1
+ 690              	.LVL79:
+  50:Bsp/Bsp_Timer.c ****         {
+ 691              		.loc 1 50 52 discriminator 2 view .LVU171
+ 692 005e DBB2     		uxtb	r3, r3
+ 693              	.LVL80:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 21
+
+
+ 694              	.L63:
+  50:Bsp/Bsp_Timer.c ****         {
+ 695              		.loc 1 50 29 is_stmt 1 discriminator 1 view .LVU172
+  50:Bsp/Bsp_Timer.c ****         {
+ 696              		.loc 1 50 9 is_stmt 0 discriminator 1 view .LVU173
+ 697 0060 9942     		cmp	r1, r3
+ 698 0062 D8D9     		bls	.L64
+  52:Bsp/Bsp_Timer.c ****                 return false;
+ 699              		.loc 1 52 13 is_stmt 1 view .LVU174
+  52:Bsp/Bsp_Timer.c ****                 return false;
+ 700              		.loc 1 52 36 is_stmt 0 view .LVU175
+ 701 0064 334A     		ldr	r2, .L86
+ 702 0066 52F82320 		ldr	r2, [r2, r3, lsl #2]
+  52:Bsp/Bsp_Timer.c ****                 return false;
+ 703              		.loc 1 52 16 view .LVU176
+ 704 006a A242     		cmp	r2, r4
+ 705 006c F6D1     		bne	.L85
+  53:Bsp/Bsp_Timer.c ****         }
+ 706              		.loc 1 53 24 view .LVU177
+ 707 006e 0020     		movs	r0, #0
+ 708 0070 5DE0     		b	.L65
+ 709              	.LVL81:
+ 710              	.L73:
+  50:Bsp/Bsp_Timer.c ****         {
+ 711              		.loc 1 50 22 view .LVU178
+ 712 0072 0023     		movs	r3, #0
+ 713 0074 F4E7     		b	.L63
+ 714              	.L79:
+  50:Bsp/Bsp_Timer.c ****         {
+ 715              		.loc 1 50 22 view .LVU179
+ 716              	.LBE2:
+  61:Bsp/Bsp_Timer.c ****         }
+ 717              		.loc 1 61 13 is_stmt 1 view .LVU180
+ 718              	.LBB3:
+  61:Bsp/Bsp_Timer.c ****         }
+ 719              		.loc 1 61 13 view .LVU181
+  61:Bsp/Bsp_Timer.c ****         }
+ 720              		.loc 1 61 13 view .LVU182
+ 721 0076 354B     		ldr	r3, .L86+24
+ 722 0078 D3F8F020 		ldr	r2, [r3, #240]
+ 723 007c 42F00102 		orr	r2, r2, #1
+ 724 0080 C3F8F020 		str	r2, [r3, #240]
+  61:Bsp/Bsp_Timer.c ****         }
+ 725              		.loc 1 61 13 view .LVU183
+ 726 0084 D3F8F030 		ldr	r3, [r3, #240]
+ 727 0088 03F00103 		and	r3, r3, #1
+ 728 008c 0093     		str	r3, [sp]
+  61:Bsp/Bsp_Timer.c ****         }
+ 729              		.loc 1 61 13 view .LVU184
+ 730 008e 009B     		ldr	r3, [sp]
+ 731              	.LBE3:
+  61:Bsp/Bsp_Timer.c ****         }
+ 732              		.loc 1 61 13 view .LVU185
+ 733              	.L68:
+  86:Bsp/Bsp_Timer.c ****         monitor.init_cnt++;
+ 734              		.loc 1 86 9 view .LVU186
+  86:Bsp/Bsp_Timer.c ****         monitor.init_cnt++;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 22
+
+
+ 735              		.loc 1 86 40 is_stmt 0 view .LVU187
+ 736 0090 284B     		ldr	r3, .L86
+ 737 0092 43F82140 		str	r4, [r3, r1, lsl #2]
+  87:Bsp/Bsp_Timer.c ****     }
+ 738              		.loc 1 87 9 is_stmt 1 view .LVU188
+  87:Bsp/Bsp_Timer.c ****     }
+ 739              		.loc 1 87 25 is_stmt 0 view .LVU189
+ 740 0096 0131     		adds	r1, r1, #1
+ 741 0098 83F88010 		strb	r1, [r3, #128]
+  90:Bsp/Bsp_Timer.c **** }
+ 742              		.loc 1 90 12 view .LVU190
+ 743 009c 0120     		movs	r0, #1
+ 744 009e 46E0     		b	.L65
+ 745              	.L80:
+  65:Bsp/Bsp_Timer.c ****         }
+ 746              		.loc 1 65 13 is_stmt 1 view .LVU191
+ 747              	.LBB4:
+  65:Bsp/Bsp_Timer.c ****         }
+ 748              		.loc 1 65 13 view .LVU192
+  65:Bsp/Bsp_Timer.c ****         }
+ 749              		.loc 1 65 13 view .LVU193
+ 750 00a0 2A4B     		ldr	r3, .L86+24
+ 751 00a2 D3F8E820 		ldr	r2, [r3, #232]
+ 752 00a6 42F00102 		orr	r2, r2, #1
+ 753 00aa C3F8E820 		str	r2, [r3, #232]
+  65:Bsp/Bsp_Timer.c ****         }
+ 754              		.loc 1 65 13 view .LVU194
+ 755 00ae D3F8E830 		ldr	r3, [r3, #232]
+ 756 00b2 03F00103 		and	r3, r3, #1
+ 757 00b6 0193     		str	r3, [sp, #4]
+  65:Bsp/Bsp_Timer.c ****         }
+ 758              		.loc 1 65 13 view .LVU195
+ 759 00b8 019B     		ldr	r3, [sp, #4]
+ 760              	.LBE4:
+  65:Bsp/Bsp_Timer.c ****         }
+ 761              		.loc 1 65 13 view .LVU196
+ 762 00ba E9E7     		b	.L68
+ 763              	.L81:
+  69:Bsp/Bsp_Timer.c ****         }
+ 764              		.loc 1 69 13 view .LVU197
+ 765              	.LBB5:
+  69:Bsp/Bsp_Timer.c ****         }
+ 766              		.loc 1 69 13 view .LVU198
+  69:Bsp/Bsp_Timer.c ****         }
+ 767              		.loc 1 69 13 view .LVU199
+ 768 00bc 234B     		ldr	r3, .L86+24
+ 769 00be D3F8E820 		ldr	r2, [r3, #232]
+ 770 00c2 42F00202 		orr	r2, r2, #2
+ 771 00c6 C3F8E820 		str	r2, [r3, #232]
+  69:Bsp/Bsp_Timer.c ****         }
+ 772              		.loc 1 69 13 view .LVU200
+ 773 00ca D3F8E830 		ldr	r3, [r3, #232]
+ 774 00ce 03F00203 		and	r3, r3, #2
+ 775 00d2 0293     		str	r3, [sp, #8]
+  69:Bsp/Bsp_Timer.c ****         }
+ 776              		.loc 1 69 13 view .LVU201
+ 777 00d4 029B     		ldr	r3, [sp, #8]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 23
+
+
+ 778              	.LBE5:
+  69:Bsp/Bsp_Timer.c ****         }
+ 779              		.loc 1 69 13 view .LVU202
+ 780 00d6 DBE7     		b	.L68
+ 781              	.L82:
+  73:Bsp/Bsp_Timer.c ****         }
+ 782              		.loc 1 73 13 view .LVU203
+ 783              	.LBB6:
+  73:Bsp/Bsp_Timer.c ****         }
+ 784              		.loc 1 73 13 view .LVU204
+  73:Bsp/Bsp_Timer.c ****         }
+ 785              		.loc 1 73 13 view .LVU205
+ 786 00d8 1C4B     		ldr	r3, .L86+24
+ 787 00da D3F8E820 		ldr	r2, [r3, #232]
+ 788 00de 42F00402 		orr	r2, r2, #4
+ 789 00e2 C3F8E820 		str	r2, [r3, #232]
+  73:Bsp/Bsp_Timer.c ****         }
+ 790              		.loc 1 73 13 view .LVU206
+ 791 00e6 D3F8E830 		ldr	r3, [r3, #232]
+ 792 00ea 03F00403 		and	r3, r3, #4
+ 793 00ee 0393     		str	r3, [sp, #12]
+  73:Bsp/Bsp_Timer.c ****         }
+ 794              		.loc 1 73 13 view .LVU207
+ 795 00f0 039B     		ldr	r3, [sp, #12]
+ 796              	.LBE6:
+  73:Bsp/Bsp_Timer.c ****         }
+ 797              		.loc 1 73 13 view .LVU208
+ 798 00f2 CDE7     		b	.L68
+ 799              	.L83:
+  77:Bsp/Bsp_Timer.c ****         }
+ 800              		.loc 1 77 13 view .LVU209
+ 801              	.LBB7:
+  77:Bsp/Bsp_Timer.c ****         }
+ 802              		.loc 1 77 13 view .LVU210
+  77:Bsp/Bsp_Timer.c ****         }
+ 803              		.loc 1 77 13 view .LVU211
+ 804 00f4 154B     		ldr	r3, .L86+24
+ 805 00f6 D3F8E820 		ldr	r2, [r3, #232]
+ 806 00fa 42F00802 		orr	r2, r2, #8
+ 807 00fe C3F8E820 		str	r2, [r3, #232]
+  77:Bsp/Bsp_Timer.c ****         }
+ 808              		.loc 1 77 13 view .LVU212
+ 809 0102 D3F8E830 		ldr	r3, [r3, #232]
+ 810 0106 03F00803 		and	r3, r3, #8
+ 811 010a 0493     		str	r3, [sp, #16]
+  77:Bsp/Bsp_Timer.c ****         }
+ 812              		.loc 1 77 13 view .LVU213
+ 813 010c 049B     		ldr	r3, [sp, #16]
+ 814              	.LBE7:
+  77:Bsp/Bsp_Timer.c ****         }
+ 815              		.loc 1 77 13 view .LVU214
+ 816 010e BFE7     		b	.L68
+ 817              	.L84:
+  81:Bsp/Bsp_Timer.c ****         }
+ 818              		.loc 1 81 13 view .LVU215
+ 819              	.LBB8:
+  81:Bsp/Bsp_Timer.c ****         }
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 24
+
+
+ 820              		.loc 1 81 13 view .LVU216
+  81:Bsp/Bsp_Timer.c ****         }
+ 821              		.loc 1 81 13 view .LVU217
+ 822 0110 0E4B     		ldr	r3, .L86+24
+ 823 0112 D3F8E820 		ldr	r2, [r3, #232]
+ 824 0116 42F01002 		orr	r2, r2, #16
+ 825 011a C3F8E820 		str	r2, [r3, #232]
+  81:Bsp/Bsp_Timer.c ****         }
+ 826              		.loc 1 81 13 view .LVU218
+ 827 011e D3F8E830 		ldr	r3, [r3, #232]
+ 828 0122 03F01003 		and	r3, r3, #16
+ 829 0126 0593     		str	r3, [sp, #20]
+  81:Bsp/Bsp_Timer.c ****         }
+ 830              		.loc 1 81 13 view .LVU219
+ 831 0128 059B     		ldr	r3, [sp, #20]
+ 832              	.LBE8:
+  81:Bsp/Bsp_Timer.c ****         }
+ 833              		.loc 1 81 13 view .LVU220
+ 834 012a B1E7     		b	.L68
+ 835              	.L75:
+  90:Bsp/Bsp_Timer.c **** }
+ 836              		.loc 1 90 12 is_stmt 0 view .LVU221
+ 837 012c 0120     		movs	r0, #1
+ 838              	.L65:
+  91:Bsp/Bsp_Timer.c **** 
+ 839              		.loc 1 91 1 view .LVU222
+ 840 012e 07B0     		add	sp, sp, #28
+ 841              	.LCFI5:
+ 842              		.cfi_def_cfa_offset 12
+ 843              		@ sp needed
+ 844 0130 30BD     		pop	{r4, r5, pc}
+ 845              	.LVL82:
+ 846              	.L87:
+  91:Bsp/Bsp_Timer.c **** 
+ 847              		.loc 1 91 1 view .LVU223
+ 848 0132 00BF     		.align	2
+ 849              	.L86:
+ 850 0134 00000000 		.word	.LANCHOR0
+ 851 0138 00000140 		.word	1073807360
+ 852 013c 00040040 		.word	1073742848
+ 853 0140 00080040 		.word	1073743872
+ 854 0144 000C0040 		.word	1073744896
+ 855 0148 00100040 		.word	1073745920
+ 856 014c 00440258 		.word	1476543488
+ 857              		.cfi_endproc
+ 858              	.LFE144:
+ 860              		.section	.text.BspTimer_PWM_Init,"ax",%progbits
+ 861              		.align	1
+ 862              		.syntax unified
+ 863              		.thumb
+ 864              		.thumb_func
+ 865              		.fpu fpv5-d16
+ 867              	BspTimer_PWM_Init:
+ 868              	.LVL83:
+ 869              	.LFB146:
+ 169:Bsp/Bsp_Timer.c ****     TIM_MasterConfigTypeDef sMasterConfig = {0};
+ 870              		.loc 1 169 1 is_stmt 1 view -0
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 25
+
+
+ 871              		.cfi_startproc
+ 872              		@ args = 32, pretend = 8, frame = 40
+ 873              		@ frame_needed = 0, uses_anonymous_args = 0
+ 169:Bsp/Bsp_Timer.c ****     TIM_MasterConfigTypeDef sMasterConfig = {0};
+ 874              		.loc 1 169 1 is_stmt 0 view .LVU225
+ 875 0000 82B0     		sub	sp, sp, #8
+ 876              	.LCFI6:
+ 877              		.cfi_def_cfa_offset 8
+ 878 0002 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 879              	.LCFI7:
+ 880              		.cfi_def_cfa_offset 40
+ 881              		.cfi_offset 4, -40
+ 882              		.cfi_offset 5, -36
+ 883              		.cfi_offset 6, -32
+ 884              		.cfi_offset 7, -28
+ 885              		.cfi_offset 8, -24
+ 886              		.cfi_offset 9, -20
+ 887              		.cfi_offset 10, -16
+ 888              		.cfi_offset 14, -12
+ 889 0006 8AB0     		sub	sp, sp, #40
+ 890              	.LCFI8:
+ 891              		.cfi_def_cfa_offset 80
+ 892 0008 1393     		str	r3, [sp, #76]
+ 893 000a 9DF85870 		ldrb	r7, [sp, #88]	@ zero_extendqisi2
+ 894 000e 9DF85C80 		ldrb	r8, [sp, #92]	@ zero_extendqisi2
+ 170:Bsp/Bsp_Timer.c ****     TIM_OC_InitTypeDef sConfigOC = {0};
+ 895              		.loc 1 170 5 is_stmt 1 view .LVU226
+ 170:Bsp/Bsp_Timer.c ****     TIM_OC_InitTypeDef sConfigOC = {0};
+ 896              		.loc 1 170 29 is_stmt 0 view .LVU227
+ 897 0012 0023     		movs	r3, #0
+ 898 0014 0793     		str	r3, [sp, #28]
+ 899 0016 0893     		str	r3, [sp, #32]
+ 900 0018 0993     		str	r3, [sp, #36]
+ 171:Bsp/Bsp_Timer.c **** 
+ 901              		.loc 1 171 5 is_stmt 1 view .LVU228
+ 171:Bsp/Bsp_Timer.c **** 
+ 902              		.loc 1 171 24 is_stmt 0 view .LVU229
+ 903 001a 0093     		str	r3, [sp]
+ 904 001c 0193     		str	r3, [sp, #4]
+ 905 001e 0293     		str	r3, [sp, #8]
+ 906 0020 0393     		str	r3, [sp, #12]
+ 907 0022 0493     		str	r3, [sp, #16]
+ 908 0024 0593     		str	r3, [sp, #20]
+ 909 0026 0693     		str	r3, [sp, #24]
+ 173:Bsp/Bsp_Timer.c ****         return false;
+ 910              		.loc 1 173 5 is_stmt 1 view .LVU230
+ 173:Bsp/Bsp_Timer.c ****         return false;
+ 911              		.loc 1 173 14 is_stmt 0 view .LVU231
+ 912 0028 0446     		mov	r4, r0
+ 173:Bsp/Bsp_Timer.c ****         return false;
+ 913              		.loc 1 173 8 view .LVU232
+ 914 002a 9942     		cmp	r1, r3
+ 915 002c 18BF     		it	ne
+ 916 002e 9842     		cmpne	r0, r3
+ 917 0030 0CBF     		ite	eq
+ 918 0032 0120     		moveq	r0, #1
+ 919              	.LVL84:
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 26
+
+
+ 173:Bsp/Bsp_Timer.c ****         return false;
+ 920              		.loc 1 173 8 view .LVU233
+ 921 0034 0020     		movne	r0, #0
+ 922 0036 00F0B880 		beq	.L96
+ 923 003a 1646     		mov	r6, r2
+ 924 003c 8946     		mov	r9, r1
+ 173:Bsp/Bsp_Timer.c ****         return false;
+ 925              		.loc 1 173 64 discriminator 1 view .LVU234
+ 926 003e 189B     		ldr	r3, [sp, #96]
+ 927 0040 199A     		ldr	r2, [sp, #100]
+ 928              	.LVL85:
+ 173:Bsp/Bsp_Timer.c ****         return false;
+ 929              		.loc 1 173 64 discriminator 1 view .LVU235
+ 930 0042 002A     		cmp	r2, #0
+ 931 0044 18BF     		it	ne
+ 932 0046 002B     		cmpne	r3, #0
+ 933 0048 0CBF     		ite	eq
+ 934 004a 0125     		moveq	r5, #1
+ 935 004c 0025     		movne	r5, #0
+ 936 004e 00F0B380 		beq	.L97
+ 176:Bsp/Bsp_Timer.c ****     obj->stream = stream;
+ 937              		.loc 1 176 5 is_stmt 1 view .LVU236
+ 176:Bsp/Bsp_Timer.c ****     obj->stream = stream;
+ 938              		.loc 1 176 14 is_stmt 0 view .LVU237
+ 939 0052 2772     		strb	r7, [r4, #8]
+ 177:Bsp/Bsp_Timer.c **** 
+ 940              		.loc 1 177 5 is_stmt 1 view .LVU238
+ 177:Bsp/Bsp_Timer.c **** 
+ 941              		.loc 1 177 17 is_stmt 0 view .LVU239
+ 942 0054 84F80980 		strb	r8, [r4, #9]
+ 179:Bsp/Bsp_Timer.c ****     {
+ 943              		.loc 1 179 5 is_stmt 1 view .LVU240
+ 944 0058 0C2E     		cmp	r6, #12
+ 945 005a 00F2A780 		bhi	.L89
+ 946 005e DFE806F0 		tbb	[pc, r6]
+ 947              	.L91:
+ 948 0062 07       		.byte	(.L94-.L91)/2
+ 949 0063 A5       		.byte	(.L89-.L91)/2
+ 950 0064 A5       		.byte	(.L89-.L91)/2
+ 951 0065 A5       		.byte	(.L89-.L91)/2
+ 952 0066 84       		.byte	(.L93-.L91)/2
+ 953 0067 A5       		.byte	(.L89-.L91)/2
+ 954 0068 A5       		.byte	(.L89-.L91)/2
+ 955 0069 A5       		.byte	(.L89-.L91)/2
+ 956 006a 8C       		.byte	(.L92-.L91)/2
+ 957 006b A5       		.byte	(.L89-.L91)/2
+ 958 006c A5       		.byte	(.L89-.L91)/2
+ 959 006d A5       		.byte	(.L89-.L91)/2
+ 960 006e 94       		.byte	(.L90-.L91)/2
+ 961 006f 00       		.p2align 1
+ 962              	.L94:
+ 182:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC1;
+ 963              		.loc 1 182 9 view .LVU241
+ 182:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC1;
+ 964              		.loc 1 182 28 is_stmt 0 view .LVU242
+ 965 0070 0123     		movs	r3, #1
+ 966 0072 C4F8D830 		str	r3, [r4, #216]
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 27
+
+
+ 183:Bsp/Bsp_Timer.c ****         break;
+ 967              		.loc 1 183 9 is_stmt 1 view .LVU243
+ 183:Bsp/Bsp_Timer.c ****         break;
+ 968              		.loc 1 183 25 is_stmt 0 view .LVU244
+ 969 0076 4FF40073 		mov	r3, #512
+ 970 007a C4F8DC30 		str	r3, [r4, #220]
+ 184:Bsp/Bsp_Timer.c **** 
+ 971              		.loc 1 184 9 is_stmt 1 view .LVU245
+ 972              	.L95:
+ 205:Bsp/Bsp_Timer.c ****     obj->instance = instance;
+ 973              		.loc 1 205 5 view .LVU246
+ 974 007e 4846     		mov	r0, r9
+ 975 0080 FFF7FEFF 		bl	BspTimer_PWM_InitMonit
+ 976              	.LVL86:
+ 206:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Instance = instance;
+ 977              		.loc 1 206 5 view .LVU247
+ 206:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Instance = instance;
+ 978              		.loc 1 206 19 is_stmt 0 view .LVU248
+ 979 0084 C4F80090 		str	r9, [r4]
+ 207:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.Prescaler = 0;
+ 980              		.loc 1 207 5 is_stmt 1 view .LVU249
+ 207:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.Prescaler = 0;
+ 981              		.loc 1 207 27 is_stmt 0 view .LVU250
+ 982 0088 C4F88490 		str	r9, [r4, #132]
+ 208:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.CounterMode = TIM_COUNTERMODE_UP;
+ 983              		.loc 1 208 5 is_stmt 1 view .LVU251
+ 208:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.CounterMode = TIM_COUNTERMODE_UP;
+ 984              		.loc 1 208 33 is_stmt 0 view .LVU252
+ 985 008c 4FF0000A 		mov	r10, #0
+ 986 0090 C4F888A0 		str	r10, [r4, #136]
+ 209:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.Period = 0;
+ 987              		.loc 1 209 5 is_stmt 1 view .LVU253
+ 209:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.Period = 0;
+ 988              		.loc 1 209 35 is_stmt 0 view .LVU254
+ 989 0094 C4F88CA0 		str	r10, [r4, #140]
+ 210:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+ 990              		.loc 1 210 5 is_stmt 1 view .LVU255
+ 210:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+ 991              		.loc 1 210 30 is_stmt 0 view .LVU256
+ 992 0098 C4F890A0 		str	r10, [r4, #144]
+ 211:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+ 993              		.loc 1 211 5 is_stmt 1 view .LVU257
+ 211:Bsp/Bsp_Timer.c ****     obj->tim_hdl.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+ 994              		.loc 1 211 37 is_stmt 0 view .LVU258
+ 995 009c C4F894A0 		str	r10, [r4, #148]
+ 212:Bsp/Bsp_Timer.c **** 
+ 996              		.loc 1 212 5 is_stmt 1 view .LVU259
+ 212:Bsp/Bsp_Timer.c **** 
+ 997              		.loc 1 212 41 is_stmt 0 view .LVU260
+ 998 00a0 C4F89CA0 		str	r10, [r4, #156]
+ 215:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Request = BspTimer_Get_DMA_Request(instance, ch);
+ 999              		.loc 1 215 5 is_stmt 1 view .LVU261
+ 215:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Request = BspTimer_Get_DMA_Request(instance, ch);
+ 1000              		.loc 1 215 35 is_stmt 0 view .LVU262
+ 1001 00a4 454B     		ldr	r3, .L101
+ 1002 00a6 DB68     		ldr	r3, [r3, #12]
+ 215:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Request = BspTimer_Get_DMA_Request(instance, ch);
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 28
+
+
+ 1003              		.loc 1 215 29 view .LVU263
+ 1004 00a8 7FB2     		sxtb	r7, r7
+ 1005 00aa 4FFA88F8 		sxtb	r8, r8
+ 1006 00ae 4146     		mov	r1, r8
+ 1007 00b0 3846     		mov	r0, r7
+ 1008 00b2 9847     		blx	r3
+ 1009              	.LVL87:
+ 215:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Request = BspTimer_Get_DMA_Request(instance, ch);
+ 1010              		.loc 1 215 27 view .LVU264
+ 1011 00b4 E060     		str	r0, [r4, #12]
+ 216:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Direction = DMA_MEMORY_TO_PERIPH;
+ 1012              		.loc 1 216 5 is_stmt 1 view .LVU265
+ 216:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Direction = DMA_MEMORY_TO_PERIPH;
+ 1013              		.loc 1 216 33 is_stmt 0 view .LVU266
+ 1014 00b6 3146     		mov	r1, r6
+ 1015 00b8 4846     		mov	r0, r9
+ 1016 00ba FFF7FEFF 		bl	BspTimer_Get_DMA_Request
+ 1017              	.LVL88:
+ 216:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Direction = DMA_MEMORY_TO_PERIPH;
+ 1018              		.loc 1 216 31 view .LVU267
+ 1019 00be 2061     		str	r0, [r4, #16]
+ 217:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.PeriphInc = DMA_PINC_DISABLE;
+ 1020              		.loc 1 217 5 is_stmt 1 view .LVU268
+ 217:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.PeriphInc = DMA_PINC_DISABLE;
+ 1021              		.loc 1 217 33 is_stmt 0 view .LVU269
+ 1022 00c0 4023     		movs	r3, #64
+ 1023 00c2 6361     		str	r3, [r4, #20]
+ 218:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.MemInc = DMA_MINC_ENABLE;
+ 1024              		.loc 1 218 5 is_stmt 1 view .LVU270
+ 218:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.MemInc = DMA_MINC_ENABLE;
+ 1025              		.loc 1 218 33 is_stmt 0 view .LVU271
+ 1026 00c4 C4F818A0 		str	r10, [r4, #24]
+ 219:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+ 1027              		.loc 1 219 5 is_stmt 1 view .LVU272
+ 219:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+ 1028              		.loc 1 219 30 is_stmt 0 view .LVU273
+ 1029 00c8 4FF48063 		mov	r3, #1024
+ 1030 00cc E361     		str	r3, [r4, #28]
+ 220:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
+ 1031              		.loc 1 220 5 is_stmt 1 view .LVU274
+ 220:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
+ 1032              		.loc 1 220 43 is_stmt 0 view .LVU275
+ 1033 00ce 4FF48053 		mov	r3, #4096
+ 1034 00d2 2362     		str	r3, [r4, #32]
+ 221:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Mode = DMA_NORMAL;
+ 1035              		.loc 1 221 5 is_stmt 1 view .LVU276
+ 221:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Mode = DMA_NORMAL;
+ 1036              		.loc 1 221 40 is_stmt 0 view .LVU277
+ 1037 00d4 6362     		str	r3, [r4, #36]
+ 222:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Priority = DMA_PRIORITY_HIGH;
+ 1038              		.loc 1 222 5 is_stmt 1 view .LVU278
+ 222:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.Priority = DMA_PRIORITY_HIGH;
+ 1039              		.loc 1 222 28 is_stmt 0 view .LVU279
+ 1040 00d6 C4F828A0 		str	r10, [r4, #40]
+ 223:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+ 1041              		.loc 1 223 5 is_stmt 1 view .LVU280
+ 223:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 29
+
+
+ 1042              		.loc 1 223 32 is_stmt 0 view .LVU281
+ 1043 00da 4FF40033 		mov	r3, #131072
+ 1044 00de E362     		str	r3, [r4, #44]
+ 224:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
+ 1045              		.loc 1 224 5 is_stmt 1 view .LVU282
+ 224:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
+ 1046              		.loc 1 224 32 is_stmt 0 view .LVU283
+ 1047 00e0 0423     		movs	r3, #4
+ 1048 00e2 2363     		str	r3, [r4, #48]
+ 225:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.MemBurst = DMA_MBURST_SINGLE;
+ 1049              		.loc 1 225 5 is_stmt 1 view .LVU284
+ 225:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.MemBurst = DMA_MBURST_SINGLE;
+ 1050              		.loc 1 225 37 is_stmt 0 view .LVU285
+ 1051 00e4 C4F834A0 		str	r10, [r4, #52]
+ 226:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.PeriphBurst = DMA_PBURST_SINGLE;
+ 1052              		.loc 1 226 5 is_stmt 1 view .LVU286
+ 226:Bsp/Bsp_Timer.c ****     obj->dma_hdl.Init.PeriphBurst = DMA_PBURST_SINGLE;
+ 1053              		.loc 1 226 32 is_stmt 0 view .LVU287
+ 1054 00e8 C4F838A0 		str	r10, [r4, #56]
+ 227:Bsp/Bsp_Timer.c **** 
+ 1055              		.loc 1 227 5 is_stmt 1 view .LVU288
+ 227:Bsp/Bsp_Timer.c **** 
+ 1056              		.loc 1 227 35 is_stmt 0 view .LVU289
+ 1057 00ec C4F83CA0 		str	r10, [r4, #60]
+ 229:Bsp/Bsp_Timer.c ****         return false;
+ 1058              		.loc 1 229 5 is_stmt 1 view .LVU290
+ 229:Bsp/Bsp_Timer.c ****         return false;
+ 1059              		.loc 1 229 9 is_stmt 0 view .LVU291
+ 1060 00f0 04F10C09 		add	r9, r4, #12
+ 1061              	.LVL89:
+ 229:Bsp/Bsp_Timer.c ****         return false;
+ 1062              		.loc 1 229 9 view .LVU292
+ 1063 00f4 4846     		mov	r0, r9
+ 1064 00f6 FFF7FEFF 		bl	HAL_DMA_Init
+ 1065              	.LVL90:
+ 229:Bsp/Bsp_Timer.c ****         return false;
+ 1066              		.loc 1 229 8 view .LVU293
+ 1067 00fa 0028     		cmp	r0, #0
+ 1068 00fc 56D1     		bne	.L89
+ 232:Bsp/Bsp_Timer.c **** 
+ 1069              		.loc 1 232 5 is_stmt 1 view .LVU294
+ 232:Bsp/Bsp_Timer.c **** 
+ 1070              		.loc 1 232 5 view .LVU295
+ 1071 00fe D4F8D830 		ldr	r3, [r4, #216]
+ 1072 0102 2833     		adds	r3, r3, #40
+ 1073 0104 04EB8303 		add	r3, r4, r3, lsl #2
+ 1074 0108 C3F80490 		str	r9, [r3, #4]
+ 232:Bsp/Bsp_Timer.c **** 
+ 1075              		.loc 1 232 5 view .LVU296
+ 1076 010c 04F1840A 		add	r10, r4, #132
+ 1077 0110 C4F844A0 		str	r10, [r4, #68]
+ 232:Bsp/Bsp_Timer.c **** 
+ 1078              		.loc 1 232 5 view .LVU297
+ 234:Bsp/Bsp_Timer.c ****         return false;
+ 1079              		.loc 1 234 5 view .LVU298
+ 234:Bsp/Bsp_Timer.c ****         return false;
+ 1080              		.loc 1 234 9 is_stmt 0 view .LVU299
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 30
+
+
+ 1081 0114 5046     		mov	r0, r10
+ 1082 0116 FFF7FEFF 		bl	HAL_TIM_PWM_Init
+ 1083              	.LVL91:
+ 234:Bsp/Bsp_Timer.c ****         return false;
+ 1084              		.loc 1 234 8 view .LVU300
+ 1085 011a 0028     		cmp	r0, #0
+ 1086 011c 46D1     		bne	.L89
+ 237:Bsp/Bsp_Timer.c ****     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+ 1087              		.loc 1 237 5 is_stmt 1 view .LVU301
+ 237:Bsp/Bsp_Timer.c ****     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+ 1088              		.loc 1 237 39 is_stmt 0 view .LVU302
+ 1089 011e 0023     		movs	r3, #0
+ 1090 0120 0793     		str	r3, [sp, #28]
+ 238:Bsp/Bsp_Timer.c **** 
+ 1091              		.loc 1 238 5 is_stmt 1 view .LVU303
+ 238:Bsp/Bsp_Timer.c **** 
+ 1092              		.loc 1 238 35 is_stmt 0 view .LVU304
+ 1093 0122 0993     		str	r3, [sp, #36]
+ 240:Bsp/Bsp_Timer.c ****         return false;
+ 1094              		.loc 1 240 5 is_stmt 1 view .LVU305
+ 240:Bsp/Bsp_Timer.c ****         return false;
+ 1095              		.loc 1 240 9 is_stmt 0 view .LVU306
+ 1096 0124 07A9     		add	r1, sp, #28
+ 1097 0126 5046     		mov	r0, r10
+ 1098 0128 FFF7FEFF 		bl	HAL_TIMEx_MasterConfigSynchronization
+ 1099              	.LVL92:
+ 240:Bsp/Bsp_Timer.c ****         return false;
+ 1100              		.loc 1 240 8 view .LVU307
+ 1101 012c 0028     		cmp	r0, #0
+ 1102 012e 3DD1     		bne	.L89
+ 243:Bsp/Bsp_Timer.c ****     sConfigOC.Pulse = 0;
+ 1103              		.loc 1 243 5 is_stmt 1 view .LVU308
+ 243:Bsp/Bsp_Timer.c ****     sConfigOC.Pulse = 0;
+ 1104              		.loc 1 243 22 is_stmt 0 view .LVU309
+ 1105 0130 6023     		movs	r3, #96
+ 1106 0132 0093     		str	r3, [sp]
+ 244:Bsp/Bsp_Timer.c ****     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+ 1107              		.loc 1 244 5 is_stmt 1 view .LVU310
+ 244:Bsp/Bsp_Timer.c ****     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+ 1108              		.loc 1 244 21 is_stmt 0 view .LVU311
+ 1109 0134 0023     		movs	r3, #0
+ 1110 0136 0193     		str	r3, [sp, #4]
+ 245:Bsp/Bsp_Timer.c ****     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+ 1111              		.loc 1 245 5 is_stmt 1 view .LVU312
+ 245:Bsp/Bsp_Timer.c ****     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+ 1112              		.loc 1 245 26 is_stmt 0 view .LVU313
+ 1113 0138 0293     		str	r3, [sp, #8]
+ 246:Bsp/Bsp_Timer.c **** 
+ 1114              		.loc 1 246 5 is_stmt 1 view .LVU314
+ 246:Bsp/Bsp_Timer.c **** 
+ 1115              		.loc 1 246 26 is_stmt 0 view .LVU315
+ 1116 013a 0493     		str	r3, [sp, #16]
+ 248:Bsp/Bsp_Timer.c ****         return false;
+ 1117              		.loc 1 248 5 is_stmt 1 view .LVU316
+ 248:Bsp/Bsp_Timer.c ****         return false;
+ 1118              		.loc 1 248 9 is_stmt 0 view .LVU317
+ 1119 013c 3246     		mov	r2, r6
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 31
+
+
+ 1120 013e 6946     		mov	r1, sp
+ 1121 0140 5046     		mov	r0, r10
+ 1122 0142 FFF7FEFF 		bl	HAL_TIM_PWM_ConfigChannel
+ 1123              	.LVL93:
+ 248:Bsp/Bsp_Timer.c ****         return false;
+ 1124              		.loc 1 248 8 view .LVU318
+ 1125 0146 88BB     		cbnz	r0, .L89
+ 251:Bsp/Bsp_Timer.c **** 
+ 1126              		.loc 1 251 5 is_stmt 1 view .LVU319
+ 251:Bsp/Bsp_Timer.c **** 
+ 1127              		.loc 1 251 22 is_stmt 0 view .LVU320
+ 1128 0148 6660     		str	r6, [r4, #4]
+ 254:Bsp/Bsp_Timer.c **** 
+ 1129              		.loc 1 254 5 is_stmt 1 view .LVU321
+ 254:Bsp/Bsp_Timer.c **** 
+ 1130              		.loc 1 254 12 is_stmt 0 view .LVU322
+ 1131 014a 1D4B     		ldr	r3, .L101+4
+ 1132 014c DC68     		ldr	r4, [r3, #12]
+ 1133              	.LVL94:
+ 254:Bsp/Bsp_Timer.c **** 
+ 1134              		.loc 1 254 5 view .LVU323
+ 1135 014e 13AB     		add	r3, sp, #76
+ 1136 0150 93E80700 		ldm	r3, {r0, r1, r2}
+ 1137 0154 A047     		blx	r4
+ 1138              	.LVL95:
+ 257:Bsp/Bsp_Timer.c ****     {
+ 1139              		.loc 1 257 5 is_stmt 1 view .LVU324
+ 257:Bsp/Bsp_Timer.c ****     {
+ 1140              		.loc 1 257 15 is_stmt 0 view .LVU325
+ 1141 0156 194B     		ldr	r3, .L101
+ 1142 0158 1B68     		ldr	r3, [r3]
+ 257:Bsp/Bsp_Timer.c ****     {
+ 1143              		.loc 1 257 9 view .LVU326
+ 1144 015a 4A46     		mov	r2, r9
+ 1145 015c 4146     		mov	r1, r8
+ 1146 015e 3846     		mov	r0, r7
+ 1147 0160 9847     		blx	r3
+ 1148              	.LVL96:
+ 257:Bsp/Bsp_Timer.c ****     {
+ 1149              		.loc 1 257 8 view .LVU327
+ 1150 0162 0546     		mov	r5, r0
+ 1151 0164 C8B9     		cbnz	r0, .L100
+ 264:Bsp/Bsp_Timer.c **** }
+ 1152              		.loc 1 264 12 view .LVU328
+ 1153 0166 0125     		movs	r5, #1
+ 1154 0168 20E0     		b	.L89
+ 1155              	.LVL97:
+ 1156              	.L93:
+ 187:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC2;
+ 1157              		.loc 1 187 9 is_stmt 1 view .LVU329
+ 187:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC2;
+ 1158              		.loc 1 187 28 is_stmt 0 view .LVU330
+ 1159 016a 0223     		movs	r3, #2
+ 1160 016c C4F8D830 		str	r3, [r4, #216]
+ 188:Bsp/Bsp_Timer.c ****         break;
+ 1161              		.loc 1 188 9 is_stmt 1 view .LVU331
+ 188:Bsp/Bsp_Timer.c ****         break;
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 32
+
+
+ 1162              		.loc 1 188 25 is_stmt 0 view .LVU332
+ 1163 0170 4FF48063 		mov	r3, #1024
+ 1164 0174 C4F8DC30 		str	r3, [r4, #220]
+ 189:Bsp/Bsp_Timer.c **** 
+ 1165              		.loc 1 189 9 is_stmt 1 view .LVU333
+ 1166 0178 81E7     		b	.L95
+ 1167              	.L92:
+ 192:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC3;
+ 1168              		.loc 1 192 9 view .LVU334
+ 192:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC3;
+ 1169              		.loc 1 192 28 is_stmt 0 view .LVU335
+ 1170 017a 0323     		movs	r3, #3
+ 1171 017c C4F8D830 		str	r3, [r4, #216]
+ 193:Bsp/Bsp_Timer.c ****         break;
+ 1172              		.loc 1 193 9 is_stmt 1 view .LVU336
+ 193:Bsp/Bsp_Timer.c ****         break;
+ 1173              		.loc 1 193 25 is_stmt 0 view .LVU337
+ 1174 0180 4FF40063 		mov	r3, #2048
+ 1175 0184 C4F8DC30 		str	r3, [r4, #220]
+ 194:Bsp/Bsp_Timer.c **** 
+ 1176              		.loc 1 194 9 is_stmt 1 view .LVU338
+ 1177 0188 79E7     		b	.L95
+ 1178              	.L90:
+ 197:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC4;
+ 1179              		.loc 1 197 9 view .LVU339
+ 197:Bsp/Bsp_Timer.c ****         obj->tim_dma_cc = TIM_DMA_CC4;
+ 1180              		.loc 1 197 28 is_stmt 0 view .LVU340
+ 1181 018a 0423     		movs	r3, #4
+ 1182 018c C4F8D830 		str	r3, [r4, #216]
+ 198:Bsp/Bsp_Timer.c ****         break;
+ 1183              		.loc 1 198 9 is_stmt 1 view .LVU341
+ 198:Bsp/Bsp_Timer.c ****         break;
+ 1184              		.loc 1 198 25 is_stmt 0 view .LVU342
+ 1185 0190 4FF48053 		mov	r3, #4096
+ 1186 0194 C4F8DC30 		str	r3, [r4, #220]
+ 199:Bsp/Bsp_Timer.c **** 
+ 1187              		.loc 1 199 9 is_stmt 1 view .LVU343
+ 1188 0198 71E7     		b	.L95
+ 1189              	.LVL98:
+ 1190              	.L100:
+ 260:Bsp/Bsp_Timer.c ****         return true;
+ 1191              		.loc 1 260 9 view .LVU344
+ 260:Bsp/Bsp_Timer.c ****         return true;
+ 1192              		.loc 1 260 15 is_stmt 0 view .LVU345
+ 1193 019a 084B     		ldr	r3, .L101
+ 1194 019c 1C69     		ldr	r4, [r3, #16]
+ 260:Bsp/Bsp_Timer.c ****         return true;
+ 1195              		.loc 1 260 9 view .LVU346
+ 1196 019e 0023     		movs	r3, #0
+ 1197 01a0 0522     		movs	r2, #5
+ 1198 01a2 4146     		mov	r1, r8
+ 1199 01a4 3846     		mov	r0, r7
+ 1200 01a6 A047     		blx	r4
+ 1201              	.LVL99:
+ 261:Bsp/Bsp_Timer.c ****     }
+ 1202              		.loc 1 261 9 is_stmt 1 view .LVU347
+ 261:Bsp/Bsp_Timer.c ****     }
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 33
+
+
+ 1203              		.loc 1 261 16 is_stmt 0 view .LVU348
+ 1204 01a8 00E0     		b	.L89
+ 1205              	.LVL100:
+ 1206              	.L96:
+ 174:Bsp/Bsp_Timer.c **** 
+ 1207              		.loc 1 174 16 view .LVU349
+ 1208 01aa 0025     		movs	r5, #0
+ 1209              	.LVL101:
+ 1210              	.L89:
+ 265:Bsp/Bsp_Timer.c **** 
+ 1211              		.loc 1 265 1 view .LVU350
+ 1212 01ac 2846     		mov	r0, r5
+ 1213 01ae 0AB0     		add	sp, sp, #40
+ 1214              	.LCFI9:
+ 1215              		.cfi_remember_state
+ 1216              		.cfi_def_cfa_offset 40
+ 1217              		@ sp needed
+ 1218 01b0 BDE8F047 		pop	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 1219              	.LCFI10:
+ 1220              		.cfi_restore 14
+ 1221              		.cfi_restore 10
+ 1222              		.cfi_restore 9
+ 1223              		.cfi_restore 8
+ 1224              		.cfi_restore 7
+ 1225              		.cfi_restore 6
+ 1226              		.cfi_restore 5
+ 1227              		.cfi_restore 4
+ 1228              		.cfi_def_cfa_offset 8
+ 1229 01b4 02B0     		add	sp, sp, #8
+ 1230              	.LCFI11:
+ 1231              		.cfi_def_cfa_offset 0
+ 1232 01b6 7047     		bx	lr
+ 1233              	.LVL102:
+ 1234              	.L97:
+ 1235              	.LCFI12:
+ 1236              		.cfi_restore_state
+ 174:Bsp/Bsp_Timer.c **** 
+ 1237              		.loc 1 174 16 view .LVU351
+ 1238 01b8 0546     		mov	r5, r0
+ 1239 01ba F7E7     		b	.L89
+ 1240              	.L102:
+ 1241              		.align	2
+ 1242              	.L101:
+ 1243 01bc 00000000 		.word	BspDMA
+ 1244 01c0 00000000 		.word	BspGPIO
+ 1245              		.cfi_endproc
+ 1246              	.LFE146:
+ 1248              		.global	BspTimer_PWM
+ 1249              		.global	monitor
+ 1250              		.section	.bss.monitor,"aw",%nobits
+ 1251              		.align	2
+ 1252              		.set	.LANCHOR0,. + 0
+ 1255              	monitor:
+ 1256 0000 00000000 		.space	132
+ 1256      00000000 
+ 1256      00000000 
+ 1256      00000000 
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 34
+
+
+ 1256      00000000 
+ 1257              		.section	.data.BspTimer_PWM,"aw"
+ 1258              		.align	2
+ 1261              	BspTimer_PWM:
+ 1262 0000 00000000 		.word	BspTimer_PWM_Init
+ 1263 0004 00000000 		.word	BspTimer_SetPreScale
+ 1264 0008 00000000 		.word	BspTimer_SetAutoReload
+ 1265 000c 00000000 		.word	BspTimer_PWM_Start
+ 1266 0010 00000000 		.word	BspTimer_DMA_Start
+ 1267              		.text
+ 1268              	.Letext0:
+ 1269              		.file 2 "/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.07/gcc/arm-none-eabi/include/machine/_de
+ 1270              		.file 3 "/opt/homebrew/Cellar/arm-none-eabi-gcc/10.3-2021.07/gcc/arm-none-eabi/include/sys/_stdint
+ 1271              		.file 4 "HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1272              		.file 5 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1273              		.file 6 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1274              		.file 7 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1275              		.file 8 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h"
+ 1276              		.file 9 "Bsp/Bsp_DMA.h"
+ 1277              		.file 10 "Bsp/Bsp_GPIO.h"
+ 1278              		.file 11 "Bsp/Bsp_Timer.h"
+ 1279              		.file 12 "HAL_Lib/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim_ex.h"
+ 1280              		.file 13 "<built-in>"
+ARM GAS  /var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s 			page 35
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 Bsp_Timer.c
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:17     .text.BspTimer_Get_DMA_Request:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:24     .text.BspTimer_Get_DMA_Request:0000000000000000 BspTimer_Get_DMA_Request
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:76     .text.BspTimer_Get_DMA_Request:000000000000003a $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:103    .text.BspTimer_Get_DMA_Request:0000000000000054 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:154    .text.BspTimer_Get_DMA_Request:000000000000007a $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:273    .text.BspTimer_Get_DMA_Request:00000000000000c0 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:279    .text.BspTimer_SetPreScale:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:285    .text.BspTimer_SetPreScale:0000000000000000 BspTimer_SetPreScale
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:305    .text.BspTimer_SetAutoReload:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:311    .text.BspTimer_SetAutoReload:0000000000000000 BspTimer_SetAutoReload
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:335    .text.BspTimer_DMA_Callback:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:341    .text.BspTimer_DMA_Callback:0000000000000000 BspTimer_DMA_Callback
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:433    .text.BspTimer_DMA_Start:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:439    .text.BspTimer_DMA_Start:0000000000000000 BspTimer_DMA_Start
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:473    .text.BspTimer_DMA_Start:000000000000001e $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:477    .text.BspTimer_DMA_Start:0000000000000022 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:544    .text.BspTimer_PWM_Start:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:550    .text.BspTimer_PWM_Start:0000000000000000 BspTimer_PWM_Start
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:585    .text.BspTimer_PWM_Start:000000000000001c $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:590    .text.BspTimer_PWM_InitMonit:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:596    .text.BspTimer_PWM_InitMonit:0000000000000000 BspTimer_PWM_InitMonit
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:850    .text.BspTimer_PWM_InitMonit:0000000000000134 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:861    .text.BspTimer_PWM_Init:0000000000000000 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:867    .text.BspTimer_PWM_Init:0000000000000000 BspTimer_PWM_Init
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:948    .text.BspTimer_PWM_Init:0000000000000062 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:1243   .text.BspTimer_PWM_Init:00000000000001bc $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:1261   .data.BspTimer_PWM:0000000000000000 BspTimer_PWM
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:1255   .bss.monitor:0000000000000000 monitor
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:1251   .bss.monitor:0000000000000000 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:1258   .data.BspTimer_PWM:0000000000000000 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:89     .text.BspTimer_Get_DMA_Request:0000000000000047 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:89     .text.BspTimer_Get_DMA_Request:0000000000000048 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:116    .text.BspTimer_Get_DMA_Request:0000000000000061 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:116    .text.BspTimer_Get_DMA_Request:0000000000000062 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:167    .text.BspTimer_Get_DMA_Request:0000000000000087 $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:167    .text.BspTimer_Get_DMA_Request:0000000000000088 $t
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:961    .text.BspTimer_PWM_Init:000000000000006f $d
+/var/folders/8_/_8bzxkcs1296m80nzxdrn9q80000gn/T//ccwoK4vF.s:961    .text.BspTimer_PWM_Init:0000000000000070 $t
+
+UNDEFINED SYMBOLS
+HAL_DMA_Start_IT
+HAL_TIM_PWM_Start
+memset
+HAL_DMA_Init
+HAL_TIM_PWM_Init
+HAL_TIMEx_MasterConfigSynchronization
+HAL_TIM_PWM_ConfigChannel
+BspDMA
+BspGPIO
