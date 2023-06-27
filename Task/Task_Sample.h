@@ -1,5 +1,5 @@
-#ifndef __TASK_SENSORINERTIAL_H
-#define __TASK_SENSORINERTIAL_H
+#ifndef __TASK_SAMPLE_H
+#define __TASK_SAMPLE_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -35,7 +35,7 @@ typedef struct
 } SensorInertial_Data_TypeDef;
 #pragma pack()
 
-void TaskInertial_Init(void);
-void TaskInertical_Core(void const *arg);
+void TaskSample_Init(uint32_t period);
+void TaskSample_Core(void const *arg);
 
 #endif

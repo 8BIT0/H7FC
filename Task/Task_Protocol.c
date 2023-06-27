@@ -10,6 +10,7 @@
 #include "usbd_cdc_if.h"
 #include "debug_util.h"
 #include <stdio.h>
+#include "Srv_OsCommon.h"
 #include "../DataStructure/queue.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
@@ -20,6 +21,9 @@
 static bool test = false;
 
 #define VCP_QUEUE_BUFF_SIZE 4096
+
+/* internal var */
+static uint32_t TaskProtocol_Period = 0;
 
 /* MAVLink message List */
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RawIMU;
@@ -51,7 +55,7 @@ static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 static void TaskProtocol_PlugDetect_Callback(void);
 ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
 
-bool TaskProtocol_Init(void)
+bool TaskProtocol_Init(uint32_t period)
 {
     SrvComProto.init(SrvComProto_Type_MAV, NULL);
 
@@ -118,6 +122,8 @@ bool TaskProtocol_Init(void)
     ErrorLog.set_callback(Error_Out_Callback, TaskProto_PushProtocolQueue);
 
     task_state = TaskProto_Core;
+    TaskProtocol_Period = period;
+
     return true;
 }
 
@@ -168,44 +174,49 @@ void TaskProtocol_Core(void const *arg)
 {
     uint8_t *p_buf = NULL;
     uint16_t p_buf_size = 0;
+    uint32_t sys_time = SrvOsCommon.get_os_ms();
 
-    DebugPin.ctl(Debug_PC3, true);
-
-    switch ((uint8_t)task_state)
+    while(1)
     {
-    case TaskProto_Core:
-        TaskProtocol_MainProc(NULL, 0);
+        DebugPin.ctl(Debug_PC3, true);
 
-        /* check vcp send queue state */
-        /* if it has any data then send them out */
-        if (test && ((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Queue_full)) && Queue.size(VCP_ProtoQueue))
+        switch ((uint8_t)task_state)
         {
-            p_buf = (uint8_t *)MMU_Malloc(Queue.size(VCP_ProtoQueue));
+        case TaskProto_Core:
+            TaskProtocol_MainProc(NULL, 0);
 
-            if (p_buf)
+            /* check vcp send queue state */
+            /* if it has any data then send them out */
+            if (test && ((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Queue_full)) && Queue.size(VCP_ProtoQueue))
             {
-                p_buf_size = Queue.size(VCP_ProtoQueue);
-                Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
+                p_buf = (uint8_t *)MMU_Malloc(Queue.size(VCP_ProtoQueue));
 
-                TaskProtocol_TransBuff(p_buf, p_buf_size);
+                if (p_buf)
+                {
+                    p_buf_size = Queue.size(VCP_ProtoQueue);
+                    Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
+
+                    TaskProtocol_TransBuff(p_buf, p_buf_size);
+                }
+
+                MMU_Free(p_buf);
             }
+            
+            /* test proto mavlink raw imu data */
+            SrvComProto.mav_msg_stream(TaskProto_MAV_RawIMU, &MavStream, TaskProtocol_TransBuff);
 
-            MMU_Free(p_buf);
+            break;
+
+        case TaskProto_Error_Proc:
+            break;
+
+        default:
+            break;
         }
-        
-        /* test proto mavlink raw imu data */
-        SrvComProto.mav_msg_stream(TaskProto_MAV_RawIMU, &MavStream, TaskProtocol_TransBuff);
 
-        break;
-
-    case TaskProto_Error_Proc:
-        break;
-
-    default:
-        break;
+        DebugPin.ctl(Debug_PC3, false);
+        SrvOsCommon.precise_delay(&sys_time, TaskProtocol_Period);
     }
-
-    DebugPin.ctl(Debug_PC3, false);
 }
 
 static void TaskProtocol_MainProc(uint8_t *data, uint16_t size)

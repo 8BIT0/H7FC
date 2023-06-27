@@ -40,6 +40,7 @@ static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_RCInput_TypeDef RC_Setting;
 static Telemetry_Monitor_TypeDef Telemetry_Monitor;
 static bool RCData_To_Configuretor = false;
+static uint32_t TaskTelemetry_Period = 0;
 DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
 
 /* internal funciotn */
@@ -55,7 +56,7 @@ void TaskTelemetry_Set_DataIO_Enable(bool state)
     RCData_To_Configuretor = state;
 }
 
-void TaskTelemetry_Init(void)
+void TaskTelemetry_Init(uint32_t period)
 {
     memset(&Telemetry_Monitor, 0, sizeof(Telemetry_Monitor));
 
@@ -110,6 +111,8 @@ void TaskTelemetry_Init(void)
     }
 
     /* init radio */
+
+    TaskTelemetry_Period = period;
 }
 
 void Telemetry_blink(void)
@@ -140,12 +143,19 @@ static bool Telemetry_Led_Control(bool state)
 
 void TaskTelemetry_Core(void const *arg)
 {
-    // Telemetry_blink();
+    uint32_t sys_time = SrvOsCommon.get_os_ms();
 
-    DataPipe_DataObj(Rc) = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
+    while(1)
+    {
+        // Telemetry_blink();
 
-    /* pipe data out */
-    DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
+        DataPipe_DataObj(Rc) = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
+
+        /* pipe data out */
+        DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
+        
+        SrvOsCommon.precise_delay(&sys_time, TaskTelemetry_Period);
+    }
 }
 
 /************************************** telemetry receiver section ********************************************/

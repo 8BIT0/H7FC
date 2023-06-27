@@ -139,7 +139,7 @@ typedef struct
 } Telemetry_Monitor_TypeDef;
 #pragma pack()
 
-void TaskTelemetry_Init(void);
+void TaskTelemetry_Init(uint32_t period);
 void TaskTelemetry_Core(void const* arg);
 
 #endif

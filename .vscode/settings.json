@@ -126,7 +126,8 @@
                 "minilzo.h": "c",
                 "srv_oscommon.h": "c",
                 "task.h": "c",
-                "freertos.h": "c"
+                "freertos.h": "c",
+                "cmsis_os.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false

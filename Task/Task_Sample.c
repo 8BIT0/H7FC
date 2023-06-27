@@ -1,9 +1,10 @@
-#include "Task_SensorInertial.h"
+#include "Task_Sample.h"
 #include "debug_util.h"
 #include "Srv_OsCommon.h"
 #include "IO_Definition.h"
 #include "debug_util.h"
 #include "error_log.h"
+#include "Srv_OsCommon.h"
 #include "../System/DataPipe/DataPipe.h"
 
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
@@ -11,7 +12,7 @@
 /* internal var */
 static Task_SensorInertial_State TaskInertial_State = Task_SensorInertial_Core;
 static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
-
+static uint32_t TaskSample_Period = 0;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, IMU_Data);
 
 /* internal function */
@@ -20,7 +21,7 @@ static void TaskInertical_Led_Control(bool state);
 
 /* external function */
 
-void TaskInertial_Init(void)
+void TaskSample_Init(uint32_t period)
 {
     memset(&IMU_Smp_DataPipe, NULL, sizeof(IMU_Smp_DataPipe));
     memset(DataPipe_DataObjAddr(IMU_Data), NULL, sizeof(DataPipe_DataObj(IMU_Data)));
@@ -32,45 +33,54 @@ void TaskInertial_Init(void)
     /* regist error */
     if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
         TaskInertial_State = Task_SensorInertial_Error;
+
+    TaskSample_Period = period;
 }
 
-void TaskInertical_Core(void const *arg)
+void TaskSample_Core(void const *arg)
 {
-    // DebugPin.ctl(Debug_PB5, true);
-    switch ((uint8_t)TaskInertial_State)
+    uint32_t sys_time = SrvOsCommon.get_os_ms();
+
+    while(1)
     {
-    case Task_SensorInertial_Core:
-        TaskInertical_Blink_Notification(100);
-        if (SrvIMU.sample(SrvIMU_Both_Sample))
+        // DebugPin.ctl(Debug_PB5, true);
+        switch ((uint8_t)TaskInertial_State)
         {
-            DataPipe_DataObj(IMU_Data).data = SrvIMU.get_data(SrvIMU_FusModule);
-
-            for (uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(IMU_Data)) - sizeof(uint16_t); chk++)
+        case Task_SensorInertial_Core:
+            TaskInertical_Blink_Notification(100);
+            if (SrvIMU.sample(SrvIMU_Both_Sample))
             {
-                DataPipe_DataObj(IMU_Data).data.chk_sum += DataPipe_DataObj(IMU_Data).buff[chk];
-            }
+                DataPipe_DataObj(IMU_Data).data = SrvIMU.get_data(SrvIMU_FusModule);
 
-            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
-            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe); /* to control task */
+                for (uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(IMU_Data)) - sizeof(uint16_t); chk++)
+                {
+                    DataPipe_DataObj(IMU_Data).data.chk_sum += DataPipe_DataObj(IMU_Data).buff[chk];
+                }
 
-            if(DataPipe_DataObj(IMU_Data).data.error_code == SrvIMU_Sample_Over_Angular_Accelerate)
-            {
-                TaskInertical_Led_Control(true);
+                DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
+                DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe); /* to control task */
+
+                if(DataPipe_DataObj(IMU_Data).data.error_code == SrvIMU_Sample_Over_Angular_Accelerate)
+                {
+                    TaskInertical_Led_Control(true);
+                }
+                else
+                    TaskInertical_Led_Control(false);
             }
-            else
-                TaskInertical_Led_Control(false);
+            break;
+
+        case Task_SensorInertial_Error:
+            break;
+
+        default:
+            break;
         }
-        break;
 
-    case Task_SensorInertial_Error:
-        break;
+        SrvIMU.error_proc();
+        // DebugPin.ctl(Debug_PB5, false);
 
-    default:
-        break;
+        SrvOsCommon.precise_delay(&sys_time, TaskSample_Period);
     }
-
-    SrvIMU.error_proc();
-    // DebugPin.ctl(Debug_PB5, false);
 }
 
 static void TaskInertical_Blink_Notification(uint16_t duration)

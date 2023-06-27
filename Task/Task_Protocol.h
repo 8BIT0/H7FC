@@ -21,7 +21,7 @@ typedef enum
     TaskProto_Error_Proc,
 } TaskProto_State_List;
 
-bool TaskProtocol_Init(void);
+bool TaskProtocol_Init(TaskProtocol_Init);
 void TaskProtocol_Core(void const *arg);
 ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
 

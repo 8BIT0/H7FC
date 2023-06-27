@@ -53,7 +53,10 @@
 #define __STM32H7xx_HAL_VERSION_SUB1 (0x0AUL) /*!< [23:16] sub1 version */
 #define __STM32H7xx_HAL_VERSION_SUB2 (0x01UL) /*!< [15:8]  sub2 version */
 #define __STM32H7xx_HAL_VERSION_RC (0x00UL)   /*!< [7:0]  release candidate */
-#define __STM32H7xx_HAL_VERSION ((__STM32H7xx_HAL_VERSION_MAIN << 24) | (__STM32H7xx_HAL_VERSION_SUB1 << 16) | (__STM32H7xx_HAL_VERSION_SUB2 << 8) | (__STM32H7xx_HAL_VERSION_RC))
+#define __STM32H7xx_HAL_VERSION         ((__STM32H7xx_HAL_VERSION_MAIN << 24)\
+                                        |(__STM32H7xx_HAL_VERSION_SUB1 << 16)\
+                                        |(__STM32H7xx_HAL_VERSION_SUB2 << 8 )\
+                                        |(__STM32H7xx_HAL_VERSION_RC))
 
 #define IDCODE_DEVID_MASK ((uint32_t)0x00000FFF)
 #define VREFBUF_TIMEOUT_VALUE (uint32_t)10 /* 10 ms  */

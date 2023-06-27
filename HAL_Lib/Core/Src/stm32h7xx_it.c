@@ -49,19 +49,8 @@ void UsageFault_Handler(void)
   }
 }
 
-void SVC_Handler(void)
-{
-  Runtime_Start();
-  Os_LoadFirstTask();
-}
-
 void DebugMon_Handler(void)
 {
-}
-
-void PendSV_Handler(void)
-{
-  Os_SwitchContext();
 }
 
 void SysTick_Handler(void)

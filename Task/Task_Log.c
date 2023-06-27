@@ -15,7 +15,7 @@
 #include "DiskIO.h"
 #include "../DataPipe/DataPipe.h"
 #include "Task_Protocol.h"
-#include "Task_SensorInertial.h"
+#include "Task_Sample.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
 #include "minilzo.h"

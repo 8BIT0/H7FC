@@ -2,7 +2,7 @@
 #include "Task_Log.h"
 #include "Task_Protocol.h"
 #include "Task_Control.h"
-#include "Task_SensorInertial.h"
+#include "Task_Sample.h"
 #include "Task_Telemetry.h"
 #include "debug_util.h"
 #include "IO_Definition.h"
@@ -10,6 +10,11 @@
 #include "DiskIO.h"
 #include "../DataPipe/DataPipe.h"
 #include "cmsis_os.h"
+
+#define TaskSample_Period_Def    1  /* unit: ms period 1ms  1000Hz */
+#define TaskControl_Period_Def   2  /* unit: ms period 2ms  500Hz  */
+#define TaskTelemetry_Period_def 2  /* unit: ms period 2ms  500Hz  */
+#define TaskProtocol_Period_Def  10 /* unit: ms period 10ms 100Hz  */
 
 osThreadId TaskProtocol_Handle = NULL;
 osThreadId TaskInertial_Handle = NULL;
@@ -59,16 +64,16 @@ void Task_Manager_Init(void)
 
     DataPipe_Init();
 
-    TaskProtocol_Init();
-    TaskInertial_Init();
-    TaskTelemetry_Init();
-    TaskControl_Init();
+    TaskProtocol_Init(TaskProtocol_Period_Def);
+    TaskSample_Init(TaskSample_Period_Def);
+    TaskTelemetry_Init(TaskTelemetry_Period_def);
+    TaskControl_Init(TaskControl_Period_Def);
     TaskLog_Init();
 }
 
 void Task_Manager_CreateTask(void)
 {
-    osThreadDef(SampleTask, TaskInertical_Core, osPriorityRealtime, 0, 1024);
+    osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
     TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
 
     osThreadDef(ControlTask, TaskControl_Core, osPriorityHigh, 0, 1024);

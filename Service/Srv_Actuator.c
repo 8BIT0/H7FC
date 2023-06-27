@@ -390,7 +390,7 @@ static SrvActuator_Model_List SrvActuator_GetModel(void)
 
 static void SrvActuator_PipeData(void)
 {
-    DataPipe_DataObj(Actuator_Data).time_stamp = Get_CurrentRunningMs();
+    DataPipe_DataObj(Actuator_Data).time_stamp = SrvOsCommon.get_os_ms();
     DataPipe_DataObj(Actuator_Data).moto_cnt = SrvActuator_Obj.drive_module.num.moto_cnt;
     DataPipe_DataObj(Actuator_Data).servo_cnt = SrvActuator_Obj.drive_module.num.servo_cnt;
 

@@ -74,7 +74,7 @@ typedef struct
     uint8_t over_angular_accelerate_cnt;
 } TaskControl_Monitor_TypeDef;
 
-void TaskControl_Init(void);
+void TaskControl_Init(uint32_t period);
 void TaskControl_Core(void const *arg);
 
 #endif
