@@ -21,11 +21,11 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj **he
 {
     for (uint8_t i = 0; i < order; i++)
     {
-        float *u_temp = (float *)MMU_Malloc(sizeof(float));
+        float *u_temp = (float *)FILTER_MALLOC(sizeof(float));
 
         if (u_temp == NULL)
         {
-            MMU_Free(u_temp);
+            FILTER_FREE(u_temp);
             return false;
         }
         else
@@ -66,68 +66,68 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_o
         if ((param_obj->ep_list == NULL) || (param_obj->up_list == NULL))
             return 0;
 
-        BWF_Obj = MMU_Malloc(sizeof(Filter_ButterworthParam_TypeDef));
+        BWF_Obj = FILTER_MALLOC(sizeof(Filter_ButterworthParam_TypeDef));
 
         if (BWF_Obj == NULL)
         {
-            MMU_Free(BWF_Obj);
+            FILTER_FREE(BWF_Obj);
             return 0;
         }
 
-        BWF_Obj->p_e_data_cache = MMU_Malloc(sizeof(item_obj) * e_cnt);
+        BWF_Obj->p_e_data_cache = FILTER_MALLOC(sizeof(item_obj) * e_cnt);
         if (BWF_Obj->p_e_data_cache == NULL)
         {
-            MMU_Free(BWF_Obj->p_e_data_cache);
-            MMU_Free(BWF_Obj);
+            FILTER_FREE(BWF_Obj->p_e_data_cache);
+            FILTER_FREE(BWF_Obj);
             return 0;
         }
         else
         {
             if (!Butterworth_List_Create(e_cnt, BWF_Obj->p_e_data_cache, &(BWF_Obj->p_e_list_header), &(BWF_Obj->p_e_list_ender)))
             {
-                MMU_Free(BWF_Obj->p_e_data_cache);
-                MMU_Free(BWF_Obj);
+                FILTER_FREE(BWF_Obj->p_e_data_cache);
+                FILTER_FREE(BWF_Obj);
                 return 0;
             }
         }
 
-        BWF_Obj->p_u_data_cache = MMU_Malloc(sizeof(item_obj) * u_cnt);
+        BWF_Obj->p_u_data_cache = FILTER_MALLOC(sizeof(item_obj) * u_cnt);
         if (BWF_Obj->p_u_data_cache == NULL)
         {
-            MMU_Free(BWF_Obj->p_e_data_cache);
-            MMU_Free(BWF_Obj->p_u_data_cache);
-            MMU_Free(BWF_Obj);
+            FILTER_FREE(BWF_Obj->p_e_data_cache);
+            FILTER_FREE(BWF_Obj->p_u_data_cache);
+            FILTER_FREE(BWF_Obj);
             return 0;
         }
         else
         {
             if (!Butterworth_List_Create(u_cnt, BWF_Obj->p_u_data_cache, &(BWF_Obj->p_u_list_header), &(BWF_Obj->p_u_list_ender)))
             {
-                MMU_Free(BWF_Obj->p_e_data_cache);
-                MMU_Free(BWF_Obj->p_u_data_cache);
-                MMU_Free(BWF_Obj);
+                FILTER_FREE(BWF_Obj->p_e_data_cache);
+                FILTER_FREE(BWF_Obj->p_u_data_cache);
+                FILTER_FREE(BWF_Obj);
                 return 0;
             }
         }
 
-        BWF_Obj->e_para_buf = MMU_Malloc(sizeof(float) * e_cnt);
+        BWF_Obj->e_para_buf = FILTER_MALLOC(sizeof(float) * e_cnt);
         if(BWF_Obj->e_para_buf == NULL)
         {
-            MMU_Free(BWF_Obj->e_para_buf);
-            MMU_Free(BWF_Obj->p_e_data_cache);
-            MMU_Free(BWF_Obj->p_u_data_cache);
-            MMU_Free(BWF_Obj);
+            FILTER_FREE(BWF_Obj->e_para_buf);
+            FILTER_FREE(BWF_Obj->p_e_data_cache);
+            FILTER_FREE(BWF_Obj->p_u_data_cache);
+            FILTER_FREE(BWF_Obj);
             return 0;
         }
 
-        BWF_Obj->u_para_buf = MMU_Malloc(sizeof(float) * u_cnt);
+        BWF_Obj->u_para_buf = FILTER_MALLOC(sizeof(float) * u_cnt);
         if(BWF_Obj->u_para_buf == NULL)
         {
-            MMU_Free(BWF_Obj->e_para_buf);
-            MMU_Free(BWF_Obj->u_para_buf);
-            MMU_Free(BWF_Obj->p_e_data_cache);
-            MMU_Free(BWF_Obj->p_u_data_cache);
-            MMU_Free(BWF_Obj);
+            FILTER_FREE(BWF_Obj->e_para_buf);
+            FILTER_FREE(BWF_Obj->u_para_buf);
+            FILTER_FREE(BWF_Obj->p_e_data_cache);
+            FILTER_FREE(BWF_Obj->p_u_data_cache);
+            FILTER_FREE(BWF_Obj);
             return 0;
         }
 

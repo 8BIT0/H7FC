@@ -663,17 +663,17 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
     char *fpath_match = NULL;
     char *fpath_tmp = NULL;
 
-    fpath_tmp = (char *)MMU_Malloc(strlen(fpath) + 1);
+    fpath_tmp = (char *)DISKIO_MALLOC(strlen(fpath) + 1);
     if (fpath_tmp == NULL)
     {
-        MMU_Free(fpath_tmp);
+        DISKIO_FREE(fpath_tmp);
         return false;
     }
 
-    fpath_match = (char *)MMU_Malloc(strlen(fpath) + 1);
+    fpath_match = (char *)DISKIO_MALLOC(strlen(fpath) + 1);
     if (fpath_match == NULL)
     {
-        MMU_Free(fpath_match);
+        DISKIO_FREE(fpath_match);
         return false;
     }
 
@@ -691,8 +691,8 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
 
         if (fpath_match == NULL)
         {
-            MMU_Free(fpath_tmp);
-            MMU_Free(fpath_match);
+            DISKIO_FREE(fpath_tmp);
+            DISKIO_FREE(fpath_match);
             return false;
         }
 
@@ -701,8 +701,8 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
 
     memcpy(token, fpath_match, strlen(fpath_match));
 
-    MMU_Free(fpath_tmp);
-    MMU_Free(fpath_match);
+    DISKIO_FREE(fpath_tmp);
+    DISKIO_FREE(fpath_match);
     return true;
 }
 
@@ -825,8 +825,8 @@ static bool Disk_Name_ConvertTo83Frame(const char *n_in, char *n_out)
     char ext_file_name[3];
 
     memcpy(n_in_tmp, n_in, strlen(n_in));
-    memset(file_name, NULL, sizeof(file_name));
-    memset(ext_file_name, NULL, sizeof(ext_file_name));
+    memset(file_name, 0, sizeof(file_name));
+    memset(ext_file_name, 0, sizeof(ext_file_name));
 
     if ((n_in_tmp == NULL) || (n_out == NULL) || !Disk_SFN_LegallyCheck(n_in_tmp))
         return false;
@@ -944,7 +944,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     if ((FATObj == NULL) || (cur_cluster < ROOT_CLUSTER_ADDR) || (nxt_cluster < ROOT_CLUSTER_ADDR))
         return false;
 
-    memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
+    memset(Disk_Card_SectionBuff, 0, DISK_CARD_SECTION_SZIE);
 
     sec_index = FATObj->Fst_FATSector + (cur_cluster * sizeof(FATCluster_Addr)) / FATObj->BytePerSection;
     sec_item_index = (cur_cluster * sizeof(FATCluster_Addr)) % FATObj->BytePerSection;
@@ -987,7 +987,7 @@ static bool Disk_ClearCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr t
 
     sec_id = Disk_Get_StartSectionOfCluster(FATObj, target_cluster);
 
-    memset(Disk_Card_SectionBuff, NULL, sizeof(Disk_Card_SectionBuff));
+    memset(Disk_Card_SectionBuff, 0, sizeof(Disk_Card_SectionBuff));
 
     for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
     {
@@ -1090,7 +1090,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
         for (uint8_t section_index = 0; section_index < FATObj->SecPerCluster; section_index++)
         {
             sec_id += section_index;
-            memset(&FFInfo, NULL, sizeof(FFInfo));
+            memset(&FFInfo, 0, sizeof(FFInfo));
 
             FFInfo = Disk_Parse_Attribute(FATObj, sec_id);
 
@@ -1119,7 +1119,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                         memcpy(name_tmp, name, 9);
                     }
 
-                    memset(&attr_tmp, NULL, sizeof(Disk_FFAttr_TypeDef));
+                    memset(&attr_tmp, 0, sizeof(Disk_FFAttr_TypeDef));
                     Disk_Fill_Attr(name_tmp, type, &attr_tmp, FATObj->free_cluster);
 
                     /* read all section data first */
@@ -1130,7 +1130,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
 
                     /* write back to tf section */
                     DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
-                    memset(Disk_Card_SectionBuff, NULL, sizeof(Disk_CCSSFFAT_TypeDef));
+                    memset(Disk_Card_SectionBuff, 0, sizeof(Disk_CCSSFFAT_TypeDef));
 
                     if (type == Disk_DataType_Folder)
                     {
@@ -1191,7 +1191,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
         /* create file */
         memset(name_tmp, '\0', 12);
         memcpy(name_tmp, name, strlen(name));
-        memset(&attr_tmp, NULL, sizeof(Disk_FFAttr_TypeDef));
+        memset(&attr_tmp, 0, sizeof(Disk_FFAttr_TypeDef));
 
         Disk_Fill_Attr(name_tmp, type, &attr_tmp, target_file_cluster);
         sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
@@ -1214,11 +1214,11 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
             Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MAX_WORLD);
             Disk_ClearCluster(FATObj, FATObj->free_cluster);
 
-            memset(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name, NULL, sizeof(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name));
-            memset(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].ext, NULL, sizeof(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].ext));
+            memset(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name, 0, sizeof(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name));
+            memset(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].ext, 0, sizeof(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].ext));
             ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name[0] = '.';
 
-            memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
+            memset(Disk_Card_SectionBuff, 0, DISK_CARD_SECTION_SZIE);
             memcpy(Disk_Card_SectionBuff, &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0]), sizeof(Disk_FFAttr_TypeDef));
 
             ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0].name[1] = '.';
@@ -1272,7 +1272,7 @@ static Disk_TargetMatch_TypeDef Disk_MatchTaget(Disk_FATFileSys_TypeDef *FATObj,
     {
         for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
         {
-            memset(&FFInfo, NULL, sizeof(FFInfo));
+            memset(&FFInfo, 0, sizeof(FFInfo));
 
             FFInfo = Disk_Parse_Attribute(FATObj, sec_id + i);
 
@@ -1318,8 +1318,8 @@ static FATCluster_Addr Disk_Create_Folder(Disk_FATFileSys_TypeDef *FATObj, const
     Disk_TargetMatch_TypeDef match_state;
     Disk_FFInfo_TypeDef F_Info;
 
-    memset(&F_Info, NULL, sizeof(F_Info));
-    memset(&match_state, NULL, sizeof(match_state));
+    memset(&F_Info, 0, sizeof(F_Info));
+    memset(&match_state, 0, sizeof(match_state));
 
     /* name is folder path break it down 1st */
     layer = Disk_GetPath_Layer(name);
@@ -1373,9 +1373,9 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
     uint32_t lst_cluster_id = 0;
     uint32_t cur_cluster_id = 0;
 
-    memset(&match_state, NULL, sizeof(match_state));
-    memset(&F_Info, NULL, sizeof(F_Info));
-    memset(&file_tmp, NULL, sizeof(file_tmp));
+    memset(&match_state, 0, sizeof(match_state));
+    memset(&F_Info, 0, sizeof(F_Info));
+    memset(&file_tmp, 0, sizeof(file_tmp));
 
     if ((file != NULL) && (strlen(file) < 12))
     {
@@ -1412,9 +1412,9 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                         Disk_Printf("    [File Info] Requir Cluster Num: %d\r\n", exp_cluster_cnt);
 
                         /* create linked list item first */
-                        cluster_list_item_tmp = (item_obj *)MMU_Malloc(sizeof(item_obj));
+                        cluster_list_item_tmp = (item_obj *)DISKIO_MALLOC(sizeof(item_obj));
                         /* create linked list */
-                        cluster_id_ptr = (Disk_PreLinkBlock_TypeDef *)MMU_Malloc(sizeof(Disk_PreLinkBlock_TypeDef));
+                        cluster_id_ptr = (Disk_PreLinkBlock_TypeDef *)DISKIO_MALLOC(sizeof(Disk_PreLinkBlock_TypeDef));
                         /* init list item */
                         List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
                         List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
@@ -1444,8 +1444,8 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                                 /* create new lisnked list item */
                                 if (FATObj->free_cluster - end_cluster > 1)
                                 {
-                                    cluster_list_item_tmp = (item_obj *)MMU_Malloc(sizeof(item_obj));
-                                    cluster_id_ptr = (Disk_PreLinkBlock_TypeDef *)MMU_Malloc(sizeof(Disk_PreLinkBlock_TypeDef));
+                                    cluster_list_item_tmp = (item_obj *)DISKIO_MALLOC(sizeof(item_obj));
+                                    cluster_id_ptr = (Disk_PreLinkBlock_TypeDef *)DISKIO_MALLOC(sizeof(Disk_PreLinkBlock_TypeDef));
 
                                     if (cluster_list_item_tmp && cluster_id_ptr)
                                     {
@@ -1460,8 +1460,8 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                                         Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD);
                                         file_tmp.fast_mode = false;
 
-                                        MMU_Free(cluster_id_ptr);
-                                        MMU_Free(cluster_list_item_tmp);
+                                        DISKIO_FREE(cluster_id_ptr);
+                                        DISKIO_FREE(cluster_list_item_tmp);
                                     }
                                 }
                                 else
@@ -1498,12 +1498,12 @@ static FATCluster_Addr Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj,
     bool match = false;
     char *dir_tmp = NULL;
 
-    dir_tmp = (char *)MMU_Malloc(dir_size);
+    dir_tmp = (char *)DISKIO_MALLOC(dir_size);
     memset(&F_Info, NULL, sizeof(F_Info));
 
     if ((dir == NULL) || (dir_tmp == NULL))
     {
-        MMU_Free(dir_tmp);
+        DISKIO_FREE(dir_tmp);
         return 0;
     }
 
@@ -1531,7 +1531,7 @@ static FATCluster_Addr Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj,
     if (!match || (dir_layer == 0))
         cluster_tmp = 0;
 
-    MMU_Free(dir_tmp);
+    DISKIO_FREE(dir_tmp);
 
     return cluster_tmp;
 }
@@ -1783,10 +1783,10 @@ static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *di
     Disk_TargetMatch_TypeDef match_state = {0};
     // uint32_t file_read_sec = 0;
 
-    name_buff = (char *)MMU_Malloc(name_size);
+    name_buff = (char *)DISKIO_MALLOC(name_size);
     if (name_buff == NULL)
     {
-        MMU_Free(name_buff);
+        DISKIO_FREE(name_buff);
         return 0;
     }
 
@@ -1823,7 +1823,7 @@ static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *di
             /* comput cursor pos */
             FileObj->cursor_pos = /*FileObj->info.size*/ 0;
 
-            memset(Disk_FileSection_DataCache, NULL, sizeof(Disk_FileSection_DataCache));
+            memset(Disk_FileSection_DataCache, 0, sizeof(Disk_FileSection_DataCache));
             FileObj->info_sec = Disk_Get_StartSectionOfCluster(FATObj, file_cluster);
 
             if (FileObj->info.size)
@@ -1832,11 +1832,11 @@ static FATCluster_Addr Disk_Open(Disk_FATFileSys_TypeDef *FATObj, const char *di
             }
         }
 
-        MMU_Free(name_buff);
+        DISKIO_FREE(name_buff);
         return FileObj->info.start_cluster;
     }
 
-    MMU_Free(name_buff);
+    DISKIO_FREE(name_buff);
     return 0;
 }
 
@@ -1874,7 +1874,7 @@ static void Disk_Printf(char *str, ...)
         uint32_t length = vsnprintf((char *)Disk_Print_Buff, sizeof(Disk_Print_Buff), (char *)str, arp);
         Disk_PrintOut(Disk_Print_Buff, length);
 
-        memset(Disk_Print_Buff, NULL, sizeof(Disk_Print_Buff));
+        memset(Disk_Print_Buff, 0, sizeof(Disk_Print_Buff));
     }
 
     va_end(arp);

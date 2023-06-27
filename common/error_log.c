@@ -1,5 +1,5 @@
 #include "error_log.h"
-#include "../DataStructure/queue.h"
+#include "../DataStructure/CusQueue.h"
 #include <stdarg.h>
 
 /*
@@ -85,7 +85,7 @@ static Error_Handler ErrorTree_Create(char *name)
         ErrorQueue_Init = true;
     }
 
-    Error_Tmp = (ErrorTree_TypeDef *)MMU_Malloc(sizeof(ErrorTree_TypeDef));
+    Error_Tmp = (ErrorTree_TypeDef *)ERROR_LOG_MALLOC(sizeof(ErrorTree_TypeDef));
 
     if (Error_Tmp == NULL)
         return NULL;
@@ -248,7 +248,7 @@ static bool Error_Proc(Error_Handler hdl)
 
     if ((ErrorQueue_Head_State.section.out_reg || ErrorQueue_Head_State.section.log_reg) && (out_callback || log_callback))
     {
-        p_data = (uint8_t *)MMU_Malloc(ErrorQueue_Head_State.section.len);
+        p_data = (uint8_t *)ERROR_LOG_MALLOC(ErrorQueue_Head_State.section.len);
 
         if (p_data)
         {
@@ -268,7 +268,7 @@ static bool Error_Proc(Error_Handler hdl)
                 }
             }
 
-            MMU_Free(p_data);
+            ERROR_LOG_FREE(p_data);
         }
     }
 

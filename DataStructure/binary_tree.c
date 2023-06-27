@@ -4,9 +4,10 @@ bref:
 use binary tree structure estabilsh a error log tree make error trigger and seach effcient
 */
 #include "binary_tree.h"
+#include "Srv_OsCommon.h"
 
-#define TreeMalloc(x) MMU_Malloc(x)
-#define TreeFree(x) MMU_Free(x)
+#define TreeMalloc(x) SrvOsCommon.malloc(x)
+#define TreeFree(x) SrvOsCommon.free(x)
 
 static Tree_TypeDef *BinaryTree_Create(char *name, Tree_Callback insert, Tree_Search_Callback search, Tree_Callback compare);
 static void Tree_Traverse(Tree_TypeDef *tree, Tree_TraverseType_List type, Tree_Traverse_Callback callback);

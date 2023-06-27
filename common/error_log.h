@@ -6,9 +6,12 @@
 #include <string.h>
 #include <stdarg.h>
 #include "binary_tree.h"
+#include "Srv_OsCommon.h"
 #include "linked_list.h"
 
 #define ERROR_DESC_BUFFSIZE 1024
+#define ERROR_LOG_MALLOC(x) SrvOsCommon.malloc(x)
+#define ERROR_LOG_FREE(x) SrvOsCommon.free(x)
 
 #define ErrorHandleToObj(x) ((ErrorTree_TypeDef *)x)
 #define ErrorTreeDataToObj(x) ((Error_Obj_Typedef *)x)

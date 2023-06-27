@@ -6,6 +6,10 @@
 #include <string.h>
 #include "Dev_Card.h"
 #include "linked_list.h"
+#include "Srv_OsCommon.h"
+
+#define DISKIO_MALLOC(x) SrvOsCommon.malloc(x)
+#define DISKIO_FREE(x) SrvOsCommon.free(x)
 
 #define EXTERNAL_INTERFACE_TYPE_SPI_FLASH (1 << 0)
 #define EXTERNAL_INTERFACE_TYPE_TF_CARD (1 << 1)

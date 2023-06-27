@@ -28,7 +28,7 @@ typedef struct
 {
     uint32_t min_rx_interval;
     uint32_t detect_interval;
-    uint64_t rx_us_rt;
+    uint32_t rx_ms_rt;
 
     bool enable;
 
@@ -74,11 +74,11 @@ inline bool DataPipe_Disable(DataPipeObj_TypeDef *obj)
     return true;
 }
 
-inline bool DataPipe_Set_RxInterval(DataPipeObj_TypeDef *obj, uint64_t interval_us)
+inline bool DataPipe_Set_RxInterval(DataPipeObj_TypeDef *obj, uint32_t interval_ms)
 {
     if (obj)
     {
-        obj->min_rx_interval = interval_us;
+        obj->min_rx_interval = interval_ms;
         return true;
     }
 

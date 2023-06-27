@@ -65,8 +65,9 @@ Service/Srv_Receiver.c \
 Service/Srv_Actuator.c \
 Service/Srv_ComProto.c \
 Service/Srv_DataHub.c \
+Service/Srv_OsCommon.c \
 DataStructure/Data_Convert_Util.c \
-DataStructure/queue.c \
+DataStructure/CusQueue.c \
 DataStructure/linked_list.c \
 DataStructure/binary_tree.c \
 common/reboot.c \
@@ -78,6 +79,7 @@ System/DataPipe/DataPipe_Def.c \
 System/FreeRTOS/croutine.c \
 System/FreeRTOS/event_groups.c \
 System/FreeRTOS/list.c \
+System/FreeRTOS/freertos.c \
 System/FreeRTOS/queue.c \
 System/FreeRTOS/stream_buffer.c \
 System/FreeRTOS/tasks.c \
@@ -195,7 +197,7 @@ C_INCLUDES =  \
 -Icommon/ \
 -Icommon/compess \
 -IService/ \
--ISystem \
+-ISystem/FreeRTOS \
 -ISystem/FreeRTOS/include \
 -ISystem/FreeRTOS/CMSIS_RTOS \
 -ISystem/FreeRTOS/portable/GCC/ARM_CM4F \

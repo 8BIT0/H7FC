@@ -89,7 +89,7 @@ static void TaskInertical_Blink_Notification(uint16_t duration)
     static uint32_t Lst_Rt = 0;
     static bool led_state = false;
 
-    Rt = Get_CurrentRunningMs();
+    Rt = SrvOsCommon.get_os_ms();
 
     if ((Rt % duration == 0) && (Lst_Rt != Rt))
     {

@@ -3,7 +3,7 @@
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_dma.h"
-#include "../../DataStructure/queue.h"
+#include "../../DataStructure/CusQueue.h"
 #include "Srv_OsCommon.h"
 
 #define MAX_RETRY_CNT 200
@@ -63,8 +63,8 @@ bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
         !p_org->enable ||
         !p_dst->enable ||
         (p_dst->min_rx_interval &&
-         p_dst->rx_us_rt &&
-         (Get_CurrentRunningUs() - p_dst->rx_us_rt < p_dst->min_rx_interval)))
+         p_dst->rx_ms_rt &&
+         (SrvOsCommon.get_os_ms() - p_dst->rx_ms_rt < p_dst->min_rx_interval)))
         return false;
 
     retry_cnt = MAX_RETRY_CNT;
@@ -78,8 +78,6 @@ bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
 
     Cur_Pluged_PipeObj.dst = p_dst;
     Cur_Pluged_PipeObj.org = p_org;
-
-    Kernel_EnterCritical();
 
 retry:
     Pipe_State = Pipe_Busy;
@@ -98,8 +96,6 @@ retry:
         p_dst->er_cnt++;
     }
 
-    Kernel_ExitCritical();
-
     return true;
 }
 
@@ -116,7 +112,7 @@ bool DataPipe_DealError(void)
 /* transmit completely callback */
 static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl)
 {
-    uint64_t cur_us = Get_CurrentRunningUs();
+    uint32_t cur_ms = SrvOsCommon.get_os_ms();
 
     if (dma_hdl == &DataPipe_DMA)
     {
@@ -131,10 +127,10 @@ static void DataPipe_TransFinish_Callback(DMA_HandleTypeDef *dma_hdl)
         if (Cur_Pluged_PipeObj.dst->trans_finish_cb)
             Cur_Pluged_PipeObj.dst->trans_finish_cb(Cur_Pluged_PipeObj.dst);
 
-        if (Cur_Pluged_PipeObj.dst->rx_us_rt)
-            Cur_Pluged_PipeObj.dst->detect_interval = cur_us - Cur_Pluged_PipeObj.dst->rx_us_rt;
+        if (Cur_Pluged_PipeObj.dst->rx_ms_rt)
+            Cur_Pluged_PipeObj.dst->detect_interval = cur_ms - Cur_Pluged_PipeObj.dst->rx_ms_rt;
 
-        Cur_Pluged_PipeObj.dst->rx_us_rt = cur_us;
+        Cur_Pluged_PipeObj.dst->rx_ms_rt = cur_ms;
 
         Cur_Pluged_PipeObj.dst = NULL;
         Cur_Pluged_PipeObj.org = NULL;

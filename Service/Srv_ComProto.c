@@ -65,11 +65,11 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     msg->proto_time = 0;
 
     /* create mavlink message object */
-    msg->msg_obj = (mavlink_message_t *)MMU_Malloc(sizeof(mavlink_message_t));
+    msg->msg_obj = (mavlink_message_t *)SrvOsCommon.malloc(sizeof(mavlink_message_t));
 
     if (msg->msg_obj == NULL)
     {
-        MMU_Free(msg->msg_obj);
+        SrvOsCommon.free(msg->msg_obj);
         return false;
     }
 
@@ -95,7 +95,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
         break;
 
     default:
-        MMU_Free(msg->msg_obj);
+        SrvOsCommon.free(msg->msg_obj);
         msg->lock_proto = false;
         return false;
     }
@@ -111,7 +111,7 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto
     {
         msg.in_proto = true;
 
-        if ((msg.proto_time) && (Get_CurrentRunningMs() - msg.proto_time < msg.period))
+        if ((msg.proto_time) && (SrvOsCommon.get_os_ms() - msg.proto_time < msg.period))
         {
             msg.in_proto = false;
             return;
@@ -126,7 +126,7 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto
             if (tx_cb)
                 tx_cb(com_stream->p_buf, com_stream->size);
 
-            msg.proto_time = Get_CurrentRunningMs();
+            msg.proto_time = SrvOsCommon.get_os_ms();
         }
 
         msg.in_proto = false;

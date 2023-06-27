@@ -1,5 +1,5 @@
-#ifndef __QUEUE_H
-#define __QUEUE_H
+#ifndef __CUSQUEUE_H
+#define __CUSQUEUE_H
 
 #include <stdbool.h>
 #include <stdint.h>

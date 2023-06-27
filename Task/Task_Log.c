@@ -10,7 +10,7 @@
 #include "shell.h"
 #include "debug_util.h"
 #include <stdio.h>
-#include "../DataStructure/queue.h"
+#include "../DataStructure/CusQueue.h"
 #include "error_log.h"
 #include "DiskIO.h"
 #include "../DataPipe/DataPipe.h"

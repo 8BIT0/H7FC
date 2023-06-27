@@ -7,9 +7,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include "linked_list.h"
+#include "Srv_OsCommon.h"
 #include "filter_param.h"
 
 #define SMOOTH_WINDOW_SIZE 5
+#define FILTER_MALLOC(x) SrvOsCommon.malloc(x)
+#define FILTER_FREE(x) SrvOsCommon.free(x);
 
 typedef uint32_t BWF_Object_Handle; /* butterworth filter object */
 

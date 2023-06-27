@@ -99,11 +99,11 @@ static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
 {
     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
 
-    Uart_Receiver_Obj = (BspUARTObj_TypeDef *)MMU_Malloc(sizeof(BspUARTObj_TypeDef));
+    Uart_Receiver_Obj = (BspUARTObj_TypeDef *)SrvOsCommon.malloc(sizeof(BspUARTObj_TypeDef));
 
     if (Uart_Receiver_Obj == NULL)
     {
-        MMU_Free(Uart_Receiver_Obj);
+        SrvOsCommon.free(Uart_Receiver_Obj);
         return NULL;
     }
 
@@ -154,7 +154,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             Uart_Receiver_Obj->baudrate = SBUS_BAUDRATE;
 
             /* create data obj */
-            obj->frame_data_obj = MMU_Malloc(sizeof(DevSBUSObj_TypeDef));
+            obj->frame_data_obj = SrvOsCommon.malloc(sizeof(DevSBUSObj_TypeDef));
             if (obj->frame_data_obj == NULL)
             {
                 data_obj_error = true;
@@ -179,7 +179,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             Uart_Receiver_Obj->baudrate = CRSF_BAUDRATE;
 
             /* create data obj */
-            obj->frame_data_obj = MMU_Malloc(sizeof(DevCRSFObj_TypeDef));
+            obj->frame_data_obj = SrvOsCommon.malloc(sizeof(DevCRSFObj_TypeDef));
             if (obj->frame_data_obj == NULL)
             {
                 data_obj_error = true;
@@ -204,17 +204,17 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             return false;
         }
 
-        obj->data.val_list = (uint16_t *)MMU_Malloc(sizeof(uint16_t) * obj->channel_num);
+        obj->data.val_list = (uint16_t *)SrvOsCommon.malloc(sizeof(uint16_t) * obj->channel_num);
         if (!obj->data.val_list)
         {
-            MMU_Free(obj->data.val_list);
+            SrvOsCommon.free(obj->data.val_list);
             return false;
         }
 
-        obj->port = (SrvReceiver_Port_TypeDef *)MMU_Malloc(sizeof(SrvReceiver_Port_TypeDef));
+        obj->port = (SrvReceiver_Port_TypeDef *)SrvOsCommon.malloc(sizeof(SrvReceiver_Port_TypeDef));
         if (!obj->port)
         {
-            MMU_Free(obj->data.val_list);
+            SrvOsCommon.free(obj->data.val_list);
             return false;
         }
 
@@ -334,7 +334,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
             }
 
             /* set decode time stamp */
-            receiver_obj->data.time_stamp = Get_CurrentRunningMs();
+            receiver_obj->data.time_stamp = SrvOsCommon.get_os_ms();
 
             /* clear serial obj received data */
             if (receiver_obj->port->cfg)
@@ -354,7 +354,7 @@ static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
 {
     /* update check */
     /* update frequence less than 10hz switch into failsafe */
-    if ((Get_CurrentRunningMs() - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
+    if ((SrvOsCommon.get_os_ms() - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
     {
         return false;
     }

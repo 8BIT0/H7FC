@@ -11,7 +11,7 @@
 #include "debug_util.h"
 #include <stdio.h>
 #include "Srv_OsCommon.h"
-#include "../DataStructure/queue.h"
+#include "../DataStructure/CusQueue.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
 #include "Bsp_GPIO.h"
@@ -189,7 +189,7 @@ void TaskProtocol_Core(void const *arg)
             /* if it has any data then send them out */
             if (test && ((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Queue_full)) && Queue.size(VCP_ProtoQueue))
             {
-                p_buf = (uint8_t *)MMU_Malloc(Queue.size(VCP_ProtoQueue));
+                p_buf = (uint8_t *)SrvOsCommon.malloc(Queue.size(VCP_ProtoQueue));
 
                 if (p_buf)
                 {
@@ -199,7 +199,7 @@ void TaskProtocol_Core(void const *arg)
                     TaskProtocol_TransBuff(p_buf, p_buf_size);
                 }
 
-                MMU_Free(p_buf);
+                SrvOsCommon.free(p_buf);
             }
             
             /* test proto mavlink raw imu data */

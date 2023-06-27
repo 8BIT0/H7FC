@@ -28,6 +28,8 @@ typedef struct
     bool (*realtime_trim)(SrvOs_RealTime_TypeDef timeobj);
     uint32_t (*get_realtime_ms)(void);
     SrvOs_RealTime_TypeDef (*get_realtime)(void);
+    void *(*malloc)(uint16_t size);
+    void (*free)(void *ptr);
 }SrvOsCommon_TypeDef;
 
 extern SrvOsCommon_TypeDef SrvOsCommon;

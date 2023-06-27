@@ -123,11 +123,11 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     SrvActuator_Obj.model = model;
 
     /* malloc dshot esc driver obj for using */
-    SrvActuator_Obj.drive_module.obj_list = (SrvActuator_PWMOutObj_TypeDef *)MMU_Malloc(sizeof(SrvActuator_PWMOutObj_TypeDef) * SrvActuator_Obj.drive_module.num.total_cnt);
+    SrvActuator_Obj.drive_module.obj_list = (SrvActuator_PWMOutObj_TypeDef *)SrvOsCommon.malloc(sizeof(SrvActuator_PWMOutObj_TypeDef) * SrvActuator_Obj.drive_module.num.total_cnt);
 
     if (SrvActuator_Obj.drive_module.obj_list == NULL)
     {
-        MMU_Free(SrvActuator_Obj.drive_module.obj_list);
+        SrvOsCommon.free(SrvActuator_Obj.drive_module.obj_list);
         return false;
     }
 
@@ -149,14 +149,14 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
                 SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
                 SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
 
-                SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)MMU_Malloc(sizeof(DevDshotObj_TypeDef));
+                SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)SrvOsCommon.malloc(sizeof(DevDshotObj_TypeDef));
                 break;
 
             case Actuator_DevType_ServoPWM:
                 break;
 
             default:
-                MMU_Free(SrvActuator_Obj.drive_module.obj_list);
+                SrvOsCommon.free(SrvActuator_Obj.drive_module.obj_list);
                 return false;
             }
 
@@ -164,10 +164,10 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
             {
                 for (uint8_t j = 0; j < i; j++)
                 {
-                    MMU_Free(SrvActuator_Obj.drive_module.obj_list[j].drv_obj);
+                    SrvOsCommon.free(SrvActuator_Obj.drive_module.obj_list[j].drv_obj);
                 }
 
-                MMU_Free(SrvActuator_Obj.drive_module.obj_list);
+                SrvOsCommon.free(SrvActuator_Obj.drive_module.obj_list);
                 return false;
             }
         }

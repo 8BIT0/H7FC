@@ -60,7 +60,7 @@ void TaskTelemetry_Init(uint32_t period)
 {
     memset(&Telemetry_Monitor, 0, sizeof(Telemetry_Monitor));
 
-    Telemetry_Monitor.Init_Rt = Get_CurrentRunningMs();
+    Telemetry_Monitor.Init_Rt = SrvOsCommon.get_os_ms();
     SrvComProto.init(SrvComProto_Type_MAV, NULL);
 
     /* init receiver */
@@ -124,7 +124,7 @@ void Telemetry_blink(void)
     // DebugPin.ctl(Debug_PB4, true);
     // DebugPin.ctl(Debug_PB4, false);
 
-    Rt = Get_CurrentRunningMs();
+    Rt = SrvOsCommon.get_os_ms();
 
     if ((Rt % 100 == 0) && (Lst_Rt != Rt))
     {
@@ -230,11 +230,11 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
         (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
         return false;
 
-    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+    channel_set = (Telemetry_ChannelSet_TypeDef *)SrvOsCommon.malloc(sizeof(Telemetry_ChannelSet_TypeDef));
 
     if (!channel_set)
     {
-        MMU_Free(channel_set);
+        SrvOsCommon.free(channel_set);
         return false;
     }
 
@@ -269,11 +269,11 @@ static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
         (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
         return false;
 
-    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+    channel_set = (Telemetry_ChannelSet_TypeDef *)SrvOsCommon.malloc(sizeof(Telemetry_ChannelSet_TypeDef));
 
     if (!channel_set)
     {
-        MMU_Free(channel_set);
+        SrvOsCommon.free(channel_set);
         return false;
     }
 
@@ -300,19 +300,19 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
         (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
         return false;
 
-    channel_set = (Telemetry_ChannelSet_TypeDef *)MMU_Malloc(sizeof(Telemetry_ChannelSet_TypeDef));
+    channel_set = (Telemetry_ChannelSet_TypeDef *)SrvOsCommon.malloc(sizeof(Telemetry_ChannelSet_TypeDef));
 
     if (!channel_set)
     {
-        MMU_Free(channel_set);
+        SrvOsCommon.free(channel_set);
         return false;
     }
 
-    item = (item_obj *)MMU_Malloc(sizeof(item_obj));
+    item = (item_obj *)SrvOsCommon.malloc(sizeof(item_obj));
 
     if (!item)
     {
-        MMU_Free(item);
+        SrvOsCommon.free(item);
         return false;
     }
 
@@ -506,9 +506,9 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             if (Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state)
             {
                 if (Receiver_Obj.OSDTune_TriggerMs == 0)
-                    Receiver_Obj.OSDTune_TriggerMs = Get_CurrentRunningMs();
+                    Receiver_Obj.OSDTune_TriggerMs = SrvOsCommon.get_os_ms();
 
-                if (Get_CurrentRunningMs() - Receiver_Obj.OSDTune_TriggerMs >= TELEMETRY_OSDTUNE_POSHOLD)
+                if (SrvOsCommon.get_os_ms() - Receiver_Obj.OSDTune_TriggerMs >= TELEMETRY_OSDTUNE_POSHOLD)
                     RC_Input_obj->sig.osd_tune_state = true;
             }
             else
