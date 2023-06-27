@@ -76,7 +76,7 @@ typedef union
 }LogIMUDataUnion_TypeDef;
 #pragma pack()
 
-void TaskLog_Init(void);
+void TaskLog_Init(uint32_t period);
 void TaskLog_Core(void const *arg);
 
 #endif

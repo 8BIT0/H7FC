@@ -15,6 +15,7 @@
 #define TaskControl_Period_Def   2  /* unit: ms period 2ms  500Hz  */
 #define TaskTelemetry_Period_def 2  /* unit: ms period 2ms  500Hz  */
 #define TaskProtocol_Period_Def  10 /* unit: ms period 10ms 100Hz  */
+#define TaslLog_Period_Def       5  /* unit: ms period 5ms  200Hz */
 
 osThreadId TaskProtocol_Handle = NULL;
 osThreadId TaskInertial_Handle = NULL;
@@ -68,7 +69,7 @@ void Task_Manager_Init(void)
     TaskSample_Init(TaskSample_Period_Def);
     TaskTelemetry_Init(TaskTelemetry_Period_def);
     TaskControl_Init(TaskControl_Period_Def);
-    TaskLog_Init();
+    TaskLog_Init(TaslLog_Period_Def);
 }
 
 void Task_Manager_CreateTask(void)
