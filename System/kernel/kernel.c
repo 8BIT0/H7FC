@@ -29,6 +29,7 @@ static bool KernelClock_Init(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Supply configuration update enable
   */
@@ -95,19 +96,19 @@ static bool KernelClock_Init(void)
 
     /** Initializes the peripherals clock
      */
-  // PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI3|RCC_PERIPHCLK_SPI2
-  //                             |RCC_PERIPHCLK_SPI1;
-  // PeriphClkInitStruct.PLL2.PLL2M = 2;
-  // PeriphClkInitStruct.PLL2.PLL2N = 160;
-  // PeriphClkInitStruct.PLL2.PLL2P = 8;
-  // PeriphClkInitStruct.PLL2.PLL2Q = 8;
-  // PeriphClkInitStruct.PLL2.PLL2R = 2;
-  // PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_2;
-  // PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
-  // PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
-  // PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL2;
-  // if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  //       return false;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI3|RCC_PERIPHCLK_SPI2
+                              |RCC_PERIPHCLK_SPI1;
+  PeriphClkInitStruct.PLL2.PLL2M = 2;
+  PeriphClkInitStruct.PLL2.PLL2N = 160;
+  PeriphClkInitStruct.PLL2.PLL2P = 8;
+  PeriphClkInitStruct.PLL2.PLL2Q = 8;
+  PeriphClkInitStruct.PLL2.PLL2R = 2;
+  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_2;
+  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
+  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+  PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL2;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+        return false;
 
     __HAL_RCC_GPIOH_CLK_ENABLE();
 
