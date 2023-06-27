@@ -1,7 +1,7 @@
 #ifndef __SRV_COMPROTO_H
 #define __SRV_COMPROTO_H
 
-#include "../System/runtime/runtime.h"
+#include "Srv_OsCommon.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -66,7 +66,7 @@ typedef struct
     SrvComProto_MavPackInfo_TypeDef pck_info;
     mavlink_message_t *msg_obj;
     DataPack_Callback pack_callback;
-    SYSTEM_RunTime proto_time;
+    uint32_t proto_time;
 
     bool in_proto;
     bool lock_proto;

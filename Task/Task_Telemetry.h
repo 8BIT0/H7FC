@@ -4,12 +4,22 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
-#include "../System/scheduler/scheduler.h"
+#include "cmsis_os.h"
 #include "Srv_Receiver.h"
 #include "linked_list.h"
 #include "../common/util.h"
 
 #define Telemetry_SetBit(x) UTIL_SET_BIT(x)
+
+#define RECEIVER_PORT UART4
+#define RECEIVER_CRSF_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
+#define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_4
+#define RECEIVER_CRSF_TX_DMA Bsp_DMA_None               // Bsp_DMA_1
+#define RECEIVER_CRSF_TX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_5
+#define RECEIVER_SBUS_RX_DMA Bsp_DMA_1
+#define RECEIVER_SBUS_RX_DMA_STREAM Bsp_DMA_Stream_4
+#define RECEIVER_SBUS_TX_DMA Bsp_DMA_1
+#define RECEIVER_SBUS_TX_DMA_STREAM Bsp_DMA_Stream_5
 
 #define TELEMETRY_SET_ARM 1
 #define TELEMETRY_SET_DISARM 0
@@ -130,6 +140,6 @@ typedef struct
 #pragma pack()
 
 void TaskTelemetry_Init(void);
-void TaskTelemetry_Core(Task_Handle hdl);
+void TaskTelemetry_Core(void const* arg);
 
 #endif

@@ -4,7 +4,6 @@ bref:
 use binary tree structure estabilsh a error log tree make error trigger and seach effcient
 */
 #include "binary_tree.h"
-#include "mmu.h"
 
 #define TreeMalloc(x) MMU_Malloc(x)
 #define TreeFree(x) MMU_Free(x)

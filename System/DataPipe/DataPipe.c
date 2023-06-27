@@ -1,11 +1,10 @@
 #include "DataPipe.h"
-#include "mmu.h"
 #include "kernel.h"
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_dma.h"
 #include "queue.h"
-#include "runtime.h"
+#include "Srv_OsCommon.h"
 
 #define MAX_RETRY_CNT 200
 #define MAX_PIPE_FREQ 2000

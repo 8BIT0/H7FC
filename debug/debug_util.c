@@ -1,5 +1,4 @@
 #include "debug_util.h"
-#include "system_cfg.h"
 
 static bool DebugPin_Init(DebugPinObj_TypeDef pin);
 static bool DebugPin_Ctl(DebugPinObj_TypeDef pin, bool state);

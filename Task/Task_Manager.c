@@ -4,21 +4,20 @@
 #include "Task_Control.h"
 #include "Task_SensorInertial.h"
 #include "Task_Telemetry.h"
-#include "scheduler.h"
 #include "debug_util.h"
 #include "IO_Definition.h"
-#include "runtime.h"
 #include "Dev_Led.h"
 #include "DiskIO.h"
-#include "DataPipe/DataPipe.h"
+#include "../DataPipe/DataPipe.h"
+#include "cmsis_os.h"
 
-Task_Handle TaskProtocol_Handle = NULL;
-Task_Handle TaskInertial_Handle = NULL;
-Task_Handle TaskControl_Handle = NULL;
-Task_Handle TaskLog_Handle = NULL;
-Task_Handle TaskTelemetry_Handle = NULL;
+osThreadId TaskProtocol_Handle = NULL;
+osThreadId TaskInertial_Handle = NULL;
+osThreadId TaskControl_Handle = NULL;
+osThreadId TaskNavi_Handle = NULL;
+osThreadId TaskLog_Handle = NULL;
+osThreadId TaskTelemetry_Handle = NULL;
 
-void Test2(Task_Handle handle);
 
 void test_PC0_ctl(void)
 {
@@ -69,9 +68,23 @@ void Task_Manager_Init(void)
 
 void Task_Manager_CreateTask(void)
 {
-    TaskInertial_Handle = Os_CreateTask("Inertial Sample", TASK_EXEC_2KHZ, Task_Group_0, Task_Priority_0, TaskInertical_Core, 1024);
-    TaskControl_Handle = Os_CreateTask("Control", TASK_EXEC_1KHZ, Task_Group_0, Task_Priority_1, TaskControl_Core, 1024);
-    TaskProtocol_Handle = Os_CreateTask("Protocl", TASK_EXEC_100HZ, Task_Group_1, Task_Priority_0, TaskProtocol_Core, 1024);
-    TaskLog_Handle = Os_CreateTask("Data Log", TASK_EXEC_200HZ, Task_Group_2, Task_Priority_0, TaskLog_Core, 1024);
-    TaskTelemetry_Handle = Os_CreateTask("Telemetry", TASK_EXEC_100HZ, Task_Group_0, Task_Priority_2, TaskTelemetry_Core, 512);
+    osThreadDef(SampleTask, TaskInertical_Core, osPriorityRealtime, 0, 1024);
+    TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
+
+    osThreadDef(ControlTask, TaskControl_Core, osPriorityHigh, 0, 1024);
+    TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
+
+    // osThreadDef(NavTask, , osPriorityHigh, 0, 1024);
+    // TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
+
+    osThreadDef(ProtocolTask, TaskProtocol_Core, osPriorityNormal, 0, 1024);
+    TaskProtocol_Handle = osThreadCreate(osThread(ProtocolTask), NULL);
+
+    osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 1024);
+    TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
+
+    osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 512);
+    TaskTelemetry_Handle = osThreadCreate(osThread(LogTask), NULL);
+
+    osKernelStart();
 }

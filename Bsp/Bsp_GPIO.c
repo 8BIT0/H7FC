@@ -1,5 +1,4 @@
 #include "Bsp_GPIO.h"
-#include "system_cfg.h"
 #include "debug_util.h"
 
 /* interbal function */

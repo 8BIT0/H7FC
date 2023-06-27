@@ -3,8 +3,6 @@
  */
 
 #include "filter.h"
-#include "system_cfg.h"
-#include "mmu.h"
 
 /* internal function */
 static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender);

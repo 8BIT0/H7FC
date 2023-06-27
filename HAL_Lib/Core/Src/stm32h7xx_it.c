@@ -1,8 +1,7 @@
 #include "stm32h7xx_it.h"
 #include "stm32h7xx_hal.h"
-#include "kernel.h"
-#include "runtime.h"
-#include "scheduler.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include "stm32h7xx_hal_gpio.h"
 #include "IO_Definition.h"
 #include "debug_util.h"
@@ -67,25 +66,15 @@ void PendSV_Handler(void)
 
 void SysTick_Handler(void)
 {
-  static uint32_t time_base = 0;
-
-  DebugPin.ctl(Debug_PB3, true);
-
-  /* Os relay on */
-  Runtime_Tick();
-
-  DebugPin.ctl(Debug_PB3, false);
-
-  /* periph relay on */
-  if (time_base == REAL_1MS - Runtime_GetTickBase())
+  HAL_IncTick();
+#if (INCLUDE_xTaskGetSchedulerState == 1 )
+  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
   {
-    time_base = 0;
-    HAL_IncTick();
+#endif /* INCLUDE_xTaskGetSchedulerState */
+  xPortSysTickHandler();
+#if (INCLUDE_xTaskGetSchedulerState == 1 )
   }
-  else
-  {
-    time_base += Runtime_GetTickBase();
-  }
+#endif /* INCLUDE_xTaskGetSchedulerState */
 }
 
 void OTG_FS_IRQHandler(void)

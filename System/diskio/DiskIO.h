@@ -4,9 +4,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include "system_cfg.h"
 #include "Dev_Card.h"
 #include "linked_list.h"
+
+#define EXTERNAL_INTERFACE_TYPE_SPI_FLASH (1 << 0)
+#define EXTERNAL_INTERFACE_TYPE_TF_CARD (1 << 1)
+
+#define STORAGE_MODULE EXTERNAL_INTERFACE_TYPE_TF_CARD
 
 #define ROOT_CLUSTER_ADDR 2
 

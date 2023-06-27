@@ -1,6 +1,5 @@
 #include "error_log.h"
-#include "queue.h"
-#include "mmu.h"
+#include "../DataStructure/queue.h"
 #include <stdarg.h>
 
 /*

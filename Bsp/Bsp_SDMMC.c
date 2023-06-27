@@ -147,14 +147,14 @@ static bool BspSDMMC_MDMA_Init(MDMA_HandleTypeDef *mdma)
     mdma->Init.TransferTriggerMode = MDMA_BLOCK_TRANSFER;
     mdma->Init.Priority = MDMA_PRIORITY_HIGH;
     mdma->Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
-    mdma->Init.SourceInc = MDMA_SRC_INC_WORD;//MDMA_SRC_INC_BYTE;
-    mdma->Init.DestinationInc = MDMA_DEST_INC_WORD;//MDMA_DEST_INC_BYTE;
-    mdma->Init.SourceDataSize = MDMA_SRC_DATASIZE_WORD;//MDMA_SRC_DATASIZE_BYTE;
-    mdma->Init.DestDataSize = MDMA_DEST_DATASIZE_WORD;//MDMA_DEST_DATASIZE_BYTE;
+    mdma->Init.SourceInc = MDMA_SRC_INC_BYTE;
+    mdma->Init.DestinationInc = MDMA_DEST_INC_BYTE;
+    mdma->Init.SourceDataSize = MDMA_SRC_DATASIZE_BYTE;
+    mdma->Init.DestDataSize = MDMA_DEST_DATASIZE_BYTE;
     mdma->Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
     mdma->Init.BufferTransferLength = 1;
-    mdma->Init.SourceBurst = MDMA_SOURCE_BURST_8BEATS;//MDMA_SOURCE_BURST_SINGLE;
-    mdma->Init.DestBurst = MDMA_DEST_BURST_8BEATS;//MDMA_DEST_BURST_SINGLE;
+    mdma->Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
+    mdma->Init.DestBurst = MDMA_DEST_BURST_SINGLE;
     mdma->Init.SourceBlockAddressOffset = 0;
     mdma->Init.DestBlockAddressOffset = 0;
     if (HAL_MDMA_Init(mdma) != HAL_OK)
@@ -211,67 +211,59 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
     // if (HAL_SD_ReadBlocks(&(obj->hdl), (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    while (retry_cnt)
-    {
-        if (SD_Rx_Cplt)
-        {
-            // SD_Rx_Cplt = false;
-
-            if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) 
-            {
-                break;
-            }
-
-            return false;
-        }
-        __DSB();
-
-        retry_cnt--;
-    }
-
     HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
 
+    if (state == HAL_OK)
+    {
+        while (retry_cnt)
+        {
+            if (SD_Rx_Cplt)
+            {
+                SD_Rx_Cplt = false;
+
+                if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) 
+                    return true;
+
+                return false;
+            }
+            __DSB();
+
+            retry_cnt--;
+        }
+    }
+
     SD_Rx_Cplt = false;
-
-    if(HAL_OK == state)
-        return true;
-
     return false;
 }
 
 static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
-    volatile HAL_SD_StateTypeDef opr_state;
     uint32_t retry_cnt = SDMMC_OPR_RETRY_MAX_CNT;
 
     // if (HAL_SD_WriteBlocks(&(obj->hdl), (uint8_t *)pData, WriteAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
 
-    while (retry_cnt)
-    {
-        if (SD_Tx_Cplt)
-        {                
-            // SD_Tx_Cplt = false;
-            
-            if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) //HAL_SD_STATE_RESET
-            {
-                break;
-            }
-
-            return false;
-        }
-        __DSB();
-
-        retry_cnt--;
-    }
-
     HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
 
+    if (state == HAL_OK)
+    {
+        while (retry_cnt)
+        {
+            if (SD_Tx_Cplt)
+            {                
+                SD_Tx_Cplt = false;
+                
+                if(HAL_SD_GetState(&(obj->hdl)) == HAL_SD_STATE_READY) //HAL_SD_STATE_RESET
+                    return true;
+
+                return false;
+            }
+
+            retry_cnt--;
+        }
+    }
+
     SD_Tx_Cplt = false;
-
-    if(HAL_OK == state)
-        return true;
-
     return false;
 }
 

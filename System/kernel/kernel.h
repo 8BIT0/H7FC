@@ -10,12 +10,5 @@
 #define Kernel_EnableIRQ() __asm("cpsie i")
 
 bool Kernel_Init(void);
-void Kernel_EnablePendSV(void);
-void Kernel_TriggerPendSV(void);
-void Kernel_LoadProcess(void);
-void Kernel_EnterCritical(void);
-void Kernel_ExitCritical(void);
-uint32_t Kernel_GetMode(void);
-uint32_t Kernel_GetPSR(void);
 
 #endif

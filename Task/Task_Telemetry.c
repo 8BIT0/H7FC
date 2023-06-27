@@ -24,10 +24,8 @@
 #include "Task_Telemetry.h"
 #include "DataPipe.h"
 #include "Srv_Receiver.h"
-#include "system_cfg.h"
 #include "IO_Definition.h"
-#include "runtime.h"
-#include "mmu.h"
+#include "Srv_OsCommon.h"
 #include "util.h"
 #include "Srv_ComProto.h"
 
@@ -116,8 +114,8 @@ void TaskTelemetry_Init(void)
 
 void Telemetry_blink(void)
 {
-    SYSTEM_RunTime Rt = 0;
-    static SYSTEM_RunTime Lst_Rt = 0;
+    uint32_t Rt = 0;
+    static uint32_t Lst_Rt = 0;
     static bool led_state = false;
 
     // DebugPin.ctl(Debug_PB4, true);
@@ -140,7 +138,7 @@ static bool Telemetry_Led_Control(bool state)
     DevLED.ctl(Led1, state);
 }
 
-void TaskTelemetry_Core(Task_Handle hdl)
+void TaskTelemetry_Core(void const *arg)
 {
     // Telemetry_blink();
 

@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "scheduler.h"
 #include "imu_data.h"
+#include "cmsis_os.h"
 #include "../common/util.h"
 
 #define TASKCONTROL_SET_BIT(x) UTIL_SET_BIT(x)
@@ -54,8 +54,8 @@ typedef struct
     uint8_t imu_update_error_cnt;
     uint8_t rc_update_error_cnt;
 
-    SYSTEM_RunTime IMU_Rt;
-    SYSTEM_RunTime RC_Rt;
+    uint32_t IMU_Rt;
+    uint32_t RC_Rt;
 
     bool auto_control;
 
@@ -75,6 +75,6 @@ typedef struct
 } TaskControl_Monitor_TypeDef;
 
 void TaskControl_Init(void);
-void TaskControl_Core(Task_Handle hdl);
+void TaskControl_Core(void const *arg);
 
 #endif

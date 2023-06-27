@@ -6,7 +6,7 @@
 #include "Dev_ICM20602.h"
 #include "Dev_ICM426xx.h"
 #include "IO_Definition.h"
-#include "runtime.h"
+#include "Srv_OsCommon.h"
 #include "debug_util.h"
 #include "Bsp_SPI.h"
 #include "error_log.h"
@@ -424,8 +424,8 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
             DevMPU6000.pre_init(&MPU6000Obj,
                                 SrvIMU_PriIMU_CS_Ctl,
                                 SrvIMU_PriIMU_BusTrans_Rec,
-                                Runtime_DelayMs,
-                                Get_CurrentRunningUs);
+                                SrvOsCommon.delay_ms,
+                                SrvOsCommon.get_os_ms);
 
             DevMPU6000.config(&MPU6000Obj,
                                MPU6000_SampleRate_4K,
@@ -452,8 +452,8 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
             DevICM20602.pre_init(&ICM20602Obj,
                                  SrvIMU_PriIMU_CS_Ctl,
                                  SrvIMU_PriIMU_BusTrans_Rec,
-                                 Runtime_DelayMs,
-                                 Get_CurrentRunningUs);
+                                 SrvOsCommon.delay_ms,
+                                 SrvOsCommon.get_os_ms);
 
             DevICM20602.config(&ICM20602Obj,
                                 ICM20602_SampleRate_4K,
@@ -480,8 +480,8 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
             DevICM426xx.pre_init(&ICM42688PObj,
                                  SrvIMU_PriIMU_CS_Ctl,
                                  SrvIMU_PriIMU_BusTrans_Rec,
-                                 Runtime_DelayMs,
-                                 Get_CurrentRunningUs);
+                                 SrvOsCommon.delay_ms,
+                                 SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42688PObj,
                                 ICM426xx_SampleRate_4K,
@@ -508,8 +508,8 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
             DevICM426xx.pre_init(&ICM42605Obj,
                                  SrvIMU_PriIMU_CS_Ctl,
                                  SrvIMU_PriIMU_BusTrans_Rec,
-                                 Runtime_DelayMs,
-                                 Get_CurrentRunningUs);
+                                 SrvOsCommon.delay_ms,
+                                 SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42605Obj,
                                 ICM426xx_SampleRate_4K,
@@ -558,8 +558,8 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
             DevMPU6000.pre_init(&MPU6000Obj,
                                 SrvIMU_SecIMU_CS_Ctl,
                                 SrvIMU_SecIMU_BusTrans_Rec,
-                                Runtime_DelayMs,
-                                Get_CurrentRunningUs);
+                                SrvOsCommon.delay_ms,
+                                SrvOsCommon.get_os_ms);
 
             DevMPU6000.config(&MPU6000Obj,
                                MPU6000_SampleRate_4K,
@@ -586,8 +586,8 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
             DevICM20602.pre_init(&ICM20602Obj,
                                  SrvIMU_SecIMU_CS_Ctl,
                                  SrvIMU_SecIMU_BusTrans_Rec,
-                                 Runtime_DelayMs,
-                                 Get_CurrentRunningUs);
+                                 SrvOsCommon.delay_ms,
+                                 SrvOsCommon.get_os_ms);
 
             DevICM20602.config(&ICM20602Obj,
                                 ICM20602_SampleRate_4K,
@@ -614,8 +614,8 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
             DevICM426xx.pre_init(&ICM42688PObj,
                                  SrvIMU_SecIMU_CS_Ctl,
                                  SrvIMU_SecIMU_BusTrans_Rec,
-                                 Runtime_DelayMs,
-                                 Get_CurrentRunningUs);
+                                 SrvOsCommon.delay_ms,
+                                 SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42688PObj,
                                 ICM426xx_SampleRate_4K,
@@ -642,8 +642,8 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
             DevICM426xx.pre_init(&ICM42605Obj,
                                  SrvIMU_SecIMU_CS_Ctl,
                                  SrvIMU_SecIMU_BusTrans_Rec,
-                                 Runtime_DelayMs,
-                                 Get_CurrentRunningUs);
+                                 SrvOsCommon.delay_ms,
+                                 SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42605Obj,
                                 ICM426xx_SampleRate_4K,
@@ -832,8 +832,8 @@ reset_calib_var:
 
 static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
 {
-    static SYSTEM_RunTime PriSample_Rt_Lst = 0;
-    static SYSTEM_RunTime SecSample_Rt_Lst = 0;
+    static uint32_t PriSample_Rt_Lst = 0;
+    static uint32_t SecSample_Rt_Lst = 0;
     uint8_t i = Axis_X;
     bool pri_sample_state = true;
     bool sec_sample_state = true;
@@ -1016,7 +1016,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
             else
             {
                 IMU_Data = IMU_Data_Lst;
-                IMU_Data.time_stamp = Get_CurrentRunningUs();
+                IMU_Data.time_stamp = SrvOsCommon.get_os_ms();
             }
         break;
 
@@ -1111,7 +1111,7 @@ static void SrvIMU_ErrorProc(void)
 
 static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
 {
-    Runtime_DelayMs(20);
+    SrvOsCommon.delay_ms(20);
 
     if(DevMPU6000.detect(trans, cs_ctl))
         return SrvIMU_Dev_MPU6000;

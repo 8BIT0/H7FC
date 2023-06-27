@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
-#include "mmu.h"
 #include "kernel.h"
 
 #define Queue_Mem_Malloc(x) MMU_Malloc(x)

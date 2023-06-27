@@ -1,6 +1,5 @@
 #include "Dev_Led.h"
 #include "Bsp_GPIO.h"
-#include "system_cfg.h"
 
 DevLed_TypeDef DevLED;
 

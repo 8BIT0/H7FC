@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "scheduler.h"
-#include "runtime.h"
+#include "cmsis_os.h"
 
 typedef enum
 {
@@ -23,7 +22,7 @@ typedef enum
 } TaskProto_State_List;
 
 bool TaskProtocol_Init(void);
-void TaskProtocol_Core(Task_Handle hdl);
+void TaskProtocol_Core(void const *arg);
 ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
 
 #endif

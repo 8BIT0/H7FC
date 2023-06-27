@@ -1,11 +1,10 @@
 #include "Task_SensorInertial.h"
-#include "scheduler.h"
 #include "debug_util.h"
-#include "runtime.h"
+#include "Srv_OsCommon.h"
 #include "IO_Definition.h"
 #include "debug_util.h"
 #include "error_log.h"
-#include "DataPipe/DataPipe.h"
+#include "../System/DataPipe/DataPipe.h"
 
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
 
@@ -35,9 +34,9 @@ void TaskInertial_Init(void)
         TaskInertial_State = Task_SensorInertial_Error;
 }
 
-void TaskInertical_Core(Task_Handle hdl)
+void TaskInertical_Core(void const *arg)
 {
-    DebugPin.ctl(Debug_PB5, true);
+    // DebugPin.ctl(Debug_PB5, true);
     switch ((uint8_t)TaskInertial_State)
     {
     case Task_SensorInertial_Core:
@@ -71,13 +70,13 @@ void TaskInertical_Core(Task_Handle hdl)
     }
 
     SrvIMU.error_proc();
-    DebugPin.ctl(Debug_PB5, false);
+    // DebugPin.ctl(Debug_PB5, false);
 }
 
 static void TaskInertical_Blink_Notification(uint16_t duration)
 {
-    SYSTEM_RunTime Rt = 0;
-    static SYSTEM_RunTime Lst_Rt = 0;
+    uint32_t Rt = 0;
+    static uint32_t Lst_Rt = 0;
     static bool led_state = false;
 
     Rt = Get_CurrentRunningMs();

@@ -2,13 +2,12 @@
  *  coder : 8_B!T0
  *  this file use for moto & servo control
  */
+#include "cmsis_os.h"
 #include "Task_Control.h"
 #include "Srv_IMUSample.h"
 #include "Task_Telemetry.h"
 #include "Srv_DataHub.h"
-#include "scheduler.h"
 #include "Srv_Actuator.h"
-#include "mmu.h"
 #include "adrc.h"
 
 #define DEFAULT_CONTROL_MODEL Model_Quad
@@ -40,7 +39,7 @@ void TaskControl_Init(void)
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 }
 
-void TaskControl_Core(Task_Handle hdl)
+void TaskControl_Core(void const *arg)
 {
     uint64_t imu_update_time = 0;
     uint64_t rc_update_time = 0;

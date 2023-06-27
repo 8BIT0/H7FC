@@ -15,9 +15,8 @@
  */
 #include "Srv_Actuator.h"
 #include "Srv_DataHub.h"
-#include "runtime.h"
+#include "Srv_OsCommon.h"
 #include "datapipe.h"
-#include "mmu.h"
 
 const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM] = {
     SRVACTUATOR_PB0_SIG_1,

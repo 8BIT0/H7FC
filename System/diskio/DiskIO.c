@@ -14,7 +14,6 @@
 #include "IO_Definition.h"
 #include "Data_Convert_Util.h"
 #include "error_log.h"
-#include "mmu.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>

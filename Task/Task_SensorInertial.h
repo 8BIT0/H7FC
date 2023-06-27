@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include "scheduler.h"
-#include "runtime.h"
+#include "cmsis_os.h"
 #include "imu_data.h"
 #include "Srv_IMUSample.h"
 
@@ -19,7 +18,7 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    SYSTEM_RunTime time_stamp;
+    uint32_t time_stamp;
 
     int8_t org_tmp;
     float org_Cnv_tmp;
@@ -30,13 +29,13 @@ typedef struct
 
 typedef struct
 {
-    SYSTEM_RunTime time_stamp;
+    uint32_t time_stamp;
 
     InertialData_TypeDef *Inertical_Sensor;
 } SensorInertial_Data_TypeDef;
 #pragma pack()
 
 void TaskInertial_Init(void);
-void TaskInertical_Core(Task_Handle hdl);
+void TaskInertical_Core(void const *arg);
 
 #endif

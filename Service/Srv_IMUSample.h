@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include "runtime.h"
+#include "Srv_OsCommon.h"
 #include "imu_data.h"
 #include "util.h"
 
@@ -87,7 +87,7 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    SYSTEM_RunTime time_stamp;
+    uint32_t time_stamp;
     uint32_t cycle_cnt;
 
     float tempera;

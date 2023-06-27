@@ -2,21 +2,20 @@
  *  coder: 8_B!T0
  *  bref: use this task make FC communicate to computer configuration
  */
+#include "cmsis_os.h"
 #include "Task_Protocol.h"
-#include "scheduler.h"
 #include "shell.h"
 #include "shell_port.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 #include "debug_util.h"
 #include <stdio.h>
-#include "queue.h"
+#include "../DataStructure/queue.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
 #include "Bsp_GPIO.h"
 #include "error_log.h"
 #include "Srv_ComProto.h"
-#include "mmu.h"
 
 static bool test = false;
 
@@ -165,7 +164,7 @@ static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
     return true;
 }
 
-void TaskProtocol_Core(Task_Handle hdl)
+void TaskProtocol_Core(void const *arg)
 {
     uint8_t *p_buf = NULL;
     uint16_t p_buf_size = 0;

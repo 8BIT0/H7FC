@@ -123,7 +123,10 @@
                 "task_osd.h": "c",
                 "task_attitude.h": "c",
                 "filter.h": "c",
-                "minilzo.h": "c"
+                "minilzo.h": "c",
+                "srv_oscommon.h": "c",
+                "task.h": "c",
+                "freertos.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false

@@ -7,7 +7,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stddef.h>
-#include "scheduler.h"
+#include "cmsis_os.h"
 #include "imu_data.h"
 
 #define LOG_HEADER 0xBA
@@ -77,6 +77,6 @@ typedef union
 #pragma pack()
 
 void TaskLog_Init(void);
-void TaskLog_Core(Task_Handle hdl);
+void TaskLog_Core(void const *arg);
 
 #endif

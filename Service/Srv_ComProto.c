@@ -1,8 +1,7 @@
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
 #include "DataPipe.h"
-#include "mmu.h"
-#include "runtime.h"
+#include "Srv_OsCommon.h"
 
 /* only can use one hardware port at one time */
 /* still can be optmize / use multi port proto mavlink frame */

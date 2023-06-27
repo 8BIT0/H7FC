@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-typedef uint64_t SYSTEM_RunTime;
+typedef uint32_t SYSTEM_RunTime;
 #define LOG_HEADER 0xBA
 #define LOG_DATATYPE_IMU 0x00
 
