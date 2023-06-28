@@ -256,7 +256,7 @@ typedef struct
 
 typedef struct
 {
-    uint64_t time_stamp;
+    uint32_t time_stamp;
 
     uint8_t moto_cnt;
     uint8_t servo_cnt;

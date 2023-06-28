@@ -351,7 +351,7 @@ static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj)
 static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj)
 {
     uint8_t read_out = 0;
-    uint64_t reset_UsRt = 0;
+    uint32_t reset_UsRt = 0;
 
     DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_1, ICM20602_RESET_CMD);
     Obj->delay(20);

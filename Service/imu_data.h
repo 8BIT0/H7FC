@@ -13,7 +13,7 @@
 typedef void (*cs_ctl_callback)(bool state);
 typedef bool (*bus_trans_callback)(uint8_t *tx, uint8_t *rx, uint16_t len);
 typedef void (*delay_callback)(uint32_t ms);
-typedef uint64_t (*get_time_stamp_callback)(void);
+typedef uint32_t (*get_time_stamp_callback)(void);
 
 typedef enum
 {
@@ -26,8 +26,8 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    uint64_t time_stamp;
-    uint64_t cycle_cnt;
+    uint32_t time_stamp;
+    uint8_t cycle_cnt;
 
     int16_t temp_int;
     int16_t gyr_int[Axis_Sum];
