@@ -1,6 +1,8 @@
 #include "Dev_DPS310.h"
 
 #define DPS310_SAMPLE_RATE DPS310_CFG_RATE_32_MEAS
+#define DPS310_MAX_SAMPLE_RATE 10 /* unit:ms period 10ms 100Hz */
+#define DPS310_MIN_SAMPLE_RATE 25 /* unit:ms period 25ms 40Hz  */
 
 /* internal function */
 static bool DevDPS310_WriteByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t data);
