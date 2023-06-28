@@ -102,15 +102,18 @@ static uint32_t DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj, uint8_t rate)
     return 0;
 }
 
-static bool DevDPS310_WakeUp(dps310_mode_t mode)
+static bool DevDPS310_WakeUp(DevDPS310Obj_TypeDef *obj, dps310_mode_t mode)
 {
-    return DevDPS310_WriteByteToReg(DPS310_MEAS_CFG_REG, mode);
+    if(obj)
+        return DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, mode);
+
+    return false;
 }
 
 static bool DevDPS310_Sleep(DevDPS310Obj_TypeDef *obj)
 {
     if(obj)
-        return DevDPS310_WriteByteToReg(DPS310_MEAS_CFG_REG, DPS310_MEAS_CFG_MEAS_CTRL_IDLE);
+        return DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, DPS310_MEAS_CFG_MEAS_CTRL_IDLE);
 
     return false;
 }
@@ -118,7 +121,7 @@ static bool DevDPS310_Sleep(DevDPS310Obj_TypeDef *obj)
 static bool DevDPS310_Reset(DevDPS310Obj_TypeDef *obj)
 {
     if(obj)
-        return DevDPS310_WriteByteToReg(DPS310_RESET_REG, DPS310_RESET_SOFT_RST_VALUE);
+        return DevDPS310_WriteByteToReg(obj,DPS310_RESET_REG, DPS310_RESET_SOFT_RST_VALUE);
 
     return false;
 }
