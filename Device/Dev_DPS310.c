@@ -1,6 +1,7 @@
 #include "Dev_DPS310.h"
 
 #define DPS310_SAMPLE_RATE DPS310_CFG_RATE_32_MEAS
+#define DPS310_PROC_TIME   DPS310_PRS_CFG_PM_PRC_16_TIMES
 #define DPS310_MAX_SAMPLE_RATE 10 /* unit:ms period 10ms 100Hz */
 #define DPS310_MIN_SAMPLE_RATE 25 /* unit:ms period 25ms 40Hz  */
 
@@ -47,11 +48,13 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
         DevDPS310_Reset(obj);
         obj->bus_delay(50);
 
-        DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
-
         /* configure pressure sensor */
+        DevDPS310_WriteByteToReg(obj, DPS310_PRS_CFG_REG, DPS310_SAMPLE_RATE | DPS310_PROC_TIME);
+        obj->pres_factory_scale =DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
 
         /* configure temprature sensor */
+        DevDPS310_WriteByteToReg
+        obj->temp_factory_scale =DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
 
         return true;
     }
@@ -104,7 +107,7 @@ static uint32_t DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj, uint8_t rate)
     return 0;
 }
 
-static bool DevDPS310_WakeUp(DevDPS310Obj_TypeDef *obj, dps310_mode_t mode)
+static bool DevDPS310_WakeUp(DevDPS310Obj_TypeDef *obj, uint8_t mode)
 {
     if(obj)
         return DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, mode);
@@ -142,6 +145,20 @@ static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj)
     }
 
     return false;
+}
+
+static bool DevDPS310_Configure_Temperature(uint8_t data)
+{
+    int16_t ret;
+    uint8_t temperature_sensor = DPS310_TMP_CFG_REG_TMP_EXT_EXTERNAL;
+
+    ret = get_temperature_sensor(&temperature_sensor);
+    if (ret != DPS310_OK) return ret;
+
+    g_temperature_rate = DPS310_TMP_CFG_TMP_RATE_MASK & data;
+    data |= temperature_sensor;
+
+    return DevDPS310_WriteByteToReg(DPS310_TMP_CFG_REG, data);
 }
 
 static bool DevDPS310_WriteByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t data)

@@ -142,7 +142,8 @@ typedef struct
     uint8_t DevAddr;
     uint8_t ProdID;
     uint32_t update_time;
-    uint32_t factory_scale;
+    uint32_t pres_factory_scale;
+    uint32_t temp_factory_scale;
     float scaled_pres;
     int16_t pres;
 
