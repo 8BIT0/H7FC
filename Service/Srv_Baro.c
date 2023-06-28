@@ -1,5 +1,7 @@
 #include "Srv_Baro.h"
 #include "Srv_OsCommon.h"
+#include "IO_Definition.h"
+#include "debug_util.h"
 
 /* external function */
 static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate, SrvBaroBus_TypeDef bus);
