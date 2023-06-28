@@ -11,6 +11,7 @@ static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj);
 static uint32_t DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj);
 static bool DevDPS310_Sleep(DevDPS310Obj_TypeDef *obj);
 static bool DevDPS310_Reset(DevDPS310Obj_TypeDef *obj);
+static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length);
 
 /* external function */
 static bool DevDPS310_PreInit(DevDPS310Obj_TypeDef *obj, DevDPS310_BusWrite write, DevDPS310_BusRead read);
@@ -172,3 +173,15 @@ static bool DevDPS310_WriteByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr
     return true;
 }
 
+static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length)
+{
+    int32_t ret = value;
+    bool b_is_negative = value & (1u << (length - 1u));
+
+    if (b_is_negative)
+    {
+        ret -= ((uint32_t) 1 << length);
+    }
+
+    return ret;
+}
