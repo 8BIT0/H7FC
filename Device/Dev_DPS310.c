@@ -186,22 +186,25 @@ static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length)
     return ret;
 }
 
-static int16_t DevDPS310_Temperature_Sensor(uint8_t *p_sensor)
+static int16_t DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_sensor)
 {
     uint16_t ret;
-    uint8_t buff[1];
+    uint8_t read = 0;
 
-    ret = dps310_i2c_read(I2C_DPS310_ADDRESS, DPS310_TMP_COEF_SRCE, buff, 1);
-    if (ret != DPS310_OK) return ret;
+    if(obj && obj->bus_rx && obj->bus_rx(obj->DevAddr, DPS310_TMP_COEF_SRCE, &read, 1))
+    {
+        read &= DPS310_TMP_COEF_SRCE_MASK;
 
-    uint8_t value = buff[0] & DPS310_TMP_COEF_SRCE_MASK;
+        if (read)
+        {
+            *p_sensor = DPS310_TMP_CFG_REG_TMP_EXT_EXTERNAL;
+        }
+        else
+            *p_sensor = DPS310_TMP_CFG_REG_TMP_EXT_INTERNAL;
 
-    if (value) {
-        *p_sensor = DPS310_TMP_CFG_REG_TMP_EXT_EXTERNAL;
-    } else {
-        *p_sensor = DPS310_TMP_CFG_REG_TMP_EXT_INTERNAL;
+        return true;
     }
 
-    return DPS310_OK;
+    return false;
 }
 
