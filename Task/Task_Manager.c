@@ -23,6 +23,7 @@ osThreadId TaskControl_Handle = NULL;
 osThreadId TaskNavi_Handle = NULL;
 osThreadId TaskLog_Handle = NULL;
 osThreadId TaskTelemetry_Handle = NULL;
+osThreadId TaskManager_Handle = NULL;
 
 
 void test_PC0_ctl(void)
@@ -63,6 +64,14 @@ void Task_Manager_Init(void)
 
     /* cur ADC init */
 
+    osThreadDef(ManagerTask, Task_Manager_CreateTask, osPriorityLow, 0, 512);
+    TaskManager_Handle = osThreadCreate(osThread(ManagerTask), NULL);
+
+    osKernelStart();
+}
+
+void Task_Manager_CreateTask(void)
+{
     DataPipe_Init();
 
     TaskProtocol_Init(TaskProtocol_Period_Def);
@@ -70,10 +79,7 @@ void Task_Manager_Init(void)
     TaskTelemetry_Init(TaskTelemetry_Period_def);
     TaskControl_Init(TaskControl_Period_Def);
     TaskLog_Init(TaslLog_Period_Def);
-}
 
-void Task_Manager_CreateTask(void)
-{
     osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
     TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
 
@@ -92,5 +98,9 @@ void Task_Manager_CreateTask(void)
     osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 512);
     TaskTelemetry_Handle = osThreadCreate(osThread(LogTask), NULL);
 
-    osKernelStart();
+    while(1)
+    {
+        /* run system statistic in this task */
+        osDelay(10);
+    }
 }

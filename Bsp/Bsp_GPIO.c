@@ -151,7 +151,7 @@ static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_Lis
     HAL_GPIO_WritePin(IO_Obj.port, IO_Obj.pin, IO_Obj.init_state);
     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
 
-    HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 3, 0);
+    HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 5, 0);
     HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
 }
 
@@ -215,7 +215,7 @@ static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
     /* set exti callback */
     EXTI_CallBack_List[BspGPIO_GetEXTI_Index(IO_Obj.pin)] = callback;
 
-    HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 4, 0);
+    HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 5, 0);
     HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
 
     return true;
