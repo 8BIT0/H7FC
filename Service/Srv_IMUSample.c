@@ -31,7 +31,7 @@
  * Angular Speed Over Speed Threshold
  * Angular Speed Per Millscond
  */
-#define ANGULAR_ACCECLERATION_THRESHOLD 300 / 10.0f // angular speed accelerate from 0 to 300 deg/s in 10 Ms
+#define ANGULAR_ACCECLERATION_THRESHOLD 10 / 1.0f // angular speed accelerate from 0 to 100 deg/s in 1 Ms
 
 typedef struct
 {
@@ -882,7 +882,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
 
                 /* Pri imu data validation check */
                 PriIMU_Data.error_code = SrvIMU_DataCheck(InUse_PriIMU_Obj.OriData_ptr, InUse_PriIMU_Obj.acc_trip, InUse_PriIMU_Obj.gyr_trip);
-                Sample_MsDiff = (PriIMU_Data.time_stamp - PriSample_Rt_Lst) / 1000.0f;
+                Sample_MsDiff = PriIMU_Data.time_stamp - PriSample_Rt_Lst;
 
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
