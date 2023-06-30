@@ -51,17 +51,6 @@ SECTIONS
     Perph_e = .;
   } >RAM_D1 AT>FLASH
 
-  .Fast_Mem_Section : 
-  {
-    . = ALIGN(4);
-    fast_mem_s = .;
-    *(.Fast_Mem_Section)
-    *(.Fast_Mem_Section*)
-    
-    . = ALIGN(4);
-    fast_mem_e = .;
-  } >RAM_D2 AT>FLASH
-
   /* The program code and other data goes into FLASH */
   .text :
   {

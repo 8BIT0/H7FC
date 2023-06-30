@@ -5,6 +5,7 @@
 SrvOsCommon_TypeDef SrvOsCommon = {
     .get_os_ms = osKernelSysTick,
     .delay_ms = osDelay,
+    .precise_delay = osDelayUntil,
     .malloc = pvPortMalloc,
     .free = vPortFree,
     .enter_critical = vPortEnterCritical,

@@ -198,7 +198,7 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     if (!BspSDMMC_MDMA_Init(&(obj->mdma)) || (HAL_SD_Init(&(obj->hdl)) != HAL_OK))
         return false;
 
-    HAL_NVIC_SetPriority(irq, 4, 0);
+    HAL_NVIC_SetPriority(irq, 5, 0);
     HAL_NVIC_EnableIRQ(irq);
 
     return true;
