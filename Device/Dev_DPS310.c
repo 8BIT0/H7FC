@@ -7,6 +7,7 @@
 
 /* internal function */
 static bool DevDPS310_WriteByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t data);
+static int16_t DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_sensor);
 static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj);
 static uint32_t DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj);
 static bool DevDPS310_Sleep(DevDPS310Obj_TypeDef *obj);
@@ -51,11 +52,10 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
 
         /* configure pressure sensor */
         DevDPS310_WriteByteToReg(obj, DPS310_PRS_CFG_REG, DPS310_SAMPLE_RATE | DPS310_PROC_TIME);
-        obj->pres_factory_scale =DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
+        obj->pres_factory_scale = DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
 
         /* configure temprature sensor */
-        DevDPS310_WriteByteToReg
-        obj->temp_factory_scale =DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
+        obj->temp_factory_scale = DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
 
         return true;
     }
@@ -148,18 +148,23 @@ static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj)
     return false;
 }
 
-static bool DevDPS310_Configure_Temperature(uint8_t data)
+static bool DevDPS310_Configure_Temperature(DevDPS310Obj_TypeDef *obj, uint8_t data)
 {
     int16_t ret;
     uint8_t temperature_sensor = DPS310_TMP_CFG_REG_TMP_EXT_EXTERNAL;
 
-    ret = get_temperature_sensor(&temperature_sensor);
-    if (ret != DPS310_OK) return ret;
+    if(obj)
+    {
+        if(DevDPS310_Temperature_Sensor(&temperature_sensor))
+        {
+            g_temperature_rate = DPS310_TMP_CFG_TMP_RATE_MASK & `data;
+            data |= temperature_sensor;
+        }
 
-    g_temperature_rate = DPS310_TMP_CFG_TMP_RATE_MASK & data;
-    data |= temperature_sensor;
+        return DevDPS310_WriteByteToReg(DPS310_TMP_CFG_REG, data);
+    }
 
-    return DevDPS310_WriteByteToReg(DPS310_TMP_CFG_REG, data);
+    return false;
 }
 
 static bool DevDPS310_WriteByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t data)
@@ -186,9 +191,8 @@ static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length)
     return ret;
 }
 
-static int16_t DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_sensor)
+static bool DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_sensor)
 {
-    uint16_t ret;
     uint8_t read = 0;
 
     if(obj && obj->bus_rx && obj->bus_rx(obj->DevAddr, DPS310_TMP_COEF_SRCE, &read, 1))
