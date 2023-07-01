@@ -67,6 +67,8 @@ void TaskSample_Core(void const *arg)
                 else
                     TaskInertical_Led_Control(false);
             }
+
+            /* sample baro sensor */
             break;
 
         case Task_SensorInertial_Error:

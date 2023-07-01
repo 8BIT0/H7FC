@@ -92,7 +92,7 @@ void Task_Manager_CreateTask(void)
     osThreadDef(ProtocolTask, TaskProtocol_Core, osPriorityNormal, 0, 1024);
     TaskProtocol_Handle = osThreadCreate(osThread(ProtocolTask), NULL);
 
-    osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 1024);
+    osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
     TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
 
     osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 512);
