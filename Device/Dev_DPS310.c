@@ -10,9 +10,12 @@ static bool DevDPS310_WriteByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr
 static int16_t DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_sensor);
 static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj);
 static uint32_t DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj);
+static bool DevDPS310_WakeUp(DevDPS310Obj_TypeDef *obj, uint8_t mode);
 static bool DevDPS310_Sleep(DevDPS310Obj_TypeDef *obj);
 static bool DevDPS310_Reset(DevDPS310Obj_TypeDef *obj);
+static bool DevDPS310_Configure_Temperature(DevDPS310Obj_TypeDef *obj, uint8_t data);
 static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length);
+static bool DevDPS310_Get_Cali_Coefs(DevDPS310Obj_TypeDef *obj);
 
 /* external function */
 static bool DevDPS310_PreInit(DevDPS310Obj_TypeDef *obj, DevDPS310_BusWrite write, DevDPS310_BusRead read);
@@ -41,6 +44,8 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
 {
     if(obj  && obj->bus_delay)
     {
+        obj->error = DevDPS310_Error_None;
+
         if(!DevDPS310_Get_ProdID(obj))
         {
             obj->error = DevDPS310_Error_BadID;
@@ -51,11 +56,28 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
         obj->bus_delay(50);
 
         /* configure pressure sensor */
-        DevDPS310_WriteByteToReg(obj, DPS310_PRS_CFG_REG, DPS310_SAMPLE_RATE | DPS310_PROC_TIME);
-        obj->pres_factory_scale = DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
+        if(DevDPS310_WriteByteToReg(obj, DPS310_PRS_CFG_REG, DPS310_SAMPLE_RATE | DPS310_PROC_TIME))
+        {
+            obj->pres_factory_scale = DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
+        }
+        else
+        {
+            /* presesure init error */
+            obj->error = DevDPS310_Error_PressureInit;
+            return false;
+        }
 
         /* configure temprature sensor */
-        obj->temp_factory_scale = DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
+        if(DevDPS310_Configure_Temperature(obj, DPS310_SAMPLE_RATE | DPS310_PROC_TIME))
+        {
+            obj->temp_factory_scale = DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
+        }
+        else
+        {
+            /* temprature init error */
+            obj->error = DevDPS310_Error_TempratureInit;
+            return false;
+        }
 
         return true;
     }
@@ -155,11 +177,12 @@ static bool DevDPS310_Configure_Temperature(DevDPS310Obj_TypeDef *obj, uint8_t d
 
     if(obj)
     {
-        if(DevDPS310_Temperature_Sensor(&temperature_sensor))
+        if(DevDPS310_Temperature_Sensor(obj, &temperature_sensor))
         {
-            g_temperature_rate = DPS310_TMP_CFG_TMP_RATE_MASK & `data;
             data |= temperature_sensor;
         }
+        else
+            return false;
 
         return DevDPS310_WriteByteToReg(DPS310_TMP_CFG_REG, data);
     }
@@ -205,6 +228,39 @@ static bool DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_s
         }
         else
             *p_sensor = DPS310_TMP_CFG_REG_TMP_EXT_INTERNAL;
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool DevDPS310_Get_Cali_Coefs(DevDPS310Obj_TypeDef *obj)
+{
+    uint8_t buff[18] = {0};
+
+    if(obj)
+    {
+        ret = wait_for_reg_value(
+                DPS310_MEAS_CFG_REG,
+                DPS310_MEAS_CFG_COEF_RDY_AVAILABLE,
+                DPS310_MEAS_CFG_COEF_RDY_AVAILABLE);
+
+        if(!obj->bus_rx(obj->DevAddr, DPS310_COEF_REG, buff, 18))
+        {
+            obj->error = DevDPS310_Error_CaliCoefs;
+            return false;
+        }
+
+        g_coefs.c0  = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[0] << 4u) | (((uint16_t) buff[1] >> 4u) & 0x0Fu), 12);
+        g_coefs.c1  = DevDPS310_GetTwoComplementOf(obj, ((((uint16_t) buff[1] & 0x0Fu) << 8u) | (uint16_t) buff[2]), 12);
+        g_coefs.c00 = DevDPS310_GetTwoComplementOf(obj, ((uint32_t) buff[3] << 12u) | ((uint32_t) buff[4] << 4u) | (((uint32_t) buff[5] >> 4u) & 0x0Fu), 20);
+        g_coefs.c10 = DevDPS310_GetTwoComplementOf(obj, (((uint32_t) buff[5] & 0x0Fu) << 16u) | ((uint32_t) buff[6] << 8u) | (uint32_t) buff[7], 20);
+        g_coefs.c01 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[8] << 8u) | (uint16_t) buff[9], 16);
+        g_coefs.c11 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[10] << 8u) | (uint16_t) buff[11], 16);
+        g_coefs.c20 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[12] << 8u) | (uint16_t) buff[13], 16);
+        g_coefs.c21 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[14] << 8u) | (uint16_t) buff[15], 16);
+        g_coefs.c30 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[16] << 8u) | (uint16_t) buff[17], 16);
 
         return true;
     }

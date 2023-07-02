@@ -135,7 +135,22 @@ typedef enum
     DevDPS310_Error_None = 0,
     DevDPS310_Error_Busy,
     DevDPS310_Error_BadID,
+    DevDPS310_Error_PressureInit,
+    DevDPS310_Error_TempratureInit,
+    DevDPS310_Error_CaliCoefs,
 }DevDPS310_ErrorList;
+
+typedef struct {
+    int16_t c0;
+    int16_t c1;
+    int32_t c00;
+    int32_t c10;
+    int16_t c01;
+    int16_t c11;
+    int16_t c20;
+    int16_t c21;
+    int16_t c30;
+} DevDPS310_Cali_Coefs_TypeDef;
 
 typedef struct
 {
@@ -152,6 +167,8 @@ typedef struct
     DevDPS310_DelayMs  bus_delay;
     DevDPS310_WakeUp   bus_wakeup;
     DevDPS310_Sleep    bus_sleep;
+
+    DevDPS310_Cali_Coefs_TypeDef cali_coefs;
 
     bool ready;
     DevDPS310_ErrorList error;

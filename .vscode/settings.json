@@ -127,7 +127,8 @@
                 "srv_oscommon.h": "c",
                 "task.h": "c",
                 "freertos.h": "c",
-                "cmsis_os.h": "c"
+                "cmsis_os.h": "c",
+                "istream": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false
