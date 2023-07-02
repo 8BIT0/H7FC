@@ -247,10 +247,7 @@ static bool DevDPS310_Get_Cali_Coefs(DevDPS310Obj_TypeDef *obj)
                 DPS310_MEAS_CFG_COEF_RDY_AVAILABLE);
 
         if(!obj->bus_rx(obj->DevAddr, DPS310_COEF_REG, buff, 18))
-        {
-            obj->error = DevDPS310_Error_CaliCoefs;
             return false;
-        }
 
         g_coefs.c0  = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[0] << 4u) | (((uint16_t) buff[1] >> 4u) & 0x0Fu), 12);
         g_coefs.c1  = DevDPS310_GetTwoComplementOf(obj, ((((uint16_t) buff[1] & 0x0Fu) << 8u) | (uint16_t) buff[2]), 12);
