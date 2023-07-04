@@ -1,5 +1,7 @@
 #include "Dev_DPS310.h"
 
+#define DPS310_WAIT_REG_TIMEOUT 100
+
 #define DPS310_SAMPLE_RATE DPS310_CFG_RATE_32_MEAS
 #define DPS310_PROC_TIME   DPS310_PRS_CFG_PM_PRC_16_TIMES
 #define DPS310_MAX_SAMPLE_RATE 10 /* unit:ms period 10ms 100Hz */
@@ -7,6 +9,7 @@
 
 /* internal function */
 static bool DevDPS310_WriteByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t data);
+static bool DevDPS310_WaitRegValue(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t reg_value, uint8_t mask);
 static int16_t DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_sensor);
 static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj);
 static uint32_t DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj);
@@ -54,6 +57,13 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
 
         DevDPS310_Reset(obj);
         obj->bus_delay(50);
+
+        /* get calibrate data */
+        if(!DevDPS310_Get_Cali_Coefs(obj))
+        {
+            obj->error = DevDPS310_Error_CaliCoefs;
+            return false;
+        }
 
         /* configure pressure sensor */
         if(DevDPS310_WriteByteToReg(obj, DPS310_PRS_CFG_REG, DPS310_SAMPLE_RATE | DPS310_PROC_TIME))
@@ -235,29 +245,54 @@ static bool DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_s
     return false;
 }
 
+static bool DevDPS310_WaitRegValue(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t reg_value, uint8_t mask)
+{
+    uint8_t read_out = 0;
+    uint16_t attempts = 0;
+
+    if(obj && obj->bus_rx && obj->bus_delay)
+    {
+        while (attempts < DPS310_WAIT_REG_TIMEOUT)
+        {
+            attempts++;
+
+            if(!obj->bus_rx(obj->DevAddr, reg_addr, &read_out, 1))
+                return false;
+
+            if ((read_out & mask) == reg_value)
+                return true;
+
+            obj->bus_delay(10);
+        }
+
+        if (attempts == DPS310_WAIT_REG_TIMEOUT)
+            return false;
+    }
+
+    return true;
+}
+
 static bool DevDPS310_Get_Cali_Coefs(DevDPS310Obj_TypeDef *obj)
 {
     uint8_t buff[18] = {0};
 
-    if(obj)
+    if(obj &&
+       obj->bus_rx && 
+       DevDPS310_WaitRegValue(obj, 
+                              DPS310_MEAS_CFG_REG,
+                              DPS310_MEAS_CFG_COEF_RDY_AVAILABLE,
+                              DPS310_MEAS_CFG_COEF_RDY_AVAILABLE) &&
+       obj->bus_rx(obj->DevAddr, DPS310_COEF_REG, buff, 18))
     {
-        ret = wait_for_reg_value(
-                DPS310_MEAS_CFG_REG,
-                DPS310_MEAS_CFG_COEF_RDY_AVAILABLE,
-                DPS310_MEAS_CFG_COEF_RDY_AVAILABLE);
-
-        if(!obj->bus_rx(obj->DevAddr, DPS310_COEF_REG, buff, 18))
-            return false;
-
-        g_coefs.c0  = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[0] << 4u) | (((uint16_t) buff[1] >> 4u) & 0x0Fu), 12);
-        g_coefs.c1  = DevDPS310_GetTwoComplementOf(obj, ((((uint16_t) buff[1] & 0x0Fu) << 8u) | (uint16_t) buff[2]), 12);
-        g_coefs.c00 = DevDPS310_GetTwoComplementOf(obj, ((uint32_t) buff[3] << 12u) | ((uint32_t) buff[4] << 4u) | (((uint32_t) buff[5] >> 4u) & 0x0Fu), 20);
-        g_coefs.c10 = DevDPS310_GetTwoComplementOf(obj, (((uint32_t) buff[5] & 0x0Fu) << 16u) | ((uint32_t) buff[6] << 8u) | (uint32_t) buff[7], 20);
-        g_coefs.c01 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[8] << 8u) | (uint16_t) buff[9], 16);
-        g_coefs.c11 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[10] << 8u) | (uint16_t) buff[11], 16);
-        g_coefs.c20 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[12] << 8u) | (uint16_t) buff[13], 16);
-        g_coefs.c21 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[14] << 8u) | (uint16_t) buff[15], 16);
-        g_coefs.c30 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[16] << 8u) | (uint16_t) buff[17], 16);
+        obj->cali_coefs.c0  = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[0] << 4u) | (((uint16_t) buff[1] >> 4u) & 0x0Fu), 12);
+        obj->cali_coefs.c1  = DevDPS310_GetTwoComplementOf(obj, ((((uint16_t) buff[1] & 0x0Fu) << 8u) | (uint16_t) buff[2]), 12);
+        obj->cali_coefs.c00 = DevDPS310_GetTwoComplementOf(obj, ((uint32_t) buff[3] << 12u) | ((uint32_t) buff[4] << 4u) | (((uint32_t) buff[5] >> 4u) & 0x0Fu), 20);
+        obj->cali_coefs.c10 = DevDPS310_GetTwoComplementOf(obj, (((uint32_t) buff[5] & 0x0Fu) << 16u) | ((uint32_t) buff[6] << 8u) | (uint32_t) buff[7], 20);
+        obj->cali_coefs.c01 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[8] << 8u) | (uint16_t) buff[9], 16);
+        obj->cali_coefs.c11 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[10] << 8u) | (uint16_t) buff[11], 16);
+        obj->cali_coefs.c20 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[12] << 8u) | (uint16_t) buff[13], 16);
+        obj->cali_coefs.c21 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[14] << 8u) | (uint16_t) buff[15], 16);
+        obj->cali_coefs.c30 = DevDPS310_GetTwoComplementOf(obj, ((uint16_t) buff[16] << 8u) | (uint16_t) buff[17], 16);
 
         return true;
     }

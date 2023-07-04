@@ -8,8 +8,7 @@
 typedef bool (*DevDPS310_BusWrite)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint16_t len);
 typedef bool (*DevDPS310_BusRead)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint16_t len);
 typedef void (*DevDPS310_DelayMs)(uint32_t ms);
-typedef void (*DevDPS310_WakeUp)(void);
-typedef void (*DevDPS310_Sleep)(void);
+typedef uint32_t (*DevDPS310_GetTick)(void);
 
 #define DPS310_I2C_ADDR 0x76
 
@@ -165,8 +164,7 @@ typedef struct
     DevDPS310_BusWrite bus_tx;
     DevDPS310_BusRead  bus_rx;
     DevDPS310_DelayMs  bus_delay;
-    DevDPS310_WakeUp   bus_wakeup;
-    DevDPS310_Sleep    bus_sleep;
+    DevDPS310_GetTick  get_tick;
 
     DevDPS310_Cali_Coefs_TypeDef cali_coefs;
 
