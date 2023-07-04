@@ -160,6 +160,7 @@ typedef struct
     uint32_t temp_factory_scale;
     float scaled_pres;
     int16_t pres;
+    float factory_scale;
 
     DevDPS310_BusWrite bus_tx;
     DevDPS310_BusRead  bus_rx;
@@ -175,7 +176,7 @@ typedef struct
 typedef struct
 {
     bool (*pre_init)(DevDPS310Obj_TypeDef *obj, DevDPS310_BusWrite write, DevDPS310_BusRead read);
-    bool (*init)(DevDPS310Obj_TypeDef *obj, uint8_t dev_addr);
+    bool (*init)(DevDPS310Obj_TypeDef *obj);
     bool (*sample)(DevDPS310Obj_TypeDef *obj);
     bool (*ready)(DevDPS310Obj_TypeDef *obj);
     float (*get_scaled_pres)(DevDPS310Obj_TypeDef *obj);
