@@ -4,10 +4,24 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
+#include "Bsp_GPIO.h"
+#include "stm32h743xx.h"
+#include "stm32h7xx_hal.h"
+#include "stm32h7xx_hal_rcc.h"
+#include "stm32h7xx_hal_i2c.h"
+
+typedef enum
+{
+    BspIIC_Instance_I2C_1 = 0,
+    BspIIC_Instance_I2C_2,
+    BspIIC_Instance_I2C_3,
+    BspIIC_Instance_I2C_4,
+}BspIIC_Instance_List;
 
 typedef struct
 {
-
+    BspIIC_Instance_List instance_id;
+    I2C_HandleTypeDef handle;
 }BspIICObj_TypeDef;
 
 typedef struct
