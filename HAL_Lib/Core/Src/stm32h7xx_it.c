@@ -213,3 +213,8 @@ void UART7_IRQHandler(void)
   if (hdl && (hdl->Instance == UART7))
     HAL_UART_IRQHandler(hdl);
 }
+
+void I2C2_ER_IRQHandler(void)
+{
+  HAL_I2C_ER_IRQHandler(&hi2c2);
+}
