@@ -251,7 +251,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     obj->tim_channel = ch;
 
     /* pin init */
-    BspGPIO.alt_init(pin);
+    BspGPIO.alt_init(pin, GPIO_MODE_AF_PP);
 
     /* dma regist */
     if (BspDMA.regist(dma, stream, &obj->dma_hdl))

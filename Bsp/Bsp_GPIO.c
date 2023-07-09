@@ -12,7 +12,7 @@ static IRQn_Type BspGPIO_GetExti_IRQnID(BspGPIO_Obj_TypeDef IO_Obj);
 /* external function */
 static bool BspGPIO_Output_Init(BspGPIO_Obj_TypeDef IO_Obj);
 static bool BspGPIO_Input_Init(BspGPIO_Obj_TypeDef IO_Obj);
-static bool BspGPIO_Alternate_Init(BspGPIO_Obj_TypeDef IO_Obj);
+static bool BspGPIO_Alternate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode);
 static bool BspGPIO_Read(BspGPIO_Obj_TypeDef IO_Obj);
 static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state);
 static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
@@ -161,14 +161,20 @@ static bool BspGPIO_ResetExtiCallback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback 
     EXTI_CallBack_List[BspGPIO_GetEXTI_Index(IO_Obj.pin)] = callback;
 }
 
-static bool BspGPIO_Alternate_Init(BspGPIO_Obj_TypeDef IO_Obj)
+static bool BspGPIO_Alternate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
 {
     GPIO_InitTypeDef cfg_structure;
 
     BspGPIO_CLK_Enable(IO_Obj.port);
 
     cfg_structure.Pin = IO_Obj.pin;
-    cfg_structure.Mode = GPIO_MODE_AF_PP;
+
+    if((af_mode != GPIO_MODE_AF_PP) || (af_mode != GPIO_MODE_AF_OD))
+        return false;
+
+    // cfg_structure.Mode = GPIO_MODE_AF_PP;
+    cfg_structure.Mode = af_mode;
+
     cfg_structure.Pull = GPIO_NOPULL;
     cfg_structure.Speed = GPIO_SPEED_FREQ_HIGH;
     cfg_structure.Alternate = IO_Obj.alternate;
@@ -176,7 +182,6 @@ static bool BspGPIO_Alternate_Init(BspGPIO_Obj_TypeDef IO_Obj)
     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
 
     return true;
-
 }
 
 static bool BspGPIO_Input_Init(BspGPIO_Obj_TypeDef IO_Obj)

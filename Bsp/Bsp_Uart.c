@@ -76,8 +76,8 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         return BspUart_Clock_Error;
 
     /* rx tx pin init */
-    BspGPIO.alt_init(obj->rx_io);
-    BspGPIO.alt_init(obj->tx_io);
+    BspGPIO.alt_init(obj->rx_io, GPIO_MODE_AF_PP);
+    BspGPIO.alt_init(obj->tx_io, GPIO_MODE_AF_PP);
 
     return index;
 }

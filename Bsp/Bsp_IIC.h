@@ -20,7 +20,12 @@ typedef enum
 
 typedef struct
 {
+    BspGPIO_Obj_TypeDef *sck;
+    BspGPIO_Obj_TypeDef *sda;
+
+    bool init;
     BspIIC_Instance_List instance_id;
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
     I2C_HandleTypeDef handle;
 }BspIICObj_TypeDef;
 
@@ -31,5 +36,7 @@ typedef struct
     uint16_t (*read)(BspIICObj_TypeDef *obj, uint8_t addr, uint8_t reg, uint8_t *p_data, uint16_t len);
     uint16_t (*write)(BspIICObj_TypeDef *obj, uint8_t addr, uint8_t reg, uint8_t *p_data, uint16_t len);
 }BspIIC_TypeDef;
+
+extern BspIIC_TypeDef BspIIC;
 
 #endif
