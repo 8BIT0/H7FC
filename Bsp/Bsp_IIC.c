@@ -1,5 +1,8 @@
 #include "Bsp_IIC.h"
 
+/* internal vriable */
+static I2C_HandleTypeDef* BspIIC_HandleList[BspIIC_Instance_I2C_Sum] = {0};
+
 /* external function */
 static bool BspIIC_Init(BspIICObj_TypeDef *obj);
 static bool BspIIC_DeInit(BspIICObj_TypeDef *obj);
@@ -49,16 +52,17 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
 
                 __HAL_RCC_I2C2_CLK_ENABLE();
 
-                obj->sda.alternate = GPIO_AF4_I2C2;
-                obj->sck.alternate = GPIO_AF4_I2C2;
+                obj->sda->alternate = GPIO_AF4_I2C2;
+                obj->sck->alternate = GPIO_AF4_I2C2;
 
-                BspGPIO.alt_init(obj->sda, GPIO_MODE_AF_OD);
-                BspGPIO.alt_init(obj->sck, GPIO_MODE_AF_OD);
+                BspGPIO.alt_init(*(obj->sda), GPIO_MODE_AF_OD);
+                BspGPIO.alt_init(*(obj->sck), GPIO_MODE_AF_OD);
 
                 /* I2C2 interrupt Init */
                 HAL_NVIC_SetPriority(I2C2_ER_IRQn, 5, 0);
                 HAL_NVIC_EnableIRQ(I2C2_ER_IRQn);
 
+                BspIIC_HandleList[BspIIC_Instance_I2C_2] = &(obj->handle);
                 obj->init = true;
                 return true;
 
@@ -113,8 +117,19 @@ static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint32_t dev_addr, uint32_t reg
 {
     if(obj && p_buf && len)
     {
-        HAL_I2C_Mem_Write(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100)
+        HAL_I2C_Mem_Write(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100);
     }
 
     return false;
 }
+
+I2C_HandleTypeDef *BspIIC_Get_HandlePtr(BspIIC_Instance_List index)
+{
+    if((index > 0) && (index < BspIIC_Instance_I2C_Sum))
+    {
+        return BspIIC_HandleList[index];
+    }
+
+    return NULL;
+}
+

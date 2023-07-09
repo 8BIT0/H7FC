@@ -8,6 +8,7 @@
 #include "DIskIO.h"
 #include "DataPipe.h"
 #include "Bsp_DMA.h"
+#include "Bsp_IIC.h"
 #include "Bsp_Uart.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -216,5 +217,9 @@ void UART7_IRQHandler(void)
 
 void I2C2_ER_IRQHandler(void)
 {
-  HAL_I2C_ER_IRQHandler(&hi2c2);
+  I2C_HandleTypeDef *hdl = NULL;
+  hdl = BspIIC_Get_HandlePtr(BspIIC_Instance_I2C_2);
+
+  if(hdl)
+    HAL_I2C_ER_IRQHandler(hdl);
 }
