@@ -4,7 +4,6 @@
 #include "IO_Definition.h"
 #include "debug_util.h"
 #include "error_log.h"
-#include "Srv_OsCommon.h"
 #include "../System/DataPipe/DataPipe.h"
 
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100

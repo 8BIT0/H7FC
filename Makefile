@@ -63,6 +63,7 @@ Device/Dev_Sbus.c \
 Device/Dev_CRSF.c \
 Device/Dev_Dshot.c \
 Service/Srv_IMUSample.c \
+Service/Srv_Baro.c \
 Service/Srv_Receiver.c \
 Service/Srv_Actuator.c \
 Service/Srv_ComProto.c \

@@ -7,6 +7,7 @@
 #include "cmsis_os.h"
 #include "imu_data.h"
 #include "Srv_IMUSample.h"
+#include "Srv_Baro.h"
 
 /* task state */
 typedef enum

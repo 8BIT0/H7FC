@@ -17,6 +17,7 @@ typedef enum
     SrvBaro_Error_BadSensorObj,
     SrvBaro_Error_BadBusObj,
     SrvBaro_Error_BadBusApi,
+    SrvBaro_Error_BusInit,
 }SrvBaro_ErrorList;
 
 typedef enum
@@ -47,7 +48,7 @@ typedef struct
 {
     SrvBaro_TypeList type;
     uint16_t sample_rate;   /* unit: Hz */
-    uinti6_t sample_period; /* unit: Ms */
+    uint16_t sample_period; /* unit: Ms */
     void *sensor_obj;
     void *sensor_api;
     uint8_t init_err;

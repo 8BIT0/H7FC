@@ -4,17 +4,17 @@
 #include "debug_util.h"
 
 /* external function */
-static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate, SrvBaroBus_TypeDef bus);
+static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate, SrvBaroBus_TypeDef bus, void *bus_obj);
 
 
 SrvBaro_TypeDef SrvBaro = {
     .init = SrvBaro_Init,
-    .sample = ,
-    .ready = ,
-    .get = ,
+    .sample = NULL,
+    .ready = NULL,
+    .get = NULL,
 };
 
-static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate, SrvBaroBus_TypeDef bus)
+static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate, SrvBaroBus_TypeDef bus, void *bus_obj)
 {
     if(obj)
     {
@@ -22,13 +22,18 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
 
         if(rate)
         {
-            if(bus.bus_obj == NULL)
+            if(bus_obj == NULL)
                 return SrvBaro_Error_BadBusObj;
 
             if((bus.bus_init == NULL) || 
                (bus.bus_read == NULL) || 
                (bus.bus_write == NULL))
                 return SrvBaro_Error_BadBusApi;
+
+            bus.bus_obj = bus_obj;
+
+            if(!bus.bus_init(bus_obj))
+                return SrvBaro_Error_BusInit;
 
             switch((uint8_t)type)
             {
