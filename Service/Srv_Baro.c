@@ -3,6 +3,9 @@
 #include "IO_Definition.h"
 #include "debug_util.h"
 
+#define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
+#define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
+
 /* external function */
 static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate, SrvBaroBus_TypeDef bus, void *bus_obj);
 
@@ -40,15 +43,14 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
                 case Baro_Type_DPS310:
                 // obj->sensor_obj = SrvOsCommon.malloc();
                 // obj->sensor_api = ;
-                if((obj->sensor_obj == NULL) || 
-                   (obj->sensor_api == NULL))
+                if((obj->sensor_obj != NULL) &&
+                   (obj->sensor_api != NULL))
                 {
-                    return SrvBaro_Error_BadSensorObj;
-                }
-                else
-                {
+                    /* device init */
                     // if()
                 }
+                else
+                    return SrvBaro_Error_BadSensorObj;
 
                 break;
                 
@@ -59,6 +61,9 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
             obj->type = type;
             obj->sample_rate = rate;
             obj->sample_period = round(1000.0 / (double)rate);
+
+            if((obj->sample_period > SRVBARO_MAX_SAMPLE_PERIOD) || (obj->sample_period < SRVBARO_MIN_SAMPLE_PERIOD))
+                return SrvBaro_Error_BadSamplePeriod;
 
             obj->bus = bus;
         }
