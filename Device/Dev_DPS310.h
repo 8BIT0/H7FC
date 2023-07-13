@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <string.h>
 
-typedef bool (*DevDPS310_BusWrite)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint16_t len);
-typedef bool (*DevDPS310_BusRead)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint16_t len);
+typedef bool (*DevDPS310_BusWrite)(void *bus, uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint16_t len);
+typedef bool (*DevDPS310_BusRead)(void *bus, uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint16_t len);
 typedef void (*DevDPS310_DelayMs)(uint32_t ms);
 typedef uint32_t (*DevDPS310_GetTick)(void);
 

@@ -18,7 +18,7 @@ typedef enum
     SrvBaro_Error_BadSamplePeriod,
     SrvBaro_Error_BadBusObj,
     SrvBaro_Error_BadBusApi,
-    SrvBaro_Error_BusInit,
+    SrvBaro_Error_BusHandle,
 }SrvBaro_ErrorList;
 
 typedef enum
@@ -37,13 +37,20 @@ typedef struct
     uint8_t err_code;
 }SrvBaroData_TypeDef;
 
+typedef enum
+{
+    SrvBaro_Bus_IIC = 0,
+    SrvBaro_Bus_SPI,
+    SrvBaro_BusType_Sum,
+}SrvBaroBus_TypeList;
+
 typedef struct
 {
+    SrvBaroBus_TypeList type;
+
+    void *bus_api;
     void *bus_obj;
-    bool (*bus_init)(void *bus_obj);
-    bool (*bus_read)(void *bus_obj, uint8_t addr, uint8_t *p_data, uint16_t len);
-    bool (*bus_write)(void *bus_obj, uint8_t addr, uint8_t *p_data, uint16_t len);
-}SrvBaroBus_TypeDef;
+}SrvBaroBusObj_TypeDef;
 
 typedef struct
 {
@@ -56,12 +63,12 @@ typedef struct
 
     bool ready;
     SrvBaroData_TypeDef data;
-    SrvBaroBus_TypeDef bus;
+    uint32_t bus_handle;
 }SrvBaroObj_TypeDef;
 
 typedef struct
 {
-    uint8_t (*init)(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate, SrvBaroBus_TypeDef bus);
+    uint8_t (*init)(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate);
     bool (*ready)(SrvBaroObj_TypeDef *obj);
     bool (*sample)(SrvBaroObj_TypeDef *obj);
     SrvBaroData_TypeDef (*get)(SrvBaroData_TypeDef *obj);
