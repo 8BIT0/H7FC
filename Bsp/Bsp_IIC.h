@@ -21,8 +21,18 @@ typedef enum
 
 typedef struct
 {
-    BspGPIO_Obj_TypeDef *sck;
-    BspGPIO_Obj_TypeDef *sda;
+    GPIO_TypeDef *port_sda;
+    GPIO_TypeDef *port_sck;
+
+    uint32_t pin_sda;
+    uint32_t pin_sck;
+
+    uint32_t pin_Alternate;
+}BspIIC_PinConfig_TypeDef;
+
+typedef struct
+{
+    BspIIC_PinConfig_TypeDef Pin;
 
     bool init;
     BspIIC_Instance_List instance_id;

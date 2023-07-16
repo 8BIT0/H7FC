@@ -3,9 +3,38 @@
 #include "IO_Definition.h"
 #include "debug_util.h"
 #include "bsp_iic.h"
+#include "bsp_gpio.h"
+
+#define ToIIC_BusObj(x) (BspIICObj_TypeDef *)x
+#define ToIIC_BusAPI(x)
 
 #define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
+
+BspGPIO_Obj_TypeDef SrvBaro_IIC_SCK = {
+    .init_state = false,
+    .pin = GPIO_PIN_10,
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef SrvBaro_IIC_SDA = {
+    .init_state = false,
+    .pin = GPIO_PIN_11,
+    .port = GPIOB,
+};
+
+BspIICObj_TypeDef SrvBaro_IIC_Obj = {
+    .init = false,
+    .instance_id = BspIIC_Instance_I2C_2,
+    .sck = &SrvBaro_IIC_SCK,
+    .sda = &SrvBaro_IIC_SDA,
+};
+
+SrvBaroBusObj_TypeDef SrvBaroBus = {
+    .type = SrvBaro_Bus_IIC,
+    .bus_obj = (void *)&SrvBaro_IIC_Obj,
+    .bus_api = (void *)&BspIIC,
+};
 
 /* external function */
 static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate);
@@ -17,26 +46,6 @@ SrvBaro_TypeDef SrvBaro = {
     .ready = NULL,
     .get = NULL,
 };
-
-static bool SrvBaro_AttachBus(SrvBaroBus_TypeList bus_type, void *bus_obj)
-{
-    if((bus_type < SrvBaro_BusType_Sum) && bus_obj)
-    {
-        switch(bus_type)
-        {
-            case SrvBaro_Bus_IIC:
-            break;
-
-            case SrvBaro_Bus_SPI:
-            break;
-
-            default:
-                return false;
-        }
-    }
-
-    return false;
-}
 
 static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate)
 {
@@ -85,7 +94,20 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
     return SrvBaro_Error_None;
 }
 
-static bool SrvBaro_I2C_Tx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool ack)
+static uint8_t SrvBaro_Bus_Init(void)
+{
+    switch((uint8_t)SrvBaroBus.type)
+    {
+        case SrvBaro_Bus_IIC:
+
+            break;
+
+        default:
+            return SrvBaro_Error_BadBusType;
+    }
+}
+
+static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool ack)
 {
     if((p_data != NULL) || (len != 0))
     {
@@ -94,11 +116,10 @@ static bool SrvBaro_I2C_Tx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool 
     return false;
 }
 
-static bool SrvBaro_I2C_Rx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool ack)
+static bool SrvBaro_Bus_Rx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool ack)
 {
     if((p_data != NULL) || (len != 0))
     {
-
     }
 
     return false;

@@ -128,7 +128,10 @@
                 "task.h": "c",
                 "freertos.h": "c",
                 "cmsis_os.h": "c",
-                "istream": "c"
+                "istream": "c",
+                "srv_baro.h": "c",
+                "bsp_iic.h": "c",
+                "srv_imusample.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false
