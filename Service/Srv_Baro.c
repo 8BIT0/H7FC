@@ -149,7 +149,10 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
         memset(obj, 0, sizeof(SrvBaroObj_TypeDef));
 
         if(!SrvBaro_BusInit())
+        {
+            ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BusInit, NULL, 0);
             return SrvBaro_Error_BusInit;
+        }
 
         if(rate)
         {
@@ -165,8 +168,10 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
                     // if()
                 }
                 else
+                {
+                    ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSensorObj, NULL, 0);
                     return SrvBaro_Error_BadSensorObj;
-
+                }
                 break;
                 
                 default:
