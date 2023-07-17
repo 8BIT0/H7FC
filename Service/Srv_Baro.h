@@ -16,10 +16,7 @@ typedef enum
     SrvBaro_Error_BadType,
     SrvBaro_Error_BadSensorObj,
     SrvBaro_Error_BadSamplePeriod,
-    SrvBaro_Error_BadBusType,
-    SrvBaro_Error_BadBusObj,
-    SrvBaro_Error_BadBusApi,
-    SrvBaro_Error_BusHandle,
+    SrvBaro_Error_BusInit,
 }SrvBaro_ErrorList;
 
 typedef enum
@@ -64,7 +61,6 @@ typedef struct
 
     bool ready;
     SrvBaroData_TypeDef data;
-    uint32_t bus_handle;
 }SrvBaroObj_TypeDef;
 
 typedef struct

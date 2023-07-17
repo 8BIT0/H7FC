@@ -2,11 +2,12 @@
 #include "Srv_OsCommon.h"
 #include "IO_Definition.h"
 #include "debug_util.h"
+#include "error_log.h"
 #include "bsp_iic.h"
 #include "bsp_gpio.h"
 
 #define ToIIC_BusObj(x) (BspIICObj_TypeDef *)x
-#define ToIIC_BusAPI(x)
+#define ToIIC_BusAPI(x) (BspIIC_TypeDef *)x
 
 #define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
@@ -23,6 +24,85 @@ SrvBaroBusObj_TypeDef SrvBaroBus = {
     .bus_api = (void *)&BspIIC,
 };
 
+/************************************************************************ Error Tree Item ************************************************************************/
+static Error_Handler SrvBaro_Error_Handle = NULL;
+
+static Error_Obj_Typedef SrvBaro_ErrorList[] = {
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = NULL,
+        .code = SrvBaro_Error_BadObj,
+        .desc = "SrvBaro Bad Service Object\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = NULL,
+        .code = SrvBaro_Error_BadRate,
+        .desc = "SrvBaro Bad Sample Rate\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = ,
+        .code = SrvBaro_Error_BadType,
+        .desc = "SrvBaro Bad Sensor Type\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = ,
+        .code = SrvBaro_Error_BadSensorObj,
+        .desc = "SrvBaro Bad Sensor Object\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = NULL,
+        .code = SrvBaro_Error_BadSamplePeriod,
+        .desc = "SrvBaro Bad Sample Period\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = NULL,
+        .code = SrvBaro_Error_BusInit,
+        .desc = "SrvBaro Bus Init Failed\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    }
+};
+/************************************************************************ Error Tree Item ************************************************************************/
+
 /* external function */
 static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate);
 
@@ -34,14 +114,40 @@ SrvBaro_TypeDef SrvBaro = {
     .get = NULL,
 };
 
+static bool SrvBaro_BusInit(void)
+{
+    if(SrvBaroBus.bus_obj && SrvBaroBus.bus_api)
+    {
+        switch((uint8_t)SrvBaroBus.type)
+        {
+            case SrvBaro_Bus_IIC:
+
+                break;
+
+            default:
+                return false;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate)
 {
+    /* create error log handle */
+    SrvBaro_Error_Handle = ErrorLog.create("SrvBaro_Error");
+
+    /* regist all error to the error tree */
+    ErrorLog.registe(SrvBaro_Error_Handle, SrvBaro_ErrorList, sizeof(SrvBaro_ErrorList) / sizeof(SrvBaro_ErrorList[0]));
+
     if(obj)
     {
         memset(obj, 0, sizeof(SrvBaroObj_TypeDef));
 
-        if(obj->bus_handle == 0)
-            return SrvBaro_Error_BusHandle;
+        if(!SrvBaro_BusInit())
+            return SrvBaro_Error_BusInit;
 
         if(rate)
         {
@@ -79,19 +185,6 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
         return SrvBaro_Error_BadObj;
 
     return SrvBaro_Error_None;
-}
-
-static uint8_t SrvBaro_Bus_Init(void)
-{
-    switch((uint8_t)SrvBaroBus.type)
-    {
-        case SrvBaro_Bus_IIC:
-
-            break;
-
-        default:
-            return SrvBaro_Error_BadBusType;
-    }
 }
 
 static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool ack)
