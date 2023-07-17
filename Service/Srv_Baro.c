@@ -27,11 +27,13 @@ SrvBaroBusObj_TypeDef SrvBaroBus = {
 /************************************************************************ Error Tree Item ************************************************************************/
 static Error_Handler SrvBaro_Error_Handle = NULL;
 
+static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size);
+
 static Error_Obj_Typedef SrvBaro_ErrorList[] = {
     {
         .out = true,
         .log = false,
-        .prc_callback = NULL,
+        .prc_callback = SrvBaro_BusInitError,
         .code = SrvBaro_Error_BadObj,
         .desc = "SrvBaro Bad Service Object\r\n",
         .proc_type = Error_Proc_Ignore,
@@ -43,7 +45,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
     {
         .out = true,
         .log = false,
-        .prc_callback = NULL,
+        .prc_callback = SrvBaro_BusInitError,
         .code = SrvBaro_Error_BadRate,
         .desc = "SrvBaro Bad Sample Rate\r\n",
         .proc_type = Error_Proc_Ignore,
@@ -55,7 +57,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
     {
         .out = true,
         .log = false,
-        .prc_callback = ,
+        .prc_callback = SrvBaro_BusInitError,
         .code = SrvBaro_Error_BadType,
         .desc = "SrvBaro Bad Sensor Type\r\n",
         .proc_type = Error_Proc_Ignore,
@@ -67,7 +69,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
     {
         .out = true,
         .log = false,
-        .prc_callback = ,
+        .prc_callback = SrvBaro_BusInitError,
         .code = SrvBaro_Error_BadSensorObj,
         .desc = "SrvBaro Bad Sensor Object\r\n",
         .proc_type = Error_Proc_Ignore,
@@ -79,7 +81,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
     {
         .out = true,
         .log = false,
-        .prc_callback = NULL,
+        .prc_callback = SrvBaro_BusInitError,
         .code = SrvBaro_Error_BadSamplePeriod,
         .desc = "SrvBaro Bad Sample Period\r\n",
         .proc_type = Error_Proc_Ignore,
@@ -91,7 +93,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
     {
         .out = true,
         .log = false,
-        .prc_callback = NULL,
+        .prc_callback = SrvBaro_BusInitError,
         .code = SrvBaro_Error_BusInit,
         .desc = "SrvBaro Bus Init Failed\r\n",
         .proc_type = Error_Proc_Ignore,
@@ -205,4 +207,21 @@ static bool SrvBaro_Bus_Rx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool 
     return false;
 }
 
+/*************************************************************** Error Process Callback *******************************************************************************/
+static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size)
+{
+    switch(code)
+    {
+        case SrvBaro_Error_BadObj:
+        case SrvBaro_Error_BadRate:
+        case SrvBaro_Error_BadType:
+        case SrvBaro_Error_BadSensorObj:
+        case SrvBaro_Error_BadSamplePeriod:
+        case SrvBaro_Error_BusInit:
+        break;
 
+        default:
+            ErrorLog.add_desc("SrvBaro Triggered Unknow ErrorCode: %d\r\n", code);
+        break;
+    }
+}

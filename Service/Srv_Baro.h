@@ -17,7 +17,7 @@ typedef enum
     SrvBaro_Error_BadSensorObj,
     SrvBaro_Error_BadSamplePeriod,
     SrvBaro_Error_BusInit,
-}SrvBaro_ErrorList;
+}SrvBaro_ErrorCodeList;
 
 typedef enum
 {
