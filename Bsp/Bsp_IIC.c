@@ -26,7 +26,7 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
     memset(&sda_obj_tmp, 0, sizeof(sda_obj_tmp));
     memset(&sck_obj_tmp, 0, sizeof(sck_obj_tmp));
 
-    if(obj && obj->Pin.port_sck && obj->Pin.port_sda)
+    if(obj && obj->Pin->port_sck && obj->Pin->port_sda)
     {
         switch((uint8_t)(obj->instance_id))
         {
@@ -57,14 +57,14 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
 
                 __HAL_RCC_I2C2_CLK_ENABLE();
 
-                sda_obj_tmp.alternate = obj->Pin.pin_Alternate;//GPIO_AF4_I2C2;
-                sck_obj_tmp.alternate = obj->Pin.pin_Alternate;//GPIO_AF4_I2C2;
+                sda_obj_tmp.alternate = obj->Pin->pin_Alternate;//GPIO_AF4_I2C2;
+                sck_obj_tmp.alternate = obj->Pin->pin_Alternate;//GPIO_AF4_I2C2;
 
-                sda_obj_tmp.pin = obj->Pin.pin_sda;
-                sck_obj_tmp.pin = obj->Pin.pin_sck;
+                sda_obj_tmp.pin = obj->Pin->pin_sda;
+                sck_obj_tmp.pin = obj->Pin->pin_sck;
 
-                sda_obj_tmp.port = obj->Pin.port_sda;
-                sck_obj_tmp.port = obj->Pin.port_sck;
+                sda_obj_tmp.port = obj->Pin->port_sda;
+                sck_obj_tmp.port = obj->Pin->port_sck;
 
                 BspGPIO.alt_init(sda_obj_tmp, GPIO_MODE_AF_OD);
                 BspGPIO.alt_init(sck_obj_tmp, GPIO_MODE_AF_OD);
@@ -96,8 +96,8 @@ static bool BspIIC_DeInit(BspIICObj_TypeDef *obj)
                 case BspIIC_Instance_I2C_2:
                     __HAL_RCC_I2C2_CLK_DISABLE();
                 
-                    HAL_GPIO_DeInit(obj->Pin.port_sck, obj->Pin.pin_sck);
-                    HAL_GPIO_DeInit(obj->Pin.port_sda, obj->Pin.pin_sda);
+                    HAL_GPIO_DeInit(obj->Pin->port_sck, obj->Pin->pin_sck);
+                    HAL_GPIO_DeInit(obj->Pin->port_sda, obj->Pin->pin_sda);
 
                     HAL_NVIC_DisableIRQ(I2C2_ER_IRQn);
                     obj->init = false;

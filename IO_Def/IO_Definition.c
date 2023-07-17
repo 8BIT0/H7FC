@@ -133,6 +133,14 @@ BspSPI_PinConfig_TypeDef SecIMU_BusPin = {
     .pin_mosi = SecIMU_MOSI_PIN,
 };
 
+BspIIC_PinConfig_TypeDef SrvBaro_BusPin = {
+    .pin_Alternate = GPIO_AF4_I2C2,
+    .port_sda = GPIOB,
+    .port_sck = GPIOB,
+    .pin_sda = GPIO_PIN_11,
+    .pin_sck = GPIO_PIN_10,
+};
+
 BspGPIO_Obj_TypeDef USB_DctPin = {
     .init_state = false,
     .pin = USB_DETECT_INT_PIN,

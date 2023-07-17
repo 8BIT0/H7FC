@@ -11,23 +11,10 @@
 #define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
 
-BspGPIO_Obj_TypeDef SrvBaro_IIC_SCK = {
-    .init_state = false,
-    .pin = GPIO_PIN_10,
-    .port = GPIOB,
-};
-
-BspGPIO_Obj_TypeDef SrvBaro_IIC_SDA = {
-    .init_state = false,
-    .pin = GPIO_PIN_11,
-    .port = GPIOB,
-};
-
 BspIICObj_TypeDef SrvBaro_IIC_Obj = {
     .init = false,
     .instance_id = BspIIC_Instance_I2C_2,
-    .sck = &SrvBaro_IIC_SCK,
-    .sda = &SrvBaro_IIC_SDA,
+    .Pin = &SrvBaro_BusPin,
 };
 
 SrvBaroBusObj_TypeDef SrvBaroBus = {

@@ -3,6 +3,7 @@
 
 #include "Bsp_GPIO.h"
 #include "Bsp_SPI.h"
+#include "Bsp_IIC.h"
 #include "Dev_Led.h"
 #include "debug_util.h"
 
@@ -79,6 +80,12 @@
 #define D3_PORT GPIOC
 #define D3_PIN GPIO_PIN_11
 
+/* IIC Pin */
+#define IIC2_SDA_PORT GPIOB
+#define IIC2_SDA_PIN GPIO_PIN_11
+#define IIC2_SCK_PORT GPIOB
+#define IIC2_SCK_PIN GPIO_PIN_10
+
 /* Serial Pin */
 #define UART4_TX_PORT GPIOB
 #define UART4_TX_PIN GPIO_PIN_9
@@ -150,5 +157,7 @@ extern BspGPIO_Obj_TypeDef Uart4_RxPin;
 
 extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_PinConfig_TypeDef SecIMU_BusPin;
+
+extern BspIIC_PinConfig_TypeDef SrvBaro_BusPin;
 
 #endif

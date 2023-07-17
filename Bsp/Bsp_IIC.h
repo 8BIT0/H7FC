@@ -32,7 +32,7 @@ typedef struct
 
 typedef struct
 {
-    BspIIC_PinConfig_TypeDef Pin;
+    BspIIC_PinConfig_TypeDef *Pin;
 
     bool init;
     BspIIC_Instance_List instance_id;
