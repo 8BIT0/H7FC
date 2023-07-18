@@ -16,25 +16,11 @@ typedef enum
     Task_SensorInertial_Error,
 } Task_SensorInertial_State;
 
-#pragma pack(1)
-typedef struct
+typedef enum
 {
-    uint32_t time_stamp;
-
-    int8_t org_tmp;
-    float org_Cnv_tmp;
-
-    float Org_Smp[Axis_Sum];
-    float Org_Cnv[Axis_Sum];
-} InertialData_TypeDef;
-
-typedef struct
-{
-    uint32_t time_stamp;
-
-    InertialData_TypeDef *Inertical_Sensor;
-} SensorInertial_Data_TypeDef;
-#pragma pack()
+    Task_SensorBaro_Core = 0,
+    Task_SensorBaro_Error,
+}Task_SensorBaro_State;
 
 void TaskSample_Init(uint32_t period);
 void TaskSample_Core(void const *arg);
