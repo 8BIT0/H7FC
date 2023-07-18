@@ -20,6 +20,7 @@ BspIICObj_TypeDef SrvBaro_IIC_Obj = {
 
 SrvBaroBusObj_TypeDef SrvBaroBus = {
     .type = SrvBaro_Bus_IIC,
+    .init = false,
     .bus_obj = (void *)&SrvBaro_IIC_Obj,
     .bus_api = (void *)&BspIIC,
 };
@@ -124,7 +125,10 @@ static bool SrvBaro_BusInit(void)
         {
             case SrvBaro_Bus_IIC:
                 if(ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
+                {
+                    SrvBaroBus.init = true;
                     return true;
+                }
                 break;
 
             default:
@@ -205,7 +209,7 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
 
 static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool ack)
 {
-    if((p_data != NULL) || (len != 0))
+    if(SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
     {
     }
 
@@ -214,7 +218,7 @@ static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool 
 
 static bool SrvBaro_Bus_Rx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool ack)
 {
-    if((p_data != NULL) || (len != 0))
+    if(SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
     {
     }
 

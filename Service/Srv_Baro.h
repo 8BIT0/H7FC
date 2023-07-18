@@ -45,7 +45,7 @@ typedef enum
 typedef struct
 {
     SrvBaroBus_TypeList type;
-
+    bool init;
     void *bus_api;
     void *bus_obj;
 }SrvBaroBusObj_TypeDef;
