@@ -7,7 +7,15 @@
 #include <math.h>
 #include "Dev_DPS310.h"
 
-#define SRVBARO_SAMPLE_RATE_LIMIT 100   /* max sample rate 100Hz */
+#define SRVBARO_SAMPLE_RATE_LIMIT SRVBARO_SAMPLE_RATE_100HZ   /* max sample rate 100Hz */
+
+#define SRVBARO_SAMPLE_RATE_100HZ 100
+#define SRVBARO_SAMPLE_RATE_50HZ  50
+#define SRVBARO_SAMPLE_RATE_25HZ  25
+#define SRVBARO_SAMPLE_RATE_20HZ  20
+#define SRVBARO_SAMPLE_RATE_10HZ  10
+#define SRVBARO_SAMPLE_RATE_5HZ   5
+#define SRVBARO_SAMPLE_RATE_1HZ   1
 
 typedef enum
 {
