@@ -28,6 +28,10 @@ SrvBaroBusObj_TypeDef SrvBaroBus = {
     .bus_api = (void *)&BspIIC,
 };
 
+/* internal function */
+static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint8_t len);
+static bool SrvBaro_Bus_Rx(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint8_t len);
+
 /************************************************************************ Error Tree Item ************************************************************************/
 static Error_Handler SrvBaro_Error_Handle = NULL;
 
@@ -105,7 +109,19 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
             .p_data = NULL,
             .size = 0,
         },
-    }
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = SrvBaro_BusInitError,
+        .code = SrvBaro_Error_DevInit,
+        .desc = "SrvBaro Sensor Device Init Failed\r\n",
+        .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
 };
 /************************************************************************ Error Tree Item ************************************************************************/
 
@@ -171,8 +187,21 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
                 if((obj->sensor_obj != NULL) &&
                    (obj->sensor_api != NULL))
                 {
+                    /* set sensor object */
+                    memset(obj->sensor_obj, 0, sizeof(DevDPS310Obj_TypeDef));
+
+                    ToDPS310_Obj(obj->sensor_obj)->DevAddr = DPS310_I2C_ADDR;
+                    ToDPS310_Obj(obj->sensor_obj)->bus_rx = SrvBaro_Bus_Rx;
+                    ToDPS310_Obj(obj->sensor_obj)->bus_tx = SrvBaro_Bus_Tx;
+                    ToDPS310_Obj(obj->sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
+                    ToDPS310_Obj(obj->sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
+
                     /* device init */
-                    // if()
+                    // if(!ToDPS310_API(obj->sensor_api)->init())
+                    // {
+                    //     ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
+                    //     return SrvBaro_Error_DevInit;
+                    // }
                 }
                 else
                 {
@@ -258,6 +287,9 @@ static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size)
         break;
 
         case SrvBaro_Error_BusInit:
+        break;
+
+        case SrvBaro_Error_DevInit:
         break;
 
         default:

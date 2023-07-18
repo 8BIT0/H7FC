@@ -15,6 +15,7 @@ typedef enum
     SrvBaro_Error_BadObj,
     SrvBaro_Error_BadRate,
     SrvBaro_Error_BadType,
+    SrvBaro_Error_DevInit,
     SrvBaro_Error_BadSensorObj,
     SrvBaro_Error_BadSamplePeriod,
     SrvBaro_Error_BusInit,
