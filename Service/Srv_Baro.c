@@ -175,6 +175,7 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
                 break;
                 
                 default:
+                    ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadType, NULL, 0);
                     return SrvBaro_Error_BadType;
             }
 
@@ -183,7 +184,10 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
             obj->sample_period = round(1000.0 / (double)rate);
 
             if((obj->sample_period > SRVBARO_MAX_SAMPLE_PERIOD) || (obj->sample_period < SRVBARO_MIN_SAMPLE_PERIOD))
+            {
+                ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSamplePeriod, NULL, 0);
                 return SrvBaro_Error_BadSamplePeriod;
+            }
         }
         else
             return SrvBaro_Error_BadRate;
