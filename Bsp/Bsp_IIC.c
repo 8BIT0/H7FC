@@ -118,7 +118,8 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint32_t dev_addr, uint32_t reg,
 {
     if(obj && p_buf && len)
     {
-        HAL_I2C_Mem_Read(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100);
+        if(HAL_I2C_Mem_Read(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100) == HAL_OK)
+            return true;
     }
 
     return false;
@@ -128,7 +129,8 @@ static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint32_t dev_addr, uint32_t reg
 {
     if(obj && p_buf && len)
     {
-        HAL_I2C_Mem_Write(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100);
+        if(HAL_I2C_Mem_Write(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100) == HAL_OK)
+            return true;
     }
 
     return false;

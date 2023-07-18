@@ -207,19 +207,27 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
     return SrvBaro_Error_None;
 }
 
-static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool ack)
+static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint8_t len)
 {
+    BspIICObj_TypeDef *IICBusObj = NULL;
+
     if(SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
     {
+        IICBusObj = ToIIC_BusObj(SrvBaroBus.bus_obj);
+        return ToIIC_BusAPI(SrvBaroBus.bus_api)->write(IICBusObj, dev_addr, reg_addr, p_data, len);
     }
 
     return false;
 }
 
-static bool SrvBaro_Bus_Rx(uint8_t dev_addr, uint8_t *p_data, uint8_t len, bool ack)
+static bool SrvBaro_Bus_Rx(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint8_t len)
 {
+    BspIICObj_TypeDef *IICBusObj = NULL;
+
     if(SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
     {
+        IICBusObj = ToIIC_BusObj(SrvBaroBus.bus_obj);
+        return ToIIC_BusAPI(SrvBaroBus.bus_api)->read(IICBusObj, dev_addr, reg_addr, p_data, len);
     }
 
     return false;
@@ -244,7 +252,7 @@ static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size)
 
         case SrvBaro_Error_BadSamplePeriod:
         break;
-        
+
         case SrvBaro_Error_BusInit:
         break;
 

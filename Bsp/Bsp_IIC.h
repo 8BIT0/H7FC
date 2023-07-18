@@ -44,8 +44,8 @@ typedef struct
 {
     bool (*init)(BspIICObj_TypeDef *obj);
     bool (*de_init)(BspIICObj_TypeDef *obj);
-    uint16_t (*read)(BspIICObj_TypeDef *obj, uint8_t addr, uint8_t reg, uint8_t *p_data, uint16_t len);
-    uint16_t (*write)(BspIICObj_TypeDef *obj, uint8_t addr, uint8_t reg, uint8_t *p_data, uint16_t len);
+    bool (*read)(BspIICObj_TypeDef *obj, uint8_t addr, uint8_t reg, uint8_t *p_data, uint16_t len);
+    bool (*write)(BspIICObj_TypeDef *obj, uint8_t addr, uint8_t reg, uint8_t *p_data, uint16_t len);
 }BspIIC_TypeDef;
 
 I2C_HandleTypeDef *BspIIC_Get_HandlePtr(BspIIC_Instance_List index);

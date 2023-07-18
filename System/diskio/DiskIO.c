@@ -176,10 +176,10 @@ static bool ExtDisk_Init(Disk_FATFileSys_TypeDef *FATObj)
 {
     bool init_state = true;
 
-    memset(&Disk_Info, NULL, sizeof(Disk_Info));
+    memset(&Disk_Info, 0, sizeof(Disk_Info));
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
-    memset(FATObj, NULL, sizeof(FATObj));
+    memset(FATObj, 0, sizeof(FATObj));
 
     DevTFCard_Obj.SDMMC_Obj.pin = &SDMMC_Pin;
 
@@ -218,7 +218,7 @@ static bool ExtDisk_Init(Disk_FATFileSys_TypeDef *FATObj)
 
 static bool Disk_Init(Disk_FATFileSys_TypeDef *FATObj, Disk_Printf_Callback Callback)
 {
-    memset(&Disk_Info, NULL, sizeof(Disk_Info));
+    memset(&Disk_Info, 0, sizeof(Disk_Info));
 
     /* set printf callback */
     Disk_PrintOut = Callback;
@@ -267,7 +267,7 @@ static uint32_t Disk_Get_MinWriteByte(void)
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
 static Disk_Card_Info Disk_GetCard_Info(void)
 {
-    return DevCard.Get_Info(&DevTFCard_Obj.SDMMC_Obj);
+    return DevCard.Get_Info(&DevTFCard_Obj);
 }
 
 static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
@@ -275,7 +275,7 @@ static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
     if (FATObj == NULL)
         return;
 
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, DISK_CARD_MBR_SECTION, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    DevCard.read(&DevTFCard_Obj, DISK_CARD_MBR_SECTION, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     if ((memcmp(DiskCard_NoneMBR_Label, Disk_Card_SectionBuff, sizeof(DiskCard_NoneMBR_Label)) == 0) ||
         (memcmp(Disk_Card_SectionBuff, NULL, sizeof(DiskCard_NoneMBR_Label)) == 0))
@@ -308,7 +308,7 @@ static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
             }
         }
 
-        memset(Disk_Card_SectionBuff, NULL, sizeof(Disk_Card_SectionBuff));
+        memset(Disk_Card_SectionBuff, 0, sizeof(Disk_Card_SectionBuff));
     }
 }
 
@@ -319,12 +319,12 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
 
     if (FATObj->has_mbr)
     {
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->disk_section_table[0].StartLBA, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.read(&DevTFCard_Obj, FATObj->disk_section_table[0].StartLBA, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
     }
     else
     {
         /* if card has no MBR section then DBR info in the first section */
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, 0, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.read(&DevTFCard_Obj, 0, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
     }
 
     /* Check TF Card Termination Byte */
@@ -337,52 +337,52 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
         memcpy(&(FATObj->DBR_info), Disk_Card_SectionBuff, sizeof(FATObj->DBR_info));
 
         half_word_tmp = FATObj->DBR_info.BytesPerSec;
-        FATObj->DBR_info.BytesPerSec = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.BytesPerSec = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         half_word_tmp = FATObj->DBR_info.RsvdSecCnt;
-        FATObj->DBR_info.RsvdSecCnt = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.RsvdSecCnt = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         half_word_tmp = FATObj->DBR_info.RootEntCnt;
-        FATObj->DBR_info.RootEntCnt = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.RootEntCnt = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         half_word_tmp = FATObj->DBR_info.TotSec16;
-        FATObj->DBR_info.TotSec16 = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.TotSec16 = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         half_word_tmp = FATObj->DBR_info.FATSz16;
-        FATObj->DBR_info.FATSz16 = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.FATSz16 = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         half_word_tmp = FATObj->DBR_info.SecPerTrk;
-        FATObj->DBR_info.SecPerTrk = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.SecPerTrk = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         half_word_tmp = FATObj->DBR_info.NumHeads;
-        FATObj->DBR_info.NumHeads = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.NumHeads = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         word_tmp = FATObj->DBR_info.HiddSec;
-        FATObj->DBR_info.HiddSec = LEndian2Word(&word_tmp);
+        FATObj->DBR_info.HiddSec = LEndian2Word((const uint8_t *)&word_tmp);
 
         word_tmp = FATObj->DBR_info.TotSec32;
-        FATObj->DBR_info.TotSec32 = LEndian2Word(&word_tmp);
+        FATObj->DBR_info.TotSec32 = LEndian2Word((const uint8_t *)&word_tmp);
 
         word_tmp = FATObj->DBR_info.FATSz32;
-        FATObj->DBR_info.FATSz32 = LEndian2Word(&word_tmp);
+        FATObj->DBR_info.FATSz32 = LEndian2Word((const uint8_t *)&word_tmp);
 
         half_word_tmp = FATObj->DBR_info.ExtFlags;
-        FATObj->DBR_info.ExtFlags = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.ExtFlags = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         half_word_tmp = FATObj->DBR_info.FSVer;
-        FATObj->DBR_info.FSVer = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.FSVer = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         word_tmp = FATObj->DBR_info.RootClus;
-        FATObj->DBR_info.RootClus = LEndian2Word(&word_tmp);
+        FATObj->DBR_info.RootClus = LEndian2Word((const uint8_t *)&word_tmp);
 
         half_word_tmp = FATObj->DBR_info.FSInfo;
-        FATObj->DBR_info.FSInfo = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.FSInfo = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         half_word_tmp = FATObj->DBR_info.BkBootSec;
-        FATObj->DBR_info.BkBootSec = LEndian2HalfWord(&half_word_tmp);
+        FATObj->DBR_info.BkBootSec = LEndian2HalfWord((const uint8_t *)&half_word_tmp);
 
         word_tmp = FATObj->DBR_info.VolID;
-        FATObj->DBR_info.VolID = LEndian2Word(&word_tmp);
+        FATObj->DBR_info.VolID = LEndian2Word((const uint8_t *)&word_tmp);
 
         FATObj->DBR_SecNo = FATObj->disk_section_table[0].StartLBA;
         FATObj->BytePerSection = FATObj->DBR_info.BytesPerSec;
@@ -394,7 +394,7 @@ static void Disk_ParseDBR(Disk_FATFileSys_TypeDef *FATObj)
         FATObj->cluster_byte_size = FATObj->SecPerCluster * FATObj->BytePerSection;
     }
 
-    memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
+    memset(Disk_Card_SectionBuff, 0, DISK_CARD_SECTION_SZIE);
 }
 
 static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
@@ -407,17 +407,17 @@ static void Disk_ParseFSINFO(Disk_FATFileSys_TypeDef *FATObj)
     if (FATObj == NULL)
         return;
 
-    memset(&FSInfo, NULL, sizeof(FSInfo));
+    memset(&FSInfo, 0, sizeof(FSInfo));
 
     if (FATObj->has_mbr)
     {
         FSInfo_SecNo = FATObj->disk_section_table[0].StartLBA + 1;
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->disk_section_table[0].StartLBA + 1, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.read(&DevTFCard_Obj, FATObj->disk_section_table[0].StartLBA + 1, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
     }
     else
     {
         /* if card has no MBR section then FSInfo in the second section */
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, 1, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.read(&DevTFCard_Obj, 1, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
     }
 
     memcpy(&FSInfo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE);
@@ -452,12 +452,12 @@ static void Disk_UpdateFSINFO(Disk_FATFileSys_TypeDef *FATObj, uint32_t remain_c
         (remain_clus > (FATObj->DBR_info.TotSec32 - FATObj->DBR_info.FATSz32 * FATObj->DBR_info.NumFATs) / FATObj->BytePerSection))
         return;
 
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    DevCard.read(&DevTFCard_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     FSInfo_Ptr = Disk_Card_SectionBuff;
     LEndianWord2BytesArray(remain_clus, FSInfo_Ptr->remain_cluster);
 
-    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    DevCard.write(&DevTFCard_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 }
 
 /* cluster number to section number */
@@ -477,14 +477,14 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
     uint32_t date_tmp = 0;
     char name[11];
 
-    memset(name, NULL, sizeof(name));
-    memset(&table_tmp, NULL, sizeof(Disk_FFInfoTable_TypeDef));
+    memset(name, '\0', sizeof(name));
+    memset(&table_tmp, 0, sizeof(Disk_FFInfoTable_TypeDef));
 
     if (sec != 0)
     {
-        memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
+        memset(Disk_Card_SectionBuff, 0, DISK_CARD_SECTION_SZIE);
 
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.read(&DevTFCard_Obj, sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
         attr_tmp = (Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff;
 
@@ -553,7 +553,7 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
             table_tmp.Info[i].access_date.year += DISK_FILE_DATEBASE_YEAR;
         }
 
-        memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
+        memset(Disk_Card_SectionBuff, 0, DISK_CARD_SECTION_SZIE);
     }
 
     return table_tmp;
@@ -561,14 +561,12 @@ static Disk_FFInfoTable_TypeDef Disk_Parse_Attribute(Disk_FATFileSys_TypeDef *FA
 
 static bool Disk_Search_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 {
-    uint8_t Error_Code = 0;
-
     if (FATObj == NULL)
         return false;
 
     for (uint32_t sec_index = 0; sec_index < FATObj->FAT_Sections; sec_index++)
     {
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FATObj->Fst_FATSector + sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.read(&DevTFCard_Obj, FATObj->Fst_FATSector + sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
         for (uint8_t item_index = 0; item_index < DISK_FAT_CLUSTER_ITEM_SUM; item_index++)
         {
@@ -627,12 +625,12 @@ static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FAT
 
     clu_sec = (cluster / DISK_FAT_CLUSTER_ITEM_SUM) + FATObj->Fst_FATSector;
 
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, clu_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    DevCard.read(&DevTFCard_Obj, clu_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     FAT_Table = (Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff;
     FATAddr_Tmp = FAT_Table->table_item[cluster % DISK_FAT_CLUSTER_ITEM_SUM];
 
-    return LEndian2Word(&FATAddr_Tmp);
+    return LEndian2Word((const uint8_t *)&FATAddr_Tmp);
 }
 
 static uint32_t Disk_GetPath_Layer(const char *fpath)
@@ -754,14 +752,6 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
 
     e_n = strtok(NULL, SFN_EXTEND_SPLIT_SYMBOL);
 
-    /* test code */
-    volatile uint8_t f_n_len = 0;
-    volatile uint8_t e_n_len = 0;
-
-    f_n_len = strlen(f_n);
-    e_n_len = strlen(e_n);
-    /* test code */
-
     /* step 1 file name size check 0 < f_n length <= 8 && 0 <= e_n length <= 3 */
     if ((strlen(f_n) > 0) &&
         (strlen(f_n) <= SFN_FILE_NAME_MAX_LENGTH) &&
@@ -785,20 +775,20 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
             {
                 if (e_n != 0x00)
                 {
-                    if (isupper(e_n[i]))
+                    if (isupper((int)e_n[i]))
                         extend_char_Ucase++;
 
-                    if (islower(e_n[i]))
+                    if (islower((int)e_n[i]))
                         extend_char_Lcase++;
                 }
             }
 
             if (f_n != 0x00)
             {
-                if (isupper(f_n[i]))
+                if (isupper((int)f_n[i]))
                     file_char_Ucase++;
 
-                if (islower(f_n[i]))
+                if (islower((int)f_n[i]))
                     file_char_Lcase++;
             }
         }
@@ -949,16 +939,16 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     sec_index = FATObj->Fst_FATSector + (cur_cluster * sizeof(FATCluster_Addr)) / FATObj->BytePerSection;
     sec_item_index = (cur_cluster * sizeof(FATCluster_Addr)) % FATObj->BytePerSection;
 
-    state = DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    state = DevCard.read(&DevTFCard_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     if (!state)
         return false;
 
-    Data_Ptr = &Disk_Card_SectionBuff[sec_item_index];
+    Data_Ptr = (uint32_t *)&Disk_Card_SectionBuff[sec_item_index];
     LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
 
     /* Update FAT1 Table */
-    state = DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    state = DevCard.write(&DevTFCard_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     if (!state)
         return false;
@@ -967,10 +957,10 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     sec_index += FATObj->FAT_Sections;
     // DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
-    Data_Ptr = &Disk_Card_SectionBuff[sec_item_index];
+    Data_Ptr = (uint32_t)&Disk_Card_SectionBuff[sec_item_index];
     LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
 
-    state = DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    state = DevCard.write(&DevTFCard_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     if (!state)
         return false;
@@ -991,7 +981,7 @@ static bool Disk_ClearCluster(Disk_FATFileSys_TypeDef *FATObj, FATCluster_Addr t
 
     for (uint8_t i = 0; i < FATObj->SecPerCluster; i++)
     {
-        DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.write(&DevTFCard_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
         sec_id++;
     }
     return true;
@@ -1013,7 +1003,7 @@ static bool Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
         sec_index = FATObj->free_cluster / DISK_FAT_CLUSTER_ITEM_SUM;
 
         /* search new free cluster */
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index + FATObj->Fst_FATSector, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.read(&DevTFCard_Obj, sec_index + FATObj->Fst_FATSector, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
         for (free_index = FATObj->free_cluster % DISK_FAT_CLUSTER_ITEM_SUM; free_index < DISK_FAT_CLUSTER_ITEM_SUM; free_index++)
         {
@@ -1032,7 +1022,7 @@ static bool Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
         /* search free cluster from the behind */
         for (uint32_t nxt_sec = sec_index + 1; nxt_sec < FATObj->FAT_Sections; nxt_sec++)
         {
-            DevCard.read(&DevTFCard_Obj.SDMMC_Obj, nxt_sec + FATObj->Fst_FATSector, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+            DevCard.read(&DevTFCard_Obj, nxt_sec + FATObj->Fst_FATSector, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
             for (free_index = 0; free_index < DISK_FAT_CLUSTER_ITEM_SUM; free_index++)
             {
@@ -1123,13 +1113,13 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                     Disk_Fill_Attr(name_tmp, type, &attr_tmp, FATObj->free_cluster);
 
                     /* read all section data first */
-                    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+                    DevCard.read(&DevTFCard_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
                     /* corver current index of data */
                     memcpy(&(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FF_index]), &attr_tmp, sizeof(attr_tmp));
 
                     /* write back to tf section */
-                    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
+                    DevCard.write(&DevTFCard_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
                     memset(Disk_Card_SectionBuff, 0, sizeof(Disk_CCSSFFAT_TypeDef));
 
                     if (type == Disk_DataType_Folder)
@@ -1160,7 +1150,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
                         memcpy(Disk_Card_SectionBuff + sizeof(Disk_FFAttr_TypeDef), &attr_tmp, sizeof(Disk_FFAttr_TypeDef));
 
                         sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
-                        state = DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_Card_SectionBuff), 1);
+                        state = DevCard.write(&DevTFCard_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_Card_SectionBuff), 1);
 
                         while (!state)
                         {
@@ -1197,13 +1187,13 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
         sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
 
         /* read all section data first */
-        DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+        DevCard.read(&DevTFCard_Obj, sec_id, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
         /* corver current index of data */
         memcpy(&(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0]), &attr_tmp, sizeof(attr_tmp));
 
         /* write back to tf section */
-        DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
+        DevCard.write(&DevTFCard_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
         // update new free cluster
         Disk_Update_FreeCluster(FATObj);
@@ -1241,7 +1231,7 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
             memcpy(Disk_Card_SectionBuff + sizeof(Disk_FFAttr_TypeDef), &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[0]), sizeof(Disk_FFAttr_TypeDef));
 
             sec_id = Disk_Get_StartSectionOfCluster(FATObj, FATObj->free_cluster);
-            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
+            DevCard.write(&DevTFCard_Obj, sec_id, Disk_Card_SectionBuff, sizeof(Disk_CCSSFFAT_TypeDef), 1);
 
             target_file_cluster = FATObj->free_cluster;
 
@@ -1370,9 +1360,6 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
     item_obj *cluster_list_item_tmp = NULL;
     Disk_PreLinkBlock_TypeDef *cluster_id_ptr = NULL;
 
-    uint32_t lst_cluster_id = 0;
-    uint32_t cur_cluster_id = 0;
-
     memset(&match_state, 0, sizeof(match_state));
     memset(&F_Info, 0, sizeof(F_Info));
     memset(&file_tmp, 0, sizeof(file_tmp));
@@ -1385,8 +1372,8 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
             if (match_state.match)
             {
-                memset(Disk_Card_SectionBuff, NULL, DISK_CARD_SECTION_SZIE);
-                DevCard.read(&DevTFCard_Obj.SDMMC_Obj, match_state.sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+                memset(Disk_Card_SectionBuff, 0, DISK_CARD_SECTION_SZIE);
+                DevCard.read(&DevTFCard_Obj, match_state.sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
                 memcpy(&file_tmp.info, &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[match_state.info_index]), sizeof(file_tmp.info));
 
@@ -1499,7 +1486,7 @@ static FATCluster_Addr Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj,
     char *dir_tmp = NULL;
 
     dir_tmp = (char *)DISKIO_MALLOC(dir_size);
-    memset(&F_Info, NULL, sizeof(F_Info));
+    memset(&F_Info, 0, sizeof(F_Info));
 
     if ((dir == NULL) || (dir_tmp == NULL))
     {
@@ -1524,7 +1511,7 @@ static FATCluster_Addr Disk_Get_DirStartCluster(Disk_FATFileSys_TypeDef *FATObj,
                 cluster_tmp = F_Info.start_cluster;
             }
 
-            memset(dir_tmp, NULL, strlen(dir_tmp));
+            memset(dir_tmp, 0, strlen(dir_tmp));
         }
     }
 
@@ -1543,7 +1530,7 @@ static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_A
     if ((FileObj == NULL) || (cluster < ROOT_CLUSTER_ADDR))
         return false;
 
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FileObj->info_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    DevCard.read(&DevTFCard_Obj, FileObj->info_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     attr_tmp = &(((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index]);
 
@@ -1552,7 +1539,7 @@ static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_A
     attr_tmp->LowCluster[0] = cluster;
     attr_tmp->LowCluster[1] = cluster >> 8;
 
-    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->info_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    DevCard.write(&DevTFCard_Obj, FileObj->info_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
     FileObj->info.start_cluster = cluster;
 
     return true;
@@ -1561,9 +1548,9 @@ static bool Disk_Update_File_Cluster(Disk_FileObj_TypeDef *FileObj, FATCluster_A
 static void Disk_FileSize_Update(Disk_FileObj_TypeDef *FileObj)
 {
     /* update file size */
-    DevCard.read(&DevTFCard_Obj.SDMMC_Obj, FileObj->info_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    DevCard.read(&(DevTFCard_Obj), FileObj->info_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
     LEndianWord2BytesArray(FileObj->info.size, ((Disk_CCSSFFAT_TypeDef *)Disk_Card_SectionBuff)->attribute[FileObj->info_index].FileSize);
-    DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->info_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
+    DevCard.write(&DevTFCard_Obj, FileObj->info_sec, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 }
 
 /* write into an empty file */
@@ -1571,7 +1558,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
 {
     // uint32_t use_cluster = 0;
     // uint32_t use_sec = 0;
-    FATCluster_Addr lst_file_cluster = 0;
+    // FATCluster_Addr lst_file_cluster = 0;
 
     if ((FATObj == NULL) || (FileObj == NULL) || (p_data == NULL) || (len == 0))
         return false;
@@ -1596,7 +1583,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
     /* write remain data info target file cluster */
     if (len % FATObj->cluster_byte_size)
     {
-        lst_file_cluster = FileObj->info.start_cluster;
+        // lst_file_cluster = FileObj->info.start_cluster;
         // FileObj->start_sec = FileObj->end_sec;
         FileObj->end_sec = Disk_Get_StartSectionOfCluster(FATObj, FileObj->info.start_cluster);
 
@@ -1616,7 +1603,7 @@ static bool Disk_WriteFile_From_Head(Disk_FATFileSys_TypeDef *FATObj, Disk_FileO
             memset(Disk_FileSection_DataCache, '\0', DISK_CARD_SECTION_SZIE);
             memcpy(Disk_FileSection_DataCache, p_data, len);
 
-            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, len % FATObj->BytePerSection, 1);
+            DevCard.write(&DevTFCard_Obj, FileObj->end_sec, Disk_FileSection_DataCache, len % FATObj->BytePerSection, 1);
         }
     }
 
@@ -1652,7 +1639,7 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
     if ((FATObj == NULL) || (!FATObj->init) || (FileObj == NULL) || (p_data == NULL) || (len == 0) || (FileObj->cursor_pos > FATObj->BytePerSection))
         return Disk_Write_Error;
 
-    if (memcmp(FileObj->info.name, NULL, sizeof(FileObj->info.name)) == 0)
+    if (memcmp(FileObj->info.name, 0, sizeof(FileObj->info.name)) == 0)
         return Disk_Write_Error;
 
     if (FileObj->info.size == 0)
@@ -1713,7 +1700,7 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
         if (FileObj->remain_byte_in_sec == 0)
         {
             // DebugPin.ctl(Debug_PB4, true);
-            DevCard.write(&DevTFCard_Obj.SDMMC_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
+            DevCard.write(&DevTFCard_Obj, FileObj->end_sec, Disk_FileSection_DataCache, DISK_CARD_SECTION_SZIE, 1);
             // DebugPin.ctl(Debug_PB4, false);
 
             memset(Disk_FileSection_DataCache, '\0', DISK_CARD_SECTION_SZIE);
