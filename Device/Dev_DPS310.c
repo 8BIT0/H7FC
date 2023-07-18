@@ -21,27 +21,12 @@ static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length);
 static bool DevDPS310_Get_Cali_Coefs(DevDPS310Obj_TypeDef *obj);
 
 /* external function */
-static bool DevDPS310_PreInit(DevDPS310Obj_TypeDef *obj, DevDPS310_BusWrite write, DevDPS310_BusRead read);
 static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj);
 
 /* external object */
 DevDPS310_TypeDef DevDPS310 = {
-    .pre_init = DevDPS310_PreInit,
     .init = DevDPS310_Init,
 };
-
-static bool DevDPS310_PreInit(DevDPS310Obj_TypeDef *obj, DevDPS310_BusWrite write, DevDPS310_BusRead read)
-{
-    if(obj && write && read)
-    {
-        obj->bus_tx = write;
-        obj->bus_rx = read;
-
-        return true;
-    }
-
-    return false;
-}
 
 static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
 {

@@ -31,9 +31,6 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
 /* internal var */
 static uint32_t TaskControl_Period = 0;
 
-/* internal function */
-static bool TaskControl_OverAngularSpeed_Detect(void);
-
 void TaskControl_Init(uint32_t period)
 {
     // init monitor

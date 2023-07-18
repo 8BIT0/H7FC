@@ -175,7 +175,6 @@ typedef struct
 
 typedef struct
 {
-    bool (*pre_init)(DevDPS310Obj_TypeDef *obj, DevDPS310_BusWrite write, DevDPS310_BusRead read);
     bool (*init)(DevDPS310Obj_TypeDef *obj);
     bool (*sample)(DevDPS310Obj_TypeDef *obj);
     bool (*ready)(DevDPS310Obj_TypeDef *obj);

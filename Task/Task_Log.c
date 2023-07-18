@@ -98,9 +98,9 @@ static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_Type
 void TaskLog_Init(uint32_t period)
 {
     memset(&Log_Statistics, 0, sizeof(Log_Statistics_TypeDef));
-    memset(&IMU_Log_DataPipe, NULL, sizeof(IMU_Log_DataPipe));
-    memset(&LogFile_Obj, NULL, sizeof(LogFile_Obj));
-    memset(&FATFS_Obj, NULL, sizeof(FATFS_Obj));
+    memset(&IMU_Log_DataPipe, 0, sizeof(IMU_Log_DataPipe));
+    memset(&LogFile_Obj, 0, sizeof(LogFile_Obj));
+    memset(&FATFS_Obj, 0, sizeof(FATFS_Obj));
 
     IMU_Log_DataPipe.data_addr = (uint32_t)&LogIMU_Data;
     IMU_Log_DataPipe.data_size = sizeof(LogIMU_Data);

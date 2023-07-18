@@ -22,8 +22,8 @@ static void TaskInertical_Led_Control(bool state);
 
 void TaskSample_Init(uint32_t period)
 {
-    memset(&IMU_Smp_DataPipe, NULL, sizeof(IMU_Smp_DataPipe));
-    memset(DataPipe_DataObjAddr(IMU_Data), NULL, sizeof(DataPipe_DataObj(IMU_Data)));
+    memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
+    memset(DataPipe_DataObjAddr(IMU_Data), 0, sizeof(DataPipe_DataObj(IMU_Data)));
 
     IMU_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(IMU_Data);
     IMU_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(IMU_Data));

@@ -9,6 +9,9 @@
 #define ToIIC_BusObj(x) ((BspIICObj_TypeDef *)x)
 #define ToIIC_BusAPI(x) ((BspIIC_TypeDef *)x)
 
+#define ToDPS310_Obj(x) ((DevDPS310Obj_TypeDef *)x)
+#define ToDPS310_API(x) ((DevDPS310_TypeDef *)x)
+
 #define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
 
