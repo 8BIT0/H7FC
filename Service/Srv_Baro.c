@@ -190,10 +190,16 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
             }
         }
         else
+        {
+            ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadRate, NULL, 0);
             return SrvBaro_Error_BadRate;
+        }
     }
     else
+    {
+        ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadObj, NULL, 0);
         return SrvBaro_Error_BadObj;
+    }
 
     return SrvBaro_Error_None;
 }
