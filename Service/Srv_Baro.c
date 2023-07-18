@@ -123,14 +123,13 @@ static bool SrvBaro_BusInit(void)
         switch((uint8_t)SrvBaroBus.type)
         {
             case SrvBaro_Bus_IIC:
-
+                if(ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
+                    return true;
                 break;
 
             default:
                 return false;
         }
-
-        return true;
     }
 
     return false;
