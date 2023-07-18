@@ -197,11 +197,11 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
                     ToDPS310_Obj(obj->sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
 
                     /* device init */
-                    // if(!ToDPS310_API(obj->sensor_api)->init())
-                    // {
-                    //     ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
-                    //     return SrvBaro_Error_DevInit;
-                    // }
+                    if(!ToDPS310_API(obj->sensor_api)->init(ToDPS310_Obj(obj->sensor_obj)))
+                    {
+                        ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
+                        return SrvBaro_Error_DevInit;
+                    }
                 }
                 else
                 {
