@@ -10,6 +10,7 @@
 
 /* internal var */
 static Task_SensorInertial_State TaskInertial_State = Task_SensorInertial_Core;
+static Task_SensorBaro_State TaskBaro_State = Task_SensorBaro_Core;
 static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
 static uint32_t TaskSample_Period = 0;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, IMU_Data);

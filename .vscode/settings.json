@@ -131,7 +131,8 @@
                 "istream": "c",
                 "srv_baro.h": "c",
                 "bsp_iic.h": "c",
-                "srv_imusample.h": "c"
+                "srv_imusample.h": "c",
+                "task_sample.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false
