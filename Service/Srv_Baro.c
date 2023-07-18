@@ -6,8 +6,8 @@
 #include "bsp_iic.h"
 #include "bsp_gpio.h"
 
-#define ToIIC_BusObj(x) (BspIICObj_TypeDef *)x
-#define ToIIC_BusAPI(x) (BspIIC_TypeDef *)x
+#define ToIIC_BusObj(x) ((BspIICObj_TypeDef *)x)
+#define ToIIC_BusAPI(x) ((BspIIC_TypeDef *)x)
 
 #define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
