@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
+#include "Dev_DPS310.h"
 
 #define SRVBARO_SAMPLE_RATE_LIMIT 100   /* max sample rate 100Hz */
 

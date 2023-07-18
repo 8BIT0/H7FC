@@ -162,8 +162,9 @@ static uint8_t SrvBaro_Init(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint
             switch((uint8_t)type)
             {
                 case Baro_Type_DPS310:
-                // obj->sensor_obj = SrvOsCommon.malloc();
-                // obj->sensor_api = ;
+                obj->sensor_obj = SrvOsCommon.malloc(sizeof(DevDPS310Obj_TypeDef));
+                obj->sensor_api = &DevDPS310;
+
                 if((obj->sensor_obj != NULL) &&
                    (obj->sensor_api != NULL))
                 {

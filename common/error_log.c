@@ -13,15 +13,9 @@ error data in queue
 static bool ErrorQueue_Init = false;
 static bool ErrorQueue_CreateState = false;
 static QueueObj_TypeDef ErrorQueue;
-static Error_OutState_List ErrorOut_State = Error_OutFree;
-static Error_LogState_List ErrorLog_State = Error_LogFree;
 static error_port_callback out_callback = NULL;
 static error_port_callback log_callback = NULL;
 static Error_Port_Reg port_reg;
-
-/* internal function */
-static bool Error_Out(void);
-static bool Error_Log(void);
 
 /* external function */
 static Error_Handler ErrorTree_Create(char *name);
@@ -73,6 +67,8 @@ static uint8_t Error_Search(data_handle l_addr, data_handle r_addr)
 
     if (node_code == code)
         return Tree_Search_D;
+
+    return 0;
 }
 
 static Error_Handler ErrorTree_Create(char *name)
@@ -88,7 +84,7 @@ static Error_Handler ErrorTree_Create(char *name)
     Error_Tmp = (ErrorTree_TypeDef *)ERROR_LOG_MALLOC(sizeof(ErrorTree_TypeDef));
 
     if (Error_Tmp == NULL)
-        return NULL;
+        return 0;
 
     Error_Tmp->tree = BalanceTree.Create(name, Error_InsertPriority_Compare, Error_Search, Error_InsertPriority_Compare);
 
@@ -103,8 +99,6 @@ static Error_Handler ErrorTree_Create(char *name)
 
 static bool Error_Register(Error_Handler hdl, Error_Obj_Typedef *Obj_List, uint16_t num)
 {
-    item_obj *linked_item = NULL;
-
     if (hdl == 0)
         return false;
 
@@ -129,8 +123,8 @@ static uint32_t Error_DescToQueue(const char *str, ...)
         length = vsnprintf((char *)p_data, sizeof(p_data), (char *)str, arp);
 
         port_reg.section.len = length;
-        Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
-        Queue.push(&ErrorQueue, p_data, length);
+        Queue.push(&ErrorQueue, (uint8_t *)&port_reg.val, sizeof(port_reg.val));
+        Queue.push(&ErrorQueue, (uint8_t *)p_data, length);
     }
 
     va_end(arp);
@@ -141,7 +135,6 @@ static uint32_t Error_DescToQueue(const char *str, ...)
 static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint16_t size)
 {
     int16_t code_tmp = code;
-    data_handle match_data = 0;
     ErrorStream_TypeDef data_stream;
     char *letter = NULL;
 
@@ -171,18 +164,18 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
             {
                 /* Push Error describe into Error_Queue */
                 /* push out or log state */
-                Queue.push(&ErrorQueue, &port_reg.val, sizeof(port_reg.val));
+                Queue.push(&ErrorQueue, (uint8_t *)&port_reg.val, sizeof(port_reg.val));
                 /* push error tree name */
                 letter = "[ ";
-                Queue.push(&ErrorQueue, letter, strlen(letter));
+                Queue.push(&ErrorQueue, (uint8_t *)letter, strlen(letter));
 
-                Queue.push(&ErrorQueue, ErrorHandleToObj(hdl)->tree->name, strlen(ErrorHandleToObj(hdl)->tree->name));
+                Queue.push(&ErrorQueue, (uint8_t *)ErrorHandleToObj(hdl)->tree->name, strlen(ErrorHandleToObj(hdl)->tree->name));
 
                 letter = " ] ";
-                Queue.push(&ErrorQueue, letter, strlen(letter));
+                Queue.push(&ErrorQueue, (uint8_t *)letter, strlen(letter));
 
                 /* push error decribe */
-                Queue.push(&ErrorQueue, ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
+                Queue.push(&ErrorQueue, (uint8_t *)ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc, strlen(ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->desc));
             }
 
             if (ErrorTreeDataToObj(TreeNodeHandleToObj(search_handle)->data)->proc_type == Error_Proc_Immd)
@@ -233,8 +226,8 @@ static bool Error_Proc(Error_Handler hdl)
     Error_Port_Reg ErrorQueue_Head_State;
     uint8_t *p_data = NULL;
 
-    memset(&ErrorQueue_Head_State, NULL, sizeof(Error_Port_Reg));
-    memset(&stream, NULL, sizeof(ErrorStream_TypeDef));
+    memset(&ErrorQueue_Head_State, 0, sizeof(Error_Port_Reg));
+    memset(&stream, 0, sizeof(ErrorStream_TypeDef));
 
     if (hdl == 0 || !ErrorQueue_CreateState)
         return false;
@@ -244,7 +237,7 @@ static bool Error_Proc(Error_Handler hdl)
     {
     }
 
-    Queue.check(&ErrorQueue, 0, &ErrorQueue_Head_State.val, sizeof(ErrorQueue_Head_State.val));
+    Queue.check(&ErrorQueue, 0, (uint8_t *)&ErrorQueue_Head_State.val, sizeof(ErrorQueue_Head_State.val));
 
     if ((ErrorQueue_Head_State.section.out_reg || ErrorQueue_Head_State.section.log_reg) && (out_callback || log_callback))
     {
@@ -254,8 +247,8 @@ static bool Error_Proc(Error_Handler hdl)
         {
             if ((Queue.state(ErrorQueue) == Queue_full) || (Queue.state(ErrorQueue) == Queue_ok))
             {
-                Queue.pop(&ErrorQueue, &ErrorQueue_Head_State.val, sizeof(ErrorQueue_Head_State.val));
-                Queue.pop(&ErrorQueue, p_data, ErrorQueue_Head_State.section.len);
+                Queue.pop(&ErrorQueue, (uint8_t *)&ErrorQueue_Head_State.val, sizeof(ErrorQueue_Head_State.val));
+                Queue.pop(&ErrorQueue, (uint8_t *)p_data, ErrorQueue_Head_State.section.len);
 
                 if (ErrorQueue_Head_State.section.out_reg && out_callback && p_data)
                 {

@@ -183,5 +183,7 @@ typedef struct
     int16_t (*get_none_scaled_pres)(DevDPS310Obj_TypeDef *obj);
 }DevDPS310_TypeDef;
 
+extern DevDPS310_TypeDef DevDPS310;
+
 #endif
 
