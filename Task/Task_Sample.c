@@ -52,6 +52,12 @@ void TaskSample_Core(void const *arg)
         switch ((uint8_t)TaskInertial_State)
         {
         case Task_SensorInertial_Core:
+            if(SrvIMU.sample == NULL)
+            {
+                TaskInertial_State = Task_SensorInertial_Error;
+                break;
+            }
+
             if (SrvIMU.sample(SrvIMU_Both_Sample))
             {
                 DataPipe_DataObj(IMU_Data).data = SrvIMU.get_data(SrvIMU_FusModule);
@@ -85,6 +91,15 @@ void TaskSample_Core(void const *arg)
         switch((uint8_t)TaskBaro_State)
         {
             case Task_SensorBaro_Core:
+                if(SrvBaro.sample == NULL)
+                {
+                    TaskBaro_State = Task_SensorBaro_Error;
+                    break;
+                }
+                else
+                {
+
+                }
                 break;
 
             case Task_SensorBaro_Error:
