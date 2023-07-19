@@ -98,7 +98,7 @@ void TaskSample_Core(void const *arg)
                 }
                 else
                 {
-
+                    
                 }
                 break;
 

@@ -37,6 +37,7 @@ typedef enum
 
 typedef struct
 {
+    uint32_t time_stamp;
     int16_t org_data;
     float scaled_org_data;
     float scaled_flt_data;
@@ -75,7 +76,6 @@ typedef struct
 typedef struct
 {
     uint8_t (*init)(void);
-    bool (*ready)(void);
     bool (*sample)(void);
     SrvBaroData_TypeDef (*get)(void);
 }SrvBaro_TypeDef;
