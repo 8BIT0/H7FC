@@ -38,11 +38,13 @@ typedef enum
 typedef struct
 {
     uint32_t time_stamp;
+    uint32_t cyc_cnt;
+
     int16_t org_data;
     float scaled_org_data;
     float scaled_flt_data;
 
-    uint8_t err_code;
+    uint16_t check_sum;
 }SrvBaroData_TypeDef;
 
 typedef enum
