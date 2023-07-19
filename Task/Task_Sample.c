@@ -46,11 +46,12 @@ void TaskSample_Core(void const *arg)
 
     while(1)
     {
+        TaskInertical_Blink_Notification(100);
+
         // DebugPin.ctl(Debug_PB5, true);
         switch ((uint8_t)TaskInertial_State)
         {
         case Task_SensorInertial_Core:
-            TaskInertical_Blink_Notification(100);
             if (SrvIMU.sample(SrvIMU_Both_Sample))
             {
                 DataPipe_DataObj(IMU_Data).data = SrvIMU.get_data(SrvIMU_FusModule);
@@ -79,6 +80,18 @@ void TaskSample_Core(void const *arg)
 
         default:
             break;
+        }
+
+        switch((uint8_t)TaskBaro_State)
+        {
+            case Task_SensorBaro_Core:
+                break;
+
+            case Task_SensorBaro_Error:
+                break;
+
+            default:
+                break;
         }
 
         SrvIMU.error_proc();
