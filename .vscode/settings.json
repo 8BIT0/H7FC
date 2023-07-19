@@ -132,8 +132,10 @@
                 "srv_baro.h": "c",
                 "bsp_iic.h": "c",
                 "srv_imusample.h": "c",
-                "task_sample.h": "c"
+                "task_sample.h": "c",
+                "compare": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
-        "cmake.configureOnOpen": false
+        "cmake.configureOnOpen": false,
+        "cmake.sourceDirectory": "C:/Users/HUAV/Desktop/8B!T0/H7FC/HAL_Lib/CMSIS/DSP/Source/MatrixFunctions"
 }

@@ -34,6 +34,9 @@ void TaskSample_Init(uint32_t period)
     if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
         TaskInertial_State = Task_SensorInertial_Error;
 
+    if(SrvBaro.init() != SrvBaro_Error_None)
+        TaskBaro_State = Task_SensorBaro_Error;
+
     TaskSample_Period = period;
 }
 

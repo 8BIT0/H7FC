@@ -20,7 +20,6 @@
 typedef enum
 {
     SrvBaro_Error_None = 0,
-    SrvBaro_Error_BadObj,
     SrvBaro_Error_BadRate,
     SrvBaro_Error_BadType,
     SrvBaro_Error_DevInit,
@@ -75,10 +74,10 @@ typedef struct
 
 typedef struct
 {
-    uint8_t (*init)(SrvBaroObj_TypeDef *obj, SrvBaro_TypeList type, uint16_t rate);
-    bool (*ready)(SrvBaroObj_TypeDef *obj);
-    bool (*sample)(SrvBaroObj_TypeDef *obj);
-    SrvBaroData_TypeDef (*get)(SrvBaroData_TypeDef *obj);
+    uint8_t (*init)(void);
+    bool (*ready)(void);
+    bool (*sample)(void);
+    SrvBaroData_TypeDef (*get)(void);
 }SrvBaro_TypeDef;
 
 extern SrvBaro_TypeDef SrvBaro;
