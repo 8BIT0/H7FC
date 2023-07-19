@@ -15,6 +15,12 @@
 #define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
 
+/* internal vriable */
+SrvBaroObj_TypeDef SrvBaroObj = {
+    .type = Baro_Type_DPS310,
+    .sample_rate = SRVBARO_SAMPLE_RATE_100HZ,
+};
+
 BspIICObj_TypeDef SrvBaro_IIC_Obj = {
     .init = false,
     .instance_id = BspIIC_Instance_I2C_2,
@@ -112,12 +118,6 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
     },
 };
 /************************************************************************ Error Tree Item ************************************************************************/
-
-/* internal vriable */
-SrvBaroObj_TypeDef SrvBaroObj = {
-    .type = Baro_Type_DPS310,
-    .sample_rate = SRVBARO_SAMPLE_RATE_100HZ,
-};
 
 /* external function */
 static uint8_t SrvBaro_Init(void);
