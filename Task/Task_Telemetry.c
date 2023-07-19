@@ -186,6 +186,7 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
         }
         else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
         {
+            /* still in developing */
             port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
                                                      RECEIVER_SBUS_RX_DMA,
                                                      RECEIVER_SBUS_RX_DMA_STREAM,
