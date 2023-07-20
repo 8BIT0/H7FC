@@ -19,6 +19,7 @@
 SrvBaroObj_TypeDef SrvBaroObj = {
     .type = Baro_Type_DPS310,
     .sample_rate = SRVBARO_SAMPLE_RATE_100HZ,
+    .init_err = SrvBaro_Error_None,
 };
 
 BspIICObj_TypeDef SrvBaro_IIC_Obj = {
@@ -221,6 +222,32 @@ static uint8_t SrvBaro_Init(void)
     return SrvBaro_Error_None;
 }
 
+static bool SrvBaro_Sample(void)
+{
+    if(SrvBaroObj.init_err == SrvBaro_Error_None)
+    {
+
+    }
+
+    return false;
+}
+
+static SrvBaroData_TypeDef SrvBaro_Get_Date(void)
+{
+    SrvBaroData_TypeDef baro_data_tmp;
+
+    memset(&baro_data_tmp, 0, sizeof(baro_data_tmp));
+
+    if(SrvBaroObj.init_err == SrvBaro_Error_None)
+    {
+
+    }
+
+    return baro_data_tmp;
+}
+
+
+/*************************************************************** Bus Comunicate Callback *******************************************************************************/
 static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint8_t len)
 {
     BspIICObj_TypeDef *IICBusObj = NULL;
