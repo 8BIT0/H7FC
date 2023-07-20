@@ -5,7 +5,6 @@
 #include "cmsis_os.h"
 #include "Task_Control.h"
 #include "Srv_OsCommon.h"
-#include "Task_Sample.h"
 #include "Task_Telemetry.h"
 #include "Srv_DataHub.h"
 #include "Srv_Actuator.h"

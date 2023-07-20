@@ -4,6 +4,7 @@
 #include "Task_Control.h"
 #include "Task_Sample.h"
 #include "Task_Telemetry.h"
+#include "Task_Navi.h"
 #include "debug_util.h"
 #include "IO_Definition.h"
 #include "Dev_Led.h"
@@ -16,6 +17,7 @@
 #define TaskTelemetry_Period_def 2  /* unit: ms period 2ms  500Hz  */
 #define TaskProtocol_Period_Def  10 /* unit: ms period 10ms 100Hz  */
 #define TaslLog_Period_Def       5  /* unit: ms period 5ms  200Hz */
+#define TaslNavi_Period_Def      5  /* unit: ms period 5ms  200Hz */
 
 osThreadId TaskProtocol_Handle = NULL;
 osThreadId TaskInertial_Handle = NULL;
@@ -79,15 +81,16 @@ void Task_Manager_CreateTask(void)
     TaskTelemetry_Init(TaskTelemetry_Period_def);
     TaskControl_Init(TaskControl_Period_Def);
     TaskLog_Init(TaslLog_Period_Def);
+    TaskNavi_Init(TaslNavi_Period_Def);
 
     osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
     TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
 
-    osThreadDef(ControlTask, TaskControl_Core, osPriorityHigh, 0, 1024);
+    osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 1024);
     TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
 
-    // osThreadDef(NavTask, , osPriorityHigh, 0, 1024);
-    // TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
+    osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 8192);
+    TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
 
     osThreadDef(ProtocolTask, TaskProtocol_Core, osPriorityNormal, 0, 1024);
     TaskProtocol_Handle = osThreadCreate(osThread(ProtocolTask), NULL);
