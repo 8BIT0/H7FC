@@ -10,6 +10,15 @@
 uint32_t TaskNavi_Period = 0;
 static TaskNavi_Attitude_TypeDef Attitude;
 
+typedef struct
+{
+    uint32_t time_stamp;
+
+    float acc[Axis_Sum];
+    float gyr[Axis_Sum];
+}TaskNavi_IMUData_TypeDef;
+
+
 void TaskNavi_Init(uint32_t period)
 {
     memset(&Attitude, 0, sizeof(Attitude));

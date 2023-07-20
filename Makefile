@@ -98,9 +98,9 @@ System/shell/shell_companion.c \
 System/shell/shell_ext.c \
 System/shell/shell_port.c \
 System/shell/shell.c \
-Algorithm/filter.c \
-Algorithm/filter_param.c \
-Algorithm/adrc.c \
+Algorithm/Filter_Dep/filter.c \
+Algorithm/Filter_Dep/filter_param.c \
+Algorithm/Control_Dep/adrc.c \
 USB/USB_DEVICE/App/usb_device.c \
 USB/USB_DEVICE/App/usbd_desc.c \
 USB/USB_DEVICE/App/usbd_cdc_if.c \
