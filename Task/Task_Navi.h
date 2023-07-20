@@ -5,4 +5,11 @@
 #include <stdbool.h>
 #include <string.h>
 
+typedef struct
+{
+    float yaw;
+    float pitch;
+    float roll;
+}TaskNavi_Attitude_TypeDef;
+
 #endif
