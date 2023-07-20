@@ -10,6 +10,7 @@
 uint32_t TaskNavi_Period = 0;
 static TaskNavi_Attitude_TypeDef Attitude;
 
+/* data structure definition */
 typedef struct
 {
     uint32_t time_stamp;
@@ -18,6 +19,13 @@ typedef struct
     float gyr[Axis_Sum];
 }TaskNavi_IMUData_TypeDef;
 
+typedef struct
+{
+    float yaw;
+    float pitch;
+    float roll;
+}TaskNavi_Attitude_TypeDef;
+/* data structure definition */
 
 void TaskNavi_Init(uint32_t period)
 {

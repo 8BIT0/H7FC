@@ -133,7 +133,8 @@
                 "bsp_iic.h": "c",
                 "srv_imusample.h": "c",
                 "task_sample.h": "c",
-                "compare": "c"
+                "compare": "c",
+                "task_navi.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,
