@@ -38,6 +38,7 @@ BUILD_DIR = build
 C_SOURCES =  \
 main.c \
 debug/debug_util.c \
+Task/Task_Navi.c \
 Task/Task_Protocol.c \
 Task/Task_Manager.c \
 Task/Task_Sample.c \
