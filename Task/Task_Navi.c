@@ -8,7 +8,6 @@
 
 /* internal vriable */
 uint32_t TaskNavi_Period = 0;
-static TaskNavi_Attitude_TypeDef Attitude;
 
 /* data structure definition */
 typedef struct
@@ -26,6 +25,8 @@ typedef struct
     float roll;
 }TaskNavi_Attitude_TypeDef;
 /* data structure definition */
+
+static TaskNavi_Attitude_TypeDef Attitude;
 
 void TaskNavi_Init(uint32_t period)
 {

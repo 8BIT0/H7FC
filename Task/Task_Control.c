@@ -8,7 +8,6 @@
 #include "Task_Telemetry.h"
 #include "Srv_DataHub.h"
 #include "Srv_Actuator.h"
-#include "../Algorithm/Control_Dep./adrc.h"
 
 #define DEFAULT_CONTROL_MODEL Model_Quad
 #define DEFAULT_ESC_TYPE DevDshot_600
