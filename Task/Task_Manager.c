@@ -74,6 +74,7 @@ void Task_Manager_Init(void)
 
 void Task_Manager_CreateTask(void)
 {
+    bool init = false;
     DataPipe_Init();
 
     TaskProtocol_Init(TaskProtocol_Period_Def);

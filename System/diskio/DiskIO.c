@@ -668,14 +668,6 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
         return false;
     }
 
-    fpath_match = (char *)DISKIO_MALLOC(strlen(fpath) + 1);
-    if (fpath_match == NULL)
-    {
-        DISKIO_FREE(fpath_match);
-        return false;
-    }
-
-    memset(fpath_match, '\0', strlen(fpath));
     memset(fpath_tmp, '\0', strlen(fpath));
     memcpy(fpath_tmp, fpath, strlen(fpath));
 
@@ -690,7 +682,6 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
         if (fpath_match == NULL)
         {
             DISKIO_FREE(fpath_tmp);
-            DISKIO_FREE(fpath_match);
             return false;
         }
 
@@ -700,7 +691,6 @@ static bool Disk_GetFolderName_ByIndex(const char *fpath, uint32_t index, char *
     memcpy(token, fpath_match, strlen(fpath_match));
 
     DISKIO_FREE(fpath_tmp);
-    DISKIO_FREE(fpath_match);
     return true;
 }
 
@@ -755,16 +745,25 @@ static bool Disk_SFN_LegallyCheck(char *f_name)
     /* step 1 file name size check 0 < f_n length <= 8 && 0 <= e_n length <= 3 */
     if ((strlen(f_n) > 0) &&
         (strlen(f_n) <= SFN_FILE_NAME_MAX_LENGTH) &&
-        (strlen(e_n) >= 0) &&
-        (strlen(e_n) <= SFN_EXTEND_NAME_MAX_LENGTH))
+        ((e_n == NULL) ||
+        ((strlen(e_n) >= 0) &&
+        (strlen(e_n) <= SFN_EXTEND_NAME_MAX_LENGTH))))
     {
         /* step 2 all Character legally check */
         for (uint8_t i = 0; i < sizeof(illegal_letter_list); i++)
         {
-            if (strchr(e_n, illegal_letter_list[i]) != NULL)
+            if(e_n)
+            {
+                if (strchr(e_n, illegal_letter_list[i]) != NULL)
                 return false;
+            }
 
-            if (strchr(f_n, illegal_letter_list[i]) != NULL)
+            if(f_n)
+            {
+                if (strchr(f_n, illegal_letter_list[i]) != NULL)
+                    return false;
+            }
+            else
                 return false;
         }
 
@@ -1413,56 +1412,61 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                             FATCluster_Addr lst_end_cluster = end_cluster;
 
                             cluster_id_ptr->s_addr = start_cluster;
-                            Disk_Establish_ClusterLink(FATObj, start_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD);
-
-                            /* search free cluster and link them */
-                            for (uint32_t i = 0; i < exp_cluster_cnt; i++)
+                            
+                            if(Disk_Establish_ClusterLink(FATObj, start_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD))
                             {
-                                Disk_Update_FreeCluster(FATObj);
-                                end_cluster = FATObj->free_cluster;
-
-                                /* link up cluster */
-                                /* File Cluster -> Free Cluster 1 -> Free Cluster 2 -> ... -> Free Cluster end */
-                                Disk_Establish_ClusterLink(FATObj, start_cluster, end_cluster);
-                                Disk_Establish_ClusterLink(FATObj, end_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD);
-
-                                start_cluster = end_cluster;
-
-                                /* create new lisnked list item */
-                                if (FATObj->free_cluster - end_cluster > 1)
+                                /* search free cluster and link them */
+                                for (uint32_t i = 0; i < exp_cluster_cnt; i++)
                                 {
-                                    cluster_list_item_tmp = (item_obj *)DISKIO_MALLOC(sizeof(item_obj));
-                                    cluster_id_ptr = (Disk_PreLinkBlock_TypeDef *)DISKIO_MALLOC(sizeof(Disk_PreLinkBlock_TypeDef));
+                                    Disk_Update_FreeCluster(FATObj);
+                                    end_cluster = FATObj->free_cluster;
 
-                                    if (cluster_list_item_tmp && cluster_id_ptr)
+                                    /* link up cluster */
+                                    /* File Cluster -> Free Cluster 1 -> Free Cluster 2 -> ... -> Free Cluster end */
+                                    if( Disk_Establish_ClusterLink(FATObj, start_cluster, end_cluster) &&
+                                        Disk_Establish_ClusterLink(FATObj, end_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD))
                                     {
-                                        List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
-                                        List_Insert_Item(&file_tmp.cluster_list, cluster_list_item_tmp);
+                                        start_cluster = end_cluster;
 
-                                        cluster_id_ptr->s_addr = end_cluster;
-                                        cluster_id_ptr->e_addr = end_cluster;
-                                    }
-                                    else
-                                    {
-                                        Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD);
-                                        file_tmp.fast_mode = false;
+                                        /* create new lisnked list item */
+                                        if (FATObj->free_cluster - end_cluster > 1)
+                                        {
+                                            cluster_list_item_tmp = (item_obj *)DISKIO_MALLOC(sizeof(item_obj));
+                                            cluster_id_ptr = (Disk_PreLinkBlock_TypeDef *)DISKIO_MALLOC(sizeof(Disk_PreLinkBlock_TypeDef));
 
-                                        DISKIO_FREE(cluster_id_ptr);
-                                        DISKIO_FREE(cluster_list_item_tmp);
+                                            if (cluster_list_item_tmp && cluster_id_ptr)
+                                            {
+                                                List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
+                                                List_Insert_Item(&file_tmp.cluster_list, cluster_list_item_tmp);
+
+                                                cluster_id_ptr->s_addr = end_cluster;
+                                                cluster_id_ptr->e_addr = end_cluster;
+                                            }
+                                            else
+                                            {
+                                                if(Disk_Establish_ClusterLink(FATObj, FATObj->free_cluster, DISK_FAT_CLUSTER_END_MIN_WORLD))
+                                                {
+                                                    file_tmp.fast_mode = false;
+
+                                                    DISKIO_FREE(cluster_id_ptr);
+                                                    DISKIO_FREE(cluster_list_item_tmp);
+                                                }
+                                            }
+                                        }
+                                        else
+                                            /* get free cluster id */
+                                            cluster_id_ptr->e_addr = end_cluster;
                                     }
                                 }
-                                else
-                                    /* get free cluster id */
-                                    cluster_id_ptr->e_addr = end_cluster;
-                            }
 
-                            if (file_tmp.fast_mode)
-                            {
-                                /* update file size */
-                                Disk_FileSize_Update(&file_tmp);
-                                file_tmp.info.size = 0;
+                                if (file_tmp.fast_mode)
+                                {
+                                    /* update file size */
+                                    Disk_FileSize_Update(&file_tmp);
+                                    file_tmp.info.size = 0;
 
-                                memcpy(&file_tmp.cur_cluster_item, &file_tmp.cluster_list, sizeof(item_obj));
+                                    memcpy(&file_tmp.cur_cluster_item, &file_tmp.cluster_list, sizeof(item_obj));
+                                }
                             }
                         }
                         else

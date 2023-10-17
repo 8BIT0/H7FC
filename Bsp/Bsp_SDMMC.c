@@ -206,16 +206,18 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
 
 static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
 {
-    uint32_t retry_cnt = SDMMC_OPR_RETRY_MAX_CNT;
+    uint32_t timeout_cnt = SDMMC_OPR_RETRY_MAX_CNT;
+    HAL_StatusTypeDef state;
+    uint8_t retry = 5;
 
     // if (HAL_SD_ReadBlocks(&(obj->hdl), (uint8_t *)pData, ReadAddr, NumOfBlocks, SDMMC_DATATIMEOUT) == HAL_OK)
     //     return true;
-
-    HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
+sdmmc_read:
+    state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
 
     if (state == HAL_OK)
     {
-        while (retry_cnt)
+        while (timeout_cnt)
         {
             if (SD_Rx_Cplt)
             {
@@ -228,8 +230,15 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
             }
             __DSB();
 
-            retry_cnt--;
+            timeout_cnt--;
         }
+    }
+    else
+    {
+        retry --;
+
+        if(retry)
+            goto sdmmc_read;
     }
 
     SD_Rx_Cplt = false;

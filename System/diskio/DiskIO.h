@@ -307,6 +307,7 @@ typedef struct
 
 typedef struct
 {
+    bool valid;
     Disk_FFInfo_TypeDef info;
     uint32_t info_sec;
     uint32_t end_sec;
