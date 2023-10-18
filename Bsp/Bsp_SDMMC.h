@@ -24,7 +24,20 @@
 
 typedef uint16_t (*SDMMC_Callback)(uint8_t *p_data, uint16_t size);
 
-#pragma pack(1)
+typedef struct
+{
+    SDMMC_Callback Write_Callback;
+    SDMMC_Callback Read_Callback;
+    SDMMC_Callback Error_Callback;
+}BspSDMMC_Callback_List_TypeDef;
+
+typedef enum
+{
+    BspSDMMC_1_Callback = 0,
+    BspSDMMC_2_Callback,
+    BspSDMMC_Callback_Index_Sum,
+}BspSDMMC_Callback_ListItem_Def;
+
 typedef struct
 {
     GPIO_TypeDef *D0_Port;
@@ -63,7 +76,6 @@ typedef struct
     SDMMC_Callback Read_Callback;
     SDMMC_Callback Error_Callback;
 } BspSDMMC_Obj_TypeDef;
-#pragma pack()
 
 typedef struct
 {

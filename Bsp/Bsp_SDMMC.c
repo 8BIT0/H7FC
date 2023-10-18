@@ -6,20 +6,6 @@ static const GPIO_InitTypeDef BspSDMMC_PinCfg = {
     .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
 };
 
-typedef struct
-{
-    SDMMC_Callback Write_Callback;
-    SDMMC_Callback Read_Callback;
-    SDMMC_Callback Error_Callback;
-}BspSDMMC_Callback_List_TypeDef;
-
-typedef enum
-{
-    BspSDMMC_1_Callback = 0,
-    BspSDMMC_2_Callback,
-    BspSDMMC_Callback_Index_Sum,
-}BspSDMMC_Callback_ListItem_Def;
-
 /* for stm32h743 only have 2 SDMMC bus */
 static BspSDMMC_Callback_List_TypeDef BspSCMMC_Callback_List[BspSDMMC_Callback_Index_Sum] = {0};
 
@@ -386,11 +372,43 @@ static void BspSDMMC_Set_Callback(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_T
         {
             if (obj->instance == SDMMC1)
             {
-                BspSCMMC_Callback_List[BspSDMMC_1_Callback];
+                switch((uint8_t)type)
+                {
+                    case BspSDMMC_Callback_Type_Write:
+                        BspSCMMC_Callback_List[BspSDMMC_1_Callback].Write_Callback = cb;
+                        break;
+                    
+                    case BspSDMMC_Callback_Type_Read:
+                        BspSCMMC_Callback_List[BspSDMMC_1_Callback].Read_Callback = cb;
+                        break;
+
+                    case BspSDMMC_Callback_Type_Error:
+                        BspSCMMC_Callback_List[BspSDMMC_1_Callback].Error_Callback = cb;
+                        break;
+
+                    default:
+                        break;
+                }
             }
             else if (obj->instance == SDMMC2)
             {
-                BspSCMMC_Callback_List[BspSDMMC_2_Callback];
+                switch((uint8_t)type)
+                {
+                    case BspSDMMC_Callback_Type_Write:
+                        BspSCMMC_Callback_List[BspSDMMC_2_Callback].Write_Callback = cb;
+                        break;
+                    
+                    case BspSDMMC_Callback_Type_Read:
+                        BspSCMMC_Callback_List[BspSDMMC_2_Callback].Read_Callback = cb;
+                        break;
+
+                    case BspSDMMC_Callback_Type_Error:
+                        BspSCMMC_Callback_List[BspSDMMC_2_Callback].Error_Callback = cb;
+                        break;
+
+                    default:
+                        break;
+                }
             }
         }
     }
