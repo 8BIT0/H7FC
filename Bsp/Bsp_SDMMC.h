@@ -22,6 +22,8 @@
 // #define SDIO_D2_PIN PC10
 // #define SDIO_D3_PIN PC11
 
+typedef uint16_t (*SDMMC_Callback)(uint8_t *p_data, uint16_t size);
+
 #pragma pack(1)
 typedef struct
 {
@@ -42,6 +44,13 @@ typedef struct
     uint32_t Alternate;
 } BspSDMMC_PinConfig_TypeDef;
 
+typedef enum
+{
+    BspSDMMC_Callback_Type_Write = 0,
+    BspSDMMC_Callback_Type_Read,
+    BspSDMMC_Callback_Type_Error,
+}BspSDMMC_Callback_TypeList;
+
 typedef struct
 {
     BspSDMMC_PinConfig_TypeDef *pin;
@@ -49,6 +58,10 @@ typedef struct
     MDMA_HandleTypeDef mdma;
     SD_TypeDef *instance;
     HAL_SD_CardInfoTypeDef info;
+
+    SDMMC_Callback Write_Callback;
+    SDMMC_Callback Read_Callback;
+    SDMMC_Callback Error_Callback;
 } BspSDMMC_Obj_TypeDef;
 #pragma pack()
 
@@ -60,6 +73,7 @@ typedef struct
     bool (*erase)(BspSDMMC_Obj_TypeDef *obj, uint32_t addr, uint32_t start_addr, uint32_t end_addr);
     bool (*status)(BspSDMMC_Obj_TypeDef *obj);
     bool (*info)(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info);
+    void (*set_callback)(BspSDMMC_Callback_TypeList type, SDMMC_Callback cb);
 } BspSDMMC_TypeDef;
 
 extern BspSDMMC_TypeDef BspSDMMC;
