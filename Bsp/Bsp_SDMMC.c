@@ -186,10 +186,12 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     if (obj->instance == SDMMC1)
     {
         irq = SDMMC1_IRQn;
+        obj->ref_callback_item = &BspSCMMC_Callback_List[BspSDMMC_1_Callback];
     }
     else if (obj->instance == SDMMC2)
     {
         irq = SDMMC2_IRQn;
+        obj->ref_callback_item = &BspSCMMC_Callback_List[BspSDMMC_2_Callback];
     }
     else
         return false;
@@ -345,71 +347,31 @@ void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
 
 static void BspSDMMC_Set_Callback(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_TypeList type, SDMMC_Callback cb)
 {
-    bool valid = true;
-
     if(obj)
     {
         switch((uint8_t)type)
         {
             case BspSDMMC_Callback_Type_Write:
                 obj->Write_Callback = cb;
+                if(obj->ref_callback_item)
+                    obj->ref_callback_item->Write_Callback = cb;
                 break;
             
             case BspSDMMC_Callback_Type_Read:
                 obj->Read_Callback = cb;
+                if(obj->ref_callback_item)
+                    obj->ref_callback_item->Read_Callback = cb;
                 break;
 
             case BspSDMMC_Callback_Type_Error:
                 obj->Error_Callback = cb;
+                if(obj->ref_callback_item)
+                    obj->ref_callback_item->Error_Callback = cb;
                 break;
 
             default:
                 valid = false;
                 break;
-        }
-
-        if(valid && obj->instance)
-        {
-            if (obj->instance == SDMMC1)
-            {
-                switch((uint8_t)type)
-                {
-                    case BspSDMMC_Callback_Type_Write:
-                        BspSCMMC_Callback_List[BspSDMMC_1_Callback].Write_Callback = cb;
-                        break;
-                    
-                    case BspSDMMC_Callback_Type_Read:
-                        BspSCMMC_Callback_List[BspSDMMC_1_Callback].Read_Callback = cb;
-                        break;
-
-                    case BspSDMMC_Callback_Type_Error:
-                        BspSCMMC_Callback_List[BspSDMMC_1_Callback].Error_Callback = cb;
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-            else if (obj->instance == SDMMC2)
-            {
-                switch((uint8_t)type)
-                {
-                    case BspSDMMC_Callback_Type_Write:
-                        BspSCMMC_Callback_List[BspSDMMC_2_Callback].Write_Callback = cb;
-                        break;
-                    
-                    case BspSDMMC_Callback_Type_Read:
-                        BspSCMMC_Callback_List[BspSDMMC_2_Callback].Read_Callback = cb;
-                        break;
-
-                    case BspSDMMC_Callback_Type_Error:
-                        BspSCMMC_Callback_List[BspSDMMC_2_Callback].Error_Callback = cb;
-                        break;
-
-                    default:
-                        break;
-                }
-            }
         }
     }
 }
