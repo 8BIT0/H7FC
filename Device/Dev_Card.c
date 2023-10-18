@@ -8,6 +8,9 @@ static DevCard_Error_List DevCard_GetError(DevCard_Obj_TypeDef *Instance);
 static DevCard_Info_TypeDef DevCard_GetInfo(DevCard_Obj_TypeDef *Instance);
 static bool DevCard_Read(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t data_size, uint16_t block_num);
 static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t *p_data, uint16_t data_size, uint16_t block_num);
+static void DevCard_Write_FinCallback(uint8_t *p_data, uint16_t len);
+static void DevCard_Read_FinCallback(uint8_t *p_data, uint16_t len);
+static void DevCard_Error_Callback(uint8_t *p_data, uint16_t len);
 
 DevCard_TypeDef DevCard = {
     .Init = DevCard_Init,
@@ -35,6 +38,11 @@ static DevCard_Error_List DevCard_Init(DevCard_Obj_TypeDef *Instance)
         return DevCard_Info_Error;
     }
 
+    /* set irq callback */
+    BspSDMMC.set_callback(&(Instance->SDMMC_Obj), BspSDMMC_Callback_Type_Write, DevCard_Write_FinCallback);
+    BspSDMMC.set_callback(&(Instance->SDMMC_Obj), BspSDMMC_Callback_Type_Read, DevCard_Read_FinCallback);
+    BspSDMMC.set_callback(&(Instance->SDMMC_Obj), BspSDMMC_Callback_Type_Error, DevCard_Error_Callback);
+
     Instance->info.BlockNbr = Instance->SDMMC_Obj.info.BlockNbr;
     Instance->info.BlockSize = Instance->SDMMC_Obj.info.BlockSize;
     Instance->info.CardSpeed = Instance->SDMMC_Obj.info.CardSpeed;
@@ -51,6 +59,7 @@ static DevCard_Error_List DevCard_Init(DevCard_Obj_TypeDef *Instance)
     Instance->info.RmnBlockNbr = Instance->info.BlockNbr;
 
     Instance->error_code = DevCard_No_Error;
+
     return DevCard_No_Error;
 }
 
@@ -81,6 +90,7 @@ static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t
         return false;
     
     state = BspSDMMC.write(&(Instance->SDMMC_Obj), p_data, block, block_num);
+    /* wait sdmmc write semaphore */
 
     return state;
 }
@@ -92,6 +102,7 @@ static bool DevCard_Read(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t 
         return false;
 
     state = BspSDMMC.read(&(Instance->SDMMC_Obj), p_data, block, block_num);
+    /* wait sdmmc read semaphore */
 
     return state;
 }
@@ -102,4 +113,19 @@ static bool DevCard_Erase(DevCard_Obj_TypeDef *Instance, uint32_t block, uint16_
         return false;
 
     return true;
+}
+
+static void DevCard_Write_FinCallback(uint8_t *p_data, uint16_t len)
+{
+
+}
+
+static void DevCard_Read_FinCallback(uint8_t *p_data, uint16_t len)
+{
+
+}
+
+static void DevCard_Error_Callback(uint8_t *p_data, uint16_t len)
+{
+
 }
