@@ -6,6 +6,23 @@ static const GPIO_InitTypeDef BspSDMMC_PinCfg = {
     .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
 };
 
+typedef struct
+{
+    SDMMC_Callback Write_Callback;
+    SDMMC_Callback Read_Callback;
+    SDMMC_Callback Error_Callback;
+}BspSDMMC_Callback_List_TypeDef;
+
+typedef enum
+{
+    BspSDMMC_1_Callback = 0,
+    BspSDMMC_2_Callback,
+    BspSDMMC_Callback_Index_Sum,
+}BspSDMMC_Callback_ListItem_Def;
+
+/* for stm32h743 only have 2 SDMMC bus */
+static BspSDMMC_Callback_List_TypeDef BspSCMMC_Callback_List[BspSDMMC_Callback_Index_Sum] = {0};
+
 /* internal variable */
 static bool SD_Tx_Cplt = false;
 static bool SD_Rx_Cplt = false;
@@ -178,6 +195,8 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     BspSDMMC_PortCLK_Init(obj->instance);
     BspSDMMC_Pin_Init(obj->instance, obj->pin);
 
+    memset(BspSCMMC_Callback_List, 0, sizeof(BspSCMMC_Callback_List));
+
     if (obj->instance == SDMMC1)
     {
         irq = SDMMC1_IRQn;
@@ -298,6 +317,11 @@ void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
 {
     if (hsd->Instance == SDMMC1)
     {
+        if(BspSCMMC_Callback_List[BspSDMMC_1_Callback].Write_Callback)
+        {
+            BspSCMMC_Callback_List[BspSDMMC_1_Callback].Write_Callback((uint8_t *)hsd, sizeof(SD_HandleTypeDef));
+        }
+
         SD_Tx_Cplt = true;
         __DSB();
     }
@@ -307,6 +331,11 @@ void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
 {
     if (hsd->Instance == SDMMC1)
     {
+        if(BspSCMMC_Callback_List[BspSDMMC_1_Callback].Read_Callback)
+        {
+            BspSCMMC_Callback_List[BspSDMMC_1_Callback].Read_Callback((uint8_t *)hsd, sizeof(SD_HandleTypeDef));
+        }
+
         SD_Rx_Cplt = true;
         __DSB();
     }
@@ -320,11 +349,18 @@ void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
         {
             HAL_SD_Abort(&hsd);
         }
+
+        if(BspSCMMC_Callback_List[BspSDMMC_1_Callback].Error_Callback)
+        {
+            BspSCMMC_Callback_List[BspSDMMC_1_Callback].Error_Callback((uint8_t *)hsd, sizeof(SD_HandleTypeDef));
+        }
     }
 }
 
 static void BspSDMMC_Set_Callback(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_TypeList type, SDMMC_Callback cb)
 {
+    bool valid = true;
+
     if(obj)
     {
         switch((uint8_t)type)
@@ -342,7 +378,20 @@ static void BspSDMMC_Set_Callback(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_T
                 break;
 
             default:
+                valid = false;
                 break;
+        }
+
+        if(valid && obj->instance)
+        {
+            if (obj->instance == SDMMC1)
+            {
+                BspSCMMC_Callback_List[BspSDMMC_1_Callback];
+            }
+            else if (obj->instance == SDMMC2)
+            {
+                BspSCMMC_Callback_List[BspSDMMC_2_Callback];
+            }
         }
     }
 }
