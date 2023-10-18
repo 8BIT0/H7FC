@@ -101,8 +101,12 @@ static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t
     if ((Instance == NULL) || (p_data == NULL) || (block_num == 0) || (block == 0) || (block > Instance->info.BlockNbr))
         return false;
     
+    /* check state first */
     state = BspSDMMC.write(&(Instance->SDMMC_Obj), p_data, block, block_num);
+
     /* wait sdmmc write semaphore */
+    if(osSemaphoreWait (Sem_CardWrite_Handle, osWaitForever) == -1)
+        return false;
 
     return state;
 }
@@ -113,8 +117,12 @@ static bool DevCard_Read(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t 
     if ((Instance == NULL) || (p_data == NULL) || (block_num == 0) || (block > Instance->info.BlockNbr) || (data_size < block_num * Instance->info.BlockSize))
         return false;
 
+    /* check state first */
     state = BspSDMMC.read(&(Instance->SDMMC_Obj), p_data, block, block_num);
+    
     /* wait sdmmc read semaphore */
+    if(osSemaphoreWait (Sem_CardRead_Handle, osWaitForever) == -1)
+        return false;
 
     return state;
 }
