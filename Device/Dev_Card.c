@@ -1,7 +1,14 @@
 #include "Dev_Card.h"
-#include "semaphore.h"
+#include "cmsis_os.h"
 #include "Srv_OsCommon.h"
 #include "IO_Definition.h"
+
+/* internal vriable */
+osSemaphoreDef(Card_Write);
+osSemaphoreDef(Card_Read);
+
+static osSemaphoreId Sem_CardWrite_Handle;
+static osSemaphoreId Sem_CardRead_Handle;
 
 /* External Function */
 static DevCard_Error_List DevCard_Init(DevCard_Obj_TypeDef *Instance);
@@ -45,6 +52,8 @@ static DevCard_Error_List DevCard_Init(DevCard_Obj_TypeDef *Instance)
     BspSDMMC.set_callback(&(Instance->SDMMC_Obj), BspSDMMC_Callback_Type_Error, DevCard_Error_Callback);
 
     /* create semaphore */
+    Sem_CardWrite_Handle = osSemaphoreCreate(osSemaphore(Card_Write), 1);
+    Sem_CardRead_Handle = osSemaphoreCreate(osSemaphore(Card_Read), 1);
 
     Instance->info.BlockNbr = Instance->SDMMC_Obj.info.BlockNbr;
     Instance->info.BlockSize = Instance->SDMMC_Obj.info.BlockSize;
@@ -120,12 +129,14 @@ static bool DevCard_Erase(DevCard_Obj_TypeDef *Instance, uint32_t block, uint16_
 
 static void DevCard_Write_FinCallback(uint8_t *p_data, uint16_t len)
 {
-
+    if(Sem_CardWrite_Handle)
+        osSemaphoreRelease(Sem_CardWrite_Handle);
 }
 
 static void DevCard_Read_FinCallback(uint8_t *p_data, uint16_t len)
 {
-
+    if(Sem_CardRead_Handle)
+        osSemaphoreRelease(Sem_CardRead_Handle);
 }
 
 static void DevCard_Error_Callback(uint8_t *p_data, uint16_t len)
