@@ -370,7 +370,6 @@ static void BspSDMMC_Set_Callback(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_T
                 break;
 
             default:
-                valid = false;
                 break;
         }
     }
