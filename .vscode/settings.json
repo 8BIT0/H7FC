@@ -134,7 +134,11 @@
                 "srv_imusample.h": "c",
                 "task_sample.h": "c",
                 "compare": "c",
-                "task_navi.h": "c"
+                "task_navi.h": "c",
+                "gnssstr_proc.h": "c",
+                "devum626.h": "c",
+                "limits": "c",
+                "nmea_frame_decode.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,
