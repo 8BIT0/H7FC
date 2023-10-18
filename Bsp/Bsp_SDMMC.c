@@ -213,9 +213,7 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
 
 static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
 {
-    HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
-
-    if (state == HAL_OK)
+    if(HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks) == HAL_OK)
         return true;
 
     return false;
@@ -223,9 +221,7 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
 
 static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
-    HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
-
-    if (state == HAL_OK)
+    if(HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks) == HAL_OK)
         return true;
 
     return false;
@@ -233,12 +229,10 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
 
 static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr)
 {
-    bool sd_state = true;
-
     if (HAL_SD_Erase(&(obj->hdl), StartAddr, EndAddr) != HAL_OK)
-        sd_state = false;
+        return = false;
 
-    return sd_state;
+    return true;
 }
 
 static BspSDMMC_OperationState_List BspSDMMC_Get_Operation_State(BspSDMMC_Obj_TypeDef *obj)
