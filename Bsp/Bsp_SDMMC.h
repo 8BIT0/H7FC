@@ -72,6 +72,8 @@ typedef struct
     SD_TypeDef *instance;
     HAL_SD_CardInfoTypeDef info;
 
+    BspSDMMC_Callback_List_TypeDef *ref_callback_item;
+
     SDMMC_Callback Write_Callback;
     SDMMC_Callback Read_Callback;
     SDMMC_Callback Error_Callback;
