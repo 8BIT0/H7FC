@@ -1,4 +1,5 @@
 #include "Dev_Card.h"
+#include "semaphore.h"
 #include "Srv_OsCommon.h"
 #include "IO_Definition.h"
 
@@ -42,6 +43,8 @@ static DevCard_Error_List DevCard_Init(DevCard_Obj_TypeDef *Instance)
     BspSDMMC.set_callback(&(Instance->SDMMC_Obj), BspSDMMC_Callback_Type_Write, DevCard_Write_FinCallback);
     BspSDMMC.set_callback(&(Instance->SDMMC_Obj), BspSDMMC_Callback_Type_Read, DevCard_Read_FinCallback);
     BspSDMMC.set_callback(&(Instance->SDMMC_Obj), BspSDMMC_Callback_Type_Error, DevCard_Error_Callback);
+
+    /* create semaphore */
 
     Instance->info.BlockNbr = Instance->SDMMC_Obj.info.BlockNbr;
     Instance->info.BlockSize = Instance->SDMMC_Obj.info.BlockSize;

@@ -138,7 +138,8 @@
                 "gnssstr_proc.h": "c",
                 "devum626.h": "c",
                 "limits": "c",
-                "nmea_frame_decode.h": "c"
+                "nmea_frame_decode.h": "c",
+                "semaphore.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,
