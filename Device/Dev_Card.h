@@ -34,6 +34,7 @@ typedef struct
     uint32_t RmnBlockNbr;
     uint16_t RmnByteInCurBlock;
 } DevCard_Info_TypeDef;
+#pragma pack()
 
 typedef struct
 {
@@ -41,7 +42,6 @@ typedef struct
     DevCard_Error_List error_code;
     DevCard_Info_TypeDef info;
 } DevCard_Obj_TypeDef;
-#pragma pack()
 
 typedef struct
 {
