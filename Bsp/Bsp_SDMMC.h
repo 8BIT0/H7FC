@@ -73,7 +73,7 @@ typedef struct
     bool (*erase)(BspSDMMC_Obj_TypeDef *obj, uint32_t addr, uint32_t start_addr, uint32_t end_addr);
     bool (*status)(BspSDMMC_Obj_TypeDef *obj);
     bool (*info)(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info);
-    void (*set_callback)(BspSDMMC_Callback_TypeList type, SDMMC_Callback cb);
+    void (*set_callback)(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_TypeList type, SDMMC_Callback cb);
 } BspSDMMC_TypeDef;
 
 extern BspSDMMC_TypeDef BspSDMMC;

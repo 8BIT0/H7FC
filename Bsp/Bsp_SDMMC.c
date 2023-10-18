@@ -21,6 +21,7 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
 static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr);
 static bool BspSDMMC_GetStatus(BspSDMMC_Obj_TypeDef *obj);
 static bool BspSDMMC_GetInfo(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info_out);
+static void BspSDMMC_Set_Callback(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_TypeList type, SDMMC_Callback cb);
 
 BspSDMMC_TypeDef BspSDMMC = {
     .init = BspSDMMC_Init,
@@ -29,6 +30,7 @@ BspSDMMC_TypeDef BspSDMMC = {
     .erase = BspSDMMC_Erase,
     .status = BspSDMMC_GetStatus,
     .info = BspSDMMC_GetInfo,
+    .set_callback = BspSDMMC_Set_Callback,
 };
 
 static void BspSDMMC_PinCLK_Enable(GPIO_TypeDef *port)
@@ -237,7 +239,7 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
 static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
     uint32_t retry_cnt = SDMMC_OPR_RETRY_MAX_CNT;
-    
+
     HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
 
     if (state == HAL_OK)
@@ -317,6 +319,30 @@ void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
         if (hsd->ErrorCode & HAL_SD_ERROR_TX_UNDERRUN)
         {
             HAL_SD_Abort(&hsd);
+        }
+    }
+}
+
+static void BspSDMMC_Set_Callback(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_TypeList type, SDMMC_Callback cb)
+{
+    if(obj)
+    {
+        switch((uint8_t)type)
+        {
+            case BspSDMMC_Callback_Type_Write:
+                obj->Write_Callback = cb;
+                break;
+            
+            case BspSDMMC_Callback_Type_Read:
+                obj->Read_Callback = cb;
+                break;
+
+            case BspSDMMC_Callback_Type_Error:
+                obj->Error_Callback = cb;
+                break;
+
+            default:
+                break;
         }
     }
 }
