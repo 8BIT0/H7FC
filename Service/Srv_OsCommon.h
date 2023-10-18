@@ -4,6 +4,7 @@
 #include "cmsis_os.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "semaphore.h"
 
 typedef struct
 {

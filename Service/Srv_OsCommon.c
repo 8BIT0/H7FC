@@ -10,6 +10,7 @@ SrvOsCommon_TypeDef SrvOsCommon = {
     .free = vPortFree,
     .enter_critical = vPortEnterCritical,
     .exit_critical = vPortExitCritical,
+    /* relative to the real world time */
     .realtime_init = NULL,
     .realtime_trim = NULL,
     .get_realtime_ms = NULL,
