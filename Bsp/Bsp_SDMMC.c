@@ -244,9 +244,7 @@ static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32
 static BspSDMMC_OperationState_List BspSDMMC_Get_Operation_State(BspSDMMC_Obj_TypeDef *obj)
 {
     if(obj)
-    {
         return (BspSDMMC_OperationState_List)HAL_SD_GetState(&(obj->hdl));
-    }
 
     return BspSDMMC_Opr_State_ERROR;
 }
