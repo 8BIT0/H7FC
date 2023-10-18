@@ -33,6 +33,18 @@ typedef struct
 
 typedef enum
 {
+  BspSDMMC_Opr_State_RESET = 0,
+  BspSDMMC_Opr_State_READY,
+  BspSDMMC_Opr_State_TIMEOUT,
+  BspSDMMC_Opr_State_BUSY,
+  BspSDMMC_Opr_State_PROGRAMMING,
+  BspSDMMC_Opr_State_RECEIVING,
+  BspSDMMC_Opr_State_TRANSFER,
+  BspSDMMC_Opr_State_ERROR,
+}BspSDMMC_OperationState_List;
+
+typedef enum
+{
     BspSDMMC_1_Callback = 0,
     BspSDMMC_2_Callback,
     BspSDMMC_Callback_Index_Sum,
@@ -88,6 +100,7 @@ typedef struct
     bool (*card_status)(BspSDMMC_Obj_TypeDef *obj);
     bool (*info)(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info);
     void (*set_callback)(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_TypeList type, SDMMC_Callback cb);
+    BspSDMMC_OperationState_List (*get_opr_state)(BspSDMMC_Obj_TypeDef *obj);
 } BspSDMMC_TypeDef;
 
 extern BspSDMMC_TypeDef BspSDMMC;

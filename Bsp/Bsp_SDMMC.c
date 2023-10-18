@@ -281,6 +281,8 @@ static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32
     return sd_state;
 }
 
+static 
+
 static bool BspSDMMC_GetCardStatus(BspSDMMC_Obj_TypeDef *obj)
 {
     if (obj == NULL)
@@ -310,7 +312,6 @@ void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
             BspSCMMC_Callback_List[BspSDMMC_1_Callback].Write_Callback((uint8_t *)hsd, sizeof(SD_HandleTypeDef));
         }
 
-        SD_Tx_Cplt = true;
         __DSB();
     }
 }
@@ -324,7 +325,6 @@ void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
             BspSCMMC_Callback_List[BspSDMMC_1_Callback].Read_Callback((uint8_t *)hsd, sizeof(SD_HandleTypeDef));
         }
 
-        SD_Rx_Cplt = true;
         __DSB();
     }
 }
