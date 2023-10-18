@@ -22,7 +22,7 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj);
 static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks);
 static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks);
 static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr);
-static bool BspSDMMC_GetStatus(BspSDMMC_Obj_TypeDef *obj);
+static bool BspSDMMC_GetCardStatus(BspSDMMC_Obj_TypeDef *obj);
 static bool BspSDMMC_GetInfo(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info_out);
 static void BspSDMMC_Set_Callback(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_TypeList type, SDMMC_Callback cb);
 
@@ -31,7 +31,7 @@ BspSDMMC_TypeDef BspSDMMC = {
     .read = BspSDMMC_Read,
     .write = BspSDMMC_Write,
     .erase = BspSDMMC_Erase,
-    .status = BspSDMMC_GetStatus,
+    .card_status = BspSDMMC_GetCardStatus,
     .info = BspSDMMC_GetInfo,
     .set_callback = BspSDMMC_Set_Callback,
 };
@@ -281,7 +281,7 @@ static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32
     return sd_state;
 }
 
-static bool BspSDMMC_GetStatus(BspSDMMC_Obj_TypeDef *obj)
+static bool BspSDMMC_GetCardStatus(BspSDMMC_Obj_TypeDef *obj)
 {
     if (obj == NULL)
         return false;
