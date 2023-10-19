@@ -145,6 +145,9 @@ static bool Error_Trigger(Error_Handler hdl, int16_t code, uint8_t *p_arg, uint1
 
     TreeNode_Handle search_handle = BalanceTree.Search(ErrorHandleToObj(hdl)->tree, (data_handle)&code_tmp);
 
+    if(!search_handle)
+        return false;
+
     data_stream.p_data = p_arg;
     data_stream.size = size;
 

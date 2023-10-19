@@ -23,7 +23,6 @@ typedef struct
     uint32_t (*get_os_ms)(void);
     int32_t (*delay_ms)(uint32_t ms);
     int32_t (*precise_delay)(uint32_t *p_time, uint32_t ms);
-
     bool (*realtime_init)(void);
     bool (*realtime_trim)(SrvOs_RealTime_TypeDef timeobj);
     uint32_t (*get_realtime_ms)(void);

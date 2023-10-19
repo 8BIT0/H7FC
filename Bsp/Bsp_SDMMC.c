@@ -163,7 +163,7 @@ static bool BspSDMMC_MDMA_Init(MDMA_HandleTypeDef *mdma)
     if (HAL_MDMA_Init(mdma) != HAL_OK)
         return false;
 
-    HAL_NVIC_SetPriority(MDMA_IRQn, 10, 0);
+    HAL_NVIC_SetPriority(MDMA_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(MDMA_IRQn);
 
     return true;
@@ -199,7 +199,7 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     obj->hdl.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
     obj->hdl.Init.BusWide = SDMMC_BUS_WIDE_4B;
     obj->hdl.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-    obj->hdl.Init.ClockDiv = 1;
+    obj->hdl.Init.ClockDiv = 2;
     obj->hdl.Init.TranceiverPresent = SDMMC_TRANSCEIVER_NOT_PRESENT;
 
     if (!BspSDMMC_MDMA_Init(&(obj->mdma)) || (HAL_SD_Init(&(obj->hdl)) != HAL_OK))
@@ -213,7 +213,8 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
 
 static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
 {
-    if(HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks) == HAL_OK)
+    HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
+    if(state == HAL_OK)
         return true;
 
     return false;
@@ -221,7 +222,8 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
 
 static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
-    if(HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks) == HAL_OK)
+    HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
+    if(state == HAL_OK)
         return true;
 
     return false;
@@ -230,7 +232,7 @@ static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t 
 static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr)
 {
     if (HAL_SD_Erase(&(obj->hdl), StartAddr, EndAddr) != HAL_OK)
-        return = false;
+        return false;
 
     return true;
 }
