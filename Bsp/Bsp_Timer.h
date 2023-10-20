@@ -10,6 +10,17 @@
 #include "Bsp_DMA.h"
 #include "Bsp_GPIO.h"
 
+typedef void (*BspTimer_Tick_Callback)(const uint32_t tick);
+
+typedef struct
+{
+    TIM_TypeDef *instance;
+    uint32_t prescale;
+    uint32_t auto_reload;
+
+    BspTimer_Tick_Callback tick_callback;
+}BspTimerTickObj_TypeDef
+
 typedef struct
 {
     TIM_TypeDef *instance;
@@ -43,6 +54,19 @@ typedef struct
     void (*dma_trans)(BspTimerPWMObj_TypeDef *obj);
 } BspTimerPWM_TypeDef;
 
+typedef struct
+{
+    bool (*init)(BspTimerTickObj_TypeDef *obj);
+    void (*set_callback)(BspTimerTickObj_TypeDef *obj, BspTimer_Tick_Callback cb);
+    bool (*start)(BspTimerTickObj_TypeDef *obj);
+    bool (*stop)(BspTimerTickObj_TypeDef *obj);
+    bool (*reset)(BspTimerTickObj_TypeDef *obj);
+    void (*check_counter)(BspTimerTickObj_TypeDef *obj);
+    void (*trim_reload)(BspTimerTickObj_TypeDef *obj, uint32_t reload_val);
+    void (*trim_counter)(BspTimerTickObj_TypeDef *obj, uint32_t counter_val);
+}BspTimerTick_TypeDef;
+
 extern BspTimerPWM_TypeDef BspTimer_PWM;
+extern BspTimerTick_TypeDef BspTimer_Tick;
 
 #endif
