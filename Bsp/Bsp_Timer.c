@@ -79,35 +79,35 @@ static void BspTimer_Fill_TickObj_ToList(BspTimerTickObj_TypeDef *obj)
     {
         if (obj->instance == TIM1)
         {
-
+            BspTimer_TickObj_List[BspTimer_1] = obj;
         }
         else if (obj->instance == TIM2)
         {
-
+            BspTimer_TickObj_List[BspTimer_2] = obj;
         }
         else if (obj->instance == TIM3)
         {
-
+            BspTimer_TickObj_List[BspTimer_3] = obj;
         }
         else if (obj->instance == TIM4)
         {
-
+            BspTimer_TickObj_List[BspTimer_4] = obj;
         }
         else if (obj->instance == TIM5)
         {
-
+            BspTimer_TickObj_List[BspTimer_5] = obj;
         }
         else if (obj->instance == TIM6)
         {
-
+            BspTimer_TickObj_List[BspTimer_6] = obj;
         }
         else if (obj->instance == TIM7)
         {
-
+            BspTimer_TickObj_List[BspTimer_7] = obj;
         }
         else if (obj->instance == TIM8)
         {
-
+            BspTimer_TickObj_List[BspTimer_8] = obj;
         }
     }
 }
