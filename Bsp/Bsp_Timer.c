@@ -359,4 +359,25 @@ static bool BspTimer_Tick_Init(BspTimerTickObj_TypeDef *obj, uint32_t perscale, 
     return false;
 }
 
+/* Enable Timer IRQ */
+static bool BspTimer_Tick_Start(BspTimerTickObj_TypeDef *obj)
+{
+    if(obj)
+    {
+
+    }
+
+    return false;
+}
+
+/* DIsable Timer IRQ */
+static bool BspTImer_Tick_Stop(BspTimerTickObj_TypeDef *obj)
+{
+    if(obj)
+    {
+
+    }
+
+    return false;
+}
 
