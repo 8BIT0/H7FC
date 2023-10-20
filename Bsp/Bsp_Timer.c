@@ -36,6 +36,7 @@ BspTimerPWM_TypeDef BspTimer_PWM = {
     .dma_trans = BspTimer_DMA_Start,
 };
 
+/***************************************************************** DMA PWM Function ***********************************************************************/
 static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
 {
     if (!monitor.monitor_init)
@@ -336,3 +337,6 @@ static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma)
         __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC4);
     }
 }
+
+/***************************************************************** Tick Function ***********************************************************************/
+
