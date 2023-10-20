@@ -12,6 +12,19 @@
 
 typedef void (*BspTimer_Tick_Callback)(const uint32_t tick);
 
+typedef enum
+{
+    BspTimer_1 = 0,
+    BspTimer_2,
+    BspTimer_3,
+    BspTimer_4,
+    BspTimer_5,
+    BspTimer_6,
+    BspTimer_7,
+    BspTimer_8,
+    BspTimer_TickObj_Sum,
+}BspTimer_Instance_List;
+
 typedef struct
 {
     TIM_HandleTypeDef tim_hdl;
@@ -66,6 +79,8 @@ typedef struct
     void (*trim_reload)(BspTimerTickObj_TypeDef *obj, uint32_t reload_val);
     void (*trim_counter)(BspTimerTickObj_TypeDef *obj, uint32_t counter_val);
 }BspTimerTick_TypeDef;
+
+TIM_HandleTypeDef* BspTimer_Get_Tick_HandlePtr(BspTimer_Instance_List index);
 
 extern BspTimerPWM_TypeDef BspTimer_PWM;
 extern BspTimerTick_TypeDef BspTimer_Tick;

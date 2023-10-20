@@ -11,6 +11,8 @@ BspTIM_PWMInitMonitor_TypeDef monitor = {
     .monitor_init = false,
 };
 
+static BspTimerTick_TypeDef *BspTimer_TickObj_List[BspTimer_TickObj_Sum] = {NULL};
+
 /* internal function */
 static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma);
 static bool BspTimer_Clk_Enable(TIM_TypeDef *tim);
@@ -38,6 +40,78 @@ BspTimerPWM_TypeDef BspTimer_PWM = {
 };
 
 /***************************************************************** General Function ***********************************************************************/
+TIM_HandleTypeDef* BspTimer_Get_Tick_HandlePtr(BspTimer_Instance_List index)
+{
+    switch(index)
+    {
+        case BspTimer_1:
+            return BspTimer_TickObj_List[BspTimer_1];
+
+        case BspTimer_2:
+            return BspTimer_TickObj_List[BspTimer_2];
+        
+        case BspTimer_3:
+            return BspTimer_TickObj_List[BspTimer_3];
+        
+        case BspTimer_4:
+            return BspTimer_TickObj_List[BspTimer_4];
+        
+        case BspTimer_5:
+            return BspTimer_TickObj_List[BspTimer_5];
+        
+        case BspTimer_6:
+            return BspTimer_TickObj_List[BspTimer_6];
+
+        case BspTimer_7:
+            return BspTimer_TickObj_List[BspTimer_7];
+
+        case BspTimer_8:
+            return BspTimer_TickObj_List[BspTimer_8];
+        
+        default:
+            return NULL;
+    }
+}
+
+static void BspTimer_Fill_TickObj_ToList(BspTimerTickObj_TypeDef *obj)
+{
+    if(obj)
+    {
+        if (obj->instance == TIM1)
+        {
+
+        }
+        else if (obj->instance == TIM2)
+        {
+
+        }
+        else if (obj->instance == TIM3)
+        {
+
+        }
+        else if (obj->instance == TIM4)
+        {
+
+        }
+        else if (obj->instance == TIM5)
+        {
+
+        }
+        else if (obj->instance == TIM6)
+        {
+
+        }
+        else if (obj->instance == TIM7)
+        {
+
+        }
+        else if (obj->instance == TIM8)
+        {
+
+        }
+    }
+}
+
 static bool BspTimer_Clk_Enable(TIM_TypeDef *tim)
 {
     if (tim == TIM1)
@@ -63,6 +137,14 @@ static bool BspTimer_Clk_Enable(TIM_TypeDef *tim)
     else if (tim == TIM6)
     {
         __HAL_RCC_TIM6_CLK_ENABLE();
+    }
+    else if (tim == TIM7)
+    {
+        __HAL_RCC_TIM7_CLK_ENABLE();
+    }
+    else if (tim == TIM8)
+    {
+        __HAL_RCC_TIM8_CLK_ENABLE();
     }
     else
         return false;

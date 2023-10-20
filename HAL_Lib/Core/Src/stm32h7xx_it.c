@@ -9,7 +9,8 @@
 #include "DataPipe.h"
 #include "Bsp_DMA.h"
 #include "Bsp_IIC.h"
-#include "Bsp_Uart.h"
+#include "Bsp_Uart.h" 
+#include "Bsp_Timer.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern DevCard_Obj_TypeDef DevTFCard_Obj;
@@ -222,4 +223,13 @@ void I2C2_ER_IRQHandler(void)
 
   if(hdl)
     HAL_I2C_ER_IRQHandler(hdl);
+}
+
+void TIM7_IRQHandler(void)
+{
+  TIM_HandleTypeDef *hdl;
+  hdl = BspTimer_Get_Tick_HandlePtr(BspTimer_7);
+
+  if(hdl)
+    HAL_TIM_IRQHandler(hdl);
 }
