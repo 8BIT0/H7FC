@@ -349,14 +349,40 @@ static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_re
 }
 
 /***************************************************************** Tick Function ***********************************************************************/
-static bool BspTimer_Tick_Init(BspTimerTickObj_TypeDef *obj, uint32_t perscale, uint32_t auto_reload)
+static bool BspTimer_Tick_Init(BspTimerTickObj_TypeDef *obj, uint32_t perscale, uint32_t period)
 {
-    if(obj)
+    TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+    if(obj && obj->instance)
     {
         // BspTimer_Clk_Enable();
+        obj->tim_hdl.Instance = obj->instance; // TIM6
+        obj->tim_hdl.Init.Prescaler = perscale;
+        obj->tim_hdl.Init.CounterMode = TIM_COUNTERMODE_UP;
+        obj->tim_hdl.Init.Period = period;
+        obj->tim_hdl.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+        obj->tim_hdl.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+        if (HAL_TIM_Base_Init(&obj->tim_hdl) != HAL_OK)
+            return false;
+
+        sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+        if (HAL_TIM_ConfigClockSource(&obj->tim_hdl, &sClockSourceConfig) != HAL_OK)
+            return false;
+
+        sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+        sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+        if (HAL_TIMEx_MasterConfigSynchronization(&obj->tim_hdl, &sMasterConfig) != HAL_OK)
+            return false;
+    
+        // BspTimer_Clk_Enable(TIM_TypeDef *tim)
+
+        /* TIM interrupt Init */
+        // HAL_NVIC_SetPriority(TIM2_IRQn, 5, 0);
+        // HAL_NVIC_EnableIRQ(TIM2_IRQn);
     }
 
-    return false;
+    return true;
 }
 
 /* Enable Timer IRQ */
