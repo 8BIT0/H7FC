@@ -13,6 +13,7 @@ BspTIM_PWMInitMonitor_TypeDef monitor = {
 
 /* internal function */
 static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma);
+static bool BspTimer_Clk_Enable(TIM_TypeDef *tim);
 
 /* external function */
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
@@ -36,6 +37,61 @@ BspTimerPWM_TypeDef BspTimer_PWM = {
     .dma_trans = BspTimer_DMA_Start,
 };
 
+/***************************************************************** General Function ***********************************************************************/
+static bool BspTimer_Clk_Enable(TIM_TypeDef *tim)
+{
+    if (tim == TIM1)
+    {
+        __HAL_RCC_TIM1_CLK_ENABLE();
+    }
+    else if (tim == TIM2)
+    {
+        __HAL_RCC_TIM2_CLK_ENABLE();
+    }
+    else if (tim == TIM3)
+    {
+        __HAL_RCC_TIM3_CLK_ENABLE();
+    }
+    else if (tim == TIM4)
+    {
+        __HAL_RCC_TIM4_CLK_ENABLE();
+    }
+    else if (tim == TIM5)
+    {
+        __HAL_RCC_TIM5_CLK_ENABLE();
+    }
+    else if (tim == TIM6)
+    {
+        __HAL_RCC_TIM6_CLK_ENABLE();
+    }
+    else
+        return false;
+
+    return true;
+}
+
+static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma)
+{
+    TIM_HandleTypeDef *htim = (TIM_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
+
+    if (hdma == htim->hdma[TIM_DMA_ID_CC1])
+    {
+        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC1);
+    }
+    else if (hdma == htim->hdma[TIM_DMA_ID_CC2])
+    {
+        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC2);
+    }
+    else if (hdma == htim->hdma[TIM_DMA_ID_CC3])
+    {
+        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC3);
+    }
+    else if (hdma == htim->hdma[TIM_DMA_ID_CC4])
+    {
+        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC4);
+    }
+}
+
 /***************************************************************** DMA PWM Function ***********************************************************************/
 static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
 {
@@ -57,31 +113,7 @@ static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
 
     if (monitor.init_cnt < sizeof(monitor.list) / sizeof(monitor.list[0]))
     {
-        if (tim == TIM1)
-        {
-            __HAL_RCC_TIM1_CLK_ENABLE();
-        }
-        else if (tim == TIM2)
-        {
-            __HAL_RCC_TIM2_CLK_ENABLE();
-        }
-        else if (tim == TIM3)
-        {
-            __HAL_RCC_TIM3_CLK_ENABLE();
-        }
-        else if (tim == TIM4)
-        {
-            __HAL_RCC_TIM4_CLK_ENABLE();
-        }
-        else if (tim == TIM5)
-        {
-            __HAL_RCC_TIM5_CLK_ENABLE();
-        }
-        else if (tim == TIM6)
-        {
-            __HAL_RCC_TIM6_CLK_ENABLE();
-        }
-        else
+        if(!BspTimer_Clk_Enable(tim))
             return false;
 
         monitor.list[monitor.init_cnt] = tim;
@@ -316,27 +348,15 @@ static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_re
     __HAL_TIM_SET_AUTORELOAD(&obj->tim_hdl, auto_reload);
 }
 
-static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma)
+/***************************************************************** Tick Function ***********************************************************************/
+static bool BspTimer_Tick_Init(BspTimerTickObj_TypeDef *obj, uint32_t perscale, uint32_t auto_reload)
 {
-    TIM_HandleTypeDef *htim = (TIM_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
+    if(obj)
+    {
+        // BspTimer_Clk_Enable();
+    }
 
-    if (hdma == htim->hdma[TIM_DMA_ID_CC1])
-    {
-        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC1);
-    }
-    else if (hdma == htim->hdma[TIM_DMA_ID_CC2])
-    {
-        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC2);
-    }
-    else if (hdma == htim->hdma[TIM_DMA_ID_CC3])
-    {
-        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC3);
-    }
-    else if (hdma == htim->hdma[TIM_DMA_ID_CC4])
-    {
-        __HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC4);
-    }
+    return false;
 }
 
-/***************************************************************** Tick Function ***********************************************************************/
 

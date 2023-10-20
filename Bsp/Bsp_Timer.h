@@ -56,7 +56,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(BspTimerTickObj_TypeDef *obj);
+    bool (*init)(BspTimerTickObj_TypeDef *obj, uint32_t perscale, uint32_t auto_reload);
     void (*set_callback)(BspTimerTickObj_TypeDef *obj, BspTimer_Tick_Callback cb);
     bool (*start)(BspTimerTickObj_TypeDef *obj);
     bool (*stop)(BspTimerTickObj_TypeDef *obj);
