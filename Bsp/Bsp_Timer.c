@@ -375,7 +375,7 @@ static bool BspTimer_Tick_Init(BspTimerTickObj_TypeDef *obj, uint32_t perscale, 
         if (HAL_TIMEx_MasterConfigSynchronization(&obj->tim_hdl, &sMasterConfig) != HAL_OK)
             return false;
     
-        // BspTimer_Clk_Enable(TIM_TypeDef *tim)
+        BspTimer_Clk_Enable(obj->instance);
 
         /* TIM interrupt Init */
         // HAL_NVIC_SetPriority(TIM2_IRQn, 5, 0);
