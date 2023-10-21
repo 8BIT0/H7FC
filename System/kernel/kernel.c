@@ -12,12 +12,12 @@
 
 static bool KernelClock_Init(void);
 TIM_HandleTypeDef htim17;
+bool HAL_BaseTick_Init(void);
 
 bool Kernel_Init(void)
 {
     HAL_Init();
-
-    return KernelClock_Init();
+    return HAL_BaseTick_Init() && KernelClock_Init();
 }
 
 /*
@@ -106,15 +106,14 @@ bool HAL_BaseTick_Init(void)
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE BEGIN TIM2_Init 1 */
+  __HAL_RCC_TIM17_CLK_ENABLE();
 
-  /* USER CODE END TIM2_Init 1 */
   htim17.Instance = TIM17;
-  htim17.Init.Prescaler = 16000;
+  htim17.Init.Prescaler = 0;
   htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim17.Init.Period = 10000;
+  htim17.Init.Period = 160000;
   htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim17) != HAL_OK)
     return false;
 
@@ -127,11 +126,12 @@ bool HAL_BaseTick_Init(void)
   if (HAL_TIMEx_MasterConfigSynchronization(&htim17, &sMasterConfig) != HAL_OK)
     return false;
 
-  __HAL_RCC_TIM17_CLK_ENABLE();
-
   /* TIM17 interrupt Init */
   HAL_NVIC_SetPriority(TIM17_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(TIM17_IRQn);
+
+  if(HAL_TIM_Base_Start_IT(&htim17) != HAL_OK)
+    return false;
 
   return true;
 }
@@ -142,9 +142,6 @@ bool HAL_BaseTick_Init(void)
 void HAL_MspInit(void)
 {
   __HAL_RCC_SYSCFG_CLK_ENABLE();
-
-  /* timer init */
-  HAL_BaseTick_Init();
 
   /* System interrupt init*/
   /* PendSV_IRQn interrupt configuration */
