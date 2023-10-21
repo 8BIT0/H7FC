@@ -431,10 +431,48 @@ static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_re
 }
 
 /***************************************************************** Tick Function ***********************************************************************/
+static IRQn_Type BspTimer_Get_IRQType(TIM_TypeDef *tim)
+{
+    if(tim)
+    {
+        if(tim == TIM2)
+        {
+            return TIM2_IRQn;
+        }
+        else if(tim == TIM3)
+        {
+            return TIM3_IRQn;
+        }
+        else if(tim == TIM4)
+        {
+            return TIM4_IRQn;
+        }
+        else if(tim == TIM5)
+        {
+            return TIM5_IRQn;
+        }
+        else if(tim == TIM6)
+        {
+            return TIM6_DAC_IRQn;
+        }
+        else if(tim == TIM7)
+        {
+            return TIM7_IRQn;
+        }
+        else if(tim == TIM8)
+        {
+            return TIM8_CC_IRQn;
+        }
+    }
+
+    return 0;
+}
+
 static bool BspTimer_Tick_Init(BspTimerTickObj_TypeDef *obj, uint32_t perscale, uint32_t period)
 {
     TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
+    IRQn_Type IRQn;
 
     if(obj && obj->instance)
     {
@@ -460,9 +498,16 @@ static bool BspTimer_Tick_Init(BspTimerTickObj_TypeDef *obj, uint32_t perscale, 
         BspTimer_Fill_TickObj_ToList(obj);
         BspTimer_Clk_Enable(obj->instance);
 
-        /* TIM interrupt Init */
-        // HAL_NVIC_SetPriority(TIM2_IRQn, 5, 0);
-        // HAL_NVIC_EnableIRQ(TIM2_IRQn);
+        IRQn = BspTimer_Get_IRQType(obj->instance);
+
+        if(IRQn)
+        {
+            /* TIM interrupt Init */
+            HAL_NVIC_SetPriority(IRQn, 5, 0);
+            HAL_NVIC_EnableIRQ(IRQn);
+        }
+        else
+            return false;
     }
 
     return true;
