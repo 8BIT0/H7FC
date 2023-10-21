@@ -11,6 +11,7 @@
 #include "stm32h7xx_hal_tim.h"
 
 static bool KernelClock_Init(void);
+TIM_HandleTypeDef htim17;
 
 bool Kernel_Init(void)
 {
@@ -100,12 +101,50 @@ static bool KernelClock_Init(void)
     return true;
 }
 
-/**
+bool HAL_BaseTick_Init(void)
+{
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim17.Instance = TIM17;
+  htim17.Init.Prescaler = 16000;
+  htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim17.Init.Period = 10000;
+  htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim17) != HAL_OK)
+    return false;
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim17, &sClockSourceConfig) != HAL_OK)
+    return false;
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim17, &sMasterConfig) != HAL_OK)
+    return false;
+
+  __HAL_RCC_TIM17_CLK_ENABLE();
+
+  /* TIM17 interrupt Init */
+  HAL_NVIC_SetPriority(TIM17_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(TIM17_IRQn);
+
+  return true;
+}
+
+/**x
   * Initializes the Global MSP.
   */
 void HAL_MspInit(void)
 {
   __HAL_RCC_SYSCFG_CLK_ENABLE();
+
+  /* timer init */
+  HAL_BaseTick_Init();
 
   /* System interrupt init*/
   /* PendSV_IRQn interrupt configuration */

@@ -11,10 +11,12 @@
 #include "Bsp_IIC.h"
 #include "Bsp_Uart.h" 
 #include "Bsp_Timer.h"
+#include "kernel.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern DevCard_Obj_TypeDef DevTFCard_Obj;
 extern DMA_HandleTypeDef DataPipe_DMA;
+extern TIM_HandleTypeDef htim17;
 
 void NMI_Handler(void)
 {
@@ -57,7 +59,7 @@ void DebugMon_Handler(void)
 
 void SysTick_Handler(void)
 {
-  HAL_IncTick();
+  // HAL_IncTick();
 #if (INCLUDE_xTaskGetSchedulerState == 1 )
   if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
   {
@@ -232,4 +234,11 @@ void TIM7_IRQHandler(void)
 
   if(hdl)
     HAL_TIM_IRQHandler(hdl);
+}
+
+/* SYSTEM Call */
+void TIM17_IRQHandler(void)
+{
+  HAL_IncTick();
+  HAL_TIM_IRQHandler(&htim17);
 }
