@@ -812,10 +812,11 @@ static bool Disk_Name_ConvertTo83Frame(const char *n_in, char *n_out)
     char *ext_name_tmp = NULL;
     char file_name[8];
     char ext_file_name[3];
+    uint8_t i = 0;
 
     memcpy(n_in_tmp, n_in, strlen(n_in));
-    memset(file_name, 0, sizeof(file_name));
-    memset(ext_file_name, 0, sizeof(ext_file_name));
+    memset(file_name, '\0', sizeof(file_name));
+    memset(ext_file_name, '\0', sizeof(ext_file_name));
 
     if ((n_in_tmp == NULL) || (n_out == NULL) || !Disk_SFN_LegallyCheck(n_in_tmp))
         return false;
@@ -826,7 +827,7 @@ static bool Disk_Name_ConvertTo83Frame(const char *n_in, char *n_out)
     if (file_name_tmp == NULL)
         return false;
 
-    for (uint8_t i = 0; i < sizeof(file_name); i++)
+    for (i = 0; i < sizeof(file_name); i++)
     {
         if (i < strlen(file_name_tmp))
         {
@@ -839,25 +840,30 @@ static bool Disk_Name_ConvertTo83Frame(const char *n_in, char *n_out)
         }
         else
             file_name[i] = 0x20;
-
-        n_out[i] = file_name[i];
     }
 
-    for (uint8_t i = 0; i < sizeof(ext_file_name); i++)
+    memcpy(n_out, file_name, sizeof(file_name));
+
+    for (i = 0; i < sizeof(ext_file_name); i++)
     {
-        if (i < strlen(ext_name_tmp))
+        if(ext_name_tmp != NULL)
         {
-            if ((ext_name_tmp[i] >= 'a') || (ext_name_tmp[i] <= 'z'))
+            if (i < strlen(ext_name_tmp))
             {
-                ext_file_name[i] = toupper(ext_name_tmp[i]);
+                if ((ext_name_tmp[i] >= 'a') || (ext_name_tmp[i] <= 'z'))
+                {
+                    ext_file_name[i] = toupper(ext_name_tmp[i]);
+                }
+                else
+                    ext_file_name[i] = ext_name_tmp[i];
             }
             else
-                ext_file_name[i] = ext_name_tmp[i];
+                ext_file_name[i] = 0x20;
+
+            n_out[i + sizeof(file_name)] = ext_file_name[i];
         }
         else
-            ext_file_name[i] = 0x20;
-
-        n_out[i + sizeof(file_name)] = ext_file_name[i];
+            n_out[i + sizeof(file_name)] = 0x20;
     }
 
     return true;
@@ -1051,8 +1057,8 @@ static FATCluster_Addr Disk_WriteTo_TargetFFTable(Disk_FATFileSys_TypeDef *FATOb
     DiskFATCluster_State_List Cluster_State = Disk_GetClusterState(target_file_cluster);
     Disk_FFInfoTable_TypeDef FFInfo;
     Disk_FFAttr_TypeDef attr_tmp;
-    char file_name[12];
-    char folder_name[9];
+    char file_name[12] = {'\0'};
+    char folder_name[9] = {'\0'};
     char *name_tmp;
     bool state = false;
 
