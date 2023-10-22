@@ -11,7 +11,8 @@ _Min_Stack_Size = 0x2000; /* required amount of stack */
 MEMORY
 {
 DTCMRAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
-RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 512K
+RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 438K
+RAM_D1_Perph_Part(xrw)  : ORIGIN = 0x24070000, LENGTH = 64K
 RAM_D2 (xrw)      : ORIGIN = 0x30000000, LENGTH = 288K
 RAM_D3 (xrw)      : ORIGIN = 0x38000000, LENGTH = 64K
 ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
@@ -29,17 +30,6 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .MMU_Section :
-  {
-    . = ALIGN(4);
-    MMU_s = .;
-    *(.MMU_Section)
-    *(.MMU_Section*)
-    
-    . = ALIGN(4);
-    MMU_e = .;
-  } >RAM_D1 AT>FLASH
-
   .Perph_Section :
   {
     . = ALIGN(4);
@@ -49,7 +39,7 @@ SECTIONS
     
     . = ALIGN(4);
     Perph_e = .;
-  } >RAM_D1 AT>FLASH
+  } >RAM_D1_PerphPart AT>FLASH
 
   /* The program code and other data goes into FLASH */
   .text :

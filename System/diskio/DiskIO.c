@@ -1405,8 +1405,10 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
                         /* create linked list item first */
                         cluster_list_item_tmp = (item_obj *)DISKIO_MALLOC(sizeof(item_obj));
+
                         /* create linked list */
                         cluster_id_ptr = (Disk_PreLinkBlock_TypeDef *)DISKIO_MALLOC(sizeof(Disk_PreLinkBlock_TypeDef));
+                        
                         /* init list item */
                         List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
                         List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
