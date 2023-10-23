@@ -82,30 +82,30 @@ void Task_Manager_CreateTask(void)
         {
             DataPipe_Init();
 
-            TaskProtocol_Init(TaskProtocol_Period_Def);
-            TaskSample_Init(TaskSample_Period_Def);
-            TaskTelemetry_Init(TaskTelemetry_Period_def);
-            TaskControl_Init(TaskControl_Period_Def);
+            // TaskProtocol_Init(TaskProtocol_Period_Def);
+            // TaskSample_Init(TaskSample_Period_Def);
+            // TaskTelemetry_Init(TaskTelemetry_Period_def);
+            // TaskControl_Init(TaskControl_Period_Def);
             TaskLog_Init(TaslLog_Period_Def);
-            TaskNavi_Init(TaslNavi_Period_Def);
+            // TaskNavi_Init(TaslNavi_Period_Def);
 
-            osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
-            TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
+            // osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
+            // TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
 
-            osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 1024);
-            TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
+            // osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 1024);
+            // TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
 
-            osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 8192);
-            TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
+            // osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 8192);
+            // TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
 
-            osThreadDef(ProtocolTask, TaskProtocol_Core, osPriorityNormal, 0, 1024);
-            TaskProtocol_Handle = osThreadCreate(osThread(ProtocolTask), NULL);
+            // osThreadDef(ProtocolTask, TaskProtocol_Core, osPriorityNormal, 0, 1024);
+            // TaskProtocol_Handle = osThreadCreate(osThread(ProtocolTask), NULL);
 
             osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
 
-            osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 512);
-            TaskTelemetry_Handle = osThreadCreate(osThread(LogTask), NULL);
+            // osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 512);
+            // TaskTelemetry_Handle = osThreadCreate(osThread(LogTask), NULL);
 
             init = true;
         }

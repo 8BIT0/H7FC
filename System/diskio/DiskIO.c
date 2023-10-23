@@ -1405,19 +1405,19 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
 
                         /* create linked list item first */
                         cluster_list_item_tmp = (item_obj *)DISKIO_MALLOC(sizeof(item_obj));
-
                         /* create linked list */
                         cluster_id_ptr = (Disk_PreLinkBlock_TypeDef *)DISKIO_MALLOC(sizeof(Disk_PreLinkBlock_TypeDef));
                         
-                        /* init list item */
-                        List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
-                        List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
-                        Disk_Update_File_Cluster(&file_tmp, FATObj->free_cluster);
                         if (cluster_list_item_tmp && cluster_id_ptr)
                         {
                             FATCluster_Addr start_cluster = FATObj->free_cluster;
                             FATCluster_Addr end_cluster = 0;
                             FATCluster_Addr lst_end_cluster = end_cluster;
+
+                            /* init list item */
+                            List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);
+                            List_Init(&file_tmp.cluster_list, cluster_list_item_tmp, by_order, NULL);
+                            Disk_Update_File_Cluster(&file_tmp, FATObj->free_cluster);
 
                             cluster_id_ptr->s_addr = start_cluster;
                             
@@ -1478,7 +1478,12 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                             }
                         }
                         else
+                        {
                             file_tmp.fast_mode = false;
+
+                            DISKIO_FREE(cluster_list_item_tmp);
+                            DISKIO_FREE(cluster_id_ptr);
+                        }
                     }
                 }
             }

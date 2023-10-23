@@ -11,8 +11,7 @@ _Min_Stack_Size = 0x2000; /* required amount of stack */
 MEMORY
 {
 DTCMRAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
-RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 192K
-RAM_D1_OsHeap_Part(xrw) : ORIGIN = 0x24030000, LENGTH = 256K
+RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 448K
 RAM_D1_Perph_Part(xrw)  : ORIGIN = 0x24070000, LENGTH = 64K
 RAM_D2 (xrw)      : ORIGIN = 0x30000000, LENGTH = 288K
 RAM_D3 (xrw)      : ORIGIN = 0x38000000, LENGTH = 64K
@@ -31,17 +30,6 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .OsHeap_Section :
-  {
-    . = ALIGN(4);
-    OsHeap_s = .;
-    *(.OsHeap_Section)
-    *(.OsHeap_Section*)
-    
-    . = ALIGN(4);
-    OsHeap_e = .;
-  } >RAM_D1_OsHeap_Part AT>FLASH
-
   .Perph_Section :
   {
     . = ALIGN(4);
@@ -51,7 +39,7 @@ SECTIONS
     
     . = ALIGN(4);
     Perph_e = .;
-  } >RAM_D1_PerphPart AT>FLASH
+  } >RAM_D1_Perph_Part AT>FLASH
 
   /* The program code and other data goes into FLASH */
   .text :
@@ -140,7 +128,7 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
-  } >DTCMRAM
+  } >RAM_D1
 
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
