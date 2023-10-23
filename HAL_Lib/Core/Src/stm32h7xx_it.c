@@ -239,6 +239,8 @@ void TIM7_IRQHandler(void)
 /* SYSTEM Call */
 void TIM17_IRQHandler(void)
 {
+  /* check tick frequence */
+  /* set 1K tick freq on configuration */
   HAL_IncTick();
   HAL_TIM_IRQHandler(&htim17);
 }
