@@ -86,7 +86,7 @@ static bool SrvOsCommon_Free(void *ptr)
     SrvOs_HeapStatus_TypeDef status;
 
     memset(&status, 0, sizeof(SrvOs_HeapStatus_TypeDef));
-    
+
     if(ptr)
     {
         vPortGetHeapStats(&status);
