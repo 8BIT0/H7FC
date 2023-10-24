@@ -11,7 +11,8 @@ _Min_Stack_Size = 0x2000; /* required amount of stack */
 MEMORY
 {
 DTCMRAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
-RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 448K
+RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 320K
+RAM_D1_OsHeap_Part(xrw) : ORIGIN = 0x24050000, LENGTH = 128K
 RAM_D1_Perph_Part(xrw)  : ORIGIN = 0x24070000, LENGTH = 64K
 RAM_D2 (xrw)      : ORIGIN = 0x30000000, LENGTH = 288K
 RAM_D3 (xrw)      : ORIGIN = 0x38000000, LENGTH = 64K
@@ -29,6 +30,18 @@ SECTIONS
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH
+
+  .OsHeap_Section :
+  {
+    . = ALIGN(4);
+    OsHeap_s = .;
+    *(.OsHeap_Section)
+    *(.OsHeap_Section*)
+
+    . = ALIGN(4);
+    OsHeap_e = .;
+
+  } >RAM_D1_OsHeap_Part AT>FLASH
 
   .Perph_Section :
   {

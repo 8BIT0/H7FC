@@ -95,6 +95,9 @@ to exclude the API function. */
 #define configUSE_COUNTING_SEMAPHORES 1
 #define configUSE_MUTEXES 1
 
+#define configAPPLICATION_ALLOCATED_HEAP 1
+uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__((section(".OsHeap_Section")));
+
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS
  /* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
