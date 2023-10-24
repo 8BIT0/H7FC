@@ -96,7 +96,6 @@ to exclude the API function. */
 #define configUSE_MUTEXES 1
 
 #define configAPPLICATION_ALLOCATED_HEAP 1
-uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__((section(".OsHeap_Section")));
 
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS

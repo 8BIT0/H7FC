@@ -1,15 +1,38 @@
 #include "Srv_OsCommon.h"
 
+typedef struct
+{
+    uint32_t available_size;
+    uint32_t heap_remain;
+    uint32_t block_num;
+    uint32_t max_heap_usage;
+
+    uint32_t malloc_cnt;
+    uint32_t malloc_failed_cnt;
+    uint32_t free_cnt;
+    uint32_t free_faile_cnt;
+}SrvOsCommon_HeapMonitor_TypeDef;
+
+/* internal vriable */
+static bool first_call = true;
+static SrvOsCommon_HeapMonitor_TypeDef OsHeap_Monitor = {0};
+
+/* external vriable */
+uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__((section(".OsHeap_Section")));
+
 /* external function */
+static void* SrvOsCommon_Malloc(uint32_t size);
+static bool SrvOsCommon_Free(void *ptr);
 
 SrvOsCommon_TypeDef SrvOsCommon = {
     .get_os_ms = osKernelSysTick,
     .delay_ms = osDelay,
     .precise_delay = osDelayUntil,
-    .malloc = pvPortMalloc,
-    .free = vPortFree,
+    .malloc = SrvOsCommon_Malloc,
+    .free = SrvOsCommon_Free,
     .enter_critical = vPortEnterCritical,
     .exit_critical = vPortExitCritical,
+    .get_heap_status = vPortGetHeapStats,
     /* relative to the real world time */
     .realtime_init = NULL,
     .realtime_trim = NULL,
@@ -17,5 +40,76 @@ SrvOsCommon_TypeDef SrvOsCommon = {
     .get_realtime = NULL,
 };
 
+static void* SrvOsCommon_Malloc(uint32_t size)
+{
+    void *req_tmp = NULL;
+    SrvOs_HeapStatus_TypeDef status; 
+    uint32_t malloc_num = 0;
+    memset(&status, 0, sizeof(SrvOs_HeapStatus_TypeDef));
 
+    /* check heap status first */
+    vPortGetHeapStats(&status);
+    malloc_num = status.xNumberOfSuccessfulAllocations;
+    
+    if(first_call)
+    {
+        memset(&OsHeap_Monitor, 0, sizeof(SrvOsCommon_HeapMonitor_TypeDef));
+        first_call = false;
+    }
+
+    if(status.xAvailableHeapSpaceInBytes)
+    {
+        req_tmp = pvPortMalloc(size);
+        
+        /* recheck heap status after os heap malloc */
+        vPortGetHeapStats(&status);
+
+        OsHeap_Monitor.available_size = status.xAvailableHeapSpaceInBytes;
+        OsHeap_Monitor.block_num = status.xNumberOfFreeBlocks;
+        OsHeap_Monitor.max_heap_usage = status.xMinimumEverFreeBytesRemaining;
+    
+        if(!req_tmp && (status.xNumberOfSuccessfulAllocations - malloc_num != 1))
+        {
+            req_tmp = NULL;
+            OsHeap_Monitor.malloc_failed_cnt ++;
+        }
+        else
+            OsHeap_Monitor.malloc_cnt ++;
+    }
+
+    return req_tmp;
+}
+
+static bool SrvOsCommon_Free(void *ptr)
+{
+    uint32_t free_cnt = 0;
+    SrvOs_HeapStatus_TypeDef status;
+
+    memset(&status, 0, sizeof(SrvOs_HeapStatus_TypeDef));
+
+    vPortGetHeapStats(&status);
+    free_cnt = status.xNumberOfSuccessfulFrees;
+
+    if(ptr)
+    {
+        vPortFree(ptr);
+        
+        /* check heap status after os heap free */
+        vPortGetHeapStats(&status);
+        OsHeap_Monitor.available_size = status.xAvailableHeapSpaceInBytes;
+        OsHeap_Monitor.block_num = status.xNumberOfFreeBlocks;
+        OsHeap_Monitor.max_heap_usage = status.xMinimumEverFreeBytesRemaining;
+
+        if(status.xNumberOfSuccessfulFrees - free_cnt == 1)
+        {
+            OsHeap_Monitor.free_cnt++;
+            ptr = NULL;
+            return true;
+        }
+        else
+            OsHeap_Monitor.free_faile_cnt ++;
+    }
+
+    return false;
+}
 

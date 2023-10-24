@@ -16,6 +16,7 @@ typedef struct
     uint16_t ms;
 }SrvOs_RealTime_TypeDef;
 
+typedef HeapStats_t SrvOs_HeapStatus_TypeDef;
 typedef SrvOs_RealTime_TypeDef SrvOs_GPSTime_TypeDef;
 
 typedef struct
@@ -33,6 +34,7 @@ typedef struct
 
     void (*enter_critical)(void);
     void (*exit_critical)(void);
+    void (*get_heap_status)(SrvOs_HeapStatus_TypeDef *status);
 }SrvOsCommon_TypeDef;
 
 extern SrvOsCommon_TypeDef SrvOsCommon;
