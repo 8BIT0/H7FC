@@ -86,12 +86,12 @@ static bool SrvOsCommon_Free(void *ptr)
     SrvOs_HeapStatus_TypeDef status;
 
     memset(&status, 0, sizeof(SrvOs_HeapStatus_TypeDef));
-
-    vPortGetHeapStats(&status);
-    free_cnt = status.xNumberOfSuccessfulFrees;
-
+    
     if(ptr)
     {
+        vPortGetHeapStats(&status);
+        free_cnt = status.xNumberOfSuccessfulFrees;
+        
         vPortFree(ptr);
         
         /* check heap status after os heap free */
