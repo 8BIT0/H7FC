@@ -5,7 +5,6 @@ typedef struct
     uint32_t available_size;
     uint32_t heap_remain;
     uint32_t block_num;
-    uint32_t max_heap_usage;
 
     uint32_t malloc_cnt;
     uint32_t malloc_failed_cnt;
@@ -66,7 +65,6 @@ static void* SrvOsCommon_Malloc(uint32_t size)
 
         OsHeap_Monitor.available_size = status.xAvailableHeapSpaceInBytes;
         OsHeap_Monitor.block_num = status.xNumberOfFreeBlocks;
-        OsHeap_Monitor.max_heap_usage = status.xMinimumEverFreeBytesRemaining;
     
         if(!req_tmp && (status.xNumberOfSuccessfulAllocations - malloc_num != 1))
         {
@@ -74,7 +72,10 @@ static void* SrvOsCommon_Malloc(uint32_t size)
             OsHeap_Monitor.malloc_failed_cnt ++;
         }
         else
+        {
+            memset(req_tmp, 0, size);
             OsHeap_Monitor.malloc_cnt ++;
+        }
     }
 
     return req_tmp;
@@ -98,7 +99,6 @@ static bool SrvOsCommon_Free(void *ptr)
         vPortGetHeapStats(&status);
         OsHeap_Monitor.available_size = status.xAvailableHeapSpaceInBytes;
         OsHeap_Monitor.block_num = status.xNumberOfFreeBlocks;
-        OsHeap_Monitor.max_heap_usage = status.xMinimumEverFreeBytesRemaining;
 
         if(status.xNumberOfSuccessfulFrees - free_cnt == 1)
         {
