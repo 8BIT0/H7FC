@@ -37,8 +37,7 @@ void TaskSample_Init(uint32_t period, uint32_t sensor_enable)
     {
         TaskSensor_Monitor.enable_num ++;
 
-        /* regist error */
-        if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
+        if (SrvIMU.init() != SrvIMU_AllModule_Init_Error)
         {
             TaskSensor_Monitor.init_state_reg |= Task_SensorField_IMU;
         }
@@ -48,7 +47,7 @@ void TaskSample_Init(uint32_t period, uint32_t sensor_enable)
     {
         TaskSensor_Monitor.enable_num ++;
 
-        if(SrvBaro.init() != SrvBaro_Error_None)
+        if(SrvBaro.init() == SrvBaro_Error_None)
         {
             TaskSensor_Monitor.init_state_reg |= Task_SensorField_BARO;
         }
