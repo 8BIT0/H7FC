@@ -14,7 +14,7 @@
 
 typedef struct
 {
-    uint8_t buff[DEFAULT_DECOMPESS_BUF_SIZE];
+    uint8_t *buff;
     uint16_t size;
 }decompess_io_stream;
 

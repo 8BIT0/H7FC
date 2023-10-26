@@ -2,9 +2,9 @@
 #include "../inc/file_decode.h"
 #include "minilzo.h"
 
-/* create a 64K buffer */
-static uint8_t decompess_file_buff[4096] __attribute__((align(32))) = {0};
-static decompess_io_stream decompess_stream = {.size = DEFAULT_DECOMPESS_BUF_SIZE};
+/* create a 4M buffer */
+static uint8_t decompess_file_buff[4 * 1024 * 1024] __attribute__((align(32))) = {0};
+static decompess_io_stream decompess_stream = {.size = 0};
 
 #define HEAP_ALLOC(var,size) \
     lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ]
@@ -34,6 +34,7 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
     uint32_t decompess_err_cnt = 0;
     uint32_t decompess_len = 0;
 
+    uint32_t stream_size = 0;
     uint8_t compess_buff[2048] __attribute__((align(32))) = {0};
 
     static uint8_t lst_cyc = 0;
@@ -108,15 +109,17 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
                 /* decompess data */
                 if(lzo1x_decompress(compess_buff, check_pck_size, decompess_file_buff, &decompess_len, NULL) == LZO_E_OK)
                 {
+                    stream_size += decompess_len;
                     /* decode data */
-                    for(uint16_t offset = 0; offset < decompess_len; offset += sizeof(LogData_Header_TypeDef) + sizeof(IMU_LogUnionData_TypeDef))
+                    for(uint32_t offset = 0; offset < decompess_len; offset += sizeof(LogData_Header_TypeDef) + sizeof(IMU_LogUnionData_TypeDef))
                     {
                         memcpy(&header, decompess_file_buff + offset, sizeof(LogData_Header_TypeDef));
                         memset(IMU_Data.buff, 0, sizeof(IMU_LogUnionData_TypeDef));
                         memcpy(IMU_Data.buff, decompess_file_buff + offset + sizeof(LogData_Header_TypeDef), sizeof(IMU_LogUnionData_TypeDef));
 
-                        // printf("[INFO] Runtime %lld \t Cycle Cnt %d\r\n", IMU_Data.data.time, IMU_Data.data.cyc);
-                    
+                        printf("[INFO] Runtime %lld \t Cycle Cnt %d\r\n", IMU_Data.data.time, IMU_Data.data.cyc);
+                                       LogFile_Decode_IMUData(file->cnv_log_file, &stream->buff[imU_data_start], LOG_IMU_DATA_SIZE);
+ 
                         if(lst_Rt)
                         {
                             if(((IMU_Data.data.time - lst_Rt) > 500) && ((IMU_Data.data.cyc - lst_cyc) > 1))
@@ -151,6 +154,9 @@ decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file)
     }
 
 Decode_EOF:
+    decompess_stream.buff = decompess_file_buff;
+    decompess_stream.size = stream_size;
+
     printf("\r\n");
     
     printf("[INFO]  test                          : %d\r\n", test);
@@ -199,7 +205,6 @@ bool LogFile_Decode(decompess_io_stream *stream, LogFileObj_TypeDef *file)
                 if(i - imU_data_start >= LOG_IMU_DATA_SIZE)
                 {
                     log_imu_cnt ++;
-                    LogFile_Decode_IMUData(file->cnv_log_file, &stream->buff[imU_data_start], LOG_IMU_DATA_SIZE);
                 }
 
                 imU_data_start = i + LOG_HEADER_SIZE;
@@ -237,34 +242,34 @@ static uint16_t LogFile_Decode_IMUData(FILE *cnv_file, uint8_t *data, uint16_t s
         chk_sum += IMU_Data.buff[i];
     }
 
-    // if (chk_sum == IMU_Data.data.chk_sum)
+    // if (chk_sum == IMU_Data.data.check_sum)
     // {
-    //     done++;
-    //     fprintf(cnv_file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %lld\r\n",
-    //             IMU_Data.data.time_stamp / 1000.0f,
-    //             IMU_Data.data.org_gyr[Axis_X],
-    //             IMU_Data.data.org_gyr[Axis_Y],
-    //             IMU_Data.data.org_gyr[Axis_Z],
-    //             IMU_Data.data.org_acc[Axis_X],
-    //             IMU_Data.data.org_acc[Axis_Y],
-    //             IMU_Data.data.org_acc[Axis_Z],
-    //             IMU_Data.data.flt_gyr[Axis_X],
-    //             IMU_Data.data.flt_gyr[Axis_Y],
-    //             IMU_Data.data.flt_gyr[Axis_Z],
-    //             IMU_Data.data.flt_acc[Axis_X],
-    //             IMU_Data.data.flt_acc[Axis_Y],
-    //             IMU_Data.data.flt_acc[Axis_Z],
-    //             IMU_Data.data.cycle_cnt);
+        done++;
+        fprintf(cnv_file, "%lld %f %f %f %f %f %f %f %f %f %f %f %f %lld\r\n",
+                IMU_Data.data.time,
+                IMU_Data.data.org_gyr[Axis_X] / IMU_Data.data.gyr_scale,
+                IMU_Data.data.org_gyr[Axis_Y] / IMU_Data.data.gyr_scale,
+                IMU_Data.data.org_gyr[Axis_Z] / IMU_Data.data.gyr_scale,
+                IMU_Data.data.org_acc[Axis_X] / IMU_Data.data.acc_scale,
+                IMU_Data.data.org_acc[Axis_Y] / IMU_Data.data.acc_scale,
+                IMU_Data.data.org_acc[Axis_Z] / IMU_Data.data.acc_scale,
+                IMU_Data.data.flt_gyr[Axis_X],
+                IMU_Data.data.flt_gyr[Axis_Y],
+                IMU_Data.data.flt_gyr[Axis_Z],
+                IMU_Data.data.flt_acc[Axis_X],
+                IMU_Data.data.flt_acc[Axis_Y],
+                IMU_Data.data.flt_acc[Axis_Z],
+                IMU_Data.data.cyc);
 
-    //     return sizeof(IMU_Data);
+        return sizeof(IMU_Data);
     // }
     // else
     // {
     //     err++;
 
     //     printf("[ ERROR DECODE ] %lld %lld\r\n",
-    //             IMU_Data.data.time_stamp,
-    //             IMU_Data.data.cycle_cnt);
+    //             IMU_Data.data.time,
+    //             IMU_Data.data.cyc);
 
     //     return -1;
     // }
