@@ -12,12 +12,6 @@
 /* task state */
 typedef enum
 {
-    Task_SensorInertial_Core = 0,
-    Task_SensorInertial_Error,
-} Task_SensorInertial_State;
-
-typedef enum
-{
     Task_SensorField_IMU   = UTIL_SET_BIT(0),
     Task_SensorField_MAG   = UTIL_SET_BIT(1),
     Task_SensorField_BARO  = UTIL_SET_BIT(2),
@@ -44,12 +38,6 @@ typedef struct
     uint32_t init_state_reg;
 
 }Task_SensorMonitor_TypeDef;
-
-typedef enum
-{
-    Task_SensorBaro_Core = 0,
-    Task_SensorBaro_Error,
-}Task_SensorBaro_State;
 
 void TaskSample_Init(uint32_t period, uint32_t sensor_enable);
 void TaskSample_Core(void const *arg);

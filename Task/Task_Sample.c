@@ -9,15 +9,16 @@
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
 
 /* internal var */
-static Task_SensorInertial_State TaskInertial_State = Task_SensorInertial_Core;
-static Task_SensorBaro_State TaskBaro_State = Task_SensorBaro_Core;
 static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
 static uint32_t TaskSample_Period = 0;
+static Task_SensorMonitor_TypeDef TaskSensor_Monitor;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, IMU_Data);
 
 /* internal function */
 static void TaskInertical_Blink_Notification(uint16_t duration);
 static void TaskInertical_Led_Control(bool state);
+static bool TaskSampleCtl_IMU(void);
+static bool TaskSampleCtl_BARO(void);
 
 /* external function */
 
@@ -25,17 +26,33 @@ void TaskSample_Init(uint32_t period, uint32_t sensor_enable)
 {
     memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
     memset(DataPipe_DataObjAddr(IMU_Data), 0, sizeof(DataPipe_DataObj(IMU_Data)));
+    memset(&TaskSensor_Monitor, 0, sizeof(TaskSensor_Monitor));
 
+    TaskSensor_Monitor.enabled_reg = sensor_enable;
     IMU_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(IMU_Data);
     IMU_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(IMU_Data));
     DataPipe_Enable(&IMU_Smp_DataPipe);
 
-    /* regist error */
-    if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
-        TaskInertial_State = Task_SensorInertial_Error;
+    if(TaskSensor_Monitor.enabled_reg & Task_SensorField_IMU)
+    {
+        TaskSensor_Monitor.enable_num ++;
 
-    if(SrvBaro.init() != SrvBaro_Error_None)
-        TaskBaro_State = Task_SensorBaro_Error;
+        /* regist error */
+        if (SrvIMU.init() == SrvIMU_AllModule_Init_Error)
+        {
+            TaskSensor_Monitor.init_state_reg |= Task_SensorField_IMU;
+        }
+    }
+
+    if(TaskSensor_Monitor.enabled_reg & Task_SensorField_BARO)
+    {
+        TaskSensor_Monitor.enable_num ++;
+
+        if(SrvBaro.init() != SrvBaro_Error_None)
+        {
+            TaskSensor_Monitor.init_state_reg |= Task_SensorField_BARO;
+        }
+    }
 
     TaskSample_Period = period;
 }
@@ -48,72 +65,58 @@ void TaskSample_Core(void const *arg)
     {
         TaskInertical_Blink_Notification(100);
 
-        // DebugPin.ctl(Debug_PB5, true);
-        switch ((uint8_t)TaskInertial_State)
-        {
-        case Task_SensorInertial_Core:
-            if(SrvIMU.sample == NULL)
-            {
-                TaskInertial_State = Task_SensorInertial_Error;
-                break;
-            }
-
-            if (SrvIMU.sample(SrvIMU_Both_Sample))
-            {
-                DataPipe_DataObj(IMU_Data).data = SrvIMU.get_data(SrvIMU_FusModule);
-
-                for (uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(IMU_Data)) - sizeof(uint16_t); chk++)
-                {
-                    DataPipe_DataObj(IMU_Data).data.chk_sum += DataPipe_DataObj(IMU_Data).buff[chk];
-                }
-
-                DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
-                DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe); /* to control task */
-
-                if(DataPipe_DataObj(IMU_Data).data.error_code == SrvIMU_Sample_Over_Angular_Accelerate)
-                {
-                    TaskInertical_Led_Control(true);
-                }
-                else
-                    TaskInertical_Led_Control(false);
-            }
-
-            /* sample baro sensor */
-            break;
-
-        case Task_SensorInertial_Error:
-            break;
-
-        default:
-            break;
-        }
-
-        switch((uint8_t)TaskBaro_State)
-        {
-            case Task_SensorBaro_Core:
-                if(SrvBaro.sample == NULL)
-                {
-                    TaskBaro_State = Task_SensorBaro_Error;
-                    break;
-                }
-                else
-                {
-                    
-                }
-                break;
-
-            case Task_SensorBaro_Error:
-                break;
-
-            default:
-                break;
-        }
-
-        SrvIMU.error_proc();
-        // DebugPin.ctl(Debug_PB5, false);
-
+        TaskSampleCtl_IMU();
+        TaskSampleCtl_BARO();
+        
         SrvOsCommon.precise_delay(&sys_time, TaskSample_Period);
     }
+}
+
+static bool TaskSampleCtl_IMU(void)
+{
+
+    if((TaskSensor_Monitor.enabled_reg & Task_SensorField_IMU) && (TaskSensor_Monitor.init_state_reg & Task_SensorField_IMU))
+    {
+        if ((SrvIMU.sample != NULL) && (SrvIMU.error_proc != NULL) && SrvIMU.sample(SrvIMU_Both_Sample))
+        {
+            DataPipe_DataObj(IMU_Data).data = SrvIMU.get_data(SrvIMU_FusModule);
+
+            // DebugPin.ctl(Debug_PB5, true);
+            
+            for (uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(IMU_Data)) - sizeof(uint16_t); chk++)
+            {
+                DataPipe_DataObj(IMU_Data).data.chk_sum += DataPipe_DataObj(IMU_Data).buff[chk];
+            }
+
+            /* need measurement the overhead from pipe send to pipe receive callback triggered */
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe); /* to control task */
+
+            SrvIMU.error_proc();
+
+            // DebugPin.ctl(Debug_PB5, false);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool TaskSampleCtl_BARO(void)
+{
+    if((TaskSensor_Monitor.enabled_reg & Task_SensorField_BARO) && (TaskSensor_Monitor.init_state_reg & Task_SensorField_BARO))
+    {
+        /* sample baro sensor */
+        if((TaskSensor_Monitor.enabled_reg & Task_SensorField_BARO) && (TaskSensor_Monitor.init_state_reg & Task_SensorField_BARO))
+        {
+            if(SrvBaro.sample != NULL)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 static void TaskInertical_Blink_Notification(uint16_t duration)
