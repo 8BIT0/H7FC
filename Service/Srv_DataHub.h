@@ -39,6 +39,7 @@ typedef union
 
 typedef struct
 {
+    bool imu_init_state;
     uint32_t imu_update_time;
     float acc_scale;
     float gyr_scale;
@@ -62,6 +63,7 @@ typedef struct
     float imu_temp;
     uint8_t imu_error_code;
 
+    bool mag_init_state;
     uint32_t mag_update_time;
     float mag_scale;
 
@@ -76,11 +78,13 @@ typedef struct
     float mag_temp;
     uint8_t mag_error_code;
 
+    bool baro_init_state;
     uint32_t baro_update_time;
     float baro_scale;
     float baro;
     uint8_t baro_error_code;
 
+    bool sonar_init_state;
     uint32_t sonar_update_time;
     float sonar_scale;
     float sonar;
