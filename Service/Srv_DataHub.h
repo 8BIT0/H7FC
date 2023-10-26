@@ -63,6 +63,7 @@ typedef struct
     float imu_temp;
     uint8_t imu_error_code;
 
+    bool mag_enabled;
     bool mag_init_state;
     uint32_t mag_update_time;
     float mag_scale;
@@ -78,12 +79,14 @@ typedef struct
     float mag_temp;
     uint8_t mag_error_code;
 
+    bool baro_enabled;
     bool baro_init_state;
     uint32_t baro_update_time;
     float baro_scale;
     float baro;
     uint8_t baro_error_code;
 
+    bool tof_enabled;
     bool tof_init_state;
     uint32_t tof_update_time;
     float tof_scale;

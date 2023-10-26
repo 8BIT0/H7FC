@@ -1,5 +1,7 @@
 #include "DataPipe.h"
 
+DataPipeObj_TypeDef SensorState_DataPipe = {.enable = true};
+
 DataPipeObj_TypeDef Receiver_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Receiver_hub_DataPipe = {.enable = true};
 
