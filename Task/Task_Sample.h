@@ -42,7 +42,7 @@ typedef struct
     uint32_t enabled_reg;
     uint8_t enable_num;
     uint32_t init_state_reg;
-    
+
 }Task_SensorMonitor_TypeDef;
 
 typedef enum
@@ -51,7 +51,7 @@ typedef enum
     Task_SensorBaro_Error,
 }Task_SensorBaro_State;
 
-void TaskSample_Init(uint32_t period);
+void TaskSample_Init(uint32_t period, uint32_t sensor_enable);
 void TaskSample_Core(void const *arg);
 
 #endif

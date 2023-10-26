@@ -21,7 +21,7 @@ static void TaskInertical_Led_Control(bool state);
 
 /* external function */
 
-void TaskSample_Init(uint32_t period)
+void TaskSample_Init(uint32_t period, uint32_t sensor_enable)
 {
     memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
     memset(DataPipe_DataObjAddr(IMU_Data), 0, sizeof(DataPipe_DataObj(IMU_Data)));
