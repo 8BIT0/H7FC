@@ -41,7 +41,7 @@ void TaskNavi_Core(void const *arg)
 
     while(1)
     {
-        
+        /* check imu data update freq on test */
         SrvOsCommon.precise_delay(&sys_time, TaskNavi_Period);
     }
 }

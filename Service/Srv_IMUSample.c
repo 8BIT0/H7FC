@@ -310,8 +310,8 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     FilterParam_Obj_TypeDef *Gyr_Filter_Ptr = NULL;
     FilterParam_Obj_TypeDef *Acc_Filter_Ptr = NULL;
 
-    CREATE_FILTER_PARAM_OBJ(Gyr, 5, 50Hz, 2K, Gyr_Filter_Ptr);
-    CREATE_FILTER_PARAM_OBJ(Acc, 5, 50Hz, 2K, Acc_Filter_Ptr);
+    CREATE_FILTER_PARAM_OBJ(Gyr, 5, 30Hz, 1K, Gyr_Filter_Ptr);
+    CREATE_FILTER_PARAM_OBJ(Acc, 5, 30Hz, 1K, Acc_Filter_Ptr);
 
     memset(&InUse_PriIMU_Obj, 0, sizeof(InUse_PriIMU_Obj));
     memset(&InUse_SecIMU_Obj, 0, sizeof(InUse_SecIMU_Obj));
@@ -359,16 +359,11 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         SrvMpu_Init_Reg.sec.Sec_State = true;
 
         /* init filter */
-        SecIMU_Gyr_LPF_Handle[Axis_X] = Butterworth.init(Gyr_Filter_Ptr);
-        SecIMU_Gyr_LPF_Handle[Axis_Y] = Butterworth.init(Gyr_Filter_Ptr);
-        SecIMU_Gyr_LPF_Handle[Axis_Z] = Butterworth.init(Gyr_Filter_Ptr);
-
-        SecIMU_Acc_LPF_Handle[Axis_X] = Butterworth.init(Acc_Filter_Ptr);
-        SecIMU_Acc_LPF_Handle[Axis_Y] = Butterworth.init(Acc_Filter_Ptr);
-        SecIMU_Acc_LPF_Handle[Axis_Z] = Butterworth.init(Acc_Filter_Ptr);
-
         for(uint8_t i = Axis_X; i < Axis_Sum; i++)
         {
+            SecIMU_Gyr_LPF_Handle[i] = Butterworth.init(Gyr_Filter_Ptr);
+            SecIMU_Acc_LPF_Handle[i] = Butterworth.init(Acc_Filter_Ptr);
+
             if( (SecIMU_Gyr_LPF_Handle[i] == 0) || 
                 (SecIMU_Acc_LPF_Handle[i] == 0))
             {
