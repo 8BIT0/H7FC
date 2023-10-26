@@ -84,12 +84,7 @@ typedef struct
     float baro;
     uint8_t baro_error_code;
 
-    bool sonar_init_state;
-    uint32_t sonar_update_time;
-    float sonar_scale;
-    float sonar;
-    uint8_t conar_error_code;
-
+    bool tof_init_state;
     uint32_t tof_update_time;
     float tof_scale;
     float tof;
@@ -158,6 +153,10 @@ typedef struct
 typedef struct
 {
     void (*init)(void);
+    bool (*get_imu_init_state)(bool *state);
+    bool (*get_baro_init_state)(bool *state);
+    bool (*get_mag_init_state)(bool *state);
+    bool (*get_tof_init_state)(bool *state);
     bool (*get_raw_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
     bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
