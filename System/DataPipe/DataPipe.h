@@ -85,6 +85,9 @@ inline bool DataPipe_Set_RxInterval(DataPipeObj_TypeDef *obj, uint32_t interval_
     return false;
 }
 
+
+extern DataPipeObj_TypeDef SensorState_DataPipe;
+
 extern DataPipeObj_TypeDef IMU_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_Log_DataPipe;
 extern DataPipeObj_TypeDef IMU_hub_DataPipe;
