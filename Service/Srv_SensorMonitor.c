@@ -1,6 +1,7 @@
 #include "Srv_SensorMonitor.h"
 #include "Bsp_Timer.h"
 #include "Srv_OsCommon.h"
+#include "DataPipe.h"
 
 /* 
  * for sensor statistic function a timer is essenial
