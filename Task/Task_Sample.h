@@ -36,7 +36,8 @@ typedef struct
     uint32_t enabled_reg;
     uint8_t enable_num;
     uint32_t init_state_reg;
-
+    
+    Task_SensoSampleStatistic_TypeDef *statistic_tab;
 }Task_SensorMonitor_TypeDef;
 
 void TaskSample_Init(uint32_t period, uint32_t sensor_enable);

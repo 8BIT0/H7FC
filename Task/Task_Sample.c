@@ -53,6 +53,20 @@ void TaskSample_Init(uint32_t period, uint32_t sensor_enable)
         }
     }
 
+    if(TaskSensor_Monitor.enable_num)
+    {
+        TaskSensor_Monitor.statistic_tab = SrvOsCommon.malloc(sizeof(Task_SensoSampleStatistic_TypeDef) * TaskSensor_Monitor.enable_num);
+
+        if(TaskSensor_Monitor.statistic_tab == NULL)
+        {
+            SrvOsCommon.free(TaskSensor_Monitor.statistic_tab);
+        }
+    }
+    else
+        return;
+        
+    /* need pipe sensor state to datahub after initial */
+
     TaskSample_Period = period;
 }
 

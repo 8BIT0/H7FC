@@ -164,7 +164,32 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
     }
     else if(obj == &SensorState_hub_DataPipe)
     {
+        SrvDataHub_Monitor.data.mag_enabled = ;
+        SrvDataHub_Monitor.data.baro_enabled = ;
+        SrvDataHub_Monitor.data.tof_enabled = ;
+        
+        SrvDataHub_Monitor.data.imu_init_state = ;
+        
+        if(SrvDataHub_Monitor.data.mag_enabled)
+        {
+            SrvDataHub_Monitor.data.mag_init_state = false;
+        }
+        else
+            SrvDataHub_Monitor.data.mag_init_state = ;
 
+        if(SrvDataHub_Monitor.data.baro_enabled)
+        {
+            SrvDataHub_Monitor.data.baro_init_state = false;
+        }
+        else
+            SrvDataHub_Monitor.data.baro_init_state = ;
+
+        if(SrvDataHub_Monitor.data.tof_enabled)
+        {
+            SrvDataHub_Monitor.data.tof_init_state = false;
+        }
+        else
+            SrvDataHub_Monitor.data.tof_init_state = ;
     }
 }
 
