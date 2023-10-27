@@ -86,6 +86,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(SrvSensorMonitorObj_TypeDef *obj);
+    bool (*sample_ctl)(SrvSensorMonitorObj_TypeDef *obj);
 }SrvSensorMonitor_TypeDef;
 
 
