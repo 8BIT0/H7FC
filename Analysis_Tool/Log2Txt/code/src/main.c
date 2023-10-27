@@ -174,13 +174,8 @@ int main()
     // printf("[INFO]\tFile Name:\t\t\t%s\r\n", LogFile.file_name);
     // printf("[INFO]\tFile Total Byte Size:\t\t%lld\r\n", LogFile.logfile_size.total_byte);
     
-    decompess_io_stream *decompess_steam = LogFile_Decompess_Init((const LogFileObj_TypeDef)LogFile);
+    LogFile_Decompess_Init(&LogFile);
 
-    if(decompess_steam)
-    {
-        LogFile_Decode(decompess_steam, &LogFile);
-    }
-    
     while (1)
     {
     }

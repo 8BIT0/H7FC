@@ -18,7 +18,6 @@ typedef struct
     uint16_t size;
 }decompess_io_stream;
 
-decompess_io_stream *LogFile_Decompess_Init(const LogFileObj_TypeDef file);
-bool LogFile_Decode(decompess_io_stream *stream, LogFileObj_TypeDef *file);
+decompess_io_stream *LogFile_Decompess_Init(LogFileObj_TypeDef *file);
 
 #endif
