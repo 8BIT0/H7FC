@@ -77,7 +77,7 @@ typedef struct
 /* bit field on init_state_reg set 1 represent error triggerd on */
 typedef struct
 {
-    SrvSensorMonitor_GenReg_TypeDef enbled_reg;         /* pipe this vriable to datahub after srv_sensormonitor init */
+    SrvSensorMonitor_GenReg_TypeDef enabled_reg;        /* pipe this vriable to datahub after srv_sensormonitor init */
     SrvSensorMonitor_GenReg_TypeDef init_state_reg;     /* pipe thie vriable to datahub after srv_sensormonitor init */
     SrvSensorMonitor_SampleFreqReg_TypeDef freq_reg;
     

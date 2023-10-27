@@ -12,14 +12,43 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 {
     if(obj)
     {
-        /* imu on enable mode is essential */
-        if(obj->enbled_reg.bit.imu)
+        /* enabled on imu must be essential */
+        if(obj->enabled_reg.bit.imu)
         {
 
-
-
-            /* enable a 32bit timer */
         }
+        else
+            return false;
+
+        if(obj->enabled_reg.bit.mag)
+        {
+
+        }
+        else
+            obj->init_state_reg.bit.mag = false;
+
+        if(obj->enabled_reg.bit.baro)
+        {
+
+        }
+        else
+            obj->init_state_reg.bit.baro = false;
+
+        if(obj->enabled_reg.bit.tof)
+        {
+
+        }
+        else
+            obj->init_state_reg.bit.tof = false;
+
+        if(obj->enbaled_reg.bit.gnss)
+        {
+
+        }
+        else
+            obj->init_state_reg.bit.gnss = false;
+
+        /* enable a 32bit timer for statistic */
     }
 
     return false;
