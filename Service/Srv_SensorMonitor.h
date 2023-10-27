@@ -65,8 +65,8 @@ typedef union
 typedef struct
 {
     uint32_t start_time;
-    uint32_t max_sampling_overhead;
-    uint32_t min_sampling_overhead;
+    uint32_t max_sampling_overhead; /* unit: us */
+    uint32_t min_sampling_overhead; /* unit: us */
 
     uint32_t sample_cnt;
     uint32_t err_cnt;
