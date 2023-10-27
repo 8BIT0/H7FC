@@ -71,13 +71,14 @@ typedef struct
     uint32_t sample_cnt;
     uint32_t err_cnt;
     uint32_t detect_period;
+    uint32_t set_period;
 }SrvSensorMonitor_Statistic_TypeDef;
 
 /* bit field on init_state_reg set 1 represent error triggerd on */
 typedef struct
 {
-    SrvSensorMonitor_GenReg_TypeDef enbled_reg;         /* pipe this vriable to datahub */
-    SrvSensorMonitor_GenReg_TypeDef init_state_reg;     /* pipe thie vriable to datahub */
+    SrvSensorMonitor_GenReg_TypeDef enbled_reg;         /* pipe this vriable to datahub after srv_sensormonitor init */
+    SrvSensorMonitor_GenReg_TypeDef init_state_reg;     /* pipe thie vriable to datahub after srv_sensormonitor init */
     SrvSensorMonitor_SampleFreqReg_TypeDef freq_reg;
     
     SrvSensorMonitor_Statistic_TypeDef *statistic_list;
