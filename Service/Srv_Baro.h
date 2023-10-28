@@ -79,7 +79,7 @@ typedef struct
 {
     uint8_t (*init)(void);
     bool (*sample)(void);
-    SrvBaroData_TypeDef (*get)(void);
+    SrvBaroData_TypeDef (*get_data)(void);
 }SrvBaro_TypeDef;
 
 extern SrvBaro_TypeDef SrvBaro;

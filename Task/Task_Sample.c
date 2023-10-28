@@ -33,38 +33,6 @@ void TaskSample_Init(uint32_t period, uint32_t sensor_enable)
     IMU_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(IMU_Data));
     DataPipe_Enable(&IMU_Smp_DataPipe);
 
-    if(TaskSensor_Monitor.enabled_reg & Task_SensorField_IMU)
-    {
-        TaskSensor_Monitor.enable_num ++;
-
-        if (SrvIMU.init() != SrvIMU_AllModule_Init_Error)
-        {
-            TaskSensor_Monitor.init_state_reg |= Task_SensorField_IMU;
-        }
-    }
-
-    if(TaskSensor_Monitor.enabled_reg & Task_SensorField_BARO)
-    {
-        TaskSensor_Monitor.enable_num ++;
-
-        if(SrvBaro.init() == SrvBaro_Error_None)
-        {
-            TaskSensor_Monitor.init_state_reg |= Task_SensorField_BARO;
-        }
-    }
-
-    if(TaskSensor_Monitor.enable_num)
-    {
-        TaskSensor_Monitor.statistic_tab = SrvOsCommon.malloc(sizeof(Task_SensoSampleStatistic_TypeDef) * TaskSensor_Monitor.enable_num);
-
-        if(TaskSensor_Monitor.statistic_tab == NULL)
-        {
-            SrvOsCommon.free(TaskSensor_Monitor.statistic_tab);
-        }
-    }
-    else
-        return;
-        
     /* need pipe sensor state to datahub after initial */
 
     TaskSample_Period = period;

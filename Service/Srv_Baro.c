@@ -127,7 +127,7 @@ static uint8_t SrvBaro_Init(void);
 SrvBaro_TypeDef SrvBaro = {
     .init = SrvBaro_Init,
     .sample = NULL,
-    .get = NULL,
+    .get_data = NULL,
 };
 
 static bool SrvBaro_BusInit(void)
