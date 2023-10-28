@@ -23,6 +23,15 @@ static bool SrvSensorMonitor_Baro_Init(void);
 static bool SrvSensorMonitor_Gnss_Init(void);
 static bool SrvSensorMonitor_Tof_Init(void);
 
+/* external function */
+static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj);
+static bool SrvSensorMonitor_SampleCTL(void);
+
+SrvSensorMonitor_TypeDef SrvSensorMonitor = {
+    .init = SrvSensorMonitor_Init,
+    .sample_ctl = SrvSensorMonitor_SampleCTL,
+};
+
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 {
     uint8_t enable_sensor_num = 0;
@@ -314,6 +323,13 @@ staitc bool SrvSensorMonitor_Tof_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
 static bool SrvSensorMonitor_SampleCTL(void)
 {
+    bool state = false;
 
-    return false;
+    state |= SrvSensorMonitor_IMU_SampleCTL();
+    state |= SrvSensorMonitor_Mag_SampleCTL();
+    state |= SrvSensorMonitor_Baro_SampleCTL();
+    state |= SrvSensorMonitor_Gnss_SampleCTL();
+    state |= SrvSensorMonitor_Tof_SampleCTL();
+
+    return state;
 }
