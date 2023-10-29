@@ -5,99 +5,75 @@
 #include "debug_util.h"
 #include "error_log.h"
 #include "../System/DataPipe/DataPipe.h"
+#include "Srv_SensorMonitor.h"
 
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
 
 /* internal var */
 static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
 static uint32_t TaskSample_Period = 0;
-static Task_SensorMonitor_TypeDef TaskSensor_Monitor;
+static SrvSensorMonitorObj_TypeDef SensorMonitor;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, IMU_Data);
+DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorEnable_State);
+DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorInit_State);
 
 /* internal function */
 static void TaskInertical_Blink_Notification(uint16_t duration);
-static void TaskInertical_Led_Control(bool state);
-static bool TaskSampleCtl_IMU(void);
-static bool TaskSampleCtl_BARO(void);
 
 /* external function */
 
-void TaskSample_Init(uint32_t period, uint32_t sensor_enable)
+void TaskSample_Init(uint32_t period)
 {
+    memset(&SensorMonitor, 0, sizeof(SrvSensorMonitorObj_TypeDef));
     memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
     memset(DataPipe_DataObjAddr(IMU_Data), 0, sizeof(DataPipe_DataObj(IMU_Data)));
-    memset(&TaskSensor_Monitor, 0, sizeof(TaskSensor_Monitor));
 
-    TaskSensor_Monitor.enabled_reg = sensor_enable;
     IMU_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(IMU_Data);
     IMU_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(IMU_Data));
     DataPipe_Enable(&IMU_Smp_DataPipe);
+    
+    SensorMonitor.enabled_reg.bit.imu = true;
+    SensorMonitor.freq_reg.bit.imu = SrvSensorMonitor_SampleFreq_1KHz;
+    SrvSensorMonitor.init(&SensorMonitor);
+
+    DataPipe_DataObj(SensorEnable_State).val = SensorMonitor.enabled_reg.val;
+    DataPipe_DataObj(SensorInit_State).val = SensorMonitor.init_state_reg.val;
+    
+    SensorEnableState_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(SensorEnable_State);
+    SensorEnableState_smp_DataPipe.data_size = sizeof(DataPipe_DataObj(SensorEnable_State));
+    DataPipe_Enable(&SensorEnableState_smp_DataPipe);
+    
+    SensorInitState_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(SensorInit_State);
+    SensorInitState_smp_DataPipe.data_size = sizeof(DataPipe_DataObj(SensorInit_State));
+    DataPipe_Enable(&SensorInitState_smp_DataPipe);
 
     /* need pipe sensor state to datahub after initial */
+    DataPipe_SendTo(&SensorInitState_smp_DataPipe, &SensorInitState_hub_DataPipe);
+    DataPipe_SendTo(&SensorEnableState_smp_DataPipe, &SensorEnableState_hub_DataPipe);
 
-    TaskSample_Period = period;
+    /* force make sensor sample task run as 1khz freq */
+    TaskSample_Period = 1;
 }
 
 void TaskSample_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
-
+    
     while(1)
     {
         TaskInertical_Blink_Notification(100);
 
-        TaskSampleCtl_IMU();
-        TaskSampleCtl_BARO();
-        
-        SrvOsCommon.precise_delay(&sys_time, TaskSample_Period);
-    }
-}
-
-static bool TaskSampleCtl_IMU(void)
-{
-
-    if((TaskSensor_Monitor.enabled_reg & Task_SensorField_IMU) && (TaskSensor_Monitor.init_state_reg & Task_SensorField_IMU))
-    {
-        if ((SrvIMU.sample != NULL) && (SrvIMU.error_proc != NULL) && SrvIMU.sample(SrvIMU_Both_Sample))
+        if(SrvSensorMonitor.sample_ctl(&SensorMonitor))
         {
-            DataPipe_DataObj(IMU_Data).data = SrvIMU.get_data(SrvIMU_FusModule);
-
-            // DebugPin.ctl(Debug_PB5, true);
-            
-            for (uint8_t chk = 0; chk < sizeof(DataPipe_DataObj(IMU_Data)) - sizeof(uint16_t); chk++)
-            {
-                DataPipe_DataObj(IMU_Data).data.chk_sum += DataPipe_DataObj(IMU_Data).buff[chk];
-            }
+            DataPipe_DataObj(IMU_Data) = SrvSensorMonitor.get_imu_data(&SensorMonitor);
 
             /* need measurement the overhead from pipe send to pipe receive callback triggered */
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe); /* to control task */
-
-            SrvIMU.error_proc();
-
-            // DebugPin.ctl(Debug_PB5, false);
-            return true;
         }
+        
+        SrvOsCommon.precise_delay(&sys_time, TaskSample_Period);
     }
-
-    return false;
-}
-
-static bool TaskSampleCtl_BARO(void)
-{
-    if((TaskSensor_Monitor.enabled_reg & Task_SensorField_BARO) && (TaskSensor_Monitor.init_state_reg & Task_SensorField_BARO))
-    {
-        /* sample baro sensor */
-        if((TaskSensor_Monitor.enabled_reg & Task_SensorField_BARO) && (TaskSensor_Monitor.init_state_reg & Task_SensorField_BARO))
-        {
-            if(SrvBaro.sample != NULL)
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
 }
 
 static void TaskInertical_Blink_Notification(uint16_t duration)
@@ -116,9 +92,4 @@ static void TaskInertical_Blink_Notification(uint16_t duration)
 
     DevLED.ctl(Led2, led_state);
     // test_PC1_ctl();
-}
-
-static void TaskInertical_Led_Control(bool state)
-{
-    // DevLED.ctl(Led2, state);
 }

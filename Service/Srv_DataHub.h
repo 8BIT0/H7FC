@@ -8,6 +8,7 @@
 #include "Srv_Actuator.h"
 #include "Srv_IMUSample.h"
 #include "Srv_Receiver.h"
+#include "Srv_SensorMonitor.h"
 
 #pragma pack(1)
 typedef union
@@ -112,6 +113,8 @@ typedef struct
     uint16_t link_quality;
     uint16_t rssi;
     
+    bool gnss_enable;
+    bool gnss_init_state;
     uint32_t gnss_update_time;
     double lon;
     double lat;

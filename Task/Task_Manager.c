@@ -77,9 +77,6 @@ void Task_Manager_CreateTask(void)
     bool init = false;
     uint32_t enabled_sensor = 0;
 
-    enabled_sensor |= Task_SensorField_IMU;
-    enabled_sensor |= Task_SensorField_BARO;
-    
     while(1)
     {
         if(!init)
@@ -87,7 +84,7 @@ void Task_Manager_CreateTask(void)
             DataPipe_Init();
 
             TaskProtocol_Init(TaskProtocol_Period_Def);
-            TaskSample_Init(TaskSample_Period_Def, enabled_sensor);
+            TaskSample_Init(TaskSample_Period_Def);
             TaskTelemetry_Init(TaskTelemetry_Period_def);
             TaskControl_Init(TaskControl_Period_Def);
             TaskLog_Init(TaslLog_Period_Def);

@@ -9,6 +9,8 @@ SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor = {
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlIMU_Data);
 DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, PtlActuator_Data);
 DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
+DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Enable);
+DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
 
 /* internal function */
 static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
@@ -65,6 +67,18 @@ static void SrvDataHub_Init(void)
     Receiver_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
     // DataPipe_Set_RxInterval(&Receiver_hub_DataPipe, Runtime_MsToUs(20)); /* limit pipe frequence to 50Hz */
     DataPipe_Enable(&Receiver_hub_DataPipe);
+
+    memset(DataPipe_DataObjAddr(Sensor_Enable), 0, DataPipe_DataSize(Sensor_Enable));
+    SensorEnableState_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Sensor_Enable);
+    SensorEnableState_hub_DataPipe.data_size = DataPipe_DataSize(Sensor_Enable);
+    SensorEnableState_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+    DataPipe_Enable(&SensorEnableState_hub_DataPipe);
+
+    memset(DataPipe_DataObjAddr(Sensor_Init), 0, DataPipe_DataSize(Sensor_Init));
+    SensorInitState_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Sensor_Init);
+    SensorInitState_hub_DataPipe.data_size = DataPipe_DataSize(Sensor_Init);
+    SensorInitState_hub_DataPipe.trans_finish_cb = SrvComProto_PipeRcTelemtryDataFinish_Callback;
+    DataPipe_Enable(&SensorInitState_hub_DataPipe);
 
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
     SrvDataHub_Monitor.init_state = true;
@@ -162,34 +176,40 @@ static void SrvComProto_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *o
             SrvDataHub_Monitor.data.servo[servo_i] = DataPipe_DataObj(PtlActuator_Data).servo[servo_i];
         }
     }
-    else if(obj == &SensorState_hub_DataPipe)
+    else if((obj == &SensorInitState_hub_DataPipe) || (obj == &SensorEnableState_hub_DataPipe))
     {
-        SrvDataHub_Monitor.data.mag_enabled = ;
-        SrvDataHub_Monitor.data.baro_enabled = ;
-        SrvDataHub_Monitor.data.tof_enabled = ;
-        
-        SrvDataHub_Monitor.data.imu_init_state = ;
-        
-        if(SrvDataHub_Monitor.data.mag_enabled)
+        if(obj == &SensorInitState_hub_DataPipe)
         {
-            SrvDataHub_Monitor.data.mag_init_state = false;
+            SrvDataHub_Monitor.data.mag_enabled = DataPipe_DataObj(Sensor_Enable).bit.mag;
+            SrvDataHub_Monitor.data.baro_enabled = DataPipe_DataObj(Sensor_Enable).bit.baro;
+            SrvDataHub_Monitor.data.tof_enabled = DataPipe_DataObj(Sensor_Enable).bit.tof;
+            SrvDataHub_Monitor.data.gnss_enable = DataPipe_DataObj(Sensor_Enable).bit.gnss;
         }
         else
-            SrvDataHub_Monitor.data.mag_init_state = ;
+        {
+            SrvDataHub_Monitor.data.imu_init_state = DataPipe_DataObj(Sensor_Init).bit.imu;
+            
+            if(SrvDataHub_Monitor.data.mag_enabled)
+            {
+                SrvDataHub_Monitor.data.mag_init_state = DataPipe_DataObj(Sensor_Init).bit.mag;
+            }
+            else
+                SrvDataHub_Monitor.data.mag_init_state = false;
 
-        if(SrvDataHub_Monitor.data.baro_enabled)
-        {
-            SrvDataHub_Monitor.data.baro_init_state = false;
-        }
-        else
-            SrvDataHub_Monitor.data.baro_init_state = ;
+            if(SrvDataHub_Monitor.data.baro_enabled)
+            {
+                SrvDataHub_Monitor.data.baro_init_state = DataPipe_DataObj(Sensor_Init).bit.baro;
+            }
+            else
+                SrvDataHub_Monitor.data.baro_init_state = false;
 
-        if(SrvDataHub_Monitor.data.tof_enabled)
-        {
-            SrvDataHub_Monitor.data.tof_init_state = false;
+            if(SrvDataHub_Monitor.data.tof_enabled)
+            {
+                SrvDataHub_Monitor.data.tof_init_state = DataPipe_DataObj(Sensor_Init).bit.tof;
+            }
+            else
+                SrvDataHub_Monitor.data.tof_init_state = false;
         }
-        else
-            SrvDataHub_Monitor.data.tof_init_state = ;
     }
 }
 

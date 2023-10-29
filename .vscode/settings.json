@@ -140,7 +140,8 @@
                 "limits": "c",
                 "nmea_frame_decode.h": "c",
                 "semaphore.h": "c",
-                "semphr.h": "c"
+                "semphr.h": "c",
+                "srv_sensormonitor.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

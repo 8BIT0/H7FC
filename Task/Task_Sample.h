@@ -8,7 +8,7 @@
 #include "imu_data.h"
 #include "Srv_SensorMonitor.h"
 
-void TaskSample_Init(uint32_t period, uint32_t sensor_enable);
+void TaskSample_Init(uint32_t period);
 void TaskSample_Core(void const *arg);
 
 #endif
