@@ -202,7 +202,7 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
             SrvIMU.error_proc && 
             ((obj->statistic_imu->start_time == 0) || \
              (sample_interval_ms && \
-             (obj->statistic_imu->nxt_sample_time >= cur_time))))
+             (cur_time >= obj->statistic_imu->nxt_sample_time))))
         {
             if(SrvIMU.sample(SrvIMU_FusModule))
             {

@@ -47,6 +47,7 @@ typedef struct
     uint32_t end_rt;
     uint32_t err_interval_cnt;
     uint64_t push_cnt;
+    uint32_t pipe_cnt;
 }LogSummary_TypeDef;
 
 /* internal variable */
@@ -84,11 +85,12 @@ static Log_Statistics_TypeDef Log_Statistics;
 
 static LogSummary_TypeDef LogIMU_Summary = {
     .max_rt_diff = 0,
-    .period = 500,
+    .period = 1,
     .err_interval_cnt = 0,
     .push_cnt = 0,
     .start_rt = 0,
     .end_rt = 0,
+    .pipe_cnt = 0,
 };
 
 /* internal function */
@@ -116,7 +118,7 @@ void TaskLog_Init(uint32_t period)
 
         if(LogFolder_Cluster)
         {
-            LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M(8));
+            LogFile_Obj = Disk.create_file(&FATFS_Obj, IMU_LOG_FILE, LogFolder_Cluster, MAX_FILE_SIZE_M(2));
             Disk.open(&FATFS_Obj, LOG_FOLDER, IMU_LOG_FILE, &LogFile_Obj);
 
             /* create cache queue for IMU Data */
@@ -241,14 +243,16 @@ static uint32_t out_queue_size = 0;
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
     uint64_t imu_pipe_rt_diff = 0;
-    static uint64_t lst_imu_pipe_rt = 0;
     LogIMUDataUnion_TypeDef Log_Buf;
+    static uint32_t lst_imu_pipe_rt = 0;
 
     if ((obj == NULL) || !LogFile_Ready)
         return;
 
     if (LogObj_Set_Reg._sec.IMU_Sec && (obj == &IMU_Log_DataPipe) && LogObj_Enable_Reg._sec.IMU_Sec)
     {
+        LogIMU_Summary.pipe_cnt ++;
+
         if(!LogObj_Logging_Reg._sec.IMU_Sec && enable_compess && 
             Queue.size(IMUData_Queue) >= MAX_FILE_SIZE_K(1))
         {
@@ -295,6 +299,9 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 
                 imu_pipe_rt_diff = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp - lst_imu_pipe_rt;
 
+                if(LogIMU_Summary.max_rt_diff == 0)
+                    LogIMU_Summary.max_rt_diff = imu_pipe_rt_diff;
+
                 if(imu_pipe_rt_diff > LogIMU_Summary.period)
                 {
                     if(imu_pipe_rt_diff > LogIMU_Summary.max_rt_diff)
@@ -304,7 +311,6 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
                 }
 
                 LogIMU_Summary.end_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;
-                lst_imu_pipe_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;
             }
         }
         else
