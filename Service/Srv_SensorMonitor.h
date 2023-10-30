@@ -82,7 +82,13 @@ typedef struct
     SrvSensorMonitor_GenReg_TypeDef enabled_reg;        /* pipe this vriable to datahub after srv_sensormonitor init */
     SrvSensorMonitor_GenReg_TypeDef init_state_reg;     /* pipe thie vriable to datahub after srv_sensormonitor init */
     SrvSensorMonitor_SampleFreqReg_TypeDef freq_reg;
-    
+
+    SrvSensorMonitor_Statistic_TypeDef *statistic_imu;
+    SrvSensorMonitor_Statistic_TypeDef *statistic_mag;
+    SrvSensorMonitor_Statistic_TypeDef *statistic_baro;
+    SrvSensorMonitor_Statistic_TypeDef *statistic_gnss;
+    SrvSensorMonitor_Statistic_TypeDef *statistic_tof;
+
     SrvSensorMonitor_Statistic_TypeDef *statistic_list;
  }SrvSensorMonitorObj_TypeDef;
 

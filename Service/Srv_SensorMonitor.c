@@ -8,11 +8,8 @@
 #define SrvSensorMonitor_GetSampleInterval(period) (1000 / period)
 
 /* internal vriable */
-SrvSensorMonitor_Statistic_TypeDef *statistic_imu  = NULL;
-SrvSensorMonitor_Statistic_TypeDef *statistic_mag  = NULL;
-SrvSensorMonitor_Statistic_TypeDef *statistic_baro = NULL;
-SrvSensorMonitor_Statistic_TypeDef *statistic_gnss = NULL;
-SrvSensorMonitor_Statistic_TypeDef *statistic_tof  = NULL;
+bool statistic_timer_init = false;
+BspTimerTickObj_TypeDef statistic_timer_obj;
 
 /* internal function */
 static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);
@@ -40,6 +37,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 
     if(obj)
     {
+        memset(&statistic_timer_obj, 0, sizeof(BspTimerTickObj_TypeDef));
         enable_sensor_num = Get_OnSet_Bit_Num(obj->enabled_reg.val);
         
         obj->statistic_list = SrvOsCommon.malloc(enable_sensor_num * sizeof(SrvSensorMonitor_Statistic_TypeDef));
@@ -53,8 +51,8 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         if(obj->enabled_reg.bit.imu && SrvSensorMonitor_IMU_Init())
         {
             obj->init_state_reg.bit.imu = true;
-            statistic_imu = &obj->statistic_list[0];
-            statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
+            obj->statistic_imu = &obj->statistic_list[0];
+            obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
         }
         else
         {
@@ -67,8 +65,8 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         if(obj->enabled_reg.bit.mag && SrvSensorMonitor_Mag_Init())
         {
             obj->init_state_reg.bit.mag = true;
-            statistic_mag = &obj->statistic_list[1];
-            statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
+            obj->statistic_mag = &obj->statistic_list[1];
+            obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
         }
         else
         {
@@ -78,8 +76,8 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         if(obj->enabled_reg.bit.baro && SrvSensorMonitor_Baro_Init())
         {
             obj->init_state_reg.bit.baro = true;
-            statistic_baro = &obj->statistic_list[2];
-            statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
+            obj->statistic_baro = &obj->statistic_list[2];
+            obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
         }
         else
         {
@@ -89,8 +87,8 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         if(obj->enabled_reg.bit.tof && SrvSensorMonitor_Tof_Init())
         {
             obj->init_state_reg.bit.tof = true;
-            statistic_tof = &obj->statistic_list[3];
-            statistic_tof->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.tof);
+            obj->statistic_tof = &obj->statistic_list[3];
+            obj->statistic_tof->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.tof);
         }
         else
         {
@@ -100,8 +98,8 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         if(obj->enabled_reg.bit.gnss && SrvSensorMonitor_Gnss_Init())
         {
             obj->init_state_reg.bit.gnss = true;
-            statistic_gnss = &obj->statistic_list[4];
-            statistic_gnss->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.gnss);
+            obj->statistic_gnss = &obj->statistic_list[4];
+            obj->statistic_gnss->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.gnss);
         }
         else
         {
@@ -171,6 +169,17 @@ static uint32_t SrvSensorMonitor_Get_InitState(SrvSensorMonitorObj_TypeDef *obj)
     return 0;
 }
 
+/******************************************* Statistic Timer Section **********************************/
+static bool SrvSensorMonitor_Timer_Init(void)
+{
+    if(!statistic_timer_init)
+    {
+        // BspTimer_Tick.init();
+
+        statistic_timer_init = true;
+    }
+}
+
 /******************************************* IMU Section **********************************************/
 static bool SrvSensorMonitor_IMU_Init(void)
 {
@@ -185,24 +194,24 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     uint32_t sample_interval_ms = 0;
     uint32_t cur_time = SrvOsCommon.get_os_ms();
 
-    if(obj && statistic_imu && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && statistic_imu->set_period)
+    if(obj && obj->statistic_imu && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && obj->statistic_imu->set_period)
     {
-        sample_interval_ms = SrvSensorMonitor_GetSampleInterval(statistic_imu->set_period);
+        sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_imu->set_period);
         
         if( SrvIMU.sample && \
             SrvIMU.error_proc && 
-            ((statistic_imu->start_time == 0) || \
+            ((obj->statistic_imu->start_time == 0) || \
              (sample_interval_ms && \
-             (statistic_imu->nxt_sample_time >= cur_time))))
+             (obj->statistic_imu->nxt_sample_time >= cur_time))))
         {
             if(SrvIMU.sample(SrvIMU_FusModule))
             {
                 SrvIMU.error_proc();
 
-                statistic_imu->sample_cnt ++;
-                statistic_imu->nxt_sample_time = cur_time + sample_interval_ms;
-                if(statistic_imu->start_time == 0)
-                    statistic_imu->start_time = cur_time;
+                obj->statistic_imu->sample_cnt ++;
+                obj->statistic_imu->nxt_sample_time = cur_time + sample_interval_ms;
+                if(obj->statistic_imu->start_time == 0)
+                    obj->statistic_imu->start_time = cur_time;
 
                 return true;
             }
@@ -255,6 +264,7 @@ static uint32_t SrvSensorMonitor_Get_MagData(SrvSensorMonitorObj_TypeDef *obj)
 {
     return 0;
 }
+
 /******************************************* Baro Section *********************************************/
 /* still in developing */
 static bool SrvSensorMonitor_Baro_Init(void)
