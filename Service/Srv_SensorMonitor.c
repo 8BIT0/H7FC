@@ -72,9 +72,6 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
         else
         {
-            if(obj->enabled_reg.bit.mag)
-                obj->init_state_reg.bit.mag = false;
-
             obj->init_state_reg.bit.mag = false;
         }
 
@@ -86,9 +83,6 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
         else
         {
-            if(obj->enabled_reg.bit.baro)
-                obj->init_state_reg.bit.baro = false;
-            
             obj->init_state_reg.bit.baro = false;
         }
 
@@ -100,9 +94,6 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
         else
         {
-            if(obj->enabled_reg.bit.tof)
-                obj->init_state_reg.bit.tof = false;
-
             obj->init_state_reg.bit.tof = false;
         }
 
@@ -114,9 +105,6 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
         else
         {
-            if(obj->enabled_reg.bit.gnss)
-                obj->init_state_reg.bit.tof = false;
-
             obj->init_state_reg.bit.gnss = false;
         }
 
@@ -207,14 +195,17 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
              (sample_interval_ms && \
              (statistic_imu->nxt_sample_time >= cur_time))))
         {
-            SrvIMU.sample(SrvIMU_FusModule);
-            SrvIMU.error_proc();
+            if(SrvIMU.sample(SrvIMU_FusModule))
+            {
+                SrvIMU.error_proc();
 
-            statistic_imu->nxt_sample_time = cur_time + sample_interval_ms;
-            if(statistic_imu->start_time == 0)
-                statistic_imu->start_time = cur_time;
+                statistic_imu->sample_cnt ++;
+                statistic_imu->nxt_sample_time = cur_time + sample_interval_ms;
+                if(statistic_imu->start_time == 0)
+                    statistic_imu->start_time = cur_time;
 
-            return true;
+                return true;
+            }
         }
     }
 
