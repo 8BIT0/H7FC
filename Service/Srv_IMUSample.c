@@ -557,7 +557,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                                 SrvOsCommon.get_os_ms);
 
             DevMPU6000.config(&MPU6000Obj,
-                               MPU6000_SampleRate_4K,
+                               MPU6000_SampleRate_2K,
                                MPU6000_Acc_16G,
                                MPU6000_Gyr_2000DPS);
 
@@ -585,7 +585,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                                  SrvOsCommon.get_os_ms);
 
             DevICM20602.config(&ICM20602Obj,
-                                ICM20602_SampleRate_4K,
+                                ICM20602_SampleRate_2K,
                                 ICM20602_Acc_16G,
                                 ICM20602_Gyr_2000DPS);
 
@@ -613,7 +613,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                                  SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42688PObj,
-                                ICM426xx_SampleRate_4K,
+                                ICM426xx_SampleRate_2K,
                                 ICM426xx_Acc_16G,
                                 ICM426xx_Gyr_2000DPS);
 
@@ -641,7 +641,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                                  SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42605Obj,
-                                ICM426xx_SampleRate_4K,
+                                ICM426xx_SampleRate_2K,
                                 ICM426xx_Acc_16G,
                                 ICM426xx_Gyr_2000DPS);
 
@@ -1170,12 +1170,12 @@ static void SrvIMU_SecIMU_ExtiCallback(void)
 /*************************************************************** Error Process Callback *******************************************************************************/
 static void SrvIMU_PriDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
-
+    ErrorLog.add_desc("IMU Pri Filter Init Error\r\n");
 }
 
 static void SrvIMU_SecDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
-
+    ErrorLog.add_desc("IMU Sec Filter Init Error\r\n");
 }
 
 static void SrvIMU_Dev_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
