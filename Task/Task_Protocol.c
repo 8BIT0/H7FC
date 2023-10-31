@@ -30,6 +30,7 @@ SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RawIMU;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_ScaledIMU;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RcChannel;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_MotoChannel;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_Attitude;
 
 static uint8_t USB_MavShareBuf[1024];
 
@@ -69,6 +70,7 @@ bool TaskProtocol_Init(uint32_t period)
         memset(&TaskProto_MAV_ScaledIMU, 0, sizeof(TaskProto_MAV_ScaledIMU));
         memset(&TaskProto_MAV_RcChannel, 0, sizeof(TaskProto_MAV_RcChannel));
         memset(&TaskProto_MAV_MotoChannel, 0, sizeof(TaskProto_MAV_MotoChannel));
+        memset(&TaskProto_MAV_Attitude, 0, sizeof(TaskProto_MAV_Attitude));
 
         // period 10Ms 100Hz
         PckInfo.system_id = MAV_SysID_Drone;
@@ -97,6 +99,13 @@ bool TaskProtocol_Init(uint32_t period)
         PckInfo.chan = 0;
         SrvComProto.mav_msg_obj_init(&TaskProto_MAV_MotoChannel, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_MotoChannel, true);
+
+        // period 10Ms 100Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Attitude;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Attitude, true);
     }
     else if (SrvComProto.get_msg_type() == SrvComProto_Type_Cus)
     {

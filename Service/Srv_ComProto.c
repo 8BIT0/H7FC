@@ -13,6 +13,7 @@ SrvComProto_Monitor_TypeDef SrvComProto_monitor = {
 
 /* internal function */
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck);
+static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
 
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
@@ -79,6 +80,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     switch ((uint8_t)pck_info.component_id)
     {
     case MAV_CompoID_Attitude:
+        msg->pack_callback = SrvComProto_MavMsg_Attitude;
         break;
 
     case MAV_CompoID_RC_Channel:
@@ -242,4 +244,9 @@ static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck)
                                             i_acc_x, i_acc_y, i_acc_z,
                                             i_gyr_x, i_gyr_y, i_gyr_z,
                                             0, 0, 0);
+}
+
+static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    // return mavlink_msg_attitude_pack_chan();
 }
