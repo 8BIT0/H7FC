@@ -14,3 +14,6 @@ DataPipeObj_TypeDef IMU_hub_DataPipe = {.enable = true};
 
 DataPipeObj_TypeDef Actuator_cal_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Actuator_hub_DataPipe = {.enable = true};
+
+DataPipeObj_TypeDef Attitude_cmp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Attitude_hub_DataPipe = {.enable = true};

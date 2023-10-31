@@ -99,4 +99,7 @@ extern DataPipeObj_TypeDef Receiver_hub_DataPipe;
 
 extern DataPipeObj_TypeDef Actuator_cal_DataPipe;
 extern DataPipeObj_TypeDef Actuator_hub_DataPipe;
+
+extern DataPipeObj_TypeDef Attitude_cmp_DataPipe;
+extern DataPipeObj_TypeDef Attitude_hub_DataPipe;
 #endif
