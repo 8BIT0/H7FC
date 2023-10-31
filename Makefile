@@ -37,6 +37,11 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 main.c \
+Algorithm/Navi_Dep/MadgwickAHRS.c \
+Algorithm/Filter_Dep/filter.c \
+Algorithm/Filter_Dep/filter_param.c \
+Algorithm/Control_Dep/adrc.c \
+Algorithm/Control_Dep/pid.c \
 debug/debug_util.c \
 Task/Task_Navi.c \
 Task/Task_Protocol.c \
@@ -99,9 +104,6 @@ System/shell/shell_companion.c \
 System/shell/shell_ext.c \
 System/shell/shell_port.c \
 System/shell/shell.c \
-Algorithm/Filter_Dep/filter.c \
-Algorithm/Filter_Dep/filter_param.c \
-Algorithm/Control_Dep/adrc.c \
 USB/USB_DEVICE/App/usb_device.c \
 USB/USB_DEVICE/App/usbd_desc.c \
 USB/USB_DEVICE/App/usbd_cdc_if.c \
@@ -210,7 +212,9 @@ C_INCLUDES =  \
 -ISystem/diskio \
 -Idebug \
 -IMAVLink \
--IAlgorithm \
+-IAlgorithm/Navi_Dep \
+-IAlgorithm/Filter_Dep \
+-IAlgorithm/Control_Dep \
 -IMAVLink/common \
 -IMAVLink/minimal \
 -IMAVLink/standard \
