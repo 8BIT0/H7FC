@@ -179,7 +179,7 @@ static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
         u_item = filter_obj->p_u_list_header;
         e_item = filter_obj->p_e_list_header;
 
-        for (uint8_t i = 0; i < filter_obj->order + 1; i++)
+        for (uint8_t i = 0; i <= filter_obj->order; i++)
         {
             /* comput E additive */
             if (e_item)
