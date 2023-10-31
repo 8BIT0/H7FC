@@ -11,12 +11,14 @@ DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, PtlActuator_Data);
 DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Enable);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
+DataPipe_CreateDataObj(IMUAtt_TypeDef, Hub_Attitude);
 
 /* internal function */
 static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_IMU_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
+static void SrvDataHub_Attitude_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 
 /* external function */
 static void SrvDataHub_Init(void);
@@ -86,9 +88,27 @@ static void SrvDataHub_Init(void)
     Actuator_hub_DataPipe.data_size = DataPipe_DataSize(PtlActuator_Data);
     Actuator_hub_DataPipe.trans_finish_cb = SrvDataHub_Actuator_DataPipe_Finish_Callback;
     DataPipe_Enable(&Actuator_hub_DataPipe);
+    
+    memset(DataPipe_DataObjAddr(Hub_Attitude), 0, DataPipe_DataSize(Hub_Attitude));
+    Attitude_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Attitude);
+    Attitude_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Attitude);
+    Attitude_hub_DataPipe.trans_finish_cb = SrvDataHub_Attitude_DataPipe_Finish_Callback;
+    DataPipe_Enable(&Attitude_hub_DataPipe);
 
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
     SrvDataHub_Monitor.init_state = true;
+}
+
+static void SrvDataHub_Attitude_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
+{
+    if(obj == &Attitude_hub_DataPipe)
+    {
+        SrvDataHub_Monitor.data.att_update_time = DataPipe_DataObj(Hub_Attitude).time_stamp;
+        SrvDataHub_Monitor.data.att_pitch = DataPipe_DataObj(Hub_Attitude).pitch;
+        SrvDataHub_Monitor.data.att_roll = DataPipe_DataObj(Hub_Attitude).roll;
+        SrvDataHub_Monitor.data.att_yaw = DataPipe_DataObj(Hub_Attitude).yaw;
+        SrvDataHub_Monitor.data.att_error_code = DataPipe_DataObj(Hub_Attitude).err_code;
+    }
 }
 
 static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)

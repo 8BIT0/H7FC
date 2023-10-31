@@ -11,25 +11,15 @@
 uint32_t TaskNavi_Period = 0;
 
 /* data structure definition */
-typedef struct
-{
-    float yaw;
-    float pitch;
-    float roll;
-}TaskNavi_Attitude_TypeDef;
-/* data structure definition */
-
-static TaskNavi_Attitude_TypeDef Attitude;
+DataPipe_CreateDataObj(IMUAtt_TypeDef, Navi_Attitude);
 
 void TaskNavi_Init(uint32_t period)
 {
-    memset(&Attitude, 0, sizeof(Attitude));
-
     /* init DataPipe */
     memset(&Attitude_cmp_DataPipe, 0, sizeof(Attitude_cmp_DataPipe));
-    Attitude_cmp_DataPipe.data_addr = (uint32_t)&Attitude;
-    Attitude_cmp_DataPipe.data_size = sizeof(Attitude);
-    Attitude_cmp_DataPipe.trans_finish_cb = ;
+    memset(DataPipe_DataObjAddr(Navi_Attitude), 0, sizeof(DataPipe_DataObj(Navi_Attitude)));
+    Attitude_cmp_DataPipe.data_addr = DataPipe_DataObjAddr(Navi_Attitude);
+    Attitude_cmp_DataPipe.data_size = DataPipe_DataSize(Navi_Attitude);
     DataPipe_Enable(&Attitude_cmp_DataPipe);
     
     TaskNavi_Period = period;
