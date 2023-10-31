@@ -103,8 +103,8 @@ bool TaskProtocol_Init(uint32_t period)
         // period 10Ms 100Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Attitude;
-        PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&, PckInfo, 10);
+      PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Attitude, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Attitude, true);
     }
     else if (SrvComProto.get_msg_type() == SrvComProto_Type_Cus)

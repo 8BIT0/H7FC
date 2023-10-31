@@ -30,15 +30,16 @@ void TaskNavi_Core(void const *arg)
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     bool imu_state = false;
     bool mag_state = false;
-    uint32_t IMU_TimeStamp = 0;
+    uint32_t Org_IMU_TimeStamp = 0;
+    uint32_t Flt_IMU_TimeStamp = 0;
     uint32_t MAG_TimeStamp = 0;
     float Acc_Scale = 0.0f;
     float Gyr_Scale = 0.0f;
     float Mag_Scale = 0.0f;
-    float Acc[Axis_Sum] = {0.0f};
-    float Gyr[Axis_Sum] = {0.0f};
-    float Mag[Axis_Sum] = {0.0f};
-    float IMU_Tempra = 0.0f;
+    float Flt_Acc[Axis_Sum] = {0.0f};
+    float Flt_Gyr[Axis_Sum] = {0.0f};
+    float Flt_Mag[Axis_Sum] = {0.0f};
+    float Flt_IMU_Tempra = 0.0f;
     uint8_t IMU_Err = 0;
     uint8_t MAG_Err = 0;
 
@@ -51,10 +52,10 @@ void TaskNavi_Core(void const *arg)
     {
         if(imu_state)
         {
-            SrvDataHub.get_scaled_imu(&IMU_TimeStamp, &Acc_Scale, &Gyr_Scale, \
-                                      &Acc[Axis_X], &Acc[Axis_Y], &Acc[Axis_Z], \
-                                      &Gyr[Axis_X], &Gyr[Axis_Y], &Gyr[Axis_Z], \
-                                      &IMU_Tempra, &IMU_Err);
+            SrvDataHub.get_scaled_imu(&Flt_IMU_TimeStamp, &Acc_Scale, &Gyr_Scale, \
+                                      &Flt_Acc[Axis_X], &Flt_Acc[Axis_Y], &Flt_Acc[Axis_Z], \
+                                      &Flt_Gyr[Axis_X], &Flt_Gyr[Axis_Y], &Flt_Gyr[Axis_Z], \
+                                      &Flt_IMU_Tempra, &IMU_Err);
 
             Attitude_Update = true;                                
         }
@@ -62,20 +63,20 @@ void TaskNavi_Core(void const *arg)
         if(mag_state)
         {
             SrvDataHub.get_scaled_mag(&MAG_TimeStamp, &Mag_Scale, \
-                                      &Mag[Axis_X], &Mag[Axis_Y], &Mag[Axis_Z], \
+                                      &Flt_Mag[Axis_X], &Flt_Mag[Axis_Y], &Flt_Mag[Axis_Z], \
                                       &MAG_Err);
         }
         else
         {
-            Mag[Axis_X] = 0.0f;
-            Mag[Axis_Y] = 0.0f;
-            Mag[Axis_Z] = 0.0f;
+            Flt_Mag[Axis_X] = 0.0f;
+            Flt_Mag[Axis_Y] = 0.0f;
+            Flt_Mag[Axis_Z] = 0.0f;
         }
         
         if(Attitude_Update)
         {
             /* update Attitude */
-            MadgwickAHRSupdate(Gyr[Axis_X], Gyr[Axis_Y], Gyr[Axis_Z], Acc[Axis_X], Acc[Axis_Y], Acc[Axis_Z], Mag[Axis_X], Mag[Axis_Y], Mag[Axis_Z]);
+            // MadgwickAHRSupdate(Gyr[Axis_X], Gyr[Axis_Y], Gyr[Axis_Z], Acc[Axis_X], Acc[Axis_Y], Acc[Axis_Z], Mag[Axis_X], Mag[Axis_Y], Mag[Axis_Z]);
 
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_cmp_DataPipe, &Attitude_hub_DataPipe);

@@ -15,27 +15,32 @@ typedef union
 {
     struct
     {
-        uint8_t raw_imu : 1;
-        uint8_t scaled_imu : 1;
 
-        uint8_t raw_mag : 1;
-        uint8_t scaled_mag : 1;
 
-        uint8_t raw_baro : 1;
-        uint8_t scaled_baro : 1;
+        uint32_t raw_imu : 1;
+        uint32_t scaled_imu : 1;
 
-        uint8_t raw_sonar : 1;
-        uint8_t scaled_sonar : 1;
+        uint32_t raw_mag : 1;
+        uint32_t scaled_mag : 1;
 
-        uint8_t raw_tof : 1;
-        uint8_t scaled_tof : 1;
+        uint32_t raw_baro : 1;
+        uint32_t scaled_baro : 1;
 
-        uint8_t rc : 1;
+        uint32_t raw_sonar : 1;
+        uint32_t scaled_sonar : 1;
 
-        uint8_t actuator : 1;
+        uint32_t raw_tof : 1;
+        uint32_t scaled_tof : 1;
+
+        uint32_t rc : 1;
+
+        uint32_t actuator : 1;
+
+        uint32_t mag_init : 1;
+        uint32_t imu_init : 1;
     } bit;
 
-    uint8_t val;
+    uint32_t val;
 } SrvDataHub_UpdateReg_TypeDef;
 
 typedef struct

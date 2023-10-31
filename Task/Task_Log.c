@@ -148,6 +148,7 @@ void TaskLog_Init(uint32_t period)
     TaskLog_Period = period;
 }
 
+uint32_t task_cnt = 0;
 void TaskLog_Core(void const *arg)
 {
     uint8_t *compess_buf_ptr = NULL;
@@ -163,6 +164,7 @@ void TaskLog_Core(void const *arg)
 
         if(LogFile_Ready && enable_compess)
         {
+            task_cnt ++;
             compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + sizeof(uint32_t) + sizeof(uint8_t));
             cur_compess_size = 0;
 
@@ -213,7 +215,13 @@ void TaskLog_Core(void const *arg)
                             {
                                 Log_Statistics.write_file_cnt ++;
                                 Log_Statistics.log_byte_sum += 512;
+                                /* bug */
                                 LogCompess_Data.compess_size -= 512;
+
+                                if(LogCompess_Data.compess_size >= sizeof(LogCompess_Data.buf))
+                                {
+                                    __NOP();
+                                }
 
                                 for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
                                 {

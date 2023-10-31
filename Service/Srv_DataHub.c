@@ -33,6 +33,8 @@ static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t
 static bool SrvDataHub_Get_GimbalPercent(uint16_t *gimbal);
 static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir);
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
+static bool SrvDataHub_Get_IMU_InitState(bool *state);
+static bool SrvDataHub_Get_Mag_InitState(bool *state);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -48,6 +50,8 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_gimbal_percent = SrvDataHub_Get_GimbalPercent,
     .get_moto = SrvDataHub_Get_MotoChannel,
     .get_servo = SrvDataHub_Get_ServoChannel,
+    .get_imu_init_state = SrvDataHub_Get_IMU_InitState,
+    .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
 };
 
 static void SrvDataHub_Init(void)
@@ -187,6 +191,15 @@ static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef 
 {
     if((obj == &SensorInitState_hub_DataPipe) || (obj == &SensorEnableState_hub_DataPipe))
     {
+        SrvDataHub_Monitor.update_reg.bit.imu_init = true;
+        SrvDataHub_Monitor.update_reg.bit.mag_init = true;
+
+        if (SrvDataHub_Monitor.inuse_reg.bit.imu_init)
+            SrvDataHub_Monitor.inuse_reg.bit.imu_init = false;
+
+        if(SrvDataHub_Monitor.inuse_reg.bit.mag_init)
+            SrvDataHub_Monitor.inuse_reg.bit.mag_init = false;
+
         if(obj == &SensorInitState_hub_DataPipe)
         {
             SrvDataHub_Monitor.data.mag_enabled = DataPipe_DataObj(Sensor_Enable).bit.mag;
@@ -219,6 +232,9 @@ static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef 
             else
                 SrvDataHub_Monitor.data.tof_init_state = false;
         }
+
+        SrvDataHub_Monitor.update_reg.bit.imu_init = false;
+        SrvDataHub_Monitor.update_reg.bit.mag_init = false;
     }
 }
 
@@ -497,6 +513,44 @@ reupdate_moto_channel:
     SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
 
     return true;
+}
+
+static bool SrvDataHub_Get_IMU_InitState(bool *state)
+{
+reupdate_imu_state:
+    SrvDataHub_Monitor.inuse_reg.bit.imu_init = true;
+
+    if(state)
+    {
+        *state = SrvDataHub_Monitor.data.imu_init_state;
+        return true;
+    }
+
+    if(!SrvDataHub_Monitor.inuse_reg.bit.imu_init)
+        goto reupdate_imu_state;
+
+    SrvDataHub_Monitor.inuse_reg.bit.imu_init = false;
+
+    return false;
+}
+
+static bool SrvDataHub_Get_Mag_InitState(bool *state)
+{
+reupdate_mag_state:
+    SrvDataHub_Monitor.inuse_reg.bit.mag_init = true;
+
+    if(state)
+    {
+        *state = SrvDataHub_Monitor.data.mag_init_state;
+        return true;
+    }
+
+    if(!SrvDataHub_Monitor.inuse_reg.bit.mag_init)
+        goto reupdate_mag_state;
+
+    SrvDataHub_Monitor.inuse_reg.bit.mag_init = false;
+
+    return false;
 }
 
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir)
