@@ -189,7 +189,7 @@ static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
             }
 
             /* comput U additive */
-            if (i <= filter_obj->order && u_item)
+            if (i < filter_obj->order && u_item)
             {
                 U_Additive += filter_obj->u_para_buf[i] * (*(float *)(u_item->data));
                 u_item = u_item->nxt;
