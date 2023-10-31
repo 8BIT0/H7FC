@@ -5,6 +5,7 @@
 #include "Srv_OsCommon.h"
 #include "Srv_DataHub.h"
 #include "DataPipe.h"
+#include "MadgwickAHRS.h"
 
 /* internal vriable */
 uint32_t TaskNavi_Period = 0;
