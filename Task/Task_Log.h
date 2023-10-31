@@ -66,6 +66,8 @@ typedef struct
     uint32_t write_file_cnt;
     uint32_t log_byte_sum;
 
+    uint32_t uncompress_byte_sum;
+
     Log_halt_Type halt_type;
 }Log_Statistics_TypeDef;
 

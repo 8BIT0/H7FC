@@ -238,13 +238,10 @@ void TaskLog_Core(void const *arg)
     }
 }
 
-static uint32_t in_queue_size = 0;
-static uint32_t out_queue_size = 0;
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
-    uint64_t imu_pipe_rt_diff = 0;
+    uint32_t imu_pipe_rt_diff = 0;
     LogIMUDataUnion_TypeDef Log_Buf;
-    static uint32_t lst_imu_pipe_rt = 0;
 
     if ((obj == NULL) || !LogFile_Ready)
         return;
@@ -258,12 +255,12 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         {
             Log_Statistics.queue_pop_cnt ++;
 
-            in_queue_size = Queue.size(IMUData_Queue);
-            QueueIMU_PopSize = (Queue.size(IMUData_Queue) / (LOG_HEADER_SIZE + sizeof(Log_Buf))) * (LOG_HEADER_SIZE + sizeof(Log_Buf));
+            QueueIMU_PopSize = Queue.size(IMUData_Queue) / (LOG_HEADER_SIZE + sizeof(Log_Buf));
+            QueueIMU_PopSize *= LOG_HEADER_SIZE + sizeof(Log_Buf);
 
             /* queue pop count should equal to compess count */
-            Queue.pop(&IMUData_Queue, LogCache_L2_Buf, Queue.size(IMUData_Queue));
-            out_queue_size = Queue.size(IMUData_Queue);
+            Queue.pop(&IMUData_Queue, LogCache_L2_Buf, QueueIMU_PopSize);
+            Log_Statistics.uncompress_byte_sum += QueueIMU_PopSize;
         }
 
         memset(Log_Buf.data.const_res, 0, sizeof(Log_Buf.data.const_res));
@@ -297,17 +294,17 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 
                 LogIMU_Summary.push_cnt ++;
 
-                imu_pipe_rt_diff = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp - lst_imu_pipe_rt;
+                imu_pipe_rt_diff = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp - LogIMU_Summary.end_rt;
 
-                if(LogIMU_Summary.max_rt_diff == 0)
-                    LogIMU_Summary.max_rt_diff = imu_pipe_rt_diff;
-
-                if(imu_pipe_rt_diff > LogIMU_Summary.period)
+                if(LogIMU_Summary.end_rt)
                 {
-                    if(imu_pipe_rt_diff > LogIMU_Summary.max_rt_diff)
-                        LogIMU_Summary.max_rt_diff = imu_pipe_rt_diff;
-
-                    LogIMU_Summary.err_interval_cnt ++;
+                    if(imu_pipe_rt_diff > LogIMU_Summary.period)
+                    {
+                        if(imu_pipe_rt_diff > LogIMU_Summary.max_rt_diff)
+                            LogIMU_Summary.max_rt_diff = imu_pipe_rt_diff;
+                            
+                        LogIMU_Summary.err_interval_cnt ++;
+                    }
                 }
 
                 LogIMU_Summary.end_rt = ((SrvIMU_UnionData_TypeDef *)(IMU_Log_DataPipe.data_addr))->data.time_stamp;
