@@ -74,8 +74,11 @@ void TaskNavi_Core(void const *arg)
         
         if(Attitude_Update)
         {
-            /* DataPipe Attitude Data to SrvDataHub */
+            /* update Attitude */
+            MadgwickAHRSupdate(Gyr[Axis_X], Gyr[Axis_Y], Gyr[Axis_Z], Acc[Axis_X], Acc[Axis_Y], Acc[Axis_Z], Mag[Axis_X], Mag[Axis_Y], Mag[Axis_Z]);
 
+            /* DataPipe Attitude Data to SrvDataHub */
+            DataPipe_SendTo(&Attitude_cmp_DataPipe, &Attitude_hub_DataPipe);
         }
 
         /* check imu data update freq on test */
