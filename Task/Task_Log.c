@@ -148,7 +148,6 @@ void TaskLog_Init(uint32_t period)
     TaskLog_Period = period;
 }
 
-uint32_t task_cnt = 0;
 void TaskLog_Core(void const *arg)
 {
     uint8_t *compess_buf_ptr = NULL;
@@ -156,6 +155,7 @@ void TaskLog_Core(void const *arg)
     uint16_t input_compess_size = 0;
     bool log_halt = false;
     int ret = 0;
+    uint32_t income_log_size = 0;
     uint32_t sys_time = SrvOsCommon.get_os_ms();
 
     while(1)
@@ -165,7 +165,6 @@ void TaskLog_Core(void const *arg)
 
         if(LogFile_Ready && enable_compess)
         {
-            task_cnt ++;
             compess_buf_ptr = LogCompess_Data.buf + (LogCompess_Data.compess_size + sizeof(uint32_t) + sizeof(uint8_t));
             cur_compess_size = 0;
 
@@ -202,11 +201,8 @@ void TaskLog_Core(void const *arg)
                         LogCompess_Data.compess_size ++;
                         LogObj_Logging_Reg._sec.IMU_Sec = false;
 
-                        /* test code */
-                        volatile uint32_t income_log_size = 0;
                         income_log_size = LogCompess_Data.compess_size;
-                        /* test code */
-                        while(LogCompess_Data.compess_size >= 512)
+                        while(income_log_size >= 512)
                         {
                             DebugPin.ctl(Debug_PB4, true);
 
@@ -236,8 +232,8 @@ void TaskLog_Core(void const *arg)
 
                             Log_Statistics.write_file_cnt ++;
                             Log_Statistics.log_byte_sum += 512;
-                            /* bug */
-                            LogCompess_Data.compess_size -= 512;
+                            income_log_size -= 512;
+                            LogCompess_Data.compess_size = income_log_size;
 
                             if(LogCompess_Data.compess_size >= sizeof(LogCompess_Data.buf))
                             {
