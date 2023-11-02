@@ -228,6 +228,7 @@ void TaskLog_Core(void const *arg)
                                     break;
                             }
 
+                            /* some error triggered or log finish */
                             if(log_halt)
                             {
                                 LogFile_Ready = false;
