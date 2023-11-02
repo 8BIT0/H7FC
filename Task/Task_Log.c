@@ -154,6 +154,8 @@ void TaskLog_Core(void const *arg)
     uint8_t *compess_buf_ptr = NULL;
     uint16_t cur_compess_size = 0;
     uint16_t input_compess_size = 0;
+    Disk_Write_State DiskWrite_State;
+    bool log_halt = false;
     int ret = 0;
     uint32_t sys_time = SrvOsCommon.get_os_ms();
 
@@ -201,34 +203,55 @@ void TaskLog_Core(void const *arg)
                         LogCompess_Data.compess_size ++;
                         LogObj_Logging_Reg._sec.IMU_Sec = false;
 
+                        /* test code */
+                        volatile uint32_t income_log_size = 0;
+                        income_log_size = LogCompess_Data.compess_size;
+                        /* test code */
                         while(LogCompess_Data.compess_size >= 512)
                         {
                             DebugPin.ctl(Debug_PB4, true);
-                            if(Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512) == Disk_Write_Finish)
+                            DiskWrite_State = Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512);
+
+                            switch((uint8_t)LogCompess_Data.compess_size)
+                            {
+                                case Disk_Write_Error:
+                                    log_halt = true;
+                                    Log_Statistics.halt_type = Log_DiskOprError_Halt;
+                                    break;
+
+                                case Disk_Write_Finish:
+                                    log_halt = true;
+                                    Log_Statistics.halt_type = Log_Finish_Halt;
+                                    break;
+                                
+                                default:
+                                    break;
+                            }
+
+                            if(log_halt)
                             {
                                 LogFile_Ready = false;
-                                Log_Statistics.halt_type = Log_Finish_Halt;
                                 DataPipe_Disable(&IMU_Log_DataPipe);
                                 break;
                             }
-                            else
+
+                            Log_Statistics.write_file_cnt ++;
+                            Log_Statistics.log_byte_sum += 512;
+                            /* bug */
+                            LogCompess_Data.compess_size -= 512;
+
+                            if(LogCompess_Data.compess_size >= sizeof(LogCompess_Data.buf))
                             {
-                                Log_Statistics.write_file_cnt ++;
-                                Log_Statistics.log_byte_sum += 512;
-                                /* bug */
-                                LogCompess_Data.compess_size -= 512;
-
-                                if(LogCompess_Data.compess_size >= sizeof(LogCompess_Data.buf))
-                                {
-                                    __NOP();
-                                }
-
-                                for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
-                                {
-                                    LogCompess_Data.buf[t] = LogCompess_Data.buf[t + 512];
-                                    LogCompess_Data.buf[t + 512] = 0;
-                                }
+                                /* check income log size here */
+                                __NOP();
                             }
+
+                            for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
+                            {
+                                LogCompess_Data.buf[t] = LogCompess_Data.buf[t + 512];
+                                LogCompess_Data.buf[t + 512] = 0;
+                            }
+                        
                             DebugPin.ctl(Debug_PB4, false);
                         }
                     }

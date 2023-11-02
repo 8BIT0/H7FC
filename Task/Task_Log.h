@@ -20,6 +20,7 @@ typedef enum
     Log_None_Halt = 0,
     Log_CompessFunc_Halt,
     Log_CompessSize_Halt,
+    Log_DiskOprError_Halt,
     Log_Finish_Halt,
 }Log_halt_Type;
 
