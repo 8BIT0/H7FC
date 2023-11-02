@@ -154,7 +154,6 @@ void TaskLog_Core(void const *arg)
     uint8_t *compess_buf_ptr = NULL;
     uint16_t cur_compess_size = 0;
     uint16_t input_compess_size = 0;
-    Disk_Write_State DiskWrite_State;
     bool log_halt = false;
     int ret = 0;
     uint32_t sys_time = SrvOsCommon.get_os_ms();
@@ -210,9 +209,8 @@ void TaskLog_Core(void const *arg)
                         while(LogCompess_Data.compess_size >= 512)
                         {
                             DebugPin.ctl(Debug_PB4, true);
-                            DiskWrite_State = Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512);
 
-                            switch((uint8_t)LogCompess_Data.compess_size)
+                            switch((uint8_t)Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512))
                             {
                                 case Disk_Write_Error:
                                     log_halt = true;
