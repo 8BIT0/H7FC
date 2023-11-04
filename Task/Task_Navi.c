@@ -36,6 +36,7 @@ void TaskNavi_Core(void const *arg)
     float Acc_Scale = 0.0f;
     float Gyr_Scale = 0.0f;
     float Mag_Scale = 0.0f;
+    IMUAtt_TypeDef attitude;
     float Flt_Acc[Axis_Sum] = {0.0f};
     float Flt_Gyr[Axis_Sum] = {0.0f};
     float Flt_Mag[Axis_Sum] = {0.0f};
@@ -47,7 +48,8 @@ void TaskNavi_Core(void const *arg)
     SrvDataHub.get_mag_init_state(&mag_state);
     
     bool Attitude_Update = false;
-
+    memset(&attitude, 0, sizeof(IMUAtt_TypeDef));
+    
     while(1)
     {
         if(imu_state)
@@ -57,7 +59,7 @@ void TaskNavi_Core(void const *arg)
                                       &Flt_Gyr[Axis_X], &Flt_Gyr[Axis_Y], &Flt_Gyr[Axis_Z], \
                                       &Flt_IMU_Tempra, &IMU_Err);
 
-            Attitude_Update = true;                                
+            Attitude_Update = true;
         }
         
         if(mag_state)
@@ -77,6 +79,12 @@ void TaskNavi_Core(void const *arg)
         {
             /* update Attitude */
             // MadgwickAHRSupdate(Gyr[Axis_X], Gyr[Axis_Y], Gyr[Axis_Z], Acc[Axis_X], Acc[Axis_Y], Acc[Axis_Z], Mag[Axis_X], Mag[Axis_Y], Mag[Axis_Z]);
+            if(MadgwickAHRS_Get_Attitude(&attitude.pitch, &attitude.roll, &attitude.yaw) && \
+               MadgwickAHRS_Get_Quraterion(&attitude.q0, &attitude.q1, &attitude.q2, &attitude.q3))
+            {
+                attitude.time_stamp = SrvOsCommon.get_os_ms();
+                DataPipe_DataObj(Navi_Attitude) = attitude;
+            }
 
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_cmp_DataPipe, &Attitude_hub_DataPipe);

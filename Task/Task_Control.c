@@ -45,19 +45,38 @@ void TaskControl_Core(void const *arg)
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     uint32_t imu_update_time = 0;
     uint32_t rc_update_time = 0;
+    uint32_t att_update_time = 0;
+    IMUAtt_TypeDef ctl_attitude;
     uint16_t rc_ch[32];
     uint16_t gimbal[4];
     uint8_t rc_channel_sum;
     uint8_t imu_err_code;
     uint8_t axis = Axis_X;
-    bool arm_state;
-    bool failsafe;
+    bool arm_state = true;
+    bool failsafe = false;
+    bool imu_init_state = false;
 
+    memset(&ctl_attitude, 0, sizeof(IMUAtt_TypeDef));
     while(1)
     {
         if (TaskControl_Monitor.init_state && !TaskControl_Monitor.control_abort)
         {
             TaskControl_Monitor.auto_control = true;
+            imu_init_state = false;
+
+            // get failsafe
+            SrvDataHub.get_arm_state(&arm_state);
+            SrvDataHub.get_failsafe(&failsafe);
+            SrvDataHub.get_gimbal_percent(gimbal);
+            
+            // get imu init state first
+            if(SrvDataHub.get_imu_init_state(&imu_init_state) || !imu_init_state)
+            {
+                failsafe = true;
+                arm_state = TELEMETRY_SET_ARM;
+                
+                goto lock_moto;
+            }
 
             // check imu filter gyro data update or not
             SrvDataHub.get_scaled_imu(&imu_update_time,
@@ -72,13 +91,19 @@ void TaskControl_Core(void const *arg)
                                     &TaskControl_Monitor.imu_tmpr,
                                     &imu_err_code);
 
+            // get attitude
+            SrvDataHub.get_attitude(&ctl_attitude.time_stamp, \
+                                    &ctl_attitude.pitch, \
+                                    &ctl_attitude.roll, \
+                                    &ctl_attitude.yaw, \
+                                    &ctl_attitude.q0, \
+                                    &ctl_attitude.q1, \
+                                    &ctl_attitude.q2, \
+                                    &ctl_attitude.q3, \);
+            att_update_time = ctl_attitude.time_stamp;
+            
             // get rc channel and other toggle signal
             SrvDataHub.get_rc(&rc_update_time, rc_ch, &rc_channel_sum);
-
-            // get failsafe
-            SrvDataHub.get_arm_state(&arm_state);
-            SrvDataHub.get_failsafe(&failsafe);
-            SrvDataHub.get_gimbal_percent(gimbal);
 
             if (imu_update_time)
             {
@@ -197,7 +222,6 @@ void TaskControl_Core(void const *arg)
                     TaskControl_Monitor.gyr_lst[axis] = TaskControl_Monitor.gyr[axis];
                 }
             }
-            return;
         }
 
 lock_moto:

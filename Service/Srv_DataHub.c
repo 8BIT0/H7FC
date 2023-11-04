@@ -35,12 +35,14 @@ static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint1
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
+static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
     .init = SrvDataHub_Init,
     .get_raw_imu = SrvDataHub_Get_Raw_IMU,
     .get_scaled_imu = SrvDataHub_Get_Scaled_IMU,
+    .get_attitude = SrvDataHub_Get_Attitude,
     .get_raw_mag = SrvDataHub_Get_Raw_Mag,
     .get_scaled_mag = SrvDataHub_Get_Scaled_Mag,
     .get_arm_state = SrvDataHub_Get_Arm,
@@ -107,11 +109,22 @@ static void SrvDataHub_Attitude_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
 {
     if(obj == &Attitude_hub_DataPipe)
     {
+        SrvDataHub_Monitor.update_reg.bit.attitude = true;
+
+        if(SrvDataHub_Monitor.inuse_reg.bit.attitude)
+            SrvDataHub_Monitor.inuse_reg.bit.attitude = false;
+
         SrvDataHub_Monitor.data.att_update_time = DataPipe_DataObj(Hub_Attitude).time_stamp;
         SrvDataHub_Monitor.data.att_pitch = DataPipe_DataObj(Hub_Attitude).pitch;
         SrvDataHub_Monitor.data.att_roll = DataPipe_DataObj(Hub_Attitude).roll;
         SrvDataHub_Monitor.data.att_yaw = DataPipe_DataObj(Hub_Attitude).yaw;
+        SrvDataHub_Monitor.data.att_q0 = DataPipe_DataObj(Hub_Attitude).q0;
+        SrvDataHub_Monitor.data.att_q1 = DataPipe_DataObj(Hub_Attitude).q1;
+        SrvDataHub_Monitor.data.att_q2 = DataPipe_DataObj(Hub_Attitude).q2;
+        SrvDataHub_Monitor.data.att_q3 = DataPipe_DataObj(Hub_Attitude).q3;
         SrvDataHub_Monitor.data.att_error_code = DataPipe_DataObj(Hub_Attitude).err_code;
+    
+        SrvDataHub_Monitor.update_reg.bit.attitude = false;
     }
 }
 
@@ -142,8 +155,9 @@ static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
         {
             SrvDataHub_Monitor.data.servo[servo_i] = DataPipe_DataObj(PtlActuator_Data).servo[servo_i];
         }
-    }
 
+        SrvDataHub_Monitor.update_reg.bit.actuator = false;
+    }
 }
 
 static void SrvDataHub_IMU_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
@@ -391,6 +405,37 @@ reupdate_scaled_mag:
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_mag)
         goto reupdate_scaled_mag;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3)
+{
+    if((time_stamp == NULL) || \
+       (pitch == NULL) || \
+       (roll == NULL) || \
+       (yaw == NULL) || \
+       (q0 == NULL) || \
+       (q1 == NULL) || \
+       (q2 == NULL) || \
+       (q3 == NULL))
+       return false;
+
+reupdate_attitude:
+    SrvDataHub_Monitor.inuse_reg.bit.attitude = true; 
+    
+    *time_stamp = SrvDataHub_Monitor.data.att_update_time;
+    *pitch = SrvDataHub_Monitor.data.att_pitch;
+    *roll = SrvDataHub_Monitor.data.att_roll;
+    *yaw = SrvDataHub_Monitor.data.att_yaw;
+
+    *q0 = SrvDataHub_Monitor.data.att_q0;
+    *q1 = SrvDataHub_Monitor.data.att_q1;
+    *q2 = SrvDataHub_Monitor.data.att_q2;
+    *q3 = SrvDataHub_Monitor.data.att_q3;
+
+    if(!SrvDataHub_Monitor.inuse_reg.bit.attitude)
+        goto reupdate_attitude;
 
     return true;
 }

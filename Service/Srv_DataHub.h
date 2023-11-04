@@ -35,6 +35,7 @@ typedef union
         uint32_t rc : 1;
 
         uint32_t actuator : 1;
+        uint32_t attitude : 1;
 
         uint32_t mag_init : 1;
         uint32_t imu_init : 1;
@@ -103,6 +104,10 @@ typedef struct
     float att_roll;
     float att_pitch;
     float att_yaw;
+    float att_q0;
+    float att_q1;
+    float att_q2;
+    float att_q3;
     uint8_t att_error_code;
 
     uint32_t rc_update_time;
@@ -172,6 +177,7 @@ typedef struct
     bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
+    bool (*get_attitude)(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
     bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cnt);
     bool (*get_gimbal_percent)(uint16_t *gimbal);
     bool (*get_arm_state)(bool *arm);

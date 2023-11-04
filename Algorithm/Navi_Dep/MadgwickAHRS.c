@@ -17,6 +17,7 @@
 
 #include "MadgwickAHRS.h"
 #include <math.h>
+#include <stdbool.h>
 
 //---------------------------------------------------------------------------------------------------
 // Definitions
@@ -220,6 +221,50 @@ float invSqrt(float x) {
 	y = *(float*)&i;
 	y = y * (1.5f - (halfx * y * y));
 	return y;
+}
+
+bool MadgwickAHRS_Get_Quraterion(float *in_q0, float *in_q1, float *in_q2, float *in_q3)
+{
+	if((in_q0 == NULL) || \
+	   (in_q1 == NULL) || \
+	   (in_q2 == NULL) || \
+	   (in_q3 == NULL))
+	   return false;
+	
+	*in_q0 = q0;
+	*in_q1 = q1;
+	*in_q2 = q2;
+	*in_q3 = q3;
+	
+	return true;
+}
+
+bool MadgwickAHRS_Get_Attitude(double *pitch, double *roll, double *yaw)
+{
+	if((pitch == NULL) || \
+	   (roll == NULL) || \
+	   (yaw == NULL))
+	   return false;
+
+	/* quaterion convert to euler */
+	// roll (x-axis rotation)
+	double sinr_cosp = 2.0f * (q0 * q1 + q2 * q3);
+	double cosr_cosp = 1.0f - 2.0f * (q1 * q1 + q2 * q2);
+	*roll = atan2(sinr_cosp, cosr_cosp);
+
+	// pitch (y-axis rotation)
+	double sinp = 2.0f * (q0 * q2 - q3 * q1);
+	if (fabs(sinp) >= 1)
+		*pitch = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+	else
+		*pitch = asin(sinp);
+
+	// yaw (z-axis rotation)
+	double siny_cosp = 2.0f * (q0 * q3 + q1 * q2);
+	double cosy_cosp = 1.0f - 2.0f * (q2 * q2 + q3 * q3);
+	*yaw = atan2(siny_cosp, cosy_cosp);
+
+	return true;
 }
 
 //====================================================================================================

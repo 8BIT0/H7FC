@@ -56,6 +56,10 @@ typedef struct
     float pitch;
     float roll;
     float yaw;
+    float q0;
+    float q1;
+    float q2;
+    float q3;
     uint8_t err_code;
 } IMUAtt_TypeDef;
 #pragma pack()
