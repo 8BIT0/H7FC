@@ -15,8 +15,6 @@ typedef union
 {
     struct
     {
-
-
         uint32_t raw_imu : 1;
         uint32_t scaled_imu : 1;
 
