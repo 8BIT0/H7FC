@@ -99,7 +99,7 @@ void TaskControl_Core(void const *arg)
                                     &ctl_attitude.q0, \
                                     &ctl_attitude.q1, \
                                     &ctl_attitude.q2, \
-                                    &ctl_attitude.q3, \);
+                                    &ctl_attitude.q3);
             att_update_time = ctl_attitude.time_stamp;
             
             // get rc channel and other toggle signal
