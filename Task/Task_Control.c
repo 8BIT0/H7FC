@@ -72,6 +72,7 @@ void TaskControl_Core(void const *arg)
             // get imu init state first
             if(SrvDataHub.get_imu_init_state(&imu_init_state) || !imu_init_state)
             {
+                /* imu init error then lock the acturator */
                 failsafe = true;
                 arm_state = TELEMETRY_SET_ARM;
                 
