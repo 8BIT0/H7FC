@@ -67,6 +67,7 @@ typedef struct
 static LogCompess_Data_TypeDef LogCompess_Data = {
     .total = MAX_FILE_SIZE_K(2),
 };
+
 static FATCluster_Addr LogFolder_Cluster = ROOT_CLUSTER_ADDR;
 static volatile Disk_FileObj_TypeDef LogFile_Obj;
 static Disk_FATFileSys_TypeDef FATFS_Obj;
@@ -95,7 +96,6 @@ static LogSummary_TypeDef LogIMU_Summary = {
 
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
-static Disk_Write_State LogData_ToFile(QueueObj_TypeDef *queue, LogData_Reg_TypeDef *log_reg);
 
 void TaskLog_Init(uint32_t period)
 {
