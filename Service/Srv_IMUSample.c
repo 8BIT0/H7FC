@@ -15,6 +15,7 @@
 #include <math.h>
 
 /* use ENU coordinate */
+/* IMU coordinate is x->forward y->right z->down */
 
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10

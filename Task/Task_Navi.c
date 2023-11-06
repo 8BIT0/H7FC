@@ -7,6 +7,14 @@
 #include "DataPipe.h"
 #include "MadgwickAHRS.h"
 
+/* IMU coordinate is x->forward y->right z->down */
+/*
+    x Axis -> Roll  clock wise rotate positive
+    y Axis -> Pitch noise up positive
+    z Axis -> Yaw   anticlock wise rotate positice
+*/
+
+
 /* internal vriable */
 uint32_t TaskNavi_Period = 0;
 
@@ -78,7 +86,8 @@ void TaskNavi_Core(void const *arg)
         if(Attitude_Update)
         {
             /* update Attitude */
-            // MadgwickAHRSupdate(Gyr[Axis_X], Gyr[Axis_Y], Gyr[Axis_Z], Acc[Axis_X], Acc[Axis_Y], Acc[Axis_Z], Mag[Axis_X], Mag[Axis_Y], Mag[Axis_Z]);
+            MadgwickAHRSupdate(Gyr[Axis_X], Gyr[Axis_Y], Gyr[Axis_Z], Acc[Axis_X], Acc[Axis_Y], Acc[Axis_Z], Mag[Axis_X], Mag[Axis_Y], Mag[Axis_Z]);
+            
             if(MadgwickAHRS_Get_Attitude(&attitude.pitch, &attitude.roll, &attitude.yaw) && \
                MadgwickAHRS_Get_Quraterion(&attitude.q0, &attitude.q1, &attitude.q2, &attitude.q3))
             {
