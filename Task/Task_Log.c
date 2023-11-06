@@ -154,7 +154,6 @@ void TaskLog_Core(void const *arg)
     uint16_t cur_compess_size = 0;
     uint16_t input_compess_size = 0;
     bool log_halt = false;
-    int ret = 0;
     uint32_t income_log_size = 0;
     uint32_t sys_time = SrvOsCommon.get_os_ms();
 
@@ -174,9 +173,7 @@ void TaskLog_Core(void const *arg)
                 LogObj_Logging_Reg._sec.IMU_Sec = true;
                 LogCompess_Data.buf[LogCompess_Data.compess_size] = LOG_COMPESS_HEADER;
 
-                ret = lzo1x_1_compress(LogCache_L2_Buf, input_compess_size, compess_buf_ptr, &cur_compess_size, wrkmem);
-
-                if(ret != LZO_E_OK)
+                if(lzo1x_1_compress(LogCache_L2_Buf, input_compess_size, compess_buf_ptr, &cur_compess_size, wrkmem) != LZO_E_OK)
                 {
                     enable_compess = false;
                     Log_Statistics.halt_type = Log_CompessFunc_Halt;
@@ -234,12 +231,6 @@ void TaskLog_Core(void const *arg)
                             Log_Statistics.log_byte_sum += 512;
                             income_log_size -= 512;
                             LogCompess_Data.compess_size = income_log_size;
-
-                            if(LogCompess_Data.compess_size >= sizeof(LogCompess_Data.buf))
-                            {
-                                /* check income log size here */
-                                __NOP();
-                            }
 
                             for(uint16_t t = 0; t < LogCompess_Data.compess_size; t++)
                             {
