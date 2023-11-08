@@ -264,10 +264,6 @@ bool MadgwickAHRS_Get_Attitude(double *pitch, double *roll, double *yaw)
 	double cosy_cosp = 1.0f - 2.0f * (q2 * q2 + q3 * q3);
 	*yaw = atan2(siny_cosp, cosy_cosp);
 
-	*yaw *= 57.3;
-	*pitch *= 57.3;
-	*roll *= 57.3;
-
 	return true;
 }
 
