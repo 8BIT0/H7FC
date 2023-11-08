@@ -22,8 +22,8 @@
 //---------------------------------------------------------------------------------------------------
 // Definitions
 
-#define sampleFreq	512.0f		// sample frequency in Hz
-#define betaDef		0.1f		// 2 * proportional gain
+#define sampleFreq	100.0f		// sample frequency in Hz
+#define betaDef		0.001f		// 2 * proportional gain
 
 //---------------------------------------------------------------------------------------------------
 // Variable definitions
@@ -263,6 +263,10 @@ bool MadgwickAHRS_Get_Attitude(double *pitch, double *roll, double *yaw)
 	double siny_cosp = 2.0f * (q0 * q3 + q1 * q2);
 	double cosy_cosp = 1.0f - 2.0f * (q2 * q2 + q3 * q3);
 	*yaw = atan2(siny_cosp, cosy_cosp);
+
+	*yaw *= 57.3;
+	*pitch *= 57.3;
+	*roll *= 57.3;
 
 	return true;
 }

@@ -17,7 +17,7 @@
 #define TaskTelemetry_Period_def 2  /* unit: ms period 2ms  500Hz  */
 #define TaskProtocol_Period_Def  10 /* unit: ms period 10ms 100Hz  */
 #define TaslLog_Period_Def       5  /* unit: ms period 5ms  200Hz */
-#define TaslNavi_Period_Def      10 /* unit: ms period 5ms  100Hz */
+#define TaslNavi_Period_Def      10 /* unit: ms period 10ms 100Hz */
 
 osThreadId TaskProtocol_Handle = NULL;
 osThreadId TaskInertial_Handle = NULL;

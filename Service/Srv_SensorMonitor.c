@@ -1,6 +1,8 @@
 #include "Srv_SensorMonitor.h"
 #include "Bsp_Timer.h"
 #include "Srv_OsCommon.h"
+#include "debug_util.h"
+#include "IO_Definition.h"
 
 /* 
  * for sensor statistic function a timer is essenial
@@ -335,7 +337,10 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
     bool state = false;
 
+    DebugPin.ctl(Debug_PB5, true);
     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
+    DebugPin.ctl(Debug_PB5, false);
+
     state |= SrvSensorMonitor_Mag_SampleCTL(obj);
     state |= SrvSensorMonitor_Baro_SampleCTL(obj);
     state |= SrvSensorMonitor_Gnss_SampleCTL(obj);

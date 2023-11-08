@@ -160,7 +160,7 @@ void TaskLog_Core(void const *arg)
     while(1)
     {
         input_compess_size = QueueIMU_PopSize;
-        DebugPin.ctl(Debug_PB5, true);
+        // DebugPin.ctl(Debug_PB5, true);
 
         if(LogFile_Ready && enable_compess)
         {
@@ -201,7 +201,7 @@ void TaskLog_Core(void const *arg)
                         income_log_size = LogCompess_Data.compess_size;
                         while(income_log_size >= 512)
                         {
-                            DebugPin.ctl(Debug_PB4, true);
+                            // DebugPin.ctl(Debug_PB4, true);
 
                             switch((uint8_t)Disk.write(&FATFS_Obj, &LogFile_Obj, LogCompess_Data.buf, 512))
                             {
@@ -238,7 +238,7 @@ void TaskLog_Core(void const *arg)
                                 LogCompess_Data.buf[t + 512] = 0;
                             }
                         
-                            DebugPin.ctl(Debug_PB4, false);
+                            // DebugPin.ctl(Debug_PB4, false);
                         }
                     }
                 }
@@ -249,7 +249,7 @@ void TaskLog_Core(void const *arg)
         else
             DevLED.ctl(Led1, false);
 
-        DebugPin.ctl(Debug_PB5, false);
+        // DebugPin.ctl(Debug_PB5, false);
 
         SrvOsCommon.precise_delay(&sys_time, TaskLog_Period);
     }

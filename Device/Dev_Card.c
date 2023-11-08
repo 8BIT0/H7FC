@@ -2,6 +2,7 @@
 #include "cmsis_os.h"
 #include "Srv_OsCommon.h"
 #include "IO_Definition.h"
+#include "debug_util.h"
 
 #define LOCK_TIMEOUT 500 // unit: ms
 
@@ -109,6 +110,7 @@ static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t
     bus_state = BspSDMMC.get_opr_state(&(Instance->SDMMC_Obj));
     if(bus_state == BspSDMMC_Opr_State_READY)
     {
+        DebugPin.ctl(Debug_PB4, true);
         state = BspSDMMC.write(&(Instance->SDMMC_Obj), p_data, block, block_num);
 
         if(state)
@@ -129,6 +131,8 @@ static bool DevCard_Write(DevCard_Obj_TypeDef *Instance, uint32_t block, uint8_t
         else
             write_state_err_cnt ++;
     }
+ 
+    DebugPin.ctl(Debug_PB4, false);
 
     return state;
 }

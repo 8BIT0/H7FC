@@ -13,12 +13,13 @@ SrvComProto_Monitor_TypeDef SrvComProto_monitor = {
 
 /* internal function */
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck);
+static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
 
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
 static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
-static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
+static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
 static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state);
 static SrvComProto_Type_List Srv_ComProto_GetType(void);
 
@@ -90,6 +91,10 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
         msg->pack_callback = SrvComProto_MavMsg_Raw_IMU;
         break;
 
+    case MAV_CompoID_Scaled_IMU:
+        msg->pack_callback = SrvComProto_MavMsg_Scaled_IMU;
+        break;
+
     case MAV_CompoID_MotoCtl:
         break;
 
@@ -107,31 +112,31 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     return true;
 }
 
-static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb)
+static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb)
 {
-    if (msg.enable && com_stream && com_stream->p_buf && msg.pack_callback)
+    if (msg->enable && com_stream && com_stream->p_buf && msg->pack_callback)
     {
-        msg.in_proto = true;
+        msg->in_proto = true;
 
-        if ((msg.proto_time) && (SrvOsCommon.get_os_ms() - msg.proto_time < msg.period))
+        if ((msg->proto_time) && (SrvOsCommon.get_os_ms() - msg->proto_time < msg->period))
         {
-            msg.in_proto = false;
+            msg->in_proto = false;
             return;
         }
 
-        com_stream->size = msg.pack_callback((uint8_t *)&msg);
+        com_stream->size = msg->pack_callback((uint8_t *)msg);
 
         if (com_stream->size && ((com_stream->size + MAVLINK_NUM_NON_PAYLOAD_BYTES) <= com_stream->max_size))
         {
-            com_stream->size = mavlink_msg_to_send_buffer(com_stream->p_buf, msg.msg_obj);
+            com_stream->size = mavlink_msg_to_send_buffer(com_stream->p_buf, msg->msg_obj);
 
             if (tx_cb)
                 tx_cb(com_stream->p_buf, com_stream->size);
 
-            msg.proto_time = SrvOsCommon.get_os_ms();
+            msg->proto_time = SrvOsCommon.get_os_ms();
         }
 
-        msg.in_proto = false;
+        msg->in_proto = false;
     }
 }
 
@@ -246,7 +251,59 @@ static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck)
                                             0, 0, 0);
 }
 
+static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    uint32_t time_stamp = 0;
+    float acc_scale = 0.0f;
+    float gyr_scale = 0.0f;
+    float acc_x = 0.0f;
+    float acc_y = 0.0f;
+    float acc_z = 0.0f;
+    float gyr_x = 0.0f;
+    float gyr_y = 0.0f;
+    float gyr_z = 0.0f;
+    float tmpr = 0.0f;
+    uint8_t imu_err_code = 0;
+
+    SrvDataHub.get_scaled_imu(&time_stamp, &acc_scale, &gyr_scale, &acc_x, &acc_y, &acc_z, &gyr_x, &gyr_y, &gyr_z, &tmpr, &imu_err_code);
+
+    int16_t i_acc_x = (int16_t)(acc_x * acc_scale);
+    int16_t i_acc_y = (int16_t)(acc_y * acc_scale);
+    int16_t i_acc_z = (int16_t)(acc_z * acc_scale);
+
+    int16_t i_gyr_x = (int16_t)(gyr_x * gyr_scale);
+    int16_t i_gyr_y = (int16_t)(gyr_y * gyr_scale);
+    int16_t i_gyr_z = (int16_t)(gyr_z * gyr_scale);
+
+    /* we dont have any mag sensor currently */
+    return mavlink_msg_scaled_imu_pack_chan(pck->pck_info.system_id,
+                                            pck->pck_info.component_id,
+                                            pck->pck_info.chan, pck->msg_obj,
+                                            time_stamp,
+                                            i_acc_x, i_acc_y, i_acc_z,
+                                            i_gyr_x, i_gyr_y, i_gyr_z,
+                                            0, 0, 0);
+}
+
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
 {
-    // return mavlink_msg_attitude_pack_chan();
+    uint32_t time_stamp = 0;
+    
+    float pitch = 0.0f;
+    float roll = 0.0f;
+    float yaw = 0.0f;
+    
+    float q0 = 0.0f;
+    float q1 = 0.0f;
+    float q2 = 0.0f;
+    float q3 = 0.0f;
+
+    SrvDataHub.get_attitude(&time_stamp, &pitch, &roll, &yaw, &q0, &q1, &q2, &q3);
+
+    return mavlink_msg_attitude_pack_chan(pck->pck_info.system_id,
+                                          pck->pck_info.component_id,
+                                          pck->pck_info.chan, pck->msg_obj,
+                                          time_stamp,
+                                          roll, pitch, yaw, 
+                                          0.0f, 0.0f, 0.0f);
 }

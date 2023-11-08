@@ -55,6 +55,7 @@ static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 static void TaskProtocol_PlugDetect_Callback(void);
 ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
+static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 
 bool TaskProtocol_Init(uint32_t period)
 {
@@ -84,7 +85,7 @@ bool TaskProtocol_Init(uint32_t period)
         PckInfo.component_id = MAV_CompoID_Scaled_IMU;
         PckInfo.chan = 0;
         SrvComProto.mav_msg_obj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10);
-        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_ScaledIMU, false);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_ScaledIMU, true);
 
         // period 20Ms 50Hz
         PckInfo.system_id = MAV_SysID_Drone;
@@ -100,11 +101,11 @@ bool TaskProtocol_Init(uint32_t period)
         SrvComProto.mav_msg_obj_init(&TaskProto_MAV_MotoChannel, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_MotoChannel, true);
 
-        // period 10Ms 100Hz
+        // period 20Ms 50Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Attitude;
-      PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Attitude, PckInfo, 10);
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Attitude, PckInfo, 20);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Attitude, true);
     }
     else if (SrvComProto.get_msg_type() == SrvComProto_Type_Cus)
@@ -171,8 +172,41 @@ ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size
     }
 }
 
+static bool TaskProtol_PushToTxQueue(uint8_t *p_data, uint16_t size)
+{
+    uint8_t *p_data_tmp = NULL;
+    uint16_t p_data_size_tmp = 0;
+
+    if(VCP_Queue_CreateState && p_data && size)
+    {
+        if(((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Queue_empty)) && (size <= Queue.remain(VCP_ProtoQueue)))
+        {
+            Queue.push(&VCP_ProtoQueue, p_data, size);
+        }
+        else if(Queue.state(VCP_ProtoQueue) != Queue_empty)
+        {
+            p_data_size_tmp = Queue.size(VCP_ProtoQueue);
+            p_data_tmp = SrvOsCommon.malloc(p_data_size_tmp);
+
+            if(p_data_tmp)
+            {
+                Queue.pop(&VCP_ProtoQueue, p_data_tmp, p_data_size_tmp);
+                TaskProtocol_TransBuff(p_data_tmp, p_data_size_tmp);
+                SrvOsCommon.free(p_data_tmp);
+                return true;
+            }
+
+            Queue.reset(&VCP_ProtoQueue);
+            Queue.push(&VCP_ProtoQueue, p_data, size);
+        }
+    }
+
+    return false;
+}
+
 static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
 {
+    /* if port type is VCP then fill tx buff first */
     if (CDC_Transmit_FS(data, size) != USBD_OK)
         return false;
 
@@ -212,7 +246,9 @@ void TaskProtocol_Core(void const *arg)
             }
             
             /* test proto mavlink raw imu data */
-            SrvComProto.mav_msg_stream(TaskProto_MAV_RawIMU, &MavStream, TaskProtocol_TransBuff);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU, &MavStream, TaskProtol_PushToTxQueue);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, TaskProtol_PushToTxQueue);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude, &MavStream, TaskProtol_PushToTxQueue);
 
             break;
 
