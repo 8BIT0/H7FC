@@ -233,6 +233,25 @@ static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj
     {
         imu_data_tmp.data = SrvIMU.get_data(SrvIMU_FusModule);
 
+        /*
+         * adjust imu axis coordinate as 
+         * x -----> forward
+         * y -----> right
+         * z -----> down 
+         **/
+
+        imu_data_tmp.data.flt_acc[Axis_X] *= -1;
+        imu_data_tmp.data.flt_acc[Axis_Y] *= -1;
+
+        imu_data_tmp.data.org_acc[Axis_X] *= -1;
+        imu_data_tmp.data.org_acc[Axis_Y] *= -1;
+
+        imu_data_tmp.data.flt_gyr[Axis_X] *= -1;
+        imu_data_tmp.data.flt_gyr[Axis_Y] *= -1;
+
+        imu_data_tmp.data.org_gyr[Axis_X] *= -1;
+        imu_data_tmp.data.org_gyr[Axis_Y] *= -1;
+
         for (uint8_t chk = 0; chk < sizeof(SrvIMU_UnionData_TypeDef) - sizeof(uint16_t); chk++)
         {
             imu_data_tmp.data.chk_sum += imu_data_tmp.buff[chk];

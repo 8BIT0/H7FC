@@ -901,7 +901,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
                             PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                     }
                 }
-
+                 
                 /* unlock */
                 SrvMpu_Update_Reg.sec.Pri_State = false;
                 PriIMU_Data_Lst = PriIMU_Data;
