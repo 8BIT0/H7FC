@@ -27,7 +27,7 @@ extern volatile float q0, q1, q2, q3;	// quaternion of sensor frame relative to 
 void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
 void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az);
 bool MadgwickAHRS_Get_Quraterion(float *q0, float *q1, float *q2, float *q3);
-bool MadgwickAHRS_Get_Attitude(double *pitch, double *roll, double *yaw);
+bool MadgwickAHRS_Get_Attitude(float *pitch, float *roll, float *yaw);
 
 #endif
 //=====================================================================================================

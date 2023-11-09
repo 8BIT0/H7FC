@@ -17,13 +17,14 @@
 
 #include "MadgwickAHRS.h"
 #include <math.h>
+#include "math_util.h"
 #include <stdbool.h>
 
 //---------------------------------------------------------------------------------------------------
 // Definitions
 
 #define sampleFreq	100.0f		// sample frequency in Hz
-#define betaDef		0.001f		// 2 * proportional gain
+#define betaDef		0.1f		// 2 * proportional gain
 
 //---------------------------------------------------------------------------------------------------
 // Variable definitions
@@ -239,30 +240,44 @@ bool MadgwickAHRS_Get_Quraterion(float *in_q0, float *in_q1, float *in_q2, float
 	return true;
 }
 
-bool MadgwickAHRS_Get_Attitude(double *pitch, double *roll, double *yaw)
+bool MadgwickAHRS_Get_Attitude(float *pitch, float *roll, float *yaw)
 {
+	double q11 = q0 * q0;
+	double q12 = q0 * q1;
+	double q13 = q0 * q2;
+	double q14 = q0 * q3;
+	double q22 = q1 * q1;
+	double q23 = q1 * q2;
+	double q24 = q1 * q3;
+	double q33 = q2 * q2;
+	double q34 = q2 * q3;
+	double q44 = q3 * q3;
+
+	double pitch_tmp = 0.0;
+	double roll_tmp = 0.0;
+	double yaw_tmp = 0.0;
+
+	roll_tmp = atan2(2 * (q12 + q34), q11 - q22 - q33 + q44);
+	pitch_tmp = asin(2 * (q13 - q24));
+	yaw_tmp = atan2(2 * (q23 + q14), q11 + q22 - q33 - q44);
+
+	if(pitch_tmp > (0.5 * M_PI))
+	{
+		pitch_tmp = 0.5 * M_PI;
+	}
+	else if(pitch_tmp < (-0.5 * M_PI))
+	{
+		pitch_tmp = -0.5 * M_PI;
+	}
+
 	if((pitch == NULL) || \
 	   (roll == NULL) || \
 	   (yaw == NULL))
 	   return false;
 
-	/* quaterion convert to euler */
-	// roll (x-axis rotation)
-	double sinr_cosp = 2.0f * (q0 * q1 + q2 * q3);
-	double cosr_cosp = 1.0f - 2.0f * (q1 * q1 + q2 * q2);
-	*roll = atan2(sinr_cosp, cosr_cosp);
-
-	// pitch (y-axis rotation)
-	double sinp = 2.0f * (q0 * q2 - q3 * q1);
-	if (fabs(sinp) >= 1)
-		*pitch = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
-	else
-		*pitch = asin(sinp);
-
-	// yaw (z-axis rotation)
-	double siny_cosp = 2.0f * (q0 * q3 + q1 * q2);
-	double cosy_cosp = 1.0f - 2.0f * (q2 * q2 + q3 * q3);
-	*yaw = atan2(siny_cosp, cosy_cosp);
+	*pitch = Rad2Deg((float)pitch_tmp);
+	*roll = Rad2Deg((float)roll_tmp);
+	*yaw = Rad2Deg((float)yaw_tmp);
 
 	return true;
 }

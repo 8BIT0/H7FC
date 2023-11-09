@@ -141,7 +141,8 @@
                 "nmea_frame_decode.h": "c",
                 "semaphore.h": "c",
                 "semphr.h": "c",
-                "srv_sensormonitor.h": "c"
+                "srv_sensormonitor.h": "c",
+                "madgwickahrs.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

@@ -6,6 +6,7 @@
 #include "Srv_DataHub.h"
 #include "DataPipe.h"
 #include "MadgwickAHRS.h"
+#include "math_util.h"
 
 /* IMU coordinate is x->forward y->right z->down */
 /*
@@ -86,7 +87,7 @@ void TaskNavi_Core(void const *arg)
         if(Attitude_Update)
         {
             /* update Attitude */
-            MadgwickAHRSupdate(Flt_Gyr[Axis_X], Flt_Gyr[Axis_Y], -Flt_Gyr[Axis_Z], Flt_Acc[Axis_X], Flt_Acc[Axis_Y], -Flt_Acc[Axis_Z], Flt_Mag[Axis_X], Flt_Mag[Axis_Y], Flt_Mag[Axis_Z]);
+            MadgwickAHRSupdate(Deg2Rad(-Flt_Gyr[Axis_Y]), Deg2Rad(-Flt_Gyr[Axis_X]), Deg2Rad(-Flt_Gyr[Axis_Z]), g2Mpss(-Flt_Acc[Axis_Y]), g2Mpss(-Flt_Acc[Axis_X]), g2Mpss(-Flt_Acc[Axis_Z]), Flt_Mag[Axis_X], Flt_Mag[Axis_Y], Flt_Mag[Axis_Z]);
             
             if(MadgwickAHRS_Get_Attitude(&attitude.pitch, &attitude.roll, &attitude.yaw) && \
                MadgwickAHRS_Get_Quraterion(&attitude.q0, &attitude.q1, &attitude.q2, &attitude.q3))

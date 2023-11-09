@@ -215,6 +215,7 @@ C_INCLUDES =  \
 -IAlgorithm/Navi_Dep \
 -IAlgorithm/Filter_Dep \
 -IAlgorithm/Control_Dep \
+-IAlgorithm \
 -IMAVLink/common \
 -IMAVLink/minimal \
 -IMAVLink/standard \
