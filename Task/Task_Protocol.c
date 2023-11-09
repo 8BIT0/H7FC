@@ -32,18 +32,20 @@ SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RcChannel;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_MotoChannel;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_Attitude;
 
-static uint8_t USB_MavShareBuf[1024];
+static uint8_t MavShareBuf[1024];
 
 SrvComProto_Stream_TypeDef MavStream = 
 {
-    .p_buf = USB_MavShareBuf,
+    .p_buf = MavShareBuf,
     .size = 0,
-    .max_size = 1024,
+    .max_size = sizeof(MavShareBuf),
 };
 
 /* internal vriable */
-static QueueObj_TypeDef VCP_ProtoQueue; /* Send Queue */
+static QueueObj_TypeDef VCP_ProtoQueue;     /* common proto Queue */
+static QueueObj_TypeDef VCP_MAVLinkQueue;   /* mavlink proto Queue */
 static bool VCP_Queue_CreateState = false;
+static bool VCP_MAVLink_Queue_CreateState = false;
 static ProtoQueue_State_List VCPQueue_State = ProtoQueue_Idle;
 static bool VCP_Connect_State = false; /* USB connect state */
 static TaskProto_State_List task_state = TaskProto_Core;
@@ -51,11 +53,10 @@ static bool Shell_Mode = false;
 
 /* internal function */
 static void TaskProtocol_MainProc(uint8_t *data, uint16_t size);
-static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
 static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
 static void TaskProtocol_PlugDetect_Callback(void);
 ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
-static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size);
+static bool TaskProtocol_VCPTransBuff(void);
 
 bool TaskProtocol_Init(uint32_t period)
 {
@@ -124,6 +125,10 @@ bool TaskProtocol_Init(uint32_t period)
     if (!Queue.create_auto(&VCP_ProtoQueue, "VCP Send Queue", VCP_QUEUE_BUFF_SIZE))
         return false;
 
+    if(!Queue.create_with_buf(&VCP_MAVLinkQueue, "MAVLink Proto Queue", MavStream.p_buf, MavStream.max_size))
+        return false;
+
+    VCP_MAVLink_Queue_CreateState = true;
     VCP_Queue_CreateState = true;
 
     usb_setrec_callback(TaskProtocol_Rec);
@@ -172,44 +177,65 @@ ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size
     }
 }
 
-static bool TaskProtol_PushToTxQueue(uint8_t *p_data, uint16_t size)
+/* still can be optimize in a big way */
+static void TaskProtol_PushToMAVLinkQueue(uint8_t *p_data, uint16_t size)
 {
-    uint8_t *p_data_tmp = NULL;
-    uint16_t p_data_size_tmp = 0;
-
     if(VCP_Queue_CreateState && p_data && size)
     {
-        if(((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Queue_empty)) && (size <= Queue.remain(VCP_ProtoQueue)))
+        if(((Queue.state(VCP_MAVLinkQueue) == Queue_ok) || (Queue.state(VCP_MAVLinkQueue) == Queue_empty)) && (size <= Queue.remain(VCP_MAVLinkQueue)))
         {
-            Queue.push(&VCP_ProtoQueue, p_data, size);
+            Queue.push(&VCP_MAVLinkQueue, p_data, size);
         }
-        else if(Queue.state(VCP_ProtoQueue) != Queue_empty)
+        else if(Queue.state(VCP_MAVLinkQueue) != Queue_empty)
         {
-            p_data_size_tmp = Queue.size(VCP_ProtoQueue);
-            p_data_tmp = SrvOsCommon.malloc(p_data_size_tmp);
-
-            if(p_data_tmp)
-            {
-                Queue.pop(&VCP_ProtoQueue, p_data_tmp, p_data_size_tmp);
-                TaskProtocol_TransBuff(p_data_tmp, p_data_size_tmp);
-                SrvOsCommon.free(p_data_tmp);
-                return true;
-            }
-
-            Queue.reset(&VCP_ProtoQueue);
-            Queue.push(&VCP_ProtoQueue, p_data, size);
+            Queue.reset(&VCP_MAVLinkQueue);
+            Queue.push(&VCP_MAVLinkQueue, p_data, size);
         }
     }
 
-    return false;
+    /* directly proto data through other port */
+
 }
 
-static bool TaskProtocol_TransBuff(uint8_t *data, uint16_t size)
+static bool TaskProtocol_VCPTransBuff(void)
 {
-    /* if port type is VCP then fill tx buff first */
-    if (CDC_Transmit_FS(data, size) != USBD_OK)
+    uint16_t proto_total_size = 0;
+    uint16_t mav_size = 0;
+    uint16_t common_size = 0;
+    uint8_t *p_proto_buf = NULL;
+
+    mav_size = Queue.size(VCP_MAVLinkQueue);
+    common_size = Queue.size(VCP_ProtoQueue);
+    
+    proto_total_size = mav_size;
+    proto_total_size += common_size;
+
+    if(proto_total_size)
+    {
+        p_proto_buf = SrvOsCommon.malloc(proto_total_size);
+
+        if(p_proto_buf == NULL)
+        {
+            SrvOsCommon.free(p_proto_buf);
+            return false;
+        }
+
+        Queue.pop(&VCP_MAVLinkQueue, p_proto_buf, mav_size);
+        p_proto_buf += mav_size;
+        Queue.pop(&VCP_ProtoQueue, p_proto_buf, common_size);
+    }
+    else
         return false;
 
+    /* if port type is VCP then fill tx buff first */
+    if (CDC_Transmit_FS(p_proto_buf, proto_total_size) != USBD_OK)
+        return false;
+
+    /* clear both mav queue and common queue after vcp trans successed */
+    Queue.reset(&VCP_MAVLinkQueue);
+    Queue.reset(&VCP_ProtoQueue);
+
+    SrvOsCommon.free(p_proto_buf);
     return true;
 }
 
@@ -239,16 +265,16 @@ void TaskProtocol_Core(void const *arg)
                     p_buf_size = Queue.size(VCP_ProtoQueue);
                     Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
 
-                    TaskProtocol_TransBuff(p_buf, p_buf_size);
+                    // TaskProtocol_VCPTransBuff(p_buf, p_buf_size);
                 }
 
                 SrvOsCommon.free(p_buf);
             }
             
             /* test proto mavlink raw imu data */
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU, &MavStream, TaskProtol_PushToTxQueue);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, TaskProtol_PushToTxQueue);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude, &MavStream, TaskProtol_PushToTxQueue);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU, &MavStream, TaskProtol_PushToMAVLinkQueue);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, TaskProtol_PushToMAVLinkQueue);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude, &MavStream, TaskProtol_PushToMAVLinkQueue);
 
             break;
 
@@ -259,6 +285,7 @@ void TaskProtocol_Core(void const *arg)
             break;
         }
 
+        TaskProtocol_VCPTransBuff();
         DebugPin.ctl(Debug_PC3, false);
         SrvOsCommon.precise_delay(&sys_time, TaskProtocol_Period);
     }
