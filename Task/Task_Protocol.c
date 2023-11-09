@@ -20,7 +20,7 @@
 
 static bool test = false;
 
-#define VCP_QUEUE_BUFF_SIZE 4096
+#define VCP_QUEUE_BUFF_SIZE 1024
 
 /* internal var */
 static uint32_t TaskProtocol_Period = 0;
@@ -33,6 +33,7 @@ SrvComProto_MsgInfo_TypeDef TaskProto_MAV_MotoChannel;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_Attitude;
 
 static uint8_t MavShareBuf[1024];
+static uint8_t ProtoShareBuf[1024];
 
 SrvComProto_Stream_TypeDef MavStream = 
 {
@@ -182,7 +183,7 @@ static void TaskProtol_PushToMAVLinkQueue(uint8_t *p_data, uint16_t size)
 {
     if(VCP_Queue_CreateState && p_data && size)
     {
-        if(((Queue.state(VCP_MAVLinkQueue) == Queue_ok) || (Queue.state(VCP_MAVLinkQueue) == Queue_empty)) && (size <= Queue.remain(VCP_MAVLinkQueue)))
+        if(((Queue.state(VCP_MAVLinkQueue) == Queue_ok) || (Queue.state(VCP_MAVLinkQueue) == Queue_empty)) && (size < Queue.remain(VCP_MAVLinkQueue)))
         {
             Queue.push(&VCP_MAVLinkQueue, p_data, size);
         }
@@ -199,43 +200,57 @@ static void TaskProtol_PushToMAVLinkQueue(uint8_t *p_data, uint16_t size)
 
 static bool TaskProtocol_VCPTransBuff(void)
 {
-    uint16_t proto_total_size = 0;
+    uint16_t proto_total_size = 0; 
     uint16_t mav_size = 0;
     uint16_t common_size = 0;
-    uint8_t *p_proto_buf = NULL;
+    uint8_t *p_proto_buf = ProtoShareBuf;
 
     mav_size = Queue.size(VCP_MAVLinkQueue);
     common_size = Queue.size(VCP_ProtoQueue);
+    proto_total_size = mav_size + common_size;
     
-    proto_total_size = mav_size;
-    proto_total_size += common_size;
-
     if(proto_total_size)
     {
-        p_proto_buf = SrvOsCommon.malloc(proto_total_size);
-
-        if(p_proto_buf == NULL)
+        if(proto_total_size <= sizeof(ProtoShareBuf))
         {
-            SrvOsCommon.free(p_proto_buf);
-            return false;
-        }
+            if(mav_size)
+            {
+                Queue.pop(&VCP_MAVLinkQueue, p_proto_buf, mav_size);
+                p_proto_buf += mav_size;
+            }
 
-        Queue.pop(&VCP_MAVLinkQueue, p_proto_buf, mav_size);
-        p_proto_buf += mav_size;
-        Queue.pop(&VCP_ProtoQueue, p_proto_buf, common_size);
+            if(common_size)
+            {
+                Queue.pop(&VCP_ProtoQueue, p_proto_buf, common_size);
+            }
+        }
+        else
+        {
+            /* mav protol in high priority */
+        }
     }
     else
         return false;
 
     /* if port type is VCP then fill tx buff first */
-    if (CDC_Transmit_FS(p_proto_buf, proto_total_size) != USBD_OK)
+    if (CDC_Transmit_FS(ProtoShareBuf, proto_total_size) != USBD_OK)
+    {
+        if(mav_size)
+        {
+            Queue.reset(&VCP_MAVLinkQueue);
+            Queue.push(&VCP_MAVLinkQueue, p_proto_buf, mav_size);
+        }
+
+        if(common_size)
+        {
+            p_proto_buf += mav_size;
+            Queue.reset(&VCP_MAVLinkQueue);
+            Queue.push(&VCP_ProtoQueue, p_proto_buf, common_size);
+        }
+
         return false;
+    }
 
-    /* clear both mav queue and common queue after vcp trans successed */
-    Queue.reset(&VCP_MAVLinkQueue);
-    Queue.reset(&VCP_ProtoQueue);
-
-    SrvOsCommon.free(p_proto_buf);
     return true;
 }
 
