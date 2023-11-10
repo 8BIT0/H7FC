@@ -15,6 +15,8 @@
 //---------------------------------------------------------------------------------------------------
 // Header files
 
+// coordinate of madgwick alogrithm is x ---> forward y ---> left z ---> up
+
 #include "MadgwickAHRS.h"
 #include <math.h>
 #include "math_util.h"
