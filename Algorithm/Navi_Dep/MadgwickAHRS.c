@@ -143,7 +143,6 @@ void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float 
 
 //---------------------------------------------------------------------------------------------------
 // IMU algorithm update
-
 void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az) {
 	float recipNorm;
 	float s0, s1, s2, s3;
