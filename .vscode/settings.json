@@ -142,7 +142,8 @@
                 "semaphore.h": "c",
                 "semphr.h": "c",
                 "srv_sensormonitor.h": "c",
-                "madgwickahrs.h": "c"
+                "madgwickahrs.h": "c",
+                "crtdefs.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,
