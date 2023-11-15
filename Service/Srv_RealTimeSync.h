@@ -6,6 +6,8 @@
 #include <string.h>
 #include "Bsp_Timer.h"
 
+/* only when GPS PPS Pin attach on the flight controller */
+
 typedef enum
 {
     RealTime_Invalid = 0,
