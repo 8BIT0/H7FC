@@ -124,11 +124,21 @@ void TaskControl_Core(void const *arg)
                 {
                     switch(imu_err_code)
                     {
-                        case SrvIMU_Sample_Module_UnReady:
                         case SrvIMU_Sample_Data_Acc_Blunt:
-                        case SrvIMU_Sample_Data_Gyr_Blunt:
                         case SrvIMU_Sample_Data_Acc_OverRange:
+                            /* still can use gyro loop control quad */
+                            /* switch into manul control */
+                            break;
+                        
+                        case SrvIMU_Sample_Data_Gyr_Blunt:
                         case SrvIMU_Sample_Data_Gyr_OverRange:
+                            /* totally waste */
+                            /* bye drone see u in another world */
+                            TaskControl_Monitor.control_abort = true;
+                            goto lock_moto;
+                            break;
+
+                        case SrvIMU_Sample_Module_UnReady:
                             TaskControl_Monitor.imu_none_update_cnt++;
                             if(TaskControl_Monitor.imu_none_update_cnt >= IMU_NONE_UPDATE_THRESHOLD)
                             {

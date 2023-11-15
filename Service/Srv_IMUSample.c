@@ -719,7 +719,6 @@ static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8
 
                     if (data->acc_blunt_cnt >= IMU_BLUNT_SAMPLE_CNT)
                     {
-                        data->acc_blunt_cnt[axis] = 0;
                         return SrvIMU_Sample_Data_Acc_Blunt;
                     }
                 }
@@ -735,7 +734,6 @@ static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8
 
                     if (data->gyr_blunt_cnt[axis] >= IMU_BLUNT_SAMPLE_CNT)
                     {
-                        data->gyr_blunt_cnt[axis] = 0;
                         return SrvIMU_Sample_Data_Gyr_Blunt;
                     }
                 }
