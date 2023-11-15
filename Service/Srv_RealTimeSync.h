@@ -32,6 +32,8 @@ typedef struct
 {
     uint32_t tick_base;
     uint32_t pps_rec_cnt;
+    uint8_t pps_precheck;
+
     BspTimerTickObj_TypeDef tick_obj;
 
 }SrvRealTimeMonitor_TypeDef;
