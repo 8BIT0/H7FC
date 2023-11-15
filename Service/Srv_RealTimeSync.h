@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "Bsp_Timer.h"
+#include "Bsp_GPIO.h"
 
 /* only when GPS PPS Pin attach on the flight controller */
 
