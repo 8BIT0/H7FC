@@ -31,6 +31,7 @@ typedef struct
 
 typedef struct
 {
+    bool init;
     uint32_t tick_base;
     uint32_t pps_rec_cnt;
     uint8_t pps_precheck;
