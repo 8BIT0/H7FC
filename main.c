@@ -3,7 +3,12 @@
 
 void main(void)
 {
-    Kernel_Init();
+    bool kernel_init_state = false;
+    
+    kernel_init_state = Kernel_Init();
+
+    /* if kernel init failed do infinity loop */
+    while(!kernel_init_state);
 
     /* create task down below */
     Task_Manager_Init();

@@ -17,6 +17,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern DevCard_Obj_TypeDef DevTFCard_Obj;
 extern DMA_HandleTypeDef DataPipe_DMA;
 extern TIM_HandleTypeDef htim17;
+extern TIM_HandleTypeDef htim16;
 
 void NMI_Handler(void)
 {
@@ -243,4 +244,10 @@ void TIM17_IRQHandler(void)
   /* set 1K tick freq on configuration */
   HAL_IncTick();
   HAL_TIM_IRQHandler(&htim17);
+}
+
+/* use timer16 as systime tick timer */
+void TIM16_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&htim16);
 }

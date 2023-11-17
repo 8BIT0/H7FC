@@ -9,10 +9,6 @@
  */
 #define SrvSensorMonitor_GetSampleInterval(period) (1000 / period)
 
-/* internal vriable */
-bool statistic_timer_init = false;
-BspTimerTickObj_TypeDef statistic_timer_obj;
-
 /* internal function */
 static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);
 
@@ -36,10 +32,16 @@ SrvSensorMonitor_TypeDef SrvSensorMonitor = {
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 {
     uint8_t enable_sensor_num = 0;
+    static bool first_call = true;
 
     if(obj)
     {
-        memset(&statistic_timer_obj, 0, sizeof(BspTimerTickObj_TypeDef));
+        if(first_call)
+        {
+            obj->TimerState = SrvSensorMonitor_StatisticTimer_Defualt;
+            first_call = false;
+        }
+
         enable_sensor_num = Get_OnSet_Bit_Num(obj->enabled_reg.val);
         
         obj->statistic_list = SrvOsCommon.malloc(enable_sensor_num * sizeof(SrvSensorMonitor_Statistic_TypeDef));
@@ -109,6 +111,11 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
 
         /* enable a 32bit timer for statistic */
+        if(obj->TimerState == SrvSensorMonitor_StatisticTimer_Defualt)
+        {
+            /* statistic timer init */
+            // BspTimer_Tick.init();
+        }
     }
 
     return false;
@@ -169,17 +176,6 @@ static uint32_t SrvSensorMonitor_Get_InitState(SrvSensorMonitorObj_TypeDef *obj)
         return obj->init_state_reg.val;
 
     return 0;
-}
-
-/******************************************* Statistic Timer Section **********************************/
-static bool SrvSensorMonitor_Timer_Init(void)
-{
-    if(!statistic_timer_init)
-    {
-        // BspTimer_Tick.init();
-
-        statistic_timer_init = true;
-    }
 }
 
 /******************************************* IMU Section **********************************************/
@@ -352,6 +348,8 @@ static bool SrvSensorMonitor_Tof_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     return false;
 }
 
+/* noticed all sensor sampling and processing must finished in 1ms maximum */
+/* maximum sampling rate is 1KHz currentlly */
 static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
     bool state = false;

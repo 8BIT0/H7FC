@@ -10,14 +10,18 @@
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_tim.h"
 
-static bool KernelClock_Init(void);
 TIM_HandleTypeDef htim17;
+TIM_HandleTypeDef htim16;
+bool Kernel_TickTimer_Init = false;
+
+static bool KernelClock_Init(void);
 bool HAL_BaseTick_Init(void);
+bool Kernel_BaseTick_Init(void);
 
 bool Kernel_Init(void)
 {
     HAL_Init();
-    return HAL_BaseTick_Init() && KernelClock_Init();
+    return HAL_BaseTick_Init() && KernelClock_Init() && Kernel_BaseTick_Init();
 }
 
 /*
@@ -99,6 +103,133 @@ static bool KernelClock_Init(void)
     __HAL_RCC_GPIOH_CLK_ENABLE();
 
     return true;
+}
+
+bool Kernel_BaseTick_Init(void)
+{
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  
+  __HAL_RCC_TIM16_CLK_ENABLE();
+   
+  htim16.Instance = TIM16;
+  htim16.Init.Prescaler = 1600;
+  htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim16.Init.Period =  10000; /* 10000tick unit represent 1Ms, 1tick value represent 100Ns */
+  htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
+    return false;
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim16, &sClockSourceConfig) != HAL_OK)
+    return false;
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim16, &sMasterConfig) != HAL_OK)
+    return false;
+
+  /* TIM17 interrupt Init */
+  HAL_NVIC_SetPriority(TIM16_IRQn, 14, 0);
+  HAL_NVIC_EnableIRQ(TIM16_IRQn);
+
+  if(HAL_TIM_Base_Start_IT(&htim16) != HAL_OK)
+    return false;
+  
+  Kernel_TickTimer_Init = true; 
+  
+  return true;
+}
+
+bool Kernel_EnableTimer_IRQ(void)
+{
+  if(Kernel_TickTimer_Init)
+  {
+    if(HAL_TIM_Base_Start_IT(&htim16) != HAL_OK)
+      return false;
+  
+    return true;
+  }
+
+  return false;
+}
+
+bool Kernel_DisableTimer_IRQ(void)
+{
+  if(Kernel_TickTimer_Init)
+  {
+    if(HAL_TIM_Base_Stop_IT(&htim16) != HAL_OK)
+      return false;
+  
+    return true;
+  }
+
+  return false;
+}
+
+uint32_t Kernel_Get_PeriodValue(void)
+{
+  if(Kernel_TickTimer_Init)
+    return __HAL_TIM_GET_AUTORELOAD(&htim16);
+
+  return 0;
+}
+
+bool Kernel_Set_PeriodValue(uint32_t value)
+{
+  int32_t set_diff = value;
+  uint32_t cur_systick_period = 0;
+
+  if(Kernel_TickTimer_Init)
+  {
+    /* sys default tick Period count is 10000 */
+    /* 10000tick unit represent 1Ms, 1tick unit represent 100Ns */
+    cur_systick_period = __HAL_TIM_GET_AUTORELOAD(&htim16);
+    set_diff -= cur_systick_period;
+
+    /* single tune range 10Us to -10Us */
+    if((set_diff <= 100) || (set_diff >= -100))
+    {
+      __HAL_TIM_SET_AUTORELOAD(&htim16, value);
+    }
+    else if(set_diff > 100)
+    {
+      __HAL_TIM_SET_AUTORELOAD(&htim16, cur_systick_period + 100);
+    }
+    else if(set_diff < -100)
+    {
+      __HAL_TIM_SET_AUTORELOAD(&htim16, cur_systick_period - 100);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+uint32_t Kernel_Get_SysTimer_TickUnit(void)
+{
+  if(Kernel_TickTimer_Init)
+    return __HAL_TIM_GET_COUNTER(&htim16);
+
+  return 0;
+}
+
+bool Kernel_Set_SysTimer_TickUnit(uint32_t unit)
+{
+  uint32_t addin = unit;
+
+  if(Kernel_TickTimer_Init)
+  {
+    if(addin > __HAL_TIM_GET_AUTORELOAD(&htim16))
+      addin = __HAL_TIM_GET_AUTORELOAD(&htim16);
+
+    __HAL_TIM_SET_COUNTER(&htim16, addin);
+    return true;
+  }
+
+  return false;
 }
 
 bool HAL_BaseTick_Init(void)

@@ -1,4 +1,5 @@
 #include "Srv_OsCommon.h"
+#include "kernel.h"
 
 typedef struct
 {
@@ -32,11 +33,12 @@ SrvOsCommon_TypeDef SrvOsCommon = {
     .enter_critical = vPortEnterCritical,
     .exit_critical = vPortExitCritical,
     .get_heap_status = vPortGetHeapStats,
-    /* relative to the real world time */
-    .realtime_init = NULL,
-    .realtime_trim = NULL,
-    .get_realtime_ms = NULL,
-    .get_realtime = NULL,
+    .get_systimer_current_tick = Kernel_Get_SysTimer_TickUnit,
+    .get_systimer_period = Kernel_Get_PeriodValue,
+    .set_systimer_tick_value = Kernel_Set_SysTimer_TickUnit,
+    .set_systimer_period = Kernel_Set_PeriodValue,
+    .systimer_disable = Kernel_DisableTimer_IRQ,
+    .systimer_enable = Kernel_EnableTimer_IRQ,
 };
 
 static void* SrvOsCommon_Malloc(uint32_t size)
