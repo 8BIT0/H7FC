@@ -5,5 +5,11 @@
  *  one timer for moniting another for kernel tick
  */
 
+static bool SrvRealTimeSync_Init()
+{
+    /* timer init first */
+    BspTimer_Tick.init();
 
+    return false;
+}
 

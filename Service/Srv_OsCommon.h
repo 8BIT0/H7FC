@@ -5,29 +5,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef struct
-{
-    uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t min;
-    uint8_t sec;
-    uint16_t ms;
-}SrvOs_RealTime_TypeDef;
-
 typedef HeapStats_t SrvOs_HeapStatus_TypeDef;
-typedef SrvOs_RealTime_TypeDef SrvOs_GPSTime_TypeDef;
 
 typedef struct
 {
     uint32_t (*get_os_ms)(void);
     int32_t (*delay_ms)(uint32_t ms);
     int32_t (*precise_delay)(uint32_t *p_time, uint32_t ms);
-    bool (*realtime_init)(void);
-    bool (*realtime_trim)(SrvOs_RealTime_TypeDef timeobj);
-    uint32_t (*get_realtime_ms)(void);
-    SrvOs_RealTime_TypeDef (*get_realtime)(void);
+    uint32_t (*get_systimer_current_tick)(void);
+    uint32_t (*get_systimer_period)(void);
+    bool (*set_systimer_tick_value)(uint32_t value);
+    bool (*set_systimer_period)(uint32_t period);
+    uint32_t (*systimer_disable)(void);
+    uint32_t (*systimer_enable)(void);
 
     void *(*malloc)(uint16_t size);
     void (*free)(void *ptr);
