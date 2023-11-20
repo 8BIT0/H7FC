@@ -9,8 +9,11 @@ typedef struct
 {
     float in;       /* input measurement data in physical */
     float exp;      /* expect physical data */
-
+    float diff_max;
+    float diff_min;
     float fout;
+
+    uint16_t accuracy_scale; /* max scale is 10000, noticed it must be the integer power of 10 */
 
     /* Positional pid */
     int16_t iout_base;
@@ -25,13 +28,13 @@ typedef struct
     float gI;
     float gI_Min;
     float gI_Max;
+    float Integral;
     float I_out;
 
     float gD;
     float D_out;
 
-    uint16_t iCTL_period;
-    float fCTL_period;
+    float CTL_period;  /* unit: S */
 }PIDObj_TypeDef;
 
 

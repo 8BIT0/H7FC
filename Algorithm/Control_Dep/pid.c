@@ -5,25 +5,30 @@
 #include "pid.h"
 
 /* internal function */
-static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in);
-static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj);
-static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj);
+static bool PID_Accuracy_Check(uint16_t accuracy);
+static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
+static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
+static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in, float *pid_f_out, int16_t *pid_i_out)
 {
     bool P_State = false;
     bool I_State = false;
     bool D_State = false;
+    float diff = mea_in - exp_in;
 
-    if(p_PIDObj && pid_f_out && pid_i_out)
+    if(p_PIDObj && PID_Accuracy_Check(p_PIDObj->accuracy_scale) && pid_f_out && pid_i_out)
     {
-        P_State = PID_P_Progress(p_PIDObj, mea_in, exp_in);
+        p_PIDObj->in = mea_in;
+        p_PIDObj->exp = exp_in;
+
+        P_State = PID_P_Progress(p_PIDObj, diff);
         
-        /* if P stage error then PID can`t be use in the other step */
+        /* if P stage error then PID can`t be use in other progress */
         if(P_State)
         {
-            I_State = PID_I_Progress(p_PIDObj);
-            D_State = PID_D_Progress(p_PIDObj);
+            I_State = PID_I_Progress(p_PIDObj, diff);
+            D_State = PID_D_Progress(p_PIDObj, diff);
 
             return true;
         }
@@ -32,33 +37,104 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
     return false;
 }
 
-static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in)
+static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
-    float diff = mea_in - exp_in;
+    float diff_tmp = 0.0f;
 
-    if(p_PIDObj)
+    if(p_PIDObj && (int16_t)(p_PIDObj->diff_max * p_PIDObj->accuracy_scale) && (int16_t)(p_PIDObj->diff_min * p_PIDObj->accuracy_scale))
     {
-        p_PIDObj->P_out = diff * p_PIDObj->gP;
+        /* limit diff range */
+        if((int16_t)(diff * p_PIDObj->accuracy_scale) > (int16_t)(p_PIDObj->diff_max * p_PIDObj->accuracy_scale))
+        {
+            diff_tmp = p_PIDObj->diff_max;
+        }
+        else if((int16_t)(diff * p_PIDObj->accuracy_scale) < (int16_t)(p_PIDObj->diff_min * p_PIDObj->accuracy_scale))
+        {
+            diff_tmp = p_PIDObj->diff_min;
+        }
+        else
+            diff_tmp = diff;
+
+        p_PIDObj->P_out = diff_tmp * p_PIDObj->gP;
+        return true;
     }
 
     return false;
 }
 
-static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj)
+static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
+    int16_t gI_Max_Fractical = 0.0f;
+    int16_t gI_Min_Fractical = 0.0f;
+    int16_t diff_Fractical = 0.0f;
+
     if(p_PIDObj)
     {
+        p_PIDObj->Integral += diff;
 
+        /* limit Integral */
+        /* check integer first */
+        if((int16_t)p_PIDObj->Integral >= (int16_t)p_PIDObj->gI_Max)
+        {
+            if((int16_t)p_PIDObj->Integral == (int16_t)p_PIDObj->gI_Max)
+            {
+                gI_Max_Fractical = (p_PIDObj->gI_Max - (int16_t)p_PIDObj->gI_Max) * p_PIDObj->accuracy_scale;
+                diff_Fractical = (p_PIDObj->Integral - (int16_t)p_PIDObj->gI_Max) * p_PIDObj->accuracy_scale;
+
+                /* check Fractional Part */
+                if(diff_Fractical > gI_Max_Fractical)
+                {
+                    p_PIDObj->Integral = p_PIDObj->gI_Max;
+                }
+            }
+            else
+                p_PIDObj->Integral = p_PIDObj->gI_Max;
+        }
+        else if((int16_t)p_PIDObj->Integral <= (int16_t)p_PIDObj->gI_Min)
+        {
+            if((int16_t)p_PIDObj->Integral == (int16_t)p_PIDObj->gI_Min)
+            {
+                gI_Min_Fractical = (p_PIDObj->gI_Min - (int16_t)p_PIDObj->gI_Min) * p_PIDObj->accuracy_scale;
+                diff_Fractical = (p_PIDObj->Integral - (int16_t)p_PIDObj->gI_Min) * p_PIDObj->accuracy_scale;
+                
+                /* check Fractional Part */
+                if(diff_Fractical < gI_Min_Fractical)
+                {
+                    p_PIDObj->Integral = p_PIDObj->gI_Min;
+                }
+            }
+            else
+                p_PIDObj->Integral = p_PIDObj->gI_Min;
+        }
+
+        p_PIDObj->I_out = p_PIDObj->gI * p_PIDObj->Integral;
+        return true;
     }
 
     return false;
 }
 
-static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj)
+static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
     if(p_PIDObj)
     {
 
+        return true;
+    }
+
+    return false;
+}
+
+static bool PID_Accuracy_Check(uint16_t accuracy)
+{
+    if(accuracy)
+    {
+        if(accuracy % 10)
+            return false;
+
+
+
+        return true;
     }
 
     return false;
