@@ -10,6 +10,7 @@
 
 typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
 typedef uint16_t (*DataPack_Callback)(uint8_t *pck);
+typedef uint32_t ComPort_Handle;
 
 typedef enum
 {
@@ -44,6 +45,23 @@ typedef enum
     SrvComProto_Type_MAV,
 } SrvComProto_Type_List;
 
+typedef enum
+{
+    SrvComPort_Type_None = 0,
+    SrvComPort_Type_Uart,
+    SrvComPort_Type_VCP,
+    SrvComPort_Type_CAN,
+    SrvComPort_Type_CANFD,
+    SrvComPort_Type_ETH,
+} SrvComPort_Type_List;
+
+typedef struct
+{
+    SrvComPort_Type_List type;
+    uint8_t *p_Obj;
+    uint8_t *p_Api;
+} SrvComPortObj_TypeDef;
+
 typedef struct
 {
     uint8_t *p_buf;
@@ -67,6 +85,7 @@ typedef struct
     mavlink_message_t *msg_obj;
     DataPack_Callback pack_callback;
     uint32_t proto_time;
+    ComPort_Handle bind_port;
 
     bool in_proto;
     bool lock_proto;
@@ -89,6 +108,8 @@ typedef struct
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
     bool (*mav_msg_enable_ctl)(SrvComProto_MsgInfo_TypeDef *msg, bool state);
     bool (*mav_msg_stream)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
+    ComPort_Handle (*mav_creat_port)(SrvComPortObj_TypeDef *obj, SrvComPort_Type_List type, uint8_t *p_PortObj);
+    void (*mav_msg_bind_port)(SrvComProto_MsgInfo_TypeDef *msg, ComPort_Handle port_hdl);
 } SrvComProto_TypeDef;
 
 extern SrvComProto_TypeDef SrvComProto;

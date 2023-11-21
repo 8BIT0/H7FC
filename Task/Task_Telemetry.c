@@ -61,7 +61,6 @@ void TaskTelemetry_Init(uint32_t period)
     memset(&Telemetry_Monitor, 0, sizeof(Telemetry_Monitor));
 
     Telemetry_Monitor.Init_Rt = SrvOsCommon.get_os_ms();
-    SrvComProto.init(SrvComProto_Type_MAV, NULL);
 
     /* init receiver */
     if (Telemetry_RC_Sig_Init(&RC_Setting, &Receiver_Obj))

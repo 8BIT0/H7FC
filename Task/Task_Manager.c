@@ -9,6 +9,7 @@
 #include "IO_Definition.h"
 #include "Dev_Led.h"
 #include "DiskIO.h"
+#include "Srv_ComProto.h"
 #include "../DataPipe/DataPipe.h"
 #include "cmsis_os.h"
 
@@ -83,6 +84,8 @@ void Task_Manager_CreateTask(void)
         {
             DataPipe_Init();
 
+            SrvComProto.init(SrvComProto_Type_MAV, NULL);
+            
             TaskProtocol_Init(TaskProtocol_Period_Def);
             TaskSample_Init(TaskSample_Period_Def);
             TaskTelemetry_Init(TaskTelemetry_Period_def);

@@ -61,8 +61,6 @@ static bool TaskProtocol_VCPTransBuff(void);
 
 bool TaskProtocol_Init(uint32_t period)
 {
-    SrvComProto.init(SrvComProto_Type_MAV, NULL);
-
     /* create mavlink message object */
     if (SrvComProto.get_msg_type() == SrvComProto_Type_MAV)
     {
