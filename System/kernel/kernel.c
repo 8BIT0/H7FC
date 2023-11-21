@@ -267,7 +267,7 @@ bool HAL_BaseTick_Init(void)
   return true;
 }
 
-/**x
+/**
   * Initializes the Global MSP.
   */
 void HAL_MspInit(void)
