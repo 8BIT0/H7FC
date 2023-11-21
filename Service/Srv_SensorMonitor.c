@@ -3,6 +3,7 @@
 #include "Srv_OsCommon.h"
 #include "debug_util.h"
 #include "IO_Definition.h"
+#include "kernel.h"
 
 /* 
  * for sensor statistic function a timer is essenial
