@@ -32,16 +32,9 @@ SrvSensorMonitor_TypeDef SrvSensorMonitor = {
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 {
     uint8_t enable_sensor_num = 0;
-    static bool first_call = true;
 
     if(obj)
     {
-        if(first_call)
-        {
-            obj->TimerState = SrvSensorMonitor_StatisticTimer_Defualt;
-            first_call = false;
-        }
-
         enable_sensor_num = Get_OnSet_Bit_Num(obj->enabled_reg.val);
         
         obj->statistic_list = SrvOsCommon.malloc(enable_sensor_num * sizeof(SrvSensorMonitor_Statistic_TypeDef));
@@ -108,13 +101,6 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         else
         {
             obj->init_state_reg.bit.gnss = false;
-        }
-
-        /* enable a 32bit timer for statistic */
-        if(obj->TimerState == SrvSensorMonitor_StatisticTimer_Defualt)
-        {
-            /* statistic timer init */
-            // BspTimer_Tick.init();
         }
     }
 
