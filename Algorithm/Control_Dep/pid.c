@@ -12,8 +12,6 @@ static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in, float *pid_f_out, int16_t *pid_i_out)
 {
     bool P_State = false;
-    bool I_State = false;
-    bool D_State = false;
     float diff = mea_in - exp_in;
     float out_tmp = 0.0f;
 
@@ -29,15 +27,12 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
         {
             out_tmp += p_PIDObj->P_out;
             
-            I_State = PID_I_Progress(p_PIDObj, diff);
-            D_State = PID_D_Progress(p_PIDObj, diff);
-
-            if(I_State)
+            if(PID_I_Progress(p_PIDObj, diff))
             {
                 out_tmp += p_PIDObj->I_out;
             }
 
-            if(D_State)
+            if(PID_D_Progress(p_PIDObj, diff))
             {
                 out_tmp += p_PIDObj->D_out;
             }
