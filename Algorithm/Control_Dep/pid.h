@@ -38,6 +38,7 @@ typedef struct
     float CTL_period;  /* unit: S */
 }PIDObj_TypeDef;
 
+bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in, float *pid_f_out, int16_t *pid_i_out);
 
 #endif
 
