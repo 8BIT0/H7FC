@@ -178,7 +178,9 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     bool state = false;
     uint32_t sample_interval_ms = 0;
     uint32_t cur_time = SrvOsCommon.get_os_ms();
-    uint32_t sample_tick = 0;
+    uint32_t start_tick = 0;
+    uint32_t end_tick = 0;
+    int32_t sample_tick = 0;
 
     if(obj && obj->statistic_imu && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && obj->statistic_imu->set_period)
     {
@@ -192,10 +194,11 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
         {
 
             DebugPin.ctl(Debug_PB5, true);
-            sample_tick = SrvOsCommon.get_systimer_current_tick();
+            start_tick = SrvOsCommon.get_systimer_current_tick();
 
             if(SrvIMU.sample(SrvIMU_FusModule))
             {
+                end_tick = SrvOsCommon.get_systimer_current_tick();
                 SrvIMU.error_proc();
 
                 obj->statistic_imu->sample_cnt ++;
@@ -205,18 +208,29 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
                 state = true;
             }
-
-            sample_tick = (SrvOsCommon.get_systimer_current_tick() - sample_tick) / SrvOsCommon.systimer_tick_to_us();
             DebugPin.ctl(Debug_PB5, false);
 
             if(state)
             {
+                if(start_tick < end_tick)
+                {
+                    sample_tick = end_tick - start_tick;
+                }
+                else if(start_tick > end_tick)
+                {
+                    /* must after timer irq */
+                    sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
+                }
+
                 if((sample_tick <= obj->statistic_imu->min_sampling_overhead) || \
                    (obj->statistic_imu->min_sampling_overhead == 0))
                     obj->statistic_imu->min_sampling_overhead = sample_tick;
 
                 if(sample_tick >= obj->statistic_imu->max_sampling_overhead)
                     obj->statistic_imu->max_sampling_overhead = sample_tick;
+
+                obj->statistic_imu->avg_sampling_overhead += sample_tick;
+                obj->statistic_imu->avg_sampling_overhead /= 2;
 
                 /* still on test */
                 obj->statistic_imu->cur_sampling_overhead = sample_tick;
