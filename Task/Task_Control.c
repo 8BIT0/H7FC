@@ -26,6 +26,10 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .RC_Rt = 0,
 };
 
+/* internal function */
+static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state);
+static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef *monitor);
+
 /* internal var */
 static uint32_t TaskControl_Period = 0;
 
@@ -37,16 +41,17 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Monitor.ctl_model = SrvActuator.get_model();
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
+    /* PID Parametet Init */
+
     TaskControl_Period = period;
 }
 
 void TaskControl_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
-    uint32_t imu_update_time = 0;
     uint32_t rc_update_time = 0;
+    uint32_t imu_update_time = 0;
     uint32_t att_update_time = 0;
-    IMUAtt_TypeDef ctl_attitude;
     uint16_t rc_ch[32];
     uint16_t gimbal[4];
     uint8_t rc_channel_sum;
@@ -55,8 +60,9 @@ void TaskControl_Core(void const *arg)
     bool arm_state = true;
     bool failsafe = false;
     bool imu_init_state = false;
+    bool att_update = false;
+    bool rc_update = false;
 
-    memset(&ctl_attitude, 0, sizeof(IMUAtt_TypeDef));
     while(1)
     {
         if (TaskControl_Monitor.init_state && !TaskControl_Monitor.control_abort)
@@ -80,31 +86,31 @@ void TaskControl_Core(void const *arg)
             }
 
             // check imu filter gyro data update or not
-            SrvDataHub.get_scaled_imu(&imu_update_time,
-                                    &TaskControl_Monitor.acc_scale,
-                                    &TaskControl_Monitor.gyr_scale,
-                                    &TaskControl_Monitor.acc[Axis_X],
-                                    &TaskControl_Monitor.acc[Axis_Y],
-                                    &TaskControl_Monitor.acc[Axis_Z],
-                                    &TaskControl_Monitor.gyr[Axis_X],
-                                    &TaskControl_Monitor.gyr[Axis_Y],
-                                    &TaskControl_Monitor.gyr[Axis_Z],
-                                    &TaskControl_Monitor.imu_tmpr,
-                                    &imu_err_code);
+            if(!SrvDataHub.get_scaled_imu(&imu_update_time,
+                                          &TaskControl_Monitor.acc_scale,
+                                          &TaskControl_Monitor.gyr_scale,
+                                          &TaskControl_Monitor.acc[Axis_X],
+                                          &TaskControl_Monitor.acc[Axis_Y],
+                                          &TaskControl_Monitor.acc[Axis_Z],
+                                          &TaskControl_Monitor.gyr[Axis_X],
+                                          &TaskControl_Monitor.gyr[Axis_Y],
+                                          &TaskControl_Monitor.gyr[Axis_Z],
+                                          &TaskControl_Monitor.imu_tmpr,
+                                          &imu_err_code))
+                goto lock_moto;
 
             // get attitude
-            SrvDataHub.get_attitude(&ctl_attitude.time_stamp, \
-                                    &ctl_attitude.pitch, \
-                                    &ctl_attitude.roll, \
-                                    &ctl_attitude.yaw, \
-                                    &ctl_attitude.q0, \
-                                    &ctl_attitude.q1, \
-                                    &ctl_attitude.q2, \
-                                    &ctl_attitude.q3);
-            att_update_time = ctl_attitude.time_stamp;
-            
+            att_update = SrvDataHub.get_attitude(&att_update_time,
+                                                 &TaskControl_Monitor.attitude.pitch,
+                                                 &TaskControl_Monitor.attitude.roll,
+                                                 &TaskControl_Monitor.attitude.yaw,
+                                                 &TaskControl_Monitor.attitude.q0,
+                                                 &TaskControl_Monitor.attitude.q1,
+                                                 &TaskControl_Monitor.attitude.q2,
+                                                 &TaskControl_Monitor.attitude.q3);
+
             // get rc channel and other toggle signal
-            SrvDataHub.get_rc(&rc_update_time, rc_ch, &rc_channel_sum);
+            rc_update = SrvDataHub.get_rc(&rc_update_time, rc_ch, &rc_channel_sum);
 
             if (imu_update_time)
             {
@@ -223,6 +229,10 @@ void TaskControl_Core(void const *arg)
             gimbal[2] = 0;
             gimbal[3] = 0;
 
+            /* Update PID */
+            TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
+            TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
+
             SrvActuator.moto_control(gimbal);
 
             if(imu_err_code == SrvIMU_Sample_NoError)
@@ -242,3 +252,33 @@ lock_moto:
     }
 }
 
+static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state)
+{
+    if(monitor)
+    {
+        monitor->att_pid_state = att_state;
+        
+        if(att_state)
+        {
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef *monitor)
+{
+    if(monitor)
+    {
+        if(monitor->att_pid_state)
+        {
+
+        }
+
+        return true;
+    }
+
+    return false;
+}

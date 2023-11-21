@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "imu_data.h"
 #include "cmsis_os.h"
+#include "pid.h"
 #include "../common/util.h"
 
 #define TASKCONTROL_SET_BIT(x) UTIL_SET_BIT(x)
@@ -56,6 +57,7 @@ typedef struct
 
     uint32_t IMU_Rt;
     uint32_t RC_Rt;
+    uint32_t ATT_Rt;
 
     bool auto_control;
 
@@ -69,9 +71,23 @@ typedef struct
     float acc_lst[Axis_Sum];
     float gyr_lst[Axis_Sum];
 
+    IMUAtt_TypeDef attitude; 
+
     uint32_t error_code;
     uint8_t imu_none_update_cnt;
     uint8_t over_angular_accelerate_cnt;
+
+    bool att_pid_state;
+
+    /* outer ring attitude control pid */
+    PIDObj_TypeDef RollCtl_PIDObj;
+    PIDObj_TypeDef PitchCtl_PIDObj;
+    PIDObj_TypeDef YawCtl_PIDObj;
+
+    /* inner ring angular speed control pid */
+    PIDObj_TypeDef GyrXCtl_PIDObj;
+    PIDObj_TypeDef GyrYCtl_PIDObj;
+    PIDObj_TypeDef GyrZCtl_PIDObj;
 } TaskControl_Monitor_TypeDef;
 
 void TaskControl_Init(uint32_t period);
