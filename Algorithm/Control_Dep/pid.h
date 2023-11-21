@@ -15,12 +15,6 @@ typedef struct
 
     uint16_t accuracy_scale; /* max scale is 10000, noticed it must be the integer power of 10 */
 
-    /* Positional pid */
-    int16_t iout_base;
-    int16_t iout;
-    int16_t iout_min;
-    int16_t iout_max;
-
     /* add member in this section */
     float gP;
     float P_out;
@@ -38,7 +32,7 @@ typedef struct
     float CTL_period;  /* unit: S */
 }PIDObj_TypeDef;
 
-bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in, float *pid_f_out, int16_t *pid_i_out);
+bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in, float *pid_f_out);
 
 #endif
 

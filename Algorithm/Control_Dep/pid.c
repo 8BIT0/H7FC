@@ -9,12 +9,12 @@ static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 
-bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in, float *pid_f_out, int16_t *pid_i_out)
+bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in, float *pid_f_out)
 {
     float diff = mea_in - exp_in;
     float out_tmp = 0.0f;
 
-    if(p_PIDObj && PID_Accuracy_Check(p_PIDObj->accuracy_scale) && pid_f_out && pid_i_out)
+    if(p_PIDObj && PID_Accuracy_Check(p_PIDObj->accuracy_scale) && pid_f_out)
     {
         p_PIDObj->in = mea_in;
         p_PIDObj->exp = exp_in;
