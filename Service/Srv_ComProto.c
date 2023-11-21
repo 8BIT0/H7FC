@@ -192,14 +192,14 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProt
             switch(p_BindPort->type)
             {
                 case SrvComPort_Type_Uart:
-                if(p_BindPort->p_Obj && p_BindPort->p_Api)
-                {
-                    
-                }
-                break;
+                    if(p_BindPort->p_Obj && p_BindPort->p_Api)
+                    {
+
+                    }
+                    break;
 
                 default:
-                break;
+                    break;
             }
         }
     }
