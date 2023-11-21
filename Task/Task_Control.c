@@ -95,7 +95,7 @@ void TaskControl_Core(void const *arg)
             SrvDataHub.get_gimbal_percent(gimbal);
             
             // get imu init state first
-            if(SrvDataHub.get_imu_init_state(&imu_init_state) || !imu_init_state)
+            if(!SrvDataHub.get_imu_init_state(&imu_init_state) || !imu_init_state)
             {
                 /* imu init error then lock the acturator */
                 failsafe = true;
