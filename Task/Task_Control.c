@@ -208,15 +208,7 @@ void TaskControl_Core(void const *arg)
             }
             
             if(TaskControl_Monitor.angular_protect)
-            {
-                if(arm_state == TELEMETRY_SET_ARM)
-                {
-                    TaskControl_Monitor.angular_protect = false;
-                    TaskControl_Monitor.angular_warning_cnt = 0;
-                }
-                else
-                    goto lock_moto;
-            }
+                goto lock_moto;
 
             /* currently lock moto */
             if(TaskControl_Monitor.auto_control)
