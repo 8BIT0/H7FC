@@ -42,6 +42,9 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
                 out_tmp += p_PIDObj->D_out;
             }
 
+            (*pid_f_out) = out_tmp;
+            /* comput pid integer output down below */
+
             return true;
         }
     }
@@ -156,7 +159,9 @@ static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
     if(p_PIDObj)
     {
+        p_PIDObj->D_out = p_PIDObj->gD * (diff - p_PIDObj->lst_diff);
 
+        p_PIDObj->lst_diff = diff;
         return true;
     }
 
@@ -167,10 +172,9 @@ static bool PID_Accuracy_Check(uint16_t accuracy)
 {
     if(accuracy)
     {
-        if(accuracy % 10)
+        if((accuracy % 10) || (accuracy % 100) || (accuracy % 1000) || (accuracy % 10000) || \
+           (accuracy / 10) || (accuracy / 100) || (accuracy / 1000) || (accuracy / 10000))
             return false;
-
-
 
         return true;
     }

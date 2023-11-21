@@ -32,6 +32,7 @@ typedef struct
     float I_out;
 
     float gD;
+    float lst_diff;
     float D_out;
 
     float CTL_period;  /* unit: S */
