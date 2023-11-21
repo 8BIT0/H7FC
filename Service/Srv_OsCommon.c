@@ -37,6 +37,7 @@ SrvOsCommon_TypeDef SrvOsCommon = {
     .get_systimer_period = Kernel_Get_PeriodValue,
     .set_systimer_tick_value = Kernel_Set_SysTimer_TickUnit,
     .set_systimer_period = Kernel_Set_PeriodValue,
+    .systimer_tick_to_us = Kernel_TickVal_To_Us,
     .systimer_disable = Kernel_DisableTimer_IRQ,
     .systimer_enable = Kernel_EnableTimer_IRQ,
 };

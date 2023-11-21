@@ -14,6 +14,7 @@ typedef struct
     int32_t (*precise_delay)(uint32_t *p_time, uint32_t ms);
     uint32_t (*get_systimer_current_tick)(void);
     uint32_t (*get_systimer_period)(void);
+    uint32_t (*systimer_tick_to_us)(void);
     bool (*set_systimer_tick_value)(uint32_t value);
     bool (*set_systimer_period)(uint32_t period);
     uint32_t (*systimer_disable)(void);

@@ -61,14 +61,6 @@ void DebugMon_Handler(void)
 void SysTick_Handler(void)
 {
   // HAL_IncTick();
-#if (INCLUDE_xTaskGetSchedulerState == 1 )
-  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
-  {
-#endif /* INCLUDE_xTaskGetSchedulerState */
-  xPortSysTickHandler();
-#if (INCLUDE_xTaskGetSchedulerState == 1 )
-  }
-#endif /* INCLUDE_xTaskGetSchedulerState */
 }
 
 void OTG_FS_IRQHandler(void)
@@ -249,7 +241,17 @@ void TIM17_IRQHandler(void)
 /* use timer16 as systime tick timer */
 void TIM16_IRQHandler(void)
 {
-  DebugPin.ctl(Debug_PB5, true);
+  // DebugPin.ctl(Debug_PB5, true);
+
+#if (INCLUDE_xTaskGetSchedulerState == 1 )
+  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
+  {
+#endif /* INCLUDE_xTaskGetSchedulerState */
+  xPortSysTickHandler();
+#if (INCLUDE_xTaskGetSchedulerState == 1 )
+  }
+#endif /* INCLUDE_xTaskGetSchedulerState */
+  
   HAL_TIM_IRQHandler(&htim16);
-  DebugPin.ctl(Debug_PB5, false);
+  // DebugPin.ctl(Debug_PB5, false);
 }

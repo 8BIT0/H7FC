@@ -190,6 +190,8 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
              (sample_interval_ms && \
              (cur_time >= obj->statistic_imu->nxt_sample_time))))
         {
+
+            DebugPin.ctl(Debug_PB5, true);
             sample_tick = SrvOsCommon.get_systimer_current_tick();
 
             if(SrvIMU.sample(SrvIMU_FusModule))
@@ -204,10 +206,18 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
                 state = true;
             }
 
-            sample_tick -= SrvOsCommon.get_systimer_current_tick();
-            
+            sample_tick = (SrvOsCommon.get_systimer_current_tick() - sample_tick) / SrvOsCommon.systimer_tick_to_us();
+            DebugPin.ctl(Debug_PB5, false);
+
             if(state)
             {
+                if((sample_tick <= obj->statistic_imu->min_sampling_overhead) || \
+                   (obj->statistic_imu->min_sampling_overhead == 0))
+                    obj->statistic_imu->min_sampling_overhead = sample_tick;
+
+                if(sample_tick >= obj->statistic_imu->max_sampling_overhead)
+                    obj->statistic_imu->max_sampling_overhead = sample_tick;
+
                 /* still on test */
                 obj->statistic_imu->cur_sampling_overhead = sample_tick;
             }

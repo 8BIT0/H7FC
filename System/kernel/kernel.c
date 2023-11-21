@@ -113,9 +113,9 @@ bool Kernel_BaseTick_Init(void)
   __HAL_RCC_TIM16_CLK_ENABLE();
    
   htim16.Instance = TIM16;
-  htim16.Init.Prescaler = 1600;
+  htim16.Init.Prescaler = 15;
   htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim16.Init.Period =  10000; /* 10000tick unit represent 1Ms, 1tick value represent 100Ns */
+  htim16.Init.Period = 9999; /* 10000tick unit represent 1Ms, 1tick value represent 100Ns */
   htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
@@ -166,6 +166,11 @@ bool Kernel_DisableTimer_IRQ(void)
   }
 
   return false;
+}
+
+uint32_t Kernel_TickVal_To_Us(void)
+{
+  return __HAL_TIM_GET_AUTORELOAD(&htim16) / 1000;
 }
 
 uint32_t Kernel_Get_PeriodValue(void)
