@@ -249,5 +249,7 @@ void TIM17_IRQHandler(void)
 /* use timer16 as systime tick timer */
 void TIM16_IRQHandler(void)
 {
+  DebugPin.ctl(Debug_PB5, true);
   HAL_TIM_IRQHandler(&htim16);
+  DebugPin.ctl(Debug_PB5, false);
 }
