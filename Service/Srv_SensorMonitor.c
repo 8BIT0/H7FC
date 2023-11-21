@@ -3,7 +3,6 @@
 #include "Srv_OsCommon.h"
 #include "debug_util.h"
 #include "IO_Definition.h"
-#include "kernel.h"
 
 /* 
  * for sensor statistic function a timer is essenial
@@ -176,8 +175,10 @@ static bool SrvSensorMonitor_IMU_Init(void)
 
 static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
+    bool state = false;
     uint32_t sample_interval_ms = 0;
     uint32_t cur_time = SrvOsCommon.get_os_ms();
+    uint32_t sample_tick = 0;
 
     if(obj && obj->statistic_imu && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && obj->statistic_imu->set_period)
     {
@@ -189,6 +190,8 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
              (sample_interval_ms && \
              (cur_time >= obj->statistic_imu->nxt_sample_time))))
         {
+            sample_tick = SrvOsCommon.get_systimer_current_tick();
+
             if(SrvIMU.sample(SrvIMU_FusModule))
             {
                 SrvIMU.error_proc();
@@ -198,12 +201,20 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
                 if(obj->statistic_imu->start_time == 0)
                     obj->statistic_imu->start_time = cur_time;
 
-                return true;
+                state = true;
+            }
+
+            sample_tick -= SrvOsCommon.get_systimer_current_tick();
+            
+            if(state)
+            {
+                /* still on test */
+                obj->statistic_imu->cur_sampling_overhead = sample_tick;
             }
         }
     }
 
-    return false;
+    return state;
 }
 
 static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj_TypeDef *obj)
