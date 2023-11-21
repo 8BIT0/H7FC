@@ -115,7 +115,7 @@ bool Kernel_BaseTick_Init(void)
   htim16.Instance = TIM16;
   htim16.Init.Prescaler = 15;
   htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim16.Init.Period = 9999; /* 10000tick unit represent 1Ms, 1tick value represent 100Ns */
+  htim16.Init.Period = 9980; /* 9980 tick unit represent 1Ms, 1tick value represent 1000us / 9980 */
   htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim16) != HAL_OK)

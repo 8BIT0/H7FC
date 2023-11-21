@@ -23,56 +23,14 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
 static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state);
 static SrvComProto_Type_List Srv_ComProto_GetType(void);
-static ComPort_Handle Srv_ComProto_Create_Port(SrvComPortObj_TypeDef *obj, SrvComPort_Type_List type, uint8_t *p_PortObj);
-static void Srv_ComProto_BindPort(SrvComProto_MsgInfo_TypeDef *msg, ComPort_Handle port_hdl);
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
     .mav_msg_obj_init = Srv_ComProto_MsgObj_Init,
-    .mav_creat_port = Srv_ComProto_Create_Port,
-    .mav_msg_bind_port =  Srv_ComProto_BindPort,
     .get_msg_type = Srv_ComProto_GetType,
     .mav_msg_stream = SrvComProto_MsgToStream,
     .mav_msg_enable_ctl = SrvComProto_MsgEnable_Control,
 };
-
-static ComPort_Handle Srv_ComProto_Create_Port(SrvComPortObj_TypeDef *obj, SrvComPort_Type_List type, uint8_t *p_PortObj)
-{
-    ComPort_Handle hdl = 0;
-
-    if(obj && (type <= SrvComPort_Type_ETH) && p_PortObj)
-    {
-        obj->p_Obj = p_PortObj;
-
-        switch((uint8_t) type)
-        {
-            case SrvComPort_Type_Uart:
-                obj->type = type;
-
-                if(BspUart.init((BspUARTObj_TypeDef*)p_PortObj))
-                {
-                    obj->p_Api = (uint8_t *)&BspUart;
-                    break;
-                }
-
-                obj->p_Api = NULL;
-                obj->p_Obj = NULL;
-
-            default:
-                return hdl;
-        }
-
-        hdl = (ComPort_Handle)obj;
-    }
-
-    return hdl;
-}
-
-static void Srv_ComProto_BindPort(SrvComProto_MsgInfo_TypeDef *msg, ComPort_Handle port_hdl)
-{
-    if(msg)
-        msg->bind_port = port_hdl;
-}
 
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
 {
@@ -157,8 +115,6 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb)
 {
-    SrvComPortObj_TypeDef *p_BindPort;
-
     if (msg->enable && com_stream && com_stream->p_buf && msg->pack_callback)
     {
         msg->in_proto = true;
@@ -182,26 +138,6 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProt
         }
 
         msg->in_proto = false;
-
-        /* if currnet protocol bind with a valid port */
-        /* then send frame directly via binding port */
-        if(msg->bind_port)
-        {
-            p_BindPort = (SrvComPortObj_TypeDef *)(msg->bind_port);
-
-            switch(p_BindPort->type)
-            {
-                case SrvComPort_Type_Uart:
-                    if(p_BindPort->p_Obj && p_BindPort->p_Api)
-                    {
-
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-        }
     }
 }
 
