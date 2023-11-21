@@ -12,6 +12,12 @@
 #define DEFAULT_CONTROL_MODEL Model_Quad
 #define DEFAULT_ESC_TYPE DevDshot_600
 
+#define ATTITUDE_PID_ACCURACY 1000
+#define ATTITUDE_PID_DIFF_MAX 30    /* unit: deg */
+#define ATTITUDE_PID_DIFF_MIN -30   /* unit: deg */
+
+#define ANGULAR_PID_ACCURACY 1000
+
 SrvIMU_UnionData_TypeDef LstCyc_IMU_Data;
 SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
 
@@ -42,6 +48,19 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
     /* PID Parametet Init */
+    TaskControl_Monitor.PitchCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
+    TaskControl_Monitor.RollCtl_PIDObj.accuracy_scale  = ATTITUDE_PID_ACCURACY;
+    TaskControl_Monitor.YawCtl_PIDObj.accuracy_scale   = ATTITUDE_PID_ACCURACY;
+
+    TaskControl_Monitor.PitchCtl_PIDObj.diff_max       = ATTITUDE_PID_DIFF_MAX;
+    TaskControl_Monitor.RollCtl_PIDObj.diff_max        = ATTITUDE_PID_DIFF_MAX;
+
+    TaskControl_Monitor.PitchCtl_PIDObj.diff_min       = ATTITUDE_PID_DIFF_MIN;
+    TaskControl_Monitor.RollCtl_PIDObj.diff_min        = ATTITUDE_PID_DIFF_MIN;
+    
+    TaskControl_Monitor.GyrXCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+    TaskControl_Monitor.GyrYCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+    TaskControl_Monitor.GyrZCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
 
     TaskControl_Period = period;
 }
