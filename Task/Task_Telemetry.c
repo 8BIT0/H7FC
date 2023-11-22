@@ -61,6 +61,7 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
 
 /* redio section */
+static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
 static bool Telemetry_RadioPort_Init(void);
 static bool Telemetry_MAV_Msg_Init(void);
 
@@ -589,7 +590,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 }
 
 /************************************** telemetry radio section ********************************************/
-static bool Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
+static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
 {
     if(monitor)
     {
@@ -599,8 +600,6 @@ static bool Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
             
         }
     }
-
-    return false;
 }
 
 static bool Telemetry_RadioPort_Init(void)
