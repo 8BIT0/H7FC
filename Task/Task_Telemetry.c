@@ -36,11 +36,20 @@
 #define SBUS_RX_PIN Uart4_RxPin
 
 /* internal variable */
+/* MAVLink message List */
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RawIMU;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_ScaledIMU;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RcChannel;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_MotoChannel;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_Attitude;
+
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_RCInput_TypeDef RC_Setting;
 static Telemetry_Monitor_TypeDef Telemetry_Monitor;
 static bool RCData_To_Configuretor = false;
+static bool Telemetry_MavProto_Enable = false;
 static uint32_t TaskTelemetry_Period = 0;
+static Telemetry_PortMonitor_TypeDef PortMonitor = {.init = false};
 DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
 
 /* internal funciotn */
@@ -50,6 +59,10 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
 static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
+
+/* redio section */
+static bool Telemetry_RadioPort_Init(void);
+static bool Telemetry_MAV_Msg_Init(void);
 
 void TaskTelemetry_Set_DataIO_Enable(bool state)
 {
@@ -109,7 +122,11 @@ void TaskTelemetry_Init(uint32_t period)
         Telemetry_Monitor.lst_arm_state = TELEMETRY_SET_ARM;
     }
 
-    /* init radio */
+    /* init radio port */
+    Telemetry_RadioPort_Init();
+
+    /* init radio protocol*/
+    Telemetry_MavProto_Enable = Telemetry_MAV_Msg_Init();
 
     TaskTelemetry_Period = period;
 }
@@ -572,3 +589,78 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 }
 
 /************************************** telemetry radio section ********************************************/
+static bool Telemetry_RadioPort_Init(void)
+{
+    /* USB VCP as defaut port to tune parameter and frame porotcol */
+    if(!PortMonitor.init)
+    {
+        memset(&PortMonitor, 0, sizeof(PortMonitor));
+        
+        /* init default port VCP first */
+
+        PortMonitor.init = true;
+    }
+
+    return false;
+}
+
+static bool Telemetry_RadioPort_SendCTL()
+{
+    return false;
+}
+
+/************************************** telemetry radio section ********************************************/
+static bool Telemetry_MAV_Msg_Init(void)
+{
+    /* create mavlink message object */
+    if (SrvComProto.get_msg_type() == SrvComProto_Type_MAV)
+    {
+        SrvComProto_MavPackInfo_TypeDef PckInfo;
+
+        memset(&PckInfo, 0, sizeof(PckInfo));
+        memset(&TaskProto_MAV_RawIMU, 0, sizeof(TaskProto_MAV_RawIMU));
+        memset(&TaskProto_MAV_ScaledIMU, 0, sizeof(TaskProto_MAV_ScaledIMU));
+        memset(&TaskProto_MAV_RcChannel, 0, sizeof(TaskProto_MAV_RcChannel));
+        memset(&TaskProto_MAV_MotoChannel, 0, sizeof(TaskProto_MAV_MotoChannel));
+        memset(&TaskProto_MAV_Attitude, 0, sizeof(TaskProto_MAV_Attitude));
+
+        // period 10Ms 100Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Raw_IMU;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RawIMU, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RawIMU, true);
+
+        // period 10Ms 100Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Scaled_IMU;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_ScaledIMU, true);
+
+        // period 20Ms 50Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_RC_Channel;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RcChannel, PckInfo, 20);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RcChannel, true);
+
+        // period 10Ms 100Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_MotoCtl;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_MotoChannel, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_MotoChannel, true);
+
+        // period 20Ms 50Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Attitude;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Attitude, PckInfo, 20);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Attitude, true);
+
+        return true;
+    }
+
+    return false;
+}

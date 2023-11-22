@@ -139,6 +139,43 @@ typedef struct
 } Telemetry_Monitor_TypeDef;
 #pragma pack()
 
+typedef enum
+{
+    Telemetry_Bypass_None = 0,
+    Telemetry_Bypass_RxOnly,
+    Telemetry_Bypass_TxOnly,
+    Telemetry_Bypass_BothDir,
+} Telemetry_Bypass_TypeList;
+
+typedef struct
+{
+    bool init_state;
+} Telemetry_VCPPortMonitor_TypeDef;
+
+typedef struct
+{
+    bool init_state;
+    
+    Telemetry_Bypass_TypeList bypass_mode;
+    uint8_t *bypass_src;
+} Telemetry_UartPortMonitor_TypeDef;
+
+typedef struct
+{
+    bool init_state;
+} Telemetry_CanPortMonitor_TypeDef;
+
+typedef struct
+{
+    bool init;
+    uint8_t uart_port_num;
+    uint8_t can_port_num;
+
+    Telemetry_VCPPortMonitor_TypeDef VCP_Port;
+    Telemetry_UartPortMonitor_TypeDef *Uart_Port;
+    Telemetry_CanPortMonitor_TypeDef *Can_Port;
+} Telemetry_PortMonitor_TypeDef;
+
 void TaskTelemetry_Init(uint32_t period);
 void TaskTelemetry_Core(void const* arg);
 

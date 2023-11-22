@@ -61,53 +61,7 @@ static bool TaskProtocol_VCPTransBuff(void);
 
 bool TaskProtocol_Init(uint32_t period)
 {
-    /* create mavlink message object */
-    if (SrvComProto.get_msg_type() == SrvComProto_Type_MAV)
-    {
-        SrvComProto_MavPackInfo_TypeDef PckInfo;
 
-        memset(&PckInfo, 0, sizeof(PckInfo));
-        memset(&TaskProto_MAV_RawIMU, 0, sizeof(TaskProto_MAV_RawIMU));
-        memset(&TaskProto_MAV_ScaledIMU, 0, sizeof(TaskProto_MAV_ScaledIMU));
-        memset(&TaskProto_MAV_RcChannel, 0, sizeof(TaskProto_MAV_RcChannel));
-        memset(&TaskProto_MAV_MotoChannel, 0, sizeof(TaskProto_MAV_MotoChannel));
-        memset(&TaskProto_MAV_Attitude, 0, sizeof(TaskProto_MAV_Attitude));
-
-        // period 10Ms 100Hz
-        PckInfo.system_id = MAV_SysID_Drone;
-        PckInfo.component_id = MAV_CompoID_Raw_IMU;
-        PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RawIMU, PckInfo, 10);
-        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RawIMU, true);
-
-        // period 10Ms 100Hz
-        PckInfo.system_id = MAV_SysID_Drone;
-        PckInfo.component_id = MAV_CompoID_Scaled_IMU;
-        PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10);
-        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_ScaledIMU, true);
-
-        // period 20Ms 50Hz
-        PckInfo.system_id = MAV_SysID_Drone;
-        PckInfo.component_id = MAV_CompoID_RC_Channel;
-        PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RcChannel, PckInfo, 20);
-        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RcChannel, true);
-
-        // period 10Ms 100Hz
-        PckInfo.system_id = MAV_SysID_Drone;
-        PckInfo.component_id = MAV_CompoID_MotoCtl;
-        PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_MotoChannel, PckInfo, 10);
-        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_MotoChannel, true);
-
-        // period 20Ms 50Hz
-        PckInfo.system_id = MAV_SysID_Drone;
-        PckInfo.component_id = MAV_CompoID_Attitude;
-        PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Attitude, PckInfo, 20);
-        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Attitude, true);
-    }
     else if (SrvComProto.get_msg_type() == SrvComProto_Type_Cus)
     {
     }

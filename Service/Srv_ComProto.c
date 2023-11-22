@@ -16,6 +16,7 @@ SrvComProto_Monitor_TypeDef SrvComProto_monitor = {
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
+static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck);
 
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
@@ -86,6 +87,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
         break;
 
     case MAV_CompoID_RC_Channel:
+        msg->pack_callback = SrvConProto_MavMsg_RC;
         break;
 
     case MAV_CompoID_Raw_IMU:
@@ -307,4 +309,24 @@ static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
                                           time_stamp,
                                           roll, pitch, yaw, 
                                           0.0f, 0.0f, 0.0f);
+}
+
+static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    uint32_t time_stamp = 0;
+    uint8_t channel_num = 0;
+    uint8_t rssi = 0;
+    uint16_t channel[32];
+
+    SrvDataHub.get_rc(&time_stamp, channel, &channel_num);
+
+    return mavlink_msg_rc_channels_pack_chan(pck->pck_info.system_id,
+                                             pck->pck_info.component_id,
+                                             pck->pck_info.chan, pck->msg_obj,
+                                             time_stamp, channel_num,
+                                             channel[0],  channel[1],  channel[2],  channel[3],
+                                             channel[4],  channel[5],  channel[6],  channel[7],
+                                             channel[8],  channel[9],  channel[10], channel[11],
+                                             channel[12], channel[13], channel[14], channel[15],
+                                             channel[16], channel[17], rssi);
 }
