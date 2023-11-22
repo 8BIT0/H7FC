@@ -589,14 +589,26 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 }
 
 /************************************** telemetry radio section ********************************************/
+static bool Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
+{
+    if(monitor)
+    {
+        /* init default port VCP first */
+        if(!USB_DEVICE_Init())
+        {
+            
+        }
+    }
+
+    return false;
+}
+
 static bool Telemetry_RadioPort_Init(void)
 {
     /* USB VCP as defaut port to tune parameter and frame porotcol */
     if(!PortMonitor.init)
     {
         memset(&PortMonitor, 0, sizeof(PortMonitor));
-        
-        /* init default port VCP first */
 
         PortMonitor.init = true;
     }
