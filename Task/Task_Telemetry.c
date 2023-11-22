@@ -601,7 +601,7 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
         }
         else
         {
-            
+
         }
     }
 }
