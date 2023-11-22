@@ -613,6 +613,8 @@ static bool Telemetry_RadioPort_Init(void)
     {
         memset(&PortMonitor, 0, sizeof(PortMonitor));
 
+        Telemetry_DefaultPort_Init(&PortMonitor);
+
         PortMonitor.init = true;
     }
 
