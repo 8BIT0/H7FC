@@ -8,6 +8,8 @@
 #include "Srv_Receiver.h"
 #include "linked_list.h"
 #include "../common/util.h"
+#include "Bsp_USB.h"
+#include "Bsp_Uart.h"
 
 #define Telemetry_SetBit(x) UTIL_SET_BIT(x)
 
@@ -149,15 +151,23 @@ typedef enum
 
 typedef struct
 {
+    bool enable;
+    Telemetry_Bypass_TypeList bypass_mode;
+    uint8_t *bypass_src;
+}TelemetryPort_ByPass_TypeDef;
+
+typedef struct
+{
     bool init_state;
+
+    BspUSB_VCP_TxStatistic_TypeDef tx_statistic;
+    TelemetryPort_ByPass_TypeDef ByPass_Mode;
 } Telemetry_VCPPortMonitor_TypeDef;
 
 typedef struct
 {
     bool init_state;
-    
-    Telemetry_Bypass_TypeList bypass_mode;
-    uint8_t *bypass_src;
+    TelemetryPort_ByPass_TypeDef ByPass_Mode;
 } Telemetry_UartPortMonitor_TypeDef;
 
 typedef struct

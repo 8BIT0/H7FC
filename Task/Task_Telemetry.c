@@ -28,8 +28,6 @@
 #include "Srv_OsCommon.h"
 #include "util.h"
 #include "Srv_ComProto.h"
-#include "Bsp_USB.h"
-#include "Bsp_Uart.h"
 
 #define CRSF_TX_PIN Uart4_TxPin
 #define CRSF_RX_PIN Uart4_RxPin
@@ -601,6 +599,8 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
             /* init default port VCP first */
             monitor->VCP_Port.init_state = false;
         }
+        else
+            monitor->VCP_Port.init_state = true;
     }
 }
 
