@@ -596,8 +596,11 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
 {
     if(monitor)
     {
-        /* init default port VCP first */
-        monitor->VCP_Port.init_state = false;
+        if(BspUSB_VCP.init() != BspUSB_Error_None)
+        {
+            /* init default port VCP first */
+            monitor->VCP_Port.init_state = false;
+        }
     }
 }
 
