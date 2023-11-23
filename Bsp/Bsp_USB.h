@@ -34,6 +34,7 @@ typedef struct
 
     uint32_t rx_irq_cnt;
     uint32_t tx_cnt;
+    uint32_t tx_queue_reset_cnt;
     uint32_t tx_fin_cnt;
     uint32_t tx_err_cnt;
 
@@ -45,8 +46,8 @@ typedef struct
 {
     BspUSB_Error_List (*init)(void);
     BspUSB_Error_List (*send)(uint8_t *p_data, uint16_t len);
-    bool (*set_rx_callback)(BspUSB_Rx_Callback_Def callback);
-    bool (*set_tx_cpl_callback)(BspUSB_Tx_Cplt_Callback_Def callback);
+    void (*set_rx_callback)(BspUSB_Rx_Callback_Def callback);
+    void (*set_tx_cpl_callback)(BspUSB_Tx_Cplt_Callback_Def callback);
 }BspUSB_VCP_TypeDef;
 
 extern BspUSB_VCP_TypeDef BspUSB_VCP;

@@ -6,6 +6,19 @@ static BspUSB_VCP_Obj_TypeDef BspUSB_VCPMonitor = {
     .init_state =  BspUSB_None_Init;
 };
 
+/* external function */
+static BspUSB_Error_List BspUSB_VCP_Init(void);
+static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len);
+static void BspUSB_VCP_Set_Rx_Callback(BspUSB_Rx_Callback_Def callback);
+static void BspUSB_VCP_Set_Tx_CPLT_Callback(BspUSB_Tx_Cplt_Callback_Def callback);
+
+BspUSB_VCP_TypeDef BspUSB_VCP = {
+    .init =  BspUSB_VCP_Init,
+    .send =  BspUSB_VCP_SendData,
+    .set_rx_callback = BspUSB_VCP_Set_Rx_Callback,
+    .set_tx_cpl_callback = BspUSB_VCP_Set_Tx_CPLT_Callback,
+};
+
 static BspUSB_Error_List BspUSB_VCP_Init(void)
 {
     if(!BspUSB_VCPMonitor.init_state = BspUSB_None_Init)
@@ -42,7 +55,12 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
     {
         if(BspUSB_VCPMonitor.tx_cnt == BspUSB_VCPMonitor.tx_fin_cnt)
         {
-            
+            if()
+            {
+                to_queue = true;
+            }
+            else
+                BspUSB_VCPMonitor.tx_cnt ++;
         }
         else
             to_queue = true;
@@ -52,6 +70,16 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
             /* push current send into queue for next time sending */
         }
     }
+}
+
+static void BspUSB_VCP_Set_Rx_Callback(BspUSB_Rx_Callback_Def callback)
+{
+    BspUSB_VCPMonitor.rx_callback = callback;
+}
+
+static void BspUSB_VCP_Set_Tx_CPLT_Callback(BspUSB_Tx_Cplt_Callback_Def callback)
+{
+    BspUSB_VCPMonitor.tx_fin_callback = callback;
 }
 
 /* internel irq function */
