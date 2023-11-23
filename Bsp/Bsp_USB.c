@@ -68,10 +68,11 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
             else
                 tx_size = len;
 
-            if(CDC_Transmit_FS(p_data, tx_size) != USBD_OK)
+            if(CDC_Transmit_FS(,) != USBD_OK)
             {
                 push_size = len;
                 push_src_addr = p_data;
+                BspUSB_VCPMonitor.tx_err_cnt ++;
             }
             else
                 BspUSB_VCPMonitor.tx_cnt ++;
@@ -85,6 +86,17 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
         if(push_size && push_src_addr)
         {
             /* push current send into queue for next time sending */
+send_queue_repush:
+            if(Queue.remain(BspUSB_VCPMonitor.SendQueue) >= push_size)
+            {
+
+            }
+            else
+            {
+                BspUSB_VCPMonitor.tx_queue_reset_cnt ++;
+                Queue.reset(&BspUSB_VCPMonitor.SendQueue);
+                goto send_queue_repush;
+            }
         }
     }
 }
