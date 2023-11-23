@@ -11,12 +11,14 @@ static BspUSB_Error_List BspUSB_VCP_Init(void);
 static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len);
 static void BspUSB_VCP_Set_Rx_Callback(BspUSB_Rx_Callback_Def callback);
 static void BspUSB_VCP_Set_Tx_CPLT_Callback(BspUSB_Tx_Cplt_Callback_Def callback);
+static BspUSB_VCP_TxStatistic_TypeDef BspUSB_VCP_Get_TxStatistic(void);
 
 BspUSB_VCP_TypeDef BspUSB_VCP = {
     .init =  BspUSB_VCP_Init,
     .send =  BspUSB_VCP_SendData,
     .set_rx_callback = BspUSB_VCP_Set_Rx_Callback,
     .set_tx_cpl_callback = BspUSB_VCP_Set_Tx_CPLT_Callback,
+    .get_tx_statistic = BspUSB_VCP_Get_TxStatistic,
 };
 
 static BspUSB_Error_List BspUSB_VCP_Init(void)
@@ -111,6 +113,18 @@ send_queue_repush:
             }
         }
     }
+}
+
+static BspUSB_VCP_TxStatistic_TypeDef BspUSB_VCP_Get_TxStatistic(void)
+{
+    BspUSB_VCP_TxStatistic_TypeDef statistic;
+
+    statistic.tx_cnt = BspUSB_VCPMonitor.tx_cnt;
+    statistic.tx_queue_reset_cnt = BspUSB_VCPMonitor.tx_queue_reset_cnt;
+    statistic.tx_fin_cnt = BspUSB_VCPMonitor.tx_fin_cnt;
+    statistic.tx_err_cnt = BspUSB_VCPMonitor.tx_err_cnt;
+
+    return statistic;
 }
 
 static void BspUSB_VCP_Set_Rx_Callback(BspUSB_Rx_Callback_Def callback)
