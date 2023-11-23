@@ -9,8 +9,12 @@ typedef enum
 }BspUSB_VCP_TxSource_List;
 
 static BspUSB_VCP_Obj_TypeDef BspUSB_VCPMonitor = {
-    .init_state =  BspUSB_None_Init;
+    .init_state =  BspUSB_None_Init,
 };
+
+/* internal function */
+static void BspUSB_VCP_RecData_Callback(uint8_t *p_data, uint16_t len);
+static void BspUSB_VCP_SendData_CPLT_Callback(uint8_t *p_data, uint32_t *size);
 
 /* external function */
 static BspUSB_Error_List BspUSB_VCP_Init(void);
@@ -29,7 +33,7 @@ BspUSB_VCP_TypeDef BspUSB_VCP = {
 
 static BspUSB_Error_List BspUSB_VCP_Init(void)
 {
-    if(!BspUSB_VCPMonitor.init_state = BspUSB_None_Init)
+    if(BspUSB_VCPMonitor.init_state == BspUSB_None_Init)
     {
         /* send queue init_state */
         if(!Queue.create_auto(&BspUSB_VCPMonitor.SendQueue, "VCP Queue", USB_VCP_TX_BUFF_SIZE))
@@ -60,7 +64,7 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
 {
     uint16_t push_size = 0;
     uint16_t tx_size = 0;
-    uint8_t *tx_src = NULL
+    uint8_t *tx_src = NULL;
     uint8_t *push_src_addr = NULL;
     uint16_t cur_queue_size = 0;
     BspUSB_VCP_TxSource_List tx_src_type = BspUSB_VCP_TxSrc_Input;
@@ -149,7 +153,7 @@ static BspUSB_VCP_TxStatistic_TypeDef BspUSB_VCP_Get_TxStatistic(void)
     BspUSB_VCP_TxStatistic_TypeDef statistic;
 
     statistic.tx_cnt = BspUSB_VCPMonitor.tx_cnt;
-    statistic.tx_queue_reset_cnt = BspUSB_VCPMonitor.tx_queue_reset_cnt;
+    statistic.tx_abort = BspUSB_VCPMonitor.tx_abort_cnt;
     statistic.tx_fin_cnt = BspUSB_VCPMonitor.tx_fin_cnt;
     statistic.tx_err_cnt = BspUSB_VCPMonitor.tx_err_cnt;
 

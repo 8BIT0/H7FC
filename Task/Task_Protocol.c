@@ -61,17 +61,6 @@ static bool TaskProtocol_VCPTransBuff(void);
 
 bool TaskProtocol_Init(uint32_t period)
 {
-
-    else if (SrvComProto.get_msg_type() == SrvComProto_Type_Cus)
-    {
-    }
-
-    if (!USB_DEVICE_Init())
-    {
-        task_state = TaskProto_Error_Proc;
-        return false;
-    }
-
     /* init USB attach detect pin */
     // BspGPIO.in_init(USB_DctPin);
 

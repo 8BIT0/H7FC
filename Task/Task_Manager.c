@@ -83,7 +83,6 @@ void Task_Manager_CreateTask(void)
 
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
-            TaskProtocol_Init(TaskProtocol_Period_Def);
             TaskSample_Init(TaskSample_Period_Def);
             TaskTelemetry_Init(TaskTelemetry_Period_def);
             TaskControl_Init(TaskControl_Period_Def);
@@ -102,7 +101,7 @@ void Task_Manager_CreateTask(void)
             osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
 
-            osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 512);
+            osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 1024);
             TaskTelemetry_Handle = osThreadCreate(osThread(LogTask), NULL);
 
             init = true;

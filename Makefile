@@ -44,7 +44,6 @@ Algorithm/Control_Dep/adrc.c \
 Algorithm/Control_Dep/pid.c \
 debug/debug_util.c \
 Task/Task_Navi.c \
-Task/Task_Protocol.c \
 Task/Task_Manager.c \
 Task/Task_Sample.c \
 Task/Task_Log.c \
@@ -55,6 +54,7 @@ Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \
 Bsp/Bsp_SDMMC.c \
 Bsp/Bsp_Uart.c \
+Bsp/Bsp_USB.c \
 Bsp/Bsp_DMA.c \
 Bsp/Bsp_Timer.c \
 Bsp/Bsp_IIC.c \

@@ -14,7 +14,7 @@
 #include "error_log.h"
 #include "DiskIO.h"
 #include "../DataPipe/DataPipe.h"
-#include "Task_Protocol.h"
+#include "Task_Telemetry.h"
 #include "Task_Sample.h"
 #include "Dev_Led.h"
 #include "IO_Definition.h"
@@ -112,7 +112,7 @@ void TaskLog_Init(uint32_t period)
     LogObj_Logging_Reg.reg_val = 0;
 
     /* init module first then init task */
-    if (Disk.init(&FATFS_Obj, TaskProto_PushProtocolQueue))
+    if (Disk.init(&FATFS_Obj, NULL))
     {
         LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, LOG_FOLDER, ROOT_CLUSTER_ADDR);
 
