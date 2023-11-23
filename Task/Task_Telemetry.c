@@ -619,7 +619,7 @@ static bool Telemetry_RadioPort_Init(void)
     return false;
 }
 
-static bool Telemetry_RadioPort_SendCTL()
+static bool Telemetry_RadioPort_ProtoManager()
 {
     return false;
 }

@@ -40,7 +40,7 @@ static BspUSB_Error_List BspUSB_VCP_Init(void)
             return BspUSB_Error_QueueCreate;
         }
 
-        if(!USB_DEVICE_INIT())
+        if(!USB_DEVICE_Init())
         {
             BspUSB_VCPMonitor.init_state = BspUSB_Error_Init;
             return BspUSB_Error_Init;
