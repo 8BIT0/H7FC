@@ -1,6 +1,5 @@
 #include "Task_Manager.h"
 #include "Task_Log.h"
-#include "Task_Protocol.h"
 #include "Task_Control.h"
 #include "Task_Sample.h"
 #include "Task_Telemetry.h"
@@ -16,11 +15,9 @@
 #define TaskSample_Period_Def    1  /* unit: ms period 1ms  1000Hz */
 #define TaskControl_Period_Def   5  /* unit: ms period 2ms  200Hz  */
 #define TaskTelemetry_Period_def 2  /* unit: ms period 2ms  500Hz  */
-#define TaskProtocol_Period_Def  5  /* unit: ms period 10ms 200Hz  */
 #define TaslLog_Period_Def       5  /* unit: ms period 5ms  200Hz */
 #define TaslNavi_Period_Def      10 /* unit: ms period 10ms 100Hz */
 
-osThreadId TaskProtocol_Handle = NULL;
 osThreadId TaskInertial_Handle = NULL;
 osThreadId TaskControl_Handle = NULL;
 osThreadId TaskNavi_Handle = NULL;
@@ -101,9 +98,6 @@ void Task_Manager_CreateTask(void)
 
             osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 8192);
             TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
-
-            osThreadDef(ProtocolTask, TaskProtocol_Core, osPriorityNormal, 0, 1024);
-            TaskProtocol_Handle = osThreadCreate(osThread(ProtocolTask), NULL);
 
             osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
