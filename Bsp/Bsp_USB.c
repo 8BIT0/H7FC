@@ -52,21 +52,33 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
 {
     uint16_t push_size = 0;
     uint16_t tx_size = 0;
+    uint8_t *tx_src = NULL
     uint8_t *push_src_addr = NULL;
 
     if((BspUSB_VCPMonitor.init_state == BspUSB_Error_None) && p_data && len)
     {
         if(BspUSB_VCPMonitor.tx_cnt == BspUSB_VCPMonitor.tx_fin_cnt)
         {
-            if(len > USB_VCP_MAX_TX_SIZE)
+            /* check queue first */
+            if(Queue.size(BspUSB_VCPMonitor.SendQueue))
             {
-                push_size = len - USB_VCP_MAX_TX_SIZE;
-                push_src_addr = &p_data[USB_VCP_MAX_TX_SIZE];
+                if(Queue.size(BspUSB_VCPMonitor.SendQueue) <= USB_VCP_MAX_TX_SIZE)
+                {
 
-                tx_size = USB_VCP_MAX_TX_SIZE;
+                }
             }
             else
-                tx_size = len;
+            {
+                if(len > USB_VCP_MAX_TX_SIZE)
+                {
+                    push_size = len - USB_VCP_MAX_TX_SIZE;
+                    push_src_addr = &p_data[USB_VCP_MAX_TX_SIZE];
+
+                    tx_size = USB_VCP_MAX_TX_SIZE;
+                }
+                else
+                    tx_size = len;
+            }
 
             if(CDC_Transmit_FS(,) != USBD_OK)
             {
