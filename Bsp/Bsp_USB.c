@@ -140,7 +140,7 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
             /* push current send into queue for next time sending */
             if(Queue.remain(BspUSB_VCPMonitor.SendQueue) >= push_size)
             {
-                Queue.push();
+                Queue.push(&BspUSB_VCPMonitor.SendQueue, push_src_addr, push_size);
             }
             else
                 BspUSB_VCPMonitor.tx_abort_cnt ++;
