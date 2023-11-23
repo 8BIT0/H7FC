@@ -46,7 +46,7 @@ typedef struct
 
     uint32_t rx_irq_cnt;
     uint32_t tx_cnt;
-    uint32_t tx_queue_reset_cnt;
+    uint32_t tx_abort_cnt;
     uint32_t tx_fin_cnt;
     uint32_t tx_err_cnt;
 

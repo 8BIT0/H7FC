@@ -1,6 +1,6 @@
 #include "Bsp_USB.h"
 
-#define USB_VCP_TX_BUFF_SIZE 2048
+#define USB_VCP_TX_BUFF_SIZE 1024
 
 static BspUSB_VCP_Obj_TypeDef BspUSB_VCPMonitor = {
     .init_state =  BspUSB_None_Init;
@@ -56,18 +56,34 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
     uint16_t tx_size = 0;
     uint8_t *tx_src = NULL
     uint8_t *push_src_addr = NULL;
+    uint16_t cur_queue_size = 0;
 
     if((BspUSB_VCPMonitor.init_state == BspUSB_Error_None) && p_data && len)
     {
         if(BspUSB_VCPMonitor.tx_cnt == BspUSB_VCPMonitor.tx_fin_cnt)
         {
             /* check queue first */
-            if(Queue.size(BspUSB_VCPMonitor.SendQueue))
+            cur_queue_size = Queue.size(BspUSB_VCPMonitor.SendQueue); 
+            if(cur_queue_size)
             {
-                if(Queue.size(BspUSB_VCPMonitor.SendQueue) <= USB_VCP_MAX_TX_SIZE)
+                if(cur_queue_size <= USB_VCP_MAX_TX_SIZE)
                 {
-
+                    tx_size = cur_queue_size;
                 }
+                else
+                    /* queue size > USB_VCP_MAX_TX_SIZE */
+                    tx_size = USB_VCP_MAX_TX_SIZE;
+
+                Queue.pop(&BspUSB_VCPMonitor.SendQueue, BspUSB_VCPMonitor.single_tx_buffer, tx_size);
+                tx_src = BspUSB_VCPMonitor.single_tx_buffer;
+            
+                /* after pop history data to current tx buff we need push current tx data to queue */
+                if(Queue.remain(BspUSB_VCPMonitor.SendQueue) >= len)
+                {
+                    Queue.push(&BspUSB_VCPMonitor.SendQueue, p_data, len);
+                }
+                else
+                    /* no mem space for incoming data */
             }
             else
             {
@@ -80,13 +96,17 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
                 }
                 else
                     tx_size = len;
+
+                tx_src = p_data;
             }
 
-            if(CDC_Transmit_FS(,) != USBD_OK)
+            if(CDC_Transmit_FS(tx_src, tx_size) != USBD_OK)
             {
                 push_size = len;
                 push_src_addr = p_data;
                 BspUSB_VCPMonitor.tx_err_cnt ++;
+
+                /* mark current tx source if form queue we need to push data back to the queue head */
             }
             else
                 BspUSB_VCPMonitor.tx_cnt ++;
@@ -100,17 +120,12 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
         if(push_size && push_src_addr)
         {
             /* push current send into queue for next time sending */
-send_queue_repush:
             if(Queue.remain(BspUSB_VCPMonitor.SendQueue) >= push_size)
             {
 
             }
             else
-            {
-                BspUSB_VCPMonitor.tx_queue_reset_cnt ++;
-                Queue.reset(&BspUSB_VCPMonitor.SendQueue);
-                goto send_queue_repush;
-            }
+                BspUSB_VCPMonitor.tx_abort_cnt ++;
         }
     }
 }
