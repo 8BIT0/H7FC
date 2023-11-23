@@ -93,7 +93,7 @@ extern "C"
    */
 
   typedef void (*rec_callback)(uint8_t *data, uint16_t len);
-  typedef void (*send_callback)(uint8_t *data, uint16_t *len);
+  typedef void (*send_callback)(uint8_t *data, uint32_t *len);
 
   /** CDC Interface callback. */
   extern USBD_CDC_ItfTypeDef USBD_Interface_fops_FS;
