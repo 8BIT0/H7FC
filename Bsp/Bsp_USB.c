@@ -70,7 +70,8 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
 
             if(CDC_Transmit_FS(p_data, tx_size) != USBD_OK)
             {
-                
+                push_size = len;
+                push_src_addr = p_data;
             }
             else
                 BspUSB_VCPMonitor.tx_cnt ++;
