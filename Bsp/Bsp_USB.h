@@ -28,6 +28,14 @@ typedef enum
 
 typedef struct
 {
+    uint32_t tx_cnt;
+    uint32_t tx_queue_reset_cnt;
+    uint32_t tx_fin_cnt;
+    uint32_t tx_err_cnt;
+}BspUSB_VCP_TxStatistic_TypeDef;
+
+typedef struct
+{
     uint8_t single_tx_buffer[USB_VCP_MAX_TX_SIZE];
 
     BspUSB_Error_List init_state;
@@ -52,6 +60,7 @@ typedef struct
     BspUSB_Error_List (*send)(uint8_t *p_data, uint16_t len);
     void (*set_rx_callback)(BspUSB_Rx_Callback_Def callback);
     void (*set_tx_cpl_callback)(BspUSB_Tx_Cplt_Callback_Def callback);
+    BspUSB_VCP_TxStatistic_TypeDef (*get_tx_statistic)(void);
 }BspUSB_VCP_TypeDef;
 
 extern BspUSB_VCP_TypeDef BspUSB_VCP;
