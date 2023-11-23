@@ -109,6 +109,7 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
 static rec_callback cdc_rec_callback = NULL;
+static send_callback cdc_send_callback = NULL;
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 
 /* USER CODE END EXPORTED_VARIABLES */
@@ -312,9 +313,11 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 {
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 13 */
-  UNUSED(Buf);
-  UNUSED(Len);
   UNUSED(epnum);
+
+  if(cdc_send_callback)
+    cdc_send_callback(Buf, Len); 
+
   /* USER CODE END 13 */
   return result;
 }
@@ -334,6 +337,11 @@ void usb_printf(const char *format, ...)
 void usb_setrec_callback(rec_callback callback)
 {
   cdc_rec_callback = callback;
+}
+
+void usb_settxcpl_callback(send_callback callback)
+{
+  cdc_send_callback = callback;
 }
 
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */

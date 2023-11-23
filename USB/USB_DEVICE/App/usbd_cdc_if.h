@@ -93,6 +93,7 @@ extern "C"
    */
 
   typedef void (*rec_callback)(uint8_t *data, uint16_t len);
+  typedef void (*send_callback)(uint8_t *data, uint16_t *len);
 
   /** CDC Interface callback. */
   extern USBD_CDC_ItfTypeDef USBD_Interface_fops_FS;
@@ -113,6 +114,7 @@ extern "C"
   uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len);
   void usb_printf(const char *format, ...);
   void usb_setrec_callback(rec_callback callback);
+  void usb_settxcpl_callback(send_callback callback);
 
   /* USER CODE BEGIN EXPORTED_FUNCTIONS */
 

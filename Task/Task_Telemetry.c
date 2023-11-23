@@ -595,14 +595,12 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
     if(monitor)
     {
         /* init default port VCP first */
-        if(!USB_DEVICE_Init())
+        if(USB_DEVICE_Init())
         {
-            monitor->VCP_Port.init_state = false;
+            
         }
         else
-        {
-
-        }
+            monitor->VCP_Port.init_state = false;
     }
 }
 
