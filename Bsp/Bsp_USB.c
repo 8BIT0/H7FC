@@ -1,7 +1,5 @@
 #include "Bsp_USB.h"
 
-#define USB_VCP_TX_BUFF_SIZE 1024
-
 typedef enum
 {
     BspUSB_VCP_TxSrc_Queue = 0,
@@ -116,14 +114,23 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
 
             if(CDC_Transmit_FS(tx_src, tx_size) != USBD_OK)
             {
-                push_size = len;
-                push_src_addr = p_data;
                 BspUSB_VCPMonitor.tx_err_cnt ++;
 
                 /* mark current tx source if form queue we need to push data back to the queue head */
-                if(tx_src_type == BspUSB_VCP_TxSrc_Queue)
+                if((tx_src_type == BspUSB_VCP_TxSrc_Queue) && (Queue.remain(BspUSB_VCPMonitor.SendQueue) >= tx_size))
                 {
+                    memset(BspUSB_VCPMonitor.single_tx_buffer, 0, USB_VCP_TX_BUFF_SIZE);
+                    memcpy(BspUSB_VCPMonitor.single_tx_buffer, tx_src, tx_size);
+                    cur_queue_size = Queue.size(BspUSB_VCPMonitor.SendQueue);
+                    Queue.pop(&BspUSB_VCPMonitor.SendQueue, &BspUSB_VCPMonitor.single_tx_buffer[tx_size], cur_queue_size);
 
+                    push_size = tx_size + cur_queue_size;
+                    push_src_addr = BspUSB_VCPMonitor.single_tx_buffer;
+                }
+                else if(tx_src_type == BspUSB_VCP_TxSrc_Input)
+                {
+                    push_size = len;
+                    push_src_addr = p_data;
                 }
             }
             else
