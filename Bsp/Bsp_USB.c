@@ -2,6 +2,12 @@
 
 #define USB_VCP_TX_BUFF_SIZE 1024
 
+typedef enum
+{
+    BspUSB_VCP_TxSrc_Queue = 0,
+    BspUSB_VCP_TxSrc_Input,
+}BspUSB_VCP_TxSource_List;
+
 static BspUSB_VCP_Obj_TypeDef BspUSB_VCPMonitor = {
     .init_state =  BspUSB_None_Init;
 };
@@ -57,6 +63,7 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
     uint8_t *tx_src = NULL
     uint8_t *push_src_addr = NULL;
     uint16_t cur_queue_size = 0;
+    BspUSB_VCP_TxSource_List tx_src_type = BspUSB_VCP_TxSrc_Input;
 
     if((BspUSB_VCPMonitor.init_state == BspUSB_Error_None) && p_data && len)
     {
@@ -66,6 +73,8 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
             cur_queue_size = Queue.size(BspUSB_VCPMonitor.SendQueue); 
             if(cur_queue_size)
             {
+                tx_src_type = BspUSB_VCP_TxSrc_Queue;
+
                 if(cur_queue_size <= USB_VCP_MAX_TX_SIZE)
                 {
                     tx_size = cur_queue_size;
@@ -84,6 +93,7 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
                 }
                 else
                     /* no mem space for incoming data */
+                    BspUSB_VCPMonitor.tx_abort_cnt ++;
             }
             else
             {
@@ -107,6 +117,10 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
                 BspUSB_VCPMonitor.tx_err_cnt ++;
 
                 /* mark current tx source if form queue we need to push data back to the queue head */
+                if(tx_src_type == BspUSB_VCP_TxSrc_Queue)
+                {
+
+                }
             }
             else
                 BspUSB_VCPMonitor.tx_cnt ++;
@@ -122,7 +136,7 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len)
             /* push current send into queue for next time sending */
             if(Queue.remain(BspUSB_VCPMonitor.SendQueue) >= push_size)
             {
-
+                Queue.push();
             }
             else
                 BspUSB_VCPMonitor.tx_abort_cnt ++;
