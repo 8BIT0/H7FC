@@ -9,6 +9,8 @@
 #include "usbd_desc.h"
 #include "CusQueue.h"
 
+#define USB_VCP_MAX_TX_SIZE 512
+
 typedef void (*BspUSB_Tx_Cplt_Callback_Def)(uint8_t *p_data, uint32_t *len);
 typedef void (*BspUSB_Rx_Callback_Def)(uint8_t *p_data, uint16_t len);
 
@@ -26,6 +28,8 @@ typedef enum
 
 typedef struct
 {
+    uint8_t single_tx_buffer[USB_VCP_MAX_TX_SIZE];
+
     BspUSB_Error_List init_state;
     QueueObj_TypeDef SendQueue;
 
