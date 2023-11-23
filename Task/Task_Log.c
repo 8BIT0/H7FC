@@ -76,6 +76,8 @@ static bool enable_compess = true;
 static SrvIMU_UnionData_TypeDef LogIMU_Data __attribute__((section(".Perph_Section")));
 static uint8_t LogCache_L1_Buf[MAX_FILE_SIZE_K(3)];
 static uint8_t LogCache_L2_Buf[MAX_FILE_SIZE_K(3)];
+static bool INFO_Queue_CreateState = false;
+static QueueObj_TypeDef INFO_Queue;
 static QueueObj_TypeDef IMUData_Queue;
 static LogData_Reg_TypeDef LogObj_Set_Reg;
 static LogData_Reg_TypeDef LogObj_Enable_Reg;
@@ -96,6 +98,7 @@ static LogSummary_TypeDef LogIMU_Summary = {
 
 /* internal function */
 static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
+static void TaskLog_PushINFO_Data(uint8_t *info, uint16_t len);
 
 void TaskLog_Init(uint32_t period)
 {
@@ -111,8 +114,10 @@ void TaskLog_Init(uint32_t period)
     LogObj_Set_Reg.reg_val = 0;
     LogObj_Logging_Reg.reg_val = 0;
 
+    INFO_Queue_CreateState = Queue.create_auto(&INFO_Queue, "LOG Info", 1024);
+
     /* init module first then init task */
-    if (Disk.init(&FATFS_Obj, NULL))
+    if (Disk.init(&FATFS_Obj, TaskLog_PushINFO_Data))
     {
         LogFolder_Cluster = Disk.create_folder(&FATFS_Obj, LOG_FOLDER, ROOT_CLUSTER_ADDR);
 
@@ -332,4 +337,29 @@ static void TaskLog_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             Log_Statistics.queue_push_err_cnt++;
         }
     }
+}
+
+static void TaskLog_PushINFO_Data(uint8_t *info, uint16_t len)
+{
+    if(INFO_Queue_CreateState)
+    {
+        if(Queue.remain(INFO_Queue) >= len)
+            Queue.push(&INFO_Queue, info, len);
+    }
+}
+
+uint16_t TaskLog_Get_Info(uint8_t *p_info, uint16_t buff_size)
+{
+    uint16_t queue_info_size = 0;
+
+    if(p_info && buff_size && INFO_Queue_CreateState)
+    {
+        queue_info_size = Queue.size(INFO_Queue);
+        if(queue_info_size && (buff_size >= queue_info_size))
+        {
+            Queue.pop(&INFO_Queue, p_info, queue_info_size);
+        }
+    }
+
+    return queue_info_size;
 }
