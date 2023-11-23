@@ -28,6 +28,8 @@
 #include "Srv_OsCommon.h"
 #include "util.h"
 #include "Srv_ComProto.h"
+#include "Bsp_USB.h"
+#include "Bsp_Uart.h"
 
 #define CRSF_TX_PIN Uart4_TxPin
 #define CRSF_RX_PIN Uart4_RxPin
