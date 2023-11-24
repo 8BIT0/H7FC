@@ -61,6 +61,7 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
 
 /* redio section */
+static void Telemetry_PortFrameOut_Process(void);
 
 /* default vcp port section */
 static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
@@ -169,11 +170,14 @@ void TaskTelemetry_Core(void const *arg)
     while(1)
     {
         // Telemetry_blink();
-
+        /* RC receiver process */
         DataPipe_DataObj(Rc) = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
 
         /* pipe data out */
         DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
+        
+        /* frame protocol process */
+        Telemetry_PortFrameOut_Process();       
         
         SrvOsCommon.precise_delay(&sys_time, TaskTelemetry_Period);
     }
@@ -621,43 +625,6 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
     }
 }
 
-static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size)
-{
-    SrvComProto_Msg_StreamIn_TypeDef stream_in;
-    Telemetry_PortRecObj_TypeDef *p_RecObj = NULL;
-
-    /* use mavlink protocol tuning the flight parameter */
-    if(p_data && size && RecObj_addr)
-    {
-        p_RecObj = (Telemetry_PortRecObj_TypeDef *)RecObj_addr;
-        p_RecObj->time_stamp = SrvOsCommon.get_os_ms();
-
-        switch((uint8_t) p_RecObj->type)
-        {
-            case Telemetry_Port_USB:
-                break;
-
-            case Telemetry_Port_Uart:
-                break;
-
-            case Telemetry_Port_CAN:
-                break;
-
-            default:
-                return;
-        }
-
-        stream_in = SrvComProto.msg_decode(p_data, size);
-    
-        if(stream_in.valid)
-        {
-            /* tag on recive time stamp */
-            /* first come first serve */
-            /* in case two different port tuning the same function or same parameter at the same time */
-        }
-    }
-}
-
 static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size)
 {
     UNUSED(p_data);
@@ -702,6 +669,44 @@ static bool Telemetry_RadioPort_Init(void)
 static bool Telemetry_RadioPort_ProtoManager()
 {
     return false;
+}
+
+/************************************** telemetry receive process callback section *************************/
+static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size)
+{
+    SrvComProto_Msg_StreamIn_TypeDef stream_in;
+    Telemetry_PortRecObj_TypeDef *p_RecObj = NULL;
+
+    /* use mavlink protocol tuning the flight parameter */
+    if(p_data && size && RecObj_addr)
+    {
+        p_RecObj = (Telemetry_PortRecObj_TypeDef *)RecObj_addr;
+        p_RecObj->time_stamp = SrvOsCommon.get_os_ms();
+
+        switch((uint8_t) p_RecObj->type)
+        {
+            case Telemetry_Port_USB:
+                break;
+
+            case Telemetry_Port_Uart:
+                break;
+
+            case Telemetry_Port_CAN:
+                break;
+
+            default:
+                return;
+        }
+
+        stream_in = SrvComProto.msg_decode(p_data, size);
+    
+        if(stream_in.valid)
+        {
+            /* tag on recive time stamp */
+            /* first come first serve */
+            /* in case two different port tuning the same function or same parameter at the same time */
+        }
+    }
 }
 
 /************************************** telemetry radio section ********************************************/
@@ -758,4 +763,12 @@ static bool Telemetry_MAV_Msg_Init(void)
     }
 
     return false;
+}
+
+static void Telemetry_PortFrameOut_Process(void)
+{
+    if(Telemetry_MavProto_Enable)
+    {
+
+    }
 }
