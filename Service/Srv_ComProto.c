@@ -32,6 +32,7 @@ SrvComProto_TypeDef SrvComProto = {
     .get_msg_type = Srv_ComProto_GetType,
     .mav_msg_stream = SrvComProto_MsgToStream,
     .mav_msg_enable_ctl = SrvComProto_MsgEnable_Control,
+    .msg_decode = SrvComProto_MavMsg_Input_Decode,
 };
 
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
