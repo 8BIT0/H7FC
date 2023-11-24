@@ -660,7 +660,10 @@ static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, ui
 
 static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size)
 {
-    if(PortMonitor.VCP_Port.p_tx_semphr)
+    UNUSED(p_data);
+    UNUSED(size);
+
+    if(PortMonitor.VCP_Port.init_state && PortMonitor.VCP_Port.p_tx_semphr)
     {
         if(osSemaphoreRelease(PortMonitor.VCP_Port.p_tx_semphr) != osOK)
         {
@@ -672,7 +675,7 @@ static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *siz
 
 static void Telemetry_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
 {
-    if(PortMonitor.VCP_Port.init_state && p_data && size)
+    if(PortMonitor.VCP_Port.init_state && PortMonitor.VCP_Port.p_tx_semphr && p_data && size)
     {
         osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, Telemetry_Port_Tx_TimeOut);
 
