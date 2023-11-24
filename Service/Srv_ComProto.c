@@ -336,6 +336,7 @@ static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck)
 static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)
 {
     SrvComProto_Msg_StreamIn_TypeDef stream_in;
+    uint16_t payload_size = 0;
 
     memset(&stream_in, 0, sizeof(SrvComProto_Msg_StreamIn_TypeDef));
 
@@ -347,15 +348,19 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
         stream_in.size = size;
         stream_in.p_buf = p_data;
     
-        goto stream_valid;
+        goto input_stream_valid;
     }
     
     /* match mavlink message */
-    if((p_data[0] == ))
+    if(p_data[0] == MAVLINK_STX)
     {
+        /* check mavlink message is valid or not */
+        /* check message checksum */
+        payload_size = p_data[1];
 
+        goto input_stream_valid;
     }
 
-stream_valid:
+input_stream_valid:
     return stream_in;
 }
