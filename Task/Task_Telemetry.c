@@ -623,7 +623,18 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
 
 static void Telemetry_DefaultPort_Rx_Callback(uint8_t *p_data, uint16_t size)
 {
+    SrvComProto_Msg_StreamIn_TypeDef stream_in;
+
     /* use mavlink protocol tuning the flight parameter */
+    if(p_data && size)
+    {
+        stream_in = SrvComProto.msg_decode(p_data, size);
+    
+        if(stream_in.valid)
+        {
+            
+        }
+    }
 }
 
 static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size)
