@@ -71,7 +71,7 @@ static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
 
-/* redio section */
+/* frame section */
 static void Telemetry_PortFrameOut_Process(void);
 
 /* default vcp port section */
@@ -80,6 +80,9 @@ static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *siz
 static bool Telemetry_RadioPort_Init(void);
 static bool Telemetry_MAV_Msg_Init(void);
 static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size);
+
+/* radio section */
+static bool Telemetry_Port_Init(void);
 
 void TaskTelemetry_Set_DataIO_Enable(bool state)
 {
@@ -141,7 +144,7 @@ void TaskTelemetry_Init(uint32_t period)
     }
 
     /* init radio port */
-    Telemetry_RadioPort_Init();
+    Telemetry_Port_Init();
 
     /* init radio protocol*/
     Telemetry_MavProto_Enable = Telemetry_MAV_Msg_Init();
@@ -663,7 +666,13 @@ static void Telemetry_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
     }
 }
 
-static bool Telemetry_RadioPort_Init(void)
+/************************************** telemetry radio port section *************************/
+static void Telemetry_RadioPort_Init(void)
+{
+
+}
+
+static bool Telemetry_Port_Init(void)
 {
     /* USB VCP as defaut port to tune parameter and frame porotcol */
     if(!PortMonitor.init)
@@ -716,7 +725,7 @@ static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, ui
     }
 }
 
-/************************************** telemetry radio section ********************************************/
+/************************************** telemetry frame protocol section ********************************************/
 static bool Telemetry_MAV_Msg_Init(void)
 {
     /* create mavlink message object */
