@@ -35,6 +35,9 @@
 #define SBUS_TX_PIN Uart4_TxPin
 #define SBUS_RX_PIN Uart4_RxPin
 
+#define RADIO_1_TX_PIN Uart1_TxPin
+#define RADIO_1_RX_PIN Uart1_RxPin
+
 /* internal variable */
 /* MAVLink message List */
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RawIMU;
