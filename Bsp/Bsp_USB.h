@@ -21,6 +21,7 @@ typedef enum
     BspUSB_Error_None = 0,
     BspUSB_Error_QueueCreate,
     BspUSB_Error_Init,
+    BspUSB_Error_Semphr_Crt,
     BspUSB_Error_Busy,
     BspUSB_Error_EMEM,
     BspUSB_Error_Fail,
@@ -58,6 +59,7 @@ typedef struct
 typedef struct
 {
     BspUSB_Error_List (*init)(void);
+    BspUSB_Error_List (*de_init)(void);
     BspUSB_Error_List (*send)(uint8_t *p_data, uint16_t len);
     void (*set_rx_callback)(BspUSB_Rx_Callback_Def callback);
     void (*set_tx_cpl_callback)(BspUSB_Tx_Cplt_Callback_Def callback);

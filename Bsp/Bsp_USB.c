@@ -20,14 +20,26 @@ static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len);
 static void BspUSB_VCP_Set_Rx_Callback(BspUSB_Rx_Callback_Def callback);
 static void BspUSB_VCP_Set_Tx_CPLT_Callback(BspUSB_Tx_Cplt_Callback_Def callback);
 static BspUSB_VCP_TxStatistic_TypeDef BspUSB_VCP_Get_TxStatistic(void);
+static BspUSB_Error_List BspUSB_VCP_DeInit(void);
 
 BspUSB_VCP_TypeDef BspUSB_VCP = {
     .init =  BspUSB_VCP_Init,
+    .de_init = BspUSB_VCP_DeInit,
     .send =  BspUSB_VCP_SendData,
     .set_rx_callback = BspUSB_VCP_Set_Rx_Callback,
     .set_tx_cpl_callback = BspUSB_VCP_Set_Tx_CPLT_Callback,
     .get_tx_statistic = BspUSB_VCP_Get_TxStatistic,
 };
+
+static BspUSB_Error_List BspUSB_VCP_DeInit(void)
+{
+    if(BspUSB_VCPMonitor.init_state == BspUSB_Error_None)
+    {
+
+    }
+
+    return BspUSB_VCPMonitor.init_state;
+}
 
 static BspUSB_Error_List BspUSB_VCP_Init(void)
 {

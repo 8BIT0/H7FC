@@ -8,6 +8,7 @@
 #include "Srv_Receiver.h"
 #include "linked_list.h"
 #include "../common/util.h"
+#include "semphr.h"
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
 
@@ -152,6 +153,7 @@ typedef enum
 typedef struct
 {
     bool enable;
+    osSemaphoreId_t p_tx_semphr;
     Telemetry_Bypass_TypeList bypass_mode;
     uint8_t *bypass_src;
 }TelemetryPort_ByPass_TypeDef;
@@ -180,6 +182,8 @@ typedef struct
     bool init;
     uint8_t uart_port_num;
     uint8_t can_port_num;
+
+    void *Cur_Tuning_Port;
 
     Telemetry_VCPPortMonitor_TypeDef VCP_Port;
     Telemetry_UartPortMonitor_TypeDef *Uart_Port;

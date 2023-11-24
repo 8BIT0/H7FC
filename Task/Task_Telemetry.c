@@ -61,7 +61,11 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
 
 /* redio section */
+
+/* default vcp port section */
 static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
+static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size);
+static void Telemetry_DefaultPort_Rx_Callback(uint8_t *p_data, uint16_t size);
 static bool Telemetry_RadioPort_Init(void);
 static bool Telemetry_MAV_Msg_Init(void);
 
@@ -601,7 +605,30 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
         }
         else
             monitor->VCP_Port.init_state = true;
+
+        /* create USB VCP Tx semaphore */
+        osSemaphoreDef(DefaultPort_Tx);
+        monitor->VCP_Port.p_tx_semphr = osSemaphoreCreate(osSemaphore(DefaultPort_Tx), 32);
+
+        if(monitor->VCP_Port.p_tx_semphr == NULL)
+        {
+            monitor->VCP_Port.init_state = false;
+            return BspUSB_Error_Semphr_Crt;
+        }
+
+        BspUSB_VCP.set_tx_cpl_callback(Telemetry_DefaultPort_TxCplt_Callback);
+        BspUSB_VCP.set_rx_callback(Telemetry_DefaultPort_Rx_Callback);
     }
+}
+
+static void Telemetry_DefaultPort_Rx_Callback(uint8_t *p_data, uint16_t size)
+{
+
+}
+
+static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size)
+{
+
 }
 
 static bool Telemetry_RadioPort_Init(void)
