@@ -778,6 +778,12 @@ static void Telemetry_PortFrameOut_Process(void)
     {
         /* check other port init state */
 
+        /* Proto mavlink message through Radio */
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, );
+        
         /* Proto mavlink message through default port */
         SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
         SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
