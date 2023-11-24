@@ -92,6 +92,10 @@
 #define UART4_RX_PORT GPIOB
 #define UART4_RX_PIN GPIO_PIN_8
 
+#define UART1_TX_PORT GPIOA
+#define UART1_TX_PIN GPIO_PIN_9
+#define UART1_RX_PORT GPIOA
+#define UART1_RX_PIN GPIO_PIN_10
 /* USB Detected Pin */
 #define USB_DETECT_INT_PORT GPIOE
 #define USB_DETECT_INT_PIN GPIO_PIN_2
@@ -154,6 +158,8 @@ extern BspGPIO_Obj_TypeDef PriIMU_INTPin;
 extern BspGPIO_Obj_TypeDef SecIMU_INTPin;
 extern BspGPIO_Obj_TypeDef Uart4_TxPin;
 extern BspGPIO_Obj_TypeDef Uart4_RxPin;
+extern BspGPIO_Obj_TypeDef Uart1_TxPin;
+extern BspGPIO_Obj_TypeDef Uart1_RxPin;
 
 extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_PinConfig_TypeDef SecIMU_BusPin;

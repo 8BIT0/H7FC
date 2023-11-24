@@ -778,8 +778,10 @@ static void Telemetry_PortFrameOut_Process(void)
     if(Telemetry_MavProto_Enable && PortMonitor.VCP_Port.init_state)
     {
         /* check other port init state */
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream,);
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream,);
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream,);
+
+        /* Proto mavlink message through default port */
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
     }
 }

@@ -109,6 +109,18 @@ BspGPIO_Obj_TypeDef Uart4_RxPin = {
     .alternate = GPIO_AF8_UART4,
 };
 
+BspGPIO_Obj_TypeDef Uart1_TxPin = {
+    .pin = UART1_TX_PIN,
+    .port = UART1_TX_PORT,
+    .alternate = GPIO_AF4_USART1,
+};
+
+BspGPIO_Obj_TypeDef Uart1_RxPin = {
+    .pin = UART1_RX_PIN,
+    .port = UART1_RX_PORT,
+    .alternate = GPIO_AF4_USART1,
+};
+
 BspSPI_PinConfig_TypeDef PriIMU_BusPin = {
     .pin_Alternate = GPIO_AF5_SPI1,
 
