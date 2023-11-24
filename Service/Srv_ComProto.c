@@ -337,6 +337,10 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
 {
     SrvComProto_Msg_StreamIn_TypeDef stream_in;
     uint16_t payload_size = 0;
+    uint8_t default_channel = 0;
+    mavlink_message_t mav_msg;
+    mavlink_status_t mav_sta;
+    uint8_t mav_decode = 0;
 
     memset(&stream_in, 0, sizeof(SrvComProto_Msg_StreamIn_TypeDef));
 
@@ -351,15 +355,32 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
         goto input_stream_valid;
     }
     
+    memset(&mav_msg, 0, sizeof(mavlink_message_t));
+    memset(&mav_sta, 0, sizeof(mavlink_status_t));
+    
     /* match mavlink message */
-    if(p_data[0] == MAVLINK_STX)
+    for(uint16_t i = 0; i < size; i++)
     {
-        /* check mavlink message is valid or not */
-        /* check message checksum */
-        payload_size = p_data[1];
+        mav_decode = mavlink_frame_char(default_channel, p_data[i], &mav_msg, &mav_sta);
 
+        if(mav_decode && (i < size))
+        {
+            /* get multi protocol frame in one transmition and first protocol frame is mavlink message */
+            /* only decode first pack */
+            break;
+        }
+    }
+
+    if(mav_decode)
+    {
+        stream_in.pac_type = ComRec_MavMsg;
+        stream_in.valid = true;
+        stream_in.size = size;
+        stream_in.p_buf = p_data;
         goto input_stream_valid;
     }
+
+    /* custom frame input check */
 
 input_stream_valid:
     return stream_in;
