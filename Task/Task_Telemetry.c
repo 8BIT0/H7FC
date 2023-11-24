@@ -623,12 +623,19 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
 
 static void Telemetry_DefaultPort_Rx_Callback(uint8_t *p_data, uint16_t size)
 {
-
+    /* use mavlink protocol tuning the flight parameter */
 }
 
 static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size)
 {
-
+    if(PortMonitor.VCP_Port.p_tx_semph)
+    {
+        if(osSemaphoreRelease(PortMonitor.VCP_Port.p_tx_semph) != osOK)
+        {
+            PortMonitor.VCP_Port.tx_semphr_rls_err ++;
+            osSemaphoreDelete(PortMonitor.VCP_Port.p_tx_semph);
+        }
+    }
 }
 
 static bool Telemetry_RadioPort_Init(void)

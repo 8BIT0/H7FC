@@ -153,7 +153,6 @@ typedef enum
 typedef struct
 {
     bool enable;
-    osSemaphoreId_t p_tx_semphr;
     Telemetry_Bypass_TypeList bypass_mode;
     uint8_t *bypass_src;
 }TelemetryPort_ByPass_TypeDef;
@@ -161,6 +160,9 @@ typedef struct
 typedef struct
 {
     bool init_state;
+
+    osSemaphoreId_t p_tx_semphr;
+    uint32_t tx_semphr_rls_err;
 
     BspUSB_VCP_TxStatistic_TypeDef tx_statistic;
     TelemetryPort_ByPass_TypeDef ByPass_Mode;

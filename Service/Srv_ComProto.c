@@ -330,3 +330,8 @@ static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck)
                                              channel[12], channel[13], channel[14], channel[15],
                                              channel[16], channel[17], rssi);
 }
+
+static bool SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)
+{
+
+}

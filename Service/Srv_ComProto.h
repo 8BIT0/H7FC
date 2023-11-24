@@ -15,8 +15,20 @@ typedef uint32_t ComPort_Handle;
 typedef enum
 {
     MAV_SysID_Drone = 1,
+    MAV_SysID_Cfg,
     MAV_SysID_ROS,
 } SrvComProto_SysID_List;
+
+typedef enum
+{
+    MAV_CompoID_Att_PIDTune_Pitch = 0,
+    MAV_CompoID_Att_PIDTune_Roll,
+    MAV_CompoID_Att_PIDTune_Yaw,
+
+    MAV_CompoID_Gyr_PIDTune_X,
+    MAV_CompoID_Gyr_PIDTune_Y,
+    MAV_CompoID_Gyr_PIDTune_Z,
+} SrvComProto_CfgComponentID_List;
 
 typedef enum
 {
@@ -82,10 +94,20 @@ typedef struct
 
 typedef struct
 {
+    bool valid;
+
+
+
+    uint8_t *p_buf;
+    uint16_t size;
+
+}SrvComProto_Msg_StreamIn_TypeDef;
+
+typedef struct
+{
     void (*init)(SrvComProto_Type_List type, uint8_t *arg);
     SrvComProto_Type_List (*get_msg_type)(void);
-    // void (*set_decode_callback)();
-
+    SrvComProto_Msg_StreamIn_TypeDef (*)
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
     bool (*mav_msg_enable_ctl)(SrvComProto_MsgInfo_TypeDef *msg, bool state);
