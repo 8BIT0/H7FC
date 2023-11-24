@@ -767,8 +767,9 @@ static bool Telemetry_MAV_Msg_Init(void)
 
 static void Telemetry_PortFrameOut_Process(void)
 {
-    if(Telemetry_MavProto_Enable)
+    if(Telemetry_MavProto_Enable && PortMonitor.VCP_Port.init_state)
     {
 
+        /* check other port init state */
     }
 }
