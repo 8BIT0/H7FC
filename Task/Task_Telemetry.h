@@ -168,11 +168,18 @@ typedef struct
 
 typedef struct
 {
+    Telemetry_PortType_List type;
+    uint8_t port_index;
+    uint32_t time_stamp;
+} Telemetry_PortRecObj_TypeDef;
+
+typedef struct
+{
     bool init_state;
     
     Telemetry_PortRecObj_TypeDef RecObj;
     
-    osSemaphoreId_t p_tx_semphr;
+    osSemaphoreId p_tx_semphr;
     uint32_t tx_semphr_rls_err;
 
     BspUSB_VCP_TxStatistic_TypeDef tx_statistic;
@@ -204,13 +211,6 @@ typedef struct
     Telemetry_UartPortMonitor_TypeDef *Uart_Port;
     Telemetry_CanPortMonitor_TypeDef *Can_Port;
 } Telemetry_PortMonitor_TypeDef;
-
-typedef struct
-{
-    Telemetry_PortType_List type;
-    uint8_t port_index;
-    uint32_t time_stamp;
-} Telemetry_PortRecObj_TypeDef;
 
 void TaskTelemetry_Init(uint32_t period);
 void TaskTelemetry_Core(void const* arg);

@@ -67,7 +67,7 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
 static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size);
 static bool Telemetry_RadioPort_Init(void);
 static bool Telemetry_MAV_Msg_Init(void);
-static void Telemetry_Port_Rx_Callback(uint8_t *p_data, uint16_t size);
+static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size);
 
 void TaskTelemetry_Set_DataIO_Enable(bool state)
 {
@@ -660,12 +660,12 @@ static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, ui
 
 static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size)
 {
-    if(PortMonitor.VCP_Port.p_tx_semph)
+    if(PortMonitor.VCP_Port.p_tx_semphr)
     {
-        if(osSemaphoreRelease(PortMonitor.VCP_Port.p_tx_semph) != osOK)
+        if(osSemaphoreRelease(PortMonitor.VCP_Port.p_tx_semphr) != osOK)
         {
             PortMonitor.VCP_Port.tx_semphr_rls_err ++;
-            osSemaphoreDelete(PortMonitor.VCP_Port.p_tx_semph);
+            osSemaphoreDelete(PortMonitor.VCP_Port.p_tx_semphr);
         }
     }
 }
