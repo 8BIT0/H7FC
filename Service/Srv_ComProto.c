@@ -24,6 +24,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
 static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state);
 static SrvComProto_Type_List Srv_ComProto_GetType(void);
+static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size);
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
@@ -331,7 +332,16 @@ static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck)
                                              channel[16], channel[17], rssi);
 }
 
-static bool SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)
+static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)
 {
+    SrvComProto_Msg_StreamIn_TypeDef stream_in;
 
+    memset(&stream_in, 0, sizeof(SrvComProto_Msg_StreamIn_TypeDef));
+
+    if((p_data[size - 1] == '\n') && (p_data[size - 2] == '\r'))
+    {
+        stream_in.pac_type = ComRec_CLI;
+    }
+
+    return stream_in;
 }
