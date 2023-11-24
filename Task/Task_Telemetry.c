@@ -284,16 +284,16 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 
     switch (tag)
     {
-    case Telemetry_RC_Throttle:
-    case Telemetry_RC_Pitch:
-    case Telemetry_RC_Roll:
-    case Telemetry_RC_Yaw:
-        RC_Input_obj->Gimbal[tag].combo_cnt = 1;
-        List_ItemInit(&(RC_Input_obj->Gimbal[tag].combo_list), channel_set);
-        return true;
+        case Telemetry_RC_Throttle:
+        case Telemetry_RC_Pitch:
+        case Telemetry_RC_Roll:
+        case Telemetry_RC_Yaw:
+            RC_Input_obj->Gimbal[tag].combo_cnt = 1;
+            List_ItemInit(&(RC_Input_obj->Gimbal[tag].combo_list), channel_set);
+            return true;
 
-    default:
-        return false;
+        default:
+            return false;
     }
 }
 
