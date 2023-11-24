@@ -14,6 +14,8 @@
 
 #define Telemetry_SetBit(x) UTIL_SET_BIT(x)
 
+#define Telemetry_Port_Tx_TimeOut 100 // unit: ms
+
 #define RECEIVER_PORT UART4
 #define RECEIVER_CRSF_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
 #define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_4
@@ -144,6 +146,13 @@ typedef struct
 
 typedef enum
 {
+    Telemetry_Port_USB = 0,
+    Telemetry_Port_Uart,
+    Telemetry_Port_CAN,
+} Telemetry_PortType_List;
+
+typedef enum
+{
     Telemetry_Bypass_None = 0,
     Telemetry_Bypass_RxOnly,
     Telemetry_Bypass_TxOnly,
@@ -160,7 +169,9 @@ typedef struct
 typedef struct
 {
     bool init_state;
-
+    
+    Telemetry_PortRecObj_TypeDef RecObj;
+    
     osSemaphoreId_t p_tx_semphr;
     uint32_t tx_semphr_rls_err;
 
@@ -171,12 +182,14 @@ typedef struct
 typedef struct
 {
     bool init_state;
+    Telemetry_PortRecObj_TypeDef RecObj;
     TelemetryPort_ByPass_TypeDef ByPass_Mode;
 } Telemetry_UartPortMonitor_TypeDef;
 
 typedef struct
 {
     bool init_state;
+    Telemetry_PortRecObj_TypeDef RecObj;
 } Telemetry_CanPortMonitor_TypeDef;
 
 typedef struct
@@ -191,6 +204,13 @@ typedef struct
     Telemetry_UartPortMonitor_TypeDef *Uart_Port;
     Telemetry_CanPortMonitor_TypeDef *Can_Port;
 } Telemetry_PortMonitor_TypeDef;
+
+typedef struct
+{
+    Telemetry_PortType_List type;
+    uint8_t port_index;
+    uint32_t time_stamp;
+} Telemetry_PortRecObj_TypeDef;
 
 void TaskTelemetry_Init(uint32_t period);
 void TaskTelemetry_Core(void const* arg);

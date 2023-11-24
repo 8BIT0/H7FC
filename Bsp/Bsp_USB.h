@@ -13,7 +13,7 @@
 #define USB_VCP_TX_BUFF_SIZE 1024
 
 typedef void (*BspUSB_Tx_Cplt_Callback_Def)(uint8_t *p_data, uint32_t *len);
-typedef void (*BspUSB_Rx_Callback_Def)(uint8_t *p_data, uint16_t len);
+typedef void (*BspUSB_Rx_Callback_Def)(uint32_t cus_data_addr, uint8_t *p_data, uint16_t len);
 
 typedef enum
 {
@@ -54,11 +54,13 @@ typedef struct
 
     BspUSB_Tx_Cplt_Callback_Def tx_fin_callback;
     BspUSB_Rx_Callback_Def rx_callback;
+
+    uint32_t cus_data_addr;
 }BspUSB_VCP_Obj_TypeDef;
 
 typedef struct
 {
-    BspUSB_Error_List (*init)(void);
+    BspUSB_Error_List (*init)(uint32_t cus_data_addr);
     BspUSB_Error_List (*de_init)(void);
     BspUSB_Error_List (*send)(uint8_t *p_data, uint16_t len);
     void (*set_rx_callback)(BspUSB_Rx_Callback_Def callback);

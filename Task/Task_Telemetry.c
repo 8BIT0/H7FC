@@ -65,9 +65,9 @@ static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal,
 /* default vcp port section */
 static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
 static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size);
-static void Telemetry_DefaultPort_Rx_Callback(uint8_t *p_data, uint16_t size);
 static bool Telemetry_RadioPort_Init(void);
 static bool Telemetry_MAV_Msg_Init(void);
+static void Telemetry_Port_Rx_Callback(uint8_t *p_data, uint16_t size);
 
 void TaskTelemetry_Set_DataIO_Enable(bool state)
 {
@@ -598,7 +598,7 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
 {
     if(monitor)
     {
-        if(BspUSB_VCP.init() != BspUSB_Error_None)
+        if(BspUSB_VCP.init((uint32_t)&(monitor->VCP_Port.RecObj)) != BspUSB_Error_None)
         {
             /* init default port VCP first */
             monitor->VCP_Port.init_state = false;
@@ -617,22 +617,43 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
         }
 
         BspUSB_VCP.set_tx_cpl_callback(Telemetry_DefaultPort_TxCplt_Callback);
-        BspUSB_VCP.set_rx_callback(Telemetry_DefaultPort_Rx_Callback);
+        BspUSB_VCP.set_rx_callback(Telemetry_Port_Rx_Callback);
     }
 }
 
-static void Telemetry_DefaultPort_Rx_Callback(uint8_t *p_data, uint16_t size)
+static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size)
 {
     SrvComProto_Msg_StreamIn_TypeDef stream_in;
+    Telemetry_PortRecObj_TypeDef *p_RecObj = NULL;
 
     /* use mavlink protocol tuning the flight parameter */
-    if(p_data && size)
+    if(p_data && size && RecObj_addr)
     {
+        p_RecObj = (Telemetry_PortRecObj_TypeDef *)RecObj_addr;
+        p_RecObj->time_stamp = SrvOsCommon.get_os_ms();
+
+        switch((uint8_t) p_RecObj->type)
+        {
+            case Telemetry_Port_USB:
+                break;
+
+            case Telemetry_Port_Uart:
+                break;
+
+            case Telemetry_Port_CAN:
+                break;
+
+            default:
+                return;
+        }
+
         stream_in = SrvComProto.msg_decode(p_data, size);
     
         if(stream_in.valid)
         {
-            
+            /* tag on recive time stamp */
+            /* first come first serve */
+            /* in case two different port tuning the same function or same parameter at the same time */
         }
     }
 }
@@ -646,6 +667,17 @@ static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *siz
             PortMonitor.VCP_Port.tx_semphr_rls_err ++;
             osSemaphoreDelete(PortMonitor.VCP_Port.p_tx_semph);
         }
+    }
+}
+
+static void Telemetry_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
+{
+    if(PortMonitor.VCP_Port.init_state && p_data && size)
+    {
+        osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, Telemetry_Port_Tx_TimeOut);
+
+        if(BspUSB_VCP.send)
+            BspUSB_VCP.send(p_data, size);
     }
 }
 

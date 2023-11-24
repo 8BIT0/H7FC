@@ -15,7 +15,7 @@ static void BspUSB_VCP_RecData_Callback(uint8_t *p_data, uint16_t len);
 static void BspUSB_VCP_SendData_CPLT_Callback(uint8_t *p_data, uint32_t *size);
 
 /* external function */
-static BspUSB_Error_List BspUSB_VCP_Init(void);
+static BspUSB_Error_List BspUSB_VCP_Init(uint32_t cus_data_addr);
 static BspUSB_Error_List BspUSB_VCP_SendData(uint8_t *p_data, uint16_t len);
 static void BspUSB_VCP_Set_Rx_Callback(BspUSB_Rx_Callback_Def callback);
 static void BspUSB_VCP_Set_Tx_CPLT_Callback(BspUSB_Tx_Cplt_Callback_Def callback);
@@ -41,7 +41,7 @@ static BspUSB_Error_List BspUSB_VCP_DeInit(void)
     return BspUSB_VCPMonitor.init_state;
 }
 
-static BspUSB_Error_List BspUSB_VCP_Init(void)
+static BspUSB_Error_List BspUSB_VCP_Init(uint32_t cus_data_addr)
 {
     if(BspUSB_VCPMonitor.init_state == BspUSB_None_Init)
     {
@@ -64,6 +64,7 @@ static BspUSB_Error_List BspUSB_VCP_Init(void)
         
         memset(BspUSB_VCPMonitor.single_tx_buffer, 0, USB_VCP_MAX_TX_SIZE);
         BspUSB_VCPMonitor.init_state = BspUSB_Error_None;
+        BspUSB_VCPMonitor.cus_data_addr = cus_data_addr;
         return BspUSB_Error_None;
     }
 
@@ -198,7 +199,7 @@ static void BspUSB_VCP_RecData_Callback(uint8_t *p_data, uint16_t len)
         BspUSB_VCPMonitor.rx_irq_cnt ++;
 
         if(BspUSB_VCPMonitor.rx_callback)
-            BspUSB_VCPMonitor.rx_callback(p_data, len);
+            BspUSB_VCPMonitor.rx_callback(BspUSB_VCPMonitor.cus_data_addr, p_data, len);
     }
 }
 
