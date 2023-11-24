@@ -227,10 +227,7 @@ void TaskProtocol_Core(void const *arg)
                 SrvOsCommon.free(p_buf);
             }
             
-            /* test proto mavlink raw imu data */
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU, &MavStream, TaskProtol_PushToMAVLinkQueue);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, TaskProtol_PushToMAVLinkQueue);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude, &MavStream, TaskProtol_PushToMAVLinkQueue);
+
 
             break;
 

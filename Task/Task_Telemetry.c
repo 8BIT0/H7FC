@@ -51,6 +51,13 @@ static bool Telemetry_MavProto_Enable = false;
 static uint32_t TaskTelemetry_Period = 0;
 static Telemetry_PortMonitor_TypeDef PortMonitor = {.init = false};
 DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
+static uint8_t MavShareBuf[1024];
+
+SrvComProto_Stream_TypeDef MavStream = {
+    .p_buf = MavShareBuf,
+    .size = 0,
+    .max_size = sizeof(MavShareBuf),
+};
 
 /* internal funciotn */
 static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
@@ -123,6 +130,7 @@ void TaskTelemetry_Init(uint32_t period)
         }
         else if (Receiver_Obj.Frame_type == Receiver_Type_Sbus)
         {
+            /* still in developing */
         }
 
         Telemetry_Monitor.lst_arm_state = TELEMETRY_SET_ARM;
@@ -769,7 +777,9 @@ static void Telemetry_PortFrameOut_Process(void)
 {
     if(Telemetry_MavProto_Enable && PortMonitor.VCP_Port.init_state)
     {
-
         /* check other port init state */
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream,);
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream,);
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream,);
     }
 }
