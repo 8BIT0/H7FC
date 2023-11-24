@@ -35,9 +35,17 @@
 #define SBUS_TX_PIN Uart4_TxPin
 #define SBUS_RX_PIN Uart4_RxPin
 
-#define RADIO_SUM 1
-#define RADIO_TX_PIN Uart1_TxPin
-#define RADIO_RX_PIN Uart1_RxPin
+#ifndef RADIO_NUM
+    #define RADIO_NUM 1
+
+    #ifndef RADIO_TX_PIN
+    #define RADIO_TX_PIN Uart1_TxPin
+    #endif
+
+    #ifndef RADIO_RX_PIN
+    #define RADIO_RX_PIN Uart1_RxPin
+    #endif
+#endif
 
 /* internal variable */
 /* MAVLink message List */
