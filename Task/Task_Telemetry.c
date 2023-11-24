@@ -35,8 +35,8 @@
 #define SBUS_TX_PIN Uart4_TxPin
 #define SBUS_RX_PIN Uart4_RxPin
 
-#ifndef RADIO_NUM
-    #define RADIO_NUM 1
+#ifndef RADIO_UART_NUM
+    #define RADIO_UART_NUM 1
 
     #ifndef RADIO_TX_PIN
     #define RADIO_TX_PIN Uart1_TxPin
@@ -45,6 +45,16 @@
     #ifndef RADIO_RX_PIN
     #define RADIO_RX_PIN Uart1_RxPin
     #endif
+
+static Telemetry_UartPortMonitor_TypeDef Radio_UartPort_List[RADIO_UART_NUM];
+#endif
+
+#ifndef RADIO_CAN_NUM
+#define RADIO_CAN_NUM 0
+#endif
+
+#if (RADIO_CAN_NUM > 0)
+static Telemetry_CanPortMonitor_TypeDef Radio_CANPort_List[RADIO_CAN_NUM];
 #endif
 
 /* internal variable */
