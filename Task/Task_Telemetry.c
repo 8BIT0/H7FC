@@ -782,5 +782,6 @@ static void Telemetry_PortFrameOut_Process(void)
         SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
         SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
         SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
+        SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, );
     }
 }
