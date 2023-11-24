@@ -687,7 +687,11 @@ static void Telemetry_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
 /************************************** telemetry radio port section *************************/
 static void Telemetry_RadioPort_Init(void)
 {
+#if (RADIO_UART_NUM > 0)
 
+#else
+
+#endif
 }
 
 static bool Telemetry_Port_Init(void)
