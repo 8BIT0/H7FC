@@ -339,13 +339,23 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
 
     memset(&stream_in, 0, sizeof(SrvComProto_Msg_StreamIn_TypeDef));
 
+    /* match cli */
     if((p_data[size - 1] == '\n') && (p_data[size - 2] == '\r'))
     {
         stream_in.pac_type = ComRec_CLI;
         stream_in.valid = true;
         stream_in.size = size;
         stream_in.p_buf = p_data;
+    
+        goto stream_valid;
+    }
+    
+    /* match mavlink message */
+    if((p_data[0] == ))
+    {
+
     }
 
+stream_valid:
     return stream_in;
 }
