@@ -678,11 +678,6 @@ static bool Telemetry_RadioPort_Init(void)
     return false;
 }
 
-static bool Telemetry_RadioPort_ProtoManager()
-{
-    return false;
-}
-
 /************************************** telemetry receive process callback section *************************/
 static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size)
 {
