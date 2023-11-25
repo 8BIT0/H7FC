@@ -926,6 +926,7 @@ static void Telemetry_PortFrameOut_Process(void)
     {
         /* check other port init state */
 
+        /* if in tunning than halt general frame protocol */
         /* Proto mavlink message through Radio */
         // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
         // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
