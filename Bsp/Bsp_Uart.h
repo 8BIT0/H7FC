@@ -28,7 +28,8 @@ typedef enum
 
 typedef enum
 {
-    BspUART_Port_4 = 0,
+    BspUART_Port_1 = 0,
+    BspUART_Port_4,
     BspUART_Port_6,
     BspUART_Port_7,
     BspUART_Port_Sum,

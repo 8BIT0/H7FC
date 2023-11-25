@@ -43,7 +43,18 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         (obj->instance == NULL))
         return BspUart_Clock_Error;
 
-    if (obj->instance == UART4)
+    if (obj->instance == USART1)
+    {
+        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+        PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART1CLKSOURCE_D2PCLK2;
+
+        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+            return BspUart_Clock_Error;
+
+        __HAL_RCC_USART1_CLK_ENABLE();
+        index = BspUART_Port_1;
+    }
+    else if (obj->instance == UART4)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART4;
         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
@@ -114,7 +125,14 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
         (obj->instance == NULL))
         return BspUart_Clock_Error;
 
-    if (obj->instance == UART4)
+    if (obj->instance == USART1)
+    {
+        rx_dma_cfg.Init.Request = DMA_REQUEST_USART1_RX;
+        tx_dma_cfg.Init.Request = DMA_REQUEST_USART1_TX;
+
+        index = BspUART_Port_1;
+    }
+    else if (obj->instance == UART4)
     {
         rx_dma_cfg.Init.Request = DMA_REQUEST_UART4_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
@@ -167,7 +185,12 @@ static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj)
         (obj->instance == NULL))
         return BspUart_Clock_Error;
 
-    if (obj->instance == UART4)
+    if (obj->instance == USART1)
+    {
+        irqn = USART1_IRQn;
+        index = BspUART_Port_1;
+    }
+    else if (obj->instance == UART4)
     {
         irqn = UART4_IRQn;
         index = BspUART_Port_4;
@@ -250,16 +273,16 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     /* enable irq callback */
     switch (obj->irq_type)
     {
-    case BspUart_IRQ_Type_Idle:
-        __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_IDLE);
-        break;
+        case BspUart_IRQ_Type_Idle:
+            __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_IDLE);
+            break;
 
-    case BspUart_IRQ_Type_Byte:
-        __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_RXNE);
-        break;
+        case BspUart_IRQ_Type_Byte:
+            __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_RXNE);
+            break;
 
-    default:
-        return false;
+        default:
+            return false;
     }
 
     __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_ERR);

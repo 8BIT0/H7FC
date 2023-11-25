@@ -66,7 +66,6 @@ static BspUARTObj_TypeDef Radio_Port1_UartObj = {
     .rx_stream = RADIO_RX_DMA_STREAM,
     .tx_dma = RADIO_TX_DMA,
     .tx_stream = RADIO_TX_DMA_STREAM,
-    .irq_type = BspUart_IRQ_Type_Idle,
     .rx_buf = RadioRxBuff[RADIO_UART_NUM],
     .rx_size = RADIO_BUFF_SIZE,
 };
@@ -713,7 +712,7 @@ static void Telemetry_RadioPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
         
         for(uint8_t i = 0; i < monitor->uart_port_num; i++)
         {
-            if(BspUart.init(&(monitor->Uart_Port[i].Obj)))
+            if(BspUart.init(monitor->Uart_Port[i].Obj))
             {
                 monitor->Uart_Port[i].init_state = true;
                 memset(&monitor->Uart_Port[i].RecObj, 0, sizeof(Telemetry_PortRecObj_TypeDef));

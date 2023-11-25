@@ -181,6 +181,34 @@ void DMA1_Stream5_IRQHandler(void)
     HAL_DMA_IRQHandler(hdl);
 }
 
+void DMA2_Stream0_IRQHandler(void)
+{
+  DMA_HandleTypeDef *hdl = NULL;
+  hdl = BspDMA.get_handle(Bsp_DMA_2, Bsp_DMA_Stream_0);
+
+  if (hdl)
+    HAL_DMA_IRQHandler(hdl);
+}
+
+void DMA2_Stream1_IRQHandle(void)
+{
+  DMA_HandleTypeDef *hdl = NULL;
+  hdl = BspDMA.get_handle(Bsp_DMA_2, Bsp_DMA_Stream_1);
+
+  if (hdl)
+    HAL_DMA_IRQHandler(hdl);
+}
+
+void USART1_IRQHandler(void)
+{
+  UART_HandleTypeDef *hdl = NULL;
+  UART_IRQ_Callback(BspUART_Port_1);
+  hdl = BspUart_GetObj_Handle(BspUART_Port_1);
+
+  if (hdl && (hdl->Instance == USART1))
+    HAL_UART_IRQHandler(hdl);
+}
+
 void UART4_IRQHandler(void)
 {
   UART_HandleTypeDef *hdl = NULL;
