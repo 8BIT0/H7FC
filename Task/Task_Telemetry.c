@@ -715,7 +715,7 @@ static void Telemetry_RadioPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
             if(BspUart.init(monitor->Uart_Port[i].Obj))
             {
                 monitor->Uart_Port[i].init_state = true;
-                memset(&monitor->Uart_Port[i].RecObj, 0, sizeof(Telemetry_PortRecObj_TypeDef));
+                memset(&monitor->Uart_Port[i].RecObj, 0, sizeof(Telemetry_PortProtoObj_TypeDef));
                 memset(&monitor->Uart_Port[i].ByPass_Mode, 0, sizeof(TelemetryPort_ByPass_TypeDef));
                 
                 monitor->Uart_Port[i].RecObj.type = Telemetry_Port_Uart;
@@ -774,12 +774,12 @@ static bool Telemetry_Port_Init(void)
 static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size)
 {
     SrvComProto_Msg_StreamIn_TypeDef stream_in;
-    Telemetry_PortRecObj_TypeDef *p_RecObj = NULL;
+    Telemetry_PortProtoObj_TypeDef *p_RecObj = NULL;
 
     /* use mavlink protocol tuning the flight parameter */
     if(p_data && size && RecObj_addr)
     {
-        p_RecObj = (Telemetry_PortRecObj_TypeDef *)RecObj_addr;
+        p_RecObj = (Telemetry_PortProtoObj_TypeDef *)RecObj_addr;
         p_RecObj->time_stamp = SrvOsCommon.get_os_ms();
 
         switch((uint8_t) p_RecObj->type)
@@ -818,7 +818,7 @@ static void Telemetry_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data
     UNUSED(p_data);
     UNUSED(size);
 
-    Telemetry_PortRecObj_TypeDef *p_RecObj = NULL;
+    Telemetry_PortProtoObj_TypeDef *p_RecObj = NULL;
     Telemetry_UartPortMonitor_TypeDef *p_UartPortObj = NULL;
     Telemetry_VCPPortMonitor_TypeDef *p_USBPortObj = NULL;
     osSemaphoreId semID = NULL;
@@ -936,5 +936,17 @@ static void Telemetry_PortFrameOut_Process(void)
         // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
         // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
         // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, );
+    }
+}
+
+static void Telemetry_MavMsg_Trans(Telemetry_ProtoMonitor_TypeDef *Obj, uint8_t *p_data, uint16_t size)
+{
+    if(Obj)
+    {
+        /* doing frame proto now */
+        if(p_data && size)
+        {
+
+        }
     }
 }

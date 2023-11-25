@@ -182,13 +182,18 @@ typedef struct
     uint8_t port_index;
     uint32_t PortObj_addr;
     uint32_t time_stamp;
-} Telemetry_PortRecObj_TypeDef;
+} Telemetry_PortProtoObj_TypeDef;
+
+typedef struct
+{
+    
+} Telemetry_ProtoMonitor_TypeDef;
 
 typedef struct
 {
     bool init_state;
     
-    Telemetry_PortRecObj_TypeDef RecObj;
+    Telemetry_PortProtoObj_TypeDef RecObj;
     
     osSemaphoreId p_tx_semphr;
     uint32_t tx_semphr_rls_err;
@@ -200,7 +205,7 @@ typedef struct
 typedef struct
 {
     bool init_state;
-    Telemetry_PortRecObj_TypeDef RecObj;
+    Telemetry_PortProtoObj_TypeDef RecObj;
     TelemetryPort_ByPass_TypeDef ByPass_Mode;
     
     osSemaphoreId p_tx_semphr;
@@ -212,7 +217,7 @@ typedef struct
 typedef struct
 {
     bool init_state;
-    Telemetry_PortRecObj_TypeDef RecObj;
+    Telemetry_PortProtoObj_TypeDef RecObj;
 } Telemetry_CanPortMonitor_TypeDef;
 
 typedef struct
