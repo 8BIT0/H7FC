@@ -387,7 +387,7 @@ static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t 
     return true;
 }
 
-static void BSP_UART_DMAStopRx(BspUART_Port_List index)
+static void BspUart_DMAStopRx(BspUART_Port_List index)
 {
     UART_HandleTypeDef hdl;
 
@@ -417,6 +417,16 @@ static void BSP_UART_DMAStopRx(BspUART_Port_List index)
             hdl.RxState = HAL_UART_STATE_READY;
         }
     }
+}
+
+static bool BspUart_Set_Rx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback)
+{
+    return false;
+}
+
+static bool BspUart_Set_Tx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback)
+{
+    return false;
 }
 
 /******************************** irq callback ***********************************/
@@ -453,7 +463,7 @@ void UART_IRQ_Callback(BspUART_Port_List index)
                 {
                     __HAL_UART_CLEAR_IDLEFLAG(hdl);
 
-                    BSP_UART_DMAStopRx(index);
+                    BspUart_DMAStopRx(index);
 
                     len = BspUart_Obj_List[index]->rx_size - __HAL_DMA_GET_COUNTER(rx_dma);
 

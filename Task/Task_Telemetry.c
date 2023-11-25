@@ -44,8 +44,11 @@
 #define RADIO_RX_PORT UART1_RX_PORT
 
 #if (RADIO_UART_NUM > 0)
+static uint8_t RadioRxBuff[RADIO_UART_NUM][RADIO_BUFF_SIZE];
+
 static BspUARTObj_TypeDef Radio_Port1_UartObj = {
     .instance = RADIO_PORT,
+    .baudrate = RADIO_PORT_BAUD,
     .tx_io = {
         .init_state = false,
         .pin = RADIO_TX_PIN,
@@ -63,6 +66,9 @@ static BspUARTObj_TypeDef Radio_Port1_UartObj = {
     .rx_stream = RADIO_RX_DMA_STREAM,
     .tx_dma = RADIO_TX_DMA,
     .tx_stream = RADIO_TX_DMA_STREAM,
+    .irq_type = BspUart_IRQ_Type_Idle,
+    .rx_buf = RadioRxBuff[RADIO_UART_NUM],
+    .rx_size = RADIO_BUFF_SIZE,
 };
 
 static Telemetry_UartPortMonitor_TypeDef Radio_UartPort_List[RADIO_UART_NUM] = {
@@ -652,6 +658,8 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     return sig_tmp;
 }
 
+
+/*************************** telemetry ByPass Mode is still on developping *********************************/
 /************************************** telemetry radio section ********************************************/
 static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
 {
@@ -717,10 +725,27 @@ static void Telemetry_RadioPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
         
         for(uint8_t i = 0; i < monitor->uart_port_num; i++)
         {
-
+            if(BspUart.init(&(monitor->Uart_Port[i].Obj)))
+            {
+                monitor->Uart_Port[i].init_state = true;
+                memset(&monitor->Uart_Port[i].RecObj, 0, sizeof(Telemetry_PortRecObj_TypeDef));
+                memset(&monitor->Uart_Port[i].ByPass_Mode, 0, sizeof(TelemetryPort_ByPass_TypeDef));
+                
+                monitor->Uart_Port[i].RecObj.type = Telemetry_Port_Uart;
+                monitor->Uart_Port[i].RecObj.port_index = i;
+                
+                monitor->Uart_Port[i].Obj->cust_data_addr = (uint32_t)&(monitor->Uart_Port[i].RecObj);
+            
+                /* set callback */
+            }
+            else
+            {
+                monitor->Uart_Port[i].init_state = false;
+                monitor->uart_port_num --;
+            }
         }
 #else
-
+        monitor->uart_port_num = 0;
 #endif
     }
 }

@@ -24,7 +24,7 @@ typedef enum
     BspUart_IRQ_Type_None = 0,
     BspUart_IRQ_Type_Idle,
     BspUart_IRQ_Type_Byte,
-} BsuUart_IRQ_Type_List;
+} BspUart_IRQ_Type_List;
 
 typedef enum
 {
@@ -82,7 +82,7 @@ typedef struct
 
     bool init_state;
 
-    BsuUart_IRQ_Type_List irq_type;
+    BspUart_IRQ_Type_List irq_type;
 
     BspUart_MonitorObj_TypeDef monitor;
 } BspUARTObj_TypeDef;
@@ -96,6 +96,8 @@ typedef struct
     bool (*set_data_bit)(BspUARTObj_TypeDef *obj, uint32_t data_bit);
     bool (*set_swap)(BspUARTObj_TypeDef *obj, bool swap);
     bool (*send)(BspUARTObj_TypeDef *obj, uint8_t *tx, uint32_t size);
+    bool (*set_rx_callback)(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
+    bool (*set_tx_callback)(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
 } BspUART_TypeDef;
 
 void UART_IRQ_Callback(BspUART_Port_List index);
