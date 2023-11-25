@@ -180,6 +180,7 @@ typedef struct
 {
     Telemetry_PortType_List type;
     uint8_t port_index;
+    uint32_t PortObj_addr;
     uint32_t time_stamp;
 } Telemetry_PortRecObj_TypeDef;
 
@@ -201,6 +202,9 @@ typedef struct
     bool init_state;
     Telemetry_PortRecObj_TypeDef RecObj;
     TelemetryPort_ByPass_TypeDef ByPass_Mode;
+    
+    osSemaphoreId p_tx_semphr;
+    uint32_t tx_semphr_rls_err;
 
     BspUARTObj_TypeDef *Obj;
 } Telemetry_UartPortMonitor_TypeDef;

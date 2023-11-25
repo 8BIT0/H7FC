@@ -122,10 +122,10 @@ static void Telemetry_PortFrameOut_Process(void);
 
 /* default vcp port section */
 static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
-static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size);
 static void Telemetry_RadioPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
 static bool Telemetry_MAV_Msg_Init(void);
 static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size);
+static void Telemetry_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint32_t *size);
 
 /* radio section */
 static bool Telemetry_Port_Init(void);
@@ -669,6 +669,7 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
         {
             /* init default port VCP first */
             monitor->VCP_Port.init_state = false;
+            return;
         }
         else
             monitor->VCP_Port.init_state = true;
@@ -680,26 +681,13 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
         if(monitor->VCP_Port.p_tx_semphr == NULL)
         {
             monitor->VCP_Port.init_state = false;
-            return BspUSB_Error_Semphr_Crt;
+            return;
         }
 
-        BspUSB_VCP.set_tx_cpl_callback(Telemetry_DefaultPort_TxCplt_Callback);
+        BspUSB_VCP.set_tx_cpl_callback(Telemetry_Port_TxCplt_Callback);
         BspUSB_VCP.set_rx_callback(Telemetry_Port_Rx_Callback);
-    }
-}
 
-static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size)
-{
-    UNUSED(p_data);
-    UNUSED(size);
-
-    if(PortMonitor.VCP_Port.init_state && PortMonitor.VCP_Port.p_tx_semphr)
-    {
-        if(osSemaphoreRelease(PortMonitor.VCP_Port.p_tx_semphr) != osOK)
-        {
-            PortMonitor.VCP_Port.tx_semphr_rls_err ++;
-            osSemaphoreDelete(PortMonitor.VCP_Port.p_tx_semphr);
-        }
+        monitor->VCP_Port.RecObj.PortObj_addr = (uint32_t)&(monitor->VCP_Port);
     }
 }
 
@@ -736,7 +724,24 @@ static void Telemetry_RadioPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
                 
                 monitor->Uart_Port[i].Obj->cust_data_addr = (uint32_t)&(monitor->Uart_Port[i].RecObj);
             
-                /* set callback */
+                /* create semaphore for send */
+                osSemaphoreDef(Uart_Port_Tmp);
+                monitor->Uart_Port[i].p_tx_semphr = osSemaphoreCreate(osSemaphore(Uart_Port_Tmp), 32);
+
+                if(monitor->Uart_Port[i].p_tx_semphr)
+                {
+                    /* set callback */
+                    BspUart.set_rx_callback(&(monitor->Uart_Port[i].Obj), Telemetry_Port_Rx_Callback);
+                    BspUart.set_tx_callback(&(monitor->Uart_Port[i].Obj), Telemetry_Port_TxCplt_Callback);
+
+                    monitor->Uart_Port[i].RecObj.PortObj_addr = (uint32_t)&(monitor->Uart_Port[i]);
+                    monitor->Uart_Port[i].init_state = true;
+                }
+                else
+                {
+                    monitor->Uart_Port[i].init_state = false;
+                    monitor->uart_port_num --;
+                }
             }
             else
             {
@@ -799,6 +804,54 @@ static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, ui
             /* tag on recive time stamp */
             /* first come first serve */
             /* in case two different port tuning the same function or same parameter at the same time */
+        }
+    }
+}
+
+static void Telemetry_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint32_t *size)
+{
+    UNUSED(p_data);
+    UNUSED(size);
+    Telemetry_PortRecObj_TypeDef *p_RecObj = NULL;
+    Telemetry_UartPortMonitor_TypeDef *p_UartPortObj = NULL;
+    Telemetry_VCPPortMonitor_TypeDef *p_USBPortObj = NULL;
+    osSemaphoreId semID = NULL;
+    uint32_t *p_rls_err_cnt = NULL;
+
+    if(RecObj_addr)
+    {
+        p_RecObj = RecObj_addr;
+
+        if(p_RecObj->PortObj_addr)
+        {
+            switch((uint8_t) p_RecObj->type)
+            {
+                case Telemetry_Port_USB:
+                    p_USBPortObj = (Telemetry_UartPortMonitor_TypeDef *)(p_RecObj->PortObj_addr);
+
+                    if(p_USBPortObj->init_state && p_USBPortObj->p_tx_semphr)
+                    {
+                        semID = p_USBPortObj->p_tx_semphr;
+                        p_rls_err_cnt = p_USBPortObj->tx_semphr_rls_err;
+                    }
+                    break;
+
+                case Telemetry_Port_Uart:
+                    p_UartPortObj = (Telemetry_UartPortMonitor_TypeDef *)(p_RecObj->PortObj_addr);
+
+                    if(p_UartPortObj->init_state && p_UartPortObj->p_tx_semphr)
+                    {
+                        semID =p_UartPortObj->p_tx_semphr;
+                        p_rls_err_cnt = p_UartPortObj->tx_semphr_rls_err;
+                    }
+                    break;
+
+                default:
+                    return;
+            }
+            
+            if(semID && p_rls_err_cnt && (osSemaphoreRelease(semID) != osOK))
+                p_rls_err_cnt ++;
         }
     }
 }

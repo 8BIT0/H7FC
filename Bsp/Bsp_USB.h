@@ -12,7 +12,7 @@
 #define USB_VCP_MAX_TX_SIZE 512
 #define USB_VCP_TX_BUFF_SIZE 1024
 
-typedef void (*BspUSB_Tx_Cplt_Callback_Def)(uint8_t *p_data, uint32_t *len);
+typedef void (*BspUSB_Tx_Cplt_Callback_Def)(uint32_t cus_data_addr, uint8_t *p_data, uint32_t *len);
 typedef void (*BspUSB_Rx_Callback_Def)(uint32_t cus_data_addr, uint8_t *p_data, uint16_t len);
 
 typedef enum

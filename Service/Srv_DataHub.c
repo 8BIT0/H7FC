@@ -36,6 +36,8 @@ static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
+static bool SrvDataHub_Get_TunningStatue(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
+static bool SrvDataHub_Set_TunningStatus(uint32_t time_stamp, bool state, uint32_t port_addr);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -622,3 +624,35 @@ reupdate_servo_channel:
 
     return true;
 }
+
+static bool SrvDataHub_Set_TunningStatus(uint32_t time_stamp, bool state, uint32_t port_addr)
+{
+    if((SrvDataHub_Monitor.data.tunning_port_addr == 0) || \
+       (time_stamp - SrvDataHub_Monitor.data.tunning_heartbeat_timestamp >= SRVDATAHUB_TUNNING_HEARTBEAT_TIMEOUT) || \
+       (port_addr == SrvDataHub_Monitor.data.tunning_port_addr) || \
+       !SrvDataHub_Monitor.data.in_tunning)
+    {
+        SrvDataHub_Monitor.data.in_tunning = true;
+        SrvDataHub_Monitor.data.tunning_heartbeat_timestamp = time_stamp;
+        SrvDataHub_Monitor.data.tunning_port_addr = port_addr;
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool SrvDataHub_Get_TunningStatue(uint32_t *time_stamp, bool *state, uint32_t *port_addr)
+{
+    if(time_stamp && state && port_addr)
+    {
+        (*state) = SrvDataHub_Monitor.data.in_tunning;
+        (*time_stamp) = SrvDataHub_Monitor.data.tunning_heartbeat_timestamp;
+        (*port_addr) = SrvDataHub_Monitor.data.tunning_port_addr;
+
+        return true;
+    }
+
+    return false;
+}
+

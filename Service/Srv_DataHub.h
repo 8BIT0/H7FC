@@ -10,6 +10,8 @@
 #include "Srv_Receiver.h"
 #include "Srv_SensorMonitor.h"
 
+#define SRVDATAHUB_TUNNING_HEARTBEAT_TIMEOUT 3000 /* unit: ms 3S timeout */
+
 #pragma pack(1)
 typedef union
 {
@@ -153,6 +155,10 @@ typedef struct
     uint8_t servo_dir[8];
     uint16_t moto[8];
     uint8_t servo[8];
+
+    uint32_t tunning_heartbeat_timestamp;
+    bool in_tunning;
+    uint32_t tunning_port_addr;
 } SrvDataHubObj_TypeDef;
 #pragma pack()
 
@@ -167,6 +173,9 @@ typedef struct
 typedef struct
 {
     void (*init)(void);
+    bool (*set_tunning_state)(uint32_t time_stamp, bool state, uint32_t port_addr);    /* set tunning status in can/uart/usb irq */
+
+    bool (*get_tunning_state)(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
     bool (*get_imu_init_state)(bool *state);
     bool (*get_baro_init_state)(bool *state);
     bool (*get_mag_init_state)(bool *state);

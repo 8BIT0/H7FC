@@ -20,6 +20,8 @@ bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity);
 bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
 bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap);
 static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size, bool wait_till_finish);
+static bool BspUart_Set_Rx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
+static bool BspUart_Set_Tx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
 
 BspUART_TypeDef BspUart = {
     .init = BspUart_Init,
@@ -28,6 +30,8 @@ BspUART_TypeDef BspUart = {
     .set_data_bit = BspUart_Set_DataBit,
     .set_swap = BspUart_Swap_Pin,
     .send = BspUart_Transfer,
+    .set_rx_callback = BspUart_Set_Rx_Callback,
+    .set_tx_callback = BspUart_Set_Tx_Callback,
 };
 
 static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
@@ -353,21 +357,25 @@ static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t 
     if ((obj == NULL) || (tx_buf == NULL) || (size == 0))
         return false;
 
+    /* last pack still in transmitting */
+    if(obj->monitor.tx_success_cnt != obj->monitor.tx_cnt)
+        return false;
+
     /* send data */
     switch (HAL_UART_Transmit_DMA(&(obj->hdl), tx_buf, size))
     {
-    case HAL_OK:
-        obj->monitor.tx_cnt++;
-        break;
+        case HAL_OK:
+            obj->monitor.tx_cnt++;
+            break;
 
-    case HAL_ERROR:
-    case HAL_BUSY:
-        obj->monitor.tx_err_cnt++;
-        return false;
+        case HAL_ERROR:
+        case HAL_BUSY:
+            obj->monitor.tx_err_cnt++;
+            return false;
 
-    default:
-        obj->monitor.tx_unknow_err_cnt++;
-        return false;
+        default:
+            obj->monitor.tx_unknow_err_cnt++;
+            return false;
     }
 
     obj->wait_till_send_finish = wait_till_finish;
@@ -421,11 +429,23 @@ static void BspUart_DMAStopRx(BspUART_Port_List index)
 
 static bool BspUart_Set_Rx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback)
 {
+    if(obj)
+    {
+        obj->RxCallback = callback;
+        return true;
+    }
+
     return false;
 }
 
 static bool BspUart_Set_Tx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback)
 {
+    if(obj)
+    {
+        obj->TxCallback = callback;
+        return true;
+    }
+
     return false;
 }
 
@@ -560,5 +580,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
     {
         if (BspUart_Obj_List[index]->wait_till_send_finish)
             BspUart_Obj_List[index]->send_finish = true;
+
+        BspUart_Obj_List[index]->monitor.tx_success_cnt ++;
     }
 }

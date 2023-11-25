@@ -210,7 +210,7 @@ static void BspUSB_VCP_SendData_CPLT_Callback(uint8_t *p_data, uint32_t *size)
         BspUSB_VCPMonitor.tx_fin_cnt ++;
 
         if(BspUSB_VCPMonitor.tx_fin_callback)
-            BspUSB_VCPMonitor.tx_fin_callback(p_data, size);
+            BspUSB_VCPMonitor.tx_fin_callback(BspUSB_VCPMonitor.cus_data_addr, p_data, size);
     }
 }
 
