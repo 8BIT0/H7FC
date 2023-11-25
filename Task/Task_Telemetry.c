@@ -797,7 +797,6 @@ static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, ui
                 return;
         }
 
-        memset(&stream_in, 0, sizeof(stream_in));
         stream_in = SrvComProto.msg_decode(p_data, size);
     
         if(stream_in.valid)
