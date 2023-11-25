@@ -9,6 +9,7 @@
 #include "linked_list.h"
 #include "../common/util.h"
 #include "semphr.h"
+#include "IO_Definition.h"
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
 
@@ -26,10 +27,12 @@
 #define RECEIVER_SBUS_TX_DMA Bsp_DMA_1
 #define RECEIVER_SBUS_TX_DMA_STREAM Bsp_DMA_Stream_5
 
-#define RADIO_TX_DMA 
-#define RADIO_TX_DMA_STREAM 
-#define RADIO_RX_DMA 
-#define RADIO_RX_DMA_STREAM 
+#define RADIO_UART_NUM 1
+#define RADIO_PORT USART1
+#define RADIO_TX_DMA Bsp_DMA_2
+#define RADIO_TX_DMA_STREAM Bsp_DMA_Stream_1
+#define RADIO_RX_DMA Bsp_DMA_2
+#define RADIO_RX_DMA_STREAM Bsp_DMA_Stream_2
 
 #define TELEMETRY_SET_ARM 1
 #define TELEMETRY_SET_DISARM 0
@@ -196,6 +199,8 @@ typedef struct
     bool init_state;
     Telemetry_PortRecObj_TypeDef RecObj;
     TelemetryPort_ByPass_TypeDef ByPass_Mode;
+
+    BspUARTObj_TypeDef *Obj;
 } Telemetry_UartPortMonitor_TypeDef;
 
 typedef struct

@@ -24,7 +24,6 @@
 #include "Task_Telemetry.h"
 #include "DataPipe.h"
 #include "Srv_Receiver.h"
-#include "IO_Definition.h"
 #include "Srv_OsCommon.h"
 #include "util.h"
 #include "Srv_ComProto.h"
@@ -35,18 +34,41 @@
 #define SBUS_TX_PIN Uart4_TxPin
 #define SBUS_RX_PIN Uart4_RxPin
 
-#ifndef RADIO_UART_NUM
-    #define RADIO_UART_NUM 1
+#define RADIO_TX_PIN UART1_TX_PIN
+#define RADIO_RX_PIN UART1_RX_PIN
 
-    #ifndef RADIO_TX_PIN
-    #define RADIO_TX_PIN Uart1_TxPin
-    #endif
+#define RADIO_TX_PIN_ALT GPIO_AF7_USART1
+#define RADIO_RX_PIN_ALT GPIO_AF7_USART1
 
-    #ifndef RADIO_RX_PIN
-    #define RADIO_RX_PIN Uart1_RxPin
-    #endif
+#define RADIO_TX_PORT UART1_TX_PORT
+#define RADIO_RX_PORT UART1_RX_PORT
 
-static Telemetry_UartPortMonitor_TypeDef Radio_UartPort_List[RADIO_UART_NUM];
+#if (RADIO_UART_NUM > 0)
+static BspUARTObj_TypeDef Radio_Port1_UartObj = {
+    .instance = RADIO_PORT,
+    .tx_io = {
+        .init_state = false,
+        .pin = RADIO_TX_PIN,
+        .port = RADIO_TX_PORT,
+        .alternate = RADIO_TX_PIN_ALT,
+    }, 
+    .rx_io = {
+        .init_state = false,
+        .pin = RADIO_RX_PIN,
+        .port = RADIO_RX_PORT,
+        .alternate = RADIO_RX_PIN_ALT,
+    }, 
+    .pin_swap = false,
+    .rx_dma = RADIO_RX_DMA,
+    .rx_stream = RADIO_RX_DMA_STREAM,
+    .tx_dma = RADIO_TX_DMA,
+    .tx_stream = RADIO_TX_DMA_STREAM,
+};
+
+static Telemetry_UartPortMonitor_TypeDef Radio_UartPort_List[RADIO_UART_NUM] = {
+    [0] = {.init_state = false,
+           .Obj = &Radio_Port1_UartObj},
+};
 #endif
 
 #ifndef RADIO_CAN_NUM
@@ -95,7 +117,7 @@ static void Telemetry_PortFrameOut_Process(void);
 /* default vcp port section */
 static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
 static void Telemetry_DefaultPort_TxCplt_Callback(uint8_t *p_data, uint32_t *size);
-static bool Telemetry_RadioPort_Init(void);
+static void Telemetry_RadioPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
 static bool Telemetry_MAV_Msg_Init(void);
 static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size);
 
@@ -685,13 +707,22 @@ static void Telemetry_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
 }
 
 /************************************** telemetry radio port section *************************/
-static void Telemetry_RadioPort_Init(void)
+static void Telemetry_RadioPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
 {
+    if(monitor)
+    {
 #if (RADIO_UART_NUM > 0)
+        monitor->uart_port_num = RADIO_UART_NUM;
+        monitor->Uart_Port = Radio_UartPort_List;
+        
+        for(uint8_t i = 0; i < monitor->uart_port_num; i++)
+        {
 
+        }
 #else
 
 #endif
+    }
 }
 
 static bool Telemetry_Port_Init(void)
@@ -810,15 +841,15 @@ static void Telemetry_PortFrameOut_Process(void)
         /* check other port init state */
 
         /* Proto mavlink message through Radio */
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, );
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, );
         
         /* Proto mavlink message through default port */
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
-        SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, );
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, );
     }
 }
