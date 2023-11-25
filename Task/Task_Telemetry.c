@@ -805,6 +805,11 @@ static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, ui
             /* tag on recive time stamp */
             /* first come first serve */
             /* in case two different port tuning the same function or same parameter at the same time */
+        
+            if(stream_in.pac_type == ComRec_MavMsg)
+            {
+                
+            }
         }
     }
 }
@@ -813,6 +818,7 @@ static void Telemetry_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data
 {
     UNUSED(p_data);
     UNUSED(size);
+
     Telemetry_PortRecObj_TypeDef *p_RecObj = NULL;
     Telemetry_UartPortMonitor_TypeDef *p_UartPortObj = NULL;
     Telemetry_VCPPortMonitor_TypeDef *p_USBPortObj = NULL;
