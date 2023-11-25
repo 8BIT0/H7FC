@@ -8,7 +8,7 @@
 
 #include "../MAVLink/common/mavlink.h"
 
-typedef bool (*ComProto_Callback)(uint8_t *p_data, uint32_t len);
+typedef bool (*ComProto_Callback)(void *arg, uint8_t *p_data, uint32_t len);
 typedef uint16_t (*DataPack_Callback)(uint8_t *pck);
 typedef uint32_t ComPort_Handle;
 
@@ -118,7 +118,7 @@ typedef struct
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
     bool (*mav_msg_enable_ctl)(SrvComProto_MsgInfo_TypeDef *msg, bool state);
-    bool (*mav_msg_stream)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, ComProto_Callback tx_cb);
+    bool (*mav_msg_stream)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, void *arg, ComProto_Callback tx_cb);
 } SrvComProto_TypeDef;
 
 extern SrvComProto_TypeDef SrvComProto;
