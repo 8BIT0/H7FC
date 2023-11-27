@@ -37,7 +37,7 @@ static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
 static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
-static bool SrvDataHub_Get_ConfigratorAttachState(bool *state);
+static bool SrvDataHub_Get_ConfigratorAttachState(uint32_t *time_stamp, bool *state);
 
 static bool SrvDataHub_Set_ConfigratorAttachState(uint32_t time_stamp, bool state);
 static bool SrvDataHub_Set_TunningState(uint32_t time_stamp, bool state, uint32_t port_addr);
@@ -680,14 +680,15 @@ reupdate_tunning_state:
     return false;
 }
 
-static bool SrvDataHub_Get_ConfigratorAttachState(bool *state)
+static bool SrvDataHub_Get_ConfigratorAttachState(uint32_t *time_stamp,bool *state)
 {
-    if(state)
+    if(time_stamp && state)
     {
 reupdate_configrator_attach_state:
         SrvDataHub_Monitor.inuse_reg.bit.configrator_attach = true;
 
         (*state) = SrvDataHub_Monitor.data.attach_configrator;
+        (*time_stamp) = SrvDataHub_Monitor.data.configrator_time_stamp;
 
         if(!SrvDataHub_Monitor.inuse_reg.bit.configrator_attach)
             goto reupdate_configrator_attach_state;

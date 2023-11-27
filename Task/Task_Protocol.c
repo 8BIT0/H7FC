@@ -2,6 +2,7 @@
 #include "Srv_OsCommon.h"
 #include "IO_Definition.h"
 #include "Srv_ComProto.h"
+#include "Srv_DataHub.h"
 
 #define RADIO_TX_PIN UART1_TX_PIN
 #define RADIO_RX_PIN UART1_RX_PIN
@@ -86,6 +87,7 @@ static bool TaskFrameCTL_MAV_Msg_Init(void);
 static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size);
 static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint32_t *size);
 static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uint16_t index);
+static void TaskFrameCTL_ConnectStateCheck(void);
 
 void TaskFrameCTL_Init(uint32_t period)
 {
@@ -117,7 +119,8 @@ void TaskFrameCTL_Core(void *arg)
     {
         /* frame protocol process */
         TaskFrameCTL_PortFrameOut_Process();
-        
+        TaskFrameCTL_ConnectStateCheck();
+
         SrvOsCommon.precise_delay(&per_time, FrameCTL_Period);
     }
 }
@@ -402,18 +405,18 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
         /* Proto mavlink message through Radio */
         // proto_monitor.port_type = Port_Uart;
         // proto_monitor.port_addr = Radio_Addr;
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, , (ComProto_Callback));
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, , (ComProto_Callback));
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, , (ComProto_Callback));
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, , (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, , (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, , (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, , (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
         
         /* Proto mavlink message through default port */
         // proto_monitor.port_type = Port_USB;
         // proto_monitor.port_addr = USB_VCP_Addr;
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, , (ComProto_Callback));
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, , (ComProto_Callback));
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, , (ComProto_Callback));
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, , (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, , (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, , (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, , (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
     }
 }
 
@@ -435,3 +438,15 @@ static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_
     }
 }
 
+static void TaskFrameCTL_ConnectStateCheck(void)
+{
+    uint32_t tunning_time_stamp = 0;
+    uint32_t configrator_time_stamp = 0;
+    uint32_t tunning_port = 0;
+    bool tunning_state = false;
+    bool configrator_state = false;
+
+    /* check configrator and tunning mode time out */
+    SrvDataHub.get_configrator_attach_state(&configrator_time_stamp, &configrator_state);
+    SrvDataHub.get_tunning_state(&tunning_time_stamp, &tunning_state, &tunning_port);
+}

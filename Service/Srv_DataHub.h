@@ -185,7 +185,7 @@ typedef struct
     bool (*set_configrator_state)(uint32_t time_stamp, bool state);
 
     bool (*get_tunning_state)(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
-    bool (*get_configrator_attach_state)(bool *state);
+    bool (*get_configrator_attach_state)(uint32_t *time_stamp, bool *state);
     bool (*get_imu_init_state)(bool *state);
     bool (*get_baro_init_state)(bool *state);
     bool (*get_mag_init_state)(bool *state);
