@@ -19,7 +19,7 @@ bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit);
 bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity);
 bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
 bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap);
-static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size, bool wait_till_finish);
+static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size);
 static bool BspUart_Set_Rx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
 static bool BspUart_Set_Tx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
 
@@ -265,8 +265,6 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
         return false;
 
     BspUart_Obj_List[port_index] = obj;
-    obj->send_finish = false;
-    obj->wait_till_send_finish = false;
 
     memset(&(obj->monitor), NULL, sizeof(obj->monitor));
 
@@ -373,7 +371,7 @@ UART_HandleTypeDef *BspUart_GetObj_Handle(BspUART_Port_List index)
     return &(BspUart_Obj_List[index]->hdl);
 }
 
-static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size, bool wait_till_finish)
+static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size)
 {
     uint8_t time_out = BspUart_Opr_TimeOut;
 
@@ -400,20 +398,6 @@ static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t 
             obj->monitor.tx_unknow_err_cnt++;
             return false;
     }
-
-    obj->wait_till_send_finish = wait_till_finish;
-    if (wait_till_finish)
-    {
-        while (!obj->send_finish)
-        {
-            if ((time_out--) == 0)
-            {
-                obj->monitor.tx_err_cnt++;
-                return false;
-            }
-        }
-    }
-    obj->monitor.tx_success_cnt++;
 
     return true;
 }
@@ -538,7 +522,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     uint8_t index = 0;
 
-    if (huart->Instance == UART4)
+    if (huart->Instance == USART1)
+    {
+        index = BspUART_Port_1;
+    }
+    else if (huart->Instance == UART4)
     {
         index = BspUART_Port_4;
     }
@@ -584,7 +572,11 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
     uint8_t index = 0;
 
-    if (huart->Instance == UART4)
+    if(huart->Instance == USART1)
+    {
+        index = BspUART_Port_1;
+    }
+    else if (huart->Instance == UART4)
     {
         index = BspUART_Port_4;
     }
@@ -601,9 +593,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
     if (BspUart_Obj_List[index])
     {
-        if (BspUart_Obj_List[index]->wait_till_send_finish)
-            BspUart_Obj_List[index]->send_finish = true;
-
         BspUart_Obj_List[index]->monitor.tx_success_cnt ++;
     }
 }

@@ -136,7 +136,10 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProt
             com_stream->size = mavlink_msg_to_send_buffer(com_stream->p_buf, msg->msg_obj);
 
             if (tx_cb)
+            {
+                msg->proto_cnt ++;
                 tx_cb(arg, com_stream->p_buf, com_stream->size);
+            }
 
             msg->proto_time = SrvOsCommon.get_os_ms();
         }
@@ -318,7 +321,7 @@ static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck)
     uint32_t time_stamp = 0;
     uint8_t channel_num = 0;
     uint8_t rssi = 0;
-    uint16_t channel[32];
+    uint16_t channel[32] = {0};
 
     SrvDataHub.get_rc(&time_stamp, channel, &channel_num);
 

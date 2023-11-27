@@ -84,6 +84,8 @@ typedef struct
     bool enable;
     uint16_t period;
 
+    uint32_t proto_cnt;
+
     SrvComProto_MavPackInfo_TypeDef pck_info;
     mavlink_message_t *msg_obj;
     DataPack_Callback pack_callback;

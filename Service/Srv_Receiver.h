@@ -85,6 +85,7 @@ typedef struct
 {
     bool arm_state;
     bool buzz_state;
+    bool cali_state;
     bool osd_tune_state;
     bool failsafe;
 

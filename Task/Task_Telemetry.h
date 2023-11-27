@@ -125,6 +125,7 @@ typedef struct
     Telemetry_RCFuncMap_TypeDef Buzzer_Toggle;
     Telemetry_RCFuncMap_TypeDef Log_Toggle;
     Telemetry_RCFuncMap_TypeDef OSD_Toggle;
+    Telemetry_RCFuncMap_TypeDef CLI_Toggle;
 } Telemetry_RCInput_TypeDef;
 
 typedef struct

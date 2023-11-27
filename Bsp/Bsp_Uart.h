@@ -78,9 +78,6 @@ typedef struct
 
     uint32_t cust_data_addr;
 
-    bool wait_till_send_finish;
-    bool send_finish;
-
     bool init_state;
 
     BspUart_IRQ_Type_List irq_type;
