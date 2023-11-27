@@ -308,6 +308,9 @@ static uint32_t SrvSensorMonitor_Get_MagData(SrvSensorMonitorObj_TypeDef *obj)
 /* still in developing */
 static bool SrvSensorMonitor_Baro_Init(void)
 {
+    if(SrvBaro.init)
+        return SrvBaro.init();
+
     return false;
 }
 
