@@ -21,7 +21,7 @@
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
 #define ANGULAR_SPEED_ACCURACY 1e3
 
-#define GYR_STATIC_CALIB_CYCLE 100
+#define GYR_STATIC_CALIB_CYCLE 1000
 #define GYR_STATIC_CALIB_ACCURACY ANGULAR_SPEED_ACCURACY
 #define GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD (3 * GYR_STATIC_CALIB_ACCURACY)
 #define GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD (2 * GYR_STATIC_CALIB_ACCURACY)
@@ -283,7 +283,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode);
 static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type);
 static void SrvIMU_ErrorProc(void);
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
-static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(float *pri_gyr, float *sec_gyr);
+static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -746,11 +746,11 @@ static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8
     return SrvIMU_Sample_NoError;
 }
 
-static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(float *pri_gyr, float *sec_gyr)
+static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr)
 {
     uint8_t i = Axis_X;
     SrvIMU_GyroCalib_State_List state = SrvIMU_Gyr_CalibFailed;
-    static uint8_t Gyr_Static_Calib = GYR_STATIC_CALIB_CYCLE;
+    static uint8_t Gyr_Static_Calib = calib_cycle;
     static int16_t lst_pri_gyr[Axis_Sum] = {0};
     static int16_t lst_sec_gyr[Axis_Sum] = {0};
     static int16_t PriIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};

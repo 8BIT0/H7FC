@@ -50,6 +50,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.imu = true;
             obj->statistic_imu = &obj->statistic_list[0];
             obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
+            obj->statistic_imu->is_calid = false;
         }
         else
         {
@@ -64,6 +65,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.mag = true;
             obj->statistic_mag = &obj->statistic_list[1];
             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
+            obj->statistic_baro->is_calid = false;
         }
         else
         {
@@ -320,7 +322,7 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
     if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
     {
-        
+
     }
 
     return false;
@@ -381,11 +383,15 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
     /* single sampling overhead is about 60us */
     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
-
     state |= SrvSensorMonitor_Mag_SampleCTL(obj);
     state |= SrvSensorMonitor_Baro_SampleCTL(obj);
     state |= SrvSensorMonitor_Gnss_SampleCTL(obj);
     state |= SrvSensorMonitor_Tof_SampleCTL(obj);
 
     return state;
+}
+
+static bool SrvSensor_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
+{
+
 }

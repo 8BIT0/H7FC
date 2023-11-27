@@ -120,7 +120,7 @@ typedef struct
     SrvIMU_Data_TypeDef (*get_data)(SrvIMU_Module_Type type);
     float (*get_max_angular_speed_diff)(void);
     void (*error_proc)(void);
-    SrvIMU_GyroCalib_State_List (*calib)(float *pri_gyr, float *sec_gyr);
+    SrvIMU_GyroCalib_State_List (*calib)(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr);
 } SrvIMU_TypeDef;
 
 extern SrvIMU_TypeDef SrvIMU;

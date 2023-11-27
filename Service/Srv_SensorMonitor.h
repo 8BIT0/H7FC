@@ -79,6 +79,7 @@ typedef struct
     uint32_t min_sampling_overhead; /* unit: us */
     uint32_t avg_sampling_overhead; /* unit: us */
 
+    bool is_calid;
     uint32_t sample_cnt;
     uint32_t err_cnt;
     uint32_t detect_period;
