@@ -389,11 +389,19 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     {
         state |= SrvSensorMonitor_IMU_SampleCTL(obj);
     }
+    else
+    {
+
+    }
     
     if((obj->statistic_mag->is_calid != Sensor_Calib_Start) && \
        (obj->statistic_mag->is_calid != Sensor_Calib_InProcess))
     {
         state |= SrvSensorMonitor_Mag_SampleCTL(obj);
+    }
+    else
+    {
+
     }
 
     if((obj->statistic_baro->is_calid != Sensor_Calib_Start) && \
@@ -401,11 +409,19 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     {
         state |= SrvSensorMonitor_Baro_SampleCTL(obj);
     }
+    else
+    {
+
+    }
 
     if((obj->statistic_tof->is_calid != Sensor_Calib_Start) && \
        (obj->statistic_tof->is_calid != Sensor_Calib_InProcess))
     {
         state |= SrvSensorMonitor_Tof_SampleCTL(obj);
+    }
+    else
+    {
+        
     }
 
     state |= SrvSensorMonitor_Gnss_SampleCTL(obj);
