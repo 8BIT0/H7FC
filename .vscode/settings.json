@@ -145,7 +145,8 @@
                 "madgwickahrs.h": "c",
                 "crtdefs.h": "c",
                 "srv_realtimesync.h": "c",
-                "bsp_usb.h": "c"
+                "bsp_usb.h": "c",
+                "task_statecheck.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

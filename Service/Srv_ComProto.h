@@ -14,11 +14,11 @@ typedef uint32_t ComPort_Handle;
 
 typedef enum
 {
-    ComRec_Unknow = 0,
-    ComRec_CLI,
-    ComRec_MavMsg,
-    ComRec_CusMsg,
-} SrvComProto_RecData_Type_List;
+    ComFrame_Unknow = 0,
+    ComFrame_CLI,
+    ComFrame_MavMsg,
+    ComFrame_CusMsg,
+} SrvComProto_ProtoData_Type_List;
 
 typedef enum
 {
@@ -103,7 +103,7 @@ typedef struct
 typedef struct
 {
     bool valid;
-    SrvComProto_RecData_Type_List pac_type;
+    SrvComProto_ProtoData_Type_List pac_type;
 
     uint8_t *p_buf;
     uint16_t size;

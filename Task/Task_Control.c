@@ -71,16 +71,20 @@ void TaskControl_Core(void const *arg)
     uint32_t rc_update_time = 0;
     uint32_t imu_update_time = 0;
     uint32_t att_update_time = 0;
+    uint32_t tunning_time_stamp = 0;
     uint16_t rc_ch[32];
     uint16_t gimbal[4];
     uint8_t rc_channel_sum;
     uint8_t imu_err_code;
     uint8_t axis = Axis_X;
+    uint32_t tunning_port = 0;
     bool arm_state = true;
     bool failsafe = false;
     bool imu_init_state = false;
     bool att_update = false;
     bool rc_update = false;
+    bool tunning_state = false;
+    bool configrator_attach = false;
 
     while(1)
     {
@@ -94,6 +98,14 @@ void TaskControl_Core(void const *arg)
             SrvDataHub.get_failsafe(&failsafe);
             SrvDataHub.get_gimbal_percent(gimbal);
             
+            SrvDataHub.get_tunning_state(&tunning_time_stamp, &tunning_state, &tunning_port);
+
+            /* if in tunning or attach configrator then lock moto */
+            if(tunning_state || configrator_attach)
+            {
+                goto lock_moto;
+            }
+
             // get imu init state first
             if(!SrvDataHub.get_imu_init_state(&imu_init_state) || !imu_init_state)
             {

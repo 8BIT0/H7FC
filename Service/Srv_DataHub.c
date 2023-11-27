@@ -36,8 +36,12 @@ static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
-static bool SrvDataHub_Get_TunningStatue(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
-static bool SrvDataHub_Set_TunningStatus(uint32_t time_stamp, bool state, uint32_t port_addr);
+static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
+static bool SrvDataHub_Get_ConfigratorAttachState(bool *state);
+
+static bool SrvDataHub_Set_ConfigratorAttachState(uint32_t time_stamp, bool state);
+static bool SrvDataHub_Set_TunningState(uint32_t time_stamp, bool state, uint32_t port_addr);
+
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -56,6 +60,11 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_servo = SrvDataHub_Get_ServoChannel,
     .get_imu_init_state = SrvDataHub_Get_IMU_InitState,
     .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
+    .get_tunning_state =  SrvDataHub_Get_TunningState,
+    .get_configrator_attach_state =  SrvDataHub_Get_ConfigratorAttachState,
+
+    .set_tunning_state = SrvDataHub_Set_TunningState,
+    .set_configrator_state = SrvDataHub_Set_ConfigratorAttachState,
 };
 
 static void SrvDataHub_Init(void)
@@ -625,34 +634,81 @@ reupdate_servo_channel:
     return true;
 }
 
-static bool SrvDataHub_Set_TunningStatus(uint32_t time_stamp, bool state, uint32_t port_addr)
+/* call set tunning under uart/usb/can irq callback */
+static bool SrvDataHub_Set_TunningState(uint32_t time_stamp, bool state, uint32_t port_addr)
 {
     if((SrvDataHub_Monitor.data.tunning_port_addr == 0) || \
-       (time_stamp - SrvDataHub_Monitor.data.tunning_heartbeat_timestamp >= SRVDATAHUB_TUNNING_HEARTBEAT_TIMEOUT) || \
        (port_addr == SrvDataHub_Monitor.data.tunning_port_addr) || \
        !SrvDataHub_Monitor.data.in_tunning)
     {
+        if(SrvDataHub_Monitor.inuse_reg.bit.tunning)
+            SrvDataHub_Monitor.inuse_reg.bit.tunning = false;
+
+        SrvDataHub_Monitor.update_reg.bit.tunning = true;
+
         SrvDataHub_Monitor.data.in_tunning = true;
         SrvDataHub_Monitor.data.tunning_heartbeat_timestamp = time_stamp;
         SrvDataHub_Monitor.data.tunning_port_addr = port_addr;
 
+        SrvDataHub_Monitor.update_reg.bit.tunning = false;
+
         return true;
     }
 
     return false;
 }
 
-static bool SrvDataHub_Get_TunningStatue(uint32_t *time_stamp, bool *state, uint32_t *port_addr)
+static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr)
 {
     if(time_stamp && state && port_addr)
     {
+reupdate_tunning_state:
+        SrvDataHub_Monitor.inuse_reg.bit.tunning = true;
+        
         (*state) = SrvDataHub_Monitor.data.in_tunning;
         (*time_stamp) = SrvDataHub_Monitor.data.tunning_heartbeat_timestamp;
         (*port_addr) = SrvDataHub_Monitor.data.tunning_port_addr;
 
+        if(!SrvDataHub_Monitor.inuse_reg.bit.tunning)
+            goto reupdate_tunning_state;
+
+        SrvDataHub_Monitor.inuse_reg.bit.tunning = false;
+
         return true;
     }
 
     return false;
 }
 
+static bool SrvDataHub_Get_ConfigratorAttachState(bool *state)
+{
+    if(state)
+    {
+reupdate_configrator_attach_state:
+        SrvDataHub_Monitor.inuse_reg.bit.configrator_attach = true;
+
+        (*state) = SrvDataHub_Monitor.data.attach_configrator;
+
+        if(!SrvDataHub_Monitor.inuse_reg.bit.configrator_attach)
+            goto reupdate_configrator_attach_state;
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool SrvDataHub_Set_ConfigratorAttachState(uint32_t time_stamp, bool state)
+{
+    if(SrvDataHub_Monitor.inuse_reg.bit.configrator_attach)
+       SrvDataHub_Monitor.inuse_reg.bit.configrator_attach = false;
+
+    SrvDataHub_Monitor.update_reg.bit.configrator_attach = true;
+
+    SrvDataHub_Monitor.data.configrator_time_stamp = time_stamp;
+    SrvDataHub_Monitor.data.attach_configrator = state;
+
+    SrvDataHub_Monitor.update_reg.bit.configrator_attach = false;
+
+    return true; 
+}

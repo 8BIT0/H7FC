@@ -10,7 +10,8 @@
 #include "Srv_Receiver.h"
 #include "Srv_SensorMonitor.h"
 
-#define SRVDATAHUB_TUNNING_HEARTBEAT_TIMEOUT 3000 /* unit: ms 3S timeout */
+#define SRVDATAHUB_TUNNING_HEARTBEAT_TIMEOUT 3000  /* unit: ms 3S timeout */
+#define SRVDATAHUB_CONFIGRATOR_ATTACH_TIMEOUT 2000 /* unit: ms 2S timeout */
 
 #pragma pack(1)
 typedef union
@@ -39,6 +40,9 @@ typedef union
 
         uint32_t mag_init : 1;
         uint32_t imu_init : 1;
+
+        uint32_t tunning : 1;
+        uint32_t configrator_attach : 1;
     } bit;
 
     uint32_t val;
@@ -156,6 +160,10 @@ typedef struct
     uint16_t moto[8];
     uint8_t servo[8];
 
+    /* when receiver configrator`s heartbeat */
+    uint32_t configrator_time_stamp;
+    bool attach_configrator;
+
     uint32_t tunning_heartbeat_timestamp;
     bool in_tunning;
     uint32_t tunning_port_addr;
@@ -174,8 +182,10 @@ typedef struct
 {
     void (*init)(void);
     bool (*set_tunning_state)(uint32_t time_stamp, bool state, uint32_t port_addr);    /* set tunning status in can/uart/usb irq */
+    bool (*set_configrator_state)(uint32_t time_stamp, bool state);
 
     bool (*get_tunning_state)(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
+    bool (*get_configrator_attach_state)(bool *state);
     bool (*get_imu_init_state)(bool *state);
     bool (*get_baro_init_state)(bool *state);
     bool (*get_mag_init_state)(bool *state);

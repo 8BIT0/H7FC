@@ -101,6 +101,8 @@ static uint32_t TaskTelemetry_Period = 0;
 static Telemetry_PortMonitor_TypeDef PortMonitor = {.init = false};
 DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
 static uint8_t MavShareBuf[1024];
+static uint32_t Radio_Addr = 0;
+static uint32_t USB_VCP_Addr = 0;
 
 SrvComProto_Stream_TypeDef MavStream = {
     .p_buf = MavShareBuf,
@@ -118,6 +120,7 @@ static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal,
 
 /* frame section */
 static void Telemetry_PortFrameOut_Process(void);
+static void Telemetry_MavMsg_Trans(Telemetry_FrameMonitor_TypeDef *Obj, uint8_t *p_data, uint16_t size);
 
 /* default vcp port section */
 static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor);
@@ -687,6 +690,8 @@ static void Telemetry_DefaultPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
         BspUSB_VCP.set_rx_callback(Telemetry_Port_Rx_Callback);
 
         monitor->VCP_Port.RecObj.PortObj_addr = (uint32_t)&(monitor->VCP_Port);
+
+        USB_VCP_Addr = (uint32_t)&(monitor->VCP_Port);
     }
 }
 
@@ -754,6 +759,26 @@ static void Telemetry_RadioPort_Init(Telemetry_PortMonitor_TypeDef *monitor)
     }
 }
 
+static uint32_t Telemetry_Set_RadioPort(Telemetry_PortType_List port_type, uint16_t index)
+{
+    uint32_t port_hdl = 0;
+
+    switch((uint8_t) port_type)
+    {
+        case Telemetry_Port_Uart:
+            if((index < PortMonitor.uart_port_num) && PortMonitor.Uart_Port[index].init_state)
+            {
+                port_hdl = &(PortMonitor.Uart_Port[index]);
+            }
+            break;
+
+        default:
+            return port_hdl;
+    }
+
+    return port_hdl;
+}
+
 static bool Telemetry_Port_Init(void)
 {
     /* USB VCP as defaut port to tune parameter and frame porotcol */
@@ -763,6 +788,7 @@ static bool Telemetry_Port_Init(void)
 
         Telemetry_DefaultPort_Init(&PortMonitor);
         Telemetry_RadioPort_Init(&PortMonitor);
+        Radio_Addr = Telemetry_Set_RadioPort(Telemetry_Port_Uart, 0);
 
         PortMonitor.init = true;
     }
@@ -804,10 +830,10 @@ static void Telemetry_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, ui
             /* tag on recive time stamp */
             /* first come first serve */
             /* in case two different port tuning the same function or same parameter at the same time */
-        
-            if(stream_in.pac_type == ComRec_MavMsg)
+            /* if attach to configrator or in tunning then lock moto */
+            if(stream_in.pac_type == ComFrame_MavMsg)
             {
-                
+                /* check mavline message frame type */
             }
         }
     }
@@ -920,33 +946,47 @@ static bool Telemetry_MAV_Msg_Init(void)
 
 static void Telemetry_PortFrameOut_Process(void)
 {
+    Telemetry_FrameMonitor_TypeDef proto_monitor;
+
+    proto_monitor.frame_type = ComFrame_MavMsg;
+
     if(Telemetry_MavProto_Enable && PortMonitor.VCP_Port.init_state)
     {
         /* check other port init state */
 
         /* if in tunning than halt general frame protocol */
         /* Proto mavlink message through Radio */
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, );
+        // proto_monitor.port_type = Telemetry_Port_Uart;
+        // proto_monitor.port_addr = Radio_Addr;
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, , (ComProto_Callback));
         
         /* Proto mavlink message through default port */
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, );
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, );
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, );
-        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, );
+        // proto_monitor.port_type = Telemetry_Port_USB;
+        // proto_monitor.port_addr = USB_VCP_Addr;
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, , (ComProto_Callback));
     }
 }
 
-static void Telemetry_MavMsg_Trans(Telemetry_ProtoMonitor_TypeDef *Obj, uint8_t *p_data, uint16_t size)
+static void Telemetry_MavMsg_Trans(Telemetry_FrameMonitor_TypeDef *Obj, uint8_t *p_data, uint16_t size)
 {
-    if(Obj)
+    if(Obj && (Obj->frame_type == ComFrame_MavMsg) && Obj->port_addr && p_data && size)
     {
-        /* doing frame proto now */
-        if(p_data && size)
+        switch((uint8_t)(Obj->port_type))
         {
+            case Telemetry_Port_Uart:
+                break;
 
+            case Telemetry_Port_USB:
+                break;
+
+            default:
+                return;
         }
     }
 }

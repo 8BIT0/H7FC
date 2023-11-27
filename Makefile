@@ -49,6 +49,7 @@ Task/Task_Sample.c \
 Task/Task_Log.c \
 Task/Task_Telemetry.c \
 Task/Task_Control.c \
+Task/Task_StateCheck.c \
 IO_Def/IO_Definition.c \
 Bsp/Bsp_GPIO.c \
 Bsp/Bsp_SPI.c \

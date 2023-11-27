@@ -10,6 +10,7 @@
 #include "../common/util.h"
 #include "semphr.h"
 #include "IO_Definition.h"
+#include "Srv_ComProto.h"
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
 
@@ -51,6 +52,8 @@
 #define TELEMETRY_OSDTUNE_POSHOLD 100 /* unit ms */
 
 #define TELEMETRY_RC_THROTTLE_PERCENT_ALERT 5
+
+typedef SrvComProto_ProtoData_Type_List Telenmetry_FrameType_List;
 
 #pragma pack(1)
 typedef enum
@@ -186,8 +189,10 @@ typedef struct
 
 typedef struct
 {
-    
-} Telemetry_ProtoMonitor_TypeDef;
+    Telenmetry_FrameType_List frame_type;
+    Telemetry_PortType_List port_type;
+    uint32_t port_addr;
+} Telemetry_FrameMonitor_TypeDef;
 
 typedef struct
 {

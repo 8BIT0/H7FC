@@ -7,6 +7,8 @@
 
 typedef HeapStats_t SrvOs_HeapStatus_TypeDef;
 
+#define MS_PER_S 1000
+
 typedef struct
 {
     uint32_t (*get_os_ms)(void);
