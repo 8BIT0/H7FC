@@ -445,8 +445,30 @@ static void TaskFrameCTL_ConnectStateCheck(void)
     uint32_t tunning_port = 0;
     bool tunning_state = false;
     bool configrator_state = false;
+    uint32_t cur_time = SrvOsCommon.get_os_ms();
 
     /* check configrator and tunning mode time out */
     SrvDataHub.get_configrator_attach_state(&configrator_time_stamp, &configrator_state);
     SrvDataHub.get_tunning_state(&tunning_time_stamp, &tunning_state, &tunning_port);
+
+    if(configrator_state && ((cur_time - configrator_time_stamp) >= CONFIGRATOR_ATTACH_TIMEOUT))
+    {
+        configrator_state = false;
+        configrator_time_stamp = 0;
+
+        SrvOsCommon.enter_critical();
+        SrvDataHub.set_configrator_state(configrator_time_stamp, configrator_state);
+        SrvOsCommon.exit_critical();
+    }
+
+    if(tunning_state && ((cur_time - tunning_time_stamp) >= TUNNING_TIMEOUT))
+    {
+        tunning_state = false;
+        tunning_time_stamp = 0;
+        tunning_port = 0;
+
+        SrvOsCommon.enter_critical();
+        SrvDataHub.set_tunning_state(tunning_time_stamp, tunning_state, tunning_port);
+        SrvOsCommon.exit_critical();
+    }
 }

@@ -10,8 +10,11 @@
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
 
-#define FrameCTL_Port_Tx_TimeOut 100 /* unit: ms */
-#define FrameCTL_MAX_Period 5        /* unit: ms */
+#define FrameCTL_Port_Tx_TimeOut 100    /* unit: ms */
+#define FrameCTL_MAX_Period 5           /* unit: ms */
+
+#define CONFIGRATOR_ATTACH_TIMEOUT 2000 /* unit: ms 2S */
+#define TUNNING_TIMEOUT 1000            /* unit: ms 1S */
 
 #define RADIO_BUFF_SIZE 1024
 #define RADIO_UART_NUM 1
