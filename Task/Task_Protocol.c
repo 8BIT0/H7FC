@@ -483,7 +483,7 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
             /* Proto mavlink message through Radio */
             proto_monitor.port_type = Port_Uart;
             proto_monitor.port_addr = Radio_Addr;
-            /* don`t know why it can`t trigger uart tx dma irq */
+            /* don`t know why it can`t trigger uart tx dma irq some how */
             // SrvComProto.mav_msg_stream(&RadioProto_MAV_RawIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             // SrvComProto.mav_msg_stream(&RadioProto_MAV_ScaledIMU, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             // SrvComProto.mav_msg_stream(&RadioProto_MAV_Attitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
