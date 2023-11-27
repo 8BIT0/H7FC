@@ -421,6 +421,8 @@ static SrvSensorMonitor_CaliState_List SrvSensor_Set_Module_Calib(SrvSensorMonit
         {
             case SrvSensorMonitor_Type_IMU:
             case SrvSensorMonitor_Type_BARO:
+            case SrvSensorMonitor_Type_MAG:
+            case SrvSensorMonitor_Type_TOF:
                 obj->statistic_imu->is_calid = Sensor_Calib_Start;
                 break;
 
