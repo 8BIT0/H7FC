@@ -9,6 +9,8 @@
 #include "Srv_IMUSample.h"
 #include "Srv_Baro.h"
 
+#define GYRO_CALIB_CYCLE GYR_STATIC_CALIB_CYCLE
+
 typedef enum
 {
     SrvSensorMonitor_StatisticTimer_Defualt = 0,

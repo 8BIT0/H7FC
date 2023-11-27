@@ -384,44 +384,62 @@ static bool SrvSensorMonitor_Tof_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
     bool state = false;
-
+    SrvIMU_Data_TypeDef pri_imu;
+    SrvIMU_Data_TypeDef sec_imu;
+    
     /* single sampling overhead is about 60us */
-    if((obj->statistic_imu->is_calid != Sensor_Calib_Start) && \
-       (obj->statistic_imu->is_calid != Sensor_Calib_InProcess))
-    {
-        state |= SrvSensorMonitor_IMU_SampleCTL(obj);
-    }
-    else
-    {
 
+    state |= SrvSensorMonitor_IMU_SampleCTL(obj);
+    
+    if((obj->statistic_imu->is_calid == Sensor_Calib_Start) || \
+       (obj->statistic_imu->is_calid == Sensor_Calib_InProcess))
+    {
+        memset(&pri_imu, 0, sizeof(SrvIMU_Data_TypeDef));
+        memset(&sec_imu, 0, sizeof(SrvIMU_Data_TypeDef));
+
+        pri_imu = SrvIMU.get_data(SrvIMU_PriModule);
+        sec_imu = SrvIMU.get_data(SrvIMU_SecModule);
+
+        switch((uint8_t) SrvIMU.calib(GYRO_CALIB_CYCLE, pri_imu.org_gyr, sec_imu.org_gyr))
+        {
+            case SrvIMU_Gyr_CalibFailed:
+                obj->statistic_imu->is_calid = Sensor_Calib_Failed;
+                break;
+
+            case SrvIMU_Gyr_CalibDone:
+                obj->statistic_imu->is_calid = Sensor_Calib_Success;
+                break;
+
+            case SrvIMU_Gyr_Calibarting:
+                obj->statistic_imu->is_calid = Sensor_Calib_InProcess;
+                break;
+
+            default:
+                obj->statistic_imu->is_calid = Sensor_Calib_Failed;
+                break;
+        }
     }
     
-    if((obj->statistic_mag->is_calid != Sensor_Calib_Start) && \
-       (obj->statistic_mag->is_calid != Sensor_Calib_InProcess))
-    {
-        state |= SrvSensorMonitor_Mag_SampleCTL(obj);
-    }
-    else
+    state |= SrvSensorMonitor_Mag_SampleCTL(obj);
+    
+    if((obj->statistic_mag->is_calid == Sensor_Calib_Start) || \
+       (obj->statistic_mag->is_calid == Sensor_Calib_InProcess))
     {
 
     }
 
-    if((obj->statistic_baro->is_calid != Sensor_Calib_Start) && \
-       (obj->statistic_baro->is_calid != Sensor_Calib_InProcess))
-    {
-        state |= SrvSensorMonitor_Baro_SampleCTL(obj);
-    }
-    else
+    state |= SrvSensorMonitor_Baro_SampleCTL(obj);
+    
+    if((obj->statistic_baro->is_calid == Sensor_Calib_Start) || \
+       (obj->statistic_baro->is_calid == Sensor_Calib_InProcess))
     {
 
     }
 
-    if((obj->statistic_tof->is_calid != Sensor_Calib_Start) && \
-       (obj->statistic_tof->is_calid != Sensor_Calib_InProcess))
-    {
-        state |= SrvSensorMonitor_Tof_SampleCTL(obj);
-    }
-    else
+    state |= SrvSensorMonitor_Tof_SampleCTL(obj);
+    
+    if((obj->statistic_tof->is_calid == Sensor_Calib_Start) || \
+       (obj->statistic_tof->is_calid == Sensor_Calib_InProcess))
     {
         
     }

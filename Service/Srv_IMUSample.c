@@ -17,17 +17,6 @@
 /* use ENU coordinate */
 /* IMU coordinate is x->forward y->right z->down */
 
-#define IMU_Commu_TimeOut 1000
-#define MPU_MODULE_INIT_RETRY 10 // init retry count 10
-#define ANGULAR_SPEED_ACCURACY 1e3
-
-#define GYR_STATIC_CALIB_CYCLE 1000
-#define GYR_STATIC_CALIB_ACCURACY ANGULAR_SPEED_ACCURACY
-#define GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD (3 * GYR_STATIC_CALIB_ACCURACY)
-#define GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD (2 * GYR_STATIC_CALIB_ACCURACY)
-
-#define IMU_DATA_SIZE sizeof(SrvIMU_Data_TypeDef)
-
 /*
  * Angular Speed Over Speed Threshold
  * Angular Speed Per Millscond
@@ -800,8 +789,8 @@ static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t ca
         {
             for(i = Axis_X; i < Axis_Sum; i++)
             {
-                PriIMU_Gyr_ZeroOffset[i] = (PriIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / GYR_STATIC_CALIB_CYCLE;
-                SecIMU_Gyr_ZeroOffset[i] = (SecIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / GYR_STATIC_CALIB_CYCLE;
+                PriIMU_Gyr_ZeroOffset[i] = (PriIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
+                SecIMU_Gyr_ZeroOffset[i] = (SecIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
             }
 
             state = SrvIMU_Gyr_CalibDone;
@@ -822,7 +811,7 @@ reset_calib_var:
     }
             
     /* reset calib cycle count for next */
-    Gyr_Static_Calib = GYR_STATIC_CALIB_CYCLE;
+    Gyr_Static_Calib = 0;
 
     return state;
 }
