@@ -43,6 +43,8 @@ typedef union
 
         uint32_t tunning : 1;
         uint32_t configrator_attach : 1;
+
+        uint32_t cli : 1;
     } bit;
 
     uint32_t val;
@@ -167,6 +169,8 @@ typedef struct
     uint32_t tunning_heartbeat_timestamp;
     bool in_tunning;
     uint32_t tunning_port_addr;
+
+    bool CLI_state;
 } SrvDataHubObj_TypeDef;
 #pragma pack()
 
@@ -183,7 +187,9 @@ typedef struct
     void (*init)(void);
     bool (*set_tunning_state)(uint32_t time_stamp, bool state, uint32_t port_addr);    /* set tunning status in can/uart/usb irq */
     bool (*set_configrator_state)(uint32_t time_stamp, bool state);
+    bool (*set_cli_state)(bool state);
 
+    bool (*get_cli_state)(bool *state);
     bool (*get_tunning_state)(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
     bool (*get_configrator_attach_state)(uint32_t *time_stamp, bool *state);
     bool (*get_imu_init_state)(bool *state);

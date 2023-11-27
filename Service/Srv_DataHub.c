@@ -38,10 +38,11 @@ static bool SrvDataHub_Get_Mag_InitState(bool *state);
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
 static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
 static bool SrvDataHub_Get_ConfigratorAttachState(uint32_t *time_stamp, bool *state);
+static bool SrvDataHub_Get_CLI_State(bool *state);
 
 static bool SrvDataHub_Set_ConfigratorAttachState(uint32_t time_stamp, bool state);
 static bool SrvDataHub_Set_TunningState(uint32_t time_stamp, bool state, uint32_t port_addr);
-
+static bool SrvDataHub_Set_CLI_State(bool state);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -62,7 +63,9 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
     .get_tunning_state =  SrvDataHub_Get_TunningState,
     .get_configrator_attach_state =  SrvDataHub_Get_ConfigratorAttachState,
+    .get_cli_state =  SrvDataHub_Set_CLI_State,
 
+    .set_cli_state =  SrvDataHub_Get_CLI_State,
     .set_tunning_state = SrvDataHub_Set_TunningState,
     .set_configrator_state = SrvDataHub_Set_ConfigratorAttachState,
 };
@@ -713,3 +716,34 @@ static bool SrvDataHub_Set_ConfigratorAttachState(uint32_t time_stamp, bool stat
 
     return true; 
 }
+
+static bool SrvDataHub_Set_CLI_State(bool state)
+{
+    if(SrvDataHub_Monitor.inuse_reg.bit.cli)
+        SrvDataHub_Monitor.inuse_reg.bit.cli = false;
+
+    SrvDataHub_Monitor.update_reg.bit.cli = true;
+    SrvDataHub_Monitor.data.CLI_state = state;
+    SrvDataHub_Monitor.update_reg.bit.cli = false;
+    
+    return true;
+}
+
+static bool SrvDataHub_Get_CLI_State(bool *state)
+{
+    if(state)
+    {
+reupdate_cli_state:
+        SrvDataHub_Monitor.inuse_reg.bit.cli = true;
+
+        (*state) = SrvDataHub_Monitor.data.CLI_state;
+
+        if(!SrvDataHub_Monitor.inuse_reg.bit.cli)
+            goto reupdate_cli_state;
+
+        return true;
+    }
+
+    return false;
+}
+
