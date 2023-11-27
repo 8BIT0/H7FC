@@ -1,30 +1,59 @@
-/*
- *  coder: 8_B!T0
- *  bref: use this task make FC communicate to computer configuration
- */
-#include "cmsis_os.h"
 #include "Task_Protocol.h"
-#include "shell.h"
-#include "shell_port.h"
-#include "usb_device.h"
-#include "usbd_cdc_if.h"
-#include "debug_util.h"
-#include <stdio.h>
 #include "Srv_OsCommon.h"
-#include "../DataStructure/CusQueue.h"
-#include "Dev_Led.h"
 #include "IO_Definition.h"
-#include "Bsp_GPIO.h"
-#include "error_log.h"
 #include "Srv_ComProto.h"
 
-static bool test = false;
+#define RADIO_TX_PIN UART1_TX_PIN
+#define RADIO_RX_PIN UART1_RX_PIN
 
-#define VCP_QUEUE_BUFF_SIZE 1024
+#define RADIO_TX_PIN_ALT GPIO_AF7_USART1
+#define RADIO_RX_PIN_ALT GPIO_AF7_USART1
 
-/* internal var */
-static uint32_t TaskProtocol_Period = 0;
+#define RADIO_TX_PORT UART1_TX_PORT
+#define RADIO_RX_PORT UART1_RX_PORT
 
+#if (RADIO_UART_NUM > 0)
+static uint8_t RadioRxBuff[RADIO_UART_NUM][RADIO_BUFF_SIZE];
+
+static BspUARTObj_TypeDef Radio_Port1_UartObj = {
+    .instance = RADIO_PORT,
+    .baudrate = RADIO_PORT_BAUD,
+    .tx_io = {
+        .init_state = false,
+        .pin = RADIO_TX_PIN,
+        .port = RADIO_TX_PORT,
+        .alternate = RADIO_TX_PIN_ALT,
+    }, 
+    .rx_io = {
+        .init_state = false,
+        .pin = RADIO_RX_PIN,
+        .port = RADIO_RX_PORT,
+        .alternate = RADIO_RX_PIN_ALT,
+    }, 
+    .pin_swap = false,
+    .rx_dma = RADIO_RX_DMA,
+    .rx_stream = RADIO_RX_DMA_STREAM,
+    .tx_dma = RADIO_TX_DMA,
+    .tx_stream = RADIO_TX_DMA_STREAM,
+    .rx_buf = RadioRxBuff[RADIO_UART_NUM],
+    .rx_size = RADIO_BUFF_SIZE,
+};
+
+static FrameCTL_UartPortMonitor_TypeDef Radio_UartPort_List[RADIO_UART_NUM] = {
+    [0] = {.init_state = false,
+           .Obj = &Radio_Port1_UartObj},
+};
+#endif
+
+#ifndef RADIO_CAN_NUM
+#define RADIO_CAN_NUM 0
+#endif
+
+#if (RADIO_CAN_NUM > 0)
+static FrameCTL_CanPortMonitor_TypeDef Radio_CANPort_List[RADIO_CAN_NUM];
+#endif
+
+/* internal variable */
 /* MAVLink message List */
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RawIMU;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_ScaledIMU;
@@ -32,238 +61,377 @@ SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RcChannel;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_MotoChannel;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_Attitude;
 
+static FrameCTL_Monitor_TypeDef FrameCTL_Monitor;
+static bool FrameCTL_MavProto_Enable = false;
+static FrameCTL_PortMonitor_TypeDef PortMonitor = {.init = false};
+static uint32_t FrameCTL_Period = 0;
 static uint8_t MavShareBuf[1024];
-static uint8_t ProtoShareBuf[1024];
+static uint32_t Radio_Addr = 0;
+static uint32_t USB_VCP_Addr = 0;
 
-SrvComProto_Stream_TypeDef MavStream = 
-{
+SrvComProto_Stream_TypeDef MavStream = {
     .p_buf = MavShareBuf,
     .size = 0,
     .max_size = sizeof(MavShareBuf),
 };
 
-/* internal vriable */
-static QueueObj_TypeDef VCP_ProtoQueue;     /* common proto Queue */
-static QueueObj_TypeDef VCP_MAVLinkQueue;   /* mavlink proto Queue */
-static bool VCP_Queue_CreateState = false;
-static bool VCP_MAVLink_Queue_CreateState = false;
-static ProtoQueue_State_List VCPQueue_State = ProtoQueue_Idle;
-static bool VCP_Connect_State = false; /* USB connect state */
-static TaskProto_State_List task_state = TaskProto_Core;
-static bool Shell_Mode = false;
+/* frame section */
+static void TaskFrameCTL_PortFrameOut_Process(void);
+static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_data, uint16_t size);
 
-/* internal function */
-static void TaskProtocol_MainProc(uint8_t *data, uint16_t size);
-static void TaskProtocol_Rec(uint8_t *data, uint16_t len);
-static void TaskProtocol_PlugDetect_Callback(void);
-ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
-static bool TaskProtocol_VCPTransBuff(void);
+/* default vcp port section */
+static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor);
+static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor);
+static bool TaskFrameCTL_MAV_Msg_Init(void);
+static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size);
+static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint32_t *size);
+static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uint16_t index);
 
-bool TaskProtocol_Init(uint32_t period)
+void TaskFrameCTL_Init(uint32_t period)
 {
-    /* init USB attach detect pin */
-    // BspGPIO.in_init(USB_DctPin);
+    FrameCTL_Period = FrameCTL_MAX_Period;
 
-    if (!Queue.create_auto(&VCP_ProtoQueue, "VCP Send Queue", VCP_QUEUE_BUFF_SIZE))
-        return false;
+    /* USB VCP as defaut port to tune parameter and frame porotcol */
+    memset(&PortMonitor, 0, sizeof(PortMonitor));
 
-    if(!Queue.create_with_buf(&VCP_MAVLinkQueue, "MAVLink Proto Queue", MavStream.p_buf, MavStream.max_size))
-        return false;
+    TaskFrameCTL_DefaultPort_Init(&PortMonitor);
+    TaskFrameCTL_RadioPort_Init(&PortMonitor);
+    Radio_Addr = TaskFrameCTL_Set_RadioPort(Port_Uart, 0);
 
-    VCP_MAVLink_Queue_CreateState = true;
-    VCP_Queue_CreateState = true;
-
-    usb_setrec_callback(TaskProtocol_Rec);
-    // Shell_Init(TaskProtocol_TransBuff);
-
-    ErrorLog.set_callback(Error_Out_Callback, TaskProto_PushProtocolQueue);
-
-    task_state = TaskProto_Core;
-    TaskProtocol_Period = period;
-
-    return true;
-}
-
-ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size)
-{
-    /* push into send queue */
-    if (VCP_Queue_CreateState &&
-        ((VCPQueue_State == ProtoQueue_Ok) ||
-         (VCPQueue_State == ProtoQueue_Idle)) &&
-        ((Queue.state(VCP_ProtoQueue) == Queue_empty) ||
-         (Queue.state(VCP_ProtoQueue) == Queue_ok)))
-    {
-        VCPQueue_State = ProtoQueue_Busy;
-
-        /* push send data into VCP queue */
-        Queue.push(&VCP_ProtoQueue, p_data, size);
-
-        VCPQueue_State = ProtoQueue_Ok;
-
-        return ProtoQueue_Ok;
-    }
-    else if (!VCP_Queue_CreateState)
-    {
-        VCPQueue_State = ProtoQueeu_Error;
-        return ProtoQueeu_Error;
-    }
-    else if (Queue.state(VCP_ProtoQueue) == Queue_full)
-    {
-        VCPQueue_State = ProtoQueue_Full;
-        return ProtoQueue_Full;
-    }
-    else if ((VCPQueue_State != ProtoQueue_Ok) ||
-             (VCPQueue_State != ProtoQueue_Idle))
-    {
-        return VCPQueue_State;
-    }
-}
-
-/* still can be optimize in a big way */
-static void TaskProtol_PushToMAVLinkQueue(uint8_t *p_data, uint16_t size)
-{
-    if(VCP_Queue_CreateState && p_data && size)
-    {
-        if(((Queue.state(VCP_MAVLinkQueue) == Queue_ok) || (Queue.state(VCP_MAVLinkQueue) == Queue_empty)) && (size < Queue.remain(VCP_MAVLinkQueue)))
-        {
-            Queue.push(&VCP_MAVLinkQueue, p_data, size);
-        }
-        else if(Queue.state(VCP_MAVLinkQueue) != Queue_empty)
-        {
-            Queue.reset(&VCP_MAVLinkQueue);
-            Queue.push(&VCP_MAVLinkQueue, p_data, size);
-        }
-    }
-
-    /* directly proto data through other port */
-
-}
-
-static bool TaskProtocol_VCPTransBuff(void)
-{
-    uint16_t proto_total_size = 0; 
-    uint16_t mav_size = 0;
-    uint16_t common_size = 0;
-    uint8_t *p_proto_buf = ProtoShareBuf;
-
-    mav_size = Queue.size(VCP_MAVLinkQueue);
-    common_size = Queue.size(VCP_ProtoQueue);
-    proto_total_size = mav_size + common_size;
+    PortMonitor.init = true;
     
-    if(proto_total_size)
+    /* init radio protocol*/
+    FrameCTL_MavProto_Enable = TaskFrameCTL_MAV_Msg_Init();
+
+    if(period && (period <= FrameCTL_MAX_Period))
     {
-        if(proto_total_size <= sizeof(ProtoShareBuf))
-        {
-            if(mav_size)
-            {
-                Queue.pop(&VCP_MAVLinkQueue, p_proto_buf, mav_size);
-                p_proto_buf += mav_size;
-            }
-
-            if(common_size)
-            {
-                Queue.pop(&VCP_ProtoQueue, p_proto_buf, common_size);
-            }
-        }
-        else
-        {
-            /* mav protol in high priority */
-        }
+        FrameCTL_Period = period;
     }
-    else
-        return false;
-
-    /* if port type is VCP then fill tx buff first */
-    if (CDC_Transmit_FS(ProtoShareBuf, proto_total_size) != USBD_OK)
-    {
-        if(mav_size)
-        {
-            Queue.reset(&VCP_MAVLinkQueue);
-            Queue.push(&VCP_MAVLinkQueue, p_proto_buf, mav_size);
-        }
-
-        if(common_size)
-        {
-            p_proto_buf += mav_size;
-            Queue.reset(&VCP_MAVLinkQueue);
-            Queue.push(&VCP_ProtoQueue, p_proto_buf, common_size);
-        }
-
-        return false;
-    }
-
-    return true;
 }
 
-void TaskProtocol_Core(void const *arg)
+void TaskFrameCTL_Core(void *arg)
 {
-    uint8_t *p_buf = NULL;
-    uint16_t p_buf_size = 0;
-    uint32_t sys_time = SrvOsCommon.get_os_ms();
+    uint32_t per_time = SrvOsCommon.get_os_ms();
 
     while(1)
     {
-        DebugPin.ctl(Debug_PC3, true);
-
-        switch ((uint8_t)task_state)
-        {
-        case TaskProto_Core:
-            TaskProtocol_MainProc(NULL, 0);
-
-            /* check vcp send queue state */
-            /* if it has any data then send them out */
-            if (test && ((Queue.state(VCP_ProtoQueue) == Queue_ok) || (Queue.state(VCP_ProtoQueue) == Queue_full)) && Queue.size(VCP_ProtoQueue))
-            {
-                p_buf = (uint8_t *)SrvOsCommon.malloc(Queue.size(VCP_ProtoQueue));
-
-                if (p_buf)
-                {
-                    p_buf_size = Queue.size(VCP_ProtoQueue);
-                    Queue.pop(&VCP_ProtoQueue, p_buf, p_buf_size);
-
-                    // TaskProtocol_VCPTransBuff(p_buf, p_buf_size);
-                }
-
-                SrvOsCommon.free(p_buf);
-            }
-            
-
-
-            break;
-
-        case TaskProto_Error_Proc:
-            break;
-
-        default:
-            break;
-        }
-
-        TaskProtocol_VCPTransBuff();
-        DebugPin.ctl(Debug_PC3, false);
-        SrvOsCommon.precise_delay(&sys_time, TaskProtocol_Period);
+        /* frame protocol process */
+        TaskFrameCTL_PortFrameOut_Process();
+        
+        SrvOsCommon.precise_delay(&per_time, FrameCTL_Period);
     }
 }
 
-static void TaskProtocol_MainProc(uint8_t *data, uint16_t size)
+/*************************** ByPass Mode is still on developping *********************************/
+/************************************** radio section ********************************************/
+static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
 {
+    if(monitor)
+    {
+        if(BspUSB_VCP.init((uint32_t)&(monitor->VCP_Port.RecObj)) != BspUSB_Error_None)
+        {
+            /* init default port VCP first */
+            monitor->VCP_Port.init_state = false;
+            return;
+        }
+        else
+            monitor->VCP_Port.init_state = true;
+
+        /* create USB VCP Tx semaphore */
+        osSemaphoreDef(DefaultPort_Tx);
+        monitor->VCP_Port.p_tx_semphr = osSemaphoreCreate(osSemaphore(DefaultPort_Tx), 32);
+
+        if(monitor->VCP_Port.p_tx_semphr == NULL)
+        {
+            monitor->VCP_Port.init_state = false;
+            return;
+        }
+
+        BspUSB_VCP.set_tx_cpl_callback(TaskFrameCTL_Port_TxCplt_Callback);
+        BspUSB_VCP.set_rx_callback(TaskFrameCTL_Port_Rx_Callback);
+
+        monitor->VCP_Port.RecObj.PortObj_addr = (uint32_t)&(monitor->VCP_Port);
+
+        USB_VCP_Addr = (uint32_t)&(monitor->VCP_Port);
+    }
 }
 
-static void TaskProtocol_Rec(uint8_t *data, uint16_t len)
+static void TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
 {
-    // shellHandler(Shell_GetInstence(), data[i]);
-    // TaskProtocol_TransBuff(data, len);
-    test = true;
+    if(PortMonitor.VCP_Port.init_state && PortMonitor.VCP_Port.p_tx_semphr && p_data && size)
+    {
+        osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, FrameCTL_Port_Tx_TimeOut);
+
+        if(BspUSB_VCP.send)
+            BspUSB_VCP.send(p_data, size);
+    }
 }
 
-static void TaskProtocol_PlugDetect_Callback(void)
+/************************************** radio port section *************************/
+static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
 {
-    static uint8_t a;
+    if(monitor)
+    {
+#if (RADIO_UART_NUM > 0)
+        monitor->uart_port_num = RADIO_UART_NUM;
+        monitor->Uart_Port = Radio_UartPort_List;
+        
+        for(uint8_t i = 0; i < monitor->uart_port_num; i++)
+        {
+            if(BspUart.init(monitor->Uart_Port[i].Obj))
+            {
+                monitor->Uart_Port[i].init_state = true;
+                memset(&monitor->Uart_Port[i].RecObj, 0, sizeof(FrameCTL_PortProtoObj_TypeDef));
+                memset(&monitor->Uart_Port[i].ByPass_Mode, 0, sizeof(Port_Bypass_TypeDef));
+                
+                monitor->Uart_Port[i].RecObj.type = Port_Uart;
+                monitor->Uart_Port[i].RecObj.port_index = i;
+                
+                monitor->Uart_Port[i].Obj->cust_data_addr = (uint32_t)&(monitor->Uart_Port[i].RecObj);
+            
+                /* create semaphore for send */
+                osSemaphoreDef(Uart_Port_Tmp);
+                monitor->Uart_Port[i].p_tx_semphr = osSemaphoreCreate(osSemaphore(Uart_Port_Tmp), 32);
 
-    a++;
+                if(monitor->Uart_Port[i].p_tx_semphr)
+                {
+                    /* set callback */
+                    BspUart.set_rx_callback(&(monitor->Uart_Port[i].Obj), TaskFrameCTL_Port_Rx_Callback);
+                    BspUart.set_tx_callback(&(monitor->Uart_Port[i].Obj), TaskFrameCTL_Port_TxCplt_Callback);
+
+                    monitor->Uart_Port[i].RecObj.PortObj_addr = (uint32_t)&(monitor->Uart_Port[i]);
+                    monitor->Uart_Port[i].init_state = true;
+                }
+                else
+                {
+                    monitor->Uart_Port[i].init_state = false;
+                    monitor->uart_port_num --;
+                }
+            }
+            else
+            {
+                monitor->Uart_Port[i].init_state = false;
+                monitor->uart_port_num --;
+            }
+        }
+#else
+        monitor->uart_port_num = 0;
+#endif
+    }
 }
 
-static void shell_test(void)
+static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uint16_t index)
 {
-    usb_printf("\t8_B!T0 Shell test\r\n");
+    uint32_t port_hdl = 0;
+
+    switch((uint8_t) port_type)
+    {
+        case Port_Uart:
+            if((index < PortMonitor.uart_port_num) && PortMonitor.Uart_Port[index].init_state)
+            {
+                port_hdl = &(PortMonitor.Uart_Port[index]);
+            }
+            break;
+
+        default:
+            return port_hdl;
+    }
+
+    return port_hdl;
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, test, shell_test, Shell Test);
+
+/************************************** receive process callback section *************************/
+static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size)
+{
+    SrvComProto_Msg_StreamIn_TypeDef stream_in;
+    FrameCTL_PortProtoObj_TypeDef *p_RecObj = NULL;
+
+    /* use mavlink protocol tuning the flight parameter */
+    if(p_data && size && RecObj_addr)
+    {
+        p_RecObj = (FrameCTL_PortProtoObj_TypeDef *)RecObj_addr;
+        p_RecObj->time_stamp = SrvOsCommon.get_os_ms();
+
+        switch((uint8_t) p_RecObj->type)
+        {
+            case Port_USB:
+                break;
+
+            case Port_Uart:
+                break;
+
+            case Port_CAN:
+                break;
+
+            default:
+                return;
+        }
+
+        stream_in = SrvComProto.msg_decode(p_data, size);
+    
+        if(stream_in.valid)
+        {
+            /* tag on recive time stamp */
+            /* first come first serve */
+            /* in case two different port tuning the same function or same parameter at the same time */
+            /* if attach to configrator or in tunning then lock moto */
+            if(stream_in.pac_type == ComFrame_MavMsg)
+            {
+                /* check mavline message frame type */
+            }
+        }
+    }
+}
+
+static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint32_t *size)
+{
+    UNUSED(p_data);
+    UNUSED(size);
+
+    FrameCTL_PortProtoObj_TypeDef *p_RecObj = NULL;
+    FrameCTL_UartPortMonitor_TypeDef *p_UartPortObj = NULL;
+    FrameCTL_VCPPortMonitor_TypeDef *p_USBPortObj = NULL;
+    osSemaphoreId semID = NULL;
+    uint32_t *p_rls_err_cnt = NULL;
+
+    if(RecObj_addr)
+    {
+        p_RecObj = RecObj_addr;
+
+        if(p_RecObj->PortObj_addr)
+        {
+            switch((uint8_t) p_RecObj->type)
+            {
+                case Port_USB:
+                    p_USBPortObj = (FrameCTL_VCPPortMonitor_TypeDef *)(p_RecObj->PortObj_addr);
+
+                    if(p_USBPortObj->init_state && p_USBPortObj->p_tx_semphr)
+                    {
+                        semID = p_USBPortObj->p_tx_semphr;
+                        p_rls_err_cnt = &p_USBPortObj->tx_semphr_rls_err;
+                    }
+                    break;
+
+                case Port_Uart:
+                    p_UartPortObj = (FrameCTL_UartPortMonitor_TypeDef *)(p_RecObj->PortObj_addr);
+
+                    if(p_UartPortObj->init_state && p_UartPortObj->p_tx_semphr)
+                    {
+                        semID =p_UartPortObj->p_tx_semphr;
+                        p_rls_err_cnt = &p_UartPortObj->tx_semphr_rls_err;
+                    }
+                    break;
+
+                default:
+                    return;
+            }
+            
+            if(semID && p_rls_err_cnt && (osSemaphoreRelease(semID) != osOK))
+                (*p_rls_err_cnt) ++;
+        }
+    }
+}
+
+/************************************** frame protocol section ********************************************/
+static bool TaskFrameCTL_MAV_Msg_Init(void)
+{
+    /* create mavlink message object */
+    if (SrvComProto.get_msg_type() == SrvComProto_Type_MAV)
+    {
+        SrvComProto_MavPackInfo_TypeDef PckInfo;
+
+        memset(&PckInfo, 0, sizeof(PckInfo));
+        memset(&TaskProto_MAV_RawIMU, 0, sizeof(TaskProto_MAV_RawIMU));
+        memset(&TaskProto_MAV_ScaledIMU, 0, sizeof(TaskProto_MAV_ScaledIMU));
+        memset(&TaskProto_MAV_RcChannel, 0, sizeof(TaskProto_MAV_RcChannel));
+        memset(&TaskProto_MAV_MotoChannel, 0, sizeof(TaskProto_MAV_MotoChannel));
+        memset(&TaskProto_MAV_Attitude, 0, sizeof(TaskProto_MAV_Attitude));
+
+        // period 10Ms 100Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Raw_IMU;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RawIMU, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RawIMU, true);
+
+        // period 10Ms 100Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Scaled_IMU;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_ScaledIMU, true);
+
+        // period 20Ms 50Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_RC_Channel;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RcChannel, PckInfo, 20);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RcChannel, true);
+
+        // period 10Ms 100Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_MotoCtl;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_MotoChannel, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_MotoChannel, true);
+
+        // period 20Ms 50Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Attitude;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Attitude, PckInfo, 20);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Attitude, true);
+
+        return true;
+    }
+
+    return false;
+}
+
+static void TaskFrameCTL_PortFrameOut_Process(void)
+{
+    FrameCTL_Monitor_TypeDef proto_monitor;
+
+    proto_monitor.frame_type = ComFrame_MavMsg;
+
+    if(FrameCTL_MavProto_Enable && PortMonitor.VCP_Port.init_state)
+    {
+        /* check other port init state */
+
+        /* if in tunning than halt general frame protocol */
+        /* Proto mavlink message through Radio */
+        // proto_monitor.port_type = Port_Uart;
+        // proto_monitor.port_addr = Radio_Addr;
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, , (ComProto_Callback));
+        
+        /* Proto mavlink message through default port */
+        // proto_monitor.port_type = Port_USB;
+        // proto_monitor.port_addr = USB_VCP_Addr;
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, , (ComProto_Callback));
+        // SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, , (ComProto_Callback));
+    }
+}
+
+static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_data, uint16_t size)
+{
+    if(Obj && (Obj->frame_type == ComFrame_MavMsg) && Obj->port_addr && p_data && size)
+    {
+        switch((uint8_t)(Obj->port_type))
+        {
+            case Port_Uart:
+                break;
+
+            case Port_USB:
+                break;
+
+            default:
+                return;
+        }
+    }
+}
+

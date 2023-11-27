@@ -16,7 +16,6 @@
 
 #define Telemetry_SetBit(x) UTIL_SET_BIT(x)
 
-#define Telemetry_Port_Tx_TimeOut 100 // unit: ms
 
 #define RECEIVER_PORT UART4
 #define RECEIVER_CRSF_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
@@ -27,15 +26,6 @@
 #define RECEIVER_SBUS_RX_DMA_STREAM Bsp_DMA_Stream_4
 #define RECEIVER_SBUS_TX_DMA Bsp_DMA_1
 #define RECEIVER_SBUS_TX_DMA_STREAM Bsp_DMA_Stream_5
-
-#define RADIO_BUFF_SIZE 1024
-#define RADIO_UART_NUM 1
-#define RADIO_PORT USART1
-#define RADIO_PORT_BAUD 460800
-#define RADIO_TX_DMA Bsp_DMA_2
-#define RADIO_TX_DMA_STREAM Bsp_DMA_Stream_1
-#define RADIO_RX_DMA Bsp_DMA_2
-#define RADIO_RX_DMA_STREAM Bsp_DMA_Stream_2
 
 #define TELEMETRY_SET_ARM 1
 #define TELEMETRY_SET_DISARM 0
@@ -52,8 +42,6 @@
 #define TELEMETRY_OSDTUNE_POSHOLD 100 /* unit ms */
 
 #define TELEMETRY_RC_THROTTLE_PERCENT_ALERT 5
-
-typedef SrvComProto_ProtoData_Type_List Telenmetry_FrameType_List;
 
 #pragma pack(1)
 typedef enum
@@ -156,87 +144,6 @@ typedef struct
     bool lst_arm_state;
 } Telemetry_Monitor_TypeDef;
 #pragma pack()
-
-typedef enum
-{
-    Telemetry_Port_USB = 0,
-    Telemetry_Port_Uart,
-    Telemetry_Port_CAN,
-} Telemetry_PortType_List;
-
-typedef enum
-{
-    Telemetry_Bypass_None = 0,
-    Telemetry_Bypass_RxOnly,
-    Telemetry_Bypass_TxOnly,
-    Telemetry_Bypass_BothDir,
-} Telemetry_Bypass_TypeList;
-
-typedef struct
-{
-    bool enable;
-    Telemetry_Bypass_TypeList bypass_mode;
-    uint8_t *bypass_src;
-}TelemetryPort_ByPass_TypeDef;
-
-typedef struct
-{
-    Telemetry_PortType_List type;
-    uint8_t port_index;
-    uint32_t PortObj_addr;
-    uint32_t time_stamp;
-} Telemetry_PortProtoObj_TypeDef;
-
-typedef struct
-{
-    Telenmetry_FrameType_List frame_type;
-    Telemetry_PortType_List port_type;
-    uint32_t port_addr;
-} Telemetry_FrameMonitor_TypeDef;
-
-typedef struct
-{
-    bool init_state;
-    
-    Telemetry_PortProtoObj_TypeDef RecObj;
-    
-    osSemaphoreId p_tx_semphr;
-    uint32_t tx_semphr_rls_err;
-
-    BspUSB_VCP_TxStatistic_TypeDef tx_statistic;
-    TelemetryPort_ByPass_TypeDef ByPass_Mode;
-} Telemetry_VCPPortMonitor_TypeDef;
-
-typedef struct
-{
-    bool init_state;
-    Telemetry_PortProtoObj_TypeDef RecObj;
-    TelemetryPort_ByPass_TypeDef ByPass_Mode;
-    
-    osSemaphoreId p_tx_semphr;
-    uint32_t tx_semphr_rls_err;
-
-    BspUARTObj_TypeDef *Obj;
-} Telemetry_UartPortMonitor_TypeDef;
-
-typedef struct
-{
-    bool init_state;
-    Telemetry_PortProtoObj_TypeDef RecObj;
-} Telemetry_CanPortMonitor_TypeDef;
-
-typedef struct
-{
-    bool init;
-    uint8_t uart_port_num;
-    uint8_t can_port_num;
-
-    void *Cur_Tuning_Port;
-
-    Telemetry_VCPPortMonitor_TypeDef VCP_Port;
-    Telemetry_UartPortMonitor_TypeDef *Uart_Port;
-    Telemetry_CanPortMonitor_TypeDef *Can_Port;
-} Telemetry_PortMonitor_TypeDef;
 
 void TaskTelemetry_Init(uint32_t period);
 void TaskTelemetry_Core(void const* arg);

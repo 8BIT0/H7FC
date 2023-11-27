@@ -1,28 +1,111 @@
 #ifndef __TASK_PROTOCOL_H
 #define __TASK_PROTOCOL_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stdint.h>
 #include "cmsis_os.h"
+#include "Srv_ComProto.h"
+#include "semphr.h"
+#include "Bsp_USB.h"
+#include "Bsp_Uart.h"
+
+#define FrameCTL_Port_Tx_TimeOut 100 /* unit: ms */
+#define FrameCTL_MAX_Period 5        /* unit: ms */
+
+#define RADIO_BUFF_SIZE 1024
+#define RADIO_UART_NUM 1
+#define RADIO_PORT USART1
+#define RADIO_PORT_BAUD 460800
+#define RADIO_TX_DMA Bsp_DMA_2
+#define RADIO_TX_DMA_STREAM Bsp_DMA_Stream_1
+#define RADIO_RX_DMA Bsp_DMA_2
+#define RADIO_RX_DMA_STREAM Bsp_DMA_Stream_2
+
+typedef SrvComProto_ProtoData_Type_List FrameType_List;
 
 typedef enum
 {
-    ProtoQueue_Idle = 0,
-    ProtoQueue_Ok,
-    ProtoQueue_Busy,
-    ProtoQueue_Full,
-    ProtoQueeu_Error,
-} ProtoQueue_State_List;
+    Port_USB = 0,
+    Port_Uart,
+    Port_CAN,
+} FrameCTL_PortType_List;
 
 typedef enum
 {
-    TaskProto_Init = 0,
-    TaskProto_Core,
-    TaskProto_Error_Proc,
-} TaskProto_State_List;
+    Port_Bypass_None = 0,
+    Port_Bypass_RxOnly,
+    Port_Bypass_TxOnly,
+    Port_Bypass_BothDir,
+} Bypass_TypeList;
 
-bool TaskProtocol_Init(TaskProtocol_Init);
-void TaskProtocol_Core(void const *arg);
-ProtoQueue_State_List TaskProto_PushProtocolQueue(uint8_t *p_data, uint16_t size);
+typedef struct
+{
+    bool enable;
+    Bypass_TypeList bypass_mode;
+    uint8_t *bypass_src;
+} Port_Bypass_TypeDef;
+
+typedef struct
+{
+    FrameCTL_PortType_List type;
+    uint8_t port_index;
+    uint32_t PortObj_addr;
+    uint32_t time_stamp;
+} FrameCTL_PortProtoObj_TypeDef;
+
+typedef struct
+{
+    FrameType_List frame_type;
+    FrameCTL_PortType_List port_type;
+    uint32_t port_addr;
+} FrameCTL_Monitor_TypeDef;
+
+typedef struct
+{
+    bool init_state;
+    
+    FrameCTL_PortProtoObj_TypeDef RecObj;
+    
+    osSemaphoreId p_tx_semphr;
+    uint32_t tx_semphr_rls_err;
+
+    BspUSB_VCP_TxStatistic_TypeDef tx_statistic;
+    Port_Bypass_TypeDef ByPass_Mode;
+} FrameCTL_VCPPortMonitor_TypeDef;
+
+typedef struct
+{
+    bool init_state;
+    FrameCTL_PortProtoObj_TypeDef RecObj;
+    Port_Bypass_TypeDef ByPass_Mode;
+    
+    osSemaphoreId p_tx_semphr;
+    uint32_t tx_semphr_rls_err;
+
+    BspUARTObj_TypeDef *Obj;
+} FrameCTL_UartPortMonitor_TypeDef;
+
+typedef struct
+{
+    bool init_state;
+    FrameCTL_PortProtoObj_TypeDef RecObj;
+} FrameCTL_CanPortMonitor_TypeDef;
+
+typedef struct
+{
+    bool init;
+    uint8_t uart_port_num;
+    uint8_t can_port_num;
+
+    void *Cur_Tuning_Port;
+
+    FrameCTL_VCPPortMonitor_TypeDef VCP_Port;
+    FrameCTL_UartPortMonitor_TypeDef *Uart_Port;
+    FrameCTL_CanPortMonitor_TypeDef *Can_Port;
+} FrameCTL_PortMonitor_TypeDef;
+
+void TaskFrameCTL_Init(uint32_t period);
+void TaskFrameCTL_Core(void *arg);
 
 #endif

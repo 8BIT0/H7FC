@@ -4,6 +4,7 @@
 #include "Task_Sample.h"
 #include "Task_Telemetry.h"
 #include "Task_Navi.h"
+#include "Task_Protocol.h"
 #include "debug_util.h"
 #include "IO_Definition.h"
 #include "Dev_Led.h"
@@ -15,16 +16,17 @@
 #define TaskSample_Period_Def    1  /* unit: ms period 1ms  1000Hz */
 #define TaskControl_Period_Def   5  /* unit: ms period 2ms  200Hz  */
 #define TaskTelemetry_Period_def 2  /* unit: ms period 2ms  500Hz  */
-#define TaslLog_Period_Def       5  /* unit: ms period 5ms  200Hz */
-#define TaslNavi_Period_Def      10 /* unit: ms period 10ms 100Hz */
+#define TaslLog_Period_Def       5  /* unit: ms period 5ms  200Hz  */
+#define TaslNavi_Period_Def      10 /* unit: ms period 10ms 100Hz  */
+#define TaskFrameCTL_Period_Def  5  /* unit: ms period 5ms  200Hz  */
 
 osThreadId TaskInertial_Handle = NULL;
 osThreadId TaskControl_Handle = NULL;
 osThreadId TaskNavi_Handle = NULL;
 osThreadId TaskLog_Handle = NULL;
 osThreadId TaskTelemetry_Handle = NULL;
+osThreadId TaskFrameCTL_Handle = NULL;
 osThreadId TaskManager_Handle = NULL;
-
 
 void test_PC0_ctl(void)
 {
@@ -88,6 +90,7 @@ void Task_Manager_CreateTask(void)
             TaskControl_Init(TaskControl_Period_Def);
             TaskLog_Init(TaslLog_Period_Def);
             TaskNavi_Init(TaslNavi_Period_Def);
+            TaskFrameCTL_Init(TaskFrameCTL_Period_Def);
 
             osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
             TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
@@ -103,6 +106,9 @@ void Task_Manager_CreateTask(void)
 
             osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 1024);
             TaskTelemetry_Handle = osThreadCreate(osThread(LogTask), NULL);
+
+            osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 2048);
+            TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);
 
             init = true;
         }
