@@ -750,7 +750,7 @@ static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t ca
 {
     uint8_t i = Axis_X;
     SrvIMU_GyroCalib_State_List state = SrvIMU_Gyr_CalibFailed;
-    static uint8_t Gyr_Static_Calib = calib_cycle;
+    static uint32_t Gyr_Static_Calib = 0;
     static int16_t lst_pri_gyr[Axis_Sum] = {0};
     static int16_t lst_sec_gyr[Axis_Sum] = {0};
     static int16_t PriIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};
@@ -758,6 +758,9 @@ static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t ca
 
     int16_t pri_gyr_tmp[Axis_Sum] = {0};
     int16_t sec_gyr_tmp[Axis_Sum] = {0};
+
+    if(Gyr_Static_Calib == 0)
+        Gyr_Static_Calib = calib_cycle;
 
     if((pri_gyr == NULL) || 
        (sec_gyr == NULL))
