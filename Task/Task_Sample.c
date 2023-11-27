@@ -34,6 +34,10 @@ void TaskSample_Init(uint32_t period)
     
     SensorMonitor.enabled_reg.bit.imu = true;
     SensorMonitor.freq_reg.bit.imu = SrvSensorMonitor_SampleFreq_1KHz;
+    
+    SensorMonitor.enabled_reg.bit.baro = true;
+    SensorMonitor.freq_reg.bit.baro = SrvSensorMonitor_SampleFreq_100Hz;
+
     SrvSensorMonitor.init(&SensorMonitor);
 
     DataPipe_DataObj(SensorEnable_State).val = SensorMonitor.enabled_reg.val;
