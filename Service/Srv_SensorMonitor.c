@@ -22,11 +22,13 @@ static bool SrvSensorMonitor_Tof_Init(void);
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj);
 static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj);
 static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj_TypeDef *obj);
+static SrvSensorMonitor_CaliState_List SrvSensor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 
 SrvSensorMonitor_TypeDef SrvSensorMonitor = {
     .init = SrvSensorMonitor_Init,
     .sample_ctl = SrvSensorMonitor_SampleCTL,
     .get_imu_data = SrvSensorMonitor_Get_IMUData,
+    .set_calib = SrvSensor_Set_Module_Calib,
 };
 
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
@@ -50,7 +52,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.imu = true;
             obj->statistic_imu = &obj->statistic_list[0];
             obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
-            obj->statistic_imu->is_calid = false;
+            obj->statistic_imu->is_calid = Sensor_Calib_None; 
         }
         else
         {
@@ -65,7 +67,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.mag = true;
             obj->statistic_mag = &obj->statistic_list[1];
             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
-            obj->statistic_baro->is_calid = false;
+            obj->statistic_baro->is_calid = Sensor_Calib_None;
         }
         else
         {
@@ -391,7 +393,21 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     return state;
 }
 
-static bool SrvSensor_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
+static SrvSensorMonitor_CaliState_List SrvSensor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
 {
+    if(obj)
+    {
+        switch((uint8_t) type)
+        {
+            case SrvSensorMonitor_Type_IMU:
+            case SrvSensorMonitor_Type_BARO:
+                obj->statistic_imu->is_calid = Sensor_Calib_Start;
+                break;
 
+            default:
+                return Sensor_Calib_Failed;
+        }
+    }
+
+    return Sensor_Calib_Failed;
 }

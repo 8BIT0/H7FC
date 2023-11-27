@@ -70,6 +70,15 @@ typedef union
     }bit;
 }SrvSensorMonitor_SampleFreqReg_TypeDef;
 
+typedef enum
+{
+    Sensor_Calib_None = 0,
+    Sensor_Calib_Start,
+    Sensor_Calib_Success,
+    Sensor_Calib_Failed,
+    Sensor_Calib_InProcess,
+}SrvSensorMonitor_CaliState_List;
+
 typedef struct
 {
     uint32_t start_time;
@@ -79,7 +88,7 @@ typedef struct
     uint32_t min_sampling_overhead; /* unit: us */
     uint32_t avg_sampling_overhead; /* unit: us */
 
-    bool is_calid;
+    SrvSensorMonitor_CaliState_List is_calid;
     uint32_t sample_cnt;
     uint32_t err_cnt;
     uint32_t detect_period;
@@ -107,6 +116,7 @@ typedef struct
     bool (*init)(SrvSensorMonitorObj_TypeDef *obj);
     bool (*sample_ctl)(SrvSensorMonitorObj_TypeDef *obj);
     SrvIMU_UnionData_TypeDef (*get_imu_data)(SrvSensorMonitorObj_TypeDef *obj);
+    SrvSensorMonitor_CaliState_List (*set_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 }SrvSensorMonitor_TypeDef;
 
 extern SrvSensorMonitor_TypeDef SrvSensorMonitor;
