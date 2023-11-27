@@ -31,6 +31,25 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
         switch((uint8_t)(obj->instance_id))
         {
             case BspIIC_Instance_I2C_2:
+                obj->PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C2;
+                obj->PeriphClkInitStruct.I2c123ClockSelection = RCC_I2C123CLKSOURCE_D2PCLK1;
+                if (HAL_RCCEx_PeriphCLKConfig(&(obj->PeriphClkInitStruct)) != HAL_OK)
+                    return false;
+ 
+                sda_obj_tmp.alternate = obj->Pin->pin_Alternate;//GPIO_AF4_I2C2;
+                sck_obj_tmp.alternate = obj->Pin->pin_Alternate;//GPIO_AF4_I2C2;
+
+                sda_obj_tmp.pin = obj->Pin->pin_sda;
+                sck_obj_tmp.pin = obj->Pin->pin_sck;
+
+                sda_obj_tmp.port = obj->Pin->port_sda;
+                sck_obj_tmp.port = obj->Pin->port_sck;
+
+                BspGPIO.alt_init(sda_obj_tmp, GPIO_MODE_AF_OD);
+                BspGPIO.alt_init(sck_obj_tmp, GPIO_MODE_AF_OD);
+
+                __HAL_RCC_I2C2_CLK_ENABLE();
+                
                 obj->handle.Instance = I2C2;
                 obj->handle.Init.Timing = 0x10909CEC;
                 obj->handle.Init.OwnAddress1 = 0;
@@ -49,25 +68,6 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
 
                 if (HAL_I2CEx_ConfigDigitalFilter(&(obj->handle), 0) != HAL_OK)
                     return false;
-
-                obj->PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C2;
-                obj->PeriphClkInitStruct.I2c123ClockSelection = RCC_I2C123CLKSOURCE_D2PCLK1;
-                if (HAL_RCCEx_PeriphCLKConfig(&(obj->PeriphClkInitStruct)) != HAL_OK)
-                    return false;
-
-                __HAL_RCC_I2C2_CLK_ENABLE();
-
-                sda_obj_tmp.alternate = obj->Pin->pin_Alternate;//GPIO_AF4_I2C2;
-                sck_obj_tmp.alternate = obj->Pin->pin_Alternate;//GPIO_AF4_I2C2;
-
-                sda_obj_tmp.pin = obj->Pin->pin_sda;
-                sck_obj_tmp.pin = obj->Pin->pin_sck;
-
-                sda_obj_tmp.port = obj->Pin->port_sda;
-                sck_obj_tmp.port = obj->Pin->port_sck;
-
-                BspGPIO.alt_init(sda_obj_tmp, GPIO_MODE_AF_OD);
-                BspGPIO.alt_init(sck_obj_tmp, GPIO_MODE_AF_OD);
 
                 /* I2C2 interrupt Init */
                 HAL_NVIC_SetPriority(I2C2_ER_IRQn, 5, 0);
