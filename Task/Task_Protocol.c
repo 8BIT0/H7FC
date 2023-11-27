@@ -3,6 +3,7 @@
 #include "IO_Definition.h"
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
+#include "shell.h"
 
 #define RADIO_TX_PIN UART1_TX_PIN
 #define RADIO_RX_PIN UART1_RX_PIN
@@ -67,6 +68,7 @@ static bool FrameCTL_MavProto_Enable = false;
 static FrameCTL_PortMonitor_TypeDef PortMonitor = {.init = false};
 static uint32_t FrameCTL_Period = 0;
 static uint8_t MavShareBuf[1024];
+static uint8_t ShellShareBuf[1024];
 static uint32_t Radio_Addr = 0;
 static uint32_t USB_VCP_Addr = 0;
 
@@ -74,6 +76,12 @@ SrvComProto_Stream_TypeDef MavStream = {
     .p_buf = MavShareBuf,
     .size = 0,
     .max_size = sizeof(MavShareBuf),
+};
+
+SrvComProto_Stream_TypeDef ShellStream = {
+    .p_buf = ShellShareBuf,
+    .size = 0,
+    .max_size = sizeof(ShellShareBuf),
 };
 
 /* frame section */
@@ -111,6 +119,8 @@ void TaskFrameCTL_Init(uint32_t period)
     {
         FrameCTL_Period = period;
     }
+
+    /* Shell Init */
 }
 
 void TaskFrameCTL_Core(void *arg)
@@ -465,9 +475,14 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
     }
 }
 
+/* still in developping */
 static void TaskFrameCTL_CLI_Proc(void)
 {
+    /* check CLI stream */
+    if(ShellStream.p_buf && ShellStream.size)
+    {
 
+    }
 }
 
 static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_data, uint16_t size)
