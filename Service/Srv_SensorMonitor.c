@@ -71,6 +71,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
         else
         {
+            obj->statistic_mag->is_calid = Sensor_Calib_None;
             obj->init_state_reg.bit.mag = false;
         }
 
@@ -82,6 +83,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
         else
         {
+            obj->statistic_baro->is_calid = Sensor_Calib_None;
             obj->init_state_reg.bit.baro = false;
         }
 
@@ -312,8 +314,8 @@ static uint32_t SrvSensorMonitor_Get_MagData(SrvSensorMonitorObj_TypeDef *obj)
 /* still in developing */
 static bool SrvSensorMonitor_Baro_Init(void)
 {
-    if(SrvBaro.init)
-        return SrvBaro.init();
+    if(SrvBaro.init && (SrvBaro.init() == SrvBaro_Error_None))
+        return true;
 
     return false;
 }
