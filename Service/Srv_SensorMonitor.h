@@ -9,9 +9,6 @@
 #include "Srv_IMUSample.h"
 #include "Srv_Baro.h"
 
-#define IMU_GYR_CALI_CYC_CNT 500 /* unit: period */
-#define BARO_CALI_CYC_CNT    100 /* unit: period */
-
 typedef enum
 {
     SrvSensorMonitor_StatisticTimer_Defualt = 0,
@@ -82,7 +79,6 @@ typedef struct
     uint32_t min_sampling_overhead; /* unit: us */
     uint32_t avg_sampling_overhead; /* unit: us */
 
-    uint32_t cali_cycle;
     uint32_t sample_cnt;
     uint32_t err_cnt;
     uint32_t detect_period;
