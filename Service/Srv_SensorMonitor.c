@@ -384,12 +384,32 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     bool state = false;
 
     /* single sampling overhead is about 60us */
-    state |= SrvSensorMonitor_IMU_SampleCTL(obj);
-    state |= SrvSensorMonitor_Mag_SampleCTL(obj);
-    state |= SrvSensorMonitor_Baro_SampleCTL(obj);
-    state |= SrvSensorMonitor_Gnss_SampleCTL(obj);
-    state |= SrvSensorMonitor_Tof_SampleCTL(obj);
+    if((obj->statistic_imu->is_calid != Sensor_Calib_Start) && \
+       (obj->statistic_imu->is_calid != Sensor_Calib_InProcess))
+    {
+        state |= SrvSensorMonitor_IMU_SampleCTL(obj);
+    }
+    
+    if((obj->statistic_mag->is_calid != Sensor_Calib_Start) && \
+       (obj->statistic_mag->is_calid != Sensor_Calib_InProcess))
+    {
+        state |= SrvSensorMonitor_Mag_SampleCTL(obj);
+    }
 
+    if((obj->statistic_baro->is_calid != Sensor_Calib_Start) && \
+       (obj->statistic_baro->is_calid != Sensor_Calib_InProcess))
+    {
+        state |= SrvSensorMonitor_Baro_SampleCTL(obj);
+    }
+
+    if((obj->statistic_tof->is_calid != Sensor_Calib_Start) && \
+       (obj->statistic_tof->is_calid != Sensor_Calib_InProcess))
+    {
+        state |= SrvSensorMonitor_Tof_SampleCTL(obj);
+    }
+
+    state |= SrvSensorMonitor_Gnss_SampleCTL(obj);
+    
     return state;
 }
 
