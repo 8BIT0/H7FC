@@ -74,7 +74,7 @@ static bool FrameCTL_MavProto_Enable = false;
 static FrameCTL_PortMonitor_TypeDef PortMonitor = {.init = false};
 static uint32_t FrameCTL_Period = 0;
 static __attribute__((section(".Perph_Section"))) uint8_t MavShareBuf[1024];
-static uint8_t ShellShareBuf[1024];
+static __attribute__((section(".Perph_Section"))) uint8_t ShellShareBuf[1024];
 static uint32_t Radio_Addr = 0;
 static uint32_t USB_VCP_Addr = 0;
 
