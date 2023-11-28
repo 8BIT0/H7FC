@@ -9,6 +9,7 @@
 #include "semphr.h"
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
+#include "shell.h"
 
 #define FrameCTL_Port_Tx_TimeOut 10     /* unit: ms */
 #define FrameCTL_MAX_Period 5           /* unit: ms */
@@ -107,6 +108,14 @@ typedef struct
     FrameCTL_UartPortMonitor_TypeDef *Uart_Port;
     FrameCTL_CanPortMonitor_TypeDef *Can_Port;
 } FrameCTL_PortMonitor_TypeDef;
+
+typedef struct
+{
+    Shell ShellObj;
+    FrameCTL_PortType_List type;
+    uint32_t port_addr;
+    SrvComProto_Stream_TypeDef *p_stream;
+} FrameCTL_CLIMonitor_TypeDef;
 
 void TaskFrameCTL_Init(uint32_t period);
 void TaskFrameCTL_Core(void *arg);

@@ -3,7 +3,6 @@
 #include "IO_Definition.h"
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
-#include "shell.h"
 
 #define RADIO_TX_PIN UART1_TX_PIN
 #define RADIO_RX_PIN UART1_RX_PIN
@@ -78,16 +77,21 @@ static __attribute__((section(".Perph_Section"))) uint8_t ShellShareBuf[1024];
 static uint32_t Radio_Addr = 0;
 static uint32_t USB_VCP_Addr = 0;
 
-SrvComProto_Stream_TypeDef MavStream = {
+static SrvComProto_Stream_TypeDef MavStream = {
     .p_buf = MavShareBuf,
     .size = 0,
     .max_size = sizeof(MavShareBuf),
 };
 
-SrvComProto_Stream_TypeDef ShellStream = {
+static SrvComProto_Stream_TypeDef CLIStream = {
     .p_buf = ShellShareBuf,
     .size = 0,
     .max_size = sizeof(ShellShareBuf),
+};
+
+static FrameCTL_CLIMonitor_TypeDef CLI_Monitor = {
+    .port_addr = 0,
+    .p_stream = &CLIStream,
 };
 
 /* frame section */
@@ -127,6 +131,7 @@ void TaskFrameCTL_Init(uint32_t period)
     }
 
     /* Shell Init */
+    shellInit(&CLI_Monitor.ShellObj, CLI_Monitor.p_stream->p_buf, CLI_Monitor.p_stream->max_size);
 }
 
 void TaskFrameCTL_Core(void *arg)
@@ -295,10 +300,14 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
 {
     SrvComProto_Msg_StreamIn_TypeDef stream_in;
     FrameCTL_PortProtoObj_TypeDef *p_RecObj = NULL;
+    uint32_t port_addr = 0;
+    bool cli_state = false;
 
     /* use mavlink protocol tuning the flight parameter */
     if(p_data && size && RecObj_addr)
     {
+        SrvDataHub.get_cli_state(&cli_state);
+
         p_RecObj = (FrameCTL_PortProtoObj_TypeDef *)RecObj_addr;
         p_RecObj->time_stamp = SrvOsCommon.get_os_ms();
 
@@ -325,39 +334,51 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
             /* first come first serve */
             /* in case two different port tuning the same function or same parameter at the same time */
             /* if attach to configrator or in tunning then lock moto */
-            if(stream_in.pac_type == ComFrame_MavMsg)
+            if(!cli_state && (stream_in.pac_type == ComFrame_MavMsg))
             {
                 /* check mavline message frame type */
+                /* only process mavlink message when cli is disabled */
             }
             else if(stream_in.pac_type == ComFrame_CLI)
             {
+                /* set current mode as cli mode */
+                /* push string into cli shared stream */
+                if(((CLI_Monitor.port_addr == 0) || (CLI_Monitor.port_addr == p_RecObj->PortObj_addr)) && \
+                   (CLI_Monitor.p_stream->size + size) <= CLI_Monitor.p_stream->max_size)
+                {
+                    SrvDataHub.set_cli_state(true);
 
+                    CLI_Monitor.type = p_RecObj->type;
+                    CLI_Monitor.port_addr = p_RecObj->PortObj_addr;
+                    memcpy(CLI_Monitor.p_stream->p_buf + CLI_Monitor.p_stream->size, stream_in.p_buf, stream_in.size);
+                    CLI_Monitor.p_stream->size += size;
+                }
             }
         }
     }
 }
 
-static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint32_t *size)
+static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t Obj_addr, uint8_t *p_data, uint32_t *size)
 {
     UNUSED(p_data);
     UNUSED(size);
 
-    FrameCTL_PortProtoObj_TypeDef *p_RecObj = NULL;
+    FrameCTL_PortProtoObj_TypeDef *p_Obj = NULL;
     FrameCTL_UartPortMonitor_TypeDef *p_UartPortObj = NULL;
     FrameCTL_VCPPortMonitor_TypeDef *p_USBPortObj = NULL;
     osSemaphoreId semID = NULL;
     uint32_t *p_rls_err_cnt = NULL;
 
-    if(RecObj_addr)
+    if(Obj_addr)
     {
-        p_RecObj = RecObj_addr;
+        p_Obj = Obj_addr;
 
-        if(p_RecObj->PortObj_addr)
+        if(p_Obj->PortObj_addr)
         {
-            switch((uint8_t) p_RecObj->type)
+            switch((uint8_t) p_Obj->type)
             {
                 case Port_USB:
-                    p_USBPortObj = (FrameCTL_VCPPortMonitor_TypeDef *)(p_RecObj->PortObj_addr);
+                    p_USBPortObj = (FrameCTL_VCPPortMonitor_TypeDef *)(p_Obj->PortObj_addr);
 
                     if(p_USBPortObj->init_state && p_USBPortObj->p_tx_semphr)
                     {
@@ -367,7 +388,7 @@ static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_d
                     break;
 
                 case Port_Uart:
-                    p_UartPortObj = (FrameCTL_UartPortMonitor_TypeDef *)(p_RecObj->PortObj_addr);
+                    p_UartPortObj = (FrameCTL_UartPortMonitor_TypeDef *)(p_Obj->PortObj_addr);
 
                     if(p_UartPortObj->init_state && p_UartPortObj->p_tx_semphr)
                     {
@@ -511,7 +532,7 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
 static void TaskFrameCTL_CLI_Proc(void)
 {
     /* check CLI stream */
-    if(ShellStream.p_buf && ShellStream.size)
+    if(CLIStream.p_buf && CLIStream.size)
     {
 
     }
