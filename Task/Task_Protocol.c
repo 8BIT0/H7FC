@@ -131,7 +131,7 @@ void TaskFrameCTL_Init(uint32_t period)
     }
 
     /* Shell Init */
-    shellInit(&CLI_Monitor.ShellObj, CLI_Monitor.p_stream->p_buf, CLI_Monitor.p_stream->max_size);
+    // shellInit(&CLI_Monitor.ShellObj, CLI_Monitor.p_stream->p_buf, CLI_Monitor.p_stream->max_size);
 }
 
 void TaskFrameCTL_Core(void *arg)
