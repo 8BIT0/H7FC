@@ -380,7 +380,6 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
         stream_in.valid = true;
         stream_in.size = size;
         stream_in.p_buf = p_data;
-        goto input_stream_valid;
     }
 
     /* custom frame input check */
