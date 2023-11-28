@@ -30,6 +30,13 @@ typedef enum
 
 typedef enum
 {
+    SrvBaro_Calibarting = 0,
+    SrvBaro_CalibFailed,
+    SrvBaro_CalibDone,
+}SrvBaro_CalibState_List;
+
+typedef enum
+{
     Baro_Type_None = 0,
     Baro_Type_DPS310,
     Baro_Type_Sum,
@@ -79,6 +86,7 @@ typedef struct
 {
     uint8_t (*init)(void);
     bool (*sample)(void);
+    SrvBaro_CalibState_List (*calib)(uint16_t calib_cyc, float meter);
     SrvBaroData_TypeDef (*get_data)(void);
 }SrvBaro_TypeDef;
 

@@ -128,6 +128,7 @@ SrvBaro_TypeDef SrvBaro = {
     .init = SrvBaro_Init,
     .sample = NULL,
     .get_data = NULL,
+    .calib = NULL,
 };
 
 static bool SrvBaro_BusInit(void)
@@ -226,7 +227,15 @@ static bool SrvBaro_Sample(void)
 {
     if(SrvBaroObj.init_err == SrvBaro_Error_None)
     {
+        switch((uint8_t) SrvBaroObj.type)
+        {
+            case Baro_Type_DPS310:
+                // ToDPS310_Obj(SrvBaroObj.sensor_obj).
+                break;
 
+            default:
+                return false;
+        }
     }
 
     return false;
