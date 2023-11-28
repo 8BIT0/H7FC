@@ -607,5 +607,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
     if (BspUart_Obj_List[index])
     {
         BspUart_Obj_List[index]->monitor.tx_success_cnt ++;
+
+        if(BspUart_Obj_List[index]->TxCallback)
+            BspUart_Obj_List[index]->TxCallback(BspUart_Obj_List[index]->cust_data_addr, NULL, 0);
     }
 }
