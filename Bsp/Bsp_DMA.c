@@ -217,6 +217,6 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
     else
         return;
 
-    HAL_NVIC_SetPriority(irq, 5, 0);
+    HAL_NVIC_SetPriority(irq, preempt, sub);
     HAL_NVIC_EnableIRQ(irq);
 }
