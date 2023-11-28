@@ -329,6 +329,10 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
             {
                 /* check mavline message frame type */
             }
+            else if(stream_in.pac_type == ComFrame_CLI)
+            {
+
+            }
         }
     }
 }
