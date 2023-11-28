@@ -15,10 +15,10 @@ static BspUARTObj_TypeDef *BspUart_Obj_List[BspUART_Port_Sum] = {NULL};
 
 /* external function */
 static bool BspUart_Init(BspUARTObj_TypeDef *obj);
-bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit);
-bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity);
-bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
-bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap);
+static bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit);
+static bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity);
+static bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
+static bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap);
 static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size);
 static bool BspUart_Set_Rx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
 static bool BspUart_Set_Tx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
@@ -102,6 +102,8 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
     DMA_HandleTypeDef tx_dma_cfg = {0};
     DMA_HandleTypeDef rx_dma_cfg = {0};
     int8_t index = Bspuart_None_Index;
+    bool rx_dma_reg_state = false;
+    bool tx_dma_reg_state = false;
 
     tx_dma_cfg.Init.PeriphInc = DMA_PINC_DISABLE;
     tx_dma_cfg.Init.MemInc = DMA_MINC_ENABLE;
@@ -159,19 +161,31 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
     obj->tx_dma_hdl = tx_dma_cfg;
     obj->rx_dma_hdl = rx_dma_cfg;
 
-    if (!BspDMA.regist(obj->rx_dma, obj->rx_stream, &(obj->rx_dma_hdl)) ||
-        !BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl)))
+    rx_dma_reg_state = BspDMA.regist(obj->rx_dma, obj->rx_stream, &(obj->rx_dma_hdl));
+    tx_dma_reg_state = BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl));
+
+    if (!rx_dma_reg_state && !tx_dma_reg_state)
         return BspUart_Clock_Error;
 
-    if (HAL_DMA_Init(&(obj->rx_dma_hdl)) != HAL_OK)
-        return BspUart_Clock_Error;
+    if(rx_dma_reg_state)
+    {
+        if (HAL_DMA_Init(&(obj->rx_dma_hdl)) != HAL_OK)
+            return BspUart_Clock_Error;
 
-    __HAL_LINKDMA(&(obj->hdl), hdmarx, obj->rx_dma_hdl);
+        __HAL_LINKDMA(&(obj->hdl), hdmarx, obj->rx_dma_hdl);
 
-    if (HAL_DMA_Init(&(obj->tx_dma_hdl)) != HAL_OK)
-        return BspUart_Clock_Error;
+        BspDMA.enable_irq(obj->rx_dma, obj->rx_stream, 5, 0);
+    }
 
-    __HAL_LINKDMA(&(obj->hdl), hdmatx, obj->tx_dma_hdl);
+    if(tx_dma_reg_state)
+    {
+        if (HAL_DMA_Init(&(obj->tx_dma_hdl)) != HAL_OK)
+            return BspUart_Clock_Error;
+
+        __HAL_LINKDMA(&(obj->hdl), hdmatx, obj->tx_dma_hdl);
+
+        BspDMA.enable_irq(obj->tx_dma, obj->tx_stream, 5, 0);
+    }
 
     return index;
 }
@@ -236,9 +250,8 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     uart_cfg.Init.OverSampling = UART_OVERSAMPLING_16;
     uart_cfg.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
     uart_cfg.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-    uart_cfg.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT | UART_ADVFEATURE_DMADISABLEONERROR_INIT;
+    uart_cfg.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
     uart_cfg.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
-    uart_cfg.AdvancedInit.DMADisableonRxError = UART_ADVFEATURE_DMA_DISABLEONRXERROR;
 
     /* swap tx rx pin */
     if (obj->pin_swap)
@@ -304,7 +317,7 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     return true;
 }
 
-bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
+static bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
 {
     if (obj || !obj->init_state)
         return false;
@@ -317,7 +330,7 @@ bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
     return true;
 }
 
-bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity)
+static bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity)
 {
     if (obj || !obj->init_state)
         return false;
@@ -330,7 +343,7 @@ bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity)
     return true;
 }
 
-bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
+static bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
 {
     if (obj || !obj->init_state)
         return false;
@@ -343,7 +356,7 @@ bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
     return true;
 }
 
-bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap)
+static bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap)
 {
     if (obj || !obj->init_state)
         return false;

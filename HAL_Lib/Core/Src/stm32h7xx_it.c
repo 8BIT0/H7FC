@@ -190,7 +190,7 @@ void DMA2_Stream0_IRQHandler(void)
     HAL_DMA_IRQHandler(hdl);
 }
 
-void DMA2_Stream1_IRQHandle(void)
+void DMA2_Stream1_IRQHandler(void)
 {
   DMA_HandleTypeDef *hdl = NULL;
   hdl = BspDMA.get_handle(Bsp_DMA_2, Bsp_DMA_Stream_1);

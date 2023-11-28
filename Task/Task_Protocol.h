@@ -21,9 +21,9 @@
 #define RADIO_PORT USART1
 #define RADIO_PORT_BAUD 460800
 #define RADIO_TX_DMA Bsp_DMA_2
-#define RADIO_TX_DMA_STREAM Bsp_DMA_Stream_1
+#define RADIO_TX_DMA_STREAM Bsp_DMA_Stream_0
 #define RADIO_RX_DMA Bsp_DMA_2
-#define RADIO_RX_DMA_STREAM Bsp_DMA_Stream_2
+#define RADIO_RX_DMA_STREAM Bsp_DMA_Stream_1
 
 typedef SrvComProto_ProtoData_Type_List FrameType_List;
 
