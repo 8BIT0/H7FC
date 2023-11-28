@@ -328,6 +328,7 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
 
         stream_in = SrvComProto.msg_decode(p_data, size);
     
+        /* noticed when drone is under disarmed state we can`t tune or send cli to drone for safety */
         if(stream_in.valid)
         {
             /* tag on recive time stamp */
@@ -492,6 +493,7 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
     bool tunning_state = false;
     uint32_t tunning_time_stamp = 0;
     uint32_t tunning_port = 0;
+    bool arm_state = false;
 
     proto_monitor.frame_type = ComFrame_MavMsg;
 
@@ -502,6 +504,7 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
 
         /* if in tunning than halt general frame protocol */
         SrvDataHub.get_tunning_state(&tunning_time_stamp, &tunning_state, &tunning_port);
+        SrvDataHub.get_arm_state(&arm_state);
 
         if(!tunning_state)
         {
@@ -521,7 +524,7 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
             SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
         }
-        else
+        else if(tunning_state && (arm_state == DRONE_ARM))
         {
             /* proto tunning parameter */
         }

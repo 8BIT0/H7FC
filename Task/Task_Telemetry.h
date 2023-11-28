@@ -13,6 +13,7 @@
 #include "Srv_ComProto.h"
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
+#include "Srv_DataHub.h"
 
 #define Telemetry_SetBit(x) UTIL_SET_BIT(x)
 
@@ -27,8 +28,8 @@
 #define RECEIVER_SBUS_TX_DMA Bsp_DMA_1
 #define RECEIVER_SBUS_TX_DMA_STREAM Bsp_DMA_Stream_5
 
-#define TELEMETRY_SET_ARM 1
-#define TELEMETRY_SET_DISARM 0
+#define TELEMETRY_SET_ARM DRONE_ARM
+#define TELEMETRY_SET_DISARM DRONE_DISARM
 #define TELEMETRY_DISABLE_ALL_MODULE 0
 #define TELEMETRY_RCSIG_MAX_COMOBO_CNT 8
 

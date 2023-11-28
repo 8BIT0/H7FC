@@ -13,6 +13,9 @@
 #define SRVDATAHUB_TUNNING_HEARTBEAT_TIMEOUT 3000  /* unit: ms 3S timeout */
 #define SRVDATAHUB_CONFIGRATOR_ATTACH_TIMEOUT 2000 /* unit: ms 2S timeout */
 
+#define DRONE_ARM 1
+#define DRONE_DISARM 0
+
 #pragma pack(1)
 typedef union
 {
