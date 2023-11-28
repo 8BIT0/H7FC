@@ -169,7 +169,7 @@ static bool BspGPIO_Alternate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
 
     cfg_structure.Pin = IO_Obj.pin;
 
-    if((af_mode != GPIO_MODE_AF_PP) || (af_mode != GPIO_MODE_AF_OD))
+    if((af_mode != GPIO_MODE_AF_PP) && (af_mode != GPIO_MODE_AF_OD))
         return false;
 
     // cfg_structure.Mode = GPIO_MODE_AF_PP;

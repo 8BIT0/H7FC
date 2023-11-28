@@ -6,8 +6,8 @@ static I2C_HandleTypeDef* BspIIC_HandleList[BspIIC_Instance_I2C_Sum] = {0};
 /* external function */
 static bool BspIIC_Init(BspIICObj_TypeDef *obj);
 static bool BspIIC_DeInit(BspIICObj_TypeDef *obj);
-static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint32_t dev_addr, uint32_t reg, uint8_t *p_buf, uint16_t len);
-static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint32_t dev_addr, uint32_t reg, uint8_t *p_buf, uint16_t len);
+static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, uint16_t len);
+static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, uint16_t len);
 
 
 BspIIC_TypeDef BspIIC = {
@@ -114,7 +114,7 @@ static bool BspIIC_DeInit(BspIICObj_TypeDef *obj)
     return false;
 }
 
-static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint32_t dev_addr, uint32_t reg, uint8_t *p_buf, uint16_t len)
+static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, uint16_t len)
 {
     if(obj && p_buf && len)
     {
@@ -125,7 +125,7 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint32_t dev_addr, uint32_t reg,
     return false;
 }
 
-static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint32_t dev_addr, uint32_t reg, uint8_t *p_buf, uint16_t len)
+static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, uint16_t len)
 {
     if(obj && p_buf && len)
     {

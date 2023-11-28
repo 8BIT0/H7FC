@@ -158,10 +158,8 @@ static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj)
     if(obj && obj->bus_rx && obj->bus_rx(obj->DevAddr, DPS310_PRODUCT_ID_REG, &data_tmp, 1))
     {
         obj->ProdID = data_tmp;
-        if(data_tmp != DPS310_PRODUCT_ID_VALUE)
-            return false;
-        
-        return true;
+        if(data_tmp == DPS310_PRODUCT_ID_VALUE)
+            return true;
     }
 
     return false;

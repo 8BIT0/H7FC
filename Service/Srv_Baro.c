@@ -36,8 +36,8 @@ SrvBaroBusObj_TypeDef SrvBaroBus = {
 };
 
 /* internal function */
-static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint8_t len);
-static bool SrvBaro_Bus_Rx(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint8_t len);
+static bool SrvBaro_Bus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
+static bool SrvBaro_Bus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
 
 /************************************************************************ Error Tree Item ************************************************************************/
 static Error_Handler SrvBaro_Error_Handle = NULL;
@@ -111,7 +111,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
         .prc_callback = SrvBaro_BusInitError,
         .code = SrvBaro_Error_DevInit,
         .desc = "SrvBaro Sensor Device Init Failed\r\n",
-        .proc_type = Error_Proc_Ignore,
+        .proc_type = Error_Proc_Immd, 
         .prc_data_stream = {
             .p_data = NULL,
             .size = 0,
@@ -207,7 +207,7 @@ static uint8_t SrvBaro_Init(void)
 
         SrvBaroObj.sample_period = round(1000.0 / (double)SrvBaroObj.sample_rate);
 
-        if((SrvBaroObj.sample_period > SRVBARO_MAX_SAMPLE_PERIOD) || (SrvBaroObj.sample_period < SRVBARO_MIN_SAMPLE_PERIOD))
+        if((SrvBaroObj.sample_period < SRVBARO_MAX_SAMPLE_PERIOD) || (SrvBaroObj.sample_period > SRVBARO_MIN_SAMPLE_PERIOD))
         {
             ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSamplePeriod, NULL, 0);
             return SrvBaro_Error_BadSamplePeriod;
@@ -248,27 +248,27 @@ static SrvBaroData_TypeDef SrvBaro_Get_Date(void)
 
 
 /*************************************************************** Bus Comunicate Callback *******************************************************************************/
-static bool SrvBaro_Bus_Tx(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint8_t len)
+static bool SrvBaro_Bus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len)
 {
     BspIICObj_TypeDef *IICBusObj = NULL;
 
     if(SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
     {
         IICBusObj = ToIIC_BusObj(SrvBaroBus.bus_obj);
-        return ToIIC_BusAPI(SrvBaroBus.bus_api)->write(IICBusObj, dev_addr, reg_addr, p_data, len);
+        return ToIIC_BusAPI(SrvBaroBus.bus_api)->write(IICBusObj, dev_addr << 1, reg_addr, p_data, len);
     }
 
     return false;
 }
 
-static bool SrvBaro_Bus_Rx(uint8_t dev_addr, uint8_t reg_addr, uint8_t *p_data, uint8_t len)
+static bool SrvBaro_Bus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len)
 {
     BspIICObj_TypeDef *IICBusObj = NULL;
 
     if(SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
     {
         IICBusObj = ToIIC_BusObj(SrvBaroBus.bus_obj);
-        return ToIIC_BusAPI(SrvBaroBus.bus_api)->read(IICBusObj, dev_addr, reg_addr, p_data, len);
+        return ToIIC_BusAPI(SrvBaroBus.bus_api)->read(IICBusObj, dev_addr << 1, reg_addr, p_data, len);
     }
 
     return false;
