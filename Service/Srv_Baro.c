@@ -122,11 +122,11 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
 
 /* external function */
 static uint8_t SrvBaro_Init(void);
-
+static bool SrvBaro_Sample(void);
 
 SrvBaro_TypeDef SrvBaro = {
     .init = SrvBaro_Init,
-    .sample = NULL,
+    .sample = SrvBaro_Sample,
     .get_data = NULL,
     .calib = NULL,
 };
