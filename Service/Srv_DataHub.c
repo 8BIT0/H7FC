@@ -63,9 +63,9 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
     .get_tunning_state =  SrvDataHub_Get_TunningState,
     .get_configrator_attach_state =  SrvDataHub_Get_ConfigratorAttachState,
-    .get_cli_state =  SrvDataHub_Set_CLI_State,
+    .get_cli_state =  SrvDataHub_Get_CLI_State,
 
-    .set_cli_state =  SrvDataHub_Get_CLI_State,
+    .set_cli_state =  SrvDataHub_Set_CLI_State,
     .set_tunning_state = SrvDataHub_Set_TunningState,
     .set_configrator_state = SrvDataHub_Set_ConfigratorAttachState,
 };

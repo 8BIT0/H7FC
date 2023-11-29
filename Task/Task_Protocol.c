@@ -116,6 +116,7 @@ static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uin
 static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t size);
 static void TaskFrameCTL_ConnectStateCheck(void);
 static void TaskFrameCTL_CLI_Proc(void);
+static void TaskFrameCTL_CLI_Trans(uint8_t *p_data, uint16_t size);
 
 void TaskFrameCTL_Init(uint32_t period)
 {
@@ -140,28 +141,20 @@ void TaskFrameCTL_Init(uint32_t period)
 
     /* Shell Init */
     shellInit(&CLI_Monitor.ShellObj, CLI_Monitor.p_proc_stream->p_buf, CLI_Monitor.p_proc_stream->max_size);
+    CLI_Monitor.ShellObj.write = TaskFrameCTL_CLI_Trans;
 }
 
 void TaskFrameCTL_Core(void *arg)
 {
     uint32_t per_time = SrvOsCommon.get_os_ms();
-    bool CLI_mode = false;
 
     while(1)
     {
-        if(!SrvDataHub.get_cli_state(&CLI_mode))
-            CLI_mode = false;
+        /* frame protocol process */
+        TaskFrameCTL_PortFrameOut_Process();
 
-        if(!CLI_mode)
-        {
-            /* frame protocol process */
-            TaskFrameCTL_PortFrameOut_Process();
-        }
-        else
-        {
-            /* command line process */
-            TaskFrameCTL_CLI_Proc();
-        }
+        /* command line process */
+        TaskFrameCTL_CLI_Proc();
 
         TaskFrameCTL_ConnectStateCheck();
 
@@ -351,6 +344,7 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
             else if(stream_in.pac_type == ComFrame_CLI)
             {
                 /* set current mode as cli mode */
+                /* all command line end up with "\r\n" */
                 /* push string into cli shared stream */
                 if(((CLI_Monitor.port_addr == 0) || (CLI_Monitor.port_addr == p_RecObj->PortObj_addr)) && \
                    (CLI_Monitor.p_rx_stream->size + size) <= CLI_Monitor.p_rx_stream->max_size)
@@ -501,10 +495,12 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
     uint32_t tunning_time_stamp = 0;
     uint32_t tunning_port = 0;
     bool arm_state = false;
+    bool CLI_state = false;
 
     proto_monitor.frame_type = ComFrame_MavMsg;
+    SrvDataHub.get_cli_state(&CLI_state);
 
-    if(FrameCTL_MavProto_Enable && PortMonitor.VCP_Port.init_state)
+    if(FrameCTL_MavProto_Enable && PortMonitor.VCP_Port.init_state && !CLI_state)
     {
         /* when attach to configrator then disable radio port trans use default port trans mav data */
         /* check other port init state */
@@ -613,20 +609,50 @@ static void TaskFrameCTL_ConnectStateCheck(void)
 }
 
 /***************************************** CLI Section ***********************************************/
-void TaskFermeCTL_CLI_EnableControl(uint8_t state)
+static void TaskFrameCTL_CLI_Trans(uint8_t *p_data, uint16_t size)
 {
-    SrvOsCommon.enter_critical();
-    if(state)
+    if(p_data && size && CLI_Monitor.ShellObj.write)
     {
-        SrvDataHub.set_cli_state(true);
+        switch ((uint8_t) CLI_Monitor.type)
+        {
+            case Port_Uart:
+                TaskFrameCTL_Port_Tx(CLI_Monitor.port_addr, p_data, size);
+                break;
+            
+            case Port_USB:
+                TaskFrameCTL_DefaultPort_Trans(p_data, size);
+                break; 
+
+            default:
+                break;
+        }
     }
-    else
+}
+
+static void TaskFermeCTL_CLI_EnableControl(uint8_t state)
+{
+    bool cli_state = state;
+    SrvOsCommon.enter_critical();
+    if(state == 0)
     {
         SrvDataHub.set_cli_state(false);
     }
+    else
+        SrvDataHub.set_cli_state(true);
     SrvOsCommon.exit_critical();
+    
+    shellPrint(&CLI_Monitor.ShellObj, "\r\n\r\n");
+    if(state)
+    {
+        shellPrint(&CLI_Monitor.ShellObj, "CLI Enabled\r\n");
+    }
+    else
+    {
+        shellPrint(&CLI_Monitor.ShellObj, "CLI Disabled\r\n");
+        CLI_Monitor.port_addr = 0;
+    }
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, CLI_State,  TaskFermeCTL_CLI_EnableControl, CLI Enable Control);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, CLI_Enable,  TaskFermeCTL_CLI_EnableControl, CLI Enable Control);
 
 
 
