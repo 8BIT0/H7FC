@@ -1,5 +1,5 @@
 #include "reboot.h"
-#include "shell.h"
+#include "shell_port.h"
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal.h"
 

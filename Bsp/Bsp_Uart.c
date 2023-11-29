@@ -269,6 +269,9 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     else
         obj->irq_type = BspUart_IRQ_Type_Idle;
 
+    uint32_t tick = HAL_GetTick();
+    while(HAL_GetTick() - tick < 50);
+
     if (HAL_UARTEx_SetTxFifoThreshold(&uart_cfg, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK ||
         HAL_UARTEx_SetRxFifoThreshold(&uart_cfg, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK ||
         HAL_UARTEx_DisableFifoMode(&uart_cfg) != HAL_OK)

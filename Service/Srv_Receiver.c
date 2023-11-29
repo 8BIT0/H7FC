@@ -370,9 +370,11 @@ static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
     if (receiver_obj->Frame_type == Receiver_Type_CRSF)
     {
         /* check CRSF Statistics Data */
-        if ((receiver_obj->data.rssi < SRV_RECEIVER_MIN_RSSI) ||
-            (receiver_obj->data.link_quality < SRV_RECEIVER_MIN_LINKQUALITY) ||
-            (receiver_obj->data.active_antenna < SRV_RECEIVER_MIN_ANTENNA_VALUE))
+        // if ((receiver_obj->data.rssi < SRV_RECEIVER_MIN_RSSI) ||
+        //     (receiver_obj->data.link_quality < SRV_RECEIVER_MIN_LINKQUALITY) ||
+        //     (receiver_obj->data.active_antenna < SRV_RECEIVER_MIN_ANTENNA_VALUE))
+      if ( (receiver_obj->data.link_quality < SRV_RECEIVER_MIN_LINKQUALITY) ||
+           (receiver_obj->data.active_antenna < SRV_RECEIVER_MIN_ANTENNA_VALUE))
             return false;
     }
     else if (receiver_obj->Frame_type == Receiver_Type_Sbus)

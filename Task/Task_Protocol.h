@@ -9,7 +9,7 @@
 #include "semphr.h"
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
-#include "shell.h"
+#include "shell_port.h"
 
 #define FrameCTL_Port_Tx_TimeOut 10     /* unit: ms */
 #define FrameCTL_MAX_Period 5           /* unit: ms */
@@ -17,6 +17,7 @@
 #define CONFIGRATOR_ATTACH_TIMEOUT 2000 /* unit: ms 2S */
 #define TUNNING_TIMEOUT 1000            /* unit: ms 1S */
 
+#define CLI_FUNC_BUF_SIZE 1024
 #define RADIO_BUFF_SIZE 1024
 #define RADIO_UART_NUM 1
 #define RADIO_PORT USART1
@@ -114,7 +115,8 @@ typedef struct
     Shell ShellObj;
     FrameCTL_PortType_List type;
     uint32_t port_addr;
-    SrvComProto_Stream_TypeDef *p_stream;
+    SrvComProto_Stream_TypeDef *p_rx_stream;
+    SrvComProto_Stream_TypeDef *p_proc_stream;
 } FrameCTL_CLIMonitor_TypeDef;
 
 void TaskFrameCTL_Init(uint32_t period);

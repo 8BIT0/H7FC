@@ -73,7 +73,8 @@ static bool FrameCTL_MavProto_Enable = false;
 static FrameCTL_PortMonitor_TypeDef PortMonitor = {.init = false};
 static uint32_t FrameCTL_Period = 0;
 static __attribute__((section(".Perph_Section"))) uint8_t MavShareBuf[1024];
-static __attribute__((section(".Perph_Section"))) uint8_t CLIShareBuf[1024];
+static __attribute__((section(".Perph_Section"))) uint8_t CLIRxBuf[CLI_FUNC_BUF_SIZE];
+static uint8_t CLIProcBuf[CLI_FUNC_BUF_SIZE];
 static uint32_t Radio_Addr = 0;
 static uint32_t USB_VCP_Addr = 0;
 
@@ -83,15 +84,22 @@ static SrvComProto_Stream_TypeDef MavStream = {
     .max_size = sizeof(MavShareBuf),
 };
 
-static SrvComProto_Stream_TypeDef CLIStream = {
-    .p_buf = CLIShareBuf,
+static SrvComProto_Stream_TypeDef CLI_RX_Stream = {
+    .p_buf = CLIRxBuf,
     .size = 0,
-    .max_size = sizeof(CLIShareBuf),
+    .max_size = sizeof(CLIRxBuf),
+};
+
+static SrvComProto_Stream_TypeDef CLI_Proc_Stream = {
+    .p_buf = CLIProcBuf,
+    .size = 0,
+    .max_size = sizeof(CLIProcBuf),
 };
 
 static FrameCTL_CLIMonitor_TypeDef CLI_Monitor = {
     .port_addr = 0,
-    .p_stream = &CLIStream,
+    .p_rx_stream = &CLI_RX_Stream,
+    .p_proc_stream = &CLI_Proc_Stream,
 };
 
 /* frame section */
@@ -131,7 +139,7 @@ void TaskFrameCTL_Init(uint32_t period)
     }
 
     /* Shell Init */
-    // shellInit(&CLI_Monitor.ShellObj, CLI_Monitor.p_stream->p_buf, CLI_Monitor.p_stream->max_size);
+    shellInit(&CLI_Monitor.ShellObj, CLI_Monitor.p_proc_stream->p_buf, CLI_Monitor.p_proc_stream->max_size);
 }
 
 void TaskFrameCTL_Core(void *arg)
@@ -345,14 +353,13 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
                 /* set current mode as cli mode */
                 /* push string into cli shared stream */
                 if(((CLI_Monitor.port_addr == 0) || (CLI_Monitor.port_addr == p_RecObj->PortObj_addr)) && \
-                   (CLI_Monitor.p_stream->size + size) <= CLI_Monitor.p_stream->max_size)
+                   (CLI_Monitor.p_rx_stream->size + size) <= CLI_Monitor.p_rx_stream->max_size)
                 {
-                    SrvDataHub.set_cli_state(true);
 
                     CLI_Monitor.type = p_RecObj->type;
                     CLI_Monitor.port_addr = p_RecObj->PortObj_addr;
-                    memcpy(CLI_Monitor.p_stream->p_buf + CLI_Monitor.p_stream->size, stream_in.p_buf, stream_in.size);
-                    CLI_Monitor.p_stream->size += size;
+                    memcpy(CLI_Monitor.p_rx_stream->p_buf + CLI_Monitor.p_rx_stream->size, stream_in.p_buf, stream_in.size);
+                    CLI_Monitor.p_rx_stream->size += size;
                 }
             }
         }
@@ -534,10 +541,19 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
 /* still in developping */
 static void TaskFrameCTL_CLI_Proc(void)
 {
-    /* check CLI stream */
-    if(CLIStream.p_buf && CLIStream.size)
-    {
+    uint16_t rx_stream_size = 0;
 
+    /* check CLI stream */
+    if(CLI_Monitor.p_rx_stream->p_buf && CLI_Monitor.p_rx_stream->size)
+    {
+        rx_stream_size = CLI_Monitor.p_rx_stream->size;
+
+        for(uint16_t i = 0; i < rx_stream_size; i++)
+        {
+            shellHandler(&CLI_Monitor.ShellObj, CLI_Monitor.p_rx_stream->p_buf[i]);
+            CLI_Monitor.p_rx_stream->p_buf[i] = 0;
+            CLI_Monitor.p_rx_stream->size --;
+        }
     }
 }
 
@@ -595,3 +611,22 @@ static void TaskFrameCTL_ConnectStateCheck(void)
         SrvOsCommon.exit_critical();
     }
 }
+
+/***************************************** CLI Section ***********************************************/
+void TaskFermeCTL_CLI_EnableControl(uint8_t state)
+{
+    SrvOsCommon.enter_critical();
+    if(state)
+    {
+        SrvDataHub.set_cli_state(true);
+    }
+    else
+    {
+        SrvDataHub.set_cli_state(false);
+    }
+    SrvOsCommon.exit_critical();
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, CLI_State,  TaskFermeCTL_CLI_EnableControl, CLI Enable Control);
+
+
+
