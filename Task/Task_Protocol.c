@@ -126,7 +126,7 @@ void TaskFrameCTL_Init(uint32_t period)
     memset(&PortMonitor, 0, sizeof(PortMonitor));
 
     TaskFrameCTL_DefaultPort_Init(&PortMonitor);
-    TaskFrameCTL_RadioPort_Init(&PortMonitor);
+    // TaskFrameCTL_RadioPort_Init(&PortMonitor);
     Radio_Addr = TaskFrameCTL_Set_RadioPort(Port_Uart, 0);
 
     PortMonitor.init = true;
