@@ -361,9 +361,7 @@ static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
     /* update check */
     /* update frequence less than 10hz switch into failsafe */
     if ((SrvOsCommon.get_os_ms() - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
-    {
         return false;
-    }
 
     /* range check */
     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
