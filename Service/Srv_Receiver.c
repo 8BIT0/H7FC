@@ -263,63 +263,62 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
     uint8_t *rx_buff_ptr = NULL;
     uint16_t rx_buff_size = 0;
     uint8_t decode_out = 0xFF;
+    bool sig_update = false;
 
     if (receiver_obj && receiver_obj->frame_api && receiver_obj->port && receiver_obj->frame_data_obj)
     {
         if (receiver_obj->port_type == Receiver_Port_Serial)
         {
-            if (receiver_obj->in_use)
-            {
-                receiver_obj->re_update = true;
-            }
-            else
-                receiver_obj->re_update = false;
-
             /* do serial decode funtion */
             if (receiver_obj->Frame_type == Receiver_Type_CRSF)
             {
                 decode_out = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->decode(receiver_obj->frame_data_obj, p_data, size);
+                sig_update = true;
 
                 switch (decode_out)
                 {
-                case CRSF_FRAMETYPE_LINK_STATISTICS:
-                    receiver_obj->data.rssi = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).downlink_RSSI;
-                    receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).downlink_Link_quality;
-                    receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).active_antenna;
-                    break;
+                    case CRSF_FRAMETYPE_LINK_STATISTICS:
+                        receiver_obj->data.rssi = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).downlink_RSSI;
+                        receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).downlink_Link_quality;
+                        receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).active_antenna;
+                        break;
 
-                case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
-                    ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(receiver_obj->frame_data_obj, receiver_obj->data.val_list);
+                    case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+                        ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(receiver_obj->frame_data_obj, receiver_obj->data.val_list);
 
-                    for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
-                    {
-                        if (receiver_obj->data.val_list[i] < CRSF_DIGITAL_CHANNEL_MIN)
+                        for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                         {
-                            receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MIN;
-                        }
-                        else if (receiver_obj->data.val_list[i] > CRSF_DIGITAL_CHANNEL_MAX)
-                        {
-                            receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MAX;
+                            if (receiver_obj->data.val_list[i] < CRSF_DIGITAL_CHANNEL_MIN)
+                            {
+                                receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MIN;
+                            }
+                            else if (receiver_obj->data.val_list[i] > CRSF_DIGITAL_CHANNEL_MAX)
+                            {
+                                receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MAX;
+                            }
+
+                            if (receiver_obj->invert_list && (receiver_obj->invert_list & 1 << i))
+                            {
+                                receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
+                                receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
+                            }
                         }
 
-                        if (receiver_obj->invert_list && (receiver_obj->invert_list & 1 << i))
-                        {
-                            receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
-                            receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
-                        }
-                    }
+                        receiver_obj->data.failsafe = false;
+                        break;
 
-                    receiver_obj->data.failsafe = false;
-                    break;
-
-                default:
-                    return;
+                    default:
+                        sig_update = false;
+                        return;
                 }
+
+                
             }
             else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
             {
                 if (((DevSBUS_TypeDef *)(receiver_obj->frame_api))->decode(receiver_obj->frame_data_obj, p_data, size) == DevSBUS_NoError)
                 {
+                    sig_update = true;
                     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                     {
                         receiver_obj->data.val_list[i] = ((DevSBUSObj_TypeDef *)receiver_obj->frame_data_obj)->val[i];
@@ -333,8 +332,15 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                 }
             }
 
-            /* set decode time stamp */
-            receiver_obj->data.time_stamp = SrvOsCommon.get_os_ms();
+            if (sig_update && receiver_obj->in_use)
+            {
+                receiver_obj->re_update = true;
+                
+                /* set decode time stamp */
+                receiver_obj->data.time_stamp = SrvOsCommon.get_os_ms();
+            }
+            else
+                receiver_obj->re_update = false;            
 
             /* clear serial obj received data */
             if (receiver_obj->port->cfg)
