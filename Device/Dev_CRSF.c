@@ -125,7 +125,7 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
             break;
 
         case CRSF_Stage_Payload:
-            if (obj->rec_cnt < obj->frame.length)
+            if ((obj->frame.length <= CRSF_PAYLOAD_SIZE_MAX) && (obj->rec_cnt < obj->frame.length))
             {
                 obj->frame.data[obj->rec_cnt] = *p_data;
                 obj->rec_cnt++;
@@ -141,6 +141,12 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
 
                     return decode_state;
                 }
+            }
+            else
+            {
+                obj->rec_cnt = 0;
+                memset(&obj->frame, 0, sizeof(obj->frame));
+                obj->rec_stage = CRSF_Stage_Header;
             }
             break;
         }

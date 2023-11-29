@@ -483,8 +483,9 @@ void UART_IRQ_Callback(BspUART_Port_List index)
     uint32_t errorflags = 0;
     uint32_t cr3its = 0;
 
-    if (BspUart_Obj_List[index])
+    if (BspUart_Obj_List[index] && BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Idle)
     {
+
         hdl = &(BspUart_Obj_List[index]->hdl);
         isrflags = READ_REG(hdl->Instance->ISR);
         cr1its = READ_REG(hdl->Instance->CR1);
@@ -494,39 +495,36 @@ void UART_IRQ_Callback(BspUART_Port_List index)
         if (errorflags != 0)
             return;
 
-        if (BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Idle)
+        rx_dma = &(BspUart_Obj_List[index]->rx_dma_hdl);
+
+        if (hdl && rx_dma)
         {
-            rx_dma = &(BspUart_Obj_List[index]->rx_dma_hdl);
+            const HAL_UART_StateTypeDef rxstate = hdl->RxState;
 
-            if (hdl && rx_dma)
+            if ((RESET != (isrflags & USART_ISR_IDLE)) && (RESET != (cr1its & USART_CR1_IDLEIE)))
             {
-                const HAL_UART_StateTypeDef rxstate = hdl->RxState;
+                __HAL_UART_CLEAR_IDLEFLAG(hdl);
 
-                if ((RESET != (isrflags & USART_ISR_IDLE)) && (RESET != (cr1its & USART_CR1_IDLEIE)))
+                BspUart_DMAStopRx(index);
+
+                len = BspUart_Obj_List[index]->rx_size - __HAL_DMA_GET_COUNTER(rx_dma);
+
+                if (len)
                 {
-                    __HAL_UART_CLEAR_IDLEFLAG(hdl);
+                    /* idle receive callback process */
+                    if (BspUart_Obj_List[index]->RxCallback)
+                        BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
+                                                            BspUart_Obj_List[index]->rx_buf,
+                                                            len);
 
-                    BspUart_DMAStopRx(index);
-
-                    len = BspUart_Obj_List[index]->rx_size - __HAL_DMA_GET_COUNTER(rx_dma);
-
-                    if (len)
-                    {
-                        /* idle receive callback process */
-                        if (BspUart_Obj_List[index]->RxCallback)
-                            BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr,
-                                                                BspUart_Obj_List[index]->rx_buf,
-                                                                len);
-
-                        BspUart_Obj_List[index]->monitor.rx_cnt++;
-                        HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
-                    }
-                    else
-                    {
-                        BspUart_Obj_List[index]->monitor.rx_err_cnt++;
-                        READ_REG(hdl->Instance->RDR);
-                        __HAL_UART_CLEAR_OREFLAG(hdl);
-                    }
+                    BspUart_Obj_List[index]->monitor.rx_cnt++;
+                    HAL_UART_Receive_DMA(hdl, BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
+                }
+                else
+                {
+                    BspUart_Obj_List[index]->monitor.rx_err_cnt++;
+                    READ_REG(hdl->Instance->RDR);
+                    __HAL_UART_CLEAR_OREFLAG(hdl);
                 }
             }
         }
