@@ -292,7 +292,7 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
             break;
 
         case BspUart_IRQ_Type_Byte:
-            __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_RXNE);
+            __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_RXNE | UART_IT_ERR | UART_IT_ORE);
             break;
 
         default:
@@ -615,7 +615,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if(huart)
     {
-        
+
     }
 }
 
