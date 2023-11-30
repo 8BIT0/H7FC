@@ -640,9 +640,20 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
     else
         return;
  
-    if (BspUart_Obj_List[index])
+    if (BspUart_Obj_List[index] && huart->ErrorCode)
     {
+        BspUart_Obj_List[index]->monitor.rx_err_cnt ++;
         
+        if(BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Byte)
+        {
+            if(huart->ErrorCode && HAL_UART_ERROR_ORE)
+            {
+                BspUart_Obj_List[index]->monitor.ore_cnt ++;
+
+                uint8_t temp = huart->Instance->RDR;
+                HAL_UART_Receive_IT(&(BspUart_Obj_List[index]->hdl), &BspUart_Obj_List[index]->rx_single_byte, 1);
+            }
+        }
     }
 }
 

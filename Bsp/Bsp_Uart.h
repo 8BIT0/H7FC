@@ -42,6 +42,7 @@ typedef struct
     uint32_t tx_cnt;
 
     uint32_t rx_err_cnt;
+    uint32_t ore_cnt;
     uint32_t rx_full_cnt;
 
     uint32_t tx_success_cnt;
