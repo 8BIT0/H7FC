@@ -610,3 +610,12 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
             BspUart_Obj_List[index]->TxCallback(BspUart_Obj_List[index]->cust_data_addr, NULL, 0);
     }
 }
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if(huart)
+    {
+        
+    }
+}
+
