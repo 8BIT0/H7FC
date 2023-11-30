@@ -583,6 +583,9 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
     uint8_t index = 0;
 
+    if(huart == NULL)
+        return;
+
     if(huart->Instance == USART1)
     {
         index = BspUART_Port_1;
@@ -613,9 +616,33 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
-    if(huart)
-    {
+    uint8_t index = 0;
+    
+    if(huart == NULL)
+        return;
 
+    if(huart->Instance == USART1)
+    {
+        index = BspUART_Port_1;
+    }
+    else if (huart->Instance == UART4)
+    {
+        index = BspUART_Port_4;
+    }
+    else if (huart->Instance == USART6)
+    {
+        index = BspUART_Port_6;
+    }
+    else if (huart->Instance == UART7)
+    {
+        index = BspUART_Port_7;
+    }
+    else
+        return;
+ 
+    if (BspUart_Obj_List[index])
+    {
+        
     }
 }
 
