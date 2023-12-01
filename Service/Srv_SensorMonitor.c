@@ -199,7 +199,7 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
              (cur_time >= obj->statistic_imu->nxt_sample_time))))
         {
 
-            DebugPin.ctl(Debug_PB5, true);
+            // DebugPin.ctl(Debug_PB5, true);
             start_tick = SrvOsCommon.get_systimer_current_tick();
 
             if(SrvIMU.sample(SrvIMU_FusModule))
@@ -214,7 +214,7 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
                 state = true;
             }
-            DebugPin.ctl(Debug_PB5, false);
+            // DebugPin.ctl(Debug_PB5, false);
 
             if(state)
             {
@@ -337,43 +337,45 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
              (cur_time >= obj->statistic_baro->nxt_sample_time))))
         {
             start_tick = SrvOsCommon.get_systimer_current_tick();
-        }
 
-        if(SrvBaro.sample())
-        {
-            end_tick = SrvOsCommon.get_systimer_current_tick();
-
-            obj->statistic_baro->sample_cnt ++;
-            obj->statistic_baro->nxt_sample_time = cur_time + sample_interval_ms;
-            if(obj->statistic_baro->start_time == 0)
-                obj->statistic_baro->start_time = cur_time;
-
-            state = true;
-        }
-
-        if(state)
-        {
-            if(start_tick < end_tick)
+            DebugPin.ctl(Debug_PB5, true);
+            if(SrvBaro.sample())
             {
-                sample_tick = end_tick - start_tick;
+                end_tick = SrvOsCommon.get_systimer_current_tick();
+
+                obj->statistic_baro->sample_cnt ++;
+                obj->statistic_baro->nxt_sample_time = cur_time + sample_interval_ms;
+                if(obj->statistic_baro->start_time == 0)
+                    obj->statistic_baro->start_time = cur_time;
+
+                state = true;
             }
-            else if(start_tick > end_tick)
+            DebugPin.ctl(Debug_PB5, false);
+        
+            if(state)
             {
-                /* must after timer irq */
-                sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
+                if(start_tick < end_tick)
+                {
+                    sample_tick = end_tick - start_tick;
+                }
+                else if(start_tick > end_tick)
+                {
+                    /* must after timer irq */
+                    sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
+                }
+
+                if((sample_tick <= obj->statistic_baro->min_sampling_overhead) || \
+                    (obj->statistic_baro->min_sampling_overhead == 0))
+                    obj->statistic_baro->min_sampling_overhead = sample_tick;
+
+                if(sample_tick >= obj->statistic_baro->max_sampling_overhead)
+                    obj->statistic_baro->max_sampling_overhead = sample_tick;
+
+                obj->statistic_baro->avg_sampling_overhead += sample_tick;
+                obj->statistic_baro->avg_sampling_overhead /= 2;
+
+                obj->statistic_baro->cur_sampling_overhead = sample_tick;
             }
-
-            if((sample_tick <= obj->statistic_baro->min_sampling_overhead) || \
-                (obj->statistic_baro->min_sampling_overhead == 0))
-                obj->statistic_baro->min_sampling_overhead = sample_tick;
-
-            if(sample_tick >= obj->statistic_baro->max_sampling_overhead)
-                obj->statistic_baro->max_sampling_overhead = sample_tick;
-
-            obj->statistic_baro->avg_sampling_overhead += sample_tick;
-            obj->statistic_baro->avg_sampling_overhead /= 2;
-
-            obj->statistic_baro->cur_sampling_overhead = sample_tick;
         }
     }
 
