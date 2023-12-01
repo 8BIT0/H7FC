@@ -343,10 +343,10 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
         {
             end_tick = SrvOsCommon.get_systimer_current_tick();
 
-            obj->statistic_Baro->sample_cnt ++;
-            obj->statistic_Baro->nxt_sample_time = cur_time + sample_interval_ms;
-            if(obj->statistic_Baro->start_time == 0)
-                obj->statistic_Baro->start_time = cur_time;
+            obj->statistic_baro->sample_cnt ++;
+            obj->statistic_baro->nxt_sample_time = cur_time + sample_interval_ms;
+            if(obj->statistic_baro->start_time == 0)
+                obj->statistic_baro->start_time = cur_time;
 
             state = true;
         }

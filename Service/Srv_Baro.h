@@ -98,7 +98,7 @@ typedef struct
     uint8_t (*init)(void);
     bool (*sample)(void);
     SrvBaro_CalibState_List (*calib)(uint16_t calib_cyc, float meter);
-    SrvBaroData_TypeDef (*get_data)(void);
+    SrvBaro_UnionData_TypeDef (*get_data)(void);
 }SrvBaro_TypeDef;
 
 extern SrvBaro_TypeDef SrvBaro;
