@@ -6,6 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include "Dev_DPS310.h"
+#include "../algorithm/Filter_Dep/filter.h"
 
 #define SRVBARO_SAMPLE_RATE_LIMIT SRVBARO_SAMPLE_RATE_100HZ   /* max sample rate 100Hz */
 
@@ -24,6 +25,7 @@ typedef enum
     SrvBaro_Error_BadType,
     SrvBaro_Error_DevInit,
     SrvBaro_Error_BadSensorObj,
+    SrvBaro_Error_FilterInit,
     SrvBaro_Error_BadSamplePeriod,
     SrvBaro_Error_BusInit,
 }SrvBaro_ErrorCodeList;
@@ -91,6 +93,8 @@ typedef struct
     SrvBaroData_TypeDef data;
     uint32_t sample_cnt;
     uint32_t sample_err_cnt;
+
+    SW_Object_Handle smoothwindow_filter_hdl;
 }SrvBaroObj_TypeDef;
 
 typedef struct

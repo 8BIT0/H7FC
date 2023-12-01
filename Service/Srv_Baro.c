@@ -6,6 +6,8 @@
 #include "bsp_iic.h"
 #include "bsp_gpio.h"
 
+#define SRVBARO_SMOOTHWINDOW_SIZE 5
+
 #define ToIIC_BusObj(x) ((BspIICObj_TypeDef *)x)
 #define ToIIC_BusAPI(x) ((BspIIC_TypeDef *)x)
 
@@ -100,6 +102,18 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
         .code = SrvBaro_Error_BusInit,
         .desc = "SrvBaro Bus Init Failed\r\n",
         .proc_type = Error_Proc_Ignore,
+        .prc_data_stream = {
+            .p_data = NULL,
+            .size = 0,
+        },
+    },
+    {
+        .out = true,
+        .log = false,
+        .prc_callback = SrvBaro_BusInitError,
+        .code = SrvBaro_Error_FilterInit,
+        .desc = "SrvBaro Sensor Filter Init Failed\r\n",
+        .proc_type = Error_Proc_Immd, 
         .prc_data_stream = {
             .p_data = NULL,
             .size = 0,
@@ -209,6 +223,14 @@ static uint8_t SrvBaro_Init(void)
 
         SrvBaroObj.sample_period = round(1000.0 / (double)SrvBaroObj.sample_rate);
 
+        /* filter init */
+        SrvBaroObj.smoothwindow_filter_hdl = SmoothWindow.init(SRVBARO_SMOOTHWINDOW_SIZE);
+        if(SrvBaroObj.smoothwindow_filter_hdl == 0)
+        {
+            ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_FilterInit, NULL, 0);
+            return SrvBaro_Error_FilterInit;
+        }
+
         if((SrvBaroObj.sample_period < SRVBARO_MAX_SAMPLE_PERIOD) || (SrvBaroObj.sample_period > SRVBARO_MIN_SAMPLE_PERIOD))
         {
             ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSamplePeriod, NULL, 0);
@@ -271,8 +293,10 @@ static SrvBaro_UnionData_TypeDef SrvBaro_Get_Date(void)
                 
                     baro_data_tmp.data.scaled_org_pres_data = DPS310_Data.scaled_press;
                     baro_data_tmp.data.scaled_org_tempra_data = DPS310_Data.scaled_tempra;
+                    baro_data_tmp.data.scaled_flt_tempra_data = DPS310_Data.scaled_tempra;
 
                     /* doing baro filter */
+                    baro_data_tmp.data.scaled_flt_pres_data = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.data.scaled_org_pres_data);
                 }
                 break;
 
@@ -333,6 +357,9 @@ static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size)
         break;
 
         case SrvBaro_Error_DevInit:
+        break;
+
+        case SrvBaro_Error_FilterInit:
         break;
 
         default:
