@@ -238,7 +238,6 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
                 obj->statistic_imu->avg_sampling_overhead += sample_tick;
                 obj->statistic_imu->avg_sampling_overhead /= 2;
 
-                /* still on test */
                 obj->statistic_imu->cur_sampling_overhead = sample_tick;
             }
         }
@@ -322,11 +321,61 @@ static bool SrvSensorMonitor_Baro_Init(void)
 
 static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
+    bool state = false;
+    uint32_t sample_interval_ms = 0;
     uint32_t cur_time = SrvOsCommon.get_os_ms();
+    uint32_t start_tick = 0;
+    uint32_t end_tick = 0;
+    int32_t sample_tick = 0;
 
-    if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
+    if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && obj->freq_reg.bit.baro && obj->statistic_baro->set_period)
     {
+        sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_baro->set_period);
+    
+        if( SrvBaro.sample && \ 
+            ((obj->statistic_baro->start_time == 0) || \
+             (sample_interval_ms && \
+             (cur_time >= obj->statistic_baro->nxt_sample_time))))
+        {
+            start_tick = SrvOsCommon.get_systimer_current_tick();
+        }
 
+        if(SrvBaro.sample())
+        {
+            end_tick = SrvOsCommon.get_systimer_current_tick();
+
+            obj->statistic_Baro->sample_cnt ++;
+            obj->statistic_Baro->nxt_sample_time = cur_time + sample_interval_ms;
+            if(obj->statistic_Baro->start_time == 0)
+                obj->statistic_Baro->start_time = cur_time;
+
+            state = true;
+        }
+
+        if(state)
+        {
+            if(start_tick < end_tick)
+            {
+                sample_tick = end_tick - start_tick;
+            }
+            else if(start_tick > end_tick)
+            {
+                /* must after timer irq */
+                sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
+            }
+
+            if((sample_tick <= obj->statistic_baro->min_sampling_overhead) || \
+                (obj->statistic_baro->min_sampling_overhead == 0))
+                obj->statistic_baro->min_sampling_overhead = sample_tick;
+
+            if(sample_tick >= obj->statistic_baro->max_sampling_overhead)
+                obj->statistic_baro->max_sampling_overhead = sample_tick;
+
+            obj->statistic_baro->avg_sampling_overhead += sample_tick;
+            obj->statistic_baro->avg_sampling_overhead /= 2;
+
+            obj->statistic_baro->cur_sampling_overhead = sample_tick;
+        }
     }
 
     return false;
