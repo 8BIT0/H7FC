@@ -63,7 +63,7 @@ typedef struct
     list_obj *window_header;
     item_obj *window_ender;
     item_obj *window_cache;
-} SmoothWindow_;
+} SmoothWindow_Param_TypeDef;
 
 typedef struct
 {

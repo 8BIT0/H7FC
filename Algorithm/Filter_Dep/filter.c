@@ -13,7 +13,8 @@ static bool Filter_List_Create(uint8_t order, item_obj *item, list_obj **header,
 static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_obj);
 static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e);
 /* smooth window filter section */
-
+static SW_Object_Handle SmoothWindow_Init(uint8_t window_size);
+static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e);
 
 Butterworth_Filter_TypeDef Butterworth = {
     .init = Butterworth_Init,
@@ -21,8 +22,8 @@ Butterworth_Filter_TypeDef Butterworth = {
 };
 
 SmoothWindow_Filter_TypeDef SmoothWindow = {
-    // .init = ,
-    // .update = ,
+    .init = SmoothWindow_Init,
+    .update = SmoothWindow_Update,
 };
 
 /********************************************************** general filter section *********************************************************/
@@ -217,24 +218,66 @@ static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
 /********************************************************** smooth window filter section *********************************************************/
 static SW_Object_Handle SmoothWindow_Init(uint8_t window_size)
 {
+    SW_Object_Handle hdl = 0;
+    SmoothWindow_Param_TypeDef *param = NULL;
+
     if(window_size <= MAX_SMOOTH_WINDOW_SIZE)
     {
-        for(uint8_t i = 0; i < window_size; i++)
-        {
+        param = FILTER_MALLOC(sizeof(SmoothWindow_Param_TypeDef));
 
+        if(param == NULL)
+            return 0;
+
+        param->smooth_period = 0;
+        param->window_size = window_size;
+        param->window_cache = FILTER_MALLOC(sizeof(item_obj) * window_size);
+
+        if(param->window_cache == NULL)
+        {
+            FILTER_FREE(param->window_cache);
+            FILTER_FREE(param);
+            return 0;
         }
+
+        if(!Filter_List_Create(window_size, param->window_cache, &(param->window_header), &(param->window_ender)))
+            return 0;
+
+        hdl = (uint32_t)param;
     }
+
+    return hdl;
+}
+
+static int SmoothWindow_Comput_Sum(item_obj *item, void *item_data, void *sum)
+{
+    if(item && item_data && sum)
+    {
+        *((float *) sum) += *((float *) item_data);
+
+        return 1;
+    }
+
+    return 0;
 }
 
 static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e)
 {
-    float temp = 0.0f;
+    float sum = 0.0f;
+    SmoothWindow_Param_TypeDef *param = NULL; 
 
     if(hdl)
     {
+        param = (SmoothWindow_Param_TypeDef *)hdl;
+    
+        if(param->smooth_period < param->window_size)
+            param->smooth_period ++;
 
+        Filter_Item_Update(&(param->window_header), &(param->window_ender), cur_e);
+     
+        List_traverse(param->window_header, SmoothWindow_Comput_Sum, &sum, pre_callback);
+        sum /= param->smooth_period;
     }
 
-    return temp;
+    return sum;
 }
 
