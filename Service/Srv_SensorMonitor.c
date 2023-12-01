@@ -310,7 +310,6 @@ static uint32_t SrvSensorMonitor_Get_MagData(SrvSensorMonitorObj_TypeDef *obj)
 }
 
 /******************************************* Baro Section *********************************************/
-/* still in developing */
 static bool SrvSensorMonitor_Baro_Init(void)
 {
     if(SrvBaro.init && (SrvBaro.init() == SrvBaro_Error_None))
@@ -381,14 +380,16 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     return false;
 }
 
-static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj)
+static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj)
 {
-    SrvBaroData_TypeDef baro_data_tmp;
+    SrvBaro_UnionData_TypeDef baro_data_tmp;
 
-    memset(&baro_data_tmp, 0, sizeof(SrvBaroData_TypeDef));
+    memset(&baro_data_tmp, 0, sizeof(SrvBaro_UnionData_TypeDef));
 
-    if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
+    if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && SrvBaro.get_data)
     {
+        baro_data_tmp = SrvBaro.get_data();
+
     }
 
     return baro_data_tmp;

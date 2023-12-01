@@ -57,6 +57,12 @@ typedef struct
     uint16_t check_sum;
 }SrvBaroData_TypeDef;
 
+typedef union
+{
+    uint16_t buff[sizeof(SrvBaroData_TypeDef)];
+    SrvBaroData_TypeDef data;
+}SrvBaro_UnionData_TypeDef;
+
 typedef enum
 {
     SrvBaro_Bus_IIC = 0,
