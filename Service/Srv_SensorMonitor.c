@@ -390,6 +390,10 @@ static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorO
     {
         baro_data_tmp = SrvBaro.get_data();
 
+        for(uint16_t i = 0; i < sizeof(SrvBaro_UnionData_TypeDef) - sizeof(uint16_t); i++)
+        {
+            baro_data_tmp.data.check_sum += baro_data_tmp.buff[i];
+        }
     }
 
     return baro_data_tmp;
