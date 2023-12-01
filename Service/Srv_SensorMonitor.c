@@ -22,13 +22,15 @@ static bool SrvSensorMonitor_Tof_Init(void);
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj);
 static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj);
 static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj_TypeDef *obj);
-static SrvSensorMonitor_CaliState_List SrvSensor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
+static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
+static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 
 SrvSensorMonitor_TypeDef SrvSensorMonitor = {
     .init = SrvSensorMonitor_Init,
     .sample_ctl = SrvSensorMonitor_SampleCTL,
     .get_imu_data = SrvSensorMonitor_Get_IMUData,
-    .set_calib = SrvSensor_Set_Module_Calib,
+    .set_calib = SrvSensorMonitor_Set_Module_Calib,
+    .get_calib = SrvSensorMonitor_Get_Module_Calib,
 };
 
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
@@ -505,7 +507,7 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     return state;
 }
 
-static SrvSensorMonitor_CaliState_List SrvSensor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
+static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
 {
     if(obj)
     {
@@ -526,6 +528,55 @@ static SrvSensorMonitor_CaliState_List SrvSensor_Set_Module_Calib(SrvSensorMonit
             case SrvSensorMonitor_Type_TOF:
                 obj->statistic_tof->is_calid = Sensor_Calib_Start;
                 break;
+
+            default:
+                return Sensor_Calib_Failed;
+        }
+    }
+
+    return Sensor_Calib_Start;
+}
+
+static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
+{
+    if(obj)
+    {
+        switch((uint8_t) type)
+        {
+            case SrvSensorMonitor_Type_IMU:
+                break;
+
+            case SrvSensorMonitor_Type_MAG:
+                if(obj->enabled_reg.bit.mag && obj->init_state_reg.bit.mag)
+                {
+                    return obj->statistic_mag->is_calid;
+                }
+                else
+                    return Sensor_Calib_Failed; 
+
+            case SrvSensorMonitor_Type_BARO:
+                if(obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
+                {
+                    return obj->statistic_baro->is_calid;
+                }
+                else
+                    return Sensor_Calib_Failed;
+
+            case SrvSensorMonitor_Type_TOF:
+                if(obj->enabled_reg.bit.tof && obj->init_state_reg.bit.tof)
+                {
+                    return obj->statistic_tof->is_calid;
+                }
+                else
+                    return Sensor_Calib_Failed;
+
+            case SrvSensorMonitor_Type_GNSS:
+                if(obj->enabled_reg.bit.gnss && obj->init_state_reg.bit.gnss)
+                {
+                    return obj->statistic_gnss->is_calid;
+                }
+                else
+                    return Sensor_Calib_Failed;
 
             default:
                 return Sensor_Calib_Failed;

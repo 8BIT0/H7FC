@@ -119,6 +119,7 @@ typedef struct
     bool (*sample_ctl)(SrvSensorMonitorObj_TypeDef *obj);
     SrvIMU_UnionData_TypeDef (*get_imu_data)(SrvSensorMonitorObj_TypeDef *obj);
     SrvSensorMonitor_CaliState_List (*set_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
+    SrvSensorMonitor_CaliState_List (*get_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 }SrvSensorMonitor_TypeDef;
 
 extern SrvSensorMonitor_TypeDef SrvSensorMonitor;
