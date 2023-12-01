@@ -19,13 +19,20 @@ static bool DevDPS310_Reset(DevDPS310Obj_TypeDef *obj);
 static bool DevDPS310_Configure_Temperature(DevDPS310Obj_TypeDef *obj, uint8_t data);
 static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length);
 static bool DevDPS310_Get_Cali_Coefs(DevDPS310Obj_TypeDef *obj);
+static bool DevDPS310_ReadLenByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t *data, uint8_t len);
 
 /* external function */
 static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj);
+static bool DevDPS310_Sample(DevDPS310Obj_TypeDef *obj);
+static bool DevDPS310_GetReady(DevDPS310Obj_TypeDef *obj);
+static DevDPS310_Data_TypeDef DevDPS310_Get_Data(DevDPS310Obj_TypeDef *obj);
 
 /* external object */
 DevDPS310_TypeDef DevDPS310 = {
     .init = DevDPS310_Init,
+    .sample = DevDPS310_Sample,
+    .ready = DevDPS310_GetReady,
+    .get_data = DevDPS310_Get_Data,
 };
 
 static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
@@ -191,9 +198,27 @@ static bool DevDPS310_WriteByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr
     {
         if(!obj->bus_tx(obj->DevAddr, reg_addr, &data, 1))
             return false;
+
+        return true;
     }
 
-    return true;
+    return false;
+}
+
+static bool DevDPS310_ReadLenByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t *data, uint8_t len)
+{
+    if(obj && obj->bus_rx && data && len)
+    {
+        if(!obj->bus_rx(obj->DevAddr, reg_addr, data, len))
+        {
+            memset(data, 0, len);
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length)
@@ -285,3 +310,89 @@ static bool DevDPS310_Get_Cali_Coefs(DevDPS310Obj_TypeDef *obj)
     return false;
 }
 
+/* single trigger one shot mode */
+static bool DevDPS310_Sample(DevDPS310Obj_TypeDef *obj)
+{
+    uint8_t bus_read[6] = {0};
+
+    if(obj)
+    {
+        obj->ready = false;
+
+        // read data from register.
+        if(DevDPS310_ReadLenByteToReg(obj, DPS310_PSR_B2_REG, bus_read, sizeof(bus_read)))
+        {
+            obj->pressure = 0.0f;
+            obj->tempra = 0.0f;
+            return false;
+        }
+
+        obj->none_scale_pressure = 0;
+        memcpy(&obj->none_scale_pressure, bus_read, 3);
+
+        obj->none_scale_tempra = 0;
+        memcpy(&obj->none_scale_tempra, &bus_read[3], 3);
+
+        // Calculate scaled measurement results.
+        const float Praw_sc = DevDPS310_GetTwoComplementOf((bus_read[0] << 16) + (bus_read[1] << 8) + bus_read[2], 24) / obj->pres_factory_scale;
+        const float Traw_sc = DevDPS310_GetTwoComplementOf((bus_read[3] << 16) + (bus_read[4] << 8) + bus_read[5], 24) / obj->temp_factory_scale;
+
+        // Calculate compensated measurement results.
+        const float c00 = obj->cali_coefs.c00;
+        const float c01 = obj->cali_coefs.c01;
+        const float c10 = obj->cali_coefs.c10;
+        const float c11 = obj->cali_coefs.c11;
+        const float c20 = obj->cali_coefs.c20;
+        const float c21 = obj->cali_coefs.c21;
+        const float c30 = obj->cali_coefs.c30;
+
+        // See section 4.9.1, How to Calculate Compensated Pressure Values, of datasheet
+        obj->pressure = c00 + Praw_sc * (c10 + Praw_sc * (c20 + Praw_sc * c30)) + Traw_sc * c01 + Traw_sc * Praw_sc * (c11 + Praw_sc * c21);
+
+        const float c0 = obj->cali_coefs.c0;
+        const float c1 = obj->cali_coefs.c1;
+
+        // See section 4.9.2, How to Calculate Compensated Temperature Values, of datasheet
+        obj->tempra = c0 * 0.5f + c1 * Traw_sc;
+
+        if(obj->get_tick)
+            obj->update_time = obj->get_tick();
+
+        obj->ready = true;
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool DevDPS310_GetReady(DevDPS310Obj_TypeDef *obj)
+{
+    if(obj)
+        return obj->ready;
+
+    return false;
+}
+
+static DevDPS310_Data_TypeDef DevDPS310_Get_Data(DevDPS310Obj_TypeDef *obj)
+{
+    DevDPS310_Data_TypeDef tmp;
+
+    memset(&tmp, 0, sizeof(DevDPS310_Data_TypeDef));
+
+    if(obj)
+    {
+        tmp.time_stamp = obj->update_time;
+
+        tmp.none_scaled_press = obj->none_scale_pressure;
+        tmp.none_scaled_tempra = obj->none_scale_tempra;
+        
+        tmp.scaled_press = obj->pressure;
+        tmp.scaled_tempra = obj->tempra;
+
+        if(obj->ready)
+            obj->ready = false;
+    }
+
+    return tmp;
+}

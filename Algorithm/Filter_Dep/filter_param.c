@@ -9,6 +9,41 @@
  */
 
 /*
+ * 100Hz Sample Rate Section
+ */
+/* 2 order butterworth filter parameter / stop frequence: 10Hz / sample rate: 100Hz */
+const BTF_Para_TypeDef BTF_E_2O_10Hz_100Hz[3] = {{0.0674552738890719, DEFAULT_PARAM_SCALE}, {0.134910547778144, DEFAULT_PARAM_SCALE}, {0.0674552738890719, DEFAULT_PARAM_SCALE}};
+const BTF_Para_TypeDef BTF_U_2O_10Hz_100Hz[2] = {{-1.14298050253990, DEFAULT_PARAM_SCALE}, {0.412801598096189, DEFAULT_PARAM_SCALE}};
+
+/* 2 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 100Hz */
+const BTF_Para_TypeDef BTF_E_2O_30Hz_100Hz[3] = {{0.391335772501769, DEFAULT_PARAM_SCALE}, {0.782671545003537, DEFAULT_PARAM_SCALE}, {0.391335772501769, DEFAULT_PARAM_SCALE}};
+const BTF_Para_TypeDef BTF_U_2O_30Hz_100Hz[2] = {{0.369527377351241, DEFAULT_PARAM_SCALE}, {0.195815712655833, DEFAULT_PARAM_SCALE}};
+
+/* 3 order butterworth filter parameter / stop frequence: 10Hz / sample rate: 100Hz */
+const BTF_Para_TypeDef BTF_E_3O_10Hz_100Hz[4] = {{0.0180989330075144, DEFAULT_PARAM_SCALE}, {0.0542967990225433, DEFAULT_PARAM_SCALE}, {0.0542967990225433, DEFAULT_PARAM_SCALE}, {0.0180989330075144, DEFAULT_PARAM_SCALE}};
+const BTF_Para_TypeDef BTF_U_3O_10Hz_100Hz[3] = {{-1.76004188034317, DEFAULT_PARAM_SCALE}, {1.18289326203783, DEFAULT_PARAM_SCALE}, {-0.278059917634547, DEFAULT_PARAM_SCALE}};
+
+/* 3 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 100Hz */
+const BTF_Para_TypeDef BTF_E_3O_30Hz_100Hz[4] = {{0.256915601248463, DEFAULT_PARAM_SCALE}, {0.770746803745390, DEFAULT_PARAM_SCALE}, {0.770746803745390, DEFAULT_PARAM_SCALE}, {0.256915601248463, DEFAULT_PARAM_SCALE}};
+const BTF_Para_TypeDef BTF_U_3O_30Hz_100Hz[3] = {{0.577240524806302, DEFAULT_PARAM_SCALE}, {0.421787048689562, DEFAULT_PARAM_SCALE}, {0.0562972364918426, DEFAULT_PARAM_SCALE}};
+
+/* 4 order butterworth filter parameter / stop frequence: 10Hz / sample rate: 100Hz */
+const BTF_Para_TypeDef BTF_E_4O_10Hz_100Hz[5] = {{0.00482434335771623, DEFAULT_PARAM_SCALE}, {0.0192973734308649, DEFAULT_PARAM_SCALE}, {0.0289460601462974, DEFAULT_PARAM_SCALE}, {0.0192973734308649, DEFAULT_PARAM_SCALE}, {0.00482434335771623, DEFAULT_PARAM_SCALE}};
+const BTF_Para_TypeDef BTF_U_4O_10Hz_100Hz[4] = {{-2.36951300718204, DEFAULT_PARAM_SCALE}, {2.31398841441588, DEFAULT_PARAM_SCALE}, {-1.05466540587857, DEFAULT_PARAM_SCALE}, {0.187379492368185, DEFAULT_PARAM_SCALE}};
+
+/* 4 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 100Hz */
+const BTF_Para_TypeDef BTF_E_4O_30Hz_100Hz[5] = {{0.167179268608490, DEFAULT_PARAM_SCALE}, {0.668717074433960, DEFAULT_PARAM_SCALE}, {1.00307561165094, DEFAULT_PARAM_SCALE}, {0.668717074433960, DEFAULT_PARAM_SCALE}, {0.167179268608490, DEFAULT_PARAM_SCALE}};
+const BTF_Para_TypeDef BTF_U_4O_30Hz_100Hz[4] = {{0.782095198023337, DEFAULT_PARAM_SCALE}, {0.679978526916299, DEFAULT_PARAM_SCALE}, {0.182675697753032, DEFAULT_PARAM_SCALE}, {0.0301188750431692, DEFAULT_PARAM_SCALE}};
+
+/* 5 order butterworth filter parameter / stop frequence: 10Hz / sample rate: 100Hz */
+const BTF_Para_TypeDef BTF_E_5O_10Hz_100Hz[6] = {{0.00128258107896069, DEFAULT_PARAM_SCALE}, {0.00641290539480343, DEFAULT_PARAM_SCALE}, {0.0128258107896069, DEFAULT_PARAM_SCALE}, {0.0128258107896069, DEFAULT_PARAM_SCALE}, {0.00641290539480343, DEFAULT_PARAM_SCALE}, {0.00128258107896069, DEFAULT_PARAM_SCALE}};
+const BTF_Para_TypeDef BTF_U_5O_10Hz_100Hz[5] = {{-2.97542210974568, DEFAULT_PARAM_SCALE}, {3.80601811932041, DEFAULT_PARAM_SCALE}, {-2.54525286833047 , DEFAULT_PARAM_SCALE}, {0.881130075437837, DEFAULT_PARAM_SCALE}, {-0.125430622155356, DEFAULT_PARAM_SCALE}};
+
+/* 5 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 100Hz */
+const BTF_Para_TypeDef BTF_E_5O_30Hz_100Hz[6] = {{0.108373702587480, DEFAULT_PARAM_SCALE}, {0.541868512937400, DEFAULT_PARAM_SCALE}, {1.08373702587480, DEFAULT_PARAM_SCALE}, {1.08373702587480, DEFAULT_PARAM_SCALE}, {0.541868512937400, DEFAULT_PARAM_SCALE}, {0.108373702587480, DEFAULT_PARAM_SCALE}};
+const BTF_Para_TypeDef BTF_U_5O_30Hz_100Hz[5] = {{0.985325239279238, DEFAULT_PARAM_SCALE}, {0.973849331836764, DEFAULT_PARAM_SCALE}, {0.386356558648449, DEFAULT_PARAM_SCALE}, {0.111163840578342, DEFAULT_PARAM_SCALE}, {0.0112635124565659, DEFAULT_PARAM_SCALE}};
+
+/*
  * 1K Sample Rate Section
  */
 /* 2 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 1K */
@@ -42,73 +77,3 @@ const BTF_Para_TypeDef BTF_U_5O_30Hz_1K[5] = {{-4.39027619426085, DEFAULT_PARAM_
 /* 5 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 1K */
 const BTF_Para_TypeDef BTF_E_5O_50Hz_1K[6] = {{5.97957803700032, 1e-05}, {0.000298978901850016, DEFAULT_PARAM_SCALE}, {0.000597957803700032, DEFAULT_PARAM_SCALE}, {0.000597957803700032, DEFAULT_PARAM_SCALE}, {0.000298978901850016, DEFAULT_PARAM_SCALE}, {5.97957803700032, 1e-05}};
 const BTF_Para_TypeDef BTF_U_5O_50Hz_1K[5] = {{-3.98454311961234, DEFAULT_PARAM_SCALE}, {6.43486709027587, DEFAULT_PARAM_SCALE}, {-5.25361517035227, DEFAULT_PARAM_SCALE}, {2.16513290972413, DEFAULT_PARAM_SCALE}, {-0.359928245063556, DEFAULT_PARAM_SCALE}};
-
-/*
- * 2K Sample Rate section
- */
-/* 2 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 2K */
-// const BTF_Para_TypeDef BTF_E_2O_30Hz_2K[3];
-// const BTF_Para_TypeDef BTF_U_2O_30Hz_2K[2];
-
-/* 2 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 2K */
-// const BTF_Para_TypeDef BTF_E_2O_50Hz_2K[3];
-// const BTF_Para_TypeDef BTF_U_2O_50Hz_2K[2];
-
-/* 3 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 2K */
-// const BTF_Para_TypeDef BTF_E_3O_30Hz_2K[4];
-// const BTF_Para_TypeDef BTF_U_3O_30Hz_2K[3];
-
-/* 3 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 2K */
-// const BTF_Para_TypeDef BTF_E_3O_50Hz_2K[4];
-// const BTF_Para_TypeDef BTF_U_3O_50Hz_2K[3];
-
-/* 4 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 2K */
-// const BTF_Para_TypeDef BTF_E_4O_30Hz_2K[5];
-// const BTF_Para_TypeDef BTF_U_4O_30Hz_2K[4];
-
-/* 4 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 2K */
-// const BTF_Para_TypeDef BTF_E_4O_50Hz_2K[5];
-// const BTF_Para_TypeDef BTF_U_4O_50Hz_2K[4];
-
-/* 5 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 2K */
-// const BTF_Para_TypeDef BTF_E_5O_30Hz_2K[6];
-// const BTF_Para_TypeDef BTF_U_5O_30Hz_2K[5];
-
-/* 5 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 2K */
-// const BTF_Para_TypeDef BTF_E_5O_50Hz_2K[6] = {{2.3409914930614, 1e-06}, {1.1704957465307, 1e-05}, {2.3409914930614, 1e-05}, {2.3409914930614, 1e-05}, {1.1704957465307, 1e-05}, {2.3409914930614, 1e-06}};
-// const BTF_Para_TypeDef BTF_U_5O_50Hz_2K[5] = {{-4.49183096507705, DEFAULT_PARAM_SCALE}, {8.09405541782665, DEFAULT_PARAM_SCALE}, {-7.31208128015038, DEFAULT_PARAM_SCALE}, {3.31104756198840, DEFAULT_PARAM_SCALE}, {-0.601115822859839, DEFAULT_PARAM_SCALE}};
-
-/*
- * 4K Sample Rate section
- */
-/* 2 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 4K */
-// const BTF_Para_TypeDef BTF_E_2O_30Hz_4K[3];
-// const BTF_Para_TypeDef BTF_U_2O_30Hz_4K[2];
-
-/* 2 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 4K */
-// const BTF_Para_TypeDef BTF_E_2O_50Hz_4K[3];
-// const BTF_Para_TypeDef BTF_U_2O_50Hz_4K[2];
-
-/* 3 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 4K */
-// const BTF_Para_TypeDef BTF_E_3O_30Hz_4K[4];
-// const BTF_Para_TypeDef BTF_U_3O_30Hz_4K[3];
-
-/* 3 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 4K */
-// const BTF_Para_TypeDef BTF_E_3O_50Hz_4K[4];
-// const BTF_Para_TypeDef BTF_U_3O_50Hz_4K[3];
-
-/* 4 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 4K */
-// const BTF_Para_TypeDef BTF_E_4O_30Hz_4K[5];
-// const BTF_Para_TypeDef BTF_U_4O_30Hz_4K[4];
-
-/* 4 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 4K */
-// const BTF_Para_TypeDef BTF_E_4O_50Hz_4K[5];
-// const BTF_Para_TypeDef BTF_U_4O_50Hz_4K[4];
-
-/* 5 order butterworth filter parameter / stop frequence: 30Hz / sample rate: 4K */
-// const BTF_Para_TypeDef BTF_E_5O_30Hz_4K[6];
-// const BTF_Para_TypeDef BTF_U_5O_30Hz_4K[5];
-
-/* 5 order butterworth filter parameter / stop frequence: 50Hz / sample rate: 4K */
-// const BTF_Para_TypeDef BTF_E_5O_50Hz_4K[6];
-// const BTF_Para_TypeDef BTF_U_5O_50Hz_4K[5];

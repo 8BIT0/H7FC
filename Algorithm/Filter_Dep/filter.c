@@ -5,19 +5,28 @@
 #include "filter.h"
 
 /* internal function */
-static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender);
-static void Butterworth_Item_Update(item_obj **header, item_obj **ender, float cur_data);
+static void Filter_Item_Update(item_obj **header, item_obj **ender, float cur_data);
+static bool Filter_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender);
 
 /* external function */
+/* butterworth filter section */
 static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_obj);
 static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e);
+/* smooth window filter section */
+
 
 Butterworth_Filter_TypeDef Butterworth = {
     .init = Butterworth_Init,
     .update = Butterworth_Filter_Update,
 };
 
-static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender)
+SmoothWindow_Filter_TypeDef SmoothWindow = {
+    // .init = ,
+    // .update = ,
+};
+
+/********************************************************** general filter section *********************************************************/
+static bool Filter_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender)
 {
     for (uint8_t i = 0; i < order; i++)
     {
@@ -49,6 +58,21 @@ static bool Butterworth_List_Create(uint8_t order, item_obj *item, list_obj **he
     return true;
 }
 
+static void Filter_Item_Update(item_obj **header, item_obj **ender, float cur_data)
+{
+    item_obj *i_tmp = NULL;
+
+    *((float *)((*ender)->data)) = cur_data;
+    (*ender)->prv->nxt = NULL;
+    i_tmp = (*ender)->prv;
+    (*ender)->prv = NULL;
+    (*header)->prv = *ender;
+    (*ender)->nxt = *header;
+    *header = *ender;
+    *ender = i_tmp;
+}
+
+/********************************************************** butterworth filter section *********************************************************/
 static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_obj)
 {
     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
@@ -83,7 +107,7 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_o
         }
         else
         {
-            if (!Butterworth_List_Create(e_cnt, BWF_Obj->p_e_data_cache, &(BWF_Obj->p_e_list_header), &(BWF_Obj->p_e_list_ender)))
+            if (!Filter_List_Create(e_cnt, BWF_Obj->p_e_data_cache, &(BWF_Obj->p_e_list_header), &(BWF_Obj->p_e_list_ender)))
             {
                 FILTER_FREE(BWF_Obj->p_e_data_cache);
                 FILTER_FREE(BWF_Obj);
@@ -101,7 +125,7 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_o
         }
         else
         {
-            if (!Butterworth_List_Create(u_cnt, BWF_Obj->p_u_data_cache, &(BWF_Obj->p_u_list_header), &(BWF_Obj->p_u_list_ender)))
+            if (!Filter_List_Create(u_cnt, BWF_Obj->p_u_data_cache, &(BWF_Obj->p_u_list_header), &(BWF_Obj->p_u_list_ender)))
             {
                 FILTER_FREE(BWF_Obj->p_e_data_cache);
                 FILTER_FREE(BWF_Obj->p_u_data_cache);
@@ -147,20 +171,6 @@ static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_o
     return (uint32_t)BWF_Obj;
 }
 
-static void Butterworth_Item_Update(item_obj **header, item_obj **ender, float cur_data)
-{
-    item_obj *i_tmp = NULL;
-
-    *((float *)((*ender)->data)) = cur_data;
-    (*ender)->prv->nxt = NULL;
-    i_tmp = (*ender)->prv;
-    (*ender)->prv = NULL;
-    (*header)->prv = *ender;
-    (*ender)->nxt = *header;
-    *header = *ender;
-    *ender = i_tmp;
-}
-
 static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
 {
     Filter_ButterworthParam_TypeDef *filter_obj = NULL;
@@ -174,7 +184,7 @@ static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
     if (obj)
     {
         filter_obj = (Filter_ButterworthParam_TypeDef *)obj;
-        Butterworth_Item_Update(&(filter_obj->p_e_list_header), &(filter_obj->p_e_list_ender), cur_e);
+        Filter_Item_Update(&(filter_obj->p_e_list_header), &(filter_obj->p_e_list_ender), cur_e);
 
         u_item = filter_obj->p_u_list_header;
         e_item = filter_obj->p_e_list_header;
@@ -198,8 +208,33 @@ static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
 
         u_tmp = E_Additive - U_Additive;
         /* update last time filted data */
-        Butterworth_Item_Update(&(filter_obj->p_u_list_header), &(filter_obj->p_u_list_ender), u_tmp);
+        Filter_Item_Update(&(filter_obj->p_u_list_header), &(filter_obj->p_u_list_ender), u_tmp);
     }
 
     return u_tmp;
 }
+
+/********************************************************** smooth window filter section *********************************************************/
+static SW_Object_Handle SmoothWindow_Init(uint8_t window_size)
+{
+    if(window_size <= MAX_SMOOTH_WINDOW_SIZE)
+    {
+        for(uint8_t i = 0; i < window_size; i++)
+        {
+
+        }
+    }
+}
+
+static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e)
+{
+    float temp = 0.0f;
+
+    if(hdl)
+    {
+
+    }
+
+    return temp;
+}
+

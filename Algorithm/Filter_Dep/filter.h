@@ -10,13 +10,13 @@
 #include "Srv_OsCommon.h"
 #include "filter_param.h"
 
-#define SMOOTH_WINDOW_SIZE 5
+#define MAX_SMOOTH_WINDOW_SIZE 10
 #define FILTER_MALLOC(x) SrvOsCommon.malloc(x)
 #define FILTER_FREE(x) SrvOsCommon.free(x);
 
 typedef uint32_t BWF_Object_Handle; /* butterworth filter object */
+typedef uint32_t SW_Object_Handle;  /* smooth window filter object */
 
-#pragma pack(1)
 typedef struct
 {
     uint8_t order;
@@ -39,7 +39,6 @@ typedef struct
     item_obj *p_e_data_cache;
     item_obj *p_u_data_cache;
 } Filter_ButterworthParam_TypeDef;
-#pragma pack()
 
 #define CREATE_FILTER_PARAM_OBJ(_name ,_order, _stop_freq, _sample_rate, obj_ptr)      \
 FilterParam_Obj_TypeDef FilterObj_##_name##_##_order##o_##_stop_freq##_##_sample_rate = { \
@@ -55,6 +54,24 @@ typedef struct
     float (*update)(BWF_Object_Handle obj, float cur_e);
 } Butterworth_Filter_TypeDef;
 
+
+typedef struct
+{
+    uint8_t window_size;
+    uint8_t smooth_period;
+
+    list_obj *window_header;
+    item_obj *window_ender;
+    item_obj *window_cache;
+} SmoothWindow_;
+
+typedef struct
+{
+    SW_Object_Handle (*init)(uint8_t window_size);
+    float (*update)(SW_Object_Handle hdl, float cur_e);
+} SmoothWindow_Filter_TypeDef;
+
 extern Butterworth_Filter_TypeDef Butterworth;
+extern SmoothWindow_Filter_TypeDef SmoothWindow;
 
 #endif

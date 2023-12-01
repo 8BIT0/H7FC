@@ -45,11 +45,14 @@ typedef enum
 typedef struct
 {
     uint32_t time_stamp;
-    uint32_t cyc_cnt;
 
-    int16_t org_data;
-    float scaled_org_data;
-    float scaled_flt_data;
+    uint32_t org_pres_data;
+    float scaled_org_pres_data;
+    float scaled_flt_pres_data;
+
+    uint32_t org_tempra_data;
+    float scaled_org_tempra_data;
+    float scaled_flt_tempra_data;
 
     uint16_t check_sum;
 }SrvBaroData_TypeDef;
@@ -80,6 +83,8 @@ typedef struct
 
     bool ready;
     SrvBaroData_TypeDef data;
+    uint32_t sample_cnt;
+    uint32_t sample_err_cnt;
 }SrvBaroObj_TypeDef;
 
 typedef struct

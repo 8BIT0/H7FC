@@ -123,11 +123,12 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
 /* external function */
 static uint8_t SrvBaro_Init(void);
 static bool SrvBaro_Sample(void);
+static SrvBaroData_TypeDef SrvBaro_Get_Date(void);
 
 SrvBaro_TypeDef SrvBaro = {
     .init = SrvBaro_Init,
     .sample = SrvBaro_Sample,
-    .get_data = NULL,
+    .get_data = SrvBaro_Get_Date,
     .calib = NULL,
 };
 
@@ -230,8 +231,13 @@ static bool SrvBaro_Sample(void)
         switch((uint8_t) SrvBaroObj.type)
         {
             case Baro_Type_DPS310:
-                // ToDPS310_Obj(SrvBaroObj.sensor_obj).
-                break;
+                if(ToDPS310_API(SrvBaroObj.sensor_obj)->sample(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
+                {
+                    SrvBaroObj.sample_cnt ++;
+                    return true;
+                }
+                else
+                    SrvBaroObj.sample_err_cnt ++;
 
             default:
                 return false;
@@ -244,12 +250,35 @@ static bool SrvBaro_Sample(void)
 static SrvBaroData_TypeDef SrvBaro_Get_Date(void)
 {
     SrvBaroData_TypeDef baro_data_tmp;
+    DevDPS310_Data_TypeDef DPS310_Data;
 
     memset(&baro_data_tmp, 0, sizeof(baro_data_tmp));
 
     if(SrvBaroObj.init_err == SrvBaro_Error_None)
     {
+        switch((uint8_t) SrvBaroObj.type)
+        {
+            case Baro_Type_DPS310:
+                if(ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
+                {
+                    memset(&DPS310_Data, 0, sizeof(DevDPS310_Data_TypeDef));
+                    DPS310_Data = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_Obj(SrvBaroObj.sensor_obj));
+                    
+                    baro_data_tmp.time_stamp = DPS310_Data.time_stamp;
+                    
+                    baro_data_tmp.org_pres_data = DPS310_Data.none_scaled_press;
+                    baro_data_tmp.org_tempra_data = DPS310_Data.none_scaled_tempra;
+                
+                    baro_data_tmp.scaled_org_pres_data = DPS310_Data.scaled_press;
+                    baro_data_tmp.scaled_org_tempra_data = DPS310_Data.scaled_tempra;
 
+                    /* doing baro filter */
+                }
+                break;
+
+            default:
+                break;
+        }
     }
 
     return baro_data_tmp;

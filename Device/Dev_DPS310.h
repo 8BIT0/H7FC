@@ -13,8 +13,8 @@ typedef uint32_t (*DevDPS310_GetTick)(void);
 #define DPS310_I2C_ADDR 0x76
 
 #define DPS310_PSR_B2_REG 0x00u
-#define DPS310_DSP_B1_REG 0x01u
-#define DPS310_DSP_B0_REG 0x02u
+#define DPS310_PSR_B1_REG 0x01u
+#define DPS310_PSR_B0_REG 0x02u
 
 #define DPS310_TMP_B2_REG 0x03u
 #define DPS310_TMP_B1_REG 0x04u
@@ -158,9 +158,10 @@ typedef struct
     uint32_t update_time;
     uint32_t pres_factory_scale;
     uint32_t temp_factory_scale;
-    float scaled_pres;
-    int16_t pres;
     float factory_scale;
+
+    uint32_t none_scale_pressure;   // byte map as prs_b2 prs_b1 prs_b0
+    uint32_t none_scale_tempra;     // byte map as tmp_b2 tmp_b1 tmp_b0
 
     DevDPS310_BusWrite bus_tx;
     DevDPS310_BusRead  bus_rx;
@@ -171,15 +172,28 @@ typedef struct
 
     bool ready;
     DevDPS310_ErrorList error;
+
+    float tempra;
+    float pressure;
 }DevDPS310Obj_TypeDef;
+
+typedef struct
+{
+    uint32_t time_stamp;
+
+    uint32_t none_scaled_press;
+    uint32_t none_scaled_tempra;
+
+    float scaled_press;
+    float scaled_tempra;
+}DevDPS310_Data_TypeDef;
 
 typedef struct
 {
     bool (*init)(DevDPS310Obj_TypeDef *obj);
     bool (*sample)(DevDPS310Obj_TypeDef *obj);
     bool (*ready)(DevDPS310Obj_TypeDef *obj);
-    float (*get_scaled_pres)(DevDPS310Obj_TypeDef *obj);
-    int16_t (*get_none_scaled_pres)(DevDPS310Obj_TypeDef *obj);
+    DevDPS310_Data_TypeDef (*get_data)(DevDPS310Obj_TypeDef *obj);
 }DevDPS310_TypeDef;
 
 extern DevDPS310_TypeDef DevDPS310;
