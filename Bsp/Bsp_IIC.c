@@ -118,7 +118,7 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg,
 {
     if(obj && p_buf && len)
     {
-        if(HAL_I2C_Mem_Read(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100) == HAL_OK)
+        if(HAL_I2C_Mem_Read(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 500) == HAL_OK)
             return true;
     }
 

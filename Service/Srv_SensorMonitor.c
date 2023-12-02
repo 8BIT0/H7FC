@@ -38,6 +38,7 @@ SrvSensorMonitor_TypeDef SrvSensorMonitor = {
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 {
     uint8_t enable_sensor_num = 0;
+    uint16_t list_index = 0;
 
     if(obj)
     {
@@ -53,10 +54,14 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         /* enabled on imu must be essential */
         if(obj->enabled_reg.bit.imu && SrvSensorMonitor_IMU_Init())
         {
+            if(list_index > enable_sensor_num)
+                return false;
+
             obj->init_state_reg.bit.imu = true;
-            obj->statistic_imu = &obj->statistic_list[0];
+            obj->statistic_imu = &obj->statistic_list[list_index];
             obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
             obj->statistic_imu->is_calid = Sensor_Calib_None; 
+            list_index ++;
         }
         else
         {
@@ -68,10 +73,14 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 
         if(obj->enabled_reg.bit.mag && SrvSensorMonitor_Mag_Init())
         {
+            if(list_index > enable_sensor_num)
+                return false;
+
             obj->init_state_reg.bit.mag = true;
-            obj->statistic_mag = &obj->statistic_list[1];
+            obj->statistic_mag = &obj->statistic_list[list_index];
             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
-            obj->statistic_baro->is_calid = Sensor_Calib_None;
+            obj->statistic_mag->is_calid = Sensor_Calib_None;
+            list_index ++;
         }
         else
         {
@@ -81,9 +90,14 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 
         if(obj->enabled_reg.bit.baro && SrvSensorMonitor_Baro_Init())
         {
+            if(list_index > enable_sensor_num)
+                return false;
+
             obj->init_state_reg.bit.baro = true;
-            obj->statistic_baro = &obj->statistic_list[2];
+            obj->statistic_baro = &obj->statistic_list[list_index];
             obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
+            obj->statistic_baro->is_calid = Sensor_Calib_None;
+            list_index ++;
         }
         else
         {
@@ -93,9 +107,13 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 
         if(obj->enabled_reg.bit.tof && SrvSensorMonitor_Tof_Init())
         {
+            if(list_index > enable_sensor_num)
+                return false;
+
             obj->init_state_reg.bit.tof = true;
-            obj->statistic_tof = &obj->statistic_list[3];
+            obj->statistic_tof = &obj->statistic_list[list_index];
             obj->statistic_tof->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.tof);
+            list_index ++;
         }
         else
         {
@@ -104,14 +122,20 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
 
         if(obj->enabled_reg.bit.gnss && SrvSensorMonitor_Gnss_Init())
         {
+            if(list_index > enable_sensor_num)
+                return false;
+
             obj->init_state_reg.bit.gnss = true;
-            obj->statistic_gnss = &obj->statistic_list[4];
+            obj->statistic_gnss = &obj->statistic_list[list_index];
             obj->statistic_gnss->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.gnss);
+            list_index ++;
         }
         else
         {
             obj->init_state_reg.bit.gnss = false;
         }
+
+        return true;
     }
 
     return false;

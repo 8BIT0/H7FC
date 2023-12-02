@@ -47,7 +47,12 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
             return false;
         }
 
-        DevDPS310_Reset(obj);
+        if(!DevDPS310_Reset(obj))
+        {
+            obj->error = DevDPS310_Error_Reset_Filed;
+            return false;
+        }
+
         obj->bus_delay(50);
 
         /* get calibrate data */
@@ -153,7 +158,7 @@ static bool DevDPS310_Sleep(DevDPS310Obj_TypeDef *obj)
 static bool DevDPS310_Reset(DevDPS310Obj_TypeDef *obj)
 {
     if(obj)
-        return DevDPS310_WriteByteToReg(obj,DPS310_RESET_REG, DPS310_RESET_SOFT_RST_VALUE);
+        return DevDPS310_WriteByteToReg(obj, DPS310_RESET_REG, DPS310_RESET_SOFT_RST_VALUE);
 
     return false;
 }
@@ -320,7 +325,7 @@ static bool DevDPS310_Sample(DevDPS310Obj_TypeDef *obj)
         obj->ready = false;
 
         // read data from register.
-        if(DevDPS310_ReadLenByteToReg(obj, DPS310_PSR_B2_REG, bus_read, sizeof(bus_read)))
+        if(!DevDPS310_ReadLenByteToReg(obj, DPS310_PSR_B2_REG, bus_read, sizeof(bus_read)))
         {
             obj->pressure = 0.0f;
             obj->tempra = 0.0f;

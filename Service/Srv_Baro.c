@@ -20,7 +20,7 @@
 /* internal vriable */
 SrvBaroObj_TypeDef SrvBaroObj = {
     .type = Baro_Type_DPS310,
-    .sample_rate = SRVBARO_SAMPLE_RATE_100HZ,
+    .sample_rate = SRVBARO_SAMPLE_RATE_20HZ,
     .init_err = SrvBaro_Error_None,
 };
 
@@ -253,7 +253,7 @@ static bool SrvBaro_Sample(void)
         switch((uint8_t) SrvBaroObj.type)
         {
             case Baro_Type_DPS310:
-                if(ToDPS310_API(SrvBaroObj.sensor_obj)->sample(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
+                if(ToDPS310_API(SrvBaroObj.sensor_api)->sample(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
                 {
                     SrvBaroObj.sample_cnt ++;
                     return true;

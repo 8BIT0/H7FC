@@ -134,6 +134,7 @@ typedef enum
     DevDPS310_Error_None = 0,
     DevDPS310_Error_Busy,
     DevDPS310_Error_BadID,
+    DevDPS310_Error_Reset_Filed,
     DevDPS310_Error_PressureInit,
     DevDPS310_Error_TempratureInit,
     DevDPS310_Error_CaliCoefs,
