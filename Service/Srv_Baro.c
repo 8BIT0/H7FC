@@ -137,7 +137,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
 /* external function */
 static uint8_t SrvBaro_Init(void);
 static bool SrvBaro_Sample(void);
-static SrvBaro_UnionData_TypeDef SrvBaro_Get_Date(void);
+static SrvBaroData_TypeDef SrvBaro_Get_Date(void);
 
 SrvBaro_TypeDef SrvBaro = {
     .init = SrvBaro_Init,
@@ -269,9 +269,9 @@ static bool SrvBaro_Sample(void)
     return false;
 }
 
-static SrvBaro_UnionData_TypeDef SrvBaro_Get_Date(void)
+static SrvBaroData_TypeDef SrvBaro_Get_Date(void)
 {
-    SrvBaro_UnionData_TypeDef baro_data_tmp;
+    SrvBaroData_TypeDef baro_data_tmp;
     DevDPS310_Data_TypeDef DPS310_Data;
 
     memset(&baro_data_tmp, 0, sizeof(baro_data_tmp));
@@ -286,17 +286,17 @@ static SrvBaro_UnionData_TypeDef SrvBaro_Get_Date(void)
                     memset(&DPS310_Data, 0, sizeof(DevDPS310_Data_TypeDef));
                     DPS310_Data = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_Obj(SrvBaroObj.sensor_obj));
                     
-                    baro_data_tmp.data.time_stamp = DPS310_Data.time_stamp;
+                    baro_data_tmp.time_stamp = DPS310_Data.time_stamp;
                     
-                    baro_data_tmp.data.org_pres_data = DPS310_Data.none_scaled_press;
-                    baro_data_tmp.data.org_tempra_data = DPS310_Data.none_scaled_tempra;
+                    baro_data_tmp.org_pres_data = DPS310_Data.none_scaled_press;
+                    baro_data_tmp.org_tempra_data = DPS310_Data.none_scaled_tempra;
                 
-                    baro_data_tmp.data.scaled_org_pres_data = DPS310_Data.scaled_press;
-                    baro_data_tmp.data.scaled_org_tempra_data = DPS310_Data.scaled_tempra;
-                    baro_data_tmp.data.scaled_flt_tempra_data = DPS310_Data.scaled_tempra;
+                    baro_data_tmp.scaled_org_pres_data = DPS310_Data.scaled_press;
+                    baro_data_tmp.scaled_org_tempra_data = DPS310_Data.scaled_tempra;
+                    baro_data_tmp.scaled_flt_tempra_data = DPS310_Data.scaled_tempra;
 
                     /* doing baro filter */
-                    baro_data_tmp.data.scaled_flt_pres_data = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.data.scaled_org_pres_data);
+                    baro_data_tmp.scaled_flt_pres_data = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.scaled_org_pres_data);
                 }
                 break;
 

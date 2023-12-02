@@ -24,11 +24,13 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj);
 static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj_TypeDef *obj);
 static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
+static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj);
 
 SrvSensorMonitor_TypeDef SrvSensorMonitor = {
     .init = SrvSensorMonitor_Init,
     .sample_ctl = SrvSensorMonitor_SampleCTL,
     .get_imu_data = SrvSensorMonitor_Get_IMUData,
+    .get_baro_data = SrvSensorMonitor_Get_BaroData,
     .set_calib = SrvSensorMonitor_Set_Module_Calib,
     .get_calib = SrvSensorMonitor_Get_Module_Calib,
 };
@@ -290,9 +292,6 @@ static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj
 /* still in developing */
 static bool SrvSensorMonitor_Mag_Init(void)
 {
-    if(SrvBaro.init && (SrvBaro.init() == SrvBaro_Error_None))
-        return true;
-
     return false;
 }
 
@@ -384,20 +383,15 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     return false;
 }
 
-static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj)
+static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj)
 {
-    SrvBaro_UnionData_TypeDef baro_data_tmp;
+    SrvBaroData_TypeDef baro_data_tmp;
 
-    memset(&baro_data_tmp, 0, sizeof(SrvBaro_UnionData_TypeDef));
+    memset(&baro_data_tmp, 0, sizeof(SrvBaroData_TypeDef));
 
     if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && SrvBaro.get_data)
     {
         baro_data_tmp = SrvBaro.get_data();
-
-        for(uint16_t i = 0; i < sizeof(SrvBaro_UnionData_TypeDef) - sizeof(uint16_t); i++)
-        {
-            baro_data_tmp.data.check_sum += baro_data_tmp.buff[i];
-        }
     }
 
     return baro_data_tmp;

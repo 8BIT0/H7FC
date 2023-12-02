@@ -7,6 +7,7 @@
 #include "DataPipe.h"
 #include "MadgwickAHRS.h"
 #include "math_util.h"
+#include "pos_data.h"
 
 /* IMU coordinate is x->forward y->right z->down */
 /*
@@ -21,16 +22,25 @@ uint32_t TaskNavi_Period = 0;
 
 /* data structure definition */
 DataPipe_CreateDataObj(IMUAtt_TypeDef, Navi_Attitude);
+DataPipe_CreateDataObj(PosData_TypeDef, Navi_POS);
 
 void TaskNavi_Init(uint32_t period)
 {
     /* init DataPipe */
-    memset(&Attitude_cmp_DataPipe, 0, sizeof(Attitude_cmp_DataPipe));
-    memset(DataPipe_DataObjAddr(Navi_Attitude), 0, sizeof(DataPipe_DataObj(Navi_Attitude)));
-    Attitude_cmp_DataPipe.data_addr = DataPipe_DataObjAddr(Navi_Attitude);
-    Attitude_cmp_DataPipe.data_size = DataPipe_DataSize(Navi_Attitude);
-    DataPipe_Enable(&Attitude_cmp_DataPipe);
+    memset(&Attitude_smp_DataPipe, 0, sizeof(Attitude_smp_DataPipe));
+    memset(&POS_smp_DataPipe, 0, sizeof(POS_smp_DataPipe));
+
+    memset(DataPipe_DataObjAddr(Navi_Attitude), 0, DataPipe_DataSize(Navi_Attitude));
+    memset(DataPipe_DataObjAddr(Navi_POS), 0, DataPipe_DataSize(Navi_POS));
     
+    Attitude_smp_DataPipe.data_addr = DataPipe_DataObjAddr(Navi_Attitude);
+    Attitude_smp_DataPipe.data_size = DataPipe_DataSize(Navi_Attitude);
+    DataPipe_Enable(&Attitude_smp_DataPipe);
+
+    POS_smp_DataPipe.data_addr = DataPipe_DataObjAddr(Navi_POS);
+    POS_smp_DataPipe.data_size = DataPipe_DataSize(Navi_POS);
+    DataPipe_Enable(&POS_smp_DataPipe);
+
     TaskNavi_Period = period;
 }
 
@@ -99,7 +109,7 @@ void TaskNavi_Core(void const *arg)
             }
 
             /* DataPipe Attitude Data to SrvDataHub */
-            DataPipe_SendTo(&Attitude_cmp_DataPipe, &Attitude_hub_DataPipe);
+            DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);
         }
 
         /* check imu data update freq on test */

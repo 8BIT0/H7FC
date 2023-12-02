@@ -15,5 +15,14 @@ DataPipeObj_TypeDef IMU_hub_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Actuator_cal_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Actuator_hub_DataPipe = {.enable = true};
 
-DataPipeObj_TypeDef Attitude_cmp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Attitude_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Attitude_hub_DataPipe = {.enable = true};
+
+DataPipeObj_TypeDef POS_smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef POS_hub_DataPipe = {.enable = true};
+
+DataPipeObj_TypeDef Vel_smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Vel_hub_DataPipe = {.enable = true};
+
+DataPipeObj_TypeDef Baro_hub_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Baro_smp_DataPipe = {.enable = true};

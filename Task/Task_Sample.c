@@ -14,6 +14,7 @@ static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
 static uint32_t TaskSample_Period = 0;
 static SrvSensorMonitorObj_TypeDef SensorMonitor;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, IMU_Data);
+DataPipe_CreateDataObj(SrvBaroData_TypeDef, Baro_Data);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorEnable_State);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorInit_State);
 
@@ -26,12 +27,19 @@ void TaskSample_Init(uint32_t period)
 {
     memset(&SensorMonitor, 0, sizeof(SrvSensorMonitorObj_TypeDef));
     memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
+    memset(&Baro_smp_DataPipe, 0, sizeof(Baro_smp_DataPipe));
+
+    memset(DataPipe_DataObjAddr(Baro_Data), 0, sizeof(DataPipe_DataObj(Baro_Data)));
     memset(DataPipe_DataObjAddr(IMU_Data), 0, sizeof(DataPipe_DataObj(IMU_Data)));
 
     IMU_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(IMU_Data);
     IMU_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(IMU_Data));
     DataPipe_Enable(&IMU_Smp_DataPipe);
     
+    Baro_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Baro_Data);
+    Baro_smp_DataPipe.data_size = sizeof(DataPipe_DataObj(Baro_Data));
+    DataPipe_Enable(&Baro_smp_DataPipe);
+
     SensorMonitor.enabled_reg.bit.imu = true;
     SensorMonitor.freq_reg.bit.imu = SrvSensorMonitor_SampleFreq_1KHz;
     
@@ -70,10 +78,12 @@ void TaskSample_Core(void const *arg)
         if(SrvSensorMonitor.sample_ctl(&SensorMonitor))
         {
             DataPipe_DataObj(IMU_Data) = SrvSensorMonitor.get_imu_data(&SensorMonitor);
+            DataPipe_DataObj(Baro_Data) = SrvSensorMonitor.get_baro_data(&SensorMonitor);
 
             /* need measurement the overhead from pipe send to pipe receive callback triggered */
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
-            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe); /* to control task */
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe);
+            DataPipe_SendTo(&Baro_smp_DataPipe, &Baro_hub_DataPipe);
         }
         
         SrvOsCommon.precise_delay(&sys_time, TaskSample_Period);

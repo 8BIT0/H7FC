@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "DataPipe.h"
+#include "pos_data.h"
 #include "Srv_Actuator.h"
 #include "Srv_IMUSample.h"
 #include "Srv_Receiver.h"
@@ -43,6 +44,7 @@ typedef union
 
         uint32_t mag_init : 1;
         uint32_t imu_init : 1;
+        uint32_t baro_init : 1;
 
         uint32_t tunning : 1;
         uint32_t configrator_attach : 1;
@@ -98,8 +100,8 @@ typedef struct
     bool baro_enabled;
     bool baro_init_state;
     uint32_t baro_update_time;
-    float baro_scale;
-    float baro;
+    float baro_alt;
+    float baro_tempra;
     uint8_t baro_error_code;
 
     bool tof_enabled;
@@ -131,6 +133,17 @@ typedef struct
     uint16_t gimbal[4];
     uint16_t link_quality;
     uint16_t rssi;
+
+    bool pos_enable;
+    bool pos_init_state;
+    uint32_t pos_update_time;
+    double pos_x;
+    double pos_y;
+    double pos_z;
+
+    double pos_x_vel;
+    double pos_y_vel;
+    double pos_z_vel;
     
     bool gnss_enable;
     bool gnss_init_state;

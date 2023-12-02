@@ -100,6 +100,16 @@ extern DataPipeObj_TypeDef Receiver_hub_DataPipe;
 extern DataPipeObj_TypeDef Actuator_cal_DataPipe;
 extern DataPipeObj_TypeDef Actuator_hub_DataPipe;
 
-extern DataPipeObj_TypeDef Attitude_cmp_DataPipe;
+extern DataPipeObj_TypeDef Baro_smp_DataPipe;
+extern DataPipeObj_TypeDef Baro_hub_DataPipe;
+
+extern DataPipeObj_TypeDef Attitude_smp_DataPipe;
 extern DataPipeObj_TypeDef Attitude_hub_DataPipe;
+
+extern DataPipeObj_TypeDef POS_smp_DataPipe;
+extern DataPipeObj_TypeDef POS_hub_DataPipe;
+
+extern DataPipeObj_TypeDef Vel_smp_DataPipe;
+extern DataPipeObj_TypeDef Vel_hub_DataPipe;
+
 #endif

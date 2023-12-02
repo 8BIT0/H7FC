@@ -56,14 +56,10 @@ typedef struct
     float scaled_org_tempra_data;
     float scaled_flt_tempra_data;
 
+    uint8_t error_code;
+
     uint16_t check_sum;
 }SrvBaroData_TypeDef;
-
-typedef union
-{
-    uint16_t buff[sizeof(SrvBaroData_TypeDef)];
-    SrvBaroData_TypeDef data;
-}SrvBaro_UnionData_TypeDef;
 
 typedef enum
 {
@@ -102,7 +98,7 @@ typedef struct
     uint8_t (*init)(void);
     bool (*sample)(void);
     SrvBaro_CalibState_List (*calib)(uint16_t calib_cyc, float meter);
-    SrvBaro_UnionData_TypeDef (*get_data)(void);
+    SrvBaroData_TypeDef (*get_data)(void);
 }SrvBaro_TypeDef;
 
 extern SrvBaro_TypeDef SrvBaro;
