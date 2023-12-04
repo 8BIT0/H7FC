@@ -422,12 +422,12 @@ static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_Typ
 
     if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && SrvBaro.get_data)
     {
-        if(!SrvBaro.get_data(&baro_data_tmp))
+        if(SrvBaro.get_data(&baro_data_tmp))
         {
-            baro_data_tmp = obj->lst_baro_data;
+            obj->lst_baro_data = baro_data_tmp;
         }
         else
-            obj->lst_baro_data = baro_data_tmp;
+            baro_data_tmp = obj->lst_baro_data;
     }
 
     return baro_data_tmp;
