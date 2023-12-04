@@ -157,8 +157,8 @@ static void SrvDataHub_Baro_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
             SrvDataHub_Monitor.inuse_reg.bit.scaled_baro = false;
 
         SrvDataHub_Monitor.data.baro_update_time = DataPipe_DataObj(Hub_Baro_Data).time_stamp;
-        SrvDataHub_Monitor.data.baro_alt = DataPipe_DataObj(Hub_Baro_Data).scaled_flt_pres_data;
-        SrvDataHub_Monitor.data.baro_tempra = DataPipe_DataObj(Hub_Baro_Data).scaled_flt_tempra_data;
+        SrvDataHub_Monitor.data.baro_alt = DataPipe_DataObj(Hub_Baro_Data).pressure_alt;
+        SrvDataHub_Monitor.data.baro_tempra = DataPipe_DataObj(Hub_Baro_Data).tempra;
 
         SrvDataHub_Monitor.update_reg.bit.raw_baro = false;
         SrvDataHub_Monitor.update_reg.bit.scaled_baro = false;

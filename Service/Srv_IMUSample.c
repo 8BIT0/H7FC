@@ -269,7 +269,7 @@ static Error_Obj_Typedef SrvIMU_ErrorList[] = {
 /* external function */
 static SrvIMU_ErrorCode_List SrvIMU_Init(void);
 static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode);
-static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type);
+static bool SrvIMU_Get_Data(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data);
 static void SrvIMU_ErrorProc(void);
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
 static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr);
@@ -1017,11 +1017,14 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     return (pri_sample_state | sec_sample_state);
 }
 
-static SrvIMU_Data_TypeDef SrvIMU_Get_Data(SrvIMU_Module_Type type)
+static bool SrvIMU_Get_Data(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data)
 {
     SrvIMU_Data_TypeDef imu_data_tmp;
 
     memset(&imu_data_tmp, NULL, IMU_DATA_SIZE);
+
+    if(data == NULL)
+        return false;
 
 reupdate_imu:
     if (type == SrvIMU_PriModule)
@@ -1052,7 +1055,8 @@ reupdate_imu:
             goto reupdate_imu_statistics;
     }
 
-    return imu_data_tmp;
+    memcpy(data, &imu_data_tmp, sizeof(SrvIMU_Data_TypeDef));
+    return true;
 
 reupdate_imu_statistics:
     SrvIMU_Reupdate_Statistics_CNT ++;

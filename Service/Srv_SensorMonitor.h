@@ -111,6 +111,9 @@ typedef struct
     SrvSensorMonitor_Statistic_TypeDef *statistic_tof;
 
     SrvSensorMonitor_Statistic_TypeDef *statistic_list;
+
+    SrvIMU_UnionData_TypeDef lst_imu_data;
+    SrvBaroData_TypeDef lst_baro_data;
  }SrvSensorMonitorObj_TypeDef;
 
 typedef struct

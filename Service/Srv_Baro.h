@@ -33,6 +33,7 @@ typedef enum
 typedef enum
 {
     SrvBaro_CalibIdle = 0,
+    SrvBaro_CalibStart,
     SrvBaro_Calibarting,
     SrvBaro_CalibFailed,
     SrvBaro_CalibDone,
@@ -49,17 +50,10 @@ typedef struct
 {
     uint32_t time_stamp;
 
-    uint32_t org_pres_data;
-    float scaled_org_pres_data;
-    float scaled_flt_pres_data;
-
-    uint32_t org_tempra_data;
-    float scaled_org_tempra_data;
-    float scaled_flt_tempra_data;
+    float tempra;
+    float pressure_alt;
 
     uint8_t error_code;
-
-    uint16_t check_sum;
 }SrvBaroData_TypeDef;
 
 typedef enum
@@ -93,6 +87,8 @@ typedef struct
 
     uint16_t calib_cycle;
     SrvBaro_CalibState_List calib_state;
+    float pressure_add_sum;
+    float alt_offset;
 
     SW_Object_Handle smoothwindow_filter_hdl;
 }SrvBaroObj_TypeDef;
@@ -102,7 +98,7 @@ typedef struct
     uint8_t (*init)(void);
     bool (*sample)(void);
     SrvBaro_CalibState_List (*calib)(uint16_t calib_cyc, float meter);
-    SrvBaroData_TypeDef (*get_data)(void);
+    bool (*get_data)(SrvBaroData_TypeDef *data);
 }SrvBaro_TypeDef;
 
 extern SrvBaro_TypeDef SrvBaro;

@@ -7,6 +7,8 @@
 #include "bsp_gpio.h"
 #include <math.h>
 
+#define SRVBARO_DEFAULT_CALI_CYCLE 100
+
 #define STANDER_ATMOSPHERIC_PRESSURE (101.325f * 1000)
 #define SRVBARO_SMOOTHWINDOW_SIZE 5
 
@@ -42,6 +44,8 @@ SrvBaroBusObj_TypeDef SrvBaroBus = {
 /* internal function */
 static bool SrvBaro_Bus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
 static bool SrvBaro_Bus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
+
+static float SrvBaro_PessureCnvToMeter(float pa);
 
 /************************************************************************ Error Tree Item ************************************************************************/
 static Error_Handler SrvBaro_Error_Handle = NULL;
@@ -139,7 +143,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
 /* external function */
 static uint8_t SrvBaro_Init(void);
 static bool SrvBaro_Sample(void);
-static SrvBaroData_TypeDef SrvBaro_Get_Date(void);
+static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data);
 
 SrvBaro_TypeDef SrvBaro = {
     .init = SrvBaro_Init,
@@ -210,6 +214,9 @@ static uint8_t SrvBaro_Init(void)
                     ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
                     return SrvBaro_Error_DevInit;
                 }
+
+                SrvBaroObj.calib_state = SrvBaro_CalibStart;
+                SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
             }
             else
             {
@@ -258,6 +265,23 @@ static bool SrvBaro_Sample(void)
                 if(ToDPS310_API(SrvBaroObj.sensor_api)->sample(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
                 {
                     SrvBaroObj.sample_cnt ++;
+
+                    if(((SrvBaroObj.calib_state == SrvBaro_CalibStart) || 
+                        (SrvBaroObj.calib_state == SrvBaro_Calibarting)) &&
+                        SrvBaroObj.calib_cycle)
+                    {
+                        SrvBaroObj.pressure_add_sum += ToDPS310_Obj(SrvBaroObj.sensor_obj)->pressure;
+                        SrvBaroObj.pressure_add_sum /= 2;
+
+                        SrvBaroObj.calib_cycle --;
+
+                        if(SrvBaroObj.calib_cycle == 0)
+                        {
+                            SrvBaroObj.calib_state = SrvBaro_CalibDone;
+                            SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_add_sum);
+                            SrvBaroObj.pressure_add_sum = 0.0f;
+                        }
+                    }
                     return true;
                 }
                 else
@@ -276,7 +300,12 @@ static SrvBaro_CalibState_List SrvBaro_Calib(uint16_t cyc)
     if(SrvBaroObj.calib_state != SrvBaro_Calibarting)
     {
         SrvBaroObj.calib_cycle = cyc;
+        SrvBaroObj.calib_state = SrvBaro_CalibStart;
+        SrvBaroObj.alt_offset = 0.0f;
+        return SrvBaro_CalibStart;
     }
+
+    return SrvBaroObj.calib_state;
 }
 
 static float SrvBaro_PessureCnvToMeter(float pa)
@@ -284,14 +313,15 @@ static float SrvBaro_PessureCnvToMeter(float pa)
     return ((1 - pow((pa / STANDER_ATMOSPHERIC_PRESSURE), 0.1903))) * 44330;
 }
 
-static SrvBaroData_TypeDef SrvBaro_Get_Date(void)
+static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
 {
     SrvBaroData_TypeDef baro_data_tmp;
     DevDPS310_Data_TypeDef DPS310_Data;
+    float alt = 0.0f;
 
     memset(&baro_data_tmp, 0, sizeof(baro_data_tmp));
 
-    if(SrvBaroObj.init_err == SrvBaro_Error_None)
+    if((SrvBaroObj.init_err == SrvBaro_Error_None) && data)
     {
         switch((uint8_t) SrvBaroObj.type)
         {
@@ -302,19 +332,18 @@ static SrvBaroData_TypeDef SrvBaro_Get_Date(void)
                     DPS310_Data = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_Obj(SrvBaroObj.sensor_obj));
                     
                     /* convert baro pressure to meter */
-                    volatile float alt_m = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);
+                    alt = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);
 
                     baro_data_tmp.time_stamp = DPS310_Data.time_stamp;
-                    
-                    baro_data_tmp.org_pres_data = DPS310_Data.none_scaled_press;
-                    baro_data_tmp.org_tempra_data = DPS310_Data.none_scaled_tempra;
-                
-                    baro_data_tmp.scaled_org_pres_data = DPS310_Data.scaled_press;
-                    baro_data_tmp.scaled_org_tempra_data = DPS310_Data.scaled_tempra;
-                    baro_data_tmp.scaled_flt_tempra_data = DPS310_Data.scaled_tempra;
+
+                    baro_data_tmp.pressure_alt = alt - SrvBaroObj.alt_offset;
+                    baro_data_tmp.tempra = DPS310_Data.scaled_tempra;
 
                     /* doing baro filter */
-                    baro_data_tmp.scaled_flt_pres_data = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.scaled_org_pres_data);
+                    baro_data_tmp.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.pressure_alt);
+                    memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
+                    
+                    return true;
                 }
                 break;
 
@@ -323,7 +352,7 @@ static SrvBaroData_TypeDef SrvBaro_Get_Date(void)
         }
     }
 
-    return baro_data_tmp;
+    return false;
 }
 
 

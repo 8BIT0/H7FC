@@ -128,7 +128,7 @@ typedef struct
 {
     SrvIMU_ErrorCode_List (*init)(void);
     bool (*sample)(SrvIMU_SampleMode_List mode);
-    SrvIMU_Data_TypeDef (*get_data)(SrvIMU_Module_Type type);
+    bool (*get_data)(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data);
     float (*get_max_angular_speed_diff)(void);
     void (*error_proc)(void);
     SrvIMU_GyroCalib_State_List (*calib)(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr);

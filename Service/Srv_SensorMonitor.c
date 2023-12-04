@@ -282,32 +282,39 @@ static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj
 
     if(obj && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && SrvIMU.get_data)
     {
-        imu_data_tmp.data = SrvIMU.get_data(SrvIMU_FusModule);
-
-        /*
-         * adjust imu axis coordinate as 
-         * x -----> forward
-         * y -----> right
-         * z -----> down 
-         **/
-
-        imu_data_tmp.data.flt_acc[Axis_X] *= -1;
-        imu_data_tmp.data.flt_acc[Axis_Y] *= -1;
-
-        imu_data_tmp.data.org_acc[Axis_X] *= -1;
-        imu_data_tmp.data.org_acc[Axis_Y] *= -1;
-
-        imu_data_tmp.data.flt_gyr[Axis_X] *= -1;
-        imu_data_tmp.data.flt_gyr[Axis_Y] *= -1;
-
-        imu_data_tmp.data.org_gyr[Axis_X] *= -1;
-        imu_data_tmp.data.org_gyr[Axis_Y] *= -1;
-
-        for (uint8_t chk = 0; chk < sizeof(SrvIMU_UnionData_TypeDef) - sizeof(uint16_t); chk++)
+        if(SrvIMU.get_data(SrvIMU_FusModule, &imu_data_tmp.data))
         {
-            imu_data_tmp.data.chk_sum += imu_data_tmp.buff[chk];
+            /*
+            * adjust imu axis coordinate as 
+            * x -----> forward
+            * y -----> right
+            * z -----> down 
+            **/
+
+            imu_data_tmp.data.flt_acc[Axis_X] *= -1;
+            imu_data_tmp.data.flt_acc[Axis_Y] *= -1;
+
+            imu_data_tmp.data.org_acc[Axis_X] *= -1;
+            imu_data_tmp.data.org_acc[Axis_Y] *= -1;
+
+            imu_data_tmp.data.flt_gyr[Axis_X] *= -1;
+            imu_data_tmp.data.flt_gyr[Axis_Y] *= -1;
+
+            imu_data_tmp.data.org_gyr[Axis_X] *= -1;
+            imu_data_tmp.data.org_gyr[Axis_Y] *= -1;
+
+            for (uint8_t chk = 0; chk < sizeof(SrvIMU_UnionData_TypeDef) - sizeof(uint16_t); chk++)
+            {
+                imu_data_tmp.data.chk_sum += imu_data_tmp.buff[chk];
+            }
+
+            obj->lst_imu_data.data = imu_data_tmp.data;
         }
+        else
+            imu_data_tmp.data = obj->lst_imu_data.data;
     }
+    else
+        imu_data_tmp = obj->lst_imu_data;
 
     return imu_data_tmp;
 }
@@ -415,7 +422,12 @@ static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_Typ
 
     if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && SrvBaro.get_data)
     {
-        baro_data_tmp = SrvBaro.get_data();
+        if(!SrvBaro.get_data(&baro_data_tmp))
+        {
+            baro_data_tmp = obj->lst_baro_data;
+        }
+        else
+            obj->lst_baro_data = baro_data_tmp;
     }
 
     return baro_data_tmp;
@@ -473,8 +485,8 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
         memset(&pri_imu, 0, sizeof(SrvIMU_Data_TypeDef));
         memset(&sec_imu, 0, sizeof(SrvIMU_Data_TypeDef));
 
-        pri_imu = SrvIMU.get_data(SrvIMU_PriModule);
-        sec_imu = SrvIMU.get_data(SrvIMU_SecModule);
+        SrvIMU.get_data(SrvIMU_PriModule, &pri_imu);
+        SrvIMU.get_data(SrvIMU_SecModule, &sec_imu);
 
         switch((uint8_t) SrvIMU.calib(GYRO_CALIB_CYCLE, pri_imu.org_gyr, sec_imu.org_gyr))
         {
