@@ -475,8 +475,7 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     SrvIMU_Data_TypeDef pri_imu;
     SrvIMU_Data_TypeDef sec_imu;
     
-    /* single sampling overhead is about 60us */
-
+    /* imu single sampling overhead is about 60us */
     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
     
     if((obj->statistic_imu->is_calid == Sensor_Calib_Start) || \
@@ -488,24 +487,7 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
         SrvIMU.get_data(SrvIMU_PriModule, &pri_imu);
         SrvIMU.get_data(SrvIMU_SecModule, &sec_imu);
 
-        switch((uint8_t) SrvIMU.calib(GYRO_CALIB_CYCLE, pri_imu.org_gyr, sec_imu.org_gyr))
-        {
-            case SrvIMU_Gyr_CalibFailed:
-                obj->statistic_imu->is_calid = Sensor_Calib_Failed;
-                break;
-
-            case SrvIMU_Gyr_CalibDone:
-                obj->statistic_imu->is_calid = Sensor_Calib_Success;
-                break;
-
-            case SrvIMU_Gyr_Calibarting:
-                obj->statistic_imu->is_calid = Sensor_Calib_InProcess;
-                break;
-
-            default:
-                obj->statistic_imu->is_calid = Sensor_Calib_Failed;
-                break;
-        }
+        obj->statistic_imu->is_calid = SrvIMU.calib(GYRO_CALIB_CYCLE, pri_imu.org_gyr, sec_imu.org_gyr);
     }
     
     state |= SrvSensorMonitor_Mag_SampleCTL(obj);

@@ -272,7 +272,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode);
 static bool SrvIMU_Get_Data(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data);
 static void SrvIMU_ErrorProc(void);
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
-static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr);
+static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -735,10 +735,10 @@ static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8
     return SrvIMU_Sample_NoError;
 }
 
-static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr)
+static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr)
 {
     uint8_t i = Axis_X;
-    SrvIMU_GyroCalib_State_List state = SrvIMU_Gyr_CalibFailed;
+    GenCalib_State_TypeList state = Calib_Failed;
     static uint32_t Gyr_Static_Calib = 0;
     static int16_t lst_pri_gyr[Axis_Sum] = {0};
     static int16_t lst_sec_gyr[Axis_Sum] = {0};
@@ -769,7 +769,7 @@ static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t ca
                (abs(sec_gyr_tmp[i] - lst_sec_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD))
             {
                 /* reset variable */
-                state = SrvIMU_Gyr_CalibFailed;
+                state = Calib_Failed;
                 goto reset_calib_var;
             }
 
@@ -793,10 +793,10 @@ static SrvIMU_GyroCalib_State_List SrvIMU_Calib_GyroZeroOffset(const uint32_t ca
                 SecIMU_Gyr_ZeroOffset[i] = (SecIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
             }
 
-            state = SrvIMU_Gyr_CalibDone;
+            state = Calib_Done;
         }
         else
-            return SrvIMU_Gyr_Calibarting;
+            return Calib_InProcess;
     }
 
 reset_calib_var:

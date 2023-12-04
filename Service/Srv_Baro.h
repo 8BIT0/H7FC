@@ -7,6 +7,7 @@
 #include <math.h>
 #include "Dev_DPS310.h"
 #include "../algorithm/Filter_Dep/filter.h"
+#include "gen_calib.h"
 
 #define SRVBARO_SAMPLE_RATE_LIMIT SRVBARO_SAMPLE_RATE_100HZ   /* max sample rate 100Hz */
 
@@ -29,15 +30,6 @@ typedef enum
     SrvBaro_Error_BadSamplePeriod,
     SrvBaro_Error_BusInit,
 }SrvBaro_ErrorCodeList;
-
-typedef enum
-{
-    SrvBaro_CalibIdle = 0,
-    SrvBaro_CalibStart,
-    SrvBaro_Calibarting,
-    SrvBaro_CalibFailed,
-    SrvBaro_CalibDone,
-}SrvBaro_CalibState_List;
 
 typedef enum
 {
@@ -88,7 +80,7 @@ typedef struct
     uint32_t sample_err_cnt;
 
     uint16_t calib_cycle;
-    SrvBaro_CalibState_List calib_state;
+    GenCalib_State_TypeList calib_state;
     float pressure_add_sum;
     float alt_offset;
 
@@ -99,7 +91,7 @@ typedef struct
 {
     uint8_t (*init)(void);
     bool (*sample)(void);
-    SrvBaro_CalibState_List (*calib)(uint16_t calib_cyc, float meter);
+    GenCalib_State_TypeList (*calib)(uint16_t calib_cyc, float meter);
     bool (*get_data)(SrvBaroData_TypeDef *data);
 }SrvBaro_TypeDef;
 

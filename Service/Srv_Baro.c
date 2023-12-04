@@ -215,7 +215,7 @@ static uint8_t SrvBaro_Init(void)
                     return SrvBaro_Error_DevInit;
                 }
 
-                SrvBaroObj.calib_state = SrvBaro_CalibStart;
+                SrvBaroObj.calib_state = Calib_Start;
                 SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
             }
             else
@@ -266,8 +266,8 @@ static bool SrvBaro_Sample(void)
                 {
                     SrvBaroObj.sample_cnt ++;
 
-                    if(((SrvBaroObj.calib_state == SrvBaro_CalibStart) || 
-                        (SrvBaroObj.calib_state == SrvBaro_Calibarting)) &&
+                    if(((SrvBaroObj.calib_state == Calib_Start) || 
+                        (SrvBaroObj.calib_state == Calib_InProcess)) &&
                         SrvBaroObj.calib_cycle)
                     {
                         SrvBaroObj.pressure_add_sum += ToDPS310_Obj(SrvBaroObj.sensor_obj)->pressure;
@@ -277,7 +277,7 @@ static bool SrvBaro_Sample(void)
 
                         if(SrvBaroObj.calib_cycle == 0)
                         {
-                            SrvBaroObj.calib_state = SrvBaro_CalibDone;
+                            SrvBaroObj.calib_state = Calib_Done;
                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_add_sum);
                             SrvBaroObj.pressure_add_sum = 0.0f;
                         }
@@ -295,14 +295,14 @@ static bool SrvBaro_Sample(void)
     return false;
 }
 
-static SrvBaro_CalibState_List SrvBaro_Calib(uint16_t cyc)
+static GenCalib_State_TypeList SrvBaro_Calib(uint16_t cyc)
 {
-    if(SrvBaroObj.calib_state != SrvBaro_Calibarting)
+    if(SrvBaroObj.calib_state != Calib_InProcess)
     {
         SrvBaroObj.calib_cycle = cyc;
-        SrvBaroObj.calib_state = SrvBaro_CalibStart;
+        SrvBaroObj.calib_state = Calib_Start;
         SrvBaroObj.alt_offset = 0.0f;
-        return SrvBaro_CalibStart;
+        return Calib_Start;
     }
 
     return SrvBaroObj.calib_state;
@@ -355,7 +355,6 @@ static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
 
     return false;
 }
-
 
 /*************************************************************** Bus Comunicate Callback *******************************************************************************/
 static bool SrvBaro_Bus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len)
