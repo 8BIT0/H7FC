@@ -39,6 +39,7 @@ static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint1
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
+static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error);
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
 static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
 static bool SrvDataHub_Get_ConfigratorAttachState(uint32_t *time_stamp, bool *state);
@@ -56,6 +57,7 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_attitude = SrvDataHub_Get_Attitude,
     .get_raw_mag = SrvDataHub_Get_Raw_Mag,
     .get_scaled_mag = SrvDataHub_Get_Scaled_Mag,
+    .get_baro_altitude = SrvDataHub_Get_Scaled_Baro,
     .get_arm_state = SrvDataHub_Get_Arm,
     .get_failsafe = SrvDataHub_Get_Failsafe,
     .get_control_mode = SrvDataHub_Get_ControlMode,
@@ -147,20 +149,17 @@ static void SrvDataHub_Baro_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
 {
     if(obj == &Baro_hub_DataPipe)
     {
-        SrvDataHub_Monitor.update_reg.bit.raw_baro = true;
         SrvDataHub_Monitor.update_reg.bit.scaled_baro = true;
     
-        if(SrvDataHub_Monitor.inuse_reg.bit.raw_baro)
-            SrvDataHub_Monitor.inuse_reg.bit.raw_baro = false;
-
         if(SrvDataHub_Monitor.inuse_reg.bit.scaled_baro)
             SrvDataHub_Monitor.inuse_reg.bit.scaled_baro = false;
 
         SrvDataHub_Monitor.data.baro_update_time = DataPipe_DataObj(Hub_Baro_Data).time_stamp;
         SrvDataHub_Monitor.data.baro_alt = DataPipe_DataObj(Hub_Baro_Data).pressure_alt;
+        SrvDataHub_Monitor.data.baro_alt_offset = DataPipe_DataObj(Hub_Baro_Data).pressure_alt_offset;
         SrvDataHub_Monitor.data.baro_tempra = DataPipe_DataObj(Hub_Baro_Data).tempra;
+        SrvDataHub_Monitor.data.baro_error_code = DataPipe_DataObj(Hub_Baro_Data).error_code;
 
-        SrvDataHub_Monitor.update_reg.bit.raw_baro = false;
         SrvDataHub_Monitor.update_reg.bit.scaled_baro = false;
     }
 }
@@ -440,6 +439,30 @@ reupdate_raw_mag:
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.raw_mag)
         goto reupdate_raw_mag;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error)
+{
+    if ((time_stamp == NULL) ||
+        (baro_alt == NULL) ||
+        (baro_alt_offset == NULL) ||
+        (tempra == NULL) ||
+        (error == NULL))
+        return false;
+
+reupdate_scaled_baro:
+    SrvDataHub_Monitor.inuse_reg.bit.scaled_baro = true;
+
+    *time_stamp = SrvDataHub_Monitor.data.baro_update_time;
+    *baro_alt = SrvDataHub_Monitor.data.baro_alt;
+    *baro_alt_offset = SrvDataHub_Monitor.data.baro_alt_offset;
+    *tempra = SrvDataHub_Monitor.data.baro_tempra;
+    *error = SrvDataHub_Monitor.data.baro_error_code;
+
+    if(!SrvDataHub_Monitor.inuse_reg.bit.scaled_baro)
+        goto reupdate_scaled_baro;
 
     return true;
 }

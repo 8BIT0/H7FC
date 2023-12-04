@@ -28,7 +28,6 @@ typedef union
         uint32_t raw_mag : 1;
         uint32_t scaled_mag : 1;
 
-        uint32_t raw_baro : 1;
         uint32_t scaled_baro : 1;
 
         uint32_t raw_sonar : 1;
@@ -102,6 +101,7 @@ typedef struct
     uint32_t baro_update_time;
     float baro_alt;
     float baro_tempra;
+    float baro_alt_offset;
     uint8_t baro_error_code;
 
     bool tof_enabled;
@@ -218,6 +218,7 @@ typedef struct
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
     bool (*get_attitude)(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
     bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cnt);
+    bool (*get_baro_altitude)(uint32_t *time_stamp, float *baro_alt, float *baro_alt_offset, float *baro_temp, uint8_t *error);
     bool (*get_gimbal_percent)(uint16_t *gimbal);
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);

@@ -339,11 +339,18 @@ static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck)
 static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
 {
     uint32_t time_stamp = 0;
+    uint8_t error = 0;
+    float baro_alt = 0.0f;
+    float baro_alt_offset = 0.0f;
+    float baro_tempra = 0.0f;
+
+    SrvDataHub.get_baro_altitude(time_stamp, &baro_alt, &baro_alt_offset, &baro_tempra, &error);
 
     return mavlink_msg_altitude_pack_chan(pck->pck_info.system_id,
                                           pck->pck_info.component_id,
                                           pck->pck_info.chan, pck->msg_obj,
-                                          time_stamp, );
+                                          time_stamp,
+                                          baro_alt, 0, 0, 0, 0, 0);
 }
 
 static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)
