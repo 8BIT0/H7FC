@@ -12,7 +12,7 @@ static bool DevDPS310_WriteByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr
 static bool DevDPS310_WaitRegValue(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, uint8_t reg_value, uint8_t mask);
 static bool DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_sensor);
 static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj);
-static uint32_t DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj, uint8_t rate);
+static float DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj, uint8_t rate);
 static bool DevDPS310_WakeUp(DevDPS310Obj_TypeDef *obj, uint8_t mode);
 static bool DevDPS310_Sleep(DevDPS310Obj_TypeDef *obj);
 static bool DevDPS310_Reset(DevDPS310Obj_TypeDef *obj);
@@ -86,6 +86,12 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
             return false;
         }
 
+        // set pressure and temperature result bit-shift (required when the oversampling rate is >8 times)
+        DevDPS310_WriteByteToReg(obj, DPS310_CFG_REG_REG, DPS310_CFG_RET_TMP_SHIFT_EN | DPS310_CFG_RET_PRS_SHIFT_EN);
+
+        // Continuous pressure and temperature measurement
+        DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, DPS310_MEAS_CFG_MEAS_CTRL_CONTINUOUS_PRS_TMP);
+
         obj->DevAddr = DPS310_I2C_ADDR;
 
         return true;
@@ -94,49 +100,49 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
     return false;
 }
 
-static uint32_t DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj, uint8_t rate)
+static float DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj, uint8_t rate)
 {
     if(obj)
     {
         switch (rate) {
             case DPS310_CFG_RATE_1_MEAS:
                 obj->factory_scale = 524288.0f;
-                return 524288;
+                return 524288.0f;
                 
             case DPS310_CFG_RATE_2_MEAS:
                 obj->factory_scale = 1572864.0f;
-                return 1572864;
+                return 1572864.0f;
 
             case DPS310_CFG_RATE_4_MEAS:
                 obj->factory_scale = 3670016.0f;
-                return 3670016;
+                return 3670016.0f;
 
             case DPS310_CFG_RATE_8_MEAS:
                 obj->factory_scale = 7864320.0f;
-                return 7864320;
+                return 7864320.0f;
 
             case DPS310_CFG_RATE_16_MEAS:
                 obj->factory_scale = 253952.0f;
-                return 253952;
+                return 253952.0f;
 
             case DPS310_CFG_RATE_32_MEAS:
                 obj->factory_scale = 516096.0f;
-                return 516096;
+                return 516096.0f;
 
             case DPS310_CFG_RATE_64_MEAS:
                 obj->factory_scale = 1040384.0f;
-                return 1040384;
+                return 1040384.0f;
 
             case DPS310_CFG_RATE_128_MEAS:
                 obj->factory_scale = 2088960.0f;
-                return 2088960;
+                return 2088960.0f;
 
             default:
-                return 0;
+                return 0.0f;
         }
     }
 
-    return 0;
+    return 0.0f;
 }
 
 static bool DevDPS310_WakeUp(DevDPS310Obj_TypeDef *obj, uint8_t mode)
@@ -228,15 +234,12 @@ static bool DevDPS310_ReadLenByteToReg(DevDPS310Obj_TypeDef *obj, uint8_t reg_ad
 
 static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length)
 {
-    int32_t ret = value;
-    bool b_is_negative = value & (1u << (length - 1u));
-
-    if (b_is_negative)
+    if (value & ((int)1 << (length - 1)))
     {
-        ret -= ((uint32_t) 1 << length);
+        return ((int32_t)value) - ((int32_t)1 << length);
     }
-
-    return ret;
+        
+    return value;
 }
 
 static bool DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_sensor)
@@ -324,8 +327,18 @@ static bool DevDPS310_Sample(DevDPS310Obj_TypeDef *obj)
     {
         obj->ready = false;
 
-        // read data from register.
-        if(!DevDPS310_ReadLenByteToReg(obj, DPS310_PSR_B2_REG, bus_read, sizeof(bus_read)))
+        // read temprature data from register.
+        DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, DPS310_MEAS_CFG_MEAS_CTRL_TMP);
+        if(!DevDPS310_ReadLenByteToReg(obj, DPS310_TMP_B2_REG, bus_read, 3))
+        {
+            obj->pressure = 0.0f;
+            obj->tempra = 0.0f;
+            return false;
+        }
+
+        // read pressure data from register
+        DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, DPS310_MEAS_CFG_MEAS_CTRL_PRS);
+        if(!DevDPS310_ReadLenByteToReg(obj, DPS310_PSR_B2_REG, &bus_read[3], 3))
         {
             obj->pressure = 0.0f;
             obj->tempra = 0.0f;
@@ -339,8 +352,8 @@ static bool DevDPS310_Sample(DevDPS310Obj_TypeDef *obj)
         memcpy(&obj->none_scale_tempra, &bus_read[3], 3);
 
         // Calculate scaled measurement results.
-        const float Praw_sc = DevDPS310_GetTwoComplementOf((bus_read[0] << 16) + (bus_read[1] << 8) + bus_read[2], 24) / obj->pres_factory_scale;
-        const float Traw_sc = DevDPS310_GetTwoComplementOf((bus_read[3] << 16) + (bus_read[4] << 8) + bus_read[5], 24) / obj->temp_factory_scale;
+        const float Praw_sc = DevDPS310_GetTwoComplementOf((bus_read[3] << 16) + (bus_read[4] << 8) + bus_read[5], 24) / obj->pres_factory_scale;
+        const float Traw_sc = DevDPS310_GetTwoComplementOf((bus_read[0] << 16) + (bus_read[1] << 8) + bus_read[2], 24) / obj->temp_factory_scale;
 
         // Calculate compensated measurement results.
         const float c00 = obj->cali_coefs.c00;

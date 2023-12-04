@@ -157,8 +157,8 @@ typedef struct
     uint8_t DevAddr;
     uint8_t ProdID;
     uint32_t update_time;
-    uint32_t pres_factory_scale;
-    uint32_t temp_factory_scale;
+    float pres_factory_scale;
+    float temp_factory_scale;
     float factory_scale;
 
     uint32_t none_scale_pressure;   // byte map as prs_b2 prs_b1 prs_b0
