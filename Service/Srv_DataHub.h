@@ -100,6 +100,7 @@ typedef struct
     bool baro_init_state;
     uint32_t baro_update_time;
     float baro_alt;
+    float baro_pressure;
     float baro_tempra;
     float baro_alt_offset;
     uint8_t baro_error_code;
@@ -218,7 +219,7 @@ typedef struct
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
     bool (*get_attitude)(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
     bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cnt);
-    bool (*get_baro_altitude)(uint32_t *time_stamp, float *baro_alt, float *baro_alt_offset, float *baro_temp, uint8_t *error);
+    bool (*get_baro_altitude)(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *baro_temp, uint8_t *error);
     bool (*get_gimbal_percent)(uint16_t *gimbal);
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);

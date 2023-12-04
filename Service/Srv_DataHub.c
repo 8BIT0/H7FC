@@ -39,7 +39,7 @@ static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint1
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
-static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error);
+static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error);
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
 static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
 static bool SrvDataHub_Get_ConfigratorAttachState(uint32_t *time_stamp, bool *state);
@@ -157,6 +157,7 @@ static void SrvDataHub_Baro_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
         SrvDataHub_Monitor.data.baro_update_time = DataPipe_DataObj(Hub_Baro_Data).time_stamp;
         SrvDataHub_Monitor.data.baro_alt = DataPipe_DataObj(Hub_Baro_Data).pressure_alt;
         SrvDataHub_Monitor.data.baro_alt_offset = DataPipe_DataObj(Hub_Baro_Data).pressure_alt_offset;
+        SrvDataHub_Monitor.data.baro_pressure = DataPipe_DataObj(Hub_Baro_Data).pressure;
         SrvDataHub_Monitor.data.baro_tempra = DataPipe_DataObj(Hub_Baro_Data).tempra;
         SrvDataHub_Monitor.data.baro_error_code = DataPipe_DataObj(Hub_Baro_Data).error_code;
 
@@ -443,11 +444,12 @@ reupdate_raw_mag:
     return true;
 }
 
-static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error)
+static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error)
 {
     if ((time_stamp == NULL) ||
         (baro_alt == NULL) ||
         (baro_alt_offset == NULL) ||
+        (baro_pressure == NULL) ||
         (tempra == NULL) ||
         (error == NULL))
         return false;
@@ -456,6 +458,7 @@ reupdate_scaled_baro:
     SrvDataHub_Monitor.inuse_reg.bit.scaled_baro = true;
 
     *time_stamp = SrvDataHub_Monitor.data.baro_update_time;
+    *baro_pressure = SrvDataHub_Monitor.data.baro_pressure;
     *baro_alt = SrvDataHub_Monitor.data.baro_alt;
     *baro_alt_offset = SrvDataHub_Monitor.data.baro_alt_offset;
     *tempra = SrvDataHub_Monitor.data.baro_tempra;

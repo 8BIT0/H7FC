@@ -45,6 +45,7 @@ typedef enum
     MAV_CompoID_Raw_Mag,
     MAV_CompoID_Scaled_Mag,
     MAV_CompoID_Attitude,
+    MAV_CompoID_Altitude,
     MAV_CompoID_RC_Channel,
     MAV_CompoID_MotoCtl,
     MAV_CompoID_ServoCtl,

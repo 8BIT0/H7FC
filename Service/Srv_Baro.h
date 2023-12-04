@@ -51,6 +51,7 @@ typedef struct
     uint32_t time_stamp;
 
     float tempra;
+    float pressure;
     float pressure_alt;
     float pressure_alt_offset;
 

@@ -17,6 +17,7 @@ static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck);
+static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck);
 
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
@@ -86,6 +87,10 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     {
     case MAV_CompoID_Attitude:
         msg->pack_callback = SrvComProto_MavMsg_Attitude;
+        break;
+
+    case MAV_CompoID_Altitude:
+        msg->pack_callback = SrvComProto_MavMsg_Altitude;
         break;
 
     case MAV_CompoID_RC_Channel:
@@ -340,17 +345,18 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
 {
     uint32_t time_stamp = 0;
     uint8_t error = 0;
+    float baro_pressure = 0.0f;
     float baro_alt = 0.0f;
     float baro_alt_offset = 0.0f;
     float baro_tempra = 0.0f;
 
-    SrvDataHub.get_baro_altitude(time_stamp, &baro_alt, &baro_alt_offset, &baro_tempra, &error);
+    SrvDataHub.get_baro_altitude(&time_stamp, &baro_pressure, &baro_alt, &baro_alt_offset, &baro_tempra, &error);
 
     return mavlink_msg_altitude_pack_chan(pck->pck_info.system_id,
                                           pck->pck_info.component_id,
                                           pck->pck_info.chan, pck->msg_obj,
                                           time_stamp,
-                                          baro_alt, 0, 0, 0, 0, 0);
+                                          baro_alt, baro_pressure, 0, 0, 0, 0);
 }
 
 static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)

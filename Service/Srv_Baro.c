@@ -338,6 +338,7 @@ static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
                     baro_data_tmp.pressure_alt_offset = SrvBaroObj.alt_offset;
                     baro_data_tmp.pressure_alt = alt - SrvBaroObj.alt_offset;
                     baro_data_tmp.tempra = DPS310_Data.scaled_tempra;
+                    baro_data_tmp.pressure = DPS310_Data.scaled_press;
 
                     /* doing baro filter */
                     baro_data_tmp.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.pressure_alt);
