@@ -5,7 +5,9 @@
 #include "error_log.h"
 #include "bsp_iic.h"
 #include "bsp_gpio.h"
+#include <math.h>
 
+#define STANDER_ATMOSPHERIC_PRESSURE (101.325f * 1000)
 #define SRVBARO_SMOOTHWINDOW_SIZE 5
 
 #define ToIIC_BusObj(x) ((BspIICObj_TypeDef *)x)
@@ -269,6 +271,19 @@ static bool SrvBaro_Sample(void)
     return false;
 }
 
+static SrvBaro_CalibState_List SrvBaro_Calib(uint16_t cyc)
+{
+    if(SrvBaroObj.calib_state != SrvBaro_Calibarting)
+    {
+        SrvBaroObj.calib_cycle = cyc;
+    }
+}
+
+static float SrvBaro_PessureCnvToMeter(float pa)
+{
+    return ((1 - pow((pa / STANDER_ATMOSPHERIC_PRESSURE), 0.1903))) * 44330;
+}
+
 static SrvBaroData_TypeDef SrvBaro_Get_Date(void)
 {
     SrvBaroData_TypeDef baro_data_tmp;
@@ -286,6 +301,9 @@ static SrvBaroData_TypeDef SrvBaro_Get_Date(void)
                     memset(&DPS310_Data, 0, sizeof(DevDPS310_Data_TypeDef));
                     DPS310_Data = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_Obj(SrvBaroObj.sensor_obj));
                     
+                    /* convert baro pressure to meter */
+                    volatile float alt_m = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);
+
                     baro_data_tmp.time_stamp = DPS310_Data.time_stamp;
                     
                     baro_data_tmp.org_pres_data = DPS310_Data.none_scaled_press;

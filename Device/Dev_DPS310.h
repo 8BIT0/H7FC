@@ -174,8 +174,8 @@ typedef struct
     bool ready;
     DevDPS310_ErrorList error;
 
-    float tempra;
-    float pressure;
+    float tempra;   // ℃
+    float pressure; // unit: Pa
 }DevDPS310Obj_TypeDef;
 
 typedef struct

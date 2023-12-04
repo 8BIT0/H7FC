@@ -65,7 +65,7 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
         /* configure pressure sensor */
         if(DevDPS310_WriteByteToReg(obj, DPS310_PRS_CFG_REG, DPS310_SAMPLE_RATE | DPS310_PROC_TIME))
         {
-            obj->pres_factory_scale = DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
+            obj->pres_factory_scale = DevDPS310_GetScale(obj, DPS310_PROC_TIME);
         }
         else
         {
@@ -77,7 +77,7 @@ static bool DevDPS310_Init(DevDPS310Obj_TypeDef *obj)
         /* configure temprature sensor */
         if(DevDPS310_Configure_Temperature(obj, DPS310_SAMPLE_RATE | DPS310_PROC_TIME))
         {
-            obj->temp_factory_scale = DevDPS310_GetScale(obj, DPS310_SAMPLE_RATE);
+            obj->temp_factory_scale = DevDPS310_GetScale(obj, DPS310_PROC_TIME);
         }
         else
         {
@@ -104,36 +104,37 @@ static float DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj, uint8_t rate)
 {
     if(obj)
     {
-        switch (rate) {
-            case DPS310_CFG_RATE_1_MEAS:
+        switch (rate)
+        {
+            case DPS310_TMP_CFG_TMP_PRC_SINGLE:
                 obj->factory_scale = 524288.0f;
                 return 524288.0f;
                 
-            case DPS310_CFG_RATE_2_MEAS:
+            case DPS310_TMP_CFG_TMP_PRC_2_TIMES:
                 obj->factory_scale = 1572864.0f;
                 return 1572864.0f;
 
-            case DPS310_CFG_RATE_4_MEAS:
+            case DPS310_TMP_CFG_TMP_PRC_4_TIMES:
                 obj->factory_scale = 3670016.0f;
                 return 3670016.0f;
 
-            case DPS310_CFG_RATE_8_MEAS:
+            case DPS310_TMP_CFG_TMP_PRC_8_TIMES:
                 obj->factory_scale = 7864320.0f;
                 return 7864320.0f;
 
-            case DPS310_CFG_RATE_16_MEAS:
+            case DPS310_TMP_CFG_TMP_PRC_16_TIMES:
                 obj->factory_scale = 253952.0f;
                 return 253952.0f;
 
-            case DPS310_CFG_RATE_32_MEAS:
+            case DPS310_TMP_CFG_TMP_PRC_32_TIMES:
                 obj->factory_scale = 516096.0f;
                 return 516096.0f;
 
-            case DPS310_CFG_RATE_64_MEAS:
+            case DPS310_TMP_CFG_TMP_PRC_64_TIMES:
                 obj->factory_scale = 1040384.0f;
                 return 1040384.0f;
 
-            case DPS310_CFG_RATE_128_MEAS:
+            case DPS310_TMP_CFG_TMP_PRC_128_TIMES:
                 obj->factory_scale = 2088960.0f;
                 return 2088960.0f;
 
@@ -302,15 +303,15 @@ static bool DevDPS310_Get_Cali_Coefs(DevDPS310Obj_TypeDef *obj)
                               DPS310_MEAS_CFG_COEF_RDY_AVAILABLE) &&
        obj->bus_rx(obj->DevAddr, DPS310_COEF_REG, buff, 18))
     {
-        obj->cali_coefs.c0  = DevDPS310_GetTwoComplementOf(((uint16_t) buff[0] << 4u) | (((uint16_t) buff[1] >> 4u) & 0x0Fu), 12);
-        obj->cali_coefs.c1  = DevDPS310_GetTwoComplementOf(((((uint16_t) buff[1] & 0x0Fu) << 8u) | (uint16_t) buff[2]), 12);
+        obj->cali_coefs.c0  = DevDPS310_GetTwoComplementOf(((uint32_t) buff[0] << 4u) | (((uint32_t) buff[1] >> 4u) & 0x0Fu), 12);
+        obj->cali_coefs.c1  = DevDPS310_GetTwoComplementOf(((((uint32_t) buff[1] & 0x0Fu) << 8u) | (uint32_t) buff[2]), 12);
         obj->cali_coefs.c00 = DevDPS310_GetTwoComplementOf(((uint32_t) buff[3] << 12u) | ((uint32_t) buff[4] << 4u) | (((uint32_t) buff[5] >> 4u) & 0x0Fu), 20);
         obj->cali_coefs.c10 = DevDPS310_GetTwoComplementOf((((uint32_t) buff[5] & 0x0Fu) << 16u) | ((uint32_t) buff[6] << 8u) | (uint32_t) buff[7], 20);
-        obj->cali_coefs.c01 = DevDPS310_GetTwoComplementOf(((uint16_t) buff[8] << 8u) | (uint16_t) buff[9], 16);
-        obj->cali_coefs.c11 = DevDPS310_GetTwoComplementOf(((uint16_t) buff[10] << 8u) | (uint16_t) buff[11], 16);
-        obj->cali_coefs.c20 = DevDPS310_GetTwoComplementOf(((uint16_t) buff[12] << 8u) | (uint16_t) buff[13], 16);
-        obj->cali_coefs.c21 = DevDPS310_GetTwoComplementOf(((uint16_t) buff[14] << 8u) | (uint16_t) buff[15], 16);
-        obj->cali_coefs.c30 = DevDPS310_GetTwoComplementOf(((uint16_t) buff[16] << 8u) | (uint16_t) buff[17], 16);
+        obj->cali_coefs.c01 = DevDPS310_GetTwoComplementOf(((uint32_t) buff[8] << 8u) | (uint32_t) buff[9], 16);
+        obj->cali_coefs.c11 = DevDPS310_GetTwoComplementOf(((uint32_t) buff[10] << 8u) | (uint32_t) buff[11], 16);
+        obj->cali_coefs.c20 = DevDPS310_GetTwoComplementOf(((uint32_t) buff[12] << 8u) | (uint32_t) buff[13], 16);
+        obj->cali_coefs.c21 = DevDPS310_GetTwoComplementOf(((uint32_t) buff[14] << 8u) | (uint32_t) buff[15], 16);
+        obj->cali_coefs.c30 = DevDPS310_GetTwoComplementOf(((uint32_t) buff[16] << 8u) | (uint32_t) buff[17], 16);
 
         return true;
     }
@@ -327,18 +328,8 @@ static bool DevDPS310_Sample(DevDPS310Obj_TypeDef *obj)
     {
         obj->ready = false;
 
-        // read temprature data from register.
-        DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, DPS310_MEAS_CFG_MEAS_CTRL_TMP);
-        if(!DevDPS310_ReadLenByteToReg(obj, DPS310_TMP_B2_REG, bus_read, 3))
-        {
-            obj->pressure = 0.0f;
-            obj->tempra = 0.0f;
-            return false;
-        }
-
         // read pressure data from register
-        DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, DPS310_MEAS_CFG_MEAS_CTRL_PRS);
-        if(!DevDPS310_ReadLenByteToReg(obj, DPS310_PSR_B2_REG, &bus_read[3], 3))
+        if(!DevDPS310_ReadLenByteToReg(obj, DPS310_PSR_B2_REG, bus_read, sizeof(bus_read)))
         {
             obj->pressure = 0.0f;
             obj->tempra = 0.0f;
@@ -352,8 +343,8 @@ static bool DevDPS310_Sample(DevDPS310Obj_TypeDef *obj)
         memcpy(&obj->none_scale_tempra, &bus_read[3], 3);
 
         // Calculate scaled measurement results.
-        const float Praw_sc = DevDPS310_GetTwoComplementOf((bus_read[3] << 16) + (bus_read[4] << 8) + bus_read[5], 24) / obj->pres_factory_scale;
-        const float Traw_sc = DevDPS310_GetTwoComplementOf((bus_read[0] << 16) + (bus_read[1] << 8) + bus_read[2], 24) / obj->temp_factory_scale;
+        const float Praw_sc = DevDPS310_GetTwoComplementOf((bus_read[0] << 16) + (bus_read[1] << 8) + bus_read[2], 24) / obj->pres_factory_scale;
+        const float Traw_sc = DevDPS310_GetTwoComplementOf((bus_read[3] << 16) + (bus_read[4] << 8) + bus_read[5], 24) / obj->temp_factory_scale;
 
         // Calculate compensated measurement results.
         const float c00 = obj->cali_coefs.c00;

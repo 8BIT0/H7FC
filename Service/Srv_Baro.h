@@ -32,7 +32,8 @@ typedef enum
 
 typedef enum
 {
-    SrvBaro_Calibarting = 0,
+    SrvBaro_CalibIdle = 0,
+    SrvBaro_Calibarting,
     SrvBaro_CalibFailed,
     SrvBaro_CalibDone,
 }SrvBaro_CalibState_List;
@@ -89,6 +90,9 @@ typedef struct
     SrvBaroData_TypeDef data;
     uint32_t sample_cnt;
     uint32_t sample_err_cnt;
+
+    uint16_t calib_cycle;
+    SrvBaro_CalibState_List calib_state;
 
     SW_Object_Handle smoothwindow_filter_hdl;
 }SrvBaroObj_TypeDef;

@@ -51,7 +51,7 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
                 __HAL_RCC_I2C2_CLK_ENABLE();
                 
                 obj->handle.Instance = I2C2;
-                obj->handle.Init.Timing = 0x10909CEC;
+                obj->handle.Init.Timing = 0x00702991;//0x10909CEC;
                 obj->handle.Init.OwnAddress1 = 0;
                 obj->handle.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
                 obj->handle.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -118,7 +118,7 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg,
 {
     if(obj && p_buf && len)
     {
-        if(HAL_I2C_Mem_Read(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 500) == HAL_OK)
+        if(HAL_I2C_Mem_Read(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100) == HAL_OK)
             return true;
     }
 
