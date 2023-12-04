@@ -370,7 +370,7 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
         {
             start_tick = SrvOsCommon.get_systimer_current_tick();
 
-            DebugPin.ctl(Debug_PB5, true);
+            // DebugPin.ctl(Debug_PB5, true);
             if(SrvBaro.sample())
             {
                 end_tick = SrvOsCommon.get_systimer_current_tick();
@@ -382,7 +382,7 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
                 state = true;
             }
-            DebugPin.ctl(Debug_PB5, false);
+            // DebugPin.ctl(Debug_PB5, false);
         
             if(state)
             {
@@ -474,6 +474,8 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     bool state = false;
     SrvIMU_Data_TypeDef pri_imu;
     SrvIMU_Data_TypeDef sec_imu;
+
+    DebugPin.ctl(Debug_PB5, true);
     
     /* imu single sampling overhead is about 60us */
     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
@@ -498,6 +500,7 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
     }
 
+    /* baro single sampling overhead is about 230us */
     state |= SrvSensorMonitor_Baro_SampleCTL(obj);
     
     if((obj->statistic_baro->is_calid == Sensor_Calib_Start) || \
@@ -515,6 +518,8 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     }
 
     state |= SrvSensorMonitor_Gnss_SampleCTL(obj);
+    
+    DebugPin.ctl(Debug_PB5, false);
     
     return state;
 }

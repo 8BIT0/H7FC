@@ -81,9 +81,11 @@ void TaskSample_Core(void const *arg)
             DataPipe_DataObj(Baro_Data) = SrvSensorMonitor.get_baro_data(&SensorMonitor);
 
             /* need measurement the overhead from pipe send to pipe receive callback triggered */
+            DebugPin.ctl(Debug_PB4, true);
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe);
             DataPipe_SendTo(&Baro_smp_DataPipe, &Baro_hub_DataPipe);
+            DebugPin.ctl(Debug_PB4, false);
         }
         
         SrvOsCommon.precise_delay(&sys_time, TaskSample_Period);

@@ -99,6 +99,12 @@ extern "C"
 #define HAL_CORTEX_MODULE_ENABLED
 #define HAL_HSEM_MODULE_ENABLED
 
+// #if !defined(USER_VECT_TAB_ADDRESS)
+// #define USER_VECT_TAB_ADDRESS 1
+// #define VECT_TAB_OFFSET 0x00UL
+// #define VECT_TAB_BASE_ADDRESS FLASH_BANK1_BASE
+// #endif
+
 /* ########################## Oscillator Values adaptation ####################*/
 /**
  * @brief Adjust the value of External High Speed oscillator (HSE) used in your application.

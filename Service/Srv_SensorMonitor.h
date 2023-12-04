@@ -85,10 +85,10 @@ typedef struct
 {
     uint32_t start_time;
     uint32_t nxt_sample_time;
-    uint32_t cur_sampling_overhead; /* unit: us */
-    uint32_t max_sampling_overhead; /* unit: us */
-    uint32_t min_sampling_overhead; /* unit: us */
-    uint32_t avg_sampling_overhead; /* unit: us */
+    uint32_t cur_sampling_overhead; /* unit: 100ns */
+    uint32_t max_sampling_overhead; /* unit: 100ns */
+    uint32_t min_sampling_overhead; /* unit: 100ns */
+    uint32_t avg_sampling_overhead; /* unit: 100ns */
 
     SrvSensorMonitor_CaliState_List is_calid;
     uint32_t sample_cnt;
