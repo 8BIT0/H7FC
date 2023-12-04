@@ -338,7 +338,12 @@ static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck)
 
 static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
 {
+    uint32_t time_stamp = 0;
 
+    return mavlink_msg_altitude_pack_chan(pck->pck_info.system_id,
+                                          pck->pck_info.component_id,
+                                          pck->pck_info.chan, pck->msg_obj,
+                                          time_stamp, );
 }
 
 static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)

@@ -335,7 +335,7 @@ static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
                     alt = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);
 
                     baro_data_tmp.time_stamp = DPS310_Data.time_stamp;
-
+                    baro_data_tmp.pressure_alt_offset = SrvBaroObj.alt_offset;
                     baro_data_tmp.pressure_alt = alt - SrvBaroObj.alt_offset;
                     baro_data_tmp.tempra = DPS310_Data.scaled_tempra;
 

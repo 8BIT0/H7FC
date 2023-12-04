@@ -52,6 +52,7 @@ typedef struct
 
     float tempra;
     float pressure_alt;
+    float pressure_alt_offset;
 
     uint8_t error_code;
 }SrvBaroData_TypeDef;
