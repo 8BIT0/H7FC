@@ -275,7 +275,7 @@ static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj
             * y -----> right
             * z -----> down 
             **/
-
+#if defined MATEKH743_V1_5
             imu_data_tmp.data.flt_acc[Axis_X] *= -1;
             imu_data_tmp.data.flt_acc[Axis_Y] *= -1;
 
@@ -287,6 +287,11 @@ static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj
 
             imu_data_tmp.data.org_gyr[Axis_X] *= -1;
             imu_data_tmp.data.org_gyr[Axis_Y] *= -1;
+#elif defined MATEKH743_V3_0
+
+#elif defined BETA_AT32_AIO
+
+#endif
 
             for (uint8_t chk = 0; chk < sizeof(SrvIMU_UnionData_TypeDef) - sizeof(uint16_t); chk++)
             {

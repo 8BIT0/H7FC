@@ -191,7 +191,6 @@ C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32H743xx \
 
-
 # AS includes
 AS_INCLUDES = 
 
@@ -248,6 +247,8 @@ CFLAGS += -g -gdwarf-2
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
+# Hardware defines
+CFLAGS += -DMATEKH743_V1_5
 
 #######################################
 # LDFLAGS
