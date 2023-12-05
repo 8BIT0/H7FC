@@ -107,5 +107,4 @@ static void TaskInertical_Blink_Notification(uint16_t duration)
     }
 
     DevLED.ctl(Led2, led_state);
-    // test_PC1_ctl();
 }

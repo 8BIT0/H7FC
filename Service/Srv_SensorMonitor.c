@@ -22,8 +22,8 @@ static bool SrvSensorMonitor_Tof_Init(void);
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj);
 static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj);
 static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj_TypeDef *obj);
-static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
-static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
+static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
+static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj);
 
 SrvSensorMonitor_TypeDef SrvSensorMonitor = {
@@ -60,7 +60,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.imu = true;
             obj->statistic_imu = &obj->statistic_list[list_index];
             obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
-            obj->statistic_imu->is_calid = Sensor_Calib_None; 
+            obj->statistic_imu->is_calid = Calib_None; 
             list_index ++;
         }
         else
@@ -79,12 +79,12 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.mag = true;
             obj->statistic_mag = &obj->statistic_list[list_index];
             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
-            obj->statistic_mag->is_calid = Sensor_Calib_None;
+            obj->statistic_mag->is_calid = Calib_None;
             list_index ++;
         }
         else
         {
-            obj->statistic_mag->is_calid = Sensor_Calib_None;
+            obj->statistic_mag->is_calid = Calib_None;
             obj->init_state_reg.bit.mag = false;
         }
 
@@ -96,12 +96,12 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.baro = true;
             obj->statistic_baro = &obj->statistic_list[list_index];
             obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
-            obj->statistic_baro->is_calid = Sensor_Calib_None;
+            obj->statistic_baro->is_calid = Calib_None;
             list_index ++;
         }
         else
         {
-            obj->statistic_baro->is_calid = Sensor_Calib_None;
+            obj->statistic_baro->is_calid = Calib_None;
             obj->init_state_reg.bit.baro = false;
         }
 
@@ -118,21 +118,6 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         else
         {
             obj->init_state_reg.bit.tof = false;
-        }
-
-        if(obj->enabled_reg.bit.gnss && SrvSensorMonitor_Gnss_Init())
-        {
-            if(list_index > enable_sensor_num)
-                return false;
-
-            obj->init_state_reg.bit.gnss = true;
-            obj->statistic_gnss = &obj->statistic_list[list_index];
-            obj->statistic_gnss->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.gnss);
-            list_index ++;
-        }
-        else
-        {
-            obj->init_state_reg.bit.gnss = false;
         }
 
         return true;
@@ -433,23 +418,6 @@ static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_Typ
     return baro_data_tmp;
 }
 
-/******************************************* Gnss Section *********************************************/
-/* still in developing */
-static bool SrvSensorMonitor_Gnss_Init(void)
-{
-    return false;
-}
-
-static bool SrvSensorMonitor_Gnss_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
-{
-    if(obj && obj->enabled_reg.bit.gnss && obj->init_state_reg.bit.gnss)
-    {
-        
-    }
-
-    return false;
-}
-
 /******************************************* Tof Section **********************************************/
 /* still in developing */
 static bool SrvSensorMonitor_Tof_Init(void)
@@ -459,7 +427,7 @@ static bool SrvSensorMonitor_Tof_Init(void)
 
 static bool SrvSensorMonitor_Tof_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
-    if(obj && obj->enabled_reg.bit.gnss && obj->init_state_reg.bit.gnss)
+    if(obj && obj->enabled_reg.bit.tof && obj->init_state_reg.bit.tof)
     {
         
     }
@@ -472,89 +440,84 @@ static bool SrvSensorMonitor_Tof_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
     bool state = false;
-    SrvIMU_Data_TypeDef pri_imu;
-    SrvIMU_Data_TypeDef sec_imu;
-
     DebugPin.ctl(Debug_PB5, true);
     
     /* imu single sampling overhead is about 60us */
     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
-    
-    if((obj->statistic_imu->is_calid == Sensor_Calib_Start) || \
-       (obj->statistic_imu->is_calid == Sensor_Calib_InProcess))
+    if(obj->statistic_imu->is_calid == Calib_Start)
     {
-        memset(&pri_imu, 0, sizeof(SrvIMU_Data_TypeDef));
-        memset(&sec_imu, 0, sizeof(SrvIMU_Data_TypeDef));
-
-        SrvIMU.get_data(SrvIMU_PriModule, &pri_imu);
-        SrvIMU.get_data(SrvIMU_SecModule, &sec_imu);
-
-        obj->statistic_imu->is_calid = SrvIMU.calib(GYRO_CALIB_CYCLE, pri_imu.org_gyr, sec_imu.org_gyr);
+        if(SrvIMU.set_calib)
+        {
+            obj->statistic_imu->is_calid = SrvIMU.set_calib(GYRO_CALIB_CYCLE);
+        }
+        else
+            obj->statistic_imu->is_calid = Calib_Failed;
     }
+    else if(obj->statistic_imu->is_calid != Calib_Failed)
+        obj->statistic_imu->is_calid = SrvIMU.get_calib();
     
     state |= SrvSensorMonitor_Mag_SampleCTL(obj);
-    
-    if((obj->statistic_mag->is_calid == Sensor_Calib_Start) || \
-       (obj->statistic_mag->is_calid == Sensor_Calib_InProcess))
+    if(obj->statistic_mag->is_calid == Calib_Start)
     {
 
     }
 
     /* baro single sampling overhead is about 230us */
     state |= SrvSensorMonitor_Baro_SampleCTL(obj);
-    
-    if((obj->statistic_baro->is_calid == Sensor_Calib_Start) || \
-       (obj->statistic_baro->is_calid == Sensor_Calib_InProcess))
+    if(obj->statistic_baro->is_calid == Calib_Start)
     {
-
+        if(SrvBaro.set_calib)
+        {
+            obj->statistic_baro->is_calid = SrvBaro.set_calib(BARO_CALIB_CYCLE);
+        }
+        else
+            obj->statistic_baro->is_calid = Calib_Failed;
     }
+    else if(obj->statistic_baro->is_calid != Calib_Failed)
+        obj->statistic_baro->is_calid = SrvBaro.get_calib();
 
     state |= SrvSensorMonitor_Tof_SampleCTL(obj);
-    
-    if((obj->statistic_tof->is_calid == Sensor_Calib_Start) || \
-       (obj->statistic_tof->is_calid == Sensor_Calib_InProcess))
+    if(obj->statistic_tof->is_calid == Calib_Start)
     {
         
     }
-
-    state |= SrvSensorMonitor_Gnss_SampleCTL(obj);
     
     DebugPin.ctl(Debug_PB5, false);
     
     return state;
 }
 
-static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
+static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
 {
     if(obj)
     {
         switch((uint8_t) type)
         {
             case SrvSensorMonitor_Type_IMU:
-                obj->statistic_imu->is_calid = Sensor_Calib_Start;
+                obj->statistic_imu->is_calid = Calib_Start;
                 break;
 
             case SrvSensorMonitor_Type_BARO:
-                obj->statistic_baro->is_calid = Sensor_Calib_Start;
+                obj->statistic_baro->is_calid = Calib_Start;
                 break;
 
             case SrvSensorMonitor_Type_MAG:
-                obj->statistic_mag->is_calid = Sensor_Calib_Start;
+                obj->statistic_mag->is_calid = Calib_Start;
                 break;
 
             case SrvSensorMonitor_Type_TOF:
-                obj->statistic_tof->is_calid = Sensor_Calib_Start;
+                obj->statistic_tof->is_calid = Calib_Start;
                 break;
 
             default:
-                return Sensor_Calib_Failed;
+                return Calib_Start;
         }
     }
 
-    return Sensor_Calib_Start;
+    return Calib_Start;
 }
 
-static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
+static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
 {
     if(obj)
     {
@@ -569,7 +532,7 @@ static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Get_Module_Calib(SrvSens
                     return obj->statistic_mag->is_calid;
                 }
                 else
-                    return Sensor_Calib_Failed; 
+                    return Calib_Failed; 
 
             case SrvSensorMonitor_Type_BARO:
                 if(obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
@@ -577,7 +540,7 @@ static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Get_Module_Calib(SrvSens
                     return obj->statistic_baro->is_calid;
                 }
                 else
-                    return Sensor_Calib_Failed;
+                    return Calib_Failed;
 
             case SrvSensorMonitor_Type_TOF:
                 if(obj->enabled_reg.bit.tof && obj->init_state_reg.bit.tof)
@@ -585,20 +548,12 @@ static SrvSensorMonitor_CaliState_List SrvSensorMonitor_Get_Module_Calib(SrvSens
                     return obj->statistic_tof->is_calid;
                 }
                 else
-                    return Sensor_Calib_Failed;
-
-            case SrvSensorMonitor_Type_GNSS:
-                if(obj->enabled_reg.bit.gnss && obj->init_state_reg.bit.gnss)
-                {
-                    return obj->statistic_gnss->is_calid;
-                }
-                else
-                    return Sensor_Calib_Failed;
+                    return Calib_Failed;
 
             default:
-                return Sensor_Calib_Failed;
+                return Calib_Failed;
         }
     }
 
-    return Sensor_Calib_Failed;
+    return Calib_Failed;
 }

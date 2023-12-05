@@ -10,6 +10,7 @@
 #include "Srv_Baro.h"
 
 #define GYRO_CALIB_CYCLE GYR_STATIC_CALIB_CYCLE
+#define BARO_CALIB_CYCLE SRVBARO_DEFAULT_CALI_CYCLE
 
 typedef enum
 {
@@ -24,7 +25,6 @@ typedef enum
     SrvSensorMonitor_Type_MAG,
     SrvSensorMonitor_Type_BARO,
     SrvSensorMonitor_Type_TOF,
-    SrvSensorMonitor_Type_GNSS,
     SrvSensotMonitor_Type_SUM,
 }SrvSensorMonitor_Type_List;
 
@@ -51,7 +51,6 @@ typedef union
         uint32_t mag  : 1;
         uint32_t baro : 1;
         uint32_t tof  : 1;
-        uint32_t gnss : 1;
 
         uint32_t res  : 27;
     }bit;
@@ -66,20 +65,10 @@ typedef union
         uint32_t mag  : 4;
         uint32_t baro : 4;
         uint32_t tof  : 4;
-        uint32_t gnss : 4;
 
         uint32_t res  : 12;
     }bit;
 }SrvSensorMonitor_SampleFreqReg_TypeDef;
-
-typedef enum
-{
-    Sensor_Calib_None = 0,
-    Sensor_Calib_Start,
-    Sensor_Calib_Success,
-    Sensor_Calib_Failed,
-    Sensor_Calib_InProcess,
-}SrvSensorMonitor_CaliState_List;
 
 typedef struct
 {
@@ -90,7 +79,7 @@ typedef struct
     uint32_t min_sampling_overhead; /* unit: 100ns */
     uint32_t avg_sampling_overhead; /* unit: 100ns */
 
-    SrvSensorMonitor_CaliState_List is_calid;
+    GenCalib_State_TypeList is_calid;
     uint32_t sample_cnt;
     uint32_t err_cnt;
     uint32_t detect_period;
@@ -107,7 +96,6 @@ typedef struct
     SrvSensorMonitor_Statistic_TypeDef *statistic_imu;
     SrvSensorMonitor_Statistic_TypeDef *statistic_mag;
     SrvSensorMonitor_Statistic_TypeDef *statistic_baro;
-    SrvSensorMonitor_Statistic_TypeDef *statistic_gnss;
     SrvSensorMonitor_Statistic_TypeDef *statistic_tof;
 
     SrvSensorMonitor_Statistic_TypeDef *statistic_list;
@@ -122,8 +110,8 @@ typedef struct
     bool (*sample_ctl)(SrvSensorMonitorObj_TypeDef *obj);
     SrvIMU_UnionData_TypeDef (*get_imu_data)(SrvSensorMonitorObj_TypeDef *obj);
     SrvBaroData_TypeDef (*get_baro_data)(SrvSensorMonitorObj_TypeDef *obj);
-    SrvSensorMonitor_CaliState_List (*set_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
-    SrvSensorMonitor_CaliState_List (*get_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
+    GenCalib_State_TypeList (*set_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
+    GenCalib_State_TypeList (*get_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 }SrvSensorMonitor_TypeDef;
 
 extern SrvSensorMonitor_TypeDef SrvSensorMonitor;

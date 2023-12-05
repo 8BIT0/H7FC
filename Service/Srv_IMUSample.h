@@ -120,12 +120,20 @@ typedef union
 
 typedef struct
 {
+    GenCalib_State_TypeList state;
+    uint16_t calib_cycle;
+    uint16_t cur_cycle;
+}SrvIMU_CalibMonitor_TypeDef;
+
+typedef struct
+{
     SrvIMU_ErrorCode_List (*init)(void);
     bool (*sample)(SrvIMU_SampleMode_List mode);
     bool (*get_data)(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data);
     float (*get_max_angular_speed_diff)(void);
     void (*error_proc)(void);
-    GenCalib_State_TypeList (*calib)(const uint32_t calib_cycle, float *pri_gyr, float *sec_gyr);
+    GenCalib_State_TypeList (*get_calib)(void);
+    GenCalib_State_TypeList (*set_calib)(uint32_t calib_cycle);
 } SrvIMU_TypeDef;
 
 extern SrvIMU_TypeDef SrvIMU;

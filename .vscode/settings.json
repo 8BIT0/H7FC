@@ -147,7 +147,8 @@
                 "srv_realtimesync.h": "c",
                 "bsp_usb.h": "c",
                 "task_statecheck.h": "c",
-                "pos_data.h": "c"
+                "pos_data.h": "c",
+                "gen_calib.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

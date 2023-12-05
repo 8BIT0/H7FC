@@ -7,8 +7,6 @@
 #include "bsp_gpio.h"
 #include <math.h>
 
-#define SRVBARO_DEFAULT_CALI_CYCLE 100
-
 #define STANDER_ATMOSPHERIC_PRESSURE (101.325f * 1000)
 #define SRVBARO_SMOOTHWINDOW_SIZE 5
 
@@ -144,12 +142,15 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
 static uint8_t SrvBaro_Init(void);
 static bool SrvBaro_Sample(void);
 static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data);
+static GenCalib_State_TypeList SrvBaro_Set_Calib(uint16_t cyc);
+static GenCalib_State_TypeList SrvBaro_Get_Calib(void);
 
 SrvBaro_TypeDef SrvBaro = {
     .init = SrvBaro_Init,
     .sample = SrvBaro_Sample,
     .get_data = SrvBaro_Get_Date,
-    .calib = NULL,
+    .set_calib = SrvBaro_Set_Calib,
+    .get_calib = SrvBaro_Get_Calib,
 };
 
 static bool SrvBaro_BusInit(void)
@@ -295,16 +296,21 @@ static bool SrvBaro_Sample(void)
     return false;
 }
 
-static GenCalib_State_TypeList SrvBaro_Calib(uint16_t cyc)
+static GenCalib_State_TypeList SrvBaro_Set_Calib(uint16_t cyc)
 {
     if(SrvBaroObj.calib_state != Calib_InProcess)
     {
         SrvBaroObj.calib_cycle = cyc;
         SrvBaroObj.calib_state = Calib_Start;
         SrvBaroObj.alt_offset = 0.0f;
-        return Calib_Start;
+        return Calib_InProcess;
     }
 
+    return SrvBaroObj.calib_state;
+}
+
+static GenCalib_State_TypeList SrvBaro_Get_Calib(void)
+{
     return SrvBaroObj.calib_state;
 }
 

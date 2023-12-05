@@ -10,6 +10,7 @@
 #include "gen_calib.h"
 
 #define SRVBARO_SAMPLE_RATE_LIMIT SRVBARO_SAMPLE_RATE_100HZ   /* max sample rate 100Hz */
+#define SRVBARO_DEFAULT_CALI_CYCLE 100
 
 #define SRVBARO_SAMPLE_RATE_100HZ 100
 #define SRVBARO_SAMPLE_RATE_50HZ  50
@@ -91,7 +92,8 @@ typedef struct
 {
     uint8_t (*init)(void);
     bool (*sample)(void);
-    GenCalib_State_TypeList (*calib)(uint16_t calib_cyc, float meter);
+    GenCalib_State_TypeList (*set_calib)(uint16_t calib_cyc);
+    GenCalib_State_TypeList (*get_calib)(void);
     bool (*get_data)(SrvBaroData_TypeDef *data);
 }SrvBaro_TypeDef;
 
