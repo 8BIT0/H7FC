@@ -282,6 +282,8 @@ static bool SrvBaro_Sample(void)
                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_add_sum);
                             SrvBaroObj.pressure_add_sum = 0.0f;
                         }
+                        else
+                            SrvBaroObj.calib_state = Calib_InProcess;
                     }
                     return true;
                 }
