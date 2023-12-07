@@ -8,6 +8,7 @@
 #include "Task_Telemetry.h"
 #include "Srv_DataHub.h"
 #include "Srv_Actuator.h"
+#include "shell_port.h"
 
 #define DEFAULT_CONTROL_MODEL Model_Quad
 #define DEFAULT_ESC_TYPE DevDshot_600
@@ -305,3 +306,48 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 
     return false;
 }
+
+static void TaskControl_CLI_AllMotoSpinTest(uint16_t test_val)
+{
+
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, All_Moto_Spin, TaskControl_CLI_AllMotoSpinTest, All Moto Spin);
+
+static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
+{
+    uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
+
+    shellPrint("make sure propeller is already disassmabled\r\n");
+
+    if(moto_index >= moto_num)
+    {
+        shellPrint("index over range\r\n");
+        shellPrint("arg must less than %d\r\n", (moto_num - 1));
+    }
+    else
+    {
+        if(test_val)
+        {
+
+        }
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Single_Moto_Spin, TaskControl_CLI_MotoSpinTest, Single Moto Spin);
+
+static void TaskControl_CLI_Set_MotoSpinDir(uint8_t moto_index)
+{
+    uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
+
+    shellPrint("make sure propeller is already disassmabled\r\n");
+
+    if(moto_index >= moto_num)
+    {
+        shellPrint("index over range\r\n");
+        shellPrint("arg must less than %d\r\n", (moto_num - 1));
+    }
+    else
+    {
+
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Set_Moto_Dir, TaskControl_CLI_Set_MotoSpinDir, Set Moto Spin Direction);
