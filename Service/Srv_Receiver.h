@@ -18,6 +18,8 @@
 #define SRV_RECEIVER_MIN_LINKQUALITY 10
 #define SRV_RECEIVER_MIN_ANTENNA_VALUE 5
 
+#define MAX_RECEIVER_CHANNEL_NUM 32
+
 typedef enum
 {
     Receiver_Port_Serial = 1,
@@ -97,7 +99,7 @@ typedef struct
     uint32_t time_stamp;
 
     uint8_t channel_sum;
-    uint16_t channel[32];
+    uint16_t channel[MAX_RECEIVER_CHANNEL_NUM];
 } SrvRecever_RCSig_TypeDef;
 
 typedef struct

@@ -325,8 +325,8 @@ static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *ob
 
         SrvDataHub_Monitor.data.rc_update_time = DataPipe_DataObj(Proto_Rc).time_stamp;
         SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Proto_Rc).arm_state;
-        SrvDataHub_Monitor.data.mode = DataPipe_DataObj(Proto_Rc).control_mode;
-        SrvDataHub_Monitor.data.buzz = DataPipe_DataObj(Proto_Rc).buzz_state;
+        SrvDataHub_Monitor.data.flight_mode = DataPipe_DataObj(Proto_Rc).control_mode;
+        SrvDataHub_Monitor.data.buzzer = DataPipe_DataObj(Proto_Rc).buzz_state;
         SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Proto_Rc).failsafe;
         SrvDataHub_Monitor.data.channel_sum = DataPipe_DataObj(Proto_Rc).channel_sum;
 
@@ -566,7 +566,7 @@ static bool SrvDataHub_Get_ControlMode(uint8_t *mode)
 
 reupdate_control_mode:
     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
-    *mode = SrvDataHub_Monitor.data.mode;
+    *mode = SrvDataHub_Monitor.data.flight_mode;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
         goto reupdate_control_mode;

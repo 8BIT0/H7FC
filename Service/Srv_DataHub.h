@@ -53,6 +53,7 @@ typedef union
 
     uint32_t val;
 } SrvDataHub_UpdateReg_TypeDef;
+#pragma pack()
 
 typedef struct
 {
@@ -123,12 +124,6 @@ typedef struct
     uint8_t att_error_code;
 
     uint32_t rc_update_time;
-    bool arm;
-    bool failsafe;
-    bool osd_tune;
-    bool buzz;
-    bool module;
-    uint8_t mode;
     uint8_t channel_sum;
     uint16_t ch[32];
     uint16_t gimbal[4];
@@ -188,8 +183,28 @@ typedef struct
     uint32_t tunning_port_addr;
 
     bool CLI_state;
+
+    /* control toggle */
+    bool arm;
+    bool failsafe;
+    bool osd_tune;
+    bool buzzer;
+    bool calib;
+    bool alt_hold;
+
+    /* signal info */
+    uint8_t flight_sig_src;
+    uint8_t flight_mode;
+
+    /* OPC -> On Plane Computer */
+    bool OPC_TakingOver;
+    bool OPC_Clock_Sync;
+    uint32_t OPC_heartbeat_timestamp;
+    uint8_t OPC_exp_throttle;
+    float OPC_exp_alt;
+    float OPC_exp_attitude[Axis_Sum];
+    float OPC_exp_angularspeed[Axis_Sum];
 } SrvDataHubObj_TypeDef;
-#pragma pack()
 
 typedef struct
 {
