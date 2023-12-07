@@ -309,13 +309,15 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 
 static void TaskControl_CLI_AllMotoSpinTest(uint16_t test_val)
 {
-
+    /* check arm state */
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, All_Moto_Spin, TaskControl_CLI_AllMotoSpinTest, All Moto Spin);
 
 static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
 {
     uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
+
+    /* check arm state */
 
     shellPrint("make sure propeller is already disassmabled\r\n");
 
@@ -337,6 +339,8 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 static void TaskControl_CLI_Set_MotoSpinDir(uint8_t moto_index)
 {
     uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
+
+    /* check arm state */
 
     shellPrint("make sure propeller is already disassmabled\r\n");
 
