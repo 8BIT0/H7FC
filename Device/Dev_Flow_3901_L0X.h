@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #define MATEK_3901_L0X_BAUDRATE 115200
+#define MATEK_3901_L0X_FRAME_HEADER '$'
 
 /* working range 2cm ~ 2m */
 

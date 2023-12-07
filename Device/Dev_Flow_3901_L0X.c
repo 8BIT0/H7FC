@@ -18,3 +18,13 @@ static bool DevFlow3901L0X_Init(DevFlow3901L0XObj_TypeDef *obj)
     return false;
 }
 
+static bool DevFlow3901L0X_Decode(DevFlow3901L0XObj_TypeDef *obj, uint8_t *p_data, uint16_t size)
+{
+    if(obj && p_data && size)
+    {
+
+    }
+
+    return false;
+}
+
