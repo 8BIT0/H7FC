@@ -67,8 +67,8 @@ static bool SrvActuator_InvertMotoSpinDir(uint8_t component_index);
 static bool SrvActuator_Lock(void);
 static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void);
 static SrvActuator_Model_List SrvActuator_GetModel(void);
-static bool SrvActuator_Get_MotoControlRange(int16_t *min, int16_t *idle, int16_t *max);
-static bool SrvActuator_Get_ServoControlRange(int16_t *min, int16_t *idle, int16_t *max);
+static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max);
+static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
 
 /* external variable */
 SrvActuator_TypeDef SrvActuator = {
@@ -480,17 +480,20 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
     return true;a
 }
 
-static bool SrvActuator_Get_MotoControlRange(int16_t *min, int16_t *idle, int16_t *max)
+static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max)
 {
     (*min) = 0;
     (*idle) = 0;
     (*max) = 0;
  
-    if(SrvActuator_Obj.init && SrvActuator_Obj.drive_module.num.moto_cnt && min && max && idle)
+    if(SrvActuator_Obj.init && \
+       SrvActuator_Obj.drive_module.num.moto_cnt && \
+       min && max && idle && \
+       moto_index < SrvActuator_Obj.drive_module.num.moto_cnt)
     {
-        (*min) = SrvActuator_Obj.drive_module.obj_list[0].min_val;
-        (*max) = SrvActuator_Obj.drive_module.obj_list[0].max_val;
-        (*idle) = SrvActuator_Obj.drive_module.obj_list[0].idle_val;
+        (*min) = SrvActuator_Obj.drive_module.obj_list[moto_index].min_val;
+        (*max) = SrvActuator_Obj.drive_module.obj_list[moto_index].max_val;
+        (*idle) = SrvActuator_Obj.drive_module.obj_list[moto_index].idle_val;
 
         return true;
     }
@@ -498,13 +501,16 @@ static bool SrvActuator_Get_MotoControlRange(int16_t *min, int16_t *idle, int16_
     return false;
 } 
 
-static bool SrvActuator_Get_ServoControlRange(int16_t *min, int16_t *idle, int16_t *max)
+static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max)
 {
     (*min) = 0;
     (*idle) = 0;
     (*max) = 0;
 
-    if(SrvActuator_Obj.init && SrvActuator_Obj.drive_module.num.servo_cnt && min && max && idle)
+    if(SrvActuator_Obj.init && \
+       SrvActuator_Obj.drive_module.num.servo_cnt && \
+       min && max && idle && \
+       servo_index < SrvActuator_Obj.drive_module.num.servo_cnt)
     {
         /* still in developping */
         return true;

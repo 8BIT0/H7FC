@@ -276,8 +276,8 @@ typedef struct
     void (*moto_control)(uint16_t *p_val);
     void (*servo_conttol)(uint8_t index, uint16_t val);
     bool (*invert_spin)(uint8_t component_index);
-    bool (*get_moto_control_range)(int16_t *min, int16_t *idle, int16_t *max);
-    bool (*get_servo_control_range)(int16_t *min, int16_t *idle, int16_t *max);
+    bool (*get_moto_control_range)(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max);
+    bool (*get_servo_control_range)(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
     SrvActuator_ModelComponentNum_TypeDef (*get_cnt)(void);
     SrvActuator_Model_List (*get_model)(void);
 } SrvActuator_TypeDef;
