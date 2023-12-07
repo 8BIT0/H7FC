@@ -309,29 +309,48 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 
 static void TaskControl_CLI_AllMotoSpinTest(uint16_t test_val)
 {
-    /* check arm state */
+    bool arm_state = false;
+
+    SrvDataHub.get_arm_state(&arm_state);
+
+    if(arm_state == DRONE_ARM)
+    {
+
+    }
+    else
+    {
+        shellPrint("Set drone in ARM state first\r\n");
+    }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, All_Moto_Spin, TaskControl_CLI_AllMotoSpinTest, All Moto Spin);
 
 static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
 {
     uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
+    bool arm_state = false;
 
-    /* check arm state */
+    SrvDataHub.get_arm_state(&arm_state);
 
-    shellPrint("make sure propeller is already disassmabled\r\n");
-
-    if(moto_index >= moto_num)
+    if(arm_state == DRONE_ARM)
     {
-        shellPrint("index over range\r\n");
-        shellPrint("arg must less than %d\r\n", (moto_num - 1));
+        shellPrint("make sure propeller is already disassmabled\r\n");
+
+        if(moto_index >= moto_num)
+        {
+            shellPrint("index over range\r\n");
+            shellPrint("arg must less than %d\r\n", (moto_num - 1));
+        }
+        else
+        {
+            if(test_val)
+            {
+
+            }
+        }
     }
     else
     {
-        if(test_val)
-        {
-
-        }
+        shellPrint("Set drone in ARM state first\r\n");
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Single_Moto_Spin, TaskControl_CLI_MotoSpinTest, Single Moto Spin);
@@ -339,19 +358,27 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 static void TaskControl_CLI_Set_MotoSpinDir(uint8_t moto_index)
 {
     uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
+    bool arm_state = false;
+    
+    SrvDataHub.get_arm_state(&arm_state);
 
-    /* check arm state */
-
-    shellPrint("make sure propeller is already disassmabled\r\n");
-
-    if(moto_index >= moto_num)
+    if(arm_state == DRONE_ARM)
     {
-        shellPrint("index over range\r\n");
-        shellPrint("arg must less than %d\r\n", (moto_num - 1));
+        shellPrint("make sure propeller is already disassmabled\r\n");
+
+        if(moto_index >= moto_num)
+        {
+            shellPrint("index over range\r\n");
+            shellPrint("arg must less than %d\r\n", (moto_num - 1));
+        }
+        else
+        {
+
+        }
     }
     else
     {
-
+        shellPrint("Set drone in ARM state first\r\n");
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Set_Moto_Dir, TaskControl_CLI_Set_MotoSpinDir, Set Moto Spin Direction);
