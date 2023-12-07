@@ -123,6 +123,13 @@ typedef struct
     float att_q3;
     uint8_t att_error_code;
 
+    uint32_t flow_update_time;
+    uint8_t pos_XY_quality;
+    uint8_t pos_Z_quality;
+    float raw_flow_pos[Axis_Sum];
+    float flt_flow_pos[Axis_Sum];
+    uint8_t flow_error_code;
+
     uint32_t rc_update_time;
     uint8_t channel_sum;
     uint16_t ch[32];

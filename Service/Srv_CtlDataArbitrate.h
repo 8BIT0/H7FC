@@ -47,6 +47,15 @@ typedef struct
 
 typedef struct
 {
+    uint8_t throttle_percent;
+
+    float exp_attitude[Axis_Sum];
+    float exp_angularspeed[Axis_Sum];
+    float exp_alt;
+} Srv_CtlExpectionData_TypeDef;
+
+typedef struct
+{
     Srv_CtlNegociateData_TypeDef Data;
 } Srv_CtlArbitrateMonitor_TypeDef;
 
@@ -54,7 +63,7 @@ typedef struct
 {
     bool (*init)(void);
     bool (*negociate_update)(void);
-    Srv_CtlNegociateData_TypeDef (*get_data)(void);
+    Srv_CtlExpectionData_TypeDef (*get_data)(void);
 } Srv_CtlDataArbitrate_TypeDef;
 
 extern Srv_CtlDataArbitrate_TypeDef Srv_CtlDataArbitrate;
