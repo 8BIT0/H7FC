@@ -409,6 +409,8 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
                     else
                     {
                         shellPrint("current control value %d\r\n", test_val);
+                        if(osMessagePut(TaskControl_Monitor.CLIMessage_ID, , CLI_MESSAGE_OPEARATE_TIMEOUT) != osOK)
+                            shellPrint("TaskControl CLI set failed\r\n");
                     }
                 }
                 else
