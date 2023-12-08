@@ -337,7 +337,18 @@ lock_moto:
 /****************************************************** CLI Section ******************************************************************/
 static void TaskControl_CLI_Polling(void)
 {
+    osEvent event;
 
+    if(TaskControl_Monitor.CLIMessage_ID)
+    {
+        event = osMessageGet(TaskControl_Monitor.CLIMessage_ID, CLI_MESSAGE_OPEARATE_TIMEOUT);
+    
+        switch(event.status)
+        {
+            default:
+                return;
+        }
+    }
 }
 
 static void TaskControl_CLI_AllMotoSpinTest(uint16_t test_val)
