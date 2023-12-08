@@ -47,6 +47,7 @@ typedef struct
     bool init_state;
     bool control_abort;
     bool angular_protect;
+    bool CLI_enable;
 
     uint8_t angular_warning_cnt;
 

@@ -19,6 +19,24 @@
 
 #define ANGULAR_PID_ACCURACY 1000
 
+static uint32_t rc_update_time = 0;
+static uint32_t imu_update_time = 0;
+static uint32_t att_update_time = 0;
+static uint32_t tunning_time_stamp = 0;
+static uint16_t rc_ch[32];
+static uint16_t gimbal[4];
+static uint8_t rc_channel_sum;
+static uint8_t imu_err_code;
+static uint8_t axis = Axis_X;
+static uint32_t tunning_port = 0;
+static bool arm_state = true;
+static bool failsafe = false;
+static bool imu_init_state = false;
+static bool att_update = false;
+static bool rc_update = false;
+static bool tunning_state = false;
+static bool configrator_attach = false;
+
 SrvIMU_UnionData_TypeDef LstCyc_IMU_Data;
 SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
 
@@ -36,6 +54,8 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
 /* internal function */
 static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state);
 static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef *monitor);
+static void TaskControl_FlightControl_Polling(void);
+static void TaskControl_CLI_Polling(void);
 
 /* internal var */
 static uint32_t TaskControl_Period = 0;
@@ -69,208 +89,25 @@ void TaskControl_Init(uint32_t period)
 void TaskControl_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
-    uint32_t rc_update_time = 0;
-    uint32_t imu_update_time = 0;
-    uint32_t att_update_time = 0;
-    uint32_t tunning_time_stamp = 0;
-    uint16_t rc_ch[32];
-    uint16_t gimbal[4];
-    uint8_t rc_channel_sum;
-    uint8_t imu_err_code;
-    uint8_t axis = Axis_X;
-    uint32_t tunning_port = 0;
-    bool arm_state = true;
-    bool failsafe = false;
-    bool imu_init_state = false;
-    bool att_update = false;
-    bool rc_update = false;
-    bool tunning_state = false;
-    bool configrator_attach = false;
 
     while(1)
     {
-        if (TaskControl_Monitor.init_state && !TaskControl_Monitor.control_abort)
+        SrvDataHub.get_arm_state(&arm_state);
+        
+        if((DRONE_DISARM == arm_state) && !TaskControl_Monitor.CLI_enable)
         {
-            TaskControl_Monitor.auto_control = true;
-            imu_init_state = false;
-
-            // get failsafe
-            SrvDataHub.get_arm_state(&arm_state);
-            SrvDataHub.get_failsafe(&failsafe);
-            SrvDataHub.get_gimbal_percent(gimbal);
-            
-            SrvDataHub.get_tunning_state(&tunning_time_stamp, &tunning_state, &tunning_port);
-
-            /* if in tunning or attach configrator then lock moto */
-            if(tunning_state || configrator_attach)
+            TaskControl_FlightControl_Polling();
+        }
+        else
+        {
+            if(TaskControl_Monitor.CLI_enable)
             {
-                goto lock_moto;
-            }
-
-            // get imu init state first
-            if(!SrvDataHub.get_imu_init_state(&imu_init_state) || !imu_init_state)
-            {
-                /* imu init error then lock the acturator */
-                failsafe = true;
-                arm_state = TELEMETRY_SET_ARM;
-                
-                goto lock_moto;
-            }
-
-            // check imu filter gyro data update or not
-            if(!SrvDataHub.get_scaled_imu(&imu_update_time,
-                                          &TaskControl_Monitor.acc_scale,
-                                          &TaskControl_Monitor.gyr_scale,
-                                          &TaskControl_Monitor.acc[Axis_X],
-                                          &TaskControl_Monitor.acc[Axis_Y],
-                                          &TaskControl_Monitor.acc[Axis_Z],
-                                          &TaskControl_Monitor.gyr[Axis_X],
-                                          &TaskControl_Monitor.gyr[Axis_Y],
-                                          &TaskControl_Monitor.gyr[Axis_Z],
-                                          &TaskControl_Monitor.imu_tmpr,
-                                          &imu_err_code))
-                goto lock_moto;
-
-            // get attitude
-            att_update = SrvDataHub.get_attitude(&att_update_time,
-                                                 &TaskControl_Monitor.attitude.pitch,
-                                                 &TaskControl_Monitor.attitude.roll,
-                                                 &TaskControl_Monitor.attitude.yaw,
-                                                 &TaskControl_Monitor.attitude.q0,
-                                                 &TaskControl_Monitor.attitude.q1,
-                                                 &TaskControl_Monitor.attitude.q2,
-                                                 &TaskControl_Monitor.attitude.q3);
-
-            // get rc channel and other toggle signal
-            rc_update = SrvDataHub.get_rc(&rc_update_time, rc_ch, &rc_channel_sum);
-
-            if (imu_update_time)
-            {
-                if (imu_update_time > TaskControl_Monitor.IMU_Rt)
-                {
-                    TaskControl_Monitor.imu_update_error_cnt = 0;
-                    TaskControl_Monitor.IMU_Rt = imu_update_time;
-                }
-                else if (imu_update_time <= TaskControl_Monitor.IMU_Rt)
-                {
-                    TaskControl_Monitor.imu_update_error_cnt++;
-                    if (TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)
-                        TaskControl_Monitor.control_abort = true;
-                }
-
-                if(imu_err_code != SrvIMU_Sample_NoError)
-                {
-                    switch(imu_err_code)
-                    {
-                        case SrvIMU_Sample_Data_Acc_Blunt:
-                        case SrvIMU_Sample_Data_Acc_OverRange:
-                            /* still can use gyro loop control quad */
-                            /* switch into manul control */
-                            break;
-                        
-                        case SrvIMU_Sample_Data_Gyr_Blunt:
-                        case SrvIMU_Sample_Data_Gyr_OverRange:
-                            /* totally waste */
-                            /* bye drone see u in another world */
-                            TaskControl_Monitor.control_abort = true;
-                            goto lock_moto;
-                            break;
-
-                        case SrvIMU_Sample_Module_UnReady:
-                            TaskControl_Monitor.imu_none_update_cnt++;
-                            if(TaskControl_Monitor.imu_none_update_cnt >= IMU_NONE_UPDATE_THRESHOLD)
-                            {
-                                TaskControl_Monitor.control_abort = true;
-                                goto lock_moto;
-                            }
-                            else
-                            {
-                                /* use last time sample imu data for control */
-                                for(axis = Axis_X; axis < Axis_Sum; axis++)
-                                {
-                                    TaskControl_Monitor.acc[axis] = TaskControl_Monitor.acc_lst[axis];
-                                    TaskControl_Monitor.gyr[axis] = TaskControl_Monitor.gyr_lst[axis];
-                                }
-                            }
-                            break;
-
-                        case SrvIMU_Sample_Over_Angular_Accelerate:
-                            if(TaskControl_Monitor.angular_warning_cnt < OVER_ANGULAR_ACCELERATE_COUNT)
-                            {
-                                TaskControl_Monitor.angular_warning_cnt++;
-
-                                for(axis = Axis_X; axis < Axis_Sum; axis++)
-                                {
-                                    TaskControl_Monitor.acc[axis] = TaskControl_Monitor.acc_lst[axis];
-                                    TaskControl_Monitor.gyr[axis] = TaskControl_Monitor.gyr_lst[axis];
-                                }
-                            }
-                            else
-                            {
-                                TaskControl_Monitor.angular_protect = true;
-                            }
-                            break;
-                    }
-                }
-                else
-                    TaskControl_Monitor.imu_none_update_cnt = 0;
+                TaskControl_CLI_Polling();
             }
             else
-            {
-                /* check keep time to abort drone control */
-                TaskControl_Monitor.imu_none_update_cnt ++;
-
-                if(TaskControl_Monitor.imu_none_update_cnt >= IMU_NONE_UPDATE_THRESHOLD)
-                    TaskControl_Monitor.control_abort = true;
-
-                goto lock_moto;
-            }
-
-            /* only manipulate esc or servo when disarm */
-            if (rc_update_time && !failsafe)
-            {
-                if (rc_update_time >= TaskControl_Monitor.RC_Rt)
-                {
-                    TaskControl_Monitor.auto_control = false;
-                    TaskControl_Monitor.RC_Rt = rc_update_time;
-
-                    if (arm_state != TELEMETRY_SET_DISARM)
-                        goto lock_moto;
-                }
-            }
-            
-            if(TaskControl_Monitor.angular_protect)
-                goto lock_moto;
-
-            /* currently lock moto */
-            if(TaskControl_Monitor.auto_control)
-                goto lock_moto;
-
-            // do drone control algorithm down below
-
-            // currently use gimbal input percent val for moto testing
-            gimbal[1] = 0;
-            gimbal[2] = 0;
-            gimbal[3] = 0;
-
-            /* Update PID */
-            TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
-            TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
-
-            SrvActuator.moto_control(gimbal);
-
-            if(imu_err_code == SrvIMU_Sample_NoError)
-            {
-                for(axis = Axis_X; axis < Axis_Sum; axis ++)
-                {
-                    TaskControl_Monitor.acc_lst[axis] = TaskControl_Monitor.acc[axis];
-                    TaskControl_Monitor.gyr_lst[axis] = TaskControl_Monitor.gyr[axis];
-                }
-            }
+                /* lock all moto */
+                SrvActuator.lock();
         }
-
-lock_moto:
-        SrvActuator.lock();
 
         SrvOsCommon.precise_delay(&sys_time, TaskControl_Period);
     }
@@ -307,6 +144,199 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
     return false;
 }
 
+/****************************************************** Flight Control Section ********************************************************/
+static void TaskControl_FlightControl_Polling(void)
+{
+    if (TaskControl_Monitor.init_state && !TaskControl_Monitor.control_abort)
+    {
+        TaskControl_Monitor.auto_control = true;
+        imu_init_state = false;
+
+        // get failsafe
+        SrvDataHub.get_arm_state(&arm_state);
+        SrvDataHub.get_failsafe(&failsafe);
+        SrvDataHub.get_gimbal_percent(gimbal);
+        
+        SrvDataHub.get_tunning_state(&tunning_time_stamp, &tunning_state, &tunning_port);
+
+        /* if in tunning or attach configrator then lock moto */
+        if(tunning_state || configrator_attach)
+        {
+            goto lock_moto;
+        }
+
+        // get imu init state first
+        if(!SrvDataHub.get_imu_init_state(&imu_init_state) || !imu_init_state)
+        {
+            /* imu init error then lock the acturator */
+            failsafe = true;
+            arm_state = TELEMETRY_SET_ARM;
+                
+            goto lock_moto;
+        }
+
+        // check imu filter gyro data update or not
+        if(!SrvDataHub.get_scaled_imu(&imu_update_time,
+                                      &TaskControl_Monitor.acc_scale,
+                                      &TaskControl_Monitor.gyr_scale,
+                                      &TaskControl_Monitor.acc[Axis_X],
+                                      &TaskControl_Monitor.acc[Axis_Y],
+                                      &TaskControl_Monitor.acc[Axis_Z],
+                                      &TaskControl_Monitor.gyr[Axis_X],
+                                      &TaskControl_Monitor.gyr[Axis_Y],
+                                      &TaskControl_Monitor.gyr[Axis_Z],
+                                      &TaskControl_Monitor.imu_tmpr,
+                                      &imu_err_code))
+            goto lock_moto;
+
+        // get attitude
+        att_update = SrvDataHub.get_attitude(&att_update_time,
+                                             &TaskControl_Monitor.attitude.pitch,
+                                             &TaskControl_Monitor.attitude.roll,
+                                             &TaskControl_Monitor.attitude.yaw,
+                                             &TaskControl_Monitor.attitude.q0,
+                                             &TaskControl_Monitor.attitude.q1,
+                                             &TaskControl_Monitor.attitude.q2,
+                                             &TaskControl_Monitor.attitude.q3);
+
+        // get rc channel and other toggle signal
+        rc_update = SrvDataHub.get_rc(&rc_update_time, rc_ch, &rc_channel_sum);
+
+        if (imu_update_time)
+        {
+            if (imu_update_time > TaskControl_Monitor.IMU_Rt)
+            {
+                TaskControl_Monitor.imu_update_error_cnt = 0;
+                TaskControl_Monitor.IMU_Rt = imu_update_time;
+            }
+            else if (imu_update_time <= TaskControl_Monitor.IMU_Rt)
+            {
+                TaskControl_Monitor.imu_update_error_cnt++;
+                if (TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)
+                    TaskControl_Monitor.control_abort = true;
+            }
+
+            if(imu_err_code != SrvIMU_Sample_NoError)
+            {
+                switch(imu_err_code)
+                {
+                    case SrvIMU_Sample_Data_Acc_Blunt:
+                    case SrvIMU_Sample_Data_Acc_OverRange:
+                        /* still can use gyro loop control quad */
+                        /* switch into manul control */
+                        break;
+                    
+                    case SrvIMU_Sample_Data_Gyr_Blunt:
+                    case SrvIMU_Sample_Data_Gyr_OverRange:
+                        /* totally waste */
+                        /* bye drone see u in another world */
+                        TaskControl_Monitor.control_abort = true;
+                        goto lock_moto;
+                        break;
+
+                    case SrvIMU_Sample_Module_UnReady:
+                        TaskControl_Monitor.imu_none_update_cnt++;
+                        if(TaskControl_Monitor.imu_none_update_cnt >= IMU_NONE_UPDATE_THRESHOLD)
+                        {
+                            TaskControl_Monitor.control_abort = true;
+                            goto lock_moto;
+                        }
+                        else
+                        {
+                            /* use last time sample imu data for control */
+                            for(axis = Axis_X; axis < Axis_Sum; axis++)
+                            {
+                                TaskControl_Monitor.acc[axis] = TaskControl_Monitor.acc_lst[axis];
+                                TaskControl_Monitor.gyr[axis] = TaskControl_Monitor.gyr_lst[axis];
+                            }
+                        }
+                        break;
+
+                    case SrvIMU_Sample_Over_Angular_Accelerate:
+                        if(TaskControl_Monitor.angular_warning_cnt < OVER_ANGULAR_ACCELERATE_COUNT)
+                        {
+                            TaskControl_Monitor.angular_warning_cnt++;
+
+                            for(axis = Axis_X; axis < Axis_Sum; axis++)
+                            {
+                                TaskControl_Monitor.acc[axis] = TaskControl_Monitor.acc_lst[axis];
+                                TaskControl_Monitor.gyr[axis] = TaskControl_Monitor.gyr_lst[axis];
+                            }
+                        }
+                        else
+                        {
+                            TaskControl_Monitor.angular_protect = true;
+                        }
+                        break;
+                }
+            }
+            else
+                TaskControl_Monitor.imu_none_update_cnt = 0;
+        }
+        else
+        {
+            /* check keep time to abort drone control */
+            TaskControl_Monitor.imu_none_update_cnt ++;
+
+            if(TaskControl_Monitor.imu_none_update_cnt >= IMU_NONE_UPDATE_THRESHOLD)
+                TaskControl_Monitor.control_abort = true;
+
+            goto lock_moto;
+        }
+
+        /* only manipulate esc or servo when disarm */
+        if (rc_update_time && !failsafe)
+        {
+            if (rc_update_time >= TaskControl_Monitor.RC_Rt)
+            {
+                TaskControl_Monitor.auto_control = false;
+                TaskControl_Monitor.RC_Rt = rc_update_time;
+
+                if (arm_state != TELEMETRY_SET_DISARM)
+                    goto lock_moto;
+            }
+        }
+        
+        if(TaskControl_Monitor.angular_protect)
+            goto lock_moto;
+
+        /* currently lock moto */
+        if(TaskControl_Monitor.auto_control)
+            goto lock_moto;
+
+        // do drone control algorithm down below
+
+        // currently use gimbal input percent val for moto testing
+        gimbal[1] = 0;
+        gimbal[2] = 0;
+        gimbal[3] = 0;
+
+        /* Update PID */
+        TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
+        TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
+
+        SrvActuator.moto_control(gimbal);
+
+        if(imu_err_code == SrvIMU_Sample_NoError)
+        {
+            for(axis = Axis_X; axis < Axis_Sum; axis ++)
+            {
+                TaskControl_Monitor.acc_lst[axis] = TaskControl_Monitor.acc[axis];
+                TaskControl_Monitor.gyr_lst[axis] = TaskControl_Monitor.gyr[axis];
+            }
+        }
+    }
+
+lock_moto:
+    SrvActuator.lock();
+}
+
+/****************************************************** CLI Section ******************************************************************/
+static void TaskControl_CLI_Polling(void)
+{
+
+}
+
 static void TaskControl_CLI_AllMotoSpinTest(uint16_t test_val)
 {
     bool arm_state = false;
@@ -315,10 +345,11 @@ static void TaskControl_CLI_AllMotoSpinTest(uint16_t test_val)
 
     if(arm_state == DRONE_ARM)
     {
-
+        TaskControl_Monitor.CLI_enable = true;
     }
     else
     {
+        TaskControl_Monitor.CLI_enable = false;
         shellPrint("Set drone in ARM state first\r\n");
     }
 }
@@ -328,12 +359,16 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
 {
     uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
     bool arm_state = false;
+    int16_t moto_max = 0;
+    int16_t moto_idle = 0;
+    int16_t moto_min = 0;
 
     SrvDataHub.get_arm_state(&arm_state);
 
     if(arm_state == DRONE_ARM)
     {
-        shellPrint("make sure propeller is already disassmabled\r\n");
+        TaskControl_Monitor.CLI_enable = true;
+        shellPrint("make sure all propeller is already disassmabled\r\n");
 
         if(moto_index >= moto_num)
         {
@@ -342,14 +377,36 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
         }
         else
         {
-            if(test_val)
+            if(SrvActuator.get_moto_control_range(moto_index, &moto_min, &moto_idle, &moto_max))
             {
+                shellPrint("moto %d is selected\r\n", moto_index);
+                shellPrint("moto max  : %d\r\n", moto_max);
+                shellPrint("moto idle : %d\r\n", moto_idle);
+                shellPrint("moto min  : %d\r\n", moto_min);
 
+                if(test_val > moto_max)
+                {
+                    shellPrint("input value [%d] is bigger than max [%d] value", test_val, moto_max);
+                }
+                else if(test_val < moto_min)
+                {
+                    shellPrint("input value [%d] is lower than min [%d] value", test_val, moto_min);
+                }
+                else
+                {
+                    shellPrint("current control value %d\r\n", test_val);
+                    /* do moto control */
+                }
+            }
+            else
+            {
+                shellPrint("Get moto control data range failed\r\n");
             }
         }
     }
     else
     {
+        TaskControl_Monitor.CLI_enable = false;
         shellPrint("Set drone in ARM state first\r\n");
     }
 }
@@ -359,12 +416,14 @@ static void TaskControl_CLI_Set_MotoSpinDir(uint8_t moto_index)
 {
     uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
     bool arm_state = false;
-    
-    SrvDataHub.get_arm_state(&arm_state);
 
+    SrvDataHub.get_arm_state(&arm_state);
+    
     if(arm_state == DRONE_ARM)
     {
-        shellPrint("make sure propeller is already disassmabled\r\n");
+        TaskControl_Monitor.CLI_enable = true;
+
+        shellPrint("make sure all propeller is already disassmabled\r\n");
 
         if(moto_index >= moto_num)
         {
@@ -378,7 +437,15 @@ static void TaskControl_CLI_Set_MotoSpinDir(uint8_t moto_index)
     }
     else
     {
+        TaskControl_Monitor.CLI_enable = false;
         shellPrint("Set drone in ARM state first\r\n");
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Set_Moto_Dir, TaskControl_CLI_Set_MotoSpinDir, Set Moto Spin Direction);
+
+static void TaskControl_Close_CLI(void)
+{
+    SrvActuator.lock();
+    TaskControl_Monitor.CLI_enable = false;
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, disable_actuator_test, TaskControl_Close_CLI, disable actuator test);
