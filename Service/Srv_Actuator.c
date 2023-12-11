@@ -477,7 +477,7 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
         }
     }
 
-    return true;a
+    return true;
 }
 
 static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max)

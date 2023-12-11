@@ -97,11 +97,17 @@ typedef struct
 
 typedef enum
 {
+    Actuator_Spin_ClockWise = 0,
+    Actuator_Spin_AntiClockWise,
+} TaskControl_ActuatorSpinDir_List;
+
+typedef enum
+{
     TaskControl_Moto_CliDisable = 0,
     TaskControl_Moto_Set_Spin,
-    TaskControl_Moto_Set_Dir,
+    TaskControl_Moto_Set_SpinDir,
     TaskControl_Servo_Set_Spin,
-    TaskControl_Servo_Set_Dir,
+    TaskControl_Servo_Set_SpinDir,
 } TaskControl_CLIDataType_List;
 
 typedef struct
@@ -109,7 +115,7 @@ typedef struct
     uint32_t timestamp;
     TaskControl_CLIDataType_List cli_type;
     uint8_t index;
-    uint16_t value_list[8];
+    uint16_t value;
 } TaskControl_CLIData_TypeDef;
 
 void TaskControl_Init(uint32_t period);

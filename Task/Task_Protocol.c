@@ -142,8 +142,7 @@ void TaskFrameCTL_Init(uint32_t period)
     }
 
     /* Shell Init */
-    shellInit(&CLI_Monitor.ShellObj, CLI_Monitor.p_proc_stream->p_buf, CLI_Monitor.p_proc_stream->max_size);
-    CLI_Monitor.ShellObj.write = TaskFrameCTL_CLI_Trans;
+    Shell_Init(TaskFrameCTL_CLI_Trans, CLI_Monitor.p_proc_stream->p_buf, CLI_Monitor.p_proc_stream->max_size);
 }
 
 void TaskFrameCTL_Core(void *arg)
@@ -552,15 +551,16 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
 static void TaskFrameCTL_CLI_Proc(void)
 {
     uint16_t rx_stream_size = 0;
+    Shell *shell_obj = Shell_GetInstence();
 
     /* check CLI stream */
-    if(CLI_Monitor.p_rx_stream->p_buf && CLI_Monitor.p_rx_stream->size)
+    if(shell_obj && CLI_Monitor.p_rx_stream->p_buf && CLI_Monitor.p_rx_stream->size)
     {
         rx_stream_size = CLI_Monitor.p_rx_stream->size;
 
         for(uint16_t i = 0; i < rx_stream_size; i++)
         {
-            shellHandler(&CLI_Monitor.ShellObj, CLI_Monitor.p_rx_stream->p_buf[i]);
+            shellHandler(shell_obj, CLI_Monitor.p_rx_stream->p_buf[i]);
             CLI_Monitor.p_rx_stream->p_buf[i] = 0;
             CLI_Monitor.p_rx_stream->size --;
         }
@@ -625,7 +625,7 @@ static void TaskFrameCTL_ConnectStateCheck(void)
 /***************************************** CLI Section ***********************************************/
 static void TaskFrameCTL_CLI_Trans(uint8_t *p_data, uint16_t size)
 {
-    if(p_data && size && CLI_Monitor.ShellObj.write)
+    if(p_data && size)
     {
         switch ((uint8_t) CLI_Monitor.type)
         {
@@ -646,6 +646,8 @@ static void TaskFrameCTL_CLI_Trans(uint8_t *p_data, uint16_t size)
 static void TaskFermeCTL_CLI_EnableControl(uint8_t state)
 {
     bool cli_state = state;
+    Shell *shell_obj = Shell_GetInstence();
+
     SrvOsCommon.enter_critical();
     if(state == 0)
     {
@@ -655,14 +657,14 @@ static void TaskFermeCTL_CLI_EnableControl(uint8_t state)
         SrvDataHub.set_cli_state(true);
     SrvOsCommon.exit_critical();
     
-    shellPrint(&CLI_Monitor.ShellObj, "\r\n\r\n");
+    shellPrint(shell_obj, "\r\n\r\n");
     if(state)
     {
-        shellPrint(&CLI_Monitor.ShellObj, "CLI Enabled\r\n");
+        shellPrint(shell_obj, "CLI Enabled\r\n");
     }
     else
     {
-        shellPrint(&CLI_Monitor.ShellObj, "CLI Disabled\r\n");
+        shellPrint(shell_obj, "CLI Disabled\r\n");
         CLI_Monitor.port_addr = 0;
     }
 }

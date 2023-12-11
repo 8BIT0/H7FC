@@ -148,7 +148,8 @@
                 "bsp_usb.h": "c",
                 "task_statecheck.h": "c",
                 "pos_data.h": "c",
-                "gen_calib.h": "c"
+                "gen_calib.h": "c",
+                "shell_port.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

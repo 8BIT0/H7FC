@@ -112,7 +112,6 @@ typedef struct
 
 typedef struct
 {
-    Shell ShellObj;
     FrameCTL_PortType_List type;
     uint32_t port_addr;
     SrvComProto_Stream_TypeDef *p_rx_stream;
