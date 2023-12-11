@@ -338,15 +338,52 @@ lock_moto:
 static void TaskControl_CLI_Polling(void)
 {
     osEvent event;
+    TaskControl_CLIData_TypeDef *p_CLIData = NULL;
+    int16_t moto_ctl_val = 0;
 
     if(TaskControl_Monitor.CLIMessage_ID)
     {
         event = osMessageGet(TaskControl_Monitor.CLIMessage_ID, CLI_MESSAGE_OPEARATE_TIMEOUT);
     
-        switch(event.status)
+        if(event.def.message_id == TaskControl_Monitor.CLIMessage_ID)
         {
-            default:
-                return;
+            switch(event.status)
+            {
+                case osOK:
+                    p_CLIData = event.value.p;
+
+                    switch((uint8_t)p_CLIData->cli_type)
+                    {
+                        case TaskControl_Moto_Set_Spin:
+                            break;
+
+                        case TaskControl_Moto_Set_SpinDir:
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    SrvOsCommon.free(p_CLIData);
+                    break;
+
+                case osEventSignal:
+                case osEventMessage:
+                case osEventMail:
+                case osEventTimeout:
+                case osErrorParameter:
+                case osErrorResource:
+                case osErrorTimeoutResource:
+                case osErrorISR:
+                case osErrorISRRecursive:
+                case osErrorPriority:
+                case osErrorNoMemory:
+                case osErrorValue:
+                case osErrorOS:
+                case os_status_reserved:
+                default:
+                    break;
+            }
         }
     }
 }
@@ -390,6 +427,7 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
     int16_t moto_min = 0;
     uint32_t time_stamp = SrvOsCommon.get_os_ms();
     Shell *shell_obj = Shell_GetInstence();
+    TaskControl_CLIData_TypeDef *p_CLIData = NULL;
 
     if(shell_obj == NULL)
         return;
@@ -428,8 +466,23 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
                     else
                     {
                         shellPrint(shell_obj, "current control value %d\r\n", test_val);
-                        // if(osMessagePut(TaskControl_Monitor.CLIMessage_ID, , CLI_MESSAGE_OPEARATE_TIMEOUT) != osOK)
-                            shellPrint(shell_obj, "TaskControl CLI set failed\r\n");
+
+                        p_CLIData = SrvOsCommon.malloc(sizeof(TaskControl_CLIData_TypeDef));
+                        if(p_CLIData)
+                        {
+                            p_CLIData->cli_type = TaskControl_Moto_Set_Spin;
+                            p_CLIData->index = moto_index;
+                            p_CLIData->timestamp = time_stamp;
+                            p_CLIData->value = test_val;
+
+                            if(osMessagePut(TaskControl_Monitor.CLIMessage_ID, p_CLIData, CLI_MESSAGE_OPEARATE_TIMEOUT) != osOK)
+                                shellPrint(shell_obj, "TaskControl CLI set failed\r\n");
+                        }
+                        else
+                        {
+                            shellPrint(shell_obj, "Moto control test data malloc failed\r\n");
+                            SrvOsCommon.free(p_CLIData);
+                        }
                     }
                 }
                 else
