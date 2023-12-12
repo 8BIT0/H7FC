@@ -360,10 +360,6 @@ static void TaskControl_CLI_Polling(void)
                         case TaskControl_Moto_Set_SpinDir:
                             break;
 
-                        case TaskControl_Moto_CliDisable:
-                            moto_ctl_val = 0;
-                            break;
-
                         default:
                             break;
                     }
