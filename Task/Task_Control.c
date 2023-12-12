@@ -339,7 +339,7 @@ static void TaskControl_CLI_Polling(void)
 {
     osEvent event;
     TaskControl_CLIData_TypeDef *p_CLIData = NULL;
-    int16_t moto_ctl_val = 0;
+    static int16_t moto_ctl_val = 0;
 
     if(TaskControl_Monitor.CLIMessage_ID)
     {
@@ -358,6 +358,10 @@ static void TaskControl_CLI_Polling(void)
                             break;
 
                         case TaskControl_Moto_Set_SpinDir:
+                            break;
+
+                        case TaskControl_Moto_CliDisable:
+                            moto_ctl_val = 0;
                             break;
 
                         default:
@@ -386,6 +390,13 @@ static void TaskControl_CLI_Polling(void)
             }
         }
     }
+
+    if(moto_ctl_val)
+    {
+        SrvActuator.moto_control(moto_ctl_val);
+    }
+    else
+        SrvActuator.lock();
 }
 
 static void TaskControl_CLI_AllMotoSpinTest(uint16_t test_val)
