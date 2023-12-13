@@ -340,6 +340,8 @@ static void TaskControl_CLI_Polling(void)
     osEvent event;
     TaskControl_CLIData_TypeDef *p_CLIData = NULL;
     static int16_t moto_ctl_val = 0;
+    uint16_t moto_ctl_buff[8] = {0};
+    uint16_t servo_ctl_buff[8] = {0};
 
     if(TaskControl_Monitor.CLIMessage_ID)
     {
@@ -358,6 +360,7 @@ static void TaskControl_CLI_Polling(void)
                             break;
 
                         case TaskControl_Moto_Set_SpinDir:
+                            moto_ctl_buff[p_CLIData->];
                             break;
 
                         default:
