@@ -311,6 +311,7 @@ static bool SrvActuator_SetMotoSpinDir(uint8_t component_index, SrvActuator_Spin
             dir_cmd = DSHOT_CMD_SET_SPIN_ANTICLOCKWISE;
 
         DevDshot.command(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj, dir_cmd);
+        SrvOsCommon.delay_ms(10);
         DevDshot.command(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj, DSHOT_CMD_SAVE_SETTING);
         break;
 

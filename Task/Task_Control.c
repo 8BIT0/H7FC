@@ -340,8 +340,14 @@ static void TaskControl_CLI_Polling(void)
     osEvent event;
     TaskControl_CLIData_TypeDef *p_CLIData = NULL;
     static int16_t moto_ctl_val = 0;
-    uint16_t moto_ctl_buff[8] = {0};
-    uint16_t servo_ctl_buff[8] = {0};
+    uint8_t moto_sum = SrvActuator.get_cnt().moto_cnt;
+    uint8_t servo_sum = SrvActuator.get_cnt().servo_cnt;
+    uint16_t moto_ctl_buff[moto_sum] = {0};
+    uint16_t servo_ctl_buff[servo_sum] = {0};
+    Shell *shell_obj = Shell_GetInstence();
+
+    if(shell_obj == NULL)
+        return;
 
     if(TaskControl_Monitor.CLIMessage_ID)
     {
@@ -357,10 +363,26 @@ static void TaskControl_CLI_Polling(void)
                     switch((uint8_t)p_CLIData->cli_type)
                     {
                         case TaskControl_Moto_Set_Spin:
+                            if(SrvActuator.invert_spin(p_CLIData->index))
+                            {
+                                shellPrint(shell_obj, "moto spin dir set done\r\n");
+                            }
+                            else
+                                shellPrint(shell_obj, "moto spin dir set error\r\n");
                             break;
 
                         case TaskControl_Moto_Set_SpinDir:
-                            moto_ctl_buff[p_CLIData->];
+                            if(p_CLIData->index < SrvActuator.get_cnt().moto_cnt)
+                            {
+                                moto_ctl_buff[p_CLIData->index] = p_CLIData->value;
+                            }
+                            else
+                            {
+                                for(uint8_t i = 0; i < SrvActuator.get_cnt().moto_cnt; i++)
+                                {
+                                    moto_ctl_buff[i] = p_CLIData->value;
+                                }
+                            }
                             break;
 
                         default:
