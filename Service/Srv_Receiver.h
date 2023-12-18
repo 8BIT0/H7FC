@@ -22,6 +22,27 @@
 
 typedef enum
 {
+    Srv_RC_Throttle = 0,
+    Srv_RC_Pitch,
+    Srv_RC_Roll,
+    Srv_RC_Yaw,
+    Srv_Gimbal_TagSum,
+    Srv_RC_AUX_1 = Srv_Gimbal_TagSum,
+    Srv_RC_AUX_2,
+    Srv_RC_AUX_3,
+    Srv_RC_AUX_4,
+    Srv_RC_AUX_5,
+    Srv_RC_AUX_6,
+    Srv_RC_AUX_7,
+    Srv_RC_AUX_8,
+    Srv_RC_AUX_9,
+    Srv_RC_AUX_10,
+    Srv_RC_AUX_11,
+    Srv_RC_AUX_12,
+} SrvReceiver_TagList;
+
+typedef enum
+{
     Receiver_Port_Serial = 1,
     Receiver_Port_Spi,
 } SrvReceiver_Port_TypeList;

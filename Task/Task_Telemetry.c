@@ -69,10 +69,10 @@ void TaskTelemetry_Init(uint32_t period)
         {
             /* set crsf receiver map */
             /* bind to channel */
-            if (Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Telemetry_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX) &&
-                Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Telemetry_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX) &&
-                Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Telemetry_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX) &&
-                Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Telemetry_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX) &&
+            if (Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Srv_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX) &&
+                Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Srv_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX) &&
+                Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Srv_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX) &&
+                Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Srv_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX) &&
                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) &&    /* bind arm & disarm to channel */
                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.Buzzer_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID) && /* bind buzzer to channel */
                 Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[6], &RC_Setting.ControlMode_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, 300) &&                       /* bind control mode toggle */
@@ -90,9 +90,9 @@ void TaskTelemetry_Init(uint32_t period)
                 RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
 
                 /* set gimbal center dead zone */
-                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Pitch], 50);
-                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Roll], 50);
-                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Telemetry_RC_Yaw], 50);
+                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Srv_RC_Pitch], 50);
+                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Srv_RC_Roll], 50);
+                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Srv_RC_Yaw], 50);
 
                 /* set datapipe */
                 memset(&Receiver_Smp_DataPipe, 0, sizeof(Receiver_Smp_DataPipe));
@@ -247,10 +247,10 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 
     switch (tag)
     {
-        case Telemetry_RC_Throttle:
-        case Telemetry_RC_Pitch:
-        case Telemetry_RC_Roll:
-        case Telemetry_RC_Yaw:
+        case Srv_RC_Throttle:
+        case Srv_RC_Pitch:
+        case Srv_RC_Roll:
+        case Srv_RC_Yaw:
             RC_Input_obj->Gimbal[tag].combo_cnt = 1;
             List_ItemInit(&(RC_Input_obj->Gimbal[tag].combo_list), channel_set);
             return true;
@@ -450,10 +450,10 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     memset(&receiver_data, 0, sizeof(receiver_data));
     memset(&sig_tmp, 0, sizeof(sig_tmp));
 
-    sig_tmp.gimbal_percent[Telemetry_RC_Throttle] = 0;
-    sig_tmp.gimbal_percent[Telemetry_RC_Pitch] = 0;
-    sig_tmp.gimbal_percent[Telemetry_RC_Roll] = 0;
-    sig_tmp.gimbal_percent[Telemetry_RC_Yaw] = 0;
+    sig_tmp.gimbal_percent[Srv_RC_Throttle] = 0;
+    sig_tmp.gimbal_percent[Srv_RC_Pitch] = 0;
+    sig_tmp.gimbal_percent[Srv_RC_Roll] = 0;
+    sig_tmp.gimbal_percent[Srv_RC_Yaw] = 0;
 
     if ((!RC_Input_obj) || (!receiver_obj) || (!RC_Input_obj->init_state))
         return sig_tmp;
@@ -476,7 +476,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         /* get gimbal channel */
         for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
         {
-            if (i < Telemetry_Gimbal_TagSum)
+            if (i < Srv_Gimbal_TagSum)
             {
                 Telemetry_Check_Gimbal(&RC_Input_obj->Gimbal[i]);
                 RC_Input_obj->sig.gimbal_percent[i] = Telemetry_GimbalToPercent(&RC_Input_obj->Gimbal[i]);
@@ -563,7 +563,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->sig.buzz_state = false;
         // RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
 
-        for (uint8_t i = Telemetry_RC_Throttle; i < Telemetry_Gimbal_TagSum; i++)
+        for (uint8_t i = Srv_RC_Throttle; i < Srv_Gimbal_TagSum; i++)
             RC_Input_obj->sig.gimbal_percent[i] = 0;
 
         Telemetry_Monitor.recover_failsafe = true;

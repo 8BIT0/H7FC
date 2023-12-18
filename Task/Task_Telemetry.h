@@ -47,27 +47,6 @@
 #pragma pack(1)
 typedef enum
 {
-    Telemetry_RC_Throttle = 0,
-    Telemetry_RC_Pitch,
-    Telemetry_RC_Roll,
-    Telemetry_RC_Yaw,
-    Telemetry_Gimbal_TagSum,
-    Telemetry_RC_AUX_1 = Telemetry_Gimbal_TagSum,
-    Telemetry_RC_AUX_2,
-    Telemetry_RC_AUX_3,
-    Telemetry_RC_AUX_4,
-    Telemetry_RC_AUX_5,
-    Telemetry_RC_AUX_6,
-    Telemetry_RC_AUX_7,
-    Telemetry_RC_AUX_8,
-    Telemetry_RC_AUX_9,
-    Telemetry_RC_AUX_10,
-    Telemetry_RC_AUX_11,
-    Telemetry_RC_AUX_12,
-} Telemetry_Receiver_TagList;
-
-typedef enum
-{
     Telemetry_Control_Mode_ACRO = 0,
     Telemetry_Control_Mode_STAB,
     Telemetry_Control_Mode_AUTO,
@@ -120,7 +99,7 @@ typedef struct
     uint16_t rssi;
     uint16_t link_quality;
 
-    Telemetry_RCFuncMap_TypeDef Gimbal[Telemetry_Gimbal_TagSum];
+    Telemetry_RCFuncMap_TypeDef Gimbal[Srv_Gimbal_TagSum];
     Telemetry_RCFuncMap_TypeDef ARM_Toggle;
     Telemetry_RCFuncMap_TypeDef ControlMode_Toggle;
     Telemetry_RCFuncMap_TypeDef Buzzer_Toggle;

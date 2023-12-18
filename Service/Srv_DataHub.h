@@ -22,36 +22,45 @@ typedef union
 {
     struct
     {
-        uint32_t raw_imu : 1;
-        uint32_t scaled_imu : 1;
+        uint64_t raw_imu : 1;
+        uint64_t scaled_imu : 1;
+        uint64_t range_imu : 1;
 
-        uint32_t raw_mag : 1;
-        uint32_t scaled_mag : 1;
+        uint64_t raw_mag : 1;
+        uint64_t scaled_mag : 1;
+        uint64_t range_mag : 1;
 
-        uint32_t scaled_baro : 1;
+        uint64_t scaled_baro : 1;
+        uint64_t range_baro : 1;
 
-        uint32_t raw_sonar : 1;
-        uint32_t scaled_sonar : 1;
+        uint64_t raw_sonar : 1;
+        uint64_t scaled_sonar : 1;
+        uint64_t range_sonar : 1;
 
-        uint32_t raw_tof : 1;
-        uint32_t scaled_tof : 1;
+        uint64_t raw_tof : 1;
+        uint64_t scaled_tof : 1;
+        uint64_t range_tof : 1;
 
-        uint32_t rc : 1;
+        uint64_t raw_flow : 1;
+        uint64_t scale_flow : 1;
+        uint64_t range_flow : 1; 
 
-        uint32_t actuator : 1;
-        uint32_t attitude : 1;
+        uint64_t rc : 1;
 
-        uint32_t mag_init : 1;
-        uint32_t imu_init : 1;
-        uint32_t baro_init : 1;
+        uint64_t actuator : 1;
+        uint64_t attitude : 1;
 
-        uint32_t tunning : 1;
-        uint32_t configrator_attach : 1;
+        uint64_t mag_init : 1;
+        uint64_t imu_init : 1;
+        uint64_t baro_init : 1;
 
-        uint32_t cli : 1;
+        uint64_t tunning : 1;
+        uint64_t configrator_attach : 1;
+
+        uint64_t cli : 1;
     } bit;
 
-    uint32_t val;
+    uint64_t val;
 } SrvDataHub_UpdateReg_TypeDef;
 #pragma pack()
 
@@ -61,6 +70,9 @@ typedef struct
     uint32_t imu_update_time;
     float acc_scale;
     float gyr_scale;
+
+    uint8_t acc_range;
+    uint16_t gyr_range;
 
     float flt_gyr_x;
     float flt_gyr_y;
@@ -100,6 +112,7 @@ typedef struct
     bool baro_enabled;
     bool baro_init_state;
     uint32_t baro_update_time;
+    float baro_range;
     float baro_alt;
     float baro_pressure;
     float baro_tempra;
@@ -232,6 +245,7 @@ typedef struct
     bool (*get_tunning_state)(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
     bool (*get_configrator_attach_state)(uint32_t *time_stamp, bool *state);
     bool (*get_imu_init_state)(bool *state);
+    bool (*get_imu_range)(uint8_t *acc_range, uint16_t *gyr_range);
     bool (*get_baro_init_state)(bool *state);
     bool (*get_mag_init_state)(bool *state);
     bool (*get_tof_init_state)(bool *state);

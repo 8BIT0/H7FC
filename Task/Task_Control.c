@@ -85,7 +85,7 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Monitor.GyrZCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
-    TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), 64, NULL);
+    TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
 
     TaskControl_Period = period;
 }
@@ -343,8 +343,8 @@ static void TaskControl_CLI_Polling(void)
     static int16_t moto_ctl_val = 0;
     uint8_t moto_sum = SrvActuator.get_cnt().moto_cnt;
     uint8_t servo_sum = SrvActuator.get_cnt().servo_cnt;
-    uint16_t moto_ctl_buff[moto_sum] = {0};
-    uint16_t servo_ctl_buff[servo_sum] = {0};
+    uint16_t moto_ctl_buff[8] = {0};
+    uint16_t servo_ctl_buff[8] = {0};
     Shell *shell_obj = Shell_GetInstence();
 
     if(shell_obj == NULL)

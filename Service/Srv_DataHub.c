@@ -44,6 +44,7 @@ static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *r
 static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
 static bool SrvDataHub_Get_ConfigratorAttachState(uint32_t *time_stamp, bool *state);
 static bool SrvDataHub_Get_CLI_State(bool *state);
+static bool SrvDataHub_Get_IMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 
 static bool SrvDataHub_Set_ConfigratorAttachState(uint32_t time_stamp, bool state);
 static bool SrvDataHub_Set_TunningState(uint32_t time_stamp, bool state, uint32_t port_addr);
@@ -54,6 +55,7 @@ SrvDataHub_TypeDef SrvDataHub = {
     .init = SrvDataHub_Init,
     .get_raw_imu = SrvDataHub_Get_Raw_IMU,
     .get_scaled_imu = SrvDataHub_Get_Scaled_IMU,
+    .get_imu_range =  SrvDataHub_Get_IMU_Range,
     .get_attitude = SrvDataHub_Get_Attitude,
     .get_raw_mag = SrvDataHub_Get_Raw_Mag,
     .get_scaled_mag = SrvDataHub_Get_Scaled_Mag,
@@ -220,6 +222,14 @@ static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
     }
 }
 
+static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
+{
+    if(obj == &IMU_Range_hub_DataPipe)
+    {
+
+    }
+}
+
 static void SrvDataHub_IMU_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
 {
     if (obj == &IMU_hub_DataPipe)
@@ -340,7 +350,19 @@ static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *ob
 
         SrvDataHub_Monitor.update_reg.bit.rc = false;
     }
- }
+}
+
+static bool SrvDataHub_Get_IMU_Range(uint8_t *acc_range, uint16_t *gyr_range)
+{
+    if(acc_range && gyr_range)
+    {
+        (*acc_range) = SrvDataHub_Monitor.data.acc_range;
+        (*gyr_range) = SrvDataHub_Monitor.data.gyr_range;
+        return true;
+    }
+
+    return false;
+}
 
 static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr, uint8_t *err)
 {
