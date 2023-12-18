@@ -94,8 +94,10 @@ extern DataPipeObj_TypeDef IMU_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_Log_DataPipe;
 extern DataPipeObj_TypeDef IMU_hub_DataPipe;
 
-extern DataPipeObj_TypeDef IMU_Range_Smp_DataPipe;
-extern DataPipeObj_TypeDef IMU_Range_hub_DataPipe;
+extern DataPipeObj_TypeDef IMU_PriRange_Smp_DataPipe;
+extern DataPipeObj_TypeDef IMU_PriRange_hub_DataPipe;
+extern DataPipeObj_TypeDef IMU_SecRange_Smp_DataPipe;
+extern DataPipeObj_TypeDef IMU_SecRange_hub_DataPipe;
 
 extern DataPipeObj_TypeDef Receiver_Smp_DataPipe;
 extern DataPipeObj_TypeDef Receiver_hub_DataPipe;

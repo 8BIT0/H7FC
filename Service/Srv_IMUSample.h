@@ -89,6 +89,12 @@ typedef enum
     SrvIMU_Both_Sample = SrvIMU_Priori_Pri | SrvIMU_Priori_Sec, /* both primary and secondary IMU sample */
 }SrvIMU_SampleMode_List;
 
+typedef struct
+{
+    uint8_t Acc;
+    uint16_t Gyr
+}SrvIMU_Range_TypeDef;
+
 #pragma pack(1)
 typedef struct
 {
@@ -130,7 +136,7 @@ typedef struct
     SrvIMU_ErrorCode_List (*init)(void);
     bool (*sample)(SrvIMU_SampleMode_List mode);
     bool (*get_data)(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data);
-    bool (*get_range)(SrvIMU_SampleMode_List module, uint8_t *acc_range, uint16_t *gyr_range);
+    bool (*get_range)(SrvIMU_SampleMode_List module, SrvIMU_Range_TypeDef *range);
     float (*get_max_angular_speed_diff)(void);
     void (*error_proc)(void);
     GenCalib_State_TypeList (*get_calib)(void);

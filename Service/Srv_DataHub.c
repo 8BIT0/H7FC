@@ -14,6 +14,7 @@ DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
 DataPipe_CreateDataObj(IMUAtt_TypeDef, Hub_Attitude);
 DataPipe_CreateDataObj(SrvBaroData_TypeDef, Hub_Baro_Data);
 DataPipe_CreateDataObj(PosData_TypeDef, Hub_Pos);
+DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, IMU_Range);
 
 /* internal function */
 static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);

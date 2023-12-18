@@ -12,8 +12,10 @@ DataPipeObj_TypeDef IMU_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef IMU_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef IMU_hub_DataPipe = {.enable = true};
 
-DataPipeObj_TypeDef IMU_Range_Smp_DataPipe = {.enable = true};
-DataPipeObj_TypeDef IMU_Range_hub_DataPipe = {.enable = true};
+DataPipeObj_TypeDef IMU_PriRange_Smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef IMU_PriRange_hub_DataPipe = {.enable = true};
+DataPipeObj_TypeDef IMU_SecRange_Smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef IMU_SecRange_hub_DataPipe = {.enable = true};
 
 DataPipeObj_TypeDef Actuator_cal_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Actuator_hub_DataPipe = {.enable = true};

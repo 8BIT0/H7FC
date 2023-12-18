@@ -150,7 +150,8 @@
                 "pos_data.h": "c",
                 "gen_calib.h": "c",
                 "shell_port.h": "c",
-                "srv_ctldataarbitrate.h": "c"
+                "srv_ctldataarbitrate.h": "c",
+                "dev_icm426xx.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

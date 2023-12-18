@@ -278,7 +278,7 @@ static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
 static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle, uint32_t *calib_cycle_cnt, float *pri_gyr, float *sec_gyr);
 static GenCalib_State_TypeList SrvIMU_Set_Calib(uint32_t calb_cycle);
 static GenCalib_State_TypeList SrvIMU_Get_Calib(void);
-static bool SrvIMU_Get_Range(SrvIMU_SampleMode_List module, uint8_t *acc_range, uint16_t *gyr_range);
+static bool SrvIMU_Get_Range(SrvIMU_SampleMode_List module, SrvIMU_Range_TypeDef *range);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -1050,21 +1050,21 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     return (pri_sample_state | sec_sample_state);
 }
 
-static bool SrvIMU_Get_Range(SrvIMU_SampleMode_List module, uint8_t *acc_range, uint16_t *gyr_range)
+static bool SrvIMU_Get_Range(SrvIMU_SampleMode_List module, SrvIMU_Range_TypeDef *range)
 {
-    if(((SrvIMU_Priori_Pri == module) || (SrvIMU_Priori_Sec == module)) && acc_range && gyr_range)
+    if(((SrvIMU_Priori_Pri == module) || (SrvIMU_Priori_Sec == module)) && range)
     {
         if((SrvIMU_Priori_Pri == module) && SrvMpu_Init_Reg.sec.Pri_State)
         {
-            (*acc_range) = InUse_PriIMU_Obj.acc_trip;
-            (*gyr_range) = InUse_PriIMU_Obj.gyr_trip;
+            range->Acc = InUse_PriIMU_Obj.acc_trip;
+            range->Gyr = InUse_PriIMU_Obj.gyr_trip;
             
             return true; 
         }
         else if((SrvIMU_Priori_Sec == module) && SrvMpu_Init_Reg.sec.Sec_State)
         {
-            (*acc_range) = InUse_SecIMU_Obj.acc_trip;
-            (*gyr_range) = InUse_SecIMU_Obj.gyr_trip;
+            range->Acc = InUse_SecIMU_Obj.acc_trip;
+            range->Gyr = InUse_SecIMU_Obj.gyr_trip;
 
             return true;
         }

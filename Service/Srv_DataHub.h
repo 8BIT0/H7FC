@@ -71,8 +71,14 @@ typedef struct
     float acc_scale;
     float gyr_scale;
 
-    uint8_t acc_range;
-    uint16_t gyr_range;
+    uint8_t imu_num;
+    uint8_t cur_use_imu;
+
+    uint8_t pri_acc_range;
+    uint16_t pri_gyr_range;
+
+    uint8_t sec_acc_range;
+    uint16_t sec_gyr_range;
 
     float flt_gyr_x;
     float flt_gyr_y;
