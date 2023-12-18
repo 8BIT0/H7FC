@@ -14,7 +14,8 @@ DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
 DataPipe_CreateDataObj(IMUAtt_TypeDef, Hub_Attitude);
 DataPipe_CreateDataObj(SrvBaroData_TypeDef, Hub_Baro_Data);
 DataPipe_CreateDataObj(PosData_TypeDef, Hub_Pos);
-DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, IMU_Range);
+DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, PriIMU_Range);
+DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, SecIMU_Range);
 
 /* internal function */
 static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
@@ -24,6 +25,7 @@ static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
 static void SrvDataHub_Attitude_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_Baro_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_Pos_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
+static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 
 /* external function */
 static void SrvDataHub_Init(void);
@@ -45,7 +47,8 @@ static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *r
 static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
 static bool SrvDataHub_Get_ConfigratorAttachState(uint32_t *time_stamp, bool *state);
 static bool SrvDataHub_Get_CLI_State(bool *state);
-static bool SrvDataHub_Get_IMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
+static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
+static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 
 static bool SrvDataHub_Set_ConfigratorAttachState(uint32_t time_stamp, bool state);
 static bool SrvDataHub_Set_TunningState(uint32_t time_stamp, bool state, uint32_t port_addr);
@@ -56,7 +59,8 @@ SrvDataHub_TypeDef SrvDataHub = {
     .init = SrvDataHub_Init,
     .get_raw_imu = SrvDataHub_Get_Raw_IMU,
     .get_scaled_imu = SrvDataHub_Get_Scaled_IMU,
-    .get_imu_range =  SrvDataHub_Get_IMU_Range,
+    .get_pri_imu_range = SrvDataHub_Get_PriIMU_Range,
+    .get_sec_imu_range = SrvDataHub_Get_SecIMU_Range,
     .get_attitude = SrvDataHub_Get_Attitude,
     .get_raw_mag = SrvDataHub_Get_Raw_Mag,
     .get_scaled_mag = SrvDataHub_Get_Scaled_Mag,
@@ -87,12 +91,24 @@ static void SrvDataHub_Init(void)
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
 
     /* init pipe object */
-    memset(DataPipe_DataObjAddr(PtlIMU_Data), NULL, DataPipe_DataSize(PtlIMU_Data));
+    memset(DataPipe_DataObjAddr(PtlIMU_Data), 0, DataPipe_DataSize(PtlIMU_Data));
     IMU_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlIMU_Data);
     IMU_hub_DataPipe.data_size = DataPipe_DataSize(PtlIMU_Data);
     IMU_hub_DataPipe.trans_finish_cb = SrvDataHub_IMU_DataPipe_Finish_Callback;
     DataPipe_Enable(&IMU_hub_DataPipe);
 
+    memset(DataPipe_DataObjAddr(PriIMU_Range), 0, DataPipe_DataSize(PriIMU_Range));
+    IMU_PriRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PriIMU_Range);
+    IMU_PriRange_hub_DataPipe.data_size = DataPipe_DataSize(PriIMU_Range);
+    IMU_PriRange_hub_DataPipe.trans_finish_cb = SrvDataHub_IMU_Range_DataPipe_Finish_Callback;
+    DataPipe_Enable(&IMU_PriRange_hub_DataPipe);
+
+    memset(DataPipe_DataObjAddr(SecIMU_Range), 0, DataPipe_DataSize(SecIMU_Range));
+    IMU_SecRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(SecIMU_Range);
+    IMU_SecRange_hub_DataPipe.data_size = DataPipe_DataSize(SecIMU_Range);
+    IMU_SecRange_hub_DataPipe.trans_finish_cb = SrvDataHub_IMU_Range_DataPipe_Finish_Callback;
+    DataPipe_Enable(&IMU_SecRange_hub_DataPipe);
+    
     /* init pipe object */
     memset(DataPipe_DataObjAddr(Proto_Rc), 0, DataPipe_DataSize(Proto_Rc));
     Receiver_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
@@ -225,9 +241,27 @@ static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
 
 static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
 {
-    if(obj == &IMU_Range_hub_DataPipe)
+    if(obj == &IMU_PriRange_hub_DataPipe)
     {
+        SrvDataHub_Monitor.update_reg.bit.range_imu = true;
+        if(SrvDataHub_Monitor.inuse_reg.bit.range_imu)
+            SrvDataHub_Monitor.inuse_reg.bit.range_imu = false;
 
+        SrvDataHub_Monitor.data.pri_acc_range = DataPipe_DataObj(PriIMU_Range).Acc;
+        SrvDataHub_Monitor.data.pri_gyr_range = DataPipe_DataObj(PriIMU_Range).Gyr;
+
+        SrvDataHub_Monitor.update_reg.bit.range_imu = false;
+    }
+    else if(obj == &IMU_SecRange_hub_DataPipe)
+    {
+        SrvDataHub_Monitor.update_reg.bit.range_imu = true;
+        if(SrvDataHub_Monitor.inuse_reg.bit.range_imu)
+            SrvDataHub_Monitor.inuse_reg.bit.range_imu = false;
+
+        SrvDataHub_Monitor.data.sec_acc_range = DataPipe_DataObj(SecIMU_Range).Acc;
+        SrvDataHub_Monitor.data.sec_gyr_range = DataPipe_DataObj(SecIMU_Range).Gyr;
+    
+        SrvDataHub_Monitor.update_reg.bit.range_imu = false;
     }
 }
 
@@ -353,16 +387,28 @@ static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *ob
     }
 }
 
-static bool SrvDataHub_Get_IMU_Range(uint8_t *acc_range, uint16_t *gyr_range)
+static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range)
 {
     if(acc_range && gyr_range)
     {
-        (*acc_range) = SrvDataHub_Monitor.data.acc_range;
-        (*gyr_range) = SrvDataHub_Monitor.data.gyr_range;
+        (*acc_range) = SrvDataHub_Monitor.data.pri_acc_range;
+        (*gyr_range) = SrvDataHub_Monitor.data.pri_gyr_range;
         return true;
     }
 
     return false;
+}
+
+static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range)
+{
+    if(acc_range && gyr_range)
+    {
+        (*acc_range) = SrvDataHub_Monitor.data.sec_acc_range;
+        (*gyr_range) = SrvDataHub_Monitor.data.sec_gyr_range;
+        return true;
+    }
+
+    return false; 
 }
 
 static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr, uint8_t *err)
