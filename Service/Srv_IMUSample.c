@@ -278,7 +278,7 @@ static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
 static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle, uint32_t *calib_cycle_cnt, float *pri_gyr, float *sec_gyr);
 static GenCalib_State_TypeList SrvIMU_Set_Calib(uint32_t calb_cycle);
 static GenCalib_State_TypeList SrvIMU_Get_Calib(void);
-static bool SrvIMU_Get_Range(SrvIMU_SampleMode_List module, SrvIMU_Range_TypeDef *range);
+static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *range);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -869,6 +869,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     if (SrvMpu_Init_Reg.sec.Pri_State & PriSample_Enable)
     {
         pri_imu_scale = InUse_PriIMU_Obj.get_scale(InUse_PriIMU_Obj.obj_ptr);
+        PriIMU_Data.module = SrvIMU_PriModule;
         PriIMU_Data.acc_scale = pri_imu_scale.acc_scale;
         PriIMU_Data.gyr_scale = pri_imu_scale.gyr_scale;
 
@@ -940,6 +941,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     if (SrvMpu_Init_Reg.sec.Sec_State & SecSample_Enable)
     {
         sec_imu_scale = InUse_SecIMU_Obj.get_scale(InUse_SecIMU_Obj.obj_ptr);
+        SecIMU_Data.module = SrvIMU_SecModule;
         SecIMU_Data.acc_scale = sec_imu_scale.acc_scale;
         SecIMU_Data.gyr_scale = sec_imu_scale.gyr_scale;
 
@@ -1050,18 +1052,18 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     return (pri_sample_state | sec_sample_state);
 }
 
-static bool SrvIMU_Get_Range(SrvIMU_SampleMode_List module, SrvIMU_Range_TypeDef *range)
+static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *range)
 {
-    if(((SrvIMU_Priori_Pri == module) || (SrvIMU_Priori_Sec == module)) && range)
+    if(((SrvIMU_PriModule == module) || (SrvIMU_SecModule == module)) && range)
     {
-        if((SrvIMU_Priori_Pri == module) && SrvMpu_Init_Reg.sec.Pri_State)
+        if((SrvIMU_PriModule == module) && SrvMpu_Init_Reg.sec.Pri_State)
         {
             range->Acc = InUse_PriIMU_Obj.acc_trip;
             range->Gyr = InUse_PriIMU_Obj.gyr_trip;
             
             return true; 
         }
-        else if((SrvIMU_Priori_Sec == module) && SrvMpu_Init_Reg.sec.Sec_State)
+        else if((SrvIMU_SecModule == module) && SrvMpu_Init_Reg.sec.Sec_State)
         {
             range->Acc = InUse_SecIMU_Obj.acc_trip;
             range->Gyr = InUse_SecIMU_Obj.gyr_trip;

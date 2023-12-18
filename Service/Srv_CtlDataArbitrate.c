@@ -46,7 +46,7 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[2], Srv_Ctl
     }
 
     /* get imu angular speed range */
-    if(!SrvDataHub.get_imu_range(&ref_acc_range, &ref_gyr_range) && ((ref_acc_range == 0) || (ref_gyr_range == 0)))
+    if(!SrvDataHub.get_pri_imu_range(&ref_acc_range, &ref_gyr_range) && ((ref_acc_range == 0) || (ref_gyr_range == 0)))
         return false;
 
     for(index = 0; index < sizeof(angularspeed_range) / sizeof(angularspeed_range[0]); index ++)

@@ -101,6 +101,8 @@ typedef struct
     uint32_t time_stamp;
     uint32_t cycle_cnt;
 
+    SrvIMU_Module_Type module;
+    
     float tempera;
 
     float flt_gyr[Axis_Sum];
@@ -136,7 +138,7 @@ typedef struct
     SrvIMU_ErrorCode_List (*init)(void);
     bool (*sample)(SrvIMU_SampleMode_List mode);
     bool (*get_data)(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data);
-    bool (*get_range)(SrvIMU_SampleMode_List module, SrvIMU_Range_TypeDef *range);
+    bool (*get_range)(SrvIMU_Module_Type type, SrvIMU_Range_TypeDef *range);
     float (*get_max_angular_speed_diff)(void);
     void (*error_proc)(void);
     GenCalib_State_TypeList (*get_calib)(void);

@@ -253,6 +253,7 @@ typedef struct
     bool (*get_imu_init_state)(bool *state);
     bool (*get_pri_imu_range)(uint8_t *acc_range, uint16_t *gyr_range);
     bool (*get_sec_imu_range)(uint8_t *acc_range, uint16_t *gye_range);
+    bool (*get_inuse_imu_range)(uint8_t *ac_range, uint16_t *gyr_range);
     bool (*get_baro_init_state)(bool *state);
     bool (*get_mag_init_state)(bool *state);
     bool (*get_tof_init_state)(bool *state);

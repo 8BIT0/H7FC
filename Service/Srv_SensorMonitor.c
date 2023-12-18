@@ -12,7 +12,7 @@
 /* internal function */
 static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);
 
-static bool SrvSensorMonitor_IMU_Init(void);
+static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj);
 static bool SrvSensorMonitor_Mag_Init(void);
 static bool SrvSensorMonitor_Baro_Init(void);
 static bool SrvSensorMonitor_Gnss_Init(void);
@@ -52,7 +52,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
 
         /* enabled on imu must be essential */
-        if(obj->enabled_reg.bit.imu && SrvSensorMonitor_IMU_Init())
+        if(obj->enabled_reg.bit.imu && SrvSensorMonitor_IMU_Init(obj))
         {
             if(list_index > enable_sensor_num)
                 return false;
@@ -184,11 +184,80 @@ static uint32_t SrvSensorMonitor_Get_InitState(SrvSensorMonitorObj_TypeDef *obj)
 }
 
 /******************************************* IMU Section **********************************************/
-static bool SrvSensorMonitor_IMU_Init(void)
+static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
 {
-    if(SrvIMU.init && (SrvIMU.init() != SrvIMU_AllModule_Init_Error))
+    SrvIMU_ErrorCode_List init_state;
+    bool pri_range_get = false;
+    bool sec_range_get = false;
+
+    if(SrvIMU.init && obj)
+    {
+        init_state = SrvIMU.init();
+
+        switch(init_state)
+        {
+            case SrvIMU_PriDev_Init_Error:
+                memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+                if(!SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range))
+                {
+                    memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+                    return false;
+                }
+                /* set sample mode */
+                obj->IMU_SampleMode = SrvIMU_Priori_Sec;
+                break;
+
+            case SrvIMU_SecDev_Init_Error:
+                memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+                if(!SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range))
+                {
+                    memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+                    return false;
+                }
+                obj->IMU_SampleMode = SrvIMU_Priori_Pri;
+                break;
+
+            case SrvIMU_No_Error: 
+                memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+                memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+                
+                pri_range_get = SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range);
+                sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+                
+                /* set sample mode */
+                if(!pri_range_get && !sec_range_get)
+                {
+                    memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+                    memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+
+                    return false;
+                }
+                else
+                {
+                    if(pri_range_get & sec_range_get)
+                    {
+                        obj->IMU_SampleMode = SrvIMU_Both_Sample;
+                    }
+                    else
+                    {
+                        if(pri_range_get)
+                        {
+                            obj->IMU_SampleMode = SrvIMU_Priori_Pri;
+                        }
+                        else
+                            obj->IMU_SampleMode = SrvIMU_Priori_Sec;
+                    }
+                }
+                break;
+
+            case SrvIMU_AllModule_Init_Error:
+            default:
+                return false;
+        }
+
         return true;
-    
+    }
+
     return false;
 }
 
@@ -215,8 +284,8 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
             // DebugPin.ctl(Debug_PB5, true);
             start_tick = SrvOsCommon.get_systimer_current_tick();
 
-            if(SrvIMU.sample(SrvIMU_FusModule))
-            {
+            if(SrvIMU.sample(obj->IMU_SampleMode))
+            { 
                 end_tick = SrvOsCommon.get_systimer_current_tick();
                 SrvIMU.error_proc();
 

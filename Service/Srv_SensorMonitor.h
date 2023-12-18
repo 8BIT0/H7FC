@@ -9,6 +9,8 @@
 #include "Srv_IMUSample.h"
 #include "Srv_Baro.h"
 
+typedef SrvIMU_Range_TypeDef SrvSansorMonitor_IMURange_TypeDef;
+
 #define GYRO_CALIB_CYCLE GYR_STATIC_CALIB_CYCLE
 #define BARO_CALIB_CYCLE SRVBARO_DEFAULT_CALI_CYCLE
 
@@ -99,6 +101,11 @@ typedef struct
     SrvSensorMonitor_Statistic_TypeDef *statistic_tof;
 
     SrvSensorMonitor_Statistic_TypeDef *statistic_list;
+
+    SrvSansorMonitor_IMURange_TypeDef PriIMU_Range;
+    SrvSansorMonitor_IMURange_TypeDef SecIMU_Range;
+
+    SrvIMU_SampleMode_List IMU_SampleMode;
 
     SrvIMU_UnionData_TypeDef lst_imu_data;
     SrvBaroData_TypeDef lst_baro_data;
