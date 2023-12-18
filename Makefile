@@ -77,6 +77,7 @@ Service/Srv_ComProto.c \
 Service/Srv_DataHub.c \
 Service/Srv_OsCommon.c \
 Service/Srv_SensorMonitor.c \
+Service/Srv_CltDataArbitrate.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/CusQueue.c \
 DataStructure/linked_list.c \
