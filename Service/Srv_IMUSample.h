@@ -15,7 +15,7 @@
 
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
-#define ANGULAR_SPEED_ACCURACY 1e3
+#define ANGULAR_SPEED_ACCURACY 1000
 
 #define GYR_STATIC_CALIB_CYCLE 1000
 #define GYR_STATIC_CALIB_ACCURACY ANGULAR_SPEED_ACCURACY
@@ -95,7 +95,6 @@ typedef struct
     uint16_t Gyr
 }SrvIMU_Range_TypeDef;
 
-#pragma pack(1)
 typedef struct
 {
     uint32_t time_stamp;
@@ -124,7 +123,6 @@ typedef union
     uint8_t buff[sizeof(SrvIMU_Data_TypeDef)];
     SrvIMU_Data_TypeDef data;
 } SrvIMU_UnionData_TypeDef;
-#pragma pack()
 
 typedef struct
 {

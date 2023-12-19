@@ -59,7 +59,7 @@ typedef struct
     bool buzzer_state;
     bool calib_state;
     bool fail_safe;
-    uint8_t ctl_mode;
+    Srv_CtlMode_List ctl_mode;
     uint8_t RC_TakingOver_percent;
 
     uint8_t idle_throttle_percent;

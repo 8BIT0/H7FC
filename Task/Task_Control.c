@@ -56,7 +56,7 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
 /* internal function */
 static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state);
 static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef *monitor);
-static void TaskControl_FlightControl_Polling(void);
+static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_ctl_val);
 static void TaskControl_CLI_Polling(void);
 
 /* internal var */
@@ -115,8 +115,8 @@ void TaskControl_Init(uint32_t period)
         angularspeed_ctl_range[i].enable_dead_zone = false;
     }
         
-    angularspeed_ctl_range[Axis_Z].max = 500.0f;
-    angularspeed_ctl_range[Axis_Z].min = -500.0f;
+    angularspeed_ctl_range[Axis_Z].max = 100.0f;
+    angularspeed_ctl_range[Axis_Z].min = -100.0f;
     angularspeed_ctl_range[Axis_Z].idle = 0.0f;
     angularspeed_ctl_range[Axis_Z].enable_dead_zone = false;
     
@@ -135,7 +135,7 @@ void TaskControl_Core(void const *arg)
         
         if(control_enable && !TaskControl_Monitor.CLI_enable)
         {
-            TaskControl_FlightControl_Polling();
+            TaskControl_FlightControl_Polling(Srv_CtlDataArbitrate.get_data());
         }
         else
         {
@@ -150,6 +150,16 @@ void TaskControl_Core(void const *arg)
 
         SrvOsCommon.precise_delay(&sys_time, TaskControl_Period);
     }
+}
+
+static bool TaskControl_AltitudeRing_PID_Update()
+{
+    return false;
+}
+
+static bool TaskControl_VerticalSpeedRing_PID_Update()
+{
+    return false;
 }
 
 static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state)
@@ -184,7 +194,8 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 }
 
 /****************************************************** Flight Control Section ********************************************************/
-static void TaskControl_FlightControl_Polling(void)
+/* need to be optmize */
+static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_ctl_val)
 {
     if (TaskControl_Monitor.init_state && !TaskControl_Monitor.control_abort)
     {

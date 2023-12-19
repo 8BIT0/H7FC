@@ -787,13 +787,13 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
 
     if(*calib_cycle_cnt)
     {
-        for(; i < Axis_Sum; i++)
+        for(i = Axis_X; i < Axis_Sum; i++)
         {
             pri_gyr_tmp[i] = (int16_t)(pri_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
             sec_gyr_tmp[i] = (int16_t)(sec_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
 
             /* motion detect */
-            if((pri_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) || 
+            if((pri_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) || /* 3 deg/s */
                (sec_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) ||
                (abs(pri_gyr_tmp[i] - lst_pri_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD) ||
                (abs(sec_gyr_tmp[i] - lst_sec_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD))
@@ -823,7 +823,7 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
                 SecIMU_Gyr_ZeroOffset[i] = (SecIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
             }
 
-            state = Calib_Done;
+            return Calib_Done;
         }
         else
             return Calib_InProcess;
@@ -1010,7 +1010,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     /* update calibration state */
     if((Gyro_Calib_Monitor.state == Calib_Start) || (Gyro_Calib_Monitor.state == Calib_InProcess))
     {
-        Gyro_Calib_Monitor.state = SrvIMU_Calib_GyroZeroOffset(Gyro_Calib_Monitor.calib_cycle, &Gyro_Calib_Monitor.cur_cycle, PriIMU_Data.flt_gyr, SecIMU_Data.flt_gyr);
+        Gyro_Calib_Monitor.state = SrvIMU_Calib_GyroZeroOffset(Gyro_Calib_Monitor.calib_cycle, &Gyro_Calib_Monitor.cur_cycle, PriIMU_Data.org_gyr, SecIMU_Data.org_gyr);
     }
 
     switch(mode)

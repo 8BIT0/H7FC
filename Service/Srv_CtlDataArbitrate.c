@@ -1,3 +1,9 @@
+/*
+ * Auther: 8_B!T0
+ * Bref: in this project we may have multiple control signal source like RC_Remote MAVLink_Attitude_Expection MAVLinkl_AngularSpeed_Expection
+ *       but doing acturator control we must to make the control signal unique
+ *       in this file we can make multiple control signal in but out with the only one  
+ */
 #include "Srv_CtlDataArbitrate.h"
 
 #define MAX_ATTITUDE_ANGLE_RANGE 60
@@ -9,11 +15,13 @@ static Srv_CtlArbitrateMonitor_TypeDef SrvCtlArbitrateMonitor;
 /* external function */
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[2], Srv_CtlRange_TypeDef angularspeed_range[3]);
 static void Srv_CtlDataArbitrate_Update(void);
+static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_Get_Data(void);
 
 /* external vriable */
 Srv_CtlDataArbitrate_TypeDef Srv_CtlDataArbitrate = {
     .init = Srv_CtlDataArbitrate_Init,
     .negociate_update = Srv_CtlDataArbitrate_Update,
+    .get_data = Srv_CtlDataArbitrate_Get_Data,
 };
 
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[2], Srv_CtlRange_TypeDef angularspeed_range[3])
@@ -54,6 +62,15 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[2], Srv_Ctl
         /* lower than define min */
         if(input_range_min < MIN_ATTITUDE_ANGLE_RANGE)
             att_range[index].min = MIN_ATTITUDE_ANGLE_RANGE;
+
+        if(att_range[index].enable_dead_zone)
+        {
+            input_range_max = (((int16_t)(att_range[index].dead_zone_max * 1000)) / 1000) ;
+            input_range_min = (((int16_t)(att_range[index].dead_zone_min * 1000)) / 1000);
+        
+            if(input_range_max <= input_range_min)
+                return false;
+        }
     }
 
     /* get imu angular speed range */
@@ -94,6 +111,15 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[2], Srv_Ctl
 
         if(input_range_min < (ref_gyr_range * -1))
             angularspeed_range[index].min = (ref_gyr_range * -1);
+
+        if(angularspeed_range[index].enable_dead_zone)
+        {
+            input_range_max = (((int16_t)(angularspeed_range[index].dead_zone_max * 1000)) / 1000);
+            input_range_min = (((int16_t)(angularspeed_range[index].dead_zone_min * 1000)) / 1000);
+
+            if(input_range_max <= input_range_min)
+                return false;
+        }
     }
 
     memcpy(SrvCtlArbitrateMonitor.att_ctl_range, att_range, sizeof(att_range));
@@ -118,8 +144,16 @@ static void Srv_CtlDataArbitrate_Update(void)
     SrvDataHub.get_arm_state(&arm_state);
 
     /* convert gimbal value to physical expection */
-    SrvDataHub.get_rc(&rc_time_stamp, rc_ch, &rc_channel_sum);
     SrvDataHub.get_gimbal_percent(rc_gimbal_percent);
 
 
+}
+
+static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_Get_Data(void)
+{
+    Srv_CtlExpectionData_TypeDef data_tmp;
+
+    memset(&data_tmp, 0, sizeof(Srv_CtlExpectionData_TypeDef)); 
+
+    return data_tmp;
 }
