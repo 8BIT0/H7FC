@@ -74,11 +74,11 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_servo = SrvDataHub_Get_ServoChannel,
     .get_imu_init_state = SrvDataHub_Get_IMU_InitState,
     .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
-    .get_tunning_state =  SrvDataHub_Get_TunningState,
-    .get_configrator_attach_state =  SrvDataHub_Get_ConfigratorAttachState,
-    .get_cli_state =  SrvDataHub_Get_CLI_State,
+    .get_tunning_state = SrvDataHub_Get_TunningState,
+    .get_configrator_attach_state = SrvDataHub_Get_ConfigratorAttachState,
+    .get_cli_state = SrvDataHub_Get_CLI_State,
 
-    .set_cli_state =  SrvDataHub_Set_CLI_State,
+    .set_cli_state = SrvDataHub_Set_CLI_State,
     .set_tunning_state = SrvDataHub_Set_TunningState,
     .set_configrator_state = SrvDataHub_Set_ConfigratorAttachState,
 };
@@ -391,8 +391,17 @@ static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range)
 {
     if(acc_range && gyr_range)
     {
+reupdate_imu_range:
+        SrvDataHub_Monitor.inuse_reg.bit.range_imu = true;
+
         (*acc_range) = SrvDataHub_Monitor.data.pri_acc_range;
         (*gyr_range) = SrvDataHub_Monitor.data.pri_gyr_range;
+
+        if(!SrvDataHub_Monitor.inuse_reg.bit.range_imu)
+            goto reupdate_imu_range;
+
+        SrvDataHub_Monitor.inuse_reg.bit.range_imu = false;
+
         return true;
     }
 
