@@ -14,8 +14,8 @@ DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
 DataPipe_CreateDataObj(IMUAtt_TypeDef, Hub_Attitude);
 DataPipe_CreateDataObj(SrvBaroData_TypeDef, Hub_Baro_Data);
 DataPipe_CreateDataObj(PosData_TypeDef, Hub_Pos);
-DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, PriIMU_Range);
-DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, SecIMU_Range);
+DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_PriIMU_Range);
+DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_SecIMU_Range);
 
 /* internal function */
 static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
@@ -97,15 +97,15 @@ static void SrvDataHub_Init(void)
     IMU_hub_DataPipe.trans_finish_cb = SrvDataHub_IMU_DataPipe_Finish_Callback;
     DataPipe_Enable(&IMU_hub_DataPipe);
 
-    memset(DataPipe_DataObjAddr(PriIMU_Range), 0, DataPipe_DataSize(PriIMU_Range));
-    IMU_PriRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PriIMU_Range);
-    IMU_PriRange_hub_DataPipe.data_size = DataPipe_DataSize(PriIMU_Range);
+    memset(DataPipe_DataObjAddr(Hub_PriIMU_Range), 0, DataPipe_DataSize(Hub_PriIMU_Range));
+    IMU_PriRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_PriIMU_Range);
+    IMU_PriRange_hub_DataPipe.data_size = DataPipe_DataSize(Hub_PriIMU_Range);
     IMU_PriRange_hub_DataPipe.trans_finish_cb = SrvDataHub_IMU_Range_DataPipe_Finish_Callback;
     DataPipe_Enable(&IMU_PriRange_hub_DataPipe);
 
-    memset(DataPipe_DataObjAddr(SecIMU_Range), 0, DataPipe_DataSize(SecIMU_Range));
-    IMU_SecRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(SecIMU_Range);
-    IMU_SecRange_hub_DataPipe.data_size = DataPipe_DataSize(SecIMU_Range);
+    memset(DataPipe_DataObjAddr(Hub_SecIMU_Range), 0, DataPipe_DataSize(Hub_SecIMU_Range));
+    IMU_SecRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_SecIMU_Range);
+    IMU_SecRange_hub_DataPipe.data_size = DataPipe_DataSize(Hub_SecIMU_Range);
     IMU_SecRange_hub_DataPipe.trans_finish_cb = SrvDataHub_IMU_Range_DataPipe_Finish_Callback;
     DataPipe_Enable(&IMU_SecRange_hub_DataPipe);
     
@@ -247,8 +247,8 @@ static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *o
         if(SrvDataHub_Monitor.inuse_reg.bit.range_imu)
             SrvDataHub_Monitor.inuse_reg.bit.range_imu = false;
 
-        SrvDataHub_Monitor.data.pri_acc_range = DataPipe_DataObj(PriIMU_Range).Acc;
-        SrvDataHub_Monitor.data.pri_gyr_range = DataPipe_DataObj(PriIMU_Range).Gyr;
+        SrvDataHub_Monitor.data.pri_acc_range = DataPipe_DataObj(Hub_PriIMU_Range).Acc;
+        SrvDataHub_Monitor.data.pri_gyr_range = DataPipe_DataObj(Hub_PriIMU_Range).Gyr;
 
         SrvDataHub_Monitor.update_reg.bit.range_imu = false;
     }
@@ -258,8 +258,8 @@ static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *o
         if(SrvDataHub_Monitor.inuse_reg.bit.range_imu)
             SrvDataHub_Monitor.inuse_reg.bit.range_imu = false;
 
-        SrvDataHub_Monitor.data.sec_acc_range = DataPipe_DataObj(SecIMU_Range).Acc;
-        SrvDataHub_Monitor.data.sec_gyr_range = DataPipe_DataObj(SecIMU_Range).Gyr;
+        SrvDataHub_Monitor.data.sec_acc_range = DataPipe_DataObj(Hub_SecIMU_Range).Acc;
+        SrvDataHub_Monitor.data.sec_gyr_range = DataPipe_DataObj(Hub_SecIMU_Range).Gyr;
     
         SrvDataHub_Monitor.update_reg.bit.range_imu = false;
     }

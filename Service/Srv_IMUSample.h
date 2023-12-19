@@ -143,7 +143,6 @@ typedef struct
     void (*error_proc)(void);
     GenCalib_State_TypeList (*get_calib)(void);
     GenCalib_State_TypeList (*set_calib)(uint32_t calib_cycle);
-    bool (*get_imu_num)(uint8_t *num);
 } SrvIMU_TypeDef;
 
 extern SrvIMU_TypeDef SrvIMU;

@@ -12,6 +12,7 @@
 #include "Srv_ComProto.h"
 #include "../DataPipe/DataPipe.h"
 #include "cmsis_os.h"
+#include "shell_port.h"
 
 #define TaskSample_Period_Def    1  /* unit: ms period 1ms  1000Hz */
 #define TaskControl_Period_Def   5  /* unit: ms period 2ms  200Hz  */

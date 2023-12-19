@@ -12,11 +12,14 @@
 /* internal var */
 static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
 static uint32_t TaskSample_Period = 0;
+static bool sample_enable = false;
 static SrvSensorMonitorObj_TypeDef SensorMonitor;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, IMU_Data);
 DataPipe_CreateDataObj(SrvBaroData_TypeDef, Baro_Data);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorEnable_State);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorInit_State);
+DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Smp_PriIMU_Range);
+DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Smp_SecIMU_Range);
 
 /* internal function */
 static void TaskInertical_Blink_Notification(uint16_t duration);
@@ -25,6 +28,12 @@ static void TaskInertical_Blink_Notification(uint16_t duration);
 
 void TaskSample_Init(uint32_t period)
 {
+    SrvSensorMonitor_IMURange_TypeDef PriIMU_Range;
+    SrvSensorMonitor_IMURange_TypeDef SecIMU_Range;
+
+    memset(&PriIMU_Range, 0, sizeof(SrvSensorMonitor_IMURange_TypeDef));
+    memset(&SecIMU_Range, 0, sizeof(SrvSensorMonitor_IMURange_TypeDef));
+
     memset(&SensorMonitor, 0, sizeof(SrvSensorMonitorObj_TypeDef));
     memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
     memset(&Baro_smp_DataPipe, 0, sizeof(Baro_smp_DataPipe));
@@ -46,22 +55,51 @@ void TaskSample_Init(uint32_t period)
     SensorMonitor.enabled_reg.bit.baro = true;
     SensorMonitor.freq_reg.bit.baro = SrvSensorMonitor_SampleFreq_50Hz;
 
-    SrvSensorMonitor.init(&SensorMonitor);
+    sample_enable = SrvSensorMonitor.init(&SensorMonitor);
 
     DataPipe_DataObj(SensorEnable_State).val = SensorMonitor.enabled_reg.val;
     DataPipe_DataObj(SensorInit_State).val = SensorMonitor.init_state_reg.val;
     
     SensorEnableState_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(SensorEnable_State);
-    SensorEnableState_smp_DataPipe.data_size = sizeof(DataPipe_DataObj(SensorEnable_State));
+    SensorEnableState_smp_DataPipe.data_size = DataPipe_DataSize(SensorEnable_State);
     DataPipe_Enable(&SensorEnableState_smp_DataPipe);
     
     SensorInitState_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(SensorInit_State);
-    SensorInitState_smp_DataPipe.data_size = sizeof(DataPipe_DataObj(SensorInit_State));
+    SensorInitState_smp_DataPipe.data_size = DataPipe_DataSize(SensorInit_State);
     DataPipe_Enable(&SensorInitState_smp_DataPipe);
 
-    /* need pipe sensor state to datahub after initial */
+    /* pipe sensor enable and initial state to datahub */ 
     DataPipe_SendTo(&SensorInitState_smp_DataPipe, &SensorInitState_hub_DataPipe);
     DataPipe_SendTo(&SensorEnableState_smp_DataPipe, &SensorEnableState_hub_DataPipe);
+
+    if(sample_enable)
+    {
+        if(SrvSensorMonitor.get_imu_range(&SensorMonitor, SrvIMU_PriModule, &PriIMU_Range))
+        {
+            DataPipe_DataObj(Smp_PriIMU_Range).Acc = PriIMU_Range.Acc;
+            DataPipe_DataObj(Smp_PriIMU_Range).Gyr = PriIMU_Range.Gyr;
+
+            IMU_PriRange_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Smp_PriIMU_Range);
+            IMU_PriRange_Smp_DataPipe.data_size = DataPipe_DataSize(Smp_PriIMU_Range);
+            DataPipe_Enable(&IMU_PriRange_Smp_DataPipe);
+            
+            /* pipe sensor sample range to datahub */
+            DataPipe_SendTo(&IMU_PriRange_Smp_DataPipe, &IMU_PriRange_hub_DataPipe);
+        }
+
+        if(SrvSensorMonitor.get_imu_range(&SensorMonitor, SrvIMU_SecModule, &SecIMU_Range))
+        {
+            DataPipe_DataObj(Smp_SecIMU_Range).Acc = SecIMU_Range.Acc;
+            DataPipe_DataObj(Smp_SecIMU_Range).Gyr = SecIMU_Range.Gyr;
+            
+            IMU_SecRange_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Smp_SecIMU_Range);
+            IMU_SecRange_Smp_DataPipe.data_size = DataPipe_DataSize(Smp_SecIMU_Range);
+            DataPipe_Enable(&IMU_SecRange_Smp_DataPipe);
+            
+            /* pipe sensor sample range to datahub */
+            DataPipe_SendTo(&IMU_SecRange_Smp_DataPipe, &IMU_SecRange_hub_DataPipe);
+        }
+    }
 
     /* force make sensor sample task run as 1khz freq */
     TaskSample_Period = 1;
@@ -75,7 +113,7 @@ void TaskSample_Core(void const *arg)
     {
         TaskInertical_Blink_Notification(100);
 
-        if(SrvSensorMonitor.sample_ctl(&SensorMonitor))
+        if(sample_enable && SrvSensorMonitor.sample_ctl(&SensorMonitor))
         {
             DataPipe_DataObj(IMU_Data) = SrvSensorMonitor.get_imu_data(&SensorMonitor);
             DataPipe_DataObj(Baro_Data) = SrvSensorMonitor.get_baro_data(&SensorMonitor);

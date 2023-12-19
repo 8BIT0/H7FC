@@ -1,7 +1,7 @@
 #include "Srv_CtlDataArbitrate.h"
 
-#define MAX_ATTITUDE_ANGLE_RANGE 50
-#define MIN_ATTITUDE_ANGLE_RANGE -50
+#define MAX_ATTITUDE_ANGLE_RANGE 60
+#define MIN_ATTITUDE_ANGLE_RANGE -60
 
 /* internal vriable */
 static Srv_CtlArbitrateMonitor_TypeDef SrvCtlArbitrateMonitor;
@@ -19,49 +19,90 @@ Srv_CtlDataArbitrate_TypeDef Srv_CtlDataArbitrate = {
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[2], Srv_CtlRange_TypeDef angularspeed_range[3])
 {
     uint8_t index = 0;
-    uint8_t ref_acc_range = 0;
-    uint16_t ref_gyr_range = 0;
 
+    int16_t ref_gyr_range = 0;
+
+    uint8_t pri_acc_range = 0;
+    uint16_t pri_gyr_range = 0;
+    
+    uint8_t sec_acc_range = 0;
+    uint16_t sec_gyr_range = 0;
+
+    int16_t input_range_max = 0;
+    int16_t input_range_min = 0;
+    
     memset(&SrvCtlArbitrateMonitor, 0, sizeof(SrvCtlArbitrateMonitor));
 
     for(index = 0; index < sizeof(att_range) / sizeof(att_range[0]); index ++)
     {
+        input_range_max = (((int16_t)(att_range[index].max * 1000)) / 1000);
+        input_range_min = (((int16_t)(att_range[index].min * 1000)) / 1000);
+
         /* max or min is 0 */
-        if((((int16_t)(att_range[index].max * 1000)) / 1000 == 0) || 
-           (((int16_t)(att_range[index].min * 1000)) / 1000 == 0))
+        if((input_range_max == 0) || 
+           (input_range_min == 0))
             return false;
         
         /* max lower than min */
-        if((((int16_t)(att_range[index].max * 1000)) / 1000) <=
-           (((int16_t)(att_range[index].min * 1000)) / 1000))
+        if(input_range_max <= input_range_min)
             return false;
 
         /* bigger than define max */
-        if((((int16_t)(att_range[index].max * 1000)) / 1000) > MAX_ATTITUDE_ANGLE_RANGE)
-            return false;
+        if(input_range_max > MAX_ATTITUDE_ANGLE_RANGE)
+            att_range[index].max = MAX_ATTITUDE_ANGLE_RANGE;
 
         /* lower than define min */
-        if((((int16_t)(att_range[index].min * 1000)) / 1000) > MIN_ATTITUDE_ANGLE_RANGE)
-            return false;
+        if(input_range_min < MIN_ATTITUDE_ANGLE_RANGE)
+            att_range[index].min = MIN_ATTITUDE_ANGLE_RANGE;
     }
 
     /* get imu angular speed range */
-    if(!SrvDataHub.get_pri_imu_range(&ref_acc_range, &ref_gyr_range) && ((ref_acc_range == 0) || (ref_gyr_range == 0)))
+    if(!SrvDataHub.get_pri_imu_range(&pri_acc_range, &pri_gyr_range) && !SrvDataHub.get_sec_imu_range(&sec_acc_range, &sec_gyr_range))
         return false;
+
+    if((pri_gyr_range == 0) && (sec_gyr_range == 0))
+        return false;
+
+    if(pri_gyr_range || sec_gyr_range)
+    {
+        if(pri_gyr_range <= sec_gyr_range)
+        {
+            if(pri_gyr_range)
+            {
+                ref_gyr_range = pri_gyr_range;
+            }
+            else
+                ref_gyr_range = sec_gyr_range;
+        }
+        else
+            ref_gyr_range = sec_gyr_range;
+    }
 
     for(index = 0; index < sizeof(angularspeed_range) / sizeof(angularspeed_range[0]); index ++)
     {
-        if((((int16_t)(angularspeed_range[index].max * 1000)) / 1000 == 0) || 
-           (((int16_t)(angularspeed_range[index].min * 1000)) / 1000 == 0))
+        input_range_max = (((int16_t)(angularspeed_range[index].max * 1000)) / 1000);
+        input_range_min = (((int16_t)(angularspeed_range[index].min * 1000)) / 1000);
+
+        if((input_range_max == 0) || (input_range_min == 0))
            return false;
         
-        if((((int16_t)(angularspeed_range[index].max * 1000)) / 1000) <= 
-           (((int16_t)(angularspeed_range[index].min * 1000)) / 1000))
+        if(input_range_max <= input_range_min)
            return false;
+
+        if(input_range_max > ref_gyr_range)
+            angularspeed_range[index].max = ref_gyr_range;
+
+        if(input_range_min < (ref_gyr_range * -1))
+            angularspeed_range[index].min = (ref_gyr_range * -1);
     }
 
     memcpy(SrvCtlArbitrateMonitor.att_ctl_range, att_range, sizeof(att_range));
     memcpy(SrvCtlArbitrateMonitor.att_ctl_range, angularspeed_range, sizeof(angularspeed_range));
+
+    /* set default signal source/type/control mode */
+    SrvCtlArbitrateMonitor.cur_sig_sourece = Control_Sig_RC;
+    SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
+    SrvCtlArbitrateMonitor.cur_ctl_mode = Control_Mode_Attitude;
 
     return true;
 }

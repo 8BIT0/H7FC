@@ -9,7 +9,7 @@
 #include "Srv_IMUSample.h"
 #include "Srv_Baro.h"
 
-typedef SrvIMU_Range_TypeDef SrvSansorMonitor_IMURange_TypeDef;
+typedef SrvIMU_Range_TypeDef SrvSensorMonitor_IMURange_TypeDef;
 
 #define GYRO_CALIB_CYCLE GYR_STATIC_CALIB_CYCLE
 #define BARO_CALIB_CYCLE SRVBARO_DEFAULT_CALI_CYCLE
@@ -102,8 +102,11 @@ typedef struct
 
     SrvSensorMonitor_Statistic_TypeDef *statistic_list;
 
-    SrvSansorMonitor_IMURange_TypeDef PriIMU_Range;
-    SrvSansorMonitor_IMURange_TypeDef SecIMU_Range;
+    uint8_t imu_num;
+    bool pri_range_get;
+    bool sec_range_get;
+    SrvSensorMonitor_IMURange_TypeDef PriIMU_Range;
+    SrvSensorMonitor_IMURange_TypeDef SecIMU_Range;
 
     SrvIMU_SampleMode_List IMU_SampleMode;
 
@@ -115,6 +118,8 @@ typedef struct
 {
     bool (*init)(SrvSensorMonitorObj_TypeDef *obj);
     bool (*sample_ctl)(SrvSensorMonitorObj_TypeDef *obj);
+    bool (*get_imu_num)(SrvSensorMonitorObj_TypeDef *obj, uint8_t *num);
+    bool (*get_imu_range)(SrvSensorMonitorObj_TypeDef *obj, SrvIMU_Module_Type type, SrvSensorMonitor_IMURange_TypeDef *range);
     SrvIMU_UnionData_TypeDef (*get_imu_data)(SrvSensorMonitorObj_TypeDef *obj);
     SrvBaroData_TypeDef (*get_baro_data)(SrvSensorMonitorObj_TypeDef *obj);
     GenCalib_State_TypeList (*set_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);

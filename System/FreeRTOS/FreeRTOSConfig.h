@@ -91,6 +91,7 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelayUntil              1
 #define INCLUDE_vTaskDelay                   1
 #define INCLUDE_xTaskGetSchedulerState       1
+#define INCLUDE_uxTaskGetStackHighWaterMark  1
 
 #define configUSE_COUNTING_SEMAPHORES 1
 #define configUSE_MUTEXES 1

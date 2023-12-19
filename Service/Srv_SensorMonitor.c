@@ -25,10 +25,14 @@ static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj
 static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj);
+static bool SrvSensorMonitor_IMU_Get_Num(SrvSensorMonitorObj_TypeDef *obj, uint8_t *num);
+static bool SrvSensorMonitor_Get_IMU_Range(SrvSensorMonitorObj_TypeDef *obj, SrvIMU_Module_Type type, SrvIMU_Range_TypeDef *range);
 
 SrvSensorMonitor_TypeDef SrvSensorMonitor = {
     .init = SrvSensorMonitor_Init,
     .sample_ctl = SrvSensorMonitor_SampleCTL,
+    .get_imu_num = SrvSensorMonitor_IMU_Get_Num,
+    .get_imu_range = SrvSensorMonitor_Get_IMU_Range,
     .get_imu_data = SrvSensorMonitor_Get_IMUData,
     .get_baro_data = SrvSensorMonitor_Get_BaroData,
     .set_calib = SrvSensorMonitor_Set_Module_Calib,
@@ -187,12 +191,11 @@ static uint32_t SrvSensorMonitor_Get_InitState(SrvSensorMonitorObj_TypeDef *obj)
 static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
 {
     SrvIMU_ErrorCode_List init_state;
-    bool pri_range_get = false;
-    bool sec_range_get = false;
 
     if(SrvIMU.init && obj)
     {
         init_state = SrvIMU.init();
+        obj->imu_num = 0;
 
         switch(init_state)
         {
@@ -203,6 +206,8 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
                     return false;
                 }
+
+                obj->imu_num = 1;
                 /* set sample mode */
                 obj->IMU_SampleMode = SrvIMU_Priori_Sec;
                 break;
@@ -214,6 +219,9 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
                     return false;
                 }
+
+                obj->imu_num = 1;
+                /* ser sample mode */
                 obj->IMU_SampleMode = SrvIMU_Priori_Pri;
                 break;
 
@@ -221,11 +229,11 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
                 
-                pri_range_get = SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range);
-                sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+                obj->pri_range_get = SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range);
+                obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
                 
                 /* set sample mode */
-                if(!pri_range_get && !sec_range_get)
+                if(!obj->pri_range_get && !obj->sec_range_get)
                 {
                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
@@ -234,13 +242,15 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 }
                 else
                 {
-                    if(pri_range_get & sec_range_get)
+                    if(obj->pri_range_get & obj->sec_range_get)
                     {
+                        obj->imu_num = 2;
                         obj->IMU_SampleMode = SrvIMU_Both_Sample;
                     }
                     else
                     {
-                        if(pri_range_get)
+                        obj->imu_num = 1;
+                        if(obj->pri_range_get)
                         {
                             obj->IMU_SampleMode = SrvIMU_Priori_Pri;
                         }
@@ -256,6 +266,63 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
 
         return true;
+    }
+
+    return false;
+}
+
+static bool SrvSensorMonitor_IMU_Get_Num(SrvSensorMonitorObj_TypeDef *obj, uint8_t *num)
+{
+    if(obj)
+    {
+        if(num)
+        {
+            if(obj->init_state_reg.bit.imu)
+            {
+                (*num) = obj->imu_num;
+                return true;
+            }
+            else
+                (*num) = 0;
+        }   
+    }
+
+    return false;
+}
+
+static bool SrvSensorMonitor_Get_IMU_Range(SrvSensorMonitorObj_TypeDef *obj, SrvIMU_Module_Type type, SrvIMU_Range_TypeDef *range)
+{
+    if(obj && range)
+    {
+        switch((uint8_t)type)
+        {
+            case SrvIMU_PriModule:
+                if(obj->pri_range_get)
+                {
+                    range->Acc = obj->PriIMU_Range.Acc;
+                    range->Gyr = obj->PriIMU_Range.Gyr;
+                    return true;
+                }
+
+                range->Acc = 0;
+                range->Gyr = 0;
+                return false;
+
+            case SrvIMU_SecModule:
+                if(obj->sec_range_get)
+                {
+                    range->Acc = obj->SecIMU_Range.Acc;
+                    range->Gyr = obj->SecIMU_Range.Gyr;
+                    return true;
+                }
+
+                range->Acc = 0;
+                range->Gyr = 0;
+                return false;
+
+            default:
+                return false;
+        }
     }
 
     return false;

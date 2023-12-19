@@ -17,6 +17,15 @@ typedef uint32_t (*get_time_stamp_callback)(void);
 
 typedef enum
 {
+    Att_Pitch = 0,
+    Att_Roll,
+    Att_Ctl_Sum,
+    Att_Yaw = Att_Ctl_Sum,
+    Att_Heading,
+} Attitude_List;
+
+typedef enum
+{
     Axis_X = 0,
     Axis_Y,
     Axis_Z,

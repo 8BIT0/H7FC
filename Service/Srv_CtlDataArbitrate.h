@@ -10,14 +10,20 @@ typedef enum
 {
     Control_Sig_RC = 0,
     Control_Sig_OnPlaneComputer,
-} Srv_CtlSigMode_List;
+} Srv_CtlSigSrcMode_List;
+
+typedef enum
+{
+    Control_Channel_Sig = 0,
+    Control_Attitude_Sig,
+    Control_AngularSpeed_Sig,
+} Srv_CtlSigInputType_List;
 
 typedef enum
 {
     Control_Mode_Attitude = 0,
     Control_Mode_AngularSpeed,
     Control_Mode_AngluarSpeed_AngleLock,
-    Control_Mode_Manul,
 } Srv_CtlMode_List;
 
 typedef struct
@@ -70,11 +76,9 @@ typedef struct
     float idle;
     float min;
 
+    bool enable_dead_zone;
     float dead_zone_max;
     float dead_zone_min;
-
-    float max_bias_to_lst;
-    float min_bias_to_lst;
 } Srv_CtlRange_TypeDef;
 
 typedef struct
@@ -83,6 +87,10 @@ typedef struct
     
     Srv_CtlRange_TypeDef att_ctl_range[2];
     Srv_CtlRange_TypeDef angularspeed_ctl_range[3];
+
+    Srv_CtlSigSrcMode_List cur_sig_sourece;
+    Srv_CtlSigInputType_List cur_sig_type;
+    Srv_CtlMode_List cur_ctl_mode;
 
 } Srv_CtlArbitrateMonitor_TypeDef;
 

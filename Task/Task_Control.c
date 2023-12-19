@@ -37,6 +37,7 @@ static bool att_update = false;
 static bool rc_update = false;
 static bool tunning_state = false;
 static bool configrator_attach = false;
+static bool control_enable = false;
 
 SrvIMU_UnionData_TypeDef LstCyc_IMU_Data;
 SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
@@ -63,8 +64,14 @@ static uint32_t TaskControl_Period = 0;
 
 void TaskControl_Init(uint32_t period)
 {
+    uint8_t i = 0;
+    Srv_CtlRange_TypeDef att_ctl_range[Att_Ctl_Sum];
+    Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
+    
     // init monitor
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
+    memset(&att_ctl_range, 0, sizeof(Srv_CtlRange_TypeDef));
+    memset(&angularspeed_ctl_range, 0, sizeof(Srv_CtlRange_TypeDef));
 
     TaskControl_Monitor.ctl_model = SrvActuator.get_model();
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
@@ -86,6 +93,34 @@ void TaskControl_Init(uint32_t period)
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
+    
+    /* set control range */
+    /* attitude control range */
+    for(i = Att_Pitch; i < Att_Ctl_Sum; i++)
+    {
+        att_ctl_range[i].max = 50.0f;   /* max attitude control angle ±50 deg */
+        att_ctl_range[i].min = -50.0f;
+        att_ctl_range[i].idle = 0.0f;
+        att_ctl_range[i].dead_zone_max = 0.5f;
+        att_ctl_range[i].dead_zone_min = -0.5f;
+        att_ctl_range[i].enable_dead_zone = true;
+    }
+
+    /* X&Y axis angular speed control range */
+    for(i = Axis_X; i < Axis_Z; i++)
+    {
+        angularspeed_ctl_range[i].max = 500.0f;
+        angularspeed_ctl_range[i].min = -500.0f;
+        angularspeed_ctl_range[i].idle = 0.0f;
+        angularspeed_ctl_range[i].enable_dead_zone = false;
+    }
+        
+    angularspeed_ctl_range[Axis_Z].max = 500.0f;
+    angularspeed_ctl_range[Axis_Z].min = -500.0f;
+    angularspeed_ctl_range[Axis_Z].idle = 0.0f;
+    angularspeed_ctl_range[Axis_Z].enable_dead_zone = false;
+    
+    control_enable = Srv_CtlDataArbitrate.init(att_ctl_range, angularspeed_ctl_range);
 
     TaskControl_Period = period;
 }
@@ -98,7 +133,7 @@ void TaskControl_Core(void const *arg)
     {
         SrvDataHub.get_arm_state(&arm_state);
         
-        if((DRONE_DISARM == arm_state) && !TaskControl_Monitor.CLI_enable)
+        if(control_enable && !TaskControl_Monitor.CLI_enable)
         {
             TaskControl_FlightControl_Polling();
         }
