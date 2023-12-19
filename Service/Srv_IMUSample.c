@@ -45,6 +45,10 @@ static uint32_t SrvIMU_SecIMU_Init_Error_CNT = 0;
 static uint32_t SrvIMU_ALLModule_Init_Error_CNT = 0;
 static uint32_t SrvIMU_Reupdate_Statistics_CNT = 0;
 
+/* general info */
+static bool init_finish = false;
+static uint8_t Useful_IMU_Num = 0;
+
 /* PriIMU Butterworth filter object handle */
 static BWF_Object_Handle PriIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
 static BWF_Object_Handle PriIMU_Acc_LPF_Handle[Axis_Sum] = {0};
@@ -279,6 +283,7 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
 static GenCalib_State_TypeList SrvIMU_Set_Calib(uint32_t calb_cycle);
 static GenCalib_State_TypeList SrvIMU_Get_Calib(void);
 static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *range);
+static bool SrvIMU_Get_Num(uint8_t *num);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -301,6 +306,7 @@ SrvIMU_TypeDef SrvIMU = {
     .set_calib = SrvIMU_Set_Calib,
     .get_calib = SrvIMU_Get_Calib,
     .get_max_angular_speed_diff = SrvIMU_Get_MaxAngularSpeed_Diff,
+    .get_imu_num = SrvIMU_Get_Num,
 };
 
 static SrvIMU_ErrorCode_List SrvIMU_Init(void)
@@ -353,6 +359,8 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
                 return SrvIMU_PriIMU_Filter_Init_Error;
             }
         }
+
+        Useful_IMU_Num ++;
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, PriIMU_Init_State, &InUse_PriIMU_Obj, sizeof(InUse_PriIMU_Obj));
@@ -374,6 +382,8 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
                 return SrvIMU_SecIMU_Filter_Init_Error;
             }
         }
+
+        Useful_IMU_Num ++;
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SecIMU_Init_State, &InUse_SecIMU_Obj, sizeof(InUse_SecIMU_Obj));
@@ -383,6 +393,8 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     memset(&PriIMU_Data_Lst, NULL, sizeof(PriIMU_Data_Lst));
     memset(&SecIMU_Data_Lst, NULL, sizeof(SecIMU_Data_Lst));
+
+    init_finish = true;
 
     if (!SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
@@ -399,6 +411,22 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     }
     else
         return SrvIMU_No_Error;
+}
+
+static bool SrvIMU_Get_Num(uint8_t *num)
+{
+    if(num)
+    {
+        if(init_finish)
+        {
+            (*num) = Useful_IMU_Num;
+            return true;
+        }
+        
+        (*num) = 0;
+    }
+
+    return false;
 }
 
 /* init primary IMU Device */
@@ -426,7 +454,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
                                 SrvOsCommon.get_os_ms);
 
             DevMPU6000.config(&MPU6000Obj,
-                               MPU6000_SampleRate_2K,
+                               MPU6000_SampleRate_1K,
                                MPU6000_Acc_16G,
                                MPU6000_Gyr_2000DPS);
 
@@ -454,7 +482,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
                                  SrvOsCommon.get_os_ms);
 
             DevICM20602.config(&ICM20602Obj,
-                                ICM20602_SampleRate_2K,
+                                ICM20602_SampleRate_1K,
                                 ICM20602_Acc_16G,
                                 ICM20602_Gyr_2000DPS);
 
@@ -482,7 +510,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
                                  SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42688PObj,
-                                ICM426xx_SampleRate_2K,
+                                ICM426xx_SampleRate_1K,
                                 ICM426xx_Acc_16G,
                                 ICM426xx_Gyr_2000DPS);
 
@@ -510,7 +538,7 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
                                  SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42605Obj,
-                                ICM426xx_SampleRate_2K,
+                                ICM426xx_SampleRate_1K,
                                 ICM426xx_Acc_16G,
                                 ICM426xx_Gyr_2000DPS);
 
@@ -560,7 +588,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                                 SrvOsCommon.get_os_ms);
 
             DevMPU6000.config(&MPU6000Obj,
-                               MPU6000_SampleRate_2K,
+                               MPU6000_SampleRate_1K,
                                MPU6000_Acc_16G,
                                MPU6000_Gyr_2000DPS);
 
@@ -588,7 +616,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                                  SrvOsCommon.get_os_ms);
 
             DevICM20602.config(&ICM20602Obj,
-                                ICM20602_SampleRate_2K,
+                                ICM20602_SampleRate_1K,
                                 ICM20602_Acc_16G,
                                 ICM20602_Gyr_2000DPS);
 
@@ -616,7 +644,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                                  SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42688PObj,
-                                ICM426xx_SampleRate_2K,
+                                ICM426xx_SampleRate_1K,
                                 ICM426xx_Acc_16G,
                                 ICM426xx_Gyr_2000DPS);
 
@@ -644,7 +672,7 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
                                  SrvOsCommon.get_os_ms);
 
             DevICM426xx.config(&ICM42605Obj,
-                                ICM426xx_SampleRate_2K,
+                                ICM426xx_SampleRate_1K,
                                 ICM426xx_Acc_16G,
                                 ICM426xx_Gyr_2000DPS);
 
