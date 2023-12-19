@@ -34,7 +34,6 @@ static bool arm_state = true;
 static bool failsafe = false;
 static bool imu_init_state = false;
 static bool att_update = false;
-static bool rc_update = false;
 static bool tunning_state = false;
 static bool configrator_attach = false;
 static bool control_enable = false;
@@ -131,8 +130,8 @@ void TaskControl_Core(void const *arg)
 
     while(1)
     {
-        SrvDataHub.get_arm_state(&arm_state);
-        
+        Srv_CtlDataArbitrate.negociate_update();
+
         if(control_enable && !TaskControl_Monitor.CLI_enable)
         {
             TaskControl_FlightControl_Polling(Srv_CtlDataArbitrate.get_data());
@@ -249,9 +248,6 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
                                              &TaskControl_Monitor.attitude.q2,
                                              &TaskControl_Monitor.attitude.q3);
 
-        // get rc channel and other toggle signal
-        rc_update = SrvDataHub.get_rc(&rc_update_time, rc_ch, &rc_channel_sum);
-
         if (imu_update_time)
         {
             if (imu_update_time > TaskControl_Monitor.IMU_Rt)
@@ -332,19 +328,6 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
                 TaskControl_Monitor.control_abort = true;
 
             goto lock_moto;
-        }
-
-        /* only manipulate esc or servo when disarm */
-        if (rc_update_time && !failsafe)
-        {
-            if (rc_update_time >= TaskControl_Monitor.RC_Rt)
-            {
-                TaskControl_Monitor.auto_control = false;
-                TaskControl_Monitor.RC_Rt = rc_update_time;
-
-                if (arm_state != TELEMETRY_SET_DISARM)
-                    goto lock_moto;
-            }
         }
         
         if(TaskControl_Monitor.angular_protect)

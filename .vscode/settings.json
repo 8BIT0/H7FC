@@ -152,7 +152,8 @@
                 "shell_port.h": "c",
                 "srv_ctldataarbitrate.h": "c",
                 "dev_icm426xx.h": "c",
-                "freertosconfig.h": "c"
+                "freertosconfig.h": "c",
+                "ratio": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

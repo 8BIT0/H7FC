@@ -4,6 +4,7 @@
  *       but doing acturator control we must to make the control signal unique
  *       in this file we can make multiple control signal in but out with the only one  
  */
+#include <math.h>
 #include "Srv_CtlDataArbitrate.h"
 
 #define MAX_ATTITUDE_ANGLE_RANGE 60
@@ -146,6 +147,44 @@ static void Srv_CtlDataArbitrate_Update(void)
     /* convert gimbal value to physical expection */
     SrvDataHub.get_gimbal_percent(rc_gimbal_percent);
 
+    if(arm_state == DRONE_ARM)
+    {
+        /* when drone is armed we can switch control signal easily */
+        /* if on plane conputer reqire to control */
+    }
+    else
+    {
+
+    }
+}
+
+static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp_pitch, float *exp_roll)
+{
+    float pos_trip = 0.0f;
+    float neg_trip = 0.0f;
+    float gimbal_percent_tmp = 0.0f;
+
+    if(gimbal_percent && exp_pitch && exp_roll)
+    {
+        pos_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].max - SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
+        neg_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].min - SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
+        gimbal_percent_tmp = (gimbal_percent[Srv_RC_Pitch] - 50) / 100.0f;
+ 
+        if((gimbal_percent[Srv_RC_Pitch] - 50) > 0)
+        {
+            (*exp_pitch) = (pos_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
+        }
+        else if((gimbal_percent[Srv_RC_Pitch] - 50) < 0)
+        {
+            (*exp_pitch) = (neg_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
+        }
+        else
+            (*exp_pitch) = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
+    }
+}
+
+static void Srv_CtlData_ConvertGimbal_ToAngularSpeed()
+{
 
 }
 
