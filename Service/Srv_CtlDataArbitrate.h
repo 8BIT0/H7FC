@@ -31,13 +31,11 @@ typedef enum
     ArbitrateState_None = 0,
     ArbitrateState_InProcess,
     ArbitrateState_Done,
-    ArbitrateState_Error,
+    ArbitrateState_Denied,
 } Srv_CtlArbitrateState_List;
 
 typedef struct
 {
-    Srv_CtlArbitrateState_List arbitrate_state;
-    
     bool tunning;
     bool attach_configrator;
 
@@ -70,7 +68,7 @@ typedef struct
     bool calib_state;
     bool fail_safe;
     Srv_CtlMode_List ctl_mode;
-    uint8_t RC_TakingOver_percent;
+    uint8_t TakingOver_stage; /* signal arbitrate and sync process stage */
 
     uint8_t idle_throttle_percent;
     uint8_t throttle_percent;
@@ -102,6 +100,8 @@ typedef struct
     Srv_CtlSigInputType_List cur_sig_type;
     Srv_CtlMode_List cur_ctl_mode;
 
+    Srv_CtlArbitrateState_List arbitrate_state;
+    Srv_CtlSigSrcMode_List sig_privilege_req_source;
 } Srv_CtlArbitrateMonitor_TypeDef;
 
 typedef struct

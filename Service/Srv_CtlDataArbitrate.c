@@ -135,6 +135,7 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
     SrvCtlArbitrateMonitor.cur_sig_sourece = Control_Sig_RC;
     SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
     SrvCtlArbitrateMonitor.cur_ctl_mode = Control_Mode_Attitude;
+    SrvCtlArbitrateMonitor.sig_privilege_req_source = SrvCtlArbitrateMonitor.cur_sig_sourec;
 
     return true;
 }
@@ -164,15 +165,27 @@ static void Srv_CtlDataArbitrate_Update(void)
         switch((uint8_t)SrvCtlArbitrateMonitor.cur_sig_sourece)
         {
             case Control_Sig_RC:
+                SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
 
                 break;
             
             case Control_Sig_OnPlaneComputer:
-                
+                switch((uint8_t)SrvCtlArbitrateMonitor.cur_sig_type)
+                {
+                    default:
+                        break;
+                }
                 break;
 
             default:
                 break;
+        }
+
+        /* another control signal required control privilege doing arbitrate signal source */
+        if(SrvCtlArbitrateMonitor.sig_privilege_req_source != SrvCtlArbitrateMonitor.cur_sig_sourece)
+        {
+            
+            
         }
     }
 }
