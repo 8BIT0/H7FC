@@ -17,6 +17,8 @@
 */
 
 
+static void TaskNavi_FlipOver_Detect(void);
+
 /* internal vriable */
 uint32_t TaskNavi_Period = 0;
 
@@ -107,9 +109,13 @@ void TaskNavi_Core(void const *arg)
                 attitude.time_stamp = SrvOsCommon.get_os_ms();
                 DataPipe_DataObj(Navi_Attitude) = attitude;
             }
+            
+            TaskNavi_FlipOver_Detect();
 
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);
+
+            /* DataPipe FlipOver State */
         }
 
         /* check imu data update freq on test */
@@ -117,4 +123,7 @@ void TaskNavi_Core(void const *arg)
     }
 }
 
+static void TaskNavi_FlipOver_Detect(void)
+{
 
+}

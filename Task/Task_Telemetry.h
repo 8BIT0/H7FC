@@ -104,6 +104,8 @@ typedef struct
     Telemetry_RCFuncMap_TypeDef ARM_Toggle;
     Telemetry_RCFuncMap_TypeDef ControlMode_Toggle;
     Telemetry_RCFuncMap_TypeDef Buzzer_Toggle;
+    Telemetry_RCFuncMap_TypeDef TakingOver_Toggle;
+    Telemetry_RCFuncMap_TypeDef FlipOver_Toggle;
     Telemetry_RCFuncMap_TypeDef Log_Toggle;
     Telemetry_RCFuncMap_TypeDef OSD_Toggle;
     Telemetry_RCFuncMap_TypeDef CLB_Toggle;

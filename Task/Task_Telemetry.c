@@ -7,9 +7,9 @@
  * channel 2  roll
  * channel 3  throttle
  * channel 4  yaw
- * channel 5  arm toggle        two pos on and off
- * channel 6  buzzer toggle     two pos on and off
- * channel 7  aux3
+ * channel 5  arm toggle            two   pos : on/off
+ * channel 6  buzzer toggle         two   pos : on/off
+ * channel 7  control mode switch   three pos : pos 1/2/3
  * channel 8  aux4
  * channel 9  aux5
  * channel 10 aux6
@@ -48,6 +48,7 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t trigger_min_range, uint16_t trigger_max_range);
 static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t trigger_min_range, uint16_t trigger_max_range);
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
+static uint16_t Telemetry_SplitValue_Into(uint8_t pcs);
 static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t roll_ch, uint8_t yaw_ch);
 static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t takingover_toggle_ch);
 
@@ -582,6 +583,16 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     return sig_tmp;
 }
 
+static uint16_t Telemetry_SplitValue_Into(uint8_t pcs)
+{
+    uint16_t range = Telemetry_Monitor.receiver_value_max - Telemetry_Monitor.receiver_value_min;
+
+    if(pcs)
+        return range / pcs;
+
+    return 0;
+}
+
 static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t roll_ch, uint8_t yaw_ch)
 {
     if((throttle_ch == pitch_ch) || \
@@ -623,6 +634,9 @@ static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t
 
 static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t takingover_toggle_ch)
 {
+    int16_t start = 0;
+    int16_t end = 0;
+    
     /* bind arm toggle */
     if(!Telemetry_BindToggleToChannel(&RC_Setting, \
                                       &Receiver_Obj.data.val_list[4], \
@@ -639,7 +653,34 @@ static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch,
                                       Telemetry_Monitor.receiver_value_mid))
         return false;
     
-    /* bind control mode switcher toggle */
+    /* bind control mode switcher toggle */ 
+    uint16_t split_val = Telemetry_SplitValue_Into(3);
+    start = Telemetry_Monitor.receiver_value_min;
+    end = Telemetry_Monitor.receiver_value_min + split_val;
+    if(!Telemetry_BindToggleToChannel(&RC_Setting, \
+                                      &Receiver_Obj.data.val_list[6], \
+                                      &RC_Setting.ControlMode_Toggle, \
+                                      start, \
+                                      end))
+        return false;
+
+    start = end;
+    end += split_val;
+    if(!Telemetry_AddToggleCombo(&RC_Setting, \
+                                 &Receiver_Obj.data.val_list[6], \
+                                 &RC_Setting.ControlMode_Toggle, \
+                                 start, \
+                                 end))
+        return false;
+
+    start = end;
+    end = Telemetry_Monitor.receiver_value_max;
+    if(!Telemetry_AddToggleCombo(&RC_Setting, \
+                                 &Receiver_Obj.data.val_list[6], \
+                                 &RC_Setting.ControlMode_Toggle, \
+                                 start, \
+                                 end))
+       return false;
 
     /* bind control taking over toggle (toggle must can auto reset) */
 
