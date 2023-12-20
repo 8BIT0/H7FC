@@ -125,5 +125,8 @@ void TaskNavi_Core(void const *arg)
 
 static void TaskNavi_FlipOver_Detect(void)
 {
-
+    /* use roll angle detect drone up side down state */
+    /* if drone flip over roll must between 180 ~ -180 */
+    /* keep this value over than 1s we think is flip over */
+    
 }

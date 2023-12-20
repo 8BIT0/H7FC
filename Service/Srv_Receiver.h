@@ -6,6 +6,7 @@
 #include "Dev_CRSF.h"
 #include "Bsp_GPIO.h"
 #include "Bsp_Uart.h"
+#include "control_data.h"
 
 #define SRV_RECEIVER_UPDATE_TIMEOUT_MS 100
 #define SRV_RECEIVER_BUFF_SIZE 256
@@ -19,27 +20,6 @@
 #define SRV_RECEIVER_MIN_ANTENNA_VALUE 5
 
 #define MAX_RECEIVER_CHANNEL_NUM 32
-
-typedef enum
-{
-    Srv_RC_Throttle = 0,
-    Srv_RC_Pitch,
-    Srv_RC_Roll,
-    Srv_RC_Yaw,
-    Srv_Gimbal_TagSum,
-    Srv_RC_AUX_1 = Srv_Gimbal_TagSum,
-    Srv_RC_AUX_2,
-    Srv_RC_AUX_3,
-    Srv_RC_AUX_4,
-    Srv_RC_AUX_5,
-    Srv_RC_AUX_6,
-    Srv_RC_AUX_7,
-    Srv_RC_AUX_8,
-    Srv_RC_AUX_9,
-    Srv_RC_AUX_10,
-    Srv_RC_AUX_11,
-    Srv_RC_AUX_12,
-} SrvReceiver_TagList;
 
 typedef enum
 {

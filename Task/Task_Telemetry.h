@@ -100,7 +100,7 @@ typedef struct
     uint16_t rssi;
     uint16_t link_quality;
 
-    Telemetry_RCFuncMap_TypeDef Gimbal[Srv_Gimbal_TagSum];
+    Telemetry_RCFuncMap_TypeDef Gimbal[Gimbal_Sum];
     Telemetry_RCFuncMap_TypeDef ARM_Toggle;
     Telemetry_RCFuncMap_TypeDef ControlMode_Toggle;
     Telemetry_RCFuncMap_TypeDef Buzzer_Toggle;
