@@ -235,9 +235,60 @@ static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp
 
 static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, float *exp_gyr_x, float *exp_gyr_y, float *exp_gyr_z)
 {
+    float pos_trip = 0.0f;
+    float neg_trip = 0.0f;
+    float gimbal_percent_tmp = 0.0f;
+
+    /* noticed dead zone is useless in angular speed control */
     if(gimbal_percent && exp_gyr_x && exp_gyr_y && exp_gyr_z)
     {
+        /*************************************************************** gyro x section ******************************************************************/
+        pos_trip = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_X].max - SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_X].idle;
+        neg_trip = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_X].min - SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_X].idle;
+        gimbal_percent_tmp = (gimbal_percent[Srv_RC_Roll] - 50) / 100.0f;
 
+        if((gimbal_percent[Srv_RC_Roll] - 50) > 0)
+        {
+            (*exp_gyr_x) = (pos_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_X].idle;
+        }
+        else if((gimbal_percent[Srv_RC_Roll] - 50) < 0)
+        {
+            (*exp_gyr_x) = (neg_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_X].idle;
+        }
+        else
+            (*exp_gyr_x) = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_X].idle;
+
+        /*************************************************************** gyro y section ******************************************************************/
+        pos_trip = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Y].max - SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Y].idle;
+        neg_trip = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Y].min - SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Y].idle;
+        gimbal_percent_tmp = (gimbal_percent[Srv_RC_Pitch] - 50) / 100.0f;
+
+        if((gimbal_percent[Srv_RC_Pitch] - 50) > 0)
+        {
+            (*exp_gyr_y) = (pos_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Y].idle;
+        }
+        else if((gimbal_percent[Srv_RC_Pitch] - 50) < 0)
+        {
+            (*exp_gyr_y) = (neg_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Y].idle;
+        }
+        else
+            (*exp_gyr_y) = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Y].idle;
+
+        /*************************************************************** gyro z section ******************************************************************/
+        pos_trip = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Z].max - SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Z].idle;
+        neg_trip = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Z].min - SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Z].idle;
+        gimbal_percent_tmp = (gimbal_percent[Srv_RC_Yaw] - 50) / 100.0f;
+
+        if((gimbal_percent[Srv_RC_Yaw] - 50) > 0)
+        {
+            (*exp_gyr_z) = (pos_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Z].idle;
+        }
+        else if((gimbal_percent[Srv_RC_Yaw] - 50) < 0)
+        {
+            (*exp_gyr_z) = (neg_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Z].idle;
+        }
+        else
+            (*exp_gyr_z) = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Z].idle;
     }
 }
 
