@@ -7,6 +7,7 @@
 #include <math.h>
 #include "Srv_CtlDataArbitrate.h"
 
+#define ATTITUDE_ACCURACY 100
 #define MAX_ATTITUDE_ANGLE_RANGE 60
 #define MIN_ATTITUDE_ANGLE_RANGE -60
 
@@ -158,29 +159,49 @@ static void Srv_CtlDataArbitrate_Update(void)
     }
 }
 
+/* remote gimbal only can control pitch and roll angle but yaw angle */
 static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp_pitch, float *exp_roll)
 {
     float pos_trip = 0.0f;
     float neg_trip = 0.0f;
     float gimbal_percent_tmp = 0.0f;
+    int16_t diff_to_idle = 0;
+    int16_t dead_zone_max = 0;
+    int16_t dead_zone_min = 0;
 
     if(gimbal_percent && exp_pitch && exp_roll)
     {
+        /**************************************************************** pitch section ******************************************************************/
         pos_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].max - SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
         neg_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].min - SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
         gimbal_percent_tmp = (gimbal_percent[Srv_RC_Pitch] - 50) / 100.0f;
- 
+
         if((gimbal_percent[Srv_RC_Pitch] - 50) > 0)
         {
             (*exp_pitch) = (pos_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
+            diff_to_idle = (int16_t)((pos_trip * gimbal_percent_tmp) * ATTITUDE_ACCURACY);
         }
         else if((gimbal_percent[Srv_RC_Pitch] - 50) < 0)
         {
             (*exp_pitch) = (neg_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
+            diff_to_idle = (int16_t)((neg_trip * gimbal_percent_tmp) * ATTITUDE_ACCURACY);
         }
         else
             (*exp_pitch) = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
 
+        if(SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].enable_dead_zone)
+        {
+            dead_zone_max = (int16_t)(SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].dead_zone_max * ATTITUDE_ACCURACY);
+            dead_zone_min = (int16_t)(SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].dead_zone_min * ATTITUDE_ACCURACY);
+
+            if((diff_to_idle <= dead_zone_max) && (diff_to_idle >= dead_zone_min))
+            {
+                /* expection value under the dead zone */
+                (*exp_pitch) = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
+            }
+        }
+
+        /**************************************************************** roll section ******************************************************************/
         pos_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].max - SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
         neg_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].min - SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
         gimbal_percent_tmp = (gimbal_percent[Srv_RC_Roll] - 50) / 100.0f;
@@ -188,19 +209,36 @@ static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp
         if((gimbal_percent[Srv_RC_Roll] - 50) > 0)
         {
             (*exp_roll) = (pos_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
+            diff_to_idle = (int16_t)((pos_trip * gimbal_percent_tmp) * ATTITUDE_ACCURACY);
         }
         else if((gimbal_percent[Srv_RC_Roll] - 50) < 0)
         {
             (*exp_roll) = (neg_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
+            diff_to_idle = (int16_t)((neg_trip * gimbal_percent_tmp) * ATTITUDE_ACCURACY);
         }
         else
             (*exp_roll) = SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
+
+        if(SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].enable_dead_zone)
+        {
+            dead_zone_max = (int16_t)(SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].dead_zone_max * ATTITUDE_ACCURACY);
+            dead_zone_min = (int16_t)(SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].dead_zone_min * ATTITUDE_ACCURACY);
+
+            if((diff_to_idle <= dead_zone_max) && (diff_to_idle >= dead_zone_min))
+            {
+                /* expection value under the dead zone */
+                (*exp_roll) = SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
+            }
+        }
     }
 }
 
-static void Srv_CtlData_ConvertGimbal_ToAngularSpeed()
+static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, float *exp_gyr_x, float *exp_gyr_y, float *exp_gyr_z)
 {
+    if(gimbal_percent && exp_gyr_x && exp_gyr_y && exp_gyr_z)
+    {
 
+    }
 }
 
 static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_Get_Data(void)
