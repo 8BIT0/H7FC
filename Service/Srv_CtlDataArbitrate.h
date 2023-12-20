@@ -96,7 +96,7 @@ typedef struct
     Srv_CtlRange_TypeDef att_ctl_range[Att_Ctl_Sum];
     Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
 
-    Srv_CtlSigSrcMode_List cur_sig_sourece;
+    Srv_CtlSigSrcMode_List cur_sig_source;
     Srv_CtlSigInputType_List cur_sig_type;
     Srv_CtlMode_List cur_ctl_mode;
 

@@ -132,10 +132,10 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
     memcpy(SrvCtlArbitrateMonitor.att_ctl_range, angularspeed_range, sizeof(angularspeed_range));
 
     /* set default signal source/type/control mode */
-    SrvCtlArbitrateMonitor.cur_sig_sourece = Control_Sig_RC;
+    SrvCtlArbitrateMonitor.cur_sig_source = Control_Sig_RC;
     SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
     SrvCtlArbitrateMonitor.cur_ctl_mode = Control_Mode_Attitude;
-    SrvCtlArbitrateMonitor.sig_privilege_req_source = SrvCtlArbitrateMonitor.cur_sig_sourec;
+    SrvCtlArbitrateMonitor.sig_privilege_req_source = SrvCtlArbitrateMonitor.cur_sig_source;
 
     return true;
 }
@@ -162,7 +162,7 @@ static void Srv_CtlDataArbitrate_Update(void)
     {
         /* when drone is disarm need to check toggle pos and input signal arm state first */
         /* then sync trottle */
-        switch((uint8_t)SrvCtlArbitrateMonitor.cur_sig_sourece)
+        switch((uint8_t)SrvCtlArbitrateMonitor.cur_sig_source)
         {
             case Control_Sig_RC:
                 SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
@@ -182,7 +182,7 @@ static void Srv_CtlDataArbitrate_Update(void)
         }
 
         /* another control signal required control privilege doing arbitrate signal source */
-        if(SrvCtlArbitrateMonitor.sig_privilege_req_source != SrvCtlArbitrateMonitor.cur_sig_sourece)
+        if(SrvCtlArbitrateMonitor.sig_privilege_req_source != SrvCtlArbitrateMonitor.cur_sig_source)
         {
             
             

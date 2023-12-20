@@ -46,7 +46,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t mid_val, uint16_t max_range);
 static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t trigger_min_range, uint16_t trigger_max_range);
-static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t trigger_min_range, uint16_t trigger_max_range);
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
 
 void TaskTelemetry_Set_DataIO_Enable(bool state)
@@ -232,8 +232,8 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 
     if ((!RC_Input_obj) ||
         (!data_obj) ||
-        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
-        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        (min_range < Telemetry_Monitor.receiver_value_min) ||
+        (max_range > Telemetry_Monitor.receiver_value_max))
         return false;
 
     channel_set = (Telemetry_ChannelSet_TypeDef *)SrvOsCommon.malloc(sizeof(Telemetry_ChannelSet_TypeDef));
@@ -271,8 +271,8 @@ static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 
     if ((!RC_Input_obj) ||
         (!data_obj) ||
-        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
-        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        (trigger_min_range < Telemetry_Monitor.receiver_value_min) ||
+        (trigger_max_range > Telemetry_Monitor.receiver_value_max))
         return false;
 
     channel_set = (Telemetry_ChannelSet_TypeDef *)SrvOsCommon.malloc(sizeof(Telemetry_ChannelSet_TypeDef));
@@ -284,8 +284,8 @@ static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     }
 
     channel_set->channel_ptr = data_obj;
-    channel_set->max = max_range;
-    channel_set->min = min_range;
+    channel_set->max = trigger_max_range;
+    channel_set->min = trigger_min_range;
 
     toggle->combo_cnt = 1;
     toggle->combo_list.mode = by_order;
@@ -295,15 +295,15 @@ static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     return true;
 }
 
-static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range)
+static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t trigger_min_range, uint16_t trigger_max_range)
 {
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
     item_obj *item = NULL;
 
     if ((!RC_Input_obj) ||
         (!data_obj) ||
-        (min_range < TELEMETRY_RC_CHANNEL_RANGE_MIN) ||
-        (max_range > TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        (trigger_min_range < Telemetry_Monitor.receiver_value_min) ||
+        (trigger_max_range > Telemetry_Monitor.receiver_value_max))
         return false;
 
     channel_set = (Telemetry_ChannelSet_TypeDef *)SrvOsCommon.malloc(sizeof(Telemetry_ChannelSet_TypeDef));
@@ -323,8 +323,8 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
     }
 
     channel_set->channel_ptr = data_obj;
-    channel_set->max = max_range;
-    channel_set->min = min_range;
+    channel_set->max = trigger_max_range;
+    channel_set->min = trigger_min_range;
 
     toggle->combo_cnt++;
     List_ItemInit(item, channel_set);
@@ -582,16 +582,30 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 
 static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t roll_ch, uint8_t yaw_ch)
 {
-    if(!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Srv_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
-        return false;
-    
-    if(!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Srv_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
-        return false;
-
-    if(!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Srv_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
-        return false;
-    
-    if(!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Srv_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+    if( !Telemetry_BindGimbalToChannel(&RC_Setting, \
+                                       &Receiver_Obj.data.val_list[2], \
+                                       Srv_RC_Throttle, \
+                                       Telemetry_Monitor.receiver_value_min, \
+                                       Telemetry_Monitor.receiver_value_mid, \
+                                       Telemetry_Monitor.receiver_value_max) ||
+        !Telemetry_BindGimbalToChannel(&RC_Setting, \
+                                       &Receiver_Obj.data.val_list[1], \
+                                       Srv_RC_Pitch, \
+                                       Telemetry_Monitor.receiver_value_min, \
+                                       Telemetry_Monitor.receiver_value_mid, \
+                                       Telemetry_Monitor.receiver_value_max) ||
+        !Telemetry_BindGimbalToChannel(&RC_Setting, \
+                                       &Receiver_Obj.data.val_list[0], \
+                                       Srv_RC_Roll, \
+                                       Telemetry_Monitor.receiver_value_min, \
+                                       Telemetry_Monitor.receiver_value_mid, \
+                                       Telemetry_Monitor.receiver_value_max) ||
+        !Telemetry_BindGimbalToChannel(&RC_Setting, \
+                                       &Receiver_Obj.data.val_list[3], \
+                                       Srv_RC_Yaw, \
+                                       Telemetry_Monitor.receiver_value_min, \
+                                       Telemetry_Monitor.receiver_value_mid, \
+                                       Telemetry_Monitor.receiver_value_max))
         return false;
 
     return true;
