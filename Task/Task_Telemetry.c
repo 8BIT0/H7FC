@@ -477,6 +477,9 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             RC_Input_obj->sig.channel[i] = receiver_data.val_list[i];
         }
 
+        /* check taking over toggle */
+        RC_Input_obj->sig.taking_over = Telemetry_Toggle_Check(&RC_Input_obj->TakingOver_Toggle).state;
+
         /* check buzzer toggle */
         RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
 
@@ -488,12 +491,16 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             /* check control mode */
             RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
 
-            /* check calibrate */
-            RC_Input_obj->sig.cali_state = Telemetry_Toggle_Check(&RC_Input_obj->CLB_Toggle).state;
-
             /* check control mode inedx range */
             if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
                 RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+        }
+        else
+        {
+            RC_Input_obj->sig.arm_state = DRONE_ARM;
+            RC_Input_obj->sig.cali_state = false;
+            RC_Input_obj->sig.flip_over = false;
+            RC_Input_obj->sig.taking_over = false;
         }
 
         if (RC_Input_obj->sig.arm_state)
@@ -508,7 +515,21 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
                     RC_Input_obj->sig.osd_tune_state = true;
             }
             else
+            {
                 Receiver_Obj.OSDTune_TriggerMs = 0;
+                
+                /* check calibrate */
+                RC_Input_obj->sig.cali_state = Telemetry_Toggle_Check(&RC_Input_obj->CLB_Toggle).state;
+            
+                /* check flip over toggle */
+                RC_Input_obj->sig.flip_over = Telemetry_Toggle_Check(&RC_Input_obj->FlipOver_Toggle).state;
+            }
+        }
+        else
+        {
+            RC_Input_obj->sig.osd_tune_state = false;
+            RC_Input_obj->sig.cali_state = false;
+            RC_Input_obj->sig.flip_over = false;
         }
 
         RC_Input_obj->update_rt = receiver_data.time_stamp;

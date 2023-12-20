@@ -90,6 +90,7 @@ typedef struct
     bool buzz_state;
     bool cali_state;
     bool flip_over;
+    bool taking_over;
     bool osd_tune_state;
     bool failsafe;
 
