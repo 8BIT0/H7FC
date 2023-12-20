@@ -51,6 +51,7 @@ static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal,
 static uint16_t Telemetry_SplitScopeValue_Into(uint8_t pcs);
 static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t roll_ch, uint8_t yaw_ch);
 static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t takingover_toggle_ch);
+static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig, ControlData_TypeDef *CTLSig);
 static bool Telemetry_Bind_OSDCombo(void);
 static bool Telemetry_Bind_CalibCombo(void);
 
@@ -743,7 +744,10 @@ static bool Telemetry_Bind_CalibCombo(void)
     return true;
 }
 
-static void Telemetry_ConvertRCData_To_ControlData()
+static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig, ControlData_TypeDef *CTLSig)
 {
-
+    if(CTLSig)
+    {
+        CTLSig->Update_time_stamp = RCSig.time_stamp;
+    }
 }
