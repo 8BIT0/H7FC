@@ -7,10 +7,10 @@
  * channel 2  pitch
  * channel 3  throttle
  * channel 4  yaw
- * channel 5  arm toggle            two   pos : on/off
- * channel 6  buzzer toggle         two   pos : on/off
- * channel 7  control mode switch   three pos : pos 1/2/3
- * channel 8  aux4
+ * channel 5  arm toggle                two   pos : on/off
+ * channel 6  buzzer toggle             two   pos : on/off
+ * channel 7  control mode switch       three pos : pos 1/2/3
+ * channel 8  taking over & flip over   auto reset toggle hold for enable
  * channel 9  aux5
  * channel 10 aux6
  * channel 11 aux7
