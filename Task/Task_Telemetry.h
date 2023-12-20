@@ -14,6 +14,7 @@
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
 #include "Srv_DataHub.h"
+#include "control_data.h"
 
 #define Telemetry_SetBit(x) UTIL_SET_BIT(x)
 
