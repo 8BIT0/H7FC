@@ -45,7 +45,7 @@ DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
 static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
 static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, uint16_t gimbal_tag, uint16_t min_range, uint16_t mid_val, uint16_t max_range);
-static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
+static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t trigger_min_range, uint16_t trigger_max_range);
 static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range);
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
 
@@ -218,6 +218,11 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
     RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
     RC_Input_obj->sig.module_enable = TELEMETRY_DISABLE_ALL_MODULE;
 
+    RC_Input_obj->init_state = SrvReceiver.get_scope(receiver_obj, \
+                                                     &Telemetry_Monitor.receiver_value_max, \
+                                                     &Telemetry_Monitor.receiver_value_mid, \
+                                                     &Telemetry_Monitor.receiver_value_min);
+
     return RC_Input_obj->init_state;
 }
 
@@ -260,7 +265,7 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
     }
 }
 
-static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t min_range, uint16_t max_range)
+static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t trigger_min_range, uint16_t trigger_max_range)
 {
     Telemetry_ChannelSet_TypeDef *channel_set = NULL;
 
@@ -573,4 +578,50 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     memcpy(&sig_tmp, &RC_Input_obj->sig, sizeof(Telemetry_RCSig_TypeDef));
 
     return sig_tmp;
+}
+
+static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t roll_ch, uint8_t yaw_ch)
+{
+    if(!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[2], Srv_RC_Throttle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+    
+    if(!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[1], Srv_RC_Pitch, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+
+    if(!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[0], Srv_RC_Roll, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+    
+    if(!Telemetry_BindGimbalToChannel(&RC_Setting, &Receiver_Obj.data.val_list[3], Srv_RC_Yaw, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID, TELEMETRY_RC_CHANNEL_RANGE_MAX))
+        return false;
+
+    return true;
+}
+
+static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t takingover_toggle_ch)
+{
+    /* bind arm toggle */
+    if(!Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[4], &RC_Setting.ARM_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID))
+        return false;
+
+    /* bind buzzer toggle */
+    if(!Telemetry_BindToggleToChannel(&RC_Setting, &Receiver_Obj.data.val_list[5], &RC_Setting.Buzzer_Toggle, TELEMETRY_RC_CHANNEL_RANGE_MIN, TELEMETRY_RC_CHANNEL_RANGE_MID))
+        return false;
+    
+    /* bind control mode sitcher toggle */
+
+    /* bind control taking over toggle (toggle must can auto reset) */
+
+    /* bind flip over toggle can altinate with taking over toggle if u only have one auto reset toggle on u remote */
+
+    return true;
+}
+
+static bool Telemetry_Bind_Combo()
+{
+
+}
+
+static void Telemetry_ConvertRCData_To_ControlData()
+{
+
 }

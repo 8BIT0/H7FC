@@ -115,6 +115,10 @@ typedef struct
     uint32_t Start_RunCore_Rt;
     uint32_t OnStart_SelfSDetect_Duration;
 
+    int16_t receiver_value_max;
+    int16_t receiver_value_mid;
+    int16_t receiver_value_min;
+
     /* when power on and task detect arm set in disarm state in the first place */
     /* throw arm_warning */
     bool arm_alert;

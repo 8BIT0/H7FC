@@ -28,6 +28,7 @@ static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
 static uint8_t *SrvReceiver_Create_SPIObj(void);
 static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj);
 static SrvReceiverData_TypeDef SrvReceiver_Get_Value(SrvReceiverObj_TypeDef *receiver_obj);
+static bool SrvReceiver_Get_Scope(SrvReceiverObj_TypeDef *receiver_obj, int16_t *max, int16_t *mid, int16_t *min);
 
 SrvReceiver_TypeDef SrvReceiver = {
     .create_serial_obj = SrvReceiver_Create_UartObj,
@@ -35,6 +36,7 @@ SrvReceiver_TypeDef SrvReceiver = {
     .init = SrvReceiver_Init,
     .get = SrvReceiver_Get_Value,
     .invert = SrvReceiver_Set_Invert,
+    .get_scope = SrvReceiver_Get_Scope,
 };
 
 static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
@@ -433,6 +435,29 @@ re_do:
     }
 
     return receiver_data_tmp;
+}
+
+static bool SrvReceiver_Get_Scope(SrvReceiverObj_TypeDef *receiver_obj, int16_t *max, int16_t *mid, int16_t *min)
+{
+    if(receiver_obj && max && mid && min)
+    {
+        switch((uint8_t)receiver_obj->Frame_type)
+        {
+            case Receiver_Type_CRSF:
+                (*max) = CRSF_DIGITAL_CHANNEL_MAX;
+                (*mid) = CRSF_DIGITAL_CHANNEL_MID;
+                (*min) = CRSF_DIGITAL_CHANNEL_MIN;
+                return true;
+
+            case Receiver_Type_Sbus:
+                return false;
+
+            default:
+                return false;  
+        }
+    }
+
+    return false;
 }
 
 /*************************************************************** Error Process Tree Callback *******************************************************************************/

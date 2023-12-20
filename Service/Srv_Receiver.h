@@ -166,6 +166,7 @@ typedef struct
     bool (*init)(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj);
     SrvReceiverData_TypeDef (*get)(SrvReceiverObj_TypeDef *obj);
     void (*invert)(SrvReceiverObj_TypeDef *obj, uint16_t channel_index);
+    bool (*get_scope)(SrvReceiverObj_TypeDef *obj, int16_t *max, int16_t *min, int16_t *min);
 } SrvReceiver_TypeDef;
 
 extern SrvReceiver_TypeDef SrvReceiver;
