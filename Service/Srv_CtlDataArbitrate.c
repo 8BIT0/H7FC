@@ -19,7 +19,7 @@ static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp
 static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, float *exp_gyr_x, float *exp_gyr_y, float *exp_gyr_z);
 
 /* external function */
-static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[2], Srv_CtlRange_TypeDef angularspeed_range[3]);
+static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum]);
 static void Srv_CtlDataArbitrate_Update(void);
 static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_Get_Data(void);
 
@@ -30,7 +30,7 @@ Srv_CtlDataArbitrate_TypeDef Srv_CtlDataArbitrate = {
     .get_data = Srv_CtlDataArbitrate_Get_Data,
 };
 
-static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[2], Srv_CtlRange_TypeDef angularspeed_range[3])
+static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum])
 {
     uint8_t index = 0;
 
@@ -159,8 +159,18 @@ static void Srv_CtlDataArbitrate_Update(void)
     }
     else
     {
-        switch()
+        /* when drone is disarm need to check toggle pos and input signal arm state first */
+        /* then sync trottle */
+        switch((uint8_t)SrvCtlArbitrateMonitor.cur_sig_sourece)
         {
+            case Control_Sig_RC:
+
+                break;
+            
+            case Control_Sig_OnPlaneComputer:
+                
+                break;
+
             default:
                 break;
         }
