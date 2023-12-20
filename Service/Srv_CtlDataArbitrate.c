@@ -14,6 +14,10 @@
 /* internal vriable */
 static Srv_CtlArbitrateMonitor_TypeDef SrvCtlArbitrateMonitor;
 
+/* internal function */
+static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp_pitch, float *exp_roll);
+static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, float *exp_gyr_x, float *exp_gyr_y, float *exp_gyr_z);
+
 /* external function */
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[2], Srv_CtlRange_TypeDef angularspeed_range[3]);
 static void Srv_CtlDataArbitrate_Update(void);
@@ -155,7 +159,11 @@ static void Srv_CtlDataArbitrate_Update(void)
     }
     else
     {
-
+        switch()
+        {
+            default:
+                break;
+        }
     }
 }
 

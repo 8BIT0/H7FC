@@ -26,8 +26,18 @@ typedef enum
     Control_Mode_AngluarSpeed_AngleLock,
 } Srv_CtlMode_List;
 
+typedef enum
+{
+    ArbitrateState_None = 0,
+    ArbitrateState_InProcess,
+    ArbitrateState_Done,
+    ArbitrateState_Error,
+} Srv_CtlArbitrateState_List;
+
 typedef struct
 {
+    Srv_CtlArbitrateState_List arbitrate_state;
+    
     bool tunning;
     bool attach_configrator;
 
@@ -85,8 +95,8 @@ typedef struct
 {
     Srv_CtlNegociateData_TypeDef Data;
     
-    Srv_CtlRange_TypeDef att_ctl_range[2];
-    Srv_CtlRange_TypeDef angularspeed_ctl_range[3];
+    Srv_CtlRange_TypeDef att_ctl_range[Att_Ctl_Sum];
+    Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
 
     Srv_CtlSigSrcMode_List cur_sig_sourece;
     Srv_CtlSigInputType_List cur_sig_type;
@@ -96,7 +106,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(Srv_CtlRange_TypeDef att_range[2], Srv_CtlRange_TypeDef angularspeed_range[3]);
+    bool (*init)(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum]);
     bool (*negociate_update)(void);
     Srv_CtlExpectionData_TypeDef (*get_data)(void);
 } Srv_CtlDataArbitrate_TypeDef;
