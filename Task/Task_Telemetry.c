@@ -701,7 +701,14 @@ static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch,
     return true;
 }
 
-static bool Telemetry_Bind_Combo()
+/* const gimbal position */
+static bool Telemetry_Bind_OSDCombo()
+{
+
+}
+
+/* const gimbal position */
+static bool Telemetry_Bind_CalibCombo()
 {
 
 }
