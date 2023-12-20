@@ -683,8 +683,20 @@ static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch,
        return false;
 
     /* bind control taking over toggle (toggle must can auto reset) */
+    if(!Telemetry_BindToggleToChannel(&RC_Setting, \
+                                      &Receiver_Obj.data.val_list[7], \
+                                      &RC_Setting.TakingOver_Toggle, \
+                                      Telemetry_Monitor.receiver_value_mid, \
+                                      Telemetry_Monitor.receiver_value_max))
+        return false;
 
     /* bind flip over toggle can altinate with taking over toggle if u only have one auto reset toggle on u remote */
+    if(!Telemetry_BindToggleToChannel(&RC_Setting, \
+                                      &Receiver_Obj.data.val_list[7], \
+                                      &RC_Setting.FlipOver_Toggle, \
+                                      Telemetry_Monitor.receiver_value_mid, \
+                                      Telemetry_Monitor.receiver_value_max))
+        return false;
 
     return true;
 }
