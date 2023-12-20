@@ -3,8 +3,8 @@
  * OSD Tune Gimbal code : throttle down / Pitch down / Yaw right max / Roll right max / keep this position for 5S
  *
  * deflaut receiver list
- * channel 1  pitch
- * channel 2  roll
+ * channel 1  roll
+ * channel 2  pitch
  * channel 3  throttle
  * channel 4  yaw
  * channel 5  arm toggle            two   pos : on/off
