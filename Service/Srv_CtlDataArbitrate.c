@@ -180,6 +180,21 @@ static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp
         }
         else
             (*exp_pitch) = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
+
+        pos_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].max - SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
+        neg_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].min - SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
+        gimbal_percent_tmp = (gimbal_percent[Srv_RC_Roll] - 50) / 100.0f;
+ 
+        if((gimbal_percent[Srv_RC_Roll] - 50) > 0)
+        {
+            (*exp_roll) = (pos_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
+        }
+        else if((gimbal_percent[Srv_RC_Roll] - 50) < 0)
+        {
+            (*exp_roll) = (neg_trip * gimbal_percent_tmp) + SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
+        }
+        else
+            (*exp_roll) = SrvCtlArbitrateMonitor.att_ctl_range[Att_Roll].idle;
     }
 }
 
