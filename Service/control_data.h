@@ -23,6 +23,7 @@ typedef enum
     Channel_14,
     Channel_15,
     Channel_16,
+    Channel_Max,
 }Control_Channel_List;
 
 typedef enum
@@ -76,8 +77,12 @@ typedef struct
     uint8_t channel_cum;
     uint16_t all_ch[32];
     uint8_t gimbal_map_list[Gimbal_Sum];
-    uint16_t gimbal[Gimbal_Sum];
+    int16_t gimbal[Gimbal_Sum];
     uint8_t gimbal_percent[Gimbal_Sum];
+
+    int16_t gimbal_max;
+    int16_t gimbal_mid;
+    int16_t gimbal_min;
     
     uint32_t exp_att_time_stamp;
     float exp_att_pitch;

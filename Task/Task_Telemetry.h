@@ -121,11 +121,16 @@ typedef struct
     int16_t receiver_value_mid;
     int16_t receiver_value_min;
 
-    /* when power on and task detect arm set in disarm state in the first place */
-    /* throw arm_warning */
-    bool arm_alert;
+    uint8_t throttle_ch;
+    uint8_t pitch_ch;
+    uint8_t roll_ch;
+    uint8_t yaw_ch;
 
-    bool force_arm;
+    uint8_t arm_toggle_ch;
+    uint8_t buzzer_toggle_ch;
+    uint8_t mode_switcher_ch;
+    uint8_t taking_over_ch;
+    uint8_t flip_over_ch;
 
     uint32_t failsafe_trigger_cnt;
     bool recover_failsafe;

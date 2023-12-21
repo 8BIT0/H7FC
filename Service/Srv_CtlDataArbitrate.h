@@ -48,7 +48,7 @@ typedef struct
     uint8_t RC_TakingOver_percent;
 
     uint8_t rc_channel_num;
-    uint16_t rc_channel[MAX_RECEIVER_CHANNEL_NUM];
+    uint16_t rc_channel[Channel_Max];
 
     uint8_t idle_throttle_percent;
     uint8_t throttle_percent;

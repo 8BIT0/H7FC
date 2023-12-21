@@ -66,6 +66,19 @@ void TaskTelemetry_Init(uint32_t period)
 
     Telemetry_Monitor.Init_Rt = SrvOsCommon.get_os_ms();
 
+    /* gimbal channel definition */
+    Telemetry_Monitor.throttle_ch = Channel_3;
+    Telemetry_Monitor.pitch_ch = Channel_2;
+    Telemetry_Monitor.roll_ch = Channel_1;
+    Telemetry_Monitor.yaw_ch = Channel_4;
+
+    /* toggle channel definition */
+    Telemetry_Monitor.arm_toggle_ch = Channel_5;
+    Telemetry_Monitor.buzzer_toggle_ch = Channel_6;
+    Telemetry_Monitor.mode_switcher_ch = Channel_7;
+    Telemetry_Monitor.taking_over_ch = Channel_8;
+    Telemetry_Monitor.flip_over_ch = Channel_9;
+
     /* init receiver */
     if (Telemetry_RC_Sig_Init(&RC_Setting, &Receiver_Obj))
     {
@@ -75,8 +88,15 @@ void TaskTelemetry_Init(uint32_t period)
         {
             /* set crsf receiver map */
             /* bind to channel */
-            if (Telemetry_Bind_Gimbal(Channel_3, Channel_2, Channel_1, Channel_4) && \
-                Telemetry_Bind_Toggle(Channel_5, Channel_7, Channel_6, Channel_9, Channel_8) && \
+            if (Telemetry_Bind_Gimbal(Telemetry_Monitor.throttle_ch, \
+                                      Telemetry_Monitor.pitch_ch, \
+                                      Telemetry_Monitor.roll_ch, \
+                                      Telemetry_Monitor.yaw_ch) && \
+                Telemetry_Bind_Toggle(Telemetry_Monitor.arm_toggle_ch, \
+                                      Telemetry_Monitor.mode_switcher_ch, \
+                                      Telemetry_Monitor.buzzer_toggle_ch, \
+                                      Telemetry_Monitor.flip_over_ch, \
+                                      Telemetry_Monitor.taking_over_ch) && \
                 Telemetry_Bind_OSDCombo() && \
                 Telemetry_Bind_CalibCombo())
             {
@@ -502,13 +522,13 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         }
         else
         {
-            RC_Input_obj->sig.arm_state = DRONE_ARM;
+            RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
             RC_Input_obj->sig.cali_state = false;
             RC_Input_obj->sig.flip_over = false;
             RC_Input_obj->sig.taking_over = false;
         }
 
-        if (RC_Input_obj->sig.arm_state)
+        if (RC_Input_obj->sig.arm_state == TELEMETRY_SET_ARM)
         {
             /* check osd tune toggle */
             if (Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state)
@@ -576,7 +596,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     else
     {
         RC_Input_obj->sig.failsafe = true;
-        // RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+        RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
         RC_Input_obj->sig.osd_tune_state = false;
         RC_Input_obj->sig.buzz_state = false;
         // RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
@@ -751,6 +771,67 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
 {
     if(CTLSig)
     {
+        memset(CTLSig, 0, sizeof(ControlData_TypeDef));
+
+        CTLSig->sig_source = ControlData_Src_RC;
+        CTLSig->sig_type = ControlData_Type_Channel;
+     
         CTLSig->update_time_stamp = RCSig.time_stamp;
+        CTLSig->arm_state = RCSig.arm_state;
+        CTLSig->fail_safe = RCSig.failsafe;
+
+        if(!RCSig.failsafe)
+        {
+            CTLSig->channel_cum = RCSig.channel_sum;
+            for(uint8_t ch_index = Channel_1; ch_index < Channel_Max; ch_index ++)
+            {
+                CTLSig->all_ch[ch_index] = RCSig.channel[ch_index];
+            }
+
+            CTLSig->gimbal_map_list[Gimbal_Throttle] = Telemetry_Monitor.throttle_ch;
+            CTLSig->gimbal_map_list[Gimbal_Pitch] = Telemetry_Monitor.pitch_ch;
+            CTLSig->gimbal_map_list[Gimbal_Roll] = Telemetry_Monitor.roll_ch;
+            CTLSig->gimbal_map_list[Gimbal_Yaw] = Telemetry_Monitor.yaw_ch;
+
+            CTLSig->gimbal[Gimbal_Throttle] = RCSig.channel[CTLSig->gimbal_map_list[Gimbal_Throttle]];
+            CTLSig->gimbal[Gimbal_Pitch] = RCSig.channel[CTLSig->gimbal_map_list[Gimbal_Pitch]];
+            CTLSig->gimbal[Gimbal_Roll] = RCSig.channel[CTLSig->gimbal_map_list[Gimbal_Roll]];
+            CTLSig->gimbal[Gimbal_Yaw] = RCSig.channel[CTLSig->gimbal_map_list[Gimbal_Yaw]];
+
+            for(uint8_t gim_index = Gimbal_Throttle; gim_index < Gimbal_Sum; gim_index ++)
+            {
+                CTLSig->gimbal_percent[gim_index] = RCSig.gimbal_percent[gim_index];
+            }
+
+            CTLSig->gimbal_max = Telemetry_Monitor.receiver_value_max;
+            CTLSig->gimbal_mid = Telemetry_Monitor.receiver_value_mid;
+            CTLSig->gimbal_min = Telemetry_Monitor.receiver_value_min;
+
+            if(RCSig.arm_state == TELEMETRY_SET_ARM)
+            {
+                CTLSig->osd_tune_enable = true;
+                CTLSig->aux.bit.osd_tune = RCSig.osd_tune_state;
+
+                if(!RCSig.osd_tune_state)
+                {
+                    CTLSig->aux.bit.calib = RCSig.cali_state;
+                    CTLSig->aux.bit.flip_over = RCSig.flip_over;
+                }
+            }
+            else
+            {
+                CTLSig->osd_tune_enable = false;
+                CTLSig->aux.bit.osd_tune = false;
+                CTLSig->aux.bit.calib = false;
+            }
+        }
+        else
+        {
+            memset(CTLSig, 0, sizeof(ControlData_TypeDef));
+            CTLSig->arm_state = TELEMETRY_SET_ARM;
+        }
+
+        CTLSig->aux.bit.buzzer = RCSig.buzz_state;
+        CTLSig->aux.bit.hover_pos_hold = true;
     }
 }

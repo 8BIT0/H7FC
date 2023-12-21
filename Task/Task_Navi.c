@@ -129,21 +129,49 @@ static bool TaskNavi_FlipOver_Detect(float roll_angle)
     /* if drone flip over roll must between 180 ~ -180 */
     /* keep this value over than 1s we think is flip over */
     static uint32_t FilpOver_Trigger_Time = 0;
+    static uint32_t FlipOver_ResetTrigger_Time = 0;
+    static bool FlipOver_State = false;
 
-    if(((roll_angle < 180.0f) && (roll_angle > 80.0f)) || ((roll_angle > -180.0f) && (roll_angle < -80.0f)))
+    if(!FlipOver_State)
     {
-        if(FilpOver_Trigger_Time == 0)
+        if(((roll_angle < 180.0f) && (roll_angle > 80.0f)) || ((roll_angle > -180.0f) && (roll_angle < -80.0f)))
         {
-            FilpOver_Trigger_Time = SrvOsCommon.get_os_ms();
+            if(FilpOver_Trigger_Time == 0)
+            {
+                FilpOver_Trigger_Time = SrvOsCommon.get_os_ms();
+            }
+            else
+            {
+                if((SrvOsCommon.get_os_ms() - FilpOver_Trigger_Time) >= FlipOver_Detect_HoldingTime)
+                {
+                    FilpOver_Trigger_Time = 0;
+                    FlipOver_State = true;
+                }
+            }
         }
         else
-        {
-            if((SrvOsCommon.get_os_ms() - FilpOver_Trigger_Time) >= FlipOver_Detect_HoldingTime)
-                return true;
-        }
+            FilpOver_Trigger_Time = 0;
     }
     else
-        FilpOver_Trigger_Time = 0;
+    {
+        if((roll_angle < 20.0f) && (roll_angle > -20.0f))
+        {
+            if(FlipOver_ResetTrigger_Time == 0)
+            {
+                FlipOver_ResetTrigger_Time = SrvOsCommon.get_os_ms();
+            }
+            else
+            {
+                if(SrvOsCommon.get_os_ms() - FlipOver_ResetTrigger_Time >= FlipOver_Detect_HoldingTime)
+                {
+                    FlipOver_ResetTrigger_Time = 0;
+                    FlipOver_State = false;
+                }
+            }
+        }
+        else
+            FlipOver_ResetTrigger_Time = 0;
+    }
 
-    return false;
+    return FlipOver_State;
 }
