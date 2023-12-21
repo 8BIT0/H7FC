@@ -5,6 +5,7 @@
  *       in this file we can make multiple control signal in but out with the only one  
  */
 #include <math.h>
+#include "DataPipe.h"
 #include "Srv_CtlDataArbitrate.h"
 
 #define ATTITUDE_ACCURACY 100
@@ -143,6 +144,10 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
     SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
     SrvCtlArbitrateMonitor.cur_ctl_mode = Control_Mode_Attitude;
     SrvCtlArbitrateMonitor.sig_privilege_req_source = SrvCtlArbitrateMonitor.cur_sig_source;
+
+    memset(SrvCtlArbitrateMonitor.RC_CtlData, 0, sizeof(ControlData_TypeDef));
+    memset(SrvCtlArbitrateMonitor.OPC_CtlData, 0, sizeof(ControlData_TypeDef));
+    memset(SrvCtlArbitrateMonitor.InUse_CtlDa, 0, sizeof(ControlData_TypeDef));
 
     return true;
 }

@@ -102,6 +102,10 @@ typedef struct
 
     Srv_CtlArbitrateState_List arbitrate_state;
     Srv_CtlSigSrcMode_List sig_privilege_req_source;
+
+    ControlData_TypeDef RC_CtlData;
+    ControlData_TypeDef OPC_CtlData;
+    ControlData_TypeDef InUse_CtlData;
 } Srv_CtlArbitrateMonitor_TypeDef;
 
 typedef struct
