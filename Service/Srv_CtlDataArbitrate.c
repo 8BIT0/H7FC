@@ -21,14 +21,12 @@ static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, f
 
 /* external function */
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum]);
-static void Srv_CtlDataArbitrate_Update(void);
-static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_Get_Data(void);
+static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_Data);
 
 /* external vriable */
 Srv_CtlDataArbitrate_TypeDef Srv_CtlDataArbitrate = {
     .init = Srv_CtlDataArbitrate_Init,
     .negociate_update = Srv_CtlDataArbitrate_Update,
-    .get_data = Srv_CtlDataArbitrate_Get_Data,
 };
 
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum])
@@ -152,10 +150,16 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
     return true;
 }
 
-static void Srv_CtlDataArbitrate_Update(void)
+static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
 {
-    SrvDataHub.get_rc_control_data(&SrvCtlArbitrateMonitor.RC_CtlData);
-    SrvDataHub.get_opc_control_data(&SrvCtlArbitrateMonitor.OPC_CtlData);
+    if(inuse_ctl_data)
+    {
+        SrvDataHub.get_rc_control_data(&SrvCtlArbitrateMonitor.RC_CtlData);
+        SrvDataHub.get_opc_control_data(&SrvCtlArbitrateMonitor.OPC_CtlData);
+
+
+
+    }
 }
 
 /* remote gimbal only can control pitch and roll angle but yaw angle */
@@ -289,13 +293,4 @@ static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, f
         else
             (*exp_gyr_z) = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Z].idle;
     }
-}
-
-static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_Get_Data(void)
-{
-    Srv_CtlExpectionData_TypeDef data_tmp;
-
-    memset(&data_tmp, 0, sizeof(Srv_CtlExpectionData_TypeDef)); 
-
-    return data_tmp;
 }

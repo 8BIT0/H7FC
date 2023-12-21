@@ -111,8 +111,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum]);
-    bool (*negociate_update)(void);
-    Srv_CtlExpectionData_TypeDef (*get_data)(void);
+    bool (*negociate_update)(ControlData_TypeDef *inuse_ctldata);
 } Srv_CtlDataArbitrate_TypeDef;
 
 extern Srv_CtlDataArbitrate_TypeDef Srv_CtlDataArbitrate;
