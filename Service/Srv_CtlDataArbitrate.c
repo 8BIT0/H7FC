@@ -157,8 +157,13 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
         SrvDataHub.get_rc_control_data(&SrvCtlArbitrateMonitor.RC_CtlData);
         SrvDataHub.get_opc_control_data(&SrvCtlArbitrateMonitor.OPC_CtlData);
 
-
-
+        if(SrvCtlArbitrateMonitor.cur_sig_source == Control_Sig_RC)
+        {
+        }
+        
+        if(SrvCtlArbitrateMonitor.cur_sig_source == Control_Sig_OnPlaneComputer)
+        {
+        }
     }
 }
 
