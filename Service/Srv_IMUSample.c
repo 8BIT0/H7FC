@@ -40,8 +40,6 @@ typedef struct
 }SrvIMU_InuseSensorObj_TypeDef;
 
 /* test var */
-static uint32_t SrvIMU_PriIMU_Init_Error_CNT = 0;
-static uint32_t SrvIMU_SecIMU_Init_Error_CNT = 0;
 static uint32_t SrvIMU_ALLModule_Init_Error_CNT = 0;
 static uint32_t SrvIMU_Reupdate_Statistics_CNT = 0;
 
@@ -275,7 +273,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode);
 static bool SrvIMU_Get_Data(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data);
 static void SrvIMU_ErrorProc(void);
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
-static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle, uint32_t *calib_cycle_cnt, float *pri_gyr, float *sec_gyr);
+static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle, uint16_t *calib_cycle_cnt, float *pri_gyr, float *sec_gyr);
 static GenCalib_State_TypeList SrvIMU_Set_Calib(uint32_t calb_cycle);
 static GenCalib_State_TypeList SrvIMU_Get_Calib(void);
 static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *range);
@@ -719,7 +717,7 @@ static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8
                 {
                     data->acc_blunt_cnt[axis]++;
 
-                    if (data->acc_blunt_cnt >= IMU_BLUNT_SAMPLE_CNT)
+                    if (data->acc_blunt_cnt[axis] >= IMU_BLUNT_SAMPLE_CNT)
                     {
                         return SrvIMU_Sample_Data_Acc_Blunt;
                     }
@@ -766,7 +764,7 @@ static GenCalib_State_TypeList SrvIMU_Get_Calib(void)
     return Gyro_Calib_Monitor.state;
 }
 
-static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle, uint32_t *calib_cycle_cnt, float *pri_gyr, float *sec_gyr)
+static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle, uint16_t *calib_cycle_cnt, float *pri_gyr, float *sec_gyr)
 {
     uint8_t i = Axis_X;
     GenCalib_State_TypeList state = Calib_Failed;
@@ -1079,7 +1077,7 @@ static bool SrvIMU_Get_Data(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data)
 {
     SrvIMU_Data_TypeDef imu_data_tmp;
 
-    memset(&imu_data_tmp, NULL, IMU_DATA_SIZE);
+    memset(&imu_data_tmp, 0, IMU_DATA_SIZE);
 
     if(data == NULL)
         return false;

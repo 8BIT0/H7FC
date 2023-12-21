@@ -128,8 +128,15 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
         }
     }
 
-    memcpy(SrvCtlArbitrateMonitor.att_ctl_range, att_range, sizeof(att_range));
-    memcpy(SrvCtlArbitrateMonitor.att_ctl_range, angularspeed_range, sizeof(angularspeed_range));
+    for(index = 0; index < 2; index ++)
+    {
+        SrvCtlArbitrateMonitor.att_ctl_range[index] = att_range[index];
+    }
+
+    for(index = 0; index < 3; index ++)
+    {
+        SrvCtlArbitrateMonitor.att_ctl_range[index] = angularspeed_range[index];
+    }
 
     /* set default signal source/type/control mode */
     SrvCtlArbitrateMonitor.cur_sig_source = Control_Sig_RC;

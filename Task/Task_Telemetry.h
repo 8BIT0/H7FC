@@ -95,9 +95,6 @@ typedef struct
     uint32_t update_rt;
     uint32_t lst_update_rt;
     Telemetry_RCSig_TypeDef sig;
-    uint32_t aux_func_reg;
-    uint16_t rssi;
-    uint16_t link_quality;
 
     Telemetry_RCFuncMap_TypeDef Gimbal[Gimbal_Sum];
     Telemetry_RCFuncMap_TypeDef ARM_Toggle;
@@ -136,6 +133,8 @@ typedef struct
     uint32_t failsafe_trigger_cnt;
     bool recover_failsafe;
     bool lst_arm_state;
+ 
+    Telemetry_RCInput_TypeDef RC_Setting;
 } Telemetry_Monitor_TypeDef;
 
 void TaskTelemetry_Init(uint32_t period);

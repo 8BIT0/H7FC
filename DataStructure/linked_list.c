@@ -271,8 +271,6 @@ list_error_code List_DecBelowID(item_obj *obj)
 
 list_error_code List_Delete_Item(item_obj *item, item_datareset_callback callback)
 {
-    volatile static uint8_t test = 0;
-
     if (item != NULL)
     {
         if (callback != NULL)

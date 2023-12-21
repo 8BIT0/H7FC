@@ -1,5 +1,7 @@
 #include "Srv_DataHub.h"
 
+#define To_Pipe_TransFinish_Callback(x) ((Pipe_TransFinish_Callback)x)
+
 /* internal variable */
 SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor = {
     .init_state = false,
@@ -8,7 +10,9 @@ SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor = {
 /* Pipe Object */
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlIMU_Data);
 DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, PtlActuator_Data);
-DataPipe_CreateDataObj(SrvRecever_RCSig_TypeDef, Proto_Rc);
+DataPipe_CreateDataObj(ControlData_TypeDef, Hub_InUse_CtlData);
+DataPipe_CreateDataObj(ControlData_TypeDef, Hub_OPC_CtlData);
+DataPipe_CreateDataObj(ControlData_TypeDef, Hub_Telemetry_Rc);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Enable);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
 DataPipe_CreateDataObj(IMUAtt_TypeDef, Hub_Attitude);
@@ -94,62 +98,62 @@ static void SrvDataHub_Init(void)
     memset(DataPipe_DataObjAddr(PtlIMU_Data), 0, DataPipe_DataSize(PtlIMU_Data));
     IMU_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlIMU_Data);
     IMU_hub_DataPipe.data_size = DataPipe_DataSize(PtlIMU_Data);
-    IMU_hub_DataPipe.trans_finish_cb = SrvDataHub_IMU_DataPipe_Finish_Callback;
+    IMU_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_IMU_DataPipe_Finish_Callback);
     DataPipe_Enable(&IMU_hub_DataPipe);
 
     memset(DataPipe_DataObjAddr(Hub_PriIMU_Range), 0, DataPipe_DataSize(Hub_PriIMU_Range));
     IMU_PriRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_PriIMU_Range);
     IMU_PriRange_hub_DataPipe.data_size = DataPipe_DataSize(Hub_PriIMU_Range);
-    IMU_PriRange_hub_DataPipe.trans_finish_cb = SrvDataHub_IMU_Range_DataPipe_Finish_Callback;
+    IMU_PriRange_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_IMU_Range_DataPipe_Finish_Callback);
     DataPipe_Enable(&IMU_PriRange_hub_DataPipe);
 
     memset(DataPipe_DataObjAddr(Hub_SecIMU_Range), 0, DataPipe_DataSize(Hub_SecIMU_Range));
     IMU_SecRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_SecIMU_Range);
     IMU_SecRange_hub_DataPipe.data_size = DataPipe_DataSize(Hub_SecIMU_Range);
-    IMU_SecRange_hub_DataPipe.trans_finish_cb = SrvDataHub_IMU_Range_DataPipe_Finish_Callback;
+    IMU_SecRange_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_IMU_Range_DataPipe_Finish_Callback);
     DataPipe_Enable(&IMU_SecRange_hub_DataPipe);
     
     /* init pipe object */
-    memset(DataPipe_DataObjAddr(Proto_Rc), 0, DataPipe_DataSize(Proto_Rc));
-    Receiver_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Proto_Rc);
-    Receiver_hub_DataPipe.data_size = DataPipe_DataSize(Proto_Rc);
-    Receiver_hub_DataPipe.trans_finish_cb = SrvDataHub_PipeRcTelemtryDataFinish_Callback;
+    memset(DataPipe_DataObjAddr(Hub_Telemetry_Rc), 0, DataPipe_DataSize(Hub_Telemetry_Rc));
+    Receiver_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Telemetry_Rc);
+    Receiver_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Telemetry_Rc);
+    Receiver_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_PipeRcTelemtryDataFinish_Callback);
     DataPipe_Enable(&Receiver_hub_DataPipe);
 
     memset(DataPipe_DataObjAddr(Sensor_Enable), 0, DataPipe_DataSize(Sensor_Enable));
     SensorEnableState_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Sensor_Enable);
     SensorEnableState_hub_DataPipe.data_size = DataPipe_DataSize(Sensor_Enable);
-    SensorEnableState_hub_DataPipe.trans_finish_cb = SrvDataHub_SensorState_DataPipe_Finish_Callback;
+    SensorEnableState_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_SensorState_DataPipe_Finish_Callback);
     DataPipe_Enable(&SensorEnableState_hub_DataPipe);
 
     memset(DataPipe_DataObjAddr(Sensor_Init), 0, DataPipe_DataSize(Sensor_Init));
     SensorInitState_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Sensor_Init);
     SensorInitState_hub_DataPipe.data_size = DataPipe_DataSize(Sensor_Init);
-    SensorInitState_hub_DataPipe.trans_finish_cb = SrvDataHub_SensorState_DataPipe_Finish_Callback;
+    SensorInitState_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_SensorState_DataPipe_Finish_Callback);
     DataPipe_Enable(&SensorInitState_hub_DataPipe);
 
     memset(DataPipe_DataObjAddr(PtlActuator_Data), 0, DataPipe_DataSize(PtlActuator_Data));
     Actuator_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlActuator_Data);
     Actuator_hub_DataPipe.data_size = DataPipe_DataSize(PtlActuator_Data);
-    Actuator_hub_DataPipe.trans_finish_cb = SrvDataHub_Actuator_DataPipe_Finish_Callback;
+    Actuator_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_Actuator_DataPipe_Finish_Callback);
     DataPipe_Enable(&Actuator_hub_DataPipe);
     
     memset(DataPipe_DataObjAddr(Hub_Attitude), 0, DataPipe_DataSize(Hub_Attitude));
     Attitude_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Attitude);
     Attitude_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Attitude);
-    Attitude_hub_DataPipe.trans_finish_cb = SrvDataHub_Attitude_DataPipe_Finish_Callback;
+    Attitude_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_Attitude_DataPipe_Finish_Callback);
     DataPipe_Enable(&Attitude_hub_DataPipe);
 
     memset(DataPipe_DataObjAddr(Hub_Baro_Data), 0, DataPipe_DataSize(Hub_Baro_Data));
     Baro_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Baro_Data);
     Baro_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Baro_Data);
-    Baro_hub_DataPipe.trans_finish_cb = SrvDataHub_Baro_DataPipe_Finish_Callback;
+    Baro_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_Baro_DataPipe_Finish_Callback);
     DataPipe_Enable(&Baro_hub_DataPipe);
 
     memset(DataPipe_DataObjAddr(Hub_Pos), 0, DataPipe_DataSize(Hub_Pos));
     POS_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Pos);
     POS_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Pos);
-    POS_hub_DataPipe.trans_finish_cb =  SrvDataHub_Pos_DataPipe_Finish_Callback;
+    POS_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_Pos_DataPipe_Finish_Callback);
     DataPipe_Enable(&POS_hub_DataPipe);
 
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
@@ -368,20 +372,7 @@ static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *ob
         if (SrvDataHub_Monitor.inuse_reg.bit.rc)
             SrvDataHub_Monitor.inuse_reg.bit.rc = false;
 
-        SrvDataHub_Monitor.data.rc_update_time = DataPipe_DataObj(Proto_Rc).time_stamp;
-        SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Proto_Rc).arm_state;
-        SrvDataHub_Monitor.data.flight_mode = DataPipe_DataObj(Proto_Rc).control_mode;
-        SrvDataHub_Monitor.data.buzzer = DataPipe_DataObj(Proto_Rc).buzz_state;
-        SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Proto_Rc).failsafe;
-        SrvDataHub_Monitor.data.channel_sum = DataPipe_DataObj(Proto_Rc).channel_sum;
-
-        for (uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
-        {
-            SrvDataHub_Monitor.data.ch[i] = DataPipe_DataObj(Proto_Rc).channel[i];
-
-            if (i < 4)
-                SrvDataHub_Monitor.data.gimbal[i] = DataPipe_DataObj(Proto_Rc).gimbal_percent[i];
-        }
+        SrvDataHub_Monitor.data.RC_Control_Data = DataPipe_DataObj(Hub_Telemetry_Rc);
 
         SrvDataHub_Monitor.update_reg.bit.rc = false;
     }
@@ -610,7 +601,7 @@ static bool SrvDataHub_Get_Arm(bool *arm)
 
 reupdate_arm:
     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
-    *arm = SrvDataHub_Monitor.data.arm;
+    *arm = SrvDataHub_Monitor.data.InUse_Control_Data.arm_state;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
         goto reupdate_arm;
@@ -627,7 +618,7 @@ static bool SrvDataHub_Get_Failsafe(bool *failsafe)
 
 reupdate_failsafe:
     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
-    *failsafe = SrvDataHub_Monitor.data.failsafe;
+    *failsafe = SrvDataHub_Monitor.data.InUse_Control_Data.fail_safe;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
         goto reupdate_failsafe;
@@ -661,12 +652,12 @@ static bool SrvDataHub_Get_RcChannel(uint32_t *time_stamp, uint16_t *ch, uint8_t
 
 reupdate_rc_channel:
     SrvDataHub_Monitor.inuse_reg.bit.rc = true;
-    *time_stamp = SrvDataHub_Monitor.data.rc_update_time;
-    *ch_sum = SrvDataHub_Monitor.data.channel_sum;
+    *time_stamp = SrvDataHub_Monitor.data.RC_Control_Data.update_time_stamp;
+    *ch_sum = SrvDataHub_Monitor.data.RC_Control_Data.channel_sum;
 
-    for (uint8_t i = 0; i < SrvDataHub_Monitor.data.channel_sum; i++)
+    for (uint8_t i = 0; i < SrvDataHub_Monitor.data.RC_Control_Data.channel_sum; i++)
     {
-        ch[i] = SrvDataHub_Monitor.data.ch[i];
+        ch[i] = SrvDataHub_Monitor.data.RC_Control_Data.all_ch[i];
     }
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
@@ -687,7 +678,7 @@ reupdate_gimbal:
 
     for (uint8_t i = 0; i < 4; i++)
     {
-        gimbal[i] = SrvDataHub_Monitor.data.gimbal[i];
+        gimbal[i] = SrvDataHub_Monitor.data.InUse_Control_Data.gimbal_percent[i];
     }
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.rc)

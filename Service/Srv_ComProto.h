@@ -115,7 +115,7 @@ typedef struct
 
 typedef struct
 {
-    void (*init)(SrvComProto_Type_List type, uint8_t *arg);
+    bool (*init)(SrvComProto_Type_List type, uint8_t *arg);
     SrvComProto_Type_List (*get_msg_type)(void);
     SrvComProto_Msg_StreamIn_TypeDef (*msg_decode)(uint8_t *p_data, uint16_t size);
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);

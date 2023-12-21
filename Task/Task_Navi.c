@@ -7,7 +7,6 @@
 #include "DataPipe.h"
 #include "MadgwickAHRS.h"
 #include "math_util.h"
-#include "pos_data.h"
 
 /* IMU coordinate is x->forward y->right z->down */
 /*

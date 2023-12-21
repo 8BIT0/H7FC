@@ -51,7 +51,7 @@ static bool Queue_Create_WithCertainBuff(QueueObj_TypeDef *obj, char *name, uint
     obj->lenth = len;
 
     obj->buff = buff;
-    memset(obj->buff, NULL, obj->lenth);
+    memset(obj->buff, 0, obj->lenth);
 
     if (obj->buff == NULL)
         return false;
@@ -73,7 +73,7 @@ static bool Queue_Create_Auto(QueueObj_TypeDef *obj, char *name, uint16_t len)
     obj->lenth = len;
 
     obj->buff = (uint8_t *)Queue_Mem_Malloc(len);
-    memset(obj->buff, NULL, obj->lenth);
+    memset(obj->buff, 0, obj->lenth);
 
     if (obj->buff == NULL)
         return false;
@@ -93,7 +93,7 @@ static bool Queue_Reset(QueueObj_TypeDef *obj)
     obj->size = 0;
 
     obj->state = Queue_empty;
-    memset(obj->buff, NULL, obj->lenth);
+    memset(obj->buff, 0, obj->lenth);
 
     return true;
 }

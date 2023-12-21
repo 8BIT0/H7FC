@@ -5,6 +5,7 @@ use binary tree structure estabilsh a error log tree make error trigger and seac
 */
 #include "binary_tree.h"
 #include "Srv_OsCommon.h"
+#include <string.h>
 
 #define TreeMalloc(x) SrvOsCommon.malloc(x)
 #define TreeFree(x) SrvOsCommon.free(x)
@@ -395,7 +396,7 @@ static TreeSearch_Out_TypeDef TreeNode_Search(TreeNode_TypeDef *node, data_handl
 {
     TreeSearch_Out_TypeDef search_out;
 
-    memset(&search_out, NULL, sizeof(search_out));
+    memset(&search_out, 0, sizeof(search_out));
 
     search_out.state = Tree_Search_E;
     search_out.node_hdl = 0;

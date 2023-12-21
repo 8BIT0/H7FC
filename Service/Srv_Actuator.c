@@ -84,7 +84,6 @@ SrvActuator_TypeDef SrvActuator = {
 
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 {
-    uint8_t i = 0;
     memset(&SrvActuator_Obj, 0, sizeof(SrvActuator_Obj));
     memset(&SrvActuator_ControlStream, 0, sizeof(SrvActuator_ControlStream));
 
@@ -191,7 +190,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 
     // init actuator data pipe
     memset(&Actuator_cal_DataPipe, 0, sizeof(Actuator_cal_DataPipe));
-    memset(DataPipe_DataObjAddr(Actuator_Data), NULL, sizeof(DataPipe_DataObj(Actuator_Data)));
+    memset(DataPipe_DataObjAddr(Actuator_Data), 0, sizeof(DataPipe_DataObj(Actuator_Data)));
 
     Actuator_cal_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Actuator_Data);
     Actuator_cal_DataPipe.data_size = sizeof(DataPipe_DataObj(Actuator_Data));
@@ -248,23 +247,21 @@ static bool SrvActuator_Lock(void)
         case Actuator_DevType_DShot300:
         case Actuator_DevType_DShot600:
             DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].lock_val);
-            return true;
-
-        case Actuator_DevType_ServoPWM:
             break;
 
+        /* servo part still in developping */
+        case Actuator_DevType_ServoPWM:
         default:
             return false;
         }
     }
 
     SrvActuator_PipeData();
+    return true;
 }
 
 static void SrvActuator_MotoControl(uint16_t *p_val)
 {
-    uint8_t i = 0;
-
     if ((p_val == NULL) || !SrvActuator_Obj.init)
         return;
 
@@ -474,7 +471,7 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
             break;
 
         default:
-            return;
+            return false;
         }
     }
 

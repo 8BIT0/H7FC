@@ -148,7 +148,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
     case Receiver_Port_Serial:
         Uart_Receiver_Obj = (BspUARTObj_TypeDef *)port_obj;
 
-        memset(&SrvReceiver_Monitor, NULL, SRVRECEIVER_SIZE);
+        memset(&SrvReceiver_Monitor, 0, SRVRECEIVER_SIZE);
 
         switch (obj->Frame_type)
         {
@@ -352,7 +352,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                 rx_buff_ptr = uart_obj->rx_buf;
 
                 if (rx_buff_ptr)
-                    memset(rx_buff_ptr, NULL, size);
+                    memset(rx_buff_ptr, 0, size);
             }
         }
     }

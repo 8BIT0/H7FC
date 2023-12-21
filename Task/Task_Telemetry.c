@@ -35,11 +35,10 @@
 #define SBUS_RX_PIN Uart4_RxPin
 
 static SrvReceiverObj_TypeDef Receiver_Obj;
-static Telemetry_RCInput_TypeDef RC_Setting;
 static Telemetry_Monitor_TypeDef Telemetry_Monitor;
 static bool RCData_To_Configuretor = false;
 static uint32_t TaskTelemetry_Period = 0;
-DataPipe_CreateDataObj(Telemetry_RCSig_TypeDef, Rc);
+DataPipe_CreateDataObj(ControlData_TypeDef, Rc);
 
 /* internal funciotn */
 static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvReceiverObj_TypeDef *receiver_obj);
@@ -80,7 +79,7 @@ void TaskTelemetry_Init(uint32_t period)
     Telemetry_Monitor.flip_over_ch = Channel_9;
 
     /* init receiver */
-    if (Telemetry_RC_Sig_Init(&RC_Setting, &Receiver_Obj))
+    if (Telemetry_RC_Sig_Init(&Telemetry_Monitor.RC_Setting, &Receiver_Obj))
     {
         /* for crsf frame channel 1 is throttle */
         /* for sbus frame channel 3 is throttle */
@@ -100,16 +99,16 @@ void TaskTelemetry_Init(uint32_t period)
                 Telemetry_Bind_OSDCombo() && \
                 Telemetry_Bind_CalibCombo())
             {
-                RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
+                Telemetry_Monitor.RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
 
                 /* set gimbal center dead zone */
-                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Gimbal_Pitch], 50);
-                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Gimbal_Roll], 50);
-                Telemetry_Enable_GimbalDeadZone(&RC_Setting.Gimbal[Gimbal_Yaw], 50);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Pitch], 50);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Roll], 50);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Yaw], 50);
 
                 /* set datapipe */
                 memset(&Receiver_Smp_DataPipe, 0, sizeof(Receiver_Smp_DataPipe));
-                memset(DataPipe_DataObjAddr(Rc), 0, sizeof(Telemetry_RCSig_TypeDef));
+                memset(DataPipe_DataObjAddr(Rc), 0, DataPipe_DataSize(Rc));
 
                 Receiver_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Rc);
                 Receiver_Smp_DataPipe.data_size = DataPipe_DataSize(Rc);
@@ -159,16 +158,13 @@ static bool Telemetry_Led_Control(bool state)
 void TaskTelemetry_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
-    ControlData_TypeDef RC_CtlData;
-    
+
     while(1)
     {
-        memset(&RC_CtlData, 0, sizeof(ControlData_TypeDef)); 
-        
         // Telemetry_blink();
         
         /* RC receiver process */
-        Telemetry_ConvertRCData_To_ControlData(Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj), &RC_CtlData);
+        Telemetry_ConvertRCData_To_ControlData(Telemetry_RC_Sig_Update(&Telemetry_Monitor.RC_Setting, &Receiver_Obj), DataPipe_DataObjAddr(Rc));
 
         /* pipe data out */
         DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
@@ -478,13 +474,11 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         return sig_tmp;
 
     receiver_data = SrvReceiver.get(receiver_obj);
-    RC_Input_obj->rssi = 0;
-    RC_Input_obj->link_quality = 0;
 
     if (!receiver_data.failsafe)
     {
-        RC_Input_obj->rssi = receiver_data.rssi;
-        RC_Input_obj->link_quality = receiver_data.link_quality;
+        RC_Input_obj->sig.rssi = receiver_data.rssi;
+        RC_Input_obj->sig.link_quality = receiver_data.link_quality;
         RC_Input_obj->sig.time_stamp = RC_Input_obj->update_rt;
 
         RC_Input_obj->sig.channel_sum = Receiver_Obj.channel_num;
@@ -646,25 +640,25 @@ static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t
        (roll_ch == yaw_ch))
         return false;
 
-    if( !Telemetry_BindGimbalToChannel(&RC_Setting, \
+    if( !Telemetry_BindGimbalToChannel(&Telemetry_Monitor.RC_Setting, \
                                        &Receiver_Obj.data.val_list[throttle_ch], \
                                        Gimbal_Throttle, \
                                        Telemetry_Monitor.receiver_value_min, \
                                        Telemetry_Monitor.receiver_value_mid, \
                                        Telemetry_Monitor.receiver_value_max) ||
-        !Telemetry_BindGimbalToChannel(&RC_Setting, \
+        !Telemetry_BindGimbalToChannel(&Telemetry_Monitor.RC_Setting, \
                                        &Receiver_Obj.data.val_list[pitch_ch], \
                                        Gimbal_Pitch, \
                                        Telemetry_Monitor.receiver_value_min, \
                                        Telemetry_Monitor.receiver_value_mid, \
                                        Telemetry_Monitor.receiver_value_max) ||
-        !Telemetry_BindGimbalToChannel(&RC_Setting, \
+        !Telemetry_BindGimbalToChannel(&Telemetry_Monitor.RC_Setting, \
                                        &Receiver_Obj.data.val_list[roll_ch], \
                                        Gimbal_Roll, \
                                        Telemetry_Monitor.receiver_value_min, \
                                        Telemetry_Monitor.receiver_value_mid, \
                                        Telemetry_Monitor.receiver_value_max) ||
-        !Telemetry_BindGimbalToChannel(&RC_Setting, \
+        !Telemetry_BindGimbalToChannel(&Telemetry_Monitor.RC_Setting, \
                                        &Receiver_Obj.data.val_list[yaw_ch], \
                                        Gimbal_Yaw, \
                                        Telemetry_Monitor.receiver_value_min, \
@@ -681,17 +675,17 @@ static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch,
     int16_t end = 0;
     
     /* bind arm toggle */
-    if(!Telemetry_BindToggleToChannel(&RC_Setting, \
+    if(!Telemetry_BindToggleToChannel(&Telemetry_Monitor.RC_Setting, \
                                       &Receiver_Obj.data.val_list[arm_toggle_ch], \
-                                      &RC_Setting.ARM_Toggle, \
+                                      &Telemetry_Monitor.RC_Setting.ARM_Toggle, \
                                       Telemetry_Monitor.receiver_value_min, \
                                       Telemetry_Monitor.receiver_value_mid))
         return false;
 
     /* bind buzzer toggle */
-    if(!Telemetry_BindToggleToChannel(&RC_Setting, \
+    if(!Telemetry_BindToggleToChannel(&Telemetry_Monitor.RC_Setting, \
                                       &Receiver_Obj.data.val_list[buzzer_toggle_ch], \
-                                      &RC_Setting.Buzzer_Toggle, \
+                                      &Telemetry_Monitor.RC_Setting.Buzzer_Toggle, \
                                       Telemetry_Monitor.receiver_value_min, \
                                       Telemetry_Monitor.receiver_value_mid))
         return false;
@@ -700,42 +694,42 @@ static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch,
     uint16_t split_val = Telemetry_SplitScopeValue_Into(3);
     start = Telemetry_Monitor.receiver_value_min;
     end = Telemetry_Monitor.receiver_value_min + split_val;
-    if(!Telemetry_BindToggleToChannel(&RC_Setting, \
+    if(!Telemetry_BindToggleToChannel(&Telemetry_Monitor.RC_Setting, \
                                       &Receiver_Obj.data.val_list[mode_toggle_ch], \
-                                      &RC_Setting.ControlMode_Toggle, \
+                                      &Telemetry_Monitor.RC_Setting.ControlMode_Toggle, \
                                       start, \
                                       end))
         return false;
 
     start = end;
     end += split_val;
-    if(!Telemetry_AddToggleCombo(&RC_Setting, \
+    if(!Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, \
                                  &Receiver_Obj.data.val_list[mode_toggle_ch], \
-                                 &RC_Setting.ControlMode_Toggle, \
+                                 &Telemetry_Monitor.RC_Setting.ControlMode_Toggle, \
                                  start, \
                                  end))
         return false;
 
     start = end;
     end = Telemetry_Monitor.receiver_value_max;
-    if(!Telemetry_AddToggleCombo(&RC_Setting, \
+    if(!Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, \
                                  &Receiver_Obj.data.val_list[mode_toggle_ch], \
-                                 &RC_Setting.ControlMode_Toggle, \
+                                 &Telemetry_Monitor.RC_Setting.ControlMode_Toggle, \
                                  start, \
                                  end))
        return false;
 
     /* bind control taking over toggle (toggle must can auto reset) */
-    if(!Telemetry_BindToggleToChannel(&RC_Setting, \
+    if(!Telemetry_BindToggleToChannel(&Telemetry_Monitor.RC_Setting, \
                                       &Receiver_Obj.data.val_list[takingover_toggle_ch], \
-                                      &RC_Setting.TakingOver_Toggle, \
+                                      &Telemetry_Monitor.RC_Setting.TakingOver_Toggle, \
                                       Telemetry_Monitor.receiver_value_mid, \
                                       Telemetry_Monitor.receiver_value_max))
         return false;
 
-    if(!Telemetry_BindToggleToChannel(&RC_Setting, \
+    if(!Telemetry_BindToggleToChannel(&Telemetry_Monitor.RC_Setting, \
                                       &Receiver_Obj.data.val_list[flipover_toggle_ch], \
-                                      &RC_Setting.FlipOver_Toggle, \
+                                      &Telemetry_Monitor.RC_Setting.FlipOver_Toggle, \
                                       Telemetry_Monitor.receiver_value_mid, \
                                       Telemetry_Monitor.receiver_value_max))
         return false;
@@ -749,17 +743,17 @@ static bool Telemetry_Bind_OSDCombo(void)
     int16_t start = Telemetry_Monitor.receiver_value_min;
     int16_t end = start + 100;
 
-    if(!Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.OSD_Toggle, start, end))
+    if(!Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[1], &Telemetry_Monitor.RC_Setting.OSD_Toggle, start, end))
         return false;
 
     start = Telemetry_Monitor.receiver_value_max - 100;
     end = Telemetry_Monitor.receiver_value_max;
-    if(!Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.OSD_Toggle, start, end))
+    if(!Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[3], &Telemetry_Monitor.RC_Setting.OSD_Toggle, start, end))
         return false;
     
     start = Telemetry_Monitor.receiver_value_min;
     end = start + 100;
-    if(!Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.OSD_Toggle, start, end))
+    if(!Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[0], &Telemetry_Monitor.RC_Setting.OSD_Toggle, start, end))
         return false;
 
     return true;
@@ -771,10 +765,10 @@ static bool Telemetry_Bind_CalibCombo(void)
     int16_t start = Telemetry_Monitor.receiver_value_min;
     int16_t end = start + 100;
 
-    if(!Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[2], &RC_Setting.CLB_Toggle, start, end) || \
-       !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[1], &RC_Setting.CLB_Toggle, start, end) || \
-       !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[0], &RC_Setting.CLB_Toggle, start, end) || \
-       !Telemetry_AddToggleCombo(&RC_Setting, &Receiver_Obj.data.val_list[3], &RC_Setting.CLB_Toggle, start, end))
+    if(!Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[2], &Telemetry_Monitor.RC_Setting.CLB_Toggle, start, end) || \
+       !Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[1], &Telemetry_Monitor.RC_Setting.CLB_Toggle, start, end) || \
+       !Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[0], &Telemetry_Monitor.RC_Setting.CLB_Toggle, start, end) || \
+       !Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[3], &Telemetry_Monitor.RC_Setting.CLB_Toggle, start, end))
        return false;
 
     return true;
@@ -795,7 +789,7 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
 
         if(!RCSig.failsafe)
         {
-            CTLSig->channel_cum = RCSig.channel_sum;
+            CTLSig->channel_sum = RCSig.channel_sum;
             for(uint8_t ch_index = Channel_1; ch_index < Channel_Max; ch_index ++)
             {
                 CTLSig->all_ch[ch_index] = RCSig.channel[ch_index];
@@ -846,5 +840,6 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
 
         CTLSig->aux.bit.buzzer = RCSig.buzz_state;
         CTLSig->aux.bit.hover_pos_hold = true;
+        CTLSig->rssi = RCSig.link_quality;
     }
 }

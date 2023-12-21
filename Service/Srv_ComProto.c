@@ -4,6 +4,8 @@
 #include "Srv_OsCommon.h"
 #include "Bsp_Uart.h"
 
+#define To_DataPack_Callback(x) (DataPack_Callback)x
+
 /* only can use one hardware port at one time */
 /* still can be optmize / use multi port proto mavlink frame */
 
@@ -86,23 +88,23 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     switch ((uint8_t)pck_info.component_id)
     {
     case MAV_CompoID_Attitude:
-        msg->pack_callback = SrvComProto_MavMsg_Attitude;
+        msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Attitude);
         break;
 
     case MAV_CompoID_Altitude:
-        msg->pack_callback = SrvComProto_MavMsg_Altitude;
+        msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Altitude);
         break;
 
     case MAV_CompoID_RC_Channel:
-        msg->pack_callback = SrvConProto_MavMsg_RC;
+        msg->pack_callback = To_DataPack_Callback(SrvConProto_MavMsg_RC);
         break;
 
     case MAV_CompoID_Raw_IMU:
-        msg->pack_callback = SrvComProto_MavMsg_Raw_IMU;
+        msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Raw_IMU);
         break;
 
     case MAV_CompoID_Scaled_IMU:
-        msg->pack_callback = SrvComProto_MavMsg_Scaled_IMU;
+        msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Scaled_IMU);
         break;
 
     case MAV_CompoID_MotoCtl:
@@ -361,8 +363,7 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
 
 static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)
 {
-    SrvComProto_Msg_StreamIn_TypeDef stream_in;
-    uint16_t payload_size = 0;
+    SrvComProto_Msg_StreamIn_TypeDef stream_in; 
     uint8_t default_channel = 0;
     mavlink_message_t mav_msg;
     mavlink_status_t mav_sta;

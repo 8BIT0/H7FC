@@ -208,7 +208,6 @@ typedef enum
     Actuator_CtlChannel_Yaw,
 } SrvActuator_ChannelControl_List;
 
-#pragma pack(1)
 typedef struct
 {
     void *tim_base;
@@ -267,7 +266,6 @@ typedef struct
     uint8_t moto_dir[8];
     uint8_t servo_dir[8];
 } SrvActuatorPipeData_TypeDef;
-#pragma pak()
 
 typedef struct
 {

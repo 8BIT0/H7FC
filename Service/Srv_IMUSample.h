@@ -92,7 +92,7 @@ typedef enum
 typedef struct
 {
     uint8_t Acc;
-    uint16_t Gyr
+    uint16_t Gyr;
 }SrvIMU_Range_TypeDef;
 
 typedef struct

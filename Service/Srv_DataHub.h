@@ -149,12 +149,9 @@ typedef struct
     float flt_flow_pos[Axis_Sum];
     uint8_t flow_error_code;
 
-    uint32_t rc_update_time;
-    uint8_t channel_sum;
-    uint16_t ch[32];
-    uint16_t gimbal[4];
-    uint16_t link_quality;
-    uint16_t rssi;
+    ControlData_TypeDef InUse_Control_Data;
+    ControlData_TypeDef RC_Control_Data;
+    ControlData_TypeDef OPC_Control_Data;
 
     bool pos_enable;
     bool pos_init_state;
@@ -209,14 +206,6 @@ typedef struct
     uint32_t tunning_port_addr;
 
     bool CLI_state;
-
-    /* control toggle */
-    bool arm;
-    bool failsafe;
-    bool osd_tune;
-    bool buzzer;
-    bool calib;
-    bool alt_hold;
 
     /* signal info */
     uint8_t flight_sig_src;

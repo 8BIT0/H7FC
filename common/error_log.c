@@ -36,14 +36,11 @@ ErrorLog_TypeDef ErrorLog = {
 
 static data_handle Error_InsertPriority_Compare(data_handle l_addr, data_handle r_addr)
 {
-    volatile int16_t l_code = 0;
-    volatile int16_t r_code = 0;
-
     if ((l_addr == 0) && (r_addr == 0) && (l_addr != r_addr))
         return 0;
 
-    l_code = ErrorTreeDataToObj(l_addr)->code;
-    r_code = ErrorTreeDataToObj(r_addr)->code;
+    ErrorTreeDataToObj(l_addr)->code;
+    ErrorTreeDataToObj(r_addr)->code;
 
     if (ErrorTreeDataToObj(l_addr)->code > ErrorTreeDataToObj(r_addr)->code)
         return r_addr;

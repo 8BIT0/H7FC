@@ -20,7 +20,6 @@
 
 #define ANGULAR_PID_ACCURACY 1000
 
-static uint32_t rc_update_time = 0;
 static uint32_t imu_update_time = 0;
 static uint32_t att_update_time = 0;
 static uint32_t tunning_time_stamp = 0;
@@ -643,7 +642,6 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 
 static void TaskControl_Close_CLI(void)
 {
-    uint32_t time_stamp = SrvOsCommon.get_os_ms();
     Shell *shell_obj = Shell_GetInstence();
 
     if(shell_obj == NULL)

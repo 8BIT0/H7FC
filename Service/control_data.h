@@ -74,7 +74,7 @@ typedef struct
 {
     /* channel type data section */
     uint32_t update_time_stamp;
-    uint8_t channel_cum;
+    uint8_t channel_sum;
     uint16_t all_ch[32];
     uint8_t gimbal_map_list[Gimbal_Sum];
     int16_t gimbal[Gimbal_Sum];
@@ -102,6 +102,8 @@ typedef struct
     bool osd_tune_enable;
     bool arm_state;
     bool fail_safe;
+
+    uint16_t rssi;
 }ControlData_TypeDef;
 
 #endif
