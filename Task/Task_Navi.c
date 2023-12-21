@@ -7,6 +7,7 @@
 #include "DataPipe.h"
 #include "MadgwickAHRS.h"
 #include "math_util.h"
+#include "Dev_Led.h"
 
 /* IMU coordinate is x->forward y->right z->down */
 /*
@@ -14,7 +15,7 @@
     y Axis -> Pitch noise up positive
     z Axis -> Yaw   anticlock wise rotate positice
 */
-#define FlipOver_Detect_HoldingTime 1000 /* unit : ms */
+#define FlipOver_Detect_HoldingTime 500 /* unit : ms */
 
 static bool TaskNavi_FlipOver_Detect(float roll_angle);
 

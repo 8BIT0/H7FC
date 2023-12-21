@@ -212,6 +212,7 @@ static void SrvDataHub_Attitude_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
         SrvDataHub_Monitor.data.att_q1 = DataPipe_DataObj(Hub_Attitude).q1;
         SrvDataHub_Monitor.data.att_q2 = DataPipe_DataObj(Hub_Attitude).q2;
         SrvDataHub_Monitor.data.att_q3 = DataPipe_DataObj(Hub_Attitude).q3;
+        SrvDataHub_Monitor.data.att_flip_over = DataPipe_DataObj(Hub_Attitude).flip_over;
         SrvDataHub_Monitor.data.att_error_code = DataPipe_DataObj(Hub_Attitude).err_code;
     
         SrvDataHub_Monitor.update_reg.bit.attitude = false;
