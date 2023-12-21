@@ -6,33 +6,7 @@
 #include <string.h>
 #include "Srv_DataHub.h"
 
-typedef enum
-{
-    Control_Sig_RC = 0,
-    Control_Sig_OnPlaneComputer,
-} Srv_CtlSigSrcMode_List;
 
-typedef enum
-{
-    Control_Channel_Sig = 0,
-    Control_Attitude_Sig,
-    Control_AngularSpeed_Sig,
-} Srv_CtlSigInputType_List;
-
-typedef enum
-{
-    Control_Mode_Attitude = 0,
-    Control_Mode_AngularSpeed,
-    Control_Mode_AngluarSpeed_AngleLock,
-} Srv_CtlMode_List;
-
-typedef enum
-{
-    ArbitrateState_None = 0,
-    ArbitrateState_InProcess,
-    ArbitrateState_Done,
-    ArbitrateState_Denied,
-} Srv_CtlArbitrateState_List;
 
 typedef struct
 {

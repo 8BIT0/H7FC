@@ -12,8 +12,11 @@
 #define MAX_ATTITUDE_ANGLE_RANGE 60
 #define MIN_ATTITUDE_ANGLE_RANGE -60
 
+#define TAKINGOVER_NEGOCIOATE_TIMEOUT 10000 /* unit : ms */
+
 /* internal vriable */
 static Srv_CtlArbitrateMonitor_TypeDef SrvCtlArbitrateMonitor;
+static void Srv_OnPlaneComputer_TakingOver_RequireSend(ControlData_TypeDef cur_ctl_data);
 
 /* internal function */
 static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp_pitch, float *exp_roll);
@@ -158,13 +161,40 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
     {
         SrvDataHub.get_rc_control_data(&SrvCtlArbitrateMonitor.RC_CtlData);
         SrvDataHub.get_opc_control_data(&SrvCtlArbitrateMonitor.OPC_CtlData);
-
+        
         if(SrvCtlArbitrateMonitor.cur_sig_source == Control_Sig_RC)
         {
+            SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
+
+            memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.RC_CtlData, sizeof(ControlData_TypeDef));
+        }
+        else if(SrvCtlArbitrateMonitor.cur_sig_source == Control_Sig_OnPlaneComputer)
+        {
+            memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.OPC_CtlData, sizeof(ControlData_TypeDef));
+        }
+        else
+        {
+            /* signal source error */
+            /* set default control data */
+            return;
         }
         
-        if(SrvCtlArbitrateMonitor.cur_sig_source == Control_Sig_OnPlaneComputer)
+        /* check failsafe first */
+        if(SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe)
         {
+            if(SrvCtlArbitrateMonitor.cur_sig_source == Control_Sig_RC)
+            {
+                /* require on plane computer taking over control and check ack */
+                Srv_OnPlaneComputer_TakingOver_RequireSend(SrvCtlArbitrateMonitor.InUse_CtlData);
+            }
+            else
+            {
+                /* send require info through OSD */
+            }
+        }
+        else
+        {
+            /* check any taking over require info */
         }
     }
 }
@@ -309,5 +339,10 @@ static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_GetData(void)
     memset(&tmp, 0, sizeof(Srv_CtlExpectionData_TypeDef));
 
     return tmp;
+}
+
+static void Srv_OnPlaneComputer_TakingOver_RequireSend(ControlData_TypeDef cur_ctl_data)
+{
+    /* call on plane computer communicate api */
 }
 
