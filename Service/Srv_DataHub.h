@@ -140,6 +140,7 @@ typedef struct
     float att_q1;
     float att_q2;
     float att_q3;
+    bool att_flip_over;
     uint8_t att_error_code;
 
     uint32_t flow_update_time;

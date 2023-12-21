@@ -110,7 +110,7 @@ void TaskNavi_Core(void const *arg)
                 DataPipe_DataObj(Navi_Attitude) = attitude;
             }
             
-            TaskNavi_FlipOver_Detect(attitude.roll);
+            attitude.flip_over = TaskNavi_FlipOver_Detect(attitude.roll);
 
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);

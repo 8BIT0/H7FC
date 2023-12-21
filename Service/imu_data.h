@@ -69,6 +69,7 @@ typedef struct
     float q1;
     float q2;
     float q3;
+    bool flip_over;
     uint8_t err_code;
 } IMUAtt_TypeDef;
 #pragma pack()
