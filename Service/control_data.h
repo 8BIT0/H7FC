@@ -72,7 +72,7 @@ typedef union
 typedef struct
 {
     /* channel type data section */
-    uint32_t updata_time_stamp;
+    uint32_t update_time_stamp;
     uint8_t channel_cum;
     uint16_t all_ch[32];
     uint8_t gimbal_map_list[Gimbal_Sum];

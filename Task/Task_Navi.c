@@ -15,9 +15,9 @@
     y Axis -> Pitch noise up positive
     z Axis -> Yaw   anticlock wise rotate positice
 */
+#define FlipOver_Detect_HoldingTime 1000 /* unit : ms */
 
-
-static void TaskNavi_FlipOver_Detect(void);
+static bool TaskNavi_FlipOver_Detect(float roll_angle);
 
 /* internal vriable */
 uint32_t TaskNavi_Period = 0;
@@ -110,7 +110,7 @@ void TaskNavi_Core(void const *arg)
                 DataPipe_DataObj(Navi_Attitude) = attitude;
             }
             
-            TaskNavi_FlipOver_Detect();
+            TaskNavi_FlipOver_Detect(attitude.roll);
 
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);
@@ -123,10 +123,27 @@ void TaskNavi_Core(void const *arg)
     }
 }
 
-static void TaskNavi_FlipOver_Detect(void)
+static bool TaskNavi_FlipOver_Detect(float roll_angle)
 {
     /* use roll angle detect drone up side down state */
     /* if drone flip over roll must between 180 ~ -180 */
     /* keep this value over than 1s we think is flip over */
-    
+    static uint32_t FilpOver_Trigger_Time = 0;
+
+    if(((roll_angle < 180.0f) && (roll_angle > 80.0f)) || ((roll_angle > -180.0f) && (roll_angle < -80.0f)))
+    {
+        if(FilpOver_Trigger_Time == 0)
+        {
+            FilpOver_Trigger_Time = SrvOsCommon.get_os_ms();
+        }
+        else
+        {
+            if((SrvOsCommon.get_os_ms() - FilpOver_Trigger_Time) >= FlipOver_Detect_HoldingTime)
+                return true;
+        }
+    }
+    else
+        FilpOver_Trigger_Time = 0;
+
+    return false;
 }

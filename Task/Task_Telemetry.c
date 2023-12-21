@@ -7,11 +7,11 @@
  * channel 2  pitch
  * channel 3  throttle
  * channel 4  yaw
- * channel 5  arm toggle                two   pos : on/off
- * channel 6  buzzer toggle             two   pos : on/off
- * channel 7  control mode switch       three pos : pos 1/2/3
- * channel 8  taking over & flip over   auto reset toggle hold for enable
- * channel 9  aux5
+ * channel 5  arm toggle            two   pos : on/off
+ * channel 6  buzzer toggle         two   pos : on/off
+ * channel 7  control mode switch   three pos : pos 1/2/3
+ * channel 8  taking over           auto reset toggle hold for enable
+ * channel 9  flip over             two   pos : on/off
  * channel 10 aux6
  * channel 11 aux7
  * channel 12 aux8
@@ -76,7 +76,7 @@ void TaskTelemetry_Init(uint32_t period)
             /* set crsf receiver map */
             /* bind to channel */
             if (Telemetry_Bind_Gimbal(Channel_3, Channel_2, Channel_1, Channel_4) && \
-                Telemetry_Bind_Toggle(Channel_5, Channel_7, Channel_6, Channel_7, Channel_7) && \
+                Telemetry_Bind_Toggle(Channel_5, Channel_7, Channel_6, Channel_9, Channel_8) && \
                 Telemetry_Bind_OSDCombo() && \
                 Telemetry_Bind_CalibCombo())
             {
@@ -137,12 +137,16 @@ static bool Telemetry_Led_Control(bool state)
 void TaskTelemetry_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
-
+    ControlData_TypeDef RC_CtlData;
+    
     while(1)
     {
+        memset(&RC_CtlData, 0, sizeof(ControlData_TypeDef)); 
+        
         // Telemetry_blink();
+        
         /* RC receiver process */
-        DataPipe_DataObj(Rc) = Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj);
+        Telemetry_ConvertRCData_To_ControlData(Telemetry_RC_Sig_Update(&RC_Setting, &Receiver_Obj), &RC_CtlData);
 
         /* pipe data out */
         DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
@@ -696,7 +700,6 @@ static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch,
                                       Telemetry_Monitor.receiver_value_max))
         return false;
 
-    /* bind flip over toggle can altinate with taking over toggle if u only have one auto reset toggle on u remote */
     if(!Telemetry_BindToggleToChannel(&RC_Setting, \
                                       &Receiver_Obj.data.val_list[flipover_toggle_ch], \
                                       &RC_Setting.FlipOver_Toggle, \
@@ -748,6 +751,6 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
 {
     if(CTLSig)
     {
-        CTLSig->Update_time_stamp = RCSig.time_stamp;
+        CTLSig->update_time_stamp = RCSig.time_stamp;
     }
 }
