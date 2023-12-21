@@ -45,7 +45,6 @@
 
 #define TELEMETRY_RC_THROTTLE_PERCENT_ALERT 5
 
-#pragma pack(1)
 typedef enum
 {
     Telemetry_Control_Mode_ACRO = 0,
@@ -132,11 +131,12 @@ typedef struct
     uint8_t taking_over_ch;
     uint8_t flip_over_ch;
 
+    bool poweron_arm_check;
+
     uint32_t failsafe_trigger_cnt;
     bool recover_failsafe;
     bool lst_arm_state;
 } Telemetry_Monitor_TypeDef;
-#pragma pack()
 
 void TaskTelemetry_Init(uint32_t period);
 void TaskTelemetry_Core(void const* arg);

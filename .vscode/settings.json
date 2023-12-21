@@ -153,7 +153,8 @@
                 "srv_ctldataarbitrate.h": "c",
                 "dev_icm426xx.h": "c",
                 "freertosconfig.h": "c",
-                "ratio": "c"
+                "ratio": "c",
+                "math_util.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

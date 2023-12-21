@@ -124,6 +124,8 @@ void TaskTelemetry_Init(uint32_t period)
 
         Telemetry_Monitor.lst_arm_state = TELEMETRY_SET_ARM;
     }
+    
+    Telemetry_Monitor.poweron_arm_check = true;
 
     TaskTelemetry_Period = period;
 }
@@ -479,9 +481,6 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     RC_Input_obj->rssi = 0;
     RC_Input_obj->link_quality = 0;
 
-    /* notic disarm and osd tune can not enable at the same time */
-    /* when power on and arm toggle on remote is set on disarm we force it to arm */
-
     if (!receiver_data.failsafe)
     {
         RC_Input_obj->rssi = receiver_data.rssi;
@@ -575,6 +574,20 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             }
 
             Telemetry_Monitor.recover_failsafe = false;
+        }
+    
+        /* notic disarm and osd tune can not enable at the same time */
+        /* when power on and arm toggle on remote is set on disarm we force it to arm */
+        if(Telemetry_Monitor.poweron_arm_check)
+        {
+            if(RC_Input_obj->sig.arm_state == TELEMETRY_SET_DISARM)
+            {
+                RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+            }
+            else
+            {
+                Telemetry_Monitor.poweron_arm_check = false;
+            }
         }
 
         /* if toggle switch into disarm but throttle currently is upper then 5% percent input

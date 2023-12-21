@@ -20,7 +20,7 @@
 static bool TaskNavi_FlipOver_Detect(float roll_angle);
 
 /* internal vriable */
-uint32_t TaskNavi_Period = 0;
+TaskNavi_Monitor_TypeDef TaskNavi_Monitor;
 
 /* data structure definition */
 DataPipe_CreateDataObj(IMUAtt_TypeDef, Navi_Attitude);
@@ -28,6 +28,8 @@ DataPipe_CreateDataObj(PosData_TypeDef, Navi_POS);
 
 void TaskNavi_Init(uint32_t period)
 {
+    memset(&TaskNavi_Monitor, 0, sizeof(TaskNavi_Monitor_TypeDef));
+
     /* init DataPipe */
     memset(&Attitude_smp_DataPipe, 0, sizeof(Attitude_smp_DataPipe));
     memset(&POS_smp_DataPipe, 0, sizeof(POS_smp_DataPipe));
@@ -43,7 +45,7 @@ void TaskNavi_Init(uint32_t period)
     POS_smp_DataPipe.data_size = DataPipe_DataSize(Navi_POS);
     DataPipe_Enable(&POS_smp_DataPipe);
 
-    TaskNavi_Period = period;
+    TaskNavi_Monitor.period = period;
 }
 
 void TaskNavi_Core(void const *arg)
@@ -51,7 +53,6 @@ void TaskNavi_Core(void const *arg)
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     bool imu_state = false;
     bool mag_state = false;
-    uint32_t Org_IMU_TimeStamp = 0;
     uint32_t Flt_IMU_TimeStamp = 0;
     uint32_t MAG_TimeStamp = 0;
     float Acc_Scale = 0.0f;
@@ -119,7 +120,7 @@ void TaskNavi_Core(void const *arg)
         }
 
         /* check imu data update freq on test */
-        SrvOsCommon.precise_delay(&sys_time, TaskNavi_Period);
+        SrvOsCommon.precise_delay(&sys_time, TaskNavi_Monitor.period);
     }
 }
 
