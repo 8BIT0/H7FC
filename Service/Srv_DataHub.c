@@ -42,6 +42,7 @@ static bool SrvDataHub_Get_Arm(bool *arm);
 static bool SrvDataHub_Get_Failsafe(bool *failsafe);
 static bool SrvDataHub_Get_InUse_ControlData(ControlData_TypeDef *data);
 static bool SrvDataHub_Get_Telemetry_ControlData(ControlData_TypeDef *data);
+static bool SrvDataHub_Get_OnPlaneComputer_ControlData(ControlData_TypeDef *data);
 static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir);
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
@@ -72,6 +73,7 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_arm_state = SrvDataHub_Get_Arm,
     .get_failsafe = SrvDataHub_Get_Failsafe,
     .get_inuse_control_data = SrvDataHub_Get_InUse_ControlData,
+    .get_opc_control_data = SrvDataHub_Get_OnPlaneComputer_ControlData,
     .get_rc_control_data = SrvDataHub_Get_Telemetry_ControlData,
     .get_moto = SrvDataHub_Get_MotoChannel,
     .get_servo = SrvDataHub_Get_ServoChannel,
@@ -377,7 +379,7 @@ static void SrvDataHub_PipeInUseControlDataFinish_Callback(DataPipeObj_TypeDef *
         if(SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
             SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = false;
 
-        SrvDataHub_Monitor.data.InUse_Control_Data = DataPipe_DataObj(Hub_InUse_CtlData);
+        SrvDataHub_Monitor.data.InUse_Control_Data = DataPipe_DataObj(Hub_Inuse_CtlData);
 
         SrvDataHub_Monitor.update_reg.bit.inuse_control_data = false;
     }
@@ -390,7 +392,7 @@ static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *ob
 
     if (obj == &Receiver_hub_DataPipe)
     {
-        SrvDataHub_Monitor.update_reg.bit.rc_control_data = true;
+        SrvDataHub_Monitor.update_reg.bit.rc = true;
 
         if (SrvDataHub_Monitor.inuse_reg.bit.rc_control_data)
             SrvDataHub_Monitor.inuse_reg.bit.rc_control_data = false;
@@ -623,13 +625,13 @@ static bool SrvDataHub_Get_Arm(bool *arm)
         return false;
 
 reupdate_arm:
-    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = true;
+    SrvDataHub_Monitor.inuse_reg.bit.rc = true;
     *arm = SrvDataHub_Monitor.data.InUse_Control_Data.arm_state;
 
-    if (!SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
         goto reupdate_arm;
 
-    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = false;
+    SrvDataHub_Monitor.inuse_reg.bit.rc = false;
 
     return true;
 }
@@ -641,12 +643,12 @@ static bool SrvDataHub_Get_Failsafe(bool *failsafe)
 
 reupdate_failsafe:
     SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = true;
-    (*failsafe) = SrvDataHub_Monitor.data.InUse_Control_Data.fail_safe;
+    *failsafe = SrvDataHub_Monitor.data.InUse_Control_Data.fail_safe;
 
-    if (!SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
         goto reupdate_failsafe;
 
-    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = false;
+    SrvDataHub_Monitor.inuse_reg.bit.rc = false;
 
     return true;
 }
@@ -662,6 +664,24 @@ reupdate_telemetry_control_data:
 
         if(!SrvDataHub_Monitor.inuse_reg.bit.rc_control_data)
             goto reupdate_telemetry_control_data;
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool SrvDataHub_Get_OnPlaneComputer_ControlData(ControlData_TypeDef *data)
+{
+    if(data)
+    {
+reupdate_onplane_computer_control_data:
+        SrvDataHub_Monitor.inuse_reg.bit.opc_control_data = true;
+
+        (*data) = SrvDataHub_Monitor.data.OPC_Control_Data;
+
+        if(!SrvDataHub_Monitor.inuse_reg.bit.opc_control_data)
+            goto reupdate_onplane_computer_control_data;
 
         return true;
     }

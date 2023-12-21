@@ -154,7 +154,8 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
 
 static void Srv_CtlDataArbitrate_Update(void)
 {
-
+    SrvDataHub.get_rc_control_data(&SrvCtlArbitrateMonitor.RC_CtlData);
+    SrvDataHub.get_opc_control_data(&SrvCtlArbitrateMonitor.OPC_CtlData);
 }
 
 /* remote gimbal only can control pitch and roll angle but yaw angle */
