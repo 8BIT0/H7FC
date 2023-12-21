@@ -163,7 +163,7 @@ void TaskFrameCTL_Core(void *arg)
     }
 }
 
-/*************************** ByPass Mode is still on developping *********************************/
+/*************************** ByPass Mode is still in developping *********************************/
 /************************************** radio section ********************************************/
 static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
 {

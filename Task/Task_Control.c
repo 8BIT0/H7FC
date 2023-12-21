@@ -203,7 +203,6 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
         // get failsafe
         SrvDataHub.get_arm_state(&arm_state);
         SrvDataHub.get_failsafe(&failsafe);
-        SrvDataHub.get_gimbal_percent(gimbal);
         
         SrvDataHub.get_tunning_state(&tunning_time_stamp, &tunning_state, &tunning_port);
 

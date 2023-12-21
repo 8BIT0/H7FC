@@ -325,22 +325,21 @@ static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
 
 static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck)
 {
-    uint32_t time_stamp = 0;
-    uint8_t channel_num = 0;
-    uint8_t rssi = 0;
-    uint16_t channel[32] = {0};
+    ControlData_TypeDef inuse_ctldata;
 
-    SrvDataHub.get_rc(&time_stamp, channel, &channel_num);
+    memset(&inuse_ctldata, 0, sizeof(ControlData_TypeDef));
+    SrvDataHub.get_inuse_control_data(&inuse_ctldata);
 
     return mavlink_msg_rc_channels_pack_chan(pck->pck_info.system_id,
                                              pck->pck_info.component_id,
                                              pck->pck_info.chan, pck->msg_obj,
-                                             time_stamp, channel_num,
-                                             channel[0],  channel[1],  channel[2],  channel[3],
-                                             channel[4],  channel[5],  channel[6],  channel[7],
-                                             channel[8],  channel[9],  channel[10], channel[11],
-                                             channel[12], channel[13], channel[14], channel[15],
-                                             channel[16], channel[17], rssi);
+                                             inuse_ctldata.update_time_stamp, 
+                                             inuse_ctldata.channel_sum,
+                                             inuse_ctldata.all_ch[0],  inuse_ctldata.all_ch[1],  inuse_ctldata.all_ch[2],  inuse_ctldata.all_ch[3],
+                                             inuse_ctldata.all_ch[4],  inuse_ctldata.all_ch[5],  inuse_ctldata.all_ch[6],  inuse_ctldata.all_ch[7],
+                                             inuse_ctldata.all_ch[8],  inuse_ctldata.all_ch[9],  inuse_ctldata.all_ch[10], inuse_ctldata.all_ch[11],
+                                             inuse_ctldata.all_ch[12], inuse_ctldata.all_ch[13], inuse_ctldata.all_ch[14], inuse_ctldata.all_ch[15],
+                                             inuse_ctldata.all_ch[16], inuse_ctldata.all_ch[17], inuse_ctldata.rssi);
 }
 
 static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)

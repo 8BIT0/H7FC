@@ -149,52 +149,7 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
 
 static void Srv_CtlDataArbitrate_Update(void)
 {
-    uint16_t rc_ch[32] = {0};
-    uint16_t rc_gimbal_percent[Gimbal_Sum] = {0};
-    uint32_t rc_time_stamp = 0;
-    uint8_t rc_channel_sum = 0;
-    bool arm_state = DRONE_ARM;
 
-    SrvDataHub.get_arm_state(&arm_state);
-
-    /* convert gimbal value to physical expection */
-    SrvDataHub.get_gimbal_percent(rc_gimbal_percent);
-
-    if(arm_state == DRONE_ARM)
-    {
-        /* when drone is armed we can switch control signal easily */
-        /* if on plane conputer reqire to control */
-    }
-    else
-    {
-        /* when drone is disarm need to check toggle pos and input signal arm state first */
-        /* then sync trottle */
-        switch((uint8_t)SrvCtlArbitrateMonitor.cur_sig_source)
-        {
-            case Control_Sig_RC:
-                SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
-
-                break;
-            
-            case Control_Sig_OnPlaneComputer:
-                switch((uint8_t)SrvCtlArbitrateMonitor.cur_sig_type)
-                {
-                    default:
-                        break;
-                }
-                break;
-
-            default:
-                break;
-        }
-
-        /* another control signal required control privilege doing arbitrate signal source */
-        if(SrvCtlArbitrateMonitor.sig_privilege_req_source != SrvCtlArbitrateMonitor.cur_sig_source)
-        {
-            
-            
-        }
-    }
 }
 
 /* remote gimbal only can control pitch and roll angle but yaw angle */

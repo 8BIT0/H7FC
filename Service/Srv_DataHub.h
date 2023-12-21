@@ -45,7 +45,9 @@ typedef union
         uint64_t scale_flow : 1;
         uint64_t range_flow : 1; 
 
-        uint64_t rc : 1;
+        uint64_t inuse_control_data : 1;
+        uint64_t rc_control_data : 1;
+        uint64_t opc_control_data : 1;
 
         uint64_t actuator : 1;
         uint64_t attitude : 1;
@@ -243,7 +245,6 @@ typedef struct
     bool (*get_imu_init_state)(bool *state);
     bool (*get_pri_imu_range)(uint8_t *acc_range, uint16_t *gyr_range);
     bool (*get_sec_imu_range)(uint8_t *acc_range, uint16_t *gye_range);
-    bool (*get_inuse_imu_range)(uint8_t *ac_range, uint16_t *gyr_range);
     bool (*get_baro_init_state)(bool *state);
     bool (*get_mag_init_state)(bool *state);
     bool (*get_tof_init_state)(bool *state);
@@ -252,12 +253,12 @@ typedef struct
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
     bool (*get_attitude)(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
-    bool (*get_rc)(uint32_t *time_stamp, uint16_t *ch, uint8_t *ch_cnt);
+    bool (*get_inuse_control_data)(ControlData_TypeDef *data);
+    bool (*get_rc_control_data)(ControlData_TypeDef *data);
+    bool (*get_opc_control_data)(ControlData_TypeDef *data);
     bool (*get_baro_altitude)(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *baro_temp, uint8_t *error);
-    bool (*get_gimbal_percent)(uint16_t *gimbal);
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);
-    bool (*get_control_mode)(uint8_t *mode);
     bool (*get_moto)(uint32_t *time_stamp, uint8_t *cnt, uint16_t *ch, uint8_t *dir);
     bool (*get_servo)(uint32_t *time_stamp, uint8_t *cnt, uint16_t *ch, uint8_t *dir);
 } SrvDataHub_TypeDef;
