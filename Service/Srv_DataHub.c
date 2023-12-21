@@ -379,7 +379,7 @@ static void SrvDataHub_PipeInUseControlDataFinish_Callback(DataPipeObj_TypeDef *
         if(SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
             SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = false;
 
-        SrvDataHub_Monitor.data.InUse_Control_Data = DataPipe_DataObj(Hub_Inuse_CtlData);
+        SrvDataHub_Monitor.data.InUse_Control_Data = DataPipe_DataObj(Hub_InUse_CtlData);
 
         SrvDataHub_Monitor.update_reg.bit.inuse_control_data = false;
     }
@@ -392,7 +392,7 @@ static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *ob
 
     if (obj == &Receiver_hub_DataPipe)
     {
-        SrvDataHub_Monitor.update_reg.bit.rc = true;
+        SrvDataHub_Monitor.update_reg.bit.rc_control_data = true;
 
         if (SrvDataHub_Monitor.inuse_reg.bit.rc_control_data)
             SrvDataHub_Monitor.inuse_reg.bit.rc_control_data = false;
@@ -625,13 +625,13 @@ static bool SrvDataHub_Get_Arm(bool *arm)
         return false;
 
 reupdate_arm:
-    SrvDataHub_Monitor.inuse_reg.bit.rc = true;
+    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = true;
     *arm = SrvDataHub_Monitor.data.InUse_Control_Data.arm_state;
 
-    if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
         goto reupdate_arm;
 
-    SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = false;
 
     return true;
 }
@@ -645,10 +645,10 @@ reupdate_failsafe:
     SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = true;
     *failsafe = SrvDataHub_Monitor.data.InUse_Control_Data.fail_safe;
 
-    if (!SrvDataHub_Monitor.inuse_reg.bit.rc)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
         goto reupdate_failsafe;
 
-    SrvDataHub_Monitor.inuse_reg.bit.rc = false;
+    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = false;
 
     return true;
 }

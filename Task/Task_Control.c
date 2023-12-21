@@ -126,10 +126,13 @@ void TaskControl_Init(uint32_t period)
 void TaskControl_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
+    ControlData_TypeDef Inuse_CtlData;
+
+    memset(&Inuse_CtlData, 0, sizeof(ControlData_TypeDef));
 
     while(1)
     {
-        Srv_CtlDataArbitrate.negociate_update();
+        Srv_CtlDataArbitrate.negociate_update(&Inuse_CtlData);
 
         if(control_enable && !TaskControl_Monitor.CLI_enable)
         {

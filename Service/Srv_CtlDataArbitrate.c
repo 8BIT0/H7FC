@@ -22,11 +22,13 @@ static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, f
 /* external function */
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum]);
 static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_Data);
+static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_GetData(void);
 
 /* external vriable */
 Srv_CtlDataArbitrate_TypeDef Srv_CtlDataArbitrate = {
     .init = Srv_CtlDataArbitrate_Init,
     .negociate_update = Srv_CtlDataArbitrate_Update,
+    .get_data = Srv_CtlDataArbitrate_GetData,
 };
 
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum])
@@ -143,9 +145,9 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
     SrvCtlArbitrateMonitor.cur_ctl_mode = Control_Mode_Attitude;
     SrvCtlArbitrateMonitor.sig_privilege_req_source = SrvCtlArbitrateMonitor.cur_sig_source;
 
-    memset(SrvCtlArbitrateMonitor.RC_CtlData, 0, sizeof(ControlData_TypeDef));
-    memset(SrvCtlArbitrateMonitor.OPC_CtlData, 0, sizeof(ControlData_TypeDef));
-    memset(SrvCtlArbitrateMonitor.InUse_CtlDa, 0, sizeof(ControlData_TypeDef));
+    memset(&SrvCtlArbitrateMonitor.RC_CtlData, 0, sizeof(ControlData_TypeDef));
+    memset(&SrvCtlArbitrateMonitor.OPC_CtlData, 0, sizeof(ControlData_TypeDef));
+    memset(&SrvCtlArbitrateMonitor.InUse_CtlData, 0, sizeof(ControlData_TypeDef));
 
     return true;
 }
@@ -299,3 +301,13 @@ static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, f
             (*exp_gyr_z) = SrvCtlArbitrateMonitor.angularspeed_ctl_range[Axis_Z].idle;
     }
 }
+
+static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_GetData(void)
+{
+    Srv_CtlExpectionData_TypeDef tmp;
+
+    memset(&tmp, 0, sizeof(Srv_CtlExpectionData_TypeDef));
+
+    return tmp;
+}
+
