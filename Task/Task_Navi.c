@@ -106,11 +106,10 @@ void TaskNavi_Core(void const *arg)
             if(MadgwickAHRS_Get_Attitude(&attitude.pitch, &attitude.roll, &attitude.yaw) && \
                MadgwickAHRS_Get_Quraterion(&attitude.q0, &attitude.q1, &attitude.q2, &attitude.q3))
             {
+                attitude.flip_over = TaskNavi_FlipOver_Detect(attitude.roll);
                 attitude.time_stamp = SrvOsCommon.get_os_ms();
                 DataPipe_DataObj(Navi_Attitude) = attitude;
             }
-            
-            attitude.flip_over = TaskNavi_FlipOver_Detect(attitude.roll);
 
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);
