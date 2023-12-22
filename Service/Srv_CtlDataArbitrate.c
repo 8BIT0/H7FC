@@ -141,16 +141,16 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
     {
         SrvCtlArbitrateMonitor.att_ctl_range[index] = angularspeed_range[index];
     }
-
-    /* set default signal source/type/control mode */
-    SrvCtlArbitrateMonitor.cur_sig_source = Control_Sig_RC;
-    SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
-    SrvCtlArbitrateMonitor.cur_ctl_mode = Control_Mode_Attitude;
-    SrvCtlArbitrateMonitor.sig_privilege_req_source = SrvCtlArbitrateMonitor.cur_sig_source;
-
+    
     memset(&SrvCtlArbitrateMonitor.RC_CtlData, 0, sizeof(ControlData_TypeDef));
     memset(&SrvCtlArbitrateMonitor.OPC_CtlData, 0, sizeof(ControlData_TypeDef));
     memset(&SrvCtlArbitrateMonitor.InUse_CtlData, 0, sizeof(ControlData_TypeDef));
+
+    /* set default signal source/type/control mode */
+    SrvCtlArbitrateMonitor.InUse_CtlData.sig_source = Control_Sig_RC;
+    SrvCtlArbitrateMonitor.InUse_CtlData.sig_type = Control_Channel_Sig;
+    SrvCtlArbitrateMonitor.InUse_CtlData.control_mode = Control_Mode_Attitude;
+    SrvCtlArbitrateMonitor.sig_privilege_req_source = SrvCtlArbitrateMonitor.InUse_CtlData.sig_source;
 
     return true;
 }
@@ -162,39 +162,55 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
         SrvDataHub.get_rc_control_data(&SrvCtlArbitrateMonitor.RC_CtlData);
         SrvDataHub.get_opc_control_data(&SrvCtlArbitrateMonitor.OPC_CtlData);
         
-        if(SrvCtlArbitrateMonitor.cur_sig_source == Control_Sig_RC)
+        if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == Control_Sig_RC)
         {
-            SrvCtlArbitrateMonitor.cur_sig_type = Control_Channel_Sig;
+            SrvCtlArbitrateMonitor.InUse_CtlData.sig_type = Control_Channel_Sig;
 
             memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.RC_CtlData, sizeof(ControlData_TypeDef));
+            memcpy(inuse_ctl_data, &SrvCtlArbitrateMonitor.RC_CtlData, sizeof(ControlData_TypeDef));
         }
-        else if(SrvCtlArbitrateMonitor.cur_sig_source == Control_Sig_OnPlaneComputer)
+        else if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == Control_Sig_OnPlaneComputer)
         {
             memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.OPC_CtlData, sizeof(ControlData_TypeDef));
+            memcpy(inuse_ctl_data, &SrvCtlArbitrateMonitor.OPC_CtlData, sizeof(ControlData_TypeDef));
         }
         else
         {
             /* signal source error */
             /* set default control data */
-            return;
+            memset(inuse_ctl_data, 0, sizeof(ControlData_TypeDef));
+
+            inuse_ctl_data->fail_safe = true;
+            memset(&SrvCtlArbitrateMonitor.InUse_CtlData, 0, sizeof(ControlData_TypeDef));
+            SrvCtlArbitrateMonitor.InUse_CtlData.sig_source = Control_Sig_None;
+            SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe = true;
         }
         
+        /* check any taking over ack info */
+
         /* check failsafe first */
         if(SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe)
         {
-            if(SrvCtlArbitrateMonitor.cur_sig_source == Control_Sig_RC)
+            if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == Control_Sig_RC)
             {
                 /* require on plane computer taking over control and check ack */
                 Srv_OnPlaneComputer_TakingOver_RequireSend(SrvCtlArbitrateMonitor.InUse_CtlData);
             }
-            else
+            else if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source = Control_Sig_OnPlaneComputer)
             {
                 /* send require info through OSD or buzzer */
+            }
+            else
+            {
+
             }
         }
         else
         {
-            /* check any taking over require info */
+            if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == Control_Sig_RC)
+            {
+
+            }
         }
     }
 }

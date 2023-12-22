@@ -68,10 +68,6 @@ typedef struct
     Srv_CtlRange_TypeDef att_ctl_range[Att_Ctl_Sum];
     Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
 
-    ControlSig_Source_List cur_sig_source;
-    ControlSig_Type_List cur_sig_type;
-    ControlSig_Mode_List cur_ctl_mode;
-
     ControlSig_ArbitrateState_List arbitrate_state;
     ControlSig_Source_List sig_privilege_req_source;
 

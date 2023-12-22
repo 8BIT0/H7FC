@@ -57,7 +57,8 @@ typedef enum
 
 typedef enum
 {
-    Control_Sig_RC = 0,
+    Control_Sig_None = 0,
+    Control_Sig_RC,
     Control_Sig_OnPlaneComputer,
 } ControlSig_Source_List;
 
