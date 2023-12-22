@@ -189,7 +189,7 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
             }
             else
             {
-                /* send require info through OSD */
+                /* send require info through OSD or buzzer */
             }
         }
         else

@@ -59,21 +59,21 @@ typedef enum
 {
     Control_Sig_RC = 0,
     Control_Sig_OnPlaneComputer,
-} Srv_CtlSigSrcMode_List;
+} ControlSig_Source_List;
 
 typedef enum
 {
     Control_Channel_Sig = 0,
     Control_Attitude_Sig,
     Control_AngularSpeed_Sig,
-} Srv_CtlSigInputType_List;
+} ControlSig_Type_List;
 
 typedef enum
 {
     Control_Mode_Attitude = 0,
     Control_Mode_AngularSpeed,
     Control_Mode_AngluarSpeed_AngleLock,
-} Srv_CtlMode_List;
+} ControlSig_Mode_List;
 
 typedef enum
 {
@@ -81,7 +81,7 @@ typedef enum
     ArbitrateState_InProcess,
     ArbitrateState_Done,
     ArbitrateState_Denied,
-} Srv_CtlArbitrateState_List;
+} ControlSig_ArbitrateState_List;
 
 typedef union
 {

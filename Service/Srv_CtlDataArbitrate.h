@@ -6,8 +6,6 @@
 #include <string.h>
 #include "Srv_DataHub.h"
 
-
-
 typedef struct
 {
     bool tunning;
@@ -41,7 +39,7 @@ typedef struct
     bool buzzer_state;
     bool calib_state;
     bool fail_safe;
-    Srv_CtlMode_List ctl_mode;
+    ControlSig_Mode_List ctl_mode;
     uint8_t TakingOver_stage; /* signal arbitrate and sync process stage */
 
     uint8_t idle_throttle_percent;
@@ -70,12 +68,12 @@ typedef struct
     Srv_CtlRange_TypeDef att_ctl_range[Att_Ctl_Sum];
     Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
 
-    Srv_CtlSigSrcMode_List cur_sig_source;
-    Srv_CtlSigInputType_List cur_sig_type;
-    Srv_CtlMode_List cur_ctl_mode;
+    ControlSig_Source_List cur_sig_source;
+    ControlSig_Type_List cur_sig_type;
+    ControlSig_Mode_List cur_ctl_mode;
 
-    Srv_CtlArbitrateState_List arbitrate_state;
-    Srv_CtlSigSrcMode_List sig_privilege_req_source;
+    ControlSig_ArbitrateState_List arbitrate_state;
+    ControlSig_Source_List sig_privilege_req_source;
 
     ControlData_TypeDef RC_CtlData;
     ControlData_TypeDef OPC_CtlData;
