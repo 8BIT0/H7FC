@@ -136,12 +136,12 @@ typedef struct
 
 typedef struct
 {
-
+    ControlData_Source_List source;
 }Control_TakeOver_Req_TypeDef;
 
 typedef struct
 {
-
+    ControlData_Source_List source;
 }ControL_TakeOver_Ack_TypeDef;
 
 #endif

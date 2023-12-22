@@ -16,6 +16,7 @@ typedef struct
 {
     bool (*init)(void *port_obj, void *port_api);
     bool (*taking_over_req)(void);
+    bool (*get_taking_over_ack)(ControL_TakeOver_Ack_TypeDef *ack);
 }SrvOPC_TypeDef;
 
 extern SrvOPC_TypeDef SrvOPC;
