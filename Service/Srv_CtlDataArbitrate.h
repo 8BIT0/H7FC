@@ -39,7 +39,7 @@ typedef struct
     bool buzzer_state;
     bool calib_state;
     bool fail_safe;
-    ControlSig_Mode_List ctl_mode;
+    Control_Mode_List ctl_mode;
     uint8_t TakingOver_stage; /* signal arbitrate and sync process stage */
 
     uint8_t idle_throttle_percent;
@@ -69,11 +69,12 @@ typedef struct
     Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
 
     ControlSig_ArbitrateState_List arbitrate_state;
-    ControlSig_Source_List sig_privilege_req_source;
 
     ControlData_TypeDef RC_CtlData;
     ControlData_TypeDef OPC_CtlData;
     ControlData_TypeDef InUse_CtlData;
+
+    uint32_t RC_TakingOver_ReqHold;
 } Srv_CtlArbitrateMonitor_TypeDef;
 
 typedef struct

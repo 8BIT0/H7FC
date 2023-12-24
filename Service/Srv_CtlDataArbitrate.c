@@ -12,6 +12,7 @@
 #define MAX_ATTITUDE_ANGLE_RANGE 60
 #define MIN_ATTITUDE_ANGLE_RANGE -60
 
+#define RC_TAKING_OVER_CONFIRM 2000 /* unit : ms */
 #define TAKINGOVER_NEGOCIOATE_TIMEOUT 10000 /* unit : ms */
 
 /* internal vriable */
@@ -19,8 +20,9 @@ static Srv_CtlArbitrateMonitor_TypeDef SrvCtlArbitrateMonitor;
 static void Srv_OnPlaneComputer_TakingOver_RequireSend(ControlData_TypeDef cur_ctl_data);
 
 /* internal function */
-static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp_pitch, float *exp_roll);
+static void Srv_CtlData_ConvertGimbal_ToAtt(uint8_t *gimbal_percent, float *exp_pitch, float *exp_roll);
 static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, float *exp_gyr_x, float *exp_gyr_y, float *exp_gyr_z);
+static void Srv_CtlData_ControlPrivilege_Req_Check(void);
 
 /* external function */
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum]);
@@ -139,7 +141,7 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
 
     for(index = 0; index < 3; index ++)
     {
-        SrvCtlArbitrateMonitor.att_ctl_range[index] = angularspeed_range[index];
+        SrvCtlArbitrateMonitor.angularspeed_ctl_range[index] = angularspeed_range[index];
     }
     
     memset(&SrvCtlArbitrateMonitor.RC_CtlData, 0, sizeof(ControlData_TypeDef));
@@ -147,32 +149,45 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
     memset(&SrvCtlArbitrateMonitor.InUse_CtlData, 0, sizeof(ControlData_TypeDef));
 
     /* set default signal source/type/control mode */
-    SrvCtlArbitrateMonitor.InUse_CtlData.sig_source = Control_Sig_RC;
-    SrvCtlArbitrateMonitor.InUse_CtlData.sig_type = Control_Channel_Sig;
-    SrvCtlArbitrateMonitor.InUse_CtlData.control_mode = Control_Mode_Attitude;
-    SrvCtlArbitrateMonitor.sig_privilege_req_source = SrvCtlArbitrateMonitor.InUse_CtlData.sig_source;
+    SrvCtlArbitrateMonitor.InUse_CtlData.sig_source = ControlData_Src_RC;
+    SrvCtlArbitrateMonitor.InUse_CtlData.control_mode = Attitude_Control;
 
     return true;
 }
 
+/* 
+ *    signal from the telemetry use channel control drone
+ *    signal from the on plane computer use expection physical value control drone
+ */
 static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
 {
+    float *exp_pitch = NULL;
+    float *exp_roll = NULL;
+
+    float *exp_gyr_x = NULL;
+    float *exp_gyr_y = NULL;
+    float *exp_gyr_z = NULL;
+
     if(inuse_ctl_data)
     {
+        /* check on plane computer online state */
+
         SrvDataHub.get_rc_control_data(&SrvCtlArbitrateMonitor.RC_CtlData);
         SrvDataHub.get_opc_control_data(&SrvCtlArbitrateMonitor.OPC_CtlData);
         
-        if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == Control_Sig_RC)
+        if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_RC)
         {
-            SrvCtlArbitrateMonitor.InUse_CtlData.sig_type = Control_Channel_Sig;
-
-            memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.RC_CtlData, sizeof(ControlData_TypeDef));
-            memcpy(inuse_ctl_data, &SrvCtlArbitrateMonitor.RC_CtlData, sizeof(ControlData_TypeDef));
+            if(SrvCtlArbitrateMonitor.RC_CtlData.update_time_stamp)
+            {
+                memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.RC_CtlData, sizeof(ControlData_TypeDef));
+            }
         }
-        else if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == Control_Sig_OnPlaneComputer)
+        else if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_OPC)
         {
-            memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.OPC_CtlData, sizeof(ControlData_TypeDef));
-            memcpy(inuse_ctl_data, &SrvCtlArbitrateMonitor.OPC_CtlData, sizeof(ControlData_TypeDef));
+            if(SrvCtlArbitrateMonitor.OPC_CtlData.update_time_stamp)
+            {
+                memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.OPC_CtlData, sizeof(ControlData_TypeDef));
+            }
         }
         else
         {
@@ -181,42 +196,55 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
             memset(inuse_ctl_data, 0, sizeof(ControlData_TypeDef));
 
             inuse_ctl_data->fail_safe = true;
-            memset(&SrvCtlArbitrateMonitor.InUse_CtlData, 0, sizeof(ControlData_TypeDef));
-            SrvCtlArbitrateMonitor.InUse_CtlData.sig_source = Control_Sig_None;
+            SrvCtlArbitrateMonitor.InUse_CtlData.sig_source = ControlData_Src_None;
             SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe = true;
         }
         
         /* check any taking over ack info */
+        Srv_CtlData_ControlPrivilege_Req_Check();
 
         /* check failsafe first */
         if(SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe)
         {
-            if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == Control_Sig_RC)
+            if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_RC)
             {
                 /* require on plane computer taking over control and check ack */
                 Srv_OnPlaneComputer_TakingOver_RequireSend(SrvCtlArbitrateMonitor.InUse_CtlData);
             }
-            else if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source = Control_Sig_OnPlaneComputer)
+            else if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_OPC)
             {
-                /* send require info through OSD or buzzer */
-            }
-            else
-            {
-
+                /* hovering for 10 sec wait remote set all gimbal in the mid pos. set arm toggle at the DRONE_ARM state */
+                /* under the statement up top, set ARM toggle on DRONE_DISARM then remote will taking over */
             }
         }
         else
         {
-            if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == Control_Sig_RC)
-            {
+            exp_pitch = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_att_pitch;
+            exp_roll = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_att_roll;
 
+            exp_gyr_x = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_x;
+            exp_gyr_y = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_y;
+            exp_gyr_z = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_z;
+
+            if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_OPC)
+            {
+                SrvCtlArbitrateMonitor.InUse_CtlData.osd_tune_enable = false;
+                SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.osd_tune = false;
             }
+            else
+            {
+                /* convert rc channel value into exptection attitude or angluar speed */
+                Srv_CtlData_ConvertGimbal_ToAtt(SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent, exp_pitch, exp_roll);
+                Srv_CtlData_ConvertGimbal_ToAngularSpeed(SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent, exp_gyr_x, exp_gyr_y, exp_gyr_z);
+            }
+        
+            memcpy(inuse_ctl_data, &SrvCtlArbitrateMonitor.InUse_CtlData, sizeof(ControlData_TypeDef));
         }
     }
 }
 
 /* remote gimbal only can control pitch and roll angle but yaw angle */
-static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp_pitch, float *exp_roll)
+static void Srv_CtlData_ConvertGimbal_ToAtt(uint8_t *gimbal_percent, float *exp_pitch, float *exp_roll)
 {
     float pos_trip = 0.0f;
     float neg_trip = 0.0f;
@@ -229,8 +257,8 @@ static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp
     {
         /**************************************************************** pitch section ******************************************************************/
         pos_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].max - SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
-        neg_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].min - SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle;
-        gimbal_percent_tmp = (gimbal_percent[Gimbal_Pitch] - 50) / 100.0f;
+        neg_trip = SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].idle- SrvCtlArbitrateMonitor.att_ctl_range[Att_Pitch].min;
+        gimbal_percent_tmp = (gimbal_percent[Gimbal_Pitch] - 50) / 50.0f;
 
         if((gimbal_percent[Gimbal_Pitch] - 50) > 0)
         {
@@ -288,6 +316,38 @@ static void Srv_CtlData_ConvertGimbal_ToAtt(uint16_t *gimbal_percent, float *exp
         }
     }
 }
+
+static void Srv_CtlData_ControlPrivilege_Req_Check(void)
+{
+    if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_RC)
+    {
+        if(SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.taking_over_req)
+        {
+            if(SrvCtlArbitrateMonitor.RC_TakingOver_ReqHold == 0)
+            {
+                SrvCtlArbitrateMonitor.RC_TakingOver_ReqHold = SrvOsCommon.get_os_ms();
+            }
+        }
+        else
+        {
+            if(SrvOsCommon.get_os_ms() - SrvCtlArbitrateMonitor.RC_TakingOver_ReqHold >= RC_TAKING_OVER_CONFIRM)
+            {
+                /* send taking over require to on plane computer */
+            }
+            
+            SrvCtlArbitrateMonitor.RC_TakingOver_ReqHold = 0;
+        }
+    }
+    else if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_OPC)
+    {
+        /* check telemetry take over request */
+        if(SrvCtlArbitrateMonitor.RC_CtlData.aux.bit.taking_over_req)
+        {
+            /* RC remote require to taking over */
+        }
+    }
+}
+
 
 static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint16_t *gimbal_percent, float *exp_gyr_x, float *exp_gyr_y, float *exp_gyr_z)
 {

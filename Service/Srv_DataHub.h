@@ -17,7 +17,6 @@
 #define DRONE_ARM 1
 #define DRONE_DISARM 0
 
-#pragma pack(1)
 typedef union
 {
     struct
@@ -64,7 +63,6 @@ typedef union
 
     uint64_t val;
 } SrvDataHub_UpdateReg_TypeDef;
-#pragma pack()
 
 typedef struct
 {

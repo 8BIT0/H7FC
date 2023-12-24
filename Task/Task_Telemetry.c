@@ -261,6 +261,7 @@ static bool Telemetry_BindGimbalToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 
     channel_set->channel_ptr = data_obj;
     channel_set->max = max_range;
+    channel_set->mid = mid_val;
     channel_set->min = min_range;
     channel_set->center_deadzone_scope = 0;
     channel_set->enable_deadzone = false;
@@ -368,8 +369,8 @@ static Telemetry_ToggleData_TypeDef Telemetry_Toggle_Check(Telemetry_RCFuncMap_T
         channel_data = (Telemetry_ChannelSet_TypeDef *)nxt->data;
 
         if (!channel_data ||
-            (((*(uint16_t *)channel_data->channel_ptr) < channel_data->max) &&
-             ((*(uint16_t *)channel_data->channel_ptr) > channel_data->min)))
+            (((*(uint16_t *)channel_data->channel_ptr) <= channel_data->max) &&
+             ((*(uint16_t *)channel_data->channel_ptr) >= channel_data->min)))
         {
             pos_reg |= 1 << toggle_val.pos;
             toggle_val.cnt++;
@@ -450,7 +451,7 @@ static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
 
     if (gimbal_channel->enable_deadzone)
     {
-        if (*gimbal_channel->channel_ptr < (gimbal_channel->mid + gimbal_channel->center_deadzone_scope) ||
+        if (*gimbal_channel->channel_ptr < (gimbal_channel->mid + gimbal_channel->center_deadzone_scope) &&
             (*gimbal_channel->channel_ptr > (gimbal_channel->mid - gimbal_channel->center_deadzone_scope)))
             return 50;
     }
@@ -686,8 +687,8 @@ static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch,
     if(!Telemetry_BindToggleToChannel(&Telemetry_Monitor.RC_Setting, \
                                       &Receiver_Obj.data.val_list[buzzer_toggle_ch], \
                                       &Telemetry_Monitor.RC_Setting.Buzzer_Toggle, \
-                                      Telemetry_Monitor.receiver_value_min, \
-                                      Telemetry_Monitor.receiver_value_mid))
+                                      Telemetry_Monitor.receiver_value_mid, \
+                                      Telemetry_Monitor.receiver_value_max))
         return false;
     
     /* bind control mode switcher toggle */ 
@@ -781,8 +782,6 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
         memset(CTLSig, 0, sizeof(ControlData_TypeDef));
 
         CTLSig->sig_source = ControlData_Src_RC;
-        CTLSig->sig_type = ControlData_Type_Channel;
-     
         CTLSig->update_time_stamp = RCSig.time_stamp;
         CTLSig->arm_state = RCSig.arm_state;
         CTLSig->fail_safe = RCSig.failsafe;
@@ -813,6 +812,8 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
             CTLSig->gimbal_max = Telemetry_Monitor.receiver_value_max;
             CTLSig->gimbal_mid = Telemetry_Monitor.receiver_value_mid;
             CTLSig->gimbal_min = Telemetry_Monitor.receiver_value_min;
+
+            CTLSig->aux.bit.taking_over_req = RCSig.taking_over;
 
             if(RCSig.arm_state == TELEMETRY_SET_ARM)
             {

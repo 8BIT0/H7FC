@@ -37,16 +37,10 @@ typedef enum
 
 typedef enum
 {
-    ControlData_Src_RC = 0, /* RC remote */
+    ControlData_Src_None = 0,
+    ControlData_Src_RC, /* RC remote */
     ControlData_Src_OPC,    /* On Plane Computer */
 }ControlData_Source_List;
-
-typedef enum
-{
-    ControlData_Type_Channel = 0,
-    ControlData_Type_Attitude,
-    ControlData_Type_AngularSpeed,
-}ControlData_Type_List;
 
 typedef enum
 {
@@ -54,27 +48,6 @@ typedef enum
     AngularSpeed_Control,
     AngularSpeed_AngleLimit_Control,
 }Control_Mode_List;
-
-typedef enum
-{
-    Control_Sig_None = 0,
-    Control_Sig_RC,
-    Control_Sig_OnPlaneComputer,
-} ControlSig_Source_List;
-
-typedef enum
-{
-    Control_Channel_Sig = 0,
-    Control_Attitude_Sig,
-    Control_AngularSpeed_Sig,
-} ControlSig_Type_List;
-
-typedef enum
-{
-    Control_Mode_Attitude = 0,
-    Control_Mode_AngularSpeed,
-    Control_Mode_AngluarSpeed_AngleLock,
-} ControlSig_Mode_List;
 
 typedef enum
 {
@@ -93,7 +66,8 @@ typedef union
         uint16_t flip_over : 1;
         uint16_t calib : 1;
         uint16_t osd_tune : 1;
-        uint16_t res : 12;
+        uint16_t taking_over_req : 1;
+        uint16_t res : 11;
     }bit;
     
     uint16_t val;
@@ -123,7 +97,6 @@ typedef struct
     float exp_gyr_z;
 
     ControlData_Source_List sig_source;
-    ControlData_Type_List sig_type;
     Control_Mode_List control_mode;
     
     AUX_Control_Reg_TypeDef aux;
