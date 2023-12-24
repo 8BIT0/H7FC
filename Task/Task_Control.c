@@ -20,6 +20,8 @@
 
 #define ANGULAR_PID_ACCURACY 1000
 
+DataPipe_CreateDataObj(ControlData_TypeDef, Smp_Inuse_CtlData);
+
 static uint32_t imu_update_time = 0;
 static uint32_t att_update_time = 0;
 static uint32_t tunning_time_stamp = 0;
@@ -92,6 +94,11 @@ void TaskControl_Init(uint32_t period)
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
     
+    memset(DataPipe_DataObjAddr(Smp_Inuse_CtlData), 0, DataPipe_DataSize(Smp_Inuse_CtlData));
+    InUseCtlData_Smp_DataPipe.data_addr = DataPipe_DataObjAddr(Smp_Inuse_CtlData);
+    InUseCtlData_Smp_DataPipe.data_size = DataPipe_DataSize(Smp_Inuse_CtlData);
+    DataPipe_Enable(&InUseCtlData_Smp_DataPipe);
+
     /* set control range */
     /* attitude control range */
     for(i = Att_Pitch; i < Att_Ctl_Sum; i++)
@@ -126,14 +133,12 @@ void TaskControl_Init(uint32_t period)
 void TaskControl_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
-    ControlData_TypeDef Inuse_CtlData;
-
-    memset(&Inuse_CtlData, 0, sizeof(ControlData_TypeDef));
-
+    
     while(1)
     {
-        Srv_CtlDataArbitrate.negociate_update(&Inuse_CtlData);
-
+        Srv_CtlDataArbitrate.negociate_update(DataPipe_DataObjAddr(Smp_Inuse_CtlData));
+        DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
+        
         if(control_enable && !TaskControl_Monitor.CLI_enable)
         {
             TaskControl_FlightControl_Polling(Srv_CtlDataArbitrate.get_data());
