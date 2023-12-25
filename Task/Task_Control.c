@@ -133,11 +133,15 @@ void TaskControl_Init(uint32_t period)
 void TaskControl_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
+    ControlData_TypeDef CtlData;
     
+    memset(&CtlData, 0, sizeof(ControlData_TypeDef));
+
     while(1)
     {
-        Srv_CtlDataArbitrate.negociate_update(DataPipe_DataObjAddr(Smp_Inuse_CtlData));
-        DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
+        Srv_CtlDataArbitrate.negociate_update(&CtlData);
+
+        DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
         
         if(control_enable && !TaskControl_Monitor.CLI_enable)
         {
@@ -154,6 +158,9 @@ void TaskControl_Core(void const *arg)
                 SrvActuator.lock();
         }
 
+        /* pipe in use control data to data hub */
+        DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
+        
         SrvOsCommon.precise_delay(&sys_time, TaskControl_Period);
     }
 }
