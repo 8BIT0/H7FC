@@ -202,10 +202,11 @@ typedef enum
 
 typedef enum
 {
-    Actuator_CtlChannel_Throttle = 0,
-    Actuator_CtlChannel_Roll,
-    Actuator_CtlChannel_Pitch,
-    Actuator_CtlChannel_Yaw,
+    Actuator_Ctl_Throttle = 0,
+    Actuator_Ctl_GyrX,
+    Actuator_Ctl_GyrY,
+    Actuator_Ctl_GyrZ,
+    Actuator_Ctl_Sum,
 } SrvActuator_ChannelControl_List;
 
 typedef struct

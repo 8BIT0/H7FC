@@ -435,23 +435,23 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
         return false;
 
     /* limit throttle max output at 80% */
-    if (pid_ctl[Actuator_CtlChannel_Throttle] >= SRV_ACTUATOR_MAX_THROTTLE_PERCENT)
-        pid_ctl[Actuator_CtlChannel_Throttle] = SRV_ACTUATOR_MAX_THROTTLE_PERCENT;
+    if (pid_ctl[Actuator_Ctl_Throttle] >= SRV_ACTUATOR_MAX_THROTTLE_PERCENT)
+        pid_ctl[Actuator_Ctl_Throttle] = SRV_ACTUATOR_MAX_THROTTLE_PERCENT;
 
-    throttle_base_percent = pid_ctl[Actuator_CtlChannel_Throttle] / 100.0f;
+    throttle_base_percent = pid_ctl[Actuator_Ctl_Throttle] / 100.0f;
 
     for (uint8_t i = 0; i < 4; i++)
     {
         SrvActuator_Obj.drive_module.obj_list[i].ctl_val = (SrvActuator_Obj.drive_module.obj_list[i].max_val -
                                                             SrvActuator_Obj.drive_module.obj_list[i].min_val) *
-                                                               throttle_base_percent +
-                                                           SrvActuator_Obj.drive_module.obj_list[i].min_val;
+                                                            throttle_base_percent +
+                                                            SrvActuator_Obj.drive_module.obj_list[i].min_val;
     }
 
-    SrvActuator_Obj.drive_module.obj_list[0].ctl_val += pid_ctl[Actuator_CtlChannel_Roll] - pid_ctl[Actuator_CtlChannel_Pitch] - pid_ctl[Actuator_CtlChannel_Yaw];
-    SrvActuator_Obj.drive_module.obj_list[1].ctl_val += pid_ctl[Actuator_CtlChannel_Roll] + pid_ctl[Actuator_CtlChannel_Pitch] + pid_ctl[Actuator_CtlChannel_Yaw];
-    SrvActuator_Obj.drive_module.obj_list[2].ctl_val -= pid_ctl[Actuator_CtlChannel_Roll] + pid_ctl[Actuator_CtlChannel_Pitch] - pid_ctl[Actuator_CtlChannel_Yaw];
-    SrvActuator_Obj.drive_module.obj_list[3].ctl_val -= pid_ctl[Actuator_CtlChannel_Roll] - pid_ctl[Actuator_CtlChannel_Pitch] + pid_ctl[Actuator_CtlChannel_Yaw];
+    SrvActuator_Obj.drive_module.obj_list[0].ctl_val += pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
+    SrvActuator_Obj.drive_module.obj_list[1].ctl_val += pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
+    SrvActuator_Obj.drive_module.obj_list[2].ctl_val -= pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
+    SrvActuator_Obj.drive_module.obj_list[3].ctl_val -= pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
 
     for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
@@ -464,14 +464,14 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
 
         switch (SrvActuator_Obj.drive_module.obj_list[i].drv_type)
         {
-        case Actuator_DevType_DShot150:
-        case Actuator_DevType_DShot300:
-        case Actuator_DevType_DShot600:
-            DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
-            break;
+            case Actuator_DevType_DShot150:
+            case Actuator_DevType_DShot300:
+            case Actuator_DevType_DShot600:
+                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
+                break;
 
-        default:
-            return false;
+            default:
+                return false;
         }
     }
 

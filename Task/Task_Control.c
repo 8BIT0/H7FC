@@ -50,6 +50,7 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
 static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state);
 static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef *monitor);
 static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_ctl_val);
+static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef *monitor);
 static void TaskControl_CLI_Polling(void);
 
 /* internal var */
@@ -81,8 +82,16 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Monitor.RollCtl_PIDObj.diff_min        = ATTITUDE_PID_DIFF_MIN;
     
     TaskControl_Monitor.GyrXCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+    // TaskControl_Monitor.GyrXCtl_PIDObj.diff_max       =;
+    // TaskControl_Monitor.GyrXCtl_PIDObj.diff_min       =;
+
     TaskControl_Monitor.GyrYCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+    // TaskControl_Monitor.GyrYCtl_PIDObj.diff_max       =;
+    // TaskControl_Monitor.GyrYCtl_PIDObj.diff_min       =;
+    
     TaskControl_Monitor.GyrZCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+    // TaskControl_Monitor.PitchCtl_PIDObj.diff_max       =;
+    // TaskControl_Monitor.RollCtl_PIDObj.diff_min        =;
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
@@ -166,7 +175,7 @@ static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *mon
         
         if(att_state)
         {
-            /* pitch PID update */
+           /* pitch PID update */
             PID_Update(&monitor->PitchCtl_PIDObj, monitor->attitude.pitch, monitor->exp_attitude.pitch);
 
             /* roll PID update */
@@ -185,13 +194,36 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
     {
         if(monitor->att_pid_state)
         {
+            /* gyro X PID Update */
+            PID_Update(&monitor->GyrXCtl_PIDObj, monitor->gyr[Axis_X], monitor->GyrXCtl_PIDObj.exp);
 
+            /* gyro Y PID Update */
+            PID_Update(&monitor->GyrYCtl_PIDObj, monitor->gyr[Axis_Y], monitor->GyrYCtl_PIDObj.exp);
+
+            /* gyro Z PID Update */
+            PID_Update(&monitor->GyrZCtl_PIDObj, monitor->gyr[Axis_Z], monitor->GyrZCtl_PIDObj.exp);
         }
 
         return true;
     }
 
     return false;
+}
+
+static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef *monitor)
+{
+    int16_t ctl_buf[Actuator_Ctl_Sum] = {0};
+
+    if(monitor)
+    {
+        // ctl_buf[Actuator_CtlChannel_Throttle] = monitor->;
+
+        ctl_buf[Actuator_Ctl_GyrX] = monitor->GyrXCtl_PIDObj.fout;
+        ctl_buf[Actuator_Ctl_GyrY] = monitor->GyrYCtl_PIDObj.fout;
+        ctl_buf[Actuator_Ctl_GyrZ] = monitor->GyrZCtl_PIDObj.fout;
+    }
+
+    SrvActuator.moto_control(ctl_buf);
 }
 
 /****************************************************** Flight Control Section ********************************************************/
@@ -342,7 +374,12 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
         /* Update PID */
         if(exp_ctl_val.mode == Attitude_Control)
         {
+            /* set expection attitude */
+            TaskControl_Monitor.RollCtl_PIDObj.exp = exp_ctl_val.exp_attitude[Att_Roll];
+            TaskControl_Monitor.PitchCtl_PIDObj.exp = exp_ctl_val.exp_attitude[Att_Pitch];
+ 
             TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
+            
             TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.RollCtl_PIDObj.fout;
             TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.PitchCtl_PIDObj.fout;
         }
@@ -354,8 +391,7 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
 
         TaskControl_Monitor.GyrZCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_Z];
         TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
-
-        // SrvActuator.moto_control();
+        TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 
         if(imu_err_code == SrvIMU_Sample_NoError)
         {
