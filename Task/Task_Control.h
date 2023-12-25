@@ -53,7 +53,7 @@ typedef struct
 
     uint8_t angular_warning_cnt;
 
-    uint8_t ctl_model;
+    uint8_t actuator_model;
 
     uint8_t imu_update_error_cnt;
 

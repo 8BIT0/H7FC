@@ -39,7 +39,7 @@ typedef struct
     bool buzzer_state;
     bool calib_state;
     bool fail_safe;
-    Control_Mode_List ctl_mode;
+    Control_Mode_List mode;
     uint8_t TakingOver_stage; /* signal arbitrate and sync process stage */
 
     uint8_t idle_throttle_percent;

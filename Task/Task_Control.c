@@ -40,12 +40,10 @@ SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
 TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .init_state = false,
     .control_abort = false,
-    .auto_control = false,
 
-    .ctl_model = Model_Quad,
+    .actuator_model = Model_Quad,
 
     .IMU_Rt = 0,
-    .RC_Rt = 0,
 };
 
 /* internal function */
@@ -68,7 +66,7 @@ void TaskControl_Init(uint32_t period)
     memset(&att_ctl_range, 0, sizeof(Srv_CtlRange_TypeDef));
     memset(&angularspeed_ctl_range, 0, sizeof(Srv_CtlRange_TypeDef));
 
-    TaskControl_Monitor.ctl_model = SrvActuator.get_model();
+    TaskControl_Monitor.actuator_model = SrvActuator.get_model();
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
     /* PID Parametet Init */
@@ -205,7 +203,6 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
 
     if (TaskControl_Monitor.init_state && !TaskControl_Monitor.control_abort)
     {
-        TaskControl_Monitor.auto_control = true;
         imu_init_state = false;
 
         // get failsafe
@@ -340,14 +337,22 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
         if(TaskControl_Monitor.angular_protect)
             goto lock_moto;
 
-        /* currently lock moto */
-        if(TaskControl_Monitor.auto_control)
-            goto lock_moto;
-
         // do drone control algorithm down below
 
         /* Update PID */
-        TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
+        if(exp_ctl_val.mode == Attitude_Control)
+        {
+            TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
+            TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.RollCtl_PIDObj.fout;
+            TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.PitchCtl_PIDObj.fout;
+        }
+        else
+        {
+            TaskControl_Monitor.GyrXCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_X];
+            TaskControl_Monitor.GyrYCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_Y];
+        }
+
+        TaskControl_Monitor.GyrZCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_Z];
         TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
         // SrvActuator.moto_control();
