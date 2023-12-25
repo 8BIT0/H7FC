@@ -88,7 +88,6 @@ typedef struct
     /* outer ring attitude control pid */
     PIDObj_TypeDef RollCtl_PIDObj;
     PIDObj_TypeDef PitchCtl_PIDObj;
-    PIDObj_TypeDef YawCtl_PIDObj;
 
     /* inner ring angular speed control pid */
     PIDObj_TypeDef GyrXCtl_PIDObj;

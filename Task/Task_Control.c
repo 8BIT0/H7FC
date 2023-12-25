@@ -73,7 +73,6 @@ void TaskControl_Init(uint32_t period)
     /* PID Parametet Init */
     TaskControl_Monitor.PitchCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
     TaskControl_Monitor.RollCtl_PIDObj.accuracy_scale  = ATTITUDE_PID_ACCURACY;
-    TaskControl_Monitor.YawCtl_PIDObj.accuracy_scale   = ATTITUDE_PID_ACCURACY;
 
     TaskControl_Monitor.PitchCtl_PIDObj.diff_max       = ATTITUDE_PID_DIFF_MAX;
     TaskControl_Monitor.RollCtl_PIDObj.diff_max        = ATTITUDE_PID_DIFF_MAX;
@@ -105,8 +104,8 @@ void TaskControl_Init(uint32_t period)
     /* attitude control range */
     for(i = Att_Pitch; i < Att_Ctl_Sum; i++)
     {
-        att_ctl_range[i].max = 50.0f;   /* max attitude control angle ±50 deg */
-        att_ctl_range[i].min = -50.0f;
+        att_ctl_range[i].max = 30.0f;   /* max attitude control angle ±50 deg */
+        att_ctl_range[i].min = -30.0f;
         att_ctl_range[i].idle = 0.0f;
         att_ctl_range[i].dead_zone_max = 0.5f;
         att_ctl_range[i].dead_zone_min = -0.5f;
@@ -116,8 +115,8 @@ void TaskControl_Init(uint32_t period)
     /* X&Y axis angular speed control range */
     for(i = Axis_X; i < Axis_Z; i++)
     {
-        angularspeed_ctl_range[i].max = 500.0f;
-        angularspeed_ctl_range[i].min = -500.0f;
+        angularspeed_ctl_range[i].max = 300.0f;
+        angularspeed_ctl_range[i].min = -300.0f;
         angularspeed_ctl_range[i].idle = 0.0f;
         angularspeed_ctl_range[i].enable_dead_zone = false;
     }
