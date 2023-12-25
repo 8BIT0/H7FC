@@ -69,6 +69,7 @@ static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void);
 static SrvActuator_Model_List SrvActuator_GetModel(void);
 static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max);
 static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
+static uint8_t SrvActuator_Get_MotoControlValue(uint16_t *p_buff, uint8_t buf_size);
 
 /* external variable */
 SrvActuator_TypeDef SrvActuator = {
@@ -78,6 +79,7 @@ SrvActuator_TypeDef SrvActuator = {
     .invert_spin = SrvActuator_InvertMotoSpinDir,
     .get_cnt = SrvActuator_Get_NumData,
     .get_model = SrvActuator_GetModel,
+    .get_moto_ctl_value = SrvActuator_Get_MotoControlValue,
     .get_moto_control_range = SrvActuator_Get_MotoControlRange,
     .get_servo_control_range = SrvActuator_Get_ServoControlRange,
 };
@@ -476,6 +478,21 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
     }
 
     return true;
+}
+
+static uint8_t SrvActuator_Get_MotoControlValue(uint16_t *p_buff, uint8_t buf_size)
+{
+    if(p_buff && (buf_size >= SrvActuator_Obj.drive_module.num.moto_cnt))
+    {
+        for(uint8_t index = 0; index < SrvActuator_Obj.drive_module.num.moto_cnt; index ++)
+        {
+            p_buff[index] = SrvActuator_Obj.drive_module.obj_list[index].ctl_val;
+        }
+
+        return SrvActuator_Obj.drive_module.num.moto_cnt;
+    }
+
+    return 0;
 }
 
 static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max)

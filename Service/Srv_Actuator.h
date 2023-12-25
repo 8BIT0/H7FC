@@ -272,6 +272,7 @@ typedef struct
 {
     bool (*init)(SrvActuator_Model_List model, uint8_t esc_type);
     bool (*lock)(void);
+    uint8_t (*get_moto_ctl_value)(uint16_t *p_buff, uint8_t buf_size);
     void (*moto_control)(uint16_t *p_val);
     void (*servo_conttol)(uint8_t index, uint16_t val);
     bool (*invert_spin)(uint8_t component_index);

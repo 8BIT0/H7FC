@@ -230,7 +230,7 @@ static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef
 
     if(monitor)
     {
-        // ctl_buf[Actuator_CtlChannel_Throttle] = monitor->;
+        ctl_buf[Actuator_Ctl_Throttle] = 0;
 
         ctl_buf[Actuator_Ctl_GyrX] = monitor->GyrXCtl_PIDObj.fout;
         ctl_buf[Actuator_Ctl_GyrY] = monitor->GyrYCtl_PIDObj.fout;
@@ -407,7 +407,12 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
         TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
         TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 
-        /* Pipe actuator control data to hub */
+        if(TaskControl_Monitor.moto_value && \
+           SrvActuator.get_moto_ctl_value(TaskControl_Monitor.moto_value, TaskControl_Monitor.moto_cnt))
+        {
+            /* Pipe actuator control data to hub */
+
+        }
 
         if(imu_err_code == SrvIMU_Sample_NoError)
         {
