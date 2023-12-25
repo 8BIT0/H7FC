@@ -160,16 +160,6 @@ void TaskControl_Core(void const *arg)
     }
 }
 
-static bool TaskControl_AltitudeRing_PID_Update()
-{
-    return false;
-}
-
-static bool TaskControl_VerticalSpeedRing_PID_Update()
-{
-    return false;
-}
-
 static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state)
 {
     if(monitor)
