@@ -54,6 +54,8 @@ typedef struct
     uint8_t angular_warning_cnt;
 
     uint8_t actuator_model;
+    uitn8_t moto_cnt;
+    uint16_t moto_val[8];
 
     uint8_t imu_update_error_cnt;
 
