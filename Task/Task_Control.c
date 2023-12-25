@@ -190,19 +190,16 @@ static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *mon
 
 static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef *monitor)
 {
-    if(monitor)
+    if(monitor && monitor->att_pid_state)
     {
-        if(monitor->att_pid_state)
-        {
-            /* gyro X PID Update */
-            PID_Update(&monitor->GyrXCtl_PIDObj, monitor->gyr[Axis_X], monitor->GyrXCtl_PIDObj.exp);
+        /* gyro X PID Update */
+        PID_Update(&monitor->GyrXCtl_PIDObj, monitor->gyr[Axis_X], monitor->GyrXCtl_PIDObj.exp);
 
-            /* gyro Y PID Update */
-            PID_Update(&monitor->GyrYCtl_PIDObj, monitor->gyr[Axis_Y], monitor->GyrYCtl_PIDObj.exp);
+        /* gyro Y PID Update */
+        PID_Update(&monitor->GyrYCtl_PIDObj, monitor->gyr[Axis_Y], monitor->GyrYCtl_PIDObj.exp);
 
-            /* gyro Z PID Update */
-            PID_Update(&monitor->GyrZCtl_PIDObj, monitor->gyr[Axis_Z], monitor->GyrZCtl_PIDObj.exp);
-        }
+        /* gyro Z PID Update */
+        PID_Update(&monitor->GyrZCtl_PIDObj, monitor->gyr[Axis_Z], monitor->GyrZCtl_PIDObj.exp);
 
         return true;
     }
