@@ -414,6 +414,24 @@ static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_GetData(void)
 
     memset(&tmp, 0, sizeof(Srv_CtlExpectionData_TypeDef));
 
+    tmp.fail_safe = SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe;
+    tmp.arm_state = SrvCtlArbitrateMonitor.InUse_CtlData.arm_state;
+    tmp.buzzer_state = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.buzzer;
+    tmp.calib_state = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.calib;
+    tmp.ctl_mode = SrvCtlArbitrateMonitor.InUse_CtlData.control_mode;
+    tmp.TakingOver_stage = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.taking_over_req;
+    
+    tmp.throttle_percent = SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Throttle];
+    tmp.exp_attitude[Att_Pitch] = SrvCtlArbitrateMonitor.InUse_CtlData.exp_att_pitch;
+    tmp.exp_attitude[Att_Roll] = SrvCtlArbitrateMonitor.InUse_CtlData.exp_att_roll;
+    
+    tmp.exp_angularspeed[Axis_X] = SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_x;
+    tmp.exp_angularspeed[Axis_Y] = SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_y;
+    tmp.exp_angularspeed[Axis_Z] = SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_z;
+
+    /* for temporary */
+    tmp.tunning = false;
+
     return tmp;
 }
 

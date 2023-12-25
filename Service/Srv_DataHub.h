@@ -250,7 +250,7 @@ typedef struct
     bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
-    bool (*get_attitude)(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
+    bool (*get_attitude)(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over);
     bool (*get_inuse_control_data)(ControlData_TypeDef *data);
     bool (*get_rc_control_data)(ControlData_TypeDef *data);
     bool (*get_opc_control_data)(ControlData_TypeDef *data);

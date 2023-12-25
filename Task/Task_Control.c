@@ -25,12 +25,7 @@ DataPipe_CreateDataObj(ControlData_TypeDef, Smp_Inuse_CtlData);
 static uint32_t imu_update_time = 0;
 static uint32_t att_update_time = 0;
 static uint32_t tunning_time_stamp = 0;
-static uint16_t rc_ch[32];
-static uint16_t gimbal[4];
-static uint8_t rc_channel_sum;
 static uint8_t imu_err_code;
-static uint8_t axis = Axis_X;
-static uint32_t tunning_port = 0;
 static bool arm_state = true;
 static bool failsafe = false;
 static bool imu_init_state = false;
@@ -160,7 +155,7 @@ void TaskControl_Core(void const *arg)
 
         /* pipe in use control data to data hub */
         DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
-        
+
         SrvOsCommon.precise_delay(&sys_time, TaskControl_Period);
     }
 }
@@ -210,6 +205,9 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 /* need to be optmize */
 static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_ctl_val)
 {
+    uint8_t axis = Axis_X;
+    uint32_t tunning_port = 0;
+
     if (TaskControl_Monitor.init_state && !TaskControl_Monitor.control_abort)
     {
         TaskControl_Monitor.auto_control = true;
@@ -259,7 +257,8 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
                                              &TaskControl_Monitor.attitude.q0,
                                              &TaskControl_Monitor.attitude.q1,
                                              &TaskControl_Monitor.attitude.q2,
-                                             &TaskControl_Monitor.attitude.q3);
+                                             &TaskControl_Monitor.attitude.q3,
+                                             &TaskControl_Monitor.flip_over);
 
         if (imu_update_time)
         {
@@ -352,16 +351,11 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
 
         // do drone control algorithm down below
 
-        // currently use gimbal input percent val for moto testing
-        gimbal[1] = 0;
-        gimbal[2] = 0;
-        gimbal[3] = 0;
-
         /* Update PID */
         TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
         TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
-        SrvActuator.moto_control(gimbal);
+        // SrvActuator.moto_control();
 
         if(imu_err_code == SrvIMU_Sample_NoError)
         {

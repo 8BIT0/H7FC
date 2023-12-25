@@ -74,7 +74,8 @@ typedef struct
     float acc_lst[Axis_Sum];
     float gyr_lst[Axis_Sum];
 
-    IMUAtt_TypeDef attitude; 
+    IMUAtt_TypeDef attitude;
+    bool flip_over;
 
     uint32_t error_code;
     uint8_t imu_none_update_cnt;

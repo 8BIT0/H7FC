@@ -48,7 +48,7 @@ static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
 static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error);
-static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3);
+static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over);
 static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
 static bool SrvDataHub_Get_ConfigratorAttachState(uint32_t *time_stamp, bool *state);
 static bool SrvDataHub_Get_CLI_State(bool *state);
@@ -589,7 +589,7 @@ reupdate_scaled_mag:
     return true;
 }
 
-static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3)
+static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over)
 {
     if((time_stamp == NULL) || \
        (pitch == NULL) || \
@@ -604,15 +604,17 @@ static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *r
 reupdate_attitude:
     SrvDataHub_Monitor.inuse_reg.bit.attitude = true; 
     
-    *time_stamp = SrvDataHub_Monitor.data.att_update_time;
-    *pitch = SrvDataHub_Monitor.data.att_pitch;
-    *roll = SrvDataHub_Monitor.data.att_roll;
-    *yaw = SrvDataHub_Monitor.data.att_yaw;
+    (*time_stamp) = SrvDataHub_Monitor.data.att_update_time;
+    (*pitch) = SrvDataHub_Monitor.data.att_pitch;
+    (*roll) = SrvDataHub_Monitor.data.att_roll;
+    (*yaw) = SrvDataHub_Monitor.data.att_yaw;
 
-    *q0 = SrvDataHub_Monitor.data.att_q0;
-    *q1 = SrvDataHub_Monitor.data.att_q1;
-    *q2 = SrvDataHub_Monitor.data.att_q2;
-    *q3 = SrvDataHub_Monitor.data.att_q3;
+    (*q0) = SrvDataHub_Monitor.data.att_q0;
+    (*q1) = SrvDataHub_Monitor.data.att_q1;
+    (*q2) = SrvDataHub_Monitor.data.att_q2;
+    (*q3) = SrvDataHub_Monitor.data.att_q3;
+
+    (*flip_over) = SrvDataHub_Monitor.data.att_flip_over;
 
     if(!SrvDataHub_Monitor.inuse_reg.bit.attitude)
         goto reupdate_attitude;

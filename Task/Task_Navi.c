@@ -114,8 +114,6 @@ void TaskNavi_Core(void const *arg)
 
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);
-
-            /* DataPipe FlipOver State */
         }
 
         /* check imu data update freq on test */

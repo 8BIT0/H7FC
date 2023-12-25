@@ -26,7 +26,7 @@ typedef struct
     uint8_t throttle_percent;
 
     float exp_alt;
-    float exp_attitude[Axis_Sum];
+    float exp_attitude[Att_Ctl_Sum];
     float exp_angular_speed[Axis_Sum];
 } Srv_CtlNegociateData_TypeDef;
 
@@ -45,7 +45,7 @@ typedef struct
     uint8_t idle_throttle_percent;
     uint8_t throttle_percent;
 
-    float exp_attitude[Axis_Sum];
+    float exp_attitude[Att_Ctl_Sum];
     float exp_angularspeed[Axis_Sum];
     float exp_alt;
 } Srv_CtlExpectionData_TypeDef;
