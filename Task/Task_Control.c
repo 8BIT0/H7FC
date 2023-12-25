@@ -127,6 +127,24 @@ void TaskControl_Init(uint32_t period)
     angularspeed_ctl_range[Axis_Z].enable_dead_zone = false;
     
     control_enable = Srv_CtlDataArbitrate.init(att_ctl_range, angularspeed_ctl_range);
+    TaskControl_Monitor.moto_cnt = SrvActuator.get_cnt().moto_cnt;
+    TaskControl_Monitor.servo_cnt = SrvActuator.get_cnt().servo_cnt;
+
+    if(TaskControl_Monitor.moto_cnt)
+    {
+        TaskControl_Monitor.moto_value = SrvOsCommon.malloc(sizeof(uint16_t) * TaskControl_Monitor.moto_cnt);
+    
+        if(TaskControl_Monitor.moto_value == NULL)
+            SrvOsCommon.free(TaskControl_Monitor.moto_value);
+    }
+
+    if(TaskControl_Monitor.servo_cnt)
+    {
+        TaskControl_Monitor.servo_value = SrvOsCommon.malloc(sizeof(uint16_t) * TaskControl_Monitor.servo_cnt);
+    
+        if(TaskControl_Monitor.servo_value == NULL)
+            SrvOsCommon.free(TaskControl_Monitor.servo_value);
+    }
 
     TaskControl_Period = period;
 }
