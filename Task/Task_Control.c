@@ -168,6 +168,11 @@ static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *mon
         
         if(att_state)
         {
+            /* pitch PID update */
+            PID_Update(&monitor->PitchCtl_PIDObj, monitor->attitude.pitch, monitor->exp_attitude.pitch);
+
+            /* roll PID update */
+            PID_Update(&monitor->RollCtl_PIDObj, monitor->attitude.roll, monitor->exp_attitude.roll);
 
             return true;
         }

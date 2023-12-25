@@ -56,13 +56,9 @@ typedef struct
     uint8_t ctl_model;
 
     uint8_t imu_update_error_cnt;
-    uint8_t rc_update_error_cnt;
 
     uint32_t IMU_Rt;
-    uint32_t RC_Rt;
     uint32_t ATT_Rt;
-
-    bool auto_control;
 
     float acc_scale;
     float gyr_scale;
@@ -74,7 +70,10 @@ typedef struct
     float acc_lst[Axis_Sum];
     float gyr_lst[Axis_Sum];
 
+    float exp_gyr[Axis_Sum];
+
     IMUAtt_TypeDef attitude;
+    IMUAtt_TypeDef exp_attitude;
     bool flip_over;
 
     uint32_t error_code;
