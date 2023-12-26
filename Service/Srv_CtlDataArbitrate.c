@@ -420,6 +420,7 @@ static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_GetData(void)
     tmp.calib_state = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.calib;
     tmp.mode = SrvCtlArbitrateMonitor.InUse_CtlData.control_mode;
     tmp.TakingOver_stage = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.taking_over_req;
+    tmp.recover_flip_over = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.flip_over;
     
     tmp.throttle_percent = SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Throttle];
     tmp.exp_attitude[Att_Pitch] = SrvCtlArbitrateMonitor.InUse_CtlData.exp_att_pitch;

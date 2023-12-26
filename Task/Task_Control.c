@@ -383,36 +383,43 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
         if(TaskControl_Monitor.angular_protect)
             goto lock_moto;
 
-        // do drone control algorithm down below
-
-        /* Update PID */
-        if(exp_ctl_val.mode == Attitude_Control)
+        if(exp_ctl_val.recover_flip_over && TaskControl_Monitor.flip_over)
         {
-            /* set expection attitude */
-            TaskControl_Monitor.RollCtl_PIDObj.exp = exp_ctl_val.exp_attitude[Att_Roll];
-            TaskControl_Monitor.PitchCtl_PIDObj.exp = exp_ctl_val.exp_attitude[Att_Pitch];
- 
-            TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
-            
-            TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.RollCtl_PIDObj.fout;
-            TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.PitchCtl_PIDObj.fout;
+            /* when drone is up side down and we want to flip over it by telemetry */
+            /* reverse propeller spin dir to reverse the drone */
         }
         else
         {
-            TaskControl_Monitor.GyrXCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_X];
-            TaskControl_Monitor.GyrYCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_Y];
-        }
-
-        TaskControl_Monitor.GyrZCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_Z];
-        TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
-        TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
-
-        if(imu_err_code == SrvIMU_Sample_NoError)
-        {
-            for(axis = Axis_X; axis < Axis_Sum; axis ++)
+            // do drone control algorithm down below
+            /* Update PID */
+            if(exp_ctl_val.mode == Attitude_Control)
             {
-                TaskControl_Monitor.acc_lst[axis] = TaskControl_Monitor.acc[axis];
-                TaskControl_Monitor.gyr_lst[axis] = TaskControl_Monitor.gyr[axis];
+                /* set expection attitude */
+                TaskControl_Monitor.RollCtl_PIDObj.exp = exp_ctl_val.exp_attitude[Att_Roll];
+                TaskControl_Monitor.PitchCtl_PIDObj.exp = exp_ctl_val.exp_attitude[Att_Pitch];
+    
+                TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
+                
+                TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.RollCtl_PIDObj.fout;
+                TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.PitchCtl_PIDObj.fout;
+            }
+            else
+            {
+                TaskControl_Monitor.GyrXCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_X];
+                TaskControl_Monitor.GyrYCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_Y];
+            }
+
+            TaskControl_Monitor.GyrZCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_Z];
+            TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
+            TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
+
+            if(imu_err_code == SrvIMU_Sample_NoError)
+            {
+                for(axis = Axis_X; axis < Axis_Sum; axis ++)
+                {
+                    TaskControl_Monitor.acc_lst[axis] = TaskControl_Monitor.acc[axis];
+                    TaskControl_Monitor.gyr_lst[axis] = TaskControl_Monitor.gyr[axis];
+                }
             }
         }
     }

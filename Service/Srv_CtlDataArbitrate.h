@@ -45,6 +45,8 @@ typedef struct
     uint8_t idle_throttle_percent;
     uint8_t throttle_percent;
 
+    bool recover_flip_over;
+
     float exp_attitude[Att_Ctl_Sum];
     float exp_angularspeed[Axis_Sum];
     float exp_alt;
