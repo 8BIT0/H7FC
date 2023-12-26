@@ -20,6 +20,8 @@ static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck);
+
+/* just fot temporary will create custom message in the next */
 static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Exp_Gyro(SrvComProto_MsgInfo_TypeDef *pck);
 
@@ -310,6 +312,7 @@ static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck)
                                             0, 0, 0);
 }
 
+/* just fot temporary will create custom message in the next */
 static uint16_t SrvComProto_MavMsg_Exp_Gyro(SrvComProto_MsgInfo_TypeDef *pck)
 {
     ControlData_TypeDef exp_ctl_val;
@@ -344,6 +347,7 @@ static uint16_t SrvComProto_MavMsg_Exp_Gyro(SrvComProto_MsgInfo_TypeDef *pck)
                                             0, 0, 0);
 }
 
+/* just fot temporary will create custom message in the next */
 static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
 {
     ControlData_TypeDef exp_ctl_val;
