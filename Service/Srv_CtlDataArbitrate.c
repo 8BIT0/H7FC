@@ -175,19 +175,17 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
         SrvDataHub.get_rc_control_data(&SrvCtlArbitrateMonitor.RC_CtlData);
         SrvDataHub.get_opc_control_data(&SrvCtlArbitrateMonitor.OPC_CtlData);
         
+        /* check signal update */
+
         if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_RC)
         {
             if(SrvCtlArbitrateMonitor.RC_CtlData.update_time_stamp)
-            {
                 memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.RC_CtlData, sizeof(ControlData_TypeDef));
-            }
         }
         else if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_OPC)
         {
             if(SrvCtlArbitrateMonitor.OPC_CtlData.update_time_stamp)
-            {
                 memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.OPC_CtlData, sizeof(ControlData_TypeDef));
-            }
         }
         else
         {
@@ -196,7 +194,6 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
             memset(inuse_ctl_data, 0, sizeof(ControlData_TypeDef));
 
             inuse_ctl_data->fail_safe = true;
-            SrvCtlArbitrateMonitor.InUse_CtlData.sig_source = ControlData_Src_None;
             SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe = true;
         }
         
@@ -233,6 +230,14 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
             }
             else
             {
+                if(SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe)
+                {
+                    SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Throttle] = 0;
+                    SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Pitch] = 50;
+                    SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Roll] = 50;
+                    SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Yaw] = 50;
+                }
+
                 /* convert rc channel value into exptection attitude or angluar speed */
                 Srv_CtlData_ConvertGimbal_ToAtt(SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent, exp_pitch, exp_roll);
                 Srv_CtlData_ConvertGimbal_ToAngularSpeed(SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent, exp_gyr_x, exp_gyr_y, exp_gyr_z);

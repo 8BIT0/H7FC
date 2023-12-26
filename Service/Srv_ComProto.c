@@ -23,7 +23,6 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck);
 
 /* just fot temporary will create custom message in the next */
 static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
-static uint16_t SrvComProto_MavMsg_Exp_Gyro(SrvComProto_MsgInfo_TypeDef *pck);
 
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
@@ -113,10 +112,6 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 
     case MAV_CompoID_Scaled_IMU:
         msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Scaled_IMU);
-        break;
-
-    case MAV_CompoID_Exp_IMU:
-        msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Exp_Gyro); 
         break;
 
     case MAV_CompoID_MotoCtl:
@@ -313,41 +308,6 @@ static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck)
 }
 
 /* just fot temporary will create custom message in the next */
-static uint16_t SrvComProto_MavMsg_Exp_Gyro(SrvComProto_MsgInfo_TypeDef *pck)
-{
-    ControlData_TypeDef exp_ctl_val;
-    uint32_t time_stamp = 0;
-    float acc_scale = 0.0f;
-    float gyr_scale = 0.0f;
-    float acc_x = 0.0f;
-    float acc_y = 0.0f;
-    float acc_z = 0.0f;
-    float gyr_x = 0.0f;
-    float gyr_y = 0.0f;
-    float gyr_z = 0.0f;
-    float tmpr = 0.0f;
-    uint8_t imu_err_code = 0;
-    
-    memset(&exp_ctl_val, 0, sizeof(ControlData_TypeDef));
-
-    SrvDataHub.get_inuse_control_data(&exp_ctl_val);
-    SrvDataHub.get_raw_imu(&time_stamp, &acc_scale, &gyr_scale, &acc_x, &acc_y, &acc_z, &gyr_x, &gyr_y, &gyr_z, &tmpr, &imu_err_code);
-
-    int16_t i_gyr_x = (int16_t)(exp_ctl_val.exp_gyr_x * gyr_scale);
-    int16_t i_gyr_y = (int16_t)(exp_ctl_val.exp_gyr_y * gyr_scale);
-    int16_t i_gyr_z = (int16_t)(exp_ctl_val.exp_gyr_z * gyr_scale);
-
-    /* we dont have any mag sensor currently */
-    return mavlink_msg_scaled_imu_pack_chan(pck->pck_info.system_id,
-                                            pck->pck_info.component_id,
-                                            pck->pck_info.chan, pck->msg_obj,
-                                            exp_ctl_val.update_time_stamp,
-                                            0, 0, 0,
-                                            i_gyr_x, i_gyr_y, i_gyr_z,
-                                            0, 0, 0);
-}
-
-/* just fot temporary will create custom message in the next */
 static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
 {
     ControlData_TypeDef exp_ctl_val;
@@ -361,7 +321,7 @@ static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck
                                           pck->pck_info.chan, pck->msg_obj,
                                           exp_ctl_val.update_time_stamp,
                                           exp_ctl_val.exp_att_roll, exp_ctl_val.exp_att_pitch, 0.0f, 
-                                          0.0f, 0.0f, 0.0f);
+                                          exp_ctl_val.exp_gyr_x, exp_ctl_val.exp_gyr_y, exp_ctl_val.exp_gyr_z);
 }
 
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck)

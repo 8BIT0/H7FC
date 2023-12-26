@@ -42,7 +42,6 @@ typedef enum
 {
     MAV_CompoID_Raw_IMU = 1,
     MAV_CompoID_Scaled_IMU,
-    MAV_CompoID_Exp_IMU,
     MAV_CompoID_Raw_Mag,
     MAV_CompoID_Scaled_Mag,
     MAV_CompoID_Attitude,
