@@ -104,8 +104,8 @@ void TaskControl_Init(uint32_t period)
     /* attitude control range */
     for(i = Att_Pitch; i < Att_Ctl_Sum; i++)
     {
-        att_ctl_range[i].max = 30.0f;   /* max attitude control angle ±50 deg */
-        att_ctl_range[i].min = -30.0f;
+        att_ctl_range[i].max = 25.0f;   /* max attitude control angle ±50 deg */
+        att_ctl_range[i].min = -25.0f;
         att_ctl_range[i].idle = 0.0f;
         att_ctl_range[i].dead_zone_max = 0.5f;
         att_ctl_range[i].dead_zone_min = -0.5f;
@@ -413,6 +413,9 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
             }
             else
             {
+                exp_ctl_val->exp_angularspeed[Axis_X] = TaskControl_Monitor.RollCtl_PIDObj.fout;;
+                exp_ctl_val->exp_angularspeed[Axis_Y] = TaskControl_Monitor.PitchCtl_PIDObj.fout;;
+
                 TaskControl_Monitor.GyrXCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_X];
                 TaskControl_Monitor.GyrYCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Y];
             }

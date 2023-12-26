@@ -102,9 +102,9 @@ void TaskTelemetry_Init(uint32_t period)
                 Telemetry_Monitor.RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
 
                 /* set gimbal center dead zone */
-                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Pitch], 50);
-                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Roll], 50);
-                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Yaw], 50);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Pitch], 100);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Roll], 100);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Yaw], 100);
 
                 /* set datapipe */
                 memset(&Receiver_Smp_DataPipe, 0, sizeof(Receiver_Smp_DataPipe));
@@ -840,6 +840,7 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
         }
 
         CTLSig->aux.bit.buzzer = RCSig.buzz_state;
+        CTLSig->control_mode = RCSig.control_mode;
         CTLSig->aux.bit.hover_pos_hold = true;
         CTLSig->rssi = RCSig.link_quality;
     }

@@ -360,7 +360,7 @@ static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck
                                           pck->pck_info.component_id,
                                           pck->pck_info.chan, pck->msg_obj,
                                           exp_ctl_val.update_time_stamp,
-                                          exp_ctl_val.exp_att_pitch, exp_ctl_val.exp_att_roll, 0.0f, 
+                                          exp_ctl_val.exp_att_roll, exp_ctl_val.exp_att_pitch, 0.0f, 
                                           0.0f, 0.0f, 0.0f);
 }
 
