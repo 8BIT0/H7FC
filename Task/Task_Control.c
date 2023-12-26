@@ -230,7 +230,7 @@ static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef
 
     if(monitor)
     {
-        ctl_buf[Actuator_Ctl_Throttle] = 0;
+        ctl_buf[Actuator_Ctl_Throttle] = monitor->throttle_percent;
 
         ctl_buf[Actuator_Ctl_GyrX] = monitor->GyrXCtl_PIDObj.fout;
         ctl_buf[Actuator_Ctl_GyrY] = monitor->GyrYCtl_PIDObj.fout;
@@ -390,7 +390,9 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
         }
         else
         {
-            // do drone control algorithm down below
+             /* do drone control algorithm down below */
+             TaskControl_Monitor.throttle_percent = exp_ctl_val.throttle_percent;
+
             /* Update PID */
             if(exp_ctl_val.mode == Attitude_Control)
             {

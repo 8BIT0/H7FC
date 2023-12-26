@@ -85,7 +85,6 @@ typedef struct
     uint8_t imu_none_update_cnt;
     uint8_t over_angular_accelerate_cnt;
 
-    uint8_t idle_throttle;
     uint8_t throttle_percent;
 
     bool att_pid_state;
