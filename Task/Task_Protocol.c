@@ -57,10 +57,12 @@ static FrameCTL_CanPortMonitor_TypeDef Radio_CANPort_List[RADIO_CAN_NUM];
 /* internal variable */
 /* MAVLink message List */
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RawIMU;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_Exp_IMU;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_ScaledIMU;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RcChannel;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_MotoChannel;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_Attitude;
+SrvComProto_MsgInfo_TypeDef TaskProto_MAV_Exp_Attitude;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_Altitude;
 
 SrvComProto_MsgInfo_TypeDef RadioProto_MAV_RawIMU;
@@ -441,7 +443,14 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
  
         SrvComProto.mav_msg_obj_init(&RadioProto_MAV_RawIMU, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_RawIMU, true);
-        
+             
+        // period 10Ms 100Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Exp_IMU;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Exp_IMU, PckInfo, 10);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Exp_IMU, true);
+ 
         // period 10Ms 100Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Scaled_IMU;
@@ -481,7 +490,14 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
 
         SrvComProto.mav_msg_obj_init(&RadioProto_MAV_Attitude, PckInfo, 20);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_Attitude, true);
-        
+               
+        // period 20Ms 50Hz
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Exp_Attitude;
+        PckInfo.chan = 0;
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Exp_Attitude, PckInfo, 20);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Exp_Attitude, true);
+ 
         // period 100MS 50Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Altitude;
@@ -538,7 +554,9 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
             SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_Altitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+            // SrvComProto.mav_msg_stream(&TaskProto_MAV_Altitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_Exp_IMU,      &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_Exp_Attitude, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans); 
         }
         else if(tunning_state && (arm_state == DRONE_ARM))
         {
