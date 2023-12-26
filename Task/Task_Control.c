@@ -49,7 +49,7 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
 /* internal function */
 static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state);
 static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef *monitor);
-static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_ctl_val);
+static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_ctl_val);
 static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef *monitor);
 static void TaskControl_CLI_Polling(void);
 
@@ -153,8 +153,10 @@ void TaskControl_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     ControlData_TypeDef CtlData;
+    Srv_CtlExpectionData_TypeDef Cnv_CtlData;
     
-    memset(&CtlData, 0, sizeof(ControlData_TypeDef));
+    memset(&CtlData, 0, sizeof(Srv_CtlDataArbitrate_TypeDef));
+    memset(&Cnv_CtlData, 0, sizeof(ControlData_TypeDef));
 
     while(1)
     {
@@ -164,7 +166,8 @@ void TaskControl_Core(void const *arg)
         
         if(control_enable && !TaskControl_Monitor.CLI_enable)
         {
-            TaskControl_FlightControl_Polling(Srv_CtlDataArbitrate.get_data());
+            Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
+            TaskControl_FlightControl_Polling(&Cnv_CtlData);
         }
         else
         {
@@ -242,7 +245,7 @@ static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef
 
 /****************************************************** Flight Control Section ********************************************************/
 /* need to be optmize */
-static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_ctl_val)
+static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_ctl_val)
 {
     uint8_t axis = Axis_X;
     uint32_t tunning_port = 0;
@@ -383,7 +386,7 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
         if(TaskControl_Monitor.angular_protect)
             goto lock_moto;
 
-        if(exp_ctl_val.recover_flip_over && TaskControl_Monitor.flip_over)
+        if(exp_ctl_val->recover_flip_over && TaskControl_Monitor.flip_over)
         {
             /* when drone is up side down and we want to flip over it by telemetry */
             /* reverse propeller spin dir to reverse the drone */
@@ -391,27 +394,30 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
         else
         {
              /* do drone control algorithm down below */
-             TaskControl_Monitor.throttle_percent = exp_ctl_val.throttle_percent;
+             TaskControl_Monitor.throttle_percent = exp_ctl_val->throttle_percent;
 
             /* Update PID */
-            if(exp_ctl_val.mode == Attitude_Control)
+            if(exp_ctl_val->mode == Attitude_Control)
             {
                 /* set expection attitude */
-                TaskControl_Monitor.RollCtl_PIDObj.exp = exp_ctl_val.exp_attitude[Att_Roll];
-                TaskControl_Monitor.PitchCtl_PIDObj.exp = exp_ctl_val.exp_attitude[Att_Pitch];
+                TaskControl_Monitor.RollCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Roll];
+                TaskControl_Monitor.PitchCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Pitch];
     
                 TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
                 
                 TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.RollCtl_PIDObj.fout;
                 TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.PitchCtl_PIDObj.fout;
+
+                exp_ctl_val->exp_angularspeed[Axis_X] = TaskControl_Monitor.RollCtl_PIDObj.fout;;
+                exp_ctl_val->exp_angularspeed[Axis_Y] = TaskControl_Monitor.PitchCtl_PIDObj.fout;;
             }
             else
             {
-                TaskControl_Monitor.GyrXCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_X];
-                TaskControl_Monitor.GyrYCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_Y];
+                TaskControl_Monitor.GyrXCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_X];
+                TaskControl_Monitor.GyrYCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Y];
             }
 
-            TaskControl_Monitor.GyrZCtl_PIDObj.exp = exp_ctl_val.exp_angularspeed[Axis_Z];
+            TaskControl_Monitor.GyrZCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Z];
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
             TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 

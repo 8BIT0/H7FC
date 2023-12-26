@@ -20,6 +20,7 @@ static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck);
+static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
 
 /* external function */
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg);
@@ -91,6 +92,10 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
         msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Attitude);
         break;
 
+    case MAV_CompoID_Exp_Attitude:
+        msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Exp_Attitude);
+        break;
+    
     case MAV_CompoID_Altitude:
         msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Altitude);
         break;
@@ -105,6 +110,9 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 
     case MAV_CompoID_Scaled_IMU:
         msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Scaled_IMU);
+        break;
+
+    case MAV_CompoID_Exp_IMU:
         break;
 
     case MAV_CompoID_MotoCtl:
@@ -298,6 +306,31 @@ static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck)
                                             i_acc_x, i_acc_y, i_acc_z,
                                             i_gyr_x, i_gyr_y, i_gyr_z,
                                             0, 0, 0);
+}
+
+static uint16_t SrvComProto_MavMsg_Exp_Gyro(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    ControlData_TypeDef exp_ctl_val;
+    
+    memset(&exp_ctl_val, 0, sizeof(ControlData_TypeDef));
+
+    SrvDataHub.get_inuse_control_data(&exp_ctl_val);
+}
+
+static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    ControlData_TypeDef exp_ctl_val;
+    
+    memset(&exp_ctl_val, 0, sizeof(ControlData_TypeDef));
+
+    SrvDataHub.get_inuse_control_data(&exp_ctl_val);
+
+    return mavlink_msg_attitude_pack_chan(pck->pck_info.system_id,
+                                          pck->pck_info.component_id,
+                                          pck->pck_info.chan, pck->msg_obj,
+                                          exp_ctl_val.update_time_stamp,
+                                          exp_ctl_val.exp_att_pitch, exp_ctl_val.exp_att_roll, 0.0f, 
+                                          0.0f, 0.0f, 0.0f);
 }
 
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
