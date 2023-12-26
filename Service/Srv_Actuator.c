@@ -444,9 +444,6 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
                                                             SrvActuator_Obj.drive_module.obj_list[i].min_val) *
                                                             throttle_base_percent +
                                                             SrvActuator_Obj.drive_module.obj_list[i].min_val;
-
-        if(SrvActuator_Obj.drive_module.obj_list[i].ctl_val < SrvActuator_Obj.drive_module.obj_list[i].idle_val)
-            SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].idle_val;
     }
 
     SrvActuator_Obj.drive_module.obj_list[0].ctl_val += pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
@@ -456,9 +453,9 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
 
     for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
-        if (SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].min_val)
+        if (SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].idle_val)
         {
-            SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].min_val;
+            SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].idle_val;
         }
         else if (SrvActuator_Obj.drive_module.obj_list[i].ctl_val >= SrvActuator_Obj.drive_module.obj_list[i].max_val)
             SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].max_val;
