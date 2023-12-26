@@ -407,13 +407,6 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef exp_c
         TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
         TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 
-        if(TaskControl_Monitor.moto_value && \
-           SrvActuator.get_moto_ctl_value(TaskControl_Monitor.moto_value, TaskControl_Monitor.moto_cnt))
-        {
-            /* Pipe actuator control data to hub */
-
-        }
-
         if(imu_err_code == SrvIMU_Sample_NoError)
         {
             for(axis = Axis_X; axis < Axis_Sum; axis ++)

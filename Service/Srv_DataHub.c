@@ -232,8 +232,6 @@ static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
         SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(PtlActuator_Data).moto_cnt;
         SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(PtlActuator_Data).servo_cnt;
 
-        memset(SrvDataHub_Monitor.data.moto_dir, 0, sizeof(SrvDataHub_Monitor.data.moto_dir));
-        memset(SrvDataHub_Monitor.data.servo_dir, 0, sizeof(SrvDataHub_Monitor.data.servo_dir));
         memset(SrvDataHub_Monitor.data.moto, 0, sizeof(SrvDataHub_Monitor.data.moto));
         memset(SrvDataHub_Monitor.data.servo, 0, sizeof(SrvDataHub_Monitor.data.servo));
 
@@ -724,7 +722,6 @@ reupdate_moto_channel:
     if (*cnt)
     {
         memcpy(moto_ch, SrvDataHub_Monitor.data.moto, *cnt);
-        memcpy(moto_dir, SrvDataHub_Monitor.data.moto_dir, *cnt);
     }
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.actuator)
@@ -787,7 +784,6 @@ reupdate_servo_channel:
     if (*cnt)
     {
         memcpy(servo_ch, SrvDataHub_Monitor.data.servo, *cnt);
-        memcpy(servo_dir, SrvDataHub_Monitor.data.servo_dir, *cnt);
     }
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.actuator)

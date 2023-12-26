@@ -69,8 +69,7 @@ static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void);
 static SrvActuator_Model_List SrvActuator_GetModel(void);
 static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max);
 static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
-static uint8_t SrvActuator_Get_MotoControlValue(uint16_t *p_buff, uint8_t buf_size);
-
+ 
 /* external variable */
 SrvActuator_TypeDef SrvActuator = {
     .init = SrvActuator_Init,
@@ -79,7 +78,6 @@ SrvActuator_TypeDef SrvActuator = {
     .invert_spin = SrvActuator_InvertMotoSpinDir,
     .get_cnt = SrvActuator_Get_NumData,
     .get_model = SrvActuator_GetModel,
-    .get_moto_ctl_value = SrvActuator_Get_MotoControlValue,
     .get_moto_control_range = SrvActuator_Get_MotoControlRange,
     .get_servo_control_range = SrvActuator_Get_ServoControlRange,
 };
@@ -191,12 +189,12 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     SrvActuator_Lock();
 
     // init actuator data pipe
-    memset(&Actuator_cal_DataPipe, 0, sizeof(Actuator_cal_DataPipe));
+    memset(&Actuator_Smp_DataPipe, 0, sizeof(Actuator_Smp_DataPipe));
     memset(DataPipe_DataObjAddr(Actuator_Data), 0, sizeof(DataPipe_DataObj(Actuator_Data)));
 
-    Actuator_cal_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Actuator_Data);
-    Actuator_cal_DataPipe.data_size = sizeof(DataPipe_DataObj(Actuator_Data));
-    DataPipe_Enable(&Actuator_cal_DataPipe);
+    Actuator_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Actuator_Data);
+    Actuator_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(Actuator_Data));
+    DataPipe_Enable(&Actuator_Smp_DataPipe);
 
     SrvActuator_Obj.init = true;
     return true;
@@ -403,16 +401,14 @@ static void SrvActuator_PipeData(void)
         if (i < SrvActuator_Obj.drive_module.num.moto_cnt)
         {
             DataPipe_DataObj(Actuator_Data).moto[i] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
-            DataPipe_DataObj(Actuator_Data).moto_dir[i] = SrvActuator_Obj.drive_module.obj_list[i].spin_dir;
         }
         else
         {
-            DataPipe_DataObj(Actuator_Data).servo_dir[i - SrvActuator_Obj.drive_module.num.moto_cnt] = SrvActuator_Obj.drive_module.obj_list[i].spin_dir;
             DataPipe_DataObj(Actuator_Data).servo[i - SrvActuator_Obj.drive_module.num.moto_cnt] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
         }
     }
 
-    DataPipe_SendTo(&Actuator_cal_DataPipe, &Actuator_hub_DataPipe);
+    DataPipe_SendTo(&Actuator_Smp_DataPipe, &Actuator_hub_DataPipe);
 }
 
 /*
@@ -478,21 +474,6 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
     }
 
     return true;
-}
-
-static uint8_t SrvActuator_Get_MotoControlValue(uint16_t *p_buff, uint8_t buf_size)
-{
-    if(p_buff && (buf_size >= SrvActuator_Obj.drive_module.num.moto_cnt))
-    {
-        for(uint8_t index = 0; index < SrvActuator_Obj.drive_module.num.moto_cnt; index ++)
-        {
-            p_buff[index] = SrvActuator_Obj.drive_module.obj_list[index].ctl_val;
-        }
-
-        return SrvActuator_Obj.drive_module.num.moto_cnt;
-    }
-
-    return 0;
 }
 
 static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max)

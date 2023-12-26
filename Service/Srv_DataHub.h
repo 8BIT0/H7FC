@@ -193,8 +193,6 @@ typedef struct
     uint32_t actuator_update_time;
     uint8_t moto_num;
     uint8_t servo_num;
-    uint8_t moto_dir[8];
-    uint8_t servo_dir[8];
     uint16_t moto[8];
     uint8_t servo[8];
 

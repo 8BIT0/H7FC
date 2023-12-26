@@ -20,7 +20,7 @@ DataPipeObj_TypeDef IMU_PriRange_hub_DataPipe = {.enable = true};
 DataPipeObj_TypeDef IMU_SecRange_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef IMU_SecRange_hub_DataPipe = {.enable = true};
 
-DataPipeObj_TypeDef Actuator_cal_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Actuator_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Actuator_hub_DataPipe = {.enable = true};
 
 DataPipeObj_TypeDef Attitude_smp_DataPipe = {.enable = true};
