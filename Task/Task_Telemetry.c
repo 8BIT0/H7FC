@@ -102,9 +102,9 @@ void TaskTelemetry_Init(uint32_t period)
                 Telemetry_Monitor.RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
 
                 /* set gimbal center dead zone */
-                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Pitch], 100);
-                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Roll], 100);
-                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Yaw], 100);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Pitch], 200);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Roll], 200);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Yaw], 200);
 
                 /* set datapipe */
                 memset(&Receiver_Smp_DataPipe, 0, sizeof(Receiver_Smp_DataPipe));
@@ -438,7 +438,6 @@ static uint16_t Telemetry_Check_Gimbal(Telemetry_RCFuncMap_TypeDef *gimbal)
 static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
 {
     Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
-    uint16_t gimbal_range = 0;
     float percent = 0.0f;
 
     if (gimbal == NULL)
@@ -456,17 +455,20 @@ static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
             return 50;
     }
 
-    gimbal_range = gimbal_channel->max - gimbal_channel->min - 2 * gimbal_channel->center_deadzone_scope;
+    uint16_t pos_range = (gimbal_channel->max - gimbal_channel->mid - gimbal_channel->center_deadzone_scope);
+    uint16_t neg_range = (gimbal_channel->mid - gimbal_channel->min - gimbal_channel->center_deadzone_scope);
+
     if((*gimbal_channel->channel_ptr - (gimbal_channel->mid + gimbal_channel->center_deadzone_scope)) > 0)
     {
-        percent = (float)(*gimbal_channel->channel_ptr - gimbal_channel->center_deadzone_scope) / gimbal_range;
+        percent = (float)(*gimbal_channel->channel_ptr - gimbal_channel->center_deadzone_scope - gimbal_channel->mid) / pos_range;
+        percent = (percent / 2) * 100 + 50;
     }
     else if((gimbal_channel->mid - gimbal_channel->center_deadzone_scope) - *gimbal_channel->channel_ptr > 0 )
     {
-        percent = (float)(*gimbal_channel->channel_ptr + gimbal_channel->center_deadzone_scope) / gimbal_range;
+        percent = (float)(*gimbal_channel->channel_ptr - gimbal_channel->min) / neg_range;
+        percent = (percent / 2) * 100;
     }
-    percent *= 100;
-
+    
     return (uint16_t)percent;
 }
 
