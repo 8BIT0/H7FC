@@ -187,16 +187,7 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
             if(SrvCtlArbitrateMonitor.OPC_CtlData.update_time_stamp)
                 memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.OPC_CtlData, sizeof(ControlData_TypeDef));
         }
-        else
-        {
-            /* signal source error */
-            /* set default control data */
-            memset(inuse_ctl_data, 0, sizeof(ControlData_TypeDef));
 
-            inuse_ctl_data->fail_safe = true;
-            SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe = true;
-        }
-        
         /* check any taking over ack info */
         Srv_CtlData_ControlPrivilege_Req_Check();
 

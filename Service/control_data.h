@@ -37,7 +37,6 @@ typedef enum
 
 typedef enum
 {
-    ControlData_Src_None = 0,
     ControlData_Src_RC, /* RC remote */
     ControlData_Src_OPC,    /* On Plane Computer */
 }ControlData_Source_List;
