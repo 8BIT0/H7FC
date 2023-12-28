@@ -205,37 +205,35 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
                 /* under the statement up top, set ARM toggle on DRONE_DISARM then remote will taking over */
             }
         }
+        
+        exp_pitch = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_att_pitch;
+        exp_roll = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_att_roll;
+
+        exp_gyr_x = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_x;
+        exp_gyr_y = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_y;
+        exp_gyr_z = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_z;
+
+        if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_OPC)
+        {
+            SrvCtlArbitrateMonitor.InUse_CtlData.osd_tune_enable = false;
+            SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.osd_tune = false;
+        }
         else
         {
-            exp_pitch = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_att_pitch;
-            exp_roll = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_att_roll;
-
-            exp_gyr_x = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_x;
-            exp_gyr_y = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_y;
-            exp_gyr_z = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_z;
-
-            if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_OPC)
+            if(SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe)
             {
-                SrvCtlArbitrateMonitor.InUse_CtlData.osd_tune_enable = false;
-                SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.osd_tune = false;
+                SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Throttle] = 0;
+                SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Pitch] = 50;
+                SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Roll] = 50;
+                SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Yaw] = 50;
             }
-            else
-            {
-                if(SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe)
-                {
-                    SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Throttle] = 0;
-                    SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Pitch] = 50;
-                    SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Roll] = 50;
-                    SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Yaw] = 50;
-                }
 
-                /* convert rc channel value into exptection attitude or angluar speed */
-                Srv_CtlData_ConvertGimbal_ToAtt(SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent, exp_pitch, exp_roll);
-                Srv_CtlData_ConvertGimbal_ToAngularSpeed(SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent, exp_gyr_x, exp_gyr_y, exp_gyr_z);
-            }
-        
-            memcpy(inuse_ctl_data, &SrvCtlArbitrateMonitor.InUse_CtlData, sizeof(ControlData_TypeDef));
+            /* convert rc channel value into exptection attitude or angluar speed */
+            Srv_CtlData_ConvertGimbal_ToAtt(SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent, exp_pitch, exp_roll);
+            Srv_CtlData_ConvertGimbal_ToAngularSpeed(SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent, exp_gyr_x, exp_gyr_y, exp_gyr_z);
         }
+
+        memcpy(inuse_ctl_data, &SrvCtlArbitrateMonitor.InUse_CtlData, sizeof(ControlData_TypeDef));
     }
 }
 
