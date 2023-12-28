@@ -102,9 +102,9 @@ void TaskTelemetry_Init(uint32_t period)
                 Telemetry_Monitor.RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
 
                 /* set gimbal center dead zone */
-                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Pitch], 200);
-                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Roll], 200);
-                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Yaw], 200);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Pitch], 100);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Roll], 100);
+                Telemetry_Enable_GimbalDeadZone(&Telemetry_Monitor.RC_Setting.Gimbal[Gimbal_Yaw], 100);
 
                 /* set datapipe */
                 memset(&Receiver_Smp_DataPipe, 0, sizeof(Receiver_Smp_DataPipe));

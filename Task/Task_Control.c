@@ -161,13 +161,15 @@ void TaskControl_Core(void const *arg)
     while(1)
     {
         Srv_CtlDataArbitrate.negociate_update(&CtlData);
-
-        DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
         
         if(control_enable && !TaskControl_Monitor.CLI_enable)
         {
             Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
             TaskControl_FlightControl_Polling(&Cnv_CtlData);
+            
+            CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
+            CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
+            CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
         }
         else
         {
@@ -180,6 +182,7 @@ void TaskControl_Core(void const *arg)
                 SrvActuator.lock();
         }
 
+        DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
         /* pipe in use control data to data hub */
         DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
 
@@ -408,14 +411,11 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
                 TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.RollCtl_PIDObj.fout;
                 TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.PitchCtl_PIDObj.fout;
 
-                exp_ctl_val->exp_angularspeed[Axis_X] = TaskControl_Monitor.RollCtl_PIDObj.fout;;
-                exp_ctl_val->exp_angularspeed[Axis_Y] = TaskControl_Monitor.PitchCtl_PIDObj.fout;;
+                exp_ctl_val->exp_angularspeed[Axis_X] = TaskControl_Monitor.RollCtl_PIDObj.fout;
+                exp_ctl_val->exp_angularspeed[Axis_Y] = TaskControl_Monitor.PitchCtl_PIDObj.fout;
             }
             else
             {
-                exp_ctl_val->exp_angularspeed[Axis_X] = TaskControl_Monitor.RollCtl_PIDObj.fout;;
-                exp_ctl_val->exp_angularspeed[Axis_Y] = TaskControl_Monitor.PitchCtl_PIDObj.fout;;
-
                 TaskControl_Monitor.GyrXCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_X];
                 TaskControl_Monitor.GyrYCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Y];
             }
