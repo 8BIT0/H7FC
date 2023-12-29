@@ -71,6 +71,7 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
     /* PID Parametet Init */
+    /* attitude PID control parameter section */
     TaskControl_Monitor.PitchCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
     TaskControl_Monitor.RollCtl_PIDObj.accuracy_scale  = ATTITUDE_PID_ACCURACY;
 
@@ -79,18 +80,49 @@ void TaskControl_Init(uint32_t period)
 
     TaskControl_Monitor.PitchCtl_PIDObj.diff_min       = ATTITUDE_PID_DIFF_MIN;
     TaskControl_Monitor.RollCtl_PIDObj.diff_min        = ATTITUDE_PID_DIFF_MIN;
-    
+
+    TaskControl_Monitor.PitchCtl_PIDObj.gP = 1.2;
+    TaskControl_Monitor.PitchCtl_PIDObj.gI = 0.08;
+    TaskControl_Monitor.PitchCtl_PIDObj.gI_Max = 50;
+    TaskControl_Monitor.PitchCtl_PIDObj.gI_Min = -50;
+    TaskControl_Monitor.PitchCtl_PIDObj.gD = 1;
+
+    TaskControl_Monitor.RollCtl_PIDObj.gP = 1.2;
+    TaskControl_Monitor.RollCtl_PIDObj.gI = 0.08;
+    TaskControl_Monitor.RollCtl_PIDObj.gI_Max = 50;
+    TaskControl_Monitor.RollCtl_PIDObj.gI_Min = -50;
+    TaskControl_Monitor.RollCtl_PIDObj.gD = 1;
+
+    /* angular PID control parameter section */
     TaskControl_Monitor.GyrXCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
     // TaskControl_Monitor.GyrXCtl_PIDObj.diff_max       =;
     // TaskControl_Monitor.GyrXCtl_PIDObj.diff_min       =;
+
+    // TaskControl_Monitor.GyrXCtl_PIDObj.gP = ;
+    // TaskControl_Monitor.GyrXCtl_PIDObj.gI = ;
+    // TaskControl_Monitor.GyrXCtl_PIDObj.gI_Max = ;
+    // TaskControl_Monitor.GyrXCtl_PIDObj.gI_Min = ;
+    // TaskControl_Monitor.GyrXCtl_PIDObj.gD = ;
 
     TaskControl_Monitor.GyrYCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
     // TaskControl_Monitor.GyrYCtl_PIDObj.diff_max       =;
     // TaskControl_Monitor.GyrYCtl_PIDObj.diff_min       =;
     
+    // TaskControl_Monitor.GyrYCtl_PIDObj.gP = ;
+    // TaskControl_Monitor.GyrYCtl_PIDObj.gI = ;
+    // TaskControl_Monitor.GyrYCtl_PIDObj.gI_Max = ;
+    // TaskControl_Monitor.GyrYCtl_PIDObj.gI_Min = ;
+    // TaskControl_Monitor.GyrYCtl_PIDObj.gD = ;
+
     TaskControl_Monitor.GyrZCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
     // TaskControl_Monitor.PitchCtl_PIDObj.diff_max       =;
     // TaskControl_Monitor.RollCtl_PIDObj.diff_min        =;
+    
+    // TaskControl_Monitor.GyrZCtl_PIDObj.gP = ;
+    // TaskControl_Monitor.GyrZCtl_PIDObj.gI = ;
+    // TaskControl_Monitor.GyrZCtl_PIDObj.gI_Max = ;
+    // TaskControl_Monitor.GyrZCtl_PIDObj.gI_Min = ;
+    // TaskControl_Monitor.GyrZCtl_PIDObj.gD = ;
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
@@ -292,6 +324,8 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
                                       &TaskControl_Monitor.imu_tmpr,
                                       &imu_err_code))
             goto lock_moto;
+
+        /* if angular speed over ride then lock the moto and set drone as arm */
 
         // get attitude
         att_update = SrvDataHub.get_attitude(&att_update_time,

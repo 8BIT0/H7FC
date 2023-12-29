@@ -4,7 +4,6 @@
 #include "pid.h"
 
 /* internal function */
-static bool PID_Accuracy_Check(uint16_t accuracy);
 static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
@@ -14,7 +13,7 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
     float diff = mea_in - exp_in;
     float out_tmp = 0.0f;
 
-    if(p_PIDObj && PID_Accuracy_Check(p_PIDObj->accuracy_scale))
+    if(p_PIDObj)
     {
         p_PIDObj->in = mea_in;
         p_PIDObj->exp = exp_in;
@@ -160,16 +159,3 @@ static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
     return false;
 }
 
-static bool PID_Accuracy_Check(uint16_t accuracy)
-{
-    if(accuracy)
-    {
-        if((accuracy % 10) || (accuracy % 100) || (accuracy % 1000) || (accuracy % 10000) || \
-           (accuracy / 10) || (accuracy / 100) || (accuracy / 1000) || (accuracy / 10000))
-            return false;
-
-        return true;
-    }
-
-    return false;
-}
