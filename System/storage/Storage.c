@@ -51,7 +51,11 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     switch((uint8_t)type)
     {
         case Internal_Flash:
-            break;
+            if(BspFlash.read(OnChipFlash_Storage_StartAddress, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+            {
+                break;
+            }
+            return false;
 
         case External_Flash:
             break;
