@@ -24,10 +24,18 @@ static bool BspFlash_Get_Sector(uint32_t addr, uint32_t *p_bank, uint32_t *p_sec
 /* external function */
 static bool BspFlash_Init(void);
 static void BspFlash_DeInit(void);
-static bool BspFlash_Read_From_Addr(uint32_t addr, uint32_t *p_data, uint32_t size);
+static bool BspFlash_Read_From_Addr(uint32_t addr, uint8_t *p_data, uint32_t size);
 static bool BspFlash_Write_To_Addr(uint32_t addr, uint8_t *p_data, uint32_t size);
 static bool BspFlash_Erase_Sector(uint32_t addr, uint32_t len);
 static uint8_t BspFlash_Get_AlignSize(void);
+
+BspFlash_TypeDef BspFlash = {
+    .init = BspFlash_Init,
+    .de_init = BspFlash_DeInit,
+    .erase_sector = BspFlash_Erase_Sector,
+    .read = BspFlash_Read_From_Addr,
+    .write = BspFlash_Write_To_Addr,
+};
 
 static bool BspFlash_Init(void)
 {
