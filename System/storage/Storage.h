@@ -4,8 +4,8 @@
 #include "Srv_DataHub.h"
 #include "Bsp_Flash.h"
 
-#define OnChipFlash_Storage_StartAddress 
-#define OnChipFlash_Stroage_TotalSize 
+#define OnChipFlash_Storage_StartAddress (FLASH_BASE_ADDR + FLASH_SECTOR_7_OFFSET_ADDR)
+#define OnChipFlash_Stroage_TotalSize (FLASH_SECTOR_7_OFFSET_ADDR - FLASH_SECTOR_6_OFFSET_ADDR)
 
 #define OnChipFlash_Storage_PageSize (1024 * 4)
 
