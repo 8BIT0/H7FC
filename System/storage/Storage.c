@@ -63,8 +63,19 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     return false;
 }
 
-static bool Storage_Build_StorageInfo()
+static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 {
+    switch((uint8_t)type)
+    {
+        case Internal_Flash:
+            break;
+
+        case External_Flash:
+            break;
+
+        default:
+            return false;
+    }
     return false;
 }
 
