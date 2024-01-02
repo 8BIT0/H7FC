@@ -13,6 +13,8 @@
 
 #define INTERNAL_STORAGE_PAGE_TAG "[Internal Storage]"
 #define EXTERNAL_STORAGE_PAGE_TAG "[External Storage]"
+#define INTERNAL_PAGE_TAG_SIZE sizeof(INTERNAL_STORAGE_PAGE_TAG)
+#define EXTERNAL_PAGE_TAG_SIZE sizeof(EXTERNAL_STORAGE_PAGE_TAG)
 #define STORAGE_TAGE "DATA"
 
 typedef uint32_t storage_handle;
