@@ -27,6 +27,7 @@ static void BspFlash_DeInit(void);
 static bool BspFlash_Read_From_Addr(uint32_t addr, uint32_t *p_data, uint32_t size);
 static bool BspFlash_Write_To_Addr(uint32_t addr, uint8_t *p_data, uint32_t size);
 static bool BspFlash_Erase_Sector(uint32_t addr, uint32_t len);
+static uint8_t BspFlash_Get_AlignSize(void);
 
 static bool BspFlash_Init(void)
 {
@@ -101,6 +102,9 @@ static bool BspFlash_ReadWord(uint32_t addr, uint32_t *p_data)
 
 static bool BspFlash_Read_From_Addr(uint32_t addr, uint8_t *p_data, uint32_t size)
 {
+    uint8_t remain = 0;
+    uint32_t read_tmp = 0;
+
     if(addr && ((addr % BSP_FLASH_ADDR_ALIGN_SIZE) == 0) && p_data && size && ((size % BSP_FLASH_ADDR_ALIGN_SIZE) == 0))
     {
         for(uint32_t i = 0; i < (size / BSP_FLASH_ADDR_ALIGN_SIZE); i++)
@@ -114,9 +118,13 @@ static bool BspFlash_Read_From_Addr(uint32_t addr, uint8_t *p_data, uint32_t siz
                 return false;
         }
 
-        if(size % BSP_FLASH_ADDR_ALIGN_SIZE)
+        remain = size % BSP_FLASH_ADDR_ALIGN_SIZE;
+        if(remain)
         {
+            if(!BspFlash_ReadWord(addr, &read_tmp))
+                return false;
 
+            memcpy(p_data, &read_tmp, remain);
         }
 
         return true;
@@ -217,6 +225,11 @@ static bool BspFlash_Erase_Sector(uint32_t addr, uint32_t len)
         return false;
     
     return true;
+}
+
+static uint8_t BspFlash_Get_AlignSize(void)
+{
+    return BSP_FLASH_ADDR_ALIGN_SIZE;
 }
 
 static bool BspFlash_Get_Sector(uint32_t addr, uint32_t *p_bank, uint32_t *p_sector)
