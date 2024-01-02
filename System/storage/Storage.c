@@ -76,6 +76,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
         default:
             return false;
     }
+
     return false;
 }
 
