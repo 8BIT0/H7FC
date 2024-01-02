@@ -6,7 +6,7 @@ Storage_Monitor_TypeDef Storage_Monitor;
 uint8_t page_data_tmp[OnChipFlash_Storage_PageSize] = {0};
 
 /* internal function */
-static bool Storage_Build_StorageInfo();
+static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 
 /* external function */
@@ -48,9 +48,13 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable)
 
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 {
+    uint8_t test[12] = "8bit    test";
+
     switch((uint8_t)type)
     {
         case Internal_Flash:
+            BspFlash.erase(OnChipFlash_Storage_StartAddress, strlen(test));
+            BspFlash.write(OnChipFlash_Storage_StartAddress, test, strlen(test));
             if(BspFlash.read(OnChipFlash_Storage_StartAddress, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
             {
                 /* check internal storage tag */

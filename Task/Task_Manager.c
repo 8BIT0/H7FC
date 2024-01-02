@@ -13,6 +13,7 @@
 #include "../DataPipe/DataPipe.h"
 #include "cmsis_os.h"
 #include "shell_port.h"
+#include "Storage.h"
 
 #define TaskSample_Period_Def    1  /* unit: ms period 1ms  1000Hz */
 #define TaskControl_Period_Def   5  /* unit: ms period 2ms  200Hz  */
@@ -77,12 +78,17 @@ void Task_Manager_CreateTask(void)
 {
     bool init = false;
     uint32_t enabled_sensor = 0;
+    Storage_ModuleState_TypeDef storage_module_enable;
+    storage_module_enable.val = 0;
+    storage_module_enable.bit.internal = true;
+    storage_module_enable.bit.external = false;
 
     while(1)
     {
         if(!init)
         {
             DataPipe_Init();
+            Storage.init(storage_module_enable);
 
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
