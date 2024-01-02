@@ -7,13 +7,15 @@
 #define OnChipFlash_Storage_StartAddress 
 #define OnChipFlash_Stroage_TotalSize
 
-#define OnChilFlash_Storage_PageNum
-#define OnChipFlash_Storage_PageSize
+#define OnChipFlash_Storage_PageSize (1024 * 4)
 
 #define ExternalFlash_Storage_Address
 
 #define INTERNAL_STORAGE_PAGE_TAG "[Internal Storage]"
 #define EXTERNAL_STORAGE_PAGE_TAG "[External Storage]"
+#define STORAGE_TAGE "DATA"
+
+typedef uint32_t storage_handle;
 
 typedef enum
 {
@@ -24,7 +26,7 @@ typedef enum
 typedef struct
 {
     uint32_t addr;
-    uint32_t start_map_addr;
+    uint32_t map_start_addr;
     uint8_t map_page_num;
     uint32_t info_page_size;
     uint32_t free_block_addr;
@@ -51,5 +53,17 @@ typedef struct
 
     bool init_state;
 } Storage_Monitor_TypeDef;
+
+typedef struct
+{
+    bool (*init)(Storage_ModuleState_TypeDef enable);
+    storage_handle (*create_section)(uint32_t addr, uint16_t size);
+    bool (*delete_section)(storage_handle hdl);
+    bool (*save)(storage_handle hdl, uint8_t *p_data, uint16_t size);
+    bool (*get)(storage_handle hdl, uint8_t *p_data, uint16_t size);
+    bool (*clear)(storage_handle hdl);
+} Storage_TypeDef;
+
+extern Storage_TypeDef Storage;
 
 #endif
