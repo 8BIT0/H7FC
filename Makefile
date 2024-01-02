@@ -56,6 +56,7 @@ Bsp/Bsp_SPI.c \
 Bsp/Bsp_SDMMC.c \
 Bsp/Bsp_Uart.c \
 Bsp/Bsp_USB.c \
+Bsp/Bsp_Flash.c \
 Bsp/Bsp_DMA.c \
 Bsp/Bsp_Timer.c \
 Bsp/Bsp_IIC.c \
