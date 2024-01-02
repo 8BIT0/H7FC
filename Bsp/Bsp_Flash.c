@@ -102,10 +102,10 @@ static bool BspFlash_ReadWord(uint32_t addr, uint32_t *p_data)
 
 static bool BspFlash_Read_From_Addr(uint32_t addr, uint8_t *p_data, uint32_t size)
 {
-    uint8_t remain = 0;
+    uint8_t remain_size = 0;
     uint32_t read_tmp = 0;
 
-    if(addr && ((addr % BSP_FLASH_ADDR_ALIGN_SIZE) == 0) && p_data && size && ((size % BSP_FLASH_ADDR_ALIGN_SIZE) == 0))
+    if(addr && ((addr % BSP_FLASH_ADDR_ALIGN_SIZE) == 0) && p_data && size)
     {
         for(uint32_t i = 0; i < (size / BSP_FLASH_ADDR_ALIGN_SIZE); i++)
         {
@@ -118,13 +118,13 @@ static bool BspFlash_Read_From_Addr(uint32_t addr, uint8_t *p_data, uint32_t siz
                 return false;
         }
 
-        remain = size % BSP_FLASH_ADDR_ALIGN_SIZE;
-        if(remain)
+        remain_size = size % BSP_FLASH_ADDR_ALIGN_SIZE;
+        if(remain_size)
         {
             if(!BspFlash_ReadWord(addr, &read_tmp))
                 return false;
 
-            memcpy(p_data, &read_tmp, remain);
+            memcpy(p_data, &read_tmp, remain_size);
         }
 
         return true;
@@ -136,9 +136,10 @@ static bool BspFlash_Read_From_Addr(uint32_t addr, uint8_t *p_data, uint32_t siz
 static bool BspFlash_Write_To_Addr(uint32_t addr, uint8_t *p_data, uint32_t size)
 {
     uint32_t read_tmp = 0;
+    uint32_t write_tmp = 0;
     uint8_t remain_size = 0;
 
-    if(addr && ((addr % BSP_FLASH_ADDR_ALIGN_SIZE) == 0) && p_data && size && ((size % BSP_FLASH_ADDR_ALIGN_SIZE) == 0))
+    if(addr && ((addr % BSP_FLASH_ADDR_ALIGN_SIZE) == 0) && p_data && size)
     {
         if ((addr < FLASH_BASE_ADDR) || \
             (addr + size >= FLASH_BASE_ADDR + FLASH_SIZE))
@@ -146,10 +147,11 @@ static bool BspFlash_Write_To_Addr(uint32_t addr, uint8_t *p_data, uint32_t size
 
         for (uint32_t i = 0; i < (size / BSP_FLASH_ADDR_ALIGN_SIZE); i ++)
         {
-            if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, addr, (uint32_t)p_data))
+            memcpy(&write_tmp, p_data, BSP_FLASH_ADDR_ALIGN_SIZE);
+            if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, addr, write_tmp))
                 return false;
             
-            if(!BspFlash_Read_From_Addr(addr, &read_tmp, sizeof(read_tmp)) || (*p_data != read_tmp))
+            if(!BspFlash_Read_From_Addr(addr, &read_tmp, sizeof(read_tmp)) || (write_tmp != read_tmp))
                 return false;
 
             addr += BSP_FLASH_ADDR_ALIGN_SIZE;
@@ -159,10 +161,15 @@ static bool BspFlash_Write_To_Addr(uint32_t addr, uint8_t *p_data, uint32_t size
         remain_size = size % BSP_FLASH_ADDR_ALIGN_SIZE;
         if(remain_size)
         {
-            if(!BspFlash_ReadWord(addr, &read_tmp))
+            if(!BspFlash_ReadWord(addr, &write_tmp))
                 return false;
 
-            
+            memcpy(&write_tmp, p_data, remain_size);
+            if(HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, addr, &write_tmp) != HAL_OK)
+                return false;
+        
+            if(!BspFlash_Read_From_Addr(addr, &read_tmp, sizeof(read_tmp)) || (*p_data != read_tmp))
+                return false;
         }
 
         return true;
