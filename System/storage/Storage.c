@@ -1,9 +1,13 @@
 #include "Storage.h"
 #include "shell_port.h"
+#include "util.h"
 
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
 uint8_t page_data_tmp[OnChipFlash_Storage_PageSize] = {0};
+static bool Storage_OnChipFlash_Read(uint32_t addr, uint8_t *p_data, uint32_t len);
+static bool Storage_OnChipFlash_Write(uint32_t addr, uint8_t *p_data, uint32_t len);
+static bool Storage_OnChipFlash_Erase(uint32_t addr, uint32_t len);
 
 /* internal function */
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
@@ -88,4 +92,26 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
     return false;
 }
+
+/************************************************** Internal Flash IO API Section ************************************************/
+static bool Storage_OnChipFlash_Read(uint32_t addr, uint8_t *p_data, uint32_t len)
+{
+
+}
+
+static bool Storage_OnChipFlash_Write(uint32_t addr, uint8_t *p_data, uint32_t len)
+{
+    /* erase address first */
+
+    /* after erase write data into address */
+
+    /* compute CRC16 and storage the check end */
+}
+
+static bool Storage_OnChipFlash_Erase(uint32_t addr, uint32_t len)
+{
+    /* erase only */
+}
+
+
 
