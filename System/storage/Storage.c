@@ -6,7 +6,7 @@ Storage_Monitor_TypeDef Storage_Monitor;
 
 /* internal function */
 static bool Storage_Build_StorageInfo();
-static bool Storage_Get_StorageInfo();
+static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable);
@@ -30,7 +30,8 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable)
         /* flash area size check */
 
         /* read internal flash storage info */
-        
+        if(!Storage_Get_StorageInfo(Internal_Flash))
+            return false;        
     }
 
     /* still in developping */
