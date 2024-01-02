@@ -87,6 +87,7 @@ common/reboot.c \
 common/error_log.c \
 common/util.c \
 common/compess/minilzo.c \
+System/storage/Storage.c \
 System/DataPipe/DataPipe.c \
 System/DataPipe/DataPipe_Def.c \
 System/FreeRTOS/croutine.c \
@@ -211,6 +212,7 @@ C_INCLUDES =  \
 -ISystem/FreeRTOS/CMSIS_RTOS \
 -ISystem/FreeRTOS/portable/GCC/ARM_CM4F \
 -ISystem/shell \
+-ISystem/storage \
 -ISystem/diskio \
 -Idebug \
 -IMAVLink \
