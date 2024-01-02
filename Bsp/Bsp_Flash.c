@@ -35,6 +35,7 @@ BspFlash_TypeDef BspFlash = {
     .erase_sector = BspFlash_Erase_Sector,
     .read = BspFlash_Read_From_Addr,
     .write = BspFlash_Write_To_Addr,
+    .get_align_size = BspFlash_Get_AlignSize,
 };
 
 static bool BspFlash_Init(void)
