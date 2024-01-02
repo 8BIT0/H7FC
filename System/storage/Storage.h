@@ -8,6 +8,7 @@
 #define OnChipFlash_Stroage_TotalSize (FLASH_SECTOR_7_OFFSET_ADDR - FLASH_SECTOR_6_OFFSET_ADDR)
 
 #define OnChipFlash_Storage_PageSize (1024 * 4)
+#define OnChipFlash_Storage_InfoPageSize OnChipFlash_Storage_PageSize 
 
 #define ExternalFlash_Storage_Address
 
@@ -52,7 +53,10 @@ typedef struct
 {
     Storage_ModuleState_TypeDef module_enable_reg;
     Storage_ModuleState_TypeDef module_init_reg;
-
+    
+    Storage_InfoPage_TypeDef IntStor_Info;
+    Storage_InfoPage_TypeDef ExtStor_Info;
+    
     bool init_state;
 } Storage_Monitor_TypeDef;
 

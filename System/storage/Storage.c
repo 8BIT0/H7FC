@@ -3,6 +3,7 @@
 
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
+uint8_t page_data_tmp[OnChipFlash_Storage_PageSize] = {0};
 
 /* internal function */
 static bool Storage_Build_StorageInfo();
