@@ -31,7 +31,7 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable)
 
         /* read internal flash storage info */
         if(!Storage_Get_StorageInfo(Internal_Flash))
-            return false;        
+            Storage_Monitor.module_init_reg.bit.internal = false;
     }
 
     /* still in developping */
