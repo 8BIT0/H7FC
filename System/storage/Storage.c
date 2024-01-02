@@ -53,6 +53,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         case Internal_Flash:
             if(BspFlash.read(OnChipFlash_Storage_StartAddress, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
             {
+                /* check internal storage tag */
                 break;
             }
             return false;
