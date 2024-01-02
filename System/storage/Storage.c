@@ -25,6 +25,10 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable)
     /* on chip flash init */
     if(enable.bit.internal && BspFlash.init && BspFlash.init())
     {
+        /* start address check */
+
+        /* flash area size check */
+
         /* read internal flash storage info */
         
     }

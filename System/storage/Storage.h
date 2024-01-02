@@ -5,7 +5,7 @@
 #include "Bsp_Flash.h"
 
 #define OnChipFlash_Storage_StartAddress 
-#define OnChipFlash_Stroage_TotalSize
+#define OnChipFlash_Stroage_TotalSize 
 
 #define OnChipFlash_Storage_PageSize (1024 * 4)
 
