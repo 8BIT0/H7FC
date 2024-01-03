@@ -38,7 +38,7 @@ typedef enum
 typedef struct
 {
     uint8_t head_tag;
-    uint8_t name[28];
+    uint8_t name[20];
     uint32_t data_addr;
     uint32_t next_data_addr;
     uint16_t len;
