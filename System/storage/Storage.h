@@ -13,12 +13,15 @@
 
 #define ExternalFlash_Storage_Address 0
 
+#define From_Start_Address 0
+
 #define INTERNAL_STORAGE_PAGE_TAG "[InternalFlash Storage]"
 #define EXTERNAL_STORAGE_PAGE_TAG "[ExternalFlash Storage]"
-#define INTERNAL_PAGE_TAG_SIZE sizeof(INTERNAL_STORAGE_PAGE_TAG)
-#define EXTERNAL_PAGE_TAG_SIZE sizeof(EXTERNAL_STORAGE_PAGE_TAG)
-#define STORAGE_TAG "DATA"
-#define STORAGE_END_TAG 0xFF1001FF
+#define INTERNAL_PAGE_TAG_SIZE strlen(INTERNAL_STORAGE_PAGE_TAG)
+#define EXTERNAL_PAGE_TAG_SIZE strlen(EXTERNAL_STORAGE_PAGE_TAG)
+#define STORAGE_HEAD_TAG 0xAA
+#define STORAGE_END_TAG 0xBB
+#define STORAGE_SECTION_END_TAG 0xFF1001FF
 
 typedef uint32_t storage_handle;
 
@@ -52,15 +55,17 @@ typedef struct
     uint32_t boot_para_addr;
     uint32_t boot_free_addr;
     uint32_t boot_para_size;
+    uint32_t boot_para_num;
 
     uint32_t sys_para_addr;
     uint32_t sys_free_addr;
     uint32_t sys_para_size;
+    uint32_t sys_para_num;
 
     uint32_t user_para_addr;
     uint32_t user_free_addr;
     uint32_t user_para_size;
-
+    uint32_t user_para_num;
 } Storage_SectionInfo_TypeDef;
 
 typedef union
