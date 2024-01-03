@@ -44,7 +44,7 @@ typedef struct
 {
     uint16_t head_tag;
     uint16_t class_type;
-    uint16_t sub_class_num;
+    uint16_t sub_folder_num;
     uint16_t sub_file_num;
     uint16_t file_type;
     uint8_t name[32];
