@@ -7,8 +7,8 @@
 #define OnChipFlash_Storage_StartAddress (FLASH_BASE_ADDR + FLASH_SECTOR_7_OFFSET_ADDR)
 #define OnChipFlash_Stroage_TotalSize (FLASH_SECTOR_7_OFFSET_ADDR - FLASH_SECTOR_6_OFFSET_ADDR)
 
-#define OnChipFlash_Storage_PageSize (1024 * 4)
-#define OnChipFlash_Storage_InfoPageSize OnChipFlash_Storage_PageSize 
+#define OnChipFlash_Storage_TabSize (1024 * 4)
+#define OnChipFlash_Storage_InfoPageSize OnChipFlash_Storage_TabSize 
 
 #define ExternalFlash_Storage_Address
 
