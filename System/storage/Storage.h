@@ -11,7 +11,7 @@
 #define OnChipFlash_Storage_TabSize (1024 * 4)
 #define OnChipFlash_Storage_InfoPageSize OnChipFlash_Storage_TabSize 
 
-#define ExternalFlash_Storage_Address
+#define ExternalFlash_Storage_Address 0
 
 #define INTERNAL_STORAGE_PAGE_TAG "[InternalFlash Storage]"
 #define EXTERNAL_STORAGE_PAGE_TAG "[ExternalFlash Storage]"
@@ -34,6 +34,21 @@ typedef enum
     Para_Sys,
     Para_User,
 } Storage_ParaClassType_List;
+
+typedef struct
+{
+    uint8_t head_tag;
+    uint8_t name[32];
+    uint32_t addr;
+    uint16_t len;
+    uint8_t end_tag;
+} Storage_Item_TypeDef;
+
+typedef struct
+{
+    uint8_t tag[32];
+    uint32_t free_addr;
+} Storage_SectionInfo_TypeDef;
 
 typedef union
 {
