@@ -12,11 +12,12 @@
 
 #define ExternalFlash_Storage_Address
 
-#define INTERNAL_STORAGE_PAGE_TAG "[Internal Storage]"
-#define EXTERNAL_STORAGE_PAGE_TAG "[External Storage]"
+#define INTERNAL_STORAGE_PAGE_TAG "[InternalFlash Storage]"
+#define EXTERNAL_STORAGE_PAGE_TAG "[ExternalFlash Storage]"
 #define INTERNAL_PAGE_TAG_SIZE sizeof(INTERNAL_STORAGE_PAGE_TAG)
 #define EXTERNAL_PAGE_TAG_SIZE sizeof(EXTERNAL_STORAGE_PAGE_TAG)
-#define STORAGE_TAGE "DATA"
+#define STORAGE_TAG "DATA"
+#define STORAGE_END_TAG 0xFF1001FF
 
 typedef uint32_t storage_handle;
 
@@ -26,13 +27,42 @@ typedef enum
     External_Flash,
 } Storage_MediumType_List;
 
+typedef enum
+{
+    Para_Boot = 0,
+    Para_Sys,
+    Para_User,
+} Storage_ParaClassType_List;
+
+typedef enum
+{
+    Stor_Folder = 0,
+    Stor_File,
+} Storage_FileType_List;
+
 typedef struct
 {
-    uint32_t addr;
-    uint32_t map_start_addr;
-    uint8_t map_page_num;
-    uint32_t info_page_size;
+    uint16_t head_tag;
+    uint16_t class_type;
+    uint16_t sub_class_num;
+    uint16_t sub_file_num;
+    uint16_t file_type;
+    uint8_t name[32];
+    uint32_t next_addr;
+    uint32_t size;
+    uint16_t end_tag;
+} Storage_MapTabItem_TypeDef;
+
+typedef struct
+{
+    uint8_t tag[32];
     uint32_t free_block_addr;
+    uint32_t total_stor_space;
+    uint32_t inuse_stor_space;
+    uint32_t unuse_stor_space;
+    uint32_t map_start_addr;
+    uint32_t map_page_num;
+    uint32_t info_page_size;
 } Storage_InfoPage_TypeDef;
 
 typedef union

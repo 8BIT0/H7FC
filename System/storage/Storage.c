@@ -2,12 +2,26 @@
 #include "shell_port.h"
 #include "util.h"
 
+/* flash io object */
+typedef struct
+{
+    bool (*read)(uint32_t addr, uint8_t *p_data, uint32_t len);
+    bool (*write)(uint32_t addr, uint8_t *p_data, uint32_t len);
+    bool (*erase)(uint32_t addr, uint32_t len);
+} StorageIO_TypeDef;
+
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
 uint8_t page_data_tmp[OnChipFlash_Storage_PageSize] = {0};
-static bool Storage_OnChipFlash_Read(uint32_t addr, uint8_t *p_data, uint32_t len);
-static bool Storage_OnChipFlash_Write(uint32_t addr, uint8_t *p_data, uint32_t len);
-static bool Storage_OnChipFlash_Erase(uint32_t addr, uint32_t len);
+static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
+static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
+static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len);
+
+StorageIO_TypeDef InternalFlash_IO = {
+    .erase = Storage_OnChipFlash_Erase,
+    .read = Storage_OnChipFlash_Read,
+    .write = Storage_OnChipFlash_Write,
+};
 
 /* internal function */
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
@@ -50,27 +64,42 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable)
     return Storage_Monitor.init_state;
 }
 
+static bool Storage_Format(Storage_MediumType_List type)
+{
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    
+    switch((uint8_t) type)
+    {
+        case Internal_Flash:
+            StorageIO_API = &InternalFlash_IO;
+            break;
+        
+        /* still in developping */
+        case External_Flash:
+        default:
+            return false;
+    }
+}
+
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 {
-    uint8_t test[12] = "8bit    test";
-
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    
     switch((uint8_t)type)
     {
         case Internal_Flash:
-            BspFlash.erase(OnChipFlash_Storage_StartAddress, strlen(test));
-            BspFlash.write(OnChipFlash_Storage_StartAddress, test, strlen(test));
-            if(BspFlash.read(OnChipFlash_Storage_StartAddress, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
-            {
-                /* check internal storage tag */
-                break;
-            }
-            return false;
-
-        case External_Flash:
+            StorageIO_API = &InternalFlash_IO;
             break;
 
+        /* still in developping */
+        case External_Flash:
         default:
             return false;
+    }
+    
+    if(StorageIO_API->read(OnChipFlash_Storage_StartAddress, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+    {
+        /* check internal storage tag */
     }
 
     return false;
@@ -78,14 +107,16 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 {
+    StorageIO_TypeDef *StorageIO_API = NULL;
+
     switch((uint8_t)type)
     {
         case Internal_Flash:
+            StorageIO_API = &InternalFlash_IO;
             break;
 
+        /* still in developping */
         case External_Flash:
-            break;
-
         default:
             return false;
     }
@@ -94,23 +125,33 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 }
 
 /************************************************** Internal Flash IO API Section ************************************************/
-static bool Storage_OnChipFlash_Read(uint32_t addr, uint8_t *p_data, uint32_t len)
+static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
-
+    uint32_t addr = OnChipFlash_Storage_StartAddress + addr_offset;
+    return BspFlash.read(addr, p_data, len);
 }
 
-static bool Storage_OnChipFlash_Write(uint32_t addr, uint8_t *p_data, uint32_t len)
+static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
+    uint32_t addr = OnChipFlash_Storage_StartAddress + addr_offset;
+    
     /* erase address first */
-
+    if(!BspFlash.erase(addr, len))
+        return false;
+    
     /* after erase write data into address */
+    if(!BspFlash.write(addr, p_data, len))
+        return false;
 
-    /* compute CRC16 and storage the check end */
+    return true;
 }
 
-static bool Storage_OnChipFlash_Erase(uint32_t addr, uint32_t len)
+static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len)
 {
+    uint32_t addr = OnChipFlash_Storage_StartAddress + addr_offset;
+    
     /* erase only */
+    return BspFlash.erase(addr, len);
 }
 
 
