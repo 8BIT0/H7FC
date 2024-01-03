@@ -51,7 +51,6 @@ typedef struct
     uint8_t tag[32];
     uint32_t free_block_addr;
     uint32_t total_stor_space;
-    uint32_t inuse_stor_space;
     uint32_t unuse_stor_space;
     uint32_t map_start_addr;
     uint32_t map_page_num;
