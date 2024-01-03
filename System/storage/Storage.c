@@ -100,6 +100,8 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     if(StorageIO_API->read(OnChipFlash_Storage_StartAddress, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
     {
         /* check internal storage tag */
+
+        return true;
     }
 
     return false;
