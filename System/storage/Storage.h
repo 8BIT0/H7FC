@@ -3,9 +3,10 @@
 
 #include "Srv_DataHub.h"
 #include "Bsp_Flash.h"
+#include "Srv_OsCommon.h"
 
 #define OnChipFlash_Storage_StartAddress (FLASH_BASE_ADDR + FLASH_SECTOR_7_OFFSET_ADDR)
-#define OnChipFlash_Stroage_TotalSize (FLASH_SECTOR_7_OFFSET_ADDR - FLASH_SECTOR_6_OFFSET_ADDR)
+#define OnChipFlash_Stroage_TotalSize FLASH_SECTOR_7_SIZE
 
 #define OnChipFlash_Storage_TabSize (1024 * 4)
 #define OnChipFlash_Storage_InfoPageSize OnChipFlash_Storage_TabSize 
@@ -34,29 +35,6 @@ typedef enum
     Para_User,
 } Storage_ParaClassType_List;
 
-typedef struct
-{
-    uint16_t head_tag;
-    uint16_t class_type;
-    uint16_t file_type;
-    uint8_t name[32];
-    uint32_t next_addr;
-    uint32_t size;
-    uint32_t res[4];
-    uint16_t end_tag;
-} Storage_MapTabItem_TypeDef;
-
-typedef struct
-{
-    uint8_t tag[32];
-    uint32_t free_block_addr;
-    uint32_t total_stor_space;
-    uint32_t unuse_stor_space;
-    uint32_t map_start_addr;
-    uint32_t map_page_num;
-    uint32_t info_page_size;
-} Storage_InfoPage_TypeDef;
-
 typedef union
 {
     struct
@@ -76,9 +54,6 @@ typedef struct
     Storage_ModuleState_TypeDef module_enable_reg;
     Storage_ModuleState_TypeDef module_init_reg;
     
-    Storage_InfoPage_TypeDef IntStor_Info;
-    Storage_InfoPage_TypeDef ExtStor_Info;
-    
     bool init_state;
     uint8_t inuse;
 } Storage_Monitor_TypeDef;
@@ -86,12 +61,9 @@ typedef struct
 typedef struct
 {
     bool (*init)(Storage_ModuleState_TypeDef enable);
-    storage_handle (*create_section)(uint32_t addr, uint16_t size);
-    bool (*delete_section)(storage_handle hdl);
     bool (*save)(storage_handle hdl, uint8_t *p_data, uint16_t size);
     bool (*get)(storage_handle hdl, uint8_t *p_data, uint16_t size);
     bool (*clear)(storage_handle hdl);
-    uint8_t (*get_inuse)(void);
 } Storage_TypeDef;
 
 extern Storage_TypeDef Storage;
