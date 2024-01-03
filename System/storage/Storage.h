@@ -38,8 +38,9 @@ typedef enum
 typedef struct
 {
     uint8_t head_tag;
-    uint8_t name[32];
-    uint32_t addr;
+    uint8_t name[28];
+    uint32_t data_addr;
+    uint32_t next_data_addr;
     uint16_t len;
     uint8_t end_tag;
 } Storage_Item_TypeDef;
@@ -47,7 +48,19 @@ typedef struct
 typedef struct
 {
     uint8_t tag[32];
-    uint32_t free_addr;
+
+    uint32_t boot_para_addr;
+    uint32_t boot_free_addr;
+    uint32_t boot_para_size;
+
+    uint32_t sys_para_addr;
+    uint32_t sys_free_addr;
+    uint32_t sys_para_size;
+
+    uint32_t user_para_addr;
+    uint32_t user_free_addr;
+    uint32_t user_para_size;
+
 } Storage_SectionInfo_TypeDef;
 
 typedef union
