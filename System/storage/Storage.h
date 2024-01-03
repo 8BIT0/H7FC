@@ -34,22 +34,15 @@ typedef enum
     Para_User,
 } Storage_ParaClassType_List;
 
-typedef enum
-{
-    Stor_Folder = 0,
-    Stor_File,
-} Storage_FileType_List;
-
 typedef struct
 {
     uint16_t head_tag;
     uint16_t class_type;
-    uint16_t sub_folder_num;
-    uint16_t sub_file_num;
     uint16_t file_type;
     uint8_t name[32];
     uint32_t next_addr;
     uint32_t size;
+    uint32_t res[4];
     uint16_t end_tag;
 } Storage_MapTabItem_TypeDef;
 
@@ -88,6 +81,7 @@ typedef struct
     Storage_InfoPage_TypeDef ExtStor_Info;
     
     bool init_state;
+    uint8_t inuse;
 } Storage_Monitor_TypeDef;
 
 typedef struct
@@ -98,6 +92,7 @@ typedef struct
     bool (*save)(storage_handle hdl, uint8_t *p_data, uint16_t size);
     bool (*get)(storage_handle hdl, uint8_t *p_data, uint16_t size);
     bool (*clear)(storage_handle hdl);
+    uint8_t (*get_inuse)(void);
 } Storage_TypeDef;
 
 extern Storage_TypeDef Storage;
