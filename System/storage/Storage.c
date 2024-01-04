@@ -46,32 +46,40 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable)
     /* on chip flash init */
     if(enable.bit.internal && BspFlash.init && BspFlash.init())
     {
+        Storage_Monitor.InternalFlash_Format_cnt = Format_Retry_Cnt;
         /* start address check */
 
         /* flash area size check */
 
+reupdate_internal_flash_info:
         /* read internal flash storage info */
-        if(!Storage_Get_StorageInfo(Internal_Flash))
+        if(!Storage_Get_StorageInfo(Internal_Flash) && Storage_Monitor.InternalFlash_Format_cnt)
         {
+            Storage_Monitor.InternalFlash_Format_cnt --;
+            
             if(!Storage_Format(Internal_Flash))
             {
+                /* format internal flash storage space */
+                Storage_Monitor.module_init_reg.bit.internal = false;
+                
                 /* format error */
+                goto reupdate_internal_flash_info;
             }
             else
             {
                 /* format flash successed */
                 /* build storage tab again */
             }
-
-            /* format internal flash storage space */
-            Storage_Monitor.module_init_reg.bit.internal = false;
-        }
+       }
+        else
+            Storage_Monitor.module_init_reg.bit.internal = true;
     }
 
     /* still in developping */
     /* external flash init */
     if(enable.bit.external)
     {
+        Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
     }
 
     Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | Storage_Monitor.module_init_reg.bit.internal;

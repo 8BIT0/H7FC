@@ -5,6 +5,8 @@
 #include "Bsp_Flash.h"
 #include "Srv_OsCommon.h"
 
+#define Format_Retry_Cnt 5
+
 #define OnChipFlash_Storage_StartAddress (FLASH_BASE_ADDR + FLASH_SECTOR_7_OFFSET_ADDR)
 #define OnChipFlash_Stroage_TotalSize FLASH_SECTOR_7_SIZE
 
@@ -52,17 +54,20 @@ typedef struct
 {
     uint8_t tag[32];
 
-    uint32_t boot_para_addr;
+    uint32_t boot_tab_addr;
+    uint32_t boot_block_size;
     uint32_t boot_free_addr;
     uint32_t boot_para_size;
     uint32_t boot_para_num;
 
-    uint32_t sys_para_addr;
+    uint32_t sys_tab_addr;
+    uint32_t sys_block_size;
     uint32_t sys_free_addr;
     uint32_t sys_para_size;
     uint32_t sys_para_num;
 
-    uint32_t user_para_addr;
+    uint32_t user_tab_addr;
+    uint32_t user_block_size;
     uint32_t user_free_addr;
     uint32_t user_para_size;
     uint32_t user_para_num;
@@ -86,6 +91,9 @@ typedef struct
 {
     Storage_ModuleState_TypeDef module_enable_reg;
     Storage_ModuleState_TypeDef module_init_reg;
+
+    uint8_t InternalFlash_Format_cnt;
+    uint8_t ExternalFlash_Format_cnt;
     
     bool init_state;
     uint8_t inuse;
