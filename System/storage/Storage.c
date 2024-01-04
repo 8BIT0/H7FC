@@ -157,6 +157,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_SectionInfo_TypeDef InfoSec;
     char flash_tag[INTERNAL_PAGE_TAG_SIZE + EXTERNAL_PAGE_TAG_SIZE];
+    uint32_t base_addr = 0;
 
     memset(flash_tag, '\0', sizeof(flash_tag));
     memset(&InfoSec, 0, sizeof(Storage_SectionInfo_TypeDef));
@@ -166,6 +167,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
             memcpy(flash_tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
+            base_addr = OnChipFlash_Storage_StartAddress;
             break;
 
         /* still in developping */
@@ -181,10 +183,16 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         /* check internal storage tag */
         memcpy(&InfoSec, page_data_tmp, sizeof(Storage_SectionInfo_TypeDef));
 
-        if(strcmp(InfoSec.tag, flash_tag) != 0)
-        {
+        /* check storage tag */
+        /* check boot / sys / user  start addr */
+        if( (strcmp(InfoSec.tag, flash_tag) != 0) || \
+            (InfoSec.boot_tab_addr < base_addr) || \
+            (InfoSec.sys_tab_addr < base_addr) || \
+            (InfoSec.user_tab_addr < base_addr) || \
+            (InfoSec.boot_tab_addr == InfoSec.sys_tab_addr) || \
+            (InfoSec.boot_tab_addr == InfoSec.user_tab_addr) || \
+            (InfoSec.sys_tab_addr == InfoSec.user_tab_addr))
             return false;
-        }
 
         return true;
     }
