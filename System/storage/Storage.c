@@ -53,7 +53,8 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable)
 
 reupdate_internal_flash_info:
         /* read internal flash storage info */
-        if(!Storage_Get_StorageInfo(Internal_Flash) && Storage_Monitor.InternalFlash_Format_cnt)
+        if(!Storage_Get_StorageInfo(Internal_Flash) && \
+            Storage_Monitor.InternalFlash_Format_cnt)
         {
             Storage_Monitor.InternalFlash_Format_cnt --;
             
@@ -82,7 +83,8 @@ reupdate_internal_flash_info:
         Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
     }
 
-    Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | Storage_Monitor.module_init_reg.bit.internal;
+    Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | \
+                                 Storage_Monitor.module_init_reg.bit.internal;
 
     return Storage_Monitor.init_state;
 }
@@ -116,7 +118,8 @@ static bool Storage_Format(Storage_MediumType_List type)
             return false;
     }
 
-    if(InternalFlash_IO.erase && InternalFlash_IO.erase(From_Start_Address, size))
+    if( InternalFlash_IO.erase && \
+        InternalFlash_IO.erase(From_Start_Address, size))
     {
         for(uint32_t i = 0; i < read_time; i++)
         {
@@ -164,7 +167,9 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             return false;
     }
     
-    if(StorageIO_API->read(OnChipFlash_Storage_StartAddress, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+    if(StorageIO_API->read(OnChipFlash_Storage_StartAddress, \
+                           page_data_tmp, \
+                           OnChipFlash_Storage_InfoPageSize))
     {
         /* check internal storage tag */
         memcpy(&InfoSec, page_data_tmp, sizeof(Storage_SectionInfo_TypeDef));
