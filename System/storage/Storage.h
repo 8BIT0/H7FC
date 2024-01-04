@@ -8,7 +8,8 @@
 #define Format_Retry_Cnt 5
 
 #define OnChipFlash_Storage_StartAddress (FLASH_BASE_ADDR + FLASH_SECTOR_7_OFFSET_ADDR)
-#define OnChipFlash_Stroage_TotalSize FLASH_SECTOR_7_SIZE
+#define OnChipFlash_Storage_TotalSize FLASH_SECTOR_7_SIZE
+#define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 
 #define OnChipFlash_Storage_TabSize (1024 * 4)
 #define OnChipFlash_Storage_InfoPageSize OnChipFlash_Storage_TabSize 

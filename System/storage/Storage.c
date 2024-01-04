@@ -91,12 +91,23 @@ static bool Storage_Format(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     uint32_t size = 0;
+    uint8_t default_data = 0;
+    uint32_t read_time = 0;
+    uint32_t remain_size = 0;
+    uint32_t addr_offset = From_Start_Address;
 
     switch((uint8_t) type)
     {
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
-            size = OnChipFlash_Stroage_TotalSize;
+            size = OnChipFlash_Storage_TotalSize;
+            default_data = OnChipFlash_Storage_DefaultData;
+
+            read_time = OnChipFlash_Storage_TotalSize / sizeof(page_data_tmp);
+            if(OnChipFlash_Storage_TotalSize % sizeof(page_data_tmp))
+                read_time ++;
+            
+            remain_size = OnChipFlash_Storage_TotalSize;
             break;
         
         /* still in developping */
@@ -106,7 +117,27 @@ static bool Storage_Format(Storage_MediumType_List type)
     }
 
     if(InternalFlash_IO.erase && InternalFlash_IO.erase(From_Start_Address, size))
+    {
+        for(uint32_t i = 0; i < read_time; i++)
+        {
+            if(remain_size < size)
+                size = remain_size;
+            
+            if(!InternalFlash_IO.read(addr_offset, page_data_tmp, size))
+                return false;
+
+            for(uint32_t j = 0; j < size; j++)
+            {
+                if(page_data_tmp[i] != default_data)
+                    return false;
+            }
+
+            addr_offset += size;
+            remain_size -= sizeof(page_data_tmp);
+        }
+
         return true;
+    }
 
     return false;
 }
