@@ -33,8 +33,8 @@ typedef struct
     void (*de_init)(void);
     bool (*erase)(uint32_t addr, uint32_t len);
     uint8_t (*get_align_size)(void);
-    bool (*read)(uint32_t addr, uint8_t *p_data, uint16_t size);
-    bool (*write)(uint32_t addr, uint8_t *p_data, uint16_t size);
+    bool (*read)(uint32_t addr, uint8_t *p_data, uint32_t size);
+    bool (*write)(uint32_t addr, uint8_t *p_data, uint32_t size);
 } BspFlash_TypeDef;
 
 extern BspFlash_TypeDef BspFlash;

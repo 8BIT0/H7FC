@@ -11,7 +11,7 @@
 #define OnChipFlash_Storage_TotalSize FLASH_SECTOR_7_SIZE
 #define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 
-#define OnChipFlash_Storage_TabSize (1024 * 4)
+#define OnChipFlash_Storage_TabSize (1024 * 2)
 #define OnChipFlash_Storage_InfoPageSize OnChipFlash_Storage_TabSize 
 
 #define ExternalFlash_Storage_Address 0

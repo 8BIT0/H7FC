@@ -1,6 +1,7 @@
 #include "Storage.h"
 #include "shell_port.h"
 #include "util.h"
+#include "Srv_OsCommon.h"
 
 /* flash io object */
 typedef struct
@@ -12,7 +13,7 @@ typedef struct
 
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
-uint8_t page_data_tmp[OnChipFlash_Storage_TabSize] = {0};
+uint8_t page_data_tmp[OnChipFlash_Storage_TabSize] __attribute__((aligned(4))) = {0};
 
 static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
@@ -38,6 +39,7 @@ Storage_TypeDef Storage = {
 
 static bool Storage_Init(Storage_ModuleState_TypeDef enable)
 {
+    SrvOsCommon.enter_critical();
     memset(&Storage_Monitor, 0, sizeof(Storage_Monitor));
 
     Storage_Monitor.module_enable_reg.val = enable.val;
@@ -73,7 +75,8 @@ reformat_internal_flash_info:
                     /* format flash successed */
                     /* build storage tab again */
 
-                    goto reupdate_internal_flash_info;
+                    // goto reupdate_internal_flash_info;
+                    __NOP();
                 }
             }
             else
@@ -93,23 +96,24 @@ reformat_internal_flash_info:
     Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | \
                                  Storage_Monitor.module_init_reg.bit.internal;
 
+    SrvOsCommon.exit_critical();
     return Storage_Monitor.init_state;
 }
 
 static bool Storage_Format(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
-    uint32_t size = 0;
+    volatile uint32_t size = 0;
     uint8_t default_data = 0;
     uint32_t read_time = 0;
-    uint32_t remain_size = 0;
+    volatile uint32_t remain_size = 0;
     uint32_t addr_offset = From_Start_Address;
 
     switch((uint8_t) type)
     {
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
-            size = OnChipFlash_Storage_TotalSize;
+            size = sizeof(page_data_tmp);
             default_data = OnChipFlash_Storage_DefaultData;
 
             read_time = OnChipFlash_Storage_TotalSize / sizeof(page_data_tmp);
@@ -130,9 +134,9 @@ static bool Storage_Format(Storage_MediumType_List type)
     {
         for(uint32_t i = 0; i < read_time; i++)
         {
-            if(remain_size < size)
+            if((remain_size != 0) && (remain_size < size))
                 size = remain_size;
-            
+
             if(!InternalFlash_IO.read(addr_offset, page_data_tmp, size))
                 return false;
 
@@ -143,10 +147,11 @@ static bool Storage_Format(Storage_MediumType_List type)
             }
 
             addr_offset += size;
-            remain_size -= sizeof(page_data_tmp);
-        }
+            remain_size -= size;
 
-        return true;
+            if(remain_size == 0)
+                return true;
+        }
     }
 
     return false;
@@ -156,8 +161,8 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_SectionInfo_TypeDef InfoSec;
-    char flash_tag[INTERNAL_PAGE_TAG_SIZE + EXTERNAL_PAGE_TAG_SIZE];
     uint32_t base_addr = 0;
+    char flash_tag[INTERNAL_PAGE_TAG_SIZE + EXTERNAL_PAGE_TAG_SIZE];
 
     memset(flash_tag, '\0', sizeof(flash_tag));
     memset(&InfoSec, 0, sizeof(Storage_SectionInfo_TypeDef));
@@ -176,9 +181,9 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             return false;
     }
     
-    if(StorageIO_API->read(OnChipFlash_Storage_StartAddress, \
+    if(StorageIO_API->read(From_Start_Address, \
                            page_data_tmp, \
-                           OnChipFlash_Storage_InfoPageSize))
+                           sizeof(page_data_tmp)))
     {
         /* check internal storage tag */
         memcpy(&InfoSec, page_data_tmp, sizeof(Storage_SectionInfo_TypeDef));
