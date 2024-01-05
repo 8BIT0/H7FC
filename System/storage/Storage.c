@@ -228,7 +228,31 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
     uint32_t addr = OnChipFlash_Storage_StartAddress + addr_offset;
-    return BspFlash.read(addr, p_data, len);
+    uint32_t read_size = 0;
+    uint8_t read_cnt = 1;
+
+    if(len > OnChipFlash_MaxRWSize)
+    {
+        read_cnt = len / OnChipFlash_MaxRWSize;
+        read_size = OnChipFlash_MaxRWSize;
+        
+        if(len % OnChipFlash_MaxRWSize)
+            read_cnt ++;
+    }
+
+    for(uint8_t i = 0; i < read_cnt; i++)
+    {
+        if(!BspFlash.read(addr, p_data, read_size))
+            return false;
+
+        addr += read_size;
+        len -= read_size;
+
+        if(len < read_size)
+            read_size = len;
+    }
+
+    return true;
 }
 
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
