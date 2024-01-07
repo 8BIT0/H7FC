@@ -76,7 +76,13 @@ reformat_internal_flash_info:
                     /* build storage tab again */
 
                     // goto reupdate_internal_flash_info;
-                    __NOP();
+                    if(!Storage_Build_StorageInfo(Internal_Flash))
+                    {
+                        Storage_Monitor.module_init_reg.bit.internal = false;
+                        return false;
+                    }
+
+                    Storage_Monitor.module_init_reg.bit.internal = true;
                 }
             }
             else
@@ -221,6 +227,8 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             return false;
     }
 
+
+
     return false;
 }
 
@@ -258,14 +266,39 @@ static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
     uint32_t addr = OnChipFlash_Storage_StartAddress + addr_offset;
+    uint8_t write_cnt = 0;
+    uint32_t write_size = 0;
+    uint32_t write_addr = addr;
     
-    /* erase address first */
-    if(!BspFlash.erase(addr, len))
-        return false;
-    
-    /* after erase write data into address */
-    if(!BspFlash.write(addr, p_data, len))
-        return false;
+    if(len > OnChipFlash_MaxRWSize)
+    {
+        write_cnt = len / OnChipFlash_MaxRWSize;
+        write_size = OnChipFlash_MaxRWSize;
+
+        if(len % OnChipFlash_MaxRWSize)
+            write_cnt ++;
+    }
+    else
+    {
+        write_cnt = 1;
+        write_size = len;
+    }
+
+    for(uint8_t i = 0; i < write_cnt; i++)
+    {
+        /* erase address first */
+        if(!BspFlash.erase(write_addr, write_size))
+            return false;
+        
+        /* after erase write data into address */
+        if(!BspFlash.write(write_addr, p_data, write_size))
+            return false;
+
+        write_addr += write_size;
+        len -= write_size;
+        if(len && len <= write_size)
+            write_size = len;
+    }
 
     return true;
 }
