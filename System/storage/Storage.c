@@ -57,9 +57,9 @@ reupdate_internal_flash_info:
         /* read internal flash storage info */
         if(!Storage_Get_StorageInfo(Internal_Flash))
         {
+reformat_internal_flash_info:
             if(Storage_Monitor.InternalFlash_Format_cnt)
             {
-reformat_internal_flash_info:
                 Storage_Monitor.InternalFlash_Format_cnt --;
 
                 if(!Storage_Format(Internal_Flash))
