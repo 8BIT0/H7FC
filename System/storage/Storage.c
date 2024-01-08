@@ -4,6 +4,7 @@
 #include "Srv_OsCommon.h"
 
 #define StorageItem_Size sizeof(Storage_Item_TypeDef)
+#define Storage_Capacity 256
 
 /* flash io object */
 typedef struct
@@ -216,11 +217,25 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
+    uint32_t page_num = 0;
+    Storage_SectionInfo_TypeDef Info;
+    uint32_t BaseInfo_start_addr = 0;
+    uint32_t boot_tab_start_addr = 0;
+    uint32_t sys_tab_start_addr = 0;
+    uint32_t user_tab_start_addr = 0;
 
     switch((uint8_t)type)
     {
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
+            memset(&Info, 0, sizeof(Storage_SectionInfo_TypeDef));
+            memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
+
+            BaseInfo_start_addr = OnChipFlash_Storage_StartAddress;
+            page_num = Storage_Capacity / (OnChipFlash_Storage_InfoPageSize / StorageItem_Size)
+            if(page_num == 0)
+                return false;
+            
             break;
 
         /* still in developping */
