@@ -3,6 +3,8 @@
 #include "util.h"
 #include "Srv_OsCommon.h"
 
+#define StorageItem_Size sizeof(Storage_Item_TypeDef)
+
 /* flash io object */
 typedef struct
 {
