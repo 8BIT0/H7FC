@@ -284,7 +284,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
 
-    return false;
+    return true;
 }
 
 /************************************************** Internal Flash IO API Section ************************************************/
