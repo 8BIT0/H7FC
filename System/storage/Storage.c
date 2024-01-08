@@ -232,10 +232,30 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
 
             BaseInfo_start_addr = OnChipFlash_Storage_StartAddress;
-            page_num = Storage_Capacity / (OnChipFlash_Storage_InfoPageSize / StorageItem_Size)
+            page_num = Storage_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size)
             if(page_num == 0)
                 return false;
             
+            // if()
+            // {
+            //     Info.boot_tab_addr = ;
+            //     Info.boot_block_size = ;
+            //     Info.boot_free_addr = ;
+            //     Info.boot_para_size = ;
+            //     Info.boot_para_num = ;
+            // }
+
+            // Info.sys_tab_addr = ;
+            // Info.sys_block_size = ;
+            // Info.sys_free_addr = ;
+            // Info.sys_para_size = ;
+            // Info.sys_para_num = ;
+                
+            // Info.user_tab_addr = ;
+            // Info.user_block_size = ;
+            // Info.user_free_addr = ;
+            // Info.user_para_size = ;
+            // Info.user_para_num = ;
             break;
 
         /* still in developping */

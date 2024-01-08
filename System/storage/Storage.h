@@ -13,7 +13,7 @@
 
 #define OnChipFlash_MaxRWSize (1024 * 2)
 #define OnChipFlash_Storage_TabSize (1024 * 4)
-#define OnChipFlash_Storage_InfoPageSize OnChipFlash_Storage_TabSize 
+#define OnChipFlash_Storage_InfoPageSize 1024
 
 #define ExternalFlash_Storage_Address 0
 
