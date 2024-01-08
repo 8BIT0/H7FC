@@ -20,6 +20,7 @@
 #define From_Start_Address 0
 
 #define BootSection_Block_Size (1024 * 4)
+#define BootTab_Page_Num 2
 
 #define INTERNAL_STORAGE_PAGE_TAG "[InternalFlash Storage]"
 #define EXTERNAL_STORAGE_PAGE_TAG "[ExternalFlash Storage]"
@@ -59,18 +60,21 @@ typedef struct
     uint8_t tag[32];
 
     uint32_t boot_tab_addr;
+    uint32_t boot_page_num;
     uint32_t boot_block_size;
     uint32_t boot_free_addr;
     uint32_t boot_para_size;
     uint32_t boot_para_num;
 
     uint32_t sys_tab_addr;
+    uint32_t sys_page_num;
     uint32_t sys_block_size;
     uint32_t sys_free_addr;
     uint32_t sys_para_size;
     uint32_t sys_para_num;
 
     uint32_t user_tab_addr;
+    uint32_t user_page_num;
     uint32_t user_block_size;
     uint32_t user_free_addr;
     uint32_t user_para_size;
