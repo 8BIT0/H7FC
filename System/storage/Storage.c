@@ -238,7 +238,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
 
             BaseInfo_start_addr = OnChipFlash_Storage_StartAddress;
-            page_num = Storage_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size)
+            page_num = Storage_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size);
             if(page_num == 0)
                 return false;
             
