@@ -20,7 +20,7 @@
 #define From_Start_Address 0
 
 #define BootSection_Block_Size (1024 * 4)
-#define BootTab_Page_Num 2
+#define BootTab_Num 2
 
 #define INTERNAL_STORAGE_PAGE_TAG "[InternalFlash Storage]"
 #define EXTERNAL_STORAGE_PAGE_TAG "[ExternalFlash Storage]"
