@@ -22,6 +22,8 @@
 #define BootSection_Block_Size (1024 * 4)
 #define BootTab_Num 2
 
+#define Storage_Max_Capacity 256
+
 #define INTERNAL_STORAGE_PAGE_TAG "[InternalFlash Storage]"
 #define EXTERNAL_STORAGE_PAGE_TAG "[ExternalFlash Storage]"
 #define INTERNAL_PAGE_TAG_SIZE strlen(INTERNAL_STORAGE_PAGE_TAG)

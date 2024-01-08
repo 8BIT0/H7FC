@@ -4,7 +4,6 @@
 #include "Srv_OsCommon.h"
 
 #define StorageItem_Size sizeof(Storage_Item_TypeDef)
-#define Storage_Capacity 256
 
 /* flash io object */
 typedef struct
@@ -224,16 +223,22 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     uint32_t sys_tab_start_addr = 0;
     uint32_t user_tab_start_addr = 0;
     uint32_t tab_addr_offset = 0;
+    uint16_t crc = 0;
 
     switch((uint8_t)type)
     {
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
+            if( (StorageIO_API->erase == NULL) || \
+                (StorageIO_API->read  == NULL) || \
+                (StorageIO_API->write == NULL))
+                return false;
+
             memset(&Info, 0, sizeof(Storage_SectionInfo_TypeDef));
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
 
             BaseInfo_start_addr = OnChipFlash_Storage_StartAddress;
-            page_num = Storage_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size)
+            page_num = Storage_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size)
             if(page_num == 0)
                 return false;
             
@@ -246,16 +251,19 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             tab_addr_offset = (Info.boot_tab_addr + Info.boot_page_num * OnChipFlash_Storage_TabSize);
 
             Info.sys_tab_addr = tab_addr_offset;
-            // Info.sys_block_size = ;
-            // Info.sys_free_addr = ;
-            // Info.sys_para_size = ;
-            // Info.sys_para_num = ;
+            Info.sys_block_size = page_num * OnChipFlash_Storage_TabSize;
+            Info.sys_page_num = page_num;
+            Info.sys_free_addr = 0;
+            Info.sys_para_size = 0;
+            Info.sys_para_num = 0;
+            tab_addr_offset += Info.sys_block_size;
                 
-            // Info.user_tab_addr = ;
-            // Info.user_block_size = ;
-            // Info.user_free_addr = ;
-            // Info.user_para_size = ;
-            // Info.user_para_num = ;
+            Info.user_tab_addr = tab_addr_offset;
+            Info.user_block_size = page_num * OnChipFlash_Storage_TabSize;
+            Info.user_page_num = page_num;
+            Info.user_free_addr = 0;
+            Info.user_para_size = 0;
+            Info.user_para_num = 0;
             break;
 
         /* still in developping */
@@ -265,6 +273,14 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     }
 
     /* write 0 to info section */
+    if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+        return false;
+
+    /* write base info to info section */
+    memcpy(page_data_tmp, &Info, sizeof(Info));
+    crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize);
+    memcpy(page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
+
     if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
 
