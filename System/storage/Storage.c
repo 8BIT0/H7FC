@@ -21,6 +21,10 @@ static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len);
 
+static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type);
+static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type);
+static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type);
+
 StorageIO_TypeDef InternalFlash_IO = {
     .erase = Storage_OnChipFlash_Erase,
     .read = Storage_OnChipFlash_Read,
@@ -221,6 +225,66 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     }
 
     return false;
+}
+
+static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
+{
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    
+    switch((uint8_t) type)
+    {
+        case Internal_Flash:
+            StorageIO_API = &InternalFlash_IO;
+            if( (StorageIO_API->erase == NULL) || \
+                (StorageIO_API->read  == NULL) || \
+                (StorageIO_API->write == NULL))
+                return false;
+            break;
+
+        case External_Flash:
+        default:
+            return false;
+    }
+}
+
+static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
+{
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    
+    switch((uint8_t) type)
+    {
+        case Internal_Flash:
+            StorageIO_API = &InternalFlash_IO;
+            if( (StorageIO_API->erase == NULL) || \
+                (StorageIO_API->read  == NULL) || \
+                (StorageIO_API->write == NULL))
+                return false;
+            break;
+
+        case External_Flash:
+        default:
+            return false;
+    }
+}
+
+static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
+{
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    
+    switch((uint8_t) type)
+    {
+        case Internal_Flash:
+            StorageIO_API = &InternalFlash_IO;
+            if( (StorageIO_API->erase == NULL) || \
+                (StorageIO_API->read  == NULL) || \
+                (StorageIO_API->write == NULL))
+                return false;
+            break;
+
+        case External_Flash:
+        default:
+            return false;
+    }
 }
 
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
