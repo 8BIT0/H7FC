@@ -432,10 +432,9 @@ static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint
 
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
-    uint32_t addr = OnChipFlash_Storage_StartAddress + addr_offset;
     uint8_t write_cnt = 0;
     uint32_t write_size = 0;
-    uint32_t write_addr = addr;
+    uint32_t write_addr = OnChipFlash_Storage_StartAddress + addr_offset;
     
     if(len > OnChipFlash_MaxRWSize)
     {
