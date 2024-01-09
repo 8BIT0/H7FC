@@ -227,6 +227,14 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     return false;
 }
 
+static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num)
+{
+    if( (addr == 0) || (tab_num == 0))
+        return false;
+
+    return true;
+}
+
 static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
@@ -251,9 +259,8 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
             return false;
     }
 
-    if(p_Info->boot_tab_addr)
+    if(p_Info->boot_tab_addr && Storage_Clear_Tab(p_Info->boot_tab_addr, p_Info->boot_page_num))
     {
-
     }
 
     return false;
@@ -283,9 +290,8 @@ static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
             return false;
     }
 
-    if(p_Info->sys_tab_addr)
+    if(p_Info->sys_tab_addr && Storage_Clear_Tab(p_Info->sys_tab_addr, p_Info->sys_page_num))
     {
-
     }
 }
 
@@ -313,9 +319,8 @@ static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
             return false;
     }
 
-    if(p_Info->user_tab_addr)
+    if(p_Info->user_tab_addr && Storage_Clear_Tab(p_Info->user_tab_addr, p_Info->user_page_num))
     {
-        
     }
 }
 
