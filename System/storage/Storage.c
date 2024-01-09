@@ -85,6 +85,7 @@ reformat_internal_flash_info:
                     }
 
                     Storage_Monitor.module_init_reg.bit.internal = true;
+                    goto reupdate_internal_flash_info;
                 }
             }
             else
@@ -168,12 +169,13 @@ static bool Storage_Format(Storage_MediumType_List type)
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_SectionInfo_TypeDef InfoSec;
+    Storage_SectionInfo_TypeDef *p_Info = NULL;
     uint32_t base_addr = 0;
+    uint16_t crc = 0;
+    uint16_t crc_read = 0;
     char flash_tag[INTERNAL_PAGE_TAG_SIZE + EXTERNAL_PAGE_TAG_SIZE];
 
     memset(flash_tag, '\0', sizeof(flash_tag));
-    memset(&InfoSec, 0, sizeof(Storage_SectionInfo_TypeDef));
 
     switch((uint8_t)type)
     {
@@ -181,6 +183,8 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             StorageIO_API = &InternalFlash_IO;
             memcpy(flash_tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
             base_addr = OnChipFlash_Storage_StartAddress;
+            p_Info = &Storage_Monitor.internal_info;
+            memset(p_Info, 0, sizeof(Storage_SectionInfo_TypeDef));
             break;
 
         /* still in developping */
@@ -194,17 +198,23 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
                            sizeof(page_data_tmp)))
     {
         /* check internal storage tag */
-        memcpy(&InfoSec, page_data_tmp, sizeof(Storage_SectionInfo_TypeDef));
+        memcpy(p_Info, page_data_tmp, sizeof(Storage_SectionInfo_TypeDef));
 
         /* check storage tag */
         /* check boot / sys / user  start addr */
-        if( (strcmp(InfoSec.tag, flash_tag) != 0) || \
-            (InfoSec.boot_tab_addr < base_addr) || \
-            (InfoSec.sys_tab_addr < base_addr) || \
-            (InfoSec.user_tab_addr < base_addr) || \
-            (InfoSec.boot_tab_addr == InfoSec.sys_tab_addr) || \
-            (InfoSec.boot_tab_addr == InfoSec.user_tab_addr) || \
-            (InfoSec.sys_tab_addr == InfoSec.user_tab_addr))
+        if( (strcmp(p_Info->tag, flash_tag) != 0) || \
+            (p_Info->boot_tab_addr == 0) || \
+            (p_Info->sys_tab_addr == 0) || \
+            (p_Info->user_tab_addr == 0) || \
+            (p_Info->boot_tab_addr == p_Info->sys_tab_addr) || \
+            (p_Info->boot_tab_addr == p_Info->user_tab_addr) || \
+            (p_Info->sys_tab_addr == p_Info->user_tab_addr))
+            return false;
+
+        /* get crc from storage baseinfo section check crc value */
+        memcpy(&crc_read, &page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(uint16_t)], sizeof(uint16_t));
+        crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize - sizeof(crc));
+        if(crc != crc_read)
             return false;
 
         return true;
@@ -237,7 +247,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             memset(&Info, 0, sizeof(Storage_SectionInfo_TypeDef));
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
 
-            BaseInfo_start_addr = OnChipFlash_Storage_StartAddress; 
+            BaseInfo_start_addr = From_Start_Address; 
             page_num = Storage_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size);
             if(page_num == 0)
                 return false;
@@ -274,15 +284,15 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
     /* write 0 to info section */
     memset(page_data_tmp, 0, OnChipFlash_Storage_InfoPageSize);
-    if(!StorageIO_API->write(From_Start_Address, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+    if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
 
     /* write base info to info section */
     memcpy(page_data_tmp, &Info, sizeof(Info));
-    crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize);
+    crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize - sizeof(crc));
     memcpy(&page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
 
-    if(!StorageIO_API->write(From_Start_Address, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+    if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
 
     return true;

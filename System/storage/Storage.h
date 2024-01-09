@@ -107,6 +107,9 @@ typedef struct
     
     bool init_state;
     uint8_t inuse;
+
+    Storage_SectionInfo_TypeDef internal_info;
+    Storage_SectionInfo_TypeDef external_info;
 } Storage_Monitor_TypeDef;
 
 typedef struct
