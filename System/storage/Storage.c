@@ -230,6 +230,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_SectionInfo_TypeDef *p_Info = NULL;
     
     switch((uint8_t) type)
     {
@@ -239,9 +240,12 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
                 (StorageIO_API->read  == NULL) || \
                 (StorageIO_API->write == NULL))
                 return false;
+
+            p_Info = &Storage_Monitor.internal_info;
             break;
 
         case External_Flash:
+            p_Info = &Storage_Monitor.external_info;
         default:
             return false;
     }
@@ -250,7 +254,8 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
 static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
-    
+    Storage_SectionInfo_TypeDef *p_Info = NULL;
+
     switch((uint8_t) type)
     {
         case Internal_Flash:
@@ -259,9 +264,12 @@ static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
                 (StorageIO_API->read  == NULL) || \
                 (StorageIO_API->write == NULL))
                 return false;
+
+            p_Info = &Storage_Monitor.internal_info;
             break;
 
         case External_Flash:
+            p_Info = &Storage_Monitor.external_info;
         default:
             return false;
     }
@@ -270,7 +278,8 @@ static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
 static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
-    
+    Storage_SectionInfo_TypeDef *p_Info = NULL;
+
     switch((uint8_t) type)
     {
         case Internal_Flash:
@@ -279,9 +288,12 @@ static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
                 (StorageIO_API->read  == NULL) || \
                 (StorageIO_API->write == NULL))
                 return false;
+
+            p_Info = &Storage_Monitor.internal_info;
             break;
 
         case External_Flash:
+            p_Info = &Storage_Monitor.external_info;
         default:
             return false;
     }
