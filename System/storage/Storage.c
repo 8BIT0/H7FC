@@ -250,6 +250,13 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
         default:
             return false;
     }
+
+    if(p_Info->boot_tab_addr)
+    {
+
+    }
+
+    return false;
 }
 
 static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
@@ -275,6 +282,11 @@ static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
         default:
             return false;
     }
+
+    if(p_Info->sys_tab_addr)
+    {
+
+    }
 }
 
 static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
@@ -299,6 +311,11 @@ static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
             p_Info = &Storage_Monitor.external_info;
         default:
             return false;
+    }
+
+    if(p_Info->user_tab_addr)
+    {
+        
     }
 }
 
