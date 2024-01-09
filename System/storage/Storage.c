@@ -236,7 +236,8 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
     {
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
-            if( (StorageIO_API->erase == NULL) || \
+            if( (!Storage_Monitor.module_init_reg.bit.internal) || \
+                (StorageIO_API->erase == NULL) || \
                 (StorageIO_API->read  == NULL) || \
                 (StorageIO_API->write == NULL))
                 return false;
@@ -260,7 +261,8 @@ static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
     {
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
-            if( (StorageIO_API->erase == NULL) || \
+            if( (!Storage_Monitor.module_init_reg.bit.internal) || \
+                (StorageIO_API->erase == NULL) || \
                 (StorageIO_API->read  == NULL) || \
                 (StorageIO_API->write == NULL))
                 return false;
@@ -284,7 +286,8 @@ static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
     {
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
-            if( (StorageIO_API->erase == NULL) || \
+            if( (!Storage_Monitor.module_init_reg.bit.internal) || \
+                (StorageIO_API->erase == NULL) || \
                 (StorageIO_API->read  == NULL) || \
                 (StorageIO_API->write == NULL))
                 return false;
