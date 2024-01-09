@@ -229,8 +229,25 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 
 static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num)
 {
+    uint16_t clear_cnt = 1;
+
     if( (addr == 0) || (tab_num == 0))
         return false;
+
+    for(uint32_t i = 0; i < tab_num; i++)
+    {
+        if(sizeof(page_data_tmp) < OnChipFlash_Storage_TabSize)
+        {
+            clear_cnt = OnChipFlash_Storage_TabSize / sizeof(page_data_tmp);
+            if(OnChipFlash_Storage_TabSize % sizeof(page_data_tmp))
+                clear_cnt += 1;
+        }
+    
+        for(uint8_t c = 0; c < clear_cnt; c++)
+        {
+            
+        }
+    }
 
     return true;
 }
