@@ -21,6 +21,7 @@ static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len);
 
+static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num);
 static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type);
 static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type);
 static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type);
@@ -245,7 +246,7 @@ static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num)
     
         for(uint8_t c = 0; c < clear_cnt; c++)
         {
-            
+
         }
     }
 
