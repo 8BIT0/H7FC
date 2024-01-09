@@ -237,7 +237,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             memset(&Info, 0, sizeof(Storage_SectionInfo_TypeDef));
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
 
-            BaseInfo_start_addr = From_Start_Address;
+            BaseInfo_start_addr = OnChipFlash_Storage_StartAddress; 
             page_num = Storage_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size);
             if(page_num == 0)
                 return false;
@@ -274,7 +274,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
     /* write 0 to info section */
     memset(page_data_tmp, 0, OnChipFlash_Storage_InfoPageSize);
-    if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+    if(!StorageIO_API->write(From_Start_Address, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
 
     /* write base info to info section */
@@ -282,7 +282,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize);
     memcpy(&page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
 
-    if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+    if(!StorageIO_API->write(From_Start_Address, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
 
     return true;
@@ -311,6 +311,7 @@ static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint
 
         addr += read_size;
         len -= read_size;
+        p_data += read_size;
 
         if(len < read_size)
             read_size = len;

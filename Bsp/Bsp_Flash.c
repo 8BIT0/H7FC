@@ -117,7 +117,7 @@ static bool BspFlash_Write_To_Addr(uint32_t addr, uint8_t *p_data, uint32_t size
         if ((addr < FLASH_BASE_ADDR) || \
             (addr + size >= FLASH_BASE_ADDR + FLASH_SIZE))
             return false;
-        
+
         for (uint32_t i = 0; i < (size / BSP_FLASH_WRITE_UNIT); i ++)
         {
             memcpy(write_tmp, p_data, BSP_FLASH_WRITE_UNIT);
