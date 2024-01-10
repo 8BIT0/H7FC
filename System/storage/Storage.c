@@ -434,9 +434,10 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
     
-    Storage_Estabish_BootSec_Tab(type);
-    Storage_Estabish_SysSec_Tab(type);
-    Storage_Estabish_UserSec_Tab(type);
+    if( !Storage_Estabish_BootSec_Tab(type) || \
+        !Storage_Estabish_SysSec_Tab(type) || \
+        !Storage_Estabish_UserSec_Tab(type))
+        return false;
 
     return true;
 }
