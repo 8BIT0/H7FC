@@ -274,7 +274,7 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
     return true;
 }
 
-static bool Storage_UpdateInfo_Sec(Storage_MediumType_List type, Storage_ParaClassType_List class)
+static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaClassType_List class)
 {
     return false;
 }
