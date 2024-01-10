@@ -445,8 +445,34 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name)
 {
     storage_handle hdl = 0;
+    StorageIO_TypeDef *StorageIO_API = NULL;
 
-    
+    if((name == NULL) || (strlen(name) == 0))
+        return 0;
+
+    if(medium == Internal_Flash)
+    {
+        StorageIO_API = &InternalFlash_IO;
+        switch(class)
+        {
+            case Para_Boot:
+            break;
+
+            case Para_Sys:
+            break;
+
+            case Para_User:
+            break;
+
+            default:
+                return 0;
+        }
+    }
+    else
+    {
+        /* external flash search still in developping */
+        return 0;
+    }
 
     return hdl;
 }
