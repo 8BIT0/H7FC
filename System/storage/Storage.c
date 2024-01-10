@@ -38,10 +38,10 @@ StorageIO_TypeDef InternalFlash_IO = {
     .write = Storage_OnChipFlash_Write,
 };
 
-/* internal function */
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Format(Storage_MediumType_List type);
+static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaClassType_List class, int8_t item_inc, uint32_t nxt_free_block, uint32_t size);
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable);
