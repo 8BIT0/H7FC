@@ -1,6 +1,7 @@
 #ifndef __STORAGE_H
 #define __STORAGE_H
 
+#include <string.h>
 #include "Srv_DataHub.h"
 #include "Bsp_Flash.h"
 #include "Srv_OsCommon.h"
@@ -33,6 +34,8 @@
 #define EXTERNAL_STORAGE_PAGE_TAG "[ExternalFlash Storage]"
 #define INTERNAL_PAGE_TAG_SIZE strlen(INTERNAL_STORAGE_PAGE_TAG)
 #define EXTERNAL_PAGE_TAG_SIZE strlen(EXTERNAL_STORAGE_PAGE_TAG)
+
+#define STORAGE_ITEM_NAME_LEN 53
 #define STORAGE_HEAD_TAG 0xAA
 #define STORAGE_END_TAG 0xBB
 #define STORAGE_SECTION_END_TAG 0xFF1001FF
@@ -56,9 +59,8 @@ typedef struct
 {
     uint8_t head_tag;
     uint8_t class;
-    uint8_t name[49];
+    uint8_t name[STORAGE_ITEM_NAME_LEN];
     uint32_t data_addr;
-    uint32_t next_data_addr;
     uint16_t len;
     uint16_t crc16;
     uint8_t end_tag;
