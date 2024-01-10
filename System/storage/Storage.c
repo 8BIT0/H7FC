@@ -274,6 +274,16 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
     return true;
 }
 
+static bool Storage_UpdateInfo_Sec(Storage_MediumType_List type, Storage_ParaClassType_List class)
+{
+    return false;
+}
+
+static bool Storage_CreateSec(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *tag, uint32_t size)
+{
+    return false;
+}
+
 static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
@@ -378,6 +388,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     uint32_t tab_addr_offset = 0;
     uint16_t crc = 0;
     uint32_t data_sec_addr = 0;
+    uint32_t remain_data_sec_size = 0;
     uint32_t data_sec_size = 0;
 
     switch((uint8_t)type)
@@ -430,11 +441,29 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             if(Info.total_size < (tab_addr_offset - BaseInfo_start_addr))
                 return false;
             
-            data_sec_size = Info.total_size - (tab_addr_offset - BaseInfo_start_addr);
-            if(data_sec_size < (Info.boot_data_sec_size + Info.sys_data_sec_size + Info.user_data_sec_size))
+            remain_data_sec_size = Info.total_size - (tab_addr_offset - BaseInfo_start_addr);
+            data_sec_size += Info.boot_data_sec_size + Storage_ReserveBlock_Size;
+            data_sec_size += Info.sys_data_sec_size + Storage_ReserveBlock_Size;
+            data_sec_size += Info.user_data_sec_size + Storage_ReserveBlock_Size;
+
+            if(remain_data_sec_size < data_sec_size)
                 return false;
 
-            data_sec_addr = 0;
+            Info.remain_size = remain_data_sec_size - data_sec_size;
+            Info.data_sec_size = Info.boot_data_sec_size + Info.sys_data_sec_size + Info.user_data_sec_size;
+
+            /* get data sec addr */
+            Info.boot_data_sec_addr = tab_addr_offset;
+            tab_addr_offset += InternalFlash_BootDataSec_Size;
+            tab_addr_offset += Storage_ReserveBlock_Size;
+
+            Info.sys_data_sec_addr = tab_addr_offset;
+            tab_addr_offset += InternalFlash_SysDataSec_Size;
+            tab_addr_offset += Storage_ReserveBlock_Size;
+
+            Info.user_data_sec_addr = tab_addr_offset;
+            tab_addr_offset += InternalFlash_UserDataSec_Size;
+            tab_addr_offset += Storage_ReserveBlock_Size;
             break;
 
         /* still in developping */
