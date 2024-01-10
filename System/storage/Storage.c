@@ -39,6 +39,7 @@ static bool Storage_Format(Storage_MediumType_List type);
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable);
+static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name);
 
 Storage_TypeDef Storage = {
     .init = Storage_Init,
