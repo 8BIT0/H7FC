@@ -387,8 +387,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
                 return false;
 
             memset(&Info, 0, sizeof(Storage_SectionInfo_TypeDef));
-            memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_S
-            TORAGE_PAGE_TAG));
+            memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
 
             Info.total_size = OnChipFlash_Storage_TotalSize;
 
@@ -403,7 +402,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             Info.boot_free_addr = 0;
             Info.boot_para_size = 0;
             Info.boot_para_num = 0;
-            tab_addr_offset = (Info.boot_tab_addr + Info.boot_tab_size);
+            tab_addr_offset = (Info.boot_tab_addr + Info.boot_tab_size) + Storage_ReserveBlock_Size;
 
             Info.sys_tab_addr = tab_addr_offset;
             Info.sys_tab_size = page_num * OnChipFlash_Storage_TabSize;
@@ -411,7 +410,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             Info.sys_free_addr = 0;
             Info.sys_para_size = 0;
             Info.sys_para_num = 0;
-            tab_addr_offset += Info.sys_tab_size;
+            tab_addr_offset += Info.sys_tab_size + Storage_ReserveBlock_Size;
                 
             Info.user_tab_addr = tab_addr_offset;
             Info.user_tab_size = page_num * OnChipFlash_Storage_TabSize;
@@ -419,7 +418,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             Info.user_free_addr = 0;
             Info.user_para_size = 0;
             Info.user_para_num = 0;
-            tab_addr_offset += Info.user_tab_size;
+            tab_addr_offset += Info.user_tab_size + Storage_ReserveBlock_Size;
 
             /* get the remaining size of rom space has left */
             if(Info.total_size < (tab_addr_offset - BaseInfo_start_addr))
@@ -428,7 +427,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             data_sec_size = Info.total_size - (tab_addr_offset - BaseInfo_start_addr);
             if(data_sec_size < (Info.boot_data_sec_size + Info.sys_data_sec_size + Info.user_data_sec_size))
                 return false;
-                
+
             data_sec_addr = 0;
             break;
 
