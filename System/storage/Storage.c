@@ -279,7 +279,7 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
     return false;
 }
 
-static bool Storage_CreateSec(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *tag, uint32_t size)
+static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *tag, uint32_t size)
 {
     return false;
 }
