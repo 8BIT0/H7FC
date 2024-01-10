@@ -222,6 +222,8 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         if(crc != crc_read)
             return false;
 
+        /* check tab */
+
         return true;
     }
 
@@ -292,7 +294,8 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
             return false;
     }
 
-    if(p_Info->boot_tab_addr && Storage_Clear_Tab(StorageIO_API, p_Info->boot_tab_addr, p_Info->boot_page_num))
+    if( p_Info->boot_tab_addr && \
+        Storage_Clear_Tab(StorageIO_API, p_Info->boot_tab_addr, p_Info->boot_page_num))
     {
     }
 
@@ -323,7 +326,8 @@ static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
             return false;
     }
 
-    if(p_Info->sys_tab_addr && Storage_Clear_Tab(StorageIO_API, p_Info->sys_tab_addr, p_Info->sys_page_num))
+    if( p_Info->sys_tab_addr && \
+        Storage_Clear_Tab(StorageIO_API, p_Info->sys_tab_addr, p_Info->sys_page_num))
     {
     }
 }
@@ -352,7 +356,8 @@ static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
             return false;
     }
 
-    if(p_Info->user_tab_addr && Storage_Clear_Tab(StorageIO_API, p_Info->user_tab_addr, p_Info->user_page_num))
+    if( p_Info->user_tab_addr && \
+        Storage_Clear_Tab(StorageIO_API, p_Info->user_tab_addr, p_Info->user_page_num))
     {
     }
 }
