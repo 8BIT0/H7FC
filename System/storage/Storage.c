@@ -281,9 +281,12 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
     uint8_t page_index = 0;
     uint32_t tab_addr = 0;
-    uint16_t item_per_page = Storage_Tab_MaxItem_Num;
+    Storage_Item_TypeDef item_list[Storage_Tab_MaxItem_Num];
     uint32_t max_capacity = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
+    uint16_t list_index = 0;
+
+    memset(item_list, 0, sizeof(item_list));
 
     if( !Storage_Monitor.init_state || \
         (item_inc != Storage_Increase_Single_Item) || \
@@ -339,13 +342,30 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
     p_SecInfo->para_size += item_inc * size;
 
     /* tab update */
-    page_index = p_SecInfo->para_num / item_per_page;
+    page_index = p_SecInfo->para_num / Storage_Tab_MaxItem_Num;
 
     /* get tab addr */
     tab_addr = p_SecInfo->tab_addr + page_index * OnChipFlash_Storage_TabSize;
 
     if(!StorageIO_API->read(tab_addr, page_data_tmp, OnChipFlash_Storage_TabSize))
         return false;
+
+    memcpy(item_list, page_data_tmp, sizeof(item_list));
+
+    if(item_inc == Storage_Increase_Single_Item)
+    {
+        /* add new item info into tab */
+        for(list_index = 0; list_index < Storage_Tab_MaxItem_Num; list_index ++)
+        {
+            /* find a free slot */
+            if(memcmp(&item_list[list_index], 0, StorageItem_Size) == 0)
+                break;
+        }
+    }
+    else
+    {
+        /* remove item info from tab */
+    }
 
     return false;
 }
