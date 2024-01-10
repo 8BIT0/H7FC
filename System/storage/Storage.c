@@ -282,7 +282,8 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
     uint8_t page_index = 0;
     uint32_t tab_addr = 0;
-    uint16_t item_per_page = OnChipFlash_Storage_TabSize / sizeof(Storage_Item_TypeDef);
+    uint16_t item_per_page = OnChipFlash_Storage_TabSize / StorageItem_Size;
+    uint32_t max_capacity = 0;
 
     if( !Storage_Monitor.init_state || \
         (item_inc != Storage_Increase_Single_Item) || \
@@ -301,14 +302,17 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
         {
             case Para_Boot:
                 p_SecInfo = &Storage_Monitor.internal_info.boot_sec_info;
+                max_capacity = Storage_Monitor.internal_info.boot_sec_info.tab_size / StorageItem_Size;
                 break;
 
             case Para_Sys:
                 p_SecInfo = &Storage_Monitor.internal_info.sys_sec_info;
+                max_capacity = Storage_Max_Capacity;
                 break;
 
             case Para_User:
                 p_SecInfo = &Storage_Monitor.internal_info.user_sec_info;
+                max_capacity = Storage_Max_Capacity;
                 break;
 
             default:
@@ -323,7 +327,7 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
 
     if( ((p_SecInfo->para_num == 0) && \
         (item_inc == Storage_Decrease_Single_Item)) || \
-        ((p_SecInfo->para_num == Storage_Max_Capacity) && \
+        ((p_SecInfo->para_num == max_capacity) && \
         (item_inc == Storage_Increase_Single_Item)))
         return false;
 
