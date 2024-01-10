@@ -21,7 +21,7 @@ static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len);
 
-static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num);
+static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uint32_t tab_num);
 static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type);
 static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type);
 static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type);
@@ -228,11 +228,17 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     return false;
 }
 
-static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num)
+static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uint32_t tab_num)
 {
     uint16_t clear_cnt = 1;
+    uint32_t clear_size = 0;
+    uint32_t clear_remain = 0;
+    uint32_t addr_tmp = 0;
 
-    if( (addr == 0) || (tab_num == 0))
+    if( (addr == 0) || \
+        (tab_num == 0) || \
+        (storage_api == NULL) || \
+        (storage_api->write == NULL))
         return false;
 
     for(uint32_t i = 0; i < tab_num; i++)
@@ -240,13 +246,22 @@ static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num)
         if(sizeof(page_data_tmp) < OnChipFlash_Storage_TabSize)
         {
             clear_cnt = OnChipFlash_Storage_TabSize / sizeof(page_data_tmp);
+            clear_size = sizeof(page_data_tmp);
+            clear_remain = OnChipFlash_Storage_TabSize;
+            addr_tmp = addr;
             if(OnChipFlash_Storage_TabSize % sizeof(page_data_tmp))
                 clear_cnt += 1;
         }
     
         for(uint8_t c = 0; c < clear_cnt; c++)
         {
+            memset(page_data_tmp, 0, clear_size);
+            storage_api->write(addr_tmp, page_data_tmp, clear_size);
 
+            clear_remain -= clear_size;
+            if(clear_remain <= clear_size)
+                clear_size = clear_remain;
+            addr_tmp += clear_size;
         }
     }
 
@@ -277,7 +292,7 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
             return false;
     }
 
-    if(p_Info->boot_tab_addr && Storage_Clear_Tab(p_Info->boot_tab_addr, p_Info->boot_page_num))
+    if(p_Info->boot_tab_addr && Storage_Clear_Tab(StorageIO_API, p_Info->boot_tab_addr, p_Info->boot_page_num))
     {
     }
 
@@ -308,7 +323,7 @@ static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
             return false;
     }
 
-    if(p_Info->sys_tab_addr && Storage_Clear_Tab(p_Info->sys_tab_addr, p_Info->sys_page_num))
+    if(p_Info->sys_tab_addr && Storage_Clear_Tab(StorageIO_API, p_Info->sys_tab_addr, p_Info->sys_page_num))
     {
     }
 }
@@ -337,7 +352,7 @@ static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
             return false;
     }
 
-    if(p_Info->user_tab_addr && Storage_Clear_Tab(p_Info->user_tab_addr, p_Info->user_page_num))
+    if(p_Info->user_tab_addr && Storage_Clear_Tab(StorageIO_API, p_Info->user_tab_addr, p_Info->user_page_num))
     {
     }
 }
