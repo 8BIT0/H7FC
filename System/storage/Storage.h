@@ -62,38 +62,27 @@ typedef struct
 
 typedef struct
 {
+    uint32_t tab_addr;
+    uint32_t data_sec_addr;
+    uint32_t data_sec_size;
+    uint32_t page_num;
+    uint32_t tab_size;
+    uint32_t free_addr;
+    uint32_t para_size;
+    uint32_t para_num;
+} Storage_BaseSecInfo_TypeDef;
+
+typedef struct
+{
     uint8_t tag[32];
 
     uint32_t total_size;
     uint32_t remain_size;
     uint32_t data_sec_size;
 
-    uint32_t boot_tab_addr;
-    uint32_t boot_data_sec_addr;
-    uint32_t boot_data_sec_size;
-    uint32_t boot_page_num;
-    uint32_t boot_tab_size;
-    uint32_t boot_free_addr;
-    uint32_t boot_para_size;
-    uint32_t boot_para_num;
-
-    uint32_t sys_tab_addr;
-    uint32_t sys_data_sec_addr;
-    uint32_t sys_data_sec_size;
-    uint32_t sys_page_num;
-    uint32_t sys_tab_size;
-    uint32_t sys_free_addr;
-    uint32_t sys_para_size;
-    uint32_t sys_para_num;
-
-    uint32_t user_tab_addr;
-    uint32_t user_data_sec_addr;
-    uint32_t user_data_sec_size;
-    uint32_t user_page_num;
-    uint32_t user_tab_size;
-    uint32_t user_free_addr;
-    uint32_t user_para_size;
-    uint32_t user_para_num;
+    Storage_BaseSecInfo_TypeDef boot_sec_info;
+    Storage_BaseSecInfo_TypeDef sys_sec_info;
+    Storage_BaseSecInfo_TypeDef user_sec_info;
 } Storage_SectionInfo_TypeDef;
 
 typedef union
