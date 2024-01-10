@@ -20,7 +20,7 @@
 #define From_Start_Address 0
 
 #define BootSection_Block_Size (1024 * 4)
-#define BootTab_Num 2
+#define BootTab_Num 1
 
 #define Storage_Max_Capacity 256
 
@@ -50,10 +50,12 @@ typedef enum
 typedef struct
 {
     uint8_t head_tag;
-    uint8_t name[52];
+    uint8_t class;
+    uint8_t name[49];
     uint32_t data_addr;
     uint32_t next_data_addr;
     uint16_t len;
+    uint16_t crc16;
     uint8_t end_tag;
 } Storage_Item_TypeDef;
 
@@ -63,21 +65,21 @@ typedef struct
 
     uint32_t boot_tab_addr;
     uint32_t boot_page_num;
-    uint32_t boot_block_size;
+    uint32_t boot_tab_size;
     uint32_t boot_free_addr;
     uint32_t boot_para_size;
     uint32_t boot_para_num;
 
     uint32_t sys_tab_addr;
     uint32_t sys_page_num;
-    uint32_t sys_block_size;
+    uint32_t sys_tab_size;
     uint32_t sys_free_addr;
     uint32_t sys_para_size;
     uint32_t sys_para_num;
 
     uint32_t user_tab_addr;
     uint32_t user_page_num;
-    uint32_t user_block_size;
+    uint32_t user_tab_size;
     uint32_t user_free_addr;
     uint32_t user_para_size;
     uint32_t user_para_num;

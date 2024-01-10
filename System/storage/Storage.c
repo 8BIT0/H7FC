@@ -393,7 +393,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
                 return false;
             
             Info.boot_tab_addr = BaseInfo_start_addr + OnChipFlash_Storage_InfoPageSize;
-            Info.boot_block_size = BootSection_Block_Size;
+            Info.boot_tab_size = BootSection_Block_Size * BootTab_Num;
             Info.boot_page_num = BootTab_Num;
             Info.boot_free_addr = 0;
             Info.boot_para_size = 0;
@@ -401,15 +401,15 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             tab_addr_offset = (Info.boot_tab_addr + Info.boot_page_num * OnChipFlash_Storage_TabSize);
 
             Info.sys_tab_addr = tab_addr_offset;
-            Info.sys_block_size = page_num * OnChipFlash_Storage_TabSize;
+            Info.sys_tab_size = page_num * OnChipFlash_Storage_TabSize;
             Info.sys_page_num = page_num;
             Info.sys_free_addr = 0;
             Info.sys_para_size = 0;
             Info.sys_para_num = 0;
-            tab_addr_offset += Info.sys_block_size;
+            tab_addr_offset += Info.sys_tab_size;
                 
             Info.user_tab_addr = tab_addr_offset;
-            Info.user_block_size = page_num * OnChipFlash_Storage_TabSize;
+            Info.user_tab_size = page_num * OnChipFlash_Storage_TabSize;
             Info.user_page_num = page_num;
             Info.user_free_addr = 0;
             Info.user_para_size = 0;
