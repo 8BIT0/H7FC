@@ -4,6 +4,9 @@
 #include "Srv_OsCommon.h"
 
 #define StorageItem_Size sizeof(Storage_Item_TypeDef)
+#define InternalFlash_BootDataSec_Size (4 Kb)
+#define InternalFlash_SysDataSec_Size (16 Kb)
+#define InternalFlash_UserDataSec_Size (32 Kb)
 
 /* flash io object */
 typedef struct
@@ -399,6 +402,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             Info.boot_tab_addr = BaseInfo_start_addr + OnChipFlash_Storage_InfoPageSize;
             Info.boot_tab_size = BootSection_Block_Size * BootTab_Num;
             Info.boot_page_num = BootTab_Num;
+            Info.boot_data_sec_size = InternalFlash_BootDataSec_Size;
             Info.boot_free_addr = 0;
             Info.boot_para_size = 0;
             Info.boot_para_num = 0;
@@ -406,6 +410,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
             Info.sys_tab_addr = tab_addr_offset;
             Info.sys_tab_size = page_num * OnChipFlash_Storage_TabSize;
+            Info.sys_data_sec_size = InternalFlash_SysDataSec_Size;
             Info.sys_page_num = page_num;
             Info.sys_free_addr = 0;
             Info.sys_para_size = 0;
@@ -414,6 +419,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
                 
             Info.user_tab_addr = tab_addr_offset;
             Info.user_tab_size = page_num * OnChipFlash_Storage_TabSize;
+            Info.user_data_sec_size = InternalFlash_UserDataSec_Size;
             Info.user_page_num = page_num;
             Info.user_free_addr = 0;
             Info.user_para_size = 0;

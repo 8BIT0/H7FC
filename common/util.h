@@ -5,6 +5,9 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define Kb * 1024
+#define Mb * (1024 Kb)
+
 #define UTIL_SET_BIT(x) (1 << x)
 #define DEG_2_REG(x) (x / 57.29578f)
 #define REG_2_DEG(x) (x * 57.29578f)
