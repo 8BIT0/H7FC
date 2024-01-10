@@ -297,15 +297,15 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
         switch((uint8_t) class)
         {
             case Para_Boot:
-                p_SecInfo = &Storage_Monitor.boot_sec_info;
+                p_SecInfo = &Storage_Monitor.internal_info.boot_sec_info;
                 break;
 
             case Para_Sys:
-                p_SecInfo = &Storage_Monitor.sys_sec_info;
+                p_SecInfo = &Storage_Monitor.internal_info.sys_sec_info;
                 break;
 
             case Para_User:
-                p_SecInfo = &Storage_Monitor.user_sec_info;
+                p_SecInfo = &Storage_Monitor.internal_info.user_sec_info;
                 break;
 
             default:
@@ -317,6 +317,16 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
         /* still in developping */
         return false;
     }
+
+    if( ((p_SecInfo->para_num == 0) && \
+        (item_inc == Storage_Decrease_Single_Item)) || \
+        ((p_SecInfo->para_num == Storage_Max_Capacity) && \
+        (item_inc == Storage_Increase_Single_Item)))
+        return false;
+
+    p_SecInfo->para_num += item_inc;
+    p_SecInfo->para_size += item_inc * size;
+
 
     return false;
 }
