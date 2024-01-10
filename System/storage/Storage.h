@@ -63,6 +63,8 @@ typedef struct
 {
     uint8_t tag[32];
 
+    uint32_t total_size; 
+
     uint32_t boot_tab_addr;
     uint32_t boot_page_num;
     uint32_t boot_tab_size;

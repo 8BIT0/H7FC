@@ -374,6 +374,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     uint32_t user_tab_start_addr = 0;
     uint32_t tab_addr_offset = 0;
     uint16_t crc = 0;
+    uint32_t data_sec_size = 0;
 
     switch((uint8_t)type)
     {
@@ -386,6 +387,8 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
             memset(&Info, 0, sizeof(Storage_SectionInfo_TypeDef));
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
+
+            Info.total_size = OnChipFlash_Storage_TotalSize;
 
             BaseInfo_start_addr = From_Start_Address; 
             page_num = Storage_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size);
