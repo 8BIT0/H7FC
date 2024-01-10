@@ -279,6 +279,8 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
 
 static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaClassType_List class, int8_t item_inc, uint32_t nxt_free_block, uint32_t size)
 {
+    Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
+
     if( !Storage_Monitor.init_state || \
         (item_inc != Storage_Increase_Single_Item) || \
         (item_inc != Storage_Decrease_Single_Item) || 
@@ -292,7 +294,23 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
             !Storage_Monitor.module_init_reg.bit.internal)
             return false;
 
-        
+        switch((uint8_t) class)
+        {
+            case Para_Boot:
+                p_SecInfo = &Storage_Monitor.boot_sec_info;
+                break;
+
+            case Para_Sys:
+                p_SecInfo = &Storage_Monitor.sys_sec_info;
+                break;
+
+            case Para_User:
+                p_SecInfo = &Storage_Monitor.user_sec_info;
+                break;
+
+            default:
+                return false;
+        }
     }
     else if(type == External_Flash)
     {
