@@ -3,7 +3,6 @@
 #include "util.h"
 #include "Srv_OsCommon.h"
 
-#define StorageItem_Size sizeof(Storage_Item_TypeDef)
 #define InternalFlash_BootDataSec_Size (4 Kb)
 #define InternalFlash_SysDataSec_Size (16 Kb)
 #define InternalFlash_UserDataSec_Size (32 Kb)
@@ -282,8 +281,9 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
     uint8_t page_index = 0;
     uint32_t tab_addr = 0;
-    uint16_t item_per_page = OnChipFlash_Storage_TabSize / StorageItem_Size;
+    uint16_t item_per_page = Storage_Tab_MaxItem_Num;
     uint32_t max_capacity = 0;
+    StorageIO_TypeDef *StorageIO_API = NULL;
 
     if( !Storage_Monitor.init_state || \
         (item_inc != Storage_Increase_Single_Item) || \
@@ -296,6 +296,10 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
     {
         if( !Storage_Monitor.module_enable_reg.bit.internal || \
             !Storage_Monitor.module_init_reg.bit.internal)
+            return false;
+
+        StorageIO_API = &InternalFlash_IO;
+        if((StorageIO_API->read == NULL) || (StorageIO_API->write == NULL))
             return false;
 
         switch((uint8_t) class)
@@ -339,6 +343,9 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
 
     /* get tab addr */
     tab_addr = p_SecInfo->tab_addr + page_index * OnChipFlash_Storage_TabSize;
+
+    if(!StorageIO_API->read(tab_addr, page_data_tmp, OnChipFlash_Storage_TabSize))
+        return false;
 
     return false;
 }

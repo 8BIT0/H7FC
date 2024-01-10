@@ -4,6 +4,7 @@
 #include "Srv_DataHub.h"
 #include "Bsp_Flash.h"
 #include "Srv_OsCommon.h"
+#include "util.h"
 
 #define Format_Retry_Cnt 5
 
@@ -11,19 +12,22 @@
 #define OnChipFlash_Storage_TotalSize FLASH_SECTOR_7_SIZE
 #define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 
-#define OnChipFlash_MaxRWSize (1024 * 2)
-#define OnChipFlash_Storage_TabSize (1024 * 4)
-#define OnChipFlash_Storage_InfoPageSize 1024
+#define OnChipFlash_MaxRWSize (2 Kb)
+#define OnChipFlash_Storage_TabSize (4 Kb)
+#define OnChipFlash_Storage_InfoPageSize (1 Kb)
 
 #define ExternalFlash_Storage_Address 0
 
 #define From_Start_Address 0
 
-#define BootSection_Block_Size (1024 * 4)
+#define BootSection_Block_Size (4 Kb)
 #define BootTab_Num 1
 
 #define Storage_Max_Capacity 256
 #define Storage_ReserveBlock_Size 128
+
+#define StorageItem_Size sizeof(Storage_Item_TypeDef)
+#define Storage_Tab_MaxItem_Num (OnChipFlash_Storage_TabSize / StorageItem_Size)
 
 #define INTERNAL_STORAGE_PAGE_TAG "[InternalFlash Storage]"
 #define EXTERNAL_STORAGE_PAGE_TAG "[ExternalFlash Storage]"
