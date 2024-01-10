@@ -280,6 +280,9 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
 static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaClassType_List class, int8_t item_inc, uint32_t nxt_free_block, uint32_t size)
 {
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
+    uint8_t page_index = 0;
+    uint32_t tab_addr = 0;
+    uint16_t item_per_page = OnChipFlash_Storage_TabSize / sizeof(Storage_Item_TypeDef);
 
     if( !Storage_Monitor.init_state || \
         (item_inc != Storage_Increase_Single_Item) || \
@@ -327,6 +330,11 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
     p_SecInfo->para_num += item_inc;
     p_SecInfo->para_size += item_inc * size;
 
+    /* tab update */
+    page_index = p_SecInfo->para_num / item_per_page;
+
+    /* get tab addr */
+    tab_addr = p_SecInfo->tab_addr + page_index * OnChipFlash_Storage_TabSize;
 
     return false;
 }
