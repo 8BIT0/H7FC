@@ -374,6 +374,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     uint32_t user_tab_start_addr = 0;
     uint32_t tab_addr_offset = 0;
     uint16_t crc = 0;
+    uint32_t data_sec_addr = 0;
     uint32_t data_sec_size = 0;
 
     switch((uint8_t)type)
@@ -390,7 +391,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
             Info.total_size = OnChipFlash_Storage_TotalSize;
 
-            BaseInfo_start_addr = From_Start_Address; 
+            BaseInfo_start_addr = From_Start_Address;
             page_num = Storage_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size);
             if(page_num == 0)
                 return false;
@@ -417,6 +418,10 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             Info.user_free_addr = 0;
             Info.user_para_size = 0;
             Info.user_para_num = 0;
+
+            /* get the remaining size of rom space has left */
+            data_sec_addr = 0;
+            data_sec_size = 0;
             break;
 
         /* still in developping */

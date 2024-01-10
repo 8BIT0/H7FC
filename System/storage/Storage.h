@@ -66,6 +66,8 @@ typedef struct
     uint32_t total_size; 
 
     uint32_t boot_tab_addr;
+    uint32_t boot_data_sec_addr;
+    uint32_t boot_data_sec_size;
     uint32_t boot_page_num;
     uint32_t boot_tab_size;
     uint32_t boot_free_addr;
@@ -73,6 +75,8 @@ typedef struct
     uint32_t boot_para_num;
 
     uint32_t sys_tab_addr;
+    uint32_t sys_data_sec_addr;
+    uint32_t sys_data_sec_size;
     uint32_t sys_page_num;
     uint32_t sys_tab_size;
     uint32_t sys_free_addr;
@@ -80,6 +84,8 @@ typedef struct
     uint32_t sys_para_num;
 
     uint32_t user_tab_addr;
+    uint32_t user_data_sec_addr;
+    uint32_t user_data_sec_size;
     uint32_t user_page_num;
     uint32_t user_tab_size;
     uint32_t user_free_addr;
