@@ -115,6 +115,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(Storage_ModuleState_TypeDef enable);
+    storage_handle (*search)(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name);
     bool (*save)(storage_handle hdl, uint8_t *p_data, uint16_t size);
     bool (*get)(storage_handle hdl, uint8_t *p_data, uint16_t size);
     bool (*clear)(storage_handle hdl);

@@ -442,6 +442,15 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     return true;
 }
 
+static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name)
+{
+    storage_handle hdl = 0;
+
+    
+
+    return hdl;
+}
+
 /************************************************** Internal Flash IO API Section ************************************************/
 static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
