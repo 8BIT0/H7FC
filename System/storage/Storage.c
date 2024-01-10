@@ -444,6 +444,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
 static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name)
 {
+    uint32_t base_addr = 0;
     storage_handle hdl = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
 
@@ -456,13 +457,16 @@ static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_Par
         switch(class)
         {
             case Para_Boot:
-            break;
+                base_addr = Storage_Monitor.internal_info.boot_tab_addr;
+                break;
 
             case Para_Sys:
-            break;
+                base_addr = Storage_Monitor.internal_info.sys_tab_addr;
+                break;
 
             case Para_User:
-            break;
+                base_addr = Storage_Monitor.internal_info.user_tab_addr;
+                break;
 
             default:
                 return 0;
