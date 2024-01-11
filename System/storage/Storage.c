@@ -297,9 +297,10 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     Storage_Item_TypeDef *item_list = NULL;
     uint32_t max_capacity = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_FlashInfo_TypeDef *p_Flash = NULL;
     uint16_t list_index = 0;
     Storage_Item_TypeDef *p_Item = NULL;
-    uint16_t item_crc = 0;
+    uint16_t crc = 0;
     Storage_FreeSlot_TypeDef free_slot;
 
     if( !Storage_Monitor.init_state || \
@@ -319,31 +320,33 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
         if((StorageIO_API->read == NULL) || (StorageIO_API->write == NULL))
             return false;
 
-        switch((uint8_t) class)
-        {
-            case Para_Boot:
-                p_SecInfo = &Storage_Monitor.internal_info.boot_sec;
-                max_capacity = Storage_Monitor.internal_info.boot_sec.tab_size / StorageItem_Size;
-                break;
-
-            case Para_Sys:
-                p_SecInfo = &Storage_Monitor.internal_info.sys_sec;
-                max_capacity = Storage_Max_Capacity;
-                break;
-
-            case Para_User:
-                p_SecInfo = &Storage_Monitor.internal_info.user_sec;
-                max_capacity = Storage_Max_Capacity;
-                break;
-
-            default:
-                return false;
-        }
+        p_Flash = &Storage_Monitor.internal_info;
     }
     else if(type == External_Flash)
     {
         /* still in developping */
         return false;
+    }
+        
+    switch((uint8_t) class)
+    {
+        case Para_Boot:
+            p_SecInfo = &p_Flash->boot_sec;
+            max_capacity = p_Flash->boot_sec.tab_size / StorageItem_Size;
+            break;
+
+        case Para_Sys:
+            p_SecInfo = &p_Flash->sys_sec;
+            max_capacity = Storage_Max_Capacity;
+            break;
+
+        case Para_User:
+            p_SecInfo = &p_Flash->user_sec;
+            max_capacity = Storage_Max_Capacity;
+            break;
+
+        default:
+            return false;
     }
 
     if(p_SecInfo->para_num == max_capacity)
@@ -390,8 +393,8 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
             strcpy(p_Item->name, name);
 
             p_Item->data_addr = p_SecInfo->free_addr;
-            item_crc = Common_CRC16(p_Item, sizeof(Storage_Item_TypeDef));
-            p_Item->crc16 = item_crc;
+            crc = Common_CRC16(p_Item, sizeof(Storage_Item_TypeDef));
+            p_Item->crc16 = crc;
             
             /* write new item to tab */
             if(!StorageIO_API->write(tab_addr, page_data_tmp, sizeof(page_data_tmp)))
@@ -400,12 +403,30 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
             break;
         }
     }
-
-    /* update free block in tab */
     
-    /* update storage base info section */
+    /* update total free space in tab */
+    free_slot.total_size -= size;
+ 
+    if(free_slot.cur_slot_size >= size)
+    {
+        /* located to the free address in this section */
+        p_SecInfo->free_addr += size;
+        free_slot.cur_slot_size -= size;
+    }
+    else
+    {
 
-    return false;
+    }
+   
+    /* write base info to info section */
+    memcpy(page_data_tmp, p_Flash, sizeof(Storage_FlashInfo_TypeDef));
+    crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize - sizeof(crc));
+    memcpy(&page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
+
+    if(!StorageIO_API->write(From_Start_Address, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+        return false;
+
+    return true;
 }
 
 static bool Storage_Estabish_Tab(Storage_MediumType_List type, Storage_ParaClassType_List class)
