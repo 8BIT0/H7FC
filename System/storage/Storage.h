@@ -38,7 +38,8 @@
 #define STORAGE_ITEM_NAME_LEN 53
 #define STORAGE_HEAD_TAG 0xAA
 #define STORAGE_END_TAG 0xBB
-#define STORAGE_SECTION_END_TAG 0xFF1001FF
+#define STORAGE_SLOT_HEAD_TAG 0xEF0110EF
+#define STORAGE_SLOT_END_TAG 0xFE1001FE
 
 typedef uint32_t storage_handle;
 
@@ -65,6 +66,17 @@ typedef struct
     uint16_t crc16;
     uint8_t end_tag;
 } Storage_Item_TypeDef;
+
+typedef struct
+{
+    uint32_t header;
+    uint8_t name[STORAGE_ITEM_NAME_LEN];
+    uint32_t total_data_size;
+    uint32_t cur_slot_size;
+    uint8_t *p_data;
+    uint16_t cur_slot_crc;
+    uint32_t ender;
+} Storage_DataSlot_TypeDef;
 
 typedef struct
 {

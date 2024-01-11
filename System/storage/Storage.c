@@ -375,6 +375,10 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
                 item_crc = Common_CRC16(p_Item, sizeof(Storage_Item_TypeDef));
                 p_Item->crc16 = item_crc;
                 
+                /* write new item to tab */
+                if(!StorageIO_API->write(tab_addr, page_data_tmp, sizeof(page_data_tmp)))
+                    return false;
+
                 break;
             }
         }
