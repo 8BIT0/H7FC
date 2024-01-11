@@ -74,9 +74,17 @@ typedef struct
     uint32_t total_data_size;
     uint32_t cur_slot_size;
     uint8_t *p_data;
-    uint16_t cur_slot_crc;
+    uint16_t slot_crc;
     uint32_t ender;
 } Storage_DataSlot_TypeDef;
+
+typedef struct
+{
+    uint32_t header;
+    uint32_t total_size;
+    uint32_t cur_slot_size;
+    uint32_t ender;
+} Storage_FreeSlot_TypeDef;
 
 typedef struct
 {
