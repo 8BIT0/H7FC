@@ -106,10 +106,10 @@ typedef struct
     uint32_t remain_size;
     uint32_t data_sec_size;
 
-    Storage_BaseSecInfo_TypeDef boot_sec_info;
-    Storage_BaseSecInfo_TypeDef sys_sec_info;
-    Storage_BaseSecInfo_TypeDef user_sec_info;
-} Storage_SectionInfo_TypeDef;
+    Storage_BaseSecInfo_TypeDef boot_sec;
+    Storage_BaseSecInfo_TypeDef sys_sec;
+    Storage_BaseSecInfo_TypeDef user_sec;
+} Storage_FlashInfo_TypeDef;
 
 typedef union
 {
@@ -136,8 +136,8 @@ typedef struct
     bool init_state;
     uint8_t inuse;
 
-    Storage_SectionInfo_TypeDef internal_info;
-    Storage_SectionInfo_TypeDef external_info;
+    Storage_FlashInfo_TypeDef internal_info;
+    Storage_FlashInfo_TypeDef external_info;
 } Storage_Monitor_TypeDef;
 
 typedef struct

@@ -24,9 +24,7 @@ static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uin
 static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len);
 
 static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uint32_t tab_num);
-static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type);
-static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type);
-static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type);
+static bool Storage_Estabish_Tab(Storage_MediumType_List type, Storage_ParaClassType_List class);
 
 StorageIO_TypeDef InternalFlash_IO = {
     .erase = Storage_OnChipFlash_Erase,
@@ -177,7 +175,7 @@ static bool Storage_Format(Storage_MediumType_List type)
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_SectionInfo_TypeDef *p_Info = NULL;
+    Storage_FlashInfo_TypeDef *p_Info = NULL;
     uint32_t base_addr = 0;
     uint16_t crc = 0;
     uint16_t crc_read = 0;
@@ -192,7 +190,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             memcpy(flash_tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
             base_addr = OnChipFlash_Storage_StartAddress;
             p_Info = &Storage_Monitor.internal_info;
-            memset(p_Info, 0, sizeof(Storage_SectionInfo_TypeDef));
+            memset(p_Info, 0, sizeof(Storage_FlashInfo_TypeDef));
             break;
 
         /* still in developping */
@@ -206,17 +204,17 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
                            sizeof(page_data_tmp)))
     {
         /* check internal storage tag */
-        memcpy(p_Info, page_data_tmp, sizeof(Storage_SectionInfo_TypeDef));
+        memcpy(p_Info, page_data_tmp, sizeof(Storage_FlashInfo_TypeDef));
 
         /* check storage tag */
         /* check boot / sys / user  start addr */
         if( (strcmp(p_Info->tag, flash_tag) != 0) || \
-            (p_Info->boot_sec_info.tab_addr == 0) || \
-            (p_Info->sys_sec_info.tab_addr == 0) || \
-            (p_Info->user_sec_info.tab_addr == 0) || \
-            (p_Info->boot_sec_info.tab_addr == p_Info->sys_sec_info.tab_addr) || \
-            (p_Info->boot_sec_info.tab_addr == p_Info->user_sec_info.tab_addr) || \
-            (p_Info->sys_sec_info.tab_addr == p_Info->user_sec_info.tab_addr))
+            (p_Info->boot_sec.tab_addr == 0) || \
+            (p_Info->sys_sec.tab_addr == 0) || \
+            (p_Info->user_sec.tab_addr == 0) || \
+            (p_Info->boot_sec.tab_addr == p_Info->sys_sec.tab_addr) || \
+            (p_Info->boot_sec.tab_addr == p_Info->user_sec.tab_addr) || \
+            (p_Info->sys_sec.tab_addr == p_Info->user_sec.tab_addr))
             return false;
 
         /* get crc from storage baseinfo section check crc value */
@@ -323,17 +321,17 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
         switch((uint8_t) class)
         {
             case Para_Boot:
-                p_SecInfo = &Storage_Monitor.internal_info.boot_sec_info;
-                max_capacity = Storage_Monitor.internal_info.boot_sec_info.tab_size / StorageItem_Size;
+                p_SecInfo = &Storage_Monitor.internal_info.boot_sec;
+                max_capacity = Storage_Monitor.internal_info.boot_sec.tab_size / StorageItem_Size;
                 break;
 
             case Para_Sys:
-                p_SecInfo = &Storage_Monitor.internal_info.sys_sec_info;
+                p_SecInfo = &Storage_Monitor.internal_info.sys_sec;
                 max_capacity = Storage_Max_Capacity;
                 break;
 
             case Para_User:
-                p_SecInfo = &Storage_Monitor.internal_info.user_sec_info;
+                p_SecInfo = &Storage_Monitor.internal_info.user_sec;
                 max_capacity = Storage_Max_Capacity;
                 break;
 
@@ -398,9 +396,10 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     return false;
 }
 
-static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
+static bool Storage_Estabish_Tab(Storage_MediumType_List type, Storage_ParaClassType_List class)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
     uint16_t clear_cnt = 0;
     uint32_t clear_byte = 0;
@@ -417,10 +416,28 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
                 (StorageIO_API->write == NULL))
                 return false;
 
-            p_SecInfo = &Storage_Monitor.internal_info.boot_sec_info;
+            p_Flash = &Storage_Monitor.internal_info;
             break;
 
         case External_Flash:
+        default:
+            return false;
+    }
+
+    switch((uint8_t) class)
+    {
+        case Para_Boot:
+            p_SecInfo = &p_Flash->boot_sec;
+            break;
+
+        case Para_Sys:
+            p_SecInfo = &p_Flash->sys_sec;
+            break;
+
+        case Para_User:
+            p_SecInfo = &p_Flash->user_sec;
+            break;
+
         default:
             return false;
     }
@@ -456,87 +473,11 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
     return false;
 }
 
-static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
-{
-    StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
- 
-    switch((uint8_t) type)
-    {
-        case Internal_Flash:
-            StorageIO_API = &InternalFlash_IO;
-            if( (!Storage_Monitor.module_init_reg.bit.internal) || \
-                (StorageIO_API->erase == NULL) || \
-                (StorageIO_API->read  == NULL) || \
-                (StorageIO_API->write == NULL))
-                return false;
-
-            p_SecInfo = &Storage_Monitor.internal_info.sys_sec_info;
-            break;
-
-        case External_Flash:
-        default:
-            return false;
-    }
-
-    if( p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
-    {
-        /* clear sys data section */
-        if( (p_SecInfo->data_sec_addr == 0) || \
-            !StorageIO_API->erase(p_SecInfo->data_sec_addr, p_SecInfo->data_sec_size))
-            return false;
-        
-        /* write 0 to data section */
-
-        return true;
-    }
-
-    return false;
-}
-
-static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
-{
-    StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
-
-    switch((uint8_t) type)
-    {
-        case Internal_Flash:
-            StorageIO_API = &InternalFlash_IO;
-            if( (!Storage_Monitor.module_init_reg.bit.internal) || \
-                (StorageIO_API->erase == NULL) || \
-                (StorageIO_API->read  == NULL) || \
-                (StorageIO_API->write == NULL))
-                return false;
-
-            p_SecInfo = &Storage_Monitor.internal_info.user_sec_info;
-            break;
-
-        case External_Flash:
-        default:
-            return false;
-    }
-
-    if( p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
-    {
-        /* clear user data section */
-        if( (p_SecInfo->data_sec_addr == 0) || \
-            !StorageIO_API->erase(p_SecInfo->data_sec_addr, p_SecInfo->data_sec_size))
-            return false;
-
-        /* write 0 to data section */
-
-        return true;
-    }
-
-    return false;
-}
-
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     uint32_t page_num = 0;
-    Storage_SectionInfo_TypeDef Info;
+    Storage_FlashInfo_TypeDef Info;
     uint32_t BaseInfo_start_addr = 0;
     uint32_t boot_tab_start_addr = 0;
     uint32_t sys_tab_start_addr = 0;
@@ -556,7 +497,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
                 (StorageIO_API->write == NULL))
                 return false;
 
-            memset(&Info, 0, sizeof(Storage_SectionInfo_TypeDef));
+            memset(&Info, 0, sizeof(Storage_FlashInfo_TypeDef));
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
 
             Info.total_size = OnChipFlash_Storage_TotalSize;
@@ -566,61 +507,61 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             if(page_num == 0)
                 return false;
             
-            Info.boot_sec_info.tab_addr = BaseInfo_start_addr + OnChipFlash_Storage_InfoPageSize;
-            Info.boot_sec_info.tab_size = BootSection_Block_Size * BootTab_Num;
-            Info.boot_sec_info.page_num = BootTab_Num;
-            Info.boot_sec_info.data_sec_size = InternalFlash_BootDataSec_Size;
-            Info.boot_sec_info.para_size = 0;
-            Info.boot_sec_info.para_num = 0;
-            tab_addr_offset = (Info.boot_sec_info.tab_addr + Info.boot_sec_info.tab_size) + Storage_ReserveBlock_Size;
+            Info.boot_sec.tab_addr = BaseInfo_start_addr + OnChipFlash_Storage_InfoPageSize;
+            Info.boot_sec.tab_size = BootSection_Block_Size * BootTab_Num;
+            Info.boot_sec.page_num = BootTab_Num;
+            Info.boot_sec.data_sec_size = InternalFlash_BootDataSec_Size;
+            Info.boot_sec.para_size = 0;
+            Info.boot_sec.para_num = 0;
+            tab_addr_offset = (Info.boot_sec.tab_addr + Info.boot_sec.tab_size) + Storage_ReserveBlock_Size;
 
-            Info.sys_sec_info.tab_addr = tab_addr_offset;
-            Info.sys_sec_info.tab_size = page_num * OnChipFlash_Storage_TabSize;
-            Info.sys_sec_info.data_sec_size = InternalFlash_SysDataSec_Size;
-            Info.sys_sec_info.page_num = page_num;
-            Info.sys_sec_info.para_size = 0;
-            Info.sys_sec_info.para_num = 0;
-            tab_addr_offset += Info.sys_sec_info.tab_size + Storage_ReserveBlock_Size;
+            Info.sys_sec.tab_addr = tab_addr_offset;
+            Info.sys_sec.tab_size = page_num * OnChipFlash_Storage_TabSize;
+            Info.sys_sec.data_sec_size = InternalFlash_SysDataSec_Size;
+            Info.sys_sec.page_num = page_num;
+            Info.sys_sec.para_size = 0;
+            Info.sys_sec.para_num = 0;
+            tab_addr_offset += Info.sys_sec.tab_size + Storage_ReserveBlock_Size;
                 
-            Info.user_sec_info.tab_addr = tab_addr_offset;
-            Info.user_sec_info.tab_size = page_num * OnChipFlash_Storage_TabSize;
-            Info.user_sec_info.data_sec_size = InternalFlash_UserDataSec_Size;
-            Info.user_sec_info.page_num = page_num;
-            Info.user_sec_info.para_size = 0;
-            Info.user_sec_info.para_num = 0;
-            tab_addr_offset += Info.user_sec_info.tab_size + Storage_ReserveBlock_Size;
+            Info.user_sec.tab_addr = tab_addr_offset;
+            Info.user_sec.tab_size = page_num * OnChipFlash_Storage_TabSize;
+            Info.user_sec.data_sec_size = InternalFlash_UserDataSec_Size;
+            Info.user_sec.page_num = page_num;
+            Info.user_sec.para_size = 0;
+            Info.user_sec.para_num = 0;
+            tab_addr_offset += Info.user_sec.tab_size + Storage_ReserveBlock_Size;
 
             /* get the remaining size of rom space has left */
             if(Info.total_size < (tab_addr_offset - BaseInfo_start_addr))
                 return false;
             
             remain_data_sec_size = Info.total_size - (tab_addr_offset - BaseInfo_start_addr);
-            data_sec_size += Info.boot_sec_info.data_sec_size + Storage_ReserveBlock_Size;
-            data_sec_size += Info.sys_sec_info.data_sec_size + Storage_ReserveBlock_Size;
-            data_sec_size += Info.user_sec_info.data_sec_size + Storage_ReserveBlock_Size;
+            data_sec_size += Info.boot_sec.data_sec_size + Storage_ReserveBlock_Size;
+            data_sec_size += Info.sys_sec.data_sec_size + Storage_ReserveBlock_Size;
+            data_sec_size += Info.user_sec.data_sec_size + Storage_ReserveBlock_Size;
 
             if(remain_data_sec_size < data_sec_size)
                 return false;
 
             Info.remain_size = remain_data_sec_size - data_sec_size;
-            Info.data_sec_size = Info.boot_sec_info.data_sec_size + Info.sys_sec_info.data_sec_size + Info.user_sec_info.data_sec_size;
+            Info.data_sec_size = Info.boot_sec.data_sec_size + Info.sys_sec.data_sec_size + Info.user_sec.data_sec_size;
 
             /* get data sec addr */
-            Info.boot_sec_info.data_sec_addr = tab_addr_offset;
+            Info.boot_sec.data_sec_addr = tab_addr_offset;
             tab_addr_offset += InternalFlash_BootDataSec_Size;
             tab_addr_offset += Storage_ReserveBlock_Size;
 
-            Info.sys_sec_info.data_sec_addr = tab_addr_offset;
+            Info.sys_sec.data_sec_addr = tab_addr_offset;
             tab_addr_offset += InternalFlash_SysDataSec_Size;
             tab_addr_offset += Storage_ReserveBlock_Size;
 
-            Info.user_sec_info.data_sec_addr = tab_addr_offset;
+            Info.user_sec.data_sec_addr = tab_addr_offset;
             tab_addr_offset += InternalFlash_UserDataSec_Size;
             tab_addr_offset += Storage_ReserveBlock_Size;
 
-            Info.boot_sec_info.free_addr = Info.boot_sec_info.data_sec_addr;
-            Info.sys_sec_info.free_addr = Info.sys_sec_info.data_sec_addr;
-            Info.user_sec_info.free_addr = Info.user_sec_info.data_sec_addr;
+            Info.boot_sec.free_addr = Info.boot_sec.data_sec_addr;
+            Info.sys_sec.free_addr = Info.sys_sec.data_sec_addr;
+            Info.user_sec.free_addr = Info.user_sec.data_sec_addr;
             break;
 
         /* still in developping */
@@ -642,9 +583,9 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
     
-    if( !Storage_Estabish_BootSec_Tab(type) || \
-        !Storage_Estabish_SysSec_Tab(type) || \
-        !Storage_Estabish_UserSec_Tab(type))
+    if( !Storage_Estabish_Tab(type, Para_Boot) || \
+        !Storage_Estabish_Tab(type, Para_Sys)  || \
+        !Storage_Estabish_Tab(type, Para_User))
         return false;
 
     return true;
@@ -665,15 +606,15 @@ static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_Par
         switch(class)
         {
             case Para_Boot:
-                base_addr = Storage_Monitor.internal_info.boot_sec_info.tab_addr;
+                base_addr = Storage_Monitor.internal_info.boot_sec.tab_addr;
                 break;
 
             case Para_Sys:
-                base_addr = Storage_Monitor.internal_info.sys_sec_info.tab_addr;
+                base_addr = Storage_Monitor.internal_info.sys_sec.tab_addr;
                 break;
 
             case Para_User:
-                base_addr = Storage_Monitor.internal_info.user_sec_info.tab_addr;
+                base_addr = Storage_Monitor.internal_info.user_sec.tab_addr;
                 break;
 
             default:
