@@ -300,6 +300,7 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     uint16_t list_index = 0;
     Storage_Item_TypeDef *p_Item = NULL;
     uint16_t item_crc = 0;
+    Storage_FreeSlot_TypeDef free_slot;
 
     if( !Storage_Monitor.init_state || \
         (name == NULL) || \
@@ -346,6 +347,17 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     }
 
     if(p_SecInfo->para_num == max_capacity)
+        return false;
+    
+    /* search all tab to match exist name tag data item */
+    /* if matched then failed to create a new section */
+
+    /* check free slot info */
+    if(!StorageIO_API->read(p_SecInfo->free_addr, &free_slot, sizeof(Storage_FreeSlot_TypeDef)) || )
+        return false;
+
+    if( (free_slot.header != STORAGE_SLOT_HEAD_TAG) || \
+        (free_slot.total_size < size))
         return false;
 
     p_SecInfo->para_num ++;
@@ -405,6 +417,7 @@ static bool Storage_Estabish_Tab(Storage_MediumType_List type, Storage_ParaClass
     uint32_t clear_byte = 0;
     uint32_t clear_remain = 0;
     uint32_t addr_tmp = 0;
+    Storage_FreeSlot_TypeDef free_slot;
     
     switch((uint8_t) type)
     {
@@ -466,6 +479,20 @@ static bool Storage_Estabish_Tab(Storage_MediumType_List type, Storage_ParaClass
             if(clear_remain && clear_remain <= clear_byte)
                 clear_byte = clear_remain;
         }
+
+        /* write free slot info */
+        memset(&free_slot, 0, sizeof(free_slot));
+        free_slot.header = STORAGE_SLOT_HEAD_TAG;
+        free_slot.total_size = p_SecInfo->data_sec_size;
+        free_slot.cur_slot_size = p_SecInfo->data_sec_size;
+        /* if current free slot get enought space for data then set ender tag as 0xFE1001FE */
+        /* or else set ender tag as next slot address such like 0x80exxxx. */
+        /* until all data was saved into multiple flash segment completely */
+        /* set ender tag as 0xFE1001FE */
+        free_slot.ender = STORAGE_SLOT_END_TAG;
+        
+        if(!StorageIO_API->write(p_SecInfo->data_sec_addr, &free_slot, sizeof(free_slot)))
+            return false;
 
         return true;
     }
