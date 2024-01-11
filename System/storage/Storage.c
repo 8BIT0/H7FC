@@ -287,7 +287,7 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
         return false;
     
 
-    
+
     return false;
 }
 
@@ -401,7 +401,7 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
 static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_SectionInfo_TypeDef *p_Info = NULL;
+    Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
     
     switch((uint8_t) type)
     {
@@ -413,18 +413,17 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
                 (StorageIO_API->write == NULL))
                 return false;
 
-            p_Info = &Storage_Monitor.internal_info;
+            p_SecInfo = &Storage_Monitor.internal_info.boot_sec_info;
             break;
 
         case External_Flash:
-            p_Info = &Storage_Monitor.external_info;
         default:
             return false;
     }
 
-    if( p_Info->boot_sec_info.tab_addr && \
-        Storage_Clear_Tab(StorageIO_API, p_Info->boot_sec_info.tab_addr, p_Info->boot_sec_info.page_num))
+    if( p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
     {
+        /* clear boot data section */
     }
 
     return false;
@@ -433,8 +432,8 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
 static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_SectionInfo_TypeDef *p_Info = NULL;
-
+    Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
+ 
     switch((uint8_t) type)
     {
         case Internal_Flash:
@@ -445,25 +444,24 @@ static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
                 (StorageIO_API->write == NULL))
                 return false;
 
-            p_Info = &Storage_Monitor.internal_info;
+            p_SecInfo = &Storage_Monitor.internal_info.sys_sec_info;
             break;
 
         case External_Flash:
-            p_Info = &Storage_Monitor.external_info;
         default:
             return false;
     }
 
-    if( p_Info->sys_sec_info.tab_addr && \
-        Storage_Clear_Tab(StorageIO_API, p_Info->sys_sec_info.tab_addr, p_Info->sys_sec_info.page_num))
+    if( p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
     {
+        /* clear sys data section */
     }
 }
 
 static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_SectionInfo_TypeDef *p_Info = NULL;
+    Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
 
     switch((uint8_t) type)
     {
@@ -475,18 +473,17 @@ static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
                 (StorageIO_API->write == NULL))
                 return false;
 
-            p_Info = &Storage_Monitor.internal_info;
+            p_SecInfo = &Storage_Monitor.internal_info.user_sec_info;
             break;
 
         case External_Flash:
-            p_Info = &Storage_Monitor.external_info;
         default:
             return false;
     }
 
-    if( p_Info->user_sec_info.tab_addr && \
-        Storage_Clear_Tab(StorageIO_API, p_Info->user_sec_info.tab_addr, p_Info->user_sec_info.page_num))
+    if( p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
     {
+        /* clear user data section */
     }
 }
 
