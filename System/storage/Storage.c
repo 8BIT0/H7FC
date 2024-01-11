@@ -7,9 +7,6 @@
 #define InternalFlash_SysDataSec_Size (16 Kb)
 #define InternalFlash_UserDataSec_Size (32 Kb)
 
-#define Storage_Increase_Single_Item  1
-#define Storage_Decrease_Single_Item -1
-
 /* flash io object */
 typedef struct
 {
@@ -40,8 +37,8 @@ StorageIO_TypeDef InternalFlash_IO = {
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Format(Storage_MediumType_List type);
-static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaClassType_List class, int8_t item_inc, const char *name, uint32_t size);
-
+static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size);
+ 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable);
 static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name);
@@ -276,7 +273,12 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
     return true;
 }
 
-static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaClassType_List class, int8_t item_inc, const char *name, uint32_t size)
+static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
+{
+    return false;
+}
+
+static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
 {
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
     uint8_t page_index = 0;
@@ -289,8 +291,6 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
     uint16_t item_crc = 0;
 
     if( !Storage_Monitor.init_state || \
-        (item_inc != Storage_Increase_Single_Item) || \
-        (item_inc != Storage_Decrease_Single_Item) || 
         (name == NULL) || \
         (strlen(name) == 0) || \
         (strlen(name) >= STORAGE_ITEM_NAME_LEN) || \
@@ -334,69 +334,54 @@ static bool Storage_Update_InfoSec(Storage_MediumType_List type, Storage_ParaCla
         return false;
     }
 
-    if( ((p_SecInfo->para_num == 0) && \
-        (item_inc == Storage_Decrease_Single_Item)) || \
-        ((p_SecInfo->para_num == max_capacity) && \
-        (item_inc == Storage_Increase_Single_Item)))
+    if(p_SecInfo->para_num == max_capacity)
         return false;
 
-    p_SecInfo->para_num += item_inc;
-    p_SecInfo->para_size += item_inc * size;
+    p_SecInfo->para_num ++;
+    p_SecInfo->para_size += size;
 
-    if(item_inc == Storage_Increase_Single_Item)
+    /* tab update */
+    page_index = p_SecInfo->para_num / Storage_Tab_MaxItem_Num;
+
+    /* get tab addr */
+    tab_addr = p_SecInfo->tab_addr + page_index * OnChipFlash_Storage_TabSize;
+
+    if(!StorageIO_API->read(tab_addr, page_data_tmp, OnChipFlash_Storage_TabSize))
+        return false;
+
+    item_list = (Storage_Item_TypeDef *)page_data_tmp;
+
+    /* add new item info into tab */
+    for(list_index = 0; list_index < Storage_Tab_MaxItem_Num; list_index ++)
     {
-        /* tab update */
-        page_index = p_SecInfo->para_num / Storage_Tab_MaxItem_Num;
-
-        /* get tab addr */
-        tab_addr = p_SecInfo->tab_addr + page_index * OnChipFlash_Storage_TabSize;
-
-        if(!StorageIO_API->read(tab_addr, page_data_tmp, OnChipFlash_Storage_TabSize))
-            return false;
-
-        item_list = (Storage_Item_TypeDef *)page_data_tmp;
-
-        /* add new item info into tab */
-        for(list_index = 0; list_index < Storage_Tab_MaxItem_Num; list_index ++)
+        /* find a free slot */
+        if(memcmp(&item_list[list_index], 0, StorageItem_Size) == 0)
         {
-            /* find a free slot */
-            if(memcmp(&item_list[list_index], 0, StorageItem_Size) == 0)
-            {
-                p_Item = &item_list[list_index];
+            p_Item = &item_list[list_index];
 
-                p_Item->head_tag = STORAGE_HEAD_TAG;
-                p_Item->end_tag = STORAGE_END_TAG;
+            p_Item->head_tag = STORAGE_HEAD_TAG;
+            p_Item->end_tag = STORAGE_END_TAG;
 
-                p_Item->class = class;
-                p_Item->len = size;
-                strcpy(p_Item->name, name);
+            p_Item->class = class;
+            p_Item->len = size;
+            strcpy(p_Item->name, name);
 
-                p_Item->data_addr = p_SecInfo->free_addr;
-                item_crc = Common_CRC16(p_Item, sizeof(Storage_Item_TypeDef));
-                p_Item->crc16 = item_crc;
-                
-                /* write new item to tab */
-                if(!StorageIO_API->write(tab_addr, page_data_tmp, sizeof(page_data_tmp)))
-                    return false;
+            p_Item->data_addr = p_SecInfo->free_addr;
+            item_crc = Common_CRC16(p_Item, sizeof(Storage_Item_TypeDef));
+            p_Item->crc16 = item_crc;
+            
+            /* write new item to tab */
+            if(!StorageIO_API->write(tab_addr, page_data_tmp, sizeof(page_data_tmp)))
+                return false;
 
-                break;
-            }
+            break;
         }
-
-        /* update free block in tab */
-        
-        /* update storage base info section */
-    }
-    else
-    {
-        /* remove item info from tab */
     }
 
-    return false;
-}
+    /* update free block in tab */
+    
+    /* update storage base info section */
 
-static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *tag, uint32_t size)
-{
     return false;
 }
 
