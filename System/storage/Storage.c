@@ -424,6 +424,13 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
     if( p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
     {
         /* clear boot data section */
+        if( (p_SecInfo->data_sec_addr == 0) || \
+            !StorageIO_API->erase(p_SecInfo->data_sec_addr, p_SecInfo->data_sec_size))
+            return false;
+
+        /* write 0 to data section */
+
+        return true;
     }
 
     return false;
@@ -455,7 +462,16 @@ static bool Storage_Estabish_SysSec_Tab(Storage_MediumType_List type)
     if( p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
     {
         /* clear sys data section */
+        if( (p_SecInfo->data_sec_addr == 0) || \
+            !StorageIO_API->erase(p_SecInfo->data_sec_addr, p_SecInfo->data_sec_size))
+            return false;
+        
+        /* write 0 to data section */
+
+        return true;
     }
+
+    return false;
 }
 
 static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
@@ -484,7 +500,16 @@ static bool Storage_Estabish_UserSec_Tab(Storage_MediumType_List type)
     if( p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
     {
         /* clear user data section */
+        if( (p_SecInfo->data_sec_addr == 0) || \
+            !StorageIO_API->erase(p_SecInfo->data_sec_addr, p_SecInfo->data_sec_size))
+            return false;
+
+        /* write 0 to data section */
+
+        return true;
     }
+
+    return false;
 }
 
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
