@@ -41,6 +41,8 @@
 #define STORAGE_SLOT_HEAD_TAG 0xEF0110EF
 #define STORAGE_SLOT_END_TAG 0xFE1001FE
 
+#define STORAGE_MIN_BYTE_SIZE 1
+
 typedef uint32_t storage_handle;
 
 typedef enum

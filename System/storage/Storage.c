@@ -415,7 +415,7 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
 
 
         free_slot.cur_slot_size -= storage_size;
-        if(free_slot.cur_slot_size < sizeof(Storage_FreeSlot_TypeDef))
+        if(free_slot.cur_slot_size < (sizeof(Storage_FreeSlot_TypeDef) + STORAGE_MIN_BYTE_SIZE))
         {
             storage_size += free_slot.cur_slot_size;
             align_byte = free_slot.cur_slot_size;
