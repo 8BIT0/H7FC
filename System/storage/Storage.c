@@ -275,6 +275,19 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
 
 static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
 {
+    Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
+    Storage_Item_TypeDef *item_list = NULL;
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    
+    if( !Storage_Monitor.init_state || \
+        (name == NULL) || \
+        (strlen(name) == 0) || \
+        (strlen(name) >= STORAGE_ITEM_NAME_LEN) || \
+        (size == 0))
+        return false;
+    
+
+    
     return false;
 }
 
