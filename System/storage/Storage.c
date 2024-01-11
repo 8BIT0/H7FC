@@ -302,6 +302,8 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     Storage_Item_TypeDef *p_Item = NULL;
     uint16_t crc = 0;
     Storage_FreeSlot_TypeDef free_slot;
+    uint32_t storage_size = 0;
+    uint32_t align_byte = 0;
 
     if( !Storage_Monitor.init_state || \
         (name == NULL) || \
@@ -404,19 +406,30 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
         }
     }
     
-    /* update total free space in tab */
-    free_slot.total_size -= size;
- 
+    /* update total free space in tab */ 
     if(free_slot.cur_slot_size >= size)
     {
+        storage_size = size + sizeof(Storage_DataSlot_TypeDef);
+    
         /* located to the free address in this section */
-        p_SecInfo->free_addr += size;
-        free_slot.cur_slot_size -= size;
+
+
+        free_slot.cur_slot_size -= storage_size;
+        if(free_slot.cur_slot_size < sizeof(Storage_FreeSlot_TypeDef))
+        {
+            storage_size += free_slot.cur_slot_size;
+            align_byte = free_slot.cur_slot_size;
+            free_slot.cur_slot_size = 0;
+        }
+
+        /* update free slot info */
     }
     else
     {
 
     }
+
+    free_slot.total_size -= storage_size;
    
     /* write base info to info section */
     memcpy(page_data_tmp, p_Flash, sizeof(Storage_FlashInfo_TypeDef));
