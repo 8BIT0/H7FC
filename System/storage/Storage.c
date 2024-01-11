@@ -402,6 +402,10 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
+    uint16_t clear_cnt = 0;
+    uint32_t clear_byte = 0;
+    uint32_t clear_remain = 0;
+    uint32_t addr_tmp = 0;
     
     switch((uint8_t) type)
     {
@@ -429,6 +433,22 @@ static bool Storage_Estabish_BootSec_Tab(Storage_MediumType_List type)
             return false;
 
         /* write 0 to data section */
+        memset(page_data_tmp, 0, sizeof(page_data_tmp));
+        clear_cnt = p_SecInfo->data_sec_size / sizeof(page_data_tmp);
+        clear_remain = p_SecInfo->data_sec_size;
+        addr_tmp = p_SecInfo->data_sec_addr;
+        clear_byte = sizeof(page_data_tmp);
+        if(p_SecInfo->data_sec_size % sizeof(page_data_tmp))
+            clear_cnt ++;
+ 
+        for(uint16_t i = 0; i < clear_cnt; i++)
+        {
+            StorageIO_API->write(addr_tmp, page_data_tmp, clear_byte);
+            addr_tmp += sizeof(page_data_tmp);
+            clear_remain -= clear_byte;
+            if(clear_remain && clear_remain <= clear_byte)
+                clear_byte = clear_remain;
+        }
 
         return true;
     }
