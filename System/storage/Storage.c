@@ -353,7 +353,7 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     /* if matched then failed to create a new section */
 
     /* check free slot info */
-    if(!StorageIO_API->read(p_SecInfo->free_addr, &free_slot, sizeof(Storage_FreeSlot_TypeDef)) || )
+    if(!StorageIO_API->read(p_SecInfo->free_addr, &free_slot, sizeof(Storage_FreeSlot_TypeDef)))
         return false;
 
     if( (free_slot.header != STORAGE_SLOT_HEAD_TAG) || \
