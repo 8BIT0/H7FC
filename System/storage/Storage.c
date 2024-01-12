@@ -303,9 +303,9 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     uint16_t crc = 0;
     Storage_FreeSlot_TypeDef free_slot;
     uint32_t storage_size = 0;
-    uint32_t align_byte = 0;
     bool tab_update = false;
     Storage_DataSlot_TypeDef DataSlot;
+    uint16_t write_offset = 0;
 
     if( !Storage_Monitor.init_state || \
         (name == NULL) || \
@@ -419,6 +419,15 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     memset(DataSlot.name, '\0', STORAGE_NAME_LEN);
     memcpy(DataSlot.name, name, strlen(name));
     DataSlot.total_data_size = size;
+        
+    memcpy(page_data_tmp, &DataSlot.header, sizeof(DataSlot.header));
+    write_offset += sizeof(DataSlot.header);
+
+    memcpy(page_data_tmp + write_offset, DataSlot.name, STORAGE_NAME_LEN);
+    write_offset += STORAGE_NAME_LEN;
+
+    memcpy(page_data_tmp + write_offset, &DataSlot.total_data_size, sizeof(DataSlot.total_data_size));
+    write_offset += sizeof(DataSlot.total_data_size);
 
     /* update total free space in tab */ 
     if(free_slot.cur_slot_size >= storage_size)
@@ -427,30 +436,42 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
         if(free_slot.cur_slot_size < (sizeof(Storage_FreeSlot_TypeDef) + STORAGE_MIN_BYTE_SIZE))
         {
             storage_size += free_slot.cur_slot_size;
-            align_byte = free_slot.cur_slot_size;
+            DataSlot.align_byte = free_slot.cur_slot_size;
+            DataSlot.cur_slot_size = storage_size;
             free_slot.cur_slot_size = 0;
-            DataSlot.align_byte;
-            DataSlot.cur_slot_size;
         }
 
+        DataSlot.ender = STORAGE_SLOT_END_TAG;
+        
         /* storage data */
-        if(storage_size < sizeof(page_data_tmp))
-        {
-            DataSlot.slot_crc;
-            DataSlot.ender;
-        }
-        else
-        {
+        if(storage_size > sizeof(page_data_tmp))
+            return false;
 
-        }
+        memcpy(page_data_tmp + write_offset, &DataSlot.cur_slot_size, sizeof(DataSlot.cur_slot_size));
+        write_offset += sizeof(DataSlot.cur_slot_size);
 
-        /* update free slot info */
+        memcpy(page_data_tmp + write_offset, &DataSlot.align_byte, sizeof(DataSlot.align_byte));
+        write_offset += sizeof(DataSlot.align_byte);
+
+        memcpy(page_data_tmp + write_offset, p_data, size);
+        write_offset += size;
+
+        DataSlot.slot_crc = Common_CRC16(p_data, size);
+        memcpy(page_data_tmp + write_offset, &DataSlot.slot_crc, sizeof(DataSlot.slot_crc));
+        write_offset += sizeof(DataSlot.slot_crc);
+
+        memcpy(page_data_tmp + write_offset, &DataSlot.ender, sizeof(DataSlot.ender));
+        write_offset += sizeof(DataSlot.ender);
+
+        if(!StorageIO_API->write(p_Item->data_addr, page_data_tmp, write_offset))
+            return false;
     }
     else
     {
 
     }
 
+    /* update free slot info */
     free_slot.total_size -= storage_size;
    
     /* write base info to info section */
