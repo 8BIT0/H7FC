@@ -304,6 +304,7 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     Storage_FreeSlot_TypeDef free_slot;
     uint32_t storage_size = 0;
     uint32_t align_byte = 0;
+    bool tab_update = false;
 
     if( !Storage_Monitor.init_state || \
         (name == NULL) || \
@@ -368,42 +369,49 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     p_SecInfo->para_num ++;
     p_SecInfo->para_size += size;
 
-    /* tab update */
-    page_index = p_SecInfo->para_num / Storage_Tab_MaxItem_Num;
-
-    /* get tab addr */
-    tab_addr = p_SecInfo->tab_addr + page_index * OnChipFlash_Storage_TabSize;
-
-    if(!StorageIO_API->read(tab_addr, page_data_tmp, OnChipFlash_Storage_TabSize))
-        return false;
-
-    item_list = (Storage_Item_TypeDef *)page_data_tmp;
-
-    /* add new item info into tab */
-    for(list_index = 0; list_index < Storage_Tab_MaxItem_Num; list_index ++)
+    for(page_index = 0; page_index < p_SecInfo->page_num; page_index ++)
     {
-        /* find a free slot */
-        if(memcmp(&item_list[list_index], 0, StorageItem_Size) == 0)
+        /* get tab addr */
+        tab_addr = p_SecInfo->tab_addr + page_index * OnChipFlash_Storage_TabSize;
+
+        if(!StorageIO_API->read(tab_addr, page_data_tmp, OnChipFlash_Storage_TabSize))
+            return false;
+
+        item_list = (Storage_Item_TypeDef *)page_data_tmp;
+
+        /* add new item info into tab */
+        for(list_index = 0; list_index < Storage_Tab_MaxItem_Num; list_index ++)
         {
-            p_Item = &item_list[list_index];
+            /* clear crc value */
+            crc = 0;
 
-            p_Item->head_tag = STORAGE_HEAD_TAG;
-            p_Item->end_tag = STORAGE_END_TAG;
+            /* find a free slot */
+            if(memcmp(&item_list[list_index], 0, StorageItem_Size) == 0)
+            {
+                p_Item = &item_list[list_index];
 
-            p_Item->class = class;
-            p_Item->len = size;
-            strcpy(p_Item->name, name);
+                p_Item->head_tag = STORAGE_HEAD_TAG;
+                p_Item->end_tag = STORAGE_END_TAG;
 
-            p_Item->data_addr = p_SecInfo->free_addr;
-            crc = Common_CRC16(p_Item, sizeof(Storage_Item_TypeDef));
-            p_Item->crc16 = crc;
-            
-            /* write new item to tab */
-            if(!StorageIO_API->write(tab_addr, page_data_tmp, sizeof(page_data_tmp)))
-                return false;
+                p_Item->class = class;
+                p_Item->len = size;
+                strcpy(p_Item->name, name);
 
-            break;
+                p_Item->data_addr = p_SecInfo->free_addr;
+                crc = Common_CRC16(p_Item, sizeof(Storage_Item_TypeDef));
+                p_Item->crc16 = crc;
+                
+                /* write new item to tab */
+                if(!StorageIO_API->write(tab_addr, page_data_tmp, sizeof(page_data_tmp)))
+                    return false;
+
+                tab_update = true;
+                break;
+            }
         }
+
+        if(tab_update)
+            break;
     }
     
     /* update total free space in tab */ 
