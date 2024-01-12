@@ -162,7 +162,8 @@ static bool BspFlash_Erase(uint32_t addr, uint32_t len)
     HAL_StatusTypeDef status;
     FLASH_EraseInitTypeDef eraseinitstruct;
     
-    if ((addr < FLASH_BASE_ADDR) || (addr + len >= FLASH_BASE_ADDR + FLASH_SIZE) || (addr - FLASH_BASE_ADDR) % FLASH_SECTOR_SIZE)
+    // if ((addr < FLASH_BASE_ADDR) || (addr + len >= FLASH_BASE_ADDR + FLASH_SIZE) || (addr - FLASH_BASE_ADDR) % FLASH_SECTOR_SIZE)
+    if ((addr < FLASH_BASE_ADDR) || (addr + len >= FLASH_BASE_ADDR + FLASH_SIZE))
         return false;
     
     erase_addr = addr;

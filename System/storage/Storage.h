@@ -9,6 +9,8 @@
 
 #define Format_Retry_Cnt 5
 
+#define Storage_ErrorCode_ToStr(x) #x
+
 #define OnChipFlash_Storage_StartAddress (FLASH_BASE_ADDR + FLASH_SECTOR_7_OFFSET_ADDR)
 #define OnChipFlash_Storage_TotalSize FLASH_SECTOR_7_SIZE
 #define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
@@ -44,6 +46,26 @@
 #define STORAGE_MIN_BYTE_SIZE 1
 
 typedef uint32_t storage_handle;
+
+typedef enum
+{
+    Storage_Error_None = 0,
+    Storage_ModuleInit_Error,
+    Storage_Read_Error,
+    Storage_Write_Error,
+    Storage_Erase_Error,
+    Storage_NameMatched,
+    Storage_SlotHeader_Error,
+    Storage_ExternalFlash_NotAvailable,
+    Storage_InternalFlash_NotAvailable,
+    Storage_Class_Error,
+    Storage_RW_Api_Error,
+    Storage_DataInfo_Error,
+    Storage_DataSize_Overrange,
+    Storage_ItemInfo_Update_Error,
+    Storage_BaseInfo_Updata_Error,
+    Storage_FreeAddr_Update_Error,
+} Storage_ErrorCode_List;
 
 typedef enum
 {
