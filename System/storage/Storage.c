@@ -814,13 +814,113 @@ static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len)
 }
 
 /************************************************** Shell API Section ************************************************/
-static void Storage_Shell_Help(void)
+static void Storage_SecInfo_Print(Shell *obj, Storage_BaseSecInfo_TypeDef *p_SecInfo)
 {
+    if(obj == NULL)
+        return;
+
+    shellPrint(obj, "\t\taddr:\t%x\r\n", p_SecInfo->tab_addr);
+    shellPrint(obj, "\t\tpage num:%d\r\n", p_SecInfo->tab_addr);
+    shellPrint(obj, "\t\tsize:\t%d\r\n", p_SecInfo->tab_addr);
+    shellPrint(obj, "\t\tdata sec addr:\t%x\r\n", p_SecInfo->tab_addr);
+    shellPrint(obj, "\t\tdata sec size:\t%d\r\n", p_SecInfo->tab_addr);
+    shellPrint(obj, "\t\tfree block addr:\t%x\r\n", p_SecInfo->free_addr);
+    shellPrint(obj, "\t\tparam num:\t%d\r\n", p_SecInfo->para_num);
+    shellPrint(obj, "\t\tparam size:\t%d\r\n", p_SecInfo->para_size);
+}
+
+static void Storage_Shell_Get_BaseInfo(Storage_MediumType_List medium)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    Storage_FlashInfo_TypeDef *p_Flash = NULL;
+
+    if(shell_obj == NULL)
+        return;
     
-}
+    shellPrint(shell_obj, "[Storage Shell] Get BaseInfo\r\n");
+    if(!Storage_Monitor.init_state)
+    {
+        shellPrint(shell_obj, "\thalt by init state\r\n");
+        return;
+    }
 
-static void Storage_Shell_Get_BaseInfo(void)
+    shellPrint(shell_obj, "medium para\r\n");
+    shellPrint(shell_obj, "\tInternal_Flash ---- %d\r\n", Internal_Flash);
+    shellPrint(shell_obj, "\tExternal_Flash ---- %d\r\n", External_Flash);
+    shellPrint(shell_obj, "\r\n");
+    
+    shellPrint(shell_obj, "class para\r\n");
+    shellPrint(shell_obj, "\tBoot   Class ---- %d\r\n", Para_Boot);
+    shellPrint(shell_obj, "\tSystem Class ---- %d\r\n", Para_Sys);
+    shellPrint(shell_obj, "\tUser   Class ---- %d\r\n", Para_User);
+    shellPrint(shell_obj, "\r\n");
+    
+    switch((uint8_t) medium)
+    {
+        case Internal_Flash:
+            shellPrint(shell_obj, "\t\tInternal_Flash Selected\r\n");
+            p_Flash = &Storage_Monitor.internal_info;
+            if(memcmp(p_Flash->tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE))
+            {
+                shellPrint(shell_obj, "\t\tInternal_Flash Info Error\r\n");
+                return;
+            }
+            shellPrint(shell_obj, "\t\ttotal   size:\t%d\r\n", p_Flash->total_size);
+            shellPrint(shell_obj, "\t\tremain  size:\t%d\r\n", p_Flash->remain_size);
+            shellPrint(shell_obj, "\t\tstorage size:\t%d\r\n", p_Flash->data_sec_size);
+            break;
+        
+        case External_Flash:
+            shellPrint(shell_obj, "\t\tExternal_Flash Selected\r\n");
+            shellPrint(shell_obj, "\t\tStill in developping\r\n");
+            shellPrint(shell_obj, "\t\treturn\r\n");
+            p_Flash = &Storage_Monitor.external_info;
+            return;
+
+        default:
+            shellPrint(shell_obj, "medium para error\r\n");
+            return;
+    }
+
+    /* print boot info */
+    shellPrint(shell_obj, "\t[Boot Section]\r\n");
+    Storage_SecInfo_Print(shell_obj, &p_Flash->boot_sec);
+
+    /* print sys  info */
+    shellPrint(shell_obj, "\t[System Section]\r\n");
+    Storage_SecInfo_Print(shell_obj, &p_Flash->sys_sec);
+
+    /* print user info */
+    shellPrint(shell_obj, "\t[User Section]\r\n");
+    Storage_SecInfo_Print(shell_obj, &p_Flash->user_sec);
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_BaseInfo, Storage_Shell_Get_BaseInfo, Storage base info);
+
+static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {
+    Shell *shell_obj = Shell_GetInstence();
+    
+    if(shell_obj == NULL)
+        return;
+    
+    shellPrint(shell_obj, "[Storage Shell] Show Storage Tab\r\n");
+    if(!Storage_Monitor.init_state)
+    {
+        shellPrint(shell_obj, "\thalt by init state\r\n");
+        return;
+    }
+    
+    switch((uint8_t) medium)
+    {
+        default:
+            
+            return;
+    }
 
+    switch((uint8_t) class)
+    {
+        default:
+            return;
+    }
 }
-
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_ShowTab, Storage_Show_Tab, Storage show Tab);

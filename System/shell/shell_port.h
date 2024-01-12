@@ -7,7 +7,5 @@ typedef int (*Shell_Write_Callback)(const uint8_t *ch, uint16_t len);
 
 void Shell_Init(Shell_Write_Callback callback, uint8_t *p_buff, uint16_t size);
 Shell *Shell_GetInstence(void);
-void user_shell_write_byte(const int *ch, ...);
-void Shell_Printf(const char *fmt, ...);
 
 #endif
