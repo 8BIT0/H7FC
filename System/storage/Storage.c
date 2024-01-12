@@ -814,6 +814,11 @@ static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len)
 }
 
 /************************************************** Shell API Section ************************************************/
+static void Storage_Shell_Help(void)
+{
+    
+}
+
 static void Storage_Shell_Get_BaseInfo(void)
 {
 
