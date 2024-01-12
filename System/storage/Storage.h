@@ -35,9 +35,9 @@
 #define INTERNAL_PAGE_TAG_SIZE strlen(INTERNAL_STORAGE_PAGE_TAG)
 #define EXTERNAL_PAGE_TAG_SIZE strlen(EXTERNAL_STORAGE_PAGE_TAG)
 
-#define STORAGE_ITEM_NAME_LEN 53
-#define STORAGE_HEAD_TAG 0xAA
-#define STORAGE_END_TAG 0xBB
+#define STORAGE_NAME_LEN 53
+#define STORAGE_ITEM_HEAD_TAG 0xAA
+#define STORAGE_ITEM_END_TAG 0xBB
 #define STORAGE_SLOT_HEAD_TAG 0xEF0110EF
 #define STORAGE_SLOT_END_TAG 0xFE1001FE
 
@@ -62,7 +62,7 @@ typedef struct
 {
     uint8_t head_tag;
     uint8_t class;
-    uint8_t name[STORAGE_ITEM_NAME_LEN];
+    uint8_t name[STORAGE_NAME_LEN];
     uint32_t data_addr;
     uint16_t len;
     uint16_t crc16;
@@ -72,7 +72,7 @@ typedef struct
 typedef struct
 {
     uint32_t header;
-    uint8_t name[STORAGE_ITEM_NAME_LEN];
+    uint8_t name[STORAGE_NAME_LEN];
     uint32_t total_data_size;
     uint32_t cur_slot_size;
     uint8_t *p_data;

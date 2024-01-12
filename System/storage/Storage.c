@@ -35,7 +35,7 @@ StorageIO_TypeDef InternalFlash_IO = {
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Format(Storage_MediumType_List type);
-static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size);
+static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size);
  
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable);
@@ -280,7 +280,7 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
     if( !Storage_Monitor.init_state || \
         (name == NULL) || \
         (strlen(name) == 0) || \
-        (strlen(name) >= STORAGE_ITEM_NAME_LEN) || \
+        (strlen(name) >= STORAGE_NAME_LEN) || \
         (size == 0))
         return false;
     
@@ -289,7 +289,7 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
     return false;
 }
 
-static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
+static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size)
 {
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
     uint8_t page_index = 0;
@@ -305,11 +305,12 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
     uint32_t storage_size = 0;
     uint32_t align_byte = 0;
     bool tab_update = false;
+    Storage_DataSlot_TypeDef DataSlot;
 
     if( !Storage_Monitor.init_state || \
         (name == NULL) || \
         (strlen(name) == 0) || \
-        (strlen(name) >= STORAGE_ITEM_NAME_LEN) || \
+        (strlen(name) >= STORAGE_NAME_LEN) || \
         (size == 0))
         return false;
 
@@ -382,16 +383,13 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
         /* add new item info into tab */
         for(list_index = 0; list_index < Storage_Tab_MaxItem_Num; list_index ++)
         {
-            /* clear crc value */
-            crc = 0;
-
             /* find a free slot */
             if(memcmp(&item_list[list_index], 0, StorageItem_Size) == 0)
             {
                 p_Item = &item_list[list_index];
 
-                p_Item->head_tag = STORAGE_HEAD_TAG;
-                p_Item->end_tag = STORAGE_END_TAG;
+                p_Item->head_tag = STORAGE_ITEM_HEAD_TAG;
+                p_Item->end_tag = STORAGE_ITEM_END_TAG;
 
                 p_Item->class = class;
                 p_Item->len = size;
@@ -414,19 +412,36 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
             break;
     }
     
+    memset(&DataSlot, 0, sizeof(DataSlot));
     storage_size = size + sizeof(Storage_DataSlot_TypeDef);
+        
+    DataSlot.header = STORAGE_SLOT_HEAD_TAG;
+    memset(DataSlot.name, '\0', STORAGE_NAME_LEN);
+    memcpy(DataSlot.name, name, strlen(name));
+    DataSlot.total_data_size = size;
+
     /* update total free space in tab */ 
     if(free_slot.cur_slot_size >= storage_size)
     {
-        /* located to the free address in this section */
-
-
         free_slot.cur_slot_size -= storage_size;
         if(free_slot.cur_slot_size < (sizeof(Storage_FreeSlot_TypeDef) + STORAGE_MIN_BYTE_SIZE))
         {
             storage_size += free_slot.cur_slot_size;
             align_byte = free_slot.cur_slot_size;
             free_slot.cur_slot_size = 0;
+            DataSlot.align_byte;
+            DataSlot.cur_slot_size;
+        }
+
+        /* storage data */
+        if(storage_size < sizeof(page_data_tmp))
+        {
+            DataSlot.slot_crc;
+            DataSlot.ender;
+        }
+        else
+        {
+
         }
 
         /* update free slot info */
@@ -777,5 +792,9 @@ static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len)
     return BspFlash.erase(addr, len);
 }
 
+/************************************************** Shell API Section ************************************************/
+static void Storage_Shell_Get_BaseInfo(void)
+{
 
+}
 
