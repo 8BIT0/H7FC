@@ -414,11 +414,10 @@ static bool Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassTy
             break;
     }
     
+    storage_size = size + sizeof(Storage_DataSlot_TypeDef);
     /* update total free space in tab */ 
-    if(free_slot.cur_slot_size >= size)
+    if(free_slot.cur_slot_size >= storage_size)
     {
-        storage_size = size + sizeof(Storage_DataSlot_TypeDef);
-    
         /* located to the free address in this section */
 
 
