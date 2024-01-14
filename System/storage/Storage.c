@@ -53,7 +53,7 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable)
     Storage_Monitor.module_enable_reg.val = enable.val;
     Storage_Monitor.module_init_reg.val = 0;
 
-    SrvOsCommon.delay_ms(10000);
+    SrvOsCommon.delay_ms(5000);
 
     /* on chip flash init */
     if(enable.bit.internal && BspFlash.init && BspFlash.init())
@@ -603,7 +603,7 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
         
         if(!StorageIO_API->write(p_SecInfo->data_sec_addr, &free_slot, sizeof(free_slot)))
             return false;
-        
+
         return true;
     }
 
@@ -726,7 +726,8 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
         !Storage_Establish_Tab(type, Para_Sys)  || \
         !Storage_Establish_Tab(type, Para_User))
         return false;
-
+    
+    __NOP();
     return true;
 }
 
@@ -824,7 +825,7 @@ static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uin
     }
 
     for(uint8_t i = 0; i < write_cnt; i++)
-    {
+    {       
         /* erase address first */
         if(!BspFlash.erase(write_addr, write_size))
             return false;

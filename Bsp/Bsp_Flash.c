@@ -144,7 +144,10 @@ static bool BspFlash_Write_To_Addr(uint32_t addr, uint8_t *p_data, uint32_t size
             if(HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, addr, write_tmp) != HAL_OK)
                 return false;
         
-            if(!BspFlash_Read_From_Addr(addr, read_tmp, sizeof(read_tmp)) || (write_tmp != read_tmp))
+            if(!BspFlash_Read_From_Addr(addr, read_tmp, sizeof(read_tmp)))
+                return false;
+
+            if(memcmp(write_tmp, read_tmp, BSP_FLASH_WRITE_UNIT) != 0)
                 return false;
         }
 
