@@ -137,7 +137,7 @@ static bool BspFlash_Write_To_Addr(uint32_t addr, uint8_t *p_data, uint32_t size
         remain_size = size % BSP_FLASH_WRITE_UNIT;
         if(remain_size)
         {
-            if(BspFlash_Read_From_Addr(addr, write_tmp, sizeof(write_tmp)))
+            if(!BspFlash_Read_From_Addr(addr, write_tmp, sizeof(write_tmp)))
                 return false;
 
             memcpy(write_tmp, p_data, remain_size);

@@ -581,7 +581,9 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
  
         for(uint16_t i = 0; i < clear_cnt; i++)
         {
-            StorageIO_API->write(addr_tmp, page_data_tmp, clear_byte);
+            if(!StorageIO_API->write(addr_tmp, page_data_tmp, clear_byte))
+                return false;
+
             addr_tmp += sizeof(page_data_tmp);
             clear_remain -= clear_byte;
             if(clear_remain && clear_remain <= clear_byte)
