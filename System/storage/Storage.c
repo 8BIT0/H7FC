@@ -726,8 +726,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
         !Storage_Establish_Tab(type, Para_Sys)  || \
         !Storage_Establish_Tab(type, Para_User))
         return false;
-    
-    __NOP();
+
     return true;
 }
 
@@ -825,7 +824,7 @@ static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uin
     }
 
     for(uint8_t i = 0; i < write_cnt; i++)
-    {       
+    {
         /* erase address first */
         if(!BspFlash.erase(write_addr, write_size))
             return false;
