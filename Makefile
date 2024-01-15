@@ -15,6 +15,11 @@
 ######################################
 TARGET = H7FC
 
+HW_MATEK_STM32H743 := 0
+HW_MATEK_STM32H743 := 1
+HW_BATEAIO_AT32F435 := 2
+
+BUILD_TYPE := $(HW_MATEK_STM32H743)
 
 ######################################
 # building variables
@@ -107,7 +112,9 @@ System/shell/shell_cmd_list.c \
 System/shell/shell_companion.c \
 System/shell/shell_ext.c \
 System/shell/shell_port.c \
-System/shell/shell.c \
+System/shell/shell.c
+ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
+C_SOURCES +=  \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usb_device.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_desc.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_cdc_if.c \
@@ -149,6 +156,72 @@ HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c \
 ASM_SOURCES =  \
 startup_stm32h743xx.s
 
+#######################################
+# LDFLAGS
+#######################################
+# link script
+LDSCRIPT = STM32H743VIHx_FLASH.ld
+
+#######################################
+# CFLAGS
+#######################################
+# cpu
+CPU = -mcpu=cortex-m7
+
+else ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
+C_SOURCES +=  \
+HW_Lib/STM32H7/USB/USB_DEVICE/App/usb_device.c \
+HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_desc.c \
+HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_cdc_if.c \
+HW_Lib/STM32H7/USB/USB_DEVICE/Target/usbd_conf.c \
+HW_Lib/STM32H7/USB/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+HW_Lib/STM32H7/USB/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+HW_Lib/STM32H7/USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
+HW_Lib/STM32H7/USB/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c  \
+HW_Lib/STM32H7/HAL_Lib/Core/Src/stm32h7xx_it.c \
+HW_Lib/STM32H7/HAL_Lib/Core/Src/system_stm32h7xx.c  \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash_ex.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_gpio.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma_ex.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdma.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr_ex.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_sdmmc.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c \
+
+ASM_SOURCES =  \
+startup_at32f435_437.s
+
+#######################################
+# LDFLAGS
+#######################################
+# link script
+LDSCRIPT = AT32F435xG_FLASH.ld
+
+#######################################
+# CFLAGS
+#######################################
+# cpu
+CPU = -mcpu=cortex-m4
+endif
 
 #######################################
 # binaries
@@ -169,15 +242,16 @@ SZ = $(PREFIX)size
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
- 
-#######################################
-# CFLAGS
-#######################################
-# cpu
-CPU = -mcpu=cortex-m7
+
+ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
+# C defines
+C_DEFS =  \
+-DUSE_HAL_DRIVER \
+-DSTM32H743xx \
 
 # fpu
 FPU = -mfpu=fpv5-d16
+endif
 
 # float-abi
 FLOAT-ABI = -mfloat-abi=hard
@@ -188,11 +262,6 @@ MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 # macros for gcc
 # AS defines
 AS_DEFS = 
-
-# C defines
-C_DEFS =  \
--DUSE_HAL_DRIVER \
--DSTM32H743xx \
 
 # AS includes
 AS_INCLUDES = 
@@ -225,7 +294,9 @@ C_INCLUDES =  \
 -IMAVLink/standard \
 -IDataStructure/ \
 -ISystem/kernel/ \
--ISystem/DataPipe \
+-ISystem/DataPipe 
+ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
+C_INCLUDES +=  \
 -IHW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHW_Lib/STM32H7/HAL_Lib/Core/Inc \
 -IHW_Lib/STM32H7/HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include \
@@ -235,8 +306,10 @@ C_INCLUDES =  \
 -IHW_Lib/STM32H7/USB/STM32_USB_Device_Library/Core/Inc \
 -IHW_Lib/STM32H7/USB/STM32_USB_Device_Library/Class/CDC/Inc \
 -IHW_Lib/STM32H7/USB/USB_DEVICE/App \
--IHW_Lib/STM32H7/USB/USB_DEVICE/Target \
-
+-IHW_Lib/STM32H7/USB/USB_DEVICE/Target
+else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
+C_INCLUDES += 
+endif
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -252,14 +325,11 @@ CFLAGS += -g -gdwarf-2
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
 # Hardware defines
+ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 CFLAGS += -DMATEKH743_V1_5
-
-#######################################
-# LDFLAGS
-#######################################
-# link script
-LDSCRIPT = STM32H743VIHx_FLASH.ld
-# LDSCRIPT = STM32H743IITx_FLASH.ld
+else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
+CFLAGS += -DBATEAT32F435_AIO
+endif
 
 # libraries
 LIBS = -lc -lm -lnosys 
@@ -310,8 +380,13 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
+ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 OPENOCD := openocd -f interface/stlink.cfg \
-        -f target/stm32h7x.cfg \
+        -f target/stm32h7x.cfg 
+else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
+OPENOCD := openocd -f interface/stlink.cfg \
+        -f target/stm32f4x.cfg 
+endif
 
 # download your program
 # $(OPENOCD)
