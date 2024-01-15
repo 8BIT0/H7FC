@@ -30,26 +30,9 @@ osThreadId TaskTelemetry_Handle = NULL;
 osThreadId TaskFrameCTL_Handle = NULL;
 osThreadId TaskManager_Handle = NULL;
 
-void test_PC0_ctl(void)
-{
-    DebugPin.ctl(Debug_PC0, true);
-    DebugPin.ctl(Debug_PC0, false);
-}
-
-void test_PC1_ctl(void)
-{
-    DebugPin.ctl(Debug_PC1, true);
-    DebugPin.ctl(Debug_PC1, false);
-}
-
-void test_PC2_ctl(void)
-{
-    DebugPin.ctl(Debug_PC2, true);
-    DebugPin.ctl(Debug_PC2, false);
-}
-
 void Task_Manager_Init(void)
 {
+#if defined MATEKH743_V1_5
     DevLED.init(Led1);
     DevLED.init(Led2);
     DevLED.init(Led3);
@@ -63,7 +46,7 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PB5);
     DebugPin.init(Debug_PB6);
     DebugPin.init(Debug_PB10);
-
+#endif
     /* vol ADC init */
 
     /* cur ADC init */
