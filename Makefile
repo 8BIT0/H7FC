@@ -212,9 +212,13 @@ ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32H743xx \
+-DMATEKH743_V1_5
 
 # fpu
 FPU = -mfpu=fpv5-d16
+else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
+C_DEFS = \
+-DBATEAT32F435_AIO
 endif
 
 # float-abi
@@ -290,13 +294,6 @@ CFLAGS += -g -gdwarf-2
 
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
-
-# Hardware defines
-ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
-CFLAGS += -DMATEKH743_V1_5
-else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
-CFLAGS += -DBATEAT32F435_AIO
-endif
 
 # libraries
 LIBS = -lc -lm -lnosys 

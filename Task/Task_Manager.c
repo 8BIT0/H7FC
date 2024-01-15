@@ -80,8 +80,14 @@ void Task_Manager_CreateTask(void)
     uint32_t enabled_sensor = 0;
     Storage_ModuleState_TypeDef storage_module_enable;
     storage_module_enable.val = 0;
+
+#if defined MATEKH743_V1_5
     storage_module_enable.bit.internal = true;
     storage_module_enable.bit.external = false;
+#elif defined BATEAT32F435_AIO
+    storage_module_enable.bit.internal = false;
+    storage_module_enable.bit.external = true;
+#endif
 
     while(1)
     {
