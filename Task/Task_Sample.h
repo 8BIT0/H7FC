@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include "cmsis_os.h"
 #include "imu_data.h"
+#include "Srv_OsCommon.h"
 #include "Srv_SensorMonitor.h"
 
 void TaskSample_Init(uint32_t period);

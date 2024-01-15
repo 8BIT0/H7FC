@@ -5,7 +5,6 @@
  *  this task and module can be improved and optimized in a big way we use it in short time temporary
  *  after when the main fundamental ability was accomplished we go back in this file and do improve and optimize to it
  */
-#include "cmsis_os.h"
 #include "Task_Log.h"
 #include "shell.h"
 #include "debug_util.h"

@@ -2,7 +2,6 @@
  *  coder : 8_B!T0
  *  this file use for moto & servo control
  */
-#include "cmsis_os.h"
 #include "Task_Control.h"
 #include "Srv_OsCommon.h"
 #include "Srv_CtlDataArbitrate.h"

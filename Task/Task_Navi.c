@@ -1,4 +1,3 @@
-#include "cmsis_os.h"
 #include "Task_Navi.h"
 #include "DataPipe.h"
 #include "Srv_Baro.h"

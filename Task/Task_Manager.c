@@ -10,8 +10,8 @@
 #include "Dev_Led.h"
 #include "DiskIO.h"
 #include "Srv_ComProto.h"
+#include "Srv_OsCommon.h"
 #include "../DataPipe/DataPipe.h"
-#include "cmsis_os.h"
 #include "shell_port.h"
 #include "Storage.h"
 

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
-#include "cmsis_os.h"
+#include "Srv_OsCommon.h"
 #include "Srv_ComProto.h"
 #include "semphr.h"
 #include "Bsp_USB.h"

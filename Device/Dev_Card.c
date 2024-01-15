@@ -1,5 +1,4 @@
 #include "Dev_Card.h"
-#include "cmsis_os.h"
 #include "Srv_OsCommon.h"
 #include "IO_Definition.h"
 #include "debug_util.h"

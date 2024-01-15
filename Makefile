@@ -272,7 +272,10 @@ C_INCLUDES +=  \
 -IHW_Lib/STM32H7/USB/USB_DEVICE/App \
 -IHW_Lib/STM32H7/USB/USB_DEVICE/Target
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
-C_INCLUDES += 
+C_INCLUDES += \
+-IBsp/AT32F435RGT6_Bsp/ \
+-IHW_Lib/AT32F435/drivers/inc \
+-IHW_Lib/AT32F435/device_support
 endif
 
 # compile gcc flags

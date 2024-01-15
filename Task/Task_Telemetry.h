@@ -4,13 +4,13 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
-#include "cmsis_os.h"
 #include "Srv_Receiver.h"
 #include "linked_list.h"
 #include "../common/util.h"
 #include "semphr.h"
 #include "IO_Definition.h"
 #include "Srv_ComProto.h"
+#include "Srv_OsCommon.h"
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
 #include "Srv_DataHub.h"
