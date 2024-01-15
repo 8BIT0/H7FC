@@ -351,7 +351,7 @@ OPENOCD := openocd -f interface/stlink.cfg \
         -f target/stm32h7x.cfg 
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
 OPENOCD := openocd -f interface/stlink.cfg \
-        -f target/stm32f4x.cfg 
+        -f target/at32f435xx.cfg 
 endif
 
 # download your program
