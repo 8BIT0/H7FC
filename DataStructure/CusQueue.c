@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
-#include "kernel.h"
 #include "Srv_OsCommon.h"
 
 #define Queue_Mem_Malloc(x) SrvOsCommon.malloc(x)

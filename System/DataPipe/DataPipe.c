@@ -1,9 +1,7 @@
 #include "DataPipe.h"
-#include "kernel.h"
-#include "stm32h743xx.h"
+#include "stm32h7xx.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_dma.h"
-#include "../../DataStructure/CusQueue.h"
 #include "Srv_OsCommon.h"
 
 #define MAX_RETRY_CNT 200

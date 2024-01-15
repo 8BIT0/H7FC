@@ -156,7 +156,9 @@
                 "ratio": "c",
                 "math_util.h": "c",
                 "bsp_flash.h": "c",
-                "stm32h7xx_hal_flash.h": "c"
+                "stm32h7xx_hal_flash.h": "c",
+                "stm32h7xx_hal_dma.h": "c",
+                "cusqueue.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

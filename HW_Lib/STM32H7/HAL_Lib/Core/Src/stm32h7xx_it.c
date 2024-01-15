@@ -11,7 +11,6 @@
 #include "Bsp_IIC.h"
 #include "Bsp_Uart.h" 
 #include "Bsp_Timer.h"
-#include "kernel.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern DevCard_Obj_TypeDef DevTFCard_Obj;
