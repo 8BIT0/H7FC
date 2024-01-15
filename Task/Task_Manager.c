@@ -88,7 +88,7 @@ void Task_Manager_CreateTask(void)
         if(!init)
         {
             DataPipe_Init();
-            Storage.init(storage_module_enable);
+            // Storage.init(storage_module_enable);
 
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
