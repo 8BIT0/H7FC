@@ -56,15 +56,6 @@ Task/Task_Telemetry.c \
 Task/Task_Protocol.c \
 Task/Task_Control.c \
 IO_Def/IO_Definition.c \
-Bsp/Bsp_GPIO.c \
-Bsp/Bsp_SPI.c \
-Bsp/Bsp_SDMMC.c \
-Bsp/Bsp_Uart.c \
-Bsp/Bsp_USB.c \
-Bsp/Bsp_Flash.c \
-Bsp/Bsp_DMA.c \
-Bsp/Bsp_Timer.c \
-Bsp/Bsp_IIC.c \
 Device/Dev_DPS310.c \
 Device/Dev_MPU6000.c \
 Device/Dev_ICM20602.c \
@@ -115,6 +106,15 @@ System/shell/shell_port.c \
 System/shell/shell.c
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_SOURCES +=  \
+Bsp/STM32H743_Bsp/Bsp_GPIO.c \
+Bsp/STM32H743_Bsp/Bsp_SPI.c \
+Bsp/STM32H743_Bsp/Bsp_SDMMC.c \
+Bsp/STM32H743_Bsp/Bsp_Uart.c \
+Bsp/STM32H743_Bsp/Bsp_USB.c \
+Bsp/STM32H743_Bsp/Bsp_Flash.c \
+Bsp/STM32H743_Bsp/Bsp_DMA.c \
+Bsp/STM32H743_Bsp/Bsp_Timer.c \
+Bsp/STM32H743_Bsp/Bsp_IIC.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usb_device.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_desc.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_cdc_if.c \
@@ -168,44 +168,8 @@ LDSCRIPT = STM32H743VIHx_FLASH.ld
 # cpu
 CPU = -mcpu=cortex-m7
 
-else ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
-C_SOURCES +=  \
-HW_Lib/STM32H7/USB/USB_DEVICE/App/usb_device.c \
-HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_desc.c \
-HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_cdc_if.c \
-HW_Lib/STM32H7/USB/USB_DEVICE/Target/usbd_conf.c \
-HW_Lib/STM32H7/USB/STM32_USB_Device_Library/Core/Src/usbd_core.c \
-HW_Lib/STM32H7/USB/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
-HW_Lib/STM32H7/USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
-HW_Lib/STM32H7/USB/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c  \
-HW_Lib/STM32H7/HAL_Lib/Core/Src/stm32h7xx_it.c \
-HW_Lib/STM32H7/HAL_Lib/Core/Src/system_stm32h7xx.c  \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash_ex.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_gpio.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma_ex.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdma.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr_ex.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_sdmmc.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c \
+else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
+C_SOURCES +=  
 
 ASM_SOURCES =  \
 startup_at32f435_437.s
@@ -270,7 +234,6 @@ AS_INCLUDES =
 C_INCLUDES =  \
 -IIO_Def/ \
 -Idebug/ \
--IBsp/ \
 -ITask/ \
 -IDevice/ \
 -Icommon/ \
@@ -297,6 +260,7 @@ C_INCLUDES =  \
 -ISystem/DataPipe 
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_INCLUDES +=  \
+-IBsp/STM32H743_Bsp/ \
 -IHW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHW_Lib/STM32H7/HAL_Lib/Core/Inc \
 -IHW_Lib/STM32H7/HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include \
