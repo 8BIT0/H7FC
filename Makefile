@@ -106,15 +106,15 @@ System/shell/shell_port.c \
 System/shell/shell.c
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_SOURCES +=  \
-Bsp/STM32H743_Bsp/Bsp_GPIO.c \
-Bsp/STM32H743_Bsp/Bsp_SPI.c \
-Bsp/STM32H743_Bsp/Bsp_SDMMC.c \
-Bsp/STM32H743_Bsp/Bsp_Uart.c \
-Bsp/STM32H743_Bsp/Bsp_USB.c \
-Bsp/STM32H743_Bsp/Bsp_Flash.c \
-Bsp/STM32H743_Bsp/Bsp_DMA.c \
-Bsp/STM32H743_Bsp/Bsp_Timer.c \
-Bsp/STM32H743_Bsp/Bsp_IIC.c \
+HW_Lib/STM32H7/BSP/stm32h743/Bsp_GPIO.c \
+HW_Lib/STM32H7/BSP/stm32h743/Bsp_SPI.c \
+HW_Lib/STM32H7/BSP/stm32h743/Bsp_SDMMC.c \
+HW_Lib/STM32H7/BSP/stm32h743/Bsp_Uart.c \
+HW_Lib/STM32H7/BSP/stm32h743/Bsp_USB.c \
+HW_Lib/STM32H7/BSP/stm32h743/Bsp_Flash.c \
+HW_Lib/STM32H7/BSP/stm32h743/Bsp_DMA.c \
+HW_Lib/STM32H7/BSP/stm32h743/Bsp_Timer.c \
+HW_Lib/STM32H7/BSP/stm32h743/Bsp_IIC.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usb_device.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_desc.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_cdc_if.c \
@@ -264,7 +264,7 @@ C_INCLUDES =  \
 -ISystem/DataPipe 
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_INCLUDES +=  \
--IBsp/STM32H743_Bsp/ \
+-IHW_Lib/STM32H7/BSP/stm32h743 \
 -IHW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHW_Lib/STM32H7/HAL_Lib/Core/Inc \
 -IHW_Lib/STM32H7/HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include \
