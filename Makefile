@@ -281,7 +281,7 @@ C_INCLUDES += \
 -IHW_Lib/AT32F435/bsp \
 -IHW_Lib/AT32F435/drivers/inc \
 -IHW_Lib/AT32F435/cmsis/cm4/core_support \
--IHW_Lib/AT32F435/device_support \
+-IHW_Lib/AT32F435/device_support
 endif
 
 # compile gcc flags
