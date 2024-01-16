@@ -1,5 +1,5 @@
-#ifndef __BSP_USB_H
-#define __BSP_USB_H
+#ifndef __BSP_USB_PORT_DEF_H
+#define __BSP_USB_PORT_DEF_H
 
 #include <stdbool.h>
 #include <stdint.h>

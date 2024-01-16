@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "Bsp_DMA_Port_Def.h"
 #include "stm32h7xx_hal_dma.h"
 
 typedef enum
@@ -26,15 +27,6 @@ typedef enum
     Bsp_DMA_Stream_7,
     Bsp_DMA_Stream_Sum,
 } BspDMA_Stream_List;
-
-typedef struct
-{
-    bool (*regist)(BspDMA_List dma, BspDMA_Stream_List stream, DMA_HandleTypeDef *obj);
-    bool (*unregist)(BspDMA_List dma, BspDMA_Stream_List stream);
-    DMA_HandleTypeDef *(*get_handle)(BspDMA_List dma, BspDMA_Stream_List stream);
-    DMA2D_TypeDef *(*get_instance)(BspDMA_List dma, BspDMA_Stream_List stream);
-    void (*enable_irq)(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub);
-} BspDMA_TypeDef;
 
 extern BspDMA_TypeDef BspDMA;
 

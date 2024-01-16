@@ -8,6 +8,10 @@
 #include "stm32h7xx_hal_uart.h"
 #include "Bsp_Uart.h"
 
+#define To_Uart_Instance(x) ((USART_TypeDef *)x)
+#define To_Uart_Handle_Ptr(x) ((UART_HandleTypeDef *)x)
+#define To_UartDMA_Handle_Ptr(x) ((DMA_HandleTypeDef *)x)
+
 #define BspUart_Opr_TimeOut 100 // 100ms
 
 /* internal variable */
@@ -40,10 +44,10 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
     int8_t index = Bspuart_None_Index;
 
     if ((obj == NULL) ||
-        (obj->instance == NULL))
+        (To_Uart_Instance(obj->instance) == NULL))
         return BspUart_Clock_Error;
 
-    if (obj->instance == USART1)
+    if (To_Uart_Instance(obj->instance) == USART1)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1;
         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART1CLKSOURCE_D2PCLK2;
@@ -54,7 +58,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         __HAL_RCC_USART1_CLK_ENABLE();
         index = BspUART_Port_1;
     }
-    else if (obj->instance == UART4)
+    else if (To_Uart_Instance(obj->instance) == UART4)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART4;
         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
@@ -65,7 +69,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         __HAL_RCC_UART4_CLK_ENABLE();
         index = BspUART_Port_4;
     }
-    else if (obj->instance == USART6)
+    else if (To_Uart_Instance(obj->instance) == USART6)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART6;
         PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
@@ -76,7 +80,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         __HAL_RCC_USART6_CLK_ENABLE();
         index = BspUART_Port_6;
     }
-    else if (obj->instance == UART7)
+    else if (To_Uart_Instance(obj->instance) == UART7)
     {
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART7;
         PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
@@ -124,31 +128,31 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
     rx_dma_cfg.Init.Direction = DMA_PERIPH_TO_MEMORY;
 
     if ((obj == NULL) ||
-        (obj->instance == NULL))
+        (To_Uart_Instance(obj->instance) == NULL))
         return BspUart_Clock_Error;
 
-    if (obj->instance == USART1)
+    if (To_Uart_Instance(obj->instance) == USART1)
     {
         rx_dma_cfg.Init.Request = DMA_REQUEST_USART1_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_USART1_TX;
 
         index = BspUART_Port_1;
     }
-    else if (obj->instance == UART4)
+    else if (To_Uart_Instance(obj->instance) == UART4)
     {
         rx_dma_cfg.Init.Request = DMA_REQUEST_UART4_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
 
         index = BspUART_Port_4;
     }
-    else if (obj->instance == USART6)
+    else if (To_Uart_Instance(obj->instance) == USART6)
     {
         rx_dma_cfg.Init.Request = DMA_REQUEST_USART6_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_USART6_TX;
 
         index = BspUART_Port_6;
     }
-    else if (obj->instance == UART7)
+    else if (To_Uart_Instance(obj->instance) == UART7)
     {
         rx_dma_cfg.Init.Request = DMA_REQUEST_UART7_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART7_TX;
@@ -158,31 +162,31 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
     else
         return BspUart_Clock_Error;
 
-    obj->tx_dma_hdl = tx_dma_cfg;
-    obj->rx_dma_hdl = rx_dma_cfg;
+    memcpy(obj->tx_dma_hdl, &tx_dma_cfg, sizeof(DMA_HandleTypeDef));
+    memcpy(obj->rx_dma_hdl, &rx_dma_cfg, sizeof(DMA_HandleTypeDef));
 
-    rx_dma_reg_state = BspDMA.regist(obj->rx_dma, obj->rx_stream, &(obj->rx_dma_hdl));
-    tx_dma_reg_state = BspDMA.regist(obj->tx_dma, obj->tx_stream, &(obj->tx_dma_hdl));
+    rx_dma_reg_state = BspDMA.regist(obj->rx_dma, obj->rx_stream, obj->rx_dma_hdl);
+    tx_dma_reg_state = BspDMA.regist(obj->tx_dma, obj->tx_stream, obj->tx_dma_hdl);
 
     if (!rx_dma_reg_state && !tx_dma_reg_state)
         return BspUart_Clock_Error;
 
     if(rx_dma_reg_state)
     {
-        if (HAL_DMA_Init(&(obj->rx_dma_hdl)) != HAL_OK)
+        if (HAL_DMA_Init(To_UartDMA_Handle_Ptr(obj->rx_dma_hdl)) != HAL_OK)
             return BspUart_Clock_Error;
 
-        __HAL_LINKDMA(&(obj->hdl), hdmarx, obj->rx_dma_hdl);
+        __HAL_LINKDMA(To_Uart_Handle_Ptr(obj->hdl), hdmarx, *To_UartDMA_Handle_Ptr(obj->rx_dma_hdl));
 
         BspDMA.enable_irq(obj->rx_dma, obj->rx_stream, 5, 0);
     }
 
     if(tx_dma_reg_state)
     {
-        if (HAL_DMA_Init(&(obj->tx_dma_hdl)) != HAL_OK)
+        if (HAL_DMA_Init(To_UartDMA_Handle_Ptr(obj->tx_dma_hdl)) != HAL_OK)
             return BspUart_Clock_Error;
 
-        __HAL_LINKDMA(&(obj->hdl), hdmatx, obj->tx_dma_hdl);
+        __HAL_LINKDMA(To_Uart_Handle_Ptr(obj->hdl), hdmatx, *To_UartDMA_Handle_Ptr(obj->tx_dma_hdl));
 
         BspDMA.enable_irq(obj->tx_dma, obj->tx_stream, 5, 0);
     }
@@ -196,25 +200,25 @@ static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj)
     int8_t index = Bspuart_None_Index;
 
     if ((obj == NULL) ||
-        (obj->instance == NULL))
+        (To_Uart_Instance(obj->instance) == NULL))
         return BspUart_Clock_Error;
 
-    if (obj->instance == USART1)
+    if (To_Uart_Instance(obj->instance) == USART1)
     {
         irqn = USART1_IRQn;
         index = BspUART_Port_1;
     }
-    else if (obj->instance == UART4)
+    else if (To_Uart_Instance(obj->instance) == UART4)
     {
         irqn = UART4_IRQn;
         index = BspUART_Port_4;
     }
-    else if (obj->instance == USART6)
+    else if (To_Uart_Instance(obj->instance) == USART6)
     {
         irqn = USART6_IRQn;
         index = BspUART_Port_6;
     }
-    else if (obj->instance == UART7)
+    else if (To_Uart_Instance(obj->instance) == UART7)
     {
         irqn = UART7_IRQn;
         index = BspUART_Port_7;
@@ -237,10 +241,10 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 
     port_index = BspUart_Init_Clock(obj);
 
-    if (port_index < 0)
+    if ((port_index < 0) || (To_Uart_Handle_Ptr(obj->hdl) == NULL))
         return false;
 
-    uart_cfg.Instance = obj->instance;
+    uart_cfg.Instance = To_Uart_Instance(obj->instance);
     uart_cfg.Init.BaudRate = obj->baudrate;
     uart_cfg.Init.WordLength = UART_WORDLENGTH_8B;
     uart_cfg.Init.StopBits = UART_STOPBITS_1;
@@ -257,9 +261,9 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     if (obj->pin_swap)
         uart_cfg.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
 
-    obj->hdl = uart_cfg;
+    memcpy(To_Uart_Handle_Ptr(obj->hdl), &uart_cfg, sizeof(UART_HandleTypeDef));
 
-    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+    if (HAL_UART_Init(To_Uart_Handle_Ptr(obj->hdl)) != HAL_OK)
         return false;
 
     if (BspUart_Init_DMA(obj) < 0)
@@ -288,19 +292,19 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     switch (obj->irq_type)
     {
         case BspUart_IRQ_Type_Idle:
-            __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_IDLE);
+            __HAL_UART_ENABLE_IT(To_Uart_Handle_Ptr(obj->hdl), UART_IT_IDLE);
             break;
 
         case BspUart_IRQ_Type_Byte:
-            __HAL_UART_ENABLE_IT(&(obj->hdl), UART_IT_RXNE | UART_IT_ERR | UART_IT_ORE);
+            __HAL_UART_ENABLE_IT(To_Uart_Handle_Ptr(obj->hdl), UART_IT_RXNE | UART_IT_ERR | UART_IT_ORE);
             break;
 
         default:
             return false;
     }
 
-    __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_ERR);
-    __HAL_UART_DISABLE_IT(&(obj->hdl), UART_IT_PE);
+    __HAL_UART_DISABLE_IT(To_Uart_Handle_Ptr(obj->hdl), UART_IT_ERR);
+    __HAL_UART_DISABLE_IT(To_Uart_Handle_Ptr(obj->hdl), UART_IT_PE);
 
     if (BspUart_SetIRQ(obj) < 0)
         return false;
@@ -308,12 +312,12 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     if (obj->irq_type == BspUart_IRQ_Type_Idle)
     {
         /* start dma receive data */
-        HAL_UART_Receive_DMA(&(obj->hdl), obj->rx_buf, obj->rx_size);
+        HAL_UART_Receive_DMA(To_Uart_Handle_Ptr(obj->hdl), obj->rx_buf, obj->rx_size);
     }
     else if (obj->irq_type == BspUart_IRQ_Type_Byte)
     {
         /* start receive irq */
-        HAL_UART_Receive_IT(&(obj->hdl), &obj->rx_single_byte, 1);
+        HAL_UART_Receive_IT(To_Uart_Handle_Ptr(obj->hdl), &obj->rx_single_byte, 1);
     }
 
     obj->init_state = true;
@@ -325,9 +329,9 @@ static bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)
     if (obj || !obj->init_state)
         return false;
 
-    obj->hdl.Init.WordLength = bit;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.WordLength = bit;
 
-    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+    if (HAL_UART_Init(To_Uart_Handle_Ptr(obj->hdl)) != HAL_OK)
         return false;
 
     return true;
@@ -338,9 +342,9 @@ static bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity)
     if (obj || !obj->init_state)
         return false;
 
-    obj->hdl.Init.Parity = parity;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.Parity = parity;
 
-    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+    if (HAL_UART_Init(To_Uart_Handle_Ptr(obj->hdl)) != HAL_OK)
         return false;
 
     return true;
@@ -351,9 +355,9 @@ static bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit)
     if (obj || !obj->init_state)
         return false;
 
-    obj->hdl.Init.StopBits = stop_bit;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.StopBits = stop_bit;
 
-    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+    if (HAL_UART_Init(To_Uart_Handle_Ptr(obj->hdl)) != HAL_OK)
         return false;
 
     return true;
@@ -368,12 +372,12 @@ static bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap)
 
     if (swap)
     {
-        obj->hdl.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+        To_Uart_Handle_Ptr(obj->hdl)->AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
     }
     else
-        obj->hdl.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_DISABLE;
+        To_Uart_Handle_Ptr(obj->hdl)->AdvancedInit.Swap = UART_ADVFEATURE_SWAP_DISABLE;
 
-    if (HAL_UART_Init(&obj->hdl) != HAL_OK)
+    if (HAL_UART_Init(To_Uart_Handle_Ptr(obj->hdl)) != HAL_OK)
         return false;
 
     return true;
@@ -399,7 +403,7 @@ static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t 
         return false;
 
     /* send data */
-    switch (HAL_UART_Transmit_DMA(&(obj->hdl), tx_buf, size))
+    switch (HAL_UART_Transmit_DMA(To_Uart_Handle_Ptr(obj->hdl), tx_buf, size))
     {
         case HAL_OK:
             obj->monitor.tx_cnt++;
@@ -424,7 +428,7 @@ static void BspUart_DMAStopRx(BspUART_Port_List index)
 
     if (BspUart_Obj_List[index])
     {
-        hdl = BspUart_Obj_List[index]->hdl;
+        memcpy(&hdl, BspUart_Obj_List[index]->hdl, sizeof(UART_HandleTypeDef));
 
         const HAL_UART_StateTypeDef rxstate = hdl.RxState;
 
@@ -486,7 +490,7 @@ void UART_IRQ_Callback(BspUART_Port_List index)
     if (BspUart_Obj_List[index] && BspUart_Obj_List[index]->irq_type == BspUart_IRQ_Type_Idle)
     {
 
-        hdl = &(BspUart_Obj_List[index]->hdl);
+        hdl = BspUart_Obj_List[index]->hdl;
         isrflags = READ_REG(hdl->Instance->ISR);
         cr1its = READ_REG(hdl->Instance->CR1);
         cr3its = READ_REG(hdl->Instance->CR3);
@@ -495,7 +499,7 @@ void UART_IRQ_Callback(BspUART_Port_List index)
         if (errorflags != 0)
             return;
 
-        rx_dma = &(BspUart_Obj_List[index]->rx_dma_hdl);
+        rx_dma = To_UartDMA_Handle_Ptr(BspUart_Obj_List[index]->rx_dma_hdl);
 
         if (hdl && rx_dma)
         {

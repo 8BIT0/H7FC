@@ -147,6 +147,30 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
     {
     case Receiver_Port_Serial:
         Uart_Receiver_Obj = (BspUARTObj_TypeDef *)port_obj;
+        
+        Uart_Receiver_Obj->hdl = SrvOsCommon.malloc(UART_HandleType_Size);
+        if(Uart_Receiver_Obj->hdl == NULL)
+        {
+            SrvOsCommon.free(Uart_Receiver_Obj->hdl);
+            return false;
+        }
+
+        Uart_Receiver_Obj->tx_dma_hdl = SrvOsCommon.malloc(UART_DMA_Handle_Size);
+        if(Uart_Receiver_Obj->tx_dma_hdl)
+        {
+            SrvOsCommon.free(Uart_Receiver_Obj->tx_dma_hdl);
+            SrvOsCommon.free(Uart_Receiver_Obj->hdl);
+            return false;
+        }
+
+        Uart_Receiver_Obj->rx_dma_hdl = SrvOsCommon.malloc(UART_DMA_Handle_Size);
+        if(Uart_Receiver_Obj->rx_dma_hdl)
+        {
+            SrvOsCommon.free(Uart_Receiver_Obj->rx_dma_hdl);
+            SrvOsCommon.free(Uart_Receiver_Obj->tx_dma_hdl);
+            SrvOsCommon.free(Uart_Receiver_Obj->hdl);
+            return false;
+        }
 
         memset(&SrvReceiver_Monitor, 0, SRVRECEIVER_SIZE);
 

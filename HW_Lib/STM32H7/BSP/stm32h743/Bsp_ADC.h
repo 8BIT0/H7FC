@@ -6,18 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stddef.h>
-
-typedef struct
-{
-    uint32_t Port;
-    uint32_t Pin;
-}BspADCObj_TypeDef;
-
-typedef struct
-{
-    bool (*init)(const BspADCObj_TypeDef obj);
-    uint32_t (*get)(const BspADCObj_TypeDef obj);
-}BspADC_TypeDef;
+#include "Bsp_Port_Def.h"
 
 extern BspADC_TypeDef BspADC;
 

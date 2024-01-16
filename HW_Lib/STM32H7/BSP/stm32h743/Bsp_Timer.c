@@ -1,5 +1,9 @@
 #include "Bsp_Timer.h"
 
+#define To_TIM_Handle_Ptr(x) ((TIM_HandleTypeDef *)x)
+#define To_TIM_Instance_Ptr(x) ((TIM_TypeDef *)x)
+#define To_TIM_DMA_Ptr(x) ((DMA_HandleTypeDef *)x)
+
 typedef struct
 {
     TIM_TypeDef *list[32];
@@ -11,7 +15,7 @@ BspTIM_PWMInitMonitor_TypeDef monitor = {
     .monitor_init = false,
 };
 
-static BspTimerTick_TypeDef *BspTimer_TickObj_List[BspTimer_TickObj_Sum] = {NULL};
+static TIM_HandleTypeDef *BspTimer_TickObj_List[BspTimer_TickObj_Sum] = {NULL};
 
 /* internal function */
 static void BspTimer_DMA_Callback(DMA_HandleTypeDef *hdma);
@@ -77,37 +81,37 @@ static void BspTimer_Fill_TickObj_ToList(BspTimerTickObj_TypeDef *obj)
 {
     if(obj)
     {
-        if (obj->instance == TIM1)
+        if (To_TIM_Instance_Ptr(obj->instance) == TIM1)
         {
-            BspTimer_TickObj_List[BspTimer_1] = obj;
+            BspTimer_TickObj_List[BspTimer_1] = To_TIM_Handle_Ptr(obj->tim_hdl);
         }
-        else if (obj->instance == TIM2)
+        else if (To_TIM_Instance_Ptr(obj->instance) == TIM2)
         {
-            BspTimer_TickObj_List[BspTimer_2] = obj;
+            BspTimer_TickObj_List[BspTimer_2] = To_TIM_Handle_Ptr(obj->tim_hdl);
         }
-        else if (obj->instance == TIM3)
+        else if (To_TIM_Instance_Ptr(obj->instance) == TIM3)
         {
-            BspTimer_TickObj_List[BspTimer_3] = obj;
+            BspTimer_TickObj_List[BspTimer_3] = To_TIM_Handle_Ptr(obj->tim_hdl);
         }
-        else if (obj->instance == TIM4)
+        else if (To_TIM_Instance_Ptr(obj->instance) == TIM4)
         {
-            BspTimer_TickObj_List[BspTimer_4] = obj;
+            BspTimer_TickObj_List[BspTimer_4] = To_TIM_Handle_Ptr(obj->tim_hdl);
         }
-        else if (obj->instance == TIM5)
+        else if (To_TIM_Instance_Ptr(obj->instance) == TIM5)
         {
-            BspTimer_TickObj_List[BspTimer_5] = obj;
+            BspTimer_TickObj_List[BspTimer_5] = To_TIM_Handle_Ptr(obj->tim_hdl);
         }
-        else if (obj->instance == TIM6)
+        else if (To_TIM_Instance_Ptr(obj->instance) == TIM6)
         {
-            BspTimer_TickObj_List[BspTimer_6] = obj;
+            BspTimer_TickObj_List[BspTimer_6] = To_TIM_Handle_Ptr(obj->tim_hdl);
         }
-        else if (obj->instance == TIM7)
+        else if (To_TIM_Instance_Ptr(obj->instance) == TIM7)
         {
-            BspTimer_TickObj_List[BspTimer_7] = obj;
+            BspTimer_TickObj_List[BspTimer_7] = To_TIM_Handle_Ptr(obj->tim_hdl);
         }
-        else if (obj->instance == TIM8)
+        else if (To_TIM_Instance_Ptr(obj->instance) == TIM8)
         {
-            BspTimer_TickObj_List[BspTimer_8] = obj;
+            BspTimer_TickObj_List[BspTimer_8] = To_TIM_Handle_Ptr(obj->tim_hdl);
         }
     }
 }
@@ -285,7 +289,12 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_OC_InitTypeDef sConfigOC = {0};
 
-    if ((obj == NULL) || (instance == NULL) || (buf_aadr == 0) || (buf_size == 0))
+    if ((obj == NULL) || \
+        (obj->tim_hdl == NULL) || \
+        (obj->dma_hdl == NULL) || \
+        (instance == NULL) || \
+        (buf_aadr == 0) || \
+        (buf_size == 0))
         return false;
 
     obj->dma = dma;
@@ -319,40 +328,40 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 
     BspTimer_PWM_InitMonit(instance);
     obj->instance = instance;
-    obj->tim_hdl.Instance = instance;
-    obj->tim_hdl.Init.Prescaler = 0;
-    obj->tim_hdl.Init.CounterMode = TIM_COUNTERMODE_UP;
-    obj->tim_hdl.Init.Period = 0;
-    obj->tim_hdl.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    obj->tim_hdl.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Instance = instance;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Prescaler = 0;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.CounterMode = TIM_COUNTERMODE_UP;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Period = 0;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 
     /* dma init */
-    obj->dma_hdl.Instance = BspDMA.get_instance(dma, stream);
-    obj->dma_hdl.Init.Request = BspTimer_Get_DMA_Request(instance, ch);
-    obj->dma_hdl.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    obj->dma_hdl.Init.PeriphInc = DMA_PINC_DISABLE;
-    obj->dma_hdl.Init.MemInc = DMA_MINC_ENABLE;
-    obj->dma_hdl.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    obj->dma_hdl.Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
-    obj->dma_hdl.Init.Mode = DMA_NORMAL;
-    obj->dma_hdl.Init.Priority = DMA_PRIORITY_HIGH;
-    obj->dma_hdl.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-    obj->dma_hdl.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
-    obj->dma_hdl.Init.MemBurst = DMA_MBURST_SINGLE;
-    obj->dma_hdl.Init.PeriphBurst = DMA_PBURST_SINGLE;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Instance = BspDMA.get_instance(dma, stream);
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Request = BspTimer_Get_DMA_Request(instance, ch);
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Direction = DMA_MEMORY_TO_PERIPH;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.PeriphInc = DMA_PINC_DISABLE;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.MemInc = DMA_MINC_ENABLE;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Mode = DMA_NORMAL;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Priority = DMA_PRIORITY_HIGH;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.MemBurst = DMA_MBURST_SINGLE;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.PeriphBurst = DMA_PBURST_SINGLE;
 
-    if (HAL_DMA_Init(&obj->dma_hdl) != HAL_OK)
+    if (HAL_DMA_Init(To_TIM_DMA_Ptr(obj->dma_hdl)) != HAL_OK)
         return false;
 
-    __HAL_LINKDMA(&(obj->tim_hdl), hdma[obj->tim_dma_id_cc], obj->dma_hdl);
+    __HAL_LINKDMA(To_TIM_Handle_Ptr(obj->tim_hdl), hdma[obj->tim_dma_id_cc], *To_TIM_DMA_Ptr(obj->dma_hdl));
 
-    if (HAL_TIM_PWM_Init(&(obj->tim_hdl)) != HAL_OK)
+    if (HAL_TIM_PWM_Init(To_TIM_Handle_Ptr(obj->tim_hdl)) != HAL_OK)
         return false;
 
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 
-    if (HAL_TIMEx_MasterConfigSynchronization(&(obj->tim_hdl), &sMasterConfig) != HAL_OK)
+    if (HAL_TIMEx_MasterConfigSynchronization(To_TIM_Handle_Ptr(obj->tim_hdl), &sMasterConfig) != HAL_OK)
         return false;
 
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
@@ -360,7 +369,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 
-    if (HAL_TIM_PWM_ConfigChannel(&(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
+    if (HAL_TIM_PWM_ConfigChannel(To_TIM_Handle_Ptr(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
         return false;
 
     obj->tim_channel = ch;
@@ -369,7 +378,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     BspGPIO.alt_init(pin, GPIO_MODE_AF_PP);
 
     /* dma regist */
-    if (BspDMA.regist(dma, stream, &obj->dma_hdl))
+    if (BspDMA.regist(dma, stream, obj->dma_hdl))
     {
         /* init DMA IRQ */
         BspDMA.enable_irq(dma, stream, 5, 0);
@@ -381,8 +390,11 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 {
-    obj->tim_hdl.hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
-    HAL_TIM_PWM_Start(&obj->tim_hdl, obj->tim_channel);
+    if(obj->tim_hdl)
+    {
+        To_TIM_Handle_Ptr(obj->tim_hdl)->hdma[obj->tim_dma_id_cc]->XferCpltCallback = BspTimer_DMA_Callback;
+        HAL_TIM_PWM_Start(To_TIM_Handle_Ptr(obj->tim_hdl), obj->tim_channel);
+    }
 }
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
@@ -395,39 +407,41 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
     switch (obj->tim_dma_id_cc)
     {
     case TIM_DMA_ID_CC1:
-        dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR1;
+        dst_addr = (uint32_t)&To_TIM_Handle_Ptr(obj->tim_hdl)->Instance->CCR1;
         break;
 
     case TIM_DMA_ID_CC2:
-        dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR2;
+        dst_addr = (uint32_t)&To_TIM_Handle_Ptr(obj->tim_hdl)->Instance->CCR2;
         break;
 
     case TIM_DMA_ID_CC3:
-        dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR3;
+        dst_addr = (uint32_t)&To_TIM_Handle_Ptr(obj->tim_hdl)->Instance->CCR3;
         break;
 
     case TIM_DMA_ID_CC4:
-        dst_addr = (uint32_t)&obj->tim_hdl.Instance->CCR4;
+        dst_addr = (uint32_t)&To_TIM_Handle_Ptr(obj->tim_hdl)->Instance->CCR4;
         break;
 
     default:
         return;
     }
 
-    HAL_DMA_Start_IT(obj->tim_hdl.hdma[obj->tim_dma_id_cc], obj->buffer_addr, dst_addr, obj->buffer_size);
-    __HAL_TIM_ENABLE_DMA(&obj->tim_hdl, obj->tim_dma_cc);
+    HAL_DMA_Start_IT(To_TIM_Handle_Ptr(obj->tim_hdl)->hdma[obj->tim_dma_id_cc], obj->buffer_addr, dst_addr, obj->buffer_size);
+    __HAL_TIM_ENABLE_DMA(To_TIM_Handle_Ptr(obj->tim_hdl), obj->tim_dma_cc);
 }
 
 static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
 {
     obj->prescale = prescale;
-    __HAL_TIM_SET_PRESCALER(&obj->tim_hdl, prescale);
+    if(obj->tim_hdl)
+        __HAL_TIM_SET_PRESCALER(To_TIM_Handle_Ptr(obj->tim_hdl), prescale);
 }
 
 static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload)
 {
     obj->auto_reload = auto_reload;
-    __HAL_TIM_SET_AUTORELOAD(&obj->tim_hdl, auto_reload);
+    if(obj->tim_hdl)
+        __HAL_TIM_SET_AUTORELOAD(To_TIM_Handle_Ptr(obj->tim_hdl), auto_reload);
 }
 
 /***************************************************************** Tick Function ***********************************************************************/
@@ -474,25 +488,25 @@ static bool BspTimer_Tick_Init(BspTimerTickObj_TypeDef *obj, uint32_t perscale, 
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     IRQn_Type IRQn;
 
-    if(obj && obj->instance)
+    if(obj && obj->instance && obj->tim_hdl)
     {
         // BspTimer_Clk_Enable();
-        obj->tim_hdl.Instance = obj->instance; // TIM6
-        obj->tim_hdl.Init.Prescaler = perscale;
-        obj->tim_hdl.Init.CounterMode = TIM_COUNTERMODE_UP;
-        obj->tim_hdl.Init.Period = period;
-        obj->tim_hdl.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-        obj->tim_hdl.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-        if (HAL_TIM_Base_Init(&obj->tim_hdl) != HAL_OK)
+        To_TIM_Handle_Ptr(obj->tim_hdl)->Instance = obj->instance; // TIM6
+        To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Prescaler = perscale;
+        To_TIM_Handle_Ptr(obj->tim_hdl)->Init.CounterMode = TIM_COUNTERMODE_UP;
+        To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Period = period;
+        To_TIM_Handle_Ptr(obj->tim_hdl)->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+        To_TIM_Handle_Ptr(obj->tim_hdl)->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+        if (HAL_TIM_Base_Init(To_TIM_Handle_Ptr(obj->tim_hdl)) != HAL_OK)
             return false;
 
         sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-        if (HAL_TIM_ConfigClockSource(&obj->tim_hdl, &sClockSourceConfig) != HAL_OK)
+        if (HAL_TIM_ConfigClockSource(To_TIM_Handle_Ptr(obj->tim_hdl), &sClockSourceConfig) != HAL_OK)
             return false;
 
         sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
         sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-        if (HAL_TIMEx_MasterConfigSynchronization(&obj->tim_hdl, &sMasterConfig) != HAL_OK)
+        if (HAL_TIMEx_MasterConfigSynchronization(To_TIM_Handle_Ptr(obj->tim_hdl), &sMasterConfig) != HAL_OK)
             return false;
     
         BspTimer_Fill_TickObj_ToList(obj);

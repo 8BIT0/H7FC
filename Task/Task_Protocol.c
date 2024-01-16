@@ -220,6 +220,32 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
         
         for(uint8_t i = 0; i < monitor->uart_port_num; i++)
         {
+            /* create port obj element */
+            monitor->Uart_Port[i].Obj->hdl = SrvOsCommon.malloc(UART_HandleType_Size);
+            if(monitor->Uart_Port[i].Obj->hdl == NULL)
+            {
+                SrvOsCommon.free(monitor->Uart_Port[i].Obj->hdl);
+                return false;
+            }
+
+            monitor->Uart_Port[i].Obj->rx_dma_hdl = SrvOsCommon.malloc(UART_DMA_Handle_Size);
+            if(monitor->Uart_Port[i].Obj->rx_dma_hdl == NULL)
+            {
+                SrvOsCommon.free(monitor->Uart_Port[i].Obj->rx_dma_hdl);
+                SrvOsCommon.free(monitor->Uart_Port[i].Obj->hdl);
+                return false;
+            }
+
+            monitor->Uart_Port[i].Obj->tx_dma_hdl = SrvOsCommon.malloc(UART_DMA_Handle_Size);
+            if(monitor->Uart_Port[i].Obj->tx_dma_hdl == NULL)
+            {
+                SrvOsCommon.free(monitor->Uart_Port[i].Obj->rx_dma_hdl);
+                SrvOsCommon.free(monitor->Uart_Port[i].Obj->tx_dma_hdl);
+                SrvOsCommon.free(monitor->Uart_Port[i].Obj->hdl);
+                return false;
+            }
+
+
             if(BspUart.init(monitor->Uart_Port[i].Obj))
             {
                 monitor->Uart_Port[i].init_state = true;

@@ -1,6 +1,9 @@
 #include "Dev_Dshot.h"
 #include <math.h>
 
+__attribute__((weak)) void *DShot_Malloc(uint32_t size){return NULL;}
+__attribute__((weak)) void DShot_Free(void *ptr){return;}
+
 /* external function */
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream);
 static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value);
@@ -41,6 +44,21 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
 
     if (!obj)
         return false;
+
+    obj->pwm_obj.tim_hdl = DShot_Malloc(TIM_HandleType_Size);
+    if(obj->pwm_obj.tim_hdl == NULL)
+    {
+        DShot_Free(obj->pwm_obj.tim_hdl);
+        return false;
+    }
+
+    obj->pwm_obj.dma_hdl = DShot_Malloc(TIM_DMA_HandleType_Size);
+    if(obj->pwm_obj.dma_hdl == NULL)
+    {
+        DShot_Free(obj->pwm_obj.tim_hdl);
+        DShot_Free(obj->pwm_obj.dma_hdl);
+        return false;
+    }
 
     if ((obj->type < DevDshot_150) || (obj->type > DevDshot_600))
     {

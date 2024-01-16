@@ -15,7 +15,6 @@ typedef enum
     GPIO_Exti_TwoEdge,
 } BspGPOP_ExtiMode_List;
 
-#pragma pack(4)
 typedef struct
 {
     void *port;
@@ -23,7 +22,6 @@ typedef struct
     uint8_t init_state;
     uint32_t alternate;
 } BspGPIO_Obj_TypeDef;
-#pragma pack()
 
 typedef struct
 {

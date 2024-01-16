@@ -514,3 +514,13 @@ static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min,
 
     return false;
 }
+
+void *DShot_Malloc(uint32_t size)
+{
+    return SrvOsCommon.malloc(size);
+}
+
+void DShot_Free(void *ptr)
+{
+    SrvOsCommon.free(ptr);
+}

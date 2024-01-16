@@ -1,12 +1,14 @@
 #include "Bsp_SPI.h"
 
+#define To_SPI_Handle_Ptr(x) ((SPI_HandleTypeDef *)x)
+
 /* internal function */
-static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_instance);
+static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance);
 static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg);
-static bool BspSPI_Trans(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint16_t size, uint16_t time_out);
-static bool BspSPI_Receive(SPI_HandleTypeDef *spi_instance, uint8_t *rx, uint16_t size, uint16_t time_out);
-static uint16_t BspSPI_TransReceive(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
-static bool BspSPI_Set_CLKSpeed(SPI_HandleTypeDef *spi_instance, uint32_t speed);
+static bool BspSPI_Trans(void *spi_instance, uint8_t *tx, uint16_t size, uint16_t time_out);
+static bool BspSPI_Receive(void *spi_instance, uint8_t *rx, uint16_t size, uint16_t time_out);
+static uint16_t BspSPI_TransReceive(void *spi_instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
+static bool BspSPI_Set_CLKSpeed(void *spi_instance, uint32_t speed);
 
 /* SPI0 Object */
 BspSpi_TypeDef BspSPI = {
@@ -95,9 +97,12 @@ static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
     return true;
 }
 
-static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_HandleTypeDef *spi_instance)
+static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance)
 {
     SPI_HandleTypeDef SPI_InitStructure;
+
+    if(spi_instance == NULL)
+        return false;
 
     if (spi_cfg.Instance == SPI1)
     {
@@ -154,17 +159,17 @@ static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, SPI_Han
     if (HAL_SPI_Init(&SPI_InitStructure) != HAL_OK)
         return false;
 
-    *spi_instance = SPI_InitStructure;
+    memcpy(To_SPI_Handle_Ptr(spi_instance), &SPI_InitStructure, sizeof(SPI_HandleTypeDef));
 
     return true;
 }
 
-static bool BspSPI_Set_CLKSpeed(SPI_HandleTypeDef *spi_instance, uint32_t speed)
+static bool BspSPI_Set_CLKSpeed(void *spi_instance, uint32_t speed)
 {
     if (spi_instance == NULL)
         return false;
 
-    spi_instance->Init.BaudRatePrescaler = speed;
+    To_SPI_Handle_Ptr(spi_instance)->Init.BaudRatePrescaler = speed;
 
     return true;
 }
@@ -205,26 +210,26 @@ static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg)
     return true;
 }
 
-static bool BspSPI_Trans(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint16_t size, uint16_t time_out)
+static bool BspSPI_Trans(void *spi_instance, uint8_t *tx, uint16_t size, uint16_t time_out)
 {
-    if (HAL_SPI_Transmit(spi_instance, tx, size, time_out) == HAL_OK)
+    if (HAL_SPI_Transmit(To_SPI_Handle_Ptr(spi_instance), tx, size, time_out) == HAL_OK)
         return true;
 
     return false;
 }
 
-static bool BspSPI_Receive(SPI_HandleTypeDef *spi_instance, uint8_t *rx, uint16_t size, uint16_t time_out)
+static bool BspSPI_Receive(void *spi_instance, uint8_t *rx, uint16_t size, uint16_t time_out)
 {
-    if (HAL_SPI_Receive(spi_instance, rx, size, time_out) == HAL_OK)
+    if (HAL_SPI_Receive(To_SPI_Handle_Ptr(spi_instance), rx, size, time_out) == HAL_OK)
         return true;
 
     return false;
 }
 
-static uint16_t BspSPI_TransReceive(SPI_HandleTypeDef *spi_instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out)
+static uint16_t BspSPI_TransReceive(void *spi_instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out)
 {
-    if (HAL_SPI_TransmitReceive(spi_instance, tx, rx, size, time_out) == HAL_OK)
-        return true;
+    if (HAL_SPI_TransmitReceive(To_SPI_Handle_Ptr(spi_instance), tx, rx, size, time_out) == HAL_OK)
+        return size;
 
-    return false;
+    return 0;
 }

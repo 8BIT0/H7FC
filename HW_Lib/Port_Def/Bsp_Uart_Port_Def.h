@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include "Bsp_GPIO.h"
+#include "Bsp_GPIO_Port_Def.h"
 
 typedef void (*BspUART_Callback)(uint8_t *cust_data_addr, uint8_t *buff, uint16_t size);
 
@@ -44,15 +44,15 @@ typedef struct
     bool pin_swap;
 
     void *instance;
-    UART_HandleTypeDef hdl;
+    void *hdl;
 
     int8_t tx_dma;
     int8_t tx_stream;
-    DMA_HandleTypeDef tx_dma_hdl;
+    void *tx_dma_hdl;
 
     int8_t rx_dma;
     int8_t rx_stream;
-    DMA_HandleTypeDef rx_dma_hdl;
+    void *rx_dma_hdl;
 
     BspGPIO_Obj_TypeDef tx_io;
     BspGPIO_Obj_TypeDef rx_io;

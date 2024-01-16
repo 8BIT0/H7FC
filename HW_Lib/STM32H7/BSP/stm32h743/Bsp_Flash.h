@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include "Bsp_Flash_Port_Def.h"
 
 #define FLASH_DEFAULT_DATA              0xFF
 
@@ -26,16 +27,6 @@
 #define FLASH_SECTOR_5_SIZE             ((uint32_t)0x00020000)
 #define FLASH_SECTOR_6_SIZE             ((uint32_t)0x00020000)
 #define FLASH_SECTOR_7_SIZE             ((uint32_t)0x00020000)
-
-typedef struct
-{
-    bool (*init)(void);
-    void (*de_init)(void);
-    bool (*erase)(uint32_t addr, uint32_t len);
-    uint8_t (*get_align_size)(void);
-    bool (*read)(uint32_t addr, uint8_t *p_data, uint32_t size);
-    bool (*write)(uint32_t addr, uint8_t *p_data, uint32_t size);
-} BspFlash_TypeDef;
 
 extern BspFlash_TypeDef BspFlash;
 

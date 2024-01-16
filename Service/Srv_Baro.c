@@ -160,6 +160,21 @@ static bool SrvBaro_BusInit(void)
         switch((uint8_t)SrvBaroBus.type)
         {
             case SrvBaro_Bus_IIC:
+                ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
+                if(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+                {
+                    SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
+                    return false;
+                }
+
+                ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct = SrvOsCommon.malloc(I2C_PeriphCLKInitType_Size);
+                if(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct == NULL)
+                {
+                    SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
+                    SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct);
+                    return false;
+                }
+
                 if(ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
                 {
                     SrvBaroBus.init = true;

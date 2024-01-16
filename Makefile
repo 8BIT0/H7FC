@@ -262,7 +262,8 @@ C_INCLUDES =  \
 -IMAVLink/standard \
 -IDataStructure/ \
 -ISystem/kernel/ \
--ISystem/DataPipe 
+-ISystem/DataPipe/ \
+-IHW_Lib/Port_Def/
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_INCLUDES +=  \
 -IHW_Lib/STM32H7/BSP/stm32h743 \

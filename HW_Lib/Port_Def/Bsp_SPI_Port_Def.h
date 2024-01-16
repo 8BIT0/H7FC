@@ -2,6 +2,7 @@
 #define __BSP_SPI_PORT_DEF_H
 
 #include <stdint.h>
+#include <string.h>
 #include <stdbool.h>
 
 typedef struct
@@ -32,7 +33,7 @@ typedef struct
     bool (*deinit)(BspSPI_NorModeConfig_TypeDef spi_cfg);
     bool (*trans)(void *instance, uint8_t *tx, uint16_t size, uint16_t time_out);
     bool (*receive)(void *instance, uint8_t *rx, uint16_t size, uint16_t time_out);
-    bool (*trans_receive)(void *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
+    uint16_t (*trans_receive)(void *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
     bool (*set_speed)(void *instance, uint32_t speed);
 } BspSpi_TypeDef;
 

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "Bsp_GPIO_Port_Def.h"
 
 typedef void (*BspTimer_Tick_Callback)(const uint32_t tick);
 
@@ -36,7 +37,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(BspTimerPWMObj_TypeDef *obj,
-                 TIM_TypeDef *instance,
+                 void *instance,
                  uint32_t ch,
                  BspGPIO_Obj_TypeDef pin,
                  uint8_t dma,
@@ -60,7 +61,5 @@ typedef struct
     void (*trim_reload)(BspTimerTickObj_TypeDef *obj, uint32_t reload_val);
     void (*trim_counter)(BspTimerTickObj_TypeDef *obj, uint32_t counter_val);
 }BspTimerTick_TypeDef;
-
-void *BspTimer_Get_Tick_HandlePtr(uint8_t index);
 
 #endif

@@ -34,6 +34,6 @@ typedef struct
     bool (*write)(BspIICObj_TypeDef *obj, uint16_t addr, uint16_t reg, uint8_t *p_data, uint16_t len);
 }BspIIC_TypeDef;
 
-void *BspIIC_Get_HandlePtr(uint8_T index);
+void *BspIIC_Get_HandlePtr(uint8_t index);
 
 #endif

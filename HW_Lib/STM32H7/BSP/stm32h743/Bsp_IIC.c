@@ -1,5 +1,8 @@
 #include "Bsp_IIC.h"
 
+#define To_IIC_Handle_Ptr(x) ((I2C_HandleTypeDef *)x)
+#define To_IIC_PeriphCLKInitType(x) ((RCC_PeriphCLKInitTypeDef *)x)
+
 /* internal vriable */
 static I2C_HandleTypeDef* BspIIC_HandleList[BspIIC_Instance_I2C_Sum] = {0};
 
@@ -28,12 +31,16 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
 
     if(obj && obj->Pin->port_sck && obj->Pin->port_sda)
     {
+        if( (obj->PeriphClkInitStruct == NULL) || \
+            (obj->handle == NULL))
+            return false;
+
         switch((uint8_t)(obj->instance_id))
         {
             case BspIIC_Instance_I2C_2:
-                obj->PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C2;
-                obj->PeriphClkInitStruct.I2c123ClockSelection = RCC_I2C123CLKSOURCE_D2PCLK1;
-                if (HAL_RCCEx_PeriphCLKConfig(&(obj->PeriphClkInitStruct)) != HAL_OK)
+                To_IIC_PeriphCLKInitType(obj->PeriphClkInitStruct)->PeriphClockSelection = RCC_PERIPHCLK_I2C2;
+                To_IIC_PeriphCLKInitType(obj->PeriphClkInitStruct)->I2c123ClockSelection = RCC_I2C123CLKSOURCE_D2PCLK1;
+                if (HAL_RCCEx_PeriphCLKConfig(To_IIC_PeriphCLKInitType(obj->PeriphClkInitStruct)) != HAL_OK)
                     return false;
  
                 sda_obj_tmp.alternate = obj->Pin->pin_Alternate;//GPIO_AF4_I2C2;
@@ -50,30 +57,30 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
 
                 __HAL_RCC_I2C2_CLK_ENABLE();
                 
-                obj->handle.Instance = I2C2;
-                obj->handle.Init.Timing = 0x00702991;//0x10909CEC;
-                obj->handle.Init.OwnAddress1 = 0;
-                obj->handle.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-                obj->handle.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-                obj->handle.Init.OwnAddress2 = 0;
-                obj->handle.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-                obj->handle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-                obj->handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+                To_IIC_Handle_Ptr(obj->handle)->Instance = I2C2;
+                To_IIC_Handle_Ptr(obj->handle)->Init.Timing = 0x00702991;//0x10909CEC;
+                To_IIC_Handle_Ptr(obj->handle)->Init.OwnAddress1 = 0;
+                To_IIC_Handle_Ptr(obj->handle)->Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+                To_IIC_Handle_Ptr(obj->handle)->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+                To_IIC_Handle_Ptr(obj->handle)->Init.OwnAddress2 = 0;
+                To_IIC_Handle_Ptr(obj->handle)->Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+                To_IIC_Handle_Ptr(obj->handle)->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+                To_IIC_Handle_Ptr(obj->handle)->Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
                 
-                if (HAL_I2C_Init(&(obj->handle)) != HAL_OK)
+                if (HAL_I2C_Init(To_IIC_Handle_Ptr(obj->handle)) != HAL_OK)
                     return false;
 
-                if (HAL_I2CEx_ConfigAnalogFilter(&(obj->handle), I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+                if (HAL_I2CEx_ConfigAnalogFilter(To_IIC_Handle_Ptr(obj->handle), I2C_ANALOGFILTER_ENABLE) != HAL_OK)
                     return false;
 
-                if (HAL_I2CEx_ConfigDigitalFilter(&(obj->handle), 0) != HAL_OK)
+                if (HAL_I2CEx_ConfigDigitalFilter(To_IIC_Handle_Ptr(obj->handle), 0) != HAL_OK)
                     return false;
 
                 /* I2C2 interrupt Init */
                 HAL_NVIC_SetPriority(I2C2_ER_IRQn, 5, 0);
                 HAL_NVIC_EnableIRQ(I2C2_ER_IRQn);
 
-                BspIIC_HandleList[BspIIC_Instance_I2C_2] = &(obj->handle);
+                BspIIC_HandleList[BspIIC_Instance_I2C_2] = To_IIC_Handle_Ptr(obj->handle);
                 obj->init = true;
                 return true;
 
@@ -118,7 +125,7 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg,
 {
     if(obj && p_buf && len)
     {
-        if(HAL_I2C_Mem_Read(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100) == HAL_OK)
+        if(HAL_I2C_Mem_Read(obj->handle, dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100) == HAL_OK)
             return true;
     }
 
@@ -129,14 +136,14 @@ static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg
 {
     if(obj && p_buf && len)
     {
-        if(HAL_I2C_Mem_Write(&(obj->handle), dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100) == HAL_OK)
+        if(HAL_I2C_Mem_Write(obj->handle, dev_addr, reg, I2C_MEMADD_SIZE_8BIT, p_buf, len, 100) == HAL_OK)
             return true;
     }
 
     return false;
 }
 
-I2C_HandleTypeDef *BspIIC_Get_HandlePtr(BspIIC_Instance_List index)
+void *BspIIC_Get_HandlePtr(BspIIC_Instance_List index)
 {
     if((index > 0) && (index < BspIIC_Instance_I2C_Sum))
     {
