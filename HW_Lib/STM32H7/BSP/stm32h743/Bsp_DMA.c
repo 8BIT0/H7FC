@@ -1,3 +1,4 @@
+#include "Bsp_DMA_Port_Def.h"
 #include "stm32h743xx.h"
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_rcc.h"
@@ -219,4 +220,12 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
 
     HAL_NVIC_SetPriority(irq, preempt, sub);
     HAL_NVIC_EnableIRQ(irq);
+}
+
+static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb)
+{
+    if(fin_cb == NULL)
+        return false;
+
+    return true;
 }
