@@ -274,7 +274,10 @@ static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransEr
 
 static bool BspDMA_Pipe_Trans(uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength)
 {
-    if(!DataPipe_DMA_Init)
+    if (!DataPipe_DMA_Init || \
+        (SrcAddress == 0) || \
+        (DstAddress == 0) || \
+        (DataLength == 0))
         return false;
 
     if(HAL_DMA_Start_IT(&DataPipe_DMA, SrcAddress, DstAddress, DataLength) != HAL_OK)
