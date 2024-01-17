@@ -4,7 +4,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "Bsp_DMA_Port_Def.h"
+#include "stm32h743xx.h"
+#include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_dma.h"
+
+#define To_DMA_Handle_Ptr(x) ((DMA_HandleTypeDef *)x)
 
 typedef enum
 {
@@ -29,5 +33,6 @@ typedef enum
 } BspDMA_Stream_List;
 
 extern BspDMA_TypeDef BspDMA;
+extern BspDMA_Pipe_TypeDef BspDMA_Pipe;
 
 #endif

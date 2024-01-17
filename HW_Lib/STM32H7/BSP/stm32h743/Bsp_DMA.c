@@ -5,6 +5,8 @@
 #include "Bsp_DMA.h"
 
 static DMA_HandleTypeDef *BspDMA_Map[Bsp_DMA_Sum][Bsp_DMA_Stream_Sum] = {NULL};
+static DMA_HandleTypeDef DataPipe_DMA;
+static bool DataPipe_DMA_Init = false;
 
 static const BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA1_Stream0,
@@ -41,6 +43,17 @@ BspDMA_TypeDef BspDMA = {
     .get_handle = BspDMA_Get_Handle,
     .get_instance = BspDMA_Get_Instance,
     .enable_irq = BspDMA_EnableIRQ,
+};
+
+/* pipe external function */
+static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb);
+static bool BspDMA_Pipe_Trans(uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength);
+static void* BspDMA_Get_Pipe_Handle(void);
+
+BspDMA_Pipe_TypeDef BspDMA_Pipe = {
+    .init = BspDMA_Pipe_Init,
+    .trans = BspDMA_Pipe_Trans,
+    .get_hanle = BspDMA_Get_Pipe_Handle,
 };
 
 /* DMA2_Stream7 for DataPipe Use */
@@ -227,5 +240,56 @@ static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransEr
     if(fin_cb == NULL)
         return false;
 
+    /* DMA controller clock enable */
+    __HAL_RCC_DMA2_CLK_ENABLE();
+
+    /* Configure DMA request DataPipe_DMA on DMA2_Stream7 */
+    DataPipe_DMA.Instance = DMA2_Stream7;
+    DataPipe_DMA.Init.Request = DMA_REQUEST_MEM2MEM;
+    DataPipe_DMA.Init.Direction = DMA_MEMORY_TO_MEMORY;
+    DataPipe_DMA.Init.PeriphInc = DMA_PINC_ENABLE;
+    DataPipe_DMA.Init.MemInc = DMA_MINC_ENABLE;
+    DataPipe_DMA.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    DataPipe_DMA.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    DataPipe_DMA.Init.Mode = DMA_NORMAL;
+    DataPipe_DMA.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+    DataPipe_DMA.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+
+    if (HAL_DMA_Init(&DataPipe_DMA) != HAL_OK)
+        return false;
+
+    /* set transmit process callback */
+    HAL_DMA_RegisterCallback(&DataPipe_DMA, HAL_DMA_XFER_CPLT_CB_ID, fin_cb);
+    HAL_DMA_RegisterCallback(&DataPipe_DMA, HAL_DMA_XFER_ERROR_CB_ID, err_cb);
+
+    /* DMA interrupt init */
+    /* DMA2_Stream7_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+
+    DataPipe_DMA_Init = true;
+
     return true;
+}
+
+static bool BspDMA_Pipe_Trans(uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength)
+{
+    if(!DataPipe_DMA_Init)
+        return false;
+
+    if(HAL_DMA_Start_IT(&DataPipe_DMA, SrcAddress, DstAddress, DataLength) != HAL_OK)
+    {
+        HAL_DMA_Abort_IT(&DataPipe_DMA);
+        return false;
+    }
+
+    return true;
+}
+
+static void* BspDMA_Get_Pipe_Handle(void)
+{
+    if(!DataPipe_DMA_Init)
+        return NULL;
+
+    return (void *)&DataPipe_DMA;
 }

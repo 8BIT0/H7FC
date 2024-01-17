@@ -123,7 +123,9 @@ void MDMA_IRQHandler(void)
 
 void DMA2_Stream7_IRQHandler(void)
 {
-  HAL_DMA_IRQHandler(&DataPipe_DMA);
+  DMA_HandleTypeDef *dma_hdl = BspDMA_Pipe.get_hanle();
+  if(dma_hdl)
+    HAL_DMA_IRQHandler(dma_hdl);
 }
 
 void DMA1_Stream0_IRQHandler(void)

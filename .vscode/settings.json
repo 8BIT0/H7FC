@@ -161,7 +161,8 @@
                 "cusqueue.h": "c",
                 "stm32h7xx_hal_tim.h": "c",
                 "bsp_timer_port_def.h": "c",
-                "bsp_usb_port_def.h": "c"
+                "bsp_usb_port_def.h": "c",
+                "bsp_dma_port_def.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,
