@@ -13,4 +13,13 @@ typedef struct
     void (*enable_irq)(int8_t dma, int8_t stream, uint32_t preempt, uint32_t sub);
 } BspDMA_TypeDef;
 
+void (*BspDMA_Pipe_TransFin_Cb)(void *hdl);
+void (*BspDMA_Pipe_TransErr_Cb)(void *hdl);
+
+typedef struct
+{
+    bool (*init)(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb);
+    bool (*trans)(uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength);
+} BspDMA_Pipe_TypeDef;
+
 #endif
