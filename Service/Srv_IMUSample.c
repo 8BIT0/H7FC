@@ -670,12 +670,12 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 /* input true selected / false deselected */
 static void SrvIMU_PriIMU_CS_Ctl(bool state)
 {
-    BspGPIO.write(PriIMU_CSPin.port, PriIMU_CSPin.pin, state);
+    BspGPIO.write(PriIMU_CSPin, state);
 }
 
 static void SrvIMU_SecIMU_CS_Ctl(bool state)
 {
-    BspGPIO.write(SecIMU_CSPin.port, SecIMU_CSPin.pin, state);
+    BspGPIO.write(SecIMU_CSPin, state);
 }
 
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)

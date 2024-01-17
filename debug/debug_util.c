@@ -21,7 +21,7 @@ static bool DebugPin_Ctl(DebugPinObj_TypeDef debug_pin, bool state)
     if (BspGPIO.write == NULL)
         return false;
 
-    BspGPIO.write(debug_pin.port, debug_pin.pin, state);
+    BspGPIO.write(debug_pin, state);
     return true;
 }
 

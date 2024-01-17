@@ -14,7 +14,7 @@ static bool BspGPIO_Output_Init(BspGPIO_Obj_TypeDef IO_Obj);
 static bool BspGPIO_Input_Init(BspGPIO_Obj_TypeDef IO_Obj);
 static bool BspGPIO_Alternate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode);
 static bool BspGPIO_Read(BspGPIO_Obj_TypeDef IO_Obj);
-static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state);
+static void BspGPIO_Write(BspGPIO_Obj_TypeDef IO_Obj, bool state);
 static bool BspGPIO_ExtiInit(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
 static bool BspGPIO_ResetExtiCallback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
 static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode);
@@ -251,9 +251,9 @@ static bool BspGPIO_Read(BspGPIO_Obj_TypeDef IO_Obj)
     return HAL_GPIO_ReadPin(IO_Obj.port, IO_Obj.pin);
 }
 
-static void BspGPIO_Write(uint32_t port, uint16_t pin, bool state)
+static void BspGPIO_Write(BspGPIO_Obj_TypeDef IO_Obj, bool state)
 {
-    HAL_GPIO_WritePin(port, pin, state);
+    HAL_GPIO_WritePin(IO_Obj.port, IO_Obj.pin, state);
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)

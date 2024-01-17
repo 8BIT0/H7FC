@@ -26,6 +26,6 @@ static bool DevLed_Ctl(DevLedObj_TypeDef LedObj, bool state)
     if (BspGPIO.write == NULL)
         return false;
 
-    BspGPIO.write(LedObj.port, LedObj.pin, state);
+    BspGPIO.write(LedObj, state);
     return true;
 }
