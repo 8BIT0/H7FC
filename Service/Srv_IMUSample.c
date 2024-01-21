@@ -789,21 +789,41 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
     if(calib_cycle_cnt == NULL)
         return Calib_Failed;
 
+#if (IMU_SUM >= 2)
     if((pri_gyr == NULL) || 
        (sec_gyr == NULL))
         goto reset_calib_var;
+#else
+    UNUSED(sec_gyr);
+
+    if(pri_gyr == NULL)
+        goto reset_calib_var;
+#endif
 
     if(*calib_cycle_cnt)
     {
         for(i = Axis_X; i < Axis_Sum; i++)
         {
             pri_gyr_tmp[i] = (int16_t)(pri_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
-            sec_gyr_tmp[i] = (int16_t)(sec_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
 
-            /* motion detect */
+             /* motion detect */
             if((pri_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) || /* 3 deg/s */
-               (sec_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) ||
-               (abs(pri_gyr_tmp[i] - lst_pri_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD) ||
+               (abs(pri_gyr_tmp[i] - lst_pri_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD))
+            {
+                /* reset variable */
+                state = Calib_Failed;
+                goto reset_calib_var;
+            }
+            
+            PriIMU_Prc_Gyr_ZeroOffset[i] += pri_gyr_tmp[i];
+            /* we need to keep sensor for static statment for entiry calibration proce */
+            lst_pri_gyr[i] = pri_gyr_tmp[i];
+
+#if (IMU_SUM >= 2)
+            sec_gyr_tmp[i] = (int16_t)(sec_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
+            
+            /* motion detect */
+            if((sec_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) ||
                (abs(sec_gyr_tmp[i] - lst_sec_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD))
             {
                 /* reset variable */
@@ -811,13 +831,9 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
                 goto reset_calib_var;
             }
 
-            /* we need to keep sensor for static statment for entiry calibration proce */
-
-            PriIMU_Prc_Gyr_ZeroOffset[i] += pri_gyr_tmp[i];
             SecIMU_Prc_Gyr_ZeroOffset[i] += sec_gyr_tmp[i];
-
-            lst_pri_gyr[i] = pri_gyr_tmp[i];
             lst_sec_gyr[i] = sec_gyr_tmp[i];
+#endif
         }
 
         (*calib_cycle_cnt)--;
@@ -828,7 +844,9 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
             for(i = Axis_X; i < Axis_Sum; i++)
             {
                 PriIMU_Gyr_ZeroOffset[i] = (PriIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
+#if (IMU_SUM >= 2)
                 SecIMU_Gyr_ZeroOffset[i] = (SecIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
+#endif
             }
 
             return Calib_Done;
@@ -842,10 +860,12 @@ reset_calib_var:
     for(i = Axis_X; i < Axis_Sum; i++)
     {
         PriIMU_Prc_Gyr_ZeroOffset[i] = 0;
-        SecIMU_Prc_Gyr_ZeroOffset[i] = 0;
-
         lst_pri_gyr[i] = 0;
+
+#if (IMU_SUM >= 2)
+        SecIMU_Prc_Gyr_ZeroOffset[i] = 0;
         lst_sec_gyr[i] = 0;
+#endif
     }
             
     return state;
