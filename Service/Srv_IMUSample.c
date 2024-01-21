@@ -330,7 +330,6 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     ErrorLog.registe(SrvMPU_Error_Handle, SrvIMU_ErrorList, sizeof(SrvIMU_ErrorList) / sizeof(SrvIMU_ErrorList[0]));
 
     SrvIMU_ErrorCode_List PriIMU_Init_State = SrvIMU_PriIMU_Init();
-    SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
 
     SrvMpu_Init_Reg.val = 0;
     SrvMpu_Update_Reg.val = 0;
@@ -361,6 +360,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, PriIMU_Init_State, &InUse_PriIMU_Obj, sizeof(InUse_PriIMU_Obj));
 
+#if (IMU_SUM >= 2)
+    SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
+    
     if (SecIMU_Init_State == SrvIMU_No_Error)
     {
         SrvMpu_Init_Reg.sec.Sec_State = true;
@@ -397,6 +399,12 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     }
     else
         return SrvIMU_No_Error;
+#else
+    if(!SrvMpu_Init_Reg.sec.Pri_State)
+        return SrvIMU_AllModule_Init_Error;
+
+    return SrvIMU_No_Error;
+#endif
 }
 
 /* init primary IMU Device */
@@ -533,6 +541,18 @@ static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
     return SrvIMU_No_Error;
 }
 
+/* input true selected / false deselected */
+static void SrvIMU_PriIMU_CS_Ctl(bool state)
+{
+    BspGPIO.write(PriIMU_CSPin, state);
+}
+
+static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
+{
+    return BspSPI.trans_receive(&PriIMU_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
+}
+
+#if (IMU_SUM >= 2)
 /* init primary IMU Device */
 static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 {
@@ -667,17 +687,6 @@ static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
     return SrvIMU_No_Error;
 }
 
-/* input true selected / false deselected */
-static void SrvIMU_PriIMU_CS_Ctl(bool state)
-{
-    BspGPIO.write(PriIMU_CSPin, state);
-}
-
-static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
-{
-    return BspSPI.trans_receive(&PriIMU_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
-}
-
 static void SrvIMU_SecIMU_CS_Ctl(bool state)
 {
     BspGPIO.write(SecIMU_CSPin, state);
@@ -687,6 +696,7 @@ static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 {
     return BspSPI.trans_receive(&SecIMU_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
 }
+#endif
 
 /************************************************************ Module Sample API Function *****************************************************************************/
 static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8_t acc_range, uint16_t gyr_range)
@@ -935,6 +945,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     else
         pri_sample_state = false;
 
+#if (IMU_SUM >= 2)
     /* sec imu init successed */
     if (SrvMpu_Init_Reg.sec.Sec_State & SecSample_Enable)
     {
@@ -1014,11 +1025,21 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     switch(mode)
     {
         case SrvIMU_Priori_Pri:
-            IMU_Data = PriIMU_Data;
+            if(pri_sample_state)
+            {
+                IMU_Data = PriIMU_Data;
+            }
+            else
+                IMU_Data = PriIMU_Data_Lst;
         break;
 
         case SrvIMU_Priori_Sec:
-            IMU_Data = SecIMU_Data;
+            if(!sec_sample_state)
+            {
+                IMU_Data = SecIMU_Data;
+            }
+            else
+                IMU_Data = SecIMU_Data_Lst;
         break;
 
         case SrvIMU_Both_Sample:
@@ -1042,7 +1063,16 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
         default:
             return false;
     }
+#else
+    if(pri_sample_state)
+    {
+        IMU_Data = PriIMU_Data;
+    }
+    else
+        IMU_Data = PriIMU_Data_Lst;
 
+    IMU_Data.time_stamp = SrvOsCommon.get_os_ms();
+#endif
     /* unlock fus data */
     SrvMpu_Update_Reg.sec.Fus_State = false;
     IMU_Data_Lst = IMU_Data;
