@@ -1084,6 +1084,12 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
             return false;
     }
 #else
+    /* update calibration state */
+    if((Gyro_Calib_Monitor.state == Calib_Start) || (Gyro_Calib_Monitor.state == Calib_InProcess))
+    {
+        Gyro_Calib_Monitor.state = SrvIMU_Calib_GyroZeroOffset(Gyro_Calib_Monitor.calib_cycle, &Gyro_Calib_Monitor.cur_cycle, PriIMU_Data.org_gyr, NULL);
+    }
+    
     if(pri_sample_state)
     {
         IMU_Data = PriIMU_Data;
