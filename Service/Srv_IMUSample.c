@@ -60,7 +60,7 @@ static float SecIMU_Gyr_ZeroOffset[Axis_Sum] = {0.0f};
 
 /*
  *   PriIMU -> MPU6000
- *   SecIMU -> ICM20602
+ *   SecIMU -> ICM42688P
  */
 static SrvMpu_Reg_TypeDef SrvMpu_Init_Reg;
 static SrvMpu_Reg_TypeDef SrvMpu_Update_Reg;

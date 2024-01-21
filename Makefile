@@ -233,8 +233,8 @@ C_DEFS =  \
 FPU = -mfpu=fpv5-d16
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
 C_DEFS = \
--DBATEAT32F435_AIO \
--DAT32F435RGT7
+-DBATEAT32F435_AIO
+
 endif
 
 # float-abi
@@ -252,6 +252,7 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
+-I/ \
 -IIO_Def/ \
 -Idebug/ \
 -ITask/ \
