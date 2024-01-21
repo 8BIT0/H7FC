@@ -11,6 +11,7 @@
 #include "Bsp_SPI.h"
 #include "error_log.h"
 #include "Dev_Led.h"
+#include "../FCHW_Config.h"
 #include "../Algorithm/Filter_Dep/filter.h"
 #include <math.h>
 
@@ -312,6 +313,12 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     memset(&InUse_PriIMU_Obj, 0, sizeof(InUse_PriIMU_Obj));
     memset(&InUse_SecIMU_Obj, 0, sizeof(InUse_SecIMU_Obj));
 
+    memset(&PriIMU_Data, 0, sizeof(PriIMU_Data));
+    memset(&SecIMU_Data, 0, sizeof(SecIMU_Data));
+
+    memset(&PriIMU_Data_Lst, 0, sizeof(PriIMU_Data_Lst));
+    memset(&SecIMU_Data_Lst, 0, sizeof(SecIMU_Data_Lst));
+
     /* init gyro calibration monitor */
     Gyro_Calib_Monitor.state = Calib_Start;
     Gyro_Calib_Monitor.calib_cycle = GYR_STATIC_CALIB_CYCLE;
@@ -375,12 +382,6 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     }
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, SecIMU_Init_State, &InUse_SecIMU_Obj, sizeof(InUse_SecIMU_Obj));
-
-    memset(&PriIMU_Data, NULL, sizeof(PriIMU_Data));
-    memset(&SecIMU_Data, NULL, sizeof(SecIMU_Data));
-
-    memset(&PriIMU_Data_Lst, NULL, sizeof(PriIMU_Data_Lst));
-    memset(&SecIMU_Data_Lst, NULL, sizeof(SecIMU_Data_Lst));
 
     if (!SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
@@ -673,14 +674,14 @@ static void SrvIMU_PriIMU_CS_Ctl(bool state)
     BspGPIO.write(PriIMU_CSPin, state);
 }
 
-static void SrvIMU_SecIMU_CS_Ctl(bool state)
-{
-    BspGPIO.write(SecIMU_CSPin, state);
-}
-
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 {
     return BspSPI.trans_receive(&PriIMU_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
+}
+
+static void SrvIMU_SecIMU_CS_Ctl(bool state)
+{
+    BspGPIO.write(SecIMU_CSPin, state);
 }
 
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
