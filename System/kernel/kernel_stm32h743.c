@@ -4,7 +4,7 @@
  * for stm32 some assemble and regsiter are in common
  */
 
-#include "kernel.h"
+#include "kernel_stm32xxx.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_pwr.h"
 #include "stm32h7xx_hal.h"

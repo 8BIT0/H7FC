@@ -169,7 +169,22 @@ LDSCRIPT = STM32H743VIHx_FLASH.ld
 CPU = -mcpu=cortex-m7
 
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
-C_SOURCES +=  
+C_SOURCES += \
+HW_Lib/AT32F435/bsp/Bsp_GPIO.c \
+HW_Lib/AT32F435/bsp/Bsp_Spi.c \
+HW_Lib/device_support/at32f435_437_clock.c \
+HW_Lib/device_support/at32f435_437_int.c \
+HW_Lib/device_support/system_at32f435_437.c \
+HW_Lib/drivers/src/at32f435_437_crm.c \
+HW_Lib/drivers/src/at32f435_437_misc.c \
+HW_Lib/driver/src/at32f435_437_gpio.c \
+HW_Lib/driver/src/at32f435_437_spi.c \
+HW_Lib/driver/src/at32f435_437_i2c.c \
+HW_Lib/driver/src/at32f435_437_tmr.c \
+HW_Lib/driver/src/at32f435_437_exint.c \
+HW_Lib/driver/src/at32f435_437_dma.c \
+HW_Lib/driver/src/at32f435_437_usb.c \
+HW_Lib/driver/src/at32f435_437_usart.c
 
 ASM_SOURCES =  \
 startup_at32f435_437.s

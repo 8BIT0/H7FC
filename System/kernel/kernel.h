@@ -4,10 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include "stm32h7xx.h"
-
-#define Kernel_DisableIRQ() __asm("cpsid i")
-#define Kernel_EnableIRQ() __asm("cpsie i")
 
 bool Kernel_Init(void);
 bool Kernel_EnableTimer_IRQ(void);
