@@ -4,13 +4,15 @@
 #define ON 1
 #define OFF 0
 
+#define HW_MATEK_STM32H743
+
 #if defined HW_MATEK_STM32H743
 
-#define IMU_CNT 2
+#define IMU_CNT 1
 #define BARO_CNT 1
 #define MAG_CNT 0
 #define SD_CARD_ENABLE_STATE ON
-#define FLASH_ENABLE_STATE OFF
+#define FLASH_CHIP_ENABLE_STATE OFF
 
 #elif defined HW_BATEAIO_AT32F435
 
@@ -44,12 +46,12 @@
 #define FLASH_CHIP_ENABLE_STATE OFF
 #endif
 
+#endif
+
 #define IMU_SUM IMU_CNT
 #define BARO_SUM BARO_CNT
 #define MAG_SUM MAG_CNT
 #define SD_CARD SD_CARD_ENABLE_STATE
 #define FLASH_CHIP FLASH_CHIP_ENABLE_STATE
-
-#endif
 
 #endif

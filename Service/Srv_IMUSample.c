@@ -1082,6 +1082,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
 
 static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *range)
 {
+#if (IMU_SUM >= 2)
     if(((SrvIMU_PriModule == module) || (SrvIMU_SecModule == module)) && range)
     {
         if((SrvIMU_PriModule == module) && SrvMpu_Init_Reg.sec.Pri_State)
@@ -1099,7 +1100,15 @@ static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *ra
             return true;
         }
     }
-
+#else
+    if(SrvMpu_Init_Reg.sec.Pri_State && range)
+    {
+        range->Acc = InUse_PriIMU_Obj.acc_trip;
+        range->Gyr = InUse_PriIMU_Obj.gyr_trip;
+        
+        return true; 
+    }
+#endif
     return false;
 }
 
