@@ -8,6 +8,7 @@
 #include "imu_data.h"
 #include "util.h"
 #include "gen_calib.h"
+#include "../FCHW_Config.h"
 
 #define MPU_RANGE_MAX_THRESHOLD 1.2f
 #define MPU_RANGE_MIN_THRESHOLD 0.9f
