@@ -113,8 +113,7 @@ static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List
 static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq)
 {
     IRQn_Type irq;
-
-    UNUSED(mux_seq);
+    dma_channel_type *dmamux = NULL;
 
     if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_1))
         return;
@@ -125,30 +124,37 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
         {
         case Bsp_DMA_Stream_1:
             irq = DMA1_Channel1_IRQn;
+            dmamux = DMA1MUX_CHANNEL1;
             break;
 
         case Bsp_DMA_Stream_2:
             irq = DMA1_Channel2_IRQn;
+            dmamux = DMA1MUX_CHANNEL2;
             break;
 
         case Bsp_DMA_Stream_3:
             irq = DMA1_Channel3_IRQn;
+            dmamux = DMA1MUX_CHANNEL3;
             break;
 
         case Bsp_DMA_Stream_4:
             irq = DMA1_Channel4_IRQn;
+            dmamux = DMA1MUX_CHANNEL4;
             break;
 
         case Bsp_DMA_Stream_5:
             irq = DMA1_Channel5_IRQn;
+            dmamux = DMA1MUX_CHANNEL5;
             break;
 
         case Bsp_DMA_Stream_6:
             irq = DMA1_Channel6_IRQn;
+            dmamux = DMA1MUX_CHANNEL6;
             break;
 
         case Bsp_DMA_Stream_7:
             irq = DMA1_Channel7_IRQn;
+            dmamux = DMA1MUX_CHANNEL7;
             break;
 
         default:
@@ -161,30 +167,37 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
         {
         case Bsp_DMA_Stream_1:
             irq = DMA2_Channel1_IRQn;
+            dmamux = DMA2MUX_CHANNEL1;
             break;
 
         case Bsp_DMA_Stream_2:
             irq = DMA2_Channel2_IRQn;
+            dmamux = DMA2MUX_CHANNEL2;
             break;
 
         case Bsp_DMA_Stream_3:
             irq = DMA2_Channel3_IRQn;
+            dmamux = DMA2MUX_CHANNEL3;
             break;
 
         case Bsp_DMA_Stream_4:
             irq = DMA2_Channel4_IRQn;
+            dmamux = DMA2MUX_CHANNEL4;
             break;
 
         case Bsp_DMA_Stream_5:
             irq = DMA2_Channel5_IRQn;
+            dmamux = DMA2MUX_CHANNEL5;
             break;
 
         case Bsp_DMA_Stream_6:
             irq = DMA2_Channel6_IRQn;
+            dmamux = DMA2MUX_CHANNEL6;
             break;
 
         case Bsp_DMA_Stream_7:
             irq = DMA2_Channel7_IRQn;
+            dmamux = DMA2MUX_CHANNEL7;
             break;
 
         default:
@@ -197,6 +210,10 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
     dma_interrupt_enable(BspDMA_Get_Instance(dma, stream), DMA_FDT_INT, TRUE);
     nvic_priority_group_config(NVIC_PRIORITY_GROUP_0);
     nvic_irq_enable(irq, preempt, sub);
+
+    if((mux_seq > DMAMUX_DMAREQ_ID_DVP) || (mux_seq < DMAMUX_DMAREQ_ID_REQ_G1))
+        return;
+    dmamux_init(dmamux, (dmamux_requst_id_sel_type)mux_seq);
 }
 
 static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb)
