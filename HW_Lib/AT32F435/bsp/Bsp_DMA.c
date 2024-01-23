@@ -1,8 +1,6 @@
 #include "Bsp_DMA.h"
 #include "at32f435_437_dma.h"
 
-// static *BspDMA_Map[Bsp_DMA_Sum][Bsp_DMA_Stream_Sum] = {NULL};
-
 static const dma_channel_type* BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA1_CHANNEL1,
     DMA1_CHANNEL2,
@@ -27,16 +25,56 @@ static bool DataPipe_InTrans = false;
 static BspDMA_Pipe_TransFin_Cb DataPipe_Trans_Fin_Callback = NULL;
 static BspDMA_Pipe_TransErr_Cb DataPipe_Trans_Err_Callback = NULL;
 
-/* external function */
+/* external funtion */
+static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, void *hdl);
+static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
+static void *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream);
+static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream);
+static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub);
+
+/* pipe external function */
 static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb);
 static bool BspDMA_Pipe_Trans(uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength);
 static void *BspDMA_Get_Pipe_Handle(void);
+
+BspDMA_TypeDef BspDMA = {
+    .regist = BspDMA_Regist_Obj,
+    .unregist = BspDMA_Unregist_Obj,
+    .get_handle = BspDMA_Get_Handle,
+    .get_instance = BspDMA_Get_Instance,
+    .enable_irq = BspDMA_EnableIRQ,
+};
 
 BspDMA_Pipe_TypeDef BspDMA_Pipe = {
     .init = BspDMA_Pipe_Init,
     .trans = BspDMA_Pipe_Trans,
     .get_hanle = BspDMA_Get_Pipe_Handle,
 };
+
+static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, void *hdl)
+{
+    UNUSED(dma);
+    UNUSED(stream);
+    UNUSED(hdl);
+
+    return true;
+}
+
+static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
+{
+    UNUSED(dma);
+    UNUSED(stream);
+    
+    return true;
+}
+
+static void *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream)
+{
+    UNUSED(dma);
+    UNUSED(stream);
+
+    return NULL;
+}
 
 static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream)
 {
