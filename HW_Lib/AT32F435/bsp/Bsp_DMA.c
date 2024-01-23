@@ -1,9 +1,9 @@
 #include "Bsp_DMA.h"
 #include "at32f435_437_dma.h"
 
-// static DMA_HandleTypeDef *BspDMA_Map[Bsp_DMA_Sum][Bsp_DMA_Stream_Sum] = {NULL};
+// static *BspDMA_Map[Bsp_DMA_Sum][Bsp_DMA_Stream_Sum] = {NULL};
 
-static const BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
+static const dma_channel_type* BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA1_CHANNEL1,
     DMA1_CHANNEL2,
     DMA1_CHANNEL3,
@@ -12,7 +12,7 @@ static const BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA1_CHANNEL6,
     DMA1_CHANNEL7};
 
-static const BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
+static const dma_channel_type* BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA2_CHANNEL1,
     DMA2_CHANNEL2,
     DMA2_CHANNEL3,
@@ -48,14 +48,114 @@ static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List
 
     if ((dma == Bsp_DMA_1) && ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_1)))
     {
+        if (!dma1_clk_init)
+        {
+            crm_periph_clock_enable(CRM_DMA1_PERIPH_CLOCK, TRUE);
+            dmamux_enable(DMA1, TRUE);
+            dma1_clk_init = true;
+        }
 
+        return BspDMA1_Instance_List[stream];
     }
     else if ((dma == Bsp_DMA_2) && ((stream < Bsp_DMA_Stream_7) && (stream >= Bsp_DMA_Stream_1)))
     {
+        if (!dma2_clk_init)
+        {
+            // crm_periph_clock_enable(CRM_DMA2_PERIPH_CLOCK, TRUE);
+            dmamux_enable(DMA2, TRUE);
+            dma2_clk_init = true;
+        }
 
+        return BspDMA2_Instance_List[stream];
     }
 
     return NULL;
+}
+
+static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub)
+{
+    IRQn_Type irq;
+
+    if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_1))
+        return;
+
+    if (dma == Bsp_DMA_1)
+    {
+        switch (stream)
+        {
+        case Bsp_DMA_Stream_1:
+            irq = DMA1_Channel1_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_2:
+            irq = DMA1_Channel2_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_3:
+            irq = DMA1_Channel3_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_4:
+            irq = DMA1_Channel4_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_5:
+            irq = DMA1_Channel5_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_6:
+            irq = DMA1_Channel6_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_7:
+            irq = DMA1_Channel7_IRQn;
+            break;
+
+        default:
+            return;
+        }
+    }
+    else if (dma == Bsp_DMA_2)
+    {
+        switch (stream)
+        {
+        case Bsp_DMA_Stream_1:
+            irq = DMA2_Channel1_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_2:
+            irq = DMA2_Channel2_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_3:
+            irq = DMA2_Channel3_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_4:
+            irq = DMA2_Channel4_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_5:
+            irq = DMA2_Channel5_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_6:
+            irq = DMA2_Channel6_IRQn;
+            break;
+
+        case Bsp_DMA_Stream_7:
+            irq = DMA2_Channel7_IRQn;
+            break;
+
+        default:
+            return;
+        }
+    }
+    else
+        return;
+
+    nvic_priority_group_config(NVIC_PRIORITY_GROUP_0);
+    nvic_irq_enable(irq, preempt, sub);
 }
 
 static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb)
