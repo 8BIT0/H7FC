@@ -381,7 +381,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     if (BspDMA.regist(dma, stream, obj->dma_hdl))
     {
         /* init DMA IRQ */
-        BspDMA.enable_irq(dma, stream, 5, 0);
+        BspDMA.enable_irq(dma, stream, 5, 0, 0);
         return true;
     }
 
