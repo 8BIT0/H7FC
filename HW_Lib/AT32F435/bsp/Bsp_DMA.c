@@ -60,7 +60,7 @@ static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, void *
     return true;
 }
 
-static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
+static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream)
 {
     UNUSED(dma);
     UNUSED(stream);
