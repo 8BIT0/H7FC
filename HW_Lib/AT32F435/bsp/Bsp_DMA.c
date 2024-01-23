@@ -38,6 +38,23 @@ BspDMA_Pipe_TypeDef BspDMA_Pipe = {
     .get_hanle = BspDMA_Get_Pipe_Handle,
 };
 
+static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream)
+{
+    if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_1))
+        return NULL;
+
+    if ((dma == Bsp_DMA_1) && ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_1)))
+    {
+
+    }
+    else if ((dma == Bsp_DMA_2) && ((stream < Bsp_DMA_Stream_7) && (stream >= Bsp_DMA_Stream_1)))
+    {
+
+    }
+
+    return NULL;
+}
+
 static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb)
 {
     dma_init_type dma_init_struct;

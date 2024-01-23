@@ -60,8 +60,8 @@ BspDMA_Pipe_TypeDef BspDMA_Pipe = {
 static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream)
 {
     DMA2D_TypeDef *instance;
-    bool dma1_clk_init = false;
-    bool dma2_clk_init = false;
+    static bool dma1_clk_init = false;
+    static bool dma2_clk_init = false;
 
     if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_0))
         return NULL;
