@@ -59,7 +59,6 @@ BspDMA_Pipe_TypeDef BspDMA_Pipe = {
 /* DMA2_Stream7 for DataPipe Use */
 static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream)
 {
-    DMA2D_TypeDef *instance;
     static bool dma1_clk_init = false;
     static bool dma2_clk_init = false;
 

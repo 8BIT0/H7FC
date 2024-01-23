@@ -40,6 +40,9 @@ BspDMA_Pipe_TypeDef BspDMA_Pipe = {
 
 static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream)
 {
+    static bool dma1_clk_init = false;
+    static bool dma2_clk_init = false;
+
     if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_1))
         return NULL;
 
