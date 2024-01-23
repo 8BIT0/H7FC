@@ -4,6 +4,7 @@
 #include "IO_Definition.h"
 #include "debug_util.h"
 #include "error_log.h"
+#include "../FCHW_Config.h"
 #include "../System/DataPipe/DataPipe.h"
 #include "Srv_SensorMonitor.h"
 
@@ -52,8 +53,10 @@ void TaskSample_Init(uint32_t period)
     SensorMonitor.enabled_reg.bit.imu = true;
     SensorMonitor.freq_reg.bit.imu = SrvSensorMonitor_SampleFreq_1KHz;
     
+#if (BARO_SUM >= 1)
     SensorMonitor.enabled_reg.bit.baro = true;
     SensorMonitor.freq_reg.bit.baro = SrvSensorMonitor_SampleFreq_50Hz;
+#endif
 
     sample_enable = SrvSensorMonitor.init(&SensorMonitor);
 

@@ -8,7 +8,7 @@
 
 #if defined HW_MATEK_STM32H743
 
-#define IMU_CNT 1
+#define IMU_CNT 2
 #define BARO_CNT 1
 #define MAG_CNT 0
 #define SD_CARD_ENABLE_STATE ON
