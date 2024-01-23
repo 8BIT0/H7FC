@@ -1,6 +1,26 @@
 #include "Bsp_DMA.h"
 #include "at32f435_437_dma.h"
 
+// static DMA_HandleTypeDef *BspDMA_Map[Bsp_DMA_Sum][Bsp_DMA_Stream_Sum] = {NULL};
+
+static const BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
+    DMA1_CHANNEL1,
+    DMA1_CHANNEL2,
+    DMA1_CHANNEL3,
+    DMA1_CHANNEL4,
+    DMA1_CHANNEL5,
+    DMA1_CHANNEL6,
+    DMA1_CHANNEL7};
+
+static const BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
+    DMA2_CHANNEL1,
+    DMA2_CHANNEL2,
+    DMA2_CHANNEL3,
+    DMA2_CHANNEL4,
+    DMA2_CHANNEL5,
+    DMA2_CHANNEL6,
+    DMA2_CHANNEL7};
+
 /* internal function */
 static bool DataPipe_DMA_Init = false;
 static bool DataPipe_InTrans = false;
