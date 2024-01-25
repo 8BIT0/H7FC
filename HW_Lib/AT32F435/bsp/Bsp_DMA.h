@@ -4,6 +4,7 @@
 #include "Bsp_DMA_Port_Def.h"
 
 typedef void (*BspDMA_Irq_Callback_Func)(void *dma_hdl);
+#define To_DMA_CHANNEL_Ptr(x) ((dma_channel_type *)x)
 
 typedef enum
 {
