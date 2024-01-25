@@ -1,6 +1,9 @@
 #include "Bsp_DMA.h"
 #include "at32f435_437_dma.h"
 
+static BspDMA_Irq_Callback_Func BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_Sum] = {NULL};
+static BspDMA_Irq_Callback_Func BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_Sum] = {NULL};
+
 static const dma_channel_type* BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA1_CHANNEL1,
     DMA1_CHANNEL2,
@@ -30,7 +33,7 @@ static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, void *
 static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
 static void *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream);
 static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream);
-static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq);
+static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq, void *cb);
 
 /* pipe external function */
 static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb);
@@ -110,7 +113,7 @@ static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List
     return NULL;
 }
 
-static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq)
+static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq, void *cb)
 {
     IRQn_Type irq;
     dma_channel_type *dmamux = NULL;
@@ -125,6 +128,7 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
         case Bsp_DMA_Stream_1:
             irq = DMA1_Channel1_IRQn;
             dmamux = DMA1MUX_CHANNEL1;
+            dma1_cb = cb;
             break;
 
         case Bsp_DMA_Stream_2:
@@ -160,6 +164,8 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
         default:
             return;
         }
+
+        BspDMA1_Irq_Callback_List[stream] = (BspDMA_Irq_Callback_Func)cb;
     }
     else if (dma == Bsp_DMA_2)
     {
@@ -203,6 +209,8 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
         default:
             return;
         }
+    
+        BspDMA2_Irq_Callback_List[stream] = (BspDMA_Irq_Callback_Func)cb;
     }
     else
         return;
@@ -293,5 +301,112 @@ void BspDMA_Pipe_Irq_Callback(void)
             if(DataPipe_Trans_Fin_Callback)
                DataPipe_Trans_Fin_Callback((void *)DMA2_CHANNEL7); 
         }
+    }
+}
+
+void BspDMA_Irq_Callback(dma_channel_type *channel)
+{
+    if(channel == DMA1_CHANNEL1)
+    {
+        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_1])
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_1](DMA1_CHANNEL1);
+
+        return;
+    }
+
+    if(channel == DMA1_CHANNEL2)
+    {
+        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_2])
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_2](DMA1_CHANNEL2);
+
+        return;
+    }
+
+    if(channel == DMA1_CHANNEL3)
+    {
+        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_3])
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_3](DMA1_CHANNEL3);
+
+        return;
+    }
+
+    if(channel == DMA1_CHANNEL4)
+    {
+        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_4])
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_4](DMA1_CHANNEL4);
+
+        return;
+    }
+
+    if(channel == DMA1_CHANNEL5)
+    {
+        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_5])
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_5](DMA1_CHANNEL5);
+
+        return;
+    }
+
+    if(channel == DMA1_CHANNEL6)
+    {
+        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_6])
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_6](DMA1_CHANNEL6);
+
+        return;
+    }
+
+    if(channel == DMA1_CHANNEL7)
+    {
+        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_7])
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_7](DMA1_CHANNEL7);
+
+        return;
+    }
+
+    if(channel == DMA2_CHANNEL1)
+    {
+        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_1])
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_1](DMA2_CHANNEL1);
+    
+        return;
+    }
+
+    if(channel == DMA2_CHANNEL2)
+    {
+        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_2])
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_2](DMA2_CHANNEL2);
+    
+        return;
+    }
+
+    if(channel == DMA2_CHANNEL3)
+    {
+        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_3])
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_3](DMA2_CHANNEL3);
+
+        return;
+    }
+
+    if(channel == DMA2_CHANNEL4)
+    {
+        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_4])
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_4](DMA2_CHANNEL4);
+
+        return;
+    }
+
+    if(channel == DMA2_CHANNEL5)
+    {
+        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_5])
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_5](DMA2_CHANNEL5);
+
+        return;
+    }
+
+    if(channel == DMA2_CHANNEL6)
+    {
+        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_6])
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_6](DMA2_CHANNEL6);
+
+        return;
     }
 }

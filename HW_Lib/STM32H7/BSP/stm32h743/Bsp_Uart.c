@@ -178,7 +178,7 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
 
         __HAL_LINKDMA(To_Uart_Handle_Ptr(obj->hdl), hdmarx, *To_UartDMA_Handle_Ptr(obj->rx_dma_hdl));
 
-        BspDMA.enable_irq(obj->rx_dma, obj->rx_stream, 5, 0, 0);
+        BspDMA.enable_irq(obj->rx_dma, obj->rx_stream, 5, 0, 0, NULL);
     }
 
     if(tx_dma_reg_state)
@@ -188,7 +188,7 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
 
         __HAL_LINKDMA(To_Uart_Handle_Ptr(obj->hdl), hdmatx, *To_UartDMA_Handle_Ptr(obj->tx_dma_hdl));
 
-        BspDMA.enable_irq(obj->tx_dma, obj->tx_stream, 5, 0, 0);
+        BspDMA.enable_irq(obj->tx_dma, obj->tx_stream, 5, 0, 0, NULL);
     }
 
     return index;

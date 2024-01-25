@@ -35,7 +35,7 @@ static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, DMA_Ha
 static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
 static DMA_HandleTypeDef *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream);
 static DMA2D_TypeDef *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream);
-static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq);
+static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq, void *cb);
 
 BspDMA_TypeDef BspDMA = {
     .regist = BspDMA_Regist_Obj,
@@ -140,9 +140,11 @@ static DMA_HandleTypeDef *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List 
     return NULL;
 }
 
-static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq)
+static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq, void *cb)
 {
     UNUSED(mux_seq);
+    UNUSED(cb);
+    
     IRQn_Type irq;
 
     if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_0))
