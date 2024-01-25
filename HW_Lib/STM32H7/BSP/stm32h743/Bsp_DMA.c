@@ -144,7 +144,7 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
 {
     UNUSED(mux_seq);
     UNUSED(cb);
-    
+
     IRQn_Type irq;
 
     if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_0))
