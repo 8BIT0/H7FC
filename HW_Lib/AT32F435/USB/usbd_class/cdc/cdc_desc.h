@@ -67,8 +67,8 @@ extern "C" {
 /**
   * @brief usb string define(vendor, product configuration, interface)
   */
-#define USBD_CDC_DESC_MANUFACTURER_STRING    "Artery"
-#define USBD_CDC_DESC_PRODUCT_STRING         "AT32 Virtual Com Port  "
+#define USBD_CDC_DESC_MANUFACTURER_STRING    "8_B!T0"
+#define USBD_CDC_DESC_PRODUCT_STRING         "H7FC"
 #define USBD_CDC_DESC_CONFIGURATION_STRING   "Virtual ComPort Config"
 #define USBD_CDC_DESC_INTERFACE_STRING       "Virtual ComPort Interface"
 
