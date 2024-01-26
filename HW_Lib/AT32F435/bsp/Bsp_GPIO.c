@@ -240,9 +240,15 @@ static bool BspGPIO_Altnate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
 {
     gpio_init_type gpio_initstructure;
     uint32_t pin_source = 0;
+    crm_periph_clock_type clk = 0;
 
     UNUSED(af_mode);
 
+    clk = BspGPIO_Get_CLK(To_GPIO_Port(IO_Obj.port)->port);
+    if(clk == 0)
+        return false;
+    
+    crm_periph_clock_enable(clk, TRUE);
     gpio_default_para_init(&gpio_initstructure);
 
     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
@@ -250,6 +256,7 @@ static bool BspGPIO_Altnate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
     if(pin_source == 16)
         return false;
 
+    gpio_initstructure.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
     gpio_initstructure.gpio_pull = GPIO_PULL_UP;
     gpio_initstructure.gpio_mode = GPIO_MODE_MUX;
     gpio_initstructure.gpio_pins = IO_Obj.pin;

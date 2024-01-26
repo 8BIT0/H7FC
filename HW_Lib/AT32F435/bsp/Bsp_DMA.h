@@ -3,7 +3,12 @@
 
 #include "Bsp_DMA_Port_Def.h"
 
-typedef void (*BspDMA_Irq_Callback_Func)(void *dma_hdl);
+typedef struct
+{
+    void (*BspDMA_Irq_Callback_Func)(void *cus);
+    void *cus_data;
+}BspDMA_IrqCall_Obj_TypeDef;
+
 #define To_DMA_CHANNEL_Ptr(x) ((dma_channel_type *)x)
 
 typedef enum
@@ -28,7 +33,7 @@ typedef enum
 } BspDMA_Stream_List;
 
 void BspDMA_Pipe_Irq_Callback(void);
-void BspDMA_Irq_Callback(dma_channel_type *channel);
+void BspDMA_Irq_Callback(void *channel);
 
 extern BspDMA_TypeDef BspDMA;
 extern BspDMA_Pipe_TypeDef BspDMA_Pipe;

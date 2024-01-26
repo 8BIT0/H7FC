@@ -1,8 +1,8 @@
 #include "Bsp_DMA.h"
 #include "at32f435_437_dma.h"
 
-static BspDMA_Irq_Callback_Func BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_Sum] = {NULL};
-static BspDMA_Irq_Callback_Func BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_Sum] = {NULL};
+static BspDMA_IrqCall_Obj_TypeDef* BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_Sum] = {NULL};
+static BspDMA_IrqCall_Obj_TypeDef* BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_Sum] = {NULL};
 
 static const dma_channel_type* BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA1_CHANNEL1,
@@ -128,7 +128,6 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
         case Bsp_DMA_Stream_1:
             irq = DMA1_Channel1_IRQn;
             dmamux = DMA1MUX_CHANNEL1;
-            dma1_cb = cb;
             break;
 
         case Bsp_DMA_Stream_2:
@@ -165,7 +164,7 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
             return;
         }
 
-        BspDMA1_Irq_Callback_List[stream] = (BspDMA_Irq_Callback_Func)cb;
+        BspDMA1_Irq_Callback_List[stream] = (BspDMA_IrqCall_Obj_TypeDef *)cb;
     }
     else if (dma == Bsp_DMA_2)
     {
@@ -210,18 +209,17 @@ static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_
             return;
         }
     
-        BspDMA2_Irq_Callback_List[stream] = (BspDMA_Irq_Callback_Func)cb;
+        BspDMA2_Irq_Callback_List[stream] = (BspDMA_IrqCall_Obj_TypeDef *)cb;
     }
     else
         return;
 
+    if((mux_seq < DMAMUX_DMAREQ_ID_DVP) || (mux_seq > DMAMUX_DMAREQ_ID_REQ_G1))
+        dmamux_init(dmamux, (dmamux_requst_id_sel_type)mux_seq);
+
     dma_interrupt_enable(BspDMA_Get_Instance(dma, stream), DMA_FDT_INT, TRUE);
     nvic_priority_group_config(NVIC_PRIORITY_GROUP_0);
     nvic_irq_enable(irq, preempt, sub);
-
-    if((mux_seq > DMAMUX_DMAREQ_ID_DVP) || (mux_seq < DMAMUX_DMAREQ_ID_REQ_G1))
-        return;
-    dmamux_init(dmamux, (dmamux_requst_id_sel_type)mux_seq);
 }
 
 static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb)
@@ -304,108 +302,163 @@ void BspDMA_Pipe_Irq_Callback(void)
     }
 }
 
-void BspDMA_Irq_Callback(dma_channel_type *channel)
+void BspDMA_Irq_Callback(void *channel)
 {
-    if(channel == DMA1_CHANNEL1)
+    dma_channel_type *ch_tmp = To_DMA_CHANNEL_Ptr(channel);
+    void *cus_data = NULL;
+
+    if (ch_tmp == DMA1_CHANNEL1)
     {
-        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_1])
-            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_1](DMA1_CHANNEL1);
+        if (BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_1] && \
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_1]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_1]->cus_data;
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_1]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA1_CHANNEL2)
+    if (ch_tmp == DMA1_CHANNEL2)
     {
-        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_2])
-            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_2](DMA1_CHANNEL2);
+        if (BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_2] && \
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_2]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_2]->cus_data;
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_2]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA1_CHANNEL3)
+    if (ch_tmp == DMA1_CHANNEL3)
     {
-        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_3])
-            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_3](DMA1_CHANNEL3);
+        if (BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_3] && \
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_3]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_3]->cus_data;
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_3]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA1_CHANNEL4)
+    if (ch_tmp == DMA1_CHANNEL4)
     {
-        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_4])
-            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_4](DMA1_CHANNEL4);
+        if (BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_4] && \
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_4]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_4]->cus_data;
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_4]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA1_CHANNEL5)
+    if (ch_tmp == DMA1_CHANNEL5)
     {
-        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_5])
-            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_5](DMA1_CHANNEL5);
+        if (BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_5] && \
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_5]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_5]->cus_data;
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_5]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA1_CHANNEL6)
+    if (ch_tmp == DMA1_CHANNEL6)
     {
-        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_6])
-            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_6](DMA1_CHANNEL6);
+        if (BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_6] && \
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_6]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_6]->cus_data;
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_6]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA1_CHANNEL7)
+    if (ch_tmp == DMA1_CHANNEL7)
     {
-        if(BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_7])
-            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_7](DMA1_CHANNEL7);
+        if (BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_7] && \
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_7]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_7]->cus_data;
+            BspDMA1_Irq_Callback_List[Bsp_DMA_Stream_7]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA2_CHANNEL1)
+    if (ch_tmp == DMA2_CHANNEL1)
     {
-        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_1])
-            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_1](DMA2_CHANNEL1);
+        if (BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_1] && \
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_1]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_1]->cus_data;
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_1]->BspDMA_Irq_Callback_Func(cus_data);
+        }
     
         return;
     }
 
-    if(channel == DMA2_CHANNEL2)
+    if (ch_tmp == DMA2_CHANNEL2)
     {
-        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_2])
-            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_2](DMA2_CHANNEL2);
+        if (BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_2] && \
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_2]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_2]->cus_data;
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_2]->BspDMA_Irq_Callback_Func(cus_data);
+        }
     
         return;
     }
 
-    if(channel == DMA2_CHANNEL3)
+    if (ch_tmp == DMA2_CHANNEL3)
     {
-        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_3])
-            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_3](DMA2_CHANNEL3);
+        if (BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_3] && \
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_3]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_3]->cus_data;
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_3]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA2_CHANNEL4)
+    if (ch_tmp == DMA2_CHANNEL4)
     {
-        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_4])
-            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_4](DMA2_CHANNEL4);
+        if (BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_4] && \
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_4]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_4]->cus_data;
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_4]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA2_CHANNEL5)
+    if (ch_tmp == DMA2_CHANNEL5)
     {
-        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_5])
-            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_5](DMA2_CHANNEL5);
+        if (BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_5] && \
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_5]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_5]->cus_data;
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_5]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
 
-    if(channel == DMA2_CHANNEL6)
+    if (ch_tmp == DMA2_CHANNEL6)
     {
-        if(BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_6])
-            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_6](DMA2_CHANNEL6);
+        if (BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_6] && \
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_6]->BspDMA_Irq_Callback_Func)
+        {
+            cus_data = BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_6]->cus_data;
+            BspDMA2_Irq_Callback_List[Bsp_DMA_Stream_6]->BspDMA_Irq_Callback_Func(cus_data);
+        }
 
         return;
     }
