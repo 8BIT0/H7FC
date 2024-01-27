@@ -35,6 +35,12 @@ extern "C" {
 #include "usb_std.h"
 #include "usbd_core.h"
 
+typedef void (*USB_CDC_Rec_Callback_Func)(void);
+typedef void (*USB_CDC_Trans_Callback_Func)(void);
+
+extern USB_CDC_Rec_Callback_Func usb_cdc_rec_cb;
+extern USB_CDC_Trans_Callback_Func usb_cdc_trans_cb;
+
 /** @addtogroup AT32F435_437_middlewares_usbd_class
   * @{
   */

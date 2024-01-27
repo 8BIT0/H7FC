@@ -27,6 +27,9 @@
 #include "cdc_class.h"
 #include "cdc_desc.h"
 
+USB_CDC_Rec_Callback_Func usb_cdc_rec_cb;
+USB_CDC_Trans_Callback_Func usb_cdc_trans_cb;
+
 /** @addtogroup AT32F435_437_middlewares_usbd_class
   * @{
   */
@@ -239,6 +242,9 @@ static usb_sts_type class_in_handler(void *udev, uint8_t ept_num)
   usbd_flush_tx_fifo(pudev, ept_num);
   pcdc->g_tx_completed = 1;
 
+  if (usb_cdc_trans_cb)
+    usb_cdc_trans_cb();
+
   return status;
 }
 
@@ -259,6 +265,9 @@ static usb_sts_type class_out_handler(void *udev, uint8_t ept_num)
 
   /*set recv flag*/
   pcdc->g_rx_completed = 1;
+
+  if (usb_cdc_rec_cb)
+    usb_cdc_rec_cb();
 
   return status;
 }
