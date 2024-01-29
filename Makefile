@@ -20,6 +20,7 @@ HW_MATEK_STM32H743 := 1
 HW_BATEAIO_AT32F435 := 2
 
 BUILD_TYPE := $(HW_MATEK_STM32H743)
+# BUILD_TYPE := $(HW_BATEAIO_AT32F435)
 
 ######################################
 # building variables
@@ -97,7 +98,6 @@ System/FreeRTOS/timers.c \
 System/FreeRTOS/CMSIS_RTOS/cmsis_os.c \
 System/FreeRTOS/portable/MemMang/heap_4.c \
 System/FreeRTOS/portable/GCC/ARM_CM4F/port.c \
-System/kernel/kernel_stm32h743.c \
 System/diskio/DiskIO.c \
 System/shell/shell_cmd_list.c \
 System/shell/shell_companion.c \
@@ -106,6 +106,7 @@ System/shell/shell_port.c \
 System/shell/shell.c
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_SOURCES +=  \
+System/kernel/kernel_stm32h743.c \
 HW_Lib/STM32H7/BSP/stm32h743/Bsp_GPIO.c \
 HW_Lib/STM32H7/BSP/stm32h743/Bsp_SPI.c \
 HW_Lib/STM32H7/BSP/stm32h743/Bsp_SDMMC.c \
@@ -170,21 +171,29 @@ CPU = -mcpu=cortex-m7
 
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
 C_SOURCES += \
+System/kernel/kernel_at32f435.c \
 HW_Lib/AT32F435/bsp/Bsp_GPIO.c \
 HW_Lib/AT32F435/bsp/Bsp_Spi.c \
-HW_Lib/device_support/at32f435_437_clock.c \
-HW_Lib/device_support/at32f435_437_int.c \
-HW_Lib/device_support/system_at32f435_437.c \
-HW_Lib/drivers/src/at32f435_437_crm.c \
-HW_Lib/drivers/src/at32f435_437_misc.c \
-HW_Lib/driver/src/at32f435_437_gpio.c \
-HW_Lib/driver/src/at32f435_437_spi.c \
-HW_Lib/driver/src/at32f435_437_i2c.c \
-HW_Lib/driver/src/at32f435_437_tmr.c \
-HW_Lib/driver/src/at32f435_437_exint.c \
-HW_Lib/driver/src/at32f435_437_dma.c \
-HW_Lib/driver/src/at32f435_437_usb.c \
-HW_Lib/driver/src/at32f435_437_usart.c
+HW_Lib/AT32F435/bsp/Bsp_Uart.c \
+HW_Lib/AT32F435/bsp/Bsp_USB.c \
+HW_Lib/AT32F435/bsp/Bsp_DMA.c \
+HW_Lib/AT32F435/USB/usb_drivers/usb_core.c \
+HW_Lib/AT32F435/USB/usb_drivers/usbd_core.c \
+HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c \
+HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_desc.c \
+HW_Lib/AT32F435/device_support/at32f435_437_clock.c \
+HW_Lib/AT32F435/device_support/at32f435_437_int.c \
+HW_Lib/AT32F435/device_support/system_at32f435_437.c \
+HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c \
+HW_Lib/AT32F435/drivers/src/at32f435_437_misc.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_gpio.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_spi.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_i2c.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_tmr.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_exint.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_dma.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_usb.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_usart.c
 
 ASM_SOURCES =  \
 startup_at32f435_437.s
@@ -233,7 +242,8 @@ C_DEFS =  \
 FPU = -mfpu=fpv5-d16
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
 C_DEFS = \
--DBATEAT32F435_AIO
+-DBATEAT32F435_AIO \
+-DAT32F435RGT7
 
 endif
 
@@ -298,7 +308,10 @@ C_INCLUDES += \
 -IHW_Lib/AT32F435/bsp \
 -IHW_Lib/AT32F435/drivers/inc \
 -IHW_Lib/AT32F435/cmsis/cm4/core_support \
--IHW_Lib/AT32F435/device_support
+-IHW_Lib/AT32F435/device_support \
+-IHW_Lib/AT32F435/USB \
+-IHW_Lib/AT32F435/USB/usb_drivers/inc \
+-IHW_Lib/AT32F435/USB/usbd_class/cdc
 endif
 
 # compile gcc flags

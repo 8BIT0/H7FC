@@ -1,54 +1,54 @@
 /**
-  **************************************************************************
-  * @file     at32f435_437_conf.h
-  * @version  v2.1.0
-  * @date     2022-08-16
-  * @brief    at32f435_437 config header file
-  **************************************************************************
-  *                       Copyright notice & Disclaimer
-  *
-  * The software Board Support Package (BSP) that is made available to
-  * download from Artery official website is the copyrighted work of Artery.
-  * Artery authorizes customers to use, copy, and distribute the BSP
-  * software and its related documentation for the purpose of design and
-  * development in conjunction with Artery microcontrollers. Use of the
-  * software is governed by this copyright notice and the following disclaimer.
-  *
-  * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
-  * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
-  * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
-  * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
-  * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
-  * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
-  *
-  **************************************************************************
-  */
+ **************************************************************************
+ * @file     at32f435_437_conf.h
+ * @version  v2.1.0
+ * @date     2022-08-16
+ * @brief    at32f435_437 config header file
+ **************************************************************************
+ *                       Copyright notice & Disclaimer
+ *
+ * The software Board Support Package (BSP) that is made available to
+ * download from Artery official website is the copyrighted work of Artery.
+ * Artery authorizes customers to use, copy, and distribute the BSP
+ * software and its related documentation for the purpose of design and
+ * development in conjunction with Artery microcontrollers. Use of the
+ * software is governed by this copyright notice and the following disclaimer.
+ *
+ * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
+ * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
+ * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
+ * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
+ * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+ *
+ **************************************************************************
+ */
 
 /* define to prevent recursive inclusion -------------------------------------*/
 #ifndef __AT32F435_437_CONF_H
 #define __AT32F435_437_CONF_H
 
 #ifdef __cplusplus
-extern "C" {
-#endif
-
-
-/**
-  * @brief in the following line adjust the value of high speed exernal crystal (hext)
-  * used in your application
-  * tip: to avoid modifying this file each time you need to use different hext, you
-  *      can define the hext value in your toolchain compiler preprocessor.
-  */
-#if !defined  HEXT_VALUE
-#define HEXT_VALUE                       ((uint32_t)8000000) /*!< value of the high speed exernal crystal in hz */
+extern "C"
+{
 #endif
 
 /**
-  * @brief in the following line adjust the high speed exernal crystal (hext) startup
-  * timeout value
-  */
-#define HEXT_STARTUP_TIMEOUT             ((uint16_t)0x3000) /*!< time out for hext start up */
-#define HICK_VALUE                       ((uint32_t)8000000) /*!< value of the high speed internal clock in hz */
+ * @brief in the following line adjust the value of high speed exernal crystal (hext)
+ * used in your application
+ * tip: to avoid modifying this file each time you need to use different hext, you
+ *      can define the hext value in your toolchain compiler preprocessor.
+ */
+#if !defined HEXT_VALUE
+#define HEXT_VALUE ((uint32_t)8000000) /*!< value of the high speed exernal crystal in hz */
+#endif
+
+/**
+ * @brief in the following line adjust the high speed exernal crystal (hext) startup
+ * timeout value
+ */
+#define HEXT_STARTUP_TIMEOUT ((uint16_t)0x3000) /*!< time out for hext start up */
+#define HICK_VALUE ((uint32_t)8000000)          /*!< value of the high speed internal clock in hz */
 
 /* module define -------------------------------------------------------------*/
 #define CRM_MODULE_ENABLED
@@ -171,5 +171,3 @@ extern "C" {
 #endif
 
 #endif /* __AT32F435_437_CONF_H */
-
-
