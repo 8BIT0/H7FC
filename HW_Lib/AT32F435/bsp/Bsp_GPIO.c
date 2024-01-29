@@ -348,11 +348,11 @@ static void BspGPIO_Write(BspGPIO_Obj_TypeDef IO_Obj, bool state)
 {
     if(state)
     {
-        To_GPIO_Port(((BspGPIO_Obj_TypeDef *)IO_Obj.port)->port)->port->clr = IO_Obj.pin;
+        To_GPIO_Port(IO_Obj.port)->port->clr = IO_Obj.pin;
     }
     else
     {
-        To_GPIO_Port(((BspGPIO_Obj_TypeDef *)IO_Obj.port)->port)->port->scr = IO_Obj.pin;
+        To_GPIO_Port(IO_Obj.port)->port->scr = IO_Obj.pin;
     }
 }
 
