@@ -10,6 +10,9 @@
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_tim.h"
 
+#define Kernel_DisableIRQ() __asm("cpsid i")
+#define Kernel_EnableIRQ() __asm("cpsie i")
+
 TIM_HandleTypeDef htim17;
 TIM_HandleTypeDef htim16;
 bool Kernel_TickTimer_Init = false;
