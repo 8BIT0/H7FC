@@ -423,7 +423,14 @@ void OTGFS1_IRQHandler(void)
   */
 void SysTick_Handler(void)
 {
-  #if (INCLUDE_xTaskGetSchedulerState == 1 )
+
+}
+
+void TMR20_OVF_IRQHandler(void)
+{
+  if(tmr_flag_get(TMR20, TMR_OVF_FLAG) == SET)
+  {
+#if (INCLUDE_xTaskGetSchedulerState == 1 )
   if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
   {
 #endif /* INCLUDE_xTaskGetSchedulerState */
@@ -431,6 +438,9 @@ void SysTick_Handler(void)
 #if (INCLUDE_xTaskGetSchedulerState == 1 )
   }
 #endif /* INCLUDE_xTaskGetSchedulerState */
+
+    tmr_flag_clear(TMR20, TMR_OVF_FLAG);
+  }
 }
 
 /**
