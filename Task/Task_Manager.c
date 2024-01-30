@@ -97,9 +97,10 @@ void Task_Manager_CreateTask(void)
             osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 8192);
             TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
 
+#if defined MATEKH743_V1_5
             osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
-
+#endif
             osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 1024);
             TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
 

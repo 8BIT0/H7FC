@@ -7,6 +7,7 @@
 #include "Dev_Led.h"
 #include "debug_util.h"
 
+#if defined STM32H743xx
 #define LED1_PIN GPIO_PIN_3
 #define LED1_PORT GPIOE
 
@@ -165,5 +166,8 @@ extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_PinConfig_TypeDef SecIMU_BusPin;
 
 extern BspIIC_PinConfig_TypeDef SrvBaro_BusPin;
+#elif defined AT32F435RGT7
+
+#endif
 
 #endif

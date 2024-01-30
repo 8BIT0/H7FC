@@ -15,7 +15,6 @@
 ######################################
 TARGET = H7FC
 
-HW_MATEK_STM32H743 := 0
 HW_MATEK_STM32H743 := 1
 HW_BATEAIO_AT32F435 := 2
 
@@ -63,7 +62,6 @@ Device/Dev_ICM20602.c \
 Device/Dev_ICM426xx.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
-Device/Dev_Card.c \
 Device/Dev_Sbus.c \
 Device/Dev_CRSF.c \
 Device/Dev_Dshot.c \
@@ -98,7 +96,6 @@ System/FreeRTOS/timers.c \
 System/FreeRTOS/CMSIS_RTOS/cmsis_os.c \
 System/FreeRTOS/portable/MemMang/heap_4.c \
 System/FreeRTOS/portable/GCC/ARM_CM4F/port.c \
-System/diskio/DiskIO.c \
 System/shell/shell_cmd_list.c \
 System/shell/shell_companion.c \
 System/shell/shell_ext.c \
@@ -106,6 +103,8 @@ System/shell/shell_port.c \
 System/shell/shell.c
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_SOURCES +=  \
+Device/Dev_Card.c \
+System/diskio/DiskIO.c \
 System/kernel/kernel_stm32h743.c \
 HW_Lib/STM32H7/BSP/stm32h743/Bsp_GPIO.c \
 HW_Lib/STM32H7/BSP/stm32h743/Bsp_SPI.c \
@@ -177,6 +176,8 @@ HW_Lib/AT32F435/bsp/Bsp_Spi.c \
 HW_Lib/AT32F435/bsp/Bsp_Uart.c \
 HW_Lib/AT32F435/bsp/Bsp_USB.c \
 HW_Lib/AT32F435/bsp/Bsp_DMA.c \
+HW_Lib?AT32F435/bsp/Bsp_Timer.c \
+HW_Lib/AT32F435/bsp/Bsp_IIC.c \
 HW_Lib/AT32F435/USB/usb_drivers/usb_core.c \
 HW_Lib/AT32F435/USB/usb_drivers/usbd_core.c \
 HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c \

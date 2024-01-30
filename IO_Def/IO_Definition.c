@@ -1,6 +1,7 @@
 #include "IO_Definition.h"
 #include "Dev_Led.h"
 
+#if defined STM32H743xx
 DebugPinObj_TypeDef Debug_PC0 = {
     .port = GPIOC,
     .pin = GPIO_PIN_0,
@@ -158,3 +159,7 @@ BspGPIO_Obj_TypeDef USB_DctPin = {
     .pin = USB_DETECT_INT_PIN,
     .port = USB_DETECT_INT_PORT,
 };
+#elif defined AT32F435RGT7
+
+#endif
+

@@ -5,7 +5,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+
+#if defined MATEKH743_V1_5
 #include "Bsp_SDMMC.h"
+#endif
 
 typedef enum
 {
@@ -38,7 +41,10 @@ typedef struct
 
 typedef struct
 {
+#if defined MATEKH743_V1_5
     BspSDMMC_Obj_TypeDef SDMMC_Obj;
+#endif
+
     DevCard_Error_List error_code;
     DevCard_Info_TypeDef info;
 } DevCard_Obj_TypeDef;

@@ -220,6 +220,7 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
         
         for(uint8_t i = 0; i < monitor->uart_port_num; i++)
         {
+#if defined STM32H743xx
             /* create port obj element */
             monitor->Uart_Port[i].Obj->hdl = SrvOsCommon.malloc(UART_HandleType_Size);
             if(monitor->Uart_Port[i].Obj->hdl == NULL)
@@ -244,7 +245,7 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
                 SrvOsCommon.free(monitor->Uart_Port[i].Obj->hdl);
                 return false;
             }
-
+#endif
 
             if(BspUart.init(monitor->Uart_Port[i].Obj))
             {
