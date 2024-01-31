@@ -15,6 +15,4 @@ typedef struct
     bool (*write)(uint32_t addr, uint8_t *p_data, uint32_t size);
 } BspFlash_TypeDef;
 
-extern BspFlash_TypeDef BspFlash;
-
 #endif
