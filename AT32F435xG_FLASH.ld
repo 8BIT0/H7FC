@@ -31,8 +31,10 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1000K
-RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 384K
+FLASH (rx)       : ORIGIN = 0x08000000, LENGTH = 1000K
+RAM_OsHeap (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
+RAM_Perph (xrw)  : ORIGIN = 0x20020000, LENGTH = 64K
+RAM (xrw)        : ORIGIN = 0x20030000, LENGTH = 192K
 }
 
 /* Define output sections */
@@ -69,6 +71,12 @@ SECTIONS
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+    . = ALIGN(4);
+    
+    . = ALIGN(4);
+    _shell_command_start = .;
+    KEEP (*(shellCommand))
+    _shell_command_end = .;
     . = ALIGN(4);
   } >FLASH
 
@@ -114,6 +122,28 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
+
+  .OsHeap_Section :
+  {
+    . = ALIGN(4);
+    OsHeap_s = .;
+    *(.OsHeap_Section)
+    *(.OsHeap_Section*)
+
+    . = ALIGN(4);
+    OsHeap_e = .;
+  } >RAM_OsHeap AT>FLASH
+
+  .Perph_Section :
+  {
+    . = ALIGN(4);
+    Perph_s = .;
+    *(.Perph_Section)
+    *(.Perph_Section*)
+    
+    . = ALIGN(4);
+    Perph_e = .;
+  } >RAM_Perph AT>FLASH
 
   /* Uninitialized data section */
   . = ALIGN(4);
