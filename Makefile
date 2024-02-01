@@ -48,6 +48,7 @@ Algorithm/Filter_Dep/filter_param.c \
 Algorithm/Control_Dep/adrc.c \
 Algorithm/Control_Dep/pid.c \
 debug/debug_util.c \
+Task/Task_Log.c \
 Task/Task_Navi.c \
 Task/Task_Manager.c \
 Task/Task_Sample.c \
@@ -101,7 +102,6 @@ System/shell/shell_port.c \
 System/shell/shell.c
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_SOURCES +=  \
-Task/Task_Log.c \
 Device/Dev_Card.c \
 System/diskio/DiskIO.c \
 System/kernel/kernel_stm32h743.c \
