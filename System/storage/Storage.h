@@ -11,14 +11,6 @@
 
 #define Storage_ErrorCode_ToStr(x) #x
 
-#define OnChipFlash_Storage_StartAddress (FLASH_BASE_ADDR + FLASH_SECTOR_7_OFFSET_ADDR)
-#define OnChipFlash_Storage_TotalSize FLASH_SECTOR_7_SIZE
-#define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
-
-#define OnChipFlash_MaxRWSize (2 Kb)
-#define OnChipFlash_Storage_TabSize (4 Kb)
-#define OnChipFlash_Storage_InfoPageSize (1 Kb)
-
 #define ExternalFlash_Storage_Address 0
 
 #define From_Start_Address 0

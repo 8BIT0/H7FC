@@ -304,7 +304,7 @@ void BspDMA_Pipe_Irq_Callback(void)
 
 void BspDMA_Irq_Callback(void *channel)
 {
-    dma_channel_type *ch_tmp = To_DMA_CHANNEL_Ptr(channel);
+    dma_channel_type *ch_tmp = To_DMA_Handle_Ptr(channel);
     void *cus_data = NULL;
 
     if (ch_tmp == DMA1_CHANNEL1)

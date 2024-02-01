@@ -23,6 +23,8 @@ const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM]
     SRVACTUATOR_PB1_SIG_2,
     SRVACTUATOR_PA0_SIG_3,
     SRVACTUATOR_PA1_SIG_4,
+
+#if defined MATEKH743_V1_5
     SRVACTUATOR_PA2_SIG_5,
     SRVACTUATOR_PA3_SIG_6,
     SRVACTUATOR_PD12_SIG_7,
@@ -30,13 +32,17 @@ const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM]
     SRVACTUATOR_PD14_SIG_9,
     SRVACTUATOR_PD15_SIG_10,
     SRVACTUATOR_PE5_SIG_11,
-    SRVACTUATOR_PE6_SIG_12};
+    SRVACTUATOR_PE6_SIG_12
+#endif
+};
 
 const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
     Actuator_PWM_Sig1,
     Actuator_PWM_Sig2,
     Actuator_PWM_Sig3,
     Actuator_PWM_Sig4,
+
+#if defined MATEKH743_V1_5
     Actuator_PWM_Sig5,
     Actuator_PWM_Sig6,
     Actuator_PWM_Sig7,
@@ -45,6 +51,7 @@ const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
     Actuator_PWM_Sig10,
     Actuator_PWM_Sig11,
     Actuator_PWM_Sig12,
+#endif
 };
 
 /* internal variable */
@@ -93,6 +100,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
         SrvActuator_Obj.drive_module.num = QUAD_CONTROL_COMPONENT;
         break;
 
+#if defined MATEKH743_V1_5
     case Model_Hex:
         SrvActuator_Obj.drive_module.num = HEX_CONTROL_COMPONENT;
         break;
@@ -116,6 +124,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     case Model_TDrone:
         SrvActuator_Obj.drive_module.num = TDRONE_CONTROL_COMPONENT;
         break;
+#endif
 
     default:
         return false;

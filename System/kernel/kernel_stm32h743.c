@@ -286,3 +286,10 @@ void HAL_MspInit(void)
   /* PendSV_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(PendSV_IRQn, 15, 0);
 }
+
+void Kernel_reboot(void)
+{
+  __set_FAULTMASK(1);
+
+  NVIC_SystemReset();
+}

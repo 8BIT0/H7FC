@@ -4,27 +4,28 @@
 #define ON 1
 #define OFF 0
 
-#if !defined HW_BATEAIO_AT32F435 && !defined HW_MATEK_STM32H743
-#define HW_MATEK_STM32H743
-#endif
+// #if !defined HW_BATEAIO_AT32F435 && !defined HW_MATEK_STM32H743
+// #define HW_MATEK_STM32H743
+// #endif
 
-#if defined HW_MATEK_STM32H743
+#if defined MATEKH743_V1_5
 
 #define IMU_CNT 2
 #define BARO_CNT 1
 #define MAG_CNT 0
 #define SD_CARD_ENABLE_STATE ON
 #define FLASH_CHIP_ENABLE_STATE OFF
+#define RADIO_NUM 1
 
-#elif defined HW_BATEAIO_AT32F435
-
-#define AT32F435RGT7
+#elif defined BATEAT32F435_AIO
 
 #define IMU_CNT 1
 #define BARO_CNT 1
 #define MAG_CNT 0
 #define SD_CARD_ENABLE_STATE OFF
 #define FLASH_CHIP_ENABLE_STATE ON
+#define RADIO_NUM 1
+
 #endif
 
 #define IMU_SUM IMU_CNT
@@ -32,5 +33,6 @@
 #define MAG_SUM MAG_CNT
 #define SD_CARD SD_CARD_ENABLE_STATE
 #define FLASH_CHIP_STATE FLASH_CHIP_ENABLE_STATE
+#define RADIO_UART_NUM RADIO_NUM
 
 #endif

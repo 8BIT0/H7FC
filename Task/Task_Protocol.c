@@ -4,15 +4,6 @@
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
 
-#define RADIO_TX_PIN UART1_TX_PIN
-#define RADIO_RX_PIN UART1_RX_PIN
-
-#define RADIO_TX_PIN_ALT GPIO_AF7_USART1
-#define RADIO_RX_PIN_ALT GPIO_AF7_USART1
-
-#define RADIO_TX_PORT UART1_TX_PORT
-#define RADIO_RX_PORT UART1_RX_PORT
-
 #if (RADIO_UART_NUM > 0)
 static uint8_t RadioRxBuff[RADIO_UART_NUM][RADIO_BUFF_SIZE];
 
@@ -20,13 +11,13 @@ static BspUARTObj_TypeDef Radio_Port1_UartObj = {
     .instance = RADIO_PORT,
     .baudrate = RADIO_PORT_BAUD,
     .tx_io = {
-        .init_state = false,
+        .init_state = RADIO_TX_PIN_INIT_STATE,
         .pin = RADIO_TX_PIN,
         .port = RADIO_TX_PORT,
         .alternate = RADIO_TX_PIN_ALT,
     }, 
     .rx_io = {
-        .init_state = false,
+        .init_state = RADIO_RX_PIN_INIT_STATE,
         .pin = RADIO_RX_PIN,
         .port = RADIO_RX_PORT,
         .alternate = RADIO_RX_PIN_ALT,

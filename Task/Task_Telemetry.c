@@ -23,16 +23,11 @@
  */
 #include "Task_Telemetry.h"
 #include "DataPipe.h"
+#include "HW_Def.h"
 #include "Srv_Receiver.h"
 #include "Srv_OsCommon.h"
 #include "util.h"
 #include "Srv_ComProto.h"
-
-#define CRSF_TX_PIN Uart4_TxPin
-#define CRSF_RX_PIN Uart4_RxPin
-
-#define SBUS_TX_PIN Uart4_TxPin
-#define SBUS_RX_PIN Uart4_RxPin
 
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_Monitor_TypeDef Telemetry_Monitor;

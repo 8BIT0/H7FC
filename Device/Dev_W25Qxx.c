@@ -9,9 +9,9 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef dev);
 
 /* without pin config in this down */
 static const BspSPI_NorModeConfig_TypeDef DevW25QxxSPI_Cfg = {
-    .CLKPolarity = SPI_POLARITY_HIGH,
-    .CLKPhase = SPI_PHASE_2EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
+    // .CLKPolarity = SPI_POLARITY_HIGH,
+    // .CLKPhase = SPI_PHASE_2EDGE,
+    // .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
 };
 
 DevW25Qxx_TypeDef DevW25Q64 = {

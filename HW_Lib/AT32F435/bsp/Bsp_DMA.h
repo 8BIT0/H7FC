@@ -2,6 +2,7 @@
 #define __BSP_DMA_H
 
 #include "Bsp_DMA_Port_Def.h"
+#include "at32f435_437_dma.h"
 
 typedef struct
 {
@@ -9,7 +10,7 @@ typedef struct
     void *cus_data;
 }BspDMA_IrqCall_Obj_TypeDef;
 
-#define To_DMA_CHANNEL_Ptr(x) ((dma_channel_type *)x)
+#define To_DMA_Handle_Ptr(x) ((dma_channel_type *)x)
 
 typedef enum
 {

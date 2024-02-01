@@ -581,7 +581,7 @@ static bool SrvSensorMonitor_Tof_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
     bool state = false;
-    DebugPin.ctl(Debug_PB5, true);
+    // DebugPin.ctl(Debug_PB5, true);
     
     /* imu single sampling overhead is about 60us */
     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
@@ -623,7 +623,7 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
         
     }
     
-    DebugPin.ctl(Debug_PB5, false);
+    // DebugPin.ctl(Debug_PB5, false);
     
     return state;
 }

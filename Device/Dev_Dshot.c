@@ -45,6 +45,7 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
     if (!obj)
         return false;
 
+#if defined STM32H743xx
     obj->pwm_obj.tim_hdl = DShot_Malloc(TIM_HandleType_Size);
     if(obj->pwm_obj.tim_hdl == NULL)
     {
@@ -59,6 +60,7 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
         DShot_Free(obj->pwm_obj.dma_hdl);
         return false;
     }
+#endif
 
     if ((obj->type < DevDshot_150) || (obj->type > DevDshot_600))
     {

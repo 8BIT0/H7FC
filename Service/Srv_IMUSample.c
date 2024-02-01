@@ -73,24 +73,14 @@ static SrvIMU_Data_TypeDef IMU_Data_Lst;
 static Error_Handler SrvMPU_Error_Handle = NULL;
 
 /* internal variable */
+#if defined STM32H743xx
 /* MPU6000 Instance */
 static SPI_HandleTypeDef PriIMU_Bus_Instance;
-static BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg = {
-    .Instance = PriIMU_SPI_BUS,
-    .CLKPolarity = SPI_POLARITY_HIGH,
-    .CLKPhase = SPI_PHASE_2EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4,
-};
-
-/* ICM20602 Instance */
+/* ICM42688P Instance */
 static SPI_HandleTypeDef SecIMU_Bus_Instance;
-static BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg = {
-    .Instance = SecIMU_SPI_BUS,
-    .CLKPolarity = SPI_POLARITY_LOW,
-    .CLKPhase = SPI_PHASE_1EDGE,
-    .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2,
-};
-
+#elif defined AT32F435RGT7
+static void *PriIMU_Bus_Instance = NULL;
+#endif
 static DevMPU6000Obj_TypeDef MPU6000Obj;
 static DevICM20602Obj_TypeDef ICM20602Obj;
 static DevICM426xxObj_TypeDef ICM42688PObj;

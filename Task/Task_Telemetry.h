@@ -18,17 +18,6 @@
 
 #define Telemetry_SetBit(x) UTIL_SET_BIT(x)
 
-
-#define RECEIVER_PORT UART4
-#define RECEIVER_CRSF_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
-#define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_4
-#define RECEIVER_CRSF_TX_DMA Bsp_DMA_None               // Bsp_DMA_1
-#define RECEIVER_CRSF_TX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_5
-#define RECEIVER_SBUS_RX_DMA Bsp_DMA_1
-#define RECEIVER_SBUS_RX_DMA_STREAM Bsp_DMA_Stream_4
-#define RECEIVER_SBUS_TX_DMA Bsp_DMA_1
-#define RECEIVER_SBUS_TX_DMA_STREAM Bsp_DMA_Stream_5
-
 #define TELEMETRY_SET_ARM DRONE_ARM
 #define TELEMETRY_SET_DISARM DRONE_DISARM
 #define TELEMETRY_DISABLE_ALL_MODULE 0

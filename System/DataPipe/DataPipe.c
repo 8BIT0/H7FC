@@ -123,6 +123,7 @@ static void DataPipe_TransError_Callback(void *dma_hdl)
         Cur_Pluged_PipeObj.dst = NULL;
         Cur_Pluged_PipeObj.org = NULL;
 
+#if defined STM32H743xx
         /*!< Transfer error */
         if (To_DMA_Handle_Ptr(dma_hdl)->ErrorCode & HAL_DMA_ERROR_TE)
         {
@@ -172,7 +173,7 @@ static void DataPipe_TransError_Callback(void *dma_hdl)
         if (To_DMA_Handle_Ptr(dma_hdl)->ErrorCode & HAL_DMA_ERROR_BUSY)
         {
         }
-
+#endif
         /* recover from error */
     }
 }

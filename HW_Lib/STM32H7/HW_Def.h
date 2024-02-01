@@ -2,12 +2,14 @@
 #define __HW_DEF_H
 
 #include "Bsp_GPIO.h"
+#include "Bsp_DMA.h"
 #include "Bsp_SPI.h"
 #include "Bsp_SDMMC.h"
 #include "Bsp_Uart.h"
 #include "Bsp_IIC.h"
-#include "Dev_Led.h"
+#include "Bsp_Flash.h"
 #include "debug_util.h"
+#include "Dev_Led.h"
 
 #define LED1_PIN GPIO_PIN_3
 #define LED1_PORT GPIOE
@@ -84,7 +86,6 @@
 #define D3_PIN GPIO_PIN_11
 
 /* Baro IIC Pin */
-#define BARO_BUS_TYPE SrvBaro_Bus_IIC
 #define BARO_BUS  BspIIC_Instance_I2C_2
 #define IIC2_SDA_PORT GPIOB
 #define IIC2_SDA_PIN GPIO_PIN_11
@@ -106,41 +107,147 @@
 #define USB_DETECT_INT_PIN GPIO_PIN_2
 
 /* PWM IO */
+#define PWM_SIG_1_TIM TIM3
+#define PWM_SIG_1_TIM_CHANNEL TIM_CHANNEL_3
 #define PWM_SIG_1_PORT GPIOB
 #define PWM_SIG_1_PIN GPIO_PIN_0
+#define PWM_SIG_1_DMA Bsp_DMA_1
+#define PWM_SIG_1_DMA_CHANNEL Bsp_DMA_Stream_0
+#define PWM_SIG_1_PIN_AF GPIO_AF2_TIM3
 
+#define PWM_SIG_2_TIM TIM3
+#define PWM_SIG_2_TIM_CHANNEL TIM_CHANNEL_4
 #define PWM_SIG_2_PORT GPIOB
 #define PWM_SIG_2_PIN GPIO_PIN_1
+#define PWM_SIG_2_DMA Bsp_DMA_1
+#define PWM_SIG_2_DMA_CHANNEL Bsp_DMA_Stream_1
+#define PWM_SIG_2_PIN_AF GPIO_AF2_TIM3
 
+#define PWM_SIG_3_TIM TIM5
+#define PWM_SIG_3_TIM_CHANNEL TIM_CHANNEL_1
 #define PWM_SIG_3_PORT GPIOA
 #define PWM_SIG_3_PIN GPIO_PIN_0
+#define PWM_SIG_3_DMA Bsp_DMA_1
+#define PWM_SIG_3_DMA_CHANNEL Bsp_DMA_Stream_2
+#define PWM_SIG_3_PIN_AF GPIO_AF2_TIM5
 
+#define PWM_SIG_4_TIM TIM5
+#define PWM_SIG_4_TIM_CHANNEL TIM_CHANNEL_2
 #define PWM_SIG_4_PORT GPIOA
 #define PWM_SIG_4_PIN GPIO_PIN_1
+#define PWM_SIG_4_DMA Bsp_DMA_1
+#define PWM_SIG_4_DMA_CHANNEL Bsp_DMA_Stream_3
+#define PWM_SIG_4_PIN_AF GPIO_AF2_TIM5
 
+#define PWM_SIG_5_TIM TIM5
+#define PWM_SIG_5_TIM_CHANNEL TIM_CHANNEL_3
 #define PWM_SIG_5_PORT GPIOA
 #define PWM_SIG_5_PIN GPIO_PIN_2
+#define PWM_SIG_5_DMA Bsp_DMA_None
+#define PWM_SIG_5_DMA_CHANNEL Bsp_DMA_Stream_None
+#define PWM_SIG_5_PIN_AF GPIO_AF2_TIM5
 
+#define PWM_SIG_6_TIM TIM5
+#define PWM_SIG_6_TIM_CHANNEL TIM_CHANNEL_4
 #define PWM_SIG_6_PORT GPIOA
 #define PWM_SIG_6_PIN GPIO_PIN_3
+#define PWM_SIG_6_DMA Bsp_DMA_None
+#define PWM_SIG_6_DMA_CHANNEL Bsp_DMA_Stream_None
+#define PWM_SIG_6_PIN_AF GPIO_AF2_TIM5
 
+#define PWM_SIG_7_TIM TIM4
+#define PWM_SIG_7_TIM_CHANNEL TIM_CHANNEL_1
 #define PWM_SIG_7_PORT GPIOD
 #define PWM_SIG_7_PIN GPIO_PIN_12
+#define PWM_SIG_7_DMA Bsp_DMA_None
+#define PWM_SIG_7_DMA_CHANNEL Bsp_DMA_Stream_None
+#define PWM_SIG_7_PIN_AF GPIO_AF2_TIM4
 
+#define PWM_SIG_8_TIM TIM4
+#define PWM_SIG_8_TIM_CHANNEL TIM_CHANNEL_2
 #define PWM_SIG_8_PORT GPIOD
 #define PWM_SIG_8_PIN GPIO_PIN_13
+#define PWM_SIG_8_DMA Bsp_DMA_None
+#define PWM_SIG_8_DMA_CHANNEL Bsp_DMA_Stream_None
+#define PWM_SIG_8_PIN_AF GPIO_AF2_TIM4
 
+#define PWM_SIG_9_TIM TIM4
+#define PWM_SIG_9_TIM_CHANNEL TIM_CHANNEL_3
 #define PWM_SIG_9_PORT GPIOD
 #define PWM_SIG_9_PIN GPIO_PIN_14
+#define PWM_SIG_9_DMA Bsp_DMA_None
+#define PWM_SIG_9_DMA_CHANNEL Bsp_DMA_Stream_None
+#define PWM_SIG_9_PIN_AF GPIO_AF2_TIM4
 
+#define PWM_SIG_10_TIM TIM4
+#define PWM_SIG_10_TIM_CHANNEL TIM_CHANNEL_4
 #define PWM_SIG_10_PORT GPIOD
 #define PWM_SIG_10_PIN GPIO_PIN_15
+#define PWM_SIG_10_DMA Bsp_DMA_None
+#define PWM_SIG_10_DMA_CHANNEL Bsp_DMA_Stream_None
+#define PWM_SIG_10_PIN_AF GPIO_AF2_TIM4
 
+#define PWM_SIG_11_TIM TIM15
+#define PWM_SIG_11_TIM_CHANNEL TIM_CHANNEL_1
 #define PWM_SIG_11_PORT GPIOE
 #define PWM_SIG_11_PIN GPIO_PIN_5
+#define PWM_SIG_11_DMA Bsp_DMA_None
+#define PWM_SIG_11_DMA_CHANNEL Bsp_DMA_Stream_None
+#define PWM_SIG_11_PIN_AF GPIO_AF2_TIM15
 
+#define PWM_SIG_12_TIM TIM15
+#define PWM_SIG_12_TIM_CHANNEL TIM_CHANNEL_2
 #define PWM_SIG_12_PORT GPIOE
 #define PWM_SIG_12_PIN GPIO_PIN_6
+#define PWM_SIG_12_DMA Bsp_DMA_None
+#define PWM_SIG_12_DMA_CHANNEL Bsp_DMA_Stream_None
+#define PWM_SIG_12_PIN_AF GPIO_AF2_TIM15
+
+#define RECEIVER_PORT UART4
+#define RECEIVER_CRSF_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
+#define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_4
+#define RECEIVER_CRSF_TX_DMA Bsp_DMA_None               // Bsp_DMA_1
+#define RECEIVER_CRSF_TX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_5
+
+#define RECEIVER_SBUS_RX_DMA Bsp_DMA_1
+#define RECEIVER_SBUS_RX_DMA_STREAM Bsp_DMA_Stream_4
+#define RECEIVER_SBUS_TX_DMA Bsp_DMA_1
+#define RECEIVER_SBUS_TX_DMA_STREAM Bsp_DMA_Stream_5
+
+#define CRSF_TX_PIN Uart4_TxPin
+#define CRSF_RX_PIN Uart4_RxPin
+
+#define SBUS_TX_PIN Uart4_TxPin
+#define SBUS_RX_PIN Uart4_RxPin
+
+/* radio uart */
+#define RADIO_PORT USART1
+
+#define RADIO_TX_PIN UART1_TX_PIN
+#define RADIO_RX_PIN UART1_RX_PIN
+
+#define RADIO_TX_PIN_INIT_STATE false
+#define RADIO_RX_PIN_INIT_STATE false
+
+#define RADIO_TX_PIN_ALT GPIO_AF7_USART1
+#define RADIO_RX_PIN_ALT GPIO_AF7_USART1
+
+#define RADIO_TX_PORT UART1_TX_PORT
+#define RADIO_RX_PORT UART1_RX_PORT
+
+#define RADIO_TX_DMA Bsp_DMA_2
+#define RADIO_TX_DMA_STREAM Bsp_DMA_Stream_0
+#define RADIO_RX_DMA Bsp_DMA_2
+#define RADIO_RX_DMA_STREAM Bsp_DMA_Stream_1
+
+/* internal flash storage */
+#define OnChipFlash_Storage_StartAddress (FLASH_BASE_ADDR + FLASH_SECTOR_7_OFFSET_ADDR)
+#define OnChipFlash_Storage_TotalSize FLASH_SECTOR_7_SIZE
+#define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
+
+#define OnChipFlash_MaxRWSize (2 Kb)
+#define OnChipFlash_Storage_TabSize (4 Kb)
+#define OnChipFlash_Storage_InfoPageSize (1 Kb)
 
 extern DebugPinObj_TypeDef Debug_PC0;
 extern DebugPinObj_TypeDef Debug_PC1;
@@ -170,5 +277,8 @@ extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_PinConfig_TypeDef SecIMU_BusPin;
 
 extern BspIIC_PinConfig_TypeDef SrvBaro_BusPin;
+
+extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
+extern BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg;
 
 #endif

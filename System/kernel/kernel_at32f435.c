@@ -1,4 +1,5 @@
 #include "at32f435_437.h"
+#include <stdbool.h>
 
 bool Kernel_Init(void)
 {
@@ -29,5 +30,8 @@ bool Kernel_Init(void)
     return true;
 }
 
+void Kernel_reboot(void)
+{
 
+}
 

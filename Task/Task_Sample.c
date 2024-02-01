@@ -10,6 +10,12 @@
 
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
 
+#if defined MATEKH743_V1_5
+#define Sample_Blinkly Led2
+#elif defined BATEAT32F435_AIO
+#define Sample_Blinkly Led1
+#endif
+
 /* internal var */
 static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
 static uint32_t TaskSample_Period = 0;
@@ -122,11 +128,11 @@ void TaskSample_Core(void const *arg)
             DataPipe_DataObj(Baro_Data) = SrvSensorMonitor.get_baro_data(&SensorMonitor);
 
             /* need measurement the overhead from pipe send to pipe receive callback triggered */
-            DebugPin.ctl(Debug_PB4, true);
+            // DebugPin.ctl(Debug_PB4, true);
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe);
             DataPipe_SendTo(&Baro_smp_DataPipe, &Baro_hub_DataPipe);
-            DebugPin.ctl(Debug_PB4, false);
+            // DebugPin.ctl(Debug_PB4, false);
         }
         
         SrvOsCommon.precise_delay(&sys_time, TaskSample_Period);
@@ -147,5 +153,5 @@ static void TaskInertical_Blink_Notification(uint16_t duration)
         Lst_Rt = Rt;
     }
 
-    DevLED.ctl(Led2, led_state);
+    DevLED.ctl(Sample_Blinkly, led_state);
 }

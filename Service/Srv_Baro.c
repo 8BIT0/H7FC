@@ -1,5 +1,6 @@
 #include "Srv_Baro.h"
 #include "Srv_OsCommon.h"
+#include "../FCHW_Config.h"
 #include "HW_Def.h"
 #include "debug_util.h"
 #include "error_log.h"
@@ -20,13 +21,13 @@
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
 
 /* internal vriable */
-#if (BARO_BUS_TYPE == SrvBaro_Bus_IIC)
 SrvBaroObj_TypeDef SrvBaroObj = {
     .type = Baro_Type_DPS310,
     .sample_rate = SRVBARO_SAMPLE_RATE_20HZ,
     .init_err = SrvBaro_Error_None,
 };
 
+#if defined MATEKH743_V1_5
 BspIICObj_TypeDef SrvBaro_IIC_Obj = {
     .init = false,
     .instance_id = BARO_BUS,
@@ -34,14 +35,15 @@ BspIICObj_TypeDef SrvBaro_IIC_Obj = {
 };
 
 SrvBaroBusObj_TypeDef SrvBaroBus = {
-    .type = BARO_BUS_TYPE,
+    .type = SrvBaro_Bus_IIC,
     .init = false,
     .bus_obj = (void *)&SrvBaro_IIC_Obj,
     .bus_api = (void *)&BspIIC,
 };
-#elif (BARO_BUS_TYPE == SrvBaro_Bus_IIC)
+#elif defined BATEAT32F435_AIO
+/* just for test currently */
 SrvBaroBusObj_TypeDef SrvBaroBus = {
-    .type = BARO_BUS_TYPE,
+    .type = SrvBaro_Bus_None,
     .init = false,
     .bus_obj = NULL,
     .bus_api = NULL,
@@ -169,6 +171,7 @@ static bool SrvBaro_BusInit(void)
         switch((uint8_t)SrvBaroBus.type)
         {
             case SrvBaro_Bus_IIC:
+#if defined STM32H743xx
                 ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
                 if(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
                 {
@@ -183,7 +186,7 @@ static bool SrvBaro_BusInit(void)
                     SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct);
                     return false;
                 }
-
+#endif
                 if(ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
                 {
                     SrvBaroBus.init = true;

@@ -30,6 +30,7 @@
 #include "Bsp_DMA.h"
 #include "Bsp_Uart.h"
 #include "Bsp_USB.h"
+#include "Bsp_Timer.h"
 #include "FreeRTOS.h"
 #include "task.h"
 

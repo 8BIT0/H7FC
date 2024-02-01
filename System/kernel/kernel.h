@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
+void Kernel_reboot(void);
 bool Kernel_Init(void);
 bool Kernel_EnableTimer_IRQ(void);
 bool Kernel_DisableTimer_IRQ(void);

@@ -18,8 +18,8 @@ TARGET = H7FC
 HW_MATEK_STM32H743 := 1
 HW_BATEAIO_AT32F435 := 2
 
-BUILD_TYPE := $(HW_MATEK_STM32H743)
-# BUILD_TYPE := $(HW_BATEAIO_AT32F435)
+# BUILD_TYPE := $(HW_MATEK_STM32H743)
+BUILD_TYPE := $(HW_BATEAIO_AT32F435)
 
 ######################################
 # building variables
@@ -174,14 +174,18 @@ System/kernel/kernel_at32f435.c \
 HW_Lib/AT32F435/bsp/Bsp_GPIO.c \
 HW_Lib/AT32F435/bsp/Bsp_Spi.c \
 HW_Lib/AT32F435/bsp/Bsp_Uart.c \
+HW_Lib/AT32F435/bsp/Bsp_Flash.c \
 HW_Lib/AT32F435/bsp/Bsp_USB.c \
 HW_Lib/AT32F435/bsp/Bsp_DMA.c \
 HW_Lib?AT32F435/bsp/Bsp_Timer.c \
 HW_Lib/AT32F435/bsp/Bsp_IIC.c \
-HW_Lib/AT32F435/USB/usb_drivers/usb_core.c \
-HW_Lib/AT32F435/USB/usb_drivers/usbd_core.c \
+HW_Lib/AT32F435/HW_Def.c \
+HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c \
+HW_Lib/AT32F435/USB/usb_drivers/src/usbd_core.c \
 HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c \
 HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_desc.c \
+HW_Lib/AT32F435/USB/usb_drivers/src/usbd_int.c \
+HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c \
 HW_Lib/AT32F435/device_support/at32f435_437_clock.c \
 HW_Lib/AT32F435/device_support/at32f435_437_int.c \
 HW_Lib/AT32F435/device_support/system_at32f435_437.c \
@@ -191,9 +195,11 @@ HW_Lib/AT32F435/driver/src/at32f435_437_gpio.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_spi.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_i2c.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_tmr.c \
-HW_Lib/AT32F435/driver/src/at32f435_437_exint.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_dma.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_usb.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_flash.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_scfg.c \
+HW_Lib/AT32F435/driver/src/at32f435_437_exint.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_usart.c
 
 ASM_SOURCES =  \
@@ -292,8 +298,8 @@ C_INCLUDES =  \
 -IHW_Lib/Port_Def/
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_INCLUDES +=  \
--IHW_Lib/STM32H7/ \
--IHW_Lib/STM32H7/BSP/stm32h743 \
+-IHW_Lib/STM32H7 \
+-IHW_Lib/STM32H7/BSP \
 -IHW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHW_Lib/STM32H7/HAL_Lib/Core/Inc \
 -IHW_Lib/STM32H7/HAL_Lib/CMSIS/Device/ST/STM32H7xx/Include \
@@ -306,7 +312,7 @@ C_INCLUDES +=  \
 -IHW_Lib/STM32H7/USB/USB_DEVICE/Target
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
 C_INCLUDES += \
--IHW_Lib/AT32F435/ \
+-IHW_Lib/AT32F435 \
 -IHW_Lib/AT32F435/bsp \
 -IHW_Lib/AT32F435/drivers/inc \
 -IHW_Lib/AT32F435/cmsis/cm4/core_support \

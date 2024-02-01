@@ -148,6 +148,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
     case Receiver_Port_Serial:
         Uart_Receiver_Obj = (BspUARTObj_TypeDef *)port_obj;
         
+#if defined STM32H743xx
         Uart_Receiver_Obj->hdl = SrvOsCommon.malloc(UART_HandleType_Size);
         if(Uart_Receiver_Obj->hdl == NULL)
         {
@@ -171,7 +172,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             SrvOsCommon.free(Uart_Receiver_Obj->hdl);
             return false;
         }
-
+#endif
         memset(&SrvReceiver_Monitor, 0, SRVRECEIVER_SIZE);
 
         switch (obj->Frame_type)
