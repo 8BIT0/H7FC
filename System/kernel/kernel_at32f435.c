@@ -37,6 +37,7 @@ bool Kernel_Init(void)
     return true;
 }
 
+/* need test */
 void Kernel_reboot(void)
 {
     __set_FAULTMASK(1);
