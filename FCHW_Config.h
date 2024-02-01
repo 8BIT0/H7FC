@@ -4,7 +4,9 @@
 #define ON 1
 #define OFF 0
 
+#if !defined HW_BATEAIO_AT32F435 && !defined HW_MATEK_STM32H743
 #define HW_MATEK_STM32H743
+#endif
 
 #if defined HW_MATEK_STM32H743
 
