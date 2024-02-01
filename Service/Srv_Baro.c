@@ -1,6 +1,6 @@
 #include "Srv_Baro.h"
 #include "Srv_OsCommon.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "debug_util.h"
 #include "error_log.h"
 #include "bsp_iic.h"
@@ -20,6 +20,7 @@
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
 
 /* internal vriable */
+#if (BARO_BUS_TYPE == SrvBaro_Bus_IIC)
 SrvBaroObj_TypeDef SrvBaroObj = {
     .type = Baro_Type_DPS310,
     .sample_rate = SRVBARO_SAMPLE_RATE_20HZ,
@@ -28,16 +29,24 @@ SrvBaroObj_TypeDef SrvBaroObj = {
 
 BspIICObj_TypeDef SrvBaro_IIC_Obj = {
     .init = false,
-    .instance_id = BspIIC_Instance_I2C_2,
+    .instance_id = BARO_BUS,
     .Pin = &SrvBaro_BusPin,
 };
 
 SrvBaroBusObj_TypeDef SrvBaroBus = {
-    .type = SrvBaro_Bus_IIC,
+    .type = BARO_BUS_TYPE,
     .init = false,
     .bus_obj = (void *)&SrvBaro_IIC_Obj,
     .bus_api = (void *)&BspIIC,
 };
+#elif (BARO_BUS_TYPE == SrvBaro_Bus_IIC)
+SrvBaroBusObj_TypeDef SrvBaroBus = {
+    .type = BARO_BUS_TYPE,
+    .init = false,
+    .bus_obj = NULL,
+    .bus_api = NULL,
+};
+#endif
 
 /* internal function */
 static bool SrvBaro_Bus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);

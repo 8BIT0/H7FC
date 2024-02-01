@@ -8,7 +8,7 @@
 #include "Bsp_Timer.h"
 #include "Bsp_DMA.h"
 #include "Dev_Dshot.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 
 #define SRVACTUATOR_PB0_SIG_1                                   \
     (SrvActuator_PeriphSet_TypeDef)                             \

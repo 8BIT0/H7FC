@@ -55,7 +55,6 @@ Task/Task_Log.c \
 Task/Task_Telemetry.c \
 Task/Task_Protocol.c \
 Task/Task_Control.c \
-IO_Def/IO_Definition.c \
 Device/Dev_DPS310.c \
 Device/Dev_MPU6000.c \
 Device/Dev_ICM20602.c \
@@ -106,6 +105,7 @@ C_SOURCES +=  \
 Device/Dev_Card.c \
 System/diskio/DiskIO.c \
 System/kernel/kernel_stm32h743.c \
+HW_Lib/STM32H7/HW_Def.c \
 HW_Lib/STM32H7/BSP/stm32h743/Bsp_GPIO.c \
 HW_Lib/STM32H7/BSP/stm32h743/Bsp_SPI.c \
 HW_Lib/STM32H7/BSP/stm32h743/Bsp_SDMMC.c \
@@ -264,7 +264,6 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -I/ \
--IIO_Def/ \
 -Idebug/ \
 -ITask/ \
 -IDevice/ \
@@ -293,6 +292,7 @@ C_INCLUDES =  \
 -IHW_Lib/Port_Def/
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_INCLUDES +=  \
+-IHW_Lib/STM32H7/ \
 -IHW_Lib/STM32H7/BSP/stm32h743 \
 -IHW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Inc \
 -IHW_Lib/STM32H7/HAL_Lib/Core/Inc \
@@ -306,6 +306,7 @@ C_INCLUDES +=  \
 -IHW_Lib/STM32H7/USB/USB_DEVICE/Target
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
 C_INCLUDES += \
+-IHW_Lib/AT32F435/ \
 -IHW_Lib/AT32F435/bsp \
 -IHW_Lib/AT32F435/drivers/inc \
 -IHW_Lib/AT32F435/cmsis/cm4/core_support \

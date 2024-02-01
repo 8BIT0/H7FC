@@ -1,6 +1,6 @@
 #include "Task_Protocol.h"
 #include "Srv_OsCommon.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
 

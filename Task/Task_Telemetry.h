@@ -8,7 +8,7 @@
 #include "linked_list.h"
 #include "../common/util.h"
 #include "semphr.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "Srv_ComProto.h"
 #include "Srv_OsCommon.h"
 #include "Bsp_USB.h"

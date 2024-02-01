@@ -16,7 +16,7 @@
 #include "Task_Telemetry.h"
 #include "Task_Sample.h"
 #include "Dev_Led.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "minilzo.h"
 #include "Srv_OsCommon.h"
 #include <stdio.h>

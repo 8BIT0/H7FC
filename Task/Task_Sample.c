@@ -1,7 +1,7 @@
 #include "Task_Sample.h"
 #include "debug_util.h"
 #include "Srv_OsCommon.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "debug_util.h"
 #include "error_log.h"
 #include "../FCHW_Config.h"

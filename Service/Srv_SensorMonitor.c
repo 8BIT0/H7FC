@@ -2,7 +2,7 @@
 #include "Bsp_Timer.h"
 #include "Srv_OsCommon.h"
 #include "debug_util.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 
 /* 
  * for sensor statistic function a timer is essenial

@@ -1,6 +1,6 @@
 #include "Dev_Card.h"
 #include "Srv_OsCommon.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "debug_util.h"
 
 #define LOCK_TIMEOUT 500 // unit: ms

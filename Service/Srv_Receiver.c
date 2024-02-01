@@ -3,7 +3,7 @@
 #include "Bsp_SPI.h"
 #include "Bsp_GPIO.h"
 #include "error_log.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "Srv_OsCommon.h"
 
 static uint8_t SrvReceiver_Buff[SRV_RECEIVER_BUFF_SIZE] __attribute__((section(".Perph_Section")));

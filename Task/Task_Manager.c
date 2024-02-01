@@ -6,7 +6,7 @@
 #include "Task_Navi.h"
 #include "Task_Protocol.h"
 #include "debug_util.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "Dev_Led.h"
 #include "DiskIO.h"
 #include "Srv_ComProto.h"
@@ -64,13 +64,8 @@ void Task_Manager_CreateTask(void)
     Storage_ModuleState_TypeDef storage_module_enable;
     storage_module_enable.val = 0;
 
-#if defined MATEKH743_V1_5
     storage_module_enable.bit.internal = true;
-    storage_module_enable.bit.external = false;
-#elif defined BATEAT32F435_AIO
-    storage_module_enable.bit.internal = false;
-    storage_module_enable.bit.external = true;
-#endif
+    storage_module_enable.bit.external = FLASH_CHIP_STATE;
 
     while(1)
     {
@@ -97,7 +92,7 @@ void Task_Manager_CreateTask(void)
             osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 8192);
             TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
 
-#if defined MATEKH743_V1_5
+#if defined SD_CARD_ENABLE_STATE 
             osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
 #endif

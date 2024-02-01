@@ -11,14 +11,14 @@
 #include "DiskIO.h"
 #include "Dev_W25Qxx.h"
 #include "Dev_Card.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "Data_Convert_Util.h"
 #include "error_log.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "debug_util.h"
 
 #define GEN_TIME(h, m, s) ((((uint16_t)h) << 11) + (((uint16_t)m) << 5) + (((uint16_t)s) >> 1))

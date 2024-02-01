@@ -1,13 +1,14 @@
-#ifndef __IO_DEFINITION_H
-#define __IO_DEFINITION_H
+#ifndef __HW_DEF_H
+#define __HW_DEF_H
 
 #include "Bsp_GPIO.h"
 #include "Bsp_SPI.h"
+#include "Bsp_SDMMC.h"
+#include "Bsp_Uart.h"
 #include "Bsp_IIC.h"
 #include "Dev_Led.h"
 #include "debug_util.h"
 
-#if defined STM32H743xx
 #define LED1_PIN GPIO_PIN_3
 #define LED1_PORT GPIOE
 
@@ -63,6 +64,7 @@
 #define SecIMU_MOSI_PORT GPIOE
 #define SecIMU_MOSI_PIN GPIO_PIN_14
 
+/* SDMMC Pin */
 #define SDMMC_CLK_PORT GPIOC
 #define SDMMC_CLK_PIN GPIO_PIN_12
 
@@ -81,7 +83,9 @@
 #define D3_PORT GPIOC
 #define D3_PIN GPIO_PIN_11
 
-/* IIC Pin */
+/* Baro IIC Pin */
+#define BARO_BUS_TYPE SrvBaro_Bus_IIC
+#define BARO_BUS  BspIIC_Instance_I2C_2
 #define IIC2_SDA_PORT GPIOB
 #define IIC2_SDA_PIN GPIO_PIN_11
 #define IIC2_SCK_PORT GPIOB
@@ -166,8 +170,5 @@ extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_PinConfig_TypeDef SecIMU_BusPin;
 
 extern BspIIC_PinConfig_TypeDef SrvBaro_BusPin;
-#elif defined AT32F435RGT7
-
-#endif
 
 #endif

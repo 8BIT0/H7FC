@@ -5,7 +5,7 @@
 #include "Dev_MPU6000.h"
 #include "Dev_ICM20602.h"
 #include "Dev_ICM426xx.h"
-#include "IO_Definition.h"
+#include "HW_Def.h"
 #include "Srv_OsCommon.h"
 #include "debug_util.h"
 #include "Bsp_SPI.h"

@@ -53,7 +53,8 @@ typedef struct
 
 typedef enum
 {
-    SrvBaro_Bus_IIC = 0,
+    SrvBaro_Bus_None = 0,
+    SrvBaro_Bus_IIC,
     SrvBaro_Bus_SPI,
     SrvBaro_BusType_Sum,
 }SrvBaroBus_TypeList;
