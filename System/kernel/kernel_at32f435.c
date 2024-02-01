@@ -1,6 +1,11 @@
 #include "at32f435_437.h"
 #include <stdbool.h>
 
+#define Kernel_DisableIRQ() __asm("cpsid i")
+#define Kernel_EnableIRQ() __asm("cpsie i")
+
+static bool Kernel_TickTimer_Init = false;
+
 bool Kernel_Init(void)
 {
     system_clock_config();
@@ -27,11 +32,59 @@ bool Kernel_Init(void)
     /* enable tmr1 */
     tmr_counter_enable(TMR20, TRUE);
 
+    Kernel_TickTimer_Init = true;
+
     return true;
 }
 
 void Kernel_reboot(void)
 {
+    __set_FAULTMASK(1);
+
+    NVIC_SystemReset();
+}
+
+bool Kernel_EnableTimer_IRQ(void)
+{
 
 }
 
+bool Kernel_DisableTimer_IRQ(void)
+{
+
+}
+
+bool Kernel_Set_PeriodValue(uint32_t value)
+{
+
+}
+
+bool Kernel_Set_SysTimer_TickUnit(uint32_t unit)
+{
+    if(Kernel_TickTimer_Init)
+    {
+
+    }
+
+    return false;
+}
+
+uint32_t Kernel_Get_SysTimer_TickUnit(void)
+{
+    if(Kernel_TickTimer_Init)
+    {
+
+    }
+
+    return 0;
+}
+
+uint32_t Kernel_Get_PeriodValue(void)
+{
+
+}
+
+uint32_t Kernel_TickVal_To_Us(void)
+{
+
+}
