@@ -6,6 +6,9 @@
 #include <string.h>
 #include "Bsp_SPI.h"
 
+#define To_DevW25Qxx_API(x) ((DevW25Qxx_TypeDef *)x)
+#define To_DevW25Qxx_OBJ(x) ((DevW25QxxObj_TypeDef *)x)
+
 #define W25Q08_DEV_ID                           0xEF13
 #define W25Q16_DEV_ID                           0xEF14
 #define W25Q32_DEV_ID                           0xEF15
