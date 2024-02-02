@@ -38,22 +38,20 @@ static bool Storage_Format(Storage_MediumType_List type);
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size);
  
 /* external function */
-static bool Storage_Init(Storage_ModuleState_TypeDef enable);
+static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
 static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name);
 
 Storage_TypeDef Storage = {
     .init = Storage_Init,
 };
 
-static bool Storage_Init(Storage_ModuleState_TypeDef enable)
+static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
 {
     // SrvOsCommon.enter_critical();
     memset(&Storage_Monitor, 0, sizeof(Storage_Monitor));
 
     Storage_Monitor.module_enable_reg.val = enable.val;
     Storage_Monitor.module_init_reg.val = 0;
-
-    SrvOsCommon.delay_ms(5000);
 
     /* on chip flash init */
     if(enable.bit.internal && BspFlash.init && BspFlash.init())

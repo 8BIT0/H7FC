@@ -4,6 +4,7 @@
 #include <string.h>
 #include "Srv_DataHub.h"
 #include "Bsp_Flash.h"
+#include "Dev_W25Qxx.h"
 #include "Srv_OsCommon.h"
 #include "util.h"
 
@@ -38,6 +39,18 @@
 #define STORAGE_MIN_BYTE_SIZE 1
 
 typedef uint32_t storage_handle;
+
+typedef enum
+{
+    Storage_ChipBus_None = 0,
+    Storage_ChipBus_Spi,
+} Storage_ExtFlash_BusType_List;
+
+typedef enum
+{
+    Storage_Chip_None = 0,
+    Storage_ChipType_W25Qxx,
+} Storage_ExtFlashChipType_List;
 
 typedef enum
 {
@@ -144,6 +157,28 @@ typedef union
 
 typedef struct
 {
+    Storage_ExtFlash_BusType_List bus_type;
+    Storage_ExtFlashChipType_List chip_type;
+
+    uint32_t total_size;
+
+    uint32_t page_num;
+
+    uint32_t bank_num;
+    uint32_t bank_size;
+
+    uint32_t block_num;
+    uint32_t block_size;
+
+    uint32_t sector_num;
+    uint32_t sector_size;
+
+    void *dev_obj;
+    void *dev_api;
+} Storage_ExtFLashDevObj_TypeDef;
+
+typedef struct
+{
     Storage_ModuleState_TypeDef module_enable_reg;
     Storage_ModuleState_TypeDef module_init_reg;
 
@@ -159,7 +194,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(Storage_ModuleState_TypeDef enable);
+    bool (*init)(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
     storage_handle (*search)(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name);
     bool (*save)(storage_handle hdl, uint8_t *p_data, uint16_t size);
     bool (*get)(storage_handle hdl, uint8_t *p_data, uint16_t size);

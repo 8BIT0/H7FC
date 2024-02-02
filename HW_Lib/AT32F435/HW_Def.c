@@ -125,3 +125,26 @@ BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg = {
     .BaudRatePrescaler = SPI_MCLK_DIV_4,
 };
 
+/* external flash chip cs */
+BspGPIO_Port_TypeDef ExtFlash_CS_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef ExtFlash_CSPin = {
+    .port = (void *)&ExtFlash_CS_Port,
+    .pin = GPIO_PINS_12,
+    .init_state = GPIO_PULL_UP,
+};
+
+/* external flash chip bus Pin (SPI2) */
+BspSPI_PinConfig_TypeDef ExtFlash_SPIPin = {
+    .port_mosi = (void *)GPIOB,
+    .port_miso = (void *)GPIOB,
+    .port_clk = (void *)GPIOB,
+    
+    .pin_mosi = GPIO_PINS_15,
+    .pin_miso = GPIO_PINS_14,
+    .pin_clk = GPIO_PINS_13,
+
+    .pin_Alternate = GPIO_MUX_5,
+};
