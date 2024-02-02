@@ -1,6 +1,6 @@
 #include "Dev_W25Qxx.h"
 
-static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev, DevW25QxxPin_Config_TypeDef DevPin);
+static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev);
 static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef dev);
 static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size);
 static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size);
@@ -159,7 +159,7 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef dev)
     return DevW25Qxx_Ok;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev, DevW25QxxPin_Config_TypeDef DevPin)
+static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev)
 {
     void *bus_instance = NULL;
     void *bus_obj = NULL;
@@ -181,7 +181,6 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev, DevW25QxxPi
             (DevW25Qxx_GetSpiInstance(dev)->trans_receive == NULL))
             return DevW25Qxx_Error;
 
-        DevW25Qxx_GetSpiObj(dev)->Pin = DevPin;
         DevW25Qxx_GetSpiInstance(dev)->init(*((BspSPI_NorModeConfig_TypeDef *)bus_obj), bus_instance);
     }
 
