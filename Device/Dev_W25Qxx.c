@@ -1,11 +1,11 @@
 #include "Dev_W25Qxx.h"
 
 static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev);
-static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef dev);
-static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size);
-static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size);
-static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef dev, uint32_t Address);
-static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef dev);
+static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev);
+static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size);
+static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size);
+static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint32_t Address);
+static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev);
 
 DevW25Qxx_TypeDef DevW25Q64 = {
     .init = DevW25Qxx_Init,
@@ -17,22 +17,22 @@ DevW25Qxx_TypeDef DevW25Q64 = {
 };
 
 /* DevW25Qxx Base SPI communicate interface */
-static BspSpi_TypeDef *DevW25Qxx_GetSpiInstance(DevW25QxxObj_TypeDef dev)
+static BspSpi_TypeDef *DevW25Qxx_GetSpiInstance(DevW25QxxObj_TypeDef *dev)
 {
-    return (BspSpi_TypeDef *)(dev.bus_api);
+    return (BspSpi_TypeDef *)(dev->bus_api);
 }
 
-static BspSPI_NorModeConfig_TypeDef *DevW25Qxx_GetSpiObj(DevW25QxxObj_TypeDef dev)
+static BspSPI_NorModeConfig_TypeDef *DevW25Qxx_GetSpiObj(DevW25QxxObj_TypeDef *dev)
 {
-    return (BspSPI_NorModeConfig_TypeDef *)(dev.bus_obj);
+    return (BspSPI_NorModeConfig_TypeDef *)(dev->bus_obj);
 }
 
-static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef dev, uint8_t *tx, uint16_t size)
+static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint16_t size)
 {
     bool state = false;
     void *bus_instance = NULL;
 
-    if (dev.bus_type == DevW25Qxx_Norm_SpiBus)
+    if (dev->bus_type == DevW25Qxx_Norm_SpiBus)
     {
         if ((DevW25Qxx_GetSpiInstance(dev) == NULL) || (DevW25Qxx_GetSpiInstance(dev)->trans == NULL))
             return false;
@@ -41,20 +41,20 @@ static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef dev, uint8_t *tx, uint16_t s
         if (bus_instance == NULL)
             return false;
 
-        dev.CSPin.ctl(true);
+        dev->CSPin.ctl(true);
         state = DevW25Qxx_GetSpiInstance(dev)->trans(bus_instance, tx, size, W25Qx_TIMEOUT_VALUE);
-        dev.CSPin.ctl(false);
+        dev->CSPin.ctl(false);
     }
 
     return state;
 }
 
-static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef dev, uint8_t *rx, uint16_t size)
+static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef *dev, uint8_t *rx, uint16_t size)
 {
     bool state = false;
     void *bus_instance = NULL;
 
-    if (dev.bus_type == DevW25Qxx_Norm_SpiBus)
+    if (dev && (dev->bus_type == DevW25Qxx_Norm_SpiBus))
     {
         if ((DevW25Qxx_GetSpiInstance(dev) == NULL) || (DevW25Qxx_GetSpiInstance(dev)->receive == NULL))
             return false;
@@ -63,20 +63,20 @@ static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef dev, uint8_t *rx, uint16_t
         if (bus_instance == NULL)
             return false;
 
-        dev.CSPin.ctl(true);
+        dev->CSPin.ctl(true);
         state = DevW25Qxx_GetSpiInstance(dev)->receive(bus_instance, rx, size, W25Qx_TIMEOUT_VALUE);
-        dev.CSPin.ctl(false);
+        dev->CSPin.ctl(false);
     }
 
     return state;
 }
 
-static bool DevW25Qxx_BusTrans_Receive(DevW25QxxObj_TypeDef dev, uint8_t *tx, uint8_t *rx, uint16_t size)
+static bool DevW25Qxx_BusTrans_Receive(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint8_t *rx, uint16_t size)
 {
     bool state;
     void *bus_instance = NULL;
 
-    if (dev.bus_type == DevW25Qxx_Norm_SpiBus)
+    if (dev->bus_type == DevW25Qxx_Norm_SpiBus)
     {
         if ((DevW25Qxx_GetSpiInstance(dev) == NULL) || (DevW25Qxx_GetSpiInstance(dev)->trans_receive == NULL))
             return false;
@@ -85,16 +85,16 @@ static bool DevW25Qxx_BusTrans_Receive(DevW25QxxObj_TypeDef dev, uint8_t *tx, ui
         if (bus_instance == NULL)
             return false;
 
-        dev.CSPin.ctl(true);
+        dev->CSPin.ctl(true);
         state = DevW25Qxx_GetSpiInstance(dev)->trans_receive(bus_instance, tx, rx, size, W25Qx_TIMEOUT_VALUE);
-        dev.CSPin.ctl(false);
+        dev->CSPin.ctl(false);
     }
 
     return state;
 }
 
 /* W25Qxx device driver */
-static bool DevW25Qxx_ReadID(DevW25QxxObj_TypeDef dev)
+static bool DevW25Qxx_ReadID(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd[4] = {READ_ID_CMD, 0x00, 0x00, 0x00};
     uint8_t ID[2] = {0};
@@ -107,7 +107,7 @@ static bool DevW25Qxx_ReadID(DevW25QxxObj_TypeDef dev)
     return true;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef dev)
+static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd[2] = {RESET_ENABLE_CMD, RESET_MEMORY_CMD};
 
@@ -118,7 +118,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef dev)
     return DevW25Qxx_Error;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef dev)
+static DevW25Qxx_Error_List DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd = READ_STATUS_REG1_CMD;
     bool trans_state = false;
@@ -136,10 +136,10 @@ static DevW25Qxx_Error_List DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef dev)
     return DevW25Qxx_Ok;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef dev)
+static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd = WRITE_ENABLE_CMD;
-    uint32_t tickstart = dev.systick();
+    uint32_t tickstart = dev->systick();
     bool trans_state = false;
 
     /* Send the read ID command */
@@ -152,7 +152,7 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef dev)
     while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
     {
         /* Check for the Timeout */
-        if ((dev.systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
+        if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
             return DevW25Qxx_TimeOut;
     }
 
@@ -171,30 +171,30 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
 
     if (dev->bus_type == DevW25Qxx_Norm_SpiBus)
     {
-        bus_obj = DevW25Qxx_GetSpiObj(*dev);
-        bus_instance = DevW25Qxx_GetSpiObj(*dev)->Instance;
+        bus_obj = DevW25Qxx_GetSpiObj(dev);
+        bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
 
         if ((bus_obj == NULL) ||
             (bus_instance == NULL) ||
-            (DevW25Qxx_GetSpiInstance(*dev)->trans == NULL) ||
-            (DevW25Qxx_GetSpiInstance(*dev)->receive == NULL) ||
-            (DevW25Qxx_GetSpiInstance(*dev)->trans_receive == NULL))
+            (DevW25Qxx_GetSpiInstance(dev)->trans == NULL) ||
+            (DevW25Qxx_GetSpiInstance(dev)->receive == NULL) ||
+            (DevW25Qxx_GetSpiInstance(dev)->trans_receive == NULL))
             return DevW25Qxx_Error;
 
-        DevW25Qxx_GetSpiInstance(*dev)->init(*((BspSPI_NorModeConfig_TypeDef *)bus_obj), bus_instance);
+        DevW25Qxx_GetSpiInstance(dev)->init(*((BspSPI_NorModeConfig_TypeDef *)bus_obj), bus_instance);
     }
 
     dev->CSPin.init();
 
     /* Reset W25Qxxx */
-    if ((DevW25Qxx_Reset(*dev) != DevW25Qxx_Ok) ||
-        (DevW25Qxx_GetStatue(*dev) != DevW25Qxx_Ok))
+    if ((DevW25Qxx_Reset(dev) != DevW25Qxx_Ok) ||
+        (DevW25Qxx_GetStatue(dev) != DevW25Qxx_Ok))
         return DevW25Qxx_Error;
 
     return DevW25Qxx_Ok;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size)
+static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size)
 {
     uint8_t cmd[4];
 
@@ -210,11 +210,11 @@ static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t Re
     return DevW25Qxx_Ok;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size)
+static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size)
 {
     uint8_t cmd[4];
     uint32_t end_addr, current_size, current_addr;
-    uint32_t tickstart = dev.systick();
+    uint32_t tickstart = dev->systick();
 
     /* Calculation of the size between the write address and the end of the page */
     current_addr = 0;
@@ -256,7 +256,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef dev, uint32_t W
         while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
         {
             /* Check for the Timeout */
-            if ((dev.systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
+            if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
             {
                 return DevW25Qxx_TimeOut;
             }
@@ -271,10 +271,10 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef dev, uint32_t W
     return DevW25Qxx_Ok;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef dev)
+static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd = SECTOR_ERASE_CMD;
-    uint32_t tickstart = dev.systick();
+    uint32_t tickstart = dev->systick();
 
     if ((DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok) ||
         (DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) != DevW25Qxx_Ok))
@@ -284,7 +284,7 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef dev)
     while (DevW25Qxx_GetStatue(dev) != DevW25Qxx_Busy)
     {
         /* Check for the Timeout */
-        if ((dev.systick() - tickstart) > W25Q128FV_BULK_ERASE_MAX_TIME)
+        if ((dev->systick() - tickstart) > W25Q128FV_BULK_ERASE_MAX_TIME)
         {
             return DevW25Qxx_TimeOut;
         }
@@ -293,10 +293,10 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef dev)
     return DevW25Qxx_Ok;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef dev, uint32_t Address)
+static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint32_t Address)
 {
     uint8_t cmd[4];
-    uint32_t tickstart = dev.systick();
+    uint32_t tickstart = dev->systick();
     cmd[0] = SECTOR_ERASE_CMD;
     cmd[1] = (uint8_t)(Address >> 16);
     cmd[2] = (uint8_t)(Address >> 8);
@@ -310,7 +310,7 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef dev, uint3
     while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
     {
         /* Check for the Timeout */
-        if ((dev.systick() - tickstart) > W25Q128FV_SECTOR_ERASE_MAX_TIME)
+        if ((dev->systick() - tickstart) > W25Q128FV_SECTOR_ERASE_MAX_TIME)
         {
             return DevW25Qxx_TimeOut;
         }
