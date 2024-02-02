@@ -7,13 +7,6 @@ static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t Re
 static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef dev, uint32_t Address);
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef dev);
 
-/* without pin config in this down */
-static const BspSPI_NorModeConfig_TypeDef DevW25QxxSPI_Cfg = {
-    // .CLKPolarity = SPI_POLARITY_HIGH,
-    // .CLKPhase = SPI_PHASE_2EDGE,
-    // .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128,
-};
-
 DevW25Qxx_TypeDef DevW25Q64 = {
     .init = DevW25Qxx_Init,
     .reset = DevW25Qxx_Reset,
@@ -24,25 +17,32 @@ DevW25Qxx_TypeDef DevW25Q64 = {
 };
 
 /* DevW25Qxx Base SPI communicate interface */
-static BspSpi_TypeDef *DevW25Qxx_GetSspiInstance(DevW25QxxObj_TypeDef dev)
+static BspSpi_TypeDef *DevW25Qxx_GetSpiInstance(DevW25QxxObj_TypeDef dev)
 {
-    if (dev.bus_type == DevW25Qxx_Norm_SpiBus)
-        return (BspSpi_TypeDef *)(&BspSPI);
+    return (BspSpi_TypeDef *)(dev.bus_api);
+}
+
+static BspSPI_NorModeConfig_TypeDef *DevW25Qxx_GetSpiObj(DevW25QxxObj_TypeDef dev)
+{
+    return (BspSPI_NorModeConfig_TypeDef *)(dev.bus_obj);
 }
 
 static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef dev, uint8_t *tx, uint16_t size)
 {
     bool state = false;
+    void *bus_instance = NULL;
 
-    if (dev.bus_instance == DevW25Qxx_Norm_SpiBus)
+    if (dev.bus_type == DevW25Qxx_Norm_SpiBus)
     {
-        if ((DevW25Qxx_GetSspiInstance(dev) == NULL) || (DevW25Qxx_GetSspiInstance(dev)->trans == NULL))
+        if ((DevW25Qxx_GetSpiInstance(dev) == NULL) || (DevW25Qxx_GetSpiInstance(dev)->trans == NULL))
+            return false;
+
+        bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
+        if (bus_instance == NULL)
             return false;
 
         dev.CSPin.ctl(true);
-
-        state = DevW25Qxx_GetSspiInstance(dev)->trans(dev.bus_instance, tx, size, W25Qx_TIMEOUT_VALUE);
-
+        state = DevW25Qxx_GetSpiInstance(dev)->trans(bus_instance, tx, size, W25Qx_TIMEOUT_VALUE);
         dev.CSPin.ctl(false);
     }
 
@@ -52,16 +52,19 @@ static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef dev, uint8_t *tx, uint16_t s
 static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef dev, uint8_t *rx, uint16_t size)
 {
     bool state = false;
+    void *bus_instance = NULL;
 
-    if (dev.bus_instance == DevW25Qxx_Norm_SpiBus)
+    if (dev.bus_type == DevW25Qxx_Norm_SpiBus)
     {
-        if ((DevW25Qxx_GetSspiInstance(dev) == NULL) || (DevW25Qxx_GetSspiInstance(dev)->receive == NULL))
+        if ((DevW25Qxx_GetSpiInstance(dev) == NULL) || (DevW25Qxx_GetSpiInstance(dev)->receive == NULL))
+            return false;
+
+        bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
+        if (bus_instance == NULL)
             return false;
 
         dev.CSPin.ctl(true);
-
-        state = DevW25Qxx_GetSspiInstance(dev)->receive(dev.bus_instance, rx, size, W25Qx_TIMEOUT_VALUE);
-
+        state = DevW25Qxx_GetSpiInstance(dev)->receive(bus_instance, rx, size, W25Qx_TIMEOUT_VALUE);
         dev.CSPin.ctl(false);
     }
 
@@ -71,16 +74,19 @@ static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef dev, uint8_t *rx, uint16_t
 static bool DevW25Qxx_BusTrans_Receive(DevW25QxxObj_TypeDef dev, uint8_t *tx, uint8_t *rx, uint16_t size)
 {
     bool state;
+    void *bus_instance = NULL;
 
-    if (dev.bus_instance == DevW25Qxx_Norm_SpiBus)
+    if (dev.bus_type == DevW25Qxx_Norm_SpiBus)
     {
-        if ((DevW25Qxx_GetSspiInstance(dev) == NULL) || (DevW25Qxx_GetSspiInstance(dev)->trans_receive == NULL))
+        if ((DevW25Qxx_GetSpiInstance(dev) == NULL) || (DevW25Qxx_GetSpiInstance(dev)->trans_receive == NULL))
+            return false;
+
+        bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
+        if (bus_instance == NULL)
             return false;
 
         dev.CSPin.ctl(true);
-
-        state = DevW25Qxx_GetSspiInstance(dev)->trans_receive(dev.bus_instance, tx, rx, size, W25Qx_TIMEOUT_VALUE);
-
+        state = DevW25Qxx_GetSpiInstance(dev)->trans_receive(bus_instance, tx, rx, size, W25Qx_TIMEOUT_VALUE);
         dev.CSPin.ctl(false);
     }
 
@@ -155,22 +161,28 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef dev)
 
 static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev, DevW25QxxPin_Config_TypeDef DevPin)
 {
+    void *bus_instance = NULL;
+    void *bus_obj = NULL;
+
     if ((dev.CSPin.init == NULL) ||
         (dev.CSPin.ctl == NULL) ||
         (dev.BusPort == NULL))
         return false;
 
-    if (dev.bus_instance == DevW25Qxx_Norm_SpiBus)
+    if (dev.bus_type == DevW25Qxx_Norm_SpiBus)
     {
-        BspSPI_NorModeConfig_TypeDef BspSPI_NorCfg = DevW25QxxSPI_Cfg;
-        BspSPI_NorCfg.Pin = DevPin;
+        bus_obj = DevW25Qxx_GetSpiObj(dev);
+        bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
 
-        if ((DevW25Qxx_GetSspiInstance(dev)->trans == NULL) ||
-            (DevW25Qxx_GetSspiInstance(dev)->receive == NULL) ||
-            (DevW25Qxx_GetSspiInstance(dev)->trans_receive == NULL))
+        if ((bus_obj == NULL) ||
+            (bus_instance == NULL) ||
+            (DevW25Qxx_GetSpiInstance(dev)->trans == NULL) ||
+            (DevW25Qxx_GetSpiInstance(dev)->receive == NULL) ||
+            (DevW25Qxx_GetSpiInstance(dev)->trans_receive == NULL))
             return DevW25Qxx_Error;
 
-        DevW25Qxx_GetSspiInstance(dev)->init(BspSPI_NorCfg, dev.bus_instance);
+        DevW25Qxx_GetSpiObj(dev)->Pin = DevPin;
+        DevW25Qxx_GetSpiInstance(dev)->init(*((BspSPI_NorModeConfig_TypeDef *)bus_obj), bus_instance);
     }
 
     dev.CSPin.init();
