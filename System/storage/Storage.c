@@ -109,6 +109,16 @@ reformat_internal_flash_info:
         (ExtDev->dev_api != NULL) && \
         (ExtDev->dev_obj != NULL))
     {
+        if (ExtDev->bus_type == Storage_ChipBus_Spi)
+        {
+            if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
+            {
+            
+            }
+        }
+        else
+            Storage_Monitor.module_init_reg.bit.external = false;
+
         Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
     }
     else
