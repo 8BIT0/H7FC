@@ -128,6 +128,7 @@ typedef struct
     uint32_t para_num;
 } Storage_BaseSecInfo_TypeDef;
 
+/* software storage info */
 typedef struct
 {
     uint8_t tag[32];
@@ -155,6 +156,7 @@ typedef union
     uint8_t val;
 } Storage_ModuleState_TypeDef;
 
+/* hadware flash chip info */
 typedef struct
 {
     Storage_ExtFlash_BusType_List bus_type;

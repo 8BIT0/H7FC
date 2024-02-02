@@ -47,7 +47,6 @@ Storage_TypeDef Storage = {
 
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
 {
-    // SrvOsCommon.enter_critical();
     memset(&Storage_Monitor, 0, sizeof(Storage_Monitor));
 
     Storage_Monitor.module_enable_reg.val = enable.val;
@@ -112,7 +111,6 @@ reformat_internal_flash_info:
     Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | \
                                  Storage_Monitor.module_init_reg.bit.internal;
 
-    // SrvOsCommon.exit_critical();
     return Storage_Monitor.init_state;
 }
 
