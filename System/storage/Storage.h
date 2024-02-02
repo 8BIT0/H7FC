@@ -187,6 +187,8 @@ typedef struct
     uint8_t InternalFlash_Format_cnt;
     uint8_t ExternalFlash_Format_cnt;
     
+    void *ExtDev_ptr;
+
     bool init_state;
     uint8_t inuse;
 

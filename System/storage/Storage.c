@@ -47,6 +47,8 @@ Storage_TypeDef Storage = {
 
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
 {
+    void *flash_bus_cfg = NULL;
+
     memset(&Storage_Monitor, 0, sizeof(Storage_Monitor));
 
     Storage_Monitor.module_enable_reg.val = enable.val;
@@ -105,15 +107,54 @@ reformat_internal_flash_info:
     /* external flash init */
     if (enable.bit.external && \
         ExtDev && \
-        (ExtDev->chip_type != Storage_Chip_None) && \
-        (ExtDev->dev_api != NULL) && \
-        (ExtDev->dev_obj != NULL))
+        (ExtDev->chip_type != Storage_Chip_None))
     {
         if (ExtDev->bus_type == Storage_ChipBus_Spi)
         {
-            if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
+            if (ExtDev->bus_type == Storage_ChipBus_Spi)
             {
-                To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj));
+                flash_bus_cfg = SrvOsCommon.malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
+
+                if (flash_bus_cfg)
+                {
+                    memset(flash_bus_cfg, 0, sizeof(BspSPI_NorModeConfig_TypeDef));
+
+                    To_NormalSPI_Obj(flash_bus_cfg)->BaudRatePrescaler = SPI_MCLK_DIV_16;
+                    To_NormalSPI_Obj(flash_bus_cfg)->CLKPhase = ExtFlash_Bus_CLKPhase;
+                    To_NormalSPI_Obj(flash_bus_cfg)->CLKPolarity = SPI_CLOCK_POLARITY_HIGH;
+                    To_NormalSPI_Obj(flash_bus_cfg)->Instance = ExtFLash_Bus_Instance;
+                    To_NormalSPI_Obj(flash_bus_cfg)->Pin = ExtFlash_Bus_Pin;
+
+                    To_DevW25Qxx_OBJ(ExtDev->dev_api)->bus_api = ExtFlash_Bus_Api;
+                    To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_obj = flash_bus_cfg;
+
+                    if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
+                    {
+                        if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
+                        {
+                            Storage_Monitor.ExtDev_ptr = ExtDev;
+                        }
+                        else
+                        {
+                            Storage_Monitor.module_init_reg.bit.external = false;
+                        }
+                    }
+                }
+                else
+                {
+                    SrvOsCommon.free(flash_bus_cfg);
+
+                    Storage_Monitor.module_init_reg.bit.external = false;
+                    ExtDev->chip_type = Storage_Chip_None;
+                    ExtDev->bus_type = Storage_ChipBus_None;
+                    ExtDev->dev_api = NULL;
+                    ExtDev->dev_obj = NULL;
+                }
+            }
+            else
+            {
+                SrvOsCommon.free(ExtDev);
+                Storage_Monitor.module_init_reg.bit.external = false;
             }
         }
         else

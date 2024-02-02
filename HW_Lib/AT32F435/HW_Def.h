@@ -120,7 +120,7 @@
 #define ExtFlash_Bus_CLKPhase SPI_CLOCK_PHASE_2EDGE
 #define ExtFlash_Bus_CLKPolarity SPI_CLOCK_POLARITY_HIGH
 #define ExtFlash_CS_Pin ExtFlash_CSPin
-#define ExtFlasH_Bus_Pin ExtFlash_SPIPin
+#define ExtFlash_Bus_Pin ExtFlash_SPIPin
 
 extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
 extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
