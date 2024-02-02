@@ -113,7 +113,7 @@ reformat_internal_flash_info:
         {
             if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
             {
-            
+                To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj));
             }
         }
         else

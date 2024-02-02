@@ -1,6 +1,6 @@
 #include "Dev_W25Qxx.h"
 
-static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev);
+static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev);
 static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef dev);
 static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size);
 static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size);
@@ -159,36 +159,36 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef dev)
     return DevW25Qxx_Ok;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef dev)
+static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
 {
     void *bus_instance = NULL;
     void *bus_obj = NULL;
 
-    if ((dev.CSPin.init == NULL) ||
-        (dev.CSPin.ctl == NULL) ||
-        (dev.BusPort == NULL))
+    if ((dev->CSPin.init == NULL) ||
+        (dev->CSPin.ctl == NULL) ||
+        (dev->BusPort == NULL))
         return false;
 
-    if (dev.bus_type == DevW25Qxx_Norm_SpiBus)
+    if (dev->bus_type == DevW25Qxx_Norm_SpiBus)
     {
-        bus_obj = DevW25Qxx_GetSpiObj(dev);
-        bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
+        bus_obj = DevW25Qxx_GetSpiObj(*dev);
+        bus_instance = DevW25Qxx_GetSpiObj(*dev)->Instance;
 
         if ((bus_obj == NULL) ||
             (bus_instance == NULL) ||
-            (DevW25Qxx_GetSpiInstance(dev)->trans == NULL) ||
-            (DevW25Qxx_GetSpiInstance(dev)->receive == NULL) ||
-            (DevW25Qxx_GetSpiInstance(dev)->trans_receive == NULL))
+            (DevW25Qxx_GetSpiInstance(*dev)->trans == NULL) ||
+            (DevW25Qxx_GetSpiInstance(*dev)->receive == NULL) ||
+            (DevW25Qxx_GetSpiInstance(*dev)->trans_receive == NULL))
             return DevW25Qxx_Error;
 
-        DevW25Qxx_GetSpiInstance(dev)->init(*((BspSPI_NorModeConfig_TypeDef *)bus_obj), bus_instance);
+        DevW25Qxx_GetSpiInstance(*dev)->init(*((BspSPI_NorModeConfig_TypeDef *)bus_obj), bus_instance);
     }
 
-    dev.CSPin.init();
+    dev->CSPin.init();
 
     /* Reset W25Qxxx */
-    if ((DevW25Qxx_Reset(dev) != DevW25Qxx_Ok) ||
-        (DevW25Qxx_GetStatue(dev) != DevW25Qxx_Ok))
+    if ((DevW25Qxx_Reset(*dev) != DevW25Qxx_Ok) ||
+        (DevW25Qxx_GetStatue(*dev) != DevW25Qxx_Ok))
         return DevW25Qxx_Error;
 
     return DevW25Qxx_Ok;
