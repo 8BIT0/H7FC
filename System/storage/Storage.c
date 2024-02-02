@@ -53,7 +53,7 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDev
     Storage_Monitor.module_init_reg.val = 0;
 
     /* on chip flash init */
-    if(enable.bit.internal && BspFlash.init && BspFlash.init())
+    if (enable.bit.internal && BspFlash.init && BspFlash.init())
     {
         Storage_Monitor.InternalFlash_Format_cnt = Format_Retry_Cnt;
         /* start address check */
@@ -62,7 +62,7 @@ static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDev
 
 reupdate_internal_flash_info:
         /* read internal flash storage info */
-        if(!Storage_Get_StorageInfo(Internal_Flash))
+        if (!Storage_Get_StorageInfo(Internal_Flash))
         {
 reformat_internal_flash_info:
             if(Storage_Monitor.InternalFlash_Format_cnt)
@@ -103,10 +103,16 @@ reformat_internal_flash_info:
 
     /* still in developping */
     /* external flash init */
-    if(enable.bit.external)
+    if (enable.bit.external && \
+        ExtDev && \
+        (ExtDev->chip_type != Storage_Chip_None) && \
+        (ExtDev->dev_api != NULL) && \
+        (ExtDev->dev_obj != NULL))
     {
         Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
     }
+    else
+        Storage_Monitor.module_init_reg.bit.external = false;
 
     Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | \
                                  Storage_Monitor.module_init_reg.bit.internal;
