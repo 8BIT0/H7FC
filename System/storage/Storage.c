@@ -32,6 +32,9 @@ StorageIO_TypeDef InternalFlash_IO = {
     .write = Storage_OnChipFlash_Write,
 };
 
+/* internal function */
+static bool Storage_External_Chip_SelectPin_Init(void);
+static bool Storage_External_Chip_SelectPin_Ctl(bool state);
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Format(Storage_MediumType_List type);
@@ -820,6 +823,16 @@ static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_Par
     }
 
     return hdl;
+}
+/************************************************** External Flash IO API Section ************************************************/
+static bool Storage_External_Chip_SelectPin_Init(void)
+{
+    return false;
+}
+
+static bool Storage_External_Chip_SelectPin_Ctl(bool state)
+{
+    return false;
 }
 
 /************************************************** Internal Flash IO API Section ************************************************/
