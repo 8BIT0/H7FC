@@ -103,6 +103,8 @@ typedef struct
 {
     DevW25Qxx_SpiBustype_List bus_type;
     void *bus_instance;
+    void *bus_api;
+    void *bus_obj;
 
     void *BusPort;
     DevW25Qxx_CSInstance_TypeDef CSPin;
