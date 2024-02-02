@@ -173,7 +173,10 @@ bool Kernel_DisableTimer_IRQ(void)
 
 uint32_t Kernel_TickVal_To_Us(void)
 {
-  return __HAL_TIM_GET_AUTORELOAD(&htim16) / 1000;
+  if(Kernel_TickTimer_Init)
+    return __HAL_TIM_GET_AUTORELOAD(&htim16) / 1000;
+
+  return 0;
 }
 
 uint32_t Kernel_Get_PeriodValue(void)

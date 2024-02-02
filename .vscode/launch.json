@@ -19,6 +19,20 @@
             //"svdFile": "/Users/mac/Desktop/Stm32/tool/cmsis-svd/data/STMicro/STM32F405.svd"
         },
         {
+            "cwd": "${workspaceRoot}",
+            "executable": "./build/H7FC.elf",
+            "interface": "swd",
+            "name": "AT32 OCD debug",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink-v2.cfg",
+                "target/at32f435xx.cfg"
+            ],
+            //"svdFile": "/Users/mac/Desktop/Stm32/tool/cmsis-svd/data/STMicro/STM32F405.svd"
+        },
+        {
             "name": "ARM Debug",
             "type": "cppdbg",
             "request": "launch",
