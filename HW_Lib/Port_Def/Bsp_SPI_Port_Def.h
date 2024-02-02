@@ -5,6 +5,9 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define To_NormalSPI_Obj(x) ((BspSPI_NorModeConfig_TypeDef *)x)
+#define To_SPI_API(x) ((BspSpi_TypeDef *)x)
+
 typedef struct
 {
     void *port_mosi;

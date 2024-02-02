@@ -112,9 +112,19 @@
 #define OnChipFlash_Storage_InfoPageSize (1 Kb)
 
 /* external flash storage */
-#define ExtFLash_Bus SPI2
+#if (FLASH_CHIP_STATE == ON)
+#define ExtFlash_Bus_Type Storage_ChipBus_Spi
+#define ExtFlash_Chip_Type Storage_ChipType_W25Qxx
+#define ExtFlash_Bus_Api (void *)(&BspSPI)
+#define ExtFLash_Bus_Instance SPI2
 #define ExtFlash_Bus_CLKPhase SPI_CLOCK_PHASE_2EDGE
 #define ExtFlash_Bus_CLKPolarity SPI_CLOCK_POLARITY_HIGH
+#define ExtFlash_CS_Pin ExtFlash_CSPin
+#define ExtFlasH_Bus_Pin ExtFlash_SPIPin
+
+extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
+extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
+#endif
 
 extern BspGPIO_Port_TypeDef Uart3_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart3_Rx_Port;
@@ -135,7 +145,5 @@ extern BspGPIO_Obj_TypeDef PriIMU_INTPin;
 extern DevLedObj_TypeDef Led1;
 extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
-extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
-extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
 
 #endif

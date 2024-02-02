@@ -93,12 +93,6 @@ typedef struct
 
 typedef enum
 {
-    DevW25Qxx_Norm_SpiBus = 0,
-    DevW25Qxx_Quad_SpiBus,
-} DevW25Qxx_SpiBustype_List;
-
-typedef enum
-{
     DevW25Q_None = 0,
     DevW25Q_08,
     DevW25Q_16,
@@ -117,7 +111,6 @@ typedef enum
 
 typedef struct
 {
-    DevW25Qxx_SpiBustype_List bus_type;
     DevW25Qxx_ProdType_List prod_type;
     void *bus_api;
     void *bus_obj;
@@ -140,6 +133,6 @@ typedef struct
     DevW25Qxx_Error_List (*erase_chip)(DevW25QxxObj_TypeDef *dev);
 } DevW25Qxx_TypeDef;
 
-extern DevW25Qxx_TypeDef DevW25Q64;
+extern DevW25Qxx_TypeDef DevW25Qxx;
 
 #endif

@@ -62,18 +62,67 @@ void Task_Manager_CreateTask(void)
     bool init = false;
     uint32_t enabled_sensor = 0;
     Storage_ModuleState_TypeDef storage_module_enable;
+    Storage_ExtFLashDevObj_TypeDef *storage_ExtFlashObj = NULL;
     storage_module_enable.val = 0;
+    void *flash_bus_cfg = NULL;
 
-    storage_module_enable.bit.internal = true;
+    storage_module_enable.bit.internal = false;
     storage_module_enable.bit.external = FLASH_CHIP_STATE;
+
+    if (storage_module_enable.bit.external)
+    {
+        storage_ExtFlashObj = SrvOsCommon.malloc(sizeof(Storage_ExtFLashDevObj_TypeDef));
+
+        if (storage_ExtFlashObj)
+        {
+            storage_ExtFlashObj->bus_type = ExtFlash_Bus_Type;
+            storage_ExtFlashObj->chip_type = ExtFlash_Chip_Type;
+            storage_ExtFlashObj->dev_api = (void *)&DevW25Qxx;
+            storage_ExtFlashObj->dev_obj = (void *)(&storage_ExtFlashObj);
+
+            if (storage_ExtFlashObj->bus_type == Storage_ChipBus_Spi)
+            {
+                flash_bus_cfg = SrvOsCommon.malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
+
+                if (flash_bus_cfg)
+                {
+                    memset(flash_bus_cfg, 0, sizeof(BspSPI_NorModeConfig_TypeDef));
+
+                    To_NormalSPI_Obj(flash_bus_cfg)->BaudRatePrescaler = SPI_MCLK_DIV_16;
+                    To_NormalSPI_Obj(flash_bus_cfg)->CLKPhase = ExtFlash_Bus_CLKPhase;
+                    To_NormalSPI_Obj(flash_bus_cfg)->CLKPolarity = SPI_CLOCK_POLARITY_HIGH;
+                    To_NormalSPI_Obj(flash_bus_cfg)->Instance = ExtFLash_Bus_Instance;
+                    To_NormalSPI_Obj(flash_bus_cfg)->Pin = ExtFlasH_Bus_Pin;
+
+                    To_DevW25Qxx_OBJ(storage_ExtFlashObj->dev_api)->bus_api = ExtFlash_Bus_Api;
+                    To_DevW25Qxx_OBJ(storage_ExtFlashObj->dev_obj)->bus_obj = flash_bus_cfg;
+                }
+                else
+                {
+                    SrvOsCommon.free(flash_bus_cfg);
+
+                    storage_module_enable.bit.external = false;
+                    storage_ExtFlashObj->chip_type = Storage_Chip_None;
+                    storage_ExtFlashObj->bus_type = Storage_ChipBus_None;
+                    storage_ExtFlashObj->dev_api = NULL;
+                    storage_ExtFlashObj->dev_obj = NULL;
+                }
+            }
+            else
+            {
+                SrvOsCommon.free(storage_ExtFlashObj);
+                storage_module_enable.bit.external = false;
+            }
+        }
+    }
 
     while(1)
     {
-        if(!init)
+        if (!init)
         {
             DataPipe_Init();
-            // Storage.init(storage_module_enable);
 
+            Storage.init(storage_module_enable, storage_ExtFlashObj);
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
             TaskSample_Init(TaskSample_Period_Def);
