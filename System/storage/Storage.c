@@ -87,6 +87,7 @@ reupdate_internal_flash_info:
         /* read internal flash storage info */
         if (!Storage_Get_StorageInfo(Internal_Flash))
         {
+            Storage_Monitor.internal_info.base_addr = OnChipFlash_Storage_StartAddress;
 reformat_internal_flash_info:
             if(Storage_Monitor.InternalFlash_Format_cnt)
             {
@@ -945,7 +946,7 @@ static bool Storage_ExtFlash_EraseAll(void)
 /************************************************** Internal Flash IO API Section ************************************************/
 static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
-    uint32_t addr = OnChipFlash_Storage_StartAddress + addr_offset;
+    uint32_t addr = Storage_Monitor.internal_info.base_addr + addr_offset;
     uint32_t read_size = 0;
     uint8_t read_cnt = 1;
 
@@ -980,7 +981,7 @@ static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uin
 {
     uint8_t write_cnt = 0;
     uint32_t write_size = 0;
-    uint32_t write_addr = OnChipFlash_Storage_StartAddress + addr_offset;
+    uint32_t write_addr = Storage_Monitor.internal_info.base_addr + addr_offset;
     
     if(len > OnChipFlash_MaxRWSize)
     {
@@ -1017,7 +1018,7 @@ static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uin
 
 static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len)
 {
-    uint32_t addr = OnChipFlash_Storage_StartAddress + addr_offset;
+    uint32_t addr = Storage_Monitor.internal_info.base_addr + addr_offset;
     
     /* erase only */
     return BspFlash.erase(addr, len);

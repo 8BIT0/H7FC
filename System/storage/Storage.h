@@ -134,6 +134,8 @@ typedef struct
 {
     uint8_t tag[32];
 
+    uint32_t base_addr;
+
     uint32_t total_size;
     uint32_t remain_size;
     uint32_t data_sec_size;
