@@ -1,5 +1,9 @@
 #include "Dev_W25Qxx.h"
 
+/* internal function */
+static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev);
+
+/* external function */
 static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev);
 static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev);
 static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size);
@@ -16,72 +20,31 @@ DevW25Qxx_TypeDef DevW25Qxx = {
     .erase_chip = DevW25Qxx_EraseChip,
 };
 
-/* DevW25Qxx Base SPI communicate interface */
-static BspSpi_TypeDef *DevW25Qxx_GetSpiInstance(DevW25QxxObj_TypeDef *dev)
-{
-    return (BspSpi_TypeDef *)(dev->bus_api);
-}
-
-static BspSPI_NorModeConfig_TypeDef *DevW25Qxx_GetSpiObj(DevW25QxxObj_TypeDef *dev)
-{
-    return (BspSPI_NorModeConfig_TypeDef *)(dev->bus_obj);
-}
-
 static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint16_t size)
 {
-    bool state = false;
-    void *bus_instance = NULL;
-
-    if ((DevW25Qxx_GetSpiInstance(dev) == NULL) || (DevW25Qxx_GetSpiInstance(dev)->trans == NULL))
+    if ((dev == NULL) || \
+        (dev->bus_tx == NULL))
         return false;
 
-    bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
-    if (bus_instance == NULL)
-        return false;
-
-    dev->CSPin.ctl(true);
-    state = DevW25Qxx_GetSpiInstance(dev)->trans(bus_instance, tx, size, W25Qx_TIMEOUT_VALUE);
-    dev->CSPin.ctl(false);
-
-    return state;
+    return dev->bus_tx(tx, size, W25Qx_TIMEOUT_VALUE);
 }
 
 static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef *dev, uint8_t *rx, uint16_t size)
 {
-    bool state = false;
-    void *bus_instance = NULL;
-
-    if ((DevW25Qxx_GetSpiInstance(dev) == NULL) || (DevW25Qxx_GetSpiInstance(dev)->receive == NULL))
+    if ((dev == NULL) || \
+        (dev->bus_rx == NULL))
         return false;
 
-    bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
-    if (bus_instance == NULL)
-        return false;
-
-    dev->CSPin.ctl(true);
-    state = DevW25Qxx_GetSpiInstance(dev)->receive(bus_instance, rx, size, W25Qx_TIMEOUT_VALUE);
-    dev->CSPin.ctl(false);
-
-    return state;
+    return dev->bus_rx(rx, size, W25Qx_TIMEOUT_VALUE);
 }
 
 static bool DevW25Qxx_BusTrans_Receive(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint8_t *rx, uint16_t size)
 {
-    bool state;
-    void *bus_instance = NULL;
-
-    if ((DevW25Qxx_GetSpiInstance(dev) == NULL) || (DevW25Qxx_GetSpiInstance(dev)->trans_receive == NULL))
+    if ((dev == NULL) || \
+        (dev->bus_trans == NULL))
         return false;
 
-    bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
-    if (bus_instance == NULL)
-        return false;
-
-    dev->CSPin.ctl(true);
-    state = DevW25Qxx_GetSpiInstance(dev)->trans_receive(bus_instance, tx, rx, size, W25Qx_TIMEOUT_VALUE);
-    dev->CSPin.ctl(false);
-    
-    return state;
+    return dev->bus_trans(tx, rx, size, W25Qx_TIMEOUT_VALUE);
 }
 
 /* W25Qxx device driver */
@@ -156,26 +119,13 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
     void *bus_obj = NULL;
 
     if ((dev == NULL) ||
-        (dev->CSPin.init == NULL) ||
-        (dev->CSPin.ctl == NULL) ||
-        (dev->BusPort == NULL))
+        (dev->cs_ctl == NULL))
         return DevW25Qxx_Error;
 
     dev->init_state = DevW25Qxx_Error;
 
-    bus_obj = DevW25Qxx_GetSpiObj(dev);
-    bus_instance = DevW25Qxx_GetSpiObj(dev)->Instance;
-
-    if ((bus_obj == NULL) ||
-        (bus_instance == NULL) ||
-        (DevW25Qxx_GetSpiInstance(dev)->trans == NULL) ||
-        (DevW25Qxx_GetSpiInstance(dev)->receive == NULL) ||
-        (DevW25Qxx_GetSpiInstance(dev)->trans_receive == NULL))
+    if (DevW25Qxx_Get_ProdType(dev) == DevW25Q_None)
         return DevW25Qxx_Error;
-
-    DevW25Qxx_GetSpiInstance(dev)->init(*((BspSPI_NorModeConfig_TypeDef *)bus_obj), bus_instance);
-
-    dev->CSPin.init();
 
     /* Reset W25Qxxx */
     if ((DevW25Qxx_Reset(dev) != DevW25Qxx_Ok) ||
@@ -184,6 +134,47 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
 
     dev->init_state = DevW25Qxx_Ok;
     return DevW25Qxx_Ok;
+}
+
+static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev)
+{
+    uint8_t ID_Req_CMD[] = {READ_ID_CMD, 0, 0, 0};
+    uint8_t ID_Rx_buf[] = {0, 0};
+    uint16_t ID = 0;
+
+    if (dev && dev->cs_ctl)
+    {
+        dev->cs_ctl(true);
+
+        DevW25Qxx_BusTrans(dev, ID_Req_CMD, sizeof(ID_Req_CMD));
+        DevW25Qxx_BusReceive(dev, ID_Rx_buf, sizeof(ID_Rx_buf));
+
+        dev->cs_ctl(false);
+    
+        ID |= ID_Rx_buf[0] << 8;
+        ID |= ID_Rx_buf[1];
+
+        switch(ID)
+        {
+            case W25Q08_DEV_ID:
+                return DevW25Q_08;
+
+            case W25Q16_DEV_ID:
+                return DevW25Q_16;
+
+            case W25Q32_DEV_ID:
+                return DevW25Q_32;
+
+            case W25Q64_DEV_ID:
+                return DevW25Q_64;
+
+            case W25Q128_DEV_ID:
+                return DevW25Q_128;
+
+            default:
+                return DevW25Q_None;
+        }
+    }
 }
 
 static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size)

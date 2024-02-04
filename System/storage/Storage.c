@@ -33,8 +33,10 @@ StorageIO_TypeDef InternalFlash_IO = {
 };
 
 /* internal function */
-static bool Storage_External_Chip_SelectPin_Init(void);
-static bool Storage_External_Chip_SelectPin_Ctl(bool state);
+static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state);
+static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out);
+static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out);
+static uint16_t Storage_External_Chip_W25Qxx_Trans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out);
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Format(Storage_MediumType_List type);
@@ -50,7 +52,7 @@ Storage_TypeDef Storage = {
 
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
 {
-    void *flash_bus_cfg = NULL;
+    void *ext_flash_bus_cfg = NULL;
 
     memset(&Storage_Monitor, 0, sizeof(Storage_Monitor));
 
@@ -116,36 +118,56 @@ reformat_internal_flash_info:
         {
             if (ExtDev->bus_type == Storage_ChipBus_Spi)
             {
-                flash_bus_cfg = SrvOsCommon.malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
+                ext_flash_bus_cfg = SrvOsCommon.malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
 
-                if (flash_bus_cfg)
+                if (ext_flash_bus_cfg)
                 {
-                    memset(flash_bus_cfg, 0, sizeof(BspSPI_NorModeConfig_TypeDef));
+                    memset(ext_flash_bus_cfg, 0, sizeof(BspSPI_NorModeConfig_TypeDef));
 
-                    To_NormalSPI_Obj(flash_bus_cfg)->BaudRatePrescaler = SPI_MCLK_DIV_16;
-                    To_NormalSPI_Obj(flash_bus_cfg)->CLKPhase = ExtFlash_Bus_CLKPhase;
-                    To_NormalSPI_Obj(flash_bus_cfg)->CLKPolarity = SPI_CLOCK_POLARITY_HIGH;
-                    To_NormalSPI_Obj(flash_bus_cfg)->Instance = ExtFLash_Bus_Instance;
-                    To_NormalSPI_Obj(flash_bus_cfg)->Pin = ExtFlash_Bus_Pin;
+                    To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->BaudRatePrescaler = ExtFlash_Bus_Clock_Div;
+                    To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->CLKPhase = ExtFlash_Bus_CLKPhase;
+                    To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->CLKPolarity = ExtFlash_Bus_CLKPolarity;
+                    To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->Instance = ExtFLash_Bus_Instance;
+                    To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->Pin = ExtFlash_Bus_Pin;
 
-                    To_DevW25Qxx_OBJ(ExtDev->dev_api)->bus_api = ExtFlash_Bus_Api;
-                    To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_obj = flash_bus_cfg;
-
-                    if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
+                    /* bus init & cs pin init */
+                    if (ExtFlash_Bus_Api.init(To_NormalSPI_Obj(ext_flash_bus_cfg), ExtFLash_Bus_Instance) && \
+                        BspGPIO.out_init(ExtFlash_CS_Pin))
                     {
-                        if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
+                        Storage_Monitor.ExtBusCfg_Ptr = ext_flash_bus_cfg;
+
+                        if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
                         {
-                            Storage_Monitor.ExtDev_ptr = ExtDev;
+                            /* set bus control callback */
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_Trans;
+                            
+                            if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
+                            {
+                                Storage_Monitor.ExtDev_ptr = ExtDev;
+                            }
+                            else
+                            {
+                                Storage_Monitor.module_init_reg.bit.external = false;
+                            }
                         }
                         else
                         {
+                            SrvOsCommon.free(ExtDev);
                             Storage_Monitor.module_init_reg.bit.external = false;
                         }
+                    }
+                    else
+                    {
+                        SrvOsCommon.free(ExtDev);
+                        Storage_Monitor.module_init_reg.bit.external = false;
                     }
                 }
                 else
                 {
-                    SrvOsCommon.free(flash_bus_cfg);
+                    SrvOsCommon.free(ext_flash_bus_cfg);
 
                     Storage_Monitor.module_init_reg.bit.external = false;
                     ExtDev->chip_type = Storage_Chip_None;
@@ -825,14 +847,49 @@ static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_Par
     return hdl;
 }
 /************************************************** External Flash IO API Section ************************************************/
-static bool Storage_External_Chip_SelectPin_Init(void)
+static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state)
 {
-    return false;
+    BspGPIO.write(ExtFlash_CS_Pin, state);
+    return true;
 }
 
-static bool Storage_External_Chip_SelectPin_Ctl(bool state)
+static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out)
 {
-    return false;
+    BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
+
+    if (p_data && len && p_cfg && p_cfg->Instance)
+    {
+        if (ExtFlash_Bus_Api.trans(p_cfg->Instance, p_data, len, time_out))
+            return len;
+    }
+
+    return 0;
+}
+
+static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out)
+{
+    BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
+
+    if (p_data && len && p_cfg && p_cfg->Instance)
+    {
+        if (ExtFlash_Bus_Api.receive(p_cfg->Instance, p_data, len, time_out))
+            return len;
+    }
+
+    return 0;
+}
+
+static uint16_t Storage_External_Chip_W25Qxx_Trans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out)
+{
+    BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
+
+    if (tx && rx && len && p_cfg && p_cfg->Instance)
+    {
+        if (ExtFlash_Bus_Api.trans_receive(p_cfg->Instance, tx, rx, len, time_out))
+            return len;
+    }
+
+    return 0;
 }
 
 /************************************************** Internal Flash IO API Section ************************************************/

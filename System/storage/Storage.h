@@ -4,6 +4,7 @@
 #include <string.h>
 #include "Srv_DataHub.h"
 #include "Bsp_Flash.h"
+#include "Bsp_GPIO.h"
 #include "Dev_W25Qxx.h"
 #include "Srv_OsCommon.h"
 #include "util.h"
@@ -187,7 +188,8 @@ typedef struct
     uint8_t InternalFlash_Format_cnt;
     uint8_t ExternalFlash_Format_cnt;
     
-    void *ExtDev_ptr;
+    void *ExtDev_ptr;       /* external flash chip device obj pointer */
+    void *ExtBusCfg_Ptr;    /* external flash chip hardware bus config data pointer */
 
     bool init_state;
     uint8_t inuse;

@@ -153,7 +153,7 @@ static bool BspGPIO_Out_Init(BspGPIO_Obj_TypeDef IO_Obj)
     if(clk == 0)
         return false;
 
-    /* enable the led clock */
+    /* enable the clock */
     crm_periph_clock_enable(clk, TRUE);
     
     /* set default parameter */

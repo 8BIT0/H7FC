@@ -112,11 +112,11 @@ typedef enum
 typedef struct
 {
     DevW25Qxx_ProdType_List prod_type;
-    void *bus_api;
-    void *bus_obj;
 
-    void *BusPort;
-    DevW25Qxx_CSInstance_TypeDef CSPin;
+    uint16_t (*bus_tx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
+    uint16_t (*bus_rx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
+    uint16_t (*bus_trans)(uint8_t *tx_data, uint8_t *rx_data, uint16_t len, uint32_t time_out);
+    bool (*cs_ctl)(bool state);
 
     DevW25Qxx_Error_List init_state;
     get_systick systick;

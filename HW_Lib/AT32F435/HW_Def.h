@@ -117,9 +117,10 @@
 /* external flash storage */
 #if (FLASH_CHIP_STATE == ON)
 #define ExtFlash_Bus_Type Storage_ChipBus_Spi
+#define ExtFlash_Bus_Clock_Div SPI_MCLK_DIV_32
 #define ExtFlash_Chip_Type Storage_ChipType_W25Qxx
-#define ExtFlash_Bus_Api (void *)(&BspSPI)
-#define ExtFLash_Bus_Instance SPI2
+#define ExtFlash_Bus_Api BspSPI
+#define ExtFLash_Bus_Instance (void *)SPI2
 #define ExtFlash_Bus_CLKPhase SPI_CLOCK_PHASE_2EDGE
 #define ExtFlash_Bus_CLKPolarity SPI_CLOCK_POLARITY_HIGH
 #define ExtFlash_CS_Pin ExtFlash_CSPin
