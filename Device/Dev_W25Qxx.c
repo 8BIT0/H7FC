@@ -87,7 +87,7 @@ static DevW25Qxx_Error_List DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef *dev)
         return DevW25Qxx_Error;
 
     dev->cs_ctl(true);
-    state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) | DevW25Qxx_BusReceive(dev, &dev_status, sizeof(dev_status));
+    state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) & DevW25Qxx_BusReceive(dev, &dev_status, sizeof(dev_status));
     dev->cs_ctl(false);
     
     if (!state)
@@ -217,6 +217,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
     uint8_t cmd[4];
     uint32_t end_addr, current_size, current_addr;
     uint32_t tickstart = 0;
+    bool write_state = false;
 
     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
         return DevW25Qxx_Error;
@@ -256,8 +257,9 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
             return DevW25Qxx_Error;
 
         /* Send the command Transmission of the data */
-        if (DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) || DevW25Qxx_BusTrans(dev, pData, current_size))
-            return DevW25Qxx_Error;
+        dev->cs_ctl(true);
+        write_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) & DevW25Qxx_BusTrans(dev, pData, current_size);
+        dev->cs_ctl(false);
 
         /* Wait the end of Flash writing */
         while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
