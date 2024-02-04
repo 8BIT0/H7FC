@@ -174,6 +174,8 @@ reformat_internal_flash_info:
 
                                 /* build storage tab */
                             }
+                            else
+                                Storage_Monitor.module_init_reg.bit.external = true;
                         }
                         else
                             Storage_Smash_ExternalFlashDev_Ptr(ext_flash_bus_cfg, ExtDev);
