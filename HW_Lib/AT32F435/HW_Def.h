@@ -127,6 +127,7 @@
 #define ExtFlash_Bus_Pin ExtFlash_SPIPin
 
 #define ExtFlash_Dev_Api (void *)(&DevW25Qxx)
+#define ExtFlash_Start_Addr W25QXX_BASE_ADDRESS
 
 extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
 extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
