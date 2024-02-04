@@ -292,14 +292,21 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd = SECTOR_ERASE_CMD;
     uint32_t tickstart = 0;
+    bool erase_state = false;
 
     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
         return DevW25Qxx_Error;
 
     tickstart = dev->systick();
 
-    if ((DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok) ||
-        (DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) != DevW25Qxx_Ok))
+    if (DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok)
+        return DevW25Qxx_Error;
+
+    dev->cs_ctl(true);
+    erase_state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd));
+    dev->cs_ctl(false);
+
+    if (!erase_state)
         return DevW25Qxx_Error;
 
     /* Wait the end of Flash writing */
