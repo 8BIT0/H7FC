@@ -79,6 +79,11 @@ void Task_Manager_CreateTask(void)
             storage_ExtFlashObj->dev_api = ExtFlash_Dev_Api;
             storage_ExtFlashObj->dev_obj = (void *)(&storage_ExtFlashObj);
         }
+        else
+        {
+            SrvOsCommon.free(storage_ExtFlashObj);
+            storage_module_enable.bit.external = false;
+        }
     }
 
     while(1)
