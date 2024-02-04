@@ -106,7 +106,7 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef *dev)
     uint32_t tickstart = dev->systick();
     bool trans_state = false;
 
-    if ((dev == NULL) || (dev->cs_ctl == NULL))
+    if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
         return DevW25Qxx_Error;
 
     /* Send the read ID command */
@@ -214,7 +214,10 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
 {
     uint8_t cmd[4];
     uint32_t end_addr, current_size, current_addr;
-    uint32_t tickstart = dev->systick();
+    uint32_t tickstart = 0;
+
+    if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
+        return DevW25Qxx_Error;
 
     /* Calculation of the size between the write address and the end of the page */
     current_addr = 0;
@@ -274,7 +277,10 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd = SECTOR_ERASE_CMD;
-    uint32_t tickstart = dev->systick();
+    uint32_t tickstart = 0;
+
+    if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
+        return DevW25Qxx_Error; 
 
     if ((DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok) ||
         (DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) != DevW25Qxx_Ok))
@@ -296,11 +302,14 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
 static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint32_t Address)
 {
     uint8_t cmd[4];
-    uint32_t tickstart = dev->systick();
+    uint32_t tickstart = 0;
     cmd[0] = SECTOR_ERASE_CMD;
     cmd[1] = (uint8_t)(Address >> 16);
     cmd[2] = (uint8_t)(Address >> 8);
     cmd[3] = (uint8_t)(Address);
+
+    if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
+        return DevW25Qxx_Error;
 
     /* Enable write operations Send the read ID command */
     if ((DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok) || (DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) != DevW25Qxx_Ok))
