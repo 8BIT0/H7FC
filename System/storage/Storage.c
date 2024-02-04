@@ -165,8 +165,15 @@ reformat_internal_flash_info:
                         if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
                         {
                             Storage_Monitor.ExtDev_ptr = ExtDev;
+                            Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
 
                             /* build tab section */
+                            if (!Storage_Get_StorageInfo(External_Flash))
+                            {
+                                /* format storage device */
+
+                                /* build storage tab */
+                            }
                         }
                         else
                             Storage_Smash_ExternalFlashDev_Ptr(ext_flash_bus_cfg, ExtDev);
@@ -185,8 +192,6 @@ reformat_internal_flash_info:
             SrvOsCommon.free(ExtDev);
             Storage_Monitor.module_init_reg.bit.external = false;
         }
-
-        Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
     }
     else
     {
