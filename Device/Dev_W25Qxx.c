@@ -199,6 +199,7 @@ static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev)
 static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size)
 {
     uint8_t cmd[4];
+    bool read_state = false;
 
     /* Configure the command */
     cmd[0] = READ_CMD;
@@ -206,10 +207,17 @@ static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t R
     cmd[2] = (uint8_t)(ReadAddr >> 8);
     cmd[3] = (uint8_t)(ReadAddr);
 
-    if (!DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) || !DevW25Qxx_BusReceive(dev, pData, Size))
-        return DevW25Qxx_Error;
+    if ((dev == NULL) || (dev->cs_ctl == NULL) || (pData == NULL) || (Size == 0))
+        return DevW25Qxx_Error; 
 
-    return DevW25Qxx_Ok;
+    dev->cs_ctl(true);
+    read_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) & DevW25Qxx_BusReceive(dev, pData, Size);
+    dev->cs_ctl(false);
+
+    if (read_state)
+        return DevW25Qxx_Ok;
+
+    return DevW25Qxx_Error; 
 }
 
 static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size)
@@ -219,7 +227,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
     uint32_t tickstart = 0;
     bool write_state = false;
 
-    if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
+    if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL) || (pData == NULL) || (Size == 0))
         return DevW25Qxx_Error;
 
     /* Calculation of the size between the write address and the end of the page */
