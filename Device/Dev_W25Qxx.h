@@ -40,6 +40,8 @@
 #define W25Q128FV_SUBSECTOR_ERASE_MAX_TIME      800
 #define W25Qx_TIMEOUT_VALUE                     1000
 
+#define W25QXX_BASE_ADDRESS                     0x000000
+
 /* Reset Operations */
 #define RESET_ENABLE_CMD 0x66
 #define RESET_MEMORY_CMD 0x99
