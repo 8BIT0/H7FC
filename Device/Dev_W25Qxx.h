@@ -16,10 +16,21 @@
 /* 16mb, the range of address:0~0xFFFFFF */
 #define W25Q128_DEV_ID                          0xEF17
 
+#define W25Q64FV_FLASH_SIZE                     0x800000    /* 64 MBits => 8MBytes */
+#define W25Q64FV_SECTOR_SIZE                    0x10000     /* 128 sectors of 64KBytes */
+#define W25Q64FV_SUBSECTOR_SIZE                 0x1000      /* 2048 subsectors of 4kBytes */
+#define W25Q64FV_PAGE_SIZE                      0x100       /* 32767 pages of 256 bytes */
+#define W25Q64FV_SECTOR_NUM                     128
+#define W25Q64FV_SUBSECTOR_NUM                  2048
+#define W25Q64FV_PAGE_NUM                       32768
+
 #define W25Q128FV_FLASH_SIZE                    0x1000000   /* 128 MBits => 16MBytes */
 #define W25Q128FV_SECTOR_SIZE                   0x10000     /* 256 sectors of 64KBytes */
 #define W25Q128FV_SUBSECTOR_SIZE                0x1000      /* 4096 subsectors of 4kBytes */
 #define W25Q128FV_PAGE_SIZE                     0x100       /* 65536 pages of 256 bytes */
+#define W25Q128FV_SECTOR_NUM                    256
+#define W25Q128FV_SUBSECTOR_NUM                 4096
+#define W25Q128FV_PAGE_NUM                      65536
 
 #define W25Q128FV_DUMMY_CYCLES_READ             4
 #define W25Q128FV_DUMMY_CYCLES_READ_QUAD        10
@@ -79,17 +90,10 @@
 #define W25Q128FV_FSR_WREN ((uint8_t)0x02) /*!< write enable */
 #define W25Q128FV_FSR_QE ((uint8_t)0x02)   /*!< quad enable */
 
-typedef bool (*cs_pin_init)(void);
 typedef bool (*cs_pin_ctl)(bool state);
 typedef uint32_t (*get_systick)(void);
 
 typedef BspSPI_PinConfig_TypeDef DevW25QxxPin_Config_TypeDef;
-
-typedef struct
-{
-    cs_pin_init init;
-    cs_pin_ctl ctl;
-} DevW25Qxx_CSInstance_TypeDef;
 
 typedef enum
 {
@@ -108,6 +112,19 @@ typedef enum
     DevW25Qxx_Busy,
     DevW25Qxx_TimeOut,
 } DevW25Qxx_Error_List;
+
+typedef struct
+{
+    uint32_t flash_size;
+
+    uint32_t sector_size;
+    uint32_t subsector_size;
+    uint16_t page_size;
+
+    uint16_t sector_num;
+    uint16_t subsector_num;
+    uint16_t page_num;
+} DevW25Qxx_DeviceInfo_TypeDef;
 
 typedef struct
 {
@@ -131,6 +148,7 @@ typedef struct
     DevW25Qxx_Error_List (*read)(DevW25QxxObj_TypeDef *dev, uint32_t addr, uint8_t *rx, uint32_t size);
     DevW25Qxx_Error_List (*erase_block)(DevW25QxxObj_TypeDef *dev, uint32_t addr);
     DevW25Qxx_Error_List (*erase_chip)(DevW25QxxObj_TypeDef *dev);
+    DevW25Qxx_DeviceInfo_TypeDef (*info)(DevW25QxxObj_TypeDef *dev);
 } DevW25Qxx_TypeDef;
 
 extern DevW25Qxx_TypeDef DevW25Qxx;

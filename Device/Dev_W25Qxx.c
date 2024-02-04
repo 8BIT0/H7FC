@@ -10,6 +10,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
 static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size);
 static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint32_t Address);
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev);
+static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev);
 
 DevW25Qxx_TypeDef DevW25Qxx = {
     .init = DevW25Qxx_Init,
@@ -18,6 +19,7 @@ DevW25Qxx_TypeDef DevW25Qxx = {
     .read = DevW25Qxx_Read,
     .erase_block = DevW25Qxx_EraseBlock,
     .erase_chip = DevW25Qxx_EraseChip,
+    .info = DevW25Qxx_Get_Info,
 };
 
 static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint16_t size)
@@ -26,7 +28,10 @@ static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint16_t 
         (dev->bus_tx == NULL))
         return false;
 
-    return dev->bus_tx(tx, size, W25Qx_TIMEOUT_VALUE);
+    if (dev->bus_tx(tx, size, W25Qx_TIMEOUT_VALUE))
+        return true;
+
+    return false;
 }
 
 static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef *dev, uint8_t *rx, uint16_t size)
@@ -35,7 +40,10 @@ static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef *dev, uint8_t *rx, uint16_
         (dev->bus_rx == NULL))
         return false;
 
-    return dev->bus_rx(rx, size, W25Qx_TIMEOUT_VALUE);
+    if (dev->bus_rx(rx, size, W25Qx_TIMEOUT_VALUE))
+        return true;
+
+    return false;
 }
 
 static bool DevW25Qxx_BusTrans_Receive(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint8_t *rx, uint16_t size)
@@ -44,44 +52,46 @@ static bool DevW25Qxx_BusTrans_Receive(DevW25QxxObj_TypeDef *dev, uint8_t *tx, u
         (dev->bus_trans == NULL))
         return false;
 
-    return dev->bus_trans(tx, rx, size, W25Qx_TIMEOUT_VALUE);
-}
+    if (dev->bus_trans(tx, rx, size, W25Qx_TIMEOUT_VALUE))
+        return true;
 
-/* W25Qxx device driver */
-static bool DevW25Qxx_ReadID(DevW25QxxObj_TypeDef *dev)
-{
-    uint8_t cmd[4] = {READ_ID_CMD, 0x00, 0x00, 0x00};
-    uint8_t ID[2] = {0};
-
-    /* Send the read ID command */
-    DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
-    /* Reception of the data */
-    DevW25Qxx_BusReceive(dev, ID, sizeof(ID));
-
-    return true;
+    return false;
 }
 
 static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd[2] = {RESET_ENABLE_CMD, RESET_MEMORY_CMD};
+    bool state = false;
+
+    if ((dev == NULL) || (dev->cs_ctl == NULL))
+        return DevW25Qxx_Error;
 
     /* Send the reset command */
-    if (DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)))
-        return DevW25Qxx_Ok;
+    dev->cs_ctl(true);
+    state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+    dev->cs_ctl(false);
 
-    return DevW25Qxx_Error;
+    if (!state)
+        return DevW25Qxx_Error;
+
+    return DevW25Qxx_Ok;
 }
 
 static DevW25Qxx_Error_List DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd = READ_STATUS_REG1_CMD;
-    bool trans_state = false;
-    uint8_t dev_status;
+    uint8_t dev_status = 0;
+    bool state = false;
 
-    trans_state = DevW25Qxx_BusTrans_Receive(dev, &cmd, &dev_status, sizeof(dev_status));
-
-    if (!trans_state)
+    if ((dev == NULL) || (dev->cs_ctl == NULL))
         return DevW25Qxx_Error;
+
+    dev->cs_ctl(true);
+    state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) | DevW25Qxx_BusReceive(dev, &dev_status, sizeof(dev_status));
+    dev->cs_ctl(false);
+    
+    if (!state)
+        return DevW25Qxx_Error; 
 
     /* Check the value of the register */
     if ((dev_status & W25Q128FV_FSR_BUSY) != 0)
@@ -96,8 +106,13 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef *dev)
     uint32_t tickstart = dev->systick();
     bool trans_state = false;
 
+    if ((dev == NULL) || (dev->cs_ctl == NULL))
+        return DevW25Qxx_Error;
+
     /* Send the read ID command */
+    dev->cs_ctl(true);
     trans_state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd));
+    dev->cs_ctl(false);
 
     if (!trans_state)
         return DevW25Qxx_Error;
@@ -124,7 +139,9 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
 
     dev->init_state = DevW25Qxx_Error;
 
-    if (DevW25Qxx_Get_ProdType(dev) == DevW25Q_None)
+    dev->prod_type = DevW25Qxx_Get_ProdType(dev);
+
+    if (dev->prod_type == DevW25Q_None)
         return DevW25Qxx_Error;
 
     /* Reset W25Qxxx */
@@ -300,4 +317,49 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint
     }
 
     return DevW25Qxx_Ok;
+}
+
+static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev)
+{
+    DevW25Qxx_DeviceInfo_TypeDef info;
+    
+    memset(&info, 0, sizeof(DevW25Qxx_DeviceInfo_TypeDef));
+
+    if (dev && (dev->prod_type != DevW25Q_None))
+    {
+        /* currently we only have such type of flash chip on the evk or fc-board */
+        switch ((uint8_t)(dev->prod_type))
+        {
+            case DevW25Q_64:
+                info.flash_size     = W25Q64FV_FLASH_SIZE;
+
+                info.page_num       = W25Q64FV_PAGE_NUM;
+                info.page_size      = W25Q64FV_PAGE_SIZE;
+
+                info.sector_num     = W25Q64FV_SECTOR_NUM;
+                info.sector_size    = W25Q64FV_SECTOR_SIZE;
+
+                info.subsector_num  = W25Q64FV_SUBSECTOR_NUM;
+                info.subsector_size = W25Q64FV_SUBSECTOR_SIZE;
+                break;
+
+            case DevW25Q_128:
+                info.flash_size     = W25Q128FV_FLASH_SIZE;
+                
+                info.page_num       = W25Q128FV_PAGE_NUM;
+                info.page_size      = W25Q128FV_PAGE_SIZE;
+
+                info.sector_num     = W25Q128FV_SECTOR_NUM;
+                info.sector_size    = W25Q128FV_SECTOR_SIZE;
+
+                info.subsector_num  = W25Q128FV_SUBSECTOR_NUM;
+                info.subsector_size = W25Q128FV_SUBSECTOR_SIZE;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return info;
 }
