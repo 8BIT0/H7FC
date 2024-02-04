@@ -56,6 +56,8 @@ extern unsigned int system_core_clock; /*!< system clock frequency (core clock) 
 
 extern void SystemInit(void);
 extern void system_core_clock_update(void);
+extern void System_Tick(void);
+extern uint64_t System_GetTick(void);
 
 /**
   * @}

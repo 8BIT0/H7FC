@@ -26,6 +26,7 @@
 
 /* includes ------------------------------------------------------------------*/
 #include "at32f435_437_int.h"
+#include "at32f435_437.h"
 #include "Bsp_GPIO.h"
 #include "Bsp_DMA.h"
 #include "Bsp_Uart.h"
@@ -427,18 +428,22 @@ void SysTick_Handler(void)
 
 }
 
+/* os timer */
 void TMR20_OVF_IRQHandler(void)
 {
   if(tmr_flag_get(TMR20, TMR_OVF_FLAG) == SET)
   {
 #if (INCLUDE_xTaskGetSchedulerState == 1 )
-  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
-  {
+    if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
+    {
 #endif /* INCLUDE_xTaskGetSchedulerState */
-  xPortSysTickHandler();
+      xPortSysTickHandler();
 #if (INCLUDE_xTaskGetSchedulerState == 1 )
-  }
+    }
 #endif /* INCLUDE_xTaskGetSchedulerState */
+
+    /* increase tick for bsp time out compare */
+    System_Tick();
 
     tmr_flag_clear(TMR20, TMR_OVF_FLAG);
   }

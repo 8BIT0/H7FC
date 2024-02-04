@@ -165,7 +165,11 @@
                 "bsp_dma_port_def.h": "c",
                 "hw_def.h": "c",
                 "fchw_config.h": "c",
-                "bsp_flash_port_def.h": "c"
+                "bsp_flash_port_def.h": "c",
+                "kernel_at32xxx.h": "c",
+                "at32f435_437_int.h": "c",
+                "at32f435_437.h": "c",
+                "system_at32f435_437.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

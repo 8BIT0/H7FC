@@ -168,6 +168,31 @@ void system_core_clock_update(void)
   /* ahbclk frequency */
   system_core_clock = system_core_clock >> div_value;
 }
+
+static uint8_t Reading = 0;
+static uint64_t SysTick_Val = 0;
+void System_Tick(void)
+{
+  SysTick_Val ++;
+  if (Reading)
+    Reading = 0;
+}
+
+uint64_t System_GetTick(void)
+{
+  uint64_t tmp = 0;
+
+reupdate:
+  Reading = 1;
+  tmp = SysTick_Val;
+  
+  if (Reading == 0)
+    goto reupdate;
+
+  return tmp;
+}
+
+
 /**
   * @}
   */
