@@ -899,16 +899,31 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, 
 
 static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
+    if (p_data && len)
+    {
+
+    }
+
     return false;
 }
 
 static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
+    if (p_data && len)
+    {
+
+    }
+
     return false;
 }
 
 static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len)
 {
+    if (p_data && len)
+    {
+
+    }
+    
     return false;
 }
 
