@@ -290,7 +290,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
 
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
 {
-    uint8_t cmd = SECTOR_ERASE_CMD;
+    uint8_t cmd = CHIP_ERASE_CMD;
     uint32_t tickstart = 0;
     bool erase_state = false;
 
