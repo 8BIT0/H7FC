@@ -8,7 +8,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev);
 static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev);
 static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size);
 static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint32_t *pData, uint32_t Size);
-static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint32_t Address);
+static DevW25Qxx_Error_List DevW25Qxx_EraseSector(DevW25QxxObj_TypeDef *dev, uint32_t Address);
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev);
 static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev);
 
@@ -17,7 +17,7 @@ DevW25Qxx_TypeDef DevW25Qxx = {
     .reset = DevW25Qxx_Reset,
     .write = DevW25Qxx_Write,
     .read = DevW25Qxx_Read,
-    .erase_block = DevW25Qxx_EraseBlock,
+    .erase_block = DevW25Qxx_EraseSector,
     .erase_chip = DevW25Qxx_EraseChip,
     .info = DevW25Qxx_Get_Info,
 };
@@ -322,7 +322,7 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
     return DevW25Qxx_Ok;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint32_t Address)
+static DevW25Qxx_Error_List DevW25Qxx_EraseSector(DevW25QxxObj_TypeDef *dev, uint32_t Address)
 {
     uint8_t cmd[4];
     uint32_t tickstart = 0;
