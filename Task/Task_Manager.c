@@ -95,33 +95,33 @@ void Task_Manager_CreateTask(void)
             Storage.init(storage_module_enable, storage_ExtFlashObj);
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
-            TaskSample_Init(TaskSample_Period_Def);
-            TaskTelemetry_Init(TaskTelemetry_Period_def);
-            TaskControl_Init(TaskControl_Period_Def);
+            // TaskSample_Init(TaskSample_Period_Def);
+            // TaskTelemetry_Init(TaskTelemetry_Period_def);
+            // TaskControl_Init(TaskControl_Period_Def);
 #if (SD_CARD_ENABLE_STATE == ON)
             TaskLog_Init(TaslLog_Period_Def);
 #endif
             TaskNavi_Init(TaslNavi_Period_Def);
             TaskFrameCTL_Init(TaskFrameCTL_Period_Def);
 
-            osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
-            TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
+            // osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
+            // TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
 
-            osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 1024);
-            TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
+            // osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 1024);
+            // TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
 
-            osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 8192);
-            TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
+            // osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 8192);
+            // TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
 
 #if (SD_CARD_ENABLE_STATE  == ON)
             osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
 #endif
-            osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 1024);
-            TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
+            // osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 1024);
+            // TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
 
-            osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 2048);
-            TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);
+            // osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 2048);
+            // TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);
 
             init = true;
         }

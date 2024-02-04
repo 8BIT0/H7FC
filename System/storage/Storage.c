@@ -28,6 +28,10 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
 
 static void Storage_Smash_ExternalFlashDev_Ptr(void *bus_cfg_ptr, void *ExtDev_ptr);
 
+static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
+static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
+static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len);
+
 StorageIO_TypeDef InternalFlash_IO = {
     .erase = Storage_OnChipFlash_Erase,
     .read = Storage_OnChipFlash_Read,
@@ -38,7 +42,7 @@ StorageIO_TypeDef InternalFlash_IO = {
 static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state);
 static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out);
 static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out);
-static uint16_t Storage_External_Chip_W25Qxx_Trans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out);
+static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out);
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Format(Storage_MediumType_List type);
@@ -145,7 +149,7 @@ reformat_internal_flash_info:
                         To_DevW25Qxx_OBJ(ExtDev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
                         To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
                         To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
-                        To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_Trans;
+                        To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
                             
                         if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
                         {
@@ -880,7 +884,7 @@ static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len
     return 0;
 }
 
-static uint16_t Storage_External_Chip_W25Qxx_Trans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out)
+static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out)
 {
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
 
@@ -891,6 +895,21 @@ static uint16_t Storage_External_Chip_W25Qxx_Trans(uint8_t *tx, uint8_t *rx, uin
     }
 
     return 0;
+}
+
+static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
+{
+    return false;
+}
+
+static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
+{
+    return false;
+}
+
+static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len)
+{
+    return false;
 }
 
 /************************************************** Internal Flash IO API Section ************************************************/
