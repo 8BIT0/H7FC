@@ -180,7 +180,7 @@ static bool BspSPI_Receive(void *instance, uint8_t *rx, uint16_t size, uint16_t 
             spi_i2s_data_transmit(To_SPI_Instance(instance), Dummy_Byte);
 
             if ((System_GetTick() - start_time) > time_out)
-                        return false;
+                return false;
         }
 
         while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_RDBF_FLAG) == RESET)
@@ -188,7 +188,7 @@ static bool BspSPI_Receive(void *instance, uint8_t *rx, uint16_t size, uint16_t 
             rx[i] = spi_i2s_data_receive(To_SPI_Instance(instance));
 
             if ((System_GetTick() - start_time) > time_out)
-                        return false;
+                return false;
         }
     }
 
