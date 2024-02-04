@@ -919,7 +919,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
 
 static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len)
 {
-    if (p_data && len)
+    if (len)
     {
 
     }
