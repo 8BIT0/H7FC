@@ -326,6 +326,7 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint
 {
     uint8_t cmd[4];
     uint32_t tickstart = 0;
+    bool erase_state = false;
     cmd[0] = SECTOR_ERASE_CMD;
     cmd[1] = (uint8_t)(Address >> 16);
     cmd[2] = (uint8_t)(Address >> 8);
@@ -337,7 +338,14 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint
     tickstart = dev->systick();
 
     /* Enable write operations Send the read ID command */
-    if ((DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok) || (DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) != DevW25Qxx_Ok))
+    if (DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok)
+        return DevW25Qxx_Error;
+
+    dev->cs_ctl(true);
+    erase_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+    dev->cs_ctl(false);
+
+    if (!erase_state)
         return DevW25Qxx_Error;
 
     /* Wait the end of Flash writing */
