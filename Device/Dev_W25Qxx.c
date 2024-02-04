@@ -103,7 +103,7 @@ static DevW25Qxx_Error_List DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef *dev)
 static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd = WRITE_ENABLE_CMD;
-    uint32_t tickstart = dev->systick();
+    uint32_t tickstart = 0;
     bool trans_state = false;
 
     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
@@ -113,6 +113,8 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef *dev)
     dev->cs_ctl(true);
     trans_state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd));
     dev->cs_ctl(false);
+
+    tickstart = dev->systick();
 
     if (!trans_state)
         return DevW25Qxx_Error;
@@ -238,6 +240,8 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
     current_addr = WriteAddr;
     end_addr = WriteAddr + Size;
 
+    tickstart = dev->systick();
+
     /* Perform the write page by page */
     do
     {
@@ -280,7 +284,9 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
     uint32_t tickstart = 0;
 
     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
-        return DevW25Qxx_Error; 
+        return DevW25Qxx_Error;
+
+    tickstart = dev->systick();
 
     if ((DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok) ||
         (DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) != DevW25Qxx_Ok))
@@ -310,6 +316,8 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseBlock(DevW25QxxObj_TypeDef *dev, uint
 
     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
         return DevW25Qxx_Error;
+
+    tickstart = dev->systick();
 
     /* Enable write operations Send the read ID command */
     if ((DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok) || (DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) != DevW25Qxx_Ok))
