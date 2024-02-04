@@ -13,6 +13,7 @@ typedef struct
     bool (*read)(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
     bool (*write)(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
     bool (*erase)(uint32_t addr_offset, uint32_t len);
+    bool (*erase_all)(void);
 } StorageIO_TypeDef;
 
 /* internal vriable */
@@ -31,11 +32,20 @@ static void Storage_Smash_ExternalFlashDev_Ptr(void *bus_cfg_ptr, void *ExtDev_p
 static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len);
+static bool Storage_ExtFlash_EraseAll(void);
 
 StorageIO_TypeDef InternalFlash_IO = {
     .erase = Storage_OnChipFlash_Erase,
+    .erase_all = NULL,
     .read = Storage_OnChipFlash_Read,
     .write = Storage_OnChipFlash_Write,
+};
+
+StorageIO_TypeDef ExternalFlash_IO = {
+    .erase = Storage_ExtFlash_Erase,
+    .erase_all = Storage_ExtFlash_EraseAll,
+    .read = Storage_ExtFlash_Read,
+    .write = Storage_ExtFlash_Write,
 };
 
 /* internal function */
@@ -924,6 +934,11 @@ static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len)
 
     }
     
+    return false;
+}
+
+static bool Storage_ExtFlash_EraseAll(void)
+{
     return false;
 }
 
