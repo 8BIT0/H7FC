@@ -166,6 +166,8 @@ reformat_internal_flash_info:
                         {
                             Storage_Monitor.ExtDev_ptr = ExtDev;
                             Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
+                            /* set external flash device read write base address */
+                            Storage_Monitor.external_info.base_addr = ;
 
                             /* build tab section */
                             if (!Storage_Get_StorageInfo(External_Flash))
