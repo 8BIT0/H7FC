@@ -867,7 +867,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             if(page_num == 0)
                 return false;
             
-            Info.boot_sec.tab_addr = BaseInfo_start_addr + EtFlash_Storage_InfoPageSize;
+            Info.boot_sec.tab_addr = BaseInfo_start_addr + ExtFlash_Storage_InfoPageSize;
             Info.boot_sec.tab_size = BootSection_Block_Size * BootTab_Num;
             Info.boot_sec.page_num = BootTab_Num;
             Info.boot_sec.data_sec_size = InternalFlash_BootDataSec_Size;

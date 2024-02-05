@@ -133,7 +133,7 @@
 #define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 #define ExtFlash_Storage_TotalSize (2 Mb)
 #define ExtFlash_Storage_TabSize (4 Kb)
-#define EtFlash_Storage_InfoPageSize (1 Kb)
+#define ExtFlash_Storage_InfoPageSize (1 Kb)
 
 extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
 extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
