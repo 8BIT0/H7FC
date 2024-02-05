@@ -907,6 +907,7 @@ static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_Par
     uint32_t base_addr = 0;
     storage_handle hdl = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_FlashInfo_TypeDef *info = MULL;
 
     if((name == NULL) || (strlen(name) == 0))
         return 0;
@@ -914,28 +915,30 @@ static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_Par
     if(medium == Internal_Flash)
     {
         StorageIO_API = &InternalFlash_IO;
-        switch(class)
-        {
-            case Para_Boot:
-                base_addr = Storage_Monitor.internal_info.boot_sec.tab_addr;
-                break;
-
-            case Para_Sys:
-                base_addr = Storage_Monitor.internal_info.sys_sec.tab_addr;
-                break;
-
-            case Para_User:
-                base_addr = Storage_Monitor.internal_info.user_sec.tab_addr;
-                break;
-
-            default:
-                return 0;
-        }
+        info = &Storage_Monitor.internal_info;
     }
     else
     {
-        /* external flash search still in developping */
-        return 0;
+        StorageIO_API = &ExternalFlash_IO;
+        info = &Storage_Monitor.external_info;
+    }
+
+    switch(class)
+    {
+        case Para_Boot:
+            base_addr = info->boot_sec.tab_addr;
+            break;
+
+        case Para_Sys:
+            base_addr = info->sys_sec.tab_addr;
+            break;
+
+        case Para_User:
+            base_addr = info->user_sec.tab_addr;
+            break;
+
+        default:
+            return 0;
     }
 
     return hdl;
