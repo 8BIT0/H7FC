@@ -3,7 +3,7 @@
 
 #include "Bsp_Flash_Port_Def.h"
 
-#define FLASH_DEFAULT_DATA              0xFF
+#define FLASH_DEFAULT_DATA 0xFF
 
 #define FLASH_BANK_NUM 2
 #define FLASH_BANK_SIZE (512 * 1024)

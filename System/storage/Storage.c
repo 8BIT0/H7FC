@@ -7,6 +7,11 @@
 #define InternalFlash_SysDataSec_Size (16 Kb)
 #define InternalFlash_UserDataSec_Size (32 Kb)
 
+/* store boot info boot parameter and firmware */
+#define ExternalFlash_BootDataSec_Size (1 Mb)
+#define ExternalFlash_SysDataSec_Size (256 Kb)
+#define ExternalFlash_UserDataSec_Size (256 Kb)
+
 /* flash io object */
 typedef struct
 {
@@ -870,11 +875,31 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             Info.boot_sec.tab_addr = BaseInfo_start_addr + ExtFlash_Storage_InfoPageSize;
             Info.boot_sec.tab_size = BootSection_Block_Size * BootTab_Num;
             Info.boot_sec.page_num = BootTab_Num;
-            Info.boot_sec.data_sec_size = InternalFlash_BootDataSec_Size;
+            Info.boot_sec.data_sec_size = ExternalFlash_BootDataSec_Size;
             Info.boot_sec.para_size = 0;
             Info.boot_sec.para_num = 0;
             tab_addr_offset = (Info.boot_sec.tab_addr + Info.boot_sec.tab_size) + Storage_ReserveBlock_Size;
 
+            Info.sys_sec.tab_addr = tab_addr_offset;
+            Info.sys_sec.tab_size = page_num * ExtFlash_Storage_TabSize;
+            Info.sys_sec.data_sec_size = ExternalFlash_SysDataSec_Size;
+            Info.sys_sec.page_num = page_num;
+            Info.sys_sec.para_size = 0;
+            Info.sys_sec.para_num = 0;
+            tab_addr_offset += Info.sys_sec.tab_size + Storage_ReserveBlock_Size;
+                
+            Info.user_sec.tab_addr = tab_addr_offset;
+            Info.user_sec.tab_size = page_num * ExtFlash_Storage_TabSize;
+            Info.user_sec.data_sec_size = ExternalFlash_UserDataSec_Size;
+            Info.user_sec.page_num = page_num;
+            Info.user_sec.para_size = 0;
+            Info.user_sec.para_num = 0;
+            tab_addr_offset += Info.user_sec.tab_size + Storage_ReserveBlock_Size;
+            
+            /* get the remaining size of rom space has left */
+            if(Info.total_size < (tab_addr_offset - BaseInfo_start_addr))
+                return false;
+                
             break;
 
         default:

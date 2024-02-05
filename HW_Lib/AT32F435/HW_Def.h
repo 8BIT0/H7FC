@@ -139,6 +139,15 @@ extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
 extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
 #endif
 
+/* internal flash storage */
+#define OnChipFlash_Storage_StartAddress FLASH_BLOCK_7_START_ADDR
+#define OnChipFlash_Storage_TotalSize FLASH_BLOCK_7_SIZE
+#define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
+
+#define OnChipFlash_MaxRWSize (2 Kb)
+#define OnChipFlash_Storage_TabSize (4 Kb)
+#define OnChipFlash_Storage_InfoPageSize (1 Kb)
+
 extern BspGPIO_Port_TypeDef Uart3_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart3_Rx_Port;
 extern BspGPIO_Port_TypeDef Uart1_Tx_Port;
