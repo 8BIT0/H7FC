@@ -9,6 +9,7 @@
 #include "Bsp_Flash.h"
 #include "Dev_Led.h"
 #include "debug_util.h"
+#include "util.h"
 
 /* device support */
 #include "Dev_W25Qxx.h"
@@ -128,6 +129,9 @@
 
 #define ExtFlash_Dev_Api (void *)(&DevW25Qxx)
 #define ExtFlash_Start_Addr W25QXX_BASE_ADDRESS
+
+#define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA
+#define ExtFlash_Storage_TotalSize (1 Mb)
 
 extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
 extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;

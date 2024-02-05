@@ -17,7 +17,7 @@ DevW25Qxx_TypeDef DevW25Qxx = {
     .reset = DevW25Qxx_Reset,
     .write = DevW25Qxx_Write,
     .read = DevW25Qxx_Read,
-    .erase_block = DevW25Qxx_EraseSector,
+    .erase_sector = DevW25Qxx_EraseSector,
     .erase_chip = DevW25Qxx_EraseChip,
     .info = DevW25Qxx_Get_Info,
 };

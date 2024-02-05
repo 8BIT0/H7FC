@@ -110,7 +110,6 @@ reformat_internal_flash_info:
                     if(!Storage_Build_StorageInfo(Internal_Flash))
                     {
                         Storage_Monitor.module_init_reg.bit.internal = false;
-                        // SrvOsCommon.exit_critical();
                         return false;
                     }
 
@@ -166,21 +165,40 @@ reformat_internal_flash_info:
                         if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
                         {
                             Storage_Monitor.ExtDev_ptr = ExtDev;
-                            Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
                             /* set external flash device read write base address */
                             Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
+                            Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
 
-// reformat_external_flash_info:
-                            /* build tab section */
+reupdate_external_flash_info:
+                            /* get storage info */
                             if (!Storage_Get_StorageInfo(External_Flash))
                             {
-                                /* format storage device */
-                                // if (!Storage_ExtFlash_Erase())
+reformat_external_flash_info:
+                                if (Storage_Monitor.ExternalFlash_Format_cnt)
                                 {
+                                    /* format storage device */
+                                    if (!Storage_Format(External_Flash))
+                                    {
+                                        Storage_Monitor.ExternalFlash_Format_cnt --;
+                                        if (Storage_Monitor.ExternalFlash_Format_cnt)
+                                            goto reformat_external_flash_info;
+                                    }
+                                    else
+                                    {
+                                        /* external flash module format successed */
+                                        /* build storage tab */
 
+                                        /* after tab builded read storage info again */
+
+                                    }
                                 }
-
-                                /* build storage tab */
+                                else
+                                {
+                                    /* reformat count is 0 */
+                                    /* external flash module format error */
+                                    Storage_Monitor.module_init_reg.bit.external = false;
+                                    Storage_Smash_ExternalFlashDev_Ptr(ext_flash_bus_cfg, ExtDev);
+                                }
                             }
                             else
                                 Storage_Monitor.module_init_reg.bit.external = true;
@@ -252,19 +270,30 @@ static bool Storage_Format(Storage_MediumType_List type)
         
         /* still in developping */
         case External_Flash:
+            StorageIO_API = &ExternalFlash_IO;
+            size = sizeof(page_data_tmp);
+            default_data = ExtFlash_Storage_DefaultData;
+
+            read_time = ExtFlash_Storage_TotalSize / sizeof(page_data_tmp);
+            if(ExtFlash_Storage_TotalSize % sizeof(page_data_tmp))
+                read_time ++;
+
+            remain_size = ExtFlash_Storage_TotalSize;
+            break;
+
         default:
             return false;
     }
 
-    if( InternalFlash_IO.erase && \
-        InternalFlash_IO.erase(From_Start_Address, size))
+    if( StorageIO_API->erase && \
+        StorageIO_API->erase(From_Start_Address, size))
     {
         for(uint32_t i = 0; i < read_time; i++)
         {
             if((remain_size != 0) && (remain_size < size))
                 size = remain_size;
 
-            if(!InternalFlash_IO.read(addr_offset, page_data_tmp, size))
+            if(!StorageIO_API->read(addr_offset, page_data_tmp, size))
                 return false;
 
             for(uint32_t j = 0; j < size; j++)
@@ -976,7 +1005,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
     
     if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
     {
-        write_addr = Storage_Monitor.external_info.base_addr + addr_offset;       
+        write_addr = Storage_Monitor.external_info.base_addr + addr_offset;
         dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
     
         switch((uint8_t)dev->chip_type)
@@ -1011,9 +1040,34 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
 
 static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len)
 {
-    if (len)
-    {
+    uint32_t erase_start_addr = 0;
+    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
 
+    if ((Storage_Monitor.ExtDev_ptr != NULL) && len)
+    {
+        /* erase external flash sector */
+        erase_start_addr = Storage_Monitor.external_info.base_addr + addr_offset;
+        dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+    
+        switch((uint8_t)dev->chip_type)
+        {
+            case Storage_ChipType_W25Qxx:
+                if (dev->dev_api && dev->dev_obj)
+                {
+                    /* get w25qxx device info */
+                    /* address check */
+                    if (erase_start_addr < To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).start_addr)
+                        return false;
+
+                    /* W25Qxx device read */
+                    if (To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), erase_start_addr) == DevW25Qxx_Ok)
+                        return true;
+                }
+                break;
+
+            default:
+                return false;
+        }
     }
     
     return false;
