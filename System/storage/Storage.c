@@ -780,7 +780,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     {
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
-            if( (StorageIO_API->erase == NULL) || \
+            if ((StorageIO_API->erase == NULL) || \
                 (StorageIO_API->read  == NULL) || \
                 (StorageIO_API->write == NULL))
                 return false;
@@ -792,7 +792,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
             BaseInfo_start_addr = From_Start_Address;
             page_num = Storage_OnChip_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size);
-            if(page_num == 0)
+            if (page_num == 0)
                 return false;
             
             Info.boot_sec.tab_addr = BaseInfo_start_addr + OnChipFlash_Storage_InfoPageSize;
@@ -857,7 +857,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
         /* still in developping */
         case External_Flash:
             StorageIO_API = &ExternalFlash_IO;
-            if( (StorageIO_API->erase == NULL) || \
+            if ((StorageIO_API->erase == NULL) || \
                 (StorageIO_API->read  == NULL) || \
                 (StorageIO_API->write == NULL))
                 return false;
@@ -899,7 +899,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             /* get the remaining size of rom space has left */
             if(Info.total_size < (tab_addr_offset - BaseInfo_start_addr))
                 return false;
-                
+
             break;
 
         default:
@@ -908,7 +908,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
     /* write 0 to info section */
     memset(page_data_tmp, 0, OnChipFlash_Storage_InfoPageSize);
-    if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+    if (!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
 
     /* write base info to info section */
@@ -916,10 +916,10 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize - sizeof(crc));
     memcpy(&page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
 
-    if(!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+    if (!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
         return false;
 
-    if( !Storage_Establish_Tab(type, Para_Boot) || \
+    if (!Storage_Establish_Tab(type, Para_Boot) || \
         !Storage_Establish_Tab(type, Para_Sys)  || \
         !Storage_Establish_Tab(type, Para_User))
         return false;
