@@ -860,6 +860,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             memset(&Info, 0, sizeof(Storage_FlashInfo_TypeDef));
             memcpy(Info.tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE);
             
+            Info.total_size = ExtFlash_Storage_TotalSize;
             break;
 
         default:
