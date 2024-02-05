@@ -164,10 +164,8 @@ static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev)
     if (dev && dev->cs_ctl)
     {
         dev->cs_ctl(true);
-
         DevW25Qxx_BusTrans(dev, ID_Req_CMD, sizeof(ID_Req_CMD));
         DevW25Qxx_BusReceive(dev, ID_Rx_buf, sizeof(ID_Rx_buf));
-
         dev->cs_ctl(false);
     
         ID |= ID_Rx_buf[0] << 8;
