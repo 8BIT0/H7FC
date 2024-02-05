@@ -189,7 +189,7 @@ reformat_external_flash_info:
                                         /* build storage tab */
 
                                         /* after tab builded read storage info again */
-
+                                        goto reupdate_external_flash_info;
                                     }
                                 }
                                 else
