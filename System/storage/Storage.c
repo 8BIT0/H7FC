@@ -498,12 +498,12 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
         case Para_Sys:
             p_SecInfo = &p_Flash->sys_sec;
-            max_capacity = Storage_Max_Capacity;
+            max_capacity = Storage_OnChip_Max_Capacity;
             break;
 
         case Para_User:
             p_SecInfo = &p_Flash->user_sec;
-            max_capacity = Storage_Max_Capacity;
+            max_capacity = Storage_OnChip_Max_Capacity;
             break;
 
         default:
@@ -786,7 +786,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             Info.total_size = OnChipFlash_Storage_TotalSize;
 
             BaseInfo_start_addr = From_Start_Address;
-            page_num = Storage_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size);
+            page_num = Storage_OnChip_Max_Capacity / (OnChipFlash_Storage_TabSize / StorageItem_Size);
             if(page_num == 0)
                 return false;
             
@@ -861,6 +861,20 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             memcpy(Info.tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE);
             
             Info.total_size = ExtFlash_Storage_TotalSize;
+            
+            BaseInfo_start_addr = From_Start_Address;
+            page_num = Storage_ExtFlash_Max_Capacity / (ExtFlash_Storage_TabSize / StorageItem_Size);
+            if(page_num == 0)
+                return false;
+            
+            Info.boot_sec.tab_addr = BaseInfo_start_addr + EtFlash_Storage_InfoPageSize;
+            Info.boot_sec.tab_size = BootSection_Block_Size * BootTab_Num;
+            Info.boot_sec.page_num = BootTab_Num;
+            Info.boot_sec.data_sec_size = InternalFlash_BootDataSec_Size;
+            Info.boot_sec.para_size = 0;
+            Info.boot_sec.para_num = 0;
+            tab_addr_offset = (Info.boot_sec.tab_addr + Info.boot_sec.tab_size) + Storage_ReserveBlock_Size;
+
             break;
 
         default:

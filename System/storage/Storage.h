@@ -20,8 +20,10 @@
 #define BootSection_Block_Size (4 Kb)
 #define BootTab_Num 1
 
-#define Storage_Max_Capacity 256
+#define Storage_OnChip_Max_Capacity 256
 #define Storage_ReserveBlock_Size 128
+
+#define Storage_ExtFlash_Max_Capacity (1 Kb)
 
 #define StorageItem_Size sizeof(Storage_Item_TypeDef)
 #define Storage_Tab_MaxItem_Num (OnChipFlash_Storage_TabSize / StorageItem_Size)
