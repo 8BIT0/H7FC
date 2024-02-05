@@ -907,7 +907,7 @@ static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_Par
     uint32_t base_addr = 0;
     storage_handle hdl = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_FlashInfo_TypeDef *info = MULL;
+    Storage_FlashInfo_TypeDef *info = NULL;
 
     if((name == NULL) || (strlen(name) == 0))
         return 0;
