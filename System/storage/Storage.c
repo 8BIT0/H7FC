@@ -89,11 +89,11 @@ reupdate_internal_flash_info:
         {
             Storage_Monitor.internal_info.base_addr = OnChipFlash_Storage_StartAddress;
 reformat_internal_flash_info:
-            if(Storage_Monitor.InternalFlash_Format_cnt)
+            if (Storage_Monitor.InternalFlash_Format_cnt)
             {
                 Storage_Monitor.InternalFlash_Format_cnt --;
 
-                if(!Storage_Format(Internal_Flash))
+                if (!Storage_Format(Internal_Flash))
                 {
                     /* format internal flash storage space */
                     Storage_Monitor.module_init_reg.bit.internal = false;
@@ -107,14 +107,13 @@ reformat_internal_flash_info:
                     /* build storage tab again */
 
                     // goto reupdate_internal_flash_info;
-                    if(!Storage_Build_StorageInfo(Internal_Flash))
+                    if (Storage_Build_StorageInfo(Internal_Flash))
                     {
-                        Storage_Monitor.module_init_reg.bit.internal = false;
-                        return false;
+                        Storage_Monitor.module_init_reg.bit.internal = true;
+                        goto reupdate_internal_flash_info;
                     }
-
-                    Storage_Monitor.module_init_reg.bit.internal = true;
-                    goto reupdate_internal_flash_info;
+                    else
+                        Storage_Monitor.module_init_reg.bit.internal = false;
                 }
             }
             else
@@ -187,9 +186,14 @@ reformat_external_flash_info:
                                     {
                                         /* external flash module format successed */
                                         /* build storage tab */
-
-                                        /* after tab builded read storage info again */
-                                        goto reupdate_external_flash_info;
+                                        if (Storage_Build_StorageInfo(External_Flash))
+                                        {
+                                            Storage_Monitor.module_init_reg.bit.external = true;
+                                            /* after tab builded read storage info again */
+                                            goto reupdate_external_flash_info;
+                                        }
+                                        else
+                                            Storage_Monitor.module_init_reg.bit.internal = false;
                                     }
                                 }
                                 else
@@ -777,7 +781,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
                 return false;
 
             memset(&Info, 0, sizeof(Storage_FlashInfo_TypeDef));
-            memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, strlen(INTERNAL_STORAGE_PAGE_TAG));
+            memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
 
             Info.total_size = OnChipFlash_Storage_TotalSize;
 
@@ -847,6 +851,17 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
         /* still in developping */
         case External_Flash:
+            StorageIO_API = &ExternalFlash_IO;
+            if( (StorageIO_API->erase == NULL) || \
+                (StorageIO_API->read  == NULL) || \
+                (StorageIO_API->write == NULL))
+                return false;
+            
+            memset(&Info, 0, sizeof(Storage_FlashInfo_TypeDef));
+            memcpy(Info.tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE);
+            
+            break;
+
         default:
             return false;
     }
