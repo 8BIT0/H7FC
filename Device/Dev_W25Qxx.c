@@ -369,6 +369,8 @@ static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev
 
     if (dev && (dev->prod_type != DevW25Q_None))
     {
+        info.start_addr = W25QXX_BASE_ADDRESS;
+
         /* currently we only have such type of flash chip on the evk or fc-board */
         switch ((uint8_t)(dev->prod_type))
         {

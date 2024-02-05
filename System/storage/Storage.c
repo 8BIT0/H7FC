@@ -154,25 +154,31 @@ reformat_internal_flash_info:
 
                     if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
                     {
-                        To_DevW25Qxx_OBJ(ExtDev->dev_obj)->systick = SrvOsCommon.get_os_ms();
+                        /* set get time callback */
+                        To_DevW25Qxx_OBJ(ExtDev->dev_obj)->systick = SrvOsCommon.get_os_ms;
 
                         /* set bus control callback */
                         To_DevW25Qxx_OBJ(ExtDev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
                         To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
                         To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
                         To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
-                            
+
                         if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
                         {
                             Storage_Monitor.ExtDev_ptr = ExtDev;
                             Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
                             /* set external flash device read write base address */
-                            Storage_Monitor.external_info.base_addr = ;
+                            Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
 
+// reformat_external_flash_info:
                             /* build tab section */
                             if (!Storage_Get_StorageInfo(External_Flash))
                             {
                                 /* format storage device */
+                                // if (!Storage_ExtFlash_Erase())
+                                {
+
+                                }
 
                                 /* build storage tab */
                             }
@@ -282,7 +288,6 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Info = NULL;
-    uint32_t base_addr = 0;
     uint16_t crc = 0;
     uint16_t crc_read = 0;
     char flash_tag[INTERNAL_PAGE_TAG_SIZE + EXTERNAL_PAGE_TAG_SIZE];
@@ -294,27 +299,32 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
             memcpy(flash_tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
-            base_addr = OnChipFlash_Storage_StartAddress;
             p_Info = &Storage_Monitor.internal_info;
             memset(p_Info, 0, sizeof(Storage_FlashInfo_TypeDef));
             break;
 
         /* still in developping */
         case External_Flash:
+            StorageIO_API = &ExternalFlash_IO;
+            memcpy(flash_tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE);
+            p_Info = &Storage_Monitor.external_info;
+            memset(p_Info, 0, sizeof(Storage_FlashInfo_TypeDef));
+            break;
+
         default:
             return false;
     }
     
-    if(StorageIO_API->read(From_Start_Address, \
-                           page_data_tmp, \
-                           sizeof(page_data_tmp)))
+    if (StorageIO_API->read(From_Start_Address, \
+                            page_data_tmp, \
+                            sizeof(page_data_tmp)))
     {
         /* check internal storage tag */
         memcpy(p_Info, page_data_tmp, sizeof(Storage_FlashInfo_TypeDef));
 
         /* check storage tag */
         /* check boot / sys / user  start addr */
-        if( (strcmp(p_Info->tag, flash_tag) != 0) || \
+        if ((strcmp(p_Info->tag, flash_tag) != 0) || \
             (p_Info->boot_sec.tab_addr == 0) || \
             (p_Info->sys_sec.tab_addr == 0) || \
             (p_Info->user_sec.tab_addr == 0) || \
@@ -344,7 +354,7 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
     uint32_t clear_remain = 0;
     uint32_t addr_tmp = 0;
 
-    if( (addr == 0) || \
+    if ((addr == 0) || \
         (tab_num == 0) || \
         (storage_api == NULL) || \
         (storage_api->write == NULL))
@@ -919,9 +929,40 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, 
 
 static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
-    if (p_data && len)
-    {
+    uint32_t read_addr = 0;
+    uint32_t flash_end_addr = 0;
+    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
 
+    if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
+    {
+        read_addr = Storage_Monitor.external_info.base_addr + addr_offset;       
+        dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+
+        switch((uint8_t)dev->chip_type)
+        {
+            case Storage_ChipType_W25Qxx:
+                if (dev->dev_api && dev->dev_obj)
+                {
+                    /* get w25qxx device info */
+                    /* address check */
+                    flash_end_addr = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).start_addr;
+                    if (flash_end_addr > read_addr)
+                        return false;
+
+                    /* range check */
+                    flash_end_addr += To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).flash_size;
+                    if ((len + read_addr) > flash_end_addr)
+                        return false;
+
+                    /* W25Qxx device read */
+                    if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), read_addr, p_data, len) == DevW25Qxx_Ok)
+                        return true;
+                }
+                break;
+
+            default:
+                return false;
+        }
     }
 
     return false;
@@ -929,9 +970,40 @@ static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
 
 static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
-    if (p_data && len)
+    uint32_t write_addr = 0;
+    uint32_t flash_end_addr = 0;
+    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
+    
+    if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
     {
+        write_addr = Storage_Monitor.external_info.base_addr + addr_offset;       
+        dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+    
+        switch((uint8_t)dev->chip_type)
+        {
+            case Storage_ChipType_W25Qxx:
+                if (dev->dev_api && dev->dev_obj)
+                {
+                    /* get w25qxx device info */
+                    /* address check */
+                    flash_end_addr = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).start_addr;
+                    if (flash_end_addr > write_addr)
+                        return false;
 
+                    /* range check */
+                    flash_end_addr += To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).flash_size;
+                    if ((len + write_addr) > flash_end_addr)
+                        return false;
+
+                    /* W25Qxx device read */
+                    if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr, p_data, len) == DevW25Qxx_Ok)
+                        return true;
+                }
+                break;
+
+            default:
+                return false;
+        }
     }
 
     return false;

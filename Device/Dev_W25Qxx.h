@@ -117,6 +117,7 @@ typedef enum
 
 typedef struct
 {
+    uint32_t start_addr;
     uint32_t flash_size;
 
     uint32_t sector_size;

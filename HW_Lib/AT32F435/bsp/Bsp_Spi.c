@@ -148,19 +148,17 @@ static bool BspSPI_Transmit(void *instance, uint8_t *tx, uint16_t size, uint16_t
     {
         while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_TDBE_FLAG) == RESET)
         {
-            spi_i2s_data_transmit(To_SPI_Instance(instance), tx[i]);
-
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
-
+        spi_i2s_data_transmit(To_SPI_Instance(instance), tx[i]);
+        
         while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_RDBF_FLAG) == RESET)
         {
-            spi_i2s_data_receive(To_SPI_Instance(instance));
-
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
+        spi_i2s_data_receive(To_SPI_Instance(instance));
     }
 
     return true;
@@ -177,19 +175,17 @@ static bool BspSPI_Receive(void *instance, uint8_t *rx, uint16_t size, uint16_t 
     {
         while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_TDBE_FLAG) == RESET)
         {
-            spi_i2s_data_transmit(To_SPI_Instance(instance), Dummy_Byte);
-
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
-
+        spi_i2s_data_transmit(To_SPI_Instance(instance), Dummy_Byte);
+        
         while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_RDBF_FLAG) == RESET)
         {
-            rx[i] = spi_i2s_data_receive(To_SPI_Instance(instance));
-
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
+        rx[i] = spi_i2s_data_receive(To_SPI_Instance(instance));
     }
 
     return true;
@@ -206,19 +202,17 @@ static uint16_t BspSPI_Trans_Receive(void *instance, uint8_t *tx, uint8_t *rx, u
     {
         while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_TDBE_FLAG) == RESET)
         {
-            spi_i2s_data_transmit(To_SPI_Instance(instance), tx[i]);
-            
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
+        spi_i2s_data_transmit(To_SPI_Instance(instance), tx[i]);
 
         while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_RDBF_FLAG) == RESET)
         {
-            rx[i] = spi_i2s_data_receive(To_SPI_Instance(instance));
-            
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
+        rx[i] = spi_i2s_data_receive(To_SPI_Instance(instance));
     }
 
     return size;
