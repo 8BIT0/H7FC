@@ -132,8 +132,8 @@
 
 #define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 #define ExtFlash_Storage_TotalSize (2 Mb)
-#define ExtFlash_Storage_TabSize (4 Kb)
-#define ExtFlash_Storage_InfoPageSize (1 Kb)
+#define ExtFlash_Storage_TabSize  Flash_Storage_TabSize
+#define ExtFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
 
 extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
 extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
@@ -145,8 +145,8 @@ extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
 #define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 
 #define OnChipFlash_MaxRWSize (2 Kb)
-#define OnChipFlash_Storage_TabSize (4 Kb)
-#define OnChipFlash_Storage_InfoPageSize (1 Kb)
+#define OnChipFlash_Storage_TabSize Flash_Storage_TabSize
+#define OnChipFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
 
 extern BspGPIO_Port_TypeDef Uart3_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart3_Rx_Port;

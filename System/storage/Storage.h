@@ -170,6 +170,7 @@ typedef struct
     uint32_t total_size;
 
     uint32_t page_num;
+    uint32_t page_size;
 
     uint32_t bank_num;
     uint32_t bank_size;

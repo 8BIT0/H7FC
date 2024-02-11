@@ -246,8 +246,8 @@
 #define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 
 #define OnChipFlash_MaxRWSize (2 Kb)
-#define OnChipFlash_Storage_TabSize (4 Kb)
-#define OnChipFlash_Storage_InfoPageSize (1 Kb)
+#define OnChipFlash_Storage_TabSize Flash_Storage_TabSize
+#define OnChipFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
 
 extern DebugPinObj_TypeDef Debug_PC0;
 extern DebugPinObj_TypeDef Debug_PC1;

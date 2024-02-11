@@ -1,6 +1,8 @@
 #ifndef __FCHW_CONFIG_H
 #define __FCHW_CONFIG_H
 
+#include "util.h"
+
 #define ON 1
 #define OFF 0
 
@@ -27,6 +29,10 @@
 #define RADIO_NUM 1
 
 #endif
+
+#define Flash_MaxRWSize (2 Kb)
+#define Flash_Storage_TabSize (4 Kb)
+#define Flash_Storage_InfoPageSize (1 Kb)
 
 #define IMU_SUM IMU_CNT
 #define BARO_SUM BARO_CNT
