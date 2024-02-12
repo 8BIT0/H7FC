@@ -26,7 +26,7 @@ typedef struct
 
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
-uint8_t page_data_tmp[Storage_TabSize] __attribute__((aligned(4))) = {0};
+uint8_t page_data_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = {0};
 
 static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
@@ -267,21 +267,21 @@ static void Storage_Smash_ExternalFlashDev_Ptr(void *bus_cfg_ptr, void *ExtDev_p
 static bool Storage_Format(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
-    volatile uint32_t size = 0;
+    uint32_t size = 0;
     uint8_t default_data = 0;
     uint32_t read_time = 0;
-    volatile uint32_t remain_size = 0;
+    uint32_t remain_size = 0;
     uint32_t addr_offset = From_Start_Address;
 
     switch((uint8_t) type)
     {
         case Internal_Flash:
             StorageIO_API = &InternalFlash_IO;
-            size = sizeof(page_data_tmp);
+            size = Storage_TabSize;
             default_data = OnChipFlash_Storage_DefaultData;
 
-            read_time = OnChipFlash_Storage_TotalSize / sizeof(page_data_tmp);
-            if(OnChipFlash_Storage_TotalSize % sizeof(page_data_tmp))
+            read_time = OnChipFlash_Storage_TotalSize / Storage_TabSize;
+            if(OnChipFlash_Storage_TotalSize % Storage_TabSize)
                 read_time ++;
             
             remain_size = OnChipFlash_Storage_TotalSize;
@@ -290,11 +290,11 @@ static bool Storage_Format(Storage_MediumType_List type)
         /* still in developping */
         case External_Flash:
             StorageIO_API = &ExternalFlash_IO;
-            size = sizeof(page_data_tmp);
+            size = Storage_TabSize;
             default_data = ExtFlash_Storage_DefaultData;
 
-            read_time = ExtFlash_Storage_TotalSize / sizeof(page_data_tmp);
-            if(ExtFlash_Storage_TotalSize % sizeof(page_data_tmp))
+            read_time = ExtFlash_Storage_TotalSize / Storage_TabSize;
+            if(ExtFlash_Storage_TotalSize % Storage_TabSize)
                 read_time ++;
 
             remain_size = ExtFlash_Storage_TotalSize;
@@ -348,7 +348,6 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             StorageIO_API = &InternalFlash_IO;
             memcpy(flash_tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
             p_Info = &Storage_Monitor.internal_info;
-            memset(p_Info, 0, sizeof(Storage_FlashInfo_TypeDef));
             break;
 
         /* still in developping */
@@ -356,16 +355,16 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             StorageIO_API = &ExternalFlash_IO;
             memcpy(flash_tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE);
             p_Info = &Storage_Monitor.external_info;
-            memset(p_Info, 0, sizeof(Storage_FlashInfo_TypeDef));
             break;
 
         default:
             return false;
     }
     
+    memset(p_Info, 0, sizeof(Storage_FlashInfo_TypeDef));
     if (StorageIO_API->read(From_Start_Address, \
                             page_data_tmp, \
-                            sizeof(page_data_tmp)))
+                            Storage_TabSize))
     {
         /* check internal storage tag */
         memcpy(p_Info, page_data_tmp, sizeof(Storage_FlashInfo_TypeDef));
@@ -413,11 +412,11 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
         clear_remain = OnChipFlash_Storage_TabSize;
         addr_tmp = addr;
         
-        if(sizeof(page_data_tmp) <= OnChipFlash_Storage_TabSize)
+        if(Storage_TabSize <= OnChipFlash_Storage_TabSize)
         {
-            clear_size = sizeof(page_data_tmp);
-            clear_cnt = OnChipFlash_Storage_TabSize / sizeof(page_data_tmp);
-            if(OnChipFlash_Storage_TabSize % sizeof(page_data_tmp))
+            clear_size = Storage_TabSize;
+            clear_cnt = OnChipFlash_Storage_TabSize / Storage_TabSize;
+            if(OnChipFlash_Storage_TabSize % Storage_TabSize)
                 clear_cnt += 1;
         }
         else
@@ -574,7 +573,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 p_Item->crc16 = crc;
                 
                 /* write new item to tab */
-                if(!StorageIO_API->write(tab_addr, page_data_tmp, sizeof(page_data_tmp)))
+                if(!StorageIO_API->write(tab_addr, page_data_tmp, Storage_TabSize))
                     return Storage_Write_Error;
 
                 tab_update = true;
@@ -586,7 +585,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             break;
     }
     
-    if(storage_size > sizeof(page_data_tmp))
+    if(storage_size > Storage_TabSize)
         return Storage_DataSize_Overrange;
 
     memset(&DataSlot, 0, sizeof(DataSlot));
@@ -669,10 +668,10 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     
     /* write base info to info section */
     memcpy(page_data_tmp, p_Flash, sizeof(Storage_FlashInfo_TypeDef));
-    crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize - sizeof(crc));
-    memcpy(&page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
+    crc = Common_CRC16(page_data_tmp, Storage_InfoPageSize - sizeof(crc));
+    memcpy(&page_data_tmp[Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
 
-    if(!StorageIO_API->write(From_Start_Address, page_data_tmp, OnChipFlash_Storage_InfoPageSize))
+    if(!StorageIO_API->write(From_Start_Address, page_data_tmp, Storage_InfoPageSize))
         return Storage_BaseInfo_Updata_Error;
 
     return Storage_Error_None;
@@ -688,7 +687,8 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
     uint32_t clear_remain = 0;
     uint32_t addr_tmp = 0;
     Storage_FreeSlot_TypeDef free_slot;
-    
+    uint16_t crc = 0;
+
     switch((uint8_t) type)
     {
         case Internal_Flash:
@@ -731,25 +731,25 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
     if (p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
     {
         /* clear boot data section */
-        if ((p_SecInfo->data_sec_addr == 0) || \
-            !StorageIO_API->erase(p_SecInfo->data_sec_addr, p_SecInfo->data_sec_size))
+        if (p_SecInfo->data_sec_addr == 0)
             return false;
 
         /* write 0 to data section */
-        memset(page_data_tmp, 0, sizeof(page_data_tmp));
-        clear_cnt = p_SecInfo->data_sec_size / sizeof(page_data_tmp);
+        memset(page_data_tmp, 0, Storage_TabSize);
+        clear_cnt = p_SecInfo->data_sec_size / Storage_TabSize;
         clear_remain = p_SecInfo->data_sec_size;
         addr_tmp = p_SecInfo->data_sec_addr;
-        clear_byte = sizeof(page_data_tmp);
-        if(p_SecInfo->data_sec_size % sizeof(page_data_tmp))
+        clear_byte = Storage_TabSize;
+        if(p_SecInfo->data_sec_size % Storage_TabSize)
             clear_cnt ++;
  
         for(uint16_t i = 0; i < clear_cnt; i++)
         {
-            if (!StorageIO_API->write(addr_tmp, page_data_tmp, clear_byte))
+            if ((!StorageIO_API->erase(addr_tmp, p_SecInfo->data_sec_size)) || \
+                (!StorageIO_API->write(addr_tmp, page_data_tmp, clear_byte)))
                 return false;
 
-            addr_tmp += sizeof(page_data_tmp);
+            addr_tmp += Storage_TabSize;
             clear_remain -= clear_byte;
             if(clear_remain && clear_remain <= clear_byte)
                 clear_byte = clear_remain;
@@ -758,15 +758,39 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
         /* write free slot info */
         memset(&free_slot, 0, sizeof(free_slot));
         free_slot.header = STORAGE_SLOT_HEAD_TAG;
-        free_slot.total_size = p_SecInfo->data_sec_size;
-        free_slot.cur_slot_size = p_SecInfo->data_sec_size;
+        free_slot.total_size = p_SecInfo->data_sec_size - sizeof(free_slot);
+        free_slot.cur_slot_size = p_SecInfo->data_sec_size - sizeof(free_slot);
         /* if current free slot get enought space for data then set ender tag as 0xFE1001FE */
         /* or else set ender tag as next slot address such like 0x80exxxx. */
         /* until all data was saved into multiple flash segment completely */
         /* set ender tag as 0xFE1001FE */
         free_slot.ender = STORAGE_SLOT_END_TAG;
         
-        if (!StorageIO_API->write(p_SecInfo->data_sec_addr, &free_slot, sizeof(free_slot)))
+        memcpy(page_data_tmp, &free_slot, sizeof(free_slot));
+        if ((!StorageIO_API->erase(p_SecInfo->data_sec_addr, p_SecInfo->data_sec_size)) || \
+            (!StorageIO_API->write(p_SecInfo->data_sec_addr, page_data_tmp, Storage_TabSize)))
+            return false;
+
+        /* update info section */
+        p_SecInfo->free_addr = p_SecInfo->data_sec_addr;
+        p_SecInfo->free_num = 1;
+        p_SecInfo->para_num = 0;
+        p_SecInfo->para_size = 0;
+
+        /* read out whole section info data from storage info section */
+        if (!StorageIO_API->read(From_Start_Address, page_data_tmp, Storage_TabSize))
+            return false;
+
+        memset(page_data_tmp, 0, Storage_InfoPageSize);
+        memcpy(page_data_tmp, p_Flash, sizeof(Storage_FlashInfo_TypeDef));
+
+        /* comput crc */
+        crc = Common_CRC16(page_data_tmp, Storage_InfoPageSize - sizeof(crc));
+        memcpy(&page_data_tmp[Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
+
+        /* erase sector first then write into the target sector */
+        if ((!StorageIO_API->erase(From_Start_Address, Storage_TabSize)) || \
+            (!StorageIO_API->write(From_Start_Address, page_data_tmp, Storage_TabSize)))
             return false;
 
         return true;
@@ -802,7 +826,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             info_page_size = OnChipFlash_Storage_InfoPageSize;
             StorageIO_API = &InternalFlash_IO;
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
-            
+
             // sector_size = ;
             if ((StorageIO_API->erase == NULL) || \
                 (StorageIO_API->read  == NULL) || \
@@ -867,10 +891,6 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             Info.user_sec.data_sec_addr = tab_addr_offset;
             tab_addr_offset += InternalFlash_UserDataSec_Size;
             tab_addr_offset += Storage_ReserveBlock_Size;
-
-            Info.boot_sec.free_addr = Info.boot_sec.data_sec_addr;
-            Info.sys_sec.free_addr = Info.sys_sec.data_sec_addr;
-            Info.user_sec.free_addr = Info.user_sec.data_sec_addr;
 
             Storage_Monitor.internal_info = Info;
             break;
@@ -947,10 +967,6 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             Info.user_sec.data_sec_addr = tab_addr_offset;
             tab_addr_offset += ExternalFlash_UserDataSec_Size;
             tab_addr_offset += Storage_ReserveBlock_Size;
-
-            Info.boot_sec.free_addr = Info.boot_sec.data_sec_addr;
-            Info.sys_sec.free_addr = Info.sys_sec.data_sec_addr;
-            Info.user_sec.free_addr = Info.user_sec.data_sec_addr;
 
             Storage_Monitor.external_info = Info;
             break;

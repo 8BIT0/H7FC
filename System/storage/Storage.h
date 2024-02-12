@@ -116,6 +116,7 @@ typedef struct
     uint32_t header;
     uint32_t total_size;
     uint32_t cur_slot_size;
+    uint32_t nxt_addr;
     uint32_t ender;
 } Storage_FreeSlot_TypeDef;
 
@@ -127,6 +128,7 @@ typedef struct
     uint32_t page_num;
     uint32_t tab_size;
     uint32_t free_addr;
+    uint32_t free_num;
     uint32_t para_size;
     uint32_t para_num;
 } Storage_BaseSecInfo_TypeDef;
