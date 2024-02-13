@@ -13,8 +13,6 @@
 
 #define Storage_ErrorCode_ToStr(x) #x
 
-#define ExternalFlash_Storage_Address 0
-
 #define From_Start_Address 0
 
 #define BootSection_Block_Size (4 Kb)
@@ -127,8 +125,8 @@ typedef struct
     uint32_t data_sec_size;
     uint32_t page_num;
     uint32_t tab_size;
-    uint32_t free_addr;
-    uint32_t free_num;
+    uint32_t free_slot_addr;
+    uint32_t free_slot_num;
     uint32_t para_size;
     uint32_t para_num;
 } Storage_BaseSecInfo_TypeDef;

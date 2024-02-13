@@ -127,13 +127,21 @@
 #define ExtFlash_CS_Pin ExtFlash_CSPin
 #define ExtFlash_Bus_Pin ExtFlash_SPIPin
 
+#define ExtFlash_Firmware_Addr W25QXX_BASE_ADDRESS
+#define ExtFlash_Firmware_Size (1 Mb)
+
 #define ExtFlash_Dev_Api (void *)(&DevW25Qxx)
-#define ExtFlash_Start_Addr W25QXX_BASE_ADDRESS
+#define ExtFlash_Start_Addr (ExtFlash_Firmware_Addr + ExtFlash_Firmware_Size)
 
 #define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA
-#define ExtFlash_Storage_TotalSize (2 Mb)
+#define ExtFlash_Storage_TotalSize (384 Kb)
 #define ExtFlash_Storage_TabSize  Flash_Storage_TabSize
 #define ExtFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
+
+/* store boot info boot parameter and firmware */
+#define ExternalFlash_BootDataSec_Size (32 Kb)
+#define ExternalFlash_SysDataSec_Size (64 Kb)
+#define ExternalFlash_UserDataSec_Size (64 Kb)
 
 extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
 extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;

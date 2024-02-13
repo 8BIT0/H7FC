@@ -7,11 +7,6 @@
 #define InternalFlash_SysDataSec_Size (16 Kb)
 #define InternalFlash_UserDataSec_Size (32 Kb)
 
-/* store boot info boot parameter and firmware */
-#define ExternalFlash_BootDataSec_Size (1 Mb)
-#define ExternalFlash_SysDataSec_Size (256 Kb)
-#define ExternalFlash_UserDataSec_Size (256 Kb)
-
 #define Storage_TabSize Flash_Storage_TabSize
 #define Storage_InfoPageSize Flash_Storage_InfoPageSize
 
@@ -338,6 +333,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     Storage_FlashInfo_TypeDef *p_Info = NULL;
     uint16_t crc = 0;
     uint16_t crc_read = 0;
+    uint32_t info_addr = 0;
     char flash_tag[INTERNAL_PAGE_TAG_SIZE + EXTERNAL_PAGE_TAG_SIZE];
 
     memset(flash_tag, '\0', sizeof(flash_tag));
@@ -348,6 +344,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             StorageIO_API = &InternalFlash_IO;
             memcpy(flash_tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
             p_Info = &Storage_Monitor.internal_info;
+            info_addr = From_Start_Address;
             break;
 
         /* still in developping */
@@ -355,6 +352,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             StorageIO_API = &ExternalFlash_IO;
             memcpy(flash_tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE);
             p_Info = &Storage_Monitor.external_info;
+            info_addr = p_Info->base_addr;
             break;
 
         default:
@@ -362,7 +360,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     }
     
     memset(p_Info, 0, sizeof(Storage_FlashInfo_TypeDef));
-    if (StorageIO_API->read(From_Start_Address, \
+    if (StorageIO_API->read(info_addr, \
                             page_data_tmp, \
                             Storage_TabSize))
     {
@@ -372,6 +370,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         /* check storage tag */
         /* check boot / sys / user  start addr */
         if ((strcmp(p_Info->tag, flash_tag) != 0) || \
+            (p_Info->base_addr != info_addr) || \
             (p_Info->boot_sec.tab_addr == 0) || \
             (p_Info->sys_sec.tab_addr == 0) || \
             (p_Info->user_sec.tab_addr == 0) || \
@@ -391,14 +390,12 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         return true;
     }
 
+    p_Info->base_addr = info_addr;
     return false;
 }
 
 static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uint32_t tab_num)
 {
-    uint16_t clear_cnt = 1;
-    uint32_t clear_size = 0;
-    uint32_t clear_remain = 0;
     uint32_t addr_tmp = 0;
 
     if ((addr == 0) || \
@@ -407,33 +404,16 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
         (storage_api->write == NULL))
         return false;
 
-    for(uint32_t i = 0; i < tab_num; i++)
-    {
-        clear_remain = OnChipFlash_Storage_TabSize;
-        addr_tmp = addr;
-        
-        if(Storage_TabSize <= OnChipFlash_Storage_TabSize)
-        {
-            clear_size = Storage_TabSize;
-            clear_cnt = OnChipFlash_Storage_TabSize / Storage_TabSize;
-            if(OnChipFlash_Storage_TabSize % Storage_TabSize)
-                clear_cnt += 1;
-        }
-        else
-            clear_size = OnChipFlash_Storage_TabSize;
+    memset(page_data_tmp, 0, Storage_TabSize);
+    addr_tmp = addr;
     
-        memset(page_data_tmp, 0, clear_size);
-        
-        for(uint8_t c = 0; c < clear_cnt; c++)
-        {
-            if(!storage_api->write(addr_tmp, page_data_tmp, clear_size))
-                return false;
+    for(uint32_t i = 0; i < tab_num; i++)
+    {    
+        if (!storage_api->erase(addr_tmp, Storage_TabSize) ||
+            !storage_api->write(addr_tmp, page_data_tmp, Storage_TabSize))
+            return false;
 
-            addr_tmp += clear_size;
-            clear_remain -= clear_size;
-            if(clear_remain <= clear_size)
-                clear_size = clear_remain;
-        }
+        addr_tmp += Storage_TabSize;
     }
 
     return true;
@@ -459,220 +439,221 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
 
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size)
 {
-    Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
-    uint8_t page_index = 0;
-    uint32_t tab_addr = 0;
-    Storage_Item_TypeDef *item_list = NULL;
-    uint32_t max_capacity = 0;
-    StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_FlashInfo_TypeDef *p_Flash = NULL;
-    uint16_t list_index = 0;
-    Storage_Item_TypeDef *p_Item = NULL;
-    uint16_t crc = 0;
-    Storage_FreeSlot_TypeDef free_slot;
-    uint32_t storage_size = 0;
-    bool tab_update = false;
-    Storage_DataSlot_TypeDef DataSlot;
-    uint16_t write_offset = 0;
-    uint32_t nxt_free_addr = 0;
+    // Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
+    // uint8_t page_index = 0;
+    // uint32_t tab_addr = 0;
+    // Storage_Item_TypeDef *item_list = NULL;
+    // uint32_t max_capacity = 0;
+    // StorageIO_TypeDef *StorageIO_API = NULL;
+    // Storage_FlashInfo_TypeDef *p_Flash = NULL;
+    // uint16_t list_index = 0;
+    // Storage_Item_TypeDef *p_Item = NULL;
+    // uint16_t crc = 0;
+    // Storage_FreeSlot_TypeDef free_slot;
+    // uint32_t storage_size = 0;
+    // bool tab_update = false;
+    // Storage_DataSlot_TypeDef DataSlot;
+    // uint16_t write_offset = 0;
+    // uint32_t free_addr = 0;
+    // uint32_t nxt_free_addr = 0;
 
-    if(!Storage_Monitor.init_state)
-        return Storage_ModuleInit_Error;
+    // if(!Storage_Monitor.init_state)
+    //     return Storage_ModuleInit_Error;
 
-    if( (name == NULL) || \
-        (strlen(name) == 0) || \
-        (strlen(name) >= STORAGE_NAME_LEN) || \
-        (size == 0))
-        return Storage_DataInfo_Error;
+    // if( (name == NULL) || \
+    //     (strlen(name) == 0) || \
+    //     (strlen(name) >= STORAGE_NAME_LEN) || \
+    //     (size == 0))
+    //     return Storage_DataInfo_Error;
 
-    if(type == Internal_Flash)
-    {
-        if( !Storage_Monitor.module_enable_reg.bit.internal || \
-            !Storage_Monitor.module_init_reg.bit.internal)
-            return Storage_InternalFlash_NotAvailable;
+    // if(type == Internal_Flash)
+    // {
+    //     if( !Storage_Monitor.module_enable_reg.bit.internal || \
+    //         !Storage_Monitor.module_init_reg.bit.internal)
+    //         return Storage_InternalFlash_NotAvailable;
 
-        StorageIO_API = &InternalFlash_IO;
-        if((StorageIO_API->read == NULL) || (StorageIO_API->write == NULL))
-            return Storage_RW_Api_Error;
+    //     StorageIO_API = &InternalFlash_IO;
+    //     if((StorageIO_API->read == NULL) || (StorageIO_API->write == NULL))
+    //         return Storage_RW_Api_Error;
 
-        p_Flash = &Storage_Monitor.internal_info;
-    }
-    else if(type == External_Flash)
-    {
-        /* still in developping */
-        return Storage_ExternalFlash_NotAvailable;
-    }
+    //     p_Flash = &Storage_Monitor.internal_info;
+    // }
+    // else if(type == External_Flash)
+    // {
+    //     /* still in developping */
+    //     return Storage_ExternalFlash_NotAvailable;
+    // }
         
-    switch((uint8_t) class)
-    {
-        case Para_Boot:
-            p_SecInfo = &p_Flash->boot_sec;
-            max_capacity = p_Flash->boot_sec.tab_size / StorageItem_Size;
-            break;
+    // switch((uint8_t) class)
+    // {
+    //     case Para_Boot:
+    //         p_SecInfo = &p_Flash->boot_sec;
+    //         max_capacity = p_Flash->boot_sec.tab_size / StorageItem_Size;
+    //         break;
 
-        case Para_Sys:
-            p_SecInfo = &p_Flash->sys_sec;
-            max_capacity = Storage_OnChip_Max_Capacity;
-            break;
+    //     case Para_Sys:
+    //         p_SecInfo = &p_Flash->sys_sec;
+    //         max_capacity = Storage_OnChip_Max_Capacity;
+    //         break;
 
-        case Para_User:
-            p_SecInfo = &p_Flash->user_sec;
-            max_capacity = Storage_OnChip_Max_Capacity;
-            break;
+    //     case Para_User:
+    //         p_SecInfo = &p_Flash->user_sec;
+    //         max_capacity = Storage_OnChip_Max_Capacity;
+    //         break;
 
-        default:
-            return false;
-    }
+    //     default:
+    //         return false;
+    // }
 
-    if(p_SecInfo->para_num == max_capacity)
-        return Storage_Class_Error;
+    // if(p_SecInfo->para_num == max_capacity)
+    //     return Storage_Class_Error;
     
-    /* check free slot info */
-    if(!StorageIO_API->read(p_SecInfo->free_addr, &free_slot, sizeof(Storage_FreeSlot_TypeDef)))
-        return Storage_Read_Error;
+    // /* check free slot info */
+    // if(!StorageIO_API->read(p_SecInfo->free_addr, &free_slot, sizeof(Storage_FreeSlot_TypeDef)))
+    //     return Storage_Read_Error;
 
-    if( (free_slot.header != STORAGE_SLOT_HEAD_TAG) || \
-        (free_slot.total_size < size))
-        return Storage_SlotHeader_Error;
+    // if( (free_slot.header != STORAGE_SLOT_HEAD_TAG) || \
+    //     (free_slot.total_size < size))
+    //     return Storage_SlotHeader_Error;
 
-    p_SecInfo->para_num ++;
-    p_SecInfo->para_size += size;
+    // p_SecInfo->para_num ++;
+    // p_SecInfo->para_size += size;
 
-    for(page_index = 0; page_index < p_SecInfo->page_num; page_index ++)
-    {
-        /* get tab addr */
-        tab_addr = p_SecInfo->tab_addr + page_index * OnChipFlash_Storage_TabSize;
+    // for(page_index = 0; page_index < p_SecInfo->page_num; page_index ++)
+    // {
+    //     /* get tab addr */
+    //     tab_addr = p_SecInfo->tab_addr + page_index * OnChipFlash_Storage_TabSize;
 
-        if(!StorageIO_API->read(tab_addr, page_data_tmp, OnChipFlash_Storage_TabSize))
-            return Storage_Read_Error;
+    //     if(!StorageIO_API->read(tab_addr, page_data_tmp, OnChipFlash_Storage_TabSize))
+    //         return Storage_Read_Error;
 
-        item_list = (Storage_Item_TypeDef *)page_data_tmp;
+    //     item_list = (Storage_Item_TypeDef *)page_data_tmp;
 
-        /* add new item info into tab */
-        for(list_index = 0; list_index < Storage_Tab_MaxItem_Num; list_index ++)
-        {
-            /* search all tab to match exist name tag data item */
-            /* if matched then failed to create a new section */
-            if(memcmp(item_list[list_index].name, name, sizeof(name)) == 0)
-                return Storage_NameMatched;
+    //     /* add new item info into tab */
+    //     for(list_index = 0; list_index < Storage_Tab_MaxItem_Num; list_index ++)
+    //     {
+    //         /* search all tab to match exist name tag data item */
+    //         /* if matched then failed to create a new section */
+    //         if(memcmp(item_list[list_index].name, name, sizeof(name)) == 0)
+    //             return Storage_NameMatched;
 
-            /* find a free slot */
-            if(memcmp(&item_list[list_index], 0, StorageItem_Size) == 0)
-            {
-                p_Item = &item_list[list_index];
+    //         /* find a free slot */
+    //         if(memcmp(&item_list[list_index], 0, StorageItem_Size) == 0)
+    //         {
+    //             p_Item = &item_list[list_index];
 
-                p_Item->head_tag = STORAGE_ITEM_HEAD_TAG;
-                p_Item->end_tag = STORAGE_ITEM_END_TAG;
+    //             p_Item->head_tag = STORAGE_ITEM_HEAD_TAG;
+    //             p_Item->end_tag = STORAGE_ITEM_END_TAG;
 
-                p_Item->class = class;
-                p_Item->len = size;
-                strcpy(p_Item->name, name);
+    //             p_Item->class = class;
+    //             p_Item->len = size;
+    //             strcpy(p_Item->name, name);
 
-                p_Item->data_addr = p_SecInfo->free_addr;
-                crc = Common_CRC16(p_Item, sizeof(Storage_Item_TypeDef));
-                p_Item->crc16 = crc;
+    //             p_Item->data_addr = p_SecInfo->free_addr;
+    //             crc = Common_CRC16(p_Item, sizeof(Storage_Item_TypeDef));
+    //             p_Item->crc16 = crc;
                 
-                /* write new item to tab */
-                if(!StorageIO_API->write(tab_addr, page_data_tmp, Storage_TabSize))
-                    return Storage_Write_Error;
+    //             /* write new item to tab */
+    //             if(!StorageIO_API->write(tab_addr, page_data_tmp, Storage_TabSize))
+    //                 return Storage_Write_Error;
 
-                tab_update = true;
-                break;
-            }
-        }
+    //             tab_update = true;
+    //             break;
+    //         }
+    //     }
 
-        if(tab_update)
-            break;
-    }
+    //     if(tab_update)
+    //         break;
+    // }
     
-    if(storage_size > Storage_TabSize)
-        return Storage_DataSize_Overrange;
+    // if(storage_size > Storage_TabSize)
+    //     return Storage_DataSize_Overrange;
 
-    memset(&DataSlot, 0, sizeof(DataSlot));
-    storage_size = size + sizeof(Storage_DataSlot_TypeDef);
+    // memset(&DataSlot, 0, sizeof(DataSlot));
+    // storage_size = size + sizeof(Storage_DataSlot_TypeDef);
         
-    DataSlot.header = STORAGE_SLOT_HEAD_TAG;
-    memset(DataSlot.name, '\0', STORAGE_NAME_LEN);
-    memcpy(DataSlot.name, name, strlen(name));
-    DataSlot.total_data_size = size;
+    // DataSlot.header = STORAGE_SLOT_HEAD_TAG;
+    // memset(DataSlot.name, '\0', STORAGE_NAME_LEN);
+    // memcpy(DataSlot.name, name, strlen(name));
+    // DataSlot.total_data_size = size;
         
-    memcpy(page_data_tmp, &DataSlot.header, sizeof(DataSlot.header));
-    write_offset += sizeof(DataSlot.header);
+    // memcpy(page_data_tmp, &DataSlot.header, sizeof(DataSlot.header));
+    // write_offset += sizeof(DataSlot.header);
 
-    memcpy(page_data_tmp + write_offset, DataSlot.name, STORAGE_NAME_LEN);
-    write_offset += STORAGE_NAME_LEN;
+    // memcpy(page_data_tmp + write_offset, DataSlot.name, STORAGE_NAME_LEN);
+    // write_offset += STORAGE_NAME_LEN;
 
-    memcpy(page_data_tmp + write_offset, &DataSlot.total_data_size, sizeof(DataSlot.total_data_size));
-    write_offset += sizeof(DataSlot.total_data_size);
+    // memcpy(page_data_tmp + write_offset, &DataSlot.total_data_size, sizeof(DataSlot.total_data_size));
+    // write_offset += sizeof(DataSlot.total_data_size);
 
-    if(free_slot.ender != STORAGE_SLOT_END_TAG)
-        nxt_free_addr = free_slot.ender;
+    // if(free_slot.ender != STORAGE_SLOT_END_TAG)
+    //     nxt_free_addr = free_slot.ender;
 
-    /* update total free space in tab */ 
-    if(free_slot.cur_slot_size >= storage_size)
-    {
-        free_slot.cur_slot_size -= storage_size;
-        if(free_slot.cur_slot_size < (sizeof(Storage_FreeSlot_TypeDef) + STORAGE_MIN_BYTE_SIZE))
-        {
-            storage_size += free_slot.cur_slot_size;
-            DataSlot.align_byte = free_slot.cur_slot_size;
-            DataSlot.cur_slot_size = storage_size;
-            free_slot.cur_slot_size = 0;
-        }
+    // /* update total free space in tab */ 
+    // if(free_slot.cur_slot_size >= storage_size)
+    // {
+    //     free_slot.cur_slot_size -= storage_size;
+    //     if(free_slot.cur_slot_size < (sizeof(Storage_FreeSlot_TypeDef) + STORAGE_MIN_BYTE_SIZE))
+    //     {
+    //         storage_size += free_slot.cur_slot_size;
+    //         DataSlot.align_byte = free_slot.cur_slot_size;
+    //         DataSlot.cur_slot_size = storage_size;
+    //         free_slot.cur_slot_size = 0;
+    //     }
 
-        DataSlot.ender = STORAGE_SLOT_END_TAG;
+    //     DataSlot.ender = STORAGE_SLOT_END_TAG;
         
-        /* storage data */
-        memcpy(page_data_tmp + write_offset, &DataSlot.cur_slot_size, sizeof(DataSlot.cur_slot_size));
-        write_offset += sizeof(DataSlot.cur_slot_size);
+    //     /* storage data */
+    //     memcpy(page_data_tmp + write_offset, &DataSlot.cur_slot_size, sizeof(DataSlot.cur_slot_size));
+    //     write_offset += sizeof(DataSlot.cur_slot_size);
 
-        memcpy(page_data_tmp + write_offset, &DataSlot.align_byte, sizeof(DataSlot.align_byte));
-        write_offset += sizeof(DataSlot.align_byte);
+    //     memcpy(page_data_tmp + write_offset, &DataSlot.align_byte, sizeof(DataSlot.align_byte));
+    //     write_offset += sizeof(DataSlot.align_byte);
 
-        memcpy(page_data_tmp + write_offset, p_data, size);
-        write_offset += size;
+    //     memcpy(page_data_tmp + write_offset, p_data, size);
+    //     write_offset += size;
 
-        /* set align data */
-        for(uint16_t i = 0; i < DataSlot.align_byte; i++)
-        {
-            page_data_tmp[write_offset + i] = 0;
-        }
-        write_offset += DataSlot.align_byte;
+    //     /* set align data */
+    //     for(uint16_t i = 0; i < DataSlot.align_byte; i++)
+    //     {
+    //         page_data_tmp[write_offset + i] = 0;
+    //     }
+    //     write_offset += DataSlot.align_byte;
 
-        DataSlot.slot_crc = Common_CRC16(p_data, size);
-        memcpy(page_data_tmp + write_offset, &DataSlot.slot_crc, sizeof(DataSlot.slot_crc));
-        write_offset += sizeof(DataSlot.slot_crc);
+    //     DataSlot.slot_crc = Common_CRC16(p_data, size);
+    //     memcpy(page_data_tmp + write_offset, &DataSlot.slot_crc, sizeof(DataSlot.slot_crc));
+    //     write_offset += sizeof(DataSlot.slot_crc);
 
-        memcpy(page_data_tmp + write_offset, &DataSlot.ender, sizeof(DataSlot.ender));
-        write_offset += sizeof(DataSlot.ender);
+    //     memcpy(page_data_tmp + write_offset, &DataSlot.ender, sizeof(DataSlot.ender));
+    //     write_offset += sizeof(DataSlot.ender);
 
-        if(!StorageIO_API->write(p_Item->data_addr, page_data_tmp, write_offset))
-            return Storage_ItemInfo_Update_Error;
+    //     if(!StorageIO_API->write(p_Item->data_addr, page_data_tmp, write_offset))
+    //         return Storage_ItemInfo_Update_Error;
     
-        if(free_slot.cur_slot_size)
-        {
-            p_SecInfo->free_addr += storage_size;
-        }
-        else
-            p_SecInfo->free_addr = nxt_free_addr;
-    }
-    else
-    {
+    //     if(free_slot.cur_slot_size)
+    //     {
+    //         p_SecInfo->free_addr += storage_size;
+    //     }
+    //     else
+    //         p_SecInfo->free_addr = nxt_free_addr;
+    // }
+    // else
+    // {
 
-    }
+    // }
 
-    /* update free slot info */
-    free_slot.total_size -= storage_size;
-    if(!StorageIO_API->write(p_SecInfo->free_addr, &free_slot, sizeof(Storage_FreeSlot_TypeDef)))
-        return Storage_FreeAddr_Update_Error;
+    // /* update free slot info */
+    // free_slot.total_size -= storage_size;
+    // if(!StorageIO_API->write(p_SecInfo->free_addr, &free_slot, sizeof(Storage_FreeSlot_TypeDef)))
+    //     return Storage_FreeAddr_Update_Error;
     
-    /* write base info to info section */
-    memcpy(page_data_tmp, p_Flash, sizeof(Storage_FlashInfo_TypeDef));
-    crc = Common_CRC16(page_data_tmp, Storage_InfoPageSize - sizeof(crc));
-    memcpy(&page_data_tmp[Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
+    // /* write base info to info section */
+    // memcpy(page_data_tmp, p_Flash, sizeof(Storage_FlashInfo_TypeDef));
+    // crc = Common_CRC16(page_data_tmp, Storage_InfoPageSize - sizeof(crc));
+    // memcpy(&page_data_tmp[Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
 
-    if(!StorageIO_API->write(From_Start_Address, page_data_tmp, Storage_InfoPageSize))
-        return Storage_BaseInfo_Updata_Error;
+    // if(!StorageIO_API->write(From_Start_Address, page_data_tmp, Storage_InfoPageSize))
+    //     return Storage_BaseInfo_Updata_Error;
 
     return Storage_Error_None;
 }
@@ -760,6 +741,7 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
         free_slot.header = STORAGE_SLOT_HEAD_TAG;
         free_slot.total_size = p_SecInfo->data_sec_size - sizeof(free_slot);
         free_slot.cur_slot_size = p_SecInfo->data_sec_size - sizeof(free_slot);
+        free_slot.nxt_addr = 0;
         /* if current free slot get enought space for data then set ender tag as 0xFE1001FE */
         /* or else set ender tag as next slot address such like 0x80exxxx. */
         /* until all data was saved into multiple flash segment completely */
@@ -772,8 +754,8 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
             return false;
 
         /* update info section */
-        p_SecInfo->free_addr = p_SecInfo->data_sec_addr;
-        p_SecInfo->free_num = 1;
+        p_SecInfo->free_slot_addr = p_SecInfo->data_sec_addr;
+        p_SecInfo->free_slot_num = 1;
         p_SecInfo->para_num = 0;
         p_SecInfo->para_size = 0;
 
@@ -805,6 +787,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     uint32_t page_num = 0;
     Storage_FlashInfo_TypeDef Info;
     Storage_FlashInfo_TypeDef Info_Rx;
+    uint32_t addr_offset = 0;
     uint32_t BaseInfo_start_addr = 0;
     uint32_t boot_tab_start_addr = 0;
     uint32_t sys_tab_start_addr = 0;
@@ -893,6 +876,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             tab_addr_offset += Storage_ReserveBlock_Size;
 
             Storage_Monitor.internal_info = Info;
+            addr_offset = From_Start_Address;
             break;
 
         /* still in developping */
@@ -910,8 +894,9 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
                 return false;
             
             Info.total_size = ExtFlash_Storage_TotalSize;
+            Info.base_addr = Storage_Monitor.external_info.base_addr;
             
-            BaseInfo_start_addr = From_Start_Address;
+            BaseInfo_start_addr = Info.base_addr;
             page_num = Storage_ExtFlash_Max_Capacity / (ExtFlash_Storage_TabSize / StorageItem_Size);
             if(page_num == 0)
                 return false;
@@ -969,6 +954,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             tab_addr_offset += Storage_ReserveBlock_Size;
 
             Storage_Monitor.external_info = Info;
+            addr_offset = BaseInfo_start_addr - Storage_Monitor.external_info.base_addr;
             break;
 
         default:
@@ -979,10 +965,10 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     memset(page_data_tmp, 0, info_page_size);
 
     /* read out and erase sector */
-    if (!StorageIO_API->read(BaseInfo_start_addr, page_data_tmp, sizeof(Info)))
+    if (!StorageIO_API->read(addr_offset, page_data_tmp, sizeof(Info)))
         return false;
         
-    if (!StorageIO_API->erase(BaseInfo_start_addr, sector_size))
+    if (!StorageIO_API->erase(addr_offset, sector_size))
         return false;
 
     /* write base info to info section */
@@ -991,11 +977,11 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     memcpy(&page_data_tmp[info_page_size - sizeof(crc)], &crc, sizeof(crc));
 
     /* write into flash chip */
-    if (!StorageIO_API->write(BaseInfo_start_addr, page_data_tmp, info_page_size))
+    if (!StorageIO_API->write(addr_offset, page_data_tmp, info_page_size))
         return false;
 
     /* read out again */
-    if (!StorageIO_API->read(BaseInfo_start_addr, page_data_tmp, sizeof(Info)))
+    if (!StorageIO_API->read(addr_offset, page_data_tmp, sizeof(Info)))
         return false;
 
     /* compare with target */
@@ -1312,7 +1298,7 @@ static void Storage_SecInfo_Print(Shell *obj, Storage_BaseSecInfo_TypeDef *p_Sec
     shellPrint(obj, "\t\tsize:            %d\r\n", p_SecInfo->tab_size);
     shellPrint(obj, "\t\tdata sec addr:   %x\r\n", p_SecInfo->data_sec_addr);
     shellPrint(obj, "\t\tdata sec size:   %d\r\n", p_SecInfo->data_sec_size);
-    shellPrint(obj, "\t\tfree block addr: %x\r\n", p_SecInfo->free_addr);
+    shellPrint(obj, "\t\tfree slot addr:  %x\r\n", p_SecInfo->free_slot_addr);
     shellPrint(obj, "\t\tparam num:       %d\r\n", p_SecInfo->para_num);
     shellPrint(obj, "\t\tparam size:      %d\r\n", p_SecInfo->para_size);
 }
