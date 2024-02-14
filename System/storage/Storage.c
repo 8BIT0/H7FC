@@ -339,6 +339,8 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     uint32_t tab_i = 0;
     uint8_t item_i = 0;
     uint32_t item_num = 0;
+    uint32_t sec_start_addr = 0;
+    uint32_t sec_end_addr = 0;
     uint32_t tab_addr = 0;
     uint16_t crc = 0;
     uint16_t crc_read = 0;
@@ -395,27 +397,29 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 
         memset(page_data_tmp, 0, Storage_TabSize);
         free_slot_addr = p_Info->boot_sec.free_slot_addr;
-        
+        sec_start_addr = p_Info->boot_sec.data_sec_addr;
+        sec_end_addr = sec_start_addr + p_Info->boot_sec.data_sec_size;
+
         for(i = 0; ;)
         {
             /* check boot section free slot */
-            if (free_slot_addr && \
-                StorageIO_API->read(free_slot_addr, page_data_tmp, Storage_TabSize))
-            {
-                FreeSlot_Info = (Storage_FreeSlot_TypeDef *)page_data_tmp;
-
-                if ((FreeSlot_Info->header != STORAGE_SLOT_HEAD_TAG) || \
-                    (FreeSlot_Info->ender != STORAGE_SLOT_END_TAG))
-                    return false;
-
-                i ++;
-                if (FreeSlot_Info->nxt_addr == 0)
-                    break;
-
-                free_slot_addr = FreeSlot_Info->nxt_addr;
-            }
-            else
+            if ((free_slot_addr == 0) || \
+                (free_slot_addr < sec_start_addr) || \
+                (free_slot_addr > sec_end_addr) || \
+                !StorageIO_API->read(free_slot_addr, page_data_tmp, Storage_TabSize))
                 break;
+
+            FreeSlot_Info = (Storage_FreeSlot_TypeDef *)page_data_tmp;
+
+            if ((FreeSlot_Info->header != STORAGE_SLOT_HEAD_TAG) || \
+                (FreeSlot_Info->ender != STORAGE_SLOT_END_TAG))
+                return false;
+
+            i ++;
+            if (FreeSlot_Info->nxt_addr == 0)
+                break;
+
+            free_slot_addr = FreeSlot_Info->nxt_addr;
         }
 
         if (i != p_Info->boot_sec.free_slot_num)
@@ -439,7 +443,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
                     if ((p_ItemList[item_i].head_tag == STORAGE_ITEM_HEAD_TAG) && \
                         (p_ItemList[item_i].end_tag == STORAGE_ITEM_END_TAG))
                     {
-                    
+                        /* check item slot crc */
                     }
                 }
 
