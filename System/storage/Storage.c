@@ -10,6 +10,8 @@
 #define Storage_TabSize Flash_Storage_TabSize
 #define Storage_InfoPageSize Flash_Storage_InfoPageSize
 
+#define Item_Capacity_Per_Tab (Storage_TabSize / sizeof(Storage_Item_TypeDef))
+
 /* flash io object */
 typedef struct
 {
@@ -331,9 +333,17 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Info = NULL;
+    Storage_FreeSlot_TypeDef *FreeSlot_Info = NULL;
+    uint32_t free_slot_addr = 0;
+    uint16_t i = 0;
+    uint32_t tab_i = 0;
+    uint8_t item_i = 0;
+    uint32_t item_num = 0;
+    uint32_t tab_addr = 0;
     uint16_t crc = 0;
     uint16_t crc_read = 0;
     uint32_t info_addr = 0;
+    Storage_Item_TypeDef *p_ItemList = NULL;
     char flash_tag[INTERNAL_PAGE_TAG_SIZE + EXTERNAL_PAGE_TAG_SIZE];
 
     memset(flash_tag, '\0', sizeof(flash_tag));
@@ -360,9 +370,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     }
     
     memset(p_Info, 0, sizeof(Storage_FlashInfo_TypeDef));
-    if (StorageIO_API->read(info_addr, \
-                            page_data_tmp, \
-                            Storage_TabSize))
+    if (StorageIO_API->read(info_addr, page_data_tmp, Storage_TabSize))
     {
         /* check internal storage tag */
         memcpy(p_Info, page_data_tmp, sizeof(Storage_FlashInfo_TypeDef));
@@ -385,7 +393,66 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         if(crc != crc_read)
             return false;
 
-        /* check tab */
+        memset(page_data_tmp, 0, Storage_TabSize);
+        free_slot_addr = p_Info->boot_sec.free_slot_addr;
+        
+        for(i = 0; ;)
+        {
+            /* check boot section free slot */
+            if (free_slot_addr && \
+                StorageIO_API->read(free_slot_addr, page_data_tmp, Storage_TabSize))
+            {
+                FreeSlot_Info = (Storage_FreeSlot_TypeDef *)page_data_tmp;
+
+                if ((FreeSlot_Info->header != STORAGE_SLOT_HEAD_TAG) || \
+                    (FreeSlot_Info->ender != STORAGE_SLOT_END_TAG))
+                    return false;
+
+                i ++;
+                if (FreeSlot_Info->nxt_addr == 0)
+                    break;
+
+                free_slot_addr = FreeSlot_Info->nxt_addr;
+            }
+            else
+                break;
+        }
+
+        if (i != p_Info->boot_sec.free_slot_num)
+            return false;
+
+        /* can be optimize in the middle of the annotation */
+        /* boot sec param check */
+        if (p_Info->boot_sec.para_num)
+        {
+            tab_addr = p_Info->boot_sec.tab_addr;
+            /* check boot tab and get item number from the tab */
+            for(tab_i = 0; tab_i < p_Info->boot_sec.tab_size; tab_i ++)
+            {
+                /* read tab address get item info */
+                if (!StorageIO_API->read(tab_addr, page_data_tmp, p_Info->boot_sec.tab_size))
+                    return false;
+
+                p_ItemList = page_data_tmp;
+                for(item_i = 0; i < Item_Capacity_Per_Tab; i++)
+                {
+                    if ((p_ItemList[item_i].head_tag == STORAGE_ITEM_HEAD_TAG) && \
+                        (p_ItemList[item_i].end_tag == STORAGE_ITEM_END_TAG))
+                    {
+                    
+                    }
+                }
+
+                tab_addr += p_Info->boot_sec.tab_size;
+            }
+        }
+        /* can be optimize in the middle of the annotation */
+
+        /* check system section free slot */
+        free_slot_addr = p_Info->sys_sec.free_slot_addr;
+
+        /* check user section free slot */
+
 
         return true;
     }

@@ -99,14 +99,15 @@ typedef struct
 
 typedef struct
 {
-    uint32_t header;
+    uint32_t head_tag;
     uint8_t name[STORAGE_NAME_LEN];
     uint32_t total_data_size;
     uint32_t cur_slot_size;
+    uint32_t nxt_addr;
     uint8_t align_byte;
     /* storage data insert */
     uint16_t slot_crc;
-    uint32_t ender;
+    uint32_t end_tag;
 } Storage_DataSlot_TypeDef;
 
 typedef struct
