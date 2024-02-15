@@ -56,7 +56,9 @@ typedef enum
 typedef enum
 {
     Storage_Error_None = 0,
+    Storage_ModuleType_Error,
     Storage_ModuleInit_Error,
+    Storage_ModuleAPI_Error,
     Storage_Read_Error,
     Storage_Write_Error,
     Storage_Erase_Error,
@@ -112,11 +114,11 @@ typedef struct
 
 typedef struct
 {
-    uint32_t header;
+    uint32_t head_tag;
     uint32_t total_size;
     uint32_t cur_slot_size;
     uint32_t nxt_addr;
-    uint32_t ender;
+    uint32_t end_tag;
 } Storage_FreeSlot_TypeDef;
 
 typedef struct
