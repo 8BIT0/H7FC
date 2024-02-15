@@ -339,6 +339,9 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
     uint32_t free_slot_addr = 0;
     uint32_t sec_start_addr = 0;
     uint32_t sec_end_addr = 0;
+    uint16_t crc16 = 0;
+    uint8_t *crc_buf_ptr = NULL;
+    uint16_t crc_comput_size = 0;
     Storage_FreeSlot_TypeDef *FreeSlot_Info = NULL;
     Storage_Item_TypeDef *p_ItemList = NULL;
 
@@ -391,6 +394,29 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
                         (p_ItemList[item_i].end_tag == STORAGE_ITEM_END_TAG))
                     {
                         /* check item slot crc */
+                        /*
+                         *  typedef struct
+                         *  {
+                         *      uint8_t head_tag;
+                         *      uint8_t class;
+                         *      uint8_t name[STORAGE_NAME_LEN];
+                         *      uint32_t data_addr;
+                         *      uint16_t len;
+                         *      uint16_t crc16;
+                         *      uint8_t end_tag;
+                         *  } Storage_Item_TypeDef;
+                         *  
+                         * comput crc from class to len
+                         */
+                        crc_buf_ptr = &p_ItemList[item_i] + sizeof(p_ItemList[item_i].head_tag);
+                        crc_comput_size = sizeof(Storage_Item_TypeDef);
+                        crc_comput_size -= sizeof(p_ItemList[item_i].head_tag);
+                        crc_comput_size -= sizeof(p_ItemList[item_i].end_tag);
+                        crc_comput_size -= sizeof(p_ItemList[item_i].crc16);
+                        
+                        crc16 = Common_CRC16(crc_buf_ptr, crc_comput_size);
+                        if (crc16 != p_ItemList[item_i].crc16)
+                            return false;
 
                         store_param_found ++;
                     }
@@ -472,9 +498,9 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         /* check  boot  section tab & free slot info & stored item */
         /* check system section tab & free slot info & stored item */
         /* check  user  section tab & free slot info & stored item */
-        if (Storage_Check_Tab(StorageIO_API, &p_Info->boot_sec)) && \
+        if (Storage_Check_Tab(StorageIO_API, &p_Info->boot_sec) && \
             Storage_Check_Tab(StorageIO_API, &p_Info->sys_sec) && \
-            Storage_Check_Tab(StorageIO_API, &p_Info->user_sec)
+            Storage_Check_Tab(StorageIO_API, &p_Info->user_sec))
             return true;
 
         return true;
