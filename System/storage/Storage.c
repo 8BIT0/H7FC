@@ -329,6 +329,7 @@ static bool Storage_Format(Storage_MediumType_List type)
     return false;
 }
 
+/* still in developping */
 static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInfo_TypeDef *sec_info)
 {
     uint32_t free_i = 0;
@@ -447,7 +448,8 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
     {
         /* check internal storage tag */
         memcpy(p_Info, page_data_tmp, sizeof(Storage_FlashInfo_TypeDef));
-
+        p_Info->base_addr = info_addr;
+        
         /* check storage tag */
         /* check boot / sys / user  start addr */
         if ((strcmp(p_Info->tag, flash_tag) != 0) || \
@@ -470,15 +472,14 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         /* check  boot  section tab & free slot info & stored item */
         /* check system section tab & free slot info & stored item */
         /* check  user  section tab & free slot info & stored item */
-        if ((!Storage_Check_Tab(StorageIO_API, &p_Info->boot_sec)) || \
-            (!Storage_Check_Tab(StorageIO_API, &p_Info->sys_sec)) || \
-            (!Storage_Check_Tab(StorageIO_API, &p_Info->user_sec)))
-            return false;
+        if (Storage_Check_Tab(StorageIO_API, &p_Info->boot_sec)) && \
+            Storage_Check_Tab(StorageIO_API, &p_Info->sys_sec) && \
+            Storage_Check_Tab(StorageIO_API, &p_Info->user_sec)
+            return true;
 
         return true;
     }
 
-    p_Info->base_addr = info_addr;
     return false;
 }
 
