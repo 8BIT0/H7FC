@@ -651,6 +651,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     memset(empty_item_slot->name, '\0', STORAGE_NAME_LEN);
                     memcpy(empty_item_slot->name, name, strlen(name));
                     empty_item_slot->len = size;
+
+                    /* set free slot address as current data address */
                     empty_item_slot->data_addr = p_Sec->free_slot_addr;
                     empty_item_slot->head_tag = STORAGE_ITEM_HEAD_TAG;
                     empty_item_slot->end_tag = STORAGE_ITEM_END_TAG;
