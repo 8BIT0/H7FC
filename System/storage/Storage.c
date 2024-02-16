@@ -340,8 +340,8 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
     uint32_t sec_start_addr = 0;
     uint32_t sec_end_addr = 0;
     uint16_t crc16 = 0;
-    uint8_t *crc_buf_ptr = NULL;
-    uint16_t crc_comput_size = 0;
+    uint8_t *crc_buf = NULL;
+    uint16_t crc_len = 0;
     Storage_FreeSlot_TypeDef *FreeSlot_Info = NULL;
     Storage_Item_TypeDef *p_ItemList = NULL;
 
@@ -408,13 +408,13 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
                          *  
                          * comput crc from class to len
                          */
-                        crc_buf_ptr = &p_ItemList[item_i] + sizeof(p_ItemList[item_i].head_tag);
-                        crc_comput_size = sizeof(Storage_Item_TypeDef);
-                        crc_comput_size -= sizeof(p_ItemList[item_i].head_tag);
-                        crc_comput_size -= sizeof(p_ItemList[item_i].end_tag);
-                        crc_comput_size -= sizeof(p_ItemList[item_i].crc16);
+                        crc_buf = &p_ItemList[item_i] + sizeof(p_ItemList[item_i].head_tag);
+                        crc_len = sizeof(Storage_Item_TypeDef);
+                        crc_len -= sizeof(p_ItemList[item_i].head_tag);
+                        crc_len -= sizeof(p_ItemList[item_i].end_tag);
+                        crc_len -= sizeof(p_ItemList[item_i].crc16);
                         
-                        crc16 = Common_CRC16(crc_buf_ptr, crc_comput_size);
+                        crc16 = Common_CRC16(crc_buf, crc_len);
                         if (crc16 != p_ItemList[item_i].crc16)
                             return false;
 
@@ -554,10 +554,21 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
 
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size)
 {
+    uint8_t *crc_buf = NULL;
+    uint16_t crc_len = 0;
+    uint32_t storage_data_size = 0;
+    uint32_t storage_tab_addr = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    Storage_Item_TypeDef *tab_item = NULL;
+    Storage_Item_TypeDef *empty_item_slot = NULL;
     Storage_FreeSlot_TypeDef FreeSlot;
+
+    memset(&FreeSlot, 0, sizeof(Storage_FreeSlot_TypeDef));
+
+    if ((name == NULL) || (p_data == NULL) || (size == 0))
+        return Storage_Param_Error;
 
     switch((uint8_t)type)
     {
@@ -615,7 +626,54 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         (strlen(name) <= STORAGE_NAME_LEN) && \
         (FreeSlot.total_size >= size))
     {
+        /* step 1: update info section first */
+        p_Sec->para_num ++;
+        p_Sec->para_size += size;
         
+        storage_tab_addr = p_Sec->tab_addr;
+        for(uint16_t tab_i = 0; tab_i < p_Sec->page_num; tab_i ++)
+        {
+            /* step 2: update tab */
+            if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, p_Sec->tab_size))
+                return Storage_Read_Error;
+
+            tab_item = page_data_tmp;
+            for (uint16_t item_i = 0; item_i < Item_Capacity_Per_Tab; item_i ++)
+            {
+                if ((tab_item[item_i].head_tag != STORAGE_ITEM_HEAD_TAG) && \
+                    (tab_item[item_i].end_tag != STORAGE_ITEM_END_TAG))
+                {
+                    /* found empty item slot */
+                    empty_item_slot = &tab_item[item_i];
+
+                    /* set item slot info */
+                    empty_item_slot->class = class;
+                    memset(empty_item_slot->name, '\0', STORAGE_NAME_LEN);
+                    memcpy(empty_item_slot->name, name, strlen(name));
+                    empty_item_slot->len = size;
+                    empty_item_slot->data_addr = p_Sec->free_slot_addr;
+                    empty_item_slot->head_tag = STORAGE_ITEM_HEAD_TAG;
+                    empty_item_slot->end_tag = STORAGE_ITEM_END_TAG;
+
+                    /* comput crc */
+                    crc_buf = empty_item_slot + sizeof(empty_item_slot->head_tag);
+                    crc_len = sizeof(Storage_Item_TypeDef);
+                    crc_len -= sizeof(empty_item_slot->head_tag);
+                    crc_len -= sizeof(empty_item_slot->end_tag);
+                    crc_len -= sizeof(empty_item_slot->crc16);
+
+                    empty_item_slot->crc16 = Common_CRC16(crc_buf, crc_len);
+                    break; 
+                }
+            }
+
+            storage_tab_addr += p_Sec->tab_size;
+        }
+
+        /* step 3: update free slot */
+        // p_Sec->
+
+        /* step 4: store data */
     }
 
     return Storage_Error_None;

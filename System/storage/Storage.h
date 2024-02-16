@@ -24,7 +24,6 @@
 #define Storage_ExtFlash_Max_Capacity (1 Kb)
 
 #define StorageItem_Size sizeof(Storage_Item_TypeDef)
-#define Storage_Tab_MaxItem_Num (OnChipFlash_Storage_TabSize / StorageItem_Size)
 
 #define INTERNAL_STORAGE_PAGE_TAG "[InternalFlash Storage]"
 #define EXTERNAL_STORAGE_PAGE_TAG "[ExternalFlash Storage]"
@@ -36,7 +35,7 @@
 #define STORAGE_ITEM_END_TAG 0xBB
 #define STORAGE_SLOT_HEAD_TAG 0xEF0110EF
 #define STORAGE_SLOT_END_TAG 0xFE1001FE
-
+#define STORAGE_DATA_ALIGN 4
 #define STORAGE_MIN_BYTE_SIZE 1
 
 typedef uint32_t storage_handle;
@@ -56,6 +55,7 @@ typedef enum
 typedef enum
 {
     Storage_Error_None = 0,
+    Storage_Param_Error,
     Storage_ModuleType_Error,
     Storage_ModuleInit_Error,
     Storage_ModuleAPI_Error,
@@ -88,6 +88,7 @@ typedef enum
     Para_User,
 } Storage_ParaClassType_List;
 
+#pragma pack(1)
 typedef struct
 {
     uint8_t head_tag;
@@ -149,6 +150,7 @@ typedef struct
     Storage_BaseSecInfo_TypeDef sys_sec;
     Storage_BaseSecInfo_TypeDef user_sec;
 } Storage_FlashInfo_TypeDef;
+#pragma pack()
 
 typedef union
 {
