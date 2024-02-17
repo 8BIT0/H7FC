@@ -565,6 +565,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     uint16_t crc_len = 0;
     uint32_t storage_data_size = 0;
     uint32_t stored_size = 0;
+    uint32_t unstored_size = 0;
     uint32_t storage_tab_addr = 0;
     uint32_t cur_freeslot_addr = 0;
     uint32_t nxt_freeslot_addr = 0;
@@ -698,6 +699,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
         /* noticed: DataSlot.total_data_size - DataSlot.align_size is storaged data size */
         DataSlot.total_data_size = storage_data_size;
+        unstored_size = DataSlot.total_data_size;
         
         if (FreeSlot.total_size >= (sizeof(Storage_DataSlot_TypeDef) + size))
         {
@@ -721,6 +723,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 {
                     DataSlot.cur_slot_size = FreeSlot.cur_slot_size - sizeof(Storage_DataSlot_TypeDef);
                     stored_size += DataSlot.cur_slot_size;
+                    unstored_size -= stored_size;
                     DataSlot.align_size = 0;
                     
                     /* current free slot full fill can not split any space for next free slot`s start */
@@ -734,7 +737,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 else
                 {
                     /* seperate data slot and new free slot from current free slot */
-                    DataSlot.cur_slot_size = DataSlot.total_data_size;
+                    stored_size += unstored_size;
+                    DataSlot.cur_slot_size = unstored_size;
                     DataSlot.align_size = size % STORAGE_DATA_ALIGN;
                     DataSlot.nxt_addr = 0;
 
@@ -750,8 +754,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
                 if (DataSlot.nxt_addr == 0)
                 {
-                    if (DataSlot.)
-                    break;
+                    Storage_Assert(DataSlot.total_data_size > stored_size);
+                    if (DataSlot.total_data_size == stored_size)
+                        break;
+
+                    return Storage_No_Enough_Space;
                 }
             }
         }
