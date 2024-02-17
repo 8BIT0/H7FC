@@ -1,3 +1,10 @@
+/* 
+ * Auther: 8_B!T0
+ * WARNING: NOT ALL CIRCUMSTANCES BEEN TESTED
+ * 
+ * Bref: Use for storage parameter for drone
+ *       can create search delete parameter section as user want
+ */
 #include "Storage.h"
 #include "shell_port.h"
 #include "util.h"
@@ -557,6 +564,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     uint8_t *crc_buf = NULL;
     uint16_t crc_len = 0;
     uint32_t storage_data_size = 0;
+    uint32_t stored_size = 0;
     uint32_t storage_tab_addr = 0;
     uint32_t cur_freeslot_addr = 0;
     uint32_t nxt_freeslot_addr = 0;
@@ -712,6 +720,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 if (slot_useful_size <= storage_data_size)
                 {
                     DataSlot.cur_slot_size = FreeSlot.cur_slot_size - sizeof(Storage_DataSlot_TypeDef);
+                    stored_size += DataSlot.cur_slot_size;
                     DataSlot.align_size = 0;
                     
                     /* current free slot full fill can not split any space for next free slot`s start */
@@ -740,7 +749,10 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 /* write to the data section */
 
                 if (DataSlot.nxt_addr == 0)
+                {
+                    if (DataSlot.)
                     break;
+                }
             }
         }
         else
