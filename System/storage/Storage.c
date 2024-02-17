@@ -742,9 +742,12 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     DataSlot.align_size = size % STORAGE_DATA_ALIGN;
                     DataSlot.nxt_addr = 0;
 
-                    FreeSlot.cur_slot_size -= DataSlot.total_data_size;
-                    FreeSlot.nxt_addr = cur_freeslot_addr + DataSlot.total_data_size;
-                    FreeSlot.nxt_addr += sizeof(Storage_DataSlot_TypeDef);
+                    New_FreeSlot.total_size = ;
+                    New_FreeSlot.cur_slot_size = ;
+                    New_FreeSlot.nxt_addr = cur_freeslot_addr + ;
+
+                    New_FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
+                    New_FreeSlot.nxt_addr += sizeof(Storage_DataSlot_TypeDef);
                 }
 
                 /* comput current slot crc */
@@ -760,6 +763,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
                     return Storage_No_Enough_Space;
                 }
+            
+                /* step 4: store target data in the data section */
             }
         }
         else
@@ -770,9 +775,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         FreeSlot.total_size -= storage_data_size;
         New_FreeSlot = FreeSlot;
         New_FreeSlot.total_size -= size;
-
-        /* step 5: store target data in the data section */
-
     }
 
     return Storage_Error_None;
