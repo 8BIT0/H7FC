@@ -107,7 +107,7 @@ typedef struct
     uint32_t total_data_size;
     uint32_t cur_slot_size;
     uint32_t nxt_addr;
-    uint8_t align_byte;
+    uint8_t align_size;
     /* storage data insert */
     uint16_t slot_crc;
     uint32_t end_tag;
