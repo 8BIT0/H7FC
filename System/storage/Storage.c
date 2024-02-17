@@ -564,7 +564,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     Storage_Item_TypeDef *tab_item = NULL;
     Storage_Item_TypeDef *empty_item_slot = NULL;
     Storage_FreeSlot_TypeDef FreeSlot;
+    Storage_FreeSlot_TypeDef New_FreeSlot;
 
+    memset(&New_FreeSlot, 0, sizeof(Storage_FreeSlot_TypeDef));
     memset(&FreeSlot, 0, sizeof(Storage_FreeSlot_TypeDef));
 
     if ((name == NULL) || (p_data == NULL) || (size == 0))
@@ -665,6 +667,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     crc_len -= sizeof(empty_item_slot->crc16);
 
                     empty_item_slot->crc16 = Common_CRC16(crc_buf, crc_len);
+
+                    /* write back item slot list to tab */
+                    if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
+                        return false;
+
                     break; 
                 }
             }
@@ -672,10 +679,18 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             storage_tab_addr += p_Sec->tab_size;
         }
 
-        /* step 3: update free slot */
-        // p_Sec->
+        /* step 3: comput storage data size */
+        storage_data_size = sizeof(Storage_DataSlot_TypeDef);
+        storage_data_size += size;
+        if (size % STORAGE_DATA_ALIGN)
+            storage_data_size += size % STORAGE_DATA_ALIGN;
 
-        /* step 4: store data */
+        /* step 3: update free slot */
+        New_FreeSlot = FreeSlot;
+        New_FreeSlot.total_size -= size;
+
+        /* step 4: store target data in the data section */
+
     }
 
     return Storage_Error_None;
