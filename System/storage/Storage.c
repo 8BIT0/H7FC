@@ -558,6 +558,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     uint16_t crc_len = 0;
     uint32_t storage_data_size = 0;
     uint32_t storage_tab_addr = 0;
+    uint32_t cur_freeslot_addr = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
@@ -630,6 +631,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         (strlen(name) <= STORAGE_NAME_LEN) && \
         (FreeSlot.total_size >= size))
     {
+        cur_freeslot_addr = p_Sec->free_slot_addr;
+
         /* step 1: update info section first */
         p_Sec->para_num ++;
         p_Sec->para_size += size;
@@ -681,8 +684,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             storage_tab_addr += p_Sec->tab_size;
         }
 
-        // while(true)
-        // {
+        while(true)
+        {
             /* step 3: comput storage data size and set data slot */
             DataSlot.head_tag = STORAGE_SLOT_HEAD_TAG;
             DataSlot.end_tag = STORAGE_SLOT_END_TAG;
@@ -717,13 +720,19 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             else
             {
                 /* seperate data slot and new free slot from current free slot */
-                FreeSlot.cur_slot_size -= DataSlot.total_data_size;
                 DataSlot.cur_slot_size = DataSlot.total_data_size;
+                DataSlot.nxt_addr = 0;
 
+                FreeSlot.cur_slot_size -= DataSlot.total_data_size;
+                FreeSlot.nxt_addr = cur_freeslot_addr + DataSlot.total_data_size;
+                FreeSlot.nxt_addr += sizeof(Storage_DataSlot_TypeDef);
             }
 
             /* write to the data section */
-        // }
+
+            if (DataSlot.nxt_addr == 0)
+                break;
+        }
 
         /* step 4: update free slot */
         New_FreeSlot = FreeSlot;
@@ -1229,7 +1238,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                     flash_end_addr += To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).flash_size;
                     if ((len + write_addr) > flash_end_addr)
                         return false;
-
+                    
                     /* W25Qxx device read */
                     if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr, p_data, len) == DevW25Qxx_Ok)
                         return true;

@@ -109,6 +109,7 @@ typedef struct
     uint32_t nxt_addr;
     uint8_t align_size;
     /* storage data insert */
+    /* crc is from name to the last byte in data buff */
     uint16_t slot_crc;
     uint32_t end_tag;
 } Storage_DataSlot_TypeDef;
