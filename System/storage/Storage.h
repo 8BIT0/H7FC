@@ -9,6 +9,8 @@
 #include "Srv_OsCommon.h"
 #include "util.h"
 
+#define Storage_Assert(x) while(x)
+
 #define Format_Retry_Cnt 5
 
 #define Storage_ErrorCode_ToStr(x) #x
@@ -68,9 +70,10 @@ typedef enum
     Storage_InternalFlash_NotAvailable,
     Storage_Class_Error,
     Storage_RW_Api_Error,
+    Storage_No_Enough_Space,
     Storage_DataInfo_Error,
     Storage_DataSize_Overrange,
-    Storage_ItemInfo_Update_Error,
+    Storage_TabItem_Update_Error,
     Storage_BaseInfo_Updata_Error,
     Storage_FreeAddr_Update_Error,
 } Storage_ErrorCode_List;
