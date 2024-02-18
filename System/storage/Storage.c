@@ -570,6 +570,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     uint32_t cur_freeslot_addr = 0;
     uint32_t nxt_freeslot_addr = 0;
     uint32_t slot_useful_size = 0;
+    uint32_t free_space_remianing = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
@@ -643,6 +644,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         (FreeSlot.total_size >= size))
     {
         cur_freeslot_addr = p_Sec->free_slot_addr;
+        free_space_remianing = FreeSlot.total_size;
 
         /* step 1: update info section first */
         p_Sec->para_num ++;
@@ -721,16 +723,20 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 /* current have space for new data need to be storage */
                 if (slot_useful_size <= storage_data_size)
                 {
-                    DataSlot.cur_slot_size = FreeSlot.cur_slot_size - sizeof(Storage_DataSlot_TypeDef);
+                    DataSlot.cur_slot_size = slot_useful_size;
                     stored_size += DataSlot.cur_slot_size;
                     unstored_size -= stored_size;
                     DataSlot.align_size = 0;
+                    free_space_remianing -= FreeSlot.cur_slot_size;
                     
                     /* current free slot full fill can not split any space for next free slot`s start */
                     DataSlot.nxt_addr = FreeSlot.nxt_addr;
 
                     /* in light of current free slot not enough for storage data, 
-                    * then find next free slot used for storage data remaining */
+                     * then find next free slot used for storage data remaining
+                     */
+                    if (!StorageIO_API->read(FreeSlot.nxt_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)))
+                        return Storage_FreeSlot_Get_Error;
                     
                     /* seperate current free slot */
                 }
@@ -741,10 +747,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     DataSlot.cur_slot_size = unstored_size;
                     DataSlot.align_size = size % STORAGE_DATA_ALIGN;
                     DataSlot.nxt_addr = 0;
+                    free_space_remianing -= unstored_size + sizeof(Storage_DataSlot_TypeDef);
 
-                    New_FreeSlot.total_size = ;
-                    New_FreeSlot.cur_slot_size = ;
-                    New_FreeSlot.nxt_addr = cur_freeslot_addr + ;
+                    // New_FreeSlot.total_size = ;
+                    // New_FreeSlot.cur_slot_size = ;
+                    // New_FreeSlot.nxt_addr = cur_freeslot_addr + ;
 
                     New_FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
                     New_FreeSlot.nxt_addr += sizeof(Storage_DataSlot_TypeDef);
@@ -920,6 +927,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     uint32_t remain_data_sec_size = 0;
     uint32_t data_sec_size = 0;
     uint32_t info_page_size = 0;
+    uint32_t sector_size = 0;
 
     memset(&Info, 0, sizeof(Storage_FlashInfo_TypeDef));
     memset(&Info_Rx, 0, sizeof(Storage_FlashInfo_TypeDef));
@@ -1472,8 +1480,8 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
         case Storage_BaseInfo_Updata_Error:
             return Storage_ErrorCode_ToStr(Storage_BaseInfo_Updata_Error);
 
-        case Storage_FreeAddr_Update_Error:
-            return Storage_ErrorCode_ToStr(Storage_FreeAddr_Update_Error);
+        case Storage_FreeSlot_Update_Error:
+            return Storage_ErrorCode_ToStr(Storage_FreeAddr_Slot_Error);
 
         default:
             return "Unknow Error\r\n";
