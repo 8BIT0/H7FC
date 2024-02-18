@@ -920,7 +920,6 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     uint32_t remain_data_sec_size = 0;
     uint32_t data_sec_size = 0;
     uint32_t info_page_size = 0;
-    uint32_t sector_size = 0;
 
     memset(&Info, 0, sizeof(Storage_FlashInfo_TypeDef));
     memset(&Info_Rx, 0, sizeof(Storage_FlashInfo_TypeDef));
@@ -932,7 +931,6 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             StorageIO_API = &InternalFlash_IO;
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
 
-            // sector_size = ;
             if ((StorageIO_API->erase == NULL) || \
                 (StorageIO_API->read  == NULL) || \
                 (StorageIO_API->write == NULL))
