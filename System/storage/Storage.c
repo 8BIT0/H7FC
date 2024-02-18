@@ -749,10 +749,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     DataSlot.nxt_addr = 0;
                     free_space_remianing -= unstored_size + sizeof(Storage_DataSlot_TypeDef);
 
-                    // New_FreeSlot.total_size = ;
-                    // New_FreeSlot.cur_slot_size = ;
+                    New_FreeSlot.total_size = free_space_remianing;
                     // New_FreeSlot.nxt_addr = cur_freeslot_addr + ;
-
                     New_FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
                     New_FreeSlot.nxt_addr += sizeof(Storage_DataSlot_TypeDef);
                 }
