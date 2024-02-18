@@ -739,6 +739,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                         return Storage_FreeSlot_Get_Error;
                     
                     /* seperate current free slot */
+
+                    /* after target data segment stored, shift target data pointer to unstored pos */
+                    p_data += slot_useful_size;
                 }
                 else
                 {
