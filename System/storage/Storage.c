@@ -768,8 +768,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     p_data += slot_useful_size;
                     store_addr = DataSlot.nxt_addr;
                 }
-            
-                /* step 4: store target data in the data section */
             }
         }
         else
