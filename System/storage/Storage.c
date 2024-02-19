@@ -674,12 +674,16 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     crc_len -= sizeof(empty_item_slot->crc16);
 
                     empty_item_slot->crc16 = Common_CRC16(crc_buf, crc_len);
+                    store_addr = empty_item_slot->data_addr;
                     break; 
                 }
             }
 
             storage_tab_addr += p_Sec->tab_size;
         }
+
+        if (store_addr == 0)
+            return Storage_DataAddr_Update_Error;
 
         storage_data_size = sizeof(Storage_DataSlot_TypeDef);
         storage_data_size += size;

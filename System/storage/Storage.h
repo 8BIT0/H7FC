@@ -75,6 +75,7 @@ typedef enum
     Storage_DataSize_Overrange,
     Storage_TabItem_Update_Error,
     Storage_BaseInfo_Updata_Error,
+    Storage_DataAddr_Update_Error,
     Storage_FreeSlot_Update_Error,
     Storage_FreeSlot_Get_Error,
 } Storage_ErrorCode_List;
