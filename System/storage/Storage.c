@@ -46,6 +46,8 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
 static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len);
 static bool Storage_ExtFlash_EraseAll(void);
 
+static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
+
 StorageIO_TypeDef InternalFlash_IO = {
     .erase = Storage_OnChipFlash_Erase,
     .erase_all = NULL,
@@ -613,23 +615,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             return Storage_ModuleType_Error;
     }
 
-    switch((uint8_t)class)
-    {
-        case Para_Boot:
-            p_Sec = &p_Flash->boot_sec;
-            break;
-
-        case Para_Sys:
-            p_Sec = &p_Flash->sys_sec;
-            break;
-
-        case Para_User:
-            p_Sec = &p_Flash->user_sec;
-            break;
-
-        default:
-            return Storage_Class_Error;
-    }
+    p_Sec = Storage_Get_SecInfo(p_Flash, class);
+    if (p_Sec == NULL)
+        return Storage_Class_Error;
 
     if ((StorageIO_API->erase == NULL) || \
         (StorageIO_API->read == NULL) || \
@@ -820,24 +808,10 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
         (StorageIO_API->read  == NULL) || \
         (StorageIO_API->write == NULL))
         return false;
-    
-    switch((uint8_t) class)
-    {
-        case Para_Boot:
-            p_SecInfo = &p_Flash->boot_sec;
-            break;
 
-        case Para_Sys:
-            p_SecInfo = &p_Flash->sys_sec;
-            break;
-
-        case Para_User:
-            p_SecInfo = &p_Flash->user_sec;
-            break;
-
-        default:
-            return false;
-    }
+    p_SecInfo = Storage_Get_SecInfo(p_Flash, class);
+    if (p_SecInfo == NULL)
+        return false;
 
     if (p_SecInfo->tab_addr && Storage_Clear_Tab(StorageIO_API, p_SecInfo->tab_addr, p_SecInfo->page_num))
     {
@@ -1132,6 +1106,7 @@ static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_Par
     storage_handle hdl = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *info = NULL;
+    Storage_BaseSecInfo_TypeDef *sec = NULL;
 
     if((name == NULL) || (strlen(name) == 0))
         return 0;
@@ -1147,26 +1122,31 @@ static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_Par
         info = &Storage_Monitor.external_info;
     }
 
-    switch(class)
-    {
-        case Para_Boot:
-            base_addr = info->boot_sec.tab_addr;
-            break;
-
-        case Para_Sys:
-            base_addr = info->sys_sec.tab_addr;
-            break;
-
-        case Para_User:
-            base_addr = info->user_sec.tab_addr;
-            break;
-
-        default:
-            return 0;
-    }
+    sec = Storage_Get_SecInfo(info, class);
+    if (sec == NULL)
+        return 0;
+    
+    base_addr = sec->tab_addr;
 
     return hdl;
 }
+
+static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class)
+{
+    if (info)
+    {
+        switch(class)
+        {
+            case Para_Boot: return &(info->boot_sec);
+            case Para_Sys:  return &(info->sys_sec);
+            case Para_User: return &(info->user_sec);
+            default:        return NULL;
+        }
+    }
+
+    return NULL;
+}
+
 /************************************************** External Flash IO API Section ************************************************/
 static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state)
 {
