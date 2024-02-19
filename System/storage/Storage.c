@@ -1586,6 +1586,16 @@ static void Storage_Shell_Get_BaseInfo(Storage_MediumType_List medium)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_BaseInfo, Storage_Shell_Get_BaseInfo, Storage base info);
 
+static void Storage_Dump(Storage_MediumType_List medium, Storage_ParaClassType_List class)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    Storage_ErrorCode_List error_code = Storage_Error_None;
+    
+    if(shell_obj == NULL)
+        return;
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Dump, Storage_Dump, Dump Selected Class Data In Storage Section);
+
 static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name, char *test_data)
 {
     Shell *shell_obj = Shell_GetInstence();
