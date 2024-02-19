@@ -1471,7 +1471,7 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
             return Storage_ErrorCode_ToStr(Storage_BaseInfo_Updata_Error);
 
         case Storage_FreeSlot_Update_Error:
-            return Storage_ErrorCode_ToStr(Storage_FreeAddr_Slot_Error);
+            return Storage_ErrorCode_ToStr(Storage_FreeSlot_Update_Error);
 
         default:
             return "Unknow Error\r\n";
