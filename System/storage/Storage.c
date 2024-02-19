@@ -726,8 +726,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     DataSlot.nxt_addr = FreeSlot.nxt_addr;
 
                     /* in light of current free slot not enough for storage data, 
-                     * then find next free slot used for storage data remaining
-                     */
+                     * then find next free slot used for storage data remaining */
                     if (!StorageIO_API->read(FreeSlot.nxt_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)))
                         return Storage_FreeSlot_Get_Error;
                 }
