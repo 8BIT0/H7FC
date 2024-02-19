@@ -732,11 +732,13 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                         return Storage_FreeSlot_Get_Error;
                     
                     /* storage target data */
-                    // if (!StorageIO_API->write(, , ))
+                    // if (!StorageIO_API->write(store_addr, , ))
                     //     return ;
 
-                    /* after target data segment stored, shift target data pointer to unstored pos */
+                    /* after target data segment stored, shift target data pointer to unstored pos
+                     * and update next segment data store address */
                     p_data += slot_useful_size;
+                    store_addr = DataSlot.nxt_addr;
                 }
                 else
                 {
