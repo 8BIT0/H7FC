@@ -730,15 +730,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                      */
                     if (!StorageIO_API->read(FreeSlot.nxt_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)))
                         return Storage_FreeSlot_Get_Error;
-                    
-                    /* storage target data */
-                    // if (!StorageIO_API->write(store_addr, , ))
-                    //     return ;
-
-                    /* after target data segment stored, shift target data pointer to unstored pos
-                     * and update next segment data store address */
-                    p_data += slot_useful_size;
-                    store_addr = DataSlot.nxt_addr;
                 }
                 else
                 {
@@ -759,6 +750,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 memcpy(page_data_tmp, 0, DataSlot.cur_slot_size);
 
                 /* write to the data section */
+                /* storage target data */
+                // if (!StorageIO_API->write(store_addr, , ))
+                //     return ;
 
                 if (DataSlot.nxt_addr == 0)
                 {
@@ -767,6 +761,13 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                         break;
 
                     return Storage_No_Enough_Space;
+                }
+                else
+                {
+                    /* after target data segment stored, shift target data pointer to unstored pos
+                     * and update next segment data store address */
+                    p_data += slot_useful_size;
+                    store_addr = DataSlot.nxt_addr;
                 }
             
                 /* step 4: store target data in the data section */
