@@ -567,6 +567,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     uint16_t crc_len = 0;
     uint32_t storage_data_size = 0;
     uint32_t stored_size = 0;
+    uint32_t store_addr = 0;
     uint32_t unstored_size = 0;
     uint32_t storage_tab_addr = 0;
     uint32_t cur_freeslot_addr = 0;
@@ -726,6 +727,10 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     if (!StorageIO_API->read(FreeSlot.nxt_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)))
                         return Storage_FreeSlot_Get_Error;
                     
+                    /* storage target data */
+                    // if (!StorageIO_API->write(, , ))
+                    //     return ;
+
                     /* after target data segment stored, shift target data pointer to unstored pos */
                     p_data += slot_useful_size;
                 }
