@@ -574,15 +574,18 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     uint32_t nxt_freeslot_addr = 0;
     uint32_t slot_useful_size = 0;
     uint32_t free_space_remianing = 0;
+    uint8_t tab_index = 0;
+    uint8_t item_index = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_Item_TypeDef *tab_item = NULL;
-    Storage_Item_TypeDef *empty_item_slot = NULL;
+    Storage_Item_TypeDef crt_item_slot;
     Storage_FreeSlot_TypeDef FreeSlot;
     Storage_FreeSlot_TypeDef New_FreeSlot;
     Storage_DataSlot_TypeDef DataSlot;
 
+    memset(&crt_item_slot, 0, sizeof(crt_item_slot));
     memset(&DataSlot, 0, sizeof(Storage_DataSlot_TypeDef));
     memset(&FreeSlot, 0, sizeof(Storage_FreeSlot_TypeDef));
     memset(&New_FreeSlot, 0, sizeof(Storage_FreeSlot_TypeDef));
@@ -652,29 +655,32 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 if ((tab_item[item_i].head_tag != STORAGE_ITEM_HEAD_TAG) && \
                     (tab_item[item_i].end_tag != STORAGE_ITEM_END_TAG))
                 {
+                    tab_index = tab_i;
+                    item_index = item_i;
+
                     /* found empty item slot */
-                    empty_item_slot = &tab_item[item_i];
+                    crt_item_slot = tab_item[item_i];
 
                     /* set item slot info */
-                    empty_item_slot->class = class;
-                    memset(empty_item_slot->name, '\0', STORAGE_NAME_LEN);
-                    memcpy(empty_item_slot->name, name, strlen(name));
-                    empty_item_slot->len = size;
+                    crt_item_slot.class = class;
+                    memset(crt_item_slot.name, '\0', STORAGE_NAME_LEN);
+                    memcpy(crt_item_slot.name, name, strlen(name));
+                    crt_item_slot.len = size;
 
                     /* set free slot address as current data address */
-                    empty_item_slot->data_addr = p_Sec->free_slot_addr;
-                    empty_item_slot->head_tag = STORAGE_ITEM_HEAD_TAG;
-                    empty_item_slot->end_tag = STORAGE_ITEM_END_TAG;
+                    crt_item_slot.data_addr = p_Sec->free_slot_addr;
+                    crt_item_slot.head_tag = STORAGE_ITEM_HEAD_TAG;
+                    crt_item_slot.end_tag = STORAGE_ITEM_END_TAG;
 
                     /* comput crc */
-                    crc_buf = empty_item_slot + sizeof(empty_item_slot->head_tag);
+                    crc_buf = &crt_item_slot + sizeof(crt_item_slot.head_tag);
                     crc_len = sizeof(Storage_Item_TypeDef);
-                    crc_len -= sizeof(empty_item_slot->head_tag);
-                    crc_len -= sizeof(empty_item_slot->end_tag);
-                    crc_len -= sizeof(empty_item_slot->crc16);
+                    crc_len -= sizeof(crt_item_slot.head_tag);
+                    crc_len -= sizeof(crt_item_slot.end_tag);
+                    crc_len -= sizeof(crt_item_slot.crc16);
 
-                    empty_item_slot->crc16 = Common_CRC16(crc_buf, crc_len);
-                    store_addr = empty_item_slot->data_addr;
+                    crt_item_slot.crc16 = Common_CRC16(crc_buf, crc_len);
+                    store_addr = crt_item_slot.data_addr;
                     break; 
                 }
             }
