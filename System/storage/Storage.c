@@ -704,10 +704,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         
         if (FreeSlot.total_size >= (sizeof(Storage_DataSlot_TypeDef) + size))
         {
-            /* write back item slot list to tab first */
-            if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
-                return Storage_TabItem_Update_Error;
-
             while(true)
             {
                 /* step 3: comput storage data size and set data slot */
@@ -775,6 +771,10 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     store_addr = DataSlot.nxt_addr;
                 }
             }
+
+            /* write back item slot list to tab first */
+            if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
+                return Storage_TabItem_Update_Error;
         }
         else
             /* don`t have enough space for target data */
