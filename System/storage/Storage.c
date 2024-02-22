@@ -772,14 +772,14 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
             /* get tab */
             if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
-                return;
+                return Storage_Read_Error;
 
             tab_item = page_data_tmp;
             tab_item[item_index] = crt_item_slot;
 
             /* write back item slot list to tab */
             if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
-                return Storage_TabItem_Update_Error;
+                return Storage_Write_Error;
         }
         else
             /* don`t have enough space for target data */
@@ -1476,9 +1476,6 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
 
         case Storage_DataSize_Overrange:
             return Storage_ErrorCode_ToStr(Storage_DataSize_Overrange);
-
-        case Storage_TabItem_Update_Error:
-            return Storage_ErrorCode_ToStr(Storage_TabItem_Update_Error);
 
         case Storage_BaseInfo_Updata_Error:
             return Storage_ErrorCode_ToStr(Storage_BaseInfo_Updata_Error);

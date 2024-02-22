@@ -73,7 +73,6 @@ typedef enum
     Storage_No_Enough_Space,
     Storage_DataInfo_Error,
     Storage_DataSize_Overrange,
-    Storage_TabItem_Update_Error,
     Storage_BaseInfo_Updata_Error,
     Storage_DataAddr_Update_Error,
     Storage_FreeSlot_Update_Error,
