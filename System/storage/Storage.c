@@ -1253,7 +1253,8 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
     uint32_t section_size = 0;
     uint32_t write_offset = 0;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
-    
+    DevW25Qxx_Error_List state;
+
     if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
     {
         write_addr = Storage_Monitor.external_info.base_addr + addr_offset;
@@ -1300,7 +1301,10 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                                 memcpy(page_data_tmp + write_offset, p_data, len);
 
                                 /* update whole section */
-                                if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size) == DevW25Qxx_Ok)
+                                state = To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size);
+                                memset(page_data_tmp, 0, section_size);
+
+                                if (state == DevW25Qxx_Ok)
                                     return true;
                             }
                             else
@@ -1309,8 +1313,30 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                                 /* need to operate two sections */
                                 for (uint8_t i = 0; i < 2; i++)
                                 {
-                                    
+                                    /* read whole section */
+                                    if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size) != DevW25Qxx_Ok)
+                                        return false;
+
+                                    /* erase whole section */
+                                    if (!To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr) != DevW25Qxx_Ok)
+                                        return false;
+
+                                    /* copy data to section data read out */
+                                    memcpy(page_data_tmp + write_offset, p_data, len);
+                                    /* update whole section */
+                                    state = To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size);
+                                    /* clear cache buff */
+                                    memset(page_data_tmp, 0, section_size);
+                                    /* update target section address */
+                                    section_start_addr += section_size;
+                                    /* reupdate target section address */
+                                    section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr);
+                                    p_data += section_size - write_addr;
+                                    len -= section_size - write_addr;
                                 }
+                                    
+                                if (state == DevW25Qxx_Ok)
+                                    return true;
                             }
                         }
                         else if (section_size < len)
