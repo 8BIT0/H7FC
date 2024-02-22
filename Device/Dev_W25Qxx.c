@@ -410,7 +410,7 @@ static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev
 
 static uint32_t DevW25Qxx_Get_Section_StartAddr(DevW25QxxObj_TypeDef *dev, uint32_t addr)
 {
-    if (dev && dev->init_state)
+    if (dev && (dev->init_state == DevW25Qxx_Ok))
     {
         return (addr / W25Q64FV_SUBSECTOR_SIZE) * W25Q64FV_SUBSECTOR_SIZE;
     }
