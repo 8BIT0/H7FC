@@ -1245,6 +1245,7 @@ static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
     return false;
 }
 
+/* optimize */
 static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
     uint32_t write_addr = 0;
