@@ -1333,6 +1333,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                                     section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr);
                                     p_data += section_size - write_addr;
                                     len -= section_size - write_addr;
+                                    write_offset = 0;
                                 }
                                     
                                 if (state == DevW25Qxx_Ok)
