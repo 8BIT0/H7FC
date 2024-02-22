@@ -21,7 +21,7 @@ DevW25Qxx_TypeDef DevW25Qxx = {
     .erase_sector = DevW25Qxx_EraseSector,
     .erase_chip = DevW25Qxx_EraseChip,
     .info = DevW25Qxx_Get_Info,
-    .get_section_start_addr = ,
+    .get_section_start_addr = DevW25Qxx_Get_Section_StartAddr,
 };
 
 static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint16_t size)

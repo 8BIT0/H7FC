@@ -775,7 +775,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 return Storage_Read_Error;
 
             tab_item = page_data_tmp;
-            memcpy(&tab_item[item_index], crt_item_slot, sizeof(Storage_Item_TypeDef));
+            memcpy(&tab_item[item_index], &crt_item_slot, sizeof(Storage_Item_TypeDef));
 
             /* write back item slot list to tab */
             if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
@@ -1290,6 +1290,15 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                             if ((write_addr + len) <= (section_start_addr + section_size))
                             {
                                 /* circumstances 1: store data size less than flash sector size and only none multiple sector write is needed */
+                                /* read whole section */
+                                if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size) != DevW25Qxx_Ok)
+                                    return false;
+
+                                /* erase whole section */
+                                if (!To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr) != DevW25Qxx_Ok)
+                                    return false;
+
+                                /* update whole section */
                             }
                             else
                             {
