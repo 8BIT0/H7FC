@@ -317,8 +317,10 @@ static bool Storage_Format(Storage_MediumType_List type)
             if((remain_size != 0) && (remain_size < size))
                 size = remain_size;
 
-            if (!StorageIO_API->erase(addr_offset, size) || 
-                !StorageIO_API->read(addr_offset, page_data_tmp, size))
+            if (!StorageIO_API->erase(addr_offset, size))
+                return false;
+
+            if (!StorageIO_API->read(addr_offset, page_data_tmp, size))
                 return false;
 
             for(uint32_t j = 0; j < size; j++)
