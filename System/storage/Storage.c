@@ -1305,6 +1305,11 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                             else
                             {
                                 /* circumstances 2: store data size less than flash sector length but need to write from the end of the sector N to the start of the sector N + 1 */
+                                /* need to operate two sections */
+                                for (uint8_t i = 0; i < 2; i++)
+                                {
+
+                                }
                             }
                         }
                         else if (section_size < len)
