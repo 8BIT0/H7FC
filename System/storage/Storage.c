@@ -1245,20 +1245,22 @@ static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
     return false;
 }
 
-/* optimize */
 static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
-    uint32_t write_addr = 0;
+    uint32_t write_start_addr = 0;
+    uint32_t write_end_addr = 0;
     uint32_t flash_end_addr = 0;
     uint32_t section_start_addr = 0;
     uint32_t section_size = 0;
     uint32_t write_offset = 0;
+    uint32_t write_len = len;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
-    DevW25Qxx_Error_List state;
+    DevW25Qxx_Error_List state = DevW25Qxx_Ok;
 
     if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
     {
-        write_addr = Storage_Monitor.external_info.base_addr + addr_offset;
+        write_start_addr = Storage_Monitor.external_info.base_addr + addr_offset;
+        write_end_addr = write_start_addr + len;
         dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
     
         switch((uint8_t)dev->chip_type)
@@ -1270,82 +1272,60 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                     /* get w25qxx device info */
                     /* address check */
                     flash_end_addr = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).start_addr;
-                    if (flash_end_addr > write_addr)
+                    if (flash_end_addr > write_start_addr)
                         return false;
 
                     /* range check */
                     flash_end_addr += To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).flash_size;
-                    if ((len + write_addr) > flash_end_addr)
+                    if ((len + write_start_addr) > flash_end_addr)
                         return false;
                     
                     if (section_size)
                     {
-                        if (section_size && (section_size >= len))
+                        section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_start_addr);
+                        write_offset = write_start_addr - section_start_addr;
+                        if (section_size > sizeof(page_data_tmp))
+                            return false;
+
+                        if (write_offset + write_len > section_size)
+                            write_len = section_size - write_offset;
+
+                        while(true)
                         {
-                            section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
-                            write_offset = write_addr - section_start_addr;
-                            if (section_size > sizeof(page_data_tmp))
+                            /* circumstances 1: store data size less than flash sector size and only none multiple sector write is needed */
+                            /* circumstances 2: store data size less than flash sector length but need to write from the end of the sector N to the start of the sector N + 1 */
+                            /* circumstances 3: store data size large than flash sector length */
+                            /* read whole section */
+                            if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size) != DevW25Qxx_Ok)
                                 return false;
 
-                            if ((write_addr + len) <= (section_start_addr + section_size))
+                            /* erase whole section */
+                            if (!To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr) != DevW25Qxx_Ok)
+                                return false;
+
+                            /* copy data to section data read out */
+                            memcpy(page_data_tmp + write_offset, p_data, write_len);
+
+                            /* update whole section */
+                            state = To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size);
+
+                            /* clear cache buff */
+                            memset(page_data_tmp, 0, section_size);
+                            
+                            len -= write_len;
+                            if (state == DevW25Qxx_Ok)
                             {
-                                /* circumstances 1: store data size less than flash sector size and only none multiple sector write is needed */
-                                /* read whole section */
-                                if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size) != DevW25Qxx_Ok)
-                                    return false;
-
-                                /* erase whole section */
-                                if (!To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr) != DevW25Qxx_Ok)
-                                    return false;
-
-                                /* copy data to section data read out */
-                                memcpy(page_data_tmp + write_offset, p_data, len);
-
-                                /* update whole section */
-                                state = To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size);
-                                memset(page_data_tmp, 0, section_size);
-
-                                if (state == DevW25Qxx_Ok)
+                                if (len == 0)
                                     return true;
                             }
                             else
-                            {
-                                /* circumstances 2: store data size less than flash sector length but need to write from the end of the sector N to the start of the sector N + 1 */
-                                /* need to operate two sections */
-                                for (uint8_t i = 0; i < 2; i++)
-                                {
-                                    /* read whole section */
-                                    if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size) != DevW25Qxx_Ok)
-                                        return false;
+                                return false;
 
-                                    /* erase whole section */
-                                    if (!To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr) != DevW25Qxx_Ok)
-                                        return false;
-
-                                    /* copy data to section data read out */
-                                    memcpy(page_data_tmp + write_offset, p_data, len);
-
-                                    /* update whole section */
-                                    state = To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size);
-
-                                    /* clear cache buff */
-                                    memset(page_data_tmp, 0, section_size);
-
-                                    /* update target section address */
-                                    section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + section_size);
-
-                                    p_data += section_size - write_addr;
-                                    len -= section_size - write_addr;
-                                    write_offset = 0;
-                                }
-                                    
-                                if (state == DevW25Qxx_Ok)
-                                    return true;
-                            }
-                        }
-                        else if (section_size < len)
-                        {
-                            /* circumstances 3: store data size large than flash sector length */
+                            write_offset = 0;
+                            section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + write_len);
+                            write_len = len;
+                            if (write_len >= section_size)
+                                write_len = section_size;
                         }
                     }
                     else
