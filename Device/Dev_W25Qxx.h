@@ -152,6 +152,7 @@ typedef struct
     DevW25Qxx_Error_List (*erase_sector)(DevW25QxxObj_TypeDef *dev, uint32_t addr);
     DevW25Qxx_Error_List (*erase_chip)(DevW25QxxObj_TypeDef *dev);
     DevW25Qxx_DeviceInfo_TypeDef (*info)(DevW25QxxObj_TypeDef *dev);
+    uint32_t (*get_section_start_addr)(DevW25QxxObj_TypeDef *dev, uint32_t addr);
 } DevW25Qxx_TypeDef;
 
 extern DevW25Qxx_TypeDef DevW25Qxx;

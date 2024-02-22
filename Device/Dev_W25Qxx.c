@@ -11,6 +11,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t R
 static DevW25Qxx_Error_List DevW25Qxx_EraseSector(DevW25QxxObj_TypeDef *dev, uint32_t Address);
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev);
 static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev);
+static uint32_t DevW25Qxx_Get_Section_StartAddr(DevW25QxxObj_TypeDef *dev, uint32_t addr);
 
 DevW25Qxx_TypeDef DevW25Qxx = {
     .init = DevW25Qxx_Init,
@@ -20,6 +21,7 @@ DevW25Qxx_TypeDef DevW25Qxx = {
     .erase_sector = DevW25Qxx_EraseSector,
     .erase_chip = DevW25Qxx_EraseChip,
     .info = DevW25Qxx_Get_Info,
+    .get_section_start_addr = ,
 };
 
 static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint16_t size)
@@ -404,4 +406,14 @@ static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev
     }
 
     return info;
+}
+
+static uint32_t DevW25Qxx_Get_Section_StartAddr(DevW25QxxObj_TypeDef *dev, uint32_t addr)
+{
+    if (dev && dev->init_state)
+    {
+        return (addr / W25Q64FV_SUBSECTOR_SIZE) * W25Q64FV_SUBSECTOR_SIZE;
+    }
+
+    return 0;
 }
