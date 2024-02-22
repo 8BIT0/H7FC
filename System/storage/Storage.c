@@ -1258,6 +1258,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
     uint32_t flash_end_addr = 0;
     uint32_t section_start_addr = 0;
     uint32_t section_size = 0;
+    uint32_t write_offset = 0;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
     
     if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
@@ -1287,6 +1288,10 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                         if (section_size && (section_size >= len))
                         {
                             section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
+                            write_offset = write_addr - section_start_addr;
+                            if (section_size > sizeof(page_data_tmp))
+                                return false;
+
                             if ((write_addr + len) <= (section_start_addr + section_size))
                             {
                                 /* circumstances 1: store data size less than flash sector size and only none multiple sector write is needed */
@@ -1298,8 +1303,11 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                                 if (!To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr) != DevW25Qxx_Ok)
                                     return false;
 
+                                /* copy data to section data read out */
+                                // memcpy(page_data_tmp + write_offset, p_data, );
+
                                 /* update whole section */
-                                if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr, p_data, len) == DevW25Qxx_Ok)
+                                if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size) == DevW25Qxx_Ok)
                                     return true;
                             }
                             else
@@ -1308,7 +1316,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                                 /* need to operate two sections */
                                 for (uint8_t i = 0; i < 2; i++)
                                 {
-
+                                    
                                 }
                             }
                         }
