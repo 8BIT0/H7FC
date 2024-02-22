@@ -533,8 +533,7 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
     
     for(uint32_t i = 0; i < tab_num; i++)
     {    
-        if (!storage_api->erase(addr_tmp, Storage_TabSize) ||
-            !storage_api->write(addr_tmp, page_data_tmp, Storage_TabSize))
+        if (!storage_api->write(addr_tmp, page_data_tmp, Storage_TabSize))
             return false;
 
         addr_tmp += Storage_TabSize;
@@ -848,8 +847,7 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
  
         for(uint16_t i = 0; i < clear_cnt; i++)
         {
-            if ((!StorageIO_API->erase(addr_tmp, p_SecInfo->data_sec_size)) || \
-                (!StorageIO_API->write(addr_tmp, page_data_tmp, clear_byte)))
+            if (!StorageIO_API->write(addr_tmp, page_data_tmp, clear_byte))
                 return false;
 
             addr_tmp += Storage_TabSize;
@@ -871,8 +869,7 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
         free_slot.end_tag = STORAGE_SLOT_END_TAG;
         
         memcpy(page_data_tmp, &free_slot, sizeof(free_slot));
-        if ((!StorageIO_API->erase(p_SecInfo->data_sec_addr, p_SecInfo->data_sec_size)) || \
-            (!StorageIO_API->write(p_SecInfo->data_sec_addr, page_data_tmp, Storage_TabSize)))
+        if (!StorageIO_API->write(p_SecInfo->data_sec_addr, page_data_tmp, Storage_TabSize))
             return false;
 
         /* update info section */
@@ -893,8 +890,7 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
         memcpy(&page_data_tmp[Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
 
         /* erase sector first then write into the target sector */
-        if ((!StorageIO_API->erase(From_Start_Address, Storage_TabSize)) || \
-            (!StorageIO_API->write(From_Start_Address, page_data_tmp, Storage_TabSize)))
+        if (!StorageIO_API->write(From_Start_Address, page_data_tmp, Storage_TabSize))
             return false;
 
         return true;
@@ -1087,9 +1083,6 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
     /* read out and erase sector */
     if (!StorageIO_API->read(addr_offset, page_data_tmp, sizeof(Info)))
-        return false;
-        
-    if (!StorageIO_API->erase(addr_offset, sector_size))
         return false;
 
     /* write base info to info section */
