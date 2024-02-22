@@ -1256,7 +1256,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
 {
     uint32_t write_addr = 0;
     uint32_t flash_end_addr = 0;
-    uint32_t section_addr = 0;
+    uint32_t section_start_addr = 0;
     uint32_t section_size = 0;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
     
@@ -1286,15 +1286,15 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                     {
                         if (section_size && (section_size >= len))
                         {
-                            /* circumstances 1: store data size less than flash sector size and only none multiple sector write is needed */
-                            section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
-                            if ((write_addr + len) <= (section_addr + section_size))
+                            section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
+                            if ((write_addr + len) <= (section_start_addr + section_size))
                             {
-        
+                                /* circumstances 1: store data size less than flash sector size and only none multiple sector write is needed */
                             }
-                            
-                            /* circumstances 2: store data size less than flash sector length but need to write from the end of the sector N to the start of the sector N + 1 */
-
+                            else
+                            {
+                                /* circumstances 2: store data size less than flash sector length but need to write from the end of the sector N to the start of the sector N + 1 */
+                            }
                         }
                         else if (section_size < len)
                         {
