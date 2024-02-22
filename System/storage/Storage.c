@@ -574,7 +574,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     uint32_t nxt_freeslot_addr = 0;
     uint32_t slot_useful_size = 0;
     uint32_t free_space_remianing = 0;
-    uint8_t tab_index = 0;
     uint8_t item_index = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
@@ -655,7 +654,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 if ((tab_item[item_i].head_tag != STORAGE_ITEM_HEAD_TAG) && \
                     (tab_item[item_i].end_tag != STORAGE_ITEM_END_TAG))
                 {
-                    tab_index = tab_i;
                     item_index = item_i;
 
                     /* found empty item slot */
@@ -772,7 +770,14 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 }
             }
 
-            /* write back item slot list to tab first */
+            /* get tab */
+            if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
+                return;
+
+            tab_item = page_data_tmp;
+            tab_item[item_index] = crt_item_slot;
+
+            /* write back item slot list to tab */
             if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
                 return Storage_TabItem_Update_Error;
         }
