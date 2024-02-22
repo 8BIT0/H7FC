@@ -1299,6 +1299,8 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                                     return false;
 
                                 /* update whole section */
+                                if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr, p_data, len) == DevW25Qxx_Ok)
+                                    return true;
                             }
                             else
                             {
@@ -1312,10 +1314,6 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                     }
                     else
                         return false;
-
-                    /* W25Qxx device write */
-                    if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr, p_data, len) == DevW25Qxx_Ok)
-                        return true;
                 }
                 break;
 
