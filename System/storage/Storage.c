@@ -1304,7 +1304,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                                     return false;
 
                                 /* copy data to section data read out */
-                                // memcpy(page_data_tmp + write_offset, p_data, );
+                                memcpy(page_data_tmp + write_offset, p_data, len);
 
                                 /* update whole section */
                                 if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size) == DevW25Qxx_Ok)
