@@ -775,7 +775,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 return Storage_Read_Error;
 
             tab_item = page_data_tmp;
-            tab_item[item_index] = crt_item_slot;
+            memcpy(&tab_item[item_index], crt_item_slot, sizeof(Storage_Item_TypeDef));
 
             /* write back item slot list to tab */
             if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
