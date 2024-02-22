@@ -1257,6 +1257,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
     uint32_t write_addr = 0;
     uint32_t flash_end_addr = 0;
     uint32_t section_addr = 0;
+    uint32_t section_size = 0;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
     
     if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
@@ -1269,6 +1270,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
             case Storage_ChipType_W25Qxx:
                 if (dev->dev_api && dev->dev_obj)
                 {
+                    section_size = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).sector_size;
                     /* get w25qxx device info */
                     /* address check */
                     flash_end_addr = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).start_addr;
@@ -1280,14 +1282,27 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                     if ((len + write_addr) > flash_end_addr)
                         return false;
                     
-                    /* circumstances 1: store data size less than flash sector size and only none multiple sector write is needed */
-                    section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
-                    if ((write_addr + len) <= (section_addr + To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).sector_size))
+                    if (section_size)
                     {
-                        
+                        if (section_size && (section_size >= len))
+                        {
+                            /* circumstances 1: store data size less than flash sector size and only none multiple sector write is needed */
+                            section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
+                            if ((write_addr + len) <= (section_addr + section_size))
+                            {
+        
+                            }
+                            
+                            /* circumstances 2: store data size less than flash sector length but need to write from the end of the sector N to the start of the sector N + 1 */
+
+                        }
+                        else if (section_size < len)
+                        {
+                            /* circumstances 3: store data size large than flash sector length */
+                        }
                     }
-                    /* circumstances 2: store data size less than flash sector length but need to write from the end of the sector N to the start of the sector N + 1 */
-                    /* circumstances 3: store data size large than flash sector length */
+                    else
+                        return false;
 
                     /* W25Qxx device write */
                     if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr, p_data, len) == DevW25Qxx_Ok)
