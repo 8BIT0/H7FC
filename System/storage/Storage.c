@@ -9,6 +9,7 @@
 #include "shell_port.h"
 #include "util.h"
 #include "Srv_OsCommon.h"
+#include "error_log.h"
 
 #define InternalFlash_BootDataSec_Size (4 Kb)
 #define InternalFlash_SysDataSec_Size (16 Kb)
@@ -691,8 +692,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         if (store_addr == 0)
             return Storage_DataAddr_Update_Error;
 
-        storage_data_size = sizeof(Storage_DataSlot_TypeDef);
-        storage_data_size += size;
+        storage_data_size = size;
         if (size % STORAGE_DATA_ALIGN)
             /* get align byte size */
             /* noticed: write 0 on align space */
@@ -712,7 +712,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 memset(DataSlot.name, '\0', STORAGE_NAME_LEN);
                 memcpy(DataSlot.name, name, strlen(name));
                 
-                Storage_Assert(FreeSlot.cur_slot_size <= sizeof(Storage_DataSlot_TypeDef));
+                if (FreeSlot.cur_slot_size <= sizeof(Storage_DataSlot_TypeDef))
+                    return Storage_No_Enough_Space;
 
                 slot_useful_size = FreeSlot.cur_slot_size - sizeof(Storage_DataSlot_TypeDef);
                 /* current have space for new data need to be storage */
@@ -729,8 +730,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
                     /* in light of current free slot not enough for storage data, 
                      * then find next free slot used for storage data remaining */
+                    cur_freeslot_addr = FreeSlot.nxt_addr;
                     if (!StorageIO_API->read(FreeSlot.nxt_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)))
-                        return Storage_FreeSlot_Get_Error;
+                        return Storage_FreeSlot_Get_Error;   
                 }
                 else
                 {
@@ -739,11 +741,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     DataSlot.cur_slot_size = unstored_size;
                     DataSlot.align_size = size % STORAGE_DATA_ALIGN;
                     DataSlot.nxt_addr = 0;
-                    free_space_remianing -= unstored_size + sizeof(Storage_DataSlot_TypeDef);
+                    free_space_remianing -= DataSlot.align_size + unstored_size + sizeof(Storage_DataSlot_TypeDef);
 
                     New_FreeSlot.total_size = free_space_remianing;
-                    // New_FreeSlot.nxt_addr = cur_freeslot_addr + ;
-                    New_FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
+                    New_FreeSlot.nxt_addr = cur_freeslot_addr + DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef);
+                    New_FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef);
                     New_FreeSlot.nxt_addr += sizeof(Storage_DataSlot_TypeDef);
                 }
 
@@ -1601,28 +1603,34 @@ static void Storage_Shell_Get_BaseInfo(Storage_MediumType_List medium)
         case Internal_Flash:
             shellPrint(shell_obj, "\t\t[Internal_Flash Selected]\r\n");
             p_Flash = &Storage_Monitor.internal_info;
+            
             if(memcmp(p_Flash->tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE))
             {
                 shellPrint(shell_obj, "\t\tInternal_Flash Info Error\r\n");
                 return;
             }
-            shellPrint(shell_obj, "\t\ttotal   size:\t%d\r\n", p_Flash->total_size);
-            shellPrint(shell_obj, "\t\tremain  size:\t%d\r\n", p_Flash->remain_size);
-            shellPrint(shell_obj, "\t\tstorage size:\t%d\r\n", p_Flash->data_sec_size);
-            break;
+           break;
         
         case External_Flash:
-            shellPrint(shell_obj, "\t\tExternal_Flash Selected\r\n");
-            shellPrint(shell_obj, "\t\tStill in developping\r\n");
-            shellPrint(shell_obj, "\t\treturn\r\n");
+            shellPrint(shell_obj, "\t\t[External_Flash Selected]\r\n");
             p_Flash = &Storage_Monitor.external_info;
-            return;
+
+            if(memcmp(p_Flash->tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE))
+            {
+                shellPrint(shell_obj, "\t\tExternal_Flash Info Error\r\n");
+                return;
+            }
+            break;
 
         default:
             shellPrint(shell_obj, "medium para error\r\n");
             return;
     }
 
+    shellPrint(shell_obj, "\t\ttotal   size:\t%d\r\n", p_Flash->total_size);
+    shellPrint(shell_obj, "\t\tremain  size:\t%d\r\n", p_Flash->remain_size);
+    shellPrint(shell_obj, "\t\tstorage size:\t%d\r\n", p_Flash->data_sec_size);
+ 
     /* print boot info */
     shellPrint(shell_obj, "\r\n\t[Boot Section]\r\n");
     Storage_SecInfo_Print(shell_obj, &p_Flash->boot_sec);
@@ -1664,16 +1672,9 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
 
     Storage_MediumType_Print(shell_obj);
     
-    if(medium >= External_Flash)
+    if(medium == External_Flash)
     {
-        if(medium == External_Flash)
-        {
-            shellPrint(shell_obj, "\tExternal flash still in developping\r\n");
-        }
-        else
-            shellPrint(shell_obj, "\tstorage medium arg error\r\n");
-        
-        return;
+        shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
     }
     else
     {

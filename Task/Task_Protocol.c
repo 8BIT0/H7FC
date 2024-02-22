@@ -4,6 +4,8 @@
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
 
+#define PROTO_STREAM_BUF_SIZE 512
+
 #if (RADIO_UART_NUM > 0)
 static uint8_t RadioRxBuff[RADIO_UART_NUM][RADIO_BUFF_SIZE];
 
@@ -69,8 +71,22 @@ static uint32_t FrameCTL_Period = 0;
 static __attribute__((section(".Perph_Section"))) uint8_t MavShareBuf[1024];
 static __attribute__((section(".Perph_Section"))) uint8_t CLIRxBuf[CLI_FUNC_BUF_SIZE];
 static uint8_t CLIProcBuf[CLI_FUNC_BUF_SIZE];
+static uint8_t Uart_RxBuf_Tmp[PROTO_STREAM_BUF_SIZE];
+static uint8_t USB_RxBuf_Tmp[PROTO_STREAM_BUF_SIZE];
 static uint32_t Radio_Addr = 0;
 static uint32_t USB_VCP_Addr = 0;
+
+static SrvComProto_Stream_TypeDef UartRx_Stream = {
+    .p_buf = Uart_RxBuf_Tmp,
+    .size = 0,
+    .max_size = sizeof(Uart_RxBuf_Tmp),
+};
+
+static SrvComProto_Stream_TypeDef USBRx_Stream = {
+    .p_buf = USB_RxBuf_Tmp,
+    .size = 0,
+    .max_size = sizeof(USB_RxBuf_Tmp),
+};
 
 static SrvComProto_Stream_TypeDef MavStream = {
     .p_buf = MavShareBuf,
@@ -144,7 +160,7 @@ void TaskFrameCTL_Core(void *arg)
     while(1)
     {
         /* frame protocol process */
-        TaskFrameCTL_PortFrameOut_Process();
+        // TaskFrameCTL_PortFrameOut_Process();
 
         /* command line process */
         TaskFrameCTL_CLI_Proc();
@@ -320,6 +336,7 @@ static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t si
 static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size)
 {
     SrvComProto_Msg_StreamIn_TypeDef stream_in;
+    SrvComProto_Stream_TypeDef *p_stream = NULL;
     FrameCTL_PortProtoObj_TypeDef *p_RecObj = NULL;
     uint32_t port_addr = 0;
     bool cli_state = false;
@@ -335,19 +352,46 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
         switch((uint8_t) p_RecObj->type)
         {
             case Port_USB:
+                p_stream = &USBRx_Stream;
                 break;
 
             case Port_Uart:
-                break;
-
-            case Port_CAN:
+                p_stream = &UartRx_Stream;
                 break;
 
             default:
                 return;
         }
 
-        stream_in = SrvComProto.msg_decode(p_data, size);
+        if ((p_stream->size + size) <= p_stream->max_size)
+        {
+            memcpy(p_stream->p_buf + p_stream->size, p_data, size);
+            p_stream->size += size;
+        }
+        else
+        {
+            memset(p_stream->p_buf, 0, p_stream->size);
+            p_stream->size = 0;
+        }
+
+        if (cli_state)
+        {
+            switch((uint8_t)(p_RecObj->type))
+            {
+                case Port_Uart:
+                    TaskFrameCTL_Port_Tx(p_RecObj->PortObj_addr, p_data, size);
+                    break;
+
+                case Port_USB:
+                    TaskFrameCTL_DefaultPort_Trans(p_data, size);
+                    break;
+
+                default:
+                    return;
+            }
+        }
+
+        stream_in = SrvComProto.msg_decode(p_stream->p_buf, p_stream->size);
     
         /* noticed when drone is under disarmed state we can`t tune or send cli to drone for safety */
         if(stream_in.valid)
@@ -367,15 +411,17 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
                 /* all command line end up with "\r\n" */
                 /* push string into cli shared stream */
                 if(((CLI_Monitor.port_addr == 0) || (CLI_Monitor.port_addr == p_RecObj->PortObj_addr)) && \
-                   (CLI_Monitor.p_rx_stream->size + size) <= CLI_Monitor.p_rx_stream->max_size)
+                   (CLI_Monitor.p_rx_stream->size + p_stream->size) <= CLI_Monitor.p_rx_stream->max_size)
                 {
 
                     CLI_Monitor.type = p_RecObj->type;
                     CLI_Monitor.port_addr = p_RecObj->PortObj_addr;
                     memcpy(CLI_Monitor.p_rx_stream->p_buf + CLI_Monitor.p_rx_stream->size, stream_in.p_buf, stream_in.size);
-                    CLI_Monitor.p_rx_stream->size += size;
+                    CLI_Monitor.p_rx_stream->size += p_stream->size;
                 }
             }
+        
+            memset(p_stream->p_buf, 0, p_stream->max_size);
         }
     }
 }

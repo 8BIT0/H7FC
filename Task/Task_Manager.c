@@ -120,8 +120,8 @@ void Task_Manager_CreateTask(void)
             // osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 1024);
             // TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
 
-            // osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 2048);
-            // TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);
+            osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 2048);
+            TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);
 
             init = true;
         }
