@@ -1323,14 +1323,16 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
 
                                     /* copy data to section data read out */
                                     memcpy(page_data_tmp + write_offset, p_data, len);
+
                                     /* update whole section */
                                     state = To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, page_data_tmp, section_size);
+
                                     /* clear cache buff */
                                     memset(page_data_tmp, 0, section_size);
+
                                     /* update target section address */
-                                    section_start_addr += section_size;
-                                    /* reupdate target section address */
-                                    section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr);
+                                    section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + section_size);
+
                                     p_data += section_size - write_addr;
                                     len -= section_size - write_addr;
                                     write_offset = 0;
