@@ -715,6 +715,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 if (FreeSlot.cur_slot_size <= sizeof(Storage_DataSlot_TypeDef))
                     return Storage_No_Enough_Space;
 
+                crc_buf = p_data + stored_size;
+
                 slot_useful_size = FreeSlot.cur_slot_size - sizeof(Storage_DataSlot_TypeDef);
                 /* current have space for new data need to be storage */
                 if (slot_useful_size <= storage_data_size)
@@ -731,7 +733,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     /* in light of current free slot not enough for storage data, 
                      * then find next free slot used for storage data remaining */
                     cur_freeslot_addr = FreeSlot.nxt_addr;
-                    if (!StorageIO_API->read(FreeSlot.nxt_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)))
+                    if (!StorageIO_API->read(cur_freeslot_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)))
                         return Storage_FreeSlot_Get_Error;   
                 }
                 else
@@ -750,7 +752,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 }
 
                 /* comput current slot crc */
-                memcpy(page_data_tmp, 0, DataSlot.cur_slot_size);
+                DataSlot.slot_crc = Common_CRC16(crc_buf, DataSlot.cur_slot_size);
 
                 /* write to the data section */
                 /* storage target data */
