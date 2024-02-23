@@ -811,11 +811,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         else
             /* don`t have enough space for target data */
             return Storage_No_Enough_Space;
-
-        /* step 4: update free slot */
-        FreeSlot.total_size -= storage_data_size;
-        New_FreeSlot = FreeSlot;
-        New_FreeSlot.total_size -= size;
     }
 
     return Storage_Error_None;
