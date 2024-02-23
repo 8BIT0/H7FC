@@ -567,6 +567,7 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size)
 {
     uint8_t *crc_buf = NULL;
+    uint8_t *slot_update_ptr = NULL;
     uint16_t crc_len = 0;
     uint32_t storage_data_size = 0;
     uint32_t stored_size = 0;
@@ -756,8 +757,28 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
                 /* write to the data section */
                 /* storage target data */
-                // if (!StorageIO_API->write(store_addr, , ))
-                //     return ;
+                slot_update_ptr = page_data_tmp;
+                memcpy(slot_update_ptr, &DataSlot.head_tag, sizeof(DataSlot.head_tag));
+                slot_update_ptr += sizeof(DataSlot.head_tag);
+                memcpy(slot_update_ptr, DataSlot.name, STORAGE_NAME_LEN);
+                slot_update_ptr += STORAGE_NAME_LEN;
+                memcpy(slot_update_ptr, &DataSlot.total_data_size, sizeof(DataSlot.total_data_size));
+                slot_update_ptr += sizeof(DataSlot.total_data_size);
+                memcpy(slot_update_ptr, &DataSlot.cur_slot_size, sizeof(DataSlot.cur_slot_size));
+                slot_update_ptr += sizeof(DataSlot.cur_slot_size);
+                memcpy(slot_update_ptr, &DataSlot.nxt_addr, sizeof(DataSlot.nxt_addr));
+                slot_update_ptr += sizeof(DataSlot.nxt_addr);
+                memcpy(slot_update_ptr, &DataSlot.align_size, sizeof(DataSlot.align_size));
+                slot_update_ptr += sizeof(DataSlot.align_size);
+                memcpy(slot_update_ptr, crc_buf, DataSlot.cur_slot_size);
+                slot_update_ptr += DataSlot.cur_slot_size;
+                memcpy(slot_update_ptr, &DataSlot.slot_crc, sizeof(DataSlot.slot_crc));
+                slot_update_ptr += sizeof(DataSlot.slot_crc);
+                memcpy(slot_update_ptr, &DataSlot.end_tag, sizeof(DataSlot.end_tag));
+                slot_update_ptr += sizeof(DataSlot.end_tag);
+
+                if (!StorageIO_API->write(store_addr, slot_update_ptr, (DataSlot.cur_slot_size + sizeof(DataSlot))))
+                    return Storage_Write_Error;
 
                 if (DataSlot.nxt_addr == 0)
                 {
