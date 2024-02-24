@@ -386,10 +386,6 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
 
             free_slot_addr = FreeSlot_Info->nxt_addr;
         }
-
-        if ((sec_info->free_slot_num != 0) && \
-            (free_i != sec_info->free_slot_num))
-            return false;
         
         if (sec_info->para_num)
         {
@@ -546,6 +542,58 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
     return true;
 }
 
+/* 
+ * if matched return data slot address 
+ * else return 0
+ */
+static uint32_t Storage_Search_Item(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name)
+{
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    uint32_t tab_addr = 0;
+
+    if (!Storage_Monitor.init_state || \
+        (name == NULL) || \
+        (strlen(name) == 0) || \
+        (class > Para_User))
+        return 0;
+
+    switch((uint8_t)type)
+    {
+        case Internal_Flash:
+            StorageIO_API = &InternalFlash_IO;
+            p_Sec = Storage_Get_SecInfo(&Storage_Monitor.internal_info, class);
+            break;
+
+        case External_Flash:
+            StorageIO_API = &ExternalFlash_IO;
+            p_Sec = Storage_Get_SecInfo(&Storage_Monitor.external_info, class);
+            break;
+
+        default:
+            return 0;
+    }
+
+    if ((p_Sec == NULL) || \
+        (p_Sec->para_num == 0) || \
+        (p_Sec->para_size))
+        return 0;
+
+    tab_addr = p_Sec->tab_addr;
+    /* tab traverse */
+    for (uint8_t tab_i = 0; tab_i < p_Sec->page_num; tab_i ++)
+    {
+        if (!StorageIO_API->read(tab_addr, page_data_tmp, p_Sec->tab_size))
+            return 0;
+    
+        /* tab item traverse */
+        // for (uint16_t item_i =0 ; item_i < ; item_i ++)
+        // {
+
+        // }
+    }
+}
+
 static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
 {
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
@@ -585,13 +633,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     Storage_Item_TypeDef *tab_item = NULL;
     Storage_Item_TypeDef crt_item_slot;
     Storage_FreeSlot_TypeDef FreeSlot;
-    Storage_FreeSlot_TypeDef New_FreeSlot;
     Storage_DataSlot_TypeDef DataSlot;
 
     memset(&crt_item_slot, 0, sizeof(crt_item_slot));
     memset(&DataSlot, 0, sizeof(Storage_DataSlot_TypeDef));
     memset(&FreeSlot, 0, sizeof(Storage_FreeSlot_TypeDef));
-    memset(&New_FreeSlot, 0, sizeof(Storage_FreeSlot_TypeDef));
 
     if ((name == NULL) || (p_data == NULL) || (size == 0))
         return Storage_Param_Error;
@@ -655,8 +701,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             tab_item = page_data_tmp;
             for (uint16_t item_i = 0; item_i < Item_Capacity_Per_Tab; item_i ++)
             {
-                if ((tab_item[item_i].head_tag != STORAGE_ITEM_HEAD_TAG) && \
-                    (tab_item[item_i].end_tag != STORAGE_ITEM_END_TAG))
+                if (((tab_item[item_i].head_tag == STORAGE_ITEM_HEAD_TAG) && \
+                     (tab_item[item_i].end_tag == STORAGE_ITEM_END_TAG) && \
+                     (memcmp(tab_item[item_i].name, STORAGE_FREEITEM_NAME, strlen(STORAGE_FREEITEM_NAME)))) || \
+                    ((tab_item[item_i].head_tag != STORAGE_ITEM_HEAD_TAG) && \
+                     (tab_item[item_i].end_tag != STORAGE_ITEM_END_TAG)))
                 {
                     item_index = item_i;
 
@@ -702,7 +751,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         /* noticed: DataSlot.total_data_size - DataSlot.align_size is storaged data size */
         DataSlot.total_data_size = storage_data_size;
         unstored_size = DataSlot.total_data_size;
-        
+        p_Sec->para_num ++;
+        p_Sec->para_size += storage_data_size;
+
         if (FreeSlot.total_size >= (sizeof(Storage_DataSlot_TypeDef) + size))
         {
             while(true)
@@ -717,15 +768,18 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     return Storage_No_Enough_Space;
 
                 crc_buf = p_data + stored_size;
-
                 slot_useful_size = FreeSlot.cur_slot_size - sizeof(Storage_DataSlot_TypeDef);
                 /* current have space for new data need to be storage */
-                if (slot_useful_size <= storage_data_size)
+                if (slot_useful_size < storage_data_size)
                 {
                     DataSlot.cur_slot_size = slot_useful_size;
                     stored_size += DataSlot.cur_slot_size;
                     unstored_size -= stored_size;
                     DataSlot.align_size = 0;
+
+                    if (free_space_remianing < FreeSlot.cur_slot_size)
+                        return Storage_No_Enough_Space;
+
                     free_space_remianing -= FreeSlot.cur_slot_size;
                     
                     /* current free slot full fill can not split any space for next free slot`s start */
@@ -744,12 +798,22 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     DataSlot.cur_slot_size = unstored_size;
                     DataSlot.align_size = size % STORAGE_DATA_ALIGN;
                     DataSlot.nxt_addr = 0;
-                    free_space_remianing -= DataSlot.align_size + unstored_size + sizeof(Storage_DataSlot_TypeDef);
 
-                    New_FreeSlot.total_size = free_space_remianing;
-                    New_FreeSlot.nxt_addr = cur_freeslot_addr + DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef);
-                    New_FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef);
-                    New_FreeSlot.nxt_addr += sizeof(Storage_DataSlot_TypeDef);
+                    if (free_space_remianing >= DataSlot.align_size + unstored_size + sizeof(Storage_DataSlot_TypeDef))
+                    {
+                        free_space_remianing -= DataSlot.align_size + unstored_size + sizeof(Storage_DataSlot_TypeDef);
+
+                        if (free_space_remianing < (sizeof(Storage_DataSlot_TypeDef) + STORAGE_DATA_ALIGN))
+                        {
+                            free_space_remianing = 0;
+                            DataSlot.align_size += free_space_remianing;
+                        }
+                    }
+
+                    FreeSlot.total_size = free_space_remianing;
+                    FreeSlot.nxt_addr = cur_freeslot_addr + DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef);
+                    FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef);
+                    FreeSlot.nxt_addr += sizeof(Storage_DataSlot_TypeDef);
                 }
 
                 /* comput current slot crc */
@@ -772,6 +836,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 slot_update_ptr += sizeof(DataSlot.align_size);
                 memcpy(slot_update_ptr, crc_buf, DataSlot.cur_slot_size);
                 slot_update_ptr += DataSlot.cur_slot_size;
+                if (DataSlot.align_size)
+                {
+                    memset(slot_update_ptr, 0, DataSlot.align_size);
+                    slot_update_ptr += DataSlot.align_size;
+                }
                 memcpy(slot_update_ptr, &DataSlot.slot_crc, sizeof(DataSlot.slot_crc));
                 slot_update_ptr += sizeof(DataSlot.slot_crc);
                 memcpy(slot_update_ptr, &DataSlot.end_tag, sizeof(DataSlot.end_tag));
@@ -784,7 +853,12 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 {
                     Storage_Assert(DataSlot.total_data_size > stored_size);
                     if (DataSlot.total_data_size == stored_size)
+                    {
+                        if (!StorageIO_API->write(cur_freeslot_addr, &FreeSlot, sizeof(FreeSlot)))
+                            return Storage_Write_Error;
+
                         break;
+                    }
 
                     return Storage_No_Enough_Space;
                 }
@@ -811,6 +885,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         else
             /* don`t have enough space for target data */
             return Storage_No_Enough_Space;
+
+        /* update free slot address in base info */
+        p_Sec->free_slot_addr = cur_freeslot_addr;
+        if (!StorageIO_API->write(p_Flash->base_addr, p_Flash, sizeof(Storage_FlashInfo_TypeDef)))
+            return Storage_Write_Error;
     }
 
     return Storage_Error_None;
@@ -897,7 +976,6 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
 
         /* update info section */
         p_SecInfo->free_slot_addr = p_SecInfo->data_sec_addr;
-        p_SecInfo->free_slot_num = 1;
         p_SecInfo->para_num = 0;
         p_SecInfo->para_size = 0;
 
@@ -1721,6 +1799,9 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
     shellPrint(shell_obj, "\tStorage Data: %s\r\n", test_data);
     shellPrint(shell_obj, "\tStorage Size: %d\r\n", strlen(test_data));
 
+    /* search item first */
+
+
     error_code = Storage_CreateItem(medium, class, test_name, test_data, strlen(test_data));
     if(error_code != Storage_Error_None)
     {
@@ -1752,6 +1833,8 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
             break;
 
         case External_Flash:
+            break;
+
         default:
             return;
     }

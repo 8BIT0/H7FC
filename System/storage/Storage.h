@@ -32,13 +32,14 @@
 #define INTERNAL_PAGE_TAG_SIZE strlen(INTERNAL_STORAGE_PAGE_TAG)
 #define EXTERNAL_PAGE_TAG_SIZE strlen(EXTERNAL_STORAGE_PAGE_TAG)
 
-#define STORAGE_NAME_LEN 53
+#define STORAGE_NAME_LEN 41
 #define STORAGE_ITEM_HEAD_TAG 0xAA
 #define STORAGE_ITEM_END_TAG 0xBB
 #define STORAGE_SLOT_HEAD_TAG 0xEF0110EF
 #define STORAGE_SLOT_END_TAG 0xFE1001FE
 #define STORAGE_DATA_ALIGN 4
 #define STORAGE_MIN_BYTE_SIZE 1
+#define STORAGE_FREEITEM_NAME "Item_Avaliable"
 
 typedef uint32_t storage_handle;
 
@@ -101,6 +102,7 @@ typedef struct
     uint32_t data_addr;
     uint16_t len;
     uint16_t crc16;
+    uint8_t reserved[12];
     uint8_t end_tag;
 } Storage_Item_TypeDef;
 
@@ -135,7 +137,6 @@ typedef struct
     uint32_t page_num;
     uint32_t tab_size;
     uint32_t free_slot_addr;
-    uint32_t free_slot_num;
     uint32_t para_size;
     uint32_t para_num;
 } Storage_BaseSecInfo_TypeDef;
