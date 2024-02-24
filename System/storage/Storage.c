@@ -1753,7 +1753,7 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
 {
     Shell *shell_obj = Shell_GetInstence();
     Storage_ErrorCode_List error_code = Storage_Error_None;
-    
+
     if(shell_obj == NULL)
         return;
 
@@ -1769,16 +1769,30 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
     if(medium == External_Flash)
     {
         shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
+        if (!Storage_Monitor.module_enable_reg.bit.external || !Storage_Monitor.module_init_reg.bit.external)
+        {
+            shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+            shellPrint(shell_obj, "\thalt by enable or init state\r\n");
+            return;
+        }
     }
     else
     {
         shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
+        if (!Storage_Monitor.module_enable_reg.bit.internal || !Storage_Monitor.module_init_reg.bit.internal)
+        {
+            shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+            shellPrint(shell_obj, "\thalt by enable or init state\r\n");
+            return;
+
+        }
     }
 
     Storage_ClassType_Print(shell_obj);
     if(class > Para_User)
     {
         shellPrint(shell_obj, "\tstorage class arg error\r\n");
+        shellPrint(shell_obj, "\ttest halt\r\n");
         return;
     }
 
@@ -1798,7 +1812,11 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
     shellPrint(shell_obj, "\tStorage Size: %d\r\n", strlen(test_data));
 
     /* search item first */
-
+    if (Storage_Search(medium, class, test_name))
+    {
+        shellPrint(shell_obj, "\t%s already exist\r\n", test_name);
+        return;
+    }
 
     error_code = Storage_CreateItem(medium, class, test_name, test_data, strlen(test_data));
     if(error_code != Storage_Error_None)
