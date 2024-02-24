@@ -546,11 +546,16 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
  * if matched return data slot address 
  * else return 0
  */
-static uint32_t Storage_Search_Item(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name)
+static storage_handle Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    Storage_Item_TypeDef *item_list = NULL;
+    Storage_Item_TypeDef *p_item = NULL;
     uint32_t tab_addr = 0;
+    uint8_t *crc_buf = NULL;
+    uint16_t crc_len = 0;
+    uint16_t crc = 0;
 
     if (!Storage_Monitor.init_state || \
         (name == NULL) || \
@@ -587,11 +592,35 @@ static uint32_t Storage_Search_Item(Storage_MediumType_List type, Storage_ParaCl
             return 0;
     
         /* tab item traverse */
-        // for (uint16_t item_i =0 ; item_i < ; item_i ++)
-        // {
+        item_list = page_data_tmp;
+        for (uint16_t item_i = 0; item_i < (p_Sec->tab_size / sizeof(Storage_Item_TypeDef)); item_i ++)
+        {
+            p_item = item_list + item_i;
 
-        // }
+            if ((p_item->head_tag == STORAGE_ITEM_HEAD_TAG) && \
+                (p_item->end_tag == STORAGE_ITEM_END_TAG) && \
+                (memcmp(p_item->name, name, strlen(name)) == 0))
+            {
+                crc_buf = p_item + sizeof(p_item->head_tag);
+                crc_len = sizeof(Storage_Item_TypeDef);
+                crc_len -= sizeof(p_item->head_tag);
+                crc_len -= sizeof(p_item->end_tag);
+                crc_len -= sizeof(p_item->crc16);
+                /* item slot crc check */
+                crc = Common_CRC16(crc_buf, crc_len);
+
+                if (crc != p_item->crc16)
+                    return 0;
+
+                return p_item->data_addr;
+            }
+        }
+    
+        /* update tab address */
+        tab_addr += p_Sec->tab_size;
     }
+
+    return 0;
 }
 
 static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
@@ -1210,37 +1239,6 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
         return false;
 
     return true;
-}
-
-static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name)
-{
-    uint32_t base_addr = 0;
-    storage_handle hdl = 0;
-    StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_FlashInfo_TypeDef *info = NULL;
-    Storage_BaseSecInfo_TypeDef *sec = NULL;
-
-    if((name == NULL) || (strlen(name) == 0))
-        return 0;
-
-    if(medium == Internal_Flash)
-    {
-        StorageIO_API = &InternalFlash_IO;
-        info = &Storage_Monitor.internal_info;
-    }
-    else
-    {
-        StorageIO_API = &ExternalFlash_IO;
-        info = &Storage_Monitor.external_info;
-    }
-
-    sec = Storage_Get_SecInfo(info, class);
-    if (sec == NULL)
-        return 0;
-    
-    base_addr = sec->tab_addr;
-
-    return hdl;
 }
 
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class)
