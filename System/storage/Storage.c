@@ -623,6 +623,75 @@ static storage_handle Storage_Search(Storage_MediumType_List type, Storage_ParaC
     return 0;
 }
 
+static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle slot_hdl, uint8_t *p_data, uint16_t size)
+{
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    Storage_DataSlot_TypeDef *p_slotdata = NULL;
+    uint8_t *p_read_tmp = page_data_tmp;
+    uint8_t *data_buf = NULL;
+    uint16_t data_len = 0;
+    uint16_t crc = 0;
+
+    if ((type > External_Flash) || \
+        (class > Para_User) || \
+        (slot_hdl == 0) || \
+        (p_data == NULL) || \
+        (size == 0))
+        return Storage_Param_Error;
+
+    switch((uint8_t)type)
+    {
+        case External_Flash:
+            p_Sec = Storage_Get_SecInfo(&Storage_Monitor.external_info, class);
+            StorageIO_API = &ExternalFlash_IO;
+            break;
+
+        case Internal_Flash:
+            p_Sec = Storage_Get_SecInfo(&Storage_Monitor.internal_info, class);
+            StorageIO_API = &InternalFlash_IO;
+            break;
+
+        default:
+            return Storage_Param_Error;
+    }
+
+    if ((p_Sec == NULL) || \
+        (p_Sec->data_sec_addr < slot_hdl) || \
+        (slot_hdl > (p_Sec->data_sec_addr + p_Sec->data_sec_size)))
+        return Storage_Param_Error;
+
+    /* get data from handle */
+    if (!StorageIO_API->read(slot_hdl, p_read_tmp, size))
+        return Storage_Read_Error;
+
+    p_slotdata->head_tag = *((uint32_t *)p_read_tmp);
+    p_read_tmp += sizeof(p_slotdata->head_tag);
+    memcpy(p_slotdata->name, p_read_tmp, STORAGE_NAME_LEN);
+    p_read_tmp += STORAGE_NAME_LEN;
+    p_slotdata->total_data_size = *((uint32_t *)p_read_tmp);
+    p_read_tmp += sizeof(p_slotdata->total_data_size);
+    p_slotdata->cur_slot_size = *((uint32_t *)p_read_tmp);
+    data_len = p_slotdata->cur_slot_size;
+    p_read_tmp += sizeof(p_slotdata->cur_slot_size);
+    p_slotdata->nxt_addr = *((uint32_t *)p_read_tmp);
+    p_read_tmp += sizeof(p_slotdata->nxt_addr);
+    p_slotdata->align_size = *((uint32_t *)p_read_tmp);
+    p_read_tmp += sizeof(p_slotdata->align_size);
+    data_buf = p_read_tmp;
+    p_read_tmp += data_len;
+    p_slotdata->slot_crc = *((uint32_t *)p_read_tmp);
+    p_read_tmp += sizeof(p_slotdata->slot_crc);
+    p_slotdata->end_tag = *((uint32_t *)p_read_tmp);
+
+    if ((p_slotdata->head_tag == STORAGE_SLOT_HEAD_TAG) && \
+        (p_slotdata->end_tag == STORAGE_SLOT_END_TAG) && \
+        (p_slotdata->total_data_size == size))
+    {
+        
+    }
+}
+
 static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
 {
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
