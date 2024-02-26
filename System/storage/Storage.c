@@ -778,11 +778,13 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
     return false;
 }
 
+/* free slot info update error */
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size)
 {
     uint8_t *crc_buf = NULL;
     uint8_t *slot_update_ptr = NULL;
     uint16_t crc_len = 0;
+    uint16_t base_info_crc = 0;
     uint32_t storage_data_size = 0;
     uint32_t stored_size = 0;
     uint32_t store_addr = 0;
@@ -870,11 +872,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             tab_item = (Storage_Item_TypeDef *)page_data_tmp;
             for (uint16_t item_i = 0; item_i < Item_Capacity_Per_Tab; item_i ++)
             {
-                if (((tab_item[item_i].head_tag == STORAGE_ITEM_HEAD_TAG) && \
-                     (tab_item[item_i].end_tag == STORAGE_ITEM_END_TAG) && \
-                     (memcmp(tab_item[item_i].name, STORAGE_FREEITEM_NAME, strlen(STORAGE_FREEITEM_NAME)))) || \
-                    ((tab_item[item_i].head_tag != STORAGE_ITEM_HEAD_TAG) && \
-                     (tab_item[item_i].end_tag != STORAGE_ITEM_END_TAG)))
+                if ((tab_item[item_i].head_tag != STORAGE_ITEM_HEAD_TAG) && \
+                    (tab_item[item_i].end_tag != STORAGE_ITEM_END_TAG))
                 {
                     item_index = item_i;
 
@@ -923,8 +922,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         /* noticed: DataSlot.total_data_size - DataSlot.align_size is storaged data size */
         DataSlot.total_data_size = storage_data_size;
         unstored_size = DataSlot.total_data_size;
-        p_Sec->para_num ++;
-        p_Sec->para_size += storage_data_size;
 
         if (FreeSlot.total_size >= (sizeof(Storage_DataSlot_TypeDef) + size))
         {
@@ -1044,11 +1041,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             }
 
             /* get tab */
-            if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
+            if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
                 return Storage_Read_Error;
 
             tab_item = (Storage_Item_TypeDef *)page_data_tmp;
-            memcpy(&tab_item[item_index], &crt_item_slot, sizeof(Storage_Item_TypeDef));
+            tab_item[item_index] = crt_item_slot;
 
             /* write back item slot list to tab */
             if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
@@ -1060,7 +1057,14 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
         /* update free slot address in base info */
         p_Sec->free_slot_addr = cur_freeslot_addr;
-        if (!StorageIO_API->write(p_Flash->base_addr, p_Flash, sizeof(Storage_FlashInfo_TypeDef)))
+
+        /* update base info crc */
+        memcpy(page_data_tmp, p_Flash, sizeof(Storage_FlashInfo_TypeDef));
+        base_info_crc = Common_CRC16(page_data_tmp, Storage_InfoPageSize - sizeof(base_info_crc));
+        memcpy(&page_data_tmp[Storage_InfoPageSize - sizeof(base_info_crc)], &base_info_crc, sizeof(base_info_crc));
+        
+        /* update base info from section start*/
+        if (!StorageIO_API->write(From_Start_Address, page_data_tmp, Storage_InfoPageSize))
             return Storage_Write_Error;
     }
 
@@ -1188,7 +1192,6 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     uint32_t data_sec_addr = 0;
     uint32_t remain_data_sec_size = 0;
     uint32_t data_sec_size = 0;
-    uint32_t info_page_size = 0;
     uint32_t sector_size = 0;
 
     memset(&Info, 0, sizeof(Storage_FlashInfo_TypeDef));
@@ -1197,7 +1200,6 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     switch((uint8_t)type)
     {
         case Internal_Flash:
-            info_page_size = OnChipFlash_Storage_InfoPageSize;
             StorageIO_API = &InternalFlash_IO;
             memcpy(Info.tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
 
@@ -1213,7 +1215,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             if (page_num == 0)
                 return false;
             
-            Info.boot_sec.tab_addr = BaseInfo_start_addr + info_page_size;
+            Info.boot_sec.tab_addr = BaseInfo_start_addr + Storage_InfoPageSize;
             Info.boot_sec.tab_size = BootSection_Block_Size * BootTab_Num;
             Info.boot_sec.page_num = BootTab_Num;
             Info.boot_sec.data_sec_size = InternalFlash_BootDataSec_Size;
@@ -1271,7 +1273,6 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
         /* still in developping */
         case External_Flash:
-            info_page_size = ExtFlash_Storage_InfoPageSize;
             StorageIO_API = &ExternalFlash_IO;
             memcpy(Info.tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE);
 
@@ -1291,7 +1292,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             if(page_num == 0)
                 return false;
             
-            Info.boot_sec.tab_addr = BaseInfo_start_addr + info_page_size;
+            Info.boot_sec.tab_addr = BaseInfo_start_addr + Storage_InfoPageSize;
             Info.boot_sec.tab_size = BootSection_Block_Size * BootTab_Num;
             Info.boot_sec.page_num = BootTab_Num;
             Info.boot_sec.data_sec_size = ExternalFlash_BootDataSec_Size;
@@ -1352,7 +1353,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     }
 
     /* write 0 to info section */
-    memset(page_data_tmp, 0, info_page_size);
+    memset(page_data_tmp, 0, Storage_InfoPageSize);
 
     /* read out and erase sector */
     if (!StorageIO_API->read(addr_offset, page_data_tmp, sizeof(Info)))
@@ -1360,11 +1361,11 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
 
     /* write base info to info section */
     memcpy(page_data_tmp, &Info, sizeof(Info));
-    crc = Common_CRC16(page_data_tmp, info_page_size - sizeof(crc));
-    memcpy(&page_data_tmp[info_page_size - sizeof(crc)], &crc, sizeof(crc));
+    crc = Common_CRC16(page_data_tmp, Storage_InfoPageSize - sizeof(crc));
+    memcpy(&page_data_tmp[Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
 
     /* write into flash chip */
-    if (!StorageIO_API->write(addr_offset, page_data_tmp, info_page_size))
+    if (!StorageIO_API->write(addr_offset, page_data_tmp, Storage_InfoPageSize))
         return false;
 
     /* read out again */
