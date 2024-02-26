@@ -2009,6 +2009,39 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Test, Storage_Test, Data Storage Test);
 
+static void Storage_Module_Format(Storage_MediumType_List medium)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    
+    if(shell_obj == NULL)
+        return;
+
+    switch((uint8_t) medium)
+    {
+        case Internal_Flash:
+            shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
+            break;
+
+        case External_Flash:
+            shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
+            break;
+
+        default:
+            return;
+    }
+
+    shellPrint(shell_obj, "\t[Flash Formatting ...]\r\n");
+    if (Storage_Format(medium))
+    {
+        shellPrint(shell_obj, "[Flash Formatting Done]\r\n");
+
+        /* rebuild tab */
+    }
+    else
+        shellPrint(shell_obj, "[Flash Formatting Error]\r\n");
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Format, Storage_Format, Storage Format);
+
 static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {
     Shell *shell_obj = Shell_GetInstence();
