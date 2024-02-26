@@ -711,6 +711,14 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
         p_read_tmp += data_len;
         p_write_tmp += data_len;
 
+        if (p_slotdata->align_size)
+        {
+            /* set align byte */
+            memset(p_update_data_buf, 0, p_slotdata->align_size);
+            p_read_tmp += p_slotdata->align_size;
+            p_write_tmp += p_slotdata->align_size;
+        }
+
         p_slotdata->slot_crc = *((uint32_t *)p_read_tmp);
         memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->slot_crc));
         p_crc = p_write_tmp;
@@ -739,7 +747,12 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
                 return Storage_Write_Error;
 
             if (p_slotdata->nxt_addr == 0)
-                return Storage_Error_None;
+            {
+                if (update_size == p_slotdata->total_data_size)
+                    return Storage_Error_None;
+            
+                return Storage_No_Enough_Space;
+            }
 
             read_addr = p_slotdata->nxt_addr;
         }
