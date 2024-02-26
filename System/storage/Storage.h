@@ -94,6 +94,7 @@ typedef enum
 } Storage_ParaClassType_List;
 
 #pragma pack(1)
+/* length must be 64Byte */
 typedef struct
 {
     uint8_t head_tag;
@@ -106,6 +107,7 @@ typedef struct
     uint8_t end_tag;
 } Storage_Item_TypeDef;
 
+/* length must be 64Byte witchout payload data */
 typedef struct
 {
     uint32_t head_tag;
@@ -115,7 +117,18 @@ typedef struct
     uint32_t nxt_addr;
     uint8_t align_size;
     /* storage data insert */
-    /* crc is from name to the last byte in data buff */
+    /*
+     * for example: storage 13 byte name as "data 1" then data slot should be like the diagram down below
+     *  ___________________________________________________________________________________________________________________________
+     * |    head    |   Name  | total data size | cur slot | nxt addr | align size | storage data |       slot crc    |     end    |
+     * | 0xEF0110EF |  data 1 |       16        |    16    |     0    |      3     | ............ |   comput crc by   | 0xFE1001FE |
+     * |   4Byte    |  41Byte |      4Byte      |  4Byte   |   4Byte  |    1Byte   |     13Byte   | current slot data |     4Byte  |
+     * |____________|_________|_________________|__________|__________|____________|______________|___________________|____________|
+     *                                                                                     |                  ↑
+     *                                                                                     |       13Byte     |
+     *                                                                                     |___ comput crc ___|
+     * 
+     */
     uint16_t slot_crc;
     uint32_t end_tag;
 } Storage_DataSlot_TypeDef;
