@@ -102,8 +102,8 @@ typedef struct
     uint8_t name[STORAGE_NAME_LEN];
     uint32_t data_addr;
     uint16_t len;
-    uint16_t crc16;
     uint8_t reserved[12];
+    uint16_t crc16;
     uint8_t end_tag;
 } Storage_Item_TypeDef;
 

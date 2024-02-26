@@ -33,6 +33,7 @@ typedef struct
 Storage_Monitor_TypeDef Storage_Monitor;
 static uint8_t page_data_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = {0};
 static uint8_t flash_write_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = {0};
+static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = {0};
 
 static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
@@ -393,7 +394,7 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
 
             for (uint16_t tab_i = 0; tab_i < sec_info->page_num; tab_i ++)
             {
-                if (!storage_api->read(tab_addr, page_data_tmp, sec_info->tab_size))
+                if (!storage_api->read(tab_addr, page_data_tmp, sec_info->tab_size / sec_info->page_num))
                     return false;
             
                 p_ItemList = page_data_tmp;
@@ -431,7 +432,7 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
                     }
                 }
 
-                tab_addr += sec_info->tab_size;
+                tab_addr += (sec_info->tab_size / sec_info->page_num);
             }
 
             if ((store_param_found != sec_info->para_num) || \
@@ -581,27 +582,27 @@ static storage_handle Storage_Search(Storage_MediumType_List type, Storage_ParaC
 
     if ((p_Sec == NULL) || \
         (p_Sec->para_num == 0) || \
-        (p_Sec->para_size))
+        (p_Sec->para_size == 0))
         return 0;
 
     tab_addr = p_Sec->tab_addr;
     /* tab traverse */
     for (uint8_t tab_i = 0; tab_i < p_Sec->page_num; tab_i ++)
     {
-        if (!StorageIO_API->read(tab_addr, page_data_tmp, p_Sec->tab_size))
+        if (!StorageIO_API->read(tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
             return 0;
     
         /* tab item traverse */
-        item_list = page_data_tmp;
-        for (uint16_t item_i = 0; item_i < (p_Sec->tab_size / sizeof(Storage_Item_TypeDef)); item_i ++)
+        item_list = (Storage_Item_TypeDef *)page_data_tmp;
+        for (uint16_t item_i = 0; item_i < ((p_Sec->tab_size / p_Sec->page_num) / sizeof(Storage_Item_TypeDef)); item_i ++)
         {
-            p_item = item_list + item_i;
+            p_item = &item_list[item_i];
 
             if ((p_item->head_tag == STORAGE_ITEM_HEAD_TAG) && \
                 (p_item->end_tag == STORAGE_ITEM_END_TAG) && \
                 (memcmp(p_item->name, name, strlen(name)) == 0))
             {
-                crc_buf = p_item + sizeof(p_item->head_tag);
+                crc_buf = ((uint8_t *)p_item) + sizeof(p_item->head_tag);
                 crc_len = sizeof(Storage_Item_TypeDef);
                 crc_len -= sizeof(p_item->head_tag);
                 crc_len -= sizeof(p_item->end_tag);
@@ -617,7 +618,7 @@ static storage_handle Storage_Search(Storage_MediumType_List type, Storage_ParaC
         }
     
         /* update tab address */
-        tab_addr += p_Sec->tab_size;
+        tab_addr += (p_Sec->tab_size / p_Sec->page_num);
     }
 
     return 0;
@@ -859,11 +860,14 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         storage_tab_addr = p_Sec->tab_addr;
         for(uint16_t tab_i = 0; tab_i < p_Sec->page_num; tab_i ++)
         {
+            store_addr = 0;
+            item_index = 0;
+
             /* step 2: update tab */
-            if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, p_Sec->tab_size))
+            if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
                 return Storage_Read_Error;
 
-            tab_item = page_data_tmp;
+            tab_item = (Storage_Item_TypeDef *)page_data_tmp;
             for (uint16_t item_i = 0; item_i < Item_Capacity_Per_Tab; item_i ++)
             {
                 if (((tab_item[item_i].head_tag == STORAGE_ITEM_HEAD_TAG) && \
@@ -889,7 +893,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     crt_item_slot.end_tag = STORAGE_ITEM_END_TAG;
 
                     /* comput crc */
-                    crc_buf = &crt_item_slot + sizeof(crt_item_slot.head_tag);
+                    crc_buf = ((uint8_t *)&crt_item_slot) + sizeof(crt_item_slot.head_tag);
                     crc_len = sizeof(Storage_Item_TypeDef);
                     crc_len -= sizeof(crt_item_slot.head_tag);
                     crc_len -= sizeof(crt_item_slot.end_tag);
@@ -901,7 +905,10 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 }
             }
 
-            storage_tab_addr += p_Sec->tab_size;
+            if (store_addr)
+                break;
+
+            storage_tab_addr += (p_Sec->tab_size / p_Sec->page_num);
         }
 
         if (store_addr == 0)
@@ -1040,11 +1047,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
                 return Storage_Read_Error;
 
-            tab_item = page_data_tmp;
+            tab_item = (Storage_Item_TypeDef *)page_data_tmp;
             memcpy(&tab_item[item_index], &crt_item_slot, sizeof(Storage_Item_TypeDef));
 
             /* write back item slot list to tab */
-            if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, p_Sec->tab_addr))
+            if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
                 return Storage_Write_Error;
         }
         else
@@ -1441,13 +1448,18 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, 
 
 static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
-    uint32_t read_addr = 0;
+    uint32_t read_start_addr = 0;
     uint32_t flash_end_addr = 0;
+    uint32_t section_start_addr = 0;
+    uint32_t section_size = 0;
+    uint32_t read_offset = 0;
+    uint32_t read_len = len;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
+    DevW25Qxx_Error_List state = DevW25Qxx_Ok;
 
     if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
     {
-        read_addr = Storage_Monitor.external_info.base_addr + addr_offset;       
+        read_start_addr = Storage_Monitor.external_info.base_addr + addr_offset;       
         dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
 
         switch((uint8_t)dev->chip_type)
@@ -1455,20 +1467,51 @@ static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
             case Storage_ChipType_W25Qxx:
                 if (dev->dev_api && dev->dev_obj)
                 {
+                    section_size = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).subsector_size;
                     /* get w25qxx device info */
                     /* address check */
                     flash_end_addr = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).start_addr;
-                    if (flash_end_addr > read_addr)
+                    if (flash_end_addr > read_start_addr)
                         return false;
 
                     /* range check */
                     flash_end_addr += To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).flash_size;
-                    if ((len + read_addr) > flash_end_addr)
+                    if ((len + read_start_addr) > flash_end_addr)
                         return false;
 
-                    /* W25Qxx device read */
-                    if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), read_addr, p_data, len) == DevW25Qxx_Ok)
-                        return true;
+                    if (section_size)
+                    {
+                        section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), read_start_addr);
+                        read_offset = read_start_addr - section_start_addr;
+                        if (section_size > sizeof(flash_read_tmp))
+                            return false;
+
+                        if (read_offset + read_len > section_size)
+                            read_len = section_size - read_offset;
+
+                        while(true)
+                        {
+                            /* circumstances 1: store data size less than flash sector size and only none multiple sector read is needed */
+                            /* circumstances 2: store data size less than flash sector length but need to read from the end of the sector N to the start of the sector N + 1 */
+                            /* circumstances 3: store data size large than flash sector length */
+                            /* read whole section */
+                            if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, flash_read_tmp, section_size) != DevW25Qxx_Ok)
+                                return false;
+                        
+                            memcpy(p_data, flash_read_tmp + read_offset, read_len);
+                            memset(flash_read_tmp, 0, section_size);
+
+                            len -= read_len;
+                            if (len == 0)
+                                return true;
+                        
+                            read_offset = 0;
+                            section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + read_len);
+                            read_len = len;
+                            if (read_len >= section_size)
+                                read_len = section_size;
+                        }
+                    }
                 }
                 break;
 
@@ -1920,7 +1963,6 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
             shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
             shellPrint(shell_obj, "\thalt by enable or init state\r\n");
             return;
-
         }
     }
 
@@ -1959,6 +2001,7 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
     {
         shellPrint(shell_obj, "\t[Storage Test Failed]\r\n");
         shellPrint(shell_obj, "\t[Error_Code]: %s\r\n", Storage_Error_Print(error_code));
+        return;
     }
     else
         shellPrint(shell_obj, "\t[Storage Test Done]\r\n");

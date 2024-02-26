@@ -47,7 +47,7 @@ int16_t Common_CRC16(const uint8_t *pBuf, const uint32_t len)
         
     for (uint32_t i = 0; i < len; i++)
     {
-        j = (uint8_t)(((CheckSum >> 8) ^ *pBuf++) & 0xFF);
+        j = (uint8_t)(((CheckSum >> 8) ^ pBuf[i]) & 0xFF);
         CheckSum = crc16_tab[j] ^ (CheckSum << 8);
     }
     
