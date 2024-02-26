@@ -2030,12 +2030,20 @@ static void Storage_Module_Format(Storage_MediumType_List medium)
             return;
     }
 
-    shellPrint(shell_obj, "\t[Flash Formatting ...]\r\n");
+    shellPrint(shell_obj, "\t[Flash formatting ...]\r\n");
     if (Storage_Format(medium))
     {
-        shellPrint(shell_obj, "\t[Flash Formatting Done]\r\n");
+        shellPrint(shell_obj, "\t[Flash formatting done]\r\n");
+        shellPrint(shell_obj, "\t[Rebuilding storage tab and section]\r\n");
 
         /* rebuild tab */
+        if (!Storage_Build_StorageInfo(External_Flash))
+        {
+            shellPrint(shell_obj, "\t[Rebuild storage tab and section failed]\r\n");
+            return;
+        }
+
+        shellPrint(shell_obj, "\t[Rebuild storage tab and section successed]\r\n");
     }
     else
         shellPrint(shell_obj, "\t[Flash Formatting Error]\r\n");
