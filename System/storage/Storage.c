@@ -2033,12 +2033,12 @@ static void Storage_Module_Format(Storage_MediumType_List medium)
     shellPrint(shell_obj, "\t[Flash Formatting ...]\r\n");
     if (Storage_Format(medium))
     {
-        shellPrint(shell_obj, "[Flash Formatting Done]\r\n");
+        shellPrint(shell_obj, "\t[Flash Formatting Done]\r\n");
 
         /* rebuild tab */
     }
     else
-        shellPrint(shell_obj, "[Flash Formatting Error]\r\n");
+        shellPrint(shell_obj, "\t[Flash Formatting Error]\r\n");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Format, Storage_Format, Storage Format);
 
