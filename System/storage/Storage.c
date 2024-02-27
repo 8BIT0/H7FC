@@ -1143,8 +1143,8 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
         free_slot.total_size = p_SecInfo->data_sec_size - sizeof(free_slot);
         free_slot.cur_slot_size = p_SecInfo->data_sec_size - sizeof(free_slot);
         free_slot.nxt_addr = 0;
-        /* if current free slot get enought space for data then set ender tag as 0xFE1001FE */
-        /* or else set ender tag as next slot address such like 0x80exxxx. */
+        /* if current free slot get enought space for data then set next address (nxt_addr) as 0 */
+        /* or else setnext address (nxt_addr) as next slot address such as 0x80exxxx. */
         /* until all data was saved into multiple flash segment completely */
         /* set ender tag as 0xFE1001FE */
         free_slot.end_tag = STORAGE_SLOT_END_TAG;
@@ -2068,9 +2068,11 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
     switch((uint8_t) medium)
     {
         case Internal_Flash:
+            shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
             break;
 
         case External_Flash:
+            shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
             break;
 
         default:
