@@ -2070,6 +2070,19 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
+    Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_Item_TypeDef *item_list = NULL;
+    uint16_t singal_tab_size = 0;
+    uint8_t item_per_tab = 0;
+    uint32_t tab_addr = 0;
+    uint32_t matched_item_num = 0;
+    uint32_t free_item_num = 0;
+    uint32_t error_item_num = 0;
+    uint8_t *crc_buf = NULL;
+    uint16_t crc = 0;
+    uint16_t crc_len = 0;
+    uint16_t crc_error = 0;
     Shell *shell_obj = Shell_GetInstence();
     
     if(shell_obj == NULL)
@@ -2085,18 +2098,129 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
     switch((uint8_t) medium)
     {
         case Internal_Flash:
-            p_Flash = &Storage_Monitor.internal_info;
             shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.internal || \
+                !Storage_Monitor.module_init_reg.bit.internal)
+            {
+                shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+                return;
+            }
+            p_Flash = &Storage_Monitor.internal_info;
+            StorageIO_API = &InternalFlash_IO;
             break;
 
         case External_Flash:
-            p_Flash = &Storage_Monitor.external_info;
             shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.external || \
+                !Storage_Monitor.module_init_reg.bit.external)
+            {
+                shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+                return;
+            }
+            p_Flash = &Storage_Monitor.external_info;
+            StorageIO_API = &ExternalFlash_IO;
             break;
 
         default:
             return;
     }
 
+    p_Sec = Storage_Get_SecInfo(p_Flash, class);
+    if ((p_Sec == NULL) || \
+        (p_Sec->tab_addr == 0) || \
+        (p_Sec->tab_size == 0))
+    {
+        shellPrint(shell_obj, "\tGet section info error\r\n");
+        return;
+    }
+
+    singal_tab_size = p_Sec->tab_size / p_Sec->page_num;
+    item_per_tab = singal_tab_size / sizeof(Storage_Item_TypeDef);
+    tab_addr = p_Sec->tab_addr;
+
+    for (uint8_t i = 0; i < p_Sec->page_num; i++)
+    {
+        shellPrint(shell_obj, "\t\t[tab page index : %d]\r\n", i);
+        shellPrint(shell_obj, "\t\t[tab page addr  : %d]\r\n", tab_addr);
+
+        if (!StorageIO_API->read(tab_addr, page_data_tmp, singal_tab_size))
+        {
+            shellPrint(shell_obj, "[...tab address read error...]\r\n");
+            shellPrint(shell_obj, "[............ halt ..........]\r\n");
+            return;
+        }
+        else
+        {
+            /* dump raw tab */
+            for (uint16_t t = 0; t < (singal_tab_size / 16); t++)
+            {
+                shellPrint(shell_obj, "[");
+                for (uint8_t t_i = 0; t_i < 16; t_i++)
+                    shellPrint(shell_obj, " %02x ", page_data_tmp[t_i + (t * 16)]);
+                shellPrint(shell_obj, "]\r\n");
+            }
+
+            /* convert raw data to tab item list */
+            item_list = page_data_tmp;
+            crc_error = 0;
+            for (uint8_t j = 0; j < item_per_tab; j++)
+            {
+                if ((item_list[j].head_tag == STORAGE_ITEM_HEAD_TAG) && \
+                    (item_list[j].end_tag == STORAGE_ITEM_END_TAG))
+                {
+                    crc_buf = ((uint8_t *)&item_list[j]) + sizeof(item_list[j].head_tag);
+                    crc_len = sizeof(Storage_Item_TypeDef);
+                    crc_len -= sizeof(item_list[j].head_tag);
+                    crc_len -= sizeof(item_list[j].end_tag);
+                    crc_len -= sizeof(item_list[j].crc16);
+                    crc = Common_CRC16(crc_buf, crc_len);
+
+                    shellPrint(shell_obj, "\t\t[item class    : %d]\r\n", item_list[j].class);
+                    shellPrint(shell_obj, "\t\t[item name     : %s]\r\n", item_list[j].name);
+                    shellPrint(shell_obj, "\t\t[item address  : %d]\r\n", item_list[j].data_addr);
+                    shellPrint(shell_obj, "\t\t[item data len : %d]\r\n", item_list[j].len);
+                    shellPrint(shell_obj, "\r\n");
+
+                    if (crc == item_list[j].crc16)
+                    {
+                        if (memcmp(item_list[j].name, STORAGE_FREEITEM_NAME, strlen(STORAGE_FREEITEM_NAME)) == 0)
+                        {
+                            free_item_num ++;
+                        }
+                        else
+                            matched_item_num ++;
+                    }
+                    else
+                    {
+                        crc_error ++;
+                        error_item_num ++;
+                    }
+                }
+            }
+
+            if (crc_error)
+                shellPrint(shell_obj, "\t\t\t[error item num in tab : %d]\r\n", crc_error);
+        }
+
+        tab_addr += singal_tab_size;
+    }
+ 
+    shellPrint(shell_obj, "\t[all tab size    : %d]\r\n", p_Sec->tab_size);
+    shellPrint(shell_obj, "\t[singal tab size : %d]\r\n", singal_tab_size);
+    shellPrint(shell_obj, "\t[item per tab    : %d]\r\n", item_per_tab);
+    shellPrint(shell_obj, "\t[tab start addr  : %d]\r\n", tab_addr);
+    shellPrint(shell_obj, "\t[tab address     : %d]\r\n", p_Sec->tab_addr);
+    shellPrint(shell_obj, "\t[tab page num    : %d]\r\n", p_Sec->page_num);
+    shellPrint(shell_obj, "\t[para num        : %d]\r\n", p_Sec->para_num);
+    shellPrint(shell_obj, "\t[para size       : %d]\r\n", p_Sec->para_size);
+    shellPrint(shell_obj, "\r\n");
+
+    shellPrint(shell_obj, "\t[matched data item num : %d]\r\n", matched_item_num);
+    shellPrint(shell_obj, "\t[matched free item num : %d]\r\n", free_item_num);
+    shellPrint(shell_obj, "\t[error item num        : %d]\r\n", error_item_num);
+    if (matched_item_num != p_Sec->para_num)
+        shellPrint(shell_obj, "[warnning stored parameter number]\r\n");
+
+    shellPrint(shell_obj, "\r\n");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_ShowTab, Storage_Show_Tab, Storage show Tab);
