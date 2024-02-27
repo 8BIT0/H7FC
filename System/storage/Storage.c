@@ -2218,6 +2218,17 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
     shellPrint(shell_obj, "\t[matched data item num : %d]\r\n", matched_item_num);
     shellPrint(shell_obj, "\t[matched free item num : %d]\r\n", free_item_num);
     shellPrint(shell_obj, "\t[error item num        : %d]\r\n", error_item_num);
+    
+    /* show free address */
+    if (!StorageIO_API->read(p_Sec->free_slot_addr, page_data_tmp, sizeof( Storage_FreeSlot_TypeDef)))
+    {
+        shellPrint(shell_obj, "[Free slot info read failed]\r\n");
+        shellPrint(shell_obj, "[.......... halt ..........]\r\n");
+        return;
+    }
+
+    shellPrint(shell_obj, "\t[free slot address     : %d]\r\n", p_Sec->free_slot_addr);
+
     if (matched_item_num != p_Sec->para_num)
         shellPrint(shell_obj, "[warnning stored parameter number]\r\n");
 
