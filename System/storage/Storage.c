@@ -979,10 +979,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                         }
                     }
 
+                    /* update current free slot adderess */
+                    cur_freeslot_addr += DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef); 
+                    
                     FreeSlot.total_size = free_space_remianing;
-                    FreeSlot.nxt_addr = cur_freeslot_addr + DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef);
                     FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef);
-                    FreeSlot.nxt_addr += sizeof(Storage_DataSlot_TypeDef);
                 }
 
                 /* comput current slot crc */
@@ -1005,11 +1006,13 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 slot_update_ptr += sizeof(DataSlot.align_size);
                 memcpy(slot_update_ptr, crc_buf, DataSlot.cur_slot_size);
                 slot_update_ptr += DataSlot.cur_slot_size;
+                
                 if (DataSlot.align_size)
                 {
                     memset(slot_update_ptr, 0, DataSlot.align_size);
                     slot_update_ptr += DataSlot.align_size;
                 }
+
                 memcpy(slot_update_ptr, &DataSlot.slot_crc, sizeof(DataSlot.slot_crc));
                 slot_update_ptr += sizeof(DataSlot.slot_crc);
                 memcpy(slot_update_ptr, &DataSlot.end_tag, sizeof(DataSlot.end_tag));
