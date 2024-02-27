@@ -872,8 +872,11 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             tab_item = (Storage_Item_TypeDef *)page_data_tmp;
             for (uint16_t item_i = 0; item_i < Item_Capacity_Per_Tab; item_i ++)
             {
-                if ((tab_item[item_i].head_tag != STORAGE_ITEM_HEAD_TAG) && \
-                    (tab_item[item_i].end_tag != STORAGE_ITEM_END_TAG))
+                if (((tab_item[item_i].head_tag == STORAGE_ITEM_HEAD_TAG) && \
+                     (tab_item[item_i].end_tag == STORAGE_ITEM_END_TAG) && \
+                     (memcmp(tab_item[item_i].name, STORAGE_FREEITEM_NAME, strlen(STORAGE_FREEITEM_NAME)) == 0)) || \
+                    ((tab_item[item_i].head_tag != STORAGE_ITEM_HEAD_TAG) && \
+                     (tab_item[item_i].end_tag != STORAGE_ITEM_END_TAG)))
                 {
                     item_index = item_i;
 
@@ -2014,17 +2017,30 @@ static void Storage_Module_Format(Storage_MediumType_List medium)
 {
     Shell *shell_obj = Shell_GetInstence();
     
-    if(shell_obj == NULL)
+    if ((shell_obj == NULL) || !Storage_Monitor.init_state)
         return;
 
     switch((uint8_t) medium)
     {
         case Internal_Flash:
             shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
+
+            if (!Storage_Monitor.module_enable_reg.bit.internal || \
+                !Storage_Monitor.module_init_reg.bit.internal)
+            {
+                shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+                return;
+            }
             break;
 
         case External_Flash:
             shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.external || \
+                !Storage_Monitor.module_init_reg.bit.external)
+            {
+                shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+                return;
+            }
             break;
 
         default:
@@ -2053,6 +2069,7 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 
 static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {
+    Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Shell *shell_obj = Shell_GetInstence();
     
     if(shell_obj == NULL)
@@ -2068,10 +2085,12 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
     switch((uint8_t) medium)
     {
         case Internal_Flash:
+            p_Flash = &Storage_Monitor.internal_info;
             shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
             break;
 
         case External_Flash:
+            p_Flash = &Storage_Monitor.external_info;
             shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
             break;
 
@@ -2079,19 +2098,5 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
             return;
     }
 
-    switch((uint8_t) class)
-    {
-        case Para_Boot:
-            break;
-
-        case Para_Sys:
-            break;
-        
-        case Para_User:
-            break;
-        
-        default:
-            return;
-    }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_ShowTab, Storage_Show_Tab, Storage show Tab);
