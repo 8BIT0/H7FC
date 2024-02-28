@@ -413,6 +413,7 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
                 if(((CLI_Monitor.port_addr == 0) || (CLI_Monitor.port_addr == p_RecObj->PortObj_addr)) && \
                    (CLI_Monitor.p_rx_stream->size + p_stream->size) <= CLI_Monitor.p_rx_stream->max_size)
                 {
+                    SrvDataHub.set_cli_state(true);
 
                     CLI_Monitor.type = p_RecObj->type;
                     CLI_Monitor.port_addr = p_RecObj->PortObj_addr;
@@ -716,32 +717,20 @@ static void TaskFrameCTL_CLI_Trans(uint8_t *p_data, uint16_t size)
     }
 }
 
-static void TaskFermeCTL_CLI_EnableControl(uint8_t state)
+static void TaskFermeCTL_CLI_DisableControl(void)
 {
-    bool cli_state = state;
     Shell *shell_obj = Shell_GetInstence();
-
-    SrvOsCommon.enter_critical();
-    if(state == 0)
-    {
-        SrvDataHub.set_cli_state(false);
-    }
-    else
-        SrvDataHub.set_cli_state(true);
-    SrvOsCommon.exit_critical();
     
     shellPrint(shell_obj, "\r\n\r\n");
-    if(state)
-    {
-        shellPrint(shell_obj, "CLI Enabled\r\n");
-    }
-    else
-    {
-        shellPrint(shell_obj, "CLI Disabled\r\n");
-        CLI_Monitor.port_addr = 0;
-    }
+    
+    SrvOsCommon.enter_critical();
+    SrvDataHub.set_cli_state(false);
+    SrvOsCommon.exit_critical();
+
+    shellPrint(shell_obj, "CLI Disabled\r\n");
+    CLI_Monitor.port_addr = 0;
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, CLI_Enable,  TaskFermeCTL_CLI_EnableControl, CLI Enable Control);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, CLI_Disable,  TaskFermeCTL_CLI_DisableControl, CLI Enable Control);
 
 
 

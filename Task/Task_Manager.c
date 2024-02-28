@@ -77,7 +77,7 @@ void Task_Manager_CreateTask(void)
             storage_ExtFlashObj->bus_type = ExtFlash_Bus_Type;
             storage_ExtFlashObj->chip_type = ExtFlash_Chip_Type;
             storage_ExtFlashObj->dev_api = ExtFlash_Dev_Api;
-            storage_ExtFlashObj->dev_obj = (void *)(&storage_ExtFlashObj);
+            storage_ExtFlashObj->dev_obj = NULL;
         }
         else
         {

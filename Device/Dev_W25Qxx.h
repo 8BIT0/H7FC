@@ -9,6 +9,8 @@
 #define To_DevW25Qxx_API(x) ((DevW25Qxx_TypeDef *)x)
 #define To_DevW25Qxx_OBJ(x) ((DevW25QxxObj_TypeDef *)x)
 
+#define W25QXX_PAGE_SIZE                        0x100
+
 #define W25Q08_DEV_ID                           0xEF13
 #define W25Q16_DEV_ID                           0xEF14
 #define W25Q32_DEV_ID                           0xEF15
@@ -16,18 +18,18 @@
 /* 16mb, the range of address:0~0xFFFFFF */
 #define W25Q128_DEV_ID                          0xEF17
 
-#define W25Q64FV_FLASH_SIZE                     0x800000    /* 64 MBits => 8MBytes */
-#define W25Q64FV_SECTOR_SIZE                    0x10000     /* 128 sectors of 64KBytes */
-#define W25Q64FV_SUBSECTOR_SIZE                 0x1000      /* 2048 subsectors of 4kBytes */
-#define W25Q64FV_PAGE_SIZE                      0x100       /* 32767 pages of 256 bytes */
+#define W25Q64FV_FLASH_SIZE                     0x800000            /* 64 MBits => 8MBytes */
+#define W25Q64FV_SECTOR_SIZE                    0x10000             /* 128 sectors of 64KBytes */
+#define W25Q64FV_SUBSECTOR_SIZE                 0x1000              /* 2048 subsectors of 4kBytes */
+#define W25Q64FV_PAGE_SIZE                      W25QXX_PAGE_SIZE    /* 32767 pages of 256 bytes */
 #define W25Q64FV_SECTOR_NUM                     128
 #define W25Q64FV_SUBSECTOR_NUM                  2048
 #define W25Q64FV_PAGE_NUM                       32768
 
-#define W25Q128FV_FLASH_SIZE                    0x1000000   /* 128 MBits => 16MBytes */
-#define W25Q128FV_SECTOR_SIZE                   0x10000     /* 256 sectors of 64KBytes */
-#define W25Q128FV_SUBSECTOR_SIZE                0x1000      /* 4096 subsectors of 4kBytes */
-#define W25Q128FV_PAGE_SIZE                     0x100       /* 65536 pages of 256 bytes */
+#define W25Q128FV_FLASH_SIZE                    0x1000000           /* 128 MBits => 16MBytes */
+#define W25Q128FV_SECTOR_SIZE                   0x10000             /* 256 sectors of 64KBytes */
+#define W25Q128FV_SUBSECTOR_SIZE                0x1000              /* 4096 subsectors of 4kBytes */
+#define W25Q128FV_PAGE_SIZE                     W25QXX_PAGE_SIZE    /* 65536 pages of 256 bytes */
 #define W25Q128FV_SECTOR_NUM                    256
 #define W25Q128FV_SUBSECTOR_NUM                 4096
 #define W25Q128FV_PAGE_NUM                      65536
@@ -38,9 +40,10 @@
 #define W25Q128FV_BULK_ERASE_MAX_TIME           250000
 #define W25Q128FV_SECTOR_ERASE_MAX_TIME         3000
 #define W25Q128FV_SUBSECTOR_ERASE_MAX_TIME      800
-#define W25Qx_TIMEOUT_VALUE                     1000
+#define W25Qx_TIMEOUT_VALUE                     10000
 
 #define W25QXX_BASE_ADDRESS                     0x000000
+#define W25QXX_MAX_PROGRAM_SIZE                 W25QXX_PAGE_SIZE
 
 /* Reset Operations */
 #define RESET_ENABLE_CMD 0x66

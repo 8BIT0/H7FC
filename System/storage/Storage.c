@@ -86,7 +86,6 @@ Storage_TypeDef Storage = {
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
 {
     void *ext_flash_bus_cfg = NULL;
-    bool extflash_ptr_smash = true;
 
     memset(&Storage_Monitor, 0, sizeof(Storage_Monitor));
 
@@ -128,6 +127,7 @@ reformat_internal_flash_info:
                     if (Storage_Build_StorageInfo(Internal_Flash))
                     {
                         Storage_Monitor.module_init_reg.bit.internal = true;
+                        Storage_Monitor.InternalFlash_BuildTab_cnt ++;
                         goto reupdate_internal_flash_info;
                     }
                     else
@@ -170,77 +170,72 @@ reformat_internal_flash_info:
 
                     if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
                     {
-                        /* set get time callback */
-                        To_DevW25Qxx_OBJ(ExtDev->dev_obj)->systick = SrvOsCommon.get_os_ms;
-
-                        /* set bus control callback */
-                        To_DevW25Qxx_OBJ(ExtDev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
-                        To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
-                        To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
-                        To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
-
-                        if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
+                        ExtDev->dev_obj = SrvOsCommon.malloc(sizeof(DevW25QxxObj_TypeDef));
+                        if (ExtDev->dev_obj)
                         {
+                            /* set get time callback */
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->systick = SrvOsCommon.get_os_ms;
+
+                            /* set bus control callback */
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
+
                             Storage_Monitor.ExtDev_ptr = ExtDev;
-                            ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_num;
-                            ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_size;
-                            ExtDev->total_size  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).flash_size;
-                            ExtDev->page_num    = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_num;
-                            ExtDev->page_size   = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_size;
-
-                            /* set external flash device read write base address */
-                            Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
-                            Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
-
-reupdate_external_flash_info:
-                            /* get storage info */
-                            if (!Storage_Get_StorageInfo(External_Flash))
+                            Storage_Monitor.ExternalFlash_Error_Code = To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj));
+                            
+                            if (Storage_Monitor.ExternalFlash_Error_Code == DevW25Qxx_Ok)
                             {
-reformat_external_flash_info:
-                                if (Storage_Monitor.ExternalFlash_Format_cnt)
-                                {
-                                    /* format storage device */
-                                    if (!Storage_Format(External_Flash))
-                                    {
-                                        Storage_Monitor.ExternalFlash_Format_cnt --;
-                                        Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
-                                        if (Storage_Monitor.ExternalFlash_Format_cnt)
-                                            goto reformat_external_flash_info;
-                                    }
-                                    else
-                                    {
-                                        /* external flash module format successed */
-                                        /* build storage tab */
-                                        if (Storage_Build_StorageInfo(External_Flash))
-                                        {
-                                            Storage_Monitor.module_init_reg.bit.external = true;
-                                            extflash_ptr_smash = false;
+                                ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_num;
+                                ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_size;
+                                ExtDev->total_size  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).flash_size;
+                                ExtDev->page_num    = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_num;
+                                ExtDev->page_size   = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_size;
 
-                                            /* after tab builded read storage info again */
-                                            goto reupdate_external_flash_info;
+                                /* set external flash device read write base address */
+                                Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
+                                Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
+                            
+reupdate_external_flash_info:
+                                /* get storage info */
+                                if (!Storage_Get_StorageInfo(External_Flash))
+                                {
+reformat_external_flash_info:
+                                    if (Storage_Monitor.ExternalFlash_Format_cnt)
+                                    {
+                                        /* format storage device */
+                                        if (!Storage_Format(External_Flash))
+                                        {
+                                            Storage_Monitor.ExternalFlash_Format_cnt --;
+                                            Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
+                                            if (Storage_Monitor.ExternalFlash_Format_cnt)
+                                                goto reformat_external_flash_info;
                                         }
                                         else
-                                            Storage_Monitor.module_init_reg.bit.internal = false;
+                                        {
+                                            /* external flash module format successed */
+                                            /* build storage tab */
+                                            if (Storage_Build_StorageInfo(External_Flash))
+                                            {
+                                                Storage_Monitor.ExternalFlash_BuildTab_cnt ++;
+                                                Storage_Monitor.module_init_reg.bit.external = true;
+
+                                                /* after tab builded read storage info again */
+                                                goto reupdate_external_flash_info;
+                                            }
+                                        }
                                     }
                                 }
                                 else
-                                {
-                                    /* reformat count is 0 */
-                                    /* external flash module format error */
-                                    Storage_Monitor.module_init_reg.bit.external = false;
-                                }
-                            }
-                            else
-                            {
-                                extflash_ptr_smash = false;
-                                Storage_Monitor.module_init_reg.bit.external = true;
+                                    Storage_Monitor.module_init_reg.bit.external = true;
                             }
                         }
                     }
                 }
             }
 
-            if (extflash_ptr_smash)
+            if (!Storage_Monitor.module_init_reg.bit.external)
                 Storage_Smash_ExternalFlashDev_Ptr(ext_flash_bus_cfg, ExtDev);
         }
         else
@@ -512,8 +507,6 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             Storage_Check_Tab(StorageIO_API, &p_Info->sys_sec) && \
             Storage_Check_Tab(StorageIO_API, &p_Info->user_sec))
             return true;
-
-        return true;
     }
 
     return false;
@@ -1458,6 +1451,7 @@ static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
     uint32_t read_start_addr = 0;
     uint32_t flash_end_addr = 0;
     uint32_t section_start_addr = 0;
+    uint32_t next_read_addr = 0;
     uint32_t section_size = 0;
     uint32_t read_offset = 0;
     uint32_t read_len = len;
@@ -1493,14 +1487,14 @@ static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
                         if (section_size > sizeof(flash_read_tmp))
                             return false;
 
-                        if (read_offset + read_len > section_size)
-                            read_len = section_size - read_offset;
-
                         while(true)
                         {
                             /* circumstances 1: store data size less than flash sector size and only none multiple sector read is needed */
                             /* circumstances 2: store data size less than flash sector length but need to read from the end of the sector N to the start of the sector N + 1 */
                             /* circumstances 3: store data size large than flash sector length */
+                            if (read_offset + read_len > section_size)
+                                read_len = section_size - read_offset;
+
                             /* read whole section */
                             if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, flash_read_tmp, section_size) != DevW25Qxx_Ok)
                                 return false;
@@ -1513,10 +1507,13 @@ static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
                                 return true;
                         
                             read_offset = 0;
-                            section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + read_len);
+                            next_read_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + read_len);
+                            if (next_read_addr == section_start_addr)
+                                read_offset = read_len;
+                            
+                            p_data += read_len;
                             read_len = len;
-                            if (read_len >= section_size)
-                                read_len = section_size;
+                            section_start_addr = next_read_addr;
                         }
                     }
                 }
@@ -1535,6 +1532,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
     uint32_t write_start_addr = 0;
     uint32_t flash_end_addr = 0;
     uint32_t section_start_addr = 0;
+    uint32_t next_write_addr = 0;
     uint32_t section_size = 0;
     uint32_t write_offset = 0;
     uint32_t write_len = len;
@@ -1570,9 +1568,6 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                         if (section_size > sizeof(flash_write_tmp))
                             return false;
 
-                        if (write_offset + write_len > section_size)
-                            write_len = section_size - write_offset;
-
                         while(true)
                         {
                             /* circumstances 1: store data size less than flash sector size and only none multiple sector write is needed */
@@ -1586,10 +1581,13 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                             if (To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr) != DevW25Qxx_Ok)
                                 return false;
 
+                            /* update whole section */
+                            if (write_offset + write_len > section_size)
+                                write_len = section_size - write_offset;
+                            
                             /* copy data to section data read out */
                             memcpy(flash_write_tmp + write_offset, p_data, write_len);
 
-                            /* update whole section */
                             state = To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, flash_write_tmp, section_size);
 
                             /* clear cache buff */
@@ -1605,10 +1603,13 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                                 return false;
 
                             write_offset = 0;
-                            section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + write_len);
+                            next_write_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + write_len);
+                            if (next_write_addr == section_start_addr)
+                                write_offset = write_len;
+
+                            p_data += write_len;
                             write_len = len;
-                            if (write_len >= section_size)
-                                write_len = section_size;
+                            section_start_addr = next_write_addr; 
                         }
                     }
                 }
@@ -1956,6 +1957,8 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
         if (!Storage_Monitor.module_enable_reg.bit.external || !Storage_Monitor.module_init_reg.bit.external)
         {
             shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+            shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
+            shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
             shellPrint(shell_obj, "\thalt by enable or init state\r\n");
             return;
         }
@@ -1966,6 +1969,8 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
         if (!Storage_Monitor.module_enable_reg.bit.internal || !Storage_Monitor.module_init_reg.bit.internal)
         {
             shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+            shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
+            shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
             shellPrint(shell_obj, "\thalt by enable or init state\r\n");
             return;
         }
@@ -2029,6 +2034,8 @@ static void Storage_Module_Format(Storage_MediumType_List medium)
                 !Storage_Monitor.module_init_reg.bit.internal)
             {
                 shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
                 return;
             }
             break;
@@ -2039,6 +2046,8 @@ static void Storage_Module_Format(Storage_MediumType_List medium)
                 !Storage_Monitor.module_init_reg.bit.external)
             {
                 shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
                 return;
             }
             break;
@@ -2067,6 +2076,75 @@ static void Storage_Module_Format(Storage_MediumType_List medium)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Module_Format, Storage_Module_Format, Storage Format);
 
+static void Storage_Show_ModuleInfo(void)
+{
+    Storage_ExtFLashDevObj_TypeDef *p_ext_flash = NULL; 
+    Shell *shell_obj = Shell_GetInstence();
+    void *dev_api = NULL;
+    void *dev_obj = NULL;
+
+    if (shell_obj == NULL)
+        return;
+
+    if (Storage_Monitor.ExtDev_ptr == NULL)
+    {
+        shellPrint(shell_obj, "\t[ExtDev pointer NULL]\r\n");
+        return;
+    }
+
+    shellPrint(shell_obj, "\t[ExtDev pointer %08x]\r\n", Storage_Monitor.ExtDev_ptr);
+    p_ext_flash = Storage_Monitor.ExtDev_ptr;
+
+    switch (p_ext_flash->bus_type)
+    {
+        case Storage_ChipBus_Spi:
+            shellPrint(shell_obj, "\t[external flash bus type SPI]\r\n");
+            break;
+        
+        case Storage_ChipBus_None:
+        default:
+            shellPrint(shell_obj, "\t[none external flash bus matched %d]\r\n", p_ext_flash->bus_type);
+            break;
+    }
+
+    dev_api = p_ext_flash->dev_api;
+    dev_obj = p_ext_flash->dev_obj;
+    
+    switch (p_ext_flash->chip_type)
+    {
+        case Storage_ChipType_W25Qxx:
+            shellPrint(shell_obj, "\t[external flash chip type W25Qxx]\r\n");
+            break;
+
+        case Storage_Chip_None:
+        default:
+            shellPrint(shell_obj, "\t[none external flash chip type matched %d]\r\n", p_ext_flash->chip_type);
+            break;
+    }
+
+    if (dev_api == NULL)
+    {
+        shellPrint(shell_obj, "\t[dev_api pointer NULL]\r\n");
+    }
+    else
+        shellPrint(shell_obj, "\t[dev_api pointer %08x]\r\n", dev_api);
+
+    if (dev_obj == NULL)
+    {
+        shellPrint(shell_obj, "\t[dev_obj poniter NULL]\r\n");
+    }
+    else
+    {
+        shellPrint(shell_obj, "\t[dev_obj pointer %08x]\r\n", dev_obj);
+        shellPrint(shell_obj, "\t[bus_rx     addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->bus_rx);
+        shellPrint(shell_obj, "\t[bus_tx     addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->bus_tx);
+        shellPrint(shell_obj, "\t[bus_trans  addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->bus_trans);
+        shellPrint(shell_obj, "\t[cs_ctl     addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->cs_ctl);
+        shellPrint(shell_obj, "\t[sys_tick   addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->systick);
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Show_ModuleInfo, Storage_Show_ModuleInfo, Storage Format);
+
 static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
@@ -2093,7 +2171,6 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
     if(!Storage_Monitor.init_state)
     {
         shellPrint(shell_obj, "\thalt by init state\r\n");
-        return;
     }
     
     switch((uint8_t) medium)
@@ -2104,6 +2181,8 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
                 !Storage_Monitor.module_init_reg.bit.internal)
             {
                 shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
                 return;
             }
             p_Flash = &Storage_Monitor.internal_info;
@@ -2116,6 +2195,8 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
                 !Storage_Monitor.module_init_reg.bit.external)
             {
                 shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
                 return;
             }
             p_Flash = &Storage_Monitor.external_info;
@@ -2156,8 +2237,8 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
             for (uint16_t t = 0; t < (singal_tab_size / 16); t++)
             {
                 shellPrint(shell_obj, "[");
-                for (uint8_t t_i = 0; t_i < 16; t_i++)
-                    shellPrint(shell_obj, " %02x ", page_data_tmp[t_i + (t * 16)]);
+                for (uint8_t t_i = 0; t_i < 4; t_i++)
+                    shellPrint(shell_obj, " %08x ", *((uint32_t *)&page_data_tmp[(t_i * 4) + (t * 16)]));
                 shellPrint(shell_obj, "]\r\n");
             }
 
@@ -2329,8 +2410,8 @@ static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_Par
         for (uint16_t i = 0; i < (dump_size / 16); i++)
         {
             shellPrint(shell_obj, "[");
-            for (uint8_t j = 0; j < 16; j++)
-                shellPrint(shell_obj, " %02x ", page_data_tmp[(i * 16) + j]);
+            for (uint8_t j = 0; j < 4; j++)
+                shellPrint(shell_obj, " %08x ", *((uint32_t *)&page_data_tmp[(i * 16) + (j * 4)]));
             shellPrint(shell_obj, "]\r\n");
         }
 

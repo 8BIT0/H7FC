@@ -93,7 +93,6 @@ typedef enum
     Para_User,
 } Storage_ParaClassType_List;
 
-#pragma pack(1)
 /* length must be 64Byte */
 typedef struct
 {
@@ -169,7 +168,6 @@ typedef struct
     Storage_BaseSecInfo_TypeDef sys_sec;
     Storage_BaseSecInfo_TypeDef user_sec;
 } Storage_FlashInfo_TypeDef;
-#pragma pack()
 
 typedef union
 {
@@ -216,7 +214,12 @@ typedef struct
 
     uint8_t InternalFlash_Format_cnt;
     uint8_t ExternalFlash_Format_cnt;
+
+    uint8_t InternalFlash_BuildTab_cnt;
+    uint8_t ExternalFlash_BuildTab_cnt;
     
+    uint8_t ExternalFlash_Error_Code;
+
     void *ExtDev_ptr;       /* external flash chip device obj pointer */
     void *ExtBusCfg_Ptr;    /* external flash chip hardware bus config data pointer */
 
