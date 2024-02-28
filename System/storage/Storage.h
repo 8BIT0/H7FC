@@ -59,6 +59,9 @@ typedef enum
 {
     Storage_Error_None = 0,
     Storage_Param_Error,
+    Storage_BusInit_Error,
+    Storage_BusType_Error,
+    Storage_BusCfg_Malloc_Failed,
     Storage_ModuleType_Error,
     Storage_ModuleInit_Error,
     Storage_ModuleAPI_Error,
@@ -221,7 +224,7 @@ typedef struct
     uint8_t ExternalFlash_BuildTab_cnt;
     
     uint8_t ExternalFlash_Error_Code;
-    uint8_t ExternalFlash_Init_Stage; /* use for trace the place where the error occur */
+    uint8_t ExternalFlash_Init_Error; /* use for trace the place where the error occur */
 
     void *ExtDev_ptr;       /* external flash chip device obj pointer */
     void *ExtBusCfg_Ptr;    /* external flash chip hardware bus config data pointer */

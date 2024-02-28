@@ -230,9 +230,17 @@ reformat_external_flash_info:
                             }
                         }
                     }
+                    else
+                        Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleType_Error;
                 }
+                else
+                    Storage_Monitor.ExternalFlash_Error_Code = Storage_BusInit_Error;
             }
+            else
+                Storage_Monitor.ExternalFlash_Error_Code = Storage_BusCfg_Malloc_Failed;
         }
+        else
+            Storage_Monitor.ExternalFlash_Error_Code = Storage_BusType_Error;
     }
  
     Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | \
