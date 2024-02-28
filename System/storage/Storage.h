@@ -93,6 +93,7 @@ typedef enum
     Para_User,
 } Storage_ParaClassType_List;
 
+#pragma pack(1)
 /* length must be 64Byte */
 typedef struct
 {
@@ -168,6 +169,7 @@ typedef struct
     Storage_BaseSecInfo_TypeDef sys_sec;
     Storage_BaseSecInfo_TypeDef user_sec;
 } Storage_FlashInfo_TypeDef;
+#pragma pack()
 
 typedef union
 {

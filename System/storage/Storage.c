@@ -42,8 +42,6 @@ static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len);
 static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uint32_t tab_num);
 static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClassType_List class);
 
-static void Storage_Smash_ExternalFlashDev_Ptr(void *bus_cfg_ptr, void *ExtDev_ptr);
-
 static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len);
@@ -234,38 +232,13 @@ reformat_external_flash_info:
                     }
                 }
             }
-
-            if (!Storage_Monitor.module_init_reg.bit.external)
-                Storage_Smash_ExternalFlashDev_Ptr(ext_flash_bus_cfg, ExtDev);
-        }
-        else
-        {
-            SrvOsCommon.free(ExtDev);
-            Storage_Monitor.module_init_reg.bit.external = false;
         }
     }
-    else
-    {
-        if (ExtDev)
-            SrvOsCommon.free(ExtDev);
-
-        Storage_Monitor.module_init_reg.bit.external = false;
-    }
-
+ 
     Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | \
                                  Storage_Monitor.module_init_reg.bit.internal;
 
     return Storage_Monitor.init_state;
-}
-
-static void Storage_Smash_ExternalFlashDev_Ptr(void *bus_cfg_ptr, void *ExtDev_ptr)
-{
-    if((bus_cfg_ptr == NULL) || (ExtDev_ptr == NULL))
-        return;
-
-    SrvOsCommon.free(bus_cfg_ptr);
-    Storage_Monitor.module_init_reg.bit.external = false;
-    SrvOsCommon.free(ExtDev_ptr);
 }
 
 static bool Storage_Format(Storage_MediumType_List type)
