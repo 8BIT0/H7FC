@@ -179,11 +179,9 @@ reformat_internal_flash_info:
                             To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
                             To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
                             To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
-
                             Storage_Monitor.ExtDev_ptr = ExtDev;
-                            Storage_Monitor.ExternalFlash_Error_Code = To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj));
                             
-                            if (Storage_Monitor.ExternalFlash_Error_Code == DevW25Qxx_Ok)
+                            if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
                             {
                                 ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_num;
                                 ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_size;
@@ -228,7 +226,11 @@ reformat_external_flash_info:
                                 else
                                     Storage_Monitor.module_init_reg.bit.external = true;
                             }
+                            else
+                                Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
                         }
+                        else
+                            Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
                     }
                     else
                         Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleType_Error;
@@ -239,8 +241,6 @@ reformat_external_flash_info:
             else
                 Storage_Monitor.ExternalFlash_Error_Code = Storage_BusCfg_Malloc_Failed;
         }
-        else
-            Storage_Monitor.ExternalFlash_Error_Code = Storage_BusType_Error;
     }
  
     Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | \
@@ -1746,8 +1746,26 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
         case Storage_Error_None:
             return Storage_ErrorCode_ToStr(Storage_Error_None);
         
+        case Storage_BusType_Error:
+            return Storage_ErrorCode_ToStr(Storage_BusType_Error);
+
+        case Storage_BusCfg_Malloc_Failed:
+            return Storage_ErrorCode_ToStr(Storage_BusCfg_Malloc_Failed);
+
+        case Storage_Param_Error:
+            return Storage_ErrorCode_ToStr(Storage_Param_Error);
+
+        case Storage_ExtDevObj_Error:
+            return Storage_ErrorCode_ToStr(Storage_ExtDevObj_Error);
+
+        case Storage_ModuleType_Error:
+            return Storage_ErrorCode_ToStr(Storage_ModuleType_Error);
+
         case Storage_ModuleInit_Error:
             return Storage_ErrorCode_ToStr(Storage_ModuleInit_Error);
+
+        case Storage_BusInit_Error:
+            return Storage_ErrorCode_ToStr(Storage_BusInit_Error);
 
         case Storage_Read_Error:
             return Storage_ErrorCode_ToStr(Storage_Read_Error);
@@ -1760,6 +1778,9 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
 
         case Storage_NameMatched:
             return Storage_ErrorCode_ToStr(Storage_NameMatched);
+
+        case Storage_ModuleAPI_Error:
+            return Storage_ErrorCode_ToStr(Storage_ModuleAPI_Error);
 
         case Storage_SlotHeader_Error:
             return Storage_ErrorCode_ToStr(Storage_SlotHeader_Error);
@@ -1787,6 +1808,15 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
 
         case Storage_FreeSlot_Update_Error:
             return Storage_ErrorCode_ToStr(Storage_FreeSlot_Update_Error);
+
+        case Storage_FreeSlot_Get_Error:
+            return Storage_ErrorCode_ToStr(Storage_FreeSlot_Get_Error);
+
+        case Storage_DataAddr_Update_Error:
+            return Storage_ErrorCode_ToStr(Storage_DataAddr_Update_Error);
+
+        case Storage_No_Enough_Space:
+            return Storage_ErrorCode_ToStr(Storage_No_Enough_Space);
 
         default:
             return "Unknow Error\r\n";
@@ -2095,6 +2125,9 @@ static void Storage_Show_ModuleInfo(void)
     {
         case Storage_ChipType_W25Qxx:
             shellPrint(shell_obj, "\t[external flash chip type W25Qxx]\r\n");
+
+            /* show error code */
+            shellPrint(shell_obj, "\t[external flash error code %s]\r\n", Storage_Error_Print(Storage_Monitor.ExternalFlash_Error_Code));
             break;
 
         case Storage_Chip_None:

@@ -604,7 +604,8 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
             SrvComProto.mav_msg_stream(&RadioProto_MAV_RcChannel, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&RadioProto_MAV_Altitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             
-            /* Proto mavlink message through default port */
+            /* Proto mavlink messa
+            ge through default port */
             proto_monitor.port_type = Port_USB;
             proto_monitor.port_addr = USB_VCP_Addr;
             // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
@@ -625,12 +626,18 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
 static void TaskFrameCTL_CLI_Proc(void)
 {
     uint16_t rx_stream_size = 0;
+    bool arm_state;
     Shell *shell_obj = Shell_GetInstence();
 
     /* check CLI stream */
     if(shell_obj && CLI_Monitor.p_rx_stream->p_buf && CLI_Monitor.p_rx_stream->size)
     {
         rx_stream_size = CLI_Monitor.p_rx_stream->size;
+
+        /* if drone is under disarm state then CLI disable */
+        SrvDataHub.get_arm_state(&arm_state);
+        if (arm_state == DRONE_DISARM)
+            return;
 
         for(uint16_t i = 0; i < rx_stream_size; i++)
         {
