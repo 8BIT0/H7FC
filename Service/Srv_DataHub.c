@@ -165,6 +165,7 @@ static void SrvDataHub_Init(void)
 
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
     SrvDataHub_Monitor.init_state = true;
+    SrvDataHub_Monitor.data.InUse_Control_Data.arm_state = DRONE_ARM;
 }
 
 static void SrvDataHub_Pos_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)

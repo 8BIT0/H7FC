@@ -84,7 +84,7 @@ Storage_TypeDef Storage = {
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
 {
     void *ext_flash_bus_cfg = NULL;
-
+    uint8_t extmodule_init_state;
     memset(&Storage_Monitor, 0, sizeof(Storage_Monitor));
 
     Storage_Monitor.module_enable_reg.val = enable.val;
@@ -180,8 +180,14 @@ reformat_internal_flash_info:
                             To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
                             To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
                             Storage_Monitor.ExtDev_ptr = ExtDev;
-                            
-                            if (To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj)) == DevW25Qxx_Ok)
+                            Storage_Monitor.ExternalFlash_ReInit_cnt = ExternalModule_ReInit_Cnt;
+
+reinit_external_flash_module:
+                            extmodule_init_state = To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj));
+                            Storage_Monitor.module_prod_type = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).prod_type;
+                            Storage_Monitor.module_prod_code = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).prod_code;
+
+                            if (extmodule_init_state == DevW25Qxx_Ok)
                             {
                                 ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_num;
                                 ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_size;
@@ -224,7 +230,15 @@ reformat_external_flash_info:
                                     }
                                 }
                                 else
+                                {
+                                    if (Storage_Monitor.ExternalFlash_ReInit_cnt)
+                                    {
+                                        Storage_Monitor.ExternalFlash_ReInit_cnt --;
+                                        goto reinit_external_flash_module;
+                                    }
+
                                     Storage_Monitor.module_init_reg.bit.external = true;
+                                }
                             }
                             else
                                 Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
@@ -2128,6 +2142,9 @@ static void Storage_Show_ModuleInfo(void)
 
             /* show error code */
             shellPrint(shell_obj, "\t[external flash error code %s]\r\n", Storage_Error_Print(Storage_Monitor.ExternalFlash_Error_Code));
+            shellPrint(shell_obj, "\t[external flash re_init count: %d]\r\n", (ExternalModule_ReInit_Cnt - Storage_Monitor.ExternalFlash_ReInit_cnt));
+            shellPrint(shell_obj, "\t[external module type %d]\r\n", Storage_Monitor.module_prod_type);
+            shellPrint(shell_obj, "\t[external module code %04x]\r\n", Storage_Monitor.module_prod_code);
             break;
 
         case Storage_Chip_None:

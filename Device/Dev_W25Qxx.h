@@ -120,6 +120,9 @@ typedef enum
 
 typedef struct
 {
+    DevW25Qxx_ProdType_List prod_type;
+    uint16_t prod_code;
+
     uint32_t start_addr;
     uint32_t flash_size;
 
@@ -135,6 +138,7 @@ typedef struct
 typedef struct
 {
     DevW25Qxx_ProdType_List prod_type;
+    uint16_t prod_code;
 
     uint16_t (*bus_tx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
     uint16_t (*bus_rx)(uint8_t *p_data, uint16_t len, uint32_t time_out);

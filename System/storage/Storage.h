@@ -12,6 +12,7 @@
 #define Storage_Assert(x) while(x)
 
 #define Format_Retry_Cnt 5
+#define ExternalModule_ReInit_Cnt 5
 
 #define Storage_ErrorCode_ToStr(x) #x
 
@@ -220,6 +221,7 @@ typedef struct
 
     uint8_t InternalFlash_Format_cnt;
     uint8_t ExternalFlash_Format_cnt;
+    uint8_t ExternalFlash_ReInit_cnt;
 
     uint8_t InternalFlash_BuildTab_cnt;
     uint8_t ExternalFlash_BuildTab_cnt;
@@ -232,6 +234,9 @@ typedef struct
 
     bool init_state;
     uint8_t inuse;
+
+    uint16_t module_prod_type;
+    uint16_t module_prod_code;
 
     Storage_FlashInfo_TypeDef internal_info;
     Storage_FlashInfo_TypeDef external_info;

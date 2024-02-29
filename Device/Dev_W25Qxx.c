@@ -1,7 +1,7 @@
 #include "Dev_W25Qxx.h"
 
 /* internal function */
-static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev);
+static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev, uint16_t *id);
 
 /* external function */
 static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev);
@@ -142,22 +142,24 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
         return DevW25Qxx_Error;
 
     dev->init_state = DevW25Qxx_Error;
-
-    dev->prod_type = DevW25Qxx_Get_ProdType(dev);
-
-    if (dev->prod_type == DevW25Q_None)
+    
+    /* Reset W25Qxxx */
+    if (DevW25Qxx_Reset(dev) != DevW25Qxx_Ok)
         return DevW25Qxx_Error;
 
-    /* Reset W25Qxxx */
-    if ((DevW25Qxx_Reset(dev) != DevW25Qxx_Ok) ||
-        (DevW25Qxx_GetStatue(dev) != DevW25Qxx_Ok))
+    if (DevW25Qxx_GetStatue(dev) != DevW25Qxx_Ok)
+        return DevW25Qxx_Error;
+
+    dev->prod_type = DevW25Qxx_Get_ProdType(dev, &dev->prod_code);
+
+    if (dev->prod_type == DevW25Q_None)
         return DevW25Qxx_Error;
 
     dev->init_state = DevW25Qxx_Ok;
     return DevW25Qxx_Ok;
 }
 
-static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev)
+static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev, uint16_t *id)
 {
     uint8_t ID_Req_CMD[] = {READ_ID_CMD, 0, 0, 0};
     uint8_t ID_Rx_buf[] = {0, 0};
@@ -172,6 +174,7 @@ static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev)
     
         ID |= ID_Rx_buf[0] << 8;
         ID |= ID_Rx_buf[1];
+        *id = ID;
 
         switch(ID)
         {
@@ -370,6 +373,8 @@ static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev
     if (dev && (dev->prod_type != DevW25Q_None))
     {
         info.start_addr = W25QXX_BASE_ADDRESS;
+        info.prod_type = dev->prod_type;
+        info.prod_code = dev->prod_code;
 
         /* currently we only have such type of flash chip on the evk or fc-board */
         switch ((uint8_t)(dev->prod_type))
