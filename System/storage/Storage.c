@@ -767,6 +767,7 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
 }
 
 /* free slot info update error */
+/* still some bugs inside this function */
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size)
 {
     uint8_t *crc_buf = NULL;
@@ -917,7 +918,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         {
             while(true)
             {
-                /* step 3: comput storage data size and set data slot */
+                /* step 2: comput storage data size and set data slot */
                 DataSlot.head_tag = STORAGE_SLOT_HEAD_TAG;
                 DataSlot.end_tag = STORAGE_SLOT_END_TAG;
                 memset(DataSlot.name, '\0', STORAGE_NAME_LEN);
@@ -1008,7 +1009,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 memcpy(slot_update_ptr, &DataSlot.end_tag, sizeof(DataSlot.end_tag));
                 slot_update_ptr += sizeof(DataSlot.end_tag);
 
-                if (!StorageIO_API->write(store_addr, slot_update_ptr, (DataSlot.cur_slot_size + sizeof(DataSlot))))
+                /* step 3: store data to data section */
+                if (!StorageIO_API->write(store_addr, page_data_tmp, (DataSlot.cur_slot_size + sizeof(DataSlot))))
                     return Storage_Write_Error;
 
                 if (DataSlot.nxt_addr == 0)
@@ -1016,6 +1018,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     Storage_Assert(DataSlot.total_data_size > stored_size);
                     if (DataSlot.total_data_size == stored_size)
                     {
+                        /* step 4: update free slot */
                         if (!StorageIO_API->write(cur_freeslot_addr, &FreeSlot, sizeof(FreeSlot)))
                             return Storage_Write_Error;
 
