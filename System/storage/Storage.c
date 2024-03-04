@@ -2244,8 +2244,11 @@ static void Storage_Show_FreeSlot(Storage_MediumType_List medium, Storage_ParaCl
     {
         shellPrint(shell_obj, "\t[FreeSlot Address : %d]\r\n", FreeSlot_addr);
         if (FreeSlot_addr == 0)
+        {
+            shellPrint(shell_obj, "\t[FreeSlot End]\r\n");
             return;
-        
+        }
+
         /* get free slot info */
         if (!StorageIO_API->read(FreeSlot_addr, page_data_tmp, sizeof(Storage_FreeSlot_TypeDef)))
         {
@@ -2253,11 +2256,99 @@ static void Storage_Show_FreeSlot(Storage_MediumType_List medium, Storage_ParaCl
             return;
         }
 
-        p_FreeSlot = page_data_tmp; 
-        FreeSlot_addr = p_FreeSlot->nxt_addr;
+        p_FreeSlot = page_data_tmp;
+        
+        if ((p_FreeSlot->head_tag == STORAGE_SLOT_HEAD_TAG) && \
+            (p_FreeSlot->end_tag == STORAGE_SLOT_END_TAG))
+        {
+            shellPrint(shell_obj, "\t[FreeSlot address      : %d]\r\n", FreeSlot_addr);
+            shellPrint(shell_obj, "\t[Next FreeSlot address : %d]\r\n", p_FreeSlot->nxt_addr);
+            shellPrint(shell_obj, "\r\n");
+
+            shellPrint(shell_obj, "\t[FreeSlot total   size : %d]\r\n", p_FreeSlot->total_size);
+            shellPrint(shell_obj, "\t[FreeSlot current size : %d]\r\n", p_FreeSlot->cur_slot_size);
+            shellPrint(shell_obj, "\r\n");
+
+            FreeSlot_addr = p_FreeSlot->nxt_addr;
+        }
+        else
+        {
+            shellPrint(shell_obj, "\t[FreeSlot frame error]\r\n");
+            return;
+        }
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Show_FreeSlot, Storage_Show_FreeSlot, Storage Show Free Slot);
+
+static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClassType_List class, uint8_t *name)
+{
+    Storage_FlashInfo_TypeDef *p_Flash = NULL;
+    Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    storage_handle data_hdl = 0;
+    uint8_t *crc_buf = NULL;
+    uint16_t crc = 0;
+    uint16_t crc_len = 0;
+    uint16_t crc_error = 0;
+    Shell *shell_obj = Shell_GetInstence();
+
+    if ((shell_obj == NULL) || \
+        (name == NULL) || \
+        (strlen(name) == 0))
+        return;
+
+    switch((uint8_t) medium)
+    {
+        case Internal_Flash:
+            shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.internal || \
+                !Storage_Monitor.module_init_reg.bit.internal)
+            {
+                shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
+                return;
+            }
+            p_Flash = &Storage_Monitor.internal_info;
+            StorageIO_API = &InternalFlash_IO;
+            break;
+
+        case External_Flash:
+            shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.external || \
+                !Storage_Monitor.module_init_reg.bit.external)
+            {
+                shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
+                return;
+            }
+            p_Flash = &Storage_Monitor.external_info;
+            StorageIO_API = &ExternalFlash_IO;
+            break;
+
+        default:
+            return;
+    }
+    
+   p_Sec = Storage_Get_SecInfo(p_Flash, class);
+    if ((p_Sec == NULL) || \
+        (p_Sec->tab_addr == 0) || \
+        (p_Sec->tab_size == 0))
+    {
+        shellPrint(shell_obj, "\tGet section info error\r\n");
+        return;
+    }
+
+    data_hdl = Storage_Search(medium, class, name);
+    if (data_hdl)
+    {
+        /* return data address */
+
+    }
+    else
+        shellPrint(shell_obj, "\t[Storage no %s found in type %d clas %d]\r\n", name, medium, class);
+}
 
 static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {
