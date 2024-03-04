@@ -2291,7 +2291,6 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
     uint8_t *crc_buf = NULL;
     uint16_t crc = 0;
     uint16_t crc_len = 0;
-    uint16_t crc_error = 0;
     uint16_t data_len = 0;
     uint32_t data_addr = 0;
     Shell *shell_obj = Shell_GetInstence();
@@ -2386,10 +2385,66 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             p_read_out += sizeof(DataSlot.cur_slot_size);
             shellPrint(shell_obj, "\t[current slot size: %d]\r\n", DataSlot.cur_slot_size);
 
-            // if (DataSlot)
-            // {
+            memcpy(&DataSlot.nxt_addr, p_read_out, sizoef(DataSlot.nxt_addr));
+            p_read_out += sizeof(DataSlot.nxt_addr);
+            shellPrint(shell_obj, "\t[next segment data slot address: %d]\r\n", DataSlot.nxt_addr);
 
-            // }
+            memcpy(&DataSlot.align_size, p_read_out, sizeof(DataSlot.align_size));
+            p_read_out += sizeof(DataSlot.align_size);
+            shellPrint(shell_obj, "\t[align size : %d]\r\n", DataSlot.align_size);
+
+            crc_buf = p_read_out;
+            crc_len = DataSlot.cur_slot_size - DataSlot.align_size;
+            crc = Common_CRC16(crc_buf, crc_len);
+
+            p_read_out += DataSlot.cur_slot_size;
+            memcpy(&DataSlot.slot_crc, p_read_out, sizeof(DataSlot.slot_crc));
+            p_read_out += sizeof(DataSlot.slot_crc);
+
+            memcpy(&DataSlot.end_tag, p_read_out, sizeof(DataSlot.end_tag));
+            if (DataSlot.end_tag != STORAGE_SLOT_END_TAG)
+            {
+                shellPrint(shell_obj, "\t[Data %s ender tag error]\r\n", name);
+                return;
+            }
+
+            if (crc != DataSlot.slot_crc)
+            {
+                shellPrint(shell_obj, "\t[slot crc error]\r\n");
+                return;
+            }
+
+            /* display data as hex */
+
+            if (DataSlot.cur_slot_size == DataSlot.total_data_size)
+            {
+                if (DataSlot.total_data_size - DataSlot.align_size != item.len)
+                {
+                    shellPrint(shell_obj, "\t[slot data size error]\r\n");
+                    break;
+                }
+
+                break;
+            }
+
+            data_len -= (DataSlot.cur_slot_size - DataSlot.align_size);
+
+            if (data_len == 0)
+            {
+                if (DataSlot.nxt_addr == 0)
+                {
+                    shellPrint(shell_obj, "\t[ ---- END ----- ]\r\n");
+                }
+                else
+                {
+                    shellPrint(shell_obj, "\t[ All data dumped but still linked to another slot ]\r\n");
+                }
+
+                return;
+            }
+
+            if (DataSlot.nxt_addr)
+                data_addr = DataSlot.nxt_addr;
         }
     }
     else
