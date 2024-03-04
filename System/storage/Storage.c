@@ -843,7 +843,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         cur_freeslot_addr = p_Sec->free_slot_addr;
         free_space_remianing = FreeSlot.total_size;
 
-        /* step 1: update info section first */
         p_Sec->para_num ++;
         p_Sec->para_size += size;
         
@@ -853,7 +852,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             store_addr = 0;
             item_index = 0;
 
-            /* step 2: update tab */
+            /* step 1: search tab */
             if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
                 return Storage_Read_Error;
 
