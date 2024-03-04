@@ -2415,6 +2415,10 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             }
 
             /* display data as hex */
+            for (uint16_t i = 0; i < (DataSlot.cur_slot_size - DataSlot.align_size); i++)
+            {
+                // shellPrint(shell_obj, "[]");
+            }
 
             if (DataSlot.cur_slot_size == DataSlot.total_data_size)
             {
