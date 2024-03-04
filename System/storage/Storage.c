@@ -2436,9 +2436,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
                     shellPrint(shell_obj, "\t[ ---- END ----- ]\r\n");
                 }
                 else
-                {
                     shellPrint(shell_obj, "\t[ All data dumped but still linked to another slot ]\r\n");
-                }
 
                 return;
             }
