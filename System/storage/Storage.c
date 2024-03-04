@@ -75,7 +75,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
  
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
-static storage_handle Storage_Search(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name);
+static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name);
 
 Storage_TypeDef Storage = {
     .init = Storage_Init,
@@ -535,8 +535,9 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
  * if matched return data slot address 
  * else return 0
  */
-static storage_handle Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name)
+static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name)
 {
+    Storage_Item_TypeDef data_slot;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_Item_TypeDef *item_list = NULL;
@@ -546,11 +547,13 @@ static storage_handle Storage_Search(Storage_MediumType_List type, Storage_ParaC
     uint16_t crc_len = 0;
     uint16_t crc = 0;
 
+    memset(&data_slot, 0, sizeof(data_slot));
+
     if (!Storage_Monitor.init_state || \
         (name == NULL) || \
         (strlen(name) == 0) || \
         (class > Para_User))
-        return 0;
+        return data_slot;
 
     switch((uint8_t)type)
     {
@@ -565,20 +568,20 @@ static storage_handle Storage_Search(Storage_MediumType_List type, Storage_ParaC
             break;
 
         default:
-            return 0;
+            return data_slot;
     }
 
     if ((p_Sec == NULL) || \
         (p_Sec->para_num == 0) || \
         (p_Sec->para_size == 0))
-        return 0;
+        return data_slot;
 
     tab_addr = p_Sec->tab_addr;
     /* tab traverse */
     for (uint8_t tab_i = 0; tab_i < p_Sec->page_num; tab_i ++)
     {
         if (!StorageIO_API->read(tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
-            return 0;
+            return data_slot;
     
         /* tab item traverse */
         item_list = (Storage_Item_TypeDef *)page_data_tmp;
@@ -598,10 +601,8 @@ static storage_handle Storage_Search(Storage_MediumType_List type, Storage_ParaC
                 /* item slot crc check */
                 crc = Common_CRC16(crc_buf, crc_len);
 
-                if (crc != p_item->crc16)
-                    return 0;
-
-                return p_item->data_addr;
+                if (crc == p_item->crc16)
+                    data_slot = *p_item;
             }
         }
     
@@ -609,7 +610,7 @@ static storage_handle Storage_Search(Storage_MediumType_List type, Storage_ParaC
         tab_addr += (p_Sec->tab_size / p_Sec->page_num);
     }
 
-    return 0;
+    return data_slot;
 }
 
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle slot_hdl, uint8_t *p_data, uint16_t size)
@@ -2027,7 +2028,7 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
     shellPrint(shell_obj, "\tStorage Size: %d\r\n", strlen(test_data));
 
     /* search item first */
-    if (Storage_Search(medium, class, test_name))
+    if (Storage_Search(medium, class, test_name).data_addr != 0)
     {
         shellPrint(shell_obj, "\t%s already exist\r\n", test_name);
         return;
@@ -2285,12 +2286,19 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     StorageIO_TypeDef *StorageIO_API = NULL;
-    storage_handle data_hdl = 0;
+    Storage_DataSlot_TypeDef DataSlot;
+    Storage_Item_TypeDef item;
     uint8_t *crc_buf = NULL;
     uint16_t crc = 0;
     uint16_t crc_len = 0;
     uint16_t crc_error = 0;
+    uint16_t data_len = 0;
+    uint32_t data_addr = 0;
     Shell *shell_obj = Shell_GetInstence();
+    uint8_t *p_read_out = NULL;
+
+    memset(&item, 0, sizeof(item));
+    memset(&DataSlot, 0, sizeof(DataSlot));
 
     if ((shell_obj == NULL) || \
         (name == NULL) || \
@@ -2340,11 +2348,49 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
         return;
     }
 
-    data_hdl = Storage_Search(medium, class, name);
-    if (data_hdl)
+    item = Storage_Search(medium, class, name);
+    if (item.data_addr)
     {
-        /* return data address */
+        shellPrint(shell_obj, "\t[data %s matched]\r\n", name);
+        shellPrint(shell_obj, "\t[data size : %d]\r\n", name, item.len);
+        shellPrint(shell_obj, "\t[data name : %s]\r\n", item.name);
+        data_len = item.len;
+        data_addr = item.data_addr;
 
+        while(data_len)
+        {
+            if (!StorageIO_API->read(data_addr, page_data_tmp, data_len))
+            {
+                shellPrint(shell_obj, "\t[Read %s Data failed]\r\n", name);
+                return;
+            }
+
+            p_read_out = page_data_tmp;
+            memcpy(&DataSlot.head_tag, p_read_out, sizeof(DataSlot.head_tag));
+            p_read_out += sizeof(DataSlot.head_tag);
+            if (DataSlot.head_tag != STORAGE_SLOT_HEAD_TAG)
+            {
+                shellPrint(shell_obj, "\t[Data %s header tag error]\r\n", name);
+                return;
+            }
+
+            memcpy(&DataSlot.name, p_read_out, STORAGE_NAME_LEN);
+            p_read_out += STORAGE_NAME_LEN;
+            shellPrint(shell_obj, "\t[Slot name : %s]\r\n", DataSlot.name);
+
+            memcpy(&DataSlot.total_data_size, p_read_out, sizeof(DataSlot.total_data_size));
+            p_read_out += sizeof(DataSlot.total_data_size);
+            shellPrint(shell_obj, "\t[total data size: %d]\r\n", DataSlot.total_data_size);
+
+            memcpy(&DataSlot.cur_slot_size, p_read_out, sizeof(DataSlot.cur_slot_size));
+            p_read_out += sizeof(DataSlot.cur_slot_size);
+            shellPrint(shell_obj, "\t[current slot size: %d]\r\n", DataSlot.cur_slot_size);
+
+            // if (DataSlot)
+            // {
+
+            // }
+        }
     }
     else
         shellPrint(shell_obj, "\t[Storage no %s found in type %d clas %d]\r\n", name, medium, class);
