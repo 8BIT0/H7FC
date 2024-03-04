@@ -2178,6 +2178,87 @@ static void Storage_Show_ModuleInfo(void)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Show_ModuleInfo, Storage_Show_ModuleInfo, Storage Format);
 
+static void Storage_Show_FreeSlot(Storage_MediumType_List medium, Storage_ParaClassType_List class)
+{
+    Storage_FlashInfo_TypeDef *p_Flash = NULL;
+    Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    Storage_FreeSlot_TypeDef *p_FreeSlot = NULL;
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    uint32_t FreeSlot_addr = 0;
+    Shell *shell_obj = Shell_GetInstence();
+
+    if (shell_obj == NULL)
+        return;
+
+    shellPrint(shell_obj, "[Storage Shell]Show Freeslot\r\n");
+    if(!Storage_Monitor.init_state)
+    {
+        shellPrint(shell_obj, "\thalt by init state\r\n");
+    }
+
+    switch((uint8_t) medium)
+    {
+        case Internal_Flash:
+            shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.internal || \
+                !Storage_Monitor.module_init_reg.bit.internal)
+            {
+                shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
+                return;
+            }
+            p_Flash = &Storage_Monitor.internal_info;
+            StorageIO_API = &InternalFlash_IO;
+            break;
+
+        case External_Flash:
+            shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.external || \
+                !Storage_Monitor.module_init_reg.bit.external)
+            {
+                shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
+                return;
+            }
+            p_Flash = &Storage_Monitor.external_info;
+            StorageIO_API = &ExternalFlash_IO;
+            break;
+
+        default:
+            return;
+    }
+
+    p_Sec = Storage_Get_SecInfo(p_Flash, class);
+    if ((p_Sec == NULL) || \
+        (p_Sec->tab_addr == 0) || \
+        (p_Sec->tab_size == 0))
+    {
+        shellPrint(shell_obj, "\tGet section info error\r\n");
+        return;
+    }
+
+    FreeSlot_addr = p_Sec->free_slot_addr;
+    while(true)
+    {
+        shellPrint(shell_obj, "\t[FreeSlot Address : %d]\r\n", FreeSlot_addr);
+        if (FreeSlot_addr == 0)
+            return;
+        
+        /* get free slot info */
+        if (!StorageIO_API->read(FreeSlot_addr, page_data_tmp, sizeof(Storage_FreeSlot_TypeDef)))
+        {
+            shellPrint(shell_obj, "\t[FreeSlot data read error]\r\n");
+            return;
+        }
+
+        p_FreeSlot = page_data_tmp; 
+        FreeSlot_addr = p_FreeSlot->nxt_addr;
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Show_FreeSlot, Storage_Show_FreeSlot, Storage Show Free Slot);
+
 static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
