@@ -410,11 +410,12 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
                          *  
                          * comput crc from class to len
                          */
-                        crc_buf = &p_ItemList[item_i] + sizeof(p_ItemList[item_i].head_tag);
+                        crc_buf = (uint8_t *)&p_ItemList[item_i] + sizeof(p_ItemList[item_i].head_tag);
                         crc_len = sizeof(Storage_Item_TypeDef);
                         crc_len -= sizeof(p_ItemList[item_i].head_tag);
                         crc_len -= sizeof(p_ItemList[item_i].end_tag);
                         crc_len -= sizeof(p_ItemList[item_i].crc16);
+                        store_param_size += p_ItemList[item_i].len;
                         
                         crc16 = Common_CRC16(crc_buf, crc_len);
                         if (crc16 != p_ItemList[item_i].crc16)
@@ -505,6 +506,8 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             Storage_Check_Tab(StorageIO_API, &p_Info->sys_sec) && \
             Storage_Check_Tab(StorageIO_API, &p_Info->user_sec))
             return true;
+        
+        return true;
     }
 
     return false;
@@ -605,7 +608,10 @@ static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage
                 crc = Common_CRC16(crc_buf, crc_len);
 
                 if (crc == p_item->crc16)
+                {
                     data_slot = *p_item;
+                    return data_slot;
+                }
             }
         }
     
@@ -881,7 +887,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     crt_item_slot.class = class;
                     memset(crt_item_slot.name, '\0', STORAGE_NAME_LEN);
                     memcpy(crt_item_slot.name, name, strlen(name));
-                    crt_item_slot.len = size;
+                    crt_item_slot.len = size + size % STORAGE_DATA_ALIGN;
 
                     /* set free slot address as current data address */
                     crt_item_slot.data_addr = p_Sec->free_slot_addr;
@@ -2304,6 +2310,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
     uint32_t data_addr = 0;
     Shell *shell_obj = Shell_GetInstence();
     uint8_t *p_read_out = NULL;
+    uint16_t i = 0;
 
     memset(&item, 0, sizeof(item));
     memset(&DataSlot, 0, sizeof(DataSlot));
@@ -2367,7 +2374,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
 
         while(data_len)
         {
-            if (!StorageIO_API->read(data_addr, page_data_tmp, data_len))
+            if (!StorageIO_API->read(data_addr, page_data_tmp, data_len + sizeof(Storage_DataSlot_TypeDef)))
             {
                 shellPrint(shell_obj, "\t[Read %s Data failed]\r\n", name);
                 return;
@@ -2382,7 +2389,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
                 return;
             }
 
-            memcpy(&DataSlot.name, p_read_out, STORAGE_NAME_LEN);
+            memcpy(DataSlot.name, p_read_out, STORAGE_NAME_LEN);
             p_read_out += STORAGE_NAME_LEN;
             shellPrint(shell_obj, "\t[Slot name : %s]\r\n", DataSlot.name);
 
@@ -2434,13 +2441,20 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             }
 
             /* display data as hex */
-            shellPrint(shell_obj, "[");
-            for (uint16_t i = 0; i < DataSlot.cur_slot_size - DataSlot.align_size; i++)
+            shellPrint(shell_obj, "\t[");
+            for (i = 0; i < DataSlot.cur_slot_size - DataSlot.align_size; i++)
             {
                 shellPrint(shell_obj, " %02x ", crc_buf[i]);
             }
             shellPrint(shell_obj, "]\r\n");
-            
+
+            shellPrint(shell_obj, "\t[");
+            for (i = 0; i < DataSlot.cur_slot_size - DataSlot.align_size; i++)
+            {
+                shellPrint(shell_obj, " %c ", crc_buf[i]);
+            }
+            shellPrint(shell_obj, "]\r\n");
+
             if (DataSlot.cur_slot_size == DataSlot.total_data_size)
             {
                 if (DataSlot.total_data_size - DataSlot.align_size != item.len)
