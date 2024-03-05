@@ -2426,6 +2426,11 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             p_read_out += DataSlot.cur_slot_size;
             memcpy(&DataSlot.slot_crc, p_read_out, sizeof(DataSlot.slot_crc));
             p_read_out += sizeof(DataSlot.slot_crc);
+            if (crc != DataSlot.slot_crc)
+            {
+                shellPrint(shell_obj, "\t[Slot crc error]\r\n");
+                return;
+            }
 
             memcpy(&DataSlot.end_tag, p_read_out, sizeof(DataSlot.end_tag));
             if (DataSlot.end_tag != STORAGE_SLOT_END_TAG)
