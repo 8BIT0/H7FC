@@ -920,7 +920,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         if (size % STORAGE_DATA_ALIGN)
             /* get align byte size */
             /* noticed: write 0 on align space */
-            storage_data_size += size % STORAGE_DATA_ALIGN;
+            storage_data_size += STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
 
         /* noticed: DataSlot.total_data_size - DataSlot.align_size is storaged data size */
         DataSlot.total_data_size = storage_data_size;
