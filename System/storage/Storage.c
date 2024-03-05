@@ -231,17 +231,19 @@ reformat_external_flash_info:
                                 }
                                 else
                                 {
-                                    if (Storage_Monitor.ExternalFlash_ReInit_cnt)
-                                    {
-                                        Storage_Monitor.ExternalFlash_ReInit_cnt --;
-                                        goto reinit_external_flash_module;
-                                    }
-
                                     Storage_Monitor.module_init_reg.bit.external = true;
                                 }
                             }
                             else
+                            {
+                                if (Storage_Monitor.ExternalFlash_ReInit_cnt)
+                                {
+                                    Storage_Monitor.ExternalFlash_ReInit_cnt --;
+                                    goto reinit_external_flash_module;
+                                }
+
                                 Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
+                            }
                         }
                         else
                             Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
@@ -494,6 +496,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         if(crc != crc_read)
             return false;
 
+        /* bug in Storage_Check_Tab */
         memset(page_data_tmp, 0, Storage_TabSize);
         /* check  boot  section tab & free slot info & stored item */
         /* check system section tab & free slot info & stored item */
@@ -835,8 +838,10 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         (StorageIO_API->write == NULL))
         return Storage_ModuleAPI_Error;
 
-    if (p_Sec->free_slot_addr && \
-        StorageIO_API->read(p_Sec->free_slot_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)) && \
+    if (p_Sec->free_slot_addr == 0)
+        return Storage_FreeSlot_Addr_Error;
+
+    if (StorageIO_API->read(p_Sec->free_slot_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)) && \
         (FreeSlot.head_tag == STORAGE_SLOT_HEAD_TAG) && \
         (FreeSlot.end_tag == STORAGE_SLOT_END_TAG) && \
         (strlen(name) <= STORAGE_NAME_LEN) && \
@@ -1834,6 +1839,9 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
 
         case Storage_No_Enough_Space:
             return Storage_ErrorCode_ToStr(Storage_No_Enough_Space);
+        
+        case Storage_FreeSlot_Addr_Error:
+            return Storage_ErrorCode_ToStr(Storage_FreeSlot_Addr_Error);
 
         default:
             return "Unknow Error\r\n";
@@ -2145,6 +2153,7 @@ static void Storage_Show_ModuleInfo(void)
 
             /* show error code */
             shellPrint(shell_obj, "\t[external flash error code %s]\r\n", Storage_Error_Print(Storage_Monitor.ExternalFlash_Error_Code));
+            shellPrint(shell_obj, "\t[external flash format count: %d]\r\n", (Format_Retry_Cnt - Storage_Monitor.ExternalFlash_Format_cnt));
             shellPrint(shell_obj, "\t[external flash re_init count: %d]\r\n", (ExternalModule_ReInit_Cnt - Storage_Monitor.ExternalFlash_ReInit_cnt));
             shellPrint(shell_obj, "\t[external module type %d]\r\n", Storage_Monitor.module_prod_type);
             shellPrint(shell_obj, "\t[external module code %04x]\r\n", Storage_Monitor.module_prod_code);
@@ -2380,12 +2389,22 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             memcpy(&DataSlot.total_data_size, p_read_out, sizeof(DataSlot.total_data_size));
             p_read_out += sizeof(DataSlot.total_data_size);
             shellPrint(shell_obj, "\t[total data size: %d]\r\n", DataSlot.total_data_size);
+            if (DataSlot.total_data_size == 0)
+            {
+                shellPrint(shell_obj, "\t[Total data size error]\r\n");
+                return;
+            }
 
             memcpy(&DataSlot.cur_slot_size, p_read_out, sizeof(DataSlot.cur_slot_size));
             p_read_out += sizeof(DataSlot.cur_slot_size);
             shellPrint(shell_obj, "\t[current slot size: %d]\r\n", DataSlot.cur_slot_size);
+            if (DataSlot.cur_slot_size == 0)
+            {
+                shellPrint(shell_obj, "\t[Current slot data size error]\r\n");
+                return;
+            }
 
-            memcpy(&DataSlot.nxt_addr, p_read_out, sizoef(DataSlot.nxt_addr));
+            memcpy(&DataSlot.nxt_addr, p_read_out, sizeof(DataSlot.nxt_addr));
             p_read_out += sizeof(DataSlot.nxt_addr);
             shellPrint(shell_obj, "\t[next segment data slot address: %d]\r\n", DataSlot.nxt_addr);
 
@@ -2415,11 +2434,13 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             }
 
             /* display data as hex */
-            for (uint16_t i = 0; i < (DataSlot.cur_slot_size - DataSlot.align_size); i++)
+            shellPrint(shell_obj, "[");
+            for (uint16_t i = 0; i < DataSlot.cur_slot_size - DataSlot.align_size; i++)
             {
-                // shellPrint(shell_obj, "[]");
+                shellPrint(shell_obj, " %02x ", crc_buf[i]);
             }
-
+            shellPrint(shell_obj, "]\r\n");
+            
             if (DataSlot.cur_slot_size == DataSlot.total_data_size)
             {
                 if (DataSlot.total_data_size - DataSlot.align_size != item.len)
@@ -2450,8 +2471,9 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
         }
     }
     else
-        shellPrint(shell_obj, "\t[Storage no %s found in type %d clas %d]\r\n", name, medium, class);
+        shellPrint(shell_obj, "\t[Storage no %s found in type %d class %d]\r\n", name, medium, class);
 }
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Search, Storage_SearchData, Storage Search Data);
 
 static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {

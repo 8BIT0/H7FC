@@ -83,6 +83,7 @@ typedef enum
     Storage_DataAddr_Update_Error,
     Storage_FreeSlot_Update_Error,
     Storage_FreeSlot_Get_Error,
+    Storage_FreeSlot_Addr_Error,
 } Storage_ErrorCode_List;
 
 typedef enum
