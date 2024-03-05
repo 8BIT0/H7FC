@@ -887,7 +887,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     crt_item_slot.class = class;
                     memset(crt_item_slot.name, '\0', STORAGE_NAME_LEN);
                     memcpy(crt_item_slot.name, name, strlen(name));
-                    crt_item_slot.len = size + size % STORAGE_DATA_ALIGN;
+                    crt_item_slot.len = size + (STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN);
 
                     /* set free slot address as current data address */
                     crt_item_slot.data_addr = p_Sec->free_slot_addr;
@@ -1007,7 +1007,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 slot_update_ptr += sizeof(DataSlot.nxt_addr);
                 memcpy(slot_update_ptr, &DataSlot.align_size, sizeof(DataSlot.align_size));
                 slot_update_ptr += sizeof(DataSlot.align_size);
-                memcpy(slot_update_ptr, crc_buf, DataSlot.cur_slot_size);
+                memcpy(slot_update_ptr, crc_buf, (DataSlot.cur_slot_size - DataSlot.align_size));
                 slot_update_ptr += DataSlot.cur_slot_size;
                 
                 if (DataSlot.align_size)
@@ -2366,9 +2366,11 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
     item = Storage_Search(medium, class, name);
     if (item.data_addr)
     {
-        shellPrint(shell_obj, "\t[data %s matched]\r\n", name);
-        shellPrint(shell_obj, "\t[data size : %d]\r\n", name, item.len);
+        shellPrint(shell_obj, "\t[tab item %s matched]\r\n", name);
+        shellPrint(shell_obj, "\t[data size : %d]\r\n", item.len);
         shellPrint(shell_obj, "\t[data name : %s]\r\n", item.name);
+        shellPrint(shell_obj, "\t\r\n");
+
         data_len = item.len;
         data_addr = item.data_addr;
 
