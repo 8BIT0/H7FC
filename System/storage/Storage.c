@@ -968,7 +968,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     /* seperate data slot and new free slot from current free slot */
                     stored_size += unstored_size;
                     DataSlot.cur_slot_size = unstored_size;
-                    DataSlot.align_size = size % STORAGE_DATA_ALIGN;
+                    DataSlot.align_size = STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
                     DataSlot.nxt_addr = 0;
 
                     if (free_space_remianing >= DataSlot.align_size + unstored_size + sizeof(Storage_DataSlot_TypeDef))
