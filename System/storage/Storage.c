@@ -637,7 +637,8 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     uint32_t read_size = 0;
     uint32_t update_size = 0;
 
-    if ((type > External_Flash) || \
+    if (!Storage_Monitor.init_state || \
+        (type > External_Flash) || \
         (class > Para_User) || \
         (slot_hdl == 0) || \
         (p_data == NULL) || \
@@ -647,11 +648,19 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     switch((uint8_t)type)
     {
         case External_Flash:
+            if (!Storage_Monitor.module_enable_reg.bit.external || \
+                !Storage_Monitor.module_init_reg.bit.external)
+                return Storage_ModuleInit_Error;
+
             p_Sec = Storage_Get_SecInfo(&Storage_Monitor.external_info, class);
             StorageIO_API = &ExternalFlash_IO;
             break;
 
         case Internal_Flash:
+            if (!Storage_Monitor.module_enable_reg.bit.internal || \
+                !Storage_Monitor.module_init_reg.bit.internal)
+                return Storage_ModuleInit_Error;
+
             p_Sec = Storage_Get_SecInfo(&Storage_Monitor.internal_info, class);
             StorageIO_API = &InternalFlash_IO;
             break;
