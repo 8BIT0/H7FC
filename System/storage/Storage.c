@@ -622,11 +622,12 @@ static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage
     return data_slot;
 }
 
-static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle slot_hdl, uint8_t *p_data, uint16_t size)
+static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle item_slot_hdl, uint8_t *p_data, uint16_t size)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_DataSlot_TypeDef *p_slotdata = NULL;
+    Storage_Item_TypeDef item;
     uint8_t *p_read_tmp = page_data_tmp;
     uint8_t *p_write_tmp = flash_write_tmp;
     uint8_t *p_update_data_buf = NULL;
@@ -637,10 +638,12 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     uint32_t read_size = 0;
     uint32_t update_size = 0;
 
+    memset(&item, 0, sizeof(item));
+
     if (!Storage_Monitor.init_state || \
         (type > External_Flash) || \
         (class > Para_User) || \
-        (slot_hdl == 0) || \
+        (item_slot_hdl == 0) || \
         (p_data == NULL) || \
         (size == 0))
         return Storage_Param_Error;
@@ -670,12 +673,29 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     }
 
     if ((p_Sec == NULL) || \
-        (p_Sec->data_sec_addr < slot_hdl) || \
-        (slot_hdl > (p_Sec->data_sec_addr + p_Sec->data_sec_size)))
+        (p_Sec->tab_addr < item_slot_hdl) || \
+        (item_slot_hdl > (p_Sec->tab_addr + p_Sec->tab_size)))
         return Storage_Param_Error;
 
-    read_addr = slot_hdl;
-    read_size = size + sizeof(Storage_DataSlot_TypeDef);
+    read_addr = item_slot_hdl;
+    memset(page_data_tmp, 0, sizeof(Storage_Item_TypeDef));
+
+    /* get data item first */
+    if (!StorageIO_API->read(read_addr, page_data_tmp, sizeof(Storage_Item_TypeDef)))
+        return Storage_Read_Error;
+
+    item = *((Storage_Item_TypeDef *)page_data_tmp);
+    if ((item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
+        (item.end_tag != STORAGE_ITEM_END_TAG))
+        return Storage_ItemInfo_Error;
+
+    update_size = size + (STORAGE_DATA_ALIGN - STORAGE_DATA_ALIGN % size);
+    if (update_size != item.len)
+        return Storage_Update_DataSize_Error;
+
+    /* comput item slot crc */
+
+    update_size = 0;
 
     while(true)
     {
@@ -2675,6 +2695,7 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_DumpTab, Storage_Show_Tab, Storage dump Tab);
 
+/* still have some bug */
 static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {
     uint32_t flash_sector_size = 0;
