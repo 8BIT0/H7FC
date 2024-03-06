@@ -47,8 +47,6 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
 static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len);
 static bool Storage_ExtFlash_EraseAll(void);
 
-static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
-
 StorageIO_TypeDef InternalFlash_IO = {
     .erase = Storage_OnChipFlash_Erase,
     .erase_all = NULL,
@@ -72,7 +70,12 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Format(Storage_MediumType_List type);
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size);
- 
+static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item);
+static bool Storage_Compare_FreeSlot_CRC(const Storage_FreeSlot_TypeDef freeslot);
+static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
+static bool Storage_Conput_FreeSlot_CRC(Storage_FreeSlot_TypeDef *p_freeslot);
+static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
+
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
 static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name);
@@ -599,15 +602,7 @@ static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage
                 (p_item->end_tag == STORAGE_ITEM_END_TAG) && \
                 (memcmp(p_item->name, name, strlen(name)) == 0))
             {
-                crc_buf = ((uint8_t *)p_item) + sizeof(p_item->head_tag);
-                crc_len = sizeof(Storage_Item_TypeDef);
-                crc_len -= sizeof(p_item->head_tag);
-                crc_len -= sizeof(p_item->end_tag);
-                crc_len -= sizeof(p_item->crc16);
-                /* item slot crc check */
-                crc = Common_CRC16(crc_buf, crc_len);
-
-                if (crc == p_item->crc16)
+                if (Storage_Compare_ItemSlot_CRC(*p_item))
                 {
                     data_slot = *p_item;
                     return data_slot;
@@ -810,7 +805,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 {
     uint8_t *crc_buf = NULL;
     uint8_t *slot_update_ptr = NULL;
-    uint16_t crc_len = 0;
     uint16_t base_info_crc = 0;
     uint32_t storage_data_size = 0;
     uint32_t stored_size = 0;
@@ -923,13 +917,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     crt_item_slot.end_tag = STORAGE_ITEM_END_TAG;
 
                     /* comput crc */
-                    crc_buf = ((uint8_t *)&crt_item_slot) + sizeof(crt_item_slot.head_tag);
-                    crc_len = sizeof(Storage_Item_TypeDef);
-                    crc_len -= sizeof(crt_item_slot.head_tag);
-                    crc_len -= sizeof(crt_item_slot.end_tag);
-                    crc_len -= sizeof(crt_item_slot.crc16);
-
-                    crt_item_slot.crc16 = Common_CRC16(crc_buf, crc_len);
+                    Storage_Comput_ItemSlot_CRC(&crt_item_slot);
                     store_addr = crt_item_slot.data_addr;
                     break; 
                 }
@@ -1423,6 +1411,65 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
         return false;
 
     return true;
+}
+
+static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item)
+{
+    uint8_t *crc_buf = (uint8_t *)&item;
+    uint16_t crc_len = sizeof(Storage_Item_TypeDef);
+    uint16_t crc = 0;
+    
+    crc_buf += sizeof(item.head_tag);
+    crc_len -= sizeof(item.head_tag);
+    crc_len -= sizeof(item.end_tag);
+    crc_len -= sizeof(item.crc16);
+    crc = Common_CRC16(crc_buf, crc_len);
+
+    if (crc == item.crc16)
+        return true;
+
+    return false;
+}
+
+static bool Storage_Compare_FreeSlot_CRC(const Storage_FreeSlot_TypeDef freeslot)
+{
+    uint8_t *crc_buf = (uint8_t *)&freeslot;
+    uint16_t crc_len = sizeof(Storage_FreeSlot_TypeDef);
+    uint16_t crc = 0;
+
+    return false;
+}
+
+static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item)
+{
+    uint8_t *crc_buf = NULL;
+    uint16_t crc_len = sizeof(Storage_Item_TypeDef);
+    
+    if (p_item)
+    {
+        crc_buf = ((uint8_t *)p_item) + sizeof(p_item->head_tag);
+        crc_len -= sizeof(p_item->head_tag);
+        crc_len -= sizeof(p_item->end_tag);
+        crc_len -= sizeof(p_item->crc16);
+        p_item->crc16 = Common_CRC16(crc_buf, crc_len);
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool Storage_Conput_FreeSlot_CRC(Storage_FreeSlot_TypeDef *p_freeslot)
+{
+    uint8_t *crc_buf = NULL;
+    uint16_t crc_len = sizeof(Storage_FreeSlot_TypeDef);
+
+    if (p_freeslot)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class)
