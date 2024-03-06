@@ -687,7 +687,6 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     if (update_size != item.len)
         return Storage_Update_DataSize_Error;
 
-
     update_size = 0;
 
     // while(true)
