@@ -922,7 +922,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             /* noticed: write 0 on align space */
             storage_data_size += STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
 
-        /* noticed: DataSlot.total_data_size - DataSlot.align_size is storaged data size */
+        /* noticed: DataSlot.cur_data_size - DataSlot.align_size is current slot storaged data size */
         DataSlot.total_data_size = storage_data_size;
         unstored_size = DataSlot.total_data_size;
 
@@ -971,9 +971,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     DataSlot.align_size = STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
                     DataSlot.nxt_addr = 0;
 
-                    if (free_space_remianing >= DataSlot.align_size + unstored_size + sizeof(Storage_DataSlot_TypeDef))
+                    if (free_space_remianing >= unstored_size + sizeof(Storage_DataSlot_TypeDef))
                     {
-                        free_space_remianing -= DataSlot.align_size + unstored_size + sizeof(Storage_DataSlot_TypeDef);
+                        free_space_remianing -= unstored_size + sizeof(Storage_DataSlot_TypeDef);
 
                         if (free_space_remianing < (sizeof(Storage_DataSlot_TypeDef) + STORAGE_DATA_ALIGN))
                         {
@@ -983,10 +983,10 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     }
 
                     /* update current free slot adderess */
-                    cur_freeslot_addr += DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef); 
+                    cur_freeslot_addr += DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef); 
                     
                     FreeSlot.total_size = free_space_remianing;
-                    FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + DataSlot.align_size + sizeof(Storage_DataSlot_TypeDef);
+                    FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
                 }
 
                 /* comput current slot crc */
@@ -1008,7 +1008,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 memcpy(slot_update_ptr, &DataSlot.align_size, sizeof(DataSlot.align_size));
                 slot_update_ptr += sizeof(DataSlot.align_size);
                 memcpy(slot_update_ptr, crc_buf, (DataSlot.cur_slot_size - DataSlot.align_size));
-                slot_update_ptr += DataSlot.cur_slot_size;
+                slot_update_ptr += (DataSlot.cur_slot_size - DataSlot.align_size);
                 
                 if (DataSlot.align_size)
                 {
@@ -2420,9 +2420,10 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             memcpy(&DataSlot.align_size, p_read_out, sizeof(DataSlot.align_size));
             p_read_out += sizeof(DataSlot.align_size);
             shellPrint(shell_obj, "\t[align size : %d]\r\n", DataSlot.align_size);
+            shellPrint(shell_obj, "\t[current slot data size %d]\r\n", DataSlot.cur_slot_size - DataSlot.align_size);
 
             crc_buf = p_read_out;
-            crc_len = DataSlot.cur_slot_size - DataSlot.align_size;
+            crc_len = DataSlot.cur_slot_size;
             crc = Common_CRC16(crc_buf, crc_len);
 
             p_read_out += DataSlot.cur_slot_size;
@@ -2430,6 +2431,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             p_read_out += sizeof(DataSlot.slot_crc);
             if (crc != DataSlot.slot_crc)
             {
+                shellPrint(shell_obj, "\t[comput crc %04x slot crc %04x]\r\n", crc, DataSlot.slot_crc);
                 shellPrint(shell_obj, "\t[Slot crc error]\r\n");
                 return;
             }
@@ -2441,12 +2443,6 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
                 return;
             }
 
-            if (crc != DataSlot.slot_crc)
-            {
-                shellPrint(shell_obj, "\t[slot crc error]\r\n");
-                return;
-            }
-
             /* display data as hex */
             shellPrint(shell_obj, "\t[");
             for (i = 0; i < DataSlot.cur_slot_size - DataSlot.align_size; i++)
@@ -2455,26 +2451,14 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             }
             shellPrint(shell_obj, "]\r\n");
 
-            shellPrint(shell_obj, "\t[");
+            shellPrint(shell_obj, "\t[ ");
             for (i = 0; i < DataSlot.cur_slot_size - DataSlot.align_size; i++)
             {
-                shellPrint(shell_obj, " %c ", crc_buf[i]);
+                shellPrint(shell_obj, "%c", crc_buf[i]);
             }
-            shellPrint(shell_obj, "]\r\n");
-
-            if (DataSlot.cur_slot_size == DataSlot.total_data_size)
-            {
-                if (DataSlot.total_data_size - DataSlot.align_size != item.len)
-                {
-                    shellPrint(shell_obj, "\t[slot data size error]\r\n");
-                    break;
-                }
-
-                break;
-            }
-
-            data_len -= (DataSlot.cur_slot_size - DataSlot.align_size);
-
+            shellPrint(shell_obj, " ]\r\n");
+            
+            data_len -= DataSlot.cur_slot_size;
             if (data_len == 0)
             {
                 if (DataSlot.nxt_addr == 0)
