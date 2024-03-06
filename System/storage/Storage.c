@@ -944,6 +944,10 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 /* current have space for new data need to be storage */
                 if (slot_useful_size < storage_data_size)
                 {
+                    /*
+                     * UNTESTED IN THIS BRANCH
+                     */
+                    
                     DataSlot.cur_slot_size = slot_useful_size;
                     stored_size += DataSlot.cur_slot_size;
                     unstored_size -= stored_size;
@@ -971,9 +975,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     DataSlot.align_size = STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
                     DataSlot.nxt_addr = 0;
 
-                    if (free_space_remianing >= unstored_size + sizeof(Storage_DataSlot_TypeDef))
+                    if (free_space_remianing >= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef))
                     {
-                        free_space_remianing -= unstored_size + sizeof(Storage_DataSlot_TypeDef);
+                        free_space_remianing -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
 
                         if (free_space_remianing < (sizeof(Storage_DataSlot_TypeDef) + STORAGE_DATA_ALIGN))
                         {
@@ -2457,7 +2461,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
                 shellPrint(shell_obj, "%c", crc_buf[i]);
             }
             shellPrint(shell_obj, " ]\r\n");
-            
+
             data_len -= DataSlot.cur_slot_size;
             if (data_len == 0)
             {
