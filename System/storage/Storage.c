@@ -71,9 +71,7 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Format(Storage_MediumType_List type);
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size);
 static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item);
-static bool Storage_Compare_FreeSlot_CRC(const Storage_FreeSlot_TypeDef freeslot);
 static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
-static bool Storage_Conput_FreeSlot_CRC(Storage_FreeSlot_TypeDef *p_freeslot);
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
 
 /* external function */
@@ -1431,15 +1429,6 @@ static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item)
     return false;
 }
 
-static bool Storage_Compare_FreeSlot_CRC(const Storage_FreeSlot_TypeDef freeslot)
-{
-    uint8_t *crc_buf = (uint8_t *)&freeslot;
-    uint16_t crc_len = sizeof(Storage_FreeSlot_TypeDef);
-    uint16_t crc = 0;
-
-    return false;
-}
-
 static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item)
 {
     uint8_t *crc_buf = NULL;
@@ -1453,19 +1442,6 @@ static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item)
         crc_len -= sizeof(p_item->crc16);
         p_item->crc16 = Common_CRC16(crc_buf, crc_len);
 
-        return true;
-    }
-
-    return false;
-}
-
-static bool Storage_Conput_FreeSlot_CRC(Storage_FreeSlot_TypeDef *p_freeslot)
-{
-    uint8_t *crc_buf = NULL;
-    uint16_t crc_len = sizeof(Storage_FreeSlot_TypeDef);
-
-    if (p_freeslot)
-    {
         return true;
     }
 
