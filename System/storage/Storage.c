@@ -776,8 +776,7 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
     return false;
 }
 
-/* free slot info update error */
-/* still some bugs inside this function */
+/* it might have some bugs inside this function */
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size)
 {
     uint8_t *crc_buf = NULL;
