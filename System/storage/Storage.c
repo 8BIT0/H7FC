@@ -621,7 +621,6 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_DataSlot_TypeDef *p_slotdata = NULL;
     uint8_t *p_read_tmp = page_data_tmp;
-    uint8_t *p_update_data_buf = NULL;
     uint8_t *p_crc = NULL;
     uint32_t data_len = 0;
     uint16_t crc = 0;
@@ -732,16 +731,14 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
         memcpy(p_read_tmp, p_data, (p_slotdata->cur_slot_size - p_slotdata->align_size));
         p_data += p_slotdata->cur_slot_size - p_slotdata->align_size;
+        p_read_tmp += p_slotdata->cur_slot_size - p_slotdata->align_size;
 
-        break;
-
-    //     if (p_slotdata->align_size)
-    //     {
-    //         /* set align byte */
-    //         memset(p_update_data_buf, 0, p_slotdata->align_size);
-    //         p_read_tmp += p_slotdata->align_size;
-    //         p_write_tmp += p_slotdata->align_size;
-    //     }
+        if (p_slotdata->align_size)
+        {
+            /* set align byte */
+            memset(p_read_tmp, 0, p_slotdata->align_size);
+            p_read_tmp += p_slotdata->align_size;
+        }
 
     //     p_slotdata->slot_crc = *((uint32_t *)p_read_tmp);
     //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->slot_crc));
