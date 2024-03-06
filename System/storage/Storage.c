@@ -730,12 +730,10 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
         if (p_slotdata->align_size >= STORAGE_DATA_ALIGN)
             return Storage_DataInfo_Error;
 
-        break;
+        memcpy(p_read_tmp, p_data, (p_slotdata->cur_slot_size - p_slotdata->align_size));
+        p_data += p_slotdata->cur_slot_size - p_slotdata->align_size;
 
-    //     memcpy(p_write_tmp, p_read_tmp, data_len);
-    //     p_update_data_buf = p_write_tmp;
-    //     p_read_tmp += data_len;
-    //     p_write_tmp += data_len;
+        break;
 
     //     if (p_slotdata->align_size)
     //     {
