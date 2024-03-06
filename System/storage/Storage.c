@@ -679,14 +679,14 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
     item = *((Storage_Item_TypeDef *)page_data_tmp);
     if ((item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
-        (item.end_tag != STORAGE_ITEM_END_TAG))
+        (item.end_tag != STORAGE_ITEM_END_TAG) || \
+        !Storage_Compare_ItemSlot_CRC(item))
         return Storage_ItemInfo_Error;
 
     update_size = size + (STORAGE_DATA_ALIGN - STORAGE_DATA_ALIGN % size);
     if (update_size != item.len)
         return Storage_Update_DataSize_Error;
 
-    /* comput item slot crc */
 
     update_size = 0;
 
