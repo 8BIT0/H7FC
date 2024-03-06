@@ -697,94 +697,94 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
     update_size = 0;
 
-    while(true)
-    {
-        /* get data from handle */
-        if (!StorageIO_API->read(read_addr, p_read_tmp, read_size))
-            return Storage_Read_Error;
+    // while(true)
+    // {
+    //     /* get data from handle */
+    //     if (!StorageIO_API->read(read_addr, p_read_tmp, read_size))
+    //         return Storage_Read_Error;
 
-        p_slotdata->head_tag = *((uint32_t *)p_read_tmp);
-        memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->head_tag));
-        p_read_tmp += sizeof(p_slotdata->head_tag);
-        p_write_tmp += sizeof(p_slotdata->head_tag);
+    //     p_slotdata->head_tag = *((uint32_t *)p_read_tmp);
+    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->head_tag));
+    //     p_read_tmp += sizeof(p_slotdata->head_tag);
+    //     p_write_tmp += sizeof(p_slotdata->head_tag);
 
-        memcpy(p_slotdata->name, p_read_tmp, STORAGE_NAME_LEN);
-        memcpy(p_write_tmp, p_read_tmp, STORAGE_NAME_LEN);
-        p_read_tmp += STORAGE_NAME_LEN;
-        p_write_tmp += STORAGE_NAME_LEN;
+    //     memcpy(p_slotdata->name, p_read_tmp, STORAGE_NAME_LEN);
+    //     memcpy(p_write_tmp, p_read_tmp, STORAGE_NAME_LEN);
+    //     p_read_tmp += STORAGE_NAME_LEN;
+    //     p_write_tmp += STORAGE_NAME_LEN;
 
-        p_slotdata->total_data_size = *((uint32_t *)p_read_tmp);
-        memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->total_data_size));
-        p_read_tmp += sizeof(p_slotdata->total_data_size);
-        p_write_tmp += sizeof(p_slotdata->total_data_size);
+    //     p_slotdata->total_data_size = *((uint32_t *)p_read_tmp);
+    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->total_data_size));
+    //     p_read_tmp += sizeof(p_slotdata->total_data_size);
+    //     p_write_tmp += sizeof(p_slotdata->total_data_size);
 
-        p_slotdata->cur_slot_size = *((uint32_t *)p_read_tmp);
-        memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->cur_slot_size));
-        data_len = *((uint32_t *)p_slotdata->cur_slot_size);
-        p_read_tmp += sizeof(p_slotdata->cur_slot_size);
-        p_write_tmp += sizeof(p_slotdata->cur_slot_size);
+    //     p_slotdata->cur_slot_size = *((uint32_t *)p_read_tmp);
+    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->cur_slot_size));
+    //     data_len = *((uint32_t *)p_slotdata->cur_slot_size);
+    //     p_read_tmp += sizeof(p_slotdata->cur_slot_size);
+    //     p_write_tmp += sizeof(p_slotdata->cur_slot_size);
 
-        p_slotdata->nxt_addr = *((uint32_t *)p_read_tmp);
-        memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->nxt_addr));
-        p_read_tmp += sizeof(p_slotdata->nxt_addr);
-        p_write_tmp += sizeof(p_slotdata->nxt_addr);
+    //     p_slotdata->nxt_addr = *((uint32_t *)p_read_tmp);
+    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->nxt_addr));
+    //     p_read_tmp += sizeof(p_slotdata->nxt_addr);
+    //     p_write_tmp += sizeof(p_slotdata->nxt_addr);
 
-        p_slotdata->align_size = *((uint32_t *)p_read_tmp);
-        memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->align_size));
-        p_read_tmp += sizeof(p_slotdata->align_size);
-        p_write_tmp += sizeof(p_slotdata->align_size);
+    //     p_slotdata->align_size = *((uint32_t *)p_read_tmp);
+    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->align_size));
+    //     p_read_tmp += sizeof(p_slotdata->align_size);
+    //     p_write_tmp += sizeof(p_slotdata->align_size);
 
-        memcpy(p_write_tmp, p_read_tmp, data_len);
-        p_update_data_buf = p_write_tmp;
-        p_read_tmp += data_len;
-        p_write_tmp += data_len;
+    //     memcpy(p_write_tmp, p_read_tmp, data_len);
+    //     p_update_data_buf = p_write_tmp;
+    //     p_read_tmp += data_len;
+    //     p_write_tmp += data_len;
 
-        if (p_slotdata->align_size)
-        {
-            /* set align byte */
-            memset(p_update_data_buf, 0, p_slotdata->align_size);
-            p_read_tmp += p_slotdata->align_size;
-            p_write_tmp += p_slotdata->align_size;
-        }
+    //     if (p_slotdata->align_size)
+    //     {
+    //         /* set align byte */
+    //         memset(p_update_data_buf, 0, p_slotdata->align_size);
+    //         p_read_tmp += p_slotdata->align_size;
+    //         p_write_tmp += p_slotdata->align_size;
+    //     }
 
-        p_slotdata->slot_crc = *((uint32_t *)p_read_tmp);
-        memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->slot_crc));
-        p_crc = p_write_tmp;
-        p_read_tmp += sizeof(p_slotdata->slot_crc);
-        p_write_tmp += sizeof(p_slotdata->slot_crc);
+    //     p_slotdata->slot_crc = *((uint32_t *)p_read_tmp);
+    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->slot_crc));
+    //     p_crc = p_write_tmp;
+    //     p_read_tmp += sizeof(p_slotdata->slot_crc);
+    //     p_write_tmp += sizeof(p_slotdata->slot_crc);
 
-        p_slotdata->end_tag = *((uint32_t *)p_read_tmp);
-        memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->end_tag));
+    //     p_slotdata->end_tag = *((uint32_t *)p_read_tmp);
+    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->end_tag));
 
-        if ((p_slotdata->head_tag == STORAGE_SLOT_HEAD_TAG) && \
-            (p_slotdata->end_tag == STORAGE_SLOT_END_TAG) && \
-            (p_slotdata->total_data_size == size))
-        {
-            /* check current slot size */
-            update_size += data_len;
-            memcpy(p_update_data_buf, p_data, data_len);
-            p_data += data_len;
+    //     if ((p_slotdata->head_tag == STORAGE_SLOT_HEAD_TAG) && \
+    //         (p_slotdata->end_tag == STORAGE_SLOT_END_TAG) && \
+    //         (p_slotdata->total_data_size == size))
+    //     {
+    //         /* check current slot size */
+    //         update_size += data_len;
+    //         memcpy(p_update_data_buf, p_data, data_len);
+    //         p_data += data_len;
 
-            /* comput new crc */
-            crc = Common_CRC16(p_update_data_buf, data_len);
-            memcpy(p_crc, &crc, sizeof(crc));
+    //         /* comput new crc */
+    //         crc = Common_CRC16(p_update_data_buf, data_len);
+    //         memcpy(p_crc, &crc, sizeof(crc));
 
-            /* update current slot data */
-            /* update currnet slot data to where we read data out */
-            if (!StorageIO_API->write(read_addr, flash_write_tmp, p_slotdata->cur_slot_size + sizeof(Storage_DataSlot_TypeDef)))
-                return Storage_Write_Error;
+    //         /* update current slot data */
+    //         /* update currnet slot data to where we read data out */
+    //         if (!StorageIO_API->write(read_addr, flash_write_tmp, p_slotdata->cur_slot_size + sizeof(Storage_DataSlot_TypeDef)))
+    //             return Storage_Write_Error;
 
-            if (p_slotdata->nxt_addr == 0)
-            {
-                if (update_size == p_slotdata->total_data_size)
-                    return Storage_Error_None;
+    //         if (p_slotdata->nxt_addr == 0)
+    //         {
+    //             if (update_size == p_slotdata->total_data_size)
+    //                 return Storage_Error_None;
             
-                return Storage_No_Enough_Space;
-            }
+    //             return Storage_No_Enough_Space;
+    //         }
 
-            read_addr = p_slotdata->nxt_addr;
-        }
-    }
+    //         read_addr = p_slotdata->nxt_addr;
+    //     }
+    // }
 }
 
 static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
@@ -1880,7 +1880,16 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
         
         case Storage_FreeSlot_Addr_Error:
             return Storage_ErrorCode_ToStr(Storage_FreeSlot_Addr_Error);
-
+        
+        case Storage_ItemInfo_Error:
+            return Storage_ErrorCode_ToStr(Storage_ItemInfo_Error);
+            
+        case Storage_CRC_Error:
+            return Storage_ErrorCode_ToStr(Storage_CRC_Error);
+            
+        case Storage_Update_DataSize_Error:
+            return Storage_ErrorCode_ToStr(Storage_Update_DataSize_Error);
+            
         default:
             return "Unknow Error\r\n";
     }
