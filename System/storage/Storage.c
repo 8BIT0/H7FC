@@ -615,14 +615,12 @@ static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage
     return data_slot;
 }
 
-static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle item_slot_hdl, uint8_t *p_data, uint16_t size)
+static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_DataSlot_TypeDef *p_slotdata = NULL;
-    Storage_Item_TypeDef item;
     uint8_t *p_read_tmp = page_data_tmp;
-    uint8_t *p_write_tmp = flash_write_tmp;
     uint8_t *p_update_data_buf = NULL;
     uint8_t *p_crc = NULL;
     uint32_t data_len = 0;
@@ -631,12 +629,10 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     uint32_t read_size = 0;
     uint32_t update_size = 0;
 
-    memset(&item, 0, sizeof(item));
-
     if (!Storage_Monitor.init_state || \
         (type > External_Flash) || \
         (class > Para_User) || \
-        (item_slot_hdl == 0) || \
+        (data_slot_hdl == 0) || \
         (p_data == NULL) || \
         (size == 0))
         return Storage_Param_Error;
@@ -666,65 +662,72 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     }
 
     if ((p_Sec == NULL) || \
-        (p_Sec->tab_addr < item_slot_hdl) || \
-        (item_slot_hdl > (p_Sec->tab_addr + p_Sec->tab_size)))
+        (p_Sec->data_sec_addr < data_slot_hdl) || \
+        (data_slot_hdl > (p_Sec->data_sec_addr + p_Sec->data_sec_size)))
         return Storage_Param_Error;
 
-    read_addr = item_slot_hdl;
-    memset(page_data_tmp, 0, sizeof(Storage_Item_TypeDef));
+    read_addr = data_slot_hdl;
+    memset(page_data_tmp, 0, sizeof(Storage_DataSlot_TypeDef));
+    update_size = size + (STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN);
 
-    /* get data item first */
-    if (!StorageIO_API->read(read_addr, page_data_tmp, sizeof(Storage_Item_TypeDef)))
+    /* get data slot first */
+    if (!StorageIO_API->read(read_addr, p_read_tmp, sizeof(Storage_DataSlot_TypeDef)))
         return Storage_Read_Error;
+    
+    /* get data size */
+    p_slotdata = (Storage_DataSlot_TypeDef *)p_read_tmp;
+    if ((p_slotdata->head_tag != STORAGE_SLOT_HEAD_TAG) || \
+        (p_slotdata->total_data_size == 0) || \
+        (p_slotdata->total_data_size > p_Sec->data_sec_size))
+        return Storage_DataInfo_Error;
 
-    item = *((Storage_Item_TypeDef *)page_data_tmp);
-    if ((item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
-        (item.end_tag != STORAGE_ITEM_END_TAG) || \
-        !Storage_Compare_ItemSlot_CRC(item))
-        return Storage_ItemInfo_Error;
-
-    update_size = size + (STORAGE_DATA_ALIGN - STORAGE_DATA_ALIGN % size);
-    if (update_size != item.len)
+    if (p_slotdata->total_data_size != update_size)
         return Storage_Update_DataSize_Error;
 
     update_size = 0;
+    read_size = p_slotdata->total_data_size + sizeof(Storage_DataSlot_TypeDef);
+    p_read_tmp = page_data_tmp;
+    memset(p_read_tmp, 0, sizeof(Storage_DataSlot_TypeDef));
+    p_slotdata = NULL;
+    while(true)
+    {
+        p_read_tmp = page_data_tmp;
+        p_slotdata = (Storage_DataSlot_TypeDef *)p_read_tmp;
 
-    // while(true)
-    // {
-    //     /* get data from handle */
-    //     if (!StorageIO_API->read(read_addr, p_read_tmp, read_size))
-    //         return Storage_Read_Error;
+        /* get data from handle */
+        if (!StorageIO_API->read(read_addr, p_read_tmp, read_size))
+            return Storage_Read_Error;
 
-    //     p_slotdata->head_tag = *((uint32_t *)p_read_tmp);
-    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->head_tag));
-    //     p_read_tmp += sizeof(p_slotdata->head_tag);
-    //     p_write_tmp += sizeof(p_slotdata->head_tag);
+        p_slotdata->head_tag = *((uint32_t *)p_read_tmp);
+        p_read_tmp += sizeof(p_slotdata->head_tag);
+        if (p_slotdata->head_tag != STORAGE_SLOT_HEAD_TAG)
+            return Storage_DataInfo_Error;
 
-    //     memcpy(p_slotdata->name, p_read_tmp, STORAGE_NAME_LEN);
-    //     memcpy(p_write_tmp, p_read_tmp, STORAGE_NAME_LEN);
-    //     p_read_tmp += STORAGE_NAME_LEN;
-    //     p_write_tmp += STORAGE_NAME_LEN;
+        memcpy(p_slotdata->name, p_read_tmp, STORAGE_NAME_LEN);
+        p_read_tmp += STORAGE_NAME_LEN;
 
-    //     p_slotdata->total_data_size = *((uint32_t *)p_read_tmp);
-    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->total_data_size));
-    //     p_read_tmp += sizeof(p_slotdata->total_data_size);
-    //     p_write_tmp += sizeof(p_slotdata->total_data_size);
+        p_slotdata->total_data_size = *((uint32_t *)p_read_tmp);
+        p_read_tmp += sizeof(p_slotdata->total_data_size);
+        if ((p_slotdata->total_data_size == 0) || \
+            (p_slotdata->total_data_size > p_Sec->data_sec_size))
+            return Storage_DataInfo_Error;
 
-    //     p_slotdata->cur_slot_size = *((uint32_t *)p_read_tmp);
-    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->cur_slot_size));
-    //     data_len = *((uint32_t *)p_slotdata->cur_slot_size);
-    //     p_read_tmp += sizeof(p_slotdata->cur_slot_size);
-    //     p_write_tmp += sizeof(p_slotdata->cur_slot_size);
+        p_slotdata->cur_slot_size = *((uint32_t *)p_read_tmp);
+        p_read_tmp += sizeof(p_slotdata->cur_slot_size);
+        if (p_slotdata->cur_slot_size > p_slotdata->total_data_size)
+            return Storage_DataInfo_Error;
 
-    //     p_slotdata->nxt_addr = *((uint32_t *)p_read_tmp);
-    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->nxt_addr));
-    //     p_read_tmp += sizeof(p_slotdata->nxt_addr);
-    //     p_write_tmp += sizeof(p_slotdata->nxt_addr);
+        data_len = p_slotdata->cur_slot_size;
 
-    //     p_slotdata->align_size = *((uint32_t *)p_read_tmp);
-    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->align_size));
-    //     p_read_tmp += sizeof(p_slotdata->align_size);
-    //     p_write_tmp += sizeof(p_slotdata->align_size);
+        p_slotdata->nxt_addr = *((uint32_t *)p_read_tmp);
+        p_read_tmp += sizeof(p_slotdata->nxt_addr);
+
+        p_slotdata->align_size = *((uint32_t *)p_read_tmp);
+        p_read_tmp += sizeof(p_slotdata->align_size);
+        if (p_slotdata->align_size > STORAGE_DATA_ALIGN)
+            return Storage_DataInfo_Error;
+
+        break;
 
     //     memcpy(p_write_tmp, p_read_tmp, data_len);
     //     p_update_data_buf = p_write_tmp;
@@ -776,7 +779,9 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
     //         read_addr = p_slotdata->nxt_addr;
     //     }
-    // }
+    }
+
+    return Storage_Error_None;
 }
 
 static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
@@ -2820,3 +2825,82 @@ static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_Par
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_DumpSection, Storage_Dump_DataSection, Storage dump data section);
+
+static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name, char *test_data)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_FlashInfo_TypeDef *p_Flash = NULL;
+    Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    Storage_Item_TypeDef item;
+    Storage_ErrorCode_List update_error_code = Storage_Error_None;
+    
+    memset(&item, 0, sizeof(item));
+
+    if ((shell_obj == NULL) || \
+        (test_name == NULL) || \
+        (test_data == NULL) || \
+        (strlen(test_name) == 0) || \
+        (strlen(test_data) == 0))
+        return;
+
+    switch((uint8_t) medium)
+    {
+        case Internal_Flash:
+            shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.internal || \
+                !Storage_Monitor.module_init_reg.bit.internal)
+            {
+                shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
+                return;
+            }
+            p_Flash = &Storage_Monitor.internal_info;
+            StorageIO_API = &InternalFlash_IO;
+            break;
+
+        case External_Flash:
+            shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.external || \
+                !Storage_Monitor.module_init_reg.bit.external)
+            {
+                shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
+                return;
+            }
+            p_Flash = &Storage_Monitor.external_info;
+            StorageIO_API = &ExternalFlash_IO;
+            break;
+
+        default:
+            return;
+    }
+
+    p_Sec = Storage_Get_SecInfo(p_Flash, class);
+    if ((p_Sec == NULL) || \
+        (p_Sec->data_sec_addr == 0) || \
+        (p_Sec->data_sec_size == 0))
+    {
+        shellPrint(shell_obj, "\t[Get section info error]\r\n");
+        return;
+    }
+
+    item = Storage_Search(medium, class, test_name);
+    if ((item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
+        (item.end_tag != STORAGE_ITEM_END_TAG) || \
+        (item.data_addr == 0))
+    {
+        shellPrint(shell_obj, "\t[Item slot error]\r\n");
+        return;
+    }
+
+    update_error_code = Storage_SlotData_Update(medium, class, item.data_addr, test_data, strlen(test_data)); 
+    if (update_error_code != Storage_Error_None)
+    {
+        shellPrint(shell_obj, "\t[Data update failed %s]\r\n", Storage_Error_Print(update_error_code));
+        return;
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_UpdateData, Storage_UpdateData, Storage update data);
