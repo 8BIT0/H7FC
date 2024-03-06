@@ -721,6 +721,9 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
         p_slotdata->nxt_addr = *((uint32_t *)p_read_tmp);
         p_read_tmp += sizeof(p_slotdata->nxt_addr);
+        if ((p_slotdata->nxt_addr < p_Sec->data_sec_addr) || \
+            (p_slotdata->nxt_addr > p_Sec->data_sec_addr + p_Sec->data_sec_size))
+            return Storage_DataInfo_Error;
 
         p_slotdata->align_size = *((uint32_t *)p_read_tmp);
         p_read_tmp += sizeof(p_slotdata->align_size);
