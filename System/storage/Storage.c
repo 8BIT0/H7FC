@@ -724,7 +724,7 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
         p_slotdata->align_size = *((uint32_t *)p_read_tmp);
         p_read_tmp += sizeof(p_slotdata->align_size);
-        if (p_slotdata->align_size > STORAGE_DATA_ALIGN)
+        if (p_slotdata->align_size >= STORAGE_DATA_ALIGN)
             return Storage_DataInfo_Error;
 
         break;
