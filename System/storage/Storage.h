@@ -128,14 +128,16 @@ typedef struct
     /* storage data insert */
     /*
      * for example: storage 13 byte name as "data 1" then data slot should be like the diagram down below
-     *  ____________________________________________________________________________________________________________________________________________________
-     * |    head    |   Name  | total data size | cur slot | nxt addr | align size |       storage data       |   align    |       slot crc    |     end    |
-     * | 0xEF0110EF |  data 1 |       16        |    16    |     0    |      3     | ........................ |            |   comput crc by   | 0xFE1001FE |
-     * |   4Byte    |  41Byte |      4Byte      |  4Byte   |   4Byte  |    1Byte   |     13Byte + 3AlignByte  |   3Byte    | current slot data |     4Byte  |
-     * |____________|_________|_________________|__________|__________|____________|__________________________|____________|___________________|____________|
-     *                                                                                     |                           ↑
-     *                                                                                     |            16Byte         |
-     *                                                                                     |_________ comput crc ______|
+     *  _________________________________________________________________________________________________________________________________________
+     * |    head    |   Name  | total data size | cur slot | nxt addr | align size | storage data |   align    |       slot crc    |     end    |
+     * | 0xEF0110EF |  data 1 |       16        |    16    |     0    |      3     | ............ |            |   comput crc by   | 0xFE1001FE |
+     * |   4Byte    |  41Byte |      4Byte      |  4Byte   |   4Byte  |    1Byte   |     13Byte   |   3Byte    | current slot data |     4Byte  |
+     * |____________|_________|_________________|__________|__________|____________|______________|____________|___________________|____________|
+     *                                                                                     |______________|               ↑
+     *                                                                                            |                       |
+     *                                                                                            |                       |   
+     *                                                                                            |         16Byte        |
+     *                                                                                            |______ comput crc _____|
      * 
      */
     uint16_t slot_crc;
