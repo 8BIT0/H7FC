@@ -429,6 +429,7 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
                 tab_addr += (sec_info->tab_size / sec_info->page_num);
             }
 
+            /* bug */
             if ((store_param_found != sec_info->para_num) || \
                 (store_param_size != sec_info->para_size))
                 return false;
@@ -915,6 +916,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     else
                         align_byte = 0;
 
+                    /* bug? */
                     crt_item_slot.len = size + align_byte;
 
                     /* set free slot address as current data address */
