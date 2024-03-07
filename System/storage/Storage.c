@@ -622,7 +622,6 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     Storage_DataSlot_TypeDef *p_slotdata = NULL;
     uint8_t *p_read_tmp = page_data_tmp;
     uint8_t *p_crc = NULL;
-    uint32_t data_len = 0;
     uint16_t crc = 0;
     uint32_t read_addr = 0;
     uint32_t read_size = 0;
@@ -717,21 +716,18 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
         if (p_slotdata->cur_slot_size > p_slotdata->total_data_size)
             return Storage_DataInfo_Error;
 
-        data_len = p_slotdata->cur_slot_size;
-
         p_slotdata->nxt_addr = *((uint32_t *)p_read_tmp);
         p_read_tmp += sizeof(p_slotdata->nxt_addr);
         if ((p_slotdata->nxt_addr < p_Sec->data_sec_addr) || \
             (p_slotdata->nxt_addr > p_Sec->data_sec_addr + p_Sec->data_sec_size))
             return Storage_DataInfo_Error;
 
-        p_slotdata->align_size = *((uint32_t *)p_read_tmp);
+        p_slotdata->align_size = *((uint8_t *)p_read_tmp);
         p_read_tmp += sizeof(p_slotdata->align_size);
         if (p_slotdata->align_size >= STORAGE_DATA_ALIGN)
             return Storage_DataInfo_Error;
 
         memcpy(p_read_tmp, p_data, (p_slotdata->cur_slot_size - p_slotdata->align_size));
-        p_data += p_slotdata->cur_slot_size - p_slotdata->align_size;
         p_read_tmp += p_slotdata->cur_slot_size - p_slotdata->align_size;
 
         if (p_slotdata->align_size)
@@ -750,7 +746,11 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
                 return Storage_Update_DataSize_Error;
         }
 
-        p_slotdata->slot_crc = *((uint32_t *)p_read_tmp);
+        /* update crc */
+        p_slotdata->slot_crc = Common_CRC16(p_data, (p_slotdata->cur_slot_size - p_slotdata->align_size)) ;
+        p_data += p_slotdata->cur_slot_size - p_slotdata->align_size;
+
+        *((uint16_t *)p_read_tmp) = p_slotdata->slot_crc;
         p_read_tmp += sizeof(p_slotdata->slot_crc);
 
         p_slotdata->end_tag = *((uint32_t *)p_read_tmp);
@@ -759,37 +759,16 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
         if ((p_slotdata->nxt_addr == 0) && \
             (size == valid_data_size))
+        {
+            /* update data to flash */
+            if (!StorageIO_API->write(read_addr, page_data_tmp, p_slotdata->cur_slot_size + sizeof(Storage_DataSlot_TypeDef)))
+                return Storage_Write_Error;
+
             /* update accomplish */
             return Storage_Error_None;
+        }
 
         read_addr = p_slotdata->nxt_addr;
-
-    //     if ((p_slotdata->head_tag == STORAGE_SLOT_HEAD_TAG) && \
-    //         (p_slotdata->end_tag == STORAGE_SLOT_END_TAG) && \
-    //         (p_slotdata->total_data_size == size))
-    //     {
-    //         /* check current slot size */
-    //         update_size += data_len;
-    //         memcpy(p_update_data_buf, p_data, data_len);
-    //         p_data += data_len;
-
-    //         /* comput new crc */
-    //         crc = Common_CRC16(p_update_data_buf, data_len);
-    //         memcpy(p_crc, &crc, sizeof(crc));
-
-    //         /* update current slot data */
-    //         /* update currnet slot data to where we read data out */
-    //         if (!StorageIO_API->write(read_addr, flash_write_tmp, p_slotdata->cur_slot_size + sizeof(Storage_DataSlot_TypeDef)))
-    //             return Storage_Write_Error;
-
-    //         if (p_slotdata->nxt_addr == 0)
-    //         {
-    //             if (update_size == p_slotdata->total_data_size)
-    //                 return Storage_Error_None;
-            
-    //             return Storage_No_Enough_Space;
-    //         }
-    //     }
     }
 
     return Storage_Error_None;
