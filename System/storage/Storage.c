@@ -429,7 +429,6 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
                 tab_addr += (sec_info->tab_size / sec_info->page_num);
             }
 
-            /* bug */
             if ((store_param_found != sec_info->para_num) || \
                 (store_param_size != sec_info->para_size))
                 return false;
