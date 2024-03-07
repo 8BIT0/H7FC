@@ -366,7 +366,7 @@ static bool Storage_Check_Tab(StorageIO_TypeDef *storage_api, Storage_BaseSecInf
                 (free_slot_addr < sec_start_addr) || \
                 (free_slot_addr > sec_end_addr) || \
                 !storage_api->read(free_slot_addr, page_data_tmp, Storage_TabSize))
-                break;
+                return false;
 
             FreeSlot_Info = (Storage_FreeSlot_TypeDef *)page_data_tmp;
 
@@ -444,13 +444,14 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
 {
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Info = NULL;
+    Storage_FlashInfo_TypeDef Info_r;
     uint16_t i = 0;
     uint16_t crc = 0;
     uint16_t crc_read = 0;
-    uint32_t info_addr = 0;
     char flash_tag[INTERNAL_PAGE_TAG_SIZE + EXTERNAL_PAGE_TAG_SIZE];
 
     memset(flash_tag, '\0', sizeof(flash_tag));
+    memset(&Info_r, 0, sizeof(Storage_FlashInfo_TypeDef));
 
     switch((uint8_t)type)
     {
@@ -458,7 +459,6 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             StorageIO_API = &InternalFlash_IO;
             memcpy(flash_tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE);
             p_Info = &Storage_Monitor.internal_info;
-            info_addr = From_Start_Address;
             break;
 
         /* still in developping */
@@ -466,30 +466,26 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
             StorageIO_API = &ExternalFlash_IO;
             memcpy(flash_tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE);
             p_Info = &Storage_Monitor.external_info;
-            info_addr = p_Info->base_addr;
             break;
 
         default:
             return false;
     }
     
-    memset(p_Info, 0, sizeof(Storage_FlashInfo_TypeDef));
-    if (StorageIO_API->read(info_addr, page_data_tmp, Storage_TabSize))
+    if (StorageIO_API->read(From_Start_Address, page_data_tmp, Storage_TabSize))
     {
         /* check internal storage tag */
-        memcpy(p_Info, page_data_tmp, sizeof(Storage_FlashInfo_TypeDef));
-        p_Info->base_addr = info_addr;
+        Info_r = *(Storage_FlashInfo_TypeDef *)page_data_tmp;
         
         /* check storage tag */
         /* check boot / sys / user  start addr */
-        if ((strcmp(p_Info->tag, flash_tag) != 0) || \
-            (p_Info->base_addr != info_addr) || \
-            (p_Info->boot_sec.tab_addr == 0) || \
-            (p_Info->sys_sec.tab_addr == 0) || \
-            (p_Info->user_sec.tab_addr == 0) || \
-            (p_Info->boot_sec.tab_addr == p_Info->sys_sec.tab_addr) || \
-            (p_Info->boot_sec.tab_addr == p_Info->user_sec.tab_addr) || \
-            (p_Info->sys_sec.tab_addr == p_Info->user_sec.tab_addr))
+        if ((strcmp(Info_r.tag, flash_tag) != 0) || \
+            (Info_r.boot_sec.tab_addr == 0) || \
+            (Info_r.sys_sec.tab_addr == 0) || \
+            (Info_r.user_sec.tab_addr == 0) || \
+            (Info_r.boot_sec.tab_addr == Info_r.sys_sec.tab_addr) || \
+            (Info_r.boot_sec.tab_addr == Info_r.user_sec.tab_addr) || \
+            (Info_r.sys_sec.tab_addr == Info_r.user_sec.tab_addr))
             return false;
 
         /* get crc from storage baseinfo section check crc value */
@@ -502,12 +498,13 @@ static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
         /* check  boot  section tab & free slot info & stored item */
         /* check system section tab & free slot info & stored item */
         /* check  user  section tab & free slot info & stored item */
-        if (Storage_Check_Tab(StorageIO_API, &p_Info->boot_sec) && \
-            Storage_Check_Tab(StorageIO_API, &p_Info->sys_sec) && \
-            Storage_Check_Tab(StorageIO_API, &p_Info->user_sec))
+        if (Storage_Check_Tab(StorageIO_API, &Info_r.boot_sec) && \
+            Storage_Check_Tab(StorageIO_API, &Info_r.sys_sec) && \
+            Storage_Check_Tab(StorageIO_API, &Info_r.user_sec))
+        {
+            memcpy(p_Info, &Info_r, sizeof(Storage_FlashInfo_TypeDef));
             return true;
-        
-        return true;
+        }
     }
 
     return false;
@@ -626,6 +623,7 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     uint32_t read_size = 0;
     uint32_t update_size = 0;
     uint32_t valid_data_size = 0;
+    uint8_t align_byte = 0;
 
     if (!Storage_Monitor.init_state || \
         (type > External_Flash) || \
@@ -666,7 +664,14 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
     read_addr = data_slot_hdl;
     memset(page_data_tmp, 0, sizeof(Storage_DataSlot_TypeDef));
-    update_size = size + (STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN);
+    if (size % STORAGE_DATA_ALIGN)
+    {
+        align_byte = STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
+    }
+    else
+        align_byte = 0;
+
+    update_size = size + align_byte;
 
     /* get data slot first */
     if (!StorageIO_API->read(read_addr, p_read_tmp, sizeof(Storage_DataSlot_TypeDef)))
@@ -815,6 +820,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     Storage_Item_TypeDef crt_item_slot;
     Storage_FreeSlot_TypeDef FreeSlot;
     Storage_DataSlot_TypeDef DataSlot;
+    uint8_t align_byte = 0;
 
     memset(&crt_item_slot, 0, sizeof(crt_item_slot));
     memset(&DataSlot, 0, sizeof(Storage_DataSlot_TypeDef));
@@ -901,7 +907,15 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     crt_item_slot.class = class;
                     memset(crt_item_slot.name, '\0', STORAGE_NAME_LEN);
                     memcpy(crt_item_slot.name, name, strlen(name));
-                    crt_item_slot.len = size + (STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN);
+
+                    if (size % STORAGE_DATA_ALIGN)
+                    {
+                        align_byte = STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
+                    }
+                    else
+                        align_byte = 0;
+
+                    crt_item_slot.len = size + align_byte;
 
                     /* set free slot address as current data address */
                     crt_item_slot.data_addr = p_Sec->free_slot_addr;
@@ -925,10 +939,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
             return Storage_DataAddr_Update_Error;
 
         storage_data_size = size;
-        if (size % STORAGE_DATA_ALIGN)
-            /* get align byte size */
-            /* noticed: write 0 on align space */
-            storage_data_size += STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
+        /* get align byte size */
+        /* noticed: write 0 on align space */
+        storage_data_size += align_byte;
 
         /* noticed: DataSlot.cur_data_size - DataSlot.align_size is current slot storaged data size */
         DataSlot.total_data_size = storage_data_size;
@@ -980,7 +993,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     /* seperate data slot and new free slot from current free slot */
                     stored_size += unstored_size;
                     DataSlot.cur_slot_size = unstored_size;
-                    DataSlot.align_size = STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
+                    DataSlot.align_size = align_byte;
                     DataSlot.nxt_addr = 0;
 
                     if (free_space_remianing >= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef))
@@ -1312,7 +1325,7 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             if(page_num == 0)
                 return false;
             
-            Info.boot_sec.tab_addr = BaseInfo_start_addr + Storage_InfoPageSize;
+            Info.boot_sec.tab_addr = Storage_InfoPageSize;
             Info.boot_sec.tab_size = BootSection_Block_Size * BootTab_Num;
             Info.boot_sec.page_num = BootTab_Num;
             Info.boot_sec.data_sec_size = ExternalFlash_BootDataSec_Size;
@@ -1337,10 +1350,10 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
             tab_addr_offset += Info.user_sec.tab_size + Storage_ReserveBlock_Size;
             
             /* get the remaining size of rom space has left */
-            if(Info.total_size < (tab_addr_offset - BaseInfo_start_addr))
+            if(Info.total_size < tab_addr_offset)
                 return false;
             
-            remain_data_sec_size = Info.total_size - (tab_addr_offset - BaseInfo_start_addr);
+            remain_data_sec_size = Info.total_size - tab_addr_offset;
             data_sec_size += Info.boot_sec.data_sec_size + Storage_ReserveBlock_Size;
             data_sec_size += Info.sys_sec.data_sec_size + Storage_ReserveBlock_Size;
             data_sec_size += Info.user_sec.data_sec_size + Storage_ReserveBlock_Size;
