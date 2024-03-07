@@ -627,6 +627,7 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     uint32_t read_addr = 0;
     uint32_t read_size = 0;
     uint32_t update_size = 0;
+    uint32_t valid_data_size = 0;
 
     if (!Storage_Monitor.init_state || \
         (type > External_Flash) || \
@@ -740,14 +741,27 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
             p_read_tmp += p_slotdata->align_size;
         }
 
-    //     p_slotdata->slot_crc = *((uint32_t *)p_read_tmp);
-    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->slot_crc));
-    //     p_crc = p_write_tmp;
-    //     p_read_tmp += sizeof(p_slotdata->slot_crc);
-    //     p_write_tmp += sizeof(p_slotdata->slot_crc);
+        valid_data_size += p_slotdata->cur_slot_size - p_slotdata->align_size;
+        if (p_slotdata->nxt_addr == 0)
+        {
+            /* all data has been read out from the data slot in destination section */
+            /* compare update data size and valid_data_size */
+            if (size != valid_data_size)
+                return Storage_Update_DataSize_Error;
+        }
 
-    //     p_slotdata->end_tag = *((uint32_t *)p_read_tmp);
-    //     memcpy(p_write_tmp, p_read_tmp, sizeof(p_slotdata->end_tag));
+        p_slotdata->slot_crc = *((uint32_t *)p_read_tmp);
+        p_read_tmp += sizeof(p_slotdata->slot_crc);
+
+        p_slotdata->end_tag = *((uint32_t *)p_read_tmp);
+        if (p_slotdata->end_tag != STORAGE_SLOT_END_TAG)
+            return Storage_DataInfo_Error;
+
+        if ((p_slotdata->nxt_addr == 0) && \
+            (size == valid_data_size))
+            return Storage_Error_None;
+
+        read_addr = p_slotdata->nxt_addr;
 
     //     if ((p_slotdata->head_tag == STORAGE_SLOT_HEAD_TAG) && \
     //         (p_slotdata->end_tag == STORAGE_SLOT_END_TAG) && \
@@ -774,8 +788,6 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
             
     //             return Storage_No_Enough_Space;
     //         }
-
-    //         read_addr = p_slotdata->nxt_addr;
     //     }
     }
 
