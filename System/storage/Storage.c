@@ -759,7 +759,7 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
         if ((p_slotdata->nxt_addr == 0) && \
             (size == valid_data_size))
-            /* update done */
+            /* update accomplish */
             return Storage_Error_None;
 
         read_addr = p_slotdata->nxt_addr;
