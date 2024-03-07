@@ -877,8 +877,15 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         cur_freeslot_addr = p_Sec->free_slot_addr;
         free_space_remianing = FreeSlot.total_size;
 
+        if (size % STORAGE_DATA_ALIGN)
+        {
+            align_byte = STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
+        }
+        else
+            align_byte = 0;
+
         p_Sec->para_num ++;
-        p_Sec->para_size += size;
+        p_Sec->para_size += (size + align_byte);
         
         storage_tab_addr = p_Sec->tab_addr;
         for(uint16_t tab_i = 0; tab_i < p_Sec->page_num; tab_i ++)
@@ -908,15 +915,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     crt_item_slot.class = class;
                     memset(crt_item_slot.name, '\0', STORAGE_NAME_LEN);
                     memcpy(crt_item_slot.name, name, strlen(name));
-
-                    if (size % STORAGE_DATA_ALIGN)
-                    {
-                        align_byte = STORAGE_DATA_ALIGN - size % STORAGE_DATA_ALIGN;
-                    }
-                    else
-                        align_byte = 0;
-
-                    /* bug? */
                     crt_item_slot.len = size + align_byte;
 
                     /* set free slot address as current data address */
