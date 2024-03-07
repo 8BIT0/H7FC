@@ -160,7 +160,7 @@ void TaskFrameCTL_Core(void *arg)
     while(1)
     {
         /* frame protocol process */
-        // TaskFrameCTL_PortFrameOut_Process();
+        TaskFrameCTL_PortFrameOut_Process();
 
         /* command line process */
         TaskFrameCTL_CLI_Proc();
