@@ -661,7 +661,7 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     }
 
     if ((p_Sec == NULL) || \
-        (p_Sec->data_sec_addr < data_slot_hdl) || \
+        (p_Sec->data_sec_addr > data_slot_hdl) || \
         (data_slot_hdl > (p_Sec->data_sec_addr + p_Sec->data_sec_size)))
         return Storage_Param_Error;
 
@@ -718,9 +718,12 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
         p_slotdata->nxt_addr = *((uint32_t *)p_read_tmp);
         p_read_tmp += sizeof(p_slotdata->nxt_addr);
-        if ((p_slotdata->nxt_addr < p_Sec->data_sec_addr) || \
-            (p_slotdata->nxt_addr > p_Sec->data_sec_addr + p_Sec->data_sec_size))
-            return Storage_DataInfo_Error;
+        if (p_slotdata->nxt_addr)
+        {
+            if ((p_slotdata->nxt_addr < p_Sec->data_sec_addr) || \
+                (p_slotdata->nxt_addr > p_Sec->data_sec_addr + p_Sec->data_sec_size))
+                return Storage_DataInfo_Error;
+        }
 
         p_slotdata->align_size = *((uint8_t *)p_read_tmp);
         p_read_tmp += sizeof(p_slotdata->align_size);
@@ -747,14 +750,13 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
         }
 
         /* update crc */
-        p_slotdata->slot_crc = Common_CRC16(p_data, (p_slotdata->cur_slot_size - p_slotdata->align_size)) ;
+        crc = Common_CRC16(p_data, p_slotdata->cur_slot_size) ;
+        memcpy(p_read_tmp, &crc, sizeof(crc));
+        
         p_data += p_slotdata->cur_slot_size - p_slotdata->align_size;
-
-        *((uint16_t *)p_read_tmp) = p_slotdata->slot_crc;
         p_read_tmp += sizeof(p_slotdata->slot_crc);
 
-        p_slotdata->end_tag = *((uint32_t *)p_read_tmp);
-        if (p_slotdata->end_tag != STORAGE_SLOT_END_TAG)
+        if (*(uint32_t *)p_read_tmp != STORAGE_SLOT_END_TAG)
             return Storage_DataInfo_Error;
 
         if ((p_slotdata->nxt_addr == 0) && \
@@ -2521,7 +2523,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
             {
                 if (DataSlot.nxt_addr == 0)
                 {
-                    shellPrint(shell_obj, "\t[ ---- END ----- ]\r\n");
+                    shellPrint(shell_obj, "\t[ ----- END ----- ]\r\n");
                 }
                 else
                     shellPrint(shell_obj, "\t[ All data dumped but still linked to another slot ]\r\n");
@@ -2892,5 +2894,7 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
         shellPrint(shell_obj, "\t[Data update failed %s]\r\n", Storage_Error_Print(update_error_code));
         return;
     }
+    else
+        shellPrint(shell_obj, "\t[DataSlot Update accomplished]\r\n");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_UpdateData, Storage_UpdateData, Storage update data);
