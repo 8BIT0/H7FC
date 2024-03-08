@@ -65,6 +65,7 @@ void Task_Manager_CreateTask(void)
     Storage_ExtFLashDevObj_TypeDef *storage_ExtFlashObj = NULL;
     storage_module_enable.val = 0;
 
+    /* internal storage function still in developping */
     storage_module_enable.bit.internal = false;
     storage_module_enable.bit.external = FLASH_CHIP_STATE;
 
