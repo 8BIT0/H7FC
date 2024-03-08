@@ -77,6 +77,9 @@ static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDe
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
 static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name);
+static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size);
+static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size);
+static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
 
 Storage_TypeDef Storage = {
     .init = Storage_Init,
@@ -780,9 +783,10 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     return Storage_Error_None;
 }
 
-static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
+static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
 {
-    Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
+    Storage_FlashInfo_TypeDef *p_Flash = NULL;
+    Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_Item_TypeDef *item_list = NULL;
     StorageIO_TypeDef *StorageIO_API = NULL;
     
@@ -793,6 +797,41 @@ static bool Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassTy
         (size == 0))
         return false;
     
+    switch((uint8_t)type)
+    {
+        case Internal_Flash:
+            if (Storage_Monitor.module_enable_reg.bit.internal && \
+                Storage_Monitor.module_init_reg.bit.internal)
+            {
+                StorageIO_API = &InternalFlash_IO;
+                p_Flash = &Storage_Monitor.internal_info;
+                break;
+            }
+            return Storage_ModuleInit_Error;
+
+        case External_Flash :
+            if (Storage_Monitor.module_enable_reg.bit.external && \
+                Storage_Monitor.module_init_reg.bit.external)
+            {
+                StorageIO_API = &ExternalFlash_IO;
+                p_Flash = &Storage_Monitor.external_info;
+                break;
+            }
+            return Storage_ModuleInit_Error;
+
+        default:
+            return Storage_ModuleType_Error;
+    }
+
+    p_Sec = Storage_Get_SecInfo(p_Flash, class);
+    if (p_Sec == NULL)
+        return Storage_Class_Error;
+
+    if ((StorageIO_API->erase == NULL) || \
+        (StorageIO_API->read == NULL) || \
+        (StorageIO_API->write == NULL))
+        return Storage_ModuleAPI_Error;
+
 
 
     return false;
