@@ -87,6 +87,7 @@ typedef enum
     Storage_ItemInfo_Error,
     Storage_CRC_Error,
     Storage_Update_DataSize_Error,
+    Storage_Delete_Error,
 } Storage_ErrorCode_List;
 
 typedef enum

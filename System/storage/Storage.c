@@ -795,7 +795,7 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
         (strlen(name) == 0) || \
         (strlen(name) >= STORAGE_NAME_LEN) || \
         (size == 0))
-        return false;
+        return Storage_Param_Error;
     
     switch((uint8_t)type)
     {
@@ -834,7 +834,7 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
 
 
 
-    return false;
+    return Storage_Delete_Error;
 }
 
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size)
