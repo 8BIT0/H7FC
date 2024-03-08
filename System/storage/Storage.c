@@ -824,7 +824,9 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
     }
 
     p_Sec = Storage_Get_SecInfo(p_Flash, class);
-    if (p_Sec == NULL)
+    if ((p_Sec == NULL) || \
+        (p_Sec->para_num == 0) || \
+        (p_Sec->para_size == 0))
         return Storage_Class_Error;
 
     if ((StorageIO_API->erase == NULL) || \
