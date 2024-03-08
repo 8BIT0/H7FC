@@ -2733,7 +2733,6 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_DumpTab, Storage_Show_Tab, Storage dump Tab);
 
-/* still have some bug */
 static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_ParaClassType_List class)
 {
     uint32_t flash_sector_size = 0;
@@ -2821,8 +2820,9 @@ static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_Par
             shellPrint(shell_obj, "]\r\n");
         }
 
-        dump_addr += dump_addr;
-        remain_dump_size -= dump_size;
+        dump_addr += dump_size;
+        if (remain_dump_size >= dump_size)
+            remain_dump_size -= dump_size;
         dump_size = remain_dump_size;
     }
 }
