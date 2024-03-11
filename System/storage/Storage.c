@@ -789,7 +789,10 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_Item_TypeDef *item_list = NULL;
     StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_Item_TypeDef Item;
     
+    memset(&Item, 0, sizeof(Item));
+
     if( !Storage_Monitor.init_state || \
         (name == NULL) || \
         (strlen(name) == 0) || \
@@ -834,7 +837,18 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
         (StorageIO_API->write == NULL))
         return Storage_ModuleAPI_Error;
 
+    /* search tab for item slot first */
+    Item = Storage_Search(type, class, name);
+    if ((Item.data_addr) && \
+        (Item.head_tag == STORAGE_ITEM_HEAD_TAG) && \
+        (Item.end_tag == STORAGE_ITEM_END_TAG))
+    {
+        /* Item found */
+        while(true)
+        {
 
+        }
+    }
 
     return Storage_Delete_Error;
 }
