@@ -783,6 +783,7 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     return Storage_Error_None;
 }
 
+/* developping */
 static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_size, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     Storage_DataSlot_TypeDef data_slot;
@@ -844,7 +845,10 @@ static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_siz
             return false;
     }
 
-    /* delete data and reset data slot as free slot */
+    /* set current slot data as 0 */
+    memset(p_read, 0, data_slot.cur_slot_size);
+
+    /* reset data slot as free slot */
 
     /* link free slot address */
 
