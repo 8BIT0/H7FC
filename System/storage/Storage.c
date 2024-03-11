@@ -910,7 +910,8 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
         (Item.end_tag == STORAGE_ITEM_END_TAG))
     {
         /* Item found */
-
+        if (Storage_DeleteDataSlot(Item.data_addr, name, Item.len, p_Sec, StorageIO_API))
+            return Storage_Error_None;
     }
 
     return Storage_Delete_Error;
