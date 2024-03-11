@@ -783,6 +783,63 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     return Storage_Error_None;
 }
 
+static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_size, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
+{
+    Storage_DataSlot_TypeDef data_slot;
+    uint8_t *p_read = page_data_tmp;
+    uint8_t name_len = 0;
+    uint32_t delete_size = 0;
+
+    if ((addr == 0) || \
+        (name == NULL) || \
+        (strlen(name) == 0) || \
+        (total_size == 0) || \
+        (p_Sec == NULL) || \
+        (StorageIO_API == NULL))
+        return false;
+
+    memset(&data_slot, 0, sizeof(data_slot));
+    name_len = strlen(name);
+    
+    if (!StorageIO_API->read(addr, page_data_tmp, total_size))
+        return false;
+
+    data_slot.head_tag = *((uint32_t *)p_read);
+    if (data_slot.head_tag != STORAGE_SLOT_HEAD_TAG)
+        return false;
+
+    p_read += sizeof(data_slot.head_tag);
+    memcpy(data_slot.name, p_read, STORAGE_NAME_LEN);
+    if (memcmp(data_slot.name, name, name_len) != 0)
+        return false;
+
+    p_read += STORAGE_NAME_LEN;
+    data_slot.total_data_size = *((uint32_t *)p_read);
+    if (data_slot.total_data_size != total_size)
+        return false;
+
+    p_read += sizeof(data_slot.total_data_size);
+    data_slot.cur_slot_size = *((uint32_t *)p_read);
+    if (data_slot.cur_slot_size > data_slot.total_data_size)
+        return false;
+
+    delete_size = data_slot.cur_slot_size;
+    p_read += sizeof(data_slot.cur_slot_size);
+    data_slot.nxt_addr = *((uint32_t *)p_read);
+    if ((data_slot.nxt_addr < p_Sec->data_sec_addr) || \
+        (data_slot.nxt_addr > (p_Sec->data_sec_addr + p_Sec->data_sec_size)))
+        return false;
+
+    if (data_slot.nxt_addr)
+    {
+        /* traverse slot address */
+        if (!Storage_DeleteDataSlot(data_slot.nxt_addr, name, total_size, p_Sec, StorageIO_API))
+            return false;
+    }
+
+    return true;
+}
+
 static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
@@ -844,10 +901,7 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
         (Item.end_tag == STORAGE_ITEM_END_TAG))
     {
         /* Item found */
-        while(true)
-        {
 
-        }
     }
 
     return Storage_Delete_Error;
