@@ -784,6 +784,12 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 }
 
 /* developping */
+static bool Storage_FreeSlot_Merge(uint32_t sec_start, uint32_t sec_end, uint32_t front_slot_addr, uint32_t back_slot_addr)
+{
+    return false;
+}
+
+/* developping */
 static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_size, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     Storage_DataSlot_TypeDef data_slot;
