@@ -846,6 +846,10 @@ static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_siz
 
     /* delete data and reset data slot as free slot */
 
+    /* link free slot address */
+
+    /* update base info free address */
+
     return true;
 }
 
