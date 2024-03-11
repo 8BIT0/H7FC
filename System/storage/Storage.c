@@ -789,6 +789,7 @@ static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_siz
     uint8_t *p_read = page_data_tmp;
     uint8_t name_len = 0;
     uint32_t delete_size = 0;
+    uint32_t cur_freeslot_addr = 0;
 
     if ((addr == 0) || \
         (name == NULL) || \
@@ -829,7 +830,13 @@ static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_siz
     if ((data_slot.nxt_addr < p_Sec->data_sec_addr) || \
         (data_slot.nxt_addr > (p_Sec->data_sec_addr + p_Sec->data_sec_size)))
         return false;
+    
+    p_read += sizeof(data_slot.nxt_addr);
+    data_slot.align_size = *((uint32_t *)p_read);    
+    if (data_slot.align_size >= STORAGE_DATA_ALIGN)
+        return false;
 
+    p_read += sizeof(data_slot.align_size);
     if (data_slot.nxt_addr)
     {
         /* traverse slot address */
