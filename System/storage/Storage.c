@@ -3177,8 +3177,55 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name, char *test_data)
 {
     Shell *shell_obj = Shell_GetInstence();
-
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_FlashInfo_TypeDef *p_Flash = NULL;
+    Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    
     if (shell_obj == NULL)
         return;
+
+    switch((uint8_t) medium)
+    {
+        case Internal_Flash:
+            shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.internal || \
+                !Storage_Monitor.module_init_reg.bit.internal)
+            {
+                shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
+                return;
+            }
+            p_Flash = &Storage_Monitor.internal_info;
+            StorageIO_API = &InternalFlash_IO;
+            break;
+
+        case External_Flash:
+            shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
+            if (!Storage_Monitor.module_enable_reg.bit.external || \
+                !Storage_Monitor.module_init_reg.bit.external)
+            {
+                shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
+                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
+                return;
+            }
+            p_Flash = &Storage_Monitor.external_info;
+            StorageIO_API = &ExternalFlash_IO;
+            break;
+
+        default:
+            return;
+    }
+    
+    p_Sec = Storage_Get_SecInfo(p_Flash, class);
+    if ((p_Sec == NULL) || \
+        (p_Sec->data_sec_addr == 0) || \
+        (p_Sec->data_sec_size == 0))
+    {
+        shellPrint(shell_obj, "\tGet section info error\r\n");
+        return;
+    }
+    
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_DeleteData, Storage_DeleteData_Test, Storage delete data);
