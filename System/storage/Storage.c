@@ -2091,6 +2091,7 @@ static void Storage_SecInfo_Print(Shell *obj, Storage_BaseSecInfo_TypeDef *p_Sec
     shellPrint(obj, "\t\tdata sec addr:   %x\r\n", p_SecInfo->data_sec_addr);
     shellPrint(obj, "\t\tdata sec size:   %d\r\n", p_SecInfo->data_sec_size);
     shellPrint(obj, "\t\tfree slot addr:  %x\r\n", p_SecInfo->free_slot_addr);
+    shellPrint(obj, "\t\tfree slot size:  %x\r\n", p_SecInfo->free_space_size);
     shellPrint(obj, "\t\tparam num:       %d\r\n", p_SecInfo->para_num);
     shellPrint(obj, "\t\tparam size:      %d\r\n", p_SecInfo->para_size);
 }
