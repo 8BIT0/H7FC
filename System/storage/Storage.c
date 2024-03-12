@@ -839,20 +839,29 @@ static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_siz
         return false;
     
     p_read += sizeof(data_slot.nxt_addr);
-    data_slot.align_size = *((uint32_t *)p_read);    
+    data_slot.align_size = *((uint8_t *)p_read);    
     if (data_slot.align_size >= STORAGE_DATA_ALIGN)
         return false;
 
+    /* set current slot data as 0 */
     p_read += sizeof(data_slot.align_size);
+    memset(p_read, 0, data_slot.cur_slot_size);
+    p_read += data_slot.cur_slot_size;
+
+    /* clear crc */
+    *((uint16_t *)p_read) = 0;
+    p_read += sizeof(data_slot.slot_crc);
+
+    /* ender error */
+    if (*((uint32_t *)p_read) != STORAGE_SLOT_END_TAG)
+        return false;
+
     if (data_slot.nxt_addr)
     {
         /* traverse slot address */
         if (!Storage_DeleteDataSlot(data_slot.nxt_addr, name, total_size, p_Sec, StorageIO_API))
             return false;
     }
-
-    /* set current slot data as 0 */
-    memset(p_read, 0, data_slot.cur_slot_size);
 
     /* reset data slot as free slot */
 
