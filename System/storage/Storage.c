@@ -1041,6 +1041,8 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
             return Storage_Error_None;
     }
 
+    /* update tab */
+
     return Storage_Delete_Error;
 }
 
