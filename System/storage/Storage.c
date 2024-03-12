@@ -1238,6 +1238,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                     FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
                 }
 
+                p_Sec->free_space_size -= DataSlot.cur_slot_size;
+
                 /* comput current slot crc */
                 DataSlot.slot_crc = Common_CRC16(crc_buf, DataSlot.cur_slot_size);
 
