@@ -2195,9 +2195,9 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
 static bool Storage_Get_Flash_Section_IOAPI(Shell *shell_obj, \
                                             Storage_MediumType_List medium, \
                                             Storage_ParaClassType_List class, \
-                                            Storage_FlashInfo_TypeDef *p_Flash, \
-                                            Storage_BaseSecInfo_TypeDef *p_Sec, \
-                                            StorageIO_TypeDef *StorageIO_API)
+                                            Storage_FlashInfo_TypeDef **p_Flash, \
+                                            Storage_BaseSecInfo_TypeDef **p_Sec, \
+                                            StorageIO_TypeDef **StorageIO_API)
 {
     if (shell_obj == NULL)
         return;
@@ -2214,8 +2214,8 @@ static bool Storage_Get_Flash_Section_IOAPI(Shell *shell_obj, \
                 shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
                 return false;
             }
-            p_Flash = &Storage_Monitor.internal_info;
-            StorageIO_API = &InternalFlash_IO;
+            *p_Flash = &Storage_Monitor.internal_info;
+            *StorageIO_API = &InternalFlash_IO;
             break;
 
         case External_Flash:
@@ -2228,8 +2228,8 @@ static bool Storage_Get_Flash_Section_IOAPI(Shell *shell_obj, \
                 shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
                 return false;
             }
-            p_Flash = &Storage_Monitor.external_info;
-            StorageIO_API = &ExternalFlash_IO;
+            *p_Flash = &Storage_Monitor.external_info;
+            *StorageIO_API = &ExternalFlash_IO;
             break;
 
         default:
@@ -2237,10 +2237,10 @@ static bool Storage_Get_Flash_Section_IOAPI(Shell *shell_obj, \
             return false;
     }
 
-    p_Sec = Storage_Get_SecInfo(p_Flash, class);
-    if ((p_Sec == NULL) || \
-        (p_Sec->tab_addr == 0) || \
-        (p_Sec->tab_size == 0))
+    *p_Sec = Storage_Get_SecInfo(*p_Flash, class);
+    if ((*p_Sec == NULL) || \
+        ((*p_Sec)->tab_addr == 0) || \
+        ((*p_Sec)->tab_size == 0))
     {
         shellPrint(shell_obj, "\tGet section info error\r\n");
         return false;
@@ -2607,7 +2607,7 @@ static void Storage_Show_FreeSlot(Storage_MediumType_List medium, Storage_ParaCl
         shellPrint(shell_obj, "\thalt by init state\r\n");
     }
 
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, p_Flash, p_Sec, StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
@@ -2677,7 +2677,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
         (strlen(name) == 0))
         return;
     
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, p_Flash, p_Sec, StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
@@ -2828,42 +2828,7 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
         shellPrint(shell_obj, "\thalt by init state\r\n");
     }
     
-    switch((uint8_t) medium)
-    {
-        case Internal_Flash:
-            shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
-            if (!Storage_Monitor.module_enable_reg.bit.internal || \
-                !Storage_Monitor.module_init_reg.bit.internal)
-            {
-                shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
-                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
-                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
-                return;
-            }
-            p_Flash = &Storage_Monitor.internal_info;
-            StorageIO_API = &InternalFlash_IO;
-            break;
-
-        case External_Flash:
-            shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
-            if (!Storage_Monitor.module_enable_reg.bit.external || \
-                !Storage_Monitor.module_init_reg.bit.external)
-            {
-                shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
-                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
-                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
-                return;
-            }
-            p_Flash = &Storage_Monitor.external_info;
-            StorageIO_API = &ExternalFlash_IO;
-            break;
-
-        default:
-            return;
-    }
-
-
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, p_Flash, p_Sec, StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
@@ -3001,7 +2966,7 @@ static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_Par
         return;
     }
 
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, p_Flash, p_Sec, StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
@@ -3058,7 +3023,7 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
         (strlen(test_data) == 0))
         return;
 
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, p_Flash, p_Sec, StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
