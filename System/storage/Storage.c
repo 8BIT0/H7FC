@@ -74,7 +74,7 @@ static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item);
 static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
 static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
-static bool Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
+static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
@@ -786,17 +786,27 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 }
 
 /* developping */
-static bool Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
+static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
+    Storage_FreeSlot_TypeDef FreeSlot_Info;
+
     if ((p_Sec == NULL) || \
         (slot_addr < p_Sec->data_sec_addr) || \
         (slot_addr > (p_Sec->data_sec_addr + p_Sec->data_sec_size)) || \
         (StorageIO_API == NULL))
-        return false;
+        return Storage_Param_Error;
 
-    return false;
+    memset(&FreeSlot_Info, 0, sizeof(FreeSlot_Info));
+    /* traverse all free slot */
+    if (!StorageIO_API->read(p_Sec->free_slot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
+        return Storage_Read_Error;
+
+    
+
+    return Storage_Delete_Error;
 }
 
+/* developping */
 static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     uint32_t cur_slot_size = 0;
@@ -881,7 +891,11 @@ static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, St
 
     /* update to data section */
     if (StorageIO_API->write(slot_addr, data_w, inc_free_space))
+    {
+        /* check free slot and merge */
+
         return true;
+    }
 
     return false;
 }
