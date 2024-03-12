@@ -872,7 +872,8 @@ static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, St
         *(uint32_t *)p_freeslot_start = cur_slot_size;
         p_freeslot_start += sizeof(uint32_t);
 
-        /* reset next freeslot addr */
+        /* reset next freeslot addr
+         * link free slot address */
         *(uint32_t *)p_freeslot_start = p_Sec->free_slot_addr;
         p_freeslot_start += sizeof(uint32_t);
 
@@ -967,8 +968,6 @@ static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_
     /* reset data slot as free slot */
     if (!Storage_DeleteSingalDataSlot(addr, page_data_tmp, p_Sec, StorageIO_API))
         return false;
-
-    /* link free slot address */
 
     /* update section info free address */
 
