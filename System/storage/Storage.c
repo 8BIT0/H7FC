@@ -3060,7 +3060,7 @@ static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_Para
     if (shell_obj == NULL)
         return;
     
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, p_Flash, p_Sec, StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
