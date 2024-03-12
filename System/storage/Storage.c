@@ -2955,6 +2955,7 @@ static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_Par
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Shell *shell_obj = Shell_GetInstence();
+    Storage_ExtFLashDevObj_TypeDef *ext_dev = NULL;
 
     if (shell_obj == NULL)
         return;
@@ -2970,6 +2971,28 @@ static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_Par
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
+    }
+
+    switch (medium)
+    {
+        case Internal_Flash:
+        // flash_sector_size = 
+            break;
+
+        case External_Flash:
+            if (Storage_Monitor.ExtDev_ptr)
+            {
+                ext_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+                if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
+                {
+                    flash_sector_size = To_DevW25Qxx_API(ext_dev->dev_api)->info(ext_dev->dev_obj).subsector_size;
+                    break;
+                }
+            }
+            return;
+
+        default:
+            return;
     }
 
     remain_dump_size = p_Sec->data_sec_size;
