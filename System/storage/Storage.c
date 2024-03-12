@@ -3173,3 +3173,12 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
         shellPrint(shell_obj, "\t[DataSlot Update accomplished]\r\n");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_UpdateData, Storage_UpdateData, Storage update data);
+
+static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name, char *test_data)
+{
+    Shell *shell_obj = Shell_GetInstence();
+
+    if (shell_obj == NULL)
+        return;
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_DeleteData, Storage_DeleteData_Test, Storage delete data);
