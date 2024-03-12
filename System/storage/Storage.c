@@ -924,8 +924,8 @@ static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, St
     if (StorageIO_API->write(slot_addr, data_w, inc_free_space))
     {
         /* check free slot and merge */
-
-        return true;
+        if (Storage_FreeSlot_CheckMerge(slot_addr, (Storage_FreeSlot_TypeDef *)p_freeslot_start, p_Sec, StorageIO_API) == Storage_Error_None)
+            return true;
     }
 
     return false;
