@@ -826,8 +826,6 @@ static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, St
     memset(p_data, 0, STORAGE_NAME_LEN);
     p_data += STORAGE_NAME_LEN;
 
-    /* update free slot info */
-
     /* clear total data size */
     *((uint32_t *)p_data) = 0;
     p_data += sizeof(uint32_t);
