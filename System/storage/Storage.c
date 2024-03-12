@@ -73,6 +73,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item);
 static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
+static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
@@ -789,8 +790,98 @@ static bool Storage_FreeSlot_Merge(uint32_t sec_start, uint32_t sec_end, uint32_
     return false;
 }
 
+static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
+{
+    uint32_t cur_slot_size = 0;
+    uint32_t inc_free_space = sizeof(Storage_DataSlot_TypeDef);
+    uint8_t *p_freeslot_start = NULL;
+    uint8_t *data_w = NULL;
+
+    if ((slot_addr == 0) || \
+        (StorageIO_API == NULL) || \
+        (p_Sec == NULL) || \
+        (p_data == NULL) || \
+        (slot_addr < p_Sec->data_sec_addr) || \
+        (slot_addr > (p_Sec->data_sec_addr + p_Sec->data_sec_size)))
+        return false;
+    
+    /* check header */
+    if (*((uint32_t *)p_data) != STORAGE_SLOT_HEAD_TAG)
+        return false;
+
+    p_freeslot_start = p_data;
+    data_w = p_freeslot_start;
+    p_data += sizeof(uint32_t);
+
+    /* clear current slot name */
+    memset(p_data, 0, STORAGE_NAME_LEN);
+    p_data += STORAGE_NAME_LEN;
+
+    /* update free slot info */
+
+    /* clear total data size */
+    *((uint32_t *)p_data) = 0;
+    p_data += sizeof(uint32_t);
+
+    /* get current slot data size */
+    cur_slot_size = *((uint32_t *)p_data);
+    inc_free_space += cur_slot_size;
+    
+    /* clear current slot data size */
+    *((uint32_t *)p_data) = 0;
+    p_data += sizeof(uint32_t);
+
+    /* clear next data slot address */
+    *((uint32_t *)p_data) = 0;
+    p_data += sizeof(uint32_t);
+
+    /* clear align size */
+    *((uint8_t *)p_data) = 0;
+    p_data += sizeof(uint8_t);
+
+    /* clear data */
+    memset(p_data, 0, cur_slot_size);
+    p_data += cur_slot_size;
+
+    /* clear crc */
+    *((uint16_t *)p_data) = 0;
+    p_data += sizeof(uint16_t);
+
+    /* clear end tag */
+    *((uint32_t *)p_data) = 0;
+
+    /* update freeslot data info */
+    if (*(uint32_t *)p_freeslot_start == STORAGE_SLOT_HEAD_TAG)
+    {
+        p_freeslot_start += sizeof(uint32_t);
+
+        /* update total size */
+        *(uint32_t *)p_freeslot_start += cur_slot_size;
+        p_freeslot_start += sizeof(uint32_t);
+
+        /* update current free slot size */
+        *(uint32_t *)p_freeslot_start = cur_slot_size;
+        p_freeslot_start += sizeof(uint32_t);
+
+        /* reset next freeslot addr */
+        *(uint32_t *)p_freeslot_start = p_Sec->free_slot_addr;
+        p_freeslot_start += sizeof(uint32_t);
+
+        /* set end tag */
+        *(uint32_t *)p_freeslot_start = STORAGE_SLOT_END_TAG;
+    }
+    else
+        return false;
+
+    /* update to data section */
+    if (StorageIO_API->write(slot_addr, data_w, inc_free_space))
+        return true;
+
+    return false;
+}
+
 /* developping */
-static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_size, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
+static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_size, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     Storage_DataSlot_TypeDef data_slot;
     uint8_t *p_read = page_data_tmp;
@@ -856,6 +947,7 @@ static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_siz
     if (*((uint32_t *)p_read) != STORAGE_SLOT_END_TAG)
         return false;
 
+    /* delete next slot data */
     if (data_slot.nxt_addr)
     {
         /* traverse slot address */
@@ -864,6 +956,8 @@ static bool Storage_DeleteDataSlot(uint32_t addr, char *name, uint32_t total_siz
     }
 
     /* reset data slot as free slot */
+    if (!Storage_DeleteSingalDataSlot(addr, page_data_tmp, p_Sec, StorageIO_API))
+        return false;
 
     /* link free slot address */
 
