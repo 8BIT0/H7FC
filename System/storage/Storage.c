@@ -1407,6 +1407,7 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
 
         /* update info section */
         p_SecInfo->free_slot_addr = p_SecInfo->data_sec_addr;
+        p_SecInfo->free_space_size = p_SecInfo->data_sec_size;
         p_SecInfo->para_num = 0;
         p_SecInfo->para_size = 0;
 
