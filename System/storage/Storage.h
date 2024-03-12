@@ -146,7 +146,6 @@ typedef struct
 typedef struct
 {
     uint32_t head_tag;
-    uint32_t total_size;
     uint32_t cur_slot_size;
     uint32_t nxt_addr;
     uint32_t end_tag;
@@ -160,6 +159,7 @@ typedef struct
     uint32_t page_num;
     uint32_t tab_size;
     uint32_t free_slot_addr;
+    uint32_t free_space_size;
     uint32_t para_size;
     uint32_t para_num;
 } Storage_BaseSecInfo_TypeDef;

@@ -1057,7 +1057,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     uint32_t cur_freeslot_addr = 0;
     uint32_t nxt_freeslot_addr = 0;
     uint32_t slot_useful_size = 0;
-    uint32_t free_space_remianing = 0;
     uint8_t item_index = 0;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
@@ -1116,11 +1115,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
     if (StorageIO_API->read(p_Sec->free_slot_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)) && \
         (FreeSlot.head_tag == STORAGE_SLOT_HEAD_TAG) && \
         (FreeSlot.end_tag == STORAGE_SLOT_END_TAG) && \
-        (strlen(name) <= STORAGE_NAME_LEN) && \
-        (FreeSlot.total_size >= size))
+        (strlen(name) <= STORAGE_NAME_LEN))
     {
         cur_freeslot_addr = p_Sec->free_slot_addr;
-        free_space_remianing = FreeSlot.total_size;
 
         if (size % STORAGE_DATA_ALIGN)
         {
@@ -1192,146 +1189,122 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
         DataSlot.total_data_size = storage_data_size;
         unstored_size = DataSlot.total_data_size;
 
-        if (FreeSlot.total_size >= (sizeof(Storage_DataSlot_TypeDef) + size))
+        while(true)
         {
-            while(true)
+            /* step 2: comput storage data size and set data slot */
+            DataSlot.head_tag = STORAGE_SLOT_HEAD_TAG;
+            DataSlot.end_tag = STORAGE_SLOT_END_TAG;
+            memset(DataSlot.name, '\0', STORAGE_NAME_LEN);
+            memcpy(DataSlot.name, name, strlen(name));
+            
+            if (FreeSlot.cur_slot_size <= sizeof(Storage_DataSlot_TypeDef))
+                return Storage_No_Enough_Space;
+
+            crc_buf = p_data + stored_size;
+            slot_useful_size = FreeSlot.cur_slot_size - sizeof(Storage_DataSlot_TypeDef);
+            /* current have space for new data need to be storage */
+            if (slot_useful_size < storage_data_size)
             {
-                /* step 2: comput storage data size and set data slot */
-                DataSlot.head_tag = STORAGE_SLOT_HEAD_TAG;
-                DataSlot.end_tag = STORAGE_SLOT_END_TAG;
-                memset(DataSlot.name, '\0', STORAGE_NAME_LEN);
-                memcpy(DataSlot.name, name, strlen(name));
+                /*
+                    * UNTESTED IN THIS BRANCH
+                    */
                 
-                if (FreeSlot.cur_slot_size <= sizeof(Storage_DataSlot_TypeDef))
-                    return Storage_No_Enough_Space;
-
-                crc_buf = p_data + stored_size;
-                slot_useful_size = FreeSlot.cur_slot_size - sizeof(Storage_DataSlot_TypeDef);
-                /* current have space for new data need to be storage */
-                if (slot_useful_size < storage_data_size)
-                {
-                    /*
-                     * UNTESTED IN THIS BRANCH
-                     */
-                    
-                    DataSlot.cur_slot_size = slot_useful_size;
-                    stored_size += DataSlot.cur_slot_size;
-                    unstored_size -= stored_size;
-                    DataSlot.align_size = 0;
-
-                    if (free_space_remianing < FreeSlot.cur_slot_size)
-                        return Storage_No_Enough_Space;
-
-                    free_space_remianing -= FreeSlot.cur_slot_size;
-                    
-                    /* current free slot full fill can not split any space for next free slot`s start */
-                    DataSlot.nxt_addr = FreeSlot.nxt_addr;
-
-                    /* in light of current free slot not enough for storage data, 
-                     * then find next free slot used for storage data remaining */
-                    cur_freeslot_addr = FreeSlot.nxt_addr;
-                    if (!StorageIO_API->read(cur_freeslot_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)))
-                        return Storage_FreeSlot_Get_Error;   
-                }
-                else
-                {
-                    /* seperate data slot and new free slot from current free slot */
-                    stored_size += unstored_size;
-                    DataSlot.cur_slot_size = unstored_size;
-                    DataSlot.align_size = align_byte;
-                    DataSlot.nxt_addr = 0;
-
-                    if (free_space_remianing >= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef))
-                    {
-                        free_space_remianing -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
-
-                        if (free_space_remianing < (sizeof(Storage_DataSlot_TypeDef) + STORAGE_DATA_ALIGN))
-                        {
-                            free_space_remianing = 0;
-                            DataSlot.align_size += free_space_remianing;
-                        }
-                    }
-
-                    /* update current free slot adderess */
-                    cur_freeslot_addr += DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef); 
-                    
-                    FreeSlot.total_size = free_space_remianing;
-                    FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
-                }
-
-                /* comput current slot crc */
-                DataSlot.slot_crc = Common_CRC16(crc_buf, DataSlot.cur_slot_size);
-
-                /* write to the data section */
-                /* storage target data */
-                slot_update_ptr = page_data_tmp;
-                memcpy(slot_update_ptr, &DataSlot.head_tag, sizeof(DataSlot.head_tag));
-                slot_update_ptr += sizeof(DataSlot.head_tag);
-                memcpy(slot_update_ptr, DataSlot.name, STORAGE_NAME_LEN);
-                slot_update_ptr += STORAGE_NAME_LEN;
-                memcpy(slot_update_ptr, &DataSlot.total_data_size, sizeof(DataSlot.total_data_size));
-                slot_update_ptr += sizeof(DataSlot.total_data_size);
-                memcpy(slot_update_ptr, &DataSlot.cur_slot_size, sizeof(DataSlot.cur_slot_size));
-                slot_update_ptr += sizeof(DataSlot.cur_slot_size);
-                memcpy(slot_update_ptr, &DataSlot.nxt_addr, sizeof(DataSlot.nxt_addr));
-                slot_update_ptr += sizeof(DataSlot.nxt_addr);
-                memcpy(slot_update_ptr, &DataSlot.align_size, sizeof(DataSlot.align_size));
-                slot_update_ptr += sizeof(DataSlot.align_size);
-                memcpy(slot_update_ptr, crc_buf, (DataSlot.cur_slot_size - DataSlot.align_size));
-                slot_update_ptr += (DataSlot.cur_slot_size - DataSlot.align_size);
+                DataSlot.cur_slot_size = slot_useful_size;
+                stored_size += DataSlot.cur_slot_size;
+                unstored_size -= stored_size;
+                DataSlot.align_size = 0;
                 
-                if (DataSlot.align_size)
-                {
-                    memset(slot_update_ptr, 0, DataSlot.align_size);
-                    slot_update_ptr += DataSlot.align_size;
-                }
+                /* current free slot full fill can not split any space for next free slot`s start */
+                DataSlot.nxt_addr = FreeSlot.nxt_addr;
 
-                memcpy(slot_update_ptr, &DataSlot.slot_crc, sizeof(DataSlot.slot_crc));
-                slot_update_ptr += sizeof(DataSlot.slot_crc);
-                memcpy(slot_update_ptr, &DataSlot.end_tag, sizeof(DataSlot.end_tag));
-                slot_update_ptr += sizeof(DataSlot.end_tag);
+                /* in light of current free slot not enough for storage data, 
+                    * then find next free slot used for storage data remaining */
+                cur_freeslot_addr = FreeSlot.nxt_addr;
+                if (!StorageIO_API->read(cur_freeslot_addr, &FreeSlot, sizeof(Storage_FreeSlot_TypeDef)))
+                    return Storage_FreeSlot_Get_Error;   
+            }
+            else
+            {
+                /* seperate data slot and new free slot from current free slot */
+                stored_size += unstored_size;
+                DataSlot.cur_slot_size = unstored_size;
+                DataSlot.align_size = align_byte;
+                DataSlot.nxt_addr = 0;
 
-                /* step 3: store data to data section */
-                if (!StorageIO_API->write(store_addr, page_data_tmp, (DataSlot.cur_slot_size + sizeof(DataSlot))))
-                    return Storage_Write_Error;
-
-                if (DataSlot.nxt_addr == 0)
-                {
-                    Storage_Assert(DataSlot.total_data_size > stored_size);
-                    if (DataSlot.total_data_size == stored_size)
-                    {
-                        /* step 4: update free slot */
-                        if (!StorageIO_API->write(cur_freeslot_addr, &FreeSlot, sizeof(FreeSlot)))
-                            return Storage_Write_Error;
-
-                        break;
-                    }
-
-                    return Storage_No_Enough_Space;
-                }
-                else
-                {
-                    /* after target data segment stored, shift target data pointer to unstored pos
-                     * and update next segment data store address */
-                    p_data += slot_useful_size;
-                    store_addr = DataSlot.nxt_addr;
-                }
+                /* update current free slot adderess */
+                cur_freeslot_addr += DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
+                FreeSlot.cur_slot_size -= DataSlot.cur_slot_size + sizeof(Storage_DataSlot_TypeDef);
             }
 
-            /* get tab */
-            if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
-                return Storage_Read_Error;
+            /* comput current slot crc */
+            DataSlot.slot_crc = Common_CRC16(crc_buf, DataSlot.cur_slot_size);
 
-            tab_item = (Storage_Item_TypeDef *)page_data_tmp;
-            tab_item[item_index] = crt_item_slot;
+            /* write to the data section */
+            /* storage target data */
+            slot_update_ptr = page_data_tmp;
+            memcpy(slot_update_ptr, &DataSlot.head_tag, sizeof(DataSlot.head_tag));
+            slot_update_ptr += sizeof(DataSlot.head_tag);
+            memcpy(slot_update_ptr, DataSlot.name, STORAGE_NAME_LEN);
+            slot_update_ptr += STORAGE_NAME_LEN;
+            memcpy(slot_update_ptr, &DataSlot.total_data_size, sizeof(DataSlot.total_data_size));
+            slot_update_ptr += sizeof(DataSlot.total_data_size);
+            memcpy(slot_update_ptr, &DataSlot.cur_slot_size, sizeof(DataSlot.cur_slot_size));
+            slot_update_ptr += sizeof(DataSlot.cur_slot_size);
+            memcpy(slot_update_ptr, &DataSlot.nxt_addr, sizeof(DataSlot.nxt_addr));
+            slot_update_ptr += sizeof(DataSlot.nxt_addr);
+            memcpy(slot_update_ptr, &DataSlot.align_size, sizeof(DataSlot.align_size));
+            slot_update_ptr += sizeof(DataSlot.align_size);
+            memcpy(slot_update_ptr, crc_buf, (DataSlot.cur_slot_size - DataSlot.align_size));
+            slot_update_ptr += (DataSlot.cur_slot_size - DataSlot.align_size);
+            
+            if (DataSlot.align_size)
+            {
+                memset(slot_update_ptr, 0, DataSlot.align_size);
+                slot_update_ptr += DataSlot.align_size;
+            }
 
-            /* write back item slot list to tab */
-            if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
+            memcpy(slot_update_ptr, &DataSlot.slot_crc, sizeof(DataSlot.slot_crc));
+            slot_update_ptr += sizeof(DataSlot.slot_crc);
+            memcpy(slot_update_ptr, &DataSlot.end_tag, sizeof(DataSlot.end_tag));
+            slot_update_ptr += sizeof(DataSlot.end_tag);
+
+            /* step 3: store data to data section */
+            if (!StorageIO_API->write(store_addr, page_data_tmp, (DataSlot.cur_slot_size + sizeof(DataSlot))))
                 return Storage_Write_Error;
+
+            if (DataSlot.nxt_addr == 0)
+            {
+                Storage_Assert(DataSlot.total_data_size > stored_size);
+                if (DataSlot.total_data_size == stored_size)
+                {
+                    /* step 4: update free slot */
+                    if (!StorageIO_API->write(cur_freeslot_addr, &FreeSlot, sizeof(FreeSlot)))
+                        return Storage_Write_Error;
+
+                    break;
+                }
+
+                return Storage_No_Enough_Space;
+            }
+            else
+            {
+                /* after target data segment stored, shift target data pointer to unstored pos
+                    * and update next segment data store address */
+                p_data += slot_useful_size;
+                store_addr = DataSlot.nxt_addr;
+            }
         }
-        else
-            /* don`t have enough space for target data */
-            return Storage_No_Enough_Space;
+
+        /* get tab */
+        if (!StorageIO_API->read(storage_tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
+            return Storage_Read_Error;
+
+        tab_item = (Storage_Item_TypeDef *)page_data_tmp;
+        tab_item[item_index] = crt_item_slot;
+
+        /* write back item slot list to tab */
+        if (!StorageIO_API->write(storage_tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
+            return Storage_Write_Error;
 
         /* update free slot address in base info */
         p_Sec->free_slot_addr = cur_freeslot_addr;
@@ -1415,7 +1388,6 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
         /* write free slot info */
         memset(&free_slot, 0, sizeof(free_slot));
         free_slot.head_tag = STORAGE_SLOT_HEAD_TAG;
-        free_slot.total_size = p_SecInfo->data_sec_size - sizeof(free_slot);
         free_slot.cur_slot_size = p_SecInfo->data_sec_size - sizeof(free_slot);
         free_slot.nxt_addr = 0;
         /* if current free slot get enought space for data then set next address (nxt_addr) as 0 */
@@ -2597,7 +2569,6 @@ static void Storage_Show_FreeSlot(Storage_MediumType_List medium, Storage_ParaCl
             shellPrint(shell_obj, "\t[Next FreeSlot address : %d]\r\n", p_FreeSlot->nxt_addr);
             shellPrint(shell_obj, "\r\n");
 
-            shellPrint(shell_obj, "\t[FreeSlot total   size : %d]\r\n", p_FreeSlot->total_size);
             shellPrint(shell_obj, "\t[FreeSlot current size : %d]\r\n", p_FreeSlot->cur_slot_size);
             shellPrint(shell_obj, "\r\n");
 
@@ -2965,7 +2936,6 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
         (p_FreeSlot->end_tag == STORAGE_SLOT_END_TAG))
     {
         shellPrint(shell_obj, "\t[free slot address     : %d]\r\n", p_Sec->free_slot_addr);
-        shellPrint(shell_obj, "\t[free space byte       : %d]\r\n", p_FreeSlot->total_size);
         shellPrint(shell_obj, "\t[current free slot size: %d]\r\n", p_FreeSlot->cur_slot_size);
         shellPrint(shell_obj, "\t[next free slot address: %d]\r\n", p_FreeSlot->nxt_addr);
     }
