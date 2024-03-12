@@ -1002,7 +1002,7 @@ static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_
     if (data_slot.nxt_addr)
     {
         /* traverse slot address */
-        if (!Storage_DeleteDataSlot(data_slot.nxt_addr, name, total_size, p_Sec, StorageIO_API))
+        if (!Storage_DeleteAllDataSlot(data_slot.nxt_addr, name, total_size, p_Sec, StorageIO_API))
             return false;
     }
 
@@ -3110,5 +3110,12 @@ static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_Para
         shellPrint(shell_obj, "\t[Item slot error]\r\n");
         return;
     }
+
+    if (!Storage_DeleteAllDataSlot(item.data_addr, item.name, item.len, p_Sec, StorageIO_API))
+    {
+        shellPrint(shell_obj, "\t[Item Delete Error]\r\n");
+    }
+    else
+        shellPrint(shell_obj, "\t[Item Delete Accomplished]\r\n");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_DeleteData, Storage_DeleteData_Test, Storage delete data);
