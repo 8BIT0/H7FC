@@ -961,6 +961,8 @@ static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_
 
     /* link free slot address */
 
+    /* update section info free address */
+
     /* update base info free address */
 
     return true;
