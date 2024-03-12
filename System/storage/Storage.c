@@ -3180,6 +3180,7 @@ static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_Para
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
+    Storage_Item_TypeDef item;
     
     if (shell_obj == NULL)
         return;
@@ -3226,6 +3227,15 @@ static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_Para
         shellPrint(shell_obj, "\tGet section info error\r\n");
         return;
     }
-    
+
+    /* search */
+    item = Storage_Search(medium, class, test_name);
+    if ((item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
+        (item.end_tag != STORAGE_ITEM_END_TAG) || \
+        (item.data_addr == 0))
+    {
+        shellPrint(shell_obj, "\t[Item slot error]\r\n");
+        return;
+    }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_DeleteData, Storage_DeleteData_Test, Storage delete data);
