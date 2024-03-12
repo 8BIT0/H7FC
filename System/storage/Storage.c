@@ -74,6 +74,7 @@ static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item);
 static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
 static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
+static bool Storage_FreeSlot_CheckMerge(uint32_t sec_start, uint32_t sec_end, uint32_t front_slot_addr, uint32_t back_slot_addr);
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
@@ -785,8 +786,16 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 }
 
 /* developping */
-static bool Storage_FreeSlot_Merge(uint32_t sec_start, uint32_t sec_end, uint32_t front_slot_addr, uint32_t back_slot_addr)
+static bool Storage_FreeSlot_CheckMerge(uint32_t sec_start, uint32_t sec_end, uint32_t front_slot_addr, uint32_t back_slot_addr)
 {
+    if ((sec_start <= sec_end) || \
+        (front_slot_addr <= back_slot_addr) || \
+        (front_slot_addr < sec_start) || \
+        (front_slot_addr > sec_end) || \
+        (back_slot_addr < sec_start) || \
+        (back_slot_addr > sec_end))
+        return false;
+
     return false;
 }
 
