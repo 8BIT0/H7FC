@@ -789,6 +789,7 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     Storage_FreeSlot_TypeDef FreeSlot_Info;
+    uint32_t history_freeslot_addr = 0;
 
     if ((p_Sec == NULL) || \
         (slot_info == NULL) || \
@@ -804,11 +805,22 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
         (slot_info->cur_slot_size > p_Sec->free_space_size))
         return Storage_FreeSlot_Info_Error;
 
-    /* traverse all free slot */
-    if (!StorageIO_API->read(p_Sec->free_slot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
-        return Storage_Read_Error;
+    while (true)
+    {
+        /* circumstance 1: new free slot in front of the old free slot */
+        if (slot_info->cur_slot_size + slot_addr == history_freeslot_addr)
+        {
 
-    
+        }
+
+        /* traverse all free slot */
+        if (!StorageIO_API->read(p_Sec->free_slot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
+            return Storage_Read_Error;
+
+        if ((FreeSlot_Info.head_tag != STORAGE_SLOT_HEAD_TAG) || \
+            (FreeSlot_Info.end_tag != STORAGE_SLOT_END_TAG))
+            return Storage_FreeSlot_Info_Error;
+    }
 
     return Storage_Delete_Error;
 }
