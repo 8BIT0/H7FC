@@ -3084,7 +3084,7 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_UpdateData, Storage_UpdateData, Storage update data);
 
-static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name, char *test_data)
+static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name)
 {
     Shell *shell_obj = Shell_GetInstence();
     StorageIO_TypeDef *StorageIO_API = NULL;
