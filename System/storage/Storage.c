@@ -800,7 +800,8 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
     memset(&FreeSlot_Info, 0, sizeof(FreeSlot_Info));
 
     if ((slot_info->head_tag != STORAGE_SLOT_HEAD_TAG) || \
-        (slot_info->end_tag != STORAGE_SLOT_END_TAG))
+        (slot_info->end_tag != STORAGE_SLOT_END_TAG) || \
+        (slot_info->cur_slot_size > p_Sec->free_space_size))
         return Storage_FreeSlot_Info_Error;
 
     /* traverse all free slot */
