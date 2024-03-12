@@ -74,7 +74,7 @@ static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item);
 static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
 static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
-static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
+static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
@@ -786,17 +786,23 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 }
 
 /* developping */
-static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
+static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     Storage_FreeSlot_TypeDef FreeSlot_Info;
 
     if ((p_Sec == NULL) || \
+        (slot_info == NULL) || \
         (slot_addr < p_Sec->data_sec_addr) || \
         (slot_addr > (p_Sec->data_sec_addr + p_Sec->data_sec_size)) || \
         (StorageIO_API == NULL))
         return Storage_Param_Error;
 
     memset(&FreeSlot_Info, 0, sizeof(FreeSlot_Info));
+
+    if ((slot_info->head_tag != STORAGE_SLOT_HEAD_TAG) || \
+        (slot_info->end_tag != STORAGE_SLOT_END_TAG))
+        return Storage_FreeSlot_Info_Error;
+
     /* traverse all free slot */
     if (!StorageIO_API->read(p_Sec->free_slot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
         return Storage_Read_Error;
