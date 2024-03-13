@@ -75,6 +75,7 @@ static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
 static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
 static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
+static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behand_free_addr, uint32_t new_free_addr, Storage_FreeSlot_TypeDef *new_free_slot, StorageIO_TypeDef *StorageIO_API);
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
@@ -785,15 +786,37 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     return Storage_Error_None;
 }
 
-/* developping */
-static bool Storage_Link_FreeSlot(uint32_t new_free_slot, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
+static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behand_free_addr, uint32_t new_free_addr, Storage_FreeSlot_TypeDef *new_free_slot, StorageIO_TypeDef *StorageIO_API)
 {
-    if ((new_free_slot == 0) || \
-        (p_Sec == NULL) || \
+    Storage_FreeSlot_TypeDef front_slot;
+    Storage_FreeSlot_TypeDef behand_slot;
+
+    if ((new_free_addr == 0) || \
+        (front_free_addr == 0) || \
+        (behand_free_addr == 0) || \
+        (front_free_addr >= new_free_addr) || \
+        (behand_free_addr <= new_free_addr) || \
+        (new_free_slot == NULL) || \
         (StorageIO_API == NULL))
         return false;
 
-    return false;
+    memset(&front_slot, 0, sizeof(Storage_FreeSlot_TypeDef));
+    memset(&behand_slot, 0, sizeof(Storage_FreeSlot_TypeDef));
+
+    if (!StorageIO_API->read(front_free_addr, &front_slot, sizeof(Storage_FreeSlot_TypeDef)))
+        return false;
+
+    /* link free slot address */
+    front_slot.nxt_addr = new_free_addr;
+    new_free_slot->nxt_addr = behand_free_addr;
+
+    if (!StorageIO_API->write(front_free_addr, &front_slot, sizeof(Storage_FreeSlot_TypeDef)))
+        return false;
+
+    if (!StorageIO_API->write(new_free_addr, new_free_slot, sizeof(Storage_FreeSlot_TypeDef)))
+        return false;
+
+    return true;
 }
 
 /* developping */
@@ -830,6 +853,7 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
             (FreeSlot_Info.end_tag != STORAGE_SLOT_END_TAG))
             return Storage_FreeSlot_Info_Error;
 
+        behand_freeslot_addr = FreeSlot_Info.nxt_addr;
         p_Sec->free_space_size += slot_info->cur_slot_size;
 
         /* circumstance 1: new free slot in front of the old free slot */
@@ -864,11 +888,12 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
             FreeSlot_Info.cur_slot_size += slot_info->cur_slot_size + sizeof(Storage_FreeSlot_TypeDef);
         }
         /* circumstance 3: none free slot near by */
-        else
+        else if (((front_freeslot_addr + FreeSlot_Info.cur_slot_size + sizeof(Storage_FreeSlot_TypeDef)) < slot_addr) && \
+                 (behand_freeslot_addr > (slot_addr + slot_info->cur_slot_size + sizeof(Storage_FreeSlot_TypeDef))))
         {
             /* link free slot */
-            // if (Storage_Link_FreeSlot(uint32_t new_free_slot, p_Sec, StorageIO_API))
-                // return Storage_Error_None;
+            if (Storage_Link_FreeSlot(front_freeslot_addr, behand_freeslot_addr, slot_addr, slot_info, StorageIO_API))
+                return Storage_Error_None;
 
             return Storage_FreeSlot_Link_Error;
         }
@@ -877,7 +902,7 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
             return Storage_Error_None;
 
         /* update front free slot address */
-        front_freeslot_addr = FreeSlot_Info.nxt_addr;
+        front_freeslot_addr = behand_freeslot_addr;
     }
 
     return Storage_Delete_Error;
