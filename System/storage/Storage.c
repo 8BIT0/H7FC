@@ -853,12 +853,11 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
             p_Sec->free_slot_addr = slot_addr;
             p_Sec->free_space_size += sizeof(Storage_FreeSlot_TypeDef);
         }
-
         /* circumstance 2: new free slot is behand of the old free slot */
-        if (history_freeslot_addr + FreeSlot_Info.cur_slot_size == slot_addr)
+        else if (history_freeslot_addr + FreeSlot_Info.cur_slot_size == slot_addr)
         {
             /* merge free slot */
-            FreeSlot_Info.cur_slot_size += slot_info->cur_slot_size;
+            FreeSlot_Info.cur_slot_size += slot_info->cur_slot_size + sizeof(Storage_FreeSlot_TypeDef);
         }
 
         if (FreeSlot_Info.nxt_addr == 0)
@@ -940,6 +939,7 @@ static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, St
 
         /* reset next freeslot addr
          * link free slot address */
+        /* bug */
         *(uint32_t *)p_freeslot_start = p_Sec->free_slot_addr;
         p_freeslot_start += sizeof(uint32_t);
 
