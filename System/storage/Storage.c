@@ -800,7 +800,8 @@ static bool Storage_Link_FreeSlot(uint32_t new_free_slot, Storage_BaseSecInfo_Ty
 static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     Storage_FreeSlot_TypeDef FreeSlot_Info;
-    uint32_t history_freeslot_addr = 0;
+    uint32_t front_freeslot_addr = 0;
+    uint32_t behand_freeslot_addr = 0;
     uint32_t ori_freespace_size = 0;
 
     if ((p_Sec == NULL) || \
@@ -818,11 +819,11 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
         return Storage_FreeSlot_Info_Error;
 
     ori_freespace_size = p_Sec->free_space_size;
-    history_freeslot_addr = p_Sec->free_slot_addr;
+    front_freeslot_addr = p_Sec->free_slot_addr;
     while (true)
     {
         /* traverse all free slot */
-        if (!StorageIO_API->read(history_freeslot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
+        if (!StorageIO_API->read(front_freeslot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
             return Storage_Read_Error;
 
         if ((FreeSlot_Info.head_tag != STORAGE_SLOT_HEAD_TAG) || \
@@ -832,10 +833,10 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
         p_Sec->free_space_size += slot_info->cur_slot_size;
 
         /* circumstance 1: new free slot in front of the old free slot */
-        if (slot_addr + slot_info->cur_slot_size == history_freeslot_addr)
+        if (slot_addr + slot_info->cur_slot_size == front_freeslot_addr)
         {
-            /* merge free slot */
-            if (slot_info->nxt_addr != history_freeslot_addr)
+            /* merge front free slot */
+            if (slot_info->nxt_addr != front_freeslot_addr)
             {
                 /* free space is uncontiguous */
                 /* error occur */
@@ -848,7 +849,7 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
             memset(&FreeSlot_Info, 0, sizeof(FreeSlot_Info));
 
             /* write to histort freeslot address */
-            if (!StorageIO_API->write(history_freeslot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
+            if (!StorageIO_API->write(front_freeslot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
             {
                 p_Sec->free_space_size = ori_freespace_size;
                 return Storage_Write_Error;
@@ -865,16 +866,23 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
             p_Sec->free_space_size += sizeof(Storage_FreeSlot_TypeDef);
         }
         /* circumstance 2: new free slot is behand of the old free slot */
-        else if (history_freeslot_addr + FreeSlot_Info.cur_slot_size == slot_addr)
+        else if (front_freeslot_addr + FreeSlot_Info.cur_slot_size == slot_addr)
         {
-            /* merge free slot */
+            /* merge behand free slot */
             FreeSlot_Info.cur_slot_size += slot_info->cur_slot_size + sizeof(Storage_FreeSlot_TypeDef);
+        }
+        else
+        {
+            /* link free slot */
+            // if (Storage_Link_FreeSlot(uint32_t new_free_slot, p_Sec, StorageIO_API))
+                // return Storage_Error_None;
         }
 
         if (FreeSlot_Info.nxt_addr == 0)
             return Storage_Error_None;
-    
-        history_freeslot_addr = FreeSlot_Info.nxt_addr;
+
+        /* update front free slot address */
+        front_freeslot_addr = FreeSlot_Info.nxt_addr;
     }
 
     return Storage_Delete_Error;
