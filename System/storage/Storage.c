@@ -1322,8 +1322,8 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 if (slot_useful_size < storage_data_size)
                 {
                     /*
-                        * UNTESTED IN THIS BRANCH
-                        */
+                     * UNTESTED IN THIS BRANCH
+                     */
                     
                     DataSlot.cur_slot_size = slot_useful_size;
                     stored_size += DataSlot.cur_slot_size;
