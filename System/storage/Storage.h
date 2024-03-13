@@ -9,7 +9,7 @@
 #include "Srv_OsCommon.h"
 #include "util.h"
 
-#define Storage_Assert(x) while(x)
+#define Storage_Assert(x) SrvOsCommon.enter_critical(); while(x)
 
 #define Format_Retry_Cnt 5
 #define ExternalModule_ReInit_Cnt 5
