@@ -835,14 +835,6 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
         /* circumstance 1: new free slot in front of the old free slot */
         if (slot_addr + slot_info->cur_slot_size == front_freeslot_addr)
         {
-            /* merge front free slot */
-            if (slot_info->nxt_addr != front_freeslot_addr)
-            {
-                /* free space is uncontiguous */
-                /* error occur */
-                Storage_Assert(true);
-            }
-
             slot_info->nxt_addr = FreeSlot_Info.nxt_addr;
             slot_info->cur_slot_size += FreeSlot_Info.cur_slot_size + sizeof(Storage_FreeSlot_TypeDef);
 
