@@ -786,6 +786,17 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 }
 
 /* developping */
+static bool Storage_Link_FreeSlot(uint32_t new_free_slot, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
+{
+    if ((new_free_slot == 0) || \
+        (p_Sec == NULL) || \
+        (StorageIO_API == NULL))
+        return false;
+
+    return false;
+}
+
+/* developping */
 static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     Storage_FreeSlot_TypeDef FreeSlot_Info;
