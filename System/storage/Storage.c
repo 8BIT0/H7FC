@@ -931,7 +931,6 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
     return Storage_Delete_Error;
 }
 
-/* developping */
 static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     uint32_t cur_slot_size = 0;
