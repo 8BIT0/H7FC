@@ -808,12 +808,6 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
     history_freeslot_addr = p_Sec->free_slot_addr;
     while (true)
     {
-        /* circumstance 1: new free slot in front of the old free slot */
-        if (slot_info->cur_slot_size + slot_addr == history_freeslot_addr)
-        {
-            /* merge free slot */
-        }
-
         /* traverse all free slot */
         if (!StorageIO_API->read(history_freeslot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
             return Storage_Read_Error;
@@ -821,6 +815,12 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
         if ((FreeSlot_Info.head_tag != STORAGE_SLOT_HEAD_TAG) || \
             (FreeSlot_Info.end_tag != STORAGE_SLOT_END_TAG))
             return Storage_FreeSlot_Info_Error;
+
+        /* circumstance 1: new free slot in front of the old free slot */
+        if (slot_info->cur_slot_size + slot_addr == history_freeslot_addr)
+        {
+            /* merge free slot */
+        }
 
         /* circumstance 2: new free slot is behand of the old free slot */
         if (history_freeslot_addr + FreeSlot_Info.cur_slot_size == slot_addr)
