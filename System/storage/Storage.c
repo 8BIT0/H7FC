@@ -1060,6 +1060,7 @@ static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_
     return true;
 }
 
+/* developping */
 static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
