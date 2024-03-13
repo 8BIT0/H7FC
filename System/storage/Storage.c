@@ -863,6 +863,7 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
             /* merge behand free slot */
             FreeSlot_Info.cur_slot_size += slot_info->cur_slot_size + sizeof(Storage_FreeSlot_TypeDef);
         }
+        /* circumstance 3: none free slot near by */
         else
         {
             /* link free slot */
