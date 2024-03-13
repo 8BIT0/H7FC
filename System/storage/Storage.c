@@ -2977,7 +2977,8 @@ static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_Par
     {
         case Internal_Flash:
         // flash_sector_size = 
-            break;
+            shellPrint(shell_obj, "\t[Still In Developping]\r\n");
+            return;
 
         case External_Flash:
             if (Storage_Monitor.ExtDev_ptr)
