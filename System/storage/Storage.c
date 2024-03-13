@@ -864,7 +864,7 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
 
             memset(&FreeSlot_Info, 0, sizeof(FreeSlot_Info));
 
-            /* write to histort freeslot address */
+            /* write to front freeslot address */
             if (!StorageIO_API->write(front_freeslot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
             {
                 p_Sec->free_space_size = ori_freespace_size;
@@ -888,6 +888,16 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
             FreeSlot_Info.cur_slot_size += slot_info->cur_slot_size + sizeof(Storage_FreeSlot_TypeDef);
             Storage_Assert(slot_info->nxt_addr < FreeSlot_Info.nxt_addr);
             FreeSlot_Info.nxt_addr = slot_info->nxt_addr;
+
+            memset(slot_info, 0, sizeof(Storage_FreeSlot_TypeDef));
+
+            /* write to new free slot */
+            if (!StorageIO_API->write(slot_addr, slot_info, sizeof(Storage_FreeSlot_TypeDef)))
+                return Storage_Write_Error;
+
+            /* write to behand free slot */
+            if (!StorageIO_API->write(front_freeslot_addr, &FreeSlot_Info, sizeof(Storage_FreeSlot_TypeDef)))
+                return Storage_Write_Error;
         }
         /* circumstance 3: none free slot near by */
         else if (((front_freeslot_addr + FreeSlot_Info.cur_slot_size + sizeof(Storage_FreeSlot_TypeDef)) < slot_addr) && \
