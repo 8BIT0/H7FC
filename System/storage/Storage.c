@@ -803,6 +803,17 @@ static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behand_free
     memset(&front_slot, 0, sizeof(Storage_FreeSlot_TypeDef));
     memset(&behand_slot, 0, sizeof(Storage_FreeSlot_TypeDef));
 
+/* 
+ *
+ *       address N                    address X                   address Y
+ * _____________________        _____________________        ______________________
+ * |  front free slot  |   ———→ |   new free slot   |   ———→ |  behand free slot  |   ———→ ... ...
+ * |                   |   |    |                   |   |    |                    |   |
+ * |____next_addr_X____|   |    |____next_addr_Y____|   |    |_____next_addr_Z____|   |
+ *          |______________|             |______________|              |______________|
+ * 
+ */
+
     if (!StorageIO_API->read(front_free_addr, &front_slot, sizeof(Storage_FreeSlot_TypeDef)))
         return false;
 
