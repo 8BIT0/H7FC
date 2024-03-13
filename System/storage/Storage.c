@@ -869,6 +869,8 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
             /* link free slot */
             // if (Storage_Link_FreeSlot(uint32_t new_free_slot, p_Sec, StorageIO_API))
                 // return Storage_Error_None;
+
+            return Storage_FreeSlot_Link_Error;
         }
 
         if (FreeSlot_Info.nxt_addr == 0)
@@ -2222,7 +2224,13 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
         
         case Storage_FreeSlot_Addr_Error:
             return Storage_ErrorCode_ToStr(Storage_FreeSlot_Addr_Error);
-        
+
+        case Storage_FreeSlot_Info_Error:
+            return Storage_ErrorCode_ToStr(Storage_FreeSlot_Info_Error);
+
+        case Storage_FreeSlot_Link_Error:
+            return Storage_ErrorCode_ToStr(Storage_FreeSlot_Link_Error);
+
         case Storage_ItemInfo_Error:
             return Storage_ErrorCode_ToStr(Storage_ItemInfo_Error);
             
@@ -2232,6 +2240,9 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
         case Storage_Update_DataSize_Error:
             return Storage_ErrorCode_ToStr(Storage_Update_DataSize_Error);
             
+        case Storage_Delete_Error:
+            return Storage_ErrorCode_ToStr(Storage_Delete_Error);
+
         default:
             return "Unknow Error\r\n";
     }
