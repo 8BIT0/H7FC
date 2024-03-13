@@ -790,6 +790,7 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
 {
     Storage_FreeSlot_TypeDef FreeSlot_Info;
     uint32_t history_freeslot_addr = 0;
+    uint32_t ori_freespace_size = 0;
 
     if ((p_Sec == NULL) || \
         (slot_info == NULL) || \
@@ -805,6 +806,7 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
         (slot_info->cur_slot_size > p_Sec->free_space_size))
         return Storage_FreeSlot_Info_Error;
 
+    ori_freespace_size = p_Sec->free_space_size;
     history_freeslot_addr = p_Sec->free_slot_addr;
     while (true)
     {
@@ -815,6 +817,8 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
         if ((FreeSlot_Info.head_tag != STORAGE_SLOT_HEAD_TAG) || \
             (FreeSlot_Info.end_tag != STORAGE_SLOT_END_TAG))
             return Storage_FreeSlot_Info_Error;
+
+        p_Sec->free_space_size += slot_info->cur_slot_size;
 
         /* circumstance 1: new free slot in front of the old free slot */
         if (slot_addr + slot_info->cur_slot_size == history_freeslot_addr)
@@ -834,14 +838,20 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
 
             /* write to histort freeslot address */
             if (!StorageIO_API->write(history_freeslot_addr, &FreeSlot_Info, sizeof(FreeSlot_Info)))
+            {
+                p_Sec->free_space_size = ori_freespace_size;
                 return Storage_Write_Error;
+            }
 
             /* write to current freeslot section */
             if (!StorageIO_API->write(slot_addr, slot_info, sizeof(Storage_FreeSlot_TypeDef)))
+            {
+                p_Sec->free_space_size = ori_freespace_size;
                 return Storage_Write_Error;
-        
+            }
+
             p_Sec->free_slot_addr = slot_addr;
-            // p_Sec->free_space_size += slot_info->cur_slot_size;
+            p_Sec->free_space_size += sizeof(Storage_FreeSlot_TypeDef);
         }
 
         /* circumstance 2: new free slot is behand of the old free slot */
@@ -922,10 +932,6 @@ static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, St
     /* update freeslot data info */
     if (*(uint32_t *)p_freeslot_start == STORAGE_SLOT_HEAD_TAG)
     {
-        p_freeslot_start += sizeof(uint32_t);
-
-        /* update total size */
-        *(uint32_t *)p_freeslot_start += cur_slot_size;
         p_freeslot_start += sizeof(uint32_t);
 
         /* update current free slot size */
