@@ -938,8 +938,9 @@ static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, St
         p_freeslot_start += sizeof(uint32_t);
 
         /* reset next freeslot addr
-         * link free slot address */
-        /* bug */
+         * link free slot address
+         *
+         * still bug */
         *(uint32_t *)p_freeslot_start = p_Sec->free_slot_addr;
         p_freeslot_start += sizeof(uint32_t);
 
