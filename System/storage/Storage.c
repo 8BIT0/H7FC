@@ -79,7 +79,7 @@ static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behand_free
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
-static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name);
+static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name);
 static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size);
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size);
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
@@ -544,9 +544,8 @@ static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uin
  * if matched return data slot address 
  * else return 0
  */
-static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name)
+static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name)
 {
-    Storage_Item_TypeDef data_slot;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_Item_TypeDef *item_list = NULL;
@@ -555,14 +554,15 @@ static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage
     uint8_t *crc_buf = NULL;
     uint16_t crc_len = 0;
     uint16_t crc = 0;
+    Storage_ItemSearchOut_TypeDef ItemSearch;
 
-    memset(&data_slot, 0, sizeof(data_slot));
+    memset(&ItemSearch, 0, sizeof(ItemSearch));
 
     if (!Storage_Monitor.init_state || \
         (name == NULL) || \
         (strlen(name) == 0) || \
         (class > Para_User))
-        return data_slot;
+        return ItemSearch;
 
     switch((uint8_t)type)
     {
@@ -577,20 +577,20 @@ static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage
             break;
 
         default:
-            return data_slot;
+            return ItemSearch;
     }
 
     if ((p_Sec == NULL) || \
         (p_Sec->para_num == 0) || \
         (p_Sec->para_size == 0))
-        return data_slot;
+        return ItemSearch;
 
     tab_addr = p_Sec->tab_addr;
     /* tab traverse */
     for (uint8_t tab_i = 0; tab_i < p_Sec->page_num; tab_i ++)
     {
         if (!StorageIO_API->read(tab_addr, page_data_tmp, (p_Sec->tab_size / p_Sec->page_num)))
-            return data_slot;
+            return ItemSearch;
     
         /* tab item traverse */
         item_list = (Storage_Item_TypeDef *)page_data_tmp;
@@ -604,8 +604,10 @@ static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage
             {
                 if (Storage_Compare_ItemSlot_CRC(*p_item))
                 {
-                    data_slot = *p_item;
-                    return data_slot;
+                    ItemSearch.item_addr = tab_addr;
+                    ItemSearch.item_index = item_i;
+                    ItemSearch.item = *p_item;
+                    return ItemSearch;
                 }
             }
         }
@@ -614,7 +616,7 @@ static Storage_Item_TypeDef Storage_Search(Storage_MediumType_List type, Storage
         tab_addr += (p_Sec->tab_size / p_Sec->page_num);
     }
 
-    return data_slot;
+    return ItemSearch;
 }
 
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size)
@@ -1102,10 +1104,6 @@ static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_
     if (!Storage_DeleteSingalDataSlot(addr, page_data_tmp, p_Sec, StorageIO_API))
         return false;
 
-    /* update section info free address */
-
-    /* update base info free address */
-
     return true;
 }
 
@@ -1116,9 +1114,9 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_Item_TypeDef *item_list = NULL;
     StorageIO_TypeDef *StorageIO_API = NULL;
-    Storage_Item_TypeDef Item;
+    Storage_ItemSearchOut_TypeDef ItemSearch;
     
-    memset(&Item, 0, sizeof(Item));
+    memset(&ItemSearch, 0, sizeof(ItemSearch));
 
     if( !Storage_Monitor.init_state || \
         (name == NULL) || \
@@ -1165,17 +1163,25 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
         return Storage_ModuleAPI_Error;
 
     /* search tab for item slot first */
-    Item = Storage_Search(type, class, name);
-    if ((Item.data_addr) && \
-        (Item.head_tag == STORAGE_ITEM_HEAD_TAG) && \
-        (Item.end_tag == STORAGE_ITEM_END_TAG))
+    ItemSearch = Storage_Search(type, class, name);
+    if ((ItemSearch.item_addr != 0) && \
+        (ItemSearch.item.data_addr) && \
+        (ItemSearch.item.head_tag == STORAGE_ITEM_HEAD_TAG) && \
+        (ItemSearch.item.end_tag == STORAGE_ITEM_END_TAG))
     {
         /* Item found */
-        if (Storage_DeleteDataSlot(Item.data_addr, name, Item.len, p_Sec, StorageIO_API))
+        if (Storage_DeleteDataSlot(ItemSearch.item.data_addr, name, ItemSearch.item.len, p_Sec, StorageIO_API))
             return Storage_Error_None;
     }
 
-    /* update tab */
+    /* update item slot tab */
+    memset(ItemSearch.item.name, '\0', STORAGE_NAME_LEN);
+    memcpy(ItemSearch.item.name, STORAGE_FREEITEM_NAME, strlen(STORAGE_FREEITEM_NAME));
+
+    if (!Storage_Comput_ItemSlot_CRC(&ItemSearch.item))
+        return Storage_ItemUpdate_Error;
+
+    /* update base info */
 
     return Storage_Delete_Error;
 }
@@ -2280,6 +2286,9 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
         case Storage_ItemInfo_Error:
             return Storage_ErrorCode_ToStr(Storage_ItemInfo_Error);
             
+        case Storage_ItemUpdate_Error:
+            return Storage_ErrorCode_ToStr(Storage_ItemUpdate_Error);
+
         case Storage_CRC_Error:
             return Storage_ErrorCode_ToStr(Storage_CRC_Error);
             
@@ -2539,7 +2548,7 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
     shellPrint(shell_obj, "\tStorage Size: %d\r\n", strlen(test_data));
 
     /* search item first */
-    if (Storage_Search(medium, class, test_name).data_addr != 0)
+    if (Storage_Search(medium, class, test_name).item.data_addr != 0)
     {
         shellPrint(shell_obj, "\t%s already exist\r\n", test_name);
         return;
@@ -2761,7 +2770,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_DataSlot_TypeDef DataSlot;
-    Storage_Item_TypeDef item;
+    Storage_ItemSearchOut_TypeDef ItemSearch;
     uint8_t *crc_buf = NULL;
     uint16_t crc = 0;
     uint16_t crc_len = 0;
@@ -2771,7 +2780,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
     uint8_t *p_read_out = NULL;
     uint16_t i = 0;
 
-    memset(&item, 0, sizeof(item));
+    memset(&ItemSearch, 0, sizeof(ItemSearch));
     memset(&DataSlot, 0, sizeof(DataSlot));
 
     if ((shell_obj == NULL) || \
@@ -2785,16 +2794,16 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
         return;
     }
 
-    item = Storage_Search(medium, class, name);
-    if (item.data_addr)
+    ItemSearch = Storage_Search(medium, class, name);
+    if (ItemSearch.item.data_addr)
     {
         shellPrint(shell_obj, "\t[tab item %s matched]\r\n", name);
-        shellPrint(shell_obj, "\t[data size : %d]\r\n", item.len);
-        shellPrint(shell_obj, "\t[data name : %s]\r\n", item.name);
+        shellPrint(shell_obj, "\t[data size : %d]\r\n", ItemSearch.item.len);
+        shellPrint(shell_obj, "\t[data name : %s]\r\n", ItemSearch.item.name);
         shellPrint(shell_obj, "\t\r\n");
 
-        data_len = item.len;
-        data_addr = item.data_addr;
+        data_len = ItemSearch.item.len;
+        data_addr = ItemSearch.item.data_addr;
 
         while(data_len)
         {
@@ -3137,10 +3146,10 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
-    Storage_Item_TypeDef item;
+    Storage_ItemSearchOut_TypeDef ItemSearch;
     Storage_ErrorCode_List update_error_code = Storage_Error_None;
     
-    memset(&item, 0, sizeof(item));
+    memset(&ItemSearch, 0, sizeof(ItemSearch));
 
     if ((shell_obj == NULL) || \
         (test_name == NULL) || \
@@ -3155,16 +3164,16 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
         return;
     }
 
-    item = Storage_Search(medium, class, test_name);
-    if ((item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
-        (item.end_tag != STORAGE_ITEM_END_TAG) || \
-        (item.data_addr == 0))
+    ItemSearch = Storage_Search(medium, class, test_name);
+    if ((ItemSearch.item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
+        (ItemSearch.item.end_tag != STORAGE_ITEM_END_TAG) || \
+        (ItemSearch.item.data_addr == 0))
     {
         shellPrint(shell_obj, "\t[Item slot error]\r\n");
         return;
     }
 
-    update_error_code = Storage_SlotData_Update(medium, class, item.data_addr, test_data, strlen(test_data)); 
+    update_error_code = Storage_SlotData_Update(medium, class, ItemSearch.item.data_addr, test_data, strlen(test_data)); 
     if (update_error_code != Storage_Error_None)
     {
         shellPrint(shell_obj, "\t[Data update failed %s]\r\n", Storage_Error_Print(update_error_code));
@@ -3181,7 +3190,7 @@ static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_Para
     StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
-    Storage_Item_TypeDef item;
+    Storage_ItemSearchOut_TypeDef ItemSearch;
     
     if (shell_obj == NULL)
         return;
@@ -3193,16 +3202,16 @@ static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_Para
     }
 
     /* search */
-    item = Storage_Search(medium, class, test_name);
-    if ((item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
-        (item.end_tag != STORAGE_ITEM_END_TAG) || \
-        (item.data_addr == 0))
+    ItemSearch = Storage_Search(medium, class, test_name);
+    if ((ItemSearch.item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
+        (ItemSearch.item.end_tag != STORAGE_ITEM_END_TAG) || \
+        (ItemSearch.item.data_addr == 0))
     {
         shellPrint(shell_obj, "\t[Item slot error]\r\n");
         return;
     }
 
-    if (!Storage_DeleteAllDataSlot(item.data_addr, item.name, item.len, p_Sec, StorageIO_API))
+    if (!Storage_DeleteAllDataSlot(ItemSearch.item.data_addr, ItemSearch.item.name, ItemSearch.item.len, p_Sec, StorageIO_API))
     {
         shellPrint(shell_obj, "\t[Item Delete Error]\r\n");
     }

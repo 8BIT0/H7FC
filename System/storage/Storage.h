@@ -87,6 +87,7 @@ typedef enum
     Storage_FreeSlot_Info_Error,
     Storage_FreeSlot_Link_Error,
     Storage_ItemInfo_Error,
+    Storage_ItemUpdate_Error,
     Storage_CRC_Error,
     Storage_Update_DataSize_Error,
     Storage_Delete_Error,
@@ -181,6 +182,13 @@ typedef struct
     Storage_BaseSecInfo_TypeDef sys_sec;
     Storage_BaseSecInfo_TypeDef user_sec;
 } Storage_FlashInfo_TypeDef;
+
+typedef struct
+{
+    uint32_t item_addr;
+    uint8_t item_index;
+    Storage_Item_TypeDef item;
+} Storage_ItemSearchOut_TypeDef;
 #pragma pack()
 
 typedef union
