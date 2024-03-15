@@ -461,7 +461,7 @@ static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t Obj_addr, uint8_t *p_data
 
                     if(p_UartPortObj->init_state && p_UartPortObj->p_tx_semphr)
                     {
-                        semID =p_UartPortObj->p_tx_semphr;
+                        semID = p_UartPortObj->p_tx_semphr;
                         p_rls_err_cnt = &p_UartPortObj->tx_semphr_rls_err;
                     }
                     break;
