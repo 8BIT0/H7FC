@@ -1210,6 +1210,9 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
     if (!Storage_Comput_ItemSlot_CRC(&ItemSearch.item))
         return Storage_ItemUpdate_Error;
 
+    if (!Storage_ItemSlot_Update(ItemSearch.item_addr, ItemSearch.item_index, p_Sec, ItemSearch.item, StorageIO_API))
+        return Storage_ItemUpdate_Error;
+
     /* update base info */
 
     return Storage_Delete_Error;
