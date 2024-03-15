@@ -108,7 +108,7 @@ void Task_Manager_CreateTask(void)
             // osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
             // TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
 
-            // osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 1024);
+            // osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 4096);
             // TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
 
             // osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 8192);
@@ -121,7 +121,7 @@ void Task_Manager_CreateTask(void)
             // osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 1024);
             // TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
 
-            osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 2048);
+            osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 4096);
             TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);
 
             init = true;

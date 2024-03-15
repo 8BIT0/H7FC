@@ -188,7 +188,7 @@ static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
 
         /* create USB VCP Tx semaphore */
         osSemaphoreDef(DefaultPort_Tx);
-        monitor->VCP_Port.p_tx_semphr = osSemaphoreCreate(osSemaphore(DefaultPort_Tx), 32);
+        monitor->VCP_Port.p_tx_semphr = osSemaphoreCreate(osSemaphore(DefaultPort_Tx), 128);
 
         if(monitor->VCP_Port.p_tx_semphr == NULL)
         {
