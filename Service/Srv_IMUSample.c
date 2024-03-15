@@ -398,6 +398,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 }
 
 /* init primary IMU Device */
+/* consider use spi dma sample raw data */
 static SrvIMU_ErrorCode_List SrvIMU_PriIMU_Init(void)
 {
     /* primary IMU Pin & Bus Init */
@@ -544,6 +545,7 @@ static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 
 #if (IMU_SUM >= 2)
 /* init primary IMU Device */
+/* consider use spi dma sample raw data */
 static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
 {
     /* primary IMU Pin & Bus Init */

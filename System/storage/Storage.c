@@ -76,6 +76,7 @@ static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDe
 static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
 static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API);
 static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behand_free_addr, uint32_t new_free_addr, Storage_FreeSlot_TypeDef *new_free_slot, StorageIO_TypeDef *StorageIO_API);
+static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t item_index, Storage_BaseSecInfo_TypeDef *p_Sec, Storage_Item_TypeDef item, StorageIO_TypeDef *StorageIO_API);
 
 /* external function */
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
@@ -617,6 +618,34 @@ static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_MediumType_List type
     }
 
     return ItemSearch;
+}
+
+static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t item_index, Storage_BaseSecInfo_TypeDef *p_Sec, Storage_Item_TypeDef item, StorageIO_TypeDef *StorageIO_API)
+{
+    Storage_Item_TypeDef *ItemList = NULL;
+
+    if ((tab_addr == 0) || \
+        (p_Sec == NULL) || \
+        (item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
+        (item.end_tag != STORAGE_ITEM_END_TAG) || \
+        (item.data_addr == 0) || \
+        (item.data_addr > (p_Sec->data_sec_addr + p_Sec->data_sec_size)) || \
+        (item.data_addr < p_Sec->data_sec_addr) || \
+        (StorageIO_API == NULL) || \
+        (StorageIO_API->read == NULL) || \
+        (StorageIO_API->write == NULL))
+        return Storage_Param_Error;
+
+    if (!StorageIO_API->read(tab_addr, &page_data_tmp[Storage_TabSize], Storage_TabSize))
+        return Storage_Read_Error;
+
+    ItemList = &page_data_tmp[Storage_TabSize];
+    ItemList[item_index] = item;
+
+    if (!StorageIO_API->write(tab_addr, ItemList, Storage_TabSize))
+        return Storage_Write_Error;
+
+    return Storage_Error_None;
 }
 
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size)
