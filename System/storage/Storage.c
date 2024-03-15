@@ -1199,7 +1199,7 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
         (ItemSearch.item.end_tag == STORAGE_ITEM_END_TAG))
     {
         /* Item found */
-        if (Storage_DeleteDataSlot(ItemSearch.item.data_addr, name, ItemSearch.item.len, p_Sec, StorageIO_API))
+        if (Storage_DeleteAllDataSlot(ItemSearch.item.data_addr, name, ItemSearch.item.len, p_Sec, StorageIO_API))
             return Storage_Error_None;
     }
 
