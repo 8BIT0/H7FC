@@ -94,7 +94,6 @@ static bool BspSPI_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance
     spi_init_type spi_init_struct;
     crm_periph_clock_type clk = 0;
 
-    UNUSED(spi_instance);
     if((spi_cfg.Instance == NULL) || !BspSPI_Pin_Init(spi_cfg.Pin))
         return false;
 
@@ -116,6 +115,8 @@ static bool BspSPI_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance
 
     spi_init(To_SPI_Instance(spi_cfg.Instance), &spi_init_struct);
     spi_enable(To_SPI_Instance(spi_cfg.Instance), TRUE);
+
+    *(uint32_t *)spi_instance = (uint32_t *)spi_cfg.Instance;
 
     return true;
 }
@@ -146,19 +147,19 @@ static bool BspSPI_Transmit(void *instance, uint8_t *tx, uint16_t size, uint16_t
 
     for(uint16_t i = 0; i < size; i++)
     {
-        while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_TDBE_FLAG) == RESET)
+        while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_TDBE_FLAG) == RESET)
         {
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
-        spi_i2s_data_transmit(To_SPI_Instance(instance), tx[i]);
+        spi_i2s_data_transmit(To_SPI_Instance(*(uint32_t *)instance), tx[i]);
         
-        while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_RDBF_FLAG) == RESET)
+        while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_RDBF_FLAG) == RESET)
         {
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
-        spi_i2s_data_receive(To_SPI_Instance(instance));
+        spi_i2s_data_receive(To_SPI_Instance(*(uint32_t *)instance));
     }
 
     return true;
@@ -173,19 +174,19 @@ static bool BspSPI_Receive(void *instance, uint8_t *rx, uint16_t size, uint16_t 
 
     for(uint16_t i = 0; i < size; i++)
     {
-        while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_TDBE_FLAG) == RESET)
+        while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_TDBE_FLAG) == RESET)
         {
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
-        spi_i2s_data_transmit(To_SPI_Instance(instance), Dummy_Byte);
+        spi_i2s_data_transmit(To_SPI_Instance(*(uint32_t *)instance), Dummy_Byte);
         
-        while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_RDBF_FLAG) == RESET)
+        while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_RDBF_FLAG) == RESET)
         {
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
-        rx[i] = spi_i2s_data_receive(To_SPI_Instance(instance));
+        rx[i] = spi_i2s_data_receive(To_SPI_Instance(*(uint32_t *)instance));
     }
 
     return true;
@@ -200,19 +201,19 @@ static uint16_t BspSPI_Trans_Receive(void *instance, uint8_t *tx, uint8_t *rx, u
 
     for(uint16_t i = 0; i < size; i++)
     {
-        while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_TDBE_FLAG) == RESET)
+        while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_TDBE_FLAG) == RESET)
         {
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
-        spi_i2s_data_transmit(To_SPI_Instance(instance), tx[i]);
+        spi_i2s_data_transmit(To_SPI_Instance(*(uint32_t *)instance), tx[i]);
 
-        while(spi_i2s_flag_get(To_SPI_Instance(instance), SPI_I2S_RDBF_FLAG) == RESET)
+        while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_RDBF_FLAG) == RESET)
         {
             if ((System_GetTick() - start_time) > time_out)
                 return false;
         }
-        rx[i] = spi_i2s_data_receive(To_SPI_Instance(instance));
+        rx[i] = spi_i2s_data_receive(To_SPI_Instance(*(uint32_t *)instance));
     }
 
     return size;

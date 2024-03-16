@@ -19,7 +19,11 @@
 #define Storage_InfoPageSize Flash_Storage_InfoPageSize
 
 #define Item_Capacity_Per_Tab (Storage_TabSize / sizeof(Storage_Item_TypeDef))
-
+#if defined STM32H743xx
+static SPI_HandleTypeDef ExtFlash_Bus_InstObj;
+#elif defined AT32F435RGT7
+void *ExtFlash_Bus_InstObj = NULL;
+#endif
 /* flash io object */
 typedef struct
 {
@@ -169,7 +173,7 @@ reformat_internal_flash_info:
                 To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->Pin = ExtFlash_Bus_Pin;
 
                 /* bus init & cs pin init */
-                if (ExtFlash_Bus_Api.init(To_NormalSPI_Obj(ext_flash_bus_cfg), ExtFLash_Bus_Instance) && \
+                if (ExtFlash_Bus_Api.init(To_NormalSPI_Obj(ext_flash_bus_cfg), &ExtFlash_Bus_InstObj) && \
                     BspGPIO.out_init(ExtFlash_CS_Pin))
                 {
                     Storage_Monitor.ExtBusCfg_Ptr = ext_flash_bus_cfg;
@@ -1879,9 +1883,9 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len
 {
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
 
-    if (p_data && len && p_cfg && p_cfg->Instance)
+    if (p_data && len && p_cfg && p_cfg->Instance && ExtFlash_Bus_InstObj)
     {
-        if (ExtFlash_Bus_Api.trans(p_cfg->Instance, p_data, len, time_out))
+        if (ExtFlash_Bus_Api.trans(&ExtFlash_Bus_InstObj, p_data, len, time_out))
             return len;
     }
 
@@ -1892,9 +1896,9 @@ static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len
 {
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
 
-    if (p_data && len && p_cfg && p_cfg->Instance)
+    if (p_data && len && p_cfg && p_cfg->Instance && ExtFlash_Bus_InstObj)
     {
-        if (ExtFlash_Bus_Api.receive(p_cfg->Instance, p_data, len, time_out))
+        if (ExtFlash_Bus_Api.receive(&ExtFlash_Bus_InstObj, p_data, len, time_out))
             return len;
     }
 
@@ -1905,9 +1909,9 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, 
 {
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
 
-    if (tx && rx && len && p_cfg && p_cfg->Instance)
+    if (tx && rx && len && p_cfg && p_cfg->Instance && ExtFlash_Bus_InstObj)
     {
-        if (ExtFlash_Bus_Api.trans_receive(p_cfg->Instance, tx, rx, len, time_out))
+        if (ExtFlash_Bus_Api.trans_receive(&ExtFlash_Bus_InstObj, tx, rx, len, time_out))
             return len;
     }
 

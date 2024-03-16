@@ -69,9 +69,9 @@ static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev)
         return DevW25Qxx_Error;
 
     /* Send the reset command */
-    dev->cs_ctl(true);
-    state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
     dev->cs_ctl(false);
+    state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+    dev->cs_ctl(true);
 
     if (!state)
         return DevW25Qxx_Error;
@@ -88,9 +88,9 @@ static DevW25Qxx_Error_List DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef *dev)
     if ((dev == NULL) || (dev->cs_ctl == NULL))
         return DevW25Qxx_Error;
 
-    dev->cs_ctl(true);
-    state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) & DevW25Qxx_BusReceive(dev, &dev_status, sizeof(dev_status));
     dev->cs_ctl(false);
+    state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) & DevW25Qxx_BusReceive(dev, &dev_status, sizeof(dev_status));
+    dev->cs_ctl(true);
     
     if (!state)
         return DevW25Qxx_Error; 
@@ -112,9 +112,9 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef *dev)
         return DevW25Qxx_Error;
 
     /* Send the read ID command */
-    dev->cs_ctl(true);
-    trans_state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd));
     dev->cs_ctl(false);
+    trans_state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd));
+    dev->cs_ctl(true);
 
     tickstart = dev->systick();
 
@@ -167,10 +167,10 @@ static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev,
 
     if (dev && dev->cs_ctl)
     {
-        dev->cs_ctl(true);
+        dev->cs_ctl(false);
         DevW25Qxx_BusTrans(dev, ID_Req_CMD, sizeof(ID_Req_CMD));
         DevW25Qxx_BusReceive(dev, ID_Rx_buf, sizeof(ID_Rx_buf));
-        dev->cs_ctl(false);
+        dev->cs_ctl(true);
     
         ID |= ID_Rx_buf[0] << 8;
         ID |= ID_Rx_buf[1];
@@ -213,9 +213,9 @@ static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t R
     if ((dev == NULL) || (dev->cs_ctl == NULL) || (pData == NULL) || (Size == 0))
         return DevW25Qxx_Error; 
 
-    dev->cs_ctl(true);
-    read_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) & DevW25Qxx_BusReceive(dev, pData, Size);
     dev->cs_ctl(false);
+    read_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) & DevW25Qxx_BusReceive(dev, pData, Size);
+    dev->cs_ctl(true);
 
     if (read_state)
         return DevW25Qxx_Ok;
@@ -268,9 +268,9 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
             return DevW25Qxx_Error;
 
         /* Send the command Transmission of the data */
-        dev->cs_ctl(true);
-        write_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) & DevW25Qxx_BusTrans(dev, pData, current_size);
         dev->cs_ctl(false);
+        write_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) & DevW25Qxx_BusTrans(dev, pData, current_size);
+        dev->cs_ctl(true);
 
         /* Wait the end of Flash writing */
         while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
@@ -305,9 +305,9 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
     if (DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok)
         return DevW25Qxx_Error;
 
-    dev->cs_ctl(true);
-    erase_state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd));
     dev->cs_ctl(false);
+    erase_state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd));
+    dev->cs_ctl(true);
 
     if (!erase_state)
         return DevW25Qxx_Error;
@@ -344,9 +344,9 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseSector(DevW25QxxObj_TypeDef *dev, uin
     if (DevW25Qxx_WriteEnable(dev) != DevW25Qxx_Ok)
         return DevW25Qxx_Error;
 
-    dev->cs_ctl(true);
-    erase_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
     dev->cs_ctl(false);
+    erase_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+    dev->cs_ctl(true);
 
     if (!erase_state)
         return DevW25Qxx_Error;
