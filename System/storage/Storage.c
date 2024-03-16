@@ -1452,7 +1452,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
                 if (DataSlot.nxt_addr == 0)
                 {
-                    Storage_Assert(DataSlot.total_data_size > stored_size);
                     if (DataSlot.total_data_size == stored_size)
                     {
                         /* step 4: update free slot */

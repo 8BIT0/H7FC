@@ -604,7 +604,7 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
             SrvComProto.mav_msg_stream(&RadioProto_MAV_RcChannel, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&RadioProto_MAV_Altitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             
-            /* Proto mavlink messa
+            /* Proto mavlink message
             ge through default port */
             proto_monitor.port_type = Port_USB;
             proto_monitor.port_addr = USB_VCP_Addr;
