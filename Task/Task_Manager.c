@@ -96,7 +96,7 @@ void Task_Manager_CreateTask(void)
             Storage.init(storage_module_enable, storage_ExtFlashObj);
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
-            // TaskSample_Init(TaskSample_Period_Def);
+            TaskSample_Init(TaskSample_Period_Def);
             // TaskTelemetry_Init(TaskTelemetry_Period_def);
             // TaskControl_Init(TaskControl_Period_Def);
 #if (SD_CARD_ENABLE_STATE == ON)
@@ -105,8 +105,8 @@ void Task_Manager_CreateTask(void)
             TaskNavi_Init(TaslNavi_Period_Def);
             TaskFrameCTL_Init(TaskFrameCTL_Period_Def);
 
-            // osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
-            // TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
+            osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
+            TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
 
             // osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 4096);
             // TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
