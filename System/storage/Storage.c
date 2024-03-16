@@ -861,7 +861,7 @@ static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behind_free
     return true;
 }
 
-/* developping */
+/* developping & untested */
 static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     Storage_FreeSlot_TypeDef FreeSlot_Info;
@@ -962,6 +962,7 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
     return Storage_Delete_Error;
 }
 
+/* untested */
 static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     uint32_t cur_slot_size = 0;
@@ -1054,7 +1055,7 @@ static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, St
     return false;
 }
 
-/* developping */
+/* developping & untested */
 static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_size, Storage_BaseSecInfo_TypeDef *p_Sec, StorageIO_TypeDef *StorageIO_API)
 {
     Storage_DataSlot_TypeDef data_slot;
@@ -3215,6 +3216,7 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_UpdateData, Storage_UpdateData, Storage update data);
 
+/* untested */
 static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name)
 {
     Shell *shell_obj = Shell_GetInstence();
