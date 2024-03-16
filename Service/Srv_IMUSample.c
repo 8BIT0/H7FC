@@ -540,6 +540,7 @@ static void SrvIMU_PriIMU_CS_Ctl(bool state)
 
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
 {
+    /* at32 spi bus read bug */
     return BspSPI.trans_receive(&PriIMU_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
 }
 
