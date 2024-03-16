@@ -247,7 +247,7 @@ static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransEr
     dma_interrupt_enable(DMA2_CHANNEL7, DMA_FDT_INT, TRUE);
 
     /* dma1 channel1 interrupt nvic init */
-    nvic_priority_group_config(NVIC_PRIORITY_GROUP_0);
+    nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
     nvic_irq_enable(DMA2_Channel7_IRQn, 5, 0);
 
     DataPipe_DMA_Init = true;

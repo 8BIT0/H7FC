@@ -122,7 +122,7 @@ BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg = {
     .Instance = PriIMU_SPI_BUS,
     .CLKPolarity = SPI_CLOCK_POLARITY_HIGH,
     .CLKPhase = SPI_CLOCK_PHASE_2EDGE,
-    .BaudRatePrescaler = SPI_MCLK_DIV_4,
+    .BaudRatePrescaler = SPI_MCLK_DIV_8,
 };
 
 /* external flash chip cs */
