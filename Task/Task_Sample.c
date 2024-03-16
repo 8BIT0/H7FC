@@ -2,7 +2,6 @@
 #include "debug_util.h"
 #include "Srv_OsCommon.h"
 #include "HW_Def.h"
-#include "debug_util.h"
 #include "error_log.h"
 #include "../FCHW_Config.h"
 #include "../System/DataPipe/DataPipe.h"
