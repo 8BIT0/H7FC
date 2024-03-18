@@ -249,6 +249,25 @@
 #define OnChipFlash_Storage_TabSize Flash_Storage_TabSize
 #define OnChipFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
 
+/* external flash */
+#define ExtFlash_Firmware_Addr 0
+#define ExtFlash_Firmware_Size (1 Mb)
+
+#define ExtFlash_Bus_Type Storage_ChipBus_None
+#define ExtFlash_Chip_Type Storage_Chip_None
+#define ExtFlash_Dev_Api NULL
+
+#define ExtFlash_Start_Addr (ExtFlash_Firmware_Addr + ExtFlash_Firmware_Size)
+#define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA
+#define ExtFlash_Storage_TotalSize (0 Kb)
+#define ExtFlash_Storage_TabSize  Flash_Storage_TabSize
+#define ExtFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
+
+/* store boot info boot parameter and firmware */
+#define ExternalFlash_BootDataSec_Size (0 Kb)
+#define ExternalFlash_SysDataSec_Size (0 Kb)
+#define ExternalFlash_UserDataSec_Size (0 Kb)
+
 extern DebugPinObj_TypeDef Debug_PC0;
 extern DebugPinObj_TypeDef Debug_PC1;
 extern DebugPinObj_TypeDef Debug_PC2;

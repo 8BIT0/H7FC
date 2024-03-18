@@ -36,8 +36,8 @@ typedef struct
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
 static uint8_t page_data_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = {0};
-static uint8_t flash_write_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = {0};
-static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = {0};
+static uint8_t flash_write_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
+static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 
 static bool Storage_OnChipFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_OnChipFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
@@ -153,6 +153,7 @@ reformat_internal_flash_info:
 
     /* still in developping */
     /* external flash init */
+#if (FLASH_CHIP_STATE == ON)
     if (enable.bit.external && \
         ExtDev && \
         (ExtDev->chip_type != Storage_Chip_None))
@@ -270,7 +271,10 @@ reformat_external_flash_info:
                 Storage_Monitor.ExternalFlash_Error_Code = Storage_BusCfg_Malloc_Failed;
         }
     }
- 
+#else
+    Storage_Monitor.module_init_reg.bit.external = false;
+#endif
+
     Storage_Monitor.init_state = Storage_Monitor.module_init_reg.bit.external | \
                                  Storage_Monitor.module_init_reg.bit.internal;
 
@@ -1875,12 +1879,17 @@ static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDe
 /************************************************** External Flash IO API Section ************************************************/
 static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state)
 {
+#if (FLASH_CHIP_STATE == ON)
     BspGPIO.write(ExtFlash_CS_Pin, state);
     return true;
+#else
+    return false;
+#endif
 }
 
 static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out)
 {
+#if (FLASH_CHIP_STATE == ON)
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
 
     if (p_data && len && p_cfg && p_cfg->Instance && ExtFlash_Bus_InstObj)
@@ -1888,6 +1897,7 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len
         if (ExtFlash_Bus_Api.trans(&ExtFlash_Bus_InstObj, p_data, len, time_out))
             return len;
     }
+#endif
 
     return 0;
 }
@@ -1896,11 +1906,13 @@ static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len
 {
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
 
+#if (FLASH_CHIP_STATE == ON)
     if (p_data && len && p_cfg && p_cfg->Instance && ExtFlash_Bus_InstObj)
     {
         if (ExtFlash_Bus_Api.receive(&ExtFlash_Bus_InstObj, p_data, len, time_out))
             return len;
     }
+#endif
 
     return 0;
 }
@@ -1909,11 +1921,13 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, 
 {
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
 
+#if (FLASH_CHIP_STATE == ON)
     if (tx && rx && len && p_cfg && p_cfg->Instance && ExtFlash_Bus_InstObj)
     {
         if (ExtFlash_Bus_Api.trans_receive(&ExtFlash_Bus_InstObj, tx, rx, len, time_out))
             return len;
     }
+#endif
 
     return 0;
 }
