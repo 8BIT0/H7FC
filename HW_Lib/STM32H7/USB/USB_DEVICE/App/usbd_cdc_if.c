@@ -350,6 +350,8 @@ void usb_setconnect_callbac(connect_callback callback)
   cdc_connect_callback = callback;
 }
 
+/* implement sof interrupt callback */
+
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**
