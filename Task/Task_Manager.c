@@ -97,7 +97,7 @@ void Task_Manager_CreateTask(void)
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
             TaskSample_Init(TaskSample_Period_Def);
-            // TaskTelemetry_Init(TaskTelemetry_Period_def);
+            TaskTelemetry_Init(TaskTelemetry_Period_def);
             // TaskControl_Init(TaskControl_Period_Def);
 #if (SD_CARD_ENABLE_STATE == ON)
             TaskLog_Init(TaslLog_Period_Def);
@@ -118,8 +118,8 @@ void Task_Manager_CreateTask(void)
             osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
 #endif
-            // osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 1024);
-            // TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
+            osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityNormal, 0, 1024);
+            TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
 
             osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 2048);
             TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);

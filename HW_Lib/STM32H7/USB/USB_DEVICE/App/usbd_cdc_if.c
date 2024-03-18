@@ -110,6 +110,7 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 static rec_callback cdc_rec_callback = NULL;
 static send_callback cdc_send_callback = NULL;
+static connect_callback cdc_connect_callback = NULL;
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 
 /* USER CODE END EXPORTED_VARIABLES */
@@ -342,6 +343,11 @@ void usb_setrec_callback(rec_callback callback)
 void usb_settxcpl_callback(send_callback callback)
 {
   cdc_send_callback = callback;
+}
+
+void usb_setconnect_callbac(connect_callback callback)
+{
+  cdc_connect_callback = callback;
 }
 
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
