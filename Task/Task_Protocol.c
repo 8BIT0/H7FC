@@ -3,6 +3,7 @@
 #include "HW_Def.h"
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
+#include "DataPipe.h"
 
 #define PROTO_STREAM_BUF_SIZE 512
 
@@ -75,6 +76,7 @@ static uint8_t Uart_RxBuf_Tmp[PROTO_STREAM_BUF_SIZE];
 static uint8_t USB_RxBuf_Tmp[PROTO_STREAM_BUF_SIZE];
 static uint32_t Radio_Addr = 0;
 static uint32_t USB_VCP_Addr = 0;
+DataPipe_CreateDataObj(bool, VCP_Attach_State);
 
 static SrvComProto_Stream_TypeDef UartRx_Stream = {
     .p_buf = Uart_RxBuf_Tmp,
@@ -122,9 +124,10 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor);
 static bool TaskFrameCTL_MAV_Msg_Init(void);
 static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size);
 static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint32_t *size);
+static bool TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *time_stamp);
 static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uint16_t index);
 static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t size);
-static void TaskFrameCTL_ConnectStateCheck(void);
+static void TaskFrameCTL_ConfigureStateCheck(void);
 static void TaskFrameCTL_CLI_Proc(void);
 static void TaskFrameCTL_CLI_Trans(uint8_t *p_data, uint16_t size);
 
@@ -151,6 +154,13 @@ void TaskFrameCTL_Init(uint32_t period)
 
     /* Shell Init */
     Shell_Init(TaskFrameCTL_CLI_Trans, CLI_Monitor.p_proc_stream->p_buf, CLI_Monitor.p_proc_stream->max_size);
+
+    memset(&VCP_Connect_smp_DataPipe, 0, sizeof(VCP_Connect_smp_DataPipe));
+    memset(DataPipe_DataObjAddr(VCP_Attach_State), 0, sizeof(DataPipe_DataObj(VCP_Attach_State)));
+
+    VCP_Connect_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(VCP_Attach_State);
+    VCP_Connect_smp_DataPipe.data_size = sizeof(DataPipe_DataObj(VCP_Attach_State));
+    DataPipe_Enable(&VCP_Connect_smp_DataPipe);
 }
 
 void TaskFrameCTL_Core(void *arg)
@@ -165,7 +175,7 @@ void TaskFrameCTL_Core(void *arg)
         /* command line process */
         TaskFrameCTL_CLI_Proc();
 
-        TaskFrameCTL_ConnectStateCheck();
+        TaskFrameCTL_ConfigureStateCheck();
 
         SrvOsCommon.precise_delay(&per_time, FrameCTL_Period);
     }
@@ -198,6 +208,7 @@ static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
 
         BspUSB_VCP.set_tx_cpl_callback(TaskFrameCTL_Port_TxCplt_Callback);
         BspUSB_VCP.set_rx_callback(TaskFrameCTL_Port_Rx_Callback);
+        BspUSB_VCP.set_connect_callback(TaskFrameCTL_USB_VCP_Connect_Callback);
 
         monitor->VCP_Port.RecObj.PortObj_addr = (uint32_t)&(monitor->VCP_Port);
 
@@ -440,7 +451,7 @@ static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t Obj_addr, uint8_t *p_data
 
     if(Obj_addr)
     {
-        p_Obj = Obj_addr;
+        p_Obj = (FrameCTL_PortProtoObj_TypeDef *)Obj_addr;
 
         if(p_Obj->PortObj_addr)
         {
@@ -472,6 +483,28 @@ static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t Obj_addr, uint8_t *p_data
             
             if(semID && p_rls_err_cnt && (osSemaphoreRelease(semID) != osOK))
                 (*p_rls_err_cnt) ++;
+        }
+    }
+}
+
+/************************************** USB Only Callback section ********************************************/
+/*
+ * use usb sof interrupt
+ * as long as usb port attach to computer or other host device
+ * flight controller will receive sof interrupt
+ * if flight controller continue to receive this interrupt it must be attach to computer
+ */
+static bool TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *time_stamp)
+{
+    FrameCTL_PortProtoObj_TypeDef *p_Obj = NULL;
+
+    if (Obj_addr)
+    {
+        p_Obj = (FrameCTL_PortProtoObj_TypeDef *)Obj_addr;
+
+        if (p_Obj->PortObj_addr && (p_Obj->type == Port_USB))
+        {
+            *time_stamp = SrvOsCommon.get_os_ms();
         }
     }
 }
@@ -555,14 +588,14 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
         SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Exp_Attitude, PckInfo, 20);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Exp_Attitude, true);
  
-        // period 100MS 50Hz
+        // period 100MS 10Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Altitude;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Altitude, PckInfo, 20);
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Altitude, PckInfo, 100);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Altitude, true);
 
-        SrvComProto.mav_msg_obj_init(&RadioProto_MAV_Altitude, PckInfo, 20);
+        SrvComProto.mav_msg_obj_init(&RadioProto_MAV_Altitude, PckInfo, 100);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_Altitude, true);
 
         return true;
@@ -598,7 +631,7 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
             /* Proto mavlink message through Radio */
             proto_monitor.port_type = Port_Uart;
             proto_monitor.port_addr = Radio_Addr;
-            // SrvComProto.mav_msg_stream(&RadioProto_MAV_RawIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+            SrvComProto.mav_msg_stream(&RadioProto_MAV_RawIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&RadioProto_MAV_ScaledIMU, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&RadioProto_MAV_Attitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&RadioProto_MAV_RcChannel, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
@@ -608,11 +641,11 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
             ge through default port */
             proto_monitor.port_type = Port_USB;
             proto_monitor.port_addr = USB_VCP_Addr;
-            // SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            // SrvComProto.mav_msg_stream(&TaskProto_MAV_Altitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+            SrvComProto.mav_msg_stream(&TaskProto_MAV_Altitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
             SrvComProto.mav_msg_stream(&TaskProto_MAV_Exp_Attitude, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans); 
         }
         else if(tunning_state && (arm_state == DRONE_ARM))
@@ -622,7 +655,6 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
     }
 }
 
-/* still in developping */
 static void TaskFrameCTL_CLI_Proc(void)
 {
     uint16_t rx_stream_size = 0;
@@ -668,7 +700,7 @@ static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_
     }
 }
 
-static void TaskFrameCTL_ConnectStateCheck(void)
+static void TaskFrameCTL_ConfigureStateCheck(void)
 {
     uint32_t tunning_time_stamp = 0;
     uint32_t configrator_time_stamp = 0;
@@ -676,6 +708,22 @@ static void TaskFrameCTL_ConnectStateCheck(void)
     bool tunning_state = false;
     bool configrator_state = false;
     uint32_t cur_time = SrvOsCommon.get_os_ms();
+    bool lst_vcp_state = false;
+
+    PortMonitor.vcp_connect_state = false;
+
+    /* check usb vcp attach state */
+    if (BspUSB_VCP.check_connect)
+        PortMonitor.vcp_connect_state = BspUSB_VCP.check_connect(cur_time, FrameCTL_Period);
+
+    SrvDataHub.get_vcp_attach_state(&lst_vcp_state);
+
+    /* if vcp connect state is change update vcp state to data hub */
+    if (lst_vcp_state != PortMonitor.vcp_connect_state)
+    {
+        DataPipe_DataObj(VCP_Attach_State) = PortMonitor.vcp_connect_state;
+        DataPipe_SendTo(&VCP_Connect_smp_DataPipe, &VCP_Connect_hub_DataPipe);
+    }
 
     /* check configrator and tunning mode time out */
     SrvDataHub.get_configrator_attach_state(&configrator_time_stamp, &configrator_state);

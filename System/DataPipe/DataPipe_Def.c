@@ -32,5 +32,8 @@ DataPipeObj_TypeDef POS_hub_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Vel_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Vel_hub_DataPipe = {.enable = true};
 
-DataPipeObj_TypeDef Baro_hub_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Baro_smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Baro_hub_DataPipe = {.enable = true};
+
+DataPipeObj_TypeDef VCP_Connect_smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef VCP_Connect_hub_DataPipe = {.enable = true};

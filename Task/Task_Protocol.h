@@ -94,6 +94,7 @@ typedef struct
 typedef struct
 {
     bool init;
+    bool vcp_connect_state;
     uint8_t uart_port_num;
     uint8_t can_port_num;
 

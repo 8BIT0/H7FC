@@ -29,6 +29,7 @@
 
 USB_CDC_Rec_Callback_Func usb_cdc_rec_cb;
 USB_CDC_Trans_Callback_Func usb_cdc_trans_cb;
+USB_CDC_Connect_Callback_Func usb_cdc_cnt_cb;
 
 /** @addtogroup AT32F435_437_middlewares_usbd_class
   * @{
@@ -282,6 +283,9 @@ static usb_sts_type class_sof_handler(void *udev)
   usb_sts_type status = USB_OK;
 
   /* ...user code... */
+  /* usb connect detect */
+  if (usb_cdc_cnt_cb)
+    usb_cdc_cnt_cb();
 
   return status;
 }

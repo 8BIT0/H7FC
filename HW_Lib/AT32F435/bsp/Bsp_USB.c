@@ -29,6 +29,7 @@ static BspUSB_VCP_Obj_TypeDef BspUSB_Monitor = {
     .rx_irq_cnt = 0,
     .tx_fin_callback = NULL,
     .tx_fin_cnt = 0,
+    .connect_time = 0,
 };
 
 /* internal function */
@@ -36,6 +37,7 @@ static bool BspUSB_Clock_Init(void);
 static bool BspUSB_Pin_Init(void);
 static void BspUSB_Rec_Callback(void);
 static void BspUSB_Trans_Callback(void);
+static void BspUSB_Connect_Callback(void);
 
 /* external funtion */
 static BspUSB_Error_List BspUSB_Init(uint32_t cus_data_addr);
@@ -43,6 +45,8 @@ static BspUSB_Error_List BspUSB_DeInit(void);
 static bool BspUSB_Send(uint8_t *p_data, uint16_t size);
 static void BspUSB_Set_Rx_Callback(BspUSB_Rx_Callback_Def callback);
 static void BspUSB_Set_Tx_Callback(BspUSB_Tx_Cplt_Callback_Def callback);
+static void BspUSB_Set_Connect_Callback(BspUSB_Connect_Callback_Def callback);
+static bool BspUSB_CheckConnect(uint32_t sys_tick, uint32_t time_out);
 
 /* external vriable */
 BspUSB_VCP_TypeDef BspUSB_VCP = {
@@ -51,6 +55,8 @@ BspUSB_VCP_TypeDef BspUSB_VCP = {
     .send = BspUSB_Send,
     .set_rx_callback = BspUSB_Set_Rx_Callback,
     .set_tx_cpl_callback = BspUSB_Set_Tx_Callback,
+    .set_connect_callback = BspUSB_Set_Connect_Callback,
+    .check_connect = BspUSB_CheckConnect,
 };
 
 static bool BspUSB_Clock_Init(void)
@@ -170,6 +176,7 @@ static BspUSB_Error_List BspUSB_Init(uint32_t cus_data_addr)
 
     usb_cdc_rec_cb = BspUSB_Rec_Callback;
     usb_cdc_trans_cb = BspUSB_Trans_Callback;
+    usb_cdc_cnt_cb = BspUSB_Connect_Callback;
 
     memset(USB_Rx_Buff, 0, USB_RX_BUFF_SIZE);
 
@@ -202,6 +209,16 @@ static bool BspUSB_Send(uint8_t *p_data, uint16_t size)
     return false;
 }
 
+static bool BspUSB_CheckConnect(uint32_t sys_tick, uint32_t time_out)
+{
+    if (sys_tick && \
+        BspUSB_Monitor.connect_time && \
+        (sys_tick - BspUSB_Monitor.connect_time < time_out))
+        return true;
+
+    return false;
+}
+
 void BspUSB_Irq_Callback(void)
 {
     usbd_irq_handler(&otg_core_struct);
@@ -215,6 +232,11 @@ static void BspUSB_Set_Rx_Callback(BspUSB_Rx_Callback_Def callback)
 static void BspUSB_Set_Tx_Callback(BspUSB_Tx_Cplt_Callback_Def callback)
 {
     BspUSB_Monitor.tx_fin_callback = callback;
+}
+
+static void BspUSB_Set_Connect_Callback(BspUSB_Connect_Callback_Def callback)
+{
+    BspUSB_Monitor.connect_callback = callback;
 }
 
 static void BspUSB_Rec_Callback(void)
@@ -241,4 +263,13 @@ static void BspUSB_Trans_Callback(void)
     BspUSB_Monitor.tx_fin_cnt ++;
     if (BspUSB_Monitor.tx_fin_callback)
         BspUSB_Monitor.tx_fin_callback(BspUSB_Monitor.cus_data_addr, NULL, NULL);
+}
+
+static void BspUSB_Connect_Callback(void)
+{
+    if (BspUSB_Monitor.init_state != BspUSB_Error_None)
+        return;
+
+    if (BspUSB_Monitor.connect_callback)
+        BspUSB_Monitor.connect_callback(BspUSB_Monitor.cus_data_addr, &BspUSB_Monitor.connect_time);
 }

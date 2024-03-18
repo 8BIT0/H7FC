@@ -169,7 +169,10 @@
                 "kernel_at32xxx.h": "c",
                 "at32f435_437_int.h": "c",
                 "at32f435_437.h": "c",
-                "system_at32f435_437.h": "c"
+                "system_at32f435_437.h": "c",
+                "cdc_desc.h": "c",
+                "usbd_core.h": "c",
+                "cdc_class.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

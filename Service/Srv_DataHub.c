@@ -20,6 +20,7 @@ DataPipe_CreateDataObj(SrvBaroData_TypeDef, Hub_Baro_Data);
 DataPipe_CreateDataObj(PosData_TypeDef, Hub_Pos);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_PriIMU_Range);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_SecIMU_Range);
+DataPipe_CreateDataObj(bool, Hub_VCP_Attach_State);
 
 /* internal function */
 static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
@@ -31,6 +32,7 @@ static void SrvDataHub_Attitude_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
 static void SrvDataHub_Baro_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_Pos_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
+static void SrvDataHub_VCPAttach_dataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 
 /* external function */
 static void SrvDataHub_Init(void);
@@ -51,6 +53,7 @@ static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_pressur
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over);
 static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
 static bool SrvDataHub_Get_ConfigratorAttachState(uint32_t *time_stamp, bool *state);
+static bool SrvDataHub_Get_VCPAttach_State(bool *state);
 static bool SrvDataHub_Get_CLI_State(bool *state);
 static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
@@ -81,6 +84,7 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
     .get_tunning_state = SrvDataHub_Get_TunningState,
     .get_configrator_attach_state = SrvDataHub_Get_ConfigratorAttachState,
+    .get_vcp_attach_state = SrvDataHub_Get_VCPAttach_State,
     .get_cli_state = SrvDataHub_Get_CLI_State,
 
     .set_cli_state = SrvDataHub_Set_CLI_State,
@@ -163,9 +167,30 @@ static void SrvDataHub_Init(void)
     POS_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_Pos_DataPipe_Finish_Callback);
     DataPipe_Enable(&POS_hub_DataPipe);
 
+    memset(DataPipe_DataObjAddr(Hub_VCP_Attach_State), 0, DataPipe_DataSize(Hub_VCP_Attach_State));
+    VCP_Connect_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_VCP_Attach_State);
+    VCP_Connect_hub_DataPipe.data_size = DataPipe_DataSize(Hub_VCP_Attach_State);
+    VCP_Connect_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_VCPAttach_dataPipe_Finish_Callback);
+    DataPipe_Enable(&VCP_Connect_hub_DataPipe);
+    
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
     SrvDataHub_Monitor.init_state = true;
     SrvDataHub_Monitor.data.InUse_Control_Data.arm_state = DRONE_ARM;
+}
+
+static void SrvDataHub_VCPAttach_dataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
+{
+    if (obj == &VCP_Connect_hub_DataPipe)
+    {
+        SrvDataHub_Monitor.update_reg.bit.USB_VCP_attach = true;
+
+        if (SrvDataHub_Monitor.inuse_reg.bit.USB_VCP_attach)
+            SrvDataHub_Monitor.inuse_reg.bit.USB_VCP_attach = false;
+
+        SrvDataHub_Monitor.data.VCP_Attach = DataPipe_DataObj(Hub_VCP_Attach_State);
+
+        SrvDataHub_Monitor.update_reg.bit.USB_VCP_attach = false;
+    }
 }
 
 static void SrvDataHub_Pos_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
@@ -898,6 +923,24 @@ reupdate_cli_state:
 
         if(!SrvDataHub_Monitor.inuse_reg.bit.cli)
             goto reupdate_cli_state;
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool SrvDataHub_Get_VCPAttach_State(bool *state)
+{
+    if(state)
+    {
+reupdate_vcp_attach_state:
+        SrvDataHub_Monitor.inuse_reg.bit.USB_VCP_attach = true;
+
+        (*state) = SrvDataHub_Monitor.data.VCP_Attach;
+
+        if(!SrvDataHub_Monitor.inuse_reg.bit.USB_VCP_attach)
+            goto reupdate_vcp_attach_state;
 
         return true;
     }

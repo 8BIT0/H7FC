@@ -37,9 +37,11 @@ extern "C" {
 
 typedef void (*USB_CDC_Rec_Callback_Func)(void);
 typedef void (*USB_CDC_Trans_Callback_Func)(void);
+typedef void (*USB_CDC_Connect_Callback_Func)(void);
 
 extern USB_CDC_Rec_Callback_Func usb_cdc_rec_cb;
 extern USB_CDC_Trans_Callback_Func usb_cdc_trans_cb;
+extern USB_CDC_Connect_Callback_Func usb_cdc_cnt_cb;
 
 /** @addtogroup AT32F435_437_middlewares_usbd_class
   * @{

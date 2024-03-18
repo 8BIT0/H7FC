@@ -21,44 +21,45 @@ typedef union
 {
     struct
     {
-        uint64_t raw_imu : 1;
-        uint64_t scaled_imu : 1;
-        uint64_t range_imu : 1;
+        uint64_t raw_imu : 1;               // bit : 1
+        uint64_t scaled_imu : 1;            // bit : 2
+        uint64_t range_imu : 1;             // bit : 3
+        
+        uint64_t raw_mag : 1;               // bit : 4
+        uint64_t scaled_mag : 1;            // bit : 5
+        uint64_t range_mag : 1;             // bit : 6
+        
+        uint64_t scaled_baro : 1;           // bit : 7
+        uint64_t range_baro : 1;            // bit : 8
+        
+        uint64_t raw_sonar : 1;             // bit : 9
+        uint64_t scaled_sonar : 1;          // bit : 10
+        uint64_t range_sonar : 1;           // bit : 11
+        
+        uint64_t raw_tof : 1;               // bit : 12
+        uint64_t scaled_tof : 1;            // bit : 13
+        uint64_t range_tof : 1;             // bit : 14
+        
+        uint64_t raw_flow : 1;              // bit : 15
+        uint64_t scale_flow : 1;            // bit : 16
+        uint64_t range_flow : 1;            // bit : 17
+        
+        uint64_t inuse_control_data : 1;    // bit : 18
+        uint64_t rc_control_data : 1;       // bit : 19
+        uint64_t opc_control_data : 1;      // bit : 20
+        
+        uint64_t actuator : 1;              // bit : 21
+        uint64_t attitude : 1;              // bit : 22
+        
+        uint64_t mag_init : 1;              // bit : 23
+        uint64_t imu_init : 1;              // bit : 24
+        uint64_t baro_init : 1;             // bit : 25
+        
+        uint64_t tunning : 1;               // bit : 26
+        uint64_t configrator_attach : 1;    // bit : 27
+        uint64_t USB_VCP_attach : 1;        // bit : 28
 
-        uint64_t raw_mag : 1;
-        uint64_t scaled_mag : 1;
-        uint64_t range_mag : 1;
-
-        uint64_t scaled_baro : 1;
-        uint64_t range_baro : 1;
-
-        uint64_t raw_sonar : 1;
-        uint64_t scaled_sonar : 1;
-        uint64_t range_sonar : 1;
-
-        uint64_t raw_tof : 1;
-        uint64_t scaled_tof : 1;
-        uint64_t range_tof : 1;
-
-        uint64_t raw_flow : 1;
-        uint64_t scale_flow : 1;
-        uint64_t range_flow : 1; 
-
-        uint64_t inuse_control_data : 1;
-        uint64_t rc_control_data : 1;
-        uint64_t opc_control_data : 1;
-
-        uint64_t actuator : 1;
-        uint64_t attitude : 1;
-
-        uint64_t mag_init : 1;
-        uint64_t imu_init : 1;
-        uint64_t baro_init : 1;
-
-        uint64_t tunning : 1;
-        uint64_t configrator_attach : 1;
-
-        uint64_t cli : 1;
+        uint64_t cli : 1;                   // bit : 29
     } bit;
 
     uint64_t val;
@@ -205,6 +206,7 @@ typedef struct
     uint32_t tunning_port_addr;
 
     bool CLI_state;
+    bool VCP_Attach;
 
     /* signal info */
     uint8_t flight_sig_src;
@@ -233,11 +235,13 @@ typedef struct
     void (*init)(void);
     bool (*set_tunning_state)(uint32_t time_stamp, bool state, uint32_t port_addr);    /* set tunning status in can/uart/usb irq */
     bool (*set_configrator_state)(uint32_t time_stamp, bool state);
+    bool (*set_vcp_attach_state)(bool state);
     bool (*set_cli_state)(bool state);
 
     bool (*get_cli_state)(bool *state);
     bool (*get_tunning_state)(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
     bool (*get_configrator_attach_state)(uint32_t *time_stamp, bool *state);
+    bool (*get_vcp_attach_state)(bool *state);
     bool (*get_imu_init_state)(bool *state);
     bool (*get_pri_imu_range)(uint8_t *acc_range, uint16_t *gyr_range);
     bool (*get_sec_imu_range)(uint8_t *acc_range, uint16_t *gye_range);
