@@ -245,7 +245,7 @@ static void BspUSB_VCP_SendData_CPLT_Callback(uint8_t *p_data, uint32_t *size)
  */
 static void BspUSB_VCP_Connect_Callback(void)
 {
-    if (BspUSB_Monitor.init_state != BspUSB_Error_None)
+    if (BspUSB_VCPMonitor.init_state != BspUSB_Error_None)
         return;
 
     if (BspUSB_VCPMonitor.connect_callback)
