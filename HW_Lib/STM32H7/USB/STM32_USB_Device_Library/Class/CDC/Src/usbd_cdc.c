@@ -105,6 +105,7 @@ static uint8_t USBD_CDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *re
 static uint8_t USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum);
 static uint8_t USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum);
 static uint8_t USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev);
+static uint8_t USBD_CDC_SOF(USBD_HandleTypeDef *pdev);
 
 static uint8_t *USBD_CDC_GetFSCfgDesc(uint16_t *length);
 static uint8_t *USBD_CDC_GetHSCfgDesc(uint16_t *length);
@@ -146,7 +147,7 @@ USBD_ClassTypeDef  USBD_CDC =
   USBD_CDC_EP0_RxReady,
   USBD_CDC_DataIn,
   USBD_CDC_DataOut,
-  NULL,
+  USBD_CDC_SOF,
   NULL,
   NULL,
   USBD_CDC_GetHSCfgDesc,
@@ -725,6 +726,12 @@ static uint8_t USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
   ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->Receive(hcdc->RxBuffer, &hcdc->RxLength);
 
   return (uint8_t)USBD_OK;
+}
+
+static uint8_t USBD_CDC_SOF(USBD_HandleTypeDef *pdev)
+{
+  if (((USBD_CDC_ItfTypeDef *)pdev->pUserData)->sof)
+    ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->sof();
 }
 
 /**

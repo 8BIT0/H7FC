@@ -19,6 +19,7 @@ static BspUSB_VCP_Obj_TypeDef BspUSB_VCPMonitor = {
 /* internal function */
 static void BspUSB_VCP_RecData_Callback(uint8_t *p_data, uint16_t len);
 static void BspUSB_VCP_SendData_CPLT_Callback(uint8_t *p_data, uint32_t *size);
+static void BspUSB_VCP_Connect_Callback(void);
 
 /* external function */
 static BspUSB_Error_List BspUSB_VCP_Init(uint32_t cus_data_addr);
@@ -71,6 +72,7 @@ static BspUSB_Error_List BspUSB_VCP_Init(uint32_t cus_data_addr)
         /* set callback */
         usb_setrec_callback(BspUSB_VCP_RecData_Callback);
         usb_settxcpl_callback(BspUSB_VCP_SendData_CPLT_Callback);
+        usb_setconnect_callbac(BspUSB_VCP_Connect_Callback);
         
         memset(BspUSB_VCPMonitor.single_tx_buffer, 0, USB_VCP_MAX_TX_SIZE);
         BspUSB_VCPMonitor.init_state = BspUSB_Error_None;
