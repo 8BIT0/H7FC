@@ -483,3 +483,8 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
     }
 }
 
+static void BspTimer_DMA_TransCplt_Callback()
+{
+    
+}
+
