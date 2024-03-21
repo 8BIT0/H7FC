@@ -151,7 +151,7 @@ static tmr_dma_request_type BspTimer_Get_DMA_RequestType(BspTimerPWMObj_TypeDef 
     return 0;
 }
 
-static dmamux_requst_id_sel_type BspTimer_Get_DMA_RequestID(BspTimerPWMObj_TypeDef *obj)
+static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj)
     {
@@ -332,7 +332,7 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         return false;
 
     p_dma_channel = BspDMA.get_channel_instance(obj->dma, obj->stream);
-    dma_req_id = BspTimer_Get_DMA_RequestID(obj);
+    dma_req_id = BspTimer_Get_DMA_MuxSeq(obj);
     req_type = BspTimer_Get_DMA_RequestType(obj);
 
     if (p_dma_channel && dma_req_id && req_type)
@@ -423,6 +423,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 
     if (obj->dma_hdl && BspTimer_DMA_Init(obj))
     {
+        BspDMA.enable_irq(dma, stream, 5, 0, BspTimer_Get_DMA_MuxSeq(obj), NULL);
         monitor.list[monitor.init_cnt] = obj->instance;
         monitor.init_cnt ++;
 
@@ -475,6 +476,8 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj && obj->instance && obj->dma_hdl)
+    {
         dma_channel_enable(obj->dma_hdl, TRUE);
+    }
 }
 
