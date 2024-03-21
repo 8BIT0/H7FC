@@ -567,3 +567,11 @@ void DShot_Port_Trans(void *obj)
         BspTimer_PWM.dma_trans(&To_DShot_Obj(obj)->pwm_obj);
 }
 
+uint32_t DShot_Get_Timer_CLKFreq(void *obj)
+{
+    return BspTimer_PWM.get_clock_freq(obj);
+}
+
+
+
+

@@ -142,6 +142,8 @@ static crm_periph_clock_type BspGPIO_Get_CLK(gpio_type *port)
 
     if(port == GPIOH)
         return CRM_GPIOH_PERIPH_CLOCK;
+
+    return 0;
 }
 
 static bool BspGPIO_Out_Init(BspGPIO_Obj_TypeDef IO_Obj)

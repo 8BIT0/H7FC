@@ -5,6 +5,7 @@ __attribute__((weak)) void *DShot_Malloc(uint32_t size){return NULL;}
 __attribute__((weak)) void DShot_Free(void *ptr){return;}
 __attribute__((weak)) bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t time_ch, void *pin, uint8_t dma, uint8_t stream){return false;}
 __attribute__((weak)) void DShot_Port_Trans(void *obj){return;}
+__attribute__((weak)) uint32_t DShot_Get_Timer_CLKFreq(void *obj){return 0;}
 
 /* external function */
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, uint8_t dma, uint8_t stream);
@@ -42,10 +43,13 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
                           uint8_t dma,
                           uint8_t stream)
 {
-    uint32_t prescaler = lrintf((float)DSHOT_TIMER_CLK_HZ / DevDshot_GetType_Clock(obj->type) + 0.01f) - 1;
+    float DShot_Timer_ClkFreq = (float)DShot_Get_Timer_CLKFreq(obj);
+    uint32_t prescaler = 0;
 
-    if (!obj)
+    if (!obj || (DShot_Timer_ClkFreq == 0))
         return false;
+
+    prescaler = lrintf(DShot_Timer_ClkFreq / DevDshot_GetType_Clock(obj->type) + 0.01f) - 1;
 
 #if defined STM32H743xx
     obj->pwm_obj.tim_hdl = DShot_Malloc(TIM_HandleType_Size);

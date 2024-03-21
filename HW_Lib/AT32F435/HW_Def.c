@@ -148,3 +148,32 @@ BspSPI_PinConfig_TypeDef ExtFlash_SPIPin = {
 
     .pin_Alternate = GPIO_MUX_5,
 };
+
+BspGPIO_Port_TypeDef PWM_1_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Port_TypeDef PWM_2_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Port_TypeDef PWM_3_Port = {
+    .port = GPIOA,
+};
+
+BspGPIO_Port_TypeDef PWM_4_Port = {
+    .port = GPIOA,
+};
+
+BspGPIO_Port_TypeDef PWM_5_Port = {
+    .port = GPIOC,
+};
+
+BspGPIO_Port_TypeDef PWM_6_Port = {
+    .port = GPIOA,
+};
+
+
+
+
+

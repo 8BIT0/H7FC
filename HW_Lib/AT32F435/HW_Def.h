@@ -52,7 +52,7 @@
 /* PWM IO */
 #define PWM_SIG_1_TIM TMR3
 #define PWM_SIG_1_TIM_CHANNEL TMR_SELECT_CHANNEL_3
-#define PWM_SIG_1_PORT GPIOB
+#define PWM_SIG_1_PORT &PWM_1_Port
 #define PWM_SIG_1_PIN GPIO_PINS_0
 #define PWM_SIG_1_DMA Bsp_DMA_1
 #define PWM_SIG_1_DMA_CHANNEL Bsp_DMA_Stream_1
@@ -60,7 +60,7 @@
 
 #define PWM_SIG_2_TIM TMR3
 #define PWM_SIG_2_TIM_CHANNEL TMR_SELECT_CHANNEL_4
-#define PWM_SIG_2_PORT GPIOB
+#define PWM_SIG_2_PORT &PWM_2_Port
 #define PWM_SIG_2_PIN GPIO_PINS_1
 #define PWM_SIG_2_DMA Bsp_DMA_1
 #define PWM_SIG_2_DMA_CHANNEL Bsp_DMA_Stream_2
@@ -68,7 +68,7 @@
 
 #define PWM_SIG_3_TIM TMR2
 #define PWM_SIG_3_TIM_CHANNEL TMR_SELECT_CHANNEL_4
-#define PWM_SIG_3_PORT GPIOA
+#define PWM_SIG_3_PORT &PWM_3_Port
 #define PWM_SIG_3_PIN GPIO_PINS_3
 #define PWM_SIG_3_DMA Bsp_DMA_1
 #define PWM_SIG_3_DMA_CHANNEL Bsp_DMA_Stream_3
@@ -76,7 +76,7 @@
 
 #define PWM_SIG_4_TIM TMR2
 #define PWM_SIG_4_TIM_CHANNEL TMR_SELECT_CHANNEL_3
-#define PWM_SIG_4_PORT GPIOA
+#define PWM_SIG_4_PORT &PWM_4_Port
 #define PWM_SIG_4_PIN GPIO_PINS_2
 #define PWM_SIG_4_DMA Bsp_DMA_1
 #define PWM_SIG_4_DMA_CHANNEL Bsp_DMA_Stream_4
@@ -84,7 +84,7 @@
 
 #define PWM_SIG_5_TIM TMR8
 #define PWM_SIG_5_TIM_CHANNEL TMR_SELECT_CHANNEL_3
-#define PWM_SIG_5_PORT GPIOC
+#define PWM_SIG_5_PORT &PWM_5_Port
 #define PWM_SIG_5_PIN GPIO_PINS_8
 #define PWM_SIG_5_DMA Bsp_DMA_2
 #define PWM_SIG_5_DMA_CHANNEL Bsp_DMA_Stream_1
@@ -92,19 +92,20 @@
 
 #define PWM_SIG_6_TIM TMR1
 #define PWM_SIG_6_TIM_CHANNEL TMR_SELECT_CHANNEL_1
-#define PWM_SIG_6_PORT GPIOA
+#define PWM_SIG_6_PORT &PWM_6_Port
 #define PWM_SIG_6_PIN GPIO_PINS_8
 #define PWM_SIG_6_DMA Bsp_DMA_2
 #define PWM_SIG_6_DMA_CHANNEL Bsp_DMA_Stream_2
 #define PWM_SIG_6_PIN_AF GPIO_MUX_1
 
-#define PWM_SIG_7_TIM TMR4
-#define PWM_SIG_7_TIM_CHANNEL TMR_SELECT_CHANNEL_1
-#define PWM_SIG_7_PORT GPIOB
-#define PWM_SIG_7_PIN GPIO_PINS_6
-#define PWM_SIG_7_DMA Bsp_DMA_None
-#define PWM_SIG_7_DMA_CHANNEL Bsp_DMA_Stream_None
-#define PWM_SIG_7_PIN_AF GPIO_MUX_2
+/* led strip */
+// #define PWM_SIG_7_TIM TMR4
+// #define PWM_SIG_7_TIM_CHANNEL TMR_SELECT_CHANNEL_1
+// #define PWM_SIG_7_PORT GPIOB
+// #define PWM_SIG_7_PIN GPIO_PINS_6
+// #define PWM_SIG_7_DMA Bsp_DMA_None
+// #define PWM_SIG_7_DMA_CHANNEL Bsp_DMA_Stream_None
+// #define PWM_SIG_7_PIN_AF GPIO_MUX_2
 
 /* internal flash storage */
 #define OnChipFlash_Storage_StartAddress FLASH_BLOCK_7_START_ADDR
@@ -175,5 +176,12 @@ extern BspGPIO_Obj_TypeDef PriIMU_INTPin;
 extern DevLedObj_TypeDef Led1;
 extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
+
+extern BspGPIO_Port_TypeDef PWM_1_Port;
+extern BspGPIO_Port_TypeDef PWM_2_Port;
+extern BspGPIO_Port_TypeDef PWM_3_Port;
+extern BspGPIO_Port_TypeDef PWM_4_Port;
+extern BspGPIO_Port_TypeDef PWM_5_Port;
+extern BspGPIO_Port_TypeDef PWM_6_Port;
 
 #endif

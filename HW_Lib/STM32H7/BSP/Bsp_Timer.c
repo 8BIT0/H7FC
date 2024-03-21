@@ -34,6 +34,7 @@ static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
 static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload);
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj);
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj);
+static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj);
 
 BspTimerPWM_TypeDef BspTimer_PWM = {
     .init = BspTimer_PWM_Init,
@@ -41,6 +42,7 @@ BspTimerPWM_TypeDef BspTimer_PWM = {
     .set_autoreload = BspTimer_SetAutoReload,
     .start_pwm = BspTimer_PWM_Start,
     .dma_trans = BspTimer_DMA_Start,
+    .get_clock_freq = BspTimer_Get_Clock_Freq,
 };
 
 /***************************************************************** General Function ***********************************************************************/
@@ -75,6 +77,14 @@ TIM_HandleTypeDef* BspTimer_Get_Tick_HandlePtr(BspTimer_Instance_List index)
         default:
             return NULL;
     }
+}
+
+static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj)
+{
+    UNUSED(obj);
+
+    /* currently set as const */
+    return (160 * 1000000);
 }
 
 static void BspTimer_Fill_TickObj_ToList(BspTimerTickObj_TypeDef *obj)
