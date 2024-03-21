@@ -122,6 +122,9 @@ static bool BspTimer_Clock_Enable(void *instance)
 
 static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
 {
+    dma_init_type dma_init_struct;
+    dma_channel_type *p_dma_channel = NULL;
+
     if ((obj == NULL) || \
         (obj->instance == NULL) || \
         (obj->dma_hdl == NULL) || \
@@ -129,22 +132,27 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         (obj->buffer_size == 0))
         return false;
 
-    /* enable tmr1 overflow dma request */
-    tmr_dma_request_enable(obj->instance, TMR_OVERFLOW_DMA_REQUEST, TRUE);
-    tmr_dma_control_config(obj->instance, , TMR_PR_ADDRESS);
+    p_dma_channel = BspDMA.get_channel_index(obj->dma, obj->stream);
+    
+    if (p_dma_channel)
+    {
+        /* enable tmr1 overflow dma request */
+        tmr_dma_request_enable(obj->instance, TMR_OVERFLOW_DMA_REQUEST, TRUE);
+        tmr_dma_control_config(obj->instance, TMR_DMA_TRANSFER_18BYTES, TMR_PR_ADDRESS);
 
-    dma_reset(DMA1_CHANNEL1);
-    dma_init_struct.buffer_size = 3;
-    dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
-    dma_init_struct.memory_base_addr = (uint32_t)src_buffer;
-    dma_init_struct.memory_data_width = DMA_MEMORY_DATA_WIDTH_HALFWORD;
-    dma_init_struct.memory_inc_enable = TRUE;
-    dma_init_struct.peripheral_base_addr = (uint32_t)0x4001004C;
-    dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
-    dma_init_struct.peripheral_inc_enable = FALSE;
-    dma_init_struct.priority = DMA_PRIORITY_MEDIUM;
-    dma_init_struct.loop_mode_enable = FALSE;
-    dma_init(DMA1_CHANNEL1, &dma_init_struct);
+        dma_reset(p_dma_channel);
+        dma_init_struct.buffer_size = obj->buffer_size;
+        dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
+        dma_init_struct.memory_base_addr = (uint32_t)obj->buffer_addr;
+        dma_init_struct.memory_data_width = DMA_MEMORY_DATA_WIDTH_BYTE;
+        dma_init_struct.memory_inc_enable = TRUE;
+        dma_init_struct.peripheral_base_addr = (uint32_t)To_Timer_Instance(obj->instance)->dmadt;
+        dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_BYTE;
+        dma_init_struct.peripheral_inc_enable = FALSE;
+        dma_init_struct.priority = DMA_PRIORITY_VERY_HIGH;
+        dma_init_struct.loop_mode_enable = FALSE;
+        dma_init(p_dma_channel, &dma_init_struct);
+    }
 }
 
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
@@ -199,7 +207,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_output_struct.occ_idle_state = FALSE;
 
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
-    tmr_channel_value_set(obj->instance, obj->tim_channel, );
+    // tmr_channel_value_set(obj->instance, obj->tim_channel, );
 
     if (obj->dma_hdl)
     {

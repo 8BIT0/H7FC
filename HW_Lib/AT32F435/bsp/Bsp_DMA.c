@@ -34,6 +34,7 @@ static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
 static void *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream);
 static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream);
 static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq, void *cb);
+static void* BspDMA_Get_Channel_Index(int8_t dma, int8_t stream);
 
 /* pipe external function */
 static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb);
@@ -46,6 +47,7 @@ BspDMA_TypeDef BspDMA = {
     .get_handle = BspDMA_Get_Handle,
     .get_instance = BspDMA_Get_Instance,
     .enable_irq = BspDMA_EnableIRQ,
+    .get_channel_index = BspDMA_Get_Channel_Index,
 };
 
 BspDMA_Pipe_TypeDef BspDMA_Pipe = {
@@ -69,6 +71,74 @@ static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream)
     UNUSED(stream);
     
     return true;
+}
+
+static void* BspDMA_Get_Channel_Index(int8_t dma, int8_t stream)
+{
+    if ((dma != Bsp_DMA_None) && \
+        (dma != Bsp_DMA_Sum) && \
+        (stream != Bsp_DMA_Stream_None) && \
+        (stream != Bsp_DMA_Stream_Sum))
+        return 0;
+    
+    if (dma == Bsp_DMA_1)
+    {
+        switch (stream)
+        {
+            case Bsp_DMA_Stream_1:
+                return DMA1_CHANNEL1;
+
+            case Bsp_DMA_Stream_2:
+                return DMA1_CHANNEL2;
+            
+            case Bsp_DMA_Stream_3:
+                return DMA1_CHANNEL3;
+
+            case Bsp_DMA_Stream_4:
+                return DMA1_CHANNEL4;
+
+            case Bsp_DMA_Stream_5:
+                return DMA1_CHANNEL5;
+
+            case Bsp_DMA_Stream_6:
+                return DMA1_CHANNEL6;
+
+            case Bsp_DMA_Stream_7:
+                return DMA1_CHANNEL7;
+
+            default:
+                return 0;
+        }
+    }
+    else if (dma == Bsp_DMA_2)
+    {
+        switch (stream)
+        {
+            case Bsp_DMA_Stream_1:
+                return DMA2_CHANNEL1;
+
+            case Bsp_DMA_Stream_2:
+                return DMA2_CHANNEL2;
+            
+            case Bsp_DMA_Stream_3:
+                return DMA2_CHANNEL3;
+
+            case Bsp_DMA_Stream_4:
+                return DMA2_CHANNEL4;
+
+            case Bsp_DMA_Stream_5:
+                return DMA2_CHANNEL5;
+
+            case Bsp_DMA_Stream_6:
+                return DMA2_CHANNEL6;
+
+            case Bsp_DMA_Stream_7:
+            default:
+                return 0;
+        }
+    }
+
+    return 0;
 }
 
 static void *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream)

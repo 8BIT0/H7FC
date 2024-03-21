@@ -172,7 +172,8 @@
                 "system_at32f435_437.h": "c",
                 "cdc_desc.h": "c",
                 "usbd_core.h": "c",
-                "cdc_class.h": "c"
+                "cdc_class.h": "c",
+                "at32f435_437_dma.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

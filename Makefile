@@ -18,8 +18,8 @@ TARGET = H7FC
 HW_MATEK_STM32H743 := 1
 HW_BATEAIO_AT32F435 := 2
 
-BUILD_TYPE := $(HW_MATEK_STM32H743)
-# BUILD_TYPE := $(HW_BATEAIO_AT32F435)
+# BUILD_TYPE := $(HW_MATEK_STM32H743)
+BUILD_TYPE := $(HW_BATEAIO_AT32F435)
 
 ######################################
 # building variables
@@ -338,7 +338,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,--print-memory-usage -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
