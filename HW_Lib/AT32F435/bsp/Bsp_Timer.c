@@ -425,6 +425,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     {
         BspDMA.regist(dma, stream, obj->dma_hdl);
         BspDMA.enable_irq(dma, stream, 5, 0, BspTimer_Get_DMA_MuxSeq(obj), NULL);
+
         monitor.list[monitor.init_cnt] = obj->instance;
         monitor.init_cnt ++;
 
