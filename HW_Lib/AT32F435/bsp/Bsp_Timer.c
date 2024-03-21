@@ -124,7 +124,7 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_Request(BspTimerPWMObj_TypeDef
 {
     if (obj)
     {
-        
+
     }
 
     return 0;   
