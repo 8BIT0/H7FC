@@ -100,6 +100,7 @@
         }                           \
     }
 
+#if defined MATEKH743_V1_5
 #define SRVACTUATOR_PD12_SIG_7      \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
@@ -115,7 +116,6 @@
         }                           \
     }
 
-#if defined MATEKH743_V1_5
 #define SRVACTUATOR_PD13_SIG_8      \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
@@ -234,12 +234,12 @@ typedef enum
 {
     Model_Quad = 0,
     Model_Hex,
-#if defined MATEKH743_V1_5
-    Model_Oct,
-    Model_X8,
     Model_Y6,
     Model_Tri,
     Model_TDrone,
+#if defined MATEKH743_V1_5
+    Model_Oct,
+    Model_X8,
 #endif
 } SrvActuator_Model_List;
 
@@ -251,8 +251,8 @@ typedef enum
     Actuator_PWM_Sig4,
     Actuator_PWM_Sig5,
     Actuator_PWM_Sig6,
-    Actuator_PWM_Sig7,
 #if defined MATEKH743_V1_5
+    Actuator_PWM_Sig7,
     Actuator_PWM_Sig8,
     Actuator_PWM_Sig9,
     Actuator_PWM_Sig10,

@@ -12,6 +12,15 @@
  * S10  PD15    TIM4    CH4 NO DMA
  * S11  PE5     TIM15   CH1
  * S12  PE6     TIM15   CH2
+ * 
+ * For AT32 AIO Flight Controller Hardware
+ * S1   PB0     TIM3    CH3 Channel_63
+ * S2   PB1     TIM3    CH4 Channel_64
+ * S3   PA3     TIM2    CH4 Channel_59
+ * S4   PA2     TIM2    CH3 Channel_58
+ * S5   PC8     TIM8    CH3 Channel_51
+ * S6   PA8     TIM1    CH1 Channel_42
+ * 
  */
 #include "Srv_Actuator.h"
 #include "Srv_DataHub.h"
@@ -23,10 +32,10 @@ const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM]
     SRVACTUATOR_PB1_SIG_2,
     SRVACTUATOR_PA0_SIG_3,
     SRVACTUATOR_PA1_SIG_4,
-
-#if defined MATEKH743_V1_5
     SRVACTUATOR_PA2_SIG_5,
     SRVACTUATOR_PA3_SIG_6,
+
+#if defined MATEKH743_V1_5
     SRVACTUATOR_PD12_SIG_7,
     SRVACTUATOR_PD13_SIG_8,
     SRVACTUATOR_PD14_SIG_9,
@@ -41,10 +50,10 @@ const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
     Actuator_PWM_Sig2,
     Actuator_PWM_Sig3,
     Actuator_PWM_Sig4,
-
-#if defined MATEKH743_V1_5
     Actuator_PWM_Sig5,
     Actuator_PWM_Sig6,
+
+#if defined MATEKH743_V1_5
     Actuator_PWM_Sig7,
     Actuator_PWM_Sig8,
     Actuator_PWM_Sig9,
@@ -99,18 +108,9 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     case Model_Quad:
         SrvActuator_Obj.drive_module.num = QUAD_CONTROL_COMPONENT;
         break;
-
-#if defined MATEKH743_V1_5
+    
     case Model_Hex:
         SrvActuator_Obj.drive_module.num = HEX_CONTROL_COMPONENT;
-        break;
-
-    case Model_Oct:
-        SrvActuator_Obj.drive_module.num = OCT_CONTROL_COMPONENT;
-        break;
-
-    case Model_X8:
-        SrvActuator_Obj.drive_module.num = X8_CONTROL_COMPONENT;
         break;
 
     case Model_Y6:
@@ -120,9 +120,18 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     case Model_Tri:
         SrvActuator_Obj.drive_module.num = TRI_CONTROL_COMPONENT;
         break;
-
+        
     case Model_TDrone:
         SrvActuator_Obj.drive_module.num = TDRONE_CONTROL_COMPONENT;
+        break;
+#if defined MATEKH743_V1_5
+
+    case Model_Oct:
+        SrvActuator_Obj.drive_module.num = OCT_CONTROL_COMPONENT;
+        break;
+
+    case Model_X8:
+        SrvActuator_Obj.drive_module.num = X8_CONTROL_COMPONENT;
         break;
 #endif
 
@@ -227,7 +236,7 @@ static void SrcActuator_Get_ChannelRemap(void)
             periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 
             DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj,
-                          periph_ptr->tim_base, periph_ptr->tim_channel, periph_ptr->pin,
+                          periph_ptr->tim_base, periph_ptr->tim_channel, (void *)&(periph_ptr->pin),
                           periph_ptr->dma, periph_ptr->dma_channel);
         }
     }
@@ -524,6 +533,7 @@ static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min,
     return false;
 }
 
+/****************************************************** ESC Weak Function Implimentation *******************************************************/
 void *DShot_Malloc(uint32_t size)
 {
     return SrvOsCommon.malloc(size);
@@ -533,3 +543,27 @@ void DShot_Free(void *ptr)
 {
     SrvOsCommon.free(ptr);
 }
+
+bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t time_ch, void *pin, uint8_t dma, uint8_t stream)
+{
+    if (obj && time_ins && pin)
+    {
+        if (!BspTimer_PWM.init(&To_DShot_Obj(obj)->pwm_obj, time_ins, time_ch, *(BspGPIO_Obj_TypeDef *)pin, dma, stream, (uint32_t)To_DShot_Obj(obj)->ctl_buf, DSHOT_DMA_BUFFER_SIZE))
+            return false;
+
+        BspTimer_PWM.set_prescaler(&To_DShot_Obj(obj)->pwm_obj, prescaler);
+        BspTimer_PWM.set_autoreload(&To_DShot_Obj(obj)->pwm_obj, MOTOR_BITLENGTH);
+
+        BspTimer_PWM.start_pwm(&To_DShot_Obj(obj)->pwm_obj);
+        return true;
+    }
+
+    return false;
+}
+
+void DShot_Port_Trans(void *obj)
+{
+    if (obj)
+        BspTimer_PWM.dma_trans(&To_DShot_Obj(obj)->pwm_obj);
+}
+

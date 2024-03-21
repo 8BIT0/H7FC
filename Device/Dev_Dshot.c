@@ -3,9 +3,11 @@
 
 __attribute__((weak)) void *DShot_Malloc(uint32_t size){return NULL;}
 __attribute__((weak)) void DShot_Free(void *ptr){return;}
+__attribute__((weak)) bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t time_ch, void *pin, uint8_t dma, uint8_t stream){return false;}
+__attribute__((weak)) void DShot_Port_Trans(void *obj){return;}
 
 /* external function */
-static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream);
+static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, uint8_t dma, uint8_t stream);
 static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value);
 static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd);
 
@@ -36,7 +38,7 @@ static uint32_t DevDshot_GetType_Clock(DevDshotType_List type)
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
                           void *timer_ins,
                           uint32_t ch,
-                          BspGPIO_Obj_TypeDef pin,
+                          void *pin,
                           uint8_t dma,
                           uint8_t stream)
 {
@@ -67,13 +69,8 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
         obj->type = DevDshot_300;
     }
 
-    if (!BspTimer_PWM.init(&obj->pwm_obj, timer_ins, ch, pin, dma, stream, (uint32_t)obj->ctl_buf, DSHOT_DMA_BUFFER_SIZE))
+    if (!DShot_Port_Init(&obj->pwm_obj, prescaler, timer_ins, ch, pin, dma, stream))
         return false;
-
-    BspTimer_PWM.set_prescaler(&obj->pwm_obj, prescaler);
-    BspTimer_PWM.set_autoreload(&obj->pwm_obj, MOTOR_BITLENGTH);
-
-    BspTimer_PWM.start_pwm(&obj->pwm_obj);
 
     return true;
 }
@@ -125,7 +122,7 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
     obj->pwm_obj.buffer_addr = (uint32_t)obj->ctl_buf;
     obj->pwm_obj.buffer_size = DSHOT_DMA_BUFFER_SIZE;
 
-    BspTimer_PWM.dma_trans(&obj->pwm_obj);
+    DShot_Port_Trans(&obj->pwm_obj);
 }
 
 static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd)
@@ -147,5 +144,5 @@ static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd)
     obj->ctl_buf[16] = 0;
     obj->ctl_buf[17] = 0;
 
-    BspTimer_PWM.dma_trans(&obj->pwm_obj);
+    DShot_Port_Trans(&obj->pwm_obj);
 }

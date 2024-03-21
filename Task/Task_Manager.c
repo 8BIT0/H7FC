@@ -98,7 +98,7 @@ void Task_Manager_CreateTask(void)
             
             TaskSample_Init(TaskSample_Period_Def);
             TaskTelemetry_Init(TaskTelemetry_Period_def);
-            // TaskControl_Init(TaskControl_Period_Def);
+            TaskControl_Init(TaskControl_Period_Def);
 #if (SD_CARD_ENABLE_STATE == ON)
             TaskLog_Init(TaslLog_Period_Def);
 #endif
@@ -108,8 +108,8 @@ void Task_Manager_CreateTask(void)
             osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
             TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
 
-            // osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 4096);
-            // TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
+            osThreadDef(ControlTask, TaskControl_Core, osPriorityAboveNormal, 0, 2048);
+            TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
 
             osThreadDef(NavTask, TaskNavi_Core, osPriorityHigh, 0, 4096);
             TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);

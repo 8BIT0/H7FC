@@ -7,6 +7,8 @@
 #include "Bsp_GPIO.h"
 #include "Bsp_Timer.h"
 
+#define To_DShot_Obj(x) ((DevDshotObj_TypeDef *)x)
+
 #define MHZ_TO_HZ(x) (x * 1000000)
 
 #define DSHOT_TIMER_CLK_HZ MHZ_TO_HZ(160)
@@ -65,7 +67,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, BspGPIO_Obj_TypeDef pin, uint8_t dma, uint8_t stream);
+    bool (*init)(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, uint8_t dma, uint8_t stream);
     bool (*command)(DevDshotObj_TypeDef *obj, DevDshot_Command_List cmd);
     bool (*control)(DevDshotObj_TypeDef *obj, uint16_t val);
 } DevDshot_TypeDef;
