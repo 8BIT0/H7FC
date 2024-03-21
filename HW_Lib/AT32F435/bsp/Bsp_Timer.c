@@ -168,7 +168,13 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               uint32_t buf_aadr,
                               uint32_t buf_size)
 {
-    tmr_output_config_type  tmr_output_struct;
+    tmr_output_config_type tmr_output_struct;
+    crm_clocks_freq_type crm_clocks_freq_struct;
+
+    memset(&crm_clocks_freq_struct, 0, sizeof(crm_clocks_freq_type));
+    memset(&tmr_output_struct, 0, sizeof(tmr_output_config_type));
+
+    crm_clocks_freq_get(&crm_clocks_freq_struct);
 
     if (!monitor.monitor_init)
     {
@@ -213,12 +219,10 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
     // tmr_channel_value_set(obj->instance, obj->tim_channel, );
 
-    if (obj->dma_hdl)
-    {
-        /* dma init */
-    }
+    if (obj->dma_hdl && BspTimer_DMA_Init(obj))
+        return true;
 
-    return true;
+    return false;
 }
 
 static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
@@ -233,7 +237,14 @@ static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_re
 
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 {
+    if (obj && obj->instance)
+    {
+        /* timer output enable */
+        tmr_output_enable(obj->instance, TRUE);
     
+        /* enable timer */
+        tmr_counter_enable(obj->instance, TRUE);
+    }
 }
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)

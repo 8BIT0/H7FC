@@ -19,7 +19,7 @@ typedef struct
     uint32_t (*systimer_tick_to_us)(void);
     bool (*set_systimer_tick_value)(uint32_t value);
     bool (*set_systimer_period)(uint32_t period);
-    uint32_t (*systimer_disable)(void);
+    bool (*systimer_disable)(void);
     uint32_t (*systimer_enable)(void);
 
     void *(*malloc)(uint16_t size);
