@@ -120,10 +120,21 @@ static bool BspTimer_Clock_Enable(void *instance)
     return false;
 }
 
+static dmamux_requst_id_sel_type BspTimer_Get_DMA_Request(BspTimerPWMObj_TypeDef *obj)
+{
+    if (obj)
+    {
+        
+    }
+
+    return 0;   
+}
+
 static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
 {
     dma_init_type dma_init_struct;
     dma_channel_type *p_dma_channel = NULL;
+    dma_type *p_dma_type = NULL;
 
     if ((obj == NULL) || \
         (obj->instance == NULL) || \
@@ -132,9 +143,10 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         (obj->buffer_size == 0))
         return false;
 
-    p_dma_channel = BspDMA.get_channel_index(obj->dma, obj->stream);
-    
-    if (p_dma_channel)
+    p_dma_channel = BspDMA.get_channel_instance(obj->dma, obj->stream);
+    p_dma_type = BspDMA.get_type(obj->dma);
+
+    if (p_dma_channel && p_dma_type)
     {
         /* enable tmr1 overflow dma request */
         tmr_dma_request_enable(obj->instance, TMR_OVERFLOW_DMA_REQUEST, TRUE);
@@ -152,6 +164,9 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         dma_init_struct.priority = DMA_PRIORITY_VERY_HIGH;
         dma_init_struct.loop_mode_enable = FALSE;
         dma_init(p_dma_channel, &dma_init_struct);
+
+        dmamux_enable(p_dma_type, TRUE);
+        dmamux_init(p_dma_channel, DMAMUX_DMAREQ_ID_TMR1_CH1);
 
         return true;
     }
@@ -249,6 +264,6 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
-    
+    dma_channel_enable(DMA1_CHANNEL1, TRUE);
 }
 

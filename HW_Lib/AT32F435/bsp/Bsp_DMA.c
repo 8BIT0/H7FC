@@ -34,7 +34,8 @@ static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
 static void *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream);
 static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream);
 static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq, void *cb);
-static void* BspDMA_Get_Channel_Index(int8_t dma, int8_t stream);
+static void *BspDMA_Get_Channel_Instance(int8_t dma, int8_t stream);
+static void *BspDMA_Get_DMA_Type(int8_t dma);
 
 /* pipe external function */
 static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransErr_Cb err_cb);
@@ -47,7 +48,8 @@ BspDMA_TypeDef BspDMA = {
     .get_handle = BspDMA_Get_Handle,
     .get_instance = BspDMA_Get_Instance,
     .enable_irq = BspDMA_EnableIRQ,
-    .get_channel_index = BspDMA_Get_Channel_Index,
+    .get_channel_instance = BspDMA_Get_Channel_Instance,
+    .get_type = BspDMA_Get_DMA_Type,
 };
 
 BspDMA_Pipe_TypeDef BspDMA_Pipe = {
@@ -73,7 +75,19 @@ static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream)
     return true;
 }
 
-static void* BspDMA_Get_Channel_Index(int8_t dma, int8_t stream)
+static void *BspDMA_Get_DMA_Type(int8_t dma)
+{
+    if ((dma != Bsp_DMA_None) && \
+        (dma != Bsp_DMA_Sum))
+        return NULL;
+
+    if (dma == Bsp_DMA_1)
+        return DMA1;
+
+    return DMA2;
+}
+
+static void* BspDMA_Get_Channel_Instance(int8_t dma, int8_t stream)
 {
     if ((dma != Bsp_DMA_None) && \
         (dma != Bsp_DMA_Sum) && \

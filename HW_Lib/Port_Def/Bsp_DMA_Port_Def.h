@@ -11,7 +11,8 @@ typedef struct
     bool (*unregist)(int8_t dma, int8_t stream);
     void *(*get_handle)(int8_t dma, int8_t stream);
 #if defined AT32F435RGT7
-    void *(*get_channel_index)(int8_t dma, int8_t stream);
+    void *(*get_channel_instance)(int8_t dma, int8_t stream);
+    void *(*get_type)(int8_t dma);
 #endif
     void *(*get_instance)(int8_t dma, int8_t stream);
     void (*enable_irq)(int8_t dma, int8_t stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq, void *arg);
