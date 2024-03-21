@@ -152,7 +152,11 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         dma_init_struct.priority = DMA_PRIORITY_VERY_HIGH;
         dma_init_struct.loop_mode_enable = FALSE;
         dma_init(p_dma_channel, &dma_init_struct);
+
+        return true;
     }
+
+    return false;
 }
 
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
