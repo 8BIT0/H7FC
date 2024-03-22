@@ -19,6 +19,7 @@ BspTIM_PWMInitMonitor_TypeDef monitor = {
 
 /* internal function */
 static dmamux_requst_id_sel_type BspTimer_Get_DMA_RequestID(BspTimerPWMObj_TypeDef *obj);
+static void BspTimer_DMA_TransCplt_Callback(void *arg);
 
 /* external function */
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
@@ -424,7 +425,14 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     if (obj->dma_hdl && BspTimer_DMA_Init(obj))
     {
         BspDMA.regist(dma, stream, obj->dma_hdl);
-        BspDMA.enable_irq(dma, stream, 5, 0, BspTimer_Get_DMA_MuxSeq(obj), NULL);
+
+        if (obj->dma_callback_obj)
+        {
+            To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = obj;
+            To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->BspDMA_Irq_Callback_Func = BspTimer_DMA_TransCplt_Callback;
+        }
+
+        BspDMA.enable_irq(dma, stream, 5, 0, BspTimer_Get_DMA_MuxSeq(obj), obj->dma_callback_obj);
 
         monitor.list[monitor.init_cnt] = obj->instance;
         monitor.init_cnt ++;
@@ -483,8 +491,11 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
     }
 }
 
-static void BspTimer_DMA_TransCplt_Callback()
+static void BspTimer_DMA_TransCplt_Callback(void *arg)
 {
+    if (arg && To_TimerPWMObj(arg)->dma_hdl)
+    {
 
+    }
 }
 

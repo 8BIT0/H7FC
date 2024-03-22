@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define To_TimerPWMObj(x) ((BspTimerPWMObj_TypeDef *)x)
+
 bool BspTimer_SysTick_Init(void);
 
 extern BspTimerPWM_TypeDef BspTimer_PWM;

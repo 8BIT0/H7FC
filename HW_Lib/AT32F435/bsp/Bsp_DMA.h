@@ -11,6 +11,7 @@ typedef struct
 }BspDMA_IrqCall_Obj_TypeDef;
 
 #define To_DMA_Handle_Ptr(x) ((dma_channel_type *)x)
+#define To_DMA_IrqCallbackObj_Ptr(x) ((BspDMA_IrqCall_Obj_TypeDef *)x)
 
 typedef enum
 {
