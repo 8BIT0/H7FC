@@ -87,41 +87,6 @@ static bool BspTimer_Clock_Enable(void *instance)
         crm_periph_clock_enable(CRM_TMR8_PERIPH_CLOCK, TRUE);
         return true;
     }
-    else if (To_Timer_Instance(instance) == TMR9)
-    {
-        crm_periph_clock_enable(CRM_TMR9_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR10)
-    {
-        crm_periph_clock_enable(CRM_TMR10_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR11)
-    {
-        crm_periph_clock_enable(CRM_TMR11_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR12)
-    {
-        crm_periph_clock_enable(CRM_TMR12_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR13)
-    {
-        crm_periph_clock_enable(CRM_TMR13_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR14)
-    {
-        crm_periph_clock_enable(CRM_TMR14_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR20)
-    {
-        crm_periph_clock_enable(CRM_TMR20_PERIPH_CLOCK, TRUE);
-        return true;
-    }
 
     return false;
 }
@@ -159,36 +124,18 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef 
         switch((uint32_t)obj->instance)
         {
             case (uint32_t)TMR1:
-                switch((uint32_t)(obj->dma_hdl))
+                switch(obj->tim_channel)
                 {
-                    case (uint32_t)DMA1_CHANNEL1:
+                    case (uint32_t)TMR_SELECT_CHANNEL_1:
                         return DMAMUX_DMAREQ_ID_TMR1_CH1;
                     
-                    case (uint32_t)DMA1_CHANNEL2:
+                    case (uint32_t)TMR_SELECT_CHANNEL_2:
                         return DMAMUX_DMAREQ_ID_TMR1_CH2;
                     
-                    case (uint32_t)DMA1_CHANNEL3:
+                    case (uint32_t)TMR_SELECT_CHANNEL_3:
                         return DMAMUX_DMAREQ_ID_TMR1_CH3;
 
-                    case (uint32_t)DMA1_CHANNEL4:
-                        return DMAMUX_DMAREQ_ID_TMR1_CH4;
-
-                    default:
-                        break;
-                }
-
-                switch((uint32_t)(obj->dma_hdl))
-                {
-                    case (uint32_t)DMA2_CHANNEL1:
-                        return DMAMUX_DMAREQ_ID_TMR1_CH1;
-
-                    case (uint32_t)DMA2_CHANNEL2:
-                        return DMAMUX_DMAREQ_ID_TMR1_CH2;
-
-                    case (uint32_t)DMA2_CHANNEL3:
-                        return DMAMUX_DMAREQ_ID_TMR1_CH3;
-
-                    case (uint32_t)DMA2_CHANNEL4:
+                    case (uint32_t)TMR_SELECT_CHANNEL_4:
                         return DMAMUX_DMAREQ_ID_TMR1_CH4;
 
                     default:
@@ -197,36 +144,18 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef 
                 return 0;
                 
             case (uint32_t)TMR2:
-                switch((uint32_t)(obj->dma_hdl))
+                switch(obj->tim_channel)
                 {
-                    case (uint32_t)DMA1_CHANNEL1:
+                    case (uint32_t)TMR_SELECT_CHANNEL_1:
                         return DMAMUX_DMAREQ_ID_TMR2_CH1;
                     
-                    case (uint32_t)DMA1_CHANNEL2:
+                    case (uint32_t)TMR_SELECT_CHANNEL_2:
                         return DMAMUX_DMAREQ_ID_TMR2_CH2;
                     
-                    case (uint32_t)DMA1_CHANNEL3:
+                    case (uint32_t)TMR_SELECT_CHANNEL_3:
                         return DMAMUX_DMAREQ_ID_TMR2_CH3;
 
-                    case (uint32_t)DMA1_CHANNEL4:
-                        return DMAMUX_DMAREQ_ID_TMR2_CH4;
-
-                    default:
-                        break;
-                }
-
-                switch((uint32_t)(obj->dma_hdl))
-                {
-                    case (uint32_t)DMA2_CHANNEL1:
-                        return DMAMUX_DMAREQ_ID_TMR2_CH1;
-
-                    case (uint32_t)DMA2_CHANNEL2:
-                        return DMAMUX_DMAREQ_ID_TMR2_CH2;
-
-                    case (uint32_t)DMA2_CHANNEL3:
-                        return DMAMUX_DMAREQ_ID_TMR2_CH3;
-
-                    case (uint32_t)DMA2_CHANNEL4:
+                    case (uint32_t)TMR_SELECT_CHANNEL_4:
                         return DMAMUX_DMAREQ_ID_TMR2_CH4;
 
                     default:
@@ -235,36 +164,18 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef 
                 return 0;
                 
             case (uint32_t)TMR3:
-                switch((uint32_t)(obj->dma_hdl))
+                switch(obj->tim_channel)
                 {
-                    case (uint32_t)DMA1_CHANNEL1:
+                    case (uint32_t)TMR_SELECT_CHANNEL_1:
                         return DMAMUX_DMAREQ_ID_TMR3_CH1;
                     
-                    case (uint32_t)DMA1_CHANNEL2:
+                    case (uint32_t)TMR_SELECT_CHANNEL_2:
                         return DMAMUX_DMAREQ_ID_TMR3_CH2;
                     
-                    case (uint32_t)DMA1_CHANNEL3:
+                    case (uint32_t)TMR_SELECT_CHANNEL_3:
                         return DMAMUX_DMAREQ_ID_TMR3_CH3;
 
-                    case (uint32_t)DMA1_CHANNEL4:
-                        return DMAMUX_DMAREQ_ID_TMR3_CH4;
-
-                    default:
-                        break;
-                }
-
-                switch((uint32_t)(obj->dma_hdl))
-                {
-                    case (uint32_t)DMA2_CHANNEL1:
-                        return DMAMUX_DMAREQ_ID_TMR3_CH1;
-
-                    case (uint32_t)DMA2_CHANNEL2:
-                        return DMAMUX_DMAREQ_ID_TMR3_CH2;
-
-                    case (uint32_t)DMA2_CHANNEL3:
-                        return DMAMUX_DMAREQ_ID_TMR3_CH3;
-
-                    case (uint32_t)DMA2_CHANNEL4:
+                    case (uint32_t)TMR_SELECT_CHANNEL_4:
                         return DMAMUX_DMAREQ_ID_TMR3_CH4;
 
                     default:
@@ -273,36 +184,18 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef 
                 return 0;
                 
             case (uint32_t)TMR8:
-                switch((uint32_t)(obj->dma_hdl))
+                switch(obj->tim_channel)
                 {
-                    case (uint32_t)DMA1_CHANNEL1:
+                    case (uint32_t)TMR_SELECT_CHANNEL_1:
                         return DMAMUX_DMAREQ_ID_TMR8_CH1;
                     
-                    case (uint32_t)DMA1_CHANNEL2:
+                    case (uint32_t)TMR_SELECT_CHANNEL_2:
                         return DMAMUX_DMAREQ_ID_TMR8_CH2;
                     
-                    case (uint32_t)DMA1_CHANNEL3:
+                    case (uint32_t)TMR_SELECT_CHANNEL_3:
                         return DMAMUX_DMAREQ_ID_TMR8_CH3;
 
-                    case (uint32_t)DMA1_CHANNEL4:
-                        return DMAMUX_DMAREQ_ID_TMR8_CH4;
-
-                    default:
-                        break;
-                }
-
-                switch((uint32_t)(obj->dma_hdl))
-                {
-                    case (uint32_t)DMA2_CHANNEL1:
-                        return DMAMUX_DMAREQ_ID_TMR8_CH1;
-
-                    case (uint32_t)DMA2_CHANNEL2:
-                        return DMAMUX_DMAREQ_ID_TMR8_CH2;
-
-                    case (uint32_t)DMA2_CHANNEL3:
-                        return DMAMUX_DMAREQ_ID_TMR8_CH3;
-
-                    case (uint32_t)DMA2_CHANNEL4:
+                    case (uint32_t)TMR_SELECT_CHANNEL_4:
                         return DMAMUX_DMAREQ_ID_TMR8_CH4;
 
                     default:
@@ -318,44 +211,95 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef 
     return 0;   
 }
 
+static int32_t BspTimer_Get_DMA_Address_Type(BspTimerPWMObj_TypeDef *obj)
+{
+    if (obj && obj->instance && obj->dma_hdl && obj->tim_channel)
+    {
+        switch(obj->tim_channel)
+        {
+            case TMR_SELECT_CHANNEL_1:
+                return (int32_t)TMR_C1DT_ADDRESS;
+
+            case TMR_SELECT_CHANNEL_2:
+                return (int32_t)TMR_C2DT_ADDRESS;
+
+            case TMR_SELECT_CHANNEL_3:
+                return (int32_t)TMR_C3DT_ADDRESS;
+
+            case TMR_SELECT_CHANNEL_4:
+                return (int32_t)TMR_C4DT_ADDRESS;
+
+            default:
+                return -1;
+        }
+    }
+}
+
+static uint32_t BspTimer_Get_PrtiphAddr(BspTimerPWMObj_TypeDef *obj)
+{
+    if (obj && obj->instance && obj->tim_channel)
+    {
+        switch(obj->tim_channel)
+        {
+            case TMR_SELECT_CHANNEL_1:
+                return (uint32_t)&(To_Timer_Instance(obj->instance)->c1dt);
+
+            case TMR_SELECT_CHANNEL_2:
+                return (uint32_t)&(To_Timer_Instance(obj->instance)->c2dt);
+
+            case TMR_SELECT_CHANNEL_3:
+                return (uint32_t)&(To_Timer_Instance(obj->instance)->c3dt);
+
+            case TMR_SELECT_CHANNEL_4:
+                return (uint32_t)&(To_Timer_Instance(obj->instance)->c4dt);
+            
+            default:
+                break;
+        }
+    }
+
+    return 0;
+}
+
 static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
 {
     dma_init_type dma_init_struct;
-    dma_channel_type *p_dma_channel = NULL;
     dmamux_requst_id_sel_type dma_req_id = 0;
     tmr_dma_request_type req_type = 0;
-
+    int32_t DMA_Addr_Type = -1;
+    
     if ((obj == NULL) || \
         (obj->instance == NULL) || \
         (obj->dma_hdl == NULL) || \
         (obj->buffer_addr == 0) || \
+        (obj->dma_hdl == NULL) || \
         (obj->buffer_size == 0))
         return false;
 
-    p_dma_channel = BspDMA.get_channel_instance(obj->dma, obj->stream);
     dma_req_id = BspTimer_Get_DMA_MuxSeq(obj);
     req_type = BspTimer_Get_DMA_RequestType(obj);
+    DMA_Addr_Type = BspTimer_Get_DMA_Address_Type(obj);
 
-    if (p_dma_channel && dma_req_id && req_type)
+    if (dma_req_id && req_type && (DMA_Addr_Type != -1))
     {
         /* enable timer output dma request */
         tmr_dma_request_enable(obj->instance, req_type, TRUE);
-        tmr_dma_control_config(obj->instance, TMR_DMA_TRANSFER_18BYTES, TMR_PR_ADDRESS);
+        tmr_dma_control_config(obj->instance, TMR_DMA_TRANSFER_18BYTES, (tmr_dma_address_type)DMA_Addr_Type);
 
-        dma_reset(p_dma_channel);
+        dma_reset(obj->dma_hdl);
         dma_init_struct.buffer_size = obj->buffer_size;
         dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
         dma_init_struct.memory_base_addr = (uint32_t)obj->buffer_addr;
-        dma_init_struct.memory_data_width = DMA_MEMORY_DATA_WIDTH_BYTE;
+        dma_init_struct.memory_data_width = DMA_MEMORY_DATA_WIDTH_WORD;
         dma_init_struct.memory_inc_enable = TRUE;
-        dma_init_struct.peripheral_base_addr = (uint32_t)To_Timer_Instance(obj->instance)->dmadt;
-        dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_BYTE;
+        dma_init_struct.peripheral_base_addr = BspTimer_Get_PrtiphAddr(obj);
+        dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_WORD;
         dma_init_struct.peripheral_inc_enable = FALSE;
         dma_init_struct.priority = DMA_PRIORITY_VERY_HIGH;
         dma_init_struct.loop_mode_enable = FALSE;
-        dma_init(p_dma_channel, &dma_init_struct);
+        dma_init(obj->dma_hdl, &dma_init_struct);
 
-        dmamux_init(p_dma_channel, dma_req_id);
+        dmamux_init(obj->dma_hdl, dma_req_id);
 
         return true;
     }
@@ -412,7 +356,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_cnt_dir_set(obj->instance, TMR_COUNT_UP);
     tmr_output_default_para_init(&tmr_output_struct);
 
-    tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_B;
+    tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_A;
     tmr_output_struct.oc_output_state = TRUE;
     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_LOW;
     tmr_output_struct.oc_idle_state = TRUE;
@@ -428,7 +372,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 
         if (obj->dma_callback_obj)
         {
-            To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = obj;
+            To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = (void *)obj;
             To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->BspDMA_Irq_Callback_Func = BspTimer_DMA_TransCplt_Callback;
         }
 
@@ -450,7 +394,7 @@ static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj)
 
     memset(&crm_clocks_freq_struct, 0, sizeof(crm_clocks_freq_type));
     crm_clocks_freq_get(&crm_clocks_freq_struct);
-    return crm_clocks_freq_struct.apb2_freq;
+    return (crm_clocks_freq_struct.apb2_freq * 2);
 }
 
 static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
@@ -458,7 +402,7 @@ static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
     if (obj && obj->instance)
     {
         obj->prescale = prescale;
-        tmr_base_init(obj->instance, prescale, 0);
+        tmr_base_init(obj->instance, obj->auto_reload, prescale);
     }
 }
 
@@ -467,7 +411,8 @@ static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_re
     if (obj && obj->instance && obj->tim_channel)
     {
         obj->auto_reload = auto_reload;
-        tmr_channel_value_set(obj->instance, obj->tim_channel, auto_reload);
+        tmr_base_init(obj->instance, auto_reload, obj->prescale);
+        // tmr_channel_value_set(obj->instance, obj->tim_channel, 10);
     }
 }
 
@@ -475,27 +420,27 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj && obj->instance)
     {
-        /* timer output enable */
         tmr_output_enable(obj->instance, TRUE);
-    
-        /* enable timer */
-        tmr_counter_enable(obj->instance, TRUE);
+        tmr_counter_enable(obj->instance, FALSE);
     }
 }
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj && obj->dma_hdl)
+    {
         dma_channel_enable(obj->dma_hdl, TRUE);
+        tmr_counter_enable(obj->instance, TRUE);
+    }
 }
 
 static void BspTimer_DMA_TransCplt_Callback(void *arg)
 {
     BspTimerPWMObj_TypeDef *obj = NULL;
 
-    if (arg && To_TimerPWMObj(arg)->dma_hdl)
+    if (arg && To_TimerPWMObj_Ptr(arg)->dma_hdl)
     {
-        obj = To_TimerPWMObj(arg);
+        obj = To_TimerPWMObj_Ptr(arg);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
     }
 }

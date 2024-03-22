@@ -31,7 +31,7 @@
         PWM_SIG_2_TIM,              \
         PWM_SIG_2_TIM_CHANNEL,      \
         PWM_SIG_2_DMA,              \
-        PWM_SIG_1_DMA_CHANNEL,      \
+        PWM_SIG_2_DMA_CHANNEL,      \
         {                           \
             PWM_SIG_2_PORT,         \
             PWM_SIG_2_PIN,          \

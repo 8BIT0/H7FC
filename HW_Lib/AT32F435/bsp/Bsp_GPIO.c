@@ -114,6 +114,39 @@ static uint8_t BspGPIO_EXTILine_To_PinSource(uint32_t exti_line)
     return BspGPIO_Get_Bit_Index(index);
 }
 
+static crm_periph_clock_type BspGPIO_Get_ExtiCLK(scfg_port_source_type exti_src)
+{
+    switch((uint8_t) exti_src)
+    {
+        case SCFG_PORT_SOURCE_GPIOA:
+            return CRM_GPIOA_PERIPH_CLOCK;
+
+        case SCFG_PORT_SOURCE_GPIOB:
+            return CRM_GPIOB_PERIPH_CLOCK;
+
+        case SCFG_PORT_SOURCE_GPIOC:
+            return CRM_GPIOC_PERIPH_CLOCK;
+
+        case SCFG_PORT_SOURCE_GPIOD:
+            return CRM_GPIOD_PERIPH_CLOCK;
+
+        case SCFG_PORT_SOURCE_GPIOE:
+            return CRM_GPIOE_PERIPH_CLOCK;
+
+        case SCFG_PORT_SOURCE_GPIOF:
+            return CRM_GPIOF_PERIPH_CLOCK;
+
+        case SCFG_PORT_SOURCE_GPIOG:
+            return CRM_GPIOG_PERIPH_CLOCK;
+
+        case SCFG_PORT_SOURCE_GPIOH:
+            return CRM_GPIOH_PERIPH_CLOCK;
+
+        default:
+            return 0;
+    }
+}
+
 static crm_periph_clock_type BspGPIO_Get_CLK(gpio_type *port)
 {
     if(port == NULL)
@@ -205,7 +238,7 @@ static bool BspGPIO_Exti_Init(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback
     uint32_t pin_source = 0;
     crm_periph_clock_type clk = 0;
 
-    clk = BspGPIO_Get_CLK(To_GPIO_Port(IO_Obj.port)->port);
+    clk = BspGPIO_Get_ExtiCLK(To_ExtiGPIO_Port(IO_Obj.port)->port);
     if(clk == 0)
         return false;
 

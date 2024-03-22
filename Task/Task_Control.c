@@ -193,25 +193,29 @@ void TaskControl_Core(void const *arg)
     {
         Srv_CtlDataArbitrate.negociate_update(&CtlData);
         
-        if(control_enable && !TaskControl_Monitor.CLI_enable)
-        {
-            Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
-            TaskControl_FlightControl_Polling(&Cnv_CtlData);
+        // if(control_enable && !TaskControl_Monitor.CLI_enable)
+        // {
+        //     Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
+        //     TaskControl_FlightControl_Polling(&Cnv_CtlData);
             
-            CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
-            CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
-            CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
-        }
-        else
-        {
-            if(TaskControl_Monitor.CLI_enable)
-            {
-                TaskControl_CLI_Polling();
-            }
-            else
-                /* lock all moto */
-                SrvActuator.lock();
-        }
+        //     CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
+        //     CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
+        //     CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
+        // }
+        // else
+        // {
+        //     if(TaskControl_Monitor.CLI_enable)
+        //     {
+        //         TaskControl_CLI_Polling();
+        //     }
+        //     else
+        //         /* lock all moto */
+        //         SrvActuator.lock();
+        // }
+
+        /* test code */
+        TaskControl_FlightControl_Polling(&Cnv_CtlData);
+        /* test code */
 
         DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
         /* pipe in use control data to data hub */
@@ -273,6 +277,14 @@ static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef
         ctl_buf[Actuator_Ctl_GyrY] = monitor->GyrYCtl_PIDObj.fout;
         ctl_buf[Actuator_Ctl_GyrZ] = monitor->GyrZCtl_PIDObj.fout;
     }
+    
+    /* test code */
+    ctl_buf[Actuator_Ctl_Throttle] = 50;
+
+    ctl_buf[Actuator_Ctl_GyrX] = 10;
+    ctl_buf[Actuator_Ctl_GyrY] = 5;
+    ctl_buf[Actuator_Ctl_GyrZ] = 8;
+    /* test code */
 
     SrvActuator.moto_control(ctl_buf);
 }

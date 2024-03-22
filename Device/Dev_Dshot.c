@@ -73,7 +73,7 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
         obj->type = DevDshot_300;
     }
 
-    if (!DShot_Port_Init(&obj->pwm_obj, prescaler, timer_ins, ch, pin, dma, stream))
+    if (!DShot_Port_Init(obj, prescaler, timer_ins, ch, pin, dma, stream))
         return false;
 
     return true;
@@ -126,7 +126,7 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
     obj->pwm_obj.buffer_addr = (uint32_t)obj->ctl_buf;
     obj->pwm_obj.buffer_size = DSHOT_DMA_BUFFER_SIZE;
 
-    DShot_Port_Trans(&obj->pwm_obj);
+    DShot_Port_Trans(obj);
 }
 
 static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd)
@@ -148,5 +148,5 @@ static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd)
     obj->ctl_buf[16] = 0;
     obj->ctl_buf[17] = 0;
 
-    DShot_Port_Trans(&obj->pwm_obj);
+    DShot_Port_Trans(obj);
 }

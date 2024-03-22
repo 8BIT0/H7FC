@@ -149,7 +149,7 @@ static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj)
         index = BspUART_Port_7;
     }
 
-    nvic_priority_group_config(NVIC_PRIORITY_GROUP_0);
+    nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
     nvic_irq_enable(irqn, 5, 0);
 
     return index;

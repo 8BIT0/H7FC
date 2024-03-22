@@ -21,7 +21,7 @@
  * Angular Speed Over Speed Threshold
  * Angular Speed Per Millscond
  */
-#define ANGULAR_ACCECLERATION_THRESHOLD 10 / 1.0f // angular speed accelerate from 0 to 100 deg/s in 1 Ms
+#define ANGULAR_ACCECLERATION_THRESHOLD 200 / 1.0f // angular speed accelerate from 0 to 100 deg/s in 1 Ms
 
 typedef struct
 {
