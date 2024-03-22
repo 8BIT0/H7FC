@@ -485,17 +485,18 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
-    if (obj && obj->instance && obj->dma_hdl)
-    {
+    if (obj && obj->dma_hdl)
         dma_channel_enable(obj->dma_hdl, TRUE);
-    }
 }
 
 static void BspTimer_DMA_TransCplt_Callback(void *arg)
 {
+    BspTimerPWMObj_TypeDef *obj = NULL;
+
     if (arg && To_TimerPWMObj(arg)->dma_hdl)
     {
-
+        obj = To_TimerPWMObj(arg);
+        dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
     }
 }
 
