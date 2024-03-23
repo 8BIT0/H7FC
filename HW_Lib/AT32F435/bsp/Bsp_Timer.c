@@ -47,12 +47,7 @@ BspTimerPWM_TypeDef BspTimer_PWM = {
 
 static bool BspTimer_Clock_Enable(void *instance)
 {
-    if (To_Timer_Instance(instance) == TMR1)
-    {
-        crm_periph_clock_enable(CRM_TMR1_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR2)
+    if (To_Timer_Instance(instance) == TMR2)
     {
         crm_periph_clock_enable(CRM_TMR2_PERIPH_CLOCK, TRUE);
         return true;
@@ -60,26 +55,6 @@ static bool BspTimer_Clock_Enable(void *instance)
     else if (To_Timer_Instance(instance) == TMR3)
     {
         crm_periph_clock_enable(CRM_TMR3_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR4)
-    {
-        crm_periph_clock_enable(CRM_TMR4_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR5)
-    {
-        crm_periph_clock_enable(CRM_TMR5_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR6)
-    {
-        crm_periph_clock_enable(CRM_TMR6_PERIPH_CLOCK, TRUE);
-        return true;
-    }
-    else if (To_Timer_Instance(instance) == TMR7)
-    {
-        crm_periph_clock_enable(CRM_TMR7_PERIPH_CLOCK, TRUE);
         return true;
     }
     else if (To_Timer_Instance(instance) == TMR8)
@@ -91,23 +66,42 @@ static bool BspTimer_Clock_Enable(void *instance)
     return false;
 }
 
+/* modify */
 static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj)
     {
         switch((uint32_t)obj->instance)
         {
-            case (uint32_t)TMR1:
-                return DMAMUX_DMAREQ_ID_TMR1_OVERFLOW;
-                
             case (uint32_t)TMR2:
-                return DMAMUX_DMAREQ_ID_TMR2_OVERFLOW;
+                switch(obj->tim_channel)
+                {
+                    case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR2_CH1;
+                    case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR2_CH2;
+                    case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR2_CH3;
+                    case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR2_CH4;
+                    default: return 0;
+                }
                 
             case (uint32_t)TMR3:
-                return DMAMUX_DMAREQ_ID_TMR3_OVERFLOW;
+                switch(obj->tim_channel)
+                {
+                    case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR3_CH1;
+                    case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR3_CH2;
+                    case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR3_CH3;
+                    case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR3_CH4;
+                    default: return 0;
+                }
                 
             case (uint32_t)TMR8:
-                return DMAMUX_DMAREQ_ID_TMR4_OVERFLOW;
+                switch(obj->tim_channel)
+                {
+                    case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR8_CH1;
+                    case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR8_CH2;
+                    case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR8_CH3;
+                    case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR8_CH4;
+                    default: return 0;
+                }
                 
             default:
                 return 0;
@@ -147,7 +141,8 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
 {
     dma_init_type dma_init_struct;
     dmamux_requst_id_sel_type dma_req_id = 0;
-    
+    tmr_dma_request_type dma_req_type = 0;
+
     if ((obj == NULL) || \
         (obj->instance == NULL) || \
         (obj->dma_hdl == NULL) || \
@@ -156,11 +151,23 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         (obj->buffer_size == 0))
         return false;
 
+    switch(obj->tim_channel)
+    {
+        case TMR_SELECT_CHANNEL_1: dma_req_type = TMR_C1_DMA_REQUEST; break;
+        case TMR_SELECT_CHANNEL_2: dma_req_type = TMR_C2_DMA_REQUEST; break;
+        case TMR_SELECT_CHANNEL_3: dma_req_type = TMR_C3_DMA_REQUEST; break;
+        case TMR_SELECT_CHANNEL_4: dma_req_type = TMR_C4_DMA_REQUEST; break;
+        default: return false;
+    }
+
+    tmr_channel_dma_select(obj->instance, TMR_DMA_REQUEST_BY_CHANNEL);
+    tmr_dma_request_enable(obj->instance, dma_req_type, TRUE);
     dma_req_id = BspTimer_Get_DMA_MuxSeq(obj);
 
     if (dma_req_id)
     {
         /* enable timer output dma request */
+        dmamux_init(obj->dma_hdl, dma_req_id);
         dma_reset(obj->dma_hdl);
         dma_init_struct.buffer_size = obj->buffer_size;
         dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
@@ -173,7 +180,6 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         dma_init_struct.priority = DMA_PRIORITY_VERY_HIGH;
         dma_init_struct.loop_mode_enable = FALSE;
         dma_init(obj->dma_hdl, &dma_init_struct);
-        dmamux_init(obj->dma_hdl, dma_req_id);
 
         return true;
     }
@@ -225,22 +231,17 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     /* init pwm output */
     tmr_cnt_dir_set(obj->instance, TMR_COUNT_UP);
     tmr_output_default_para_init(&tmr_output_struct);
-
-    tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_A;
+    tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_B;
     tmr_output_struct.oc_output_state = TRUE;
     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_LOW;
     tmr_output_struct.oc_idle_state = TRUE;
-    tmr_output_struct.occ_output_state = FALSE;
+    tmr_output_struct.occ_output_state = TRUE;
     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_LOW;
     tmr_output_struct.occ_idle_state = FALSE;
-
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
-    tmr_dma_request_enable(obj->instance, TMR_OVERFLOW_DMA_REQUEST, TRUE);
 
     if (obj->dma_hdl && BspTimer_DMA_Init(obj))
     {
-        BspDMA.regist(dma, stream, obj->dma_hdl);
-
         if (obj->dma_callback_obj)
         {
             To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = (void *)obj;
@@ -255,6 +256,8 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
         return true;
     }
 
+    tmr_output_enable(obj->instance, FALSE);
+ 
     return false;
 }
 
@@ -292,20 +295,27 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
     if (obj && obj->instance)
     {
         tmr_output_enable(obj->instance, TRUE);
-        tmr_counter_enable(obj->instance, FALSE);
     }
 }
 
+/* test code */
 uint8_t send_test = 0;
 uint8_t cb_test = 0;
+/* test code */
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj && obj->dma_hdl)
     {
         send_test ++;
-        tmr_counter_enable(obj->instance, TRUE);
+        To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
+        To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
+        To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size;
         dma_channel_enable(obj->dma_hdl, TRUE);
+        tmr_counter_enable(obj->instance, TRUE);
+
+        /* test code */
+        while(cb_test < send_test);
     }
 }
 
@@ -317,8 +327,9 @@ static void BspTimer_DMA_TransCplt_Callback(void *arg)
     {
         cb_test ++;
         obj = To_TimerPWMObj_Ptr(arg);
-        tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
+        // tmr_counter_value_set(obj->instance, 0);
+        tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
     }
 }
 

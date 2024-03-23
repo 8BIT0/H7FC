@@ -480,8 +480,10 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
         }
     }
 
+    uint8_t test = 0;
 lock_moto:
-    SrvActuator.lock();
+    test ++;
+    // SrvActuator.lock();
 }
 
 /****************************************************** CLI Section ******************************************************************/
