@@ -191,7 +191,7 @@ void TaskControl_Core(void const *arg)
 
     while(1)
     {
-        Srv_CtlDataArbitrate.negociate_update(&CtlData);
+        // Srv_CtlDataArbitrate.negociate_update(&CtlData);
         
         // if(control_enable && !TaskControl_Monitor.CLI_enable)
         // {

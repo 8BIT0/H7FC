@@ -309,7 +309,7 @@ static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransEr
     dma_init_struct.peripheral_base_addr = (uint32_t)0;
     dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_BYTE;
     dma_init_struct.peripheral_inc_enable = TRUE;
-    dma_init_struct.priority = DMA_PRIORITY_MEDIUM;
+    dma_init_struct.priority = DMA_PRIORITY_VERY_HIGH;
     dma_init_struct.loop_mode_enable = FALSE;
     dma_init(DMA2_CHANNEL7, &dma_init_struct);
 

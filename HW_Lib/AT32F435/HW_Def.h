@@ -79,7 +79,7 @@
 #define PWM_SIG_4_PORT &PWM_4_Port
 #define PWM_SIG_4_PIN GPIO_PINS_2
 #define PWM_SIG_4_DMA Bsp_DMA_1
-#define PWM_SIG_4_DMA_CHANNEL Bsp_DMA_Stream_5
+#define PWM_SIG_4_DMA_CHANNEL Bsp_DMA_Stream_6
 #define PWM_SIG_4_PIN_AF GPIO_MUX_1
 
 #define PWM_SIG_5_TIM TMR8
