@@ -169,10 +169,10 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         dma_init_struct.buffer_size = obj->buffer_size;
         dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
         dma_init_struct.memory_base_addr = (uint32_t)obj->buffer_addr;
-        dma_init_struct.memory_data_width = DMA_MEMORY_DATA_WIDTH_WORD;
+        dma_init_struct.memory_data_width = DMA_MEMORY_DATA_WIDTH_HALFWORD;
         dma_init_struct.memory_inc_enable = TRUE;
         dma_init_struct.peripheral_base_addr = BspTimer_Get_PrtiphAddr(obj);
-        dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_WORD;
+        dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
         dma_init_struct.peripheral_inc_enable = FALSE;
         dma_init_struct.priority = DMA_PRIORITY_HIGH;
         dma_init_struct.loop_mode_enable = FALSE;
@@ -233,8 +233,8 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_output_struct.oc_output_state = TRUE;
     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.oc_idle_state = FALSE;
-    // tmr_output_struct.occ_output_state = TRUE;
-    // tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_LOW;
+    // tmr_output_struct.occ_output_state = FALSE;
+    // tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     // tmr_output_struct.occ_idle_state = FALSE;
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
 
@@ -317,7 +317,7 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
         send_test ++;
         To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
-        To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size;
+        To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * 2;
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
         tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
 
