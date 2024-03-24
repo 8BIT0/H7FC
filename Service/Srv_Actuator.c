@@ -552,13 +552,13 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
         To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = SrvOsCommon.malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
 #endif
 
-        if (!BspTimer_PWM.init(&To_DShot_Obj(obj)->pwm_obj, time_ins, time_ch, *(BspGPIO_Obj_TypeDef *)pin, dma, stream, (uint32_t)To_DShot_Obj(obj)->ctl_buf, DSHOT_DMA_BUFFER_SIZE))
+        if (!BspTimer_PWM.init(&(To_DShot_Obj(obj)->pwm_obj), time_ins, time_ch, *(BspGPIO_Obj_TypeDef *)pin, dma, stream, (uint32_t)(To_DShot_Obj(obj)->ctl_buf), DSHOT_DMA_BUFFER_SIZE))
             return false;
 
-        BspTimer_PWM.set_prescaler(&To_DShot_Obj(obj)->pwm_obj, prescaler);
-        BspTimer_PWM.set_autoreload(&To_DShot_Obj(obj)->pwm_obj, MOTOR_BITLENGTH);
+        BspTimer_PWM.set_prescaler(&(To_DShot_Obj(obj))->pwm_obj, prescaler);
+        BspTimer_PWM.set_autoreload(&(To_DShot_Obj(obj))->pwm_obj, (MOTOR_BITLENGTH - 1));
 
-        BspTimer_PWM.start_pwm(&To_DShot_Obj(obj)->pwm_obj);
+        BspTimer_PWM.start_pwm(&(To_DShot_Obj(obj))->pwm_obj);
         return true;
     }
 
@@ -568,12 +568,12 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
 void DShot_Port_Trans(void *obj)
 {
     if (obj)
-        BspTimer_PWM.dma_trans(&To_DShot_Obj(obj)->pwm_obj);
+        BspTimer_PWM.dma_trans(&(To_DShot_Obj(obj)->pwm_obj));
 }
 
 uint32_t DShot_Get_Timer_CLKFreq(void *obj)
 {
-    return BspTimer_PWM.get_clock_freq(obj);
+    return BspTimer_PWM.get_clock_freq(To_DShot_Obj(obj)->pwm_obj);
 }
 
 
