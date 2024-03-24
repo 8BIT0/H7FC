@@ -477,6 +477,8 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
                     TaskControl_Monitor.gyr_lst[axis] = TaskControl_Monitor.gyr[axis];
                 }
             }
+        
+            return;
         }
     }
 

@@ -145,7 +145,6 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
 
     if ((obj == NULL) || \
         (obj->instance == NULL) || \
-        (obj->dma_hdl == NULL) || \
         (obj->buffer_addr == 0) || \
         (obj->dma_hdl == NULL) || \
         (obj->buffer_size == 0))
@@ -197,6 +196,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               uint32_t buf_size)
 {
     tmr_output_config_type tmr_output_struct;
+    // tmr_dma_address_type dma_addr = 0;
 
     memset(&tmr_output_struct, 0, sizeof(tmr_output_config_type));
 
@@ -239,6 +239,17 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_LOW;
     tmr_output_struct.occ_idle_state = FALSE;
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
+
+    // switch(obj->tim_channel)
+    // {
+    //     case TMR_SELECT_CHANNEL_1: dma_addr = TMR_C1DT_ADDRESS; break;
+    //     case TMR_SELECT_CHANNEL_2: dma_addr = TMR_C2DT_ADDRESS; break;
+    //     case TMR_SELECT_CHANNEL_3: dma_addr = TMR_C3DT_ADDRESS; break;
+    //     case TMR_SELECT_CHANNEL_4: dma_addr = TMR_C4DT_ADDRESS; break;
+    //     default: return false;
+    // }
+
+    // tmr_dma_control_config(obj->instance, TMR_DMA_TRANSFER_18BYTES, dma_addr);
 
     if (obj->dma_hdl && BspTimer_DMA_Init(obj))
     {
@@ -328,7 +339,6 @@ static void BspTimer_DMA_TransCplt_Callback(void *arg)
         cb_test ++;
         obj = To_TimerPWMObj_Ptr(arg);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
-        // tmr_counter_value_set(obj->instance, 0);
         tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
     }
 }

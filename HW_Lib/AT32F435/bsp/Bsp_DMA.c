@@ -161,7 +161,7 @@ static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List
     {
         if (!dma1_clk_init)
         {
-            crm_periph_clock_enable(CRM_DMA1_PERIPH_CLOCK, TRUE);
+            // crm_periph_clock_enable(CRM_DMA1_PERIPH_CLOCK, TRUE);
             dmamux_enable(DMA1, TRUE);
             dma1_clk_init = true;
         }
@@ -298,6 +298,7 @@ static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransEr
 
     /* enable dma1 clock */
     crm_periph_clock_enable(CRM_DMA2_PERIPH_CLOCK, TRUE);
+    crm_periph_clock_enable(CRM_DMA1_PERIPH_CLOCK, TRUE);
 
     /* dma1 channel1 configuration */
     dma_reset(DMA2_CHANNEL7);
