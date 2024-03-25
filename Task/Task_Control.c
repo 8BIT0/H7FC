@@ -42,8 +42,12 @@ SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
 TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .init_state = false,
     .control_abort = false,
-    /* on test mode use angular protect */
+    /* on test mode use angular_speed over rate threshold protect */
     .angular_protect_enable = true,
+    .angular_protect = false,
+    /* on test mode for throttle control value mutation protect */
+    .throttle_protect_enable = true,
+    .throttle_percent = false,
     .actuator_model = Model_Quad,
     .IMU_Rt = 0,
 };
