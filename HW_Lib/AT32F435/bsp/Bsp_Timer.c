@@ -314,7 +314,7 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj && obj->dma_hdl)
     {
-        send_test ++;
+        // send_test ++;
         To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * 2;

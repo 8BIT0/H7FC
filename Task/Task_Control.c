@@ -496,7 +496,6 @@ static void TaskControl_CLI_Polling(void)
     TaskControl_CLIData_TypeDef *p_CLIData = NULL;
     uint8_t moto_sum = SrvActuator.get_cnt().moto_cnt;
     uint8_t servo_sum = SrvActuator.get_cnt().servo_cnt;
-    static bool moto_enable = false;
     static uint16_t moto_ctl_buff[8] = {0};
     uint16_t servo_ctl_buff[8] = {0};
     Shell *shell_obj = Shell_GetInstence();
@@ -518,8 +517,6 @@ static void TaskControl_CLI_Polling(void)
                     switch((uint8_t)p_CLIData->cli_type)
                     {
                         case TaskControl_Moto_Set_SpinDir:
-                            moto_enable = false;
-
                             if(SrvActuator.invert_spin(p_CLIData->index))
                             {
                                 shellPrint(shell_obj, "moto spin dir set done\r\n");
@@ -539,8 +536,6 @@ static void TaskControl_CLI_Polling(void)
                                 {
                                     moto_ctl_buff[i] = p_CLIData->value;
                                 }
-
-                                moto_enable = true;
                             }
                             break;
 
@@ -571,12 +566,16 @@ static void TaskControl_CLI_Polling(void)
         }
     }
 
-    if(moto_enable)
-    {
-        /* set moto spin */
-    }
-    else
-        SrvActuator.lock();
+    // if(moto_enable)
+    // {
+    //     /* set moto spin */
+    //     if (SrvActuator.moto_direct_drive)
+    //     {
+    //         // SrvActuator.moto_direct_drive();
+    //     }
+    // }
+    // else
+    //     SrvActuator.lock();
 }
 
 static void TaskControl_CLI_AllMotoSpinTest(uint16_t test_val)

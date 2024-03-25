@@ -85,6 +85,8 @@ static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void);
 static SrvActuator_Model_List SrvActuator_GetModel(void);
 static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max);
 static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
+static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value);
+static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value);
  
 /* external variable */
 SrvActuator_TypeDef SrvActuator = {
@@ -96,6 +98,8 @@ SrvActuator_TypeDef SrvActuator = {
     .get_model = SrvActuator_GetModel,
     .get_moto_control_range = SrvActuator_Get_MotoControlRange,
     .get_servo_control_range = SrvActuator_Get_ServoControlRange,
+    .moto_direct_drive = SrvActuator_Moto_DirectDrive,
+    .servo_direct_drive = SrvActuator_Servo_DirectDrive,
 };
 
 static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
@@ -445,6 +449,7 @@ static void SrvActuator_PipeData(void)
 static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
 {
     float throttle_base_percent = 0.0f;
+    uint16_t ctl_val[4] = {0};
 
     if ((!SrvActuator_Obj.init) ||
         (pid_ctl == NULL))
@@ -464,31 +469,15 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
                                                             SrvActuator_Obj.drive_module.obj_list[i].min_val;
     }
 
-    SrvActuator_Obj.drive_module.obj_list[0].ctl_val += pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
-    SrvActuator_Obj.drive_module.obj_list[1].ctl_val += pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
-    SrvActuator_Obj.drive_module.obj_list[2].ctl_val -= pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
-    SrvActuator_Obj.drive_module.obj_list[3].ctl_val -= pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
+    ctl_val[0] += pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
+    ctl_val[1] += pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
+    ctl_val[2] -= pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
+    ctl_val[3] -= pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
 
     for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
-        if (SrvActuator_Obj.drive_module.obj_list[i].ctl_val <= SrvActuator_Obj.drive_module.obj_list[i].idle_val)
-        {
-            SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].idle_val;
-        }
-        else if (SrvActuator_Obj.drive_module.obj_list[i].ctl_val >= SrvActuator_Obj.drive_module.obj_list[i].max_val)
-            SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].max_val;
-
-        switch (SrvActuator_Obj.drive_module.obj_list[i].drv_type)
-        {
-            case Actuator_DevType_DShot150:
-            case Actuator_DevType_DShot300:
-            case Actuator_DevType_DShot600:
-                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
-                break;
-
-            default:
-                return false;
-        }
+        if (!SrvActuator_Moto_DirectDrive(i, ctl_val[i]))
+            return false;
     }
 
     return true;
@@ -530,6 +519,42 @@ static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min,
         return true;
     }
 
+    return false;
+}
+
+static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
+{
+    if (index < SrvActuator_Obj.drive_module.num.moto_cnt)
+    {
+        if (value < SrvActuator_Obj.drive_module.obj_list[index].min_val)
+        {
+            SrvActuator_Obj.drive_module.obj_list[index].ctl_val = SrvActuator_Obj.drive_module.obj_list[index].min_val;
+        }
+        else if (value > SrvActuator_Obj.drive_module.obj_list[index].max_val)
+        {
+            SrvActuator_Obj.drive_module.obj_list[index].ctl_val = SrvActuator_Obj.drive_module.obj_list[index].max_val;
+        }
+        else
+            SrvActuator_Obj.drive_module.obj_list[index].ctl_val = value;
+
+        switch (SrvActuator_Obj.drive_module.obj_list[index].drv_type)
+        {
+            case  Actuator_DevType_DShot600:
+            case  Actuator_DevType_DShot300:
+            case  Actuator_DevType_DShot150:
+                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[index].drv_obj, SrvActuator_Obj.drive_module.obj_list[index].ctl_val);
+                return true;
+
+            default:
+                break;
+        }
+    }
+
+    return false;
+}
+
+static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value)
+{
     return false;
 }
 
