@@ -70,6 +70,9 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Monitor.actuator_model = SrvActuator.get_model();
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
+    /* on test mode use angular protect */
+    TaskControl_Monitor.angular_protect_enable = true;
+
     /* PID Parametet Init */
     /* attitude PID control parameter section */
     TaskControl_Monitor.PitchCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;

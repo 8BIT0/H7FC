@@ -48,6 +48,7 @@ typedef struct
 {
     bool init_state;
     bool control_abort;
+    bool angular_protect_enable;
     bool angular_protect;
     bool CLI_enable;
 
