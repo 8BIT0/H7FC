@@ -21,6 +21,7 @@
 #define ATTITUDE_PID_DIFF_MIN -30   /* unit: deg */
 
 #define ANGULAR_PID_ACCURACY 1000
+#define THROTTLE_CHANGE_RATE 50   /* unit value per ms */
 
 DataPipe_CreateDataObj(ControlData_TypeDef, Smp_Inuse_CtlData);
 
@@ -42,12 +43,15 @@ SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
 TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .init_state = false,
     .control_abort = false,
+
     /* on test mode use angular_speed over rate threshold protect */
     .angular_protect_enable = true,
     .angular_protect = false,
+
     /* on test mode for throttle control value mutation protect */
     .throttle_protect_enable = true,
     .throttle_percent = false,
+
     .actuator_model = Model_Quad,
     .IMU_Rt = 0,
 };
@@ -192,9 +196,11 @@ void TaskControl_Core(void const *arg)
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     ControlData_TypeDef CtlData;
     Srv_CtlExpectionData_TypeDef Cnv_CtlData;
+    Srv_CtlExpectionData_TypeDef Lst_CtlData;
     
     memset(&CtlData, 0, sizeof(Srv_CtlDataArbitrate_TypeDef));
     memset(&Cnv_CtlData, 0, sizeof(ControlData_TypeDef));
+    memset(&Lst_CtlData, 0, sizeof(ControlData_TypeDef));
 
     while(1)
     {
@@ -208,6 +214,8 @@ void TaskControl_Core(void const *arg)
             CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
             CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
             CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
+
+            Lst_CtlData = Cnv_CtlData;
         }
         else
         {
