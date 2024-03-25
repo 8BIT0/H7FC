@@ -306,8 +306,8 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 }
 
 /* test code */
-uint8_t send_test = 0;
-uint8_t cb_test = 0;
+// uint8_t send_test = 0;
+// uint8_t cb_test = 0;
 /* test code */
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
@@ -322,7 +322,7 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
         tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
 
         /* test code */
-        while(cb_test < send_test);
+        // while(cb_test < send_test);
     }
 }
 
@@ -332,7 +332,7 @@ static void BspTimer_DMA_TransCplt_Callback(void *arg)
 
     if (arg && To_TimerPWMObj_Ptr(arg)->dma_hdl)
     {
-        cb_test ++;
+        // cb_test ++;
         obj = To_TimerPWMObj_Ptr(arg);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
         tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);

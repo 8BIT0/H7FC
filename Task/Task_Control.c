@@ -9,6 +9,7 @@
 #include "Srv_DataHub.h"
 #include "Srv_Actuator.h"
 #include "shell_port.h"
+#include "Storage.h"
 
 #define DEFAULT_CONTROL_MODEL Model_Quad
 #define DEFAULT_ESC_TYPE DevDshot_600
@@ -191,31 +192,27 @@ void TaskControl_Core(void const *arg)
 
     while(1)
     {
-        // Srv_CtlDataArbitrate.negociate_update(&CtlData);
+        Srv_CtlDataArbitrate.negociate_update(&CtlData);
         
-        // if(control_enable && !TaskControl_Monitor.CLI_enable)
-        // {
-        //     Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
-        //     TaskControl_FlightControl_Polling(&Cnv_CtlData);
+        if(control_enable && !TaskControl_Monitor.CLI_enable)
+        {
+            Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
+            TaskControl_FlightControl_Polling(&Cnv_CtlData);
             
-        //     CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
-        //     CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
-        //     CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
-        // }
-        // else
-        // {
-        //     if(TaskControl_Monitor.CLI_enable)
-        //     {
-        //         TaskControl_CLI_Polling();
-        //     }
-        //     else
-        //         /* lock all moto */
-        //         SrvActuator.lock();
-        // }
-
-        /* test code */
-        TaskControl_FlightControl_Polling(&Cnv_CtlData);
-        /* test code */
+            CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
+            CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
+            CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
+        }
+        else
+        {
+            if(TaskControl_Monitor.CLI_enable)
+            {
+                TaskControl_CLI_Polling();
+            }
+            else
+                /* lock all moto */
+                SrvActuator.lock();
+        }
 
         DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
         /* pipe in use control data to data hub */
@@ -277,14 +274,6 @@ static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef
         ctl_buf[Actuator_Ctl_GyrY] = monitor->GyrYCtl_PIDObj.fout;
         ctl_buf[Actuator_Ctl_GyrZ] = monitor->GyrZCtl_PIDObj.fout;
     }
-    
-    /* test code */
-    ctl_buf[Actuator_Ctl_Throttle] = 50;
-
-    ctl_buf[Actuator_Ctl_GyrX] = 10;
-    ctl_buf[Actuator_Ctl_GyrY] = 5;
-    ctl_buf[Actuator_Ctl_GyrZ] = 8;
-    /* test code */
 
     SrvActuator.moto_control(ctl_buf);
 }
@@ -782,3 +771,13 @@ static void TaskControl_Close_CLI(void)
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, disable_actuator_test, TaskControl_Close_CLI, disable actuator test);
+
+static void TaskControl_Get_Controller_Parameter(void)
+{
+    Shell *shell_obj = Shell_GetInstence();
+
+    if(shell_obj == NULL)
+        return;
+        
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, get_controller_parameter, TaskControl_Get_Controller_Parameter, get controller parameter);
