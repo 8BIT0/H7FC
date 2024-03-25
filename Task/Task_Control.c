@@ -1,6 +1,8 @@
 /*
  *  coder : 8_B!T0
  *  this file use for moto & servo control
+ *  pitch & roll control mode outer loop is angular loop inner loop is angular speed loop 
+ *  yaw control mode is only angular speed loop
  */
 #include "Task_Control.h"
 #include "Srv_OsCommon.h"
@@ -40,9 +42,9 @@ SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
 TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .init_state = false,
     .control_abort = false,
-
+    /* on test mode use angular protect */
+    .angular_protect_enable = true,
     .actuator_model = Model_Quad,
-
     .IMU_Rt = 0,
 };
 
@@ -69,9 +71,6 @@ void TaskControl_Init(uint32_t period)
 
     TaskControl_Monitor.actuator_model = SrvActuator.get_model();
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
-
-    /* on test mode use angular protect */
-    TaskControl_Monitor.angular_protect_enable = true;
 
     /* PID Parametet Init */
     /* attitude PID control parameter section */
@@ -423,7 +422,7 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
             goto lock_moto;
         }
         
-        if(TaskControl_Monitor.angular_protect)
+        if(TaskControl_Monitor.angular_protect_enable && TaskControl_Monitor.angular_protect)
             goto lock_moto;
 
         if(exp_ctl_val->recover_flip_over && TaskControl_Monitor.flip_over)
