@@ -517,7 +517,7 @@ static void TaskControl_CLI_Polling(void)
 
                     switch((uint8_t)p_CLIData->cli_type)
                     {
-                        case TaskControl_Moto_Set_Spin:
+                        case TaskControl_Moto_Set_SpinDir:
                             if(SrvActuator.invert_spin(p_CLIData->index))
                             {
                                 shellPrint(shell_obj, "moto spin dir set done\r\n");
@@ -526,7 +526,7 @@ static void TaskControl_CLI_Polling(void)
                                 shellPrint(shell_obj, "moto spin dir set error\r\n");
                             break;
 
-                        case TaskControl_Moto_Set_SpinDir:
+                        case TaskControl_Moto_Set_Spin:
                             if(p_CLIData->index < SrvActuator.get_cnt().moto_cnt)
                             {
                                 moto_ctl_buff[p_CLIData->index] = p_CLIData->value;
