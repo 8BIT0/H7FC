@@ -1,3 +1,10 @@
+/*
+ * Auther: 8_B!T0
+ *
+ * WARNING:
+ *  SBUS Mode is none tested
+ * 
+ */
 #include "Srv_Receiver.h"
 #include "Bsp_Uart.h"
 #include "Bsp_SPI.h"
