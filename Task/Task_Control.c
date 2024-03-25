@@ -528,13 +528,13 @@ static void TaskControl_CLI_Polling(void)
                         case TaskControl_Moto_Set_Spin:
                             if(CLIData.index < SrvActuator.get_cnt().moto_cnt)
                             {
-                                moto_ctl_buff[p_CLIData->index] = p_CLIData->value;
+                                moto_ctl_buff[CLIData.index] = CLIData.value;
                             }
                             else
                             {
                                 for(uint8_t i = 0; i < SrvActuator.get_cnt().moto_cnt; i++)
                                 {
-                                    moto_ctl_buff[i] = p_CLIData->value;
+                                    moto_ctl_buff[i] = CLIData.value;
                                 }
                             }
                             break;
@@ -666,7 +666,7 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
                             p_CLIData->timestamp = time_stamp;
                             p_CLIData->value = test_val;
 
-                            if(osMessagePut(TaskControl_Monitor.CLIMessage_ID, p_CLIData, CLI_MESSAGE_OPEARATE_TIMEOUT) != osOK)
+                            if(osMessagePut(TaskControl_Monitor.CLIMessage_ID, (uint32_t)p_CLIData, CLI_MESSAGE_OPEARATE_TIMEOUT) != osOK)
                                 shellPrint(shell_obj, "TaskControl CLI set failed\r\n");
                         }
                         else

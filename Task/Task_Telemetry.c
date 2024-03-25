@@ -839,7 +839,6 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
         }
         else
         {
-            memset(CTLSig, 0, sizeof(ControlData_TypeDef));
             CTLSig->arm_state = TELEMETRY_SET_ARM;
         }
 

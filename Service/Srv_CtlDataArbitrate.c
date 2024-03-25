@@ -15,6 +15,8 @@
 #define RC_TAKING_OVER_CONFIRM 2000 /* unit : ms */
 #define TAKINGOVER_NEGOCIOATE_TIMEOUT 10000 /* unit : ms */
 
+#define CTL_DATA_UPDATE_TIMEOUT 2000 /* unit: ms */
+
 /* internal vriable */
 static Srv_CtlArbitrateMonitor_TypeDef SrvCtlArbitrateMonitor;
 static void Srv_OnPlaneComputer_TakingOver_RequireSend(ControlData_TypeDef cur_ctl_data);
@@ -176,7 +178,9 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
         SrvDataHub.get_opc_control_data(&SrvCtlArbitrateMonitor.OPC_CtlData);
         
         /* check signal update */
-
+        SrvCtlArbitrateMonitor.InUse_CtlData.arm_state = DRONE_ARM;
+        SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe = true;
+        
         if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_RC)
         {
             if(SrvCtlArbitrateMonitor.RC_CtlData.update_time_stamp)
