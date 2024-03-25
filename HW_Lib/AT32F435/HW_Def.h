@@ -14,7 +14,7 @@
 /* device support */
 #include "Dev_W25Qxx.h"
 
-#define RECEIVER_PORT BspUART_Port_4
+#define RECEIVER_PORT UART4
 #define RECEIVER_CRSF_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
 #define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_4
 #define RECEIVER_CRSF_TX_DMA Bsp_DMA_None               // Bsp_DMA_1
