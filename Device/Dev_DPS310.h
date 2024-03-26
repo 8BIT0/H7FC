@@ -10,6 +10,9 @@ typedef bool (*DevDPS310_BusRead)(uint16_t dev_addr, uint16_t reg_addr, uint8_t 
 typedef void (*DevDPS310_DelayMs)(uint32_t ms);
 typedef uint32_t (*DevDPS310_GetTick)(void);
 
+#define ToDPS310_Obj(x) ((DevDPS310Obj_TypeDef *)x)
+#define ToDPS310_API(x) ((DevDPS310_TypeDef *)x)
+
 #define DPS310_I2C_ADDR 0x76
 
 #define DPS310_PSR_B2_REG 0x00u

@@ -174,7 +174,9 @@
                 "usbd_core.h": "c",
                 "cdc_class.h": "c",
                 "at32f435_437_dma.h": "c",
-                "at32f435_437_conf.h": "c"
+                "at32f435_437_conf.h": "c",
+                "dev_dps310.h": "c",
+                "bsp_iic_port_def.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

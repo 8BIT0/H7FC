@@ -5,6 +5,9 @@
 #include <string.h>
 #include <stdint.h>
 
+#define ToIIC_BusObj(x) ((BspIICObj_TypeDef *)x)
+#define ToIIC_BusAPI(x) ((BspIIC_TypeDef *)x)
+
 typedef struct
 {
     void *port_sda;
