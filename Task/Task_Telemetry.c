@@ -28,6 +28,7 @@
 #include "Srv_OsCommon.h"
 #include "util.h"
 #include "Srv_ComProto.h"
+#include "Storage.h"
 
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_Monitor_TypeDef Telemetry_Monitor;

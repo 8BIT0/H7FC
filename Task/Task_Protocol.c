@@ -4,6 +4,7 @@
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
 #include "DataPipe.h"
+#include "Storage.h"
 
 #define PROTO_STREAM_BUF_SIZE 512
 
