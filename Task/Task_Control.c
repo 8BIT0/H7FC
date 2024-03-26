@@ -515,6 +515,7 @@ static void TaskControl_CLI_Polling(void)
                 switch((uint8_t)CLIData.cli_type)
                 {
                     case TaskControl_Moto_Set_SpinDir:
+                        memset(moto_ctl_buff, 0, sizeof(moto_ctl_buff));
                         if(SrvActuator.invert_spin(CLIData.index))
                         {
                             shellPrint(shell_obj, "moto spin dir set done\r\n");
@@ -538,6 +539,7 @@ static void TaskControl_CLI_Polling(void)
                         break;
 
                     case TaskControl_Moto_CliDisable:
+                        memset(moto_ctl_buff, 0, sizeof(moto_ctl_buff));
                         TaskControl_Monitor.CLI_enable = false;
                         break;
 
