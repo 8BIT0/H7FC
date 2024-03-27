@@ -32,8 +32,8 @@ osThreadId TaskManager_Handle = NULL;
 
 void Task_Manager_Init(void)
 {
-#if defined MATEKH743_V1_5
     DevLED.init(Led1);
+#if defined MATEKH743_V1_5
     DevLED.init(Led2);
     DevLED.init(Led3);
 

@@ -99,9 +99,9 @@ void TaskNavi_Core(void const *arg)
         if(Attitude_Update)
         {
             /* update Attitude */
-            MadgwickAHRSupdate(Deg2Rad(Flt_Gyr[Axis_X]), Deg2Rad(-Flt_Gyr[Axis_Y]), Deg2Rad(-Flt_Gyr[Axis_Z]), \
-                               Flt_Acc[Axis_X],           -Flt_Acc[Axis_Y],         -Flt_Acc[Axis_Z], \
-                               Flt_Mag[Axis_X],           Flt_Mag[Axis_Y],          -Flt_Mag[Axis_Z]);
+            MadgwickAHRSupdate(Deg2Rad(Flt_Gyr[Axis_X]), Deg2Rad(Flt_Gyr[Axis_Y]), Deg2Rad(Flt_Gyr[Axis_Z]), \
+                               Flt_Acc[Axis_X],          Flt_Acc[Axis_Y],          Flt_Acc[Axis_Z], \
+                               Flt_Mag[Axis_X],          Flt_Mag[Axis_Y],          Flt_Mag[Axis_Z]);
             
             if(MadgwickAHRS_Get_Attitude(&attitude.pitch, &attitude.roll, &attitude.yaw) && \
                MadgwickAHRS_Get_Quraterion(&attitude.q0, &attitude.q1, &attitude.q2, &attitude.q3))

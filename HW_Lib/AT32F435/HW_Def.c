@@ -2,12 +2,12 @@
 
 /* Led 1 */
 BspGPIO_Port_TypeDef Led1_Port = {
-    .port = GPIOC,
+    .port = GPIOB,
 };
 
 BspGPIO_Obj_TypeDef Led1 = {
     .port = (void *)&Led1_Port,
-    .pin = GPIO_PINS_1,
+    .pin = GPIO_PINS_5,
     .init_state = GPIO_PULL_NONE,
 };
 
@@ -172,8 +172,6 @@ BspGPIO_Port_TypeDef PWM_5_Port = {
 BspGPIO_Port_TypeDef PWM_6_Port = {
     .port = GPIOA,
 };
-
-
 
 
 

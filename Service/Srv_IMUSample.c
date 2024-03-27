@@ -78,8 +78,73 @@ static Error_Handler SrvMPU_Error_Handle = NULL;
 static SPI_HandleTypeDef PriIMU_Bus_Instance;
 /* ICM42688P Instance */
 static SPI_HandleTypeDef SecIMU_Bus_Instance;
+
+void PriIMU_Dir_Tune(float *gyr, float *acc)
+{
+    double gyr_tmp[Axis_Sum] = {0.0};
+    double acc_tmp[Axis_Sum] = {0.0};
+    
+    if (gyr && acc)
+    {
+        for (uint8_t i = Axis_X; i < Axis_Sum; i++)
+        {
+            gyr_tmp[i] = gyr[i];
+            acc_tmp[i] = acc[i];
+        }
+
+        gyr[Axis_Y] = -gyr_tmp[Axis_Y];
+        gyr[Axis_Z] = -gyr_tmp[Axis_Z];
+
+        acc[Axis_Y] = -acc_tmp[Axis_Y];
+        acc[Axis_Z] = -acc_tmp[Axis_Z];
+    }
+}
+
+void SecIMU_Dir_Tune(float *gyr, float *acc)
+{
+    double gyr_tmp[Axis_Sum] = {0.0};
+    double acc_tmp[Axis_Sum] = {0.0};
+
+    if (gyr && acc)
+    {
+        for (uint8_t i = Axis_X; i < Axis_Sum; i++)
+        {
+            gyr_tmp[i] = gyr[i];
+            acc_tmp[i] = acc[i];
+        }
+
+        gyr[Axis_Y] = -gyr_tmp[Axis_Y];
+        gyr[Axis_Z] = -gyr_tmp[Axis_Z];
+
+        acc[Axis_Y] = -acc_tmp[Axis_Y];
+        acc[Axis_Z] = -acc_tmp[Axis_Z];
+    }
+}
 #elif defined AT32F435RGT7
 static void *PriIMU_Bus_Instance = NULL;
+
+void PriIMU_Dir_Tune(float *gyr, float *acc)
+{
+    double gyr_tmp[Axis_Sum] = {0.0};
+    double acc_tmp[Axis_Sum] = {0.0};
+
+    if (gyr && acc)
+    {
+        for (uint8_t i = Axis_X; i < Axis_Sum; i++)
+        {
+            gyr_tmp[i] = gyr[i];
+            acc_tmp[i] = acc[i];
+        }
+
+        gyr[Axis_X] = -gyr_tmp[Axis_Y];
+        gyr[Axis_Y] = gyr_tmp[Axis_X];
+        gyr[Axis_Z] = gyr_tmp[Axis_Z];
+
+        acc[Axis_X] = -acc_tmp[Axis_Y];
+        acc[Axis_Y] = acc_tmp[Axis_X];
+        acc[Axis_Z] = acc_tmp[Axis_Z];
+    }
+}
 #endif
 static DevMPU6000Obj_TypeDef MPU6000Obj;
 static DevICM20602Obj_TypeDef ICM20602Obj;
@@ -939,6 +1004,9 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
                             PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                     }
                 }
+
+                PriIMU_Dir_Tune(PriIMU_Data.flt_gyr, PriIMU_Data.flt_acc);
+                PriIMU_Dir_Tune(PriIMU_Data.org_gyr, PriIMU_Data.org_acc);
                  
                 /* unlock */
                 SrvMpu_Update_Reg.sec.Pri_State = false;
@@ -1011,6 +1079,9 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
                     }
                 }
 
+                SecIMU_Dir_Tune(SecIMU_Data.flt_gyr, SecIMU_Data.flt_acc);
+                SecIMU_Dir_Tune(SecIMU_Data.org_gyr, SecIMU_Data.org_acc);
+                
                 /* unlock */
                 SrvMpu_Update_Reg.sec.Sec_State = false;
                 SecIMU_Data_Lst = SecIMU_Data;
