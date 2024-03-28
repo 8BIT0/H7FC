@@ -6,6 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include "Dev_DPS310.h"
+#include "Dev_BMP280.h"
 #include "../algorithm/Filter_Dep/filter.h"
 #include "gen_calib.h"
 
