@@ -949,6 +949,8 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
 
 #if (IMU_SUM < 2)
     mode = SrvIMU_Priori_Pri;
+    SecSample_Enable = false;
+    sec_sample_state = false;
 #endif
 
     /* lock fus data */
