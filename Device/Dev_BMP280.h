@@ -21,7 +21,7 @@ typedef enum
 typedef uint32_t (*DevBMP280_Get_Tick)(void);
 typedef void (*DevBMP280_Delay_Ms)(uint32_t ms);
 typedef uint16_t (*DevBMP280_BusCommu)(uint8_t *p_data, uint16_t len);
-typedef uitn16_t (*DevBMP280_Trans)(uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
+typedef uint16_t (*DevBMP280_Trans)(uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
 typedef void (*DevBMP280_CS_Ctl)(bool state); /* true -> cs high / false -> cs low */
 
 typedef struct
