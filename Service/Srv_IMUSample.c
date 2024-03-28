@@ -947,6 +947,10 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     if(mode > SrvIMU_Both_Sample)
         return false;
 
+#if (IMU_SUM < 2)
+    mode = SrvIMU_Priori_Pri;
+#endif
+
     /* lock fus data */
     SrvMpu_Update_Reg.sec.Fus_State = true;
 
