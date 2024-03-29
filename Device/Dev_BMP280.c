@@ -24,6 +24,7 @@ static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj);
 
 DevBMP280_TypeDef DevBMP280 = {
     .init =  DevBMP280_Init,
+    .sample = DevBMP280_Sample,
 };
 
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
