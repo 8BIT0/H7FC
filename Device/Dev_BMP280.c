@@ -87,7 +87,11 @@ static bool DevBMP280_Set_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBM
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
+            if ((obj->cs_ctl) && \
+                (obj->trans))
+            {
 
+            }
         }
     }
 
@@ -104,7 +108,11 @@ static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, De
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
+            if ((obj->cs_ctl) && \
+                (obj->trans))
+            {
 
+            }
         }
     }
 
