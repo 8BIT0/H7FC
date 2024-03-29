@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#define To_BMP280_Obj(x) ((DevBMP280Obj_TypeDef *)x)
+#define To_BMP280_Api(x) ((DevBMP280_TypeDef *)x)
+
 #define BMP280_NORMAL_MODE             3
 
 #define BMP280_REG_NVM_PAR_T1_L        0x88        /**< NVM PAR T1 low register */

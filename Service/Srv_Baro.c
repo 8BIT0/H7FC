@@ -251,8 +251,6 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                 (SrvBaroObj.sensor_api != NULL))
             {
                 /* set sensor object */
-                memset(SrvBaroObj.sensor_obj, 0, sizeof(DevDPS310Obj_TypeDef));
-
                 ToDPS310_Obj(SrvBaroObj.sensor_obj)->DevAddr = DPS310_I2C_ADDR;
                 ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_rx = SrvBaro_IICBus_Rx;
                 ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_tx = SrvBaro_IICBus_Tx;
