@@ -355,7 +355,7 @@ static bool DevBMP280_Compensate_Pressure(DevBMP280Obj_TypeDef *obj)
 
 static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_TypeDef *status)
 {
-    if (obj)
+    if (obj && status)
     {
         if (obj->Bus == DevBMP280_Bus_IIC)
         {
@@ -363,7 +363,8 @@ static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_Type
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-
+            if (DevBMP280_Register_Read(obj, BMP280_REG_STATUS, status, sizeof(uint8_t)) == 0)
+                return false;
 
             return true;
         }
