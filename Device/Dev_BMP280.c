@@ -7,6 +7,7 @@
 static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t *p_buf);
 static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t p_buf);
 static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj);
+static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj);
 
 /* external function */
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
@@ -46,10 +47,46 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
                 return false;
             }
 
+            /* check id first */
             if (!DevBMP280_Check_ModuleID(obj))
             {
                 obj->ErrorCode = DevBMP280_ID_Error;
                 return false;
+            }
+
+            /* soft reset */
+        }
+    }
+
+    return false;
+}
+
+static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj)
+{
+    uint8_t reg = DevBMP280_Write_Mask(BMP280_REG_RESET);
+    uint16_t state = 0;
+
+    if (obj)
+    {
+        if (obj->Bus == DevBMP280_Bus_IIC)
+        {
+            /* developping */
+        }
+        else if (obj->Bus == DevBMP280_Bus_SPI)
+        {
+            if (obj->delay_ms && \
+                obj->cs_ctl && \
+                obj->trans)
+            {
+                obj->cs_ctl(false);
+                state = obj->send(&reg, sizeof(reg));
+                obj->cs_ctl(true);
+
+                if (state)
+                {
+                    obj->delay_ms(10);
+                    return true;
+                }
             }
         }
     }
