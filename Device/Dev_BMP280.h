@@ -142,6 +142,9 @@ typedef union
 typedef struct
 {
     bool (*init)(DevBMP280Obj_TypeDef *obj);
+    bool (*sample)(DevBMP280Obj_TypeDef *obj);
+    bool (*get_data_ready)(DevBMP280Obj_TypeDef *obj);
+    bool (*get_data)(DevBMP280Obj_TypeDef *obj, float *pressure, float *tamperature);
 } DevBMP280_TypeDef;
 
 extern DevBMP280_TypeDef DevBMP280;
