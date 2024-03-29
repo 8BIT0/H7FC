@@ -56,6 +56,7 @@ Task/Task_Telemetry.c \
 Task/Task_Protocol.c \
 Task/Task_Control.c \
 Device/Dev_DPS310.c \
+Device/Dev_BMP280.c \
 Device/Dev_MPU6000.c \
 Device/Dev_ICM20602.c \
 Device/Dev_ICM426xx.c \
