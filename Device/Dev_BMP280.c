@@ -8,6 +8,7 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
 static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t p_buf);
 static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj);
 static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj);
+static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_TypeDef *status);
 
 /* external function */
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
@@ -55,6 +56,47 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
             }
 
             /* soft reset */
+            if (!DevBMP280_SoftReset(obj))
+            {
+                obj->ErrorCode = DevBMP280_Reset_Error;
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_TypeDef *status)
+{
+    uint16_t state = 0;
+    uint16_t tx_tmp[2] = {0};
+    uint16_t rx_tmp[2] = {0};
+
+    if (obj)
+    {
+        if (obj->Bus == DevBMP280_Bus_IIC)
+        {
+            /* developping */
+        }
+        else if (obj->Bus == DevBMP280_Bus_SPI)
+        {
+            if ((obj->cs_ctl) && \
+                (obj->trans))
+            {
+                obj->cs_ctl(false);
+                state = obj->trans(tx_tmp, rx_tmp, sizeof(tx_tmp));
+                obj->cs_ctl(true);
+            
+                status->val = 0;
+                if (state)
+                {
+                    status->val = rx_tmp[1];
+                    return true;
+                }
+            }
         }
     }
 

@@ -53,6 +53,7 @@ typedef enum
     DevBMP280_Error_None = 0,
     DevBMP280_Para_Error,
     DevBMP280_Init_Error,
+    DevBMP280_Reset_Error,
     DevBMP280_ID_Error,
 } DevBMP280_ErrorCode_List;
 
@@ -75,6 +76,19 @@ typedef struct
     DevBMP280_CS_Ctl cs_ctl;
 
 } DevBMP280Obj_TypeDef;
+
+typedef union
+{
+    uint8_t val;
+
+    struct
+    {
+        uint8_t im_update : 1;
+        uint8_t res_1     : 2;
+        uint8_t measuring : 1;
+        uint8_t res_2     : 4;
+    } bit;
+} DevBMP280_Status_TypeDef;
 
 typedef struct
 {
