@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define BMP280_NORMAL_MODE             3
+
 #define BMP280_REG_NVM_PAR_T1_L        0x88        /**< NVM PAR T1 low register */
 #define BMP280_REG_NVM_PAR_T1_H        0x89        /**< NVM PAR T1 high register */
 #define BMP280_REG_NVM_PAR_T2_L        0x8A        /**< NVM PAR T2 low register */

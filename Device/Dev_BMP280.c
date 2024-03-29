@@ -20,6 +20,7 @@ static bool DevBMP_Get_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List *
 
 /* external function */
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
+static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj);
 
 DevBMP280_TypeDef DevBMP280 = {
     .init =  DevBMP280_Init,
@@ -532,6 +533,83 @@ static bool DevBMP280_Calibration(DevBMP280Obj_TypeDef *obj)
             memset(rx_tmp, 0, sizeof(rx_tmp));
 
             obj->calib.t_fine = 0;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj)
+{
+    uint8_t mode = 0;
+    uint32_t timeout = 0;
+    uint8_t buf[6] = {0};
+    
+    if (obj && obj->delay_ms)
+    {
+        if (obj->Bus == DevBMP280_Bus_IIC)
+        {
+            /* developping */
+        }
+        else if (obj->Bus == DevBMP280_Bus_SPI)
+        {
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &mode, 1) == 0)
+                return false;
+            
+            if ((mode & 0x3) == BMP280_NORMAL_MODE)
+            {
+                if(DevBMP280_Register_Read(obj, BMP280_REG_PRESS_MSB, buf, sizeof(buf)) == 0)
+                    return false;
+
+                obj->raw_temperature = ((((uint32_t)(buf[3])) << 12) | (((uint32_t)(buf[4])) << 4) | ((uint32_t)buf[5] >> 4));
+                if (!DevBMP280_Compensate_Temperature(obj))
+                    return false;
+
+                obj->raw_pressure = ((((int32_t)(buf[0])) << 12) | (((int32_t)(buf[1])) << 4) |(((int32_t)(buf[2])) >> 4));
+                if (!DevBMP280_Compensate_Pressure(obj))
+                    return false;
+            }
+            else
+            {
+                /* forced mode */
+                if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &mode, 1) == 0)
+                    return false;
+                
+                mode &= ~(3 << 0);
+                mode |= 0x01 << 0;
+
+                if (DevBMP280_Register_Write(obj, BMP280_REG_CTRL_MEAS, mode) == 0)
+                    return false;
+
+                timeout = 10 * 1000;
+                while (timeout != 0)
+                {
+                    if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &mode, 1) == 0)
+                        return false;
+                    
+                    if ((mode & 0x03) == 0)
+                        break;
+                    
+                    obj->delay_ms(1);
+                    timeout--;
+
+                    if (timeout == 0)
+                        return false;
+                }
+
+                if (DevBMP280_Register_Read(obj, BMP280_REG_PRESS_MSB, buf, 6) == 0)
+                    return false;
+
+                obj->raw_temperature = ((((uint32_t)(buf[3])) << 12) | (((uint32_t)(buf[4])) << 4) | ((uint32_t)buf[5] >> 4));
+                if (!DevBMP280_Compensate_Temperature(obj))
+                    return false;
+                
+                obj->raw_pressure = ((((int32_t)(buf[0])) << 12) | (((int32_t)(buf[1])) << 4) | (((int32_t)(buf[2])) >> 4));
+                if (!DevBMP280_Compensate_Pressure(obj))
+                    return false;
+            }
 
             return true;
         }
