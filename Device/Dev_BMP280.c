@@ -83,6 +83,8 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
                 *p_buf = 0;
                 if (state)
                     *p_buf = rx_tmp[1];
+
+                return state;
             }
         }
     }
@@ -92,6 +94,10 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
 
 static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t p_buf)
 {
+    uint8_t tx_tmp[2] = {0};
+    uint8_t rx_tmp[2] = {0};
+    uint16_t state = 0;
+    
     if (obj)
     {
         if (obj->Bus == DevBMP280_Bus_IIC)
