@@ -21,10 +21,12 @@ static bool DevBMP_Get_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List *
 /* external function */
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
 static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj);
+static bool DevBMP280_Get_DataReady(DevBMP280Obj_TypeDef *obj);
 
 DevBMP280_TypeDef DevBMP280 = {
     .init =  DevBMP280_Init,
     .sample = DevBMP280_Sample,
+    .get_data_ready = DevBMP280_Get_DataReady,
 };
 
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
@@ -377,6 +379,22 @@ static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_Type
 
             return true;
         }
+    }
+
+    return false;
+}
+
+static bool DevBMP280_Get_DataReady(DevBMP280Obj_TypeDef *obj)
+{
+    DevBMP280_Status_TypeDef status;
+
+    if (obj)
+    {
+        if (!DevBMP280_GetStatus(obj, &status))
+            return false;
+
+        if (status.bit.im_update && !status.bit.measuring)
+            return true;
     }
 
     return false;
