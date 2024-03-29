@@ -59,6 +59,7 @@ typedef enum
     DevBMP280_Get_CalibParam_Error,
     DevBMP280_Set_Temperature_OverSampling_Error,
     DevBMP280_Set_Pressure_OverSampling_Error,
+    DevBMP280_Set_Filter_Error,
     DevBMP280_ID_Error,
 } DevBMP280_ErrorCode_List;
 

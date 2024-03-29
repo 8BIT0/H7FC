@@ -90,6 +90,13 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
                 return false;
             }
 
+            /* set filter */
+            if (!DevBMP280_Set_Filter(obj, DevBMP280_FILTER_COEFF_16))
+            {
+                obj->ErrorCode = DevBMP280_Set_Filter_Error;
+                return false;
+            }
+
             return true;
         }
     }
