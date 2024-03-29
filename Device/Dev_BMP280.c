@@ -22,11 +22,13 @@ static bool DevBMP_Get_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List *
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
 static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj);
 static bool DevBMP280_Get_DataReady(DevBMP280Obj_TypeDef *obj);
+static bool DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj, float *pressure, float *temperature);
 
 DevBMP280_TypeDef DevBMP280 = {
     .init =  DevBMP280_Init,
     .sample = DevBMP280_Sample,
     .get_data_ready = DevBMP280_Get_DataReady,
+    .get_data = DevBMP280_Get_Data,
 };
 
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
@@ -395,6 +397,17 @@ static bool DevBMP280_Get_DataReady(DevBMP280Obj_TypeDef *obj)
 
         if (status.bit.im_update && !status.bit.measuring)
             return true;
+    }
+
+    return false;
+}
+
+static bool DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj, float *pressure, float *temperature)
+{
+    if (obj && pressure && temperature)
+    {
+        *pressure = obj->pressure;
+        *temperature = obj->temperature;
     }
 
     return false;
