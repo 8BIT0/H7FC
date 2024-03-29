@@ -41,10 +41,10 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
                 (obj->send == NULL) || \
                 (obj->recv == NULL) || \
                 (obj-> trans == NULL))
-                {
-                    obj->ErrorCode = DevBMP280_Para_Error;
-                    return false;
-                }
+            {
+                obj->ErrorCode = DevBMP280_Para_Error;
+                return false;
+            }
 
             if (!DevBMP280_Check_ModuleID(obj))
             {
