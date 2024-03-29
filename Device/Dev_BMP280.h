@@ -54,6 +54,7 @@ typedef enum
     DevBMP280_Para_Error,
     DevBMP280_Init_Error,
     DevBMP280_Reset_Error,
+    DevBMP280_Get_CalibParam_Error,
     DevBMP280_ID_Error,
 } DevBMP280_ErrorCode_List;
 
@@ -62,6 +63,23 @@ typedef void (*DevBMP280_Delay_Ms)(uint32_t ms);
 typedef uint16_t (*DevBMP280_BusCommu)(uint8_t *p_data, uint16_t len);
 typedef uint16_t (*DevBMP280_Trans)(uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
 typedef void (*DevBMP280_CS_Ctl)(bool state); /* true -> cs high / false -> cs low */
+
+typedef struct
+{
+    uint16_t t1;
+    int16_t t2;
+    int16_t t3;
+    uint16_t p1;
+    int16_t p2;
+    int16_t p3;
+    int16_t p4;
+    int16_t p5;
+    int16_t p6;
+    int16_t p7;
+    int16_t p8;
+    int16_t p9;
+    int32_t t_fine;
+} DevBMP280_Calib_TypeDef;
 
 typedef struct
 {
@@ -74,6 +92,14 @@ typedef struct
     DevBMP280_BusCommu recv;
     DevBMP280_Trans trans;
     DevBMP280_CS_Ctl cs_ctl;
+
+    DevBMP280_Calib_TypeDef calib;
+
+    float raw_temperature;  /* without compensate temperature */
+    float raw_pressure;     /* without compensate pressure */
+
+    float temperature;
+    float pressure;
 
 } DevBMP280Obj_TypeDef;
 

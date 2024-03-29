@@ -9,6 +9,14 @@
  */
 #define SrvSensorMonitor_GetSampleInterval(period) (1000 / period)
 
+#if defined MATEKH743_V1_5
+#define BARO_TYPE Baro_Type_DPS310
+#define BARO_BUS_TYPE SrvBaro_Bus_IIC
+#elif defined BATEAT32F435_AIO
+#define BARO_TYPE Baro_Type_BMP280
+#define BARO_BUS_TYPE SrvBaro_Bus_SPI
+#endif
+
 /* internal function */
 static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);
 
@@ -470,7 +478,7 @@ static uint32_t SrvSensorMonitor_Get_MagData(SrvSensorMonitorObj_TypeDef *obj)
 /******************************************* Baro Section *********************************************/
 static bool SrvSensorMonitor_Baro_Init(void)
 {
-    if(SrvBaro.init && (SrvBaro.init() == SrvBaro_Error_None))
+    if(SrvBaro.init && (SrvBaro.init(BARO_TYPE, BARO_BUS_TYPE) == SrvBaro_Error_None))
         return true;
 
     return false;

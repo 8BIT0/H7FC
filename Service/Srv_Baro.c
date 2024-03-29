@@ -29,20 +29,19 @@ BspIICObj_TypeDef SrvBaro_IIC_Obj = {
 };
 
 SrvBaroBusObj_TypeDef SrvBaroBus = {
-    .type = SrvBaro_Bus_IIC,
+    .type = SrvBaro_Bus_None,
     .init = false,
     .bus_obj = (void *)&SrvBaro_IIC_Obj,
     .bus_api = (void *)&BspIIC,
 };
-#elif defined BATEAT32F435_AIO
-/* just for test currently */
+#endif
+
 SrvBaroBusObj_TypeDef SrvBaroBus = {
     .type = SrvBaro_Bus_None,
     .init = false,
     .bus_obj = NULL,
     .bus_api = NULL,
 };
-#endif
 
 /* internal function */
 static bool SrvBaro_Bus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
@@ -158,13 +157,14 @@ SrvBaro_TypeDef SrvBaro = {
     .get_calib = SrvBaro_Get_Calib,
 };
 
-static bool SrvBaro_BusInit(void)
+static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
 {
     if(SrvBaroBus.bus_obj && SrvBaroBus.bus_api)
     {
-        switch((uint8_t)SrvBaroBus.type)
+        switch((uint8_t)bus_type)
         {
             case SrvBaro_Bus_IIC:
+                SrvBaroBus.type = bus_type;
 #if defined STM32H743xx
                 ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
                 if(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
@@ -204,7 +204,7 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
     /* regist all error to the error tree */
     ErrorLog.registe(SrvBaro_Error_Handle, SrvBaro_ErrorList, sizeof(SrvBaro_ErrorList) / sizeof(SrvBaro_ErrorList[0]));
 
-    if(!SrvBaro_BusInit())
+    if(!SrvBaro_BusInit(bus_type))
     {
         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BusInit, NULL, 0);
         return SrvBaro_Error_BusInit;
