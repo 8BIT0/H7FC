@@ -3,6 +3,10 @@
 #define DevBMP280_Write_Mask(x) (x & ~(1 << 7))
 #define DevBMP280_Read_Mask(x) (x | (1 << 7))
 
+/* internal function */
+static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t *p_buf);
+static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t p_buf);
+
 /* external function */
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
 
@@ -48,14 +52,18 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
     return false;
 }
 
-static uint16_t DevBMP280_Get_ModuleID(DevBMP280Obj_TypeDef *obj)
+static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj)
 {
+    uint8_t ID = 0;
+
     if (obj)
     {
-
+        if (DevBMP280_Register_Read(obj, BMP280_REG_ID, &ID) && \
+            (ID == BMP280_DEVICE_ID))
+            return true;
     }
 
-    return 0;
+    return false;
 }
 
 static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t *p_buf)

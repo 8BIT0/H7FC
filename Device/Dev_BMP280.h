@@ -40,6 +40,7 @@
 #define BMP280_REG_STATUS              0xF3        /**< status register */
 #define BMP280_REG_RESET               0xE0        /**< soft reset register */
 #define BMP280_REG_ID                  0xD0        /**< chip id register */
+#define BMP280_DEVICE_ID               0x58        /**< chip id */
 
 typedef enum
 {
