@@ -93,7 +93,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t (*init)(void);
+    uint8_t (*init)(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bus_type);
     bool (*sample)(void);
     GenCalib_State_TypeList (*set_calib)(uint16_t calib_cyc);
     GenCalib_State_TypeList (*get_calib)(void);

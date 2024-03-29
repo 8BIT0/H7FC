@@ -144,7 +144,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
 /************************************************************************ Error Tree Item ************************************************************************/
 
 /* external function */
-static uint8_t SrvBaro_Init(void);
+static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bus_type);
 static bool SrvBaro_Sample(void);
 static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data);
 static GenCalib_State_TypeList SrvBaro_Set_Calib(uint16_t cyc);
@@ -196,7 +196,7 @@ static bool SrvBaro_BusInit(void)
     return false;
 }
 
-static uint8_t SrvBaro_Init(void)
+static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bus_type)
 {
     /* create error log handle */
     SrvBaro_Error_Handle = ErrorLog.create("SrvBaro_Error");
@@ -246,6 +246,9 @@ static uint8_t SrvBaro_Init(void)
                 return SrvBaro_Error_BadSensorObj;
             }
             break;
+
+            case Baro_Type_BMP280:
+                break;
             
             default:
                 ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadType, NULL, 0);
