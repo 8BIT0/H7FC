@@ -105,6 +105,37 @@ BspGPIO_Obj_TypeDef PriIMU_INTPin = {
     .init_state = EXINT_TRIGGER_FALLING_EDGE,
 };
 
+/* Baro Bus CS Pin */
+BspGPIO_Port_TypeDef Baro_CS_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef Baro_CSPin = {
+    .init_state = GPIO_PULL_UP,
+    .pin = GPIO_PINS_3,
+    .port = &Baro_CS_Port,
+};
+
+/* Baro Bus Pin (SPI3) */
+BspSPI_PinConfig_TypeDef Baro_BusPin = {
+    .port_mosi = (void *)GPIOC,
+    .port_miso = (void *)GPIOC,
+    .port_clk = (void *)GPIOC,
+    
+    .pin_mosi = GPIO_PINS_12,
+    .pin_miso = GPIO_PINS_11,
+    .pin_clk = GPIO_PINS_10,
+
+    .pin_Alternate = GPIO_MUX_5,
+};
+
+BspSPI_NorModeConfig_TypeDef Baro_BusCfg = {
+    .Instance = Baro_SPI_BUS,
+    .CLKPolarity = SPI_CLOCK_POLARITY_HIGH,
+    .CLKPhase = SPI_CLOCK_PHASE_2EDGE,
+    .BaudRatePrescaler = SPI_MCLK_DIV_8,
+};
+
 /* IMU Bus Pin (SPI1) */
 BspSPI_PinConfig_TypeDef PriIMU_BusPin = {
     .port_mosi = (void *)GPIOA,

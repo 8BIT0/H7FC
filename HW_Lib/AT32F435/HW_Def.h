@@ -49,6 +49,9 @@
 /* IMU SPI */
 #define PriIMU_SPI_BUS SPI1
 
+/* Baro SPI */
+#define Baro_SPI_BUS SPI3
+
 /* PWM IO */
 #define PWM_SIG_1_TIM TMR3
 #define PWM_SIG_1_TIM_CHANNEL TMR_SELECT_CHANNEL_3
@@ -171,11 +174,16 @@ extern BspGPIO_Obj_TypeDef Uart1_RxPin;
 extern BspGPIO_Obj_TypeDef Uart4_TxPin;
 extern BspGPIO_Obj_TypeDef Uart4_RxPin;
 
+extern DevLedObj_TypeDef Led1;
+
 extern BspGPIO_Obj_TypeDef PriIMU_CSPin;
 extern BspGPIO_Obj_TypeDef PriIMU_INTPin;
-extern DevLedObj_TypeDef Led1;
 extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
+
+extern BspGPIO_Obj_TypeDef Baro_CSPin;
+extern BspSPI_PinConfig_TypeDef Baro_BusPin;
+extern BspSPI_NorModeConfig_TypeDef Baro_BusCfg;
 
 extern BspGPIO_Port_TypeDef PWM_1_Port;
 extern BspGPIO_Port_TypeDef PWM_2_Port;

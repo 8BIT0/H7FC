@@ -7,7 +7,7 @@
 
 #define To_NormalSPI_Obj(x) (*((BspSPI_NorModeConfig_TypeDef *)x))
 #define To_NormalSPI_ObjPtr(x) ((BspSPI_NorModeConfig_TypeDef *)x)
-#define To_SPI_API(x) ((BspSpi_TypeDef *)x)
+#define ToSPI_BusAPI(x) ((BspSpi_TypeDef *)x)
 
 typedef struct
 {

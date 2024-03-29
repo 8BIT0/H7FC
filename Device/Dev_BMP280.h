@@ -115,7 +115,6 @@ typedef struct
     DevBMP280_BusCommu send;
     DevBMP280_BusCommu recv;
     DevBMP280_Trans trans;
-    DevBMP280_CS_Ctl cs_ctl;
 
     DevBMP280_Calib_TypeDef calib;
 

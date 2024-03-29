@@ -53,8 +53,7 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if ((obj->cs_ctl == NULL) || \
-                (obj->send == NULL) || \
+            if ((obj->send == NULL) || \
                 (obj->recv == NULL) || \
                 (obj-> trans == NULL))
             {
@@ -427,14 +426,9 @@ static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj)
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
             if (obj->delay_ms && \
-                obj->cs_ctl && \
                 obj->trans)
             {
-                obj->cs_ctl(false);
-                state = obj->send(&reg, sizeof(reg));
-                obj->cs_ctl(true);
-
-                if (state)
+                if (obj->send(&reg, sizeof(reg)))
                 {
                     obj->delay_ms(10);
                     return true;
@@ -471,8 +465,7 @@ static bool DevBMP280_Calibration(DevBMP280Obj_TypeDef *obj)
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if ((obj->cs_ctl) || \
-                (obj->trans))
+            if (obj->trans)
                 return false;
 
             /* get param t1 */
@@ -671,13 +664,10 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if (obj->cs_ctl && obj->trans)
+            if (obj->trans)
             {
                 tx_tmp[0] = DevBMP280_Read_Mask(reg);
-
-                obj->cs_ctl(false);
                 state = obj->trans(tx_tmp, rx_tmp, len);
-                obj->cs_ctl(true);
 
                 return state;
             }
@@ -701,15 +691,12 @@ static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg,
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if (obj->cs_ctl && obj->trans)
+            if (obj->trans)
             {
                 tx_tmp[0] = DevBMP280_Write_Mask(reg);
                 tx_tmp[1] = p_buf;
 
-                obj->cs_ctl(false);
                 state = obj->trans(tx_tmp, rx_tmp, sizeof(tx_tmp));
-                obj->cs_ctl(true);
-
                 return state;
             }
         }
