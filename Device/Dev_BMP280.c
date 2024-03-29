@@ -44,3 +44,23 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
 
     return false;
 }
+
+static uint16_t DevBMP280_Get_ModuleID(DevBMP280Obj_TypeDef *obj)
+{
+    if (obj)
+    {
+
+    }
+
+    return 0;
+}
+
+static uint16_t DevBMP280_Register_Read()
+{
+
+}
+
+static uint16_t DevBMP280_Register_Write()
+{
+    
+}

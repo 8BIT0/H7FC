@@ -5,39 +5,41 @@
 #include <stdint.h>
 #include <string.h>
 
-#define DevBMP280_ADDR                  0x76
-
-#define DevBMP280_SLEEP_MODE            0x00
-#define DevBMP280_FORCED_MODE           0x01
-#define DevBMP280_NORMAL_MODE           0x03
-
-#define DevBMP280_STDBY_HALF_MS         0x00
-#define DevBMP280_STDBY_62_AND_HALF_MS  0x01
-#define DevBMP280_STDBY_125_MS          0x02
-#define DevBMP280_STDBY_250_MS          0x03
-#define DevBMP280_STDBY_500_MS          0x04
-#define DevBMP280_STDBY_1_SEC           0x05
-#define DevBMP280_STDBY_2_SEC           0x06
-#define DevBMP280_STDBY_4_SEC           0x07
-
-#define DevBMP280_TEMP_STOP             0x00
-#define DevBMP280_TEMP_16_BIT           0x01
-#define DevBMP280_TEMP_17_BIT           0x02
-#define DevBMP280_TEMP_18_BIT           0x03
-#define DevBMP280_TEMP_19_BIT           0x04
-#define DevBMP280_TEMP_20_BIT           0x05
-
-#define DevBMP280_PRESS_STOP            0x00
-#define DevBMP280_PRESS_16_BIT          0x01
-#define DevBMP280_PRESS_17_BIT          0x02
-#define DevBMP280_PRESS_18_BIT          0x03
-#define DevBMP280_PRESS_19_BIT          0x04
-#define DevBMP280_PRESS_20_BIT          0x05
-
-#define DevBMP280_POWER_MODE_MASK       0xFC
-#define DevBMP280_STDBY_TIME_MASK       0x1F
-#define DevBMP280_TEMP_MASK             0x1F
-#define DevBMP280_PRESS_MASK            0xE3
+#define BMP280_REG_NVM_PAR_T1_L        0x88        /**< NVM PAR T1 low register */
+#define BMP280_REG_NVM_PAR_T1_H        0x89        /**< NVM PAR T1 high register */
+#define BMP280_REG_NVM_PAR_T2_L        0x8A        /**< NVM PAR T2 low register */
+#define BMP280_REG_NVM_PAR_T2_H        0x8B        /**< NVM PAR T2 high register */
+#define BMP280_REG_NVM_PAR_T3_L        0x8C        /**< NVM PAR T3 low register */
+#define BMP280_REG_NVM_PAR_T3_H        0x8D        /**< NVM PAR T3 high register */
+#define BMP280_REG_NVM_PAR_P1_L        0x8E        /**< NVM PAR P1 low register */
+#define BMP280_REG_NVM_PAR_P1_H        0x8F        /**< NVM PAR P1 high register */
+#define BMP280_REG_NVM_PAR_P2_L        0x90        /**< NVM PAR P2 low register */
+#define BMP280_REG_NVM_PAR_P2_H        0x91        /**< NVM PAR P2 high register */
+#define BMP280_REG_NVM_PAR_P3_L        0x92        /**< NVM PAR P3 low register */
+#define BMP280_REG_NVM_PAR_P3_H        0x93        /**< NVM PAR P3 high register */
+#define BMP280_REG_NVM_PAR_P4_L        0x94        /**< NVM PAR P4 low register */
+#define BMP280_REG_NVM_PAR_P4_H        0x95        /**< NVM PAR P4 high register */
+#define BMP280_REG_NVM_PAR_P5_L        0x96        /**< NVM PAR P5 low register */
+#define BMP280_REG_NVM_PAR_P5_H        0x97        /**< NVM PAR P5 high register */
+#define BMP280_REG_NVM_PAR_P6_L        0x98        /**< NVM PAR P6 low register */
+#define BMP280_REG_NVM_PAR_P6_H        0x99        /**< NVM PAR P6 high register */
+#define BMP280_REG_NVM_PAR_P7_L        0x9A        /**< NVM PAR P7 low register */
+#define BMP280_REG_NVM_PAR_P7_H        0x9B        /**< NVM PAR P7 high register */
+#define BMP280_REG_NVM_PAR_P8_L        0x9C        /**< NVM PAR P8 low register */
+#define BMP280_REG_NVM_PAR_P8_H        0x9D        /**< NVM PAR P8 high register */
+#define BMP280_REG_NVM_PAR_P9_L        0x9E        /**< NVM PAR P9 low register */
+#define BMP280_REG_NVM_PAR_P9_H        0x9F        /**< NVM PAR P9 high register */
+#define BMP280_REG_TEMP_XLSB           0xFC        /**< temp xlsb register */
+#define BMP280_REG_TEMP_LSB            0xFB        /**< temp lsb register */
+#define BMP280_REG_TEMP_MSB            0xFA        /**< temp msb register */
+#define BMP280_REG_PRESS_XLSB          0xF9        /**< press xlsb register */
+#define BMP280_REG_PRESS_LSB           0xF8        /**< press lsb register */
+#define BMP280_REG_PRESS_MSB           0xF7        /**< press msb register */
+#define BMP280_REG_CONFIG              0xF5        /**< config register */
+#define BMP280_REG_CTRL_MEAS           0xF4        /**< ctrl meas register */
+#define BMP280_REG_STATUS              0xF3        /**< status register */
+#define BMP280_REG_RESET               0xE0        /**< soft reset register */
+#define BMP280_REG_ID                  0xD0        /**< chip id register */
 
 typedef enum
 {
