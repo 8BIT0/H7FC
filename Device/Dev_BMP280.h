@@ -55,6 +55,8 @@ typedef enum
     DevBMP280_Init_Error,
     DevBMP280_Reset_Error,
     DevBMP280_Get_CalibParam_Error,
+    DevBMP280_Set_Temperature_OverSampling_Error,
+    DevBMP280_Set_Pressure_OverSampling_Error,
     DevBMP280_ID_Error,
 } DevBMP280_ErrorCode_List;
 
@@ -67,6 +69,15 @@ typedef enum
     DevBMP280_OVERSAMPLING_x8   = 0x04,
     DevBMP280_OVERSAMPLING_x16  = 0x05,
 } DevBMP280_OverSampling_List;
+
+typedef enum
+{
+    DevBMP280_FILTER_OFF      = 0x00,
+    DevBMP280_FILTER_COEFF_2  = 0x01,
+    DevBMP280_FILTER_COEFF_4  = 0x02,
+    DevBMP280_FILTER_COEFF_8  = 0x03,
+    DevBMP280_FILTER_COEFF_16 = 0x04,
+} DevBMP280_Filter_List;
 
 typedef uint32_t (*DevBMP280_Get_Tick)(void);
 typedef void (*DevBMP280_Delay_Ms)(uint32_t ms);

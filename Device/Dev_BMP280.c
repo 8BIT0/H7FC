@@ -10,7 +10,13 @@ static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg,
 static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj);
 static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj);
 static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_TypeDef *status);
-static bool DevCMP280_Calibration(DevBMP280Obj_TypeDef *obj);
+static bool DevBMP280_Calibration(DevBMP280Obj_TypeDef *obj);
+static bool DevBMP280_Set_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List OverSampling);
+static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List OverSampling);
+static bool DevBMP280_Get_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List *OverSampling);
+static bool DevBMP280_Get_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List *OverSampling);
+static bool DevBMP280_Set_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List filter);
+static bool DevBMP_Get_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List *filter);
 
 /* external function */
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
@@ -64,9 +70,22 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
                 return false;
             }
 
-            if (!DevCMP280_Calibration(obj))
+            if (!DevBMP280_Calibration(obj))
             {
                 obj->ErrorCode = DevBMP280_Get_CalibParam_Error;
+                return false;
+            }
+
+            /* set oversimpling */
+            if (!DevBMP280_Set_Pressure_OverSampling(obj, DevBMP280_OVERSAMPLING_x16))
+            {
+                obj->ErrorCode = DevBMP280_Set_Pressure_OverSampling_Error;
+                return false;
+            }
+
+            if (!!DevBMP280_Set_Temperature_OverSampling(obj, DevBMP280_OVERSAMPLING_x2))
+            {
+                obj->ErrorCode = DevBMP280_Set_Temperature_OverSampling_Error;
                 return false;
             }
 
@@ -79,19 +98,57 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
 
 static bool DevBMP280_Set_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List OverSampling)
 {
+    uint8_t cur_setting = 0;
+    uint8_t setting_readout = 0;
+
     if (obj)
     {
         if (obj->Bus == DevBMP280_Bus_IIC)
         {
-
+            /* developping */
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if ((obj->cs_ctl) && \
-                (obj->trans))
-            {
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &cur_setting, sizeof(cur_setting)) == 0)
+                return false;
+        
+            /* clear current setting */
+            cur_setting &= ~(7 << 5);
 
-            }
+            /* set incoming param */
+            cur_setting |= (OverSampling << 5);
+            
+            if (DevBMP280_Register_Write(obj, BMP280_REG_CTRL_MEAS, cur_setting) == 0)
+                return false;
+
+            /* after set we need to read out the setting value and check again */
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &setting_readout, sizeof(setting_readout)) == 0)
+                return false;
+
+            if (setting_readout != cur_setting)
+                return false;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool DevBMP280_Get_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, uint8_t *OverSampling)
+{
+    if (obj && OverSampling)
+    {
+        if (obj->Bus == DevBMP280_Bus_IIC)
+        {
+            /* developping */
+        }
+        else if (obj->Bus == DevBMP280_Bus_SPI)
+        {
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, OverSampling, sizeof(uint8_t)) == 0)
+                return false;
+
+            return true;
         }
     }
 
@@ -100,7 +157,46 @@ static bool DevBMP280_Set_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBM
 
 static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List OverSampling)
 {
+    uint8_t cur_setting = 0;
+    uint8_t setting_readout = 0;
+
     if (obj)
+    {
+        if (obj->Bus == DevBMP280_Bus_IIC)
+        {
+            /* developping */
+        }
+        else if (obj->Bus == DevBMP280_Bus_SPI)
+        {
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &cur_setting, sizeof(cur_setting)) == 0)
+                return false;
+        
+            /* clear current setting */
+            cur_setting &= ~(7 << 2);
+
+            /* set incoming param */
+            cur_setting |= (OverSampling << 2);
+            
+            if (DevBMP280_Register_Write(obj, BMP280_REG_CTRL_MEAS, cur_setting) == 0)
+                return false;
+
+            /* after set we need to read out the setting value and check again */
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &setting_readout, sizeof(setting_readout)) == 0)
+                return false;
+
+            if (setting_readout != cur_setting)
+                return false;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool DevBMP280_Get_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, uint8_t *OverSampling)
+{
+    if (obj && OverSampling)
     {
         if (obj->Bus == DevBMP280_Bus_IIC)
         {
@@ -108,11 +204,66 @@ static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, De
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if ((obj->cs_ctl) && \
-                (obj->trans))
-            {
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, OverSampling, sizeof(uint8_t)) == 0)
+                return false;
+        
+            return true;
+        }
+    }
 
-            }
+    return false;
+}
+
+static bool DevBMP280_Set_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List filter)
+{
+    uint8_t cur_setting = 0;
+    uint8_t setting_readout = 0;
+
+    if (obj)
+    {
+        if (obj->Bus == DevBMP280_Bus_IIC)
+        {
+            /* developping */
+        }
+        else if (obj->Bus == DevBMP280_Bus_SPI)
+        {
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CONFIG, &cur_setting, sizeof(cur_setting)) == 0)
+                return false;
+
+            cur_setting &= ~(7 << 2);
+            cur_setting |= (filter & 0x07) << 2;
+
+            if (DevBMP280_Register_Write(obj, BMP280_REG_CONFIG, cur_setting) == 0)
+                return false;
+            
+            /* after set we need to read out the setting value and check again */
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CONFIG, &setting_readout, sizeof(setting_readout)) == 0)
+                return false;
+
+            if (setting_readout != cur_setting)
+                return false;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool DevBMP_Get_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List *filter)
+{
+    if (obj && filter)
+    {
+        if (obj->Bus == DevBMP280_Bus_IIC)
+        {
+            /* developping */
+        }
+        else if (obj->Bus == DevBMP280_Bus_SPI)
+        {
+            if (DevBMP280_Register_Read(obj, BMP280_REG_CONFIG, filter, sizeof(uint8_t)) == 0)
+                return false;
+
+            return true;
         }
     }
 
@@ -204,10 +355,6 @@ static bool DevBMP280_Compensate_Pressure(DevBMP280Obj_TypeDef *obj)
 
 static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_TypeDef *status)
 {
-    uint16_t state = 0;
-    uint16_t tx_tmp[2] = {0};
-    uint16_t rx_tmp[2] = {0};
-
     if (obj)
     {
         if (obj->Bus == DevBMP280_Bus_IIC)
@@ -216,20 +363,9 @@ static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_Type
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if ((obj->cs_ctl) && \
-                (obj->trans))
-            {
-                obj->cs_ctl(false);
-                state = obj->trans(tx_tmp, rx_tmp, sizeof(tx_tmp));
-                obj->cs_ctl(true);
-            
-                status->val = 0;
-                if (state)
-                {
-                    status->val = rx_tmp[1];
-                    return true;
-                }
-            }
+
+
+            return true;
         }
     }
 
@@ -281,7 +417,7 @@ static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj)
     return false;
 }
 
-static bool DevCMP280_Calibration(DevBMP280Obj_TypeDef *obj)
+static bool DevBMP280_Calibration(DevBMP280Obj_TypeDef *obj)
 {
     uint8_t rx_tmp[2] = {0};
     uint16_t state = 0;
@@ -463,3 +599,34 @@ static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg,
 
     return 0;
 }
+
+// static uint16_t DevBMP280_Register_Trans(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t *tx, uint8_t *rx, uint16_t len)
+// {
+//     uint8_t tx_tmp[2] = {0};
+//     uint8_t rx_tmp[2] = {0};
+//     uint16_t state = 0;
+    
+//     if (obj)
+//     {
+//         if (obj->Bus == DevBMP280_Bus_IIC)
+//         {
+//             /* developping */
+//         }
+//         else if (obj->Bus == DevBMP280_Bus_SPI)
+//         {
+//             if (obj->cs_ctl && obj->trans)
+//             {
+//                 tx_tmp[0] = DevBMP280_Write_Mask(reg);
+//                 tx_tmp[1] = p_buf;
+
+//                 obj->cs_ctl(false);
+//                 state = obj->trans(tx_tmp, rx_tmp, sizeof(tx_tmp));
+//                 obj->cs_ctl(true);
+
+//                 return state;
+//             }
+//         }
+//     }
+
+//     return 0;
+// }
