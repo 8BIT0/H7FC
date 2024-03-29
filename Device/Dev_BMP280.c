@@ -77,6 +77,40 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
     return false;
 }
 
+static bool DevBMP280_Set_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List OverSampling)
+{
+    if (obj)
+    {
+        if (obj->Bus == DevBMP280_Bus_IIC)
+        {
+
+        }
+        else if (obj->Bus == DevBMP280_Bus_SPI)
+        {
+
+        }
+    }
+
+    return false;
+}
+
+static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List OverSampling)
+{
+    if (obj)
+    {
+        if (obj->Bus == DevBMP280_Bus_IIC)
+        {
+
+        }
+        else if (obj->Bus == DevBMP280_Bus_SPI)
+        {
+
+        }
+    }
+
+    return false;
+}
+
 static bool DevBMP280_Compensate_Temperature(DevBMP280Obj_TypeDef *obj)
 {
     bool state = true;

@@ -58,6 +58,16 @@ typedef enum
     DevBMP280_ID_Error,
 } DevBMP280_ErrorCode_List;
 
+typedef enum
+{
+    DevBMP280_OVERSAMPLING_SKIP = 0x00,
+    DevBMP280_OVERSAMPLING_x1   = 0x01,
+    DevBMP280_OVERSAMPLING_x2   = 0x02,
+    DevBMP280_OVERSAMPLING_x4   = 0x03,
+    DevBMP280_OVERSAMPLING_x8   = 0x04,
+    DevBMP280_OVERSAMPLING_x16  = 0x05,
+} DevBMP280_OverSampling_List;
+
 typedef uint32_t (*DevBMP280_Get_Tick)(void);
 typedef void (*DevBMP280_Delay_Ms)(uint32_t ms);
 typedef uint16_t (*DevBMP280_BusCommu)(uint8_t *p_data, uint16_t len);
