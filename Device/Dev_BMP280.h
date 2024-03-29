@@ -53,6 +53,7 @@ typedef enum
     DevBMP280_Error_None = 0,
     DevBMP280_Para_Error,
     DevBMP280_Init_Error,
+    DevBMP280_ID_Error,
 } DevBMP280_ErrorCode_List;
 
 typedef uint32_t (*DevBMP280_Get_Tick)(void);

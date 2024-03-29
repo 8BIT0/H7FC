@@ -6,6 +6,7 @@
 /* internal function */
 static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t *p_buf);
 static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t p_buf);
+static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj);
 
 /* external function */
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
@@ -45,7 +46,11 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
                     return false;
                 }
 
-
+            if (!DevBMP280_Check_ModuleID(obj))
+            {
+                obj->ErrorCode = DevBMP280_ID_Error;
+                return false;
+            }
         }
     }
 
