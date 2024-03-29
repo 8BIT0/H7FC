@@ -37,6 +37,7 @@ typedef enum
 {
     Baro_Type_None = 0,
     Baro_Type_DPS310,
+    Baro_Type_BMP280,
     Baro_Type_Sum,
 }SrvBaro_TypeList;
 
