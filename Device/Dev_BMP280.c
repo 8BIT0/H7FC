@@ -68,7 +68,7 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
     {
         if (obj->Bus == DevBMP280_Bus_IIC)
         {
-
+            /* developping */
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
@@ -102,17 +102,20 @@ static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg,
     {
         if (obj->Bus == DevBMP280_Bus_IIC)
         {
-
+            /* developping */
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
             if (obj->cs_ctl && obj->trans)
             {
-                reg = DevBMP280_Write_Mask(reg);
+                tx_tmp[0] = DevBMP280_Write_Mask(reg);
+                tx_tmp[1] = p_buf;
 
                 obj->cs_ctl(false);
-
+                state = obj->trans(tx_tmp, rx_tmp, sizeof(tx_tmp));
                 obj->cs_ctl(true);
+
+                return state;
             }
         }
     }
