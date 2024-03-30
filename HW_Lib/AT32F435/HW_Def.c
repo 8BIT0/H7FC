@@ -204,5 +204,26 @@ BspGPIO_Port_TypeDef PWM_6_Port = {
     .port = GPIOA,
 };
 
+void PriIMU_Dir_Tune(float *gyr, float *acc)
+{
+    double gyr_tmp[Axis_Sum] = {0.0};
+    double acc_tmp[Axis_Sum] = {0.0};
 
+    if (gyr && acc)
+    {
+        for (uint8_t i = Axis_X; i < Axis_Sum; i++)
+        {
+            gyr_tmp[i] = gyr[i];
+            acc_tmp[i] = acc[i];
+        }
+
+        gyr[Axis_X] = -gyr_tmp[Axis_Y];
+        gyr[Axis_Y] = gyr_tmp[Axis_X];
+        gyr[Axis_Z] = gyr_tmp[Axis_Z];
+
+        acc[Axis_X] = -acc_tmp[Axis_Y];
+        acc[Axis_Y] = acc_tmp[Axis_X];
+        acc[Axis_Z] = acc_tmp[Axis_Z];
+    }
+}
 

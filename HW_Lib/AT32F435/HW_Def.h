@@ -10,6 +10,7 @@
 #include "Dev_Led.h"
 #include "debug_util.h"
 #include "util.h"
+#include "imu_data.h"
 
 /* device support */
 #include "Dev_W25Qxx.h"
@@ -191,5 +192,7 @@ extern BspGPIO_Port_TypeDef PWM_3_Port;
 extern BspGPIO_Port_TypeDef PWM_4_Port;
 extern BspGPIO_Port_TypeDef PWM_5_Port;
 extern BspGPIO_Port_TypeDef PWM_6_Port;
+
+void PriIMU_Dir_Tune(float *gyr, float *acc);
 
 #endif
