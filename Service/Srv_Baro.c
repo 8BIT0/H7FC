@@ -2,6 +2,7 @@
  * Auther: 8_B!T0
  * Baro Sensor Sample Service
  * this file still can be optimized in a big way
+ * for currently only one baro sensor can be used
  */
 #include "Srv_Baro.h"
 #include "Srv_OsCommon.h"
