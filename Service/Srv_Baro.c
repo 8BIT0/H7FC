@@ -255,14 +255,14 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                     (SrvBaroObj.sensor_api != NULL))
                 {
                     /* set sensor object */
-                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->DevAddr = DPS310_I2C_ADDR;
-                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_rx = SrvBaro_IICBus_Rx;
-                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_tx = SrvBaro_IICBus_Tx;
-                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
-                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
+                    ToDPS310_OBJ(SrvBaroObj.sensor_obj)->DevAddr = DPS310_I2C_ADDR;
+                    ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_rx = SrvBaro_IICBus_Rx;
+                    ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_tx = SrvBaro_IICBus_Tx;
+                    ToDPS310_OBJ(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
+                    ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
 
                     /* device init */
-                    if(!ToDPS310_API(SrvBaroObj.sensor_api)->init(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
+                    if(!ToDPS310_API(SrvBaroObj.sensor_api)->init(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
                     {
                         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
                         return SrvBaro_Error_DevInit;
@@ -287,14 +287,14 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                     (SrvBaroObj.sensor_api != NULL))
                 {
                     /* set sensor object */
-                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->send = SrvBaro_SPIBus_Tx;
-                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->recv = SrvBaro_SPIBus_Rx;
-                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->trans = SrvBaro_SPIBus_Trans;
-                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
-                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
+                    ToBMP280_OBJ(SrvBaroObj.sensor_obj)->send = SrvBaro_SPIBus_Tx;
+                    ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = SrvBaro_SPIBus_Rx;
+                    ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = SrvBaro_SPIBus_Trans;
+                    ToBMP280_OBJ(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
+                    ToBMP280_OBJ(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
 
                     /* device init */
-                    if(!ToBMP280_Api(SrvBaroObj.sensor_api)->init(ToBMP280_Obj(SrvBaroObj.sensor_obj)))
+                    if(!ToBMP280_API(SrvBaroObj.sensor_api)->init(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
                     {
                         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
                         return SrvBaro_Error_DevInit;
@@ -347,15 +347,15 @@ static bool SrvBaro_Sample(void)
         switch((uint8_t) SrvBaroObj.type)
         {
             case Baro_Type_DPS310:
-                if(ToDPS310_API(SrvBaroObj.sensor_api)->sample(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
+                if (ToDPS310_API(SrvBaroObj.sensor_api)->sample(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
                 {
                     SrvBaroObj.sample_cnt ++;
 
-                    if(((SrvBaroObj.calib_state == Calib_Start) || 
+                    if (((SrvBaroObj.calib_state == Calib_Start) || 
                         (SrvBaroObj.calib_state == Calib_InProcess)) &&
                         SrvBaroObj.calib_cycle)
                     {
-                        SrvBaroObj.pressure_add_sum += ToDPS310_Obj(SrvBaroObj.sensor_obj)->pressure;
+                        SrvBaroObj.pressure_add_sum += ToDPS310_OBJ(SrvBaroObj.sensor_obj)->pressure;
                         SrvBaroObj.pressure_add_sum /= 2;
 
                         SrvBaroObj.calib_cycle --;
@@ -369,10 +369,46 @@ static bool SrvBaro_Sample(void)
                         else
                             SrvBaroObj.calib_state = Calib_InProcess;
                     }
+
                     return true;
                 }
                 else
+                {
                     SrvBaroObj.sample_err_cnt ++;
+                    return false;
+                }
+
+            case  Baro_Type_BMP280:
+                if (ToBMP280_API(SrvBaroObj.sensor_api)->sample(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
+                {
+                    SrvBaroObj.sample_cnt ++;
+
+                    if (((SrvBaroObj.calib_state == Calib_Start) || 
+                        (SrvBaroObj.calib_state == Calib_InProcess)) &&
+                        SrvBaroObj.calib_cycle)
+                    {
+                        SrvBaroObj.pressure_add_sum += ToBMP280_OBJ(SrvBaroObj.sensor_obj)->pressure;
+                        SrvBaroObj.pressure_add_sum /= 2;
+
+                        SrvBaroObj.calib_cycle --;
+
+                        if(SrvBaroObj.calib_cycle == 0)
+                        {
+                            SrvBaroObj.calib_state = Calib_Done;
+                            SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_add_sum);
+                            SrvBaroObj.pressure_add_sum = 0.0f;
+                        }
+                        else
+                            SrvBaroObj.calib_state = Calib_InProcess;
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    SrvBaroObj.sample_err_cnt ++;
+                    return false;
+                }
 
             default:
                 return false;
@@ -409,6 +445,7 @@ static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
 {
     SrvBaroData_TypeDef baro_data_tmp;
     DevDPS310_Data_TypeDef DPS310_Data;
+    DevBMP280_Data_TypeDef BMP280_Data;
     float alt = 0.0f;
 
     memset(&baro_data_tmp, 0, sizeof(baro_data_tmp));
@@ -418,10 +455,33 @@ static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
         switch((uint8_t) SrvBaroObj.type)
         {
             case Baro_Type_DPS310:
-                if(ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
+                if(ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
                 {
                     memset(&DPS310_Data, 0, sizeof(DevDPS310_Data_TypeDef));
-                    DPS310_Data = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_Obj(SrvBaroObj.sensor_obj));
+                    DPS310_Data = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_OBJ(SrvBaroObj.sensor_obj));
+                    
+                    /* convert baro pressure to meter */
+                    alt = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);
+
+                    baro_data_tmp.time_stamp = DPS310_Data.time_stamp;
+                    baro_data_tmp.pressure_alt_offset = SrvBaroObj.alt_offset;
+                    baro_data_tmp.pressure_alt = alt - SrvBaroObj.alt_offset;
+                    baro_data_tmp.tempra = DPS310_Data.scaled_tempra;
+                    baro_data_tmp.pressure = DPS310_Data.scaled_press;
+
+                    /* doing baro filter */
+                    baro_data_tmp.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.pressure_alt);
+                    memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
+                    
+                    return true;
+                }
+                break;
+            
+            case Baro_Type_BMP280:
+                if(ToBMP280_API(SrvBaroObj.sensor_api)->ready(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
+                {
+                    memset(&DPS310_Data, 0, sizeof(DevDPS310_Data_TypeDef));
+                    BMP280_Data = ToBMP280_API(SrvBaroObj.sensor_api)->get_data(ToBMP280_OBJ(SrvBaroObj.sensor_obj));
                     
                     /* convert baro pressure to meter */
                     alt = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);

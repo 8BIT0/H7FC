@@ -17,17 +17,18 @@ static bool DevBMP280_Get_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBM
 static bool DevBMP280_Get_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List *OverSampling);
 static bool DevBMP280_Set_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List filter);
 static bool DevBMP_Get_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List *filter);
+static bool DevBMP280_Set_NormalMode(DevBMP280Obj_TypeDef *obj);
 
 /* external function */
 static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
 static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj);
 static bool DevBMP280_Get_DataReady(DevBMP280Obj_TypeDef *obj);
-static bool DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj, float *pressure, float *temperature);
+static DevBMP280_Data_TypeDef DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj);
 
 DevBMP280_TypeDef DevBMP280 = {
     .init =  DevBMP280_Init,
     .sample = DevBMP280_Sample,
-    .get_data_ready = DevBMP280_Get_DataReady,
+    .ready = DevBMP280_Get_DataReady,
     .get_data = DevBMP280_Get_Data,
 };
 
@@ -67,6 +68,12 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
                 return false;
             }
 
+            if (!DevBMP280_Set_NormalMode(obj))
+            {
+                obj->ErrorCode = DevBMP280_Set_Mode_Error;
+                return false;
+            }
+
             if (!DevBMP280_Calibration(obj))
             {
                 obj->ErrorCode = DevBMP280_Get_CalibParam_Error;
@@ -80,7 +87,7 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
                 return false;
             }
 
-            if (!!DevBMP280_Set_Temperature_OverSampling(obj, DevBMP280_OVERSAMPLING_x2))
+            if (!DevBMP280_Set_Temperature_OverSampling(obj, DevBMP280_OVERSAMPLING_x2))
             {
                 obj->ErrorCode = DevBMP280_Set_Temperature_OverSampling_Error;
                 return false;
@@ -320,38 +327,37 @@ static bool DevBMP280_Compensate_Pressure(DevBMP280Obj_TypeDef *obj)
     if (obj)
     {
         var1 = ((float)obj->calib.t_fine / 2.0f) - 64000.0f;
-        var2 = pow(var1, 2) * ((float)obj->calib.p6) / 32768.0f;
+        var2 = var1 * var1 * ((float)obj->calib.p6) / 32768.0f;
         var2 = var2 + var1 * ((float)obj->calib.p5) * 2.0f;
         var2 = (var2 / 4.0f) + (((float)obj->calib.p4) * 65536.0f);
-        var1 = (((float)obj->calib.p3) * pow(var1, 2) / 524288.0f + ((float)obj->calib.p2) * var1) / 524288.0f;
+        var1 = (((float)obj->calib.p3) * var1 * var1 / 524288.0f + ((float)obj->calib.p2) * var1) / 524288.0f;
         var1 = (1.0f + var1 / 32768.0f) * ((float)obj->calib.p1);
-        obj->raw_pressure = 0.0f;
+        obj->pressure = 0.0f;
 
         if ((var1 < 0.0f) || \
             (var1 > 0.0f))
         {
-            obj->raw_pressure = 1048576.0f - obj->raw_pressure;
-            obj->raw_pressure = (obj->raw_pressure - (var2 / 4096.0f)) * 6250.0f / var1;
-            var1 = ((float)obj->calib.p9) * pow(obj->raw_pressure, 2) / 2147483648.0f;
-            var2 = obj->raw_pressure * ((float)obj->calib.p8) / 32768.0f;
-            obj->raw_pressure += (var1 + var2 + ((float)obj->calib.p7)) / 16.0f;
+            obj->pressure = 1048576.0f - obj->raw_pressure;
+            obj->pressure = (obj->pressure - (var2 / 4096.0f)) * 6250.0f / var1;
+            var1 = ((float)obj->calib.p9) * obj->pressure * obj->pressure / 2147483648.0f;
+            var2 = obj->pressure * ((float)obj->calib.p8) / 32768.0f;
+            obj->pressure += (var1 + var2 + ((float)obj->calib.p7)) / 16.0f;
             
-            if (obj->raw_pressure < 30000.0f)
+            if (obj->pressure < 30000.0f)
             {
-                obj->raw_pressure = 30000.0f;
+                obj->pressure = 30000.0f;
                 state = false;
             }
-            else if (obj->raw_pressure > 110000.0f)
+            else if (obj->pressure > 110000.0f)
             {
-                obj->raw_pressure = 110000.0f;
+                obj->pressure = 110000.0f;
                 state = false;
             }
 
-            obj->pressure = obj->raw_pressure;
             return state;
         }
             
-        obj->pressure = obj->raw_pressure;
+        obj->pressure = 0.0f;
     }
 
     return false;
@@ -367,7 +373,7 @@ static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_Type
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if (DevBMP280_Register_Read(obj, BMP280_REG_STATUS, status->val, sizeof(uint8_t)) == 0)
+            if (DevBMP280_Register_Read(obj, BMP280_REG_STATUS, &(status->val), sizeof(uint8_t)) == 0)
                 return false;
 
             return true;
@@ -383,25 +389,29 @@ static bool DevBMP280_Get_DataReady(DevBMP280Obj_TypeDef *obj)
 
     if (obj)
     {
-        if (!DevBMP280_GetStatus(obj, &status))
-            return false;
-
-        if (status.bit.im_update && !status.bit.measuring)
+        if (obj->sys_tick != obj->lst_sys_tick)
+        {
+            obj->lst_sys_tick = obj->sys_tick;
             return true;
+        }
     }
 
     return false;
 }
 
-static bool DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj, float *pressure, float *temperature)
+static DevBMP280_Data_TypeDef DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj)
 {
-    if (obj && pressure && temperature)
+    DevBMP280_Data_TypeDef data_tmp;
+
+    memset(&data_tmp, 0, sizeof(DevBMP280_Data_TypeDef ));
+    if (obj)
     {
-        *pressure = obj->pressure;
-        *temperature = obj->temperature;
+        data_tmp.scaled_press = obj->pressure;
+        data_tmp.scaled_tempra = obj->temperature;
+        data_tmp.time_stamp = obj->sys_tick;
     }
 
-    return false;
+    return data_tmp;
 }
 
 static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj)
@@ -444,6 +454,32 @@ static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj)
     return false;
 }
 
+static bool DevBMP280_Set_NormalMode(DevBMP280Obj_TypeDef *obj)
+{
+    uint8_t mode = 0;
+    uint8_t read_mode = 0;
+
+    if (obj)
+    {
+        if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &mode, 1) == 0)
+            return false;
+        
+        mode &= ~(3 << 0);
+        mode |= 0x03 << 0;
+
+        if (DevBMP280_Register_Write(obj, BMP280_REG_CTRL_MEAS, mode) == 0)
+            return false;
+    
+        if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &read_mode, 1) == 0)
+            return false;
+
+        if (mode == read_mode)
+            return true;
+    }
+
+    return false;
+}
+
 static bool DevBMP280_Calibration(DevBMP280Obj_TypeDef *obj)
 {
     uint8_t rx_tmp[2] = {0};
@@ -457,7 +493,7 @@ static bool DevBMP280_Calibration(DevBMP280Obj_TypeDef *obj)
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if (obj->trans)
+            if (obj->trans == NULL)
                 return false;
 
             /* get param t1 */
@@ -569,6 +605,7 @@ static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj)
 {
     uint8_t mode = 0;
     uint32_t timeout = 0;
+    DevBMP280_Status_TypeDef status; 
     uint8_t buf[6] = {0};
     
     if (obj && obj->delay_ms && obj->get_tick)
@@ -582,7 +619,7 @@ static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj)
             if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &mode, 1) == 0)
                 return false;
             
-            if ((mode & 0x3) == BMP280_NORMAL_MODE)
+            if ((mode & 0x03) == BMP280_NORMAL_MODE)
             {
                 if(DevBMP280_Register_Read(obj, BMP280_REG_PRESS_MSB, buf, sizeof(buf)) == 0)
                     return false;
@@ -702,33 +739,3 @@ static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg,
     return 0;
 }
 
-// static uint16_t DevBMP280_Register_Trans(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t *tx, uint8_t *rx, uint16_t len)
-// {
-//     uint8_t tx_tmp[2] = {0};
-//     uint8_t rx_tmp[2] = {0};
-//     uint16_t state = 0;
-    
-//     if (obj)
-//     {
-//         if (obj->Bus == DevBMP280_Bus_IIC)
-//         {
-//             /* developping */
-//         }
-//         else if (obj->Bus == DevBMP280_Bus_SPI)
-//         {
-//             if (obj->cs_ctl && obj->trans)
-//             {
-//                 tx_tmp[0] = DevBMP280_Write_Mask(reg);
-//                 tx_tmp[1] = p_buf;
-
-//                 obj->cs_ctl(false);
-//                 state = obj->trans(tx_tmp, rx_tmp, sizeof(tx_tmp));
-//                 obj->cs_ctl(true);
-
-//                 return state;
-//             }
-//         }
-//     }
-
-//     return 0;
-// }

@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#define ToBMP280_Obj(x) ((DevBMP280Obj_TypeDef *)x)
-#define ToBMP280_Api(x) ((DevBMP280_TypeDef *)x)
+#define ToBMP280_OBJ(x) ((DevBMP280Obj_TypeDef *)x)
+#define ToBMP280_API(x) ((DevBMP280_TypeDef *)x)
 
 #define BMP280_NORMAL_MODE             3
 
@@ -59,6 +59,7 @@ typedef enum
     DevBMP280_Para_Error,
     DevBMP280_Init_Error,
     DevBMP280_Reset_Error,
+    DevBMP280_Set_Mode_Error,
     DevBMP280_Get_CalibParam_Error,
     DevBMP280_Set_Temperature_OverSampling_Error,
     DevBMP280_Set_Pressure_OverSampling_Error,
@@ -122,6 +123,7 @@ typedef struct
     DevBMP280_Calib_TypeDef calib;
 
     uint32_t sys_tick;
+    uint32_t lst_sys_tick;
 
     float raw_temperature;  /* without compensate temperature */
     float raw_pressure;     /* without compensate pressure */
@@ -130,6 +132,14 @@ typedef struct
     float pressure;
 
 } DevBMP280Obj_TypeDef;
+
+typedef struct
+{
+    uint32_t time_stamp;
+
+    float scaled_press;
+    float scaled_tempra;
+}DevBMP280_Data_TypeDef;
 
 typedef union
 {
@@ -148,8 +158,8 @@ typedef struct
 {
     bool (*init)(DevBMP280Obj_TypeDef *obj);
     bool (*sample)(DevBMP280Obj_TypeDef *obj);
-    bool (*get_data_ready)(DevBMP280Obj_TypeDef *obj);
-    bool (*get_data)(DevBMP280Obj_TypeDef *obj, float *pressure, float *tamperature);
+    bool (*ready)(DevBMP280Obj_TypeDef *obj);
+    DevBMP280_Data_TypeDef (*get_data)(DevBMP280Obj_TypeDef *obj);
 } DevBMP280_TypeDef;
 
 extern DevBMP280_TypeDef DevBMP280;

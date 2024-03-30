@@ -393,9 +393,6 @@ static DevDPS310_Data_TypeDef DevDPS310_Get_Data(DevDPS310Obj_TypeDef *obj)
     {
         tmp.time_stamp = obj->update_time;
 
-        tmp.none_scaled_press = obj->none_scale_pressure;
-        tmp.none_scaled_tempra = obj->none_scale_tempra;
-        
         tmp.scaled_press = obj->pressure;
         tmp.scaled_tempra = obj->tempra;
 

@@ -10,7 +10,7 @@ typedef bool (*DevDPS310_BusRead)(uint16_t dev_addr, uint16_t reg_addr, uint8_t 
 typedef void (*DevDPS310_DelayMs)(uint32_t ms);
 typedef uint32_t (*DevDPS310_GetTick)(void);
 
-#define ToDPS310_Obj(x) ((DevDPS310Obj_TypeDef *)x)
+#define ToDPS310_OBJ(x) ((DevDPS310Obj_TypeDef *)x)
 #define ToDPS310_API(x) ((DevDPS310_TypeDef *)x)
 
 #define DPS310_I2C_ADDR 0x76
@@ -184,9 +184,6 @@ typedef struct
 typedef struct
 {
     uint32_t time_stamp;
-
-    uint32_t none_scaled_press;
-    uint32_t none_scaled_tempra;
 
     float scaled_press;
     float scaled_tempra;
