@@ -67,18 +67,14 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
                 obj->ErrorCode = DevBMP280_Reset_Error;
                 return false;
             }
-
-            if (!DevBMP280_Set_NormalMode(obj))
-            {
-                obj->ErrorCode = DevBMP280_Set_Mode_Error;
-                return false;
-            }
+            obj->delay_ms(100);
 
             if (!DevBMP280_Calibration(obj))
             {
                 obj->ErrorCode = DevBMP280_Get_CalibParam_Error;
                 return false;
             }
+            obj->delay_ms(20);
 
             /* set oversimpling */
             if (!DevBMP280_Set_Pressure_OverSampling(obj, DevBMP280_OVERSAMPLING_x16))
@@ -97,6 +93,12 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
             if (!DevBMP280_Set_Filter(obj, DevBMP280_FILTER_COEFF_16))
             {
                 obj->ErrorCode = DevBMP280_Set_Filter_Error;
+                return false;
+            }
+
+            if (!DevBMP280_Set_NormalMode(obj))
+            {
+                obj->ErrorCode = DevBMP280_Set_Mode_Error;
                 return false;
             }
 

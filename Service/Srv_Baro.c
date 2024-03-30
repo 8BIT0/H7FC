@@ -480,17 +480,17 @@ static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
             case Baro_Type_BMP280:
                 if(ToBMP280_API(SrvBaroObj.sensor_api)->ready(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
                 {
-                    memset(&DPS310_Data, 0, sizeof(DevDPS310_Data_TypeDef));
+                    memset(&BMP280_Data, 0, sizeof(DevBMP280_Data_TypeDef));
                     BMP280_Data = ToBMP280_API(SrvBaroObj.sensor_api)->get_data(ToBMP280_OBJ(SrvBaroObj.sensor_obj));
                     
                     /* convert baro pressure to meter */
-                    alt = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);
+                    alt = SrvBaro_PessureCnvToMeter(BMP280_Data.scaled_press);
 
-                    baro_data_tmp.time_stamp = DPS310_Data.time_stamp;
+                    baro_data_tmp.time_stamp = BMP280_Data.time_stamp;
                     baro_data_tmp.pressure_alt_offset = SrvBaroObj.alt_offset;
                     baro_data_tmp.pressure_alt = alt - SrvBaroObj.alt_offset;
-                    baro_data_tmp.tempra = DPS310_Data.scaled_tempra;
-                    baro_data_tmp.pressure = DPS310_Data.scaled_press;
+                    baro_data_tmp.tempra = BMP280_Data.scaled_tempra;
+                    baro_data_tmp.pressure = BMP280_Data.scaled_press;
 
                     /* doing baro filter */
                     baro_data_tmp.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.pressure_alt);
