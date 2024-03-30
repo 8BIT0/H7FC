@@ -276,6 +276,7 @@ C_INCLUDES =  \
 -IDevice/ \
 -Icommon/ \
 -Icommon/compess \
+-Icommon/gen_physic_def \
 -IService/ \
 -ISystem/FreeRTOS \
 -ISystem/FreeRTOS/include \
