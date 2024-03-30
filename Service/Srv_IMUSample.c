@@ -1,5 +1,6 @@
 /*
  * CODE: 8_B!T0
+ * might need a axis remap function at the sensor init process
  */
 #include "Srv_IMUSample.h"
 #include "Dev_MPU6000.h"
