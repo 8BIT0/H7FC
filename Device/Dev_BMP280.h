@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#define To_BMP280_Obj(x) ((DevBMP280Obj_TypeDef *)x)
-#define To_BMP280_Api(x) ((DevBMP280_TypeDef *)x)
+#define ToBMP280_Obj(x) ((DevBMP280Obj_TypeDef *)x)
+#define ToBMP280_Api(x) ((DevBMP280_TypeDef *)x)
 
 #define BMP280_NORMAL_MODE             3
 
@@ -120,6 +120,8 @@ typedef struct
     DevBMP280_Trans trans;
 
     DevBMP280_Calib_TypeDef calib;
+
+    uint32_t sys_tick;
 
     float raw_temperature;  /* without compensate temperature */
     float raw_pressure;     /* without compensate pressure */

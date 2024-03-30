@@ -54,8 +54,7 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
             if ((obj->send == NULL) || \
-                (obj->recv == NULL) || \
-                (obj-> trans == NULL))
+                (obj->recv == NULL))
             {
                 obj->ErrorCode = DevBMP280_Para_Error;
                 return false;
@@ -579,7 +578,7 @@ static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj)
     uint32_t timeout = 0;
     uint8_t buf[6] = {0};
     
-    if (obj && obj->delay_ms)
+    if (obj && obj->delay_ms && obj->get_tick)
     {
         if (obj->Bus == DevBMP280_Bus_IIC)
         {
@@ -643,6 +642,7 @@ static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj)
                     return false;
             }
 
+            obj->sys_tick = obj->get_tick();
             return true;
         }
     }

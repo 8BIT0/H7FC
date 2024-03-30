@@ -126,7 +126,7 @@ BspSPI_PinConfig_TypeDef Baro_BusPin = {
     .pin_miso = GPIO_PINS_11,
     .pin_clk = GPIO_PINS_10,
 
-    .pin_Alternate = GPIO_MUX_5,
+    .pin_Alternate = GPIO_MUX_6,
 };
 
 BspSPI_NorModeConfig_TypeDef Baro_BusCfg = {

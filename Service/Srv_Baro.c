@@ -58,6 +58,10 @@ SrvBaroBusObj_TypeDef SrvBaroBus = {
 static bool SrvBaro_IICBus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
 static bool SrvBaro_IICBus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
 
+static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len);
+static uint16_t SrvBaro_SPIBus_Rx(uint8_t *p_data, uint16_t len);
+static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
+
 static float SrvBaro_PessureCnvToMeter(float pa);
 
 /************************************************************************ Error Tree Item ************************************************************************/
@@ -170,56 +174,53 @@ SrvBaro_TypeDef SrvBaro = {
 
 static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
 {
-    if(SrvBaroBus.bus_obj && SrvBaroBus.bus_api)
+    switch((uint8_t)bus_type)
     {
-        switch((uint8_t)bus_type)
-        {
-            case SrvBaro_Bus_IIC:
-                SrvBaroBus.type = bus_type;
-                SrvBaroBus.bus_api = (void *)&BspIIC;
+        case SrvBaro_Bus_IIC:
+            SrvBaroBus.type = bus_type;
+            SrvBaroBus.bus_api = (void *)&BspIIC;
 #if defined STM32H743xx
-                ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
-                if(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
-                {
-                    SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
-                    return false;
-                }
-
-                ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct = SrvOsCommon.malloc(I2C_PeriphCLKInitType_Size);
-                if(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct == NULL)
-                {
-                    SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
-                    SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct);
-                    return false;
-                }
-#endif
-                if(!ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
-                    return false;
-
-                SrvBaroBus.init = true;
-                return true;
-
-            case SrvBaro_Bus_SPI:
-                SrvBaroBus.type = bus_type;
-
-                Baro_BusCfg.Pin = Baro_BusPin;
-                SrvBaroBus.bus_api = (void *)&BspSPI;
-                SrvBaroBus.bus_obj = (void *)&Baro_BusCfg;
-
-                /* spi cd pin init */
-                if (BspGPIO.out_init(Baro_CSPin))
-                    return false;
-
-                /* spi bus port init */
-                if (!ToSPI_BusAPI(SrvBaroBus.bus_api)->init(To_NormalSPI_Obj(SrvBaroBus.bus_obj), &Baro_Bus_Instance))
-                    return false;
-
-                SrvBaroBus.init = true;
-                return true;
-
-            default:
+            ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
+            if(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+            {
+                SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
                 return false;
-        }
+            }
+
+            ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct = SrvOsCommon.malloc(I2C_PeriphCLKInitType_Size);
+            if(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct == NULL)
+            {
+                SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
+                SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct);
+                return false;
+            }
+#endif
+            if(!ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
+                return false;
+
+            SrvBaroBus.init = true;
+            return true;
+
+        case SrvBaro_Bus_SPI:
+            SrvBaroBus.type = bus_type;
+
+            Baro_BusCfg.Pin = Baro_BusPin;
+            SrvBaroBus.bus_api = (void *)&BspSPI;
+            SrvBaroBus.bus_obj = (void *)&Baro_BusCfg;
+
+            /* spi cd pin init */
+            if (!BspGPIO.out_init(Baro_CSPin))
+                return false;
+
+            /* spi bus port init */
+            if (!ToSPI_BusAPI(SrvBaroBus.bus_api)->init(To_NormalSPI_Obj(SrvBaroBus.bus_obj), &Baro_Bus_Instance))
+                return false;
+
+            SrvBaroBus.init = true;
+            return true;
+
+        default:
+            return false;
     }
 
     return false;
@@ -241,47 +242,64 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
 
     if(SrvBaroObj.sample_rate)
     {
-        switch((uint8_t)SrvBaroObj.type)
+        switch((uint8_t)sensor_type)
         {
             case Baro_Type_DPS310:
-            SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevDPS310Obj_TypeDef));
-            SrvBaroObj.sensor_api = &DevDPS310;
+                SrvBaroObj.type = sensor_type;
+                SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevDPS310Obj_TypeDef));
+                SrvBaroObj.sensor_api = &DevDPS310;
 
-            if((SrvBaroObj.sensor_obj != NULL) &&
-                (SrvBaroObj.sensor_api != NULL))
-            {
-                /* set sensor object */
-                ToDPS310_Obj(SrvBaroObj.sensor_obj)->DevAddr = DPS310_I2C_ADDR;
-                ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_rx = SrvBaro_IICBus_Rx;
-                ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_tx = SrvBaro_IICBus_Tx;
-                ToDPS310_Obj(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
-                ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
-
-                /* device init */
-                if(!ToDPS310_API(SrvBaroObj.sensor_api)->init(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
+                if((SrvBaroObj.sensor_obj != NULL) &&
+                    (SrvBaroObj.sensor_api != NULL))
                 {
-                    ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
-                    return SrvBaro_Error_DevInit;
-                }
+                    /* set sensor object */
+                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->DevAddr = DPS310_I2C_ADDR;
+                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_rx = SrvBaro_IICBus_Rx;
+                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_tx = SrvBaro_IICBus_Tx;
+                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
+                    ToDPS310_Obj(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
 
-                SrvBaroObj.calib_state = Calib_Start;
-                SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
-            }
-            else
-            {
-                ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSensorObj, NULL, 0);
-                return SrvBaro_Error_BadSensorObj;
-            }
-            break;
+                    /* device init */
+                    if(!ToDPS310_API(SrvBaroObj.sensor_api)->init(ToDPS310_Obj(SrvBaroObj.sensor_obj)))
+                    {
+                        ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
+                        return SrvBaro_Error_DevInit;
+                    }
+
+                    SrvBaroObj.calib_state = Calib_Start;
+                    SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
+                }
+                else
+                {
+                    ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSensorObj, NULL, 0);
+                    return SrvBaro_Error_BadSensorObj;
+                }
+                break;
 
             case Baro_Type_BMP280:
+                SrvBaroObj.type = sensor_type;
                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevBMP280Obj_TypeDef));
                 SrvBaroObj.sensor_api = &DevBMP280;
 
                 if ((SrvBaroObj.sensor_obj != NULL) && \
                     (SrvBaroObj.sensor_api != NULL))
                 {
+                    /* set sensor object */
+                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->send = SrvBaro_SPIBus_Tx;
+                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->recv = SrvBaro_SPIBus_Rx;
+                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->trans = SrvBaro_SPIBus_Trans;
+                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
+                    ToBMP280_Obj(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
 
+                    /* device init */
+                    if(!ToBMP280_Api(SrvBaroObj.sensor_api)->init(ToBMP280_Obj(SrvBaroObj.sensor_obj)))
+                    {
+                        ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
+                        return SrvBaro_Error_DevInit;
+                    }
+
+                    SrvBaroObj.calib_state = Calib_Start;
+                    SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
                 }
                 else
                 {
@@ -455,7 +473,7 @@ static bool SrvBaro_IICBus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_d
     return false;
 }
 
-static uint16_t Srvaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
+static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
 {
     uint16_t res = 0;
 
