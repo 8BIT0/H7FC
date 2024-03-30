@@ -53,13 +53,6 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
         }
         else if (obj->Bus == DevBMP280_Bus_SPI)
         {
-            if ((obj->send == NULL) || \
-                (obj->recv == NULL))
-            {
-                obj->ErrorCode = DevBMP280_Para_Error;
-                return false;
-            }
-
             /* check id first */
             if (!DevBMP280_Check_ModuleID(obj))
             {
@@ -667,7 +660,11 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
             if (obj->trans)
             {
                 tx_tmp[0] = DevBMP280_Read_Mask(reg);
-                state = obj->trans(tx_tmp, rx_tmp, len);
+                state = obj->trans(tx_tmp, rx_tmp, (len + 1));
+
+                memset(p_buf, 0, len);
+                if (state)
+                    memcpy(p_buf, &rx_tmp[1], len);
 
                 return state;
             }

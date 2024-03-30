@@ -204,14 +204,14 @@ static uint16_t BspSPI_Trans_Receive(void *instance, uint8_t *tx, uint8_t *rx, u
         while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_TDBE_FLAG) == RESET)
         {
             if ((System_GetTick() - start_time) > time_out)
-                return false;
+                return 0;
         }
         spi_i2s_data_transmit(To_SPI_Instance(*(uint32_t *)instance), tx[i]);
 
         while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_RDBF_FLAG) == RESET)
         {
             if ((System_GetTick() - start_time) > time_out)
-                return false;
+                return 0;
         }
         rx[i] = spi_i2s_data_receive(To_SPI_Instance(*(uint32_t *)instance));
     }

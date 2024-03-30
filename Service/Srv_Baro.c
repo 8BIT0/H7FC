@@ -216,6 +216,8 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
             if (!ToSPI_BusAPI(SrvBaroBus.bus_api)->init(To_NormalSPI_Obj(SrvBaroBus.bus_obj), &Baro_Bus_Instance))
                 return false;
 
+            /* set cs pin high */
+            BspGPIO.write(Baro_CSPin, true);
             SrvBaroBus.init = true;
             return true;
 
@@ -484,7 +486,7 @@ static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
         /* CS Low */
         BspGPIO.write(Baro_CSPin, false);
 
-        if (ToSPI_BusAPI(SrvBaroBus.bus_api)->trans_receive(Baro_Bus_Instance, p_tx, p_rx, len, 100))
+        if (ToSPI_BusAPI(SrvBaroBus.bus_api)->trans_receive(&Baro_Bus_Instance, p_tx, p_rx, len, 100))
             res = len;
 
         /* CS High */
@@ -505,7 +507,7 @@ static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len)
         /* CS Low */
         BspGPIO.write(Baro_CSPin, false);
 
-        if (ToSPI_BusAPI(SrvBaroBus.bus_api)->trans(Baro_Bus_Instance, p_data, len, 100))
+        if (ToSPI_BusAPI(SrvBaroBus.bus_api)->trans(&Baro_Bus_Instance, p_data, len, 100))
             res = len;
 
         /* CS High */
@@ -526,7 +528,7 @@ static uint16_t SrvBaro_SPIBus_Rx(uint8_t *p_data, uint16_t len)
         /* CS Low */
         BspGPIO.write(Baro_CSPin, false);
 
-        if (ToSPI_BusAPI(SrvBaroBus.bus_api)->receive(Baro_Bus_Instance, p_data, len, 100))
+        if (ToSPI_BusAPI(SrvBaroBus.bus_api)->receive(&Baro_Bus_Instance, p_data, len, 100))
             res = len;
         
         /* CS High */
