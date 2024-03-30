@@ -92,11 +92,11 @@ void PriIMU_Dir_Tune(float *gyr, float *acc)
             acc_tmp[i] = acc[i];
         }
 
+        gyr[Axis_X] = -gyr_tmp[Axis_X];
         gyr[Axis_Y] = -gyr_tmp[Axis_Y];
-        gyr[Axis_Z] = -gyr_tmp[Axis_Z];
 
+        acc[Axis_X] = -acc_tmp[Axis_X];
         acc[Axis_Y] = -acc_tmp[Axis_Y];
-        acc[Axis_Z] = -acc_tmp[Axis_Z];
     }
 }
 
@@ -113,11 +113,11 @@ void SecIMU_Dir_Tune(float *gyr, float *acc)
             acc_tmp[i] = acc[i];
         }
 
+        gyr[Axis_X] = -gyr_tmp[Axis_X];
         gyr[Axis_Y] = -gyr_tmp[Axis_Y];
-        gyr[Axis_Z] = -gyr_tmp[Axis_Z];
 
+        acc[Axis_X] = -acc_tmp[Axis_X];
         acc[Axis_Y] = -acc_tmp[Axis_Y];
-        acc[Axis_Z] = -acc_tmp[Axis_Z];
     }
 }
 #elif defined AT32F435RGT7
