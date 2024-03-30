@@ -10,7 +10,7 @@
 #include "Dev_Led.h"
 #include "debug_util.h"
 #include "util.h"
-#include "imu_data.h"
+#include "../../common/gen_physic_def/imu_data.h"
 
 /* device support */
 #include "Dev_W25Qxx.h"

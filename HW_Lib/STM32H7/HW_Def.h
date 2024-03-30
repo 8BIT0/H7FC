@@ -10,7 +10,7 @@
 #include "Bsp_Flash.h"
 #include "debug_util.h"
 #include "Dev_Led.h"
-#include "imu_data.h"
+#include "../../common/gen_physic_def/imu_data.h"
 
 #define LED1_PIN GPIO_PIN_3
 #define LED1_PORT GPIOE
