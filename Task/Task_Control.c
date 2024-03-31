@@ -13,6 +13,8 @@
 #include "shell_port.h"
 #include "Storage.h"
 
+#define CONTROL_STORAGE_SECTION_NAME "PID_Para"
+
 #define DEFAULT_CONTROL_MODEL Model_Quad
 #define DEFAULT_ESC_TYPE DevDshot_600
 
@@ -89,58 +91,7 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
     /* PID Parametet Init */
-    /* attitude PID control parameter section */
-    TaskControl_Monitor.PitchCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
-    TaskControl_Monitor.RollCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
 
-    TaskControl_Monitor.PitchCtl_PIDObj.diff_max = ATTITUDE_PID_DIFF_MAX;
-    TaskControl_Monitor.RollCtl_PIDObj.diff_max = ATTITUDE_PID_DIFF_MAX;
-
-    TaskControl_Monitor.PitchCtl_PIDObj.diff_min = ATTITUDE_PID_DIFF_MIN;
-    TaskControl_Monitor.RollCtl_PIDObj.diff_min = ATTITUDE_PID_DIFF_MIN;
-
-    TaskControl_Monitor.PitchCtl_PIDObj.gP = 1.2;
-    TaskControl_Monitor.PitchCtl_PIDObj.gI = 0.08;
-    TaskControl_Monitor.PitchCtl_PIDObj.gI_Max = 50;
-    TaskControl_Monitor.PitchCtl_PIDObj.gI_Min = -50;
-    TaskControl_Monitor.PitchCtl_PIDObj.gD = 1;
-
-    TaskControl_Monitor.RollCtl_PIDObj.gP = 1.2;
-    TaskControl_Monitor.RollCtl_PIDObj.gI = 0.08;
-    TaskControl_Monitor.RollCtl_PIDObj.gI_Max = 50;
-    TaskControl_Monitor.RollCtl_PIDObj.gI_Min = -50;
-    TaskControl_Monitor.RollCtl_PIDObj.gD = 1;
-
-    /* angular PID control parameter section */
-    TaskControl_Monitor.GyrXCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
-    TaskControl_Monitor.GyrXCtl_PIDObj.diff_max = GYRO_X_RATE_PID_DIFF_MAX;
-    TaskControl_Monitor.GyrXCtl_PIDObj.diff_min = GYRO_X_RATE_PID_DIFF_MIN;
-
-    TaskControl_Monitor.GyrXCtl_PIDObj.gP = 2;
-    TaskControl_Monitor.GyrXCtl_PIDObj.gI = 0.002;
-    TaskControl_Monitor.GyrXCtl_PIDObj.gI_Max = 30;
-    TaskControl_Monitor.GyrXCtl_PIDObj.gI_Min = -30;
-    TaskControl_Monitor.GyrXCtl_PIDObj.gD = 0.1;
-
-    TaskControl_Monitor.GyrYCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
-    TaskControl_Monitor.GyrYCtl_PIDObj.diff_max = GYRO_Y_RATE_PID_DIFF_MAX;
-    TaskControl_Monitor.GyrYCtl_PIDObj.diff_min = GYRO_Y_RATE_PID_DIFF_MIN;
-    
-    TaskControl_Monitor.GyrYCtl_PIDObj.gP = 2;
-    TaskControl_Monitor.GyrYCtl_PIDObj.gI = 0.002;
-    TaskControl_Monitor.GyrYCtl_PIDObj.gI_Max = 30;
-    TaskControl_Monitor.GyrYCtl_PIDObj.gI_Min = -30;
-    TaskControl_Monitor.GyrYCtl_PIDObj.gD = 0.1;
-
-    TaskControl_Monitor.GyrZCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
-    TaskControl_Monitor.PitchCtl_PIDObj.diff_max = GYRO_X_RATE_PID_DIFF_MAX;
-    TaskControl_Monitor.RollCtl_PIDObj.diff_min = GYRO_X_RATE_PID_DIFF_MIN;
-    
-    TaskControl_Monitor.GyrZCtl_PIDObj.gP = 1;
-    TaskControl_Monitor.GyrZCtl_PIDObj.gI = 0.02;
-    TaskControl_Monitor.GyrZCtl_PIDObj.gI_Max = 30;
-    TaskControl_Monitor.GyrZCtl_PIDObj.gI_Min = -30;
-    TaskControl_Monitor.GyrZCtl_PIDObj.gD = 0.1;
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
@@ -200,8 +151,75 @@ void TaskControl_Init(uint32_t period)
 }
 
 /* read param from storage */
-static void TaskControl_Get_Param()
+static void TaskControl_Get_Param(void)
 {
+    Storage_ItemSearchOut_TypeDef search_out;
+
+    /* search storage section first */
+    memset(&search_out, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+    search_out = Storage.search(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME);
+
+    if (search_out.item_addr == 0)
+    {
+        /* no pid parameter found in external flash chip under user partten */
+        /* use default pid data */
+        /* attitude PID control parameter section */
+        TaskControl_Monitor.Param.PitchCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
+        TaskControl_Monitor.Param.RollCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
+
+        TaskControl_Monitor.Param.PitchCtl_PIDObj.diff_max = ATTITUDE_PID_DIFF_MAX;
+        TaskControl_Monitor.Param.RollCtl_PIDObj.diff_max = ATTITUDE_PID_DIFF_MAX;
+
+        TaskControl_Monitor.Param.PitchCtl_PIDObj.diff_min = ATTITUDE_PID_DIFF_MIN;
+        TaskControl_Monitor.Param.RollCtl_PIDObj.diff_min = ATTITUDE_PID_DIFF_MIN;
+
+        TaskControl_Monitor.Param.PitchCtl_PIDObj.gP = 1.2;
+        TaskControl_Monitor.Param.PitchCtl_PIDObj.gI = 0.08;
+        TaskControl_Monitor.Param.PitchCtl_PIDObj.gI_Max = 50;
+        TaskControl_Monitor.Param.PitchCtl_PIDObj.gI_Min = -50;
+        TaskControl_Monitor.Param.PitchCtl_PIDObj.gD = 1;
+
+        TaskControl_Monitor.Param.RollCtl_PIDObj.gP = 1.2;
+        TaskControl_Monitor.Param.RollCtl_PIDObj.gI = 0.08;
+        TaskControl_Monitor.Param.RollCtl_PIDObj.gI_Max = 50;
+        TaskControl_Monitor.Param.RollCtl_PIDObj.gI_Min = -50;
+        TaskControl_Monitor.Param.RollCtl_PIDObj.gD = 1;
+
+        /* angular PID control parameter section */
+        TaskControl_Monitor.Param.GyrXCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+        TaskControl_Monitor.Param.GyrXCtl_PIDObj.diff_max = GYRO_X_RATE_PID_DIFF_MAX;
+        TaskControl_Monitor.Param.GyrXCtl_PIDObj.diff_min = GYRO_X_RATE_PID_DIFF_MIN;
+
+        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gP = 2;
+        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gI = 0.002;
+        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gI_Max = 30;
+        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gI_Min = -30;
+        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gD = 0.1;
+
+        TaskControl_Monitor.Param.GyrYCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+        TaskControl_Monitor.Param.GyrYCtl_PIDObj.diff_max = GYRO_Y_RATE_PID_DIFF_MAX;
+        TaskControl_Monitor.Param.GyrYCtl_PIDObj.diff_min = GYRO_Y_RATE_PID_DIFF_MIN;
+        
+        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gP = 2;
+        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gI = 0.002;
+        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gI_Max = 30;
+        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gI_Min = -30;
+        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gD = 0.1;
+
+        TaskControl_Monitor.Param.GyrZCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+        TaskControl_Monitor.Param.PitchCtl_PIDObj.diff_max = GYRO_X_RATE_PID_DIFF_MAX;
+        TaskControl_Monitor.Param.RollCtl_PIDObj.diff_min = GYRO_X_RATE_PID_DIFF_MIN;
+        
+        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gP = 1;
+        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gI = 0.02;
+        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gI_Max = 30;
+        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gI_Min = -30;
+        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gD = 0.1;
+    }
+    else
+    {
+
+    }
     /* get attitide pitch  pid param */
     /* get attitude roll   pid param */
     /* get attitude gyro x pid param */
@@ -263,10 +281,10 @@ static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *mon
         if(att_state)
         {
            /* pitch PID update */
-            PID_Update(&monitor->PitchCtl_PIDObj, monitor->attitude.pitch, monitor->exp_attitude.pitch);
+            PID_Update(&monitor->Param.PitchCtl_PIDObj, monitor->attitude.pitch, monitor->exp_attitude.pitch);
 
             /* roll PID update */
-            PID_Update(&monitor->RollCtl_PIDObj, monitor->attitude.roll, monitor->exp_attitude.roll);
+            PID_Update(&monitor->Param.RollCtl_PIDObj, monitor->attitude.roll, monitor->exp_attitude.roll);
 
             return true;
         }
@@ -280,13 +298,13 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
     if(monitor && monitor->att_pid_state)
     {
         /* gyro X PID Update */
-        PID_Update(&monitor->GyrXCtl_PIDObj, monitor->gyr[Axis_X], monitor->GyrXCtl_PIDObj.exp);
+        PID_Update(&monitor->Param.GyrXCtl_PIDObj, monitor->gyr[Axis_X], monitor->Param.GyrXCtl_PIDObj.exp);
 
         /* gyro Y PID Update */
-        PID_Update(&monitor->GyrYCtl_PIDObj, monitor->gyr[Axis_Y], monitor->GyrYCtl_PIDObj.exp);
+        PID_Update(&monitor->Param.GyrYCtl_PIDObj, monitor->gyr[Axis_Y], monitor->Param.GyrYCtl_PIDObj.exp);
 
         /* gyro Z PID Update */
-        PID_Update(&monitor->GyrZCtl_PIDObj, monitor->gyr[Axis_Z], monitor->GyrZCtl_PIDObj.exp);
+        PID_Update(&monitor->Param.GyrZCtl_PIDObj, monitor->gyr[Axis_Z], monitor->Param.GyrZCtl_PIDObj.exp);
 
         return true;
     }
@@ -302,9 +320,9 @@ static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef
     {
         ctl_buf[Actuator_Ctl_Throttle] = monitor->throttle_percent;
 
-        ctl_buf[Actuator_Ctl_GyrX] = monitor->GyrXCtl_PIDObj.fout;
-        ctl_buf[Actuator_Ctl_GyrY] = monitor->GyrYCtl_PIDObj.fout;
-        ctl_buf[Actuator_Ctl_GyrZ] = monitor->GyrZCtl_PIDObj.fout;
+        ctl_buf[Actuator_Ctl_GyrX] = monitor->Param.GyrXCtl_PIDObj.fout;
+        ctl_buf[Actuator_Ctl_GyrY] = monitor->Param.GyrYCtl_PIDObj.fout;
+        ctl_buf[Actuator_Ctl_GyrZ] = monitor->Param.GyrZCtl_PIDObj.fout;
     }
 
     SrvActuator.moto_control(ctl_buf);
@@ -469,24 +487,24 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
             if(exp_ctl_val->mode == Attitude_Control)
             {
                 /* set expection attitude */
-                TaskControl_Monitor.RollCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Roll];
-                TaskControl_Monitor.PitchCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Pitch];
+                TaskControl_Monitor.Param.RollCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Roll];
+                TaskControl_Monitor.Param.PitchCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Pitch];
     
                 TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
                 
-                TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.RollCtl_PIDObj.fout;
-                TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.PitchCtl_PIDObj.fout;
+                TaskControl_Monitor.Param.GyrXCtl_PIDObj.exp = TaskControl_Monitor.Param.RollCtl_PIDObj.fout;
+                TaskControl_Monitor.Param.GyrYCtl_PIDObj.exp = TaskControl_Monitor.Param.PitchCtl_PIDObj.fout;
 
-                exp_ctl_val->exp_angularspeed[Axis_X] = TaskControl_Monitor.RollCtl_PIDObj.fout;
-                exp_ctl_val->exp_angularspeed[Axis_Y] = TaskControl_Monitor.PitchCtl_PIDObj.fout;
+                exp_ctl_val->exp_angularspeed[Axis_X] = TaskControl_Monitor.Param.RollCtl_PIDObj.fout;
+                exp_ctl_val->exp_angularspeed[Axis_Y] = TaskControl_Monitor.Param.PitchCtl_PIDObj.fout;
             }
             else
             {
-                TaskControl_Monitor.GyrXCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_X];
-                TaskControl_Monitor.GyrYCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Y];
+                TaskControl_Monitor.Param.GyrXCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_X];
+                TaskControl_Monitor.Param.GyrYCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Y];
             }
 
-            TaskControl_Monitor.GyrZCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Z];
+            TaskControl_Monitor.Param.GyrZCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Z];
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
             TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 

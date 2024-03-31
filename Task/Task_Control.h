@@ -45,6 +45,20 @@ typedef enum
     TaskControl_RC_ErrInput = TASKCONTROL_SET_BIT(5),
 }TaskControl_ErrorCode_List;
 
+#pragma pack(1)
+typedef struct
+{
+    /* outer ring attitude control pid */
+    PIDObj_TypeDef RollCtl_PIDObj;
+    PIDObj_TypeDef PitchCtl_PIDObj;
+
+    /* inner ring angular speed control pid */
+    PIDObj_TypeDef GyrXCtl_PIDObj;
+    PIDObj_TypeDef GyrYCtl_PIDObj;
+    PIDObj_TypeDef GyrZCtl_PIDObj;
+} TaskControl_Param_TypeDef;
+#pragma pack()
+
 typedef struct
 {
     bool init_state;
@@ -93,14 +107,7 @@ typedef struct
 
     bool att_pid_state;
 
-    /* outer ring attitude control pid */
-    PIDObj_TypeDef RollCtl_PIDObj;
-    PIDObj_TypeDef PitchCtl_PIDObj;
-
-    /* inner ring angular speed control pid */
-    PIDObj_TypeDef GyrXCtl_PIDObj;
-    PIDObj_TypeDef GyrYCtl_PIDObj;
-    PIDObj_TypeDef GyrZCtl_PIDObj;
+    TaskControl_Param_TypeDef Param;
 
     osMessageQId CLIMessage_ID;
 } TaskControl_Monitor_TypeDef;

@@ -91,6 +91,7 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 
 Storage_TypeDef Storage = {
     .init = Storage_Init,
+    .search = Storage_Search,
 };
 
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
@@ -1622,12 +1623,8 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     Storage_FlashInfo_TypeDef Info_Rx;
     uint32_t addr_offset = 0;
     uint32_t BaseInfo_start_addr = 0;
-    uint32_t boot_tab_start_addr = 0;
-    uint32_t sys_tab_start_addr = 0;
-    uint32_t user_tab_start_addr = 0;
     uint32_t tab_addr_offset = 0;
     uint16_t crc = 0;
-    uint32_t data_sec_addr = 0;
     uint32_t remain_data_sec_size = 0;
     uint32_t data_sec_size = 0;
     uint32_t sector_size = 0;
@@ -2105,6 +2102,8 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
                 return false;
         }
     }
+
+    return false;
 }
 
 static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len)
@@ -2456,6 +2455,8 @@ static bool Storage_SelectedClass_Print(Shell *obj, Storage_ParaClassType_List c
             shellPrint(obj, "\tClass arg error\r\n");
             return false;
     }
+
+    return true;
 }
 
 static void Storage_Shell_Get_BaseInfo(Storage_MediumType_List medium)
@@ -2604,7 +2605,7 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
         return;
     }
 
-    error_code = Storage_CreateItem(medium, class, test_name, test_data, strlen(test_data));
+    error_code = Storage_CreateItem(medium, class, test_name, (uint8_t *)test_data, strlen(test_data));
     if(error_code != Storage_Error_None)
     {
         shellPrint(shell_obj, "\t[Storage Test Failed]\r\n");
@@ -2791,7 +2792,7 @@ static void Storage_Show_FreeSlot(Storage_MediumType_List medium, Storage_ParaCl
             return;
         }
 
-        p_FreeSlot = page_data_tmp;
+        p_FreeSlot = (Storage_FreeSlot_TypeDef *)page_data_tmp;
         
         if ((p_FreeSlot->head_tag == STORAGE_SLOT_HEAD_TAG) && \
             (p_FreeSlot->end_tag == STORAGE_SLOT_END_TAG))
@@ -2835,7 +2836,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
 
     if ((shell_obj == NULL) || \
         (name == NULL) || \
-        (strlen(name) == 0))
+        (strlen((char *)name) == 0))
         return;
     
     if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
@@ -2844,7 +2845,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
         return;
     }
 
-    ItemSearch = Storage_Search(medium, class, name);
+    ItemSearch = Storage_Search(medium, class, (const char *)name);
     if (ItemSearch.item.data_addr)
     {
         shellPrint(shell_obj, "\t[tab item %s matched]\r\n", name);
@@ -3022,7 +3023,7 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
             }
 
             /* convert raw data to tab item list */
-            item_list = page_data_tmp;
+            item_list = (Storage_Item_TypeDef *)page_data_tmp;
             crc_error = 0;
             for (uint8_t j = 0; j < item_per_tab; j++)
             {
@@ -3223,7 +3224,7 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
         return;
     }
 
-    update_error_code = Storage_SlotData_Update(medium, class, ItemSearch.item.data_addr, test_data, strlen(test_data)); 
+    update_error_code = Storage_SlotData_Update(medium, class, ItemSearch.item.data_addr, (uint8_t *)test_data, strlen(test_data)); 
     if (update_error_code != Storage_Error_None)
     {
         shellPrint(shell_obj, "\t[Data update failed %s]\r\n", Storage_Error_Print(update_error_code));
@@ -3262,7 +3263,7 @@ static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_Para
         return;
     }
 
-    if (!Storage_DeleteAllDataSlot(ItemSearch.item.data_addr, ItemSearch.item.name, ItemSearch.item.len, p_Sec, StorageIO_API))
+    if (!Storage_DeleteAllDataSlot(ItemSearch.item.data_addr, (char *)ItemSearch.item.name, ItemSearch.item.len, p_Sec, StorageIO_API))
     {
         shellPrint(shell_obj, "\t[Item Delete Error]\r\n");
     }

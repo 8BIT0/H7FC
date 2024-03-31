@@ -24,7 +24,6 @@ static const dma_channel_type* BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
 
 /* internal function */
 static bool DataPipe_DMA_Init = false;
-static bool DataPipe_InTrans = false;
 static BspDMA_Pipe_TransFin_Cb DataPipe_Trans_Fin_Callback = NULL;
 static BspDMA_Pipe_TransErr_Cb DataPipe_Trans_Err_Callback = NULL;
 
@@ -186,7 +185,7 @@ static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List
 static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq, void *cb)
 {
     IRQn_Type irq;
-    dma_channel_type *dmamux = NULL;
+    dmamux_channel_type *dmamux = NULL;
 
     if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_1))
         return;
