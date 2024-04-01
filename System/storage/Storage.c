@@ -94,6 +94,7 @@ Storage_TypeDef Storage = {
     .search = Storage_Search,
     .create = Storage_CreateItem,
     .get = Storage_Get_Data,
+    .update = Storage_SlotData_Update,
 };
 
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
