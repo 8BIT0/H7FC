@@ -7,6 +7,19 @@
 
 typedef struct
 {
+    float gP;
+    float P_Diff_Max;
+    float P_Diff_Min;
+
+    float gI;
+    float I_Max;
+    float I_Min;
+    
+    float gD;
+} PID_Param_TypeDef;
+
+typedef struct
+{
     float in;       /* input measurement data in physical */
     float exp;      /* expect physical data */
     float diff_max;
