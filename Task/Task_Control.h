@@ -7,6 +7,7 @@
 #include "imu_data.h"
 #include "Srv_OsCommon.h"
 #include "pid.h"
+#include "../System/storage/Storage.h"
 // #include "adrc.h"
 #include "../common/util.h"
 
@@ -113,6 +114,8 @@ typedef struct
     uint8_t throttle_percent;
 
     bool att_pid_state;
+
+    Storage_ItemSearchOut_TypeDef param_match_state;
 
     /* outer ring attitude control pid */
     PIDObj_TypeDef RollCtl_PIDObj;

@@ -11,7 +11,6 @@
 #include "Srv_DataHub.h"
 #include "Srv_Actuator.h"
 #include "shell_port.h"
-#include "../System/storage/Storage.h"
 
 #define CONTROL_STORAGE_SECTION_NAME "PID_Para"
 
@@ -230,7 +229,6 @@ static bool TaskControl_Param_Copy(PIDObj_TypeDef *PID_Obj, PID_Param_TypeDef Pa
 /* read param from storage */
 static bool TaskControl_Get_Param(void)
 {
-    Storage_ItemSearchOut_TypeDef search_out;
     TaskControl_FlightParam_TypeDef Param;
     TaskControl_FlightParam_TypeDef Default_Param;
     TaskControl_FlightParam_TypeDef *p_UseParam = NULL;
@@ -239,14 +237,14 @@ static bool TaskControl_Get_Param(void)
     /* search storage section first */
     memset(&Param, 0, sizeof(TaskControl_FlightParam_TypeDef));
     memset(&Default_Param, 0, sizeof(TaskControl_FlightParam_TypeDef));
-    memset(&search_out, 0, sizeof(Storage_ItemSearchOut_TypeDef));
-    search_out = Storage.search(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME);
+    memset(&TaskControl_Monitor.param_match_state, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+    TaskControl_Monitor.param_match_state = Storage.search(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME);
 
     Param = TaskControl_Get_DefaultParam();
     Default_Param = Param;
     p_UseParam = &Default_Param;
     
-    if (search_out.item_addr == 0)
+    if (TaskControl_Monitor.param_match_state.item_addr == 0)
     {
         /* no pid parameter found in external flash chip under user partten */
         /* section create successful */
@@ -255,8 +253,8 @@ static bool TaskControl_Get_Param(void)
     }
     else
     {
-        if ((search_out.item.len == sizeof(TaskControl_FlightParam_TypeDef)) && \
-            (Storage.get(External_Flash, Para_User, search_out.item, &Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None))
+        if ((TaskControl_Monitor.param_match_state.item.len == sizeof(TaskControl_FlightParam_TypeDef)) && \
+            (Storage.get(External_Flash, Para_User, TaskControl_Monitor.param_match_state.item, &Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None))
         {
             p_UseParam = &Param;
         }
