@@ -9,6 +9,8 @@
 #include "Srv_OsCommon.h"
 #include "util.h"
 
+typedef uint32_t storage_handle;
+
 #define Storage_Assert(x) while(x)
 
 #define Format_Retry_Cnt 5
@@ -41,8 +43,6 @@
 #define STORAGE_DATA_ALIGN 4
 #define STORAGE_MIN_BYTE_SIZE 1
 #define STORAGE_FREEITEM_NAME "Item_Avaliable"
-
-typedef uint32_t storage_handle;
 
 typedef enum
 {
@@ -88,6 +88,7 @@ typedef enum
     Storage_FreeSlot_Link_Error,
     Storage_ItemInfo_Error,
     Storage_ItemUpdate_Error,
+    Storage_GetData_Error,
     Storage_CRC_Error,
     Storage_Update_DataSize_Error,
     Storage_Delete_Error,
@@ -261,9 +262,10 @@ typedef struct
 {
     bool (*init)(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev);
     Storage_ItemSearchOut_TypeDef (*search)(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name);
-    bool (*save)(storage_handle hdl, uint8_t *p_data, uint16_t size);
-    bool (*get)(storage_handle hdl, uint8_t *p_data, uint16_t size);
-    bool (*clear)(storage_handle hdl);
+    Storage_ErrorCode_List (*create)(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size);
+    bool (*update)(Storage_MediumType_List medium, Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
+    bool (*get)(Storage_MediumType_List medium, Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
+    // bool (*clear)(Storage_T);
 } Storage_TypeDef;
 
 extern Storage_TypeDef Storage;

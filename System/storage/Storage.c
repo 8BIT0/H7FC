@@ -73,7 +73,6 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, 
 static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
 static bool Storage_Format(Storage_MediumType_List type);
-static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size);
 static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item);
 static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
@@ -88,10 +87,13 @@ static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_MediumType_List type
 static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size);
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint32_t size);
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
+static Storage_ErrorCode_List Storage_Get_Data(Storage_MediumType_List medium, Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
 
 Storage_TypeDef Storage = {
     .init = Storage_Init,
     .search = Storage_Search,
+    .create = Storage_CreateItem,
+    .get = Storage_Get_Data,
 };
 
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
@@ -655,6 +657,106 @@ static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t
         return Storage_Write_Error;
 
     return Storage_Error_None;
+}
+
+static Storage_ErrorCode_List Storage_Get_Data(Storage_MediumType_List medium, Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size)
+{
+    uint32_t data_len = 0;
+    uint32_t data_addr = 0;
+    uint8_t *p_read_out = NULL;
+    uint8_t *crc_buf = NULL;
+    uint16_t crc_len = 0;
+    uint16_t crc = 0;
+    StorageIO_TypeDef *StorageIO_API = NULL;
+    Storage_DataSlot_TypeDef DataSlot;
+    uint8_t *p_data_start = NULL;
+
+    memset(&DataSlot, 0, sizeof(Storage_DataSlot_TypeDef));
+    if (item.data_addr && p_data && size)
+    {
+        data_len = item.len;
+        data_addr = item.data_addr;
+
+        if (medium == External_Flash)
+        {
+            StorageIO_API = &ExternalFlash_IO;
+        }
+        else if (medium == Internal_Flash)
+        {
+            StorageIO_API = &InternalFlash_IO;
+        }
+        else
+            return Storage_GetData_Error;
+
+        if (StorageIO_API->read == NULL)
+            return Storage_GetData_Error;
+
+        while(data_len)
+        {
+            if (!StorageIO_API->read(data_addr, page_data_tmp, data_len + sizeof(Storage_DataSlot_TypeDef)))
+                return Storage_GetData_Error;
+
+            p_read_out = page_data_tmp;
+            memcpy(&DataSlot.head_tag, p_read_out, sizeof(DataSlot.head_tag));
+            p_read_out += sizeof(DataSlot.head_tag);
+            if (DataSlot.head_tag != STORAGE_SLOT_HEAD_TAG)
+                return Storage_GetData_Error;
+
+            memcpy(DataSlot.name, p_read_out, STORAGE_NAME_LEN);
+            p_read_out += STORAGE_NAME_LEN;
+
+            memcpy(&DataSlot.total_data_size, p_read_out, sizeof(DataSlot.total_data_size));
+            p_read_out += sizeof(DataSlot.total_data_size);
+            if (DataSlot.total_data_size == 0)
+                return Storage_GetData_Error;
+
+            memcpy(&DataSlot.cur_slot_size, p_read_out, sizeof(DataSlot.cur_slot_size));
+            p_read_out += sizeof(DataSlot.cur_slot_size);
+            if (DataSlot.cur_slot_size == 0)
+                return Storage_GetData_Error;
+
+            memcpy(&DataSlot.nxt_addr, p_read_out, sizeof(DataSlot.nxt_addr));
+            p_read_out += sizeof(DataSlot.nxt_addr);
+
+            memcpy(&DataSlot.align_size, p_read_out, sizeof(DataSlot.align_size));
+            p_read_out += sizeof(DataSlot.align_size);
+            p_data_start = p_read_out;
+
+            crc_buf = p_read_out;
+            crc_len = DataSlot.cur_slot_size;
+            crc = Common_CRC16(crc_buf, crc_len);
+
+            p_read_out += DataSlot.cur_slot_size;
+            memcpy(&DataSlot.slot_crc, p_read_out, sizeof(DataSlot.slot_crc));
+            p_read_out += sizeof(DataSlot.slot_crc);
+            if (crc != DataSlot.slot_crc)
+                return Storage_GetData_Error;
+
+            memcpy(&DataSlot.end_tag, p_read_out, sizeof(DataSlot.end_tag));
+            if (DataSlot.end_tag != STORAGE_SLOT_END_TAG)
+                return Storage_GetData_Error;
+
+            memcpy(p_data, p_data_start, DataSlot.cur_slot_size - DataSlot.align_size);
+            data_len -= DataSlot.cur_slot_size;
+
+            if (DataSlot.nxt_addr)
+            {
+                p_data += DataSlot.cur_slot_size - DataSlot.align_size;
+                data_addr = DataSlot.nxt_addr;
+            }
+            else
+            {
+                if (data_len == 0)
+                    break;
+
+                return Storage_GetData_Error;
+            }
+        }
+
+        return Storage_Error_None;
+    }
+
+    return Storage_GetData_Error;
 }
 
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size)

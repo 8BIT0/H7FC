@@ -72,6 +72,7 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_ctl_val);
 static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef *monitor);
 static void TaskControl_CLI_Polling(void);
+static bool TaskControl_Get_Param(void);
 
 /* internal var */
 static uint32_t TaskControl_Period = 0;
@@ -91,7 +92,7 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
     /* PID Parametet Init */
-
+    TaskControl_Get_Param();
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
@@ -150,81 +151,105 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Period = period;
 }
 
+static TaskControl_Param_TypeDef TaskControl_Get_DefaultParam(void)
+{
+    TaskControl_Param_TypeDef Param;
+
+    memset(&Param, 0, sizeof(TaskControl_Param_TypeDef));
+
+    /* use default pid data */
+    /* attitude PID control parameter section */
+    Param.PitchCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
+    Param.RollCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
+
+    Param.PitchCtl_PIDObj.diff_max = ATTITUDE_PID_DIFF_MAX;
+    Param.RollCtl_PIDObj.diff_max = ATTITUDE_PID_DIFF_MAX;
+
+    Param.PitchCtl_PIDObj.diff_min = ATTITUDE_PID_DIFF_MIN;
+    Param.RollCtl_PIDObj.diff_min = ATTITUDE_PID_DIFF_MIN;
+
+    Param.PitchCtl_PIDObj.gP = 1.2;
+    Param.PitchCtl_PIDObj.gI = 0.08;
+    Param.PitchCtl_PIDObj.gI_Max = 50;
+    Param.PitchCtl_PIDObj.gI_Min = -50;
+    Param.PitchCtl_PIDObj.gD = 1;
+
+    Param.RollCtl_PIDObj.gP = 1.2;
+    Param.RollCtl_PIDObj.gI = 0.08;
+    Param.RollCtl_PIDObj.gI_Max = 50;
+    Param.RollCtl_PIDObj.gI_Min = -50;
+    Param.RollCtl_PIDObj.gD = 1;
+
+    /* angular PID control parameter section */
+    Param.GyrXCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+    Param.GyrXCtl_PIDObj.diff_max = GYRO_X_RATE_PID_DIFF_MAX;
+    Param.GyrXCtl_PIDObj.diff_min = GYRO_X_RATE_PID_DIFF_MIN;
+
+    Param.GyrXCtl_PIDObj.gP = 2;
+    Param.GyrXCtl_PIDObj.gI = 0.002;
+    Param.GyrXCtl_PIDObj.gI_Max = 30;
+    Param.GyrXCtl_PIDObj.gI_Min = -30;
+    Param.GyrXCtl_PIDObj.gD = 0.1;
+
+    Param.GyrYCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+    Param.GyrYCtl_PIDObj.diff_max = GYRO_Y_RATE_PID_DIFF_MAX;
+    Param.GyrYCtl_PIDObj.diff_min = GYRO_Y_RATE_PID_DIFF_MIN;
+    
+    Param.GyrYCtl_PIDObj.gP = 2;
+    Param.GyrYCtl_PIDObj.gI = 0.002;
+    Param.GyrYCtl_PIDObj.gI_Max = 30;
+    Param.GyrYCtl_PIDObj.gI_Min = -30;
+    Param.GyrYCtl_PIDObj.gD = 0.1;
+
+    Param.GyrZCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
+    Param.GyrZCtl_PIDObj.diff_max = GYRO_X_RATE_PID_DIFF_MAX;
+    Param.GyrZCtl_PIDObj.diff_min = GYRO_X_RATE_PID_DIFF_MIN;
+    
+    Param.GyrZCtl_PIDObj.gP = 1;
+    Param.GyrZCtl_PIDObj.gI = 0.02;
+    Param.GyrZCtl_PIDObj.gI_Max = 30;
+    Param.GyrZCtl_PIDObj.gI_Min = -30;
+    Param.GyrZCtl_PIDObj.gD = 0.1;
+
+    return Param;
+}
+
 /* read param from storage */
-static void TaskControl_Get_Param(void)
+static bool TaskControl_Get_Param(void)
 {
     Storage_ItemSearchOut_TypeDef search_out;
+    TaskControl_Param_TypeDef Param;
+    bool state = true;
 
     /* search storage section first */
+    memset(&Param, 0, sizeof(TaskControl_Param_TypeDef));
     memset(&search_out, 0, sizeof(Storage_ItemSearchOut_TypeDef));
     search_out = Storage.search(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME);
 
     if (search_out.item_addr == 0)
     {
+        Param = TaskControl_Get_DefaultParam();
+
         /* no pid parameter found in external flash chip under user partten */
-        /* use default pid data */
-        /* attitude PID control parameter section */
-        TaskControl_Monitor.Param.PitchCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
-        TaskControl_Monitor.Param.RollCtl_PIDObj.accuracy_scale = ATTITUDE_PID_ACCURACY;
-
-        TaskControl_Monitor.Param.PitchCtl_PIDObj.diff_max = ATTITUDE_PID_DIFF_MAX;
-        TaskControl_Monitor.Param.RollCtl_PIDObj.diff_max = ATTITUDE_PID_DIFF_MAX;
-
-        TaskControl_Monitor.Param.PitchCtl_PIDObj.diff_min = ATTITUDE_PID_DIFF_MIN;
-        TaskControl_Monitor.Param.RollCtl_PIDObj.diff_min = ATTITUDE_PID_DIFF_MIN;
-
-        TaskControl_Monitor.Param.PitchCtl_PIDObj.gP = 1.2;
-        TaskControl_Monitor.Param.PitchCtl_PIDObj.gI = 0.08;
-        TaskControl_Monitor.Param.PitchCtl_PIDObj.gI_Max = 50;
-        TaskControl_Monitor.Param.PitchCtl_PIDObj.gI_Min = -50;
-        TaskControl_Monitor.Param.PitchCtl_PIDObj.gD = 1;
-
-        TaskControl_Monitor.Param.RollCtl_PIDObj.gP = 1.2;
-        TaskControl_Monitor.Param.RollCtl_PIDObj.gI = 0.08;
-        TaskControl_Monitor.Param.RollCtl_PIDObj.gI_Max = 50;
-        TaskControl_Monitor.Param.RollCtl_PIDObj.gI_Min = -50;
-        TaskControl_Monitor.Param.RollCtl_PIDObj.gD = 1;
-
-        /* angular PID control parameter section */
-        TaskControl_Monitor.Param.GyrXCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
-        TaskControl_Monitor.Param.GyrXCtl_PIDObj.diff_max = GYRO_X_RATE_PID_DIFF_MAX;
-        TaskControl_Monitor.Param.GyrXCtl_PIDObj.diff_min = GYRO_X_RATE_PID_DIFF_MIN;
-
-        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gP = 2;
-        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gI = 0.002;
-        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gI_Max = 30;
-        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gI_Min = -30;
-        TaskControl_Monitor.Param.GyrXCtl_PIDObj.gD = 0.1;
-
-        TaskControl_Monitor.Param.GyrYCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
-        TaskControl_Monitor.Param.GyrYCtl_PIDObj.diff_max = GYRO_Y_RATE_PID_DIFF_MAX;
-        TaskControl_Monitor.Param.GyrYCtl_PIDObj.diff_min = GYRO_Y_RATE_PID_DIFF_MIN;
-        
-        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gP = 2;
-        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gI = 0.002;
-        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gI_Max = 30;
-        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gI_Min = -30;
-        TaskControl_Monitor.Param.GyrYCtl_PIDObj.gD = 0.1;
-
-        TaskControl_Monitor.Param.GyrZCtl_PIDObj.accuracy_scale = ANGULAR_PID_ACCURACY;
-        TaskControl_Monitor.Param.PitchCtl_PIDObj.diff_max = GYRO_X_RATE_PID_DIFF_MAX;
-        TaskControl_Monitor.Param.RollCtl_PIDObj.diff_min = GYRO_X_RATE_PID_DIFF_MIN;
-        
-        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gP = 1;
-        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gI = 0.02;
-        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gI_Max = 30;
-        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gI_Min = -30;
-        TaskControl_Monitor.Param.GyrZCtl_PIDObj.gD = 0.1;
+        /* section create successful */
+        if (Storage.create(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME, &Param, sizeof(TaskControl_Param_TypeDef)) != Storage_Error_None)
+            state = false;
     }
     else
     {
-
+        /* get attitide pitch  pid param */
+        /* get attitude roll   pid param */
+        /* get attitude gyro x pid param */
+        /* get attitude gyro y pid param */
+        /* get attitude gyro z pid param */
+        if (Storage.get(External_Flash, Para_User, search_out.item, &TaskControl_Monitor.Param, sizeof(TaskControl_Param_TypeDef)) != Storage_Error_None)
+            state = false;
     }
-    /* get attitide pitch  pid param */
-    /* get attitude roll   pid param */
-    /* get attitude gyro x pid param */
-    /* get attitude gyro y pid param */
-    /* get attitude gyro z pid param */
+
+    if (!state)
+        TaskControl_Monitor.Param = Param;
+
+    return state;
 }
 
 void TaskControl_Core(void const *arg)
@@ -851,6 +876,27 @@ static void TaskControl_Close_CLI(void)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, disable_actuator_test, TaskControl_Close_CLI, disable actuator test);
 
+static bool TaskControl_PID_Param_Print(Shell *obj, PIDObj_TypeDef para)
+{
+    char s_float[32] = {'\0'};
+
+    if (obj)
+    {
+        shellPrint(obj, "\t gP:          %f \r\n", para.gP);
+        shellPrint(obj, "\t P-Diff Max:  %f \r\n", para.diff_max);
+        shellPrint(obj, "\t P-Diff Min:  %f \r\n", para.diff_min);
+        shellPrint(obj, "\t gI:          %f \r\n", para.gI);
+        shellPrint(obj, "\t I-Max:       %f \r\n", para.gI_Max);
+        shellPrint(obj, "\t I-Min:       %f \r\n", para.gI_Min);
+        shellPrint(obj, "\t gD:          %f \r\n", para.gD);
+        shellPrint(obj, "\r\n");
+
+        return true;
+    }
+
+    return false;
+}
+
 static void TaskControl_Get_Controller_Parameter(void)
 {
     Shell *shell_obj = Shell_GetInstence();
@@ -858,5 +904,19 @@ static void TaskControl_Get_Controller_Parameter(void)
     if(shell_obj == NULL)
         return;
         
+    shellPrint(shell_obj, "Pitch PID\r\n");
+    TaskControl_PID_Param_Print(shell_obj, TaskControl_Monitor.Param.PitchCtl_PIDObj);
+
+    shellPrint(shell_obj, "Roll PID\r\n");
+    TaskControl_PID_Param_Print(shell_obj, TaskControl_Monitor.Param.RollCtl_PIDObj);
+    
+    shellPrint(shell_obj, "GyroX PID\r\n");
+    TaskControl_PID_Param_Print(shell_obj, TaskControl_Monitor.Param.GyrXCtl_PIDObj);
+    
+    shellPrint(shell_obj, "GyroY PID\r\n");
+    TaskControl_PID_Param_Print(shell_obj, TaskControl_Monitor.Param.GyrYCtl_PIDObj);
+
+    shellPrint(shell_obj, "GyroZ PID\r\n");
+    TaskControl_PID_Param_Print(shell_obj, TaskControl_Monitor.Param.GyrZCtl_PIDObj);
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, get_controller_parameter, TaskControl_Get_Controller_Parameter, get controller parameter);
