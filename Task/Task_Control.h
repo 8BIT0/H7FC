@@ -48,15 +48,22 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    /* outer ring attitude control pid */
-    PIDObj_TypeDef RollCtl_PIDObj;
-    PIDObj_TypeDef PitchCtl_PIDObj;
+    PID_Param_TypeDef Pitch_Para;
+    PID_Param_TypeDef Roll_Para;
+} TaskControl_OuterLoop_Para_TypeDef;
 
-    /* inner ring angular speed control pid */
-    PIDObj_TypeDef GyrXCtl_PIDObj;
-    PIDObj_TypeDef GyrYCtl_PIDObj;
-    PIDObj_TypeDef GyrZCtl_PIDObj;
-} TaskControl_Param_TypeDef;
+typedef struct
+{
+    PID_Param_TypeDef GyroX_Para;
+    PID_Param_TypeDef GyroY_Para;
+    PID_Param_TypeDef GyroZ_Para;
+} TaskControl_InnerLoop_Para_TypeDef;
+
+typedef struct
+{
+    TaskControl_OuterLoop_Para_TypeDef Outer;
+    TaskControl_InnerLoop_Para_TypeDef Inner;
+} TaskControl_FlightParam_TypeDef;
 #pragma pack()
 
 typedef struct
@@ -107,7 +114,14 @@ typedef struct
 
     bool att_pid_state;
 
-    TaskControl_Param_TypeDef Param;
+    /* outer ring attitude control pid */
+    PIDObj_TypeDef RollCtl_PIDObj;
+    PIDObj_TypeDef PitchCtl_PIDObj;
+
+    /* inner ring angular speed control pid */
+    PIDObj_TypeDef GyrXCtl_PIDObj;
+    PIDObj_TypeDef GyrYCtl_PIDObj;
+    PIDObj_TypeDef GyrZCtl_PIDObj;
 
     osMessageQId CLIMessage_ID;
 } TaskControl_Monitor_TypeDef;

@@ -8,12 +8,12 @@
 typedef struct
 {
     float gP;
-    float P_Diff_Max;
-    float P_Diff_Min;
+    float gP_Diff_Max;
+    float gP_Diff_Min;
 
     float gI;
-    float I_Max;
-    float I_Min;
+    float gI_Max;
+    float gI_Min;
     
     float gD;
 } PID_Param_TypeDef;
