@@ -32,7 +32,7 @@
 #define W25Q128FV_PAGE_SIZE                     W25QXX_PAGE_SIZE    /* 65536 pages of 256 bytes */
 #define W25Q128FV_SECTOR_NUM                    256
 #define W25Q128FV_SUBSECTOR_NUM                 4096
-#define W25Q128FV_PAGE_NUM                      65536
+#define W25Q128FV_PAGE_NUM                      65535
 
 #define W25Q128FV_DUMMY_CYCLES_READ             4
 #define W25Q128FV_DUMMY_CYCLES_READ_QUAD        10

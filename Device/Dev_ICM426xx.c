@@ -669,7 +669,7 @@ static IMUData_TypeDef DevICM426xx_Get_Data(DevICM426xxObj_TypeDef *sensor_obj)
 {
     IMUData_TypeDef tmp;
 
-    memset(&tmp, NULL, sizeof(tmp));
+    memset(&tmp, 0, sizeof(tmp));
     if (sensor_obj->error.code == ICM426xx_No_Error)
         return sensor_obj->OriData;
 
