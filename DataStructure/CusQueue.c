@@ -135,7 +135,7 @@ static bool Queue_PopTo(QueueObj_TypeDef *src, QueueObj_TypeDef *dst)
         src->head_pos %= src->lenth;
 
         dst->buff[dst->end_pos] = src->buff[src->head_pos];
-        src->buff[src->head_pos] = NULL;
+        src->buff[src->head_pos] = 0;
 
         src->head_pos++;
         src->size--;
@@ -191,7 +191,7 @@ static Queue_state Queue_Pop(QueueObj_TypeDef *obj, uint8_t *data, uint16_t size
             {
                 obj->head_pos %= obj->lenth;
                 data[i] = obj->buff[obj->head_pos];
-                obj->buff[obj->head_pos] = NULL;
+                obj->buff[obj->head_pos] = 0;
                 obj->head_pos++;
 
                 obj->size--;

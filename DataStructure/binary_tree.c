@@ -271,7 +271,7 @@ static void Tree_RootUpdate(Tree_TypeDef *tree)
     }
 }
 
-static bool TreeNode_Init(TreeNode_TypeDef *node, char *name, data_handle data, Tree_Callback insert, Tree_Callback search, Tree_Callback compare)
+static bool TreeNode_Init(TreeNode_TypeDef *node, char *name, data_handle data, Tree_Callback insert, Tree_Search_Callback search, Tree_Callback compare)
 {
     if (node && data)
     {

@@ -55,7 +55,7 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
     
     memset(&SrvCtlArbitrateMonitor, 0, sizeof(SrvCtlArbitrateMonitor));
 
-    for(index = 0; index < sizeof(att_range) / sizeof(att_range[0]); index ++)
+    for(index = 0; index < Att_Ctl_Sum; index ++)
     {
         input_range_max = (((int16_t)(att_range[index].max * 1000)) / 1000);
         input_range_min = (((int16_t)(att_range[index].min * 1000)) / 1000);
@@ -109,7 +109,7 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
             ref_gyr_range = sec_gyr_range;
     }
 
-    for(index = 0; index < sizeof(angularspeed_range) / sizeof(angularspeed_range[0]); index ++)
+    for(index = 0; index < Axis_Sum; index ++)
     {
         input_range_max = (((int16_t)(angularspeed_range[index].max * 1000)) / 1000);
         input_range_min = (((int16_t)(angularspeed_range[index].min * 1000)) / 1000);

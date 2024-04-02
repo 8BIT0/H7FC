@@ -22,7 +22,7 @@ typedef struct
     bool (*systimer_disable)(void);
     uint32_t (*systimer_enable)(void);
 
-    void *(*malloc)(uint16_t size);
+    void *(*malloc)(uint32_t size);
     void (*free)(void *ptr);
 
     void (*enter_critical)(void);

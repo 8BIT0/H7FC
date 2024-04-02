@@ -39,9 +39,6 @@ static data_handle Error_InsertPriority_Compare(data_handle l_addr, data_handle 
     if ((l_addr == 0) && (r_addr == 0) && (l_addr != r_addr))
         return 0;
 
-    ErrorTreeDataToObj(l_addr)->code;
-    ErrorTreeDataToObj(r_addr)->code;
-
     if (ErrorTreeDataToObj(l_addr)->code > ErrorTreeDataToObj(r_addr)->code)
         return r_addr;
 

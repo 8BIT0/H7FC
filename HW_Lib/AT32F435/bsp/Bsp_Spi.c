@@ -28,8 +28,6 @@ BspSpi_TypeDef BspSPI = {
 
 static crm_periph_clock_type BspSPI_Get_Clock(spi_type *type)
 {
-    uint32_t spi_addr = 0;
-
     switch((uint32_t)type)
     {
         case (uint32_t)SPI1:

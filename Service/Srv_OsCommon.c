@@ -22,7 +22,7 @@ uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__((section(".OsHeap_Section"
 
 /* external function */
 static void* SrvOsCommon_Malloc(uint32_t size);
-static bool SrvOsCommon_Free(void *ptr);
+static void SrvOsCommon_Free(void *ptr);
 
 SrvOsCommon_TypeDef SrvOsCommon = {
     .get_os_ms = osKernelSysTick,
@@ -84,7 +84,7 @@ static void* SrvOsCommon_Malloc(uint32_t size)
     return req_tmp;
 }
 
-static bool SrvOsCommon_Free(void *ptr)
+static void SrvOsCommon_Free(void *ptr)
 {
     uint32_t free_cnt = 0;
     SrvOs_HeapStatus_TypeDef status;
@@ -107,12 +107,9 @@ static bool SrvOsCommon_Free(void *ptr)
         {
             OsHeap_Monitor.free_cnt++;
             ptr = NULL;
-            return true;
         }
         else
             OsHeap_Monitor.free_faile_cnt ++;
     }
-
-    return false;
 }
 

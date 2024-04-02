@@ -454,7 +454,7 @@ static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t 
             if(obj->monitor.tx_success_cnt != obj->monitor.tx_cnt)
                 return false;
 
-            To_DMA_Handle_Ptr(obj->tx_dma_hdl)->maddr = tx_buf;
+            To_DMA_Handle_Ptr(obj->tx_dma_hdl)->maddr = (uint32_t)tx_buf;
             To_DMA_Handle_Ptr(obj->tx_dma_hdl)->dtcnt_bit.cnt = size;
 
             dma_channel_enable(To_DMA_Handle_Ptr(obj->tx_dma_hdl), TRUE);
@@ -607,7 +607,7 @@ void BspUart_Irq_Callback(void *arg)
                 if(obj->RxCallback)
                     obj->RxCallback((uint8_t *)obj->cust_data_addr, obj->rx_buf, dma_rec_size);
 
-                To_DMA_Handle_Ptr(obj->rx_dma_hdl)->maddr = obj->rx_buf;
+                To_DMA_Handle_Ptr(obj->rx_dma_hdl)->maddr = (uint32_t)obj->rx_buf;
                 To_DMA_Handle_Ptr(obj->rx_dma_hdl)->dtcnt = obj->rx_size;
                 dma_channel_enable(To_DMA_Handle_Ptr(obj->rx_dma_hdl), TRUE);
             }
