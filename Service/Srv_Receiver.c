@@ -254,7 +254,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
 
         if (data_obj_error)
         {
-            ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
+            ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, (uint8_t *)&SrvReceiver_Monitor, SRVRECEIVER_SIZE);
             return false;
         }
 
@@ -264,12 +264,12 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
         Uart_Receiver_Obj->cust_data_addr = (uint32_t)obj;
 
         /* set uart callback */
-        Uart_Receiver_Obj->RxCallback = SrvReceiver_SerialDecode_Callback;
+        Uart_Receiver_Obj->RxCallback = (BspUART_Callback)SrvReceiver_SerialDecode_Callback;
 
         /* serial port init */
         if (!BspUart.init(Uart_Receiver_Obj))
         {
-            ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Port_Init_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
+            ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Port_Init_Error, (uint8_t *)&SrvReceiver_Monitor, SRVRECEIVER_SIZE);
             return false;
         }
 
@@ -282,7 +282,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
         break;
 
     default:
-        ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, &SrvReceiver_Monitor, SRVRECEIVER_SIZE);
+        ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, (uint8_t *)&SrvReceiver_Monitor, SRVRECEIVER_SIZE);
         return false;
     }
 
@@ -306,19 +306,19 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
             /* do serial decode funtion */
             if (receiver_obj->Frame_type == Receiver_Type_CRSF)
             {
-                decode_out = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->decode(receiver_obj->frame_data_obj, p_data, size);
+                decode_out = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->decode(To_CRSF_Obj(receiver_obj->frame_data_obj), p_data, size);
                 sig_update = true;
 
                 switch (decode_out)
                 {
                     case CRSF_FRAMETYPE_LINK_STATISTICS:
-                        receiver_obj->data.rssi = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).downlink_RSSI;
-                        receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).downlink_Link_quality;
-                        receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(receiver_obj->frame_data_obj).active_antenna;
+                        receiver_obj->data.rssi = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(To_CRSF_Obj(receiver_obj->frame_data_obj)).downlink_RSSI;
+                        receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(To_CRSF_Obj(receiver_obj->frame_data_obj)).downlink_Link_quality;
+                        receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_statistics(To_CRSF_Obj(receiver_obj->frame_data_obj)).active_antenna;
                         break;
 
                     case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
-                        ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(receiver_obj->frame_data_obj, receiver_obj->data.val_list);
+                        ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(To_CRSF_Obj(receiver_obj->frame_data_obj), receiver_obj->data.val_list);
 
                         for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                         {

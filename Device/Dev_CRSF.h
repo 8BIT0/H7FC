@@ -7,6 +7,8 @@
 
 typedef void (*CRSF_Callback)(uint8_t *ptr, uint16_t size);
 
+#define To_CRSF_Obj(x) ((DevCRSFObj_TypeDef *)x)
+
 #define CRSF_BAUDRATE 420000
 
 #define CRSF_LINK_STATUS_UPDATE_TIMEOUT_US 250000
