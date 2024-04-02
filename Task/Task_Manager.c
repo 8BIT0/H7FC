@@ -60,7 +60,6 @@ void Task_Manager_Init(void)
 void Task_Manager_CreateTask(void)
 {
     bool init = false;
-    uint32_t enabled_sensor = 0;
     Storage_ModuleState_TypeDef storage_module_enable;
     Storage_ExtFLashDevObj_TypeDef *storage_ExtFlashObj = NULL;
     storage_module_enable.val = 0;

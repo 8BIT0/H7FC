@@ -570,7 +570,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             if ((Telemetry_Monitor.lst_arm_state == TELEMETRY_SET_ARM) && (RC_Input_obj->sig.arm_state == TELEMETRY_SET_DISARM))
             {
                 RC_Input_obj->sig.failsafe = true;
-                return;
+                return sig_tmp;
             }
 
             Telemetry_Monitor.recover_failsafe = false;

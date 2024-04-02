@@ -10,7 +10,7 @@ __attribute__((weak)) uint32_t DShot_Get_Timer_CLKFreq(void *obj){return 0;}
 /* external function */
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, uint8_t dma, uint8_t stream);
 static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value);
-static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd);
+static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint16_t cmd);
 
 DevDshot_TypeDef DevDshot = {
     .init = DevDshot_Init,
@@ -129,7 +129,7 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
     DShot_Port_Trans(obj);
 }
 
-static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint8_t cmd)
+static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint16_t cmd)
 {
     uint16_t packet;
     bool dshot_telemetry = false;

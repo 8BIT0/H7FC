@@ -127,11 +127,12 @@ static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
     Uart_Receiver_Obj->tx_dma = tx_dma;
     Uart_Receiver_Obj->tx_stream = tx_dma_stream;
 
-    return Uart_Receiver_Obj;
+    return (uint8_t *)Uart_Receiver_Obj;
 }
 
 static uint8_t *SrvReceiver_Create_SPIObj(void)
 {
+    return NULL;
 }
 
 static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
@@ -142,7 +143,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
     if ((obj == NULL) || (port_obj == NULL))
         return false;
 
-    memset(SrvReceiver_Buff, NULL, SRV_RECEIVER_BUFF_SIZE);
+    memset(SrvReceiver_Buff, 0, SRV_RECEIVER_BUFF_SIZE);
 
     /* create error log handle */
     SrvReceiver_Error_Handle = ErrorLog.create("SrvReceiver_Error");
@@ -203,9 +204,9 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             obj->channel_num = SBUS_MAX_CHANNEL;
 
             /* set receiver object frame object */
-            obj->frame_api = &DevSBUS;
+            obj->frame_api = (void *)&DevSBUS;
 
-            if (!((DevSBUS_TypeDef *)(obj->frame_api))->init(obj->frame_data_obj))
+            if (!((DevSBUS_TypeDef *)(obj->frame_api))->init(To_SBUS_Obj(obj->frame_data_obj)))
                 return false;
             break;
 
@@ -295,7 +296,6 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
 {
     BspUARTObj_TypeDef *uart_obj = NULL;
     uint8_t *rx_buff_ptr = NULL;
-    uint16_t rx_buff_size = 0;
     uint8_t decode_out = 0xFF;
     bool sig_update = false;
 

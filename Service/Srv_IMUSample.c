@@ -71,7 +71,7 @@ static SrvIMU_Data_TypeDef PriIMU_Data_Lst;
 static SrvIMU_Data_TypeDef SecIMU_Data_Lst;
 static SrvIMU_Data_TypeDef IMU_Data;
 static SrvIMU_Data_TypeDef IMU_Data_Lst;
-static Error_Handler SrvMPU_Error_Handle = NULL;
+static Error_Handler SrvMPU_Error_Handle = 0;
 
 /* internal variable */
 #if defined STM32H743xx

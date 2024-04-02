@@ -249,13 +249,13 @@ static bool TaskControl_Get_StoreParam(void)
     {
         /* no pid parameter found in external flash chip under user partten */
         /* section create successful */
-        if (Storage.create(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME, &Param, sizeof(TaskControl_FlightParam_TypeDef)) != Storage_Error_None)
+        if (Storage.create(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&Param, sizeof(TaskControl_FlightParam_TypeDef)) != Storage_Error_None)
             state = false;
     }
     else
     {
         if ((TaskControl_Monitor.param_match_state.item.len == sizeof(TaskControl_FlightParam_TypeDef)) && \
-            (Storage.get(External_Flash, Para_User, TaskControl_Monitor.param_match_state.item, &Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None))
+            (Storage.get(External_Flash, Para_User, TaskControl_Monitor.param_match_state.item, (uint8_t *)&Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None))
         {
             p_UseParam = &Param;
         }
@@ -279,9 +279,9 @@ void TaskControl_Core(void const *arg)
     Srv_CtlExpectionData_TypeDef Cnv_CtlData;
     Srv_CtlExpectionData_TypeDef Lst_CtlData;
     
-    memset(&CtlData, 0, sizeof(Srv_CtlDataArbitrate_TypeDef));
-    memset(&Cnv_CtlData, 0, sizeof(ControlData_TypeDef));
-    memset(&Lst_CtlData, 0, sizeof(ControlData_TypeDef));
+    memset(&CtlData, 0, sizeof(ControlData_TypeDef));
+    memset(&Cnv_CtlData, 0, sizeof(Srv_CtlExpectionData_TypeDef));
+    memset(&Lst_CtlData, 0, sizeof(Srv_CtlExpectionData_TypeDef));
 
     while(1)
     {
@@ -947,8 +947,6 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 
 static bool TaskControl_PID_Param_Print(Shell *obj, PIDObj_TypeDef para)
 {
-    char s_float[32] = {'\0'};
-
     if (obj)
     {
         shellPrint(obj, "\t gP:          %f \r\n", para.gP);

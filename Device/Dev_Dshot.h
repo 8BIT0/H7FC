@@ -68,8 +68,8 @@ typedef struct
 typedef struct
 {
     bool (*init)(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, uint8_t dma, uint8_t stream);
-    bool (*command)(DevDshotObj_TypeDef *obj, DevDshot_Command_List cmd);
-    bool (*control)(DevDshotObj_TypeDef *obj, uint16_t val);
+    void (*command)(DevDshotObj_TypeDef *obj, uint16_t cmd);
+    void (*control)(DevDshotObj_TypeDef *obj, uint16_t val);
 } DevDshot_TypeDef;
 
 extern DevDshot_TypeDef DevDshot;

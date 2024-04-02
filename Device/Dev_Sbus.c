@@ -24,7 +24,7 @@ static DevSBUS_ErrorCode_List DevSBUS_Frame_Decode(DevSBUSObj_TypeDef *obj, uint
     if((ptr == NULL) || (size < SBUS_FRAME_BYTE_SIZE) || (obj == NULL))
         return DevSBUS_Error_Obj;
 
-    memset(obj, NULL, sizeof(DevSBUSObj_TypeDef));
+    memset(obj, 0, sizeof(DevSBUSObj_TypeDef));
 
     if ((ptr[0] == SBUS_FRAME_HEADER) && (SBUS_FRAME_BYTE_SIZE == size))
     {

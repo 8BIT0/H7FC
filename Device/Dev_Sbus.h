@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+#define To_SBUS_Obj(x) ((DevSBUSObj_TypeDef *)x)
+
 #define SBUS_BAUDRATE 100000
 #define SBUS_FRAME_BYTE_SIZE 25
 #define SBUS_FRAME_HEADER 0xF0
