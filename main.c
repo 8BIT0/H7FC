@@ -1,7 +1,7 @@
 #include "kernel.h"
 #include "Task_Manager.h"
 
-void main(void)
+int main(void)
 {
     bool kernel_init_state = false;
     
@@ -13,4 +13,6 @@ void main(void)
     /* create task down below */
     Task_Manager_Init();
     /* create task up top */
+
+    return 0;
 }

@@ -66,7 +66,7 @@ static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
 static float SrvBaro_PessureCnvToMeter(float pa);
 
 /************************************************************************ Error Tree Item ************************************************************************/
-static Error_Handler SrvBaro_Error_Handle = NULL;
+static Error_Handler SrvBaro_Error_Handle = 0;
 
 static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size);
 

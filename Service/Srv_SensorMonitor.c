@@ -479,7 +479,7 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     {
         sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_baro->set_period);
     
-        if( SrvBaro.sample && \ 
+        if (SrvBaro.sample && \
             ((obj->statistic_baro->start_time == 0) || \
              (sample_interval_ms && \
              (cur_time >= obj->statistic_baro->nxt_sample_time))))

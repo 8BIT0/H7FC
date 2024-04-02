@@ -387,8 +387,6 @@ static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_Type
 
 static bool DevBMP280_Get_DataReady(DevBMP280Obj_TypeDef *obj)
 {
-    DevBMP280_Status_TypeDef status;
-
     if (obj)
     {
         if (obj->sys_tick != obj->lst_sys_tick)
@@ -419,7 +417,6 @@ static DevBMP280_Data_TypeDef DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj)
 static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj)
 {
     uint8_t reg = DevBMP280_Write_Mask(BMP280_REG_RESET);
-    uint16_t state = 0;
 
     if (obj)
     {
@@ -607,7 +604,6 @@ static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj)
 {
     uint8_t mode = 0;
     uint32_t timeout = 0;
-    DevBMP280_Status_TypeDef status; 
     uint8_t buf[6] = {0};
     
     if (obj && obj->delay_ms && obj->get_tick)

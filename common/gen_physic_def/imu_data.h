@@ -85,12 +85,12 @@ typedef struct
     uint8_t reg_t_val;
 }IMU_Error_TypeDef;
 
-inline void IMUData_SetError(IMU_Error_TypeDef *error, uint8_t code, char* func, uint16_t line, uint8_t reg, uint8_t reg_r, uint8_t reg_t)
+inline void IMUData_SetError(IMU_Error_TypeDef *error, uint8_t code, const char* func, uint16_t line, uint8_t reg, uint8_t reg_r, uint8_t reg_t)
 {
     if(error)
     {
         error->code = code;
-        error->function = func;
+        error->function = (char *)func;
         error->line = line;
 
         error->tar_reg = reg;

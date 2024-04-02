@@ -350,12 +350,12 @@ static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj)
 
 static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj)
 {
-    uint8_t read_out = 0;
-    uint32_t reset_UsRt = 0;
+    // uint8_t read_out = 0;
+    // uint32_t reset_UsRt = 0;
 
     DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_1, ICM20602_RESET_CMD);
     Obj->delay(20);
-    reset_UsRt = Obj->get_timestamp();
+    // reset_UsRt = Obj->get_timestamp();
 
     // do
     // {
@@ -387,7 +387,7 @@ static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj)
 static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj)
 {
     IMUData_TypeDef tmp;
-    memset(&tmp, NULL, sizeof(tmp));
+    memset(&tmp, 0, sizeof(tmp));
 
     if ((Obj->error.code == ICM20602_No_Error) && !Obj->update)
     {
