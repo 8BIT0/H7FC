@@ -1033,27 +1033,27 @@ static void TaskControl_Param_Set(const char *sel, const char *para_sel, uint16_
     shellPrint(shell_obj, "\r\n\t Input value : %d \r\n", value / 1000.0f);
     shellPrint(shell_obj, "\r\n");
 
-    if (memcmp(sel, "pitch", strlen("pitch")) == 0)
+    if ((strlen(sel) == strlen("pitch")) && (memcmp(sel, "pitch", strlen("pitch")) == 0))
     {
         shellPrint(shell_obj, "\t[ pitch selected ]\r\n");
         PID_Obj = &TaskControl_Monitor.PitchCtl_PIDObj;
     }
-    else if (memcmp(sel, "roll", strlen("roll")) == 0)
+    else if ((strlen(sel) == strlen("roll")) && (memcmp(sel, "roll", strlen("roll")) == 0))
     {
         shellPrint(shell_obj, "\t[ roll selected ]\r\n");
         PID_Obj = &TaskControl_Monitor.RollCtl_PIDObj;
     }
-    else if (memcmp(sel, "gx", strlen("gx")) == 0)
+    else if ((strlen(sel) == strlen("gx")) && (memcmp(sel, "gx", strlen("gx")) == 0))
     {
         shellPrint(shell_obj, "\t[ gyro x selected ]\r\n");
         PID_Obj = &TaskControl_Monitor.GyrXCtl_PIDObj;
     }
-    else if (memcmp(sel, "gy", strlen("gy")) == 0)
+    else if ((strlen(sel) == strlen("gy")) && (memcmp(sel, "gy", strlen("gy")) == 0))
     {
         shellPrint(shell_obj, "\t[ gyro y selected ]\r\n");
         PID_Obj = &TaskControl_Monitor.GyrYCtl_PIDObj;
     }
-    else if (memcmp(sel, "gz", strlen("gz")) == 0)
+    else if ((strlen(sel) == strlen("gz")) && (memcmp(sel, "gz", strlen("gz")) == 0))
     {
         shellPrint(shell_obj, "\t[ gyro z selected ]\r\n");
         PID_Obj = &TaskControl_Monitor.GyrZCtl_PIDObj;
