@@ -71,7 +71,8 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_ctl_val);
 static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef *monitor);
 static void TaskControl_CLI_Polling(void);
-static bool TaskControl_Get_Param(void);
+static bool TaskControl_Get_StoreParam(void);
+static TaskControl_FlightParam_TypeDef TaskControl_Get_InuseParam(void);
 
 /* internal var */
 static uint32_t TaskControl_Period = 0;
@@ -91,7 +92,7 @@ void TaskControl_Init(uint32_t period)
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
 
     /* PID Parametet Init */
-    TaskControl_Get_Param();
+    TaskControl_Get_StoreParam();
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
@@ -227,7 +228,7 @@ static bool TaskControl_Param_Copy(PIDObj_TypeDef *PID_Obj, PID_Param_TypeDef Pa
 }
 
 /* read param from storage */
-static bool TaskControl_Get_Param(void)
+static bool TaskControl_Get_StoreParam(void)
 {
     TaskControl_FlightParam_TypeDef Param;
     TaskControl_FlightParam_TypeDef Default_Param;
@@ -567,6 +568,55 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
 
 lock_moto:
     SrvActuator.lock();
+}
+
+static TaskControl_FlightParam_TypeDef TaskControl_Get_InuseParam(void)
+{
+    TaskControl_FlightParam_TypeDef Param;
+
+    memset(&Param, 0, sizeof(TaskControl_FlightParam_TypeDef));
+
+    Param.Outer.Pitch_Para.gP = TaskControl_Monitor.PitchCtl_PIDObj.gP;
+    Param.Outer.Pitch_Para.gP_Diff_Max = TaskControl_Monitor.PitchCtl_PIDObj.diff_max;
+    Param.Outer.Pitch_Para.gP_Diff_Min = TaskControl_Monitor.PitchCtl_PIDObj.diff_min;
+    Param.Outer.Pitch_Para.gI = TaskControl_Monitor.PitchCtl_PIDObj.gI;
+    Param.Outer.Pitch_Para.gI_Max = TaskControl_Monitor.PitchCtl_PIDObj.gI_Max;
+    Param.Outer.Pitch_Para.gI_Min = TaskControl_Monitor.PitchCtl_PIDObj.gI_Min;
+    Param.Outer.Pitch_Para.gD = TaskControl_Monitor.PitchCtl_PIDObj.gD;
+    
+    Param.Outer.Roll_Para.gP = TaskControl_Monitor.RollCtl_PIDObj.gP;
+    Param.Outer.Roll_Para.gP_Diff_Max = TaskControl_Monitor.RollCtl_PIDObj.diff_max;
+    Param.Outer.Roll_Para.gP_Diff_Min = TaskControl_Monitor.RollCtl_PIDObj.diff_min;
+    Param.Outer.Roll_Para.gI = TaskControl_Monitor.RollCtl_PIDObj.gI;
+    Param.Outer.Roll_Para.gI_Max = TaskControl_Monitor.RollCtl_PIDObj.gI_Max;
+    Param.Outer.Roll_Para.gI_Min = TaskControl_Monitor.RollCtl_PIDObj.gI_Min;
+    Param.Outer.Roll_Para.gD = TaskControl_Monitor.RollCtl_PIDObj.gD;
+
+    Param.Inner.GyroX_Para.gP = TaskControl_Monitor.GyrXCtl_PIDObj.gP;
+    Param.Inner.GyroX_Para.gP_Diff_Max = TaskControl_Monitor.GyrXCtl_PIDObj.diff_max;
+    Param.Inner.GyroX_Para.gP_Diff_Min = TaskControl_Monitor.GyrXCtl_PIDObj.diff_min;
+    Param.Inner.GyroX_Para.gI = TaskControl_Monitor.GyrXCtl_PIDObj.gI;
+    Param.Inner.GyroX_Para.gI_Max = TaskControl_Monitor.GyrXCtl_PIDObj.gI_Max;
+    Param.Inner.GyroX_Para.gI_Min = TaskControl_Monitor.GyrXCtl_PIDObj.gI_Min;
+    Param.Inner.GyroX_Para.gD = TaskControl_Monitor.GyrXCtl_PIDObj.gD;
+    
+    Param.Inner.GyroY_Para.gP = TaskControl_Monitor.GyrYCtl_PIDObj.gP;
+    Param.Inner.GyroY_Para.gP_Diff_Max = TaskControl_Monitor.GyrYCtl_PIDObj.diff_max;
+    Param.Inner.GyroY_Para.gP_Diff_Min = TaskControl_Monitor.GyrYCtl_PIDObj.diff_min;
+    Param.Inner.GyroY_Para.gI = TaskControl_Monitor.GyrYCtl_PIDObj.gI;
+    Param.Inner.GyroY_Para.gI_Max = TaskControl_Monitor.GyrYCtl_PIDObj.gI_Max;
+    Param.Inner.GyroY_Para.gI_Min = TaskControl_Monitor.GyrYCtl_PIDObj.gI_Min;
+    Param.Inner.GyroY_Para.gD = TaskControl_Monitor.GyrYCtl_PIDObj.gD;
+
+    Param.Inner.GyroZ_Para.gP = TaskControl_Monitor.GyrZCtl_PIDObj.gP;
+    Param.Inner.GyroZ_Para.gP_Diff_Max = TaskControl_Monitor.GyrXCtl_PIDObj.diff_max;
+    Param.Inner.GyroZ_Para.gP_Diff_Min = TaskControl_Monitor.GyrXCtl_PIDObj.diff_min;
+    Param.Inner.GyroZ_Para.gI = TaskControl_Monitor.GyrZCtl_PIDObj.gI;
+    Param.Inner.GyroZ_Para.gI_Max = TaskControl_Monitor.GyrZCtl_PIDObj.gI_Max;
+    Param.Inner.GyroZ_Para.gI_Min = TaskControl_Monitor.GyrZCtl_PIDObj.gI_Min;
+    Param.Inner.GyroZ_Para.gD = TaskControl_Monitor.GyrZCtl_PIDObj.gD;
+
+    return Param;
 }
 
 /****************************************************** CLI Section ******************************************************************/
@@ -949,6 +999,131 @@ static void TaskControl_Get_Outer_Controller_Parameter(void)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, PID_Outer_Param, TaskControl_Get_Outer_Controller_Parameter, get controller parameter);
 
+static void TaskControl_Param_Set(const char *sel, const char *para_sel, uint16_t value, const char *save)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    PIDObj_TypeDef *PID_Obj = NULL;
+    TaskControl_FlightParam_TypeDef Param;
 
+    if(shell_obj == NULL)
+        return;
 
+    memset(&Param, 0, sizeof(TaskControl_FlightParam_TypeDef));
+
+    shellPrint(shell_obj, "\tinput param 1 selection list\r\n");
+    shellPrint(shell_obj, "\t pitch ----- set pitch  pid object \r\n");
+    shellPrint(shell_obj, "\t roll  ----- set roll   pid object \r\n");
+    shellPrint(shell_obj, "\t gx -------- set gyro x pid object \r\n");
+    shellPrint(shell_obj, "\t gy -------- set gyro y pid object \r\n");
+    shellPrint(shell_obj, "\t gz -------- set gyro z pid object \r\n");
+
+    shellPrint(shell_obj, "\tinput param 2 PID param select\r\n");
+    shellPrint(shell_obj, "\t gP -------- set PID gP section \r\n");
+    shellPrint(shell_obj, "\t gP_Diff --- set PID gP_Diff section \r\n");
+    shellPrint(shell_obj, "\t gI -------- set PID gI section \r\n");
+    shellPrint(shell_obj, "\t gI_range -- set PID gI Range section \r\n");
+    shellPrint(shell_obj, "\t gD -------- set PID gD section \r\n");
+
+    shellPrint(shell_obj, "\tinput param 3 incomming value\r\n");
+    shellPrint(shell_obj, "\t for example: if u want set 0.81 then input 810 \r\n");
+    shellPrint(shell_obj, "\t              actually value = set value / 1000.0f \r\n");
+    shellPrint(shell_obj, "\tinput param 4 save choice\r\n");
+    shellPrint(shell_obj, "\t S ------ save new parameter \r\n");
+    
+    shellPrint(shell_obj, "\r\n\t Input value : %d \r\n", value / 1000.0f);
+    shellPrint(shell_obj, "\r\n");
+
+    if (memcmp(sel, "pitch", strlen("pitch")) == 0)
+    {
+        shellPrint(shell_obj, "\t[ pitch selected ]\r\n");
+        PID_Obj = &TaskControl_Monitor.PitchCtl_PIDObj;
+    }
+    else if (memcmp(sel, "roll", strlen("roll")) == 0)
+    {
+        shellPrint(shell_obj, "\t[ roll selected ]\r\n");
+        PID_Obj = &TaskControl_Monitor.RollCtl_PIDObj;
+    }
+    else if (memcmp(sel, "gx", strlen("gx")) == 0)
+    {
+        shellPrint(shell_obj, "\t[ gyro x selected ]\r\n");
+        PID_Obj = &TaskControl_Monitor.GyrXCtl_PIDObj;
+    }
+    else if (memcmp(sel, "gy", strlen("gy")) == 0)
+    {
+        shellPrint(shell_obj, "\t[ gyro y selected ]\r\n");
+        PID_Obj = &TaskControl_Monitor.GyrYCtl_PIDObj;
+    }
+    else if (memcmp(sel, "gz", strlen("gz")) == 0)
+    {
+        shellPrint(shell_obj, "\t[ gyro z selected ]\r\n");
+        PID_Obj = &TaskControl_Monitor.GyrZCtl_PIDObj;
+    }
+    else
+    {
+        shellPrint(shell_obj, "\tUnkonw Selection\r\n");
+        return;
+    }
+
+    if ((strlen(para_sel) == strlen("gP")) && \
+        (memcmp(para_sel, "gP", strlen("gP")) == 0))
+    {
+        shellPrint(shell_obj, "\t[ gP selected ]\r\n");
+        PID_Obj->gP = value / 1000.0f;
+    }
+    else if ((strlen(para_sel) == strlen("gP_Diff")) && \
+             (memcmp(para_sel, "gP_Diff", strlen("gP_Diff")) == 0))
+    {
+        shellPrint(shell_obj, "\t[ gP_Diff selected ]\r\n");
+        PID_Obj->diff_max = value / 1000.0f;
+        PID_Obj->diff_min = -value / 1000.0f;
+    }
+    else if ((strlen(para_sel) == strlen("gI")) && \
+             (memcmp(para_sel, "gI", strlen("gI")) == 0))
+    {
+        shellPrint(shell_obj, "\t[ gI selected ]\r\n");
+        PID_Obj->gI = value / 1000.0f;
+    }
+    else if ((strlen(para_sel) == strlen("gI_Range")) && \
+             (memcmp(para_sel, "gI_Range", strlen("gI_Range")) == 0))
+    {
+        shellPrint(shell_obj, "\t[ gI_Range selected ]\r\n");
+        PID_Obj->gI_Max = value / 1000.0f;
+        PID_Obj->gI_Min = -value / 1000.0f;
+    }
+    else if ((strlen(para_sel) == strlen("gD")) && \
+             (memcmp(para_sel, "gD", strlen("gD")) == 0))
+    {
+        shellPrint(shell_obj, "\t[ gD selected ]\r\n");
+        PID_Obj->gD = value / 1000.0f;
+    }
+
+    /* show new param */
+    shellPrint(shell_obj, "[ - New Param - ]\r\n");
+    TaskControl_PID_Param_Print(shell_obj, *PID_Obj);
+
+    if (save && (strlen(save) == 1) && (*save == 'S'))
+    {
+        if (TaskControl_Monitor.param_match_state.item_addr && \
+            TaskControl_Monitor.param_match_state.item.data_addr)
+        {
+            Param = TaskControl_Get_InuseParam();
+            if (Storage.update( External_Flash, Para_User, \
+                                TaskControl_Monitor.param_match_state.item.data_addr, \
+                                &Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None)
+            {
+                shellPrint(shell_obj, "\t[ -- PID Parameter Store Accomplish -- ]\r\n");
+                return;
+            }
+
+            shellPrint(shell_obj, "\t[ -- PID Parameter Store Failed -- ]\r\n");
+        }
+        else
+        {
+            shellPrint(shell_obj, "\t[ item slot addr : %lld ]\r\n", TaskControl_Monitor.param_match_state.item_addr);
+            shellPrint(shell_obj, "\t[ data slot addr : %lld ]\r\n", TaskControl_Monitor.param_match_state.item.data_addr);
+            shellPrint(shell_obj, "\t[ -- PID parameter Storage Error -- ]\r\n");
+        }
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Set_PID, TaskControl_Param_Set, set PID gP Paramter);
 
