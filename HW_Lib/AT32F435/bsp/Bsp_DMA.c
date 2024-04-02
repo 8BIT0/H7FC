@@ -165,7 +165,7 @@ static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List
             dma1_clk_init = true;
         }
 
-        return BspDMA1_Instance_List[stream];
+        return (dma_channel_type *)BspDMA1_Instance_List[stream];
     }
     else if ((dma == Bsp_DMA_2) && ((stream < Bsp_DMA_Stream_7) && (stream >= Bsp_DMA_Stream_1)))
     {
@@ -176,7 +176,7 @@ static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List
             dma2_clk_init = true;
         }
 
-        return BspDMA2_Instance_List[stream];
+        return (dma_channel_type *)BspDMA2_Instance_List[stream];
     }
 
     return NULL;

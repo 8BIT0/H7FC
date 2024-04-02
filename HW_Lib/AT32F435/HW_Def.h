@@ -116,10 +116,6 @@
 #define OnChipFlash_Storage_TotalSize FLASH_BLOCK_7_SIZE
 #define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 
-#define OnChipFlash_MaxRWSize (2 Kb)
-#define OnChipFlash_Storage_TabSize (4 Kb)
-#define OnChipFlash_Storage_InfoPageSize (1 Kb)
-
 /* external flash storage */
 #if (FLASH_CHIP_STATE == ON)
 #define ExtFlash_Bus_Type Storage_ChipBus_Spi

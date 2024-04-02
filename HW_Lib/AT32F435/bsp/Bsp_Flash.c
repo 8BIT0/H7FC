@@ -237,8 +237,6 @@ static bool BspFlash_NoneCheck_Write(uint32_t addr, uint8_t *p_data, uint32_t le
 
 static uint32_t BspFlash_Get_Section_Addr(uint32_t addr)
 {
-    uint8_t block_offset;
-
     if ((addr < FLASH_BASE) || (addr > FLASH_BLOCK_7_END_ADDR))
         return 0;
 

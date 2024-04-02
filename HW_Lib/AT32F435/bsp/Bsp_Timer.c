@@ -18,7 +18,6 @@ BspTIM_PWMInitMonitor_TypeDef monitor = {
 };
 
 /* internal function */
-static dmamux_requst_id_sel_type BspTimer_Get_DMA_RequestID(BspTimerPWMObj_TypeDef *obj);
 static void BspTimer_DMA_TransCplt_Callback(void *arg);
 
 /* external function */
@@ -200,7 +199,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 
     if (!monitor.monitor_init)
     {
-        memset(monitor.list, 0, sizeof(monitor.list) / sizeof(monitor.list[0]));
+        memset(monitor.list, 0, sizeof(monitor.list));
         monitor.init_cnt = 0;
         monitor.monitor_init = true;
     }

@@ -236,7 +236,7 @@ static void SrcActuator_Get_ChannelRemap(void)
         for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         {
             SrvActuator_Obj.drive_module.obj_list[i].sig_id = storage_serial[storage_serial[i]];
-            SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = &SrvActuator_Periph_List[storage_serial[i]];
+            SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = (SrvActuator_PeriphSet_TypeDef *)&SrvActuator_Periph_List[storage_serial[i]];
             periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 
             DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj,

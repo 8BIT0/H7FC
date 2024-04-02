@@ -15,7 +15,7 @@
 
 static uint8_t SrvReceiver_Buff[SRV_RECEIVER_BUFF_SIZE] __attribute__((section(".Perph_Section")));
 
-static Error_Handler SrvReceiver_Error_Handle = NULL;
+static Error_Handler SrvReceiver_Error_Handle = 0;
 static SrvReceiver_Monitor_TypeDef SrvReceiver_Monitor;
 
 /* internal function */
@@ -118,7 +118,7 @@ static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
 
     memset(Uart_Receiver_Obj, 0, sizeof(BspUARTObj_TypeDef));
 
-    Uart_Receiver_Obj->instance = serial_instance;
+    Uart_Receiver_Obj->instance = (void *)serial_instance;
     Uart_Receiver_Obj->tx_io = tx_pin;
     Uart_Receiver_Obj->rx_io = rx_pin;
     Uart_Receiver_Obj->pin_swap = swap;
@@ -261,7 +261,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
         /* set uart init parameter */
         Uart_Receiver_Obj->rx_buf = SrvReceiver_Buff;
         Uart_Receiver_Obj->rx_size = SRV_RECEIVER_BUFF_SIZE;
-        Uart_Receiver_Obj->cust_data_addr = obj;
+        Uart_Receiver_Obj->cust_data_addr = (uint32_t)obj;
 
         /* set uart callback */
         Uart_Receiver_Obj->RxCallback = SrvReceiver_SerialDecode_Callback;
@@ -493,35 +493,35 @@ static bool SrvReceiver_Get_Scope(SrvReceiverObj_TypeDef *receiver_obj, int16_t 
 }
 
 /*************************************************************** Error Process Tree Callback *******************************************************************************/
-static void SrvReceiver_Obj_Error(int16_t code, uint8_t *p_arg, uint16_t size)
-{
-}
+// static void SrvReceiver_Obj_Error(int16_t code, uint8_t *p_arg, uint16_t size)
+// {
+// }
 
-static void SrvReceiver_FrameType_Error(int16_t code, uint8_t *p_arg, uint16_t size)
-{
-}
+// static void SrvReceiver_FrameType_Error(int16_t code, uint8_t *p_arg, uint16_t size)
+// {
+// }
 
-static void SrvReceiver_Port_Error(int16_t code, uint8_t *p_arg, uint16_t size)
-{
-}
+// static void SrvReceiver_Port_Error(int16_t code, uint8_t *p_arg, uint16_t size)
+// {
+// }
 
-static void SrvReceiver_Port_Init_Error(int16_t code, uint8_t *p_arg, uint16_t size)
-{
-}
+// static void SrvReceiver_Port_Init_Error(int16_t code, uint8_t *p_arg, uint16_t size)
+// {
+// }
 
 /*************************************************************** Directly Error Process *******************************************************************************/
-static void SrvReceiver_UpdateTimeOut_Error()
-{
-}
+// static void SrvReceiver_UpdateTimeOut_Error()
+// {
+// }
 
-static void SrvReceiver_ValueOverRange_Error()
-{
-}
+// static void SrvReceiver_ValueOverRange_Error()
+// {
+// }
 
-static void SrvReceiver_ValueStepBump_Error()
-{
-}
+// static void SrvReceiver_ValueStepBump_Error()
+// {
+// }
 
-static void SrvReceiver_NoneSignal_Error()
-{
-}
+// static void SrvReceiver_NoneSignal_Error()
+// {
+// }

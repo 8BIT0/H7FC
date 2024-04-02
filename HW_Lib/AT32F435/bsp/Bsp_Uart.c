@@ -49,7 +49,7 @@ BspUART_TypeDef BspUart = {
 
 static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 {
-    int index;
+    int index = 0;
     crm_periph_clock_type clock;
 
     if((obj == NULL) || (obj->instance == NULL))
