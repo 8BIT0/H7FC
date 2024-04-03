@@ -231,7 +231,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             /* set receiver object frame object */
             obj->frame_api = &DevCRSF;
 
-            if (!((DevCRSF_TypeDef *)(obj->frame_api))->init((uint8_t *)(obj->frame_data_obj)))
+            if (!((DevCRSF_TypeDef *)(obj->frame_api))->init((DevCRSFObj_TypeDef *)(obj->frame_data_obj)))
                 return false;
             break;
 

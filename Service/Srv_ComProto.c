@@ -133,11 +133,13 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, void *arg, ComProto_Callback tx_cb)
 {
+    uint32_t sys_time = SrvOsCommon.get_os_ms();
+
     if (msg->enable && com_stream && com_stream->p_buf && msg->pack_callback)
     {
         msg->in_proto = true;
 
-        if ((msg->proto_time) && (SrvOsCommon.get_os_ms() - msg->proto_time < msg->period))
+        if ((msg->proto_time) && (sys_time - msg->proto_time < msg->period))
         {
             msg->in_proto = false;
             return;
@@ -155,7 +157,7 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProt
                 tx_cb(arg, com_stream->p_buf, com_stream->size);
             }
 
-            msg->proto_time = SrvOsCommon.get_os_ms();
+            msg->proto_time = sys_time;
         }
 
         msg->in_proto = false;

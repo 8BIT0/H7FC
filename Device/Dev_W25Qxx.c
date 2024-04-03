@@ -267,7 +267,8 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
 
         /* Send the command Transmission of the data */
         dev->cs_ctl(false);
-        DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) & DevW25Qxx_BusTrans(dev, pData, current_size);
+        DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+        DevW25Qxx_BusTrans(dev, pData, current_size);
         dev->cs_ctl(true);
 
         /* Wait the end of Flash writing */

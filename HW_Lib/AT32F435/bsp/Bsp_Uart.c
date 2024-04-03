@@ -103,7 +103,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj)
 {
     int index = 0;
-    IRQn_Type irqn;
+    IRQn_Type irqn = BspUART_Port_1;
 
     if((obj == NULL) || (obj->instance == NULL))
         return BspUart_Clock_Error;

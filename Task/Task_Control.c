@@ -711,7 +711,6 @@ static void TaskControl_CLI_Polling(void)
 static void TaskControl_CLI_AllMotoSpinTest(uint16_t test_val)
 {
     bool arm_state = false;
-    uint32_t time_stamp = SrvOsCommon.get_os_ms();
     Shell *shell_obj = Shell_GetInstence();
 
     if(shell_obj == NULL)

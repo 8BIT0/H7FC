@@ -11,7 +11,7 @@
 #include "Bsp_Uart.h"
 #include "shell_port.h"
 
-#define FrameCTL_Port_Tx_TimeOut 10     /* unit: ms */
+#define FrameCTL_Port_Tx_TimeOut 5      /* unit: ms */
 #define FrameCTL_MAX_Period 5           /* unit: ms */
 
 #define CONFIGRATOR_ATTACH_TIMEOUT 2000 /* unit: ms 2S */

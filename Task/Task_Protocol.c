@@ -225,7 +225,6 @@ static void TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
         PortMonitor.VCP_Port.p_tx_semphr && \
         p_data && size)
     {
-        osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, 0);
         BspUSB_VCP.send(p_data, size);
         osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, FrameCTL_Port_Tx_TimeOut);
     }
@@ -342,7 +341,6 @@ static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t si
 
         if(p_UartPort->init_state && p_UartPort->Obj && p_UartPort->p_tx_semphr)
         {
-            osSemaphoreWait(p_UartPort->p_tx_semphr, 0);
             BspUart.send(p_UartPort->Obj, p_data, size);
             osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut);
         }
