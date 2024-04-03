@@ -47,7 +47,6 @@ DevMPU6000_TypeDef DevMPU6000 = {
 
 static bool DevMPU6000_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
 {
-    uint8_t read_tmp = 0;
     uint8_t write_buff[2] = {0};
     uint8_t read_buff[2] = {0};
     bool state = false;
@@ -402,7 +401,7 @@ static IMUData_TypeDef DevMPU6000_Get_Data(DevMPU6000Obj_TypeDef *sensor_obj)
 {
     IMUData_TypeDef tmp;
 
-    memset(&tmp, NULL, sizeof(tmp));
+    memset(&tmp, 0, sizeof(tmp));
     if (sensor_obj->error.code == MPU6000_No_Error)
         return sensor_obj->OriData;
 

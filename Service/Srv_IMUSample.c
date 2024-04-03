@@ -40,24 +40,26 @@ typedef struct
     IMU_Error_TypeDef (*get_error)(void *obj);
 }SrvIMU_InuseSensorObj_TypeDef;
 
-/* test var */
-static uint32_t SrvIMU_ALLModule_Init_Error_CNT = 0;
 static uint32_t SrvIMU_Reupdate_Statistics_CNT = 0;
 
 /* PriIMU Butterworth filter object handle */
 static BWF_Object_Handle PriIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
 static BWF_Object_Handle PriIMU_Acc_LPF_Handle[Axis_Sum] = {0};
 
+#if (IMU_SUM >= 2)
 /* SecIMU Butterworth filter object handle */
 static BWF_Object_Handle SecIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
 static BWF_Object_Handle SecIMU_Acc_LPF_Handle[Axis_Sum] = {0};
+#endif
 
 /* Gyro Calibration Monitor */
 static SrvIMU_CalibMonitor_TypeDef Gyro_Calib_Monitor;
 
 /* Gyro Calibration Zero Offset Val */
 static float PriIMU_Gyr_ZeroOffset[Axis_Sum] = {0.0f};
+#if (IMU_SUM >= 2)
 static float SecIMU_Gyr_ZeroOffset[Axis_Sum] = {0.0f};
+#endif
 
 /*
  *   PriIMU -> MPU6000
@@ -272,13 +274,17 @@ static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *ra
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
-static int8_t SrvIMU_SecIMU_Init(void);
 static void SrvIMU_PriIMU_ExtiCallback(void);
-static void SrvIMU_SecIMU_ExtiCallback(void);
 static void SrvIMU_PriIMU_CS_Ctl(bool state);
-static void SrvIMU_SecIMU_CS_Ctl(bool state);
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
+
+#if (IMU_SUM >= 2)
+static int8_t SrvIMU_SecIMU_Init(void);
+static void SrvIMU_SecIMU_ExtiCallback(void);
+static void SrvIMU_SecIMU_CS_Ctl(bool state);
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
+#endif
+
 static bool SrvIMU_Detect_AngularOverSpeed(float angular_speed, float lst_angular_speed, float ms_diff);
 static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
 
@@ -350,7 +356,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         }
     }
     else
-        ErrorLog.trigger(SrvMPU_Error_Handle, PriIMU_Init_State, &InUse_PriIMU_Obj, sizeof(InUse_PriIMU_Obj));
+        ErrorLog.trigger(SrvMPU_Error_Handle, PriIMU_Init_State, (uint8_t *)&InUse_PriIMU_Obj, sizeof(InUse_PriIMU_Obj));
 
 #if (IMU_SUM >= 2)
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
@@ -773,17 +779,18 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
     uint8_t i = Axis_X;
     GenCalib_State_TypeList state = Calib_Failed;
     static int16_t lst_pri_gyr[Axis_Sum] = {0};
-    static int16_t lst_sec_gyr[Axis_Sum] = {0};
     static int16_t PriIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};
-    static int16_t SecIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};
 
     int16_t pri_gyr_tmp[Axis_Sum] = {0};
-    int16_t sec_gyr_tmp[Axis_Sum] = {0};
 
     if(calib_cycle_cnt == NULL)
         return Calib_Failed;
 
 #if (IMU_SUM >= 2)
+    static int16_t lst_sec_gyr[Axis_Sum] = {0};
+    static int16_t SecIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};
+    int16_t sec_gyr_tmp[Axis_Sum] = {0};
+    
     if((pri_gyr == NULL) || 
        (sec_gyr == NULL))
         goto reset_calib_var;
@@ -1283,11 +1290,13 @@ static void SrvIMU_PriIMU_ExtiCallback(void)
         InUse_PriIMU_Obj.set_drdy(InUse_PriIMU_Obj.obj_ptr);
 }
 
+#if (IMU_SUM >= 2)
 static void SrvIMU_SecIMU_ExtiCallback(void)
 {
     if (SrvMpu_Init_Reg.sec.Sec_State)
         InUse_SecIMU_Obj.set_drdy(InUse_SecIMU_Obj.obj_ptr);
 }
+#endif
 
 /*************************************************************** Error Process Callback *******************************************************************************/
 static void SrvIMU_PriDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size)
@@ -1330,6 +1339,8 @@ static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size)
 {
 }
 
+#if (IMU_SUM >= 2)
 static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size)
 {
 }
+#endif

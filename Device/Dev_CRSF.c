@@ -158,8 +158,6 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
 /* serial receiver receive callback */
 static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len)
 {
-    uint8_t frame_size = 0;
-
     if ((obj == NULL) || (obj->rec_cnt == 0) || (p_data == NULL) || (len <= 3))
         return false;
 

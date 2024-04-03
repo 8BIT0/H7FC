@@ -23,10 +23,11 @@ uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__((section(".OsHeap_Section"
 /* external function */
 static void* SrvOsCommon_Malloc(uint32_t size);
 static void SrvOsCommon_Free(void *ptr);
+static int32_t SrvOsCommon_Delay(uint32_t ms);
 
 SrvOsCommon_TypeDef SrvOsCommon = {
     .get_os_ms = osKernelSysTick,
-    .delay_ms = osDelay,
+    .delay_ms = SrvOsCommon_Delay,
     .precise_delay = osDelayUntil,
     .malloc = SrvOsCommon_Malloc,
     .free = SrvOsCommon_Free,
@@ -111,5 +112,13 @@ static void SrvOsCommon_Free(void *ptr)
         else
             OsHeap_Monitor.free_faile_cnt ++;
     }
+}
+
+static int32_t SrvOsCommon_Delay(uint32_t ms)
+{
+    if (osDelay(ms) == osOK)
+        return 1;
+
+    return 0;
 }
 
