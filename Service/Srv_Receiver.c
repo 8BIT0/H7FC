@@ -231,7 +231,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
             /* set receiver object frame object */
             obj->frame_api = &DevCRSF;
 
-            if (!((DevCRSF_TypeDef *)(obj->frame_api))->init(obj->frame_data_obj))
+            if (!((DevCRSF_TypeDef *)(obj->frame_api))->init((uint8_t *)(obj->frame_data_obj)))
                 return false;
             break;
 
@@ -350,12 +350,12 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
             }
             else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
             {
-                if (((DevSBUS_TypeDef *)(receiver_obj->frame_api))->decode(receiver_obj->frame_data_obj, p_data, size) == DevSBUS_NoError)
+                if (((DevSBUS_TypeDef *)(receiver_obj->frame_api))->decode(To_SBUS_Obj(receiver_obj->frame_data_obj), p_data, size) == DevSBUS_NoError)
                 {
                     sig_update = true;
                     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
                     {
-                        receiver_obj->data.val_list[i] = ((DevSBUSObj_TypeDef *)receiver_obj->frame_data_obj)->val[i];
+                        receiver_obj->data.val_list[i] = (To_SBUS_Obj(receiver_obj->frame_data_obj))->val[i];
 
                         if (receiver_obj->invert_list && receiver_obj->invert_list & 1 << i)
                         {

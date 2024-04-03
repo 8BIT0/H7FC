@@ -25,9 +25,9 @@
 #define GEN_DATE(y, m, d) (((((uint16_t)(y % 100)) + 20) << 9) + (((uint16_t)m) << 5) + ((uint16_t)d))
 
 static uint8_t Disk_Print_Buff[128] = {0};
-static Disk_Printf_Callback Disk_PrintOut = NULL;
+static Disk_Printf_Callback Disk_PrintOut = 0;
 
-static Error_Handler DevCard_Error_Handle = NULL;
+static Error_Handler DevCard_Error_Handle = 0;
 static Disk_Info_TypeDef Disk_Info;
 
 static uint32_t MIN_write_unit = 0;
@@ -179,7 +179,7 @@ static bool ExtDisk_Init(Disk_FATFileSys_TypeDef *FATObj)
     memset(&Disk_Info, 0, sizeof(Disk_Info));
 
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
-    memset(FATObj, 0, sizeof(FATObj));
+    memset(FATObj, 0, sizeof(Disk_FATFileSys_TypeDef));
 
     DevTFCard_Obj.SDMMC_Obj.pin = &SDMMC_Pin;
 
@@ -302,9 +302,9 @@ static void Disk_ParseMBR(Disk_FATFileSys_TypeDef *FATObj)
                 StartLBA = FATObj->disk_section_table[sec_index].StartLBA;
                 size = FATObj->disk_section_table[sec_index].Size;
 
-                FATObj->disk_section_table[sec_index].StartCylSect = LEndian2HalfWord(&StartCylSect);
-                FATObj->disk_section_table[sec_index].StartLBA = LEndian2Word(&StartLBA);
-                FATObj->disk_section_table[sec_index].Size = LEndian2Word(&size);
+                FATObj->disk_section_table[sec_index].StartCylSect = LEndian2HalfWord((const uint8_t *)&StartCylSect);
+                FATObj->disk_section_table[sec_index].StartLBA = LEndian2Word((const uint8_t *)&StartLBA);
+                FATObj->disk_section_table[sec_index].Size = LEndian2Word((const uint8_t *)&size);
             }
         }
 
@@ -879,7 +879,7 @@ static bool Disk_Fill_Attr(const char *name, Disk_StorageData_TypeDef type, Disk
         /* file type check */
         (type < Disk_DataType_File) || (type > Disk_DataType_Folder) ||
         /* name legally check */
-        !Disk_SFN_LegallyCheck(name))
+        !Disk_SFN_LegallyCheck((char *)name))
         return false;
 
     memset(Name_Frame83, '\0', sizeof(Name_Frame83));
@@ -950,7 +950,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
         return false;
 
     Data_Ptr = (uint32_t *)&Disk_Card_SectionBuff[sec_item_index];
-    LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
+    LEndianWord2BytesArray(nxt_cluster, (uint8_t *)Data_Ptr);
 
     /* Update FAT1 Table */
     state = DevCard.write(&DevTFCard_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
@@ -963,7 +963,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     // DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
     Data_Ptr = (uint32_t)&Disk_Card_SectionBuff[sec_item_index];
-    LEndianWord2BytesArray(nxt_cluster, Data_Ptr);
+    LEndianWord2BytesArray(nxt_cluster, (uint8_t *)Data_Ptr);
 
     state = DevCard.write(&DevTFCard_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
@@ -1012,7 +1012,7 @@ static bool Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 
         for (free_index = FATObj->free_cluster % DISK_FAT_CLUSTER_ITEM_SUM; free_index < DISK_FAT_CLUSTER_ITEM_SUM; free_index++)
         {
-            cluster_tmp = LEndian2Word(&(((Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff)->table_item[free_index]));
+            cluster_tmp = LEndian2Word((const uint8_t *)&(((Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff)->table_item[free_index]));
 
             if (cluster_tmp == 0)
             {
@@ -1373,7 +1373,7 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
     {
         if (Disk_WriteTo_TargetFFTable(FATObj, Disk_DataType_File, file, cluster))
         {
-            match_state = Disk_MatchTaget(FATObj, file, Disk_DataType_File, &F_Info, cluster);
+            match_state = Disk_MatchTaget(FATObj, (char *)file, Disk_DataType_File, &F_Info, cluster);
 
             if (match_state.match)
             {
@@ -1412,7 +1412,6 @@ static Disk_FileObj_TypeDef Disk_Create_File(Disk_FATFileSys_TypeDef *FATObj, co
                         {
                             FATCluster_Addr start_cluster = FATObj->free_cluster;
                             FATCluster_Addr end_cluster = 0;
-                            FATCluster_Addr lst_end_cluster = end_cluster;
 
                             /* init list item */
                             List_ItemInit(cluster_list_item_tmp, cluster_id_ptr);

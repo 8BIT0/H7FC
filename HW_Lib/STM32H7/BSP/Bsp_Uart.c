@@ -286,7 +286,7 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 
     BspUart_Obj_List[port_index] = obj;
 
-    memset(&(obj->monitor), NULL, sizeof(obj->monitor));
+    memset(&(obj->monitor), 0, sizeof(obj->monitor));
 
     /* enable irq callback */
     switch (obj->irq_type)

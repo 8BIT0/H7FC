@@ -18,7 +18,7 @@
 #define TUNNING_TIMEOUT 1000            /* unit: ms 1S */
 
 #define CLI_FUNC_BUF_SIZE 512
-#define RADIO_BUFF_SIZE 1024
+#define RADIO_BUFF_SIZE 512
 #define RADIO_PORT_BAUD 460800
 
 typedef SrvComProto_ProtoData_Type_List FrameType_List;

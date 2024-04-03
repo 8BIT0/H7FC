@@ -31,7 +31,7 @@ static BspUARTObj_TypeDef Radio_Port1_UartObj = {
     .rx_stream = RADIO_RX_DMA_STREAM,
     .tx_dma = RADIO_TX_DMA,
     .tx_stream = RADIO_TX_DMA_STREAM,
-    .rx_buf = RadioRxBuff[RADIO_UART_NUM],
+    .rx_buf = RadioRxBuff[0],
     .rx_size = RADIO_BUFF_SIZE,
 };
 
@@ -140,7 +140,7 @@ void TaskFrameCTL_Init(uint32_t period)
     memset(&PortMonitor, 0, sizeof(PortMonitor));
 
     TaskFrameCTL_DefaultPort_Init(&PortMonitor);
-    // TaskFrameCTL_RadioPort_Init(&PortMonitor);
+    TaskFrameCTL_RadioPort_Init(&PortMonitor);
     Radio_Addr = TaskFrameCTL_Set_RadioPort(Port_Uart, 0);
 
     PortMonitor.init = true;
@@ -219,12 +219,15 @@ static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
 
 static void TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
 {
-    if(PortMonitor.VCP_Port.init_state && PortMonitor.VCP_Port.p_tx_semphr && p_data && size)
+    /* when attach to host device then send data */
+    if (PortMonitor.VCP_Port.init_state && \
+        PortMonitor.vcp_connect_state && \
+        PortMonitor.VCP_Port.p_tx_semphr && \
+        p_data && size)
     {
+        osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, 0);
+        BspUSB_VCP.send(p_data, size);
         osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, FrameCTL_Port_Tx_TimeOut);
-
-        if(BspUSB_VCP.send)
-            BspUSB_VCP.send(p_data, size);
     }
 }
 
@@ -245,7 +248,7 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
             if(monitor->Uart_Port[i].Obj->hdl == NULL)
             {
                 SrvOsCommon.free(monitor->Uart_Port[i].Obj->hdl);
-                return false;
+                return;
             }
 
             monitor->Uart_Port[i].Obj->rx_dma_hdl = SrvOsCommon.malloc(UART_DMA_Handle_Size);
@@ -253,7 +256,7 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
             {
                 SrvOsCommon.free(monitor->Uart_Port[i].Obj->rx_dma_hdl);
                 SrvOsCommon.free(monitor->Uart_Port[i].Obj->hdl);
-                return false;
+                return;
             }
 
             monitor->Uart_Port[i].Obj->tx_dma_hdl = SrvOsCommon.malloc(UART_DMA_Handle_Size);
@@ -262,7 +265,7 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
                 SrvOsCommon.free(monitor->Uart_Port[i].Obj->rx_dma_hdl);
                 SrvOsCommon.free(monitor->Uart_Port[i].Obj->tx_dma_hdl);
                 SrvOsCommon.free(monitor->Uart_Port[i].Obj->hdl);
-                return false;
+                return;
             }
 #endif
 
@@ -317,7 +320,7 @@ static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uin
         case Port_Uart:
             if((index < PortMonitor.uart_port_num) && PortMonitor.Uart_Port[index].init_state)
             {
-                port_hdl = &(PortMonitor.Uart_Port[index]);
+                port_hdl = (uint32_t)&(PortMonitor.Uart_Port[index]);
             }
             break;
 
@@ -339,8 +342,9 @@ static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t si
 
         if(p_UartPort->init_state && p_UartPort->Obj && p_UartPort->p_tx_semphr)
         {
-            osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut);
+            osSemaphoreWait(p_UartPort->p_tx_semphr, 0);
             BspUart.send(p_UartPort->Obj, p_data, size);
+            osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut);
         }
     }
 }
@@ -350,7 +354,6 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
     SrvComProto_Msg_StreamIn_TypeDef stream_in;
     SrvComProto_Stream_TypeDef *p_stream = NULL;
     FrameCTL_PortProtoObj_TypeDef *p_RecObj = NULL;
-    uint32_t port_addr = 0;
     bool cli_state = false;
 
     /* use mavlink protocol tuning the flight parameter */
@@ -506,8 +509,11 @@ static bool TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
         if (p_Obj->PortObj_addr && (p_Obj->type == Port_USB))
         {
             *time_stamp = SrvOsCommon.get_os_ms();
+            return true;
         }
     }
+
+    return false;
 }
 
 /************************************** frame protocol section ********************************************/

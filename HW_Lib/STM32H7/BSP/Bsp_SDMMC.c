@@ -15,8 +15,8 @@ static void BspSDMMC_PinCLK_Enable(GPIO_TypeDef *port);
 
 /* external function */
 static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj);
-static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks);
-static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks);
+static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint8_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks);
+static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint8_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks);
 static bool BspSDMMC_Erase(BspSDMMC_Obj_TypeDef *obj, uint32_t StartAddr, uint32_t EndAddr);
 static bool BspSDMMC_GetCardStatus(BspSDMMC_Obj_TypeDef *obj);
 static bool BspSDMMC_GetInfo(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info_out);
@@ -211,7 +211,7 @@ static bool BspSDMMC_Init(BspSDMMC_Obj_TypeDef *obj)
     return true;
 }
 
-static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
+static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint8_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
 {
     HAL_StatusTypeDef state = HAL_SD_ReadBlocks_DMA(&(obj->hdl), pData, ReadAddr, NumOfBlocks);
     if(state == HAL_OK)
@@ -220,7 +220,7 @@ static bool BspSDMMC_Read(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t R
     return false;
 }
 
-static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
+static bool BspSDMMC_Write(BspSDMMC_Obj_TypeDef *obj, uint8_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
     HAL_StatusTypeDef state = HAL_SD_WriteBlocks_DMA(&(obj->hdl), pData, WriteAddr, NumOfBlocks);
     if(state == HAL_OK)
@@ -258,7 +258,7 @@ static bool BspSDMMC_GetInfo(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *
     if ((obj == NULL) && (info_out == NULL))
         return false;
 
-    memset(&(obj->info), NULL, sizeof(obj->info));
+    memset(&(obj->info), 0, sizeof(obj->info));
     HAL_SD_GetCardInfo(&(obj->hdl), &(obj->info));
     info_out = &(obj->info);
 
