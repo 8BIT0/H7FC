@@ -285,6 +285,9 @@ static void SrvIMU_SecIMU_CS_Ctl(bool state);
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 #endif
 
+/* test var */
+static uint32_t SrvIMU_ALLModule_Init_Error_CNT = 0;
+
 static bool SrvIMU_Detect_AngularOverSpeed(float angular_speed, float lst_angular_speed, float ms_diff);
 static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
 

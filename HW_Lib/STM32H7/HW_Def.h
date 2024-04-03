@@ -21,6 +21,8 @@
 #define LED3_PIN GPIO_PIN_7
 #define LED3_PORT GPIOH
 
+#define Baro_SPI_BUS NULL
+
 /* SPI3 Reserve SPI */
 #define RESERVE_SPI_CLK_PORT GPIOB
 #define RESERVE_SPI_CLK_PIN GPIO_PIN_3
@@ -283,6 +285,7 @@ extern DevLedObj_TypeDef Led1;
 extern DevLedObj_TypeDef Led2;
 extern DevLedObj_TypeDef Led3;
 
+extern BspGPIO_Obj_TypeDef Baro_CSPin;
 extern BspGPIO_Obj_TypeDef USB_DctPin;
 extern BspGPIO_Obj_TypeDef PriIMU_CSPin;
 extern BspGPIO_Obj_TypeDef SecIMU_CSPin;
@@ -297,6 +300,9 @@ extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_PinConfig_TypeDef SecIMU_BusPin;
 
 extern BspIIC_PinConfig_TypeDef SrvBaro_BusPin;
+extern BspSPI_PinConfig_TypeDef Baro_BusPin;
+
+extern BspSPI_NorModeConfig_TypeDef Baro_BusCfg;
 
 extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
 extern BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg;

@@ -39,11 +39,6 @@ BspIICObj_TypeDef SrvBaro_IIC_Obj = {
     .Pin = &SrvBaro_BusPin,
 };
 
-SrvBaroBusObj_TypeDef SrvBaroBus = {
-    .type = SrvBaro_Bus_None,
-    .init = false,
-    .bus_obj = (void *)&SrvBaro_IIC_Obj,
-};
 #elif defined AT32F435RGT7
 static void *Baro_Bus_Instance = NULL;
 #endif
@@ -181,6 +176,8 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
             SrvBaroBus.type = bus_type;
             SrvBaroBus.bus_api = (void *)&BspIIC;
 #if defined STM32H743xx
+            SrvBaroBus.bus_obj = (void *)&SrvBaro_IIC_Obj;
+
             ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
             if(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
             {

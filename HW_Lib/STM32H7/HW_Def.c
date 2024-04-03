@@ -172,6 +172,34 @@ BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg = {
     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2,
 };
 
+/* spi baro unused */
+BspSPI_NorModeConfig_TypeDef Baro_BusCfg = {
+    .Instance = Baro_SPI_BUS,
+    // .CLKPolarity = SPI_CLOCK_POLARITY_HIGH,
+    // .CLKPhase = SPI_CLOCK_PHASE_2EDGE,
+    // .BaudRatePrescaler = SPI_MCLK_DIV_8,
+};
+
+/* spi baro unused */
+BspGPIO_Obj_TypeDef Baro_CSPin = {
+    // .init_state = GPIO_PULL_UP,
+    .pin = 0,
+    .port = NULL,
+};
+
+/* spi baro unused */
+BspSPI_PinConfig_TypeDef Baro_BusPin = {
+    .port_mosi = NULL,
+    .port_miso = NULL,
+    .port_clk = NULL,
+    
+    .pin_mosi = 0,
+    .pin_miso = 0,
+    .pin_clk = 0,
+
+    .pin_Alternate = 0,
+};
+
 void PriIMU_Dir_Tune(float *gyr, float *acc)
 {
     double gyr_tmp[Axis_Sum] = {0.0};

@@ -186,7 +186,6 @@ static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj)
 
 static bool DevDPS310_Configure_Temperature(DevDPS310Obj_TypeDef *obj, uint8_t data)
 {
-    int16_t ret;
     uint8_t temperature_sensor = DPS310_TMP_CFG_REG_TMP_EXT_EXTERNAL;
 
     if(obj)

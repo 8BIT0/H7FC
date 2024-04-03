@@ -359,7 +359,7 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 
 static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef *monitor)
 {
-    int16_t ctl_buf[Actuator_Ctl_Sum] = {0};
+    uint16_t ctl_buf[Actuator_Ctl_Sum] = {0};
 
     if(monitor)
     {
@@ -624,10 +624,7 @@ static void TaskControl_CLI_Polling(void)
 {
     osEvent event;
     static TaskControl_CLIData_TypeDef CLIData;
-    uint8_t moto_sum = SrvActuator.get_cnt().moto_cnt;
-    uint8_t servo_sum = SrvActuator.get_cnt().servo_cnt;
     static uint16_t moto_ctl_buff[8] = {0};
-    uint16_t servo_ctl_buff[8] = {0};
     Shell *shell_obj = Shell_GetInstence();
 
     if(shell_obj == NULL)
@@ -1107,7 +1104,7 @@ static void TaskControl_Param_Set(const char *sel, const char *para_sel, uint16_
             Param = TaskControl_Get_InuseParam();
             if (Storage.update( External_Flash, Para_User, \
                                 TaskControl_Monitor.param_match_state.item.data_addr, \
-                                &Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None)
+                                (uint8_t *)&Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None)
             {
                 shellPrint(shell_obj, "\t[ -- PID Parameter Store Accomplish -- ]\r\n");
                 return;
