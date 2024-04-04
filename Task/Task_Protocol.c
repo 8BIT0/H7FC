@@ -339,6 +339,7 @@ static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t si
     {
         p_UartPort = (FrameCTL_UartPortMonitor_TypeDef *)obj_addr;
 
+        /* when FC attach to some host usb device then send nothing through the radio */
         if(p_UartPort->init_state && p_UartPort->Obj && p_UartPort->p_tx_semphr && !PortMonitor.vcp_connect_state)
         {
             BspUart.send(p_UartPort->Obj, p_data, size);
