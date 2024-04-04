@@ -42,7 +42,7 @@ static void BspUSB_Connect_Callback(void);
 /* external funtion */
 static BspUSB_Error_List BspUSB_Init(uint32_t cus_data_addr);
 static BspUSB_Error_List BspUSB_DeInit(void);
-static bool BspUSB_Send(uint8_t *p_data, uint16_t size);
+static BspUSB_Error_List BspUSB_Send(uint8_t *p_data, uint16_t size);
 static void BspUSB_Set_Rx_Callback(BspUSB_Rx_Callback_Def callback);
 static void BspUSB_Set_Tx_Callback(BspUSB_Tx_Cplt_Callback_Def callback);
 static void BspUSB_Set_Connect_Callback(BspUSB_Connect_Callback_Def callback);
@@ -188,17 +188,17 @@ static BspUSB_Error_List BspUSB_DeInit(void)
     return BspUSB_Error_None;
 }
 
-static bool BspUSB_Send(uint8_t *p_data, uint16_t size)
+static BspUSB_Error_List BspUSB_Send(uint8_t *p_data, uint16_t size)
 {
     if ((BspUSB_Monitor.init_state == BspUSB_Error_None) && p_data && size)
     {
         if(BspUSB_Monitor.tx_fin_cnt != BspUSB_Monitor.tx_cnt)
-            return false;
+            return BspUSB_Error_Busy;
 
         if(usb_vcp_send_data(&otg_core_struct.dev, p_data, size) == SUCCESS)
         {
             BspUSB_Monitor.tx_cnt ++;
-            return true;
+            return BspUSB_Error_None;
         }
         else
         {
@@ -206,7 +206,7 @@ static bool BspUSB_Send(uint8_t *p_data, uint16_t size)
         }
     }
 
-    return false;
+    return BspUSB_Error_Fail;
 }
 
 static bool BspUSB_CheckConnect(uint32_t sys_tick, uint32_t time_out)
