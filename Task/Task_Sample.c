@@ -16,7 +16,6 @@
 #endif
 
 /* internal var */
-static Error_Handler TaskInertial_ErrorLog_Handle = NULL;
 static uint32_t TaskSample_Period = 0;
 static bool sample_enable = false;
 static SrvSensorMonitorObj_TypeDef SensorMonitor;

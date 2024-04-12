@@ -146,7 +146,7 @@ void Telemetry_blink(void)
     // DevLED.ctl(Led3, led_state);
 }
 
-static bool Telemetry_Led_Control(bool state)
+static void Telemetry_Led_Control(bool state)
 {
     DevLED.ctl(Led1, state);
 }

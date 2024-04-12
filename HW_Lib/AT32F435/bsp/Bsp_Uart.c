@@ -50,7 +50,7 @@ BspUART_TypeDef BspUart = {
 static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 {
     int index = 0;
-    crm_periph_clock_type clock;
+    crm_periph_clock_type clock = CRM_USART1_PERIPH_CLOCK;
 
     if((obj == NULL) || (obj->instance == NULL))
         return BspUart_Clock_Error;
@@ -95,6 +95,8 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
         clock = CRM_UART8_PERIPH_CLOCK;
         index = BspUART_Port_8;
     }
+    else
+        return BspUart_Clock_Error;
 
     crm_periph_clock_enable(clock, TRUE);
     return index;
