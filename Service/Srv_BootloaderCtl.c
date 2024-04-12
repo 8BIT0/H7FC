@@ -8,6 +8,7 @@
 #include "Srv_OsCommon.h"
 #include "../System/storage/Storage.h"
 #include "YModem.h"
+#include "reboot.h"
 
 /* internal virable */
 static SrvBootloader_Stream_TypeDef bootloader_stream = {
