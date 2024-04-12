@@ -7,6 +7,11 @@
 
 #define YMODEM_MAX_PROTO_SIZE 1024
 
+typedef uint32_t (*YModem_Get_SysTick)(void);
+typedef void (*YModem_Start_Callback)(YModemObj_TypeDef *Obj);
+typedef void (*YModem_Finish_Callback)(YModemObj_TypeDef *Obj);
+typedef void (*YModem_Error_Callback)(YModemObj_TypeDef *Obj, uint8_t error_code);
+
 typedef enum
 {
     YModem_State_Idle = 0,
@@ -14,8 +19,6 @@ typedef enum
     YModem_State_Rx,
     YModem_State_TimeOut,
 } YModem_State_List;
-
-typedef uint32_t (*YModem_Get_SysTick)(void);
 
 typedef struct
 {
@@ -28,7 +31,12 @@ typedef struct
 {
     YModem_State_List state;
     uint32_t timeout_threshold;
+
     YModem_Get_SysTick sys_tick;
+    YModem_Start_Callback start_callback;
+    YModem_Finish_Callback finish_callback;
+    YModem_Error_Callback error_callback;
+
     YModem_Stream_TypeDef tx_stream;
     YModem_Stream_TypeDef rx_stream;
 } YModemObj_TypeDef;
@@ -36,6 +44,9 @@ typedef struct
 typedef struct
 {
     void (*recv)(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
+    void (*set_start_callback)();
+    void (*set_finish_callback)();
+    void (*set_error_callback)();
 } YModem_TypeDef;
 
 extern YModem_TypeDef YModem;
