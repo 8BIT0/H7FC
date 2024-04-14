@@ -24,11 +24,12 @@ uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__((section(".OsHeap_Section"
 static void* SrvOsCommon_Malloc(uint32_t size);
 static void SrvOsCommon_Free(void *ptr);
 static int32_t SrvOsCommon_Delay(uint32_t ms);
+static void SrvOsCommon_DelayUntil(uint32_t *prev_time, uint32_t ms);
 
 SrvOsCommon_TypeDef SrvOsCommon = {
     .get_os_ms = osKernelSysTick,
     .delay_ms = SrvOsCommon_Delay,
-    .precise_delay = osDelayUntil,
+    .precise_delay = SrvOsCommon_DelayUntil,
     .malloc = SrvOsCommon_Malloc,
     .free = SrvOsCommon_Free,
     .enter_critical = vPortEnterCritical,
@@ -122,3 +123,8 @@ static int32_t SrvOsCommon_Delay(uint32_t ms)
     return 0;
 }
 
+static void SrvOsCommon_DelayUntil(uint32_t *prev_time, uint32_t ms)
+{
+    if (prev_time && ms)
+        osDelayUntil(prev_time, ms);
+}
