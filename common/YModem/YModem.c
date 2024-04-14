@@ -47,40 +47,45 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
         (Processing_YModem_Obj == NULL)) && \
         p_buf && (len > 4))
     {
-        Frame.header = p_buf[0];
-        Frame.pack_id = p_buf[1];
-        Frame.reerse_id = p_buf[2];
-        Frame.p_data = &p_buf[3];
-
-        if (Processing_YModem_Obj == NULL)
-            Processing_YModem_Obj = Obj;
-
         Obj->state_reg.bit.recv = true;
+
+        if (Obj->remain_byte == 0)
+        {
+            Frame.header = p_buf[0];
+            Frame.pack_id = p_buf[1];
+            Frame.reerse_id = p_buf[2];
+            Frame.p_data = &p_buf[3];
+
+            if (Processing_YModem_Obj == NULL)
+                Processing_YModem_Obj = Obj;
+
+            
+            if (p_buf[0] == SOH)
+            {
+                recv_data_len = YMODEM_MIN_SIZE;
+            }
+            else if (p_buf[0] == STX)
+            {
+                recv_data_len = YMODEM_MAX_SIZE;
+            }
+            else
+                return;
+
+            /* is not a full pack */
+            if (recv_data_len > len)
+            {
+                Obj->remain_byte = recv_data_len - (len - 3);
+            }
+            else
+            {
+                // if ((Obj->state == YModem_State_Idle) && ())
+
+
+            }
+
+            Obj->state = YModem_State_Rx;
+        }
         
-        if (p_buf[0] == SOH)
-        {
-            recv_data_len = YMODEM_MIN_SIZE;
-        }
-        else if (p_buf[1] == STX)
-        {
-            recv_data_len = YMODEM_MAX_SIZE;
-        }
-        else
-            return;
-
-        /* is not a full pack */
-        if (recv_data_len > len)
-        {
-
-        }
-        else
-        {
-        // if ((Obj->state == YModem_State_Idle) && ())
-
-
-        }
-
-        Obj->state = YModem_State_Rx;
         Obj->state_reg.bit.recv = false;
     }
 }

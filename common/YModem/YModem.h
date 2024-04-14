@@ -57,9 +57,11 @@ typedef struct
     YModem_Stream_TypeDef rx_stream;
 
     YModem_StateReg_TypeDef state_reg;
+    uint8_t cur_pack_id;
     uint8_t next_pack_id;
     uint16_t received_pack_num;
     uint32_t received_byte_num;
+    uint16_t remain_byte;
 } YModemObj_TypeDef;
 
 typedef struct
