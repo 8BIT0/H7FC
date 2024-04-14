@@ -85,6 +85,9 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
 
             Obj->state = YModem_State_Rx;
         }
+        else
+        {
+        }
         
         Obj->state_reg.bit.recv = false;
     }
