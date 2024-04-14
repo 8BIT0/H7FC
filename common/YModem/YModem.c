@@ -56,11 +56,9 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
         }
         else if (p_buf[0] == STX)
         {
-        recv_data_len = YMODEM_MAX_SIZE;
+            recv_data_len = YMODEM_MAX_SIZE;
         }
-        else
-            return;
-            
+
         if (Obj->remain_byte == 0)
         {
             Frame.header = p_buf[0];
@@ -85,6 +83,12 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
         }
         else
         {
+            /* header matched */
+            /* and prev pack is not full pack size in come */
+            if (recv_data_len)
+            {
+
+            }
         }
         
         Obj->state_reg.bit.recv = false;
