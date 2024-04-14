@@ -48,7 +48,18 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
         p_buf && (len > 4))
     {
         Obj->state_reg.bit.recv = true;
-
+        
+        if (p_buf[0] == SOH)
+        {
+            recv_data_len = YMODEM_MIN_SIZE;
+        }
+        else if (p_buf[0] == STX)
+        {
+        recv_data_len = YMODEM_MAX_SIZE;
+        }
+        else
+            return;
+            
         if (Obj->remain_byte == 0)
         {
             Frame.header = p_buf[0];
@@ -58,18 +69,6 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
 
             if (Processing_YModem_Obj == NULL)
                 Processing_YModem_Obj = Obj;
-
-            
-            if (p_buf[0] == SOH)
-            {
-                recv_data_len = YMODEM_MIN_SIZE;
-            }
-            else if (p_buf[0] == STX)
-            {
-                recv_data_len = YMODEM_MAX_SIZE;
-            }
-            else
-                return;
 
             /* is not a full pack */
             if (recv_data_len > len)
