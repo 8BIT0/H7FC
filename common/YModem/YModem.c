@@ -48,6 +48,7 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
         p_buf && (len > 4))
     {
         Obj->state_reg.bit.recv = true;
+        Obj->state = YModem_State_Rx;
         
         if (p_buf[0] == SOH)
         {
@@ -81,8 +82,6 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
 
 
             }
-
-            Obj->state = YModem_State_Rx;
         }
         else
         {
