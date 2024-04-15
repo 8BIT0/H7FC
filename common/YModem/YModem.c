@@ -83,6 +83,8 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                     if (Obj->rx_stream.cur_size + data_size > Obj->rx_stream.total_size)
                     {
                         /* no enough space for receive data */
+                        /* error state */
+                        return;
                     }
                     
                     Obj->remain_byte = recv_data_len - data_size;
