@@ -3,7 +3,7 @@
 
 #include "Bsp_GPIO.h"
 #include "Bsp_DMA.h"
-#include "Bsp_Uart.h"
+#include "../../AT32F435/bsp/Bsp_Uart.h"
 #include "Bsp_IIC.h"
 #include "Bsp_SPI.h"
 #include "Bsp_Flash.h"
