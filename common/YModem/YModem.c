@@ -66,11 +66,11 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
             if (Obj->remain_byte == 0)
             {
                 Frame.header = p_buf[index];
-                Frame.pack_id = p_buf[index + 1];
-                Frame.reverse_id = p_buf[index + 2];
-                Frame.p_data = &p_buf[index + 3];
+                Frame.pack_id = p_buf[++index];
+                Frame.reverse_id = p_buf[++index];
+                Frame.p_data = &p_buf[++index];
 
-                Obj->next_pack_id = Frame.pack_id + 1;
+                Obj->next_pack_id = Frame.pack_id ++;
 
                 if (Processing_YModem_Obj == NULL)
                     Processing_YModem_Obj = Obj;
@@ -84,6 +84,12 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                     {
                         /* no enough space for receive data */
                         /* error state */
+                        /* after cache process finished request this frame again */
+                        /* abort current pack receive */
+                        Obj->next_pack_id --;
+                        Obj->rx_stream.cur_size = 0;
+                        memset(Obj->rx_stream.p_buf, 0, Obj->rx_stream.total_size);
+                        Obj->state = YModem_State_Rx_Failed;
                         return;
                     }
                     
@@ -136,6 +142,30 @@ static void YModem_State_Polling(void)
             return;
 
         Processing_YModem_Obj->state_reg.bit.poll = true;
+
+        switch ((uint8_t)(Processing_YModem_Obj->state))
+        {
+            case YModem_State_Idle:
+                break;
+
+            case YModem_State_Rx:
+                break;
+
+            case YModem_State_Tx:
+                break;
+
+            case YModem_State_Rx_Failed:
+                break;
+
+            case YModem_State_Tx_Failed:
+                break;
+
+            case YModem_State_TimeOut:
+                break;
+
+            default:
+                break;
+        }
 
         Processing_YModem_Obj->state_reg.bit.poll = false;
     }

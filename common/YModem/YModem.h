@@ -18,8 +18,9 @@ typedef enum
     YModem_State_Idle = 0,
     YModem_State_Tx,
     YModem_State_Rx,
-    YModem_State_Rx_No_Enough_Space,
-    YModem_State_Tx_No_Enough_Space,
+    YModem_State_Rx_Waiting,
+    YModem_State_Rx_Failed,
+    YModem_State_Tx_Failed,
     YModem_State_TimeOut,
 } YModem_State_List;
 
