@@ -76,25 +76,23 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                     Processing_YModem_Obj = Obj;
 
                 data_size = len - 3;
+                if (Obj->rx_stream.cur_size + data_size > Obj->rx_stream.total_size)
+                {
+                    /* no enough space for receive data */
+                    /* error state */
+                    /* after cache process finished request this frame again */
+                    /* abort current pack receive */
+                    Obj->next_pack_id --;
+                    Obj->rx_stream.cur_size = 0;
+                    memset(Obj->rx_stream.p_buf, 0, Obj->rx_stream.total_size);
+                    Obj->state = YModem_State_Rx_Failed;
+                    return;
+                }
 
                 /* is not a full pack */
                 if (recv_data_len > len)
-                {
-                    if (Obj->rx_stream.cur_size + data_size > Obj->rx_stream.total_size)
-                    {
-                        /* no enough space for receive data */
-                        /* error state */
-                        /* after cache process finished request this frame again */
-                        /* abort current pack receive */
-                        Obj->next_pack_id --;
-                        Obj->rx_stream.cur_size = 0;
-                        memset(Obj->rx_stream.p_buf, 0, Obj->rx_stream.total_size);
-                        Obj->state = YModem_State_Rx_Failed;
-                        return;
-                    }
-                    
+                {                    
                     Obj->remain_byte = recv_data_len - data_size;
-
                     break;
                 }
                 else
