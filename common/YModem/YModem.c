@@ -83,15 +83,14 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                     /* after cache process finished request this frame again */
                     /* abort current pack receive */
                     Obj->next_pack_id --;
-                    Obj->rx_stream.cur_size = 0;
-                    memset(Obj->rx_stream.p_buf, 0, Obj->rx_stream.total_size);
                     Obj->state = YModem_State_Rx_Failed;
                     return;
                 }
 
                 /* is not a full pack */
-                if (recv_data_len > len)
-                {                    
+                if (recv_data_len > data_size)
+                {
+                    Obj->state = YModem_NotFull_Pack;
                     Obj->remain_byte = recv_data_len - data_size;
                     break;
                 }
@@ -156,6 +155,9 @@ static void YModem_State_Polling(void)
                 break;
 
             case YModem_State_Tx_Failed:
+                break;
+
+            case YModem_NotFull_Pack:
                 break;
 
             case YModem_State_TimeOut:

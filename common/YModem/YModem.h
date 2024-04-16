@@ -21,6 +21,7 @@ typedef enum
     YModem_State_Rx_Waiting,
     YModem_State_Rx_Failed,
     YModem_State_Tx_Failed,
+    YModem_NotFull_Pack,
     YModem_State_TimeOut,
 } YModem_State_List;
 
