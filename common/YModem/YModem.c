@@ -44,7 +44,8 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
     uint16_t index = 0;
     uint16_t data_size = 0;
     uint8_t *p_stream_buf = NULL;
-    uint16_t *crc16 = NULL;
+    uint16_t *p_crc16 = NULL;
+    uint16_t crc16 = 0;
 
     if (Obj && \
         Obj->rx_stream.p_buf && \
@@ -104,8 +105,10 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                 else
                 {
                     memcpy((Obj->rx_stream.p_buf + Obj->rx_stream.cur_size), p_stream_buf, recv_data_len);
-                    crc16 = (uint16_t *)(p_stream_buf + recv_data_len);
+                    p_crc16 = (uint16_t *)(p_stream_buf + recv_data_len);
+
                     /* check crc */
+                    // crc16 = YModem_Cal_CRC(, );
                 }
             }
             else
