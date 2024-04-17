@@ -109,6 +109,14 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
 
                     /* check crc */
                     // crc16 = YModem_Cal_CRC(, );
+                    if (*p_crc16 == crc16)
+                    {
+
+                    }
+                    else
+                    {
+                        /* pack receive failed */
+                    }
                 }
             }
             else
