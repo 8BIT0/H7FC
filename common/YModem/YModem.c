@@ -43,8 +43,14 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
     YModem_Frame_TypeDef Frame;
     uint16_t index = 0;
     uint16_t data_size = 0;
+    uint8_t *p_stream_buf = NULL;
+    uint16_t *crc16 = NULL;
 
     if (Obj && \
+        Obj->rx_stream.p_buf && \
+        Obj->rx_stream.total_size && \
+        (Obj->rx_stream.total_size > Obj->rx_stream.cur_size) && \
+        ((Obj->rx_stream.total_size - Obj->rx_stream.cur_size) >= len) && \
         ((Obj == Processing_YModem_Obj) || \
         (Processing_YModem_Obj == NULL)) && \
         p_buf && (len > 4))
@@ -69,6 +75,7 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                 Frame.pack_id = p_buf[++index];
                 Frame.reverse_id = p_buf[++index];
                 Frame.p_data = &p_buf[++index];
+                p_stream_buf = Frame.p_data; 
 
                 Obj->next_pack_id = Frame.pack_id ++;
 
@@ -96,9 +103,9 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                 }
                 else
                 {
-                    // if ((Obj->state == YModem_State_Idle) && ())
-
-
+                    memcpy((Obj->rx_stream.p_buf + Obj->rx_stream.cur_size), p_stream_buf, recv_data_len);
+                    crc16 = (uint16_t *)(p_stream_buf + recv_data_len);
+                    /* check crc */
                 }
             }
             else
