@@ -1,4 +1,5 @@
 #include "YModem.h"
+#include "util.h"
 
 #define YMODEM_MIN_SIZE 128
 #define YMODEM_MAX_SIZE 1024
@@ -12,30 +13,18 @@ typedef struct
     uint16_t crc;
 } YModem_Frame_TypeDef;
 
-static YModemObj_TypeDef *Processing_YModem_Obj = NULL;
-
 typedef enum
 {
-    SOH    = 0x01,
-    STX    = 0x02,
-    EOT    = 0x04,
-    ACK    = 0x06,
-    NAK    = 0x15,
-    CAN    = 0x18,
-    C      = 0x43,
+    SOH    = 0x01,  /* 128  data size pack */
+    STX    = 0x02,  /* 1024 data size pack */
+    EOT    = 0x04,  /* end of translate */
+    ACK    = 0x06,  /* send acknowledge */
+    NAK    = 0x15,  /* send none acknowledge */
+    CAN    = 0x18,  /* cancel translation */
+    C      = 0x43,  /* request data pack */
     ABORT1 = 0x41,
     ABORT2 = 0x61,
 } YModem_CMD_List;
-
-static uint16_t YModem_Cal_CRC(uint8_t *p_buf, uint16_t len)
-{
-    if (p_buf && len)
-    {
-
-    }
-
-    return 0;
-}
 
 static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
 {
@@ -52,8 +41,6 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
         Obj->rx_stream.total_size && \
         (Obj->rx_stream.total_size > Obj->rx_stream.cur_size) && \
         ((Obj->rx_stream.total_size - Obj->rx_stream.cur_size) >= len) && \
-        ((Obj == Processing_YModem_Obj) || \
-        (Processing_YModem_Obj == NULL)) && \
         p_buf && (len > 4))
     {
         while (true)
@@ -80,9 +67,6 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
 
                 Obj->next_pack_id = Frame.pack_id ++;
 
-                if (Processing_YModem_Obj == NULL)
-                    Processing_YModem_Obj = Obj;
-
                 data_size = len - 3;
                 if (Obj->rx_stream.cur_size + data_size > Obj->rx_stream.total_size)
                 {
@@ -108,15 +92,14 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                     p_crc16 = (uint16_t *)(p_stream_buf + recv_data_len);
 
                     /* check crc */
-                    // crc16 = YModem_Cal_CRC(, );
-                    if (*p_crc16 == crc16)
-                    {
+                    // if (*p_crc16 == crc16)
+                    // {
 
-                    }
-                    else
-                    {
-                        /* pack receive failed */
-                    }
+                    // }
+                    // else
+                    // {
+                    //     /* pack receive failed */
+                    // }
                 }
             }
             else
@@ -147,18 +130,18 @@ static void YModem_Pack(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t len)
     }
 }
 
-static void YModem_State_Polling(void)
+static void YModem_State_Polling(YModemObj_TypeDef *obj)
 {
     /* polling currently processing ymodem object */
-    if (Processing_YModem_Obj)
+    if (obj)
     {
         /* if data is receiving polling process nothing */
-        if (Processing_YModem_Obj->state_reg.bit.recv)
+        if (obj->state_reg.bit.recv)
             return;
 
-        Processing_YModem_Obj->state_reg.bit.poll = true;
+        obj->state_reg.bit.poll = true;
 
-        switch ((uint8_t)(Processing_YModem_Obj->state))
+        switch ((uint8_t)(obj->state))
         {
             case YModem_State_Idle:
                 break;

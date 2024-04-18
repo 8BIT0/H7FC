@@ -46,9 +46,22 @@ typedef union
     } bit;
 } YModem_StateReg_TypeDef;
 
+typedef enum
+{
+    YModem_None_Frame = 0,
+    YModem_HandShake,
+    YModem_Start_Frame,
+    YModem_ACK,
+    YModem_Data_Frame,
+    YModem_NAK,
+    YModem_EOT,
+    YModem_End_Frame,
+} YModem_Stage_List;
+
 typedef struct
 {
     YModem_State_List state;
+    YModem_Stage_List stage;
     uint32_t timeout_ms;
 
     YModem_Get_SysTick sys_tick;
@@ -72,7 +85,7 @@ typedef struct
 {
     void (*recv)(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
     void (*pack)(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
-    void (*polling)(void);
+    void (*polling)(YModemObj_TypeDef *obj);
 } YModem_TypeDef;
 
 extern YModem_TypeDef YModem;
