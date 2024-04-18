@@ -88,18 +88,20 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                 }
                 else
                 {
-                    memcpy((Obj->rx_stream.p_buf + Obj->rx_stream.cur_size), p_stream_buf, recv_data_len);
-                    p_crc16 = (uint16_t *)(p_stream_buf + recv_data_len);
+                    /* noticed endian */
+                    *p_crc16 = (uint16_t *)(p_stream_buf + recv_data_len);
+                    crc16 = Common_CRC16(p_stream_buf, recv_data_len);
 
                     /* check crc */
-                    // if (*p_crc16 == crc16)
-                    // {
-
-                    // }
-                    // else
-                    // {
-                    //     /* pack receive failed */
-                    // }
+                    if (*p_crc16 == crc16)
+                    {
+                        memcpy((Obj->rx_stream.p_buf + Obj->rx_stream.cur_size), p_stream_buf, recv_data_len);
+                        Obj->rx_stream.cur_size += recv_data_len;
+                    }
+                    else
+                    {
+                        /* pack receive failed */
+                    }
                 }
             }
             else
