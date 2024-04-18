@@ -97,12 +97,14 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                     {
                         memcpy((Obj->rx_stream.p_buf + Obj->rx_stream.cur_size), p_stream_buf, recv_data_len);
                         Obj->rx_stream.cur_size += recv_data_len;
+                        Obj->state = YModem_State_Rx_PackDone;
                     }
                     else
                     {
                         /* pack receive failed */
                         memset(Obj->rx_stream.p_buf, 0, Obj->rx_stream.total_size);
                         Obj->rx_stream.cur_size = 0;
+                        Obj->state = YModem_State_Rx_Failed;
                     }
                 }
             }
@@ -154,6 +156,9 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj)
                 break;
 
             case YModem_State_Tx:
+                break;
+
+            case YModem_State_Rx_PackDone:
                 break;
 
             case YModem_State_Rx_Failed:
