@@ -115,8 +115,8 @@ static bool SevBootloader_BindToPort(SrvBootloader_Adapter_TypeDef *p_Adapter, u
         (p_Adapter->port_addr == 0) && \
         (p_Adapter->frame_type > SrvBootloader_Frame_None) && \
         (p_Adapter->frame_type < SrvBootloader_Frame_Sum) && \
-        p_Adapter->FrameObj && \
-        p_Adapter->FrmaeApi && \
+        (p_Adapter->FrameObj != NULL) && \
+        (p_Adapter->FrmaeApi != NULL) && \
         port_addr)
     {
         p_Adapter->port_addr = port_addr;
