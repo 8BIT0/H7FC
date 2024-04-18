@@ -101,6 +101,8 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                     else
                     {
                         /* pack receive failed */
+                        memset(Obj->rx_stream.p_buf, 0, Obj->rx_stream.total_size);
+                        Obj->rx_stream.cur_size = 0;
                     }
                 }
             }
