@@ -17,12 +17,8 @@ static SrvBootloader_Stream_TypeDef bootloader_stream = {
     .buf = NULL,
 };
 
-static SrvBootloader_State_TypeDef SrvBootloader_Monitor = {
-    .is_actived = false,
-    .ready_to_rec = false,
-    .reboot_type = SrvBootloader_Reboot_None,
-    .send = NULL,
-};
+/* internal function */
+static bool SrvBootloader_Adapter_Check(SrvBootloader_Adapter_TypeDef *p_Adapter);
 
 /* external function */
 static bool SrvBootloaderCtl_Init(uint16_t stream_size);
@@ -35,6 +31,18 @@ SrvBootloaderCtl_TypeDef SrvBoot = {
     .set_send = SrvBootloader_Set_Send,
     .is_active = SrvBootloader_Get_ActiveState,
 };
+
+static bool SrvBootloader_Adapter_Check(SrvBootloader_Adapter_TypeDef *p_Adapter)
+{
+    if (p_Adapter && \
+        (p_Adapter->frame_type > SrvBootloader_Frame_None) && \
+        (p_Adapter->frame_type < SrvBootloader_Frame_Sum) && 
+        (p_Adapter->FrameObj == NULL) && \
+        (p_Adapter->FrmaeApi == NULL))
+        return false;
+
+    return true;
+}
 
 static bool SrvBootloaderCtl_Init(uint16_t stream_size)
 {
@@ -99,9 +107,14 @@ static bool SrvBootloader_Distory_AdapterObj(SrvBootloader_Adapter_TypeDef *p_Ad
     return false;
 }
 
-static bool SrvBootloader_Get_ActiveState(void)
+static bool SrvBootloader_Get_ActiveState(SrvBootloader_Adapter_TypeDef *p_Adapter)
 {
-    return SrvBootloader_Monitor.is_actived;
+    if (p_Adapter)
+    {
+
+    }
+
+    return false;
 }
 
 static void SrvBootloader_Set_Send(SrvBootloader_Send_Func send)

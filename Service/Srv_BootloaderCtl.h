@@ -24,10 +24,7 @@ typedef enum
 
 typedef struct
 {
-    bool is_actived;
-    bool ready_to_rec;
-    SrvBootloader_Reboot_Type_List reboot_type;
-    SrvBootloader_Send_Func send;
+
 } SrvBootloader_State_TypeDef;
 
 typedef enum
@@ -43,6 +40,10 @@ typedef struct
     uint8_t frame_type;
     void *FrameObj;
     void *FrmaeApi;
+
+    bool is_actived;
+    bool ready_to_rec;
+    SrvBootloader_Send_Func send;
 } SrvBootloader_Adapter_TypeDef;
 
 typedef struct
