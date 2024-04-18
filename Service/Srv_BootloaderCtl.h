@@ -34,6 +34,7 @@ typedef enum
 {
     SrvBootloader_Frame_None = 0,
     SrvBootloader_Frame_YModem,
+    SrvBootloader_Frame_Sum,
 } SrvBootloader_ProtoFrameType_List;
 
 typedef struct

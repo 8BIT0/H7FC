@@ -109,8 +109,20 @@ static void SrvBootloader_Set_Send(SrvBootloader_Send_Func send)
     SrvBootloader_Monitor.send = send;    
 }
 
-static bool SevBootloader_BindToPort(uint32_t port_addr)
+static bool SevBootloader_BindToPort(SrvBootloader_Adapter_TypeDef *p_Adapter, uint32_t port_addr)
 {
+    if (p_Adapter && \
+        (p_Adapter->port_addr == 0) && \
+        (p_Adapter->frame_type > SrvBootloader_Frame_None) && \
+        (p_Adapter->frame_type < SrvBootloader_Frame_Sum) && \
+        p_Adapter->FrameObj && \
+        p_Adapter->FrmaeApi && \
+        port_addr)
+    {
+        p_Adapter->port_addr = port_addr;
+        return true;
+    }
 
+    return false;
 }
 
