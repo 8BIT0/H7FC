@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include "YModem.h"
 
 typedef struct
 {
@@ -28,6 +29,20 @@ typedef struct
     SrvBootloader_Reboot_Type_List reboot_type;
     SrvBootloader_Send_Func send;
 } SrvBootloader_State_TypeDef;
+
+typedef enum
+{
+    SrvBootloader_Frame_None = 0,
+    SrvBootloader_Frame_YModem,
+} SrvBootloader_ProtoFrameType_List;
+
+typedef struct
+{
+    uint32_t port_addr;
+    uint8_t frame_type;
+    void *FrameObj;
+    void *FrmaeApi;
+} SrvBootloader_Adapter_TypeDef;
 
 typedef struct
 {

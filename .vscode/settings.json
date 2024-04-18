@@ -178,7 +178,8 @@
                 "dev_dps310.h": "c",
                 "bsp_iic_port_def.h": "c",
                 "dev_bmp280.h": "c",
-                "ymodem.h": "c"
+                "ymodem.h": "c",
+                "srv_bootloaderctl.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

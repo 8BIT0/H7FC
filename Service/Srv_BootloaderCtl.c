@@ -56,6 +56,49 @@ static bool SrvBootloaderCtl_Init(uint16_t stream_size)
     return true;
 }
 
+static SrvBootloader_Adapter_TypeDef* SrvBootloader_Create_AdapterObj(SrvBootloader_ProtoFrameType_List frame_type)
+{
+    SrvBootloader_Adapter_TypeDef *p_AdapterObj = NULL;
+
+    p_AdapterObj = SrvOsCommon.malloc(sizeof(SrvBootloader_Adapter_TypeDef));
+    if (p_AdapterObj == NULL)
+    {
+        SrvOsCommon.free(p_AdapterObj);
+    }
+    else
+    {
+        p_AdapterObj->port_addr = 0;
+        p_AdapterObj->frame_type = frame_type;
+
+        switch (frame_type)
+        {
+            case SrvBootloader_Frame_YModem:
+
+                break;
+
+            default:
+                SrvOsCommon.free(p_AdapterObj);
+                p_AdapterObj = NULL;
+                break;
+        }
+    }
+
+    return p_AdapterObj;
+}
+
+static bool SrvBootloader_Distory_AdapterObj(SrvBootloader_Adapter_TypeDef *p_Adapter)
+{
+    if (p_Adapter)
+    {
+        SrvOsCommon.free(p_Adapter->YModemObj);
+        p_Adapter->YModemObj = NULL;
+        SrvOsCommon.free(p_Adapter);
+        p_Adapter = NULL;   
+    }
+
+    return false;
+}
+
 static bool SrvBootloader_Get_ActiveState(void)
 {
     return SrvBootloader_Monitor.is_actived;
@@ -65,3 +108,9 @@ static void SrvBootloader_Set_Send(SrvBootloader_Send_Func send)
 {
     SrvBootloader_Monitor.send = send;    
 }
+
+static bool SevBootloader_BindToPort(uint32_t port_addr)
+{
+
+}
+
