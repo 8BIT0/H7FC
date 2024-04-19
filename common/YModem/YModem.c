@@ -179,6 +179,6 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj)
                 break;
         }
 
-        Processing_YModem_Obj->state_reg.bit.poll = false;
+        obj->state_reg.bit.poll = false;
     }
 }

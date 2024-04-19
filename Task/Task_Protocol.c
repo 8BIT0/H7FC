@@ -3,6 +3,7 @@
 #include "HW_Def.h"
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
+#include "Srv_FileAdapter.h"
 #include "DataPipe.h"
 #include "Storage.h"
 
