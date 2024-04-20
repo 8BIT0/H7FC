@@ -34,7 +34,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
-    .mav_msg_obj_init = Srv_ComProto_MsgObj_Init,
+    .mav_msg_OutObj_init = Srv_ComProto_MsgObj_Init,
     .get_msg_type = Srv_ComProto_GetType,
     .mav_msg_stream = SrvComProto_MsgToStream,
     .mav_msg_enable_ctl = SrvComProto_MsgEnable_Control,
