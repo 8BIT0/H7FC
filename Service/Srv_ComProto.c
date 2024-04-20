@@ -34,7 +34,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
-    .mav_msg_OutObj_init = Srv_ComProto_MsgObj_Init,
+    .mav_msg_obj_init = Srv_ComProto_MsgObj_Init,
     .get_msg_type = Srv_ComProto_GetType,
     .mav_msg_stream = SrvComProto_MsgToStream,
     .mav_msg_enable_ctl = SrvComProto_MsgEnable_Control,
@@ -173,6 +173,7 @@ static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool
     return true;
 }
 
+/******************************************* Frame Out ****************************************/
 static uint16_t SrvComProto_MavMsg_Moto(SrvComProto_MsgInfo_TypeDef *pck)
 {
     uint32_t time_stamp = 0;
@@ -387,6 +388,39 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
                                           time_stamp,
                                           baro_alt, baro_pressure, 0, 0, 0, 0);
 }
+/******************************************* Frame Out ****************************************/
+/******************************************* Frame In  ****************************************/
+static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude()
+{
+    return ;
+}
+
+static uint16_t SrvComProto_MavMsg_Decode_ExpGyro()
+{
+    return ;
+}
+
+static uint16_t SrvComProto_MavMsg_Decode_ExpAlt()
+{
+    return ;
+}
+
+static uint16_t SrvComProto_MavMsg_Decode_ExpMoto()
+{
+    return ;
+}
+
+static uint16_t SrvComProto_MavMsg_Decode_FileAdapter()
+{
+    return ;
+}
+
+static uint16_t SrvComProto_MavMsg_Decode_ExpRC()
+{
+    return ;
+}
+
+/******************************************* Frame In  ****************************************/
 
 static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)
 {

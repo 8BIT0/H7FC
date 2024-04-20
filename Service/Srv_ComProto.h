@@ -29,17 +29,6 @@ typedef enum
 
 typedef enum
 {
-    MAV_CompoID_Att_PIDTune_Pitch = 0,
-    MAV_CompoID_Att_PIDTune_Roll,
-    MAV_CompoID_Att_PIDTune_Yaw,
-
-    MAV_CompoID_Gyr_PIDTune_X,
-    MAV_CompoID_Gyr_PIDTune_Y,
-    MAV_CompoID_Gyr_PIDTune_Z,
-} SrvComProto_CfgComponentID_List;
-
-typedef enum
-{
     MAV_CompoID_Raw_IMU = 1,
     MAV_CompoID_Scaled_IMU,
     MAV_CompoID_Raw_Mag,
@@ -120,7 +109,7 @@ typedef struct
     SrvComProto_Type_List (*get_msg_type)(void);
     SrvComProto_Msg_StreamIn_TypeDef (*msg_decode)(uint8_t *p_data, uint16_t size);
     bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
-    bool (*mav_msg_OutObj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
+    bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
     bool (*mav_msg_enable_ctl)(SrvComProto_MsgInfo_TypeDef *msg, bool state);
     bool (*mav_msg_stream)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, void *arg, ComProto_Callback tx_cb);
 } SrvComProto_TypeDef;

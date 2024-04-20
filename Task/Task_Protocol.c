@@ -541,67 +541,67 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Raw_IMU;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_OutObj_init(&TaskProto_MAV_RawIMU, PckInfo, 10);
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RawIMU, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RawIMU, true);
  
-        SrvComProto.mav_msg_OutObj_init(&RadioProto_MAV_RawIMU, PckInfo, 10);
+        SrvComProto.mav_msg_obj_init(&RadioProto_MAV_RawIMU, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_RawIMU, true);
              
         // period 10Ms 100Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Scaled_IMU;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_OutObj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10);
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_ScaledIMU, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_ScaledIMU, true);
 
-        SrvComProto.mav_msg_OutObj_init(&RadioProto_MAV_ScaledIMU, PckInfo, 10);
+        SrvComProto.mav_msg_obj_init(&RadioProto_MAV_ScaledIMU, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_ScaledIMU, true);
         
         // period 20Ms 50Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_RC_Channel;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_OutObj_init(&TaskProto_MAV_RcChannel, PckInfo, 20);
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RcChannel, PckInfo, 20);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RcChannel, true);
 
-        SrvComProto.mav_msg_OutObj_init(&RadioProto_MAV_RcChannel, PckInfo, 20);
+        SrvComProto.mav_msg_obj_init(&RadioProto_MAV_RcChannel, PckInfo, 20);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_RcChannel, true);
         
         // period 10Ms 100Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_MotoCtl;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_OutObj_init(&TaskProto_MAV_MotoChannel, PckInfo, 10);
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_MotoChannel, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_MotoChannel, true);
 
-        SrvComProto.mav_msg_OutObj_init(&RadioProto_MAV_MotoChannel, PckInfo, 10);
+        SrvComProto.mav_msg_obj_init(&RadioProto_MAV_MotoChannel, PckInfo, 10);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_MotoChannel, true);
         
         // period 20Ms 50Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Attitude;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_OutObj_init(&TaskProto_MAV_Attitude, PckInfo, 20);
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Attitude, PckInfo, 20);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Attitude, true);
 
-        SrvComProto.mav_msg_OutObj_init(&RadioProto_MAV_Attitude, PckInfo, 20);
+        SrvComProto.mav_msg_obj_init(&RadioProto_MAV_Attitude, PckInfo, 20);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_Attitude, true);
                
         // period 20Ms 50Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Exp_Attitude;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_OutObj_init(&TaskProto_MAV_Exp_Attitude, PckInfo, 20);
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Exp_Attitude, PckInfo, 20);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Exp_Attitude, true);
  
         // period 100MS 10Hz
         PckInfo.system_id = MAV_SysID_Drone;
         PckInfo.component_id = MAV_CompoID_Altitude;
         PckInfo.chan = 0;
-        SrvComProto.mav_msg_OutObj_init(&TaskProto_MAV_Altitude, PckInfo, 100);
+        SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Altitude, PckInfo, 100);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Altitude, true);
 
-        SrvComProto.mav_msg_OutObj_init(&RadioProto_MAV_Altitude, PckInfo, 100);
+        SrvComProto.mav_msg_obj_init(&RadioProto_MAV_Altitude, PckInfo, 100);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_Altitude, true);
 
         /* create mavlink input message object */
