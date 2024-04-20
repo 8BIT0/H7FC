@@ -10,9 +10,6 @@
 #include "YModem.h"
 #include "reboot.h"
 
-#define ConfigData_Type_name ".cfg"
-#define Frimware_Type_Name ".bin"
-
 /* internal function */
 static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter);
 

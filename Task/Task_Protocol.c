@@ -113,6 +113,8 @@ static FrameCTL_CLIMonitor_TypeDef CLI_Monitor = {
     .port_addr = 0,
     .p_rx_stream = &CLI_RX_Stream,
     .p_proc_stream = &CLI_Proc_Stream,
+    .slient_type = Slient_Disable,
+    .slient_timeout = 0,
 };
 
 /* frame section */
@@ -414,10 +416,14 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
             /* first come first serve */
             /* in case two different port tuning the same function or same parameter at the same time */
             /* if attach to configrator or in tunning then lock moto */
-            if(!cli_state && (stream_in.pac_type == ComFrame_MavMsg))
+            if(!cli_state)
             {
-                /* check mavline message frame type */
-                /* only process mavlink message when cli is disabled */
+                if (stream_in.pac_type == ComFrame_MavMsg)
+                {
+                    /* check mavlink message frame type */
+                    /* only process mavlink message when cli is disabled */
+                
+                }
             }
             else if(stream_in.pac_type == ComFrame_CLI)
             {
@@ -704,10 +710,8 @@ static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_
 static void TaskFrameCTL_ConfigureStateCheck(void)
 {
     uint32_t tunning_time_stamp = 0;
-    uint32_t configrator_time_stamp = 0;
     uint32_t tunning_port = 0;
     bool tunning_state = false;
-    bool configrator_state = false;
     uint32_t cur_time = SrvOsCommon.get_os_ms();
     bool lst_vcp_state = false;
 
@@ -727,19 +731,7 @@ static void TaskFrameCTL_ConfigureStateCheck(void)
     }
 
     /* check configrator and tunning mode time out */
-    SrvDataHub.get_configrator_attach_state(&configrator_time_stamp, &configrator_state);
     SrvDataHub.get_tunning_state(&tunning_time_stamp, &tunning_state, &tunning_port);
-
-    if(configrator_state && ((cur_time - configrator_time_stamp) >= CONFIGRATOR_ATTACH_TIMEOUT))
-    {
-        configrator_state = false;
-        configrator_time_stamp = 0;
-
-        SrvOsCommon.enter_critical();
-        SrvDataHub.set_configrator_state(configrator_time_stamp, configrator_state);
-        SrvOsCommon.exit_critical();
-    }
-
     if(tunning_state && ((cur_time - tunning_time_stamp) >= TUNNING_TIMEOUT))
     {
         tunning_state = false;
@@ -779,16 +771,28 @@ static void TaskFermeCTL_CLI_DisableControl(void)
 {
     Shell *shell_obj = Shell_GetInstence();
     
-    shellPrint(shell_obj, "\r\n\r\n");
-    
-    SrvOsCommon.enter_critical();
-    SrvDataHub.set_cli_state(false);
-    SrvOsCommon.exit_critical();
+    if (shell_obj)
+    {
+        shellPrint(shell_obj, "\r\n\r\n");
+        
+        SrvOsCommon.enter_critical();
+        SrvDataHub.set_cli_state(false);
+        SrvOsCommon.exit_critical();
 
-    shellPrint(shell_obj, "CLI Disabled\r\n");
-    CLI_Monitor.port_addr = 0;
+        shellPrint(shell_obj, "CLI Disabled\r\n");
+        CLI_Monitor.port_addr = 0;
+    }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, CLI_Disable,  TaskFermeCTL_CLI_DisableControl, CLI Enable Control);
 
+static void TaskFrameCTL_FileAccept()
+{
+    Shell *shell_obj = Shell_GetInstence();
 
+    if (shell_obj)
+    {
+
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Wait_File, TaskFrameCTL_FileAccept, In File Receive Mode);
 

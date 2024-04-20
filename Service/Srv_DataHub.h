@@ -197,10 +197,6 @@ typedef struct
     uint16_t moto[8];
     uint8_t servo[8];
 
-    /* when receiver configrator`s heartbeat */
-    uint32_t configrator_time_stamp;
-    bool attach_configrator;
-
     uint32_t tunning_heartbeat_timestamp;
     bool in_tunning;
     uint32_t tunning_port_addr;
@@ -234,13 +230,11 @@ typedef struct
 {
     void (*init)(void);
     bool (*set_tunning_state)(uint32_t time_stamp, bool state, uint32_t port_addr);    /* set tunning status in can/uart/usb irq */
-    bool (*set_configrator_state)(uint32_t time_stamp, bool state);
     bool (*set_vcp_attach_state)(bool state);
     bool (*set_cli_state)(bool state);
 
     bool (*get_cli_state)(bool *state);
     bool (*get_tunning_state)(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
-    bool (*get_configrator_attach_state)(uint32_t *time_stamp, bool *state);
     bool (*get_vcp_attach_state)(bool *state);
     bool (*get_imu_init_state)(bool *state);
     bool (*get_pri_imu_range)(uint8_t *acc_range, uint16_t *gyr_range);

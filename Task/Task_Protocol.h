@@ -14,8 +14,8 @@
 #define FrameCTL_Port_Tx_TimeOut 5      /* unit: ms */
 #define FrameCTL_MAX_Period 5           /* unit: ms */
 
-#define CONFIGRATOR_ATTACH_TIMEOUT 2000 /* unit: ms 2S */
-#define TUNNING_TIMEOUT 1000            /* unit: ms 1S */
+#define SLIENT_TIMEOUT 200              /* unit: ms 200ms */
+#define TUNNING_TIMEOUT 2000            /* unit: ms 1S */
 
 #define CLI_FUNC_BUF_SIZE 512
 #define RADIO_BUFF_SIZE 512
@@ -37,6 +37,13 @@ typedef enum
     Port_Bypass_TxOnly,
     Port_Bypass_BothDir,
 } Bypass_TypeList;
+
+typedef enum
+{
+    Slient_Disable = 0,
+    Slient_Wait_TimeOut,
+    Slient_Wait_Signal,
+} Slient_TypeList;
 
 typedef struct
 {
@@ -111,6 +118,9 @@ typedef struct
     uint32_t port_addr;
     SrvComProto_Stream_TypeDef *p_rx_stream;
     SrvComProto_Stream_TypeDef *p_proc_stream;
+    
+    Slient_TypeList slient_type;
+    uint16_t slient_timeout;
 } FrameCTL_CLIMonitor_TypeDef;
 
 void TaskFrameCTL_Init(uint32_t period);
