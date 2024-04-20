@@ -7,6 +7,10 @@
 
 #define YMODEM_MAX_PROTO_SIZE 1024
 
+#define To_YModem_Obj(x) ((YModemObj_TypeDef *)x)
+#define To_YModem_Api(x) ((YModem_TypeDef *)x)
+#define YModemObj_size sizeof(YModemObj_TypeDef)
+
 typedef uint32_t (*YModem_Get_SysTick)(void);
 typedef void (*YModem_Start_Callback)(void *YModem_Obj);
 typedef void (*YModem_Finish_Callback)(void *YModem_Obj);

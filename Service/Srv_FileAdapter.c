@@ -10,17 +10,28 @@
 #include "YModem.h"
 #include "reboot.h"
 
+#define ConfigData_Type_name ".cfg"
+#define Frimware_Type_Name ".bin"
+
 /* internal function */
 static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter);
 
 /* external function */
 static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(SrvFileAdapter_ProtoFrameType_List frame_type, uint32_t stream_size);
-static void SrvFileAdapter_Set_SendCallback(SrvFileAdapter_Send_Func send);
+static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter);
+static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send);
 static bool SrvFileAdapter_Get_ActiveState(SrvFileAdapterObj_TypeDef *p_Adapter);
+static bool SrvFileAdapter_BindToPort(SrvFileAdapterObj_TypeDef *p_Adapter, uint32_t port_addr);
+static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, const SrvFileAdapter_Stream_TypeDef stream);
+static void SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter);
 
 /* external virable */
 SrvFileAdapter_TypeDef SrvFileAdapter = {
     .create = SrvFileAdapter_Create_AdapterObj,
+    .destory = SrvFileAdapter_Destory_AdapterObj,
+    .bind_port = SrvFileAdapter_BindToPort,
+    .parse = SrvFileAdapter_Parse,
+    .polling = SrvFileAdapter_Polling,
     .set_send = SrvFileAdapter_Set_SendCallback,
     .is_active = SrvFileAdapter_Get_ActiveState,
 };
@@ -56,6 +67,14 @@ static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(SrvFileAdapte
             {
                 case SrvFileAdapter_Frame_YModem:
                     /* create YModem Object */
+                    p_AdapterObj->FrameObj = SrvOsCommon.malloc(YModemObj_size);
+                    if (p_AdapterObj->FrameObj == NULL)
+                    {
+                        SrvOsCommon.free(p_AdapterObj);
+                        p_AdapterObj = NULL;
+                    }
+                    
+                    p_AdapterObj->FrmaeApi = (void *)&YModem;
                     break;
 
                 default:
@@ -69,11 +88,15 @@ static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(SrvFileAdapte
     return p_AdapterObj;
 }
 
-static bool SrvFileAdapter_Distory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter)
+static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter)
 {
-    if (p_Adapter)
+    if (p_Adapter && p_Adapter->FrameObj)
     {
-    
+        SrvOsCommon.free(p_Adapter->FrameObj);
+        memset(p_Adapter, 0, sizeof(SrvFileAdapterObj_TypeDef));
+        SrvOsCommon.free(p_Adapter);
+        p_Adapter = NULL;
+        return true;
     }
 
     return false;
@@ -81,16 +104,17 @@ static bool SrvFileAdapter_Distory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapt
 
 static bool SrvFileAdapter_Get_ActiveState(SrvFileAdapterObj_TypeDef *p_Adapter)
 {
-    if (p_Adapter)
-    {
-
-    }
+    /* already bind to port */
+    if (p_Adapter && p_Adapter->FrameObj && p_Adapter->port_addr)
+        return true;
 
     return false;
 }
 
-static void SrvFileAdapter_Set_SendCallback(SrvFileAdapter_Send_Func send)
+static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter,  SrvFileAdapter_Send_Func send)
 {
+    if (p_Adapter && p_Adapter->FrameObj)
+        p_Adapter->send = send;
 }
 
 static bool SrvFileAdapter_BindToPort(SrvFileAdapterObj_TypeDef *p_Adapter, uint32_t port_addr)
@@ -108,5 +132,21 @@ static bool SrvFileAdapter_BindToPort(SrvFileAdapterObj_TypeDef *p_Adapter, uint
     }
 
     return false;
+}
+
+static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, const SrvFileAdapter_Stream_TypeDef stream)
+{
+    if (p_Adapter && p_Adapter->FrameObj && stream.buf && stream.total_size)
+    {
+
+    }
+}
+
+static void SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter)
+{
+    if (p_Adapter && p_Adapter->FrameObj)
+    {
+
+    }
 }
 

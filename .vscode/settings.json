@@ -180,7 +180,8 @@
                 "dev_bmp280.h": "c",
                 "ymodem.h": "c",
                 "srv_bootloaderctl.h": "c",
-                "srv_fileadapter.h": "c"
+                "srv_fileadapter.h": "c",
+                "mavlink_msg_scaled_imu2.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

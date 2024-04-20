@@ -6,6 +6,8 @@
 #include <string.h>
 #include "YModem.h"
 
+#define SrvFileAdapter_TimeOut (10 * 1000)  /* time out 10s */
+
 typedef struct
 {
     uint16_t total_size;
@@ -37,10 +39,12 @@ typedef struct
 typedef struct
 {
     SrvFileAdapterObj_TypeDef* (*create)(SrvFileAdapter_ProtoFrameType_List frame_type, uint32_t stream_size);
-    void (*set_send)(SrvFileAdapter_Send_Func send_cb);
-    bool (*is_active)(void);
-    void (*polling)(void);
-    void (*parse)(SrvFileAdapter_Stream_TypeDef *p_stream);
+    bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
+    void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
+    bool (*is_active)(SrvFileAdapterObj_TypeDef *p_Adapter);
+    bool (*bind_port)(SrvFileAdapterObj_TypeDef *p_Adapter, uint32_t port_addr);
+    void (*polling)(SrvFileAdapterObj_TypeDef *p_Adapter);
+    void (*parse)(SrvFileAdapterObj_TypeDef *p_Adapter, const SrvFileAdapter_Stream_TypeDef stream);
 } SrvFileAdapter_TypeDef;
 
 extern SrvFileAdapter_TypeDef SrvFileAdapter;
