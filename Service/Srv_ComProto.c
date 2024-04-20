@@ -65,7 +65,7 @@ static SrvComProto_Type_List Srv_ComProto_GetType(void)
 
 static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period)
 {
-    if ((msg == NULL) ||
+    if ((msg == NULL) || \
         (period == 0))
         return false;
 

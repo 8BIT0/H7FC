@@ -519,11 +519,10 @@ static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
 /************************************** frame protocol section ********************************************/
 static bool TaskFrameCTL_MAV_Msg_Init(void)
 {
-    /* create mavlink message object */
     if (SrvComProto.get_msg_type() == SrvComProto_Type_MAV)
     {
         SrvComProto_MavPackInfo_TypeDef PckInfo;
-
+        /* create mavlink output message object */
         memset(&PckInfo, 0, sizeof(PckInfo));
         memset(&TaskProto_MAV_RawIMU, 0, sizeof(TaskProto_MAV_RawIMU));
         memset(&TaskProto_MAV_ScaledIMU, 0, sizeof(TaskProto_MAV_ScaledIMU));
@@ -605,6 +604,7 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
         SrvComProto.mav_msg_obj_init(&RadioProto_MAV_Altitude, PckInfo, 100);
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_Altitude, true);
 
+        /* create mavlink input message object */
         return true;
     }
 
