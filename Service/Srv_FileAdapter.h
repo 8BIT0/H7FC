@@ -36,7 +36,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(uint16_t stream_size);
+    SrvFileAdapterObj_TypeDef* (*create)(SrvFileAdapter_ProtoFrameType_List frame_type, uint32_t stream_size);
     void (*set_send)(SrvFileAdapter_Send_Func send_cb);
     bool (*is_active)(void);
     void (*polling)(void);

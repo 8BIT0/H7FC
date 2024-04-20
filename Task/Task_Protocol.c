@@ -67,7 +67,6 @@ SrvComProto_MsgInfo_TypeDef RadioProto_MAV_MotoChannel;
 SrvComProto_MsgInfo_TypeDef RadioProto_MAV_Attitude;
 SrvComProto_MsgInfo_TypeDef RadioProto_MAV_Altitude;
 
-static FrameCTL_Monitor_TypeDef FrameCTL_Monitor;
 static bool FrameCTL_MavProto_Enable = false;
 static FrameCTL_PortMonitor_TypeDef PortMonitor = {.init = false};
 static uint32_t FrameCTL_Period = 0;
@@ -126,12 +125,12 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor);
 static bool TaskFrameCTL_MAV_Msg_Init(void);
 static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size);
 static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint32_t *size);
-static bool TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *time_stamp);
+static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *time_stamp);
 static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uint16_t index);
 static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t size);
 static void TaskFrameCTL_ConfigureStateCheck(void);
 static void TaskFrameCTL_CLI_Proc(void);
-static void TaskFrameCTL_CLI_Trans(uint8_t *p_data, uint16_t size);
+static int TaskFrameCTL_CLI_Trans(const uint8_t *p_data, uint16_t size);
 
 void TaskFrameCTL_Init(uint32_t period)
 {
@@ -498,7 +497,7 @@ static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t Obj_addr, uint8_t *p_data
  * flight controller will receive sof interrupt
  * if flight controller continue to receive this interrupt it must be attach to computer
  */
-static bool TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *time_stamp)
+static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *time_stamp)
 {
     FrameCTL_PortProtoObj_TypeDef *p_Obj = NULL;
 
@@ -507,13 +506,8 @@ static bool TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
         p_Obj = (FrameCTL_PortProtoObj_TypeDef *)Obj_addr;
 
         if (p_Obj->PortObj_addr && (p_Obj->type == Port_USB))
-        {
             *time_stamp = SrvOsCommon.get_os_ms();
-            return true;
-        }
     }
-
-    return false;
 }
 
 /************************************** frame protocol section ********************************************/
@@ -759,24 +753,26 @@ static void TaskFrameCTL_ConfigureStateCheck(void)
 }
 
 /***************************************** CLI Section ***********************************************/
-static void TaskFrameCTL_CLI_Trans(uint8_t *p_data, uint16_t size)
+static int TaskFrameCTL_CLI_Trans(const uint8_t *p_data, uint16_t size)
 {
     if(p_data && size)
     {
         switch ((uint8_t) CLI_Monitor.type)
         {
             case Port_Uart:
-                TaskFrameCTL_Port_Tx(CLI_Monitor.port_addr, p_data, size);
+                TaskFrameCTL_Port_Tx(CLI_Monitor.port_addr, (uint8_t *)p_data, size);
                 break;
             
             case Port_USB:
-                TaskFrameCTL_DefaultPort_Trans(p_data, size);
+                TaskFrameCTL_DefaultPort_Trans((uint8_t *)p_data, size);
                 break; 
 
             default:
                 break;
         }
     }
+
+    return 0;
 }
 
 static void TaskFermeCTL_CLI_DisableControl(void)

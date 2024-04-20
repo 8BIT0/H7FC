@@ -14,63 +14,55 @@
 static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter);
 
 /* external function */
-static bool SrvFileAdapter_Init(uint16_t stream_size);
-static void SrvFileAdapter_Set_Send(SrvFileAdapter_Send_Func send);
+static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(SrvFileAdapter_ProtoFrameType_List frame_type, uint32_t stream_size);
+static void SrvFileAdapter_Set_SendCallback(SrvFileAdapter_Send_Func send);
 static bool SrvFileAdapter_Get_ActiveState(SrvFileAdapterObj_TypeDef *p_Adapter);
 
 /* external virable */
 SrvFileAdapter_TypeDef SrvFileAdapter = {
-    .init = SrvFileAdapter_Init,
-    .set_send = SrvFileAdapter_Set_Send,
+    .create = SrvFileAdapter_Create_AdapterObj,
+    .set_send = SrvFileAdapter_Set_SendCallback,
     .is_active = SrvFileAdapter_Get_ActiveState,
 };
 
 static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter)
 {
-    if (p_Adapter && \
-        (p_Adapter->frame_type > SrvFileAdapter_Frame_None) && \
-        (p_Adapter->frame_type < SrvFileAdapter_Frame_Sum) && 
-        (p_Adapter->FrameObj == NULL) && \
+    if ((p_Adapter == NULL) || \
+        (p_Adapter->frame_type >= SrvFileAdapter_Frame_Sum) || \
+        (p_Adapter->FrameObj == NULL) || \
         (p_Adapter->FrmaeApi == NULL))
         return false;
 
     return true;
 }
 
-static bool SrvFileAdapter_Init(uint16_t stream_size)
-{
-    if (stream_size == 0)
-        return false;
-
-
-
-    return true;
-}
-
-static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(SrvFileAdapter_ProtoFrameType_List frame_type)
+static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(SrvFileAdapter_ProtoFrameType_List frame_type, uint32_t stream_size)
 {
     SrvFileAdapterObj_TypeDef *p_AdapterObj = NULL;
 
-    p_AdapterObj = SrvOsCommon.malloc(sizeof(SrvFileAdapterObj_TypeDef));
-    if (p_AdapterObj == NULL)
+    if (SrvFileAdapterObj_Check(p_AdapterObj))
     {
-        SrvOsCommon.free(p_AdapterObj);
-    }
-    else
-    {
-        p_AdapterObj->port_addr = 0;
-        p_AdapterObj->frame_type = frame_type;
-
-        switch (frame_type)
+        p_AdapterObj = SrvOsCommon.malloc(sizeof(SrvFileAdapterObj_TypeDef));
+        if (p_AdapterObj == NULL)
         {
-            case SrvFileAdapter_Frame_YModem:
+            SrvOsCommon.free(p_AdapterObj);
+        }
+        else
+        {
+            p_AdapterObj->port_addr = 0;
+            p_AdapterObj->frame_type = frame_type;
 
-                break;
+            switch (frame_type)
+            {
+                case SrvFileAdapter_Frame_YModem:
+                    /* create YModem Object */
+                    break;
 
-            default:
-                SrvOsCommon.free(p_AdapterObj);
-                p_AdapterObj = NULL;
-                break;
+                default:
+                    SrvOsCommon.free(p_AdapterObj);
+                    p_AdapterObj = NULL;
+                    break;
+            }
         }
     }
 
@@ -97,7 +89,7 @@ static bool SrvFileAdapter_Get_ActiveState(SrvFileAdapterObj_TypeDef *p_Adapter)
     return false;
 }
 
-static void SrvFileAdapter_Set_Send(SrvFileAdapter_Send_Func send)
+static void SrvFileAdapter_Set_SendCallback(SrvFileAdapter_Send_Func send)
 {
 }
 

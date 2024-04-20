@@ -516,7 +516,7 @@ static void BspUart_DMA_TxCplt_Callback(void *arg)
             obj->monitor.tx_success_cnt ++;
 
             if(obj->TxCallback)
-                obj->TxCallback((uint8_t *)obj->cust_data_addr, NULL, 0);
+                obj->TxCallback(obj->cust_data_addr, NULL, 0);
         }
         else
         {
@@ -552,7 +552,7 @@ static void BspUart_DMA_RxCplt_Callback(void *arg)
                 obj->monitor.rx_err_cnt ++;
 
             if(obj->RxCallback)
-                obj->RxCallback((uint8_t *)obj->cust_data_addr, obj->rx_buf, dma_rec_size);
+                obj->RxCallback(obj->cust_data_addr, obj->rx_buf, dma_rec_size);
         }
         else
         {
@@ -607,7 +607,7 @@ void BspUart_Irq_Callback(void *arg)
                 
                 obj->monitor.rx_cnt ++;
                 if(obj->RxCallback)
-                    obj->RxCallback((uint8_t *)obj->cust_data_addr, obj->rx_buf, dma_rec_size);
+                    obj->RxCallback(obj->cust_data_addr, obj->rx_buf, dma_rec_size);
 
                 To_DMA_Handle_Ptr(obj->rx_dma_hdl)->maddr = (uint32_t)obj->rx_buf;
                 To_DMA_Handle_Ptr(obj->rx_dma_hdl)->dtcnt = obj->rx_size;
@@ -617,7 +617,7 @@ void BspUart_Irq_Callback(void *arg)
             {
                 rx_byte = usart_data_receive(To_Uart_Instance(obj->instance));
                 if(obj->RxCallback)
-                    obj->RxCallback((uint8_t *)obj->cust_data_addr, &rx_byte, 1);
+                    obj->RxCallback(obj->cust_data_addr, &rx_byte, 1);
             }
         }
     }

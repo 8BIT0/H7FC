@@ -6,7 +6,7 @@
 #include <string.h>
 #include "Bsp_GPIO_Port_Def.h"
 
-typedef void (*BspUART_Callback)(uint8_t *cust_data_addr, uint8_t *buff, uint16_t size);
+typedef void (*BspUART_Callback)(uint32_t cust_data_addr, uint8_t *buff, uint16_t size);
 
 #define BspUart_Clock_Error -1
 #define Bspuart_None_Index -1
