@@ -30,7 +30,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, void *arg, ComProto_Callback tx_cb);
 static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state);
 static SrvComProto_Type_List Srv_ComProto_GetType(void);
-static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(uint8_t *p_data, uint16_t size);
+static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvComProto_MsgObj_TypeDef *obj, uint8_t *p_data, uint16_t size);
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
@@ -390,33 +390,75 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
 }
 /******************************************* Frame Out ****************************************/
 /******************************************* Frame In  ****************************************/
-static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude()
+static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude(SrvComProto_MsgObj_TypeDef *obj)
 {
+    uint32_t sys_tick = SrvOsCommon.get_os_ms();
+
+    if (obj)
+    {
+
+    }
+
     return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_ExpGyro()
+static uint16_t SrvComProto_MavMsg_Decode_ExpGyro(SrvComProto_MsgObj_TypeDef *obj)
 {
+    uint32_t sys_tick = SrvOsCommon.get_os_ms();
+
+    if (obj)
+    {
+
+    }
+
     return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_ExpAlt()
+static uint16_t SrvComProto_MavMsg_Decode_ExpAlt(SrvComProto_MsgObj_TypeDef *obj)
 {
+    uint32_t sys_tick = SrvOsCommon.get_os_ms();
+
+    if (obj)
+    {
+
+    }
+
     return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_ExpMoto()
+static uint16_t SrvComProto_MavMsg_Decode_ExpMoto(SrvComProto_MsgObj_TypeDef *obj)
 {
+    uint32_t sys_tick = SrvOsCommon.get_os_ms();
+
+    if (obj)
+    {
+
+    }
+
     return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_ExpRC()
+static uint16_t SrvComProto_MavMsg_Decode_ExpRC(SrvComProto_MsgObj_TypeDef *obj)
 {
+    uint32_t sys_tick = SrvOsCommon.get_os_ms();
+
+    if (obj)
+    {
+
+    }
+
     return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_FileAdapter()
+static uint16_t SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *obj, const uint8_t *p_file, uint16_t len)
 {
+    uint32_t sys_tick = SrvOsCommon.get_os_ms();
+
+    if (obj && p_file && len)
+    {
+
+    }
+
     return 0;
 }
 
@@ -459,7 +501,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
                 switch ((uint8_t)mav_msg.msgid)
                 {
                     case MAV_CompoID_Ctl_Gyro:
-                        SrvComProto_MavMsg_Decode_ExpGyro();
+                        SrvComProto_MavMsg_Decode_ExpGyro(obj);
                         break;
 
                     case MAV_CompoID_Ctl_Attitude: break;

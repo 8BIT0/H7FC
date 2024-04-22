@@ -67,6 +67,7 @@ SrvComProto_MsgInfo_TypeDef RadioProto_MAV_MotoChannel;
 SrvComProto_MsgInfo_TypeDef RadioProto_MAV_Attitude;
 SrvComProto_MsgInfo_TypeDef RadioProto_MAV_Altitude;
 
+static SrvComProto_MsgObj_TypeDef *InUsePort_MavMsgInput_Obj;
 static SrvComProto_MsgObj_TypeDef DefaultPort_MavMsgInput_Obj;
 static SrvComProto_MsgObj_TypeDef RadioPort_MavMsgInput_Obj;
 
@@ -360,6 +361,7 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
     SrvComProto_Msg_StreamIn_TypeDef stream_in;
     SrvComProto_Stream_TypeDef *p_stream = NULL;
     FrameCTL_PortProtoObj_TypeDef *p_RecObj = NULL;
+    InUsePort_MavMsgInput_Obj = NULL;
     bool cli_state = false;
 
     /* use mavlink protocol tuning the flight parameter */
@@ -374,10 +376,12 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
         {
             case Port_USB:
                 p_stream = &USBRx_Stream;
+                InUsePort_MavMsgInput_Obj = &DefaultPort_MavMsgInput_Obj;
                 break;
 
             case Port_Uart:
                 p_stream = &UartRx_Stream;
+                InUsePort_MavMsgInput_Obj = &RadioPort_MavMsgInput_Obj;
                 break;
 
             default:
@@ -412,7 +416,7 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
             }
         }
 
-        stream_in = SrvComProto.msg_decode(p_stream->p_buf, p_stream->size);
+        stream_in = SrvComProto.msg_decode(InUsePort_MavMsgInput_Obj, p_stream->p_buf, p_stream->size);
     
         /* noticed when drone is under disarmed state we can`t tune or send cli to drone for safety */
         if(stream_in.valid)

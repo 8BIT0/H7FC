@@ -144,6 +144,19 @@ typedef struct
     bool att_flip_over;
     uint8_t att_error_code;
 
+    uint32_t radio_att_in_time;
+    float radio_in_roll;
+    float radio_in_pitch;
+    float radio_in_yaw;
+
+    uint32_t radio_gyr_in_time;
+    float radio_in_gyr_x;
+    float radio_in_gyr_y;
+    float radio_in_gyr_z;
+
+    uint32_t radio_alt_in_time;
+    float radio_in_alt;
+
     uint32_t flow_update_time;
     uint8_t pos_XY_quality;
     uint8_t pos_Z_quality;
