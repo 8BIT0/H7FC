@@ -451,7 +451,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
     {
         mav_decode = mavlink_frame_char(default_channel, p_data[i], &mav_msg, &mav_sta);
 
-        if(mav_decode && (i < size))
+        if (mav_decode == MAVLINK_FRAMING_OK)
         {
             /* get multi protocol frame in one transmition and first protocol frame is mavlink message */
             /* only decode first pack */
@@ -459,7 +459,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
         }
     }
 
-    if(mav_decode)
+    if (mav_decode)
     {
         stream_in.pac_type = ComFrame_MavMsg;
         stream_in.valid = true;
