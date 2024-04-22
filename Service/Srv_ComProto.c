@@ -421,7 +421,7 @@ static uint16_t SrvComProto_MavMsg_Decode_FileAdapter()
 }
 
 /******************************************* Frame In  ****************************************/
-static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll( SrvComProto_MsgObj_TypeDef *obj, uint8_t *p_data, uint16_t size)
+static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvComProto_MsgObj_TypeDef *obj, uint8_t *p_data, uint16_t size)
 {
     SrvComProto_Msg_StreamIn_TypeDef stream_in; 
     uint8_t default_channel = 0;
