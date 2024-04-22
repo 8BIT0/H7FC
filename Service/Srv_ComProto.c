@@ -421,7 +421,7 @@ static uint16_t SrvComProto_MavMsg_Decode_FileAdapter()
 }
 
 /******************************************* Frame In  ****************************************/
-static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(uint8_t *p_data, uint16_t size)
+static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll( SrvComProto_MsgObj_TypeDef *obj, uint8_t *p_data, uint16_t size)
 {
     SrvComProto_Msg_StreamIn_TypeDef stream_in; 
     uint8_t default_channel = 0;
@@ -454,7 +454,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(uint8
         {
             /* get multi protocol frame in one transmition and first protocol frame is mavlink message */
             /* only decode first pack */
-            if (mav_msg.sysid == MAV_SysID_Radio)
+            if (obj && (mav_msg.sysid == MAV_SysID_Radio))
             {
                 switch ((uint8_t)mav_msg.msgid)
                 {
