@@ -67,6 +67,9 @@ SrvComProto_MsgInfo_TypeDef RadioProto_MAV_MotoChannel;
 SrvComProto_MsgInfo_TypeDef RadioProto_MAV_Attitude;
 SrvComProto_MsgInfo_TypeDef RadioProto_MAV_Altitude;
 
+static SrvComProto_MsgObj_TypeDef DefaultPort_MavMsgInput_Obj;
+static SrvComProto_MsgObj_TypeDef RadioPort_MavMsgInput_Obj;
+
 static bool FrameCTL_MavProto_Enable = false;
 static FrameCTL_PortMonitor_TypeDef PortMonitor = {.init = false};
 static uint32_t FrameCTL_Period = 0;
@@ -140,6 +143,8 @@ void TaskFrameCTL_Init(uint32_t period)
 
     /* USB VCP as defaut port to tune parameter and frame porotcol */
     memset(&PortMonitor, 0, sizeof(PortMonitor));
+    memset(&DefaultPort_MavMsgInput_Obj, 0, sizeof(SrvComProto_MsgObj_TypeDef));
+    memset(&RadioPort_MavMsgInput_Obj, 0, sizeof(SrvComProto_MsgObj_TypeDef));
 
     TaskFrameCTL_DefaultPort_Init(&PortMonitor);
     TaskFrameCTL_RadioPort_Init(&PortMonitor);

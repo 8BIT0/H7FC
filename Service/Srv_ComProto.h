@@ -114,7 +114,8 @@ typedef struct
 
 typedef struct
 {
-    uint8_t test;
+    uint32_t port_addr;
+    
 } SrvComProto_MsgObj_TypeDef;
 
 typedef struct
