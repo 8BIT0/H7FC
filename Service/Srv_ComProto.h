@@ -24,11 +24,13 @@ typedef enum
 {
     MAV_SysID_Drone = 1,
     MAV_SysID_Cfg,
-    MAV_SysID_ROS,
+    MAV_SysID_OPC,   /* On plane computer data input */
+    MAV_SysID_Radio,
 } SrvComProto_SysID_List;
 
 typedef enum
 {
+    /* output from drone */
     MAV_CompoID_Raw_IMU = 1,
     MAV_CompoID_Scaled_IMU,
     MAV_CompoID_Raw_Mag,
@@ -39,6 +41,14 @@ typedef enum
     MAV_CompoID_RC_Channel,
     MAV_CompoID_MotoCtl,
     MAV_CompoID_ServoCtl,
+
+    /* input to drone from on plane computer */
+    MAV_CompoID_Ctl_Gyro,
+    MAV_CompoID_Ctl_Attitude,
+    MAV_CompoID_Ctl_Altitude,
+    MAV_CompoID_Ctl_RC_Channel,
+    MAV_CompoID_Ctl_MotoCtl,
+    MAV_CompoID_Ctl_FileAdapter,
 } SrvComProto_ComponentID_List;
 
 typedef enum
@@ -100,7 +110,6 @@ typedef struct
 
     uint8_t *p_buf;
     uint16_t size;
-
 }SrvComProto_Msg_StreamIn_TypeDef;
 
 typedef struct

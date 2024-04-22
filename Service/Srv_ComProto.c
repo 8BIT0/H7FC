@@ -30,7 +30,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
 static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, void *arg, ComProto_Callback tx_cb);
 static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state);
 static SrvComProto_Type_List Srv_ComProto_GetType(void);
-static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size);
+static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(uint8_t *p_data, uint16_t size);
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
@@ -38,7 +38,7 @@ SrvComProto_TypeDef SrvComProto = {
     .get_msg_type = Srv_ComProto_GetType,
     .mav_msg_stream = SrvComProto_MsgToStream,
     .mav_msg_enable_ctl = SrvComProto_MsgEnable_Control,
-    .msg_decode = SrvComProto_MavMsg_Input_Decode,
+    .msg_decode = SrvComProto_MavMsg_Input_DecodeAll,
 };
 
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
@@ -410,19 +410,18 @@ static uint16_t SrvComProto_MavMsg_Decode_ExpMoto()
     return ;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_FileAdapter()
-{
-    return ;
-}
-
 static uint16_t SrvComProto_MavMsg_Decode_ExpRC()
 {
     return ;
 }
 
-/******************************************* Frame In  ****************************************/
+static uint16_t SrvComProto_MavMsg_Decode_FileAdapter()
+{
+    return ;
+}
 
-static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t *p_data, uint16_t size)
+/******************************************* Frame In  ****************************************/
+static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(uint8_t *p_data, uint16_t size)
 {
     SrvComProto_Msg_StreamIn_TypeDef stream_in; 
     uint8_t default_channel = 0;
@@ -455,6 +454,20 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_Decode(uint8_t 
         {
             /* get multi protocol frame in one transmition and first protocol frame is mavlink message */
             /* only decode first pack */
+            if (mav_msg.sysid == MAV_SysID_Radio)
+            {
+                switch ((uint8_t)mav_msg.msgid)
+                {
+                    case MAV_CompoID_Ctl_Gyro: break;
+                    case MAV_CompoID_Ctl_Attitude: break;
+                    case MAV_CompoID_Ctl_Altitude: break;
+                    case MAV_CompoID_Ctl_RC_Channel: break;
+                    case MAV_CompoID_Ctl_MotoCtl: break;
+                    case MAV_CompoID_Ctl_FileAdapter: break;
+                    default: break;
+                }
+            }
+
             break;
         }
     }
