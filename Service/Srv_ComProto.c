@@ -392,32 +392,32 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
 /******************************************* Frame In  ****************************************/
 static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude()
 {
-    return ;
+    return 0;
 }
 
 static uint16_t SrvComProto_MavMsg_Decode_ExpGyro()
 {
-    return ;
+    return 0;
 }
 
 static uint16_t SrvComProto_MavMsg_Decode_ExpAlt()
 {
-    return ;
+    return 0;
 }
 
 static uint16_t SrvComProto_MavMsg_Decode_ExpMoto()
 {
-    return ;
+    return 0;
 }
 
 static uint16_t SrvComProto_MavMsg_Decode_ExpRC()
 {
-    return ;
+    return 0;
 }
 
 static uint16_t SrvComProto_MavMsg_Decode_FileAdapter()
 {
-    return ;
+    return 0;
 }
 
 /******************************************* Frame In  ****************************************/
@@ -458,7 +458,10 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
             {
                 switch ((uint8_t)mav_msg.msgid)
                 {
-                    case MAV_CompoID_Ctl_Gyro: break;
+                    case MAV_CompoID_Ctl_Gyro:
+                        SrvComProto_MavMsg_Decode_ExpGyro();
+                        break;
+
                     case MAV_CompoID_Ctl_Attitude: break;
                     case MAV_CompoID_Ctl_Altitude: break;
                     case MAV_CompoID_Ctl_RC_Channel: break;
