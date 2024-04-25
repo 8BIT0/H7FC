@@ -10,6 +10,7 @@
 
 typedef bool (*ComProto_Callback)(void *arg, uint8_t *p_data, uint32_t len);
 typedef uint16_t (*DataPack_Callback)(uint8_t *pck);
+typedef void (*SrvComProto_MavMsgIn_Callback)(void const *mav_data, void *cus_data);
 typedef uint32_t ComPort_Handle;
 
 typedef enum
@@ -112,10 +113,33 @@ typedef struct
     uint16_t size;
 } SrvComProto_Msg_StreamIn_TypeDef;
 
+typedef enum
+{
+    MavIn_Msg_Gyr = 0,
+    MavIn_Msg_Att,
+    MavIn_Msg_Alt,
+    MavIn_Msg_RC,
+    MavIn_Msg_MotoCtl,
+    MavIn_Msg_FileAdapter,
+} SrvComProto_MavInMsgType_List;
+
 typedef struct
 {
     uint32_t port_addr;
 
+    void *cus_p_gyr;
+    void *cus_p_att;
+    void *cus_p_alt;
+    void *cus_p_RC;
+    void *cus_p_moto;
+    void *cus_p_FileAdapter;
+
+    SrvComProto_MavMsgIn_Callback MavMsg_Gyr_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_Att_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_Alt_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_RC_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_MotoCtl_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_FileAdapter_Callback;
 } SrvComProto_MsgObj_TypeDef;
 
 typedef struct
@@ -127,6 +151,7 @@ typedef struct
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
     bool (*mav_msg_enable_ctl)(SrvComProto_MsgInfo_TypeDef *msg, bool state);
     bool (*mav_msg_stream)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, void *arg, ComProto_Callback tx_cb);
+    void (*mav_msg_set_input_callback)(SrvComProto_MsgObj_TypeDef *obj, SrvComProto_MavInMsgType_List type, SrvComProto_MavMsgIn_Callback callback, void *p_cus_data);
 } SrvComProto_TypeDef;
 
 extern SrvComProto_TypeDef SrvComProto;

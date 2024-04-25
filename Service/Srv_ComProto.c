@@ -390,76 +390,87 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
 }
 /******************************************* Frame Out ****************************************/
 /******************************************* Frame In  ****************************************/
-static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude(SrvComProto_MsgObj_TypeDef *obj)
+static void SrvComProto_Set_MavMsgIn_Callback(SrvComProto_MsgObj_TypeDef *obj, SrvComProto_MavInMsgType_List type, SrvComProto_MavMsgIn_Callback callback, void *p_cus_data)
 {
-    uint32_t sys_tick = SrvOsCommon.get_os_ms();
-
-    if (obj)
+    if (obj && p_cus_data)
     {
+        switch ((uint8_t)type)
+        {
+            case MavIn_Msg_Gyr:         obj->MavMsg_Gyr_Callback         = callback; obj->cus_p_gyr         = p_cus_data; break;
+            case MavIn_Msg_Att:         obj->MavMsg_Att_Callback         = callback; obj->cus_p_att         = p_cus_data; break;
+            case MavIn_Msg_Alt:         obj->MavMsg_Alt_Callback         = callback; obj->cus_p_alt         = p_cus_data; break;
+            case MavIn_Msg_RC:          obj->MavMsg_RC_Callback          = callback; obj->cus_p_RC          = p_cus_data; break;
+            case MavIn_Msg_MotoCtl:     obj->MavMsg_MotoCtl_Callback     = callback; obj->cus_p_moto        = p_cus_data; break;
+            case MavIn_Msg_FileAdapter: obj->MavMsg_FileAdapter_Callback = callback; obj->cus_p_FileAdapter = p_cus_data; break;
+            default: break;
+        }
+    }
+}
 
+static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+{
+    mavlink_attitude_t msg_att;
+
+    if (obj && obj->MavMsg_Att_Callback && obj->cus_p_att)
+    {
+        memset(&msg_att, 0, sizeof(mavlink_attitude_t));
+        mavlink_msg_attitude_decode(&msg, &msg_att);
+        obj->MavMsg_Att_Callback(&msg_att, obj->cus_p_att);
     }
 
     return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_ExpGyro(SrvComProto_MsgObj_TypeDef *obj)
+static void SrvComProto_MavMsg_Decode_ExpGyro(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
-    uint32_t sys_tick = SrvOsCommon.get_os_ms();
+    mavlink_raw_imu_t msg_imu;
 
-    if (obj)
+    if (obj && obj->MavMsg_Gyr_Callback && obj->cus_p_gyr)
     {
-
+        memset(&msg_imu, 0, sizeof(mavlink_raw_imu_t));
+        mavlink_msg_raw_imu_decode(&msg, &msg_imu);
+        obj->MavMsg_Gyr_Callback(&msg_imu, obj->cus_p_gyr);
     }
-
-    return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_ExpAlt(SrvComProto_MsgObj_TypeDef *obj)
+static void SrvComProto_MavMsg_Decode_ExpAlt(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
-    uint32_t sys_tick = SrvOsCommon.get_os_ms();
+    mavlink_altitude_t msg_alt;
 
-    if (obj)
+    if (obj && obj->MavMsg_Alt_Callback && obj->cus_p_alt)
     {
-
+        memset(&msg_alt, 0, sizeof(mavlink_altitude_t));
+        mavlink_msg_altitude_decode(&msg, &msg_alt);
+        obj->MavMsg_Alt_Callback(&msg_alt, obj->cus_p_alt);
     }
-
-    return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_ExpMoto(SrvComProto_MsgObj_TypeDef *obj)
+static void SrvComProto_MavMsg_Decode_ExpMoto(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
-    uint32_t sys_tick = SrvOsCommon.get_os_ms();
+    mavlink_servo_output_raw_t msg_moto;
 
-    if (obj)
+    if (obj && obj->MavMsg_MotoCtl_Callback && obj->cus_p_moto)
     {
-
+        memset(&msg_moto, 0, sizeof(mavlink_servo_output_raw_t));
+        mavlink_msg_servo_output_raw_decode(&msg, &msg_moto);
+        obj->MavMsg_MotoCtl_Callback(&msg_moto, obj->cus_p_moto);
     }
-
-    return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_ExpRC(SrvComProto_MsgObj_TypeDef *obj)
+static void SrvComProto_MavMsg_Decode_ExpRC(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
-    uint32_t sys_tick = SrvOsCommon.get_os_ms();
-
-    if (obj)
+    if (obj && obj->MavMsg_RC_Callback && obj->cus_p_RC)
     {
 
     }
-
-    return 0;
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *obj, const uint8_t *p_file, uint16_t len)
+static void SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
-    uint32_t sys_tick = SrvOsCommon.get_os_ms();
-
-    if (obj && p_file && len)
+    if (obj && obj->MavMsg_FileAdapter_Callback && obj->cus_p_FileAdapter)
     {
 
     }
-
-    return 0;
 }
 
 /******************************************* Frame In  ****************************************/
@@ -501,14 +512,29 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
                 switch ((uint8_t)mav_msg.msgid)
                 {
                     case MAV_CompoID_Ctl_Gyro:
-                        SrvComProto_MavMsg_Decode_ExpGyro(obj);
+                        SrvComProto_MavMsg_Decode_ExpGyro(obj, mav_msg);
                         break;
 
-                    case MAV_CompoID_Ctl_Attitude: break;
-                    case MAV_CompoID_Ctl_Altitude: break;
-                    case MAV_CompoID_Ctl_RC_Channel: break;
-                    case MAV_CompoID_Ctl_MotoCtl: break;
-                    case MAV_CompoID_Ctl_FileAdapter: break;
+                    case MAV_CompoID_Ctl_Attitude:
+                        SrvComProto_MavMsg_Decode_ExpAttiude(obj, mav_msg);
+                        break;
+                    
+                    case MAV_CompoID_Ctl_Altitude:
+                        SrvComProto_MavMsg_Decode_ExpAlt(obj, mav_msg);
+                        break;
+
+                    case MAV_CompoID_Ctl_RC_Channel:
+                        SrvComProto_MavMsg_Decode_ExpRC(obj, mav_msg);
+                        break;
+                    
+                    case MAV_CompoID_Ctl_MotoCtl:
+                        SrvComProto_MavMsg_Decode_ExpMoto(obj, mav_msg);
+                        break;
+                    
+                    case MAV_CompoID_Ctl_FileAdapter:
+                        SrvComProto_MavMsg_Decode_FileAdapter(obj, mav_msg);
+                        break;
+                    
                     default: break;
                 }
             }
