@@ -459,17 +459,25 @@ static void SrvComProto_MavMsg_Decode_ExpMoto(SrvComProto_MsgObj_TypeDef *obj, c
 
 static void SrvComProto_MavMsg_Decode_ExpRC(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
+    mavlink_rc_channels_t msg_rc;
+
     if (obj && obj->MavMsg_RC_Callback && obj->cus_p_RC)
     {
-
+        memset(&msg_rc, 0, sizeof(mavlink_rc_channels_t));
+        mavlink_msg_rc_channels_decode(&msg, &msg_rc);
+        obj->MavMsg_RC_Callback(&msg_rc, obj->cus_p_RC);
     }
 }
 
 static void SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
+    mavlink_fileadapter_t msg_fileadapter;
+
     if (obj && obj->MavMsg_FileAdapter_Callback && obj->cus_p_FileAdapter)
     {
-
+        memset(&msg_fileadapter, 0, sizeof(mavlink_fileadapter_t));
+        mavlink_msg_fileadapter_decode(&msg, &msg_fileadapter);
+        obj->MavMsg_FileAdapter_Callback(&, obj->cus_p_FileAdapter);
     }
 }
 
