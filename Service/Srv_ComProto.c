@@ -477,7 +477,7 @@ static void SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *ob
     {
         memset(&msg_fileadapter, 0, sizeof(mavlink_fileadapter_t));
         mavlink_msg_fileadapter_decode(&msg, &msg_fileadapter);
-        obj->MavMsg_FileAdapter_Callback(&, obj->cus_p_FileAdapter);
+        obj->MavMsg_FileAdapter_Callback(&msg_fileadapter, obj->cus_p_FileAdapter);
     }
 }
 
