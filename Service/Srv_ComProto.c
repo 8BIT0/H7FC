@@ -154,8 +154,8 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProt
 
             if (tx_cb)
             {
-                msg->proto_cnt ++;
                 tx_cb(arg, com_stream->p_buf, com_stream->size);
+                msg->proto_cnt ++;
                 memset(com_stream->p_buf, 0, com_stream->size);
             }
 
