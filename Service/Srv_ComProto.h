@@ -134,6 +134,13 @@ typedef struct
     void *cus_p_moto;
     void *cus_p_FileAdapter;
 
+    uint32_t Gyr_Cnt;
+    uint32_t Att_Cnt;
+    uint32_t Alt_Cnt;
+    uint32_t RC_Cnt;
+    uint32_t Moto_Cnt;
+    uint32_t FileAdapter_Cnt;
+
     SrvComProto_MavMsgIn_Callback MavMsg_Gyr_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_Att_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_Alt_Callback;

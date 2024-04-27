@@ -293,7 +293,7 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
         rx_dma.peripheral_base_addr = (uint32_t)&(To_Uart_Instance(obj->instance)->dt);
         rx_dma.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_BYTE;
         rx_dma.peripheral_inc_enable = FALSE;
-        rx_dma.priority = DMA_PRIORITY_MEDIUM;
+        rx_dma.priority = DMA_PRIORITY_HIGH;
         rx_dma.loop_mode_enable = FALSE;
 
         BspUart_RxDMA_IrqObj[index].BspDMA_Irq_Callback_Func = BspUart_DMA_RxCplt_Callback;
@@ -321,7 +321,7 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
         tx_dma.peripheral_base_addr = (uint32_t)&(To_Uart_Instance(obj->instance)->dt);
         tx_dma.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_BYTE;
         tx_dma.peripheral_inc_enable = FALSE;
-        tx_dma.priority = DMA_PRIORITY_MEDIUM;
+        tx_dma.priority = DMA_PRIORITY_HIGH;
         tx_dma.loop_mode_enable = FALSE;
 
         BspUart_TxDMA_IrqObj[index].BspDMA_Irq_Callback_Func = BspUart_DMA_TxCplt_Callback;

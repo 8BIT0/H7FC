@@ -90,6 +90,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     /* set mavlink data structure value set function */
     switch ((uint8_t)pck_info.component_id)
     {
+    case MAV_CompoID_Ctl_Attitude:
     case MAV_CompoID_Attitude:
         msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Attitude);
         break;
@@ -155,6 +156,7 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProt
             {
                 msg->proto_cnt ++;
                 tx_cb(arg, com_stream->p_buf, com_stream->size);
+                memset(com_stream->p_buf, 0, com_stream->size);
             }
 
             msg->proto_time = sys_time;
@@ -488,8 +490,8 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
     uint8_t default_channel = 0;
     mavlink_message_t mav_msg;
     mavlink_status_t mav_sta;
-    uint8_t mav_decode = 0;
-
+    volatile uint8_t mav_decode = 0;
+    
     memset(&stream_in, 0, sizeof(SrvComProto_Msg_StreamIn_TypeDef));
 
     /* match cli */
@@ -517,7 +519,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
             /* only decode first pack */
             if (obj && (mav_msg.sysid == MAV_SysID_Radio))
             {
-                switch ((uint8_t)mav_msg.msgid)
+                switch ((uint8_t)mav_msg.compid)
                 {
                     case MAV_CompoID_Ctl_Gyro:
                         SrvComProto_MavMsg_Decode_ExpGyro(obj, mav_msg);
@@ -546,20 +548,25 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
                     default: break;
                 }
             }
+            
+            memset(&mav_msg, 0, sizeof(mavlink_message_t));
+            memset(&mav_sta, 0, sizeof(mavlink_status_t));
+        }
+        else if (mav_decode == MAVLINK_FRAMING_BAD_CRC)
+        {
+            if (mav_msg.sysid == MAV_SysID_Radio)
+                test_2 ++;
 
-            break;
+            memset(&mav_msg, 0, sizeof(mavlink_message_t));
+            memset(&mav_sta, 0, sizeof(mavlink_status_t));
         }
     }
 
-    if (mav_decode)
-    {
-        stream_in.pac_type = ComFrame_MavMsg;
-        stream_in.valid = true;
-        stream_in.size = size;
-        stream_in.p_buf = p_data;
-    }
-
     /* custom frame input check */
+    stream_in.pac_type = ComFrame_MavMsg;
+    stream_in.valid = true;
+    stream_in.size = size;
+    stream_in.p_buf = p_data;
 
 input_stream_valid:
     return stream_in;
