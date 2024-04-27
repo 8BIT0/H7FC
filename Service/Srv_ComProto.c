@@ -554,9 +554,6 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
         }
         else if (mav_decode == MAVLINK_FRAMING_BAD_CRC)
         {
-            if (mav_msg.sysid == MAV_SysID_Radio)
-                test_2 ++;
-
             memset(&mav_msg, 0, sizeof(mavlink_message_t));
             memset(&mav_sta, 0, sizeof(mavlink_status_t));
         }
