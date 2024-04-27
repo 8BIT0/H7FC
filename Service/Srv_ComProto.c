@@ -413,11 +413,15 @@ static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude(SrvComProto_MsgObj_TypeDef 
 {
     mavlink_attitude_t msg_att;
 
-    if (obj && obj->MavMsg_Att_Callback && obj->cus_p_att)
+    if (obj)
     {
+        obj->Att_Cnt ++;
+
         memset(&msg_att, 0, sizeof(mavlink_attitude_t));
         mavlink_msg_attitude_decode(&msg, &msg_att);
-        obj->MavMsg_Att_Callback(&msg_att, obj->cus_p_att);
+
+        if (obj->MavMsg_Att_Callback && obj->cus_p_att)
+            obj->MavMsg_Att_Callback(&msg_att, obj->cus_p_att);
     }
 
     return 0;
@@ -427,11 +431,15 @@ static void SrvComProto_MavMsg_Decode_ExpGyro(SrvComProto_MsgObj_TypeDef *obj, c
 {
     mavlink_raw_imu_t msg_imu;
 
-    if (obj && obj->MavMsg_Gyr_Callback && obj->cus_p_gyr)
+    if (obj)
     {
+        obj->Gyr_Cnt ++;
+
         memset(&msg_imu, 0, sizeof(mavlink_raw_imu_t));
         mavlink_msg_raw_imu_decode(&msg, &msg_imu);
-        obj->MavMsg_Gyr_Callback(&msg_imu, obj->cus_p_gyr);
+
+        if (obj->MavMsg_Gyr_Callback && obj->cus_p_gyr)
+            obj->MavMsg_Gyr_Callback(&msg_imu, obj->cus_p_gyr);
     }
 }
 
@@ -439,11 +447,15 @@ static void SrvComProto_MavMsg_Decode_ExpAlt(SrvComProto_MsgObj_TypeDef *obj, co
 {
     mavlink_altitude_t msg_alt;
 
-    if (obj && obj->MavMsg_Alt_Callback && obj->cus_p_alt)
+    if (obj)
     {
+        obj->Alt_Cnt ++;
+
         memset(&msg_alt, 0, sizeof(mavlink_altitude_t));
         mavlink_msg_altitude_decode(&msg, &msg_alt);
-        obj->MavMsg_Alt_Callback(&msg_alt, obj->cus_p_alt);
+
+        if (obj->MavMsg_Alt_Callback && obj->cus_p_alt)
+            obj->MavMsg_Alt_Callback(&msg_alt, obj->cus_p_alt);
     }
 }
 
@@ -451,11 +463,15 @@ static void SrvComProto_MavMsg_Decode_ExpMoto(SrvComProto_MsgObj_TypeDef *obj, c
 {
     mavlink_servo_output_raw_t msg_moto;
 
-    if (obj && obj->MavMsg_MotoCtl_Callback && obj->cus_p_moto)
+    if (obj)
     {
+        obj->Moto_Cnt ++;
+
         memset(&msg_moto, 0, sizeof(mavlink_servo_output_raw_t));
         mavlink_msg_servo_output_raw_decode(&msg, &msg_moto);
-        obj->MavMsg_MotoCtl_Callback(&msg_moto, obj->cus_p_moto);
+
+        if (obj->MavMsg_MotoCtl_Callback && obj->cus_p_moto)
+            obj->MavMsg_MotoCtl_Callback(&msg_moto, obj->cus_p_moto);
     }
 }
 
@@ -463,11 +479,15 @@ static void SrvComProto_MavMsg_Decode_ExpRC(SrvComProto_MsgObj_TypeDef *obj, con
 {
     mavlink_rc_channels_t msg_rc;
 
-    if (obj && obj->MavMsg_RC_Callback && obj->cus_p_RC)
+    if (obj)
     {
+        obj->RC_Cnt ++;
+
         memset(&msg_rc, 0, sizeof(mavlink_rc_channels_t));
         mavlink_msg_rc_channels_decode(&msg, &msg_rc);
-        obj->MavMsg_RC_Callback(&msg_rc, obj->cus_p_RC);
+
+        if (obj->MavMsg_RC_Callback && obj->cus_p_RC)
+            obj->MavMsg_RC_Callback(&msg_rc, obj->cus_p_RC);
     }
 }
 
@@ -475,11 +495,15 @@ static void SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *ob
 {
     mavlink_fileadapter_t msg_fileadapter;
 
-    if (obj && obj->MavMsg_FileAdapter_Callback && obj->cus_p_FileAdapter)
+    if (obj)
     {
+        obj->FileAdapter_Cnt ++;
+
         memset(&msg_fileadapter, 0, sizeof(mavlink_fileadapter_t));
         mavlink_msg_fileadapter_decode(&msg, &msg_fileadapter);
-        obj->MavMsg_FileAdapter_Callback(&msg_fileadapter, obj->cus_p_FileAdapter);
+
+        if (obj->MavMsg_FileAdapter_Callback && obj->cus_p_FileAdapter)
+            obj->MavMsg_FileAdapter_Callback(&msg_fileadapter, obj->cus_p_FileAdapter);
     }
 }
 
