@@ -154,6 +154,12 @@ typedef struct
     void *cus_p_RC;
     void *cus_p_moto;
     void *cus_p_FileAdapter;
+    void *cus_p_pidpara_gyrox;
+    void *cus_p_pidpara_gyroy;
+    void *cus_p_pidpara_gyroz;
+    void *cus_p_pidpara_roll;
+    void *cus_p_pidpara_pitch;
+    void *cus_p_paraoperation;
 
     uint32_t Gyr_Cnt;
     uint32_t Att_Cnt;
