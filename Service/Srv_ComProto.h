@@ -31,6 +31,14 @@ typedef enum
 
 typedef enum
 {
+    MAV_ParamOperation_Read = 0,
+    MAV_ParamOperation_Write,
+    MAV_ParamOperation_Clear,
+    MAV_ParamOperation_ToDefault,
+} SrvComProto_ParaOperationType_List;
+
+typedef enum
+{
     /* output from drone */
     MAV_CompoID_Raw_IMU = 1,
     MAV_CompoID_Scaled_IMU,
@@ -50,6 +58,13 @@ typedef enum
     MAV_CompoID_Ctl_RC_Channel,
     MAV_CompoID_Ctl_MotoCtl,
     MAV_CompoID_Ctl_FileAdapter,
+
+    // MAV_CompoID_Ctl_PIDPara_GyrX  = ,
+    // MAV_CompoID_Ctl_PIDPara_GyrY  = ,
+    // MAV_CompoID_Ctl_PIDPara_GyrZ  = ,
+    // MAV_CompoID_Ctl_PIDPara_Roll  = ,
+    // MAV_CompoID_Ctl_PIDPata_Pitch = ,
+    // MAV_CompoID_Ctl_ParaOperation = ,
 } SrvComProto_ComponentID_List;
 
 typedef enum
