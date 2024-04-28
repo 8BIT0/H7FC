@@ -664,7 +664,31 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
                     case MAV_CompoID_Ctl_FileAdapter:
                         SrvComProto_MavMsg_Decode_FileAdapter(obj, mav_msg);
                         break;
+
+                    case MAV_CompoID_Ctl_ParaOperation:
+                        SrvComProto_MavMsg_Decode_ParamOperation(obj, mav_msg);
+                        break;
                     
+                    case MAV_CompoID_Ctl_PIDPara_GyrX:
+                        SrvComProto_MavMsg_Decode_PIDPara_GyroX(obj, mav_msg);
+                        break;
+                    
+                    case MAV_CompoID_Ctl_PIDPara_GyrY:
+                        SrvComProto_MavMsg_Decode_PIDPara_GyroY(obj, mav_msg);
+                        break;
+                    
+                    case MAV_CompoID_Ctl_PIDPara_GyrZ:
+                        SrvComProto_MavMsg_Decode_PIDPara_GyroZ(obj, mav_msg);
+                        break;
+                    
+                    case MAV_CompoID_Ctl_PIDPara_Roll:
+                        SrvComProto_MavMsg_Decode_PIDPara_Roll(obj, mav_msg);
+                        break;
+                    
+                    case MAV_CompoID_Ctl_PIDPata_Pitch:
+                        SrvComProto_MavMsg_Decode_PIDPara_Pitch(obj, mav_msg);
+                        break;
+
                     default: break;
                 }
             }
