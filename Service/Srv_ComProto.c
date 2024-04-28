@@ -507,6 +507,54 @@ static void SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *ob
     }
 }
 
+static void SrvComProto_MavMsg_Decode_PIDPara_GyroX(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+{
+    if (obj)
+    {
+        obj->PID_Para_GyrX_Cnt ++;
+    }
+}
+
+static void SrvComProto_MavMsg_Decode_PIDPara_GyroY(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+{
+    if (obj)
+    {
+        obj->PID_Para_GyrY_Cnt ++;
+    }
+}
+
+static void SrvComProto_MavMsg_Decode_PIDPara_GyroZ(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+{
+    if (obj)
+    {
+        obj->PID_Para_GyrZ_Cnt ++;
+    }
+}
+
+static void SrvComProto_MavMsg_Decode_PIDPara_Roll(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+{
+    if (obj)
+    {
+        obj->PID_Para_Roll_Cnt ++;
+    }
+}
+
+static void SrvComProto_MavMsg_Decode_PIDPara_Pitch(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+{
+    if (obj)
+    {
+        obj->PID_Para_Pitch_Cnt ++;
+    }
+}
+
+static void SrvComProto_MavMsg_Decode_ParamOperation(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+{
+    if (obj)
+    {
+        obj->Para_Operation_Cnt ++;
+    }
+}
+
 /******************************************* Frame In  ****************************************/
 static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvComProto_MsgObj_TypeDef *obj, uint8_t *p_data, uint16_t size)
 {

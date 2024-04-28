@@ -121,6 +121,12 @@ typedef enum
     MavIn_Msg_RC,
     MavIn_Msg_MotoCtl,
     MavIn_Msg_FileAdapter,
+    MavIn_Msg_PID_Para_GyrX,
+    MavIn_Msg_PID_Para_GyrY,
+    MavIn_Msg_PID_Para_GyrZ,
+    MavIn_Msg_PID_Para_Roll,
+    MavIn_Msg_PID_Para_Pitch,
+    MavIn_Msg_PID_Para_Operation,
 } SrvComProto_MavInMsgType_List;
 
 typedef struct
@@ -140,6 +146,12 @@ typedef struct
     uint32_t RC_Cnt;
     uint32_t Moto_Cnt;
     uint32_t FileAdapter_Cnt;
+    uint32_t PID_Para_GyrX_Cnt;
+    uint32_t PID_Para_GyrY_Cnt;
+    uint32_t PID_Para_GyrZ_Cnt;
+    uint32_t PID_Para_Roll_Cnt;
+    uint32_t PID_Para_Pitch_Cnt;
+    uint32_t Para_Operation_Cnt;
 
     SrvComProto_MavMsgIn_Callback MavMsg_Gyr_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_Att_Callback;
