@@ -7637,17 +7637,70 @@
       <field type="int16_t" name="temperature" units="cdegC">Temperature</field>
       <field type="uint16_t" name="humidity" units="c%">Humidity</field>
     </message>
+    <message id="214" name="Para_Operation">
+      <description>Param Save Confirm</description>
+      <field type="uint16_t" name="Sys_ID">System ID</field>
+      <field type="uint16_t" name="Comp_ID">Component ID</field>
+      <field type="uint16_t" name="type_index">Parameter Type</field>
+      <field type="uint8_t" name="opr_type">Parameter Operation Type</field>
+    </message>
+    <message id="215" name="Para_GyroX_PID">
+      <description>Gyro X PID Param</description>
+      <field type="float" name="gain_p" invalid="0"> Gain P </field>
+      <field type="float" name="p_diff_max" invalid="0"> P Diff Max </field>
+      <field type="float" name="p_diff_min" invalid="0"> P Diff Min </field>
+      <field type="float" name="gain_I" invalid="0"> Gain I </field>
+      <field type="float" name="I_Max" invalid="0"> I Max </field>
+      <field type="float" name="I_Min" invalid="0"> I Min </field>
+      <field type="float" name="gain_D" invalid="0"> Gain D </field>
+    </message>
+    <message id="216" name="Para_GyroY_PID">
+      <description>Gyro Y PID Param</description>
+      <field type="float" name="gain_p" invalid="0"> Gain P </field>
+      <field type="float" name="p_diff_max" invalid="0"> P Diff Max </field>
+      <field type="float" name="p_diff_min" invalid="0"> P Diff Min </field>
+      <field type="float" name="gain_I" invalid="0"> Gain I </field>
+      <field type="float" name="I_Max" invalid="0"> I Max </field>
+      <field type="float" name="I_Min" invalid="0"> I Min </field>
+      <field type="float" name="gain_D" invalid="0"> Gain D </field>
+    </message>
+    <message id="217" name="Para_GyroZ_PID">
+      <description>Gyro Z PID Param</description>
+      <field type="float" name="gain_p" invalid="0"> Gain P </field>
+      <field type="float" name="p_diff_max" invalid="0"> P Diff Max </field>
+      <field type="float" name="p_diff_min" invalid="0"> P Diff Min </field>
+      <field type="float" name="gain_I" invalid="0"> Gain I </field>
+      <field type="float" name="I_Max" invalid="0"> I Max </field>
+      <field type="float" name="I_Min" invalid="0"> I Min </field>
+      <field type="float" name="gain_D" invalid="0"> Gain D </field>
+    </message>
+    <message id="218" name="Para_Roll_PID">
+      <description>Gyro Roll PID Param</description>
+      <field type="float" name="gain_p" invalid="0"> Gain P </field>
+      <field type="float" name="p_diff_max" invalid="0"> P Diff Max </field>
+      <field type="float" name="p_diff_min" invalid="0"> P Diff Min </field>
+      <field type="float" name="gain_I" invalid="0"> Gain I </field>
+      <field type="float" name="I_Max" invalid="0"> I Max </field>
+      <field type="float" name="I_Min" invalid="0"> I Min </field>
+      <field type="float" name="gain_D" invalid="0"> Gain D </field>
+    </message>
+    <message id="219" name="Para_Pitch_PID">
+      <description>Gyro Pitch PID Param</description>
+      <field type="float" name="gain_p" invalid="0"> Gain P </field>
+      <field type="float" name="p_diff_max" invalid="0"> P Diff Max </field>
+      <field type="float" name="p_diff_min" invalid="0"> P Diff Min </field>
+      <field type="float" name="gain_I" invalid="0"> Gain I </field>
+      <field type="float" name="I_Max" invalid="0"> I Max </field>
+      <field type="float" name="I_Min" invalid="0"> I Min </field>
+      <field type="float" name="gain_D" invalid="0"> Gain D </field>
+    </message>
     <message id="220" name="FileAdapter">
       <description>File Adapter</description>
       <field type="uint8_t" name="FrameType" enum="FileAdapter_Frame_TYPE">frame type</field>
       <field type="uint8_t" name="Version">version id</field>
       <field type="uint8_t" name="DataType">data type</field>
       <field type="uint16_t" name="total_size">total size</field>
-      <field type="uint16_t" name="pack_size">pack size</field>
-      <field type="uint8_t" name="segment_size">segment size</field>
-      <field type="uint16_t" name="pack_id">pack id</field>
-      <field type="uint8_t" name="pack_segment_id">pack segment id</field>
-      <field type="uint8_t[245]" name="Payload">payload</field>
+      <field type="uint16_t" name="pack_num">pack size</field>
     </message>
   </messages>
 </mavlink>
