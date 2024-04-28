@@ -174,6 +174,12 @@ typedef struct
     SrvComProto_MavMsgIn_Callback MavMsg_RC_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_MotoCtl_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_FileAdapter_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_PIDPara_GyroX_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_PIDPara_GyroY_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_PIDPara_GyroZ_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_PIDPara_Roll_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_PIDPara_Pitch_Callback;
+    SrvComProto_MavMsgIn_Callback MavMsg_ParamOperation_Callback;
 } SrvComProto_MsgObj_TypeDef;
 
 typedef struct
