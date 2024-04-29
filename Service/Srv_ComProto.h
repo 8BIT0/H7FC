@@ -59,12 +59,12 @@ typedef enum
     MAV_CompoID_Ctl_MotoCtl,
     MAV_CompoID_Ctl_FileAdapter,
 
-    MAV_CompoID_Ctl_ParaOperation = 214,
-    MAV_CompoID_Ctl_PIDPara_GyrX  = 215,
-    MAV_CompoID_Ctl_PIDPara_GyrY  = 216,
-    MAV_CompoID_Ctl_PIDPara_GyrZ  = 217,
-    MAV_CompoID_Ctl_PIDPara_Roll  = 218,
-    MAV_CompoID_Ctl_PIDPata_Pitch = 219,
+    MAV_CompoID_Ctl_ParaOperation,
+    MAV_CompoID_Ctl_PIDPara_GyrX,
+    MAV_CompoID_Ctl_PIDPara_GyrY,
+    MAV_CompoID_Ctl_PIDPara_GyrZ,
+    MAV_CompoID_Ctl_PIDPara_Roll,
+    MAV_CompoID_Ctl_PIDPata_Pitch,
 } SrvComProto_ComponentID_List;
 
 typedef enum
