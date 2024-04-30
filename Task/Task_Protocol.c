@@ -51,7 +51,23 @@ static FrameCTL_UartPortMonitor_TypeDef Radio_UartPort_List[RADIO_UART_NUM] = {
 static FrameCTL_CanPortMonitor_TypeDef Radio_CANPort_List[RADIO_CAN_NUM];
 #endif
 
+typedef struct
+{
+    FrameCTL_MavATTIn_TypeDef exp_att;
+    FrameCTL_MavGyrIn_TypeDef exp_gyr;
+    FrameCTL_MavAltIn_TypeDef exp_alt;
+    
+    FrameCTL_MavPIDIn_TypeDef pid_roll;
+    FrameCTL_MavPIDIn_TypeDef pid_pitch;
+
+    FrameCTL_MavPIDIn_TypeDef pid_gyr_x;
+    FrameCTL_MavPIDIn_TypeDef pid_gyr_y;
+    FrameCTL_MavPIDIn_TypeDef pid_gyr_z;
+} FrameCTL_MavTunningMonitor_TypeDef;
+
 /* internal variable */
+FrameCTL_MavTunningMonitor_TypeDef InPut_MavData;
+
 /* MAVLink message List */
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_RawIMU;
 SrvComProto_MsgInfo_TypeDef TaskProto_MAV_ScaledIMU;
@@ -134,9 +150,8 @@ static void TaskFrame_Mav_PID_Roll_Callback(void const *mav_data, void *cus_data
 static void TaskFrame_Mav_PID_Pitch_Callback(void const *mav_data, void *cus_data);
 static void TaskFrame_Mav_PID_GyrX_Callback(void const *mav_data, void *cus_data);
 static void TaskFrame_Mav_PID_GyrY_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_Mav_PID_GyrZ_Callback(void const *mav_data, void *cus_data);
 
-
-static void TaskFrame_PID_GyrZ_Callback(void const *mav_data, void *cus_data)
 /* default vcp port section */
 static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor);
 static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor);
@@ -158,6 +173,9 @@ void TaskFrameCTL_Init(uint32_t period)
     memset(&PortMonitor, 0, sizeof(PortMonitor));
     memset(&DefaultPort_MavMsgInput_Obj, 0, sizeof(SrvComProto_MsgObj_TypeDef));
     memset(&RadioPort_MavMsgInput_Obj, 0, sizeof(SrvComProto_MsgObj_TypeDef));
+
+    /* param init */
+    memset(&InPut_MavData, 0, sizeof(FrameCTL_MavTunningMonitor_TypeDef));
 
     TaskFrameCTL_DefaultPort_Init(&PortMonitor);
     TaskFrameCTL_RadioPort_Init(&PortMonitor);
@@ -627,22 +645,22 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
         /* create mavlink input message object */
         /* default(VCP) port */
         /* when VCP port is been attached only can do parameter tunning function */
-        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Roll_Callback);
-        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Pitch_Callback);
-        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrX_Callback);
-        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrY_Callback);
-        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrZ_Callback);
+        SrvComProto.mav_msg_set_input_callback(&DefaultPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_Roll,  TaskFrame_Mav_PID_Roll_Callback,  &InPut_MavData.pid_roll);
+        SrvComProto.mav_msg_set_input_callback(&DefaultPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_Pitch, TaskFrame_Mav_PID_Pitch_Callback, &InPut_MavData.pid_pitch);
+        SrvComProto.mav_msg_set_input_callback(&DefaultPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_GyrX,  TaskFrame_Mav_PID_GyrX_Callback,  &InPut_MavData.pid_gyr_x);
+        SrvComProto.mav_msg_set_input_callback(&DefaultPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_GyrY,  TaskFrame_Mav_PID_GyrY_Callback,  &InPut_MavData.pid_gyr_y);
+        SrvComProto.mav_msg_set_input_callback(&DefaultPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_GyrZ,  TaskFrame_Mav_PID_GyrZ_Callback,  &InPut_MavData.pid_gyr_z);
 
         /* radio port */
         /* radio control mode can be used */
-        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAtt_Callback);
-        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_ExpGyro_Callback);
-        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAlt_Callback);
-        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Roll_Callback);
-        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Pitch_Callback);
-        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrX_Callback);
-        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrY_Callback);
-        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrZ_Callback);
+        SrvComProto.mav_msg_set_input_callback(&RadioPort_MavMsgInput_Obj, MavIn_Msg_Att,            TaskFrame_Mav_ExpAtt_Callback,    &InPut_MavData.exp_att);
+        SrvComProto.mav_msg_set_input_callback(&RadioPort_MavMsgInput_Obj, MavIn_Msg_Gyr,            TaskFrame_Mav_ExpGyro_Callback,   &InPut_MavData.exp_gyr);
+        SrvComProto.mav_msg_set_input_callback(&RadioPort_MavMsgInput_Obj, MavIn_Msg_Alt,            TaskFrame_Mav_ExpAlt_Callback,    &InPut_MavData.exp_alt);
+        SrvComProto.mav_msg_set_input_callback(&RadioPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_Roll,  TaskFrame_Mav_PID_Roll_Callback,  &InPut_MavData.pid_roll);
+        SrvComProto.mav_msg_set_input_callback(&RadioPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_Pitch, TaskFrame_Mav_PID_Pitch_Callback, &InPut_MavData.pid_pitch);
+        SrvComProto.mav_msg_set_input_callback(&RadioPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_GyrX,  TaskFrame_Mav_PID_GyrX_Callback,  &InPut_MavData.pid_gyr_x);
+        SrvComProto.mav_msg_set_input_callback(&RadioPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_GyrY,  TaskFrame_Mav_PID_GyrY_Callback,  &InPut_MavData.pid_gyr_y);
+        SrvComProto.mav_msg_set_input_callback(&RadioPort_MavMsgInput_Obj, MavIn_Msg_PID_Para_GyrZ,  TaskFrame_Mav_PID_GyrZ_Callback,  &InPut_MavData.pid_gyr_z);
         return true;
     }
 

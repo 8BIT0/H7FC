@@ -100,6 +100,40 @@ typedef struct
 
 typedef struct
 {
+    float exp_roll;
+    float exp_pitch;
+    float exp_heading;
+    float exp_gyrz;
+} FrameCTL_MavATTIn_TypeDef;
+
+typedef struct
+{
+    float exp_x;
+    float exp_y;
+    float exp_z;
+} FrameCTL_MavGyrIn_TypeDef;
+
+typedef struct
+{
+    float alt;
+    float pa;
+} FrameCTL_MavAltIn_TypeDef;
+
+typedef struct
+{
+    float p;
+    float p_diff_max;
+    float p_diff_min;
+
+    float i;
+    float i_max;
+    float i_min;
+
+    float d;
+} FrameCTL_MavPIDIn_TypeDef;
+
+typedef struct
+{
     bool init;
     bool vcp_connect_state;
     uint8_t uart_port_num;
