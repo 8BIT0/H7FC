@@ -626,15 +626,15 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
 
         /* create mavlink input message object */
         /* default(VCP) port */
-        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAtt_Callback);
-        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_ExpGyro_Callback);
-        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAlt_Callback);
+        /* when VCP port is been attached only can do parameter tunning function */
         SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Roll_Callback);
         SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Pitch_Callback);
         SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrX_Callback);
         SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrY_Callback);
+        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrZ_Callback);
 
         /* radio port */
+        /* radio control mode can be used */
         SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAtt_Callback);
         SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_ExpGyro_Callback);
         SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAlt_Callback);
@@ -642,6 +642,7 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
         SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Pitch_Callback);
         SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrX_Callback);
         SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrY_Callback);
+        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrZ_Callback);
         return true;
     }
 
