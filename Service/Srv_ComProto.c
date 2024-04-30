@@ -392,6 +392,14 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
 }
 /******************************************* Frame Out ****************************************/
 /******************************************* Frame In  ****************************************/
+static void SrvComProto_MavMsg_Ack(SrvComProto_MsgObj_TypeDef *obj, uint16_t sys_id, uint16_t compo_id, bool state)
+{
+    if (obj)
+    {
+
+    }
+}
+
 static void SrvComProto_Set_MavMsgIn_Callback(SrvComProto_MsgObj_TypeDef *obj, SrvComProto_MavInMsgType_List type, SrvComProto_MavMsgIn_Callback callback, void *p_cus_data)
 {
     if (obj && p_cus_data)
@@ -717,6 +725,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
             }
             
             /* mavlink frame ack */
+            // SrvComProto_MavMsg_Ack(obj, uint16_t sys_id, uint16_t compo_id, decode_state);
 
             memset(&mav_msg, 0, sizeof(mavlink_message_t));
             memset(&mav_sta, 0, sizeof(mavlink_status_t));
