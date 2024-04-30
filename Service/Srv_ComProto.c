@@ -420,7 +420,7 @@ static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude(SrvComProto_MsgObj_TypeDef 
         memset(&msg_att, 0, sizeof(mavlink_attitude_t));
         mavlink_msg_attitude_decode(&msg, &msg_att);
 
-        if (obj->MavMsg_Att_Callback && obj->cus_p_att)
+        if (obj->MavMsg_Att_Callback)
             obj->MavMsg_Att_Callback(&msg_att, obj->cus_p_att);
     }
 
@@ -438,7 +438,7 @@ static void SrvComProto_MavMsg_Decode_ExpGyro(SrvComProto_MsgObj_TypeDef *obj, c
         memset(&msg_imu, 0, sizeof(mavlink_raw_imu_t));
         mavlink_msg_raw_imu_decode(&msg, &msg_imu);
 
-        if (obj->MavMsg_Gyr_Callback && obj->cus_p_gyr)
+        if (obj->MavMsg_Gyr_Callback)
             obj->MavMsg_Gyr_Callback(&msg_imu, obj->cus_p_gyr);
     }
 }
@@ -454,7 +454,7 @@ static void SrvComProto_MavMsg_Decode_ExpAlt(SrvComProto_MsgObj_TypeDef *obj, co
         memset(&msg_alt, 0, sizeof(mavlink_altitude_t));
         mavlink_msg_altitude_decode(&msg, &msg_alt);
 
-        if (obj->MavMsg_Alt_Callback && obj->cus_p_alt)
+        if (obj->MavMsg_Alt_Callback)
             obj->MavMsg_Alt_Callback(&msg_alt, obj->cus_p_alt);
     }
 }
@@ -470,7 +470,7 @@ static void SrvComProto_MavMsg_Decode_ExpMoto(SrvComProto_MsgObj_TypeDef *obj, c
         memset(&msg_moto, 0, sizeof(mavlink_servo_output_raw_t));
         mavlink_msg_servo_output_raw_decode(&msg, &msg_moto);
 
-        if (obj->MavMsg_MotoCtl_Callback && obj->cus_p_moto)
+        if (obj->MavMsg_MotoCtl_Callback)
             obj->MavMsg_MotoCtl_Callback(&msg_moto, obj->cus_p_moto);
     }
 }
@@ -486,7 +486,7 @@ static void SrvComProto_MavMsg_Decode_ExpRC(SrvComProto_MsgObj_TypeDef *obj, con
         memset(&msg_rc, 0, sizeof(mavlink_rc_channels_t));
         mavlink_msg_rc_channels_decode(&msg, &msg_rc);
 
-        if (obj->MavMsg_RC_Callback && obj->cus_p_RC)
+        if (obj->MavMsg_RC_Callback)
             obj->MavMsg_RC_Callback(&msg_rc, obj->cus_p_RC);
     }
 }
@@ -502,7 +502,7 @@ static void SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *ob
         memset(&msg_fileadapter, 0, sizeof(mavlink_fileadapter_t));
         mavlink_msg_fileadapter_decode(&msg, &msg_fileadapter);
 
-        if (obj->MavMsg_FileAdapter_Callback && obj->cus_p_FileAdapter)
+        if (obj->MavMsg_FileAdapter_Callback)
             obj->MavMsg_FileAdapter_Callback(&msg_fileadapter, obj->cus_p_FileAdapter);
     }
 }
@@ -518,7 +518,7 @@ static void SrvComProto_MavMsg_Decode_PIDPara_GyroX(SrvComProto_MsgObj_TypeDef *
         memset(&msg_pid_para_gyrox, 0, sizeof(mavlink_para_gyrox_pid_t));
         mavlink_msg_para_gyrox_pid_decode(&msg, &msg_pid_para_gyrox);
     
-        if (obj->MavMsg_PIDPara_GyroX_Callback && obj->cus_p_pidpara_gyrox)
+        if (obj->MavMsg_PIDPara_GyroX_Callback)
             obj->MavMsg_PIDPara_GyroX_Callback(&msg_pid_para_gyrox, obj->cus_p_pidpara_gyrox);
     }
 }
@@ -534,7 +534,7 @@ static void SrvComProto_MavMsg_Decode_PIDPara_GyroY(SrvComProto_MsgObj_TypeDef *
         memset(&msg_pid_para_gyroy, 0, sizeof(mavlink_para_gyroy_pid_t));
         mavlink_msg_para_gyroy_pid_decode(&msg, &msg_pid_para_gyroy);
     
-        if (obj->MavMsg_PIDPara_GyroY_Callback && obj->cus_p_pidpara_gyroy)
+        if (obj->MavMsg_PIDPara_GyroY_Callback)
             obj->MavMsg_PIDPara_GyroY_Callback(&msg_pid_para_gyroy, obj->cus_p_pidpara_gyroy);
     }
 }
@@ -550,7 +550,7 @@ static void SrvComProto_MavMsg_Decode_PIDPara_GyroZ(SrvComProto_MsgObj_TypeDef *
         memset(&msg_pid_para_gyroz, 0, sizeof(mavlink_para_gyroz_pid_t));
         mavlink_msg_para_gyroz_pid_decode(&msg, &msg_pid_para_gyroz);
 
-        if (obj->MavMsg_PIDPara_GyroZ_Callback && obj->cus_p_pidpara_gyroz)
+        if (obj->MavMsg_PIDPara_GyroZ_Callback)
             obj->MavMsg_PIDPara_GyroZ_Callback(&msg_pid_para_gyroz, obj->cus_p_pidpara_gyroz);
     }
 }
@@ -566,7 +566,7 @@ static void SrvComProto_MavMsg_Decode_PIDPara_Roll(SrvComProto_MsgObj_TypeDef *o
         memset(&msg_pid_para_roll, 0, sizeof(mavlink_para_roll_pid_t));
         mavlink_msg_para_roll_pid_decode(&msg, &msg_pid_para_roll);
     
-        if (obj->MavMsg_PIDPara_Roll_Callback && obj->cus_p_pidpara_roll)
+        if (obj->MavMsg_PIDPara_Roll_Callback)
             obj->MavMsg_PIDPara_Roll_Callback(&msg_pid_para_roll, obj->cus_p_pidpara_roll);
     }
 }
@@ -582,7 +582,7 @@ static void SrvComProto_MavMsg_Decode_PIDPara_Pitch(SrvComProto_MsgObj_TypeDef *
         memset(&msg_pid_para_pitch, 0, sizeof(mavlink_para_pitch_pid_t));
         mavlink_msg_para_pitch_pid_decode(&msg, &msg_pid_para_pitch);
 
-        if (obj->MavMsg_PIDPara_Pitch_Callback && obj->cus_p_pidpara_pitch)
+        if (obj->MavMsg_PIDPara_Pitch_Callback)
             obj->MavMsg_PIDPara_Pitch_Callback(&msg_pid_para_pitch, obj->cus_p_pidpara_pitch);
     }
 }
@@ -598,7 +598,7 @@ static void SrvComProto_MavMsg_Decode_ParamOperation(SrvComProto_MsgObj_TypeDef 
         memset(&msg_para_operation, 0, sizeof(mavlink_para_operation_t));
         mavlink_msg_para_operation_decode(&msg, &msg_para_operation);
     
-        if (obj->MavMsg_ParamOperation_Callback && obj->cus_p_paraoperation)
+        if (obj->MavMsg_ParamOperation_Callback)
             obj->MavMsg_ParamOperation_Callback(&msg_para_operation, obj->cus_p_paraoperation);
     }
 }

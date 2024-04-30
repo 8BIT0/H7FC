@@ -125,6 +125,17 @@ static FrameCTL_CLIMonitor_TypeDef CLI_Monitor = {
 static void TaskFrameCTL_PortFrameOut_Process(void);
 static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_data, uint16_t size);
 
+/* mavlinke frame decode callback */
+static void TaskFrame_ExpAtt_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_ExpGyro_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_ExpAlt_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_PID_Roll_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_PID_Pitch_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_PID_GyrX_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_PID_GyrY_Callback(void const *mav_data, void *cus_data);
+
+
+static void TaskFrame_PID_GyrZ_Callback(void const *mav_data, void *cus_data)
 /* default vcp port section */
 static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor);
 static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor);
@@ -752,6 +763,46 @@ static void TaskFrameCTL_ConfigureStateCheck(void)
     }
 }
 
+/***************************************** Frame Receive Callback ************************************/
+static void TaskFrame_ExpAtt_Callback(void const *mav_data, void *cus_data)
+{
+
+}
+
+static void TaskFrame_ExpGyro_Callback(void const *mav_data, void *cus_data)
+{
+
+}
+
+static void TaskFrame_ExpAlt_Callback(void const *mav_data, void *cus_data)
+{
+
+}
+
+static void TaskFrame_PID_Roll_Callback(void const *mav_data, void *cus_data)
+{
+
+}
+
+static void TaskFrame_PID_Pitch_Callback(void const *mav_data, void *cus_data)
+{
+
+}
+
+static void TaskFrame_PID_GyrX_Callback(void const *mav_data, void *cus_data)
+{
+
+}
+
+static void TaskFrame_PID_GyrY_Callback(void const *mav_data, void *cus_data)
+{
+
+}
+
+static void TaskFrame_PID_GyrZ_Callback(void const *mav_data, void *cus_data)
+{
+
+}
 /***************************************** CLI Section ***********************************************/
 static int TaskFrameCTL_CLI_Trans(const uint8_t *p_data, uint16_t size)
 {
