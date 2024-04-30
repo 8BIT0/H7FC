@@ -409,7 +409,7 @@ static void SrvComProto_Set_MavMsgIn_Callback(SrvComProto_MsgObj_TypeDef *obj, S
     }
 }
 
-static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_ExpAttiude(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_attitude_t msg_att;
 
@@ -421,13 +421,13 @@ static uint16_t SrvComProto_MavMsg_Decode_ExpAttiude(SrvComProto_MsgObj_TypeDef 
         mavlink_msg_attitude_decode(&msg, &msg_att);
 
         if (obj->MavMsg_Att_Callback)
-            obj->MavMsg_Att_Callback(&msg_att, obj->cus_p_att);
+            return obj->MavMsg_Att_Callback(&msg_att, obj->cus_p_att);
     }
 
-    return 0;
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_ExpGyro(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_ExpGyro(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_raw_imu_t msg_imu;
 
@@ -439,11 +439,13 @@ static void SrvComProto_MavMsg_Decode_ExpGyro(SrvComProto_MsgObj_TypeDef *obj, c
         mavlink_msg_raw_imu_decode(&msg, &msg_imu);
 
         if (obj->MavMsg_Gyr_Callback)
-            obj->MavMsg_Gyr_Callback(&msg_imu, obj->cus_p_gyr);
+            return obj->MavMsg_Gyr_Callback(&msg_imu, obj->cus_p_gyr);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_ExpAlt(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_ExpAlt(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_altitude_t msg_alt;
 
@@ -455,11 +457,13 @@ static void SrvComProto_MavMsg_Decode_ExpAlt(SrvComProto_MsgObj_TypeDef *obj, co
         mavlink_msg_altitude_decode(&msg, &msg_alt);
 
         if (obj->MavMsg_Alt_Callback)
-            obj->MavMsg_Alt_Callback(&msg_alt, obj->cus_p_alt);
+            return obj->MavMsg_Alt_Callback(&msg_alt, obj->cus_p_alt);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_ExpMoto(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_ExpMoto(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_servo_output_raw_t msg_moto;
 
@@ -471,11 +475,13 @@ static void SrvComProto_MavMsg_Decode_ExpMoto(SrvComProto_MsgObj_TypeDef *obj, c
         mavlink_msg_servo_output_raw_decode(&msg, &msg_moto);
 
         if (obj->MavMsg_MotoCtl_Callback)
-            obj->MavMsg_MotoCtl_Callback(&msg_moto, obj->cus_p_moto);
+            return obj->MavMsg_MotoCtl_Callback(&msg_moto, obj->cus_p_moto);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_ExpRC(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_ExpRC(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_rc_channels_t msg_rc;
 
@@ -487,11 +493,13 @@ static void SrvComProto_MavMsg_Decode_ExpRC(SrvComProto_MsgObj_TypeDef *obj, con
         mavlink_msg_rc_channels_decode(&msg, &msg_rc);
 
         if (obj->MavMsg_RC_Callback)
-            obj->MavMsg_RC_Callback(&msg_rc, obj->cus_p_RC);
+            return obj->MavMsg_RC_Callback(&msg_rc, obj->cus_p_RC);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_fileadapter_t msg_fileadapter;
 
@@ -503,11 +511,13 @@ static void SrvComProto_MavMsg_Decode_FileAdapter(SrvComProto_MsgObj_TypeDef *ob
         mavlink_msg_fileadapter_decode(&msg, &msg_fileadapter);
 
         if (obj->MavMsg_FileAdapter_Callback)
-            obj->MavMsg_FileAdapter_Callback(&msg_fileadapter, obj->cus_p_FileAdapter);
+            return obj->MavMsg_FileAdapter_Callback(&msg_fileadapter, obj->cus_p_FileAdapter);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_PIDPara_GyroX(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_PIDPara_GyroX(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_para_gyrox_pid_t msg_pid_para_gyrox;
 
@@ -519,11 +529,13 @@ static void SrvComProto_MavMsg_Decode_PIDPara_GyroX(SrvComProto_MsgObj_TypeDef *
         mavlink_msg_para_gyrox_pid_decode(&msg, &msg_pid_para_gyrox);
     
         if (obj->MavMsg_PIDPara_GyroX_Callback)
-            obj->MavMsg_PIDPara_GyroX_Callback(&msg_pid_para_gyrox, obj->cus_p_pidpara_gyrox);
+            return obj->MavMsg_PIDPara_GyroX_Callback(&msg_pid_para_gyrox, obj->cus_p_pidpara_gyrox);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_PIDPara_GyroY(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_PIDPara_GyroY(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_para_gyroy_pid_t msg_pid_para_gyroy;
     
@@ -535,11 +547,13 @@ static void SrvComProto_MavMsg_Decode_PIDPara_GyroY(SrvComProto_MsgObj_TypeDef *
         mavlink_msg_para_gyroy_pid_decode(&msg, &msg_pid_para_gyroy);
     
         if (obj->MavMsg_PIDPara_GyroY_Callback)
-            obj->MavMsg_PIDPara_GyroY_Callback(&msg_pid_para_gyroy, obj->cus_p_pidpara_gyroy);
+            return obj->MavMsg_PIDPara_GyroY_Callback(&msg_pid_para_gyroy, obj->cus_p_pidpara_gyroy);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_PIDPara_GyroZ(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_PIDPara_GyroZ(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_para_gyroz_pid_t msg_pid_para_gyroz;
     
@@ -551,11 +565,13 @@ static void SrvComProto_MavMsg_Decode_PIDPara_GyroZ(SrvComProto_MsgObj_TypeDef *
         mavlink_msg_para_gyroz_pid_decode(&msg, &msg_pid_para_gyroz);
 
         if (obj->MavMsg_PIDPara_GyroZ_Callback)
-            obj->MavMsg_PIDPara_GyroZ_Callback(&msg_pid_para_gyroz, obj->cus_p_pidpara_gyroz);
+            return obj->MavMsg_PIDPara_GyroZ_Callback(&msg_pid_para_gyroz, obj->cus_p_pidpara_gyroz);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_PIDPara_Roll(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_PIDPara_Roll(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_para_roll_pid_t msg_pid_para_roll;
 
@@ -567,11 +583,13 @@ static void SrvComProto_MavMsg_Decode_PIDPara_Roll(SrvComProto_MsgObj_TypeDef *o
         mavlink_msg_para_roll_pid_decode(&msg, &msg_pid_para_roll);
     
         if (obj->MavMsg_PIDPara_Roll_Callback)
-            obj->MavMsg_PIDPara_Roll_Callback(&msg_pid_para_roll, obj->cus_p_pidpara_roll);
+            return obj->MavMsg_PIDPara_Roll_Callback(&msg_pid_para_roll, obj->cus_p_pidpara_roll);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_PIDPara_Pitch(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_PIDPara_Pitch(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_para_pitch_pid_t msg_pid_para_pitch;
 
@@ -583,11 +601,13 @@ static void SrvComProto_MavMsg_Decode_PIDPara_Pitch(SrvComProto_MsgObj_TypeDef *
         mavlink_msg_para_pitch_pid_decode(&msg, &msg_pid_para_pitch);
 
         if (obj->MavMsg_PIDPara_Pitch_Callback)
-            obj->MavMsg_PIDPara_Pitch_Callback(&msg_pid_para_pitch, obj->cus_p_pidpara_pitch);
+            return obj->MavMsg_PIDPara_Pitch_Callback(&msg_pid_para_pitch, obj->cus_p_pidpara_pitch);
     }
+
+    return false;
 }
 
-static void SrvComProto_MavMsg_Decode_ParamOperation(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
+static bool SrvComProto_MavMsg_Decode_ParamOperation(SrvComProto_MsgObj_TypeDef *obj, const mavlink_message_t msg)
 {
     mavlink_para_operation_t msg_para_operation;
 
@@ -599,8 +619,10 @@ static void SrvComProto_MavMsg_Decode_ParamOperation(SrvComProto_MsgObj_TypeDef 
         mavlink_msg_para_operation_decode(&msg, &msg_para_operation);
     
         if (obj->MavMsg_ParamOperation_Callback)
-            obj->MavMsg_ParamOperation_Callback(&msg_para_operation, obj->cus_p_paraoperation);
+            return obj->MavMsg_ParamOperation_Callback(&msg_para_operation, obj->cus_p_paraoperation);
     }
+
+    return false;
 }
 
 /******************************************* Frame In  ****************************************/
@@ -611,6 +633,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
     mavlink_message_t mav_msg;
     mavlink_status_t mav_sta;
     volatile uint8_t mav_decode = 0;
+    bool decode_state = false;
     
     memset(&stream_in, 0, sizeof(SrvComProto_Msg_StreamIn_TypeDef));
 
@@ -642,51 +665,51 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
                 switch ((uint8_t)mav_msg.compid)
                 {
                     case MAV_CompoID_Ctl_Gyro:
-                        SrvComProto_MavMsg_Decode_ExpGyro(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_ExpGyro(obj, mav_msg);
                         break;
 
                     case MAV_CompoID_Ctl_Attitude:
-                        SrvComProto_MavMsg_Decode_ExpAttiude(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_ExpAttiude(obj, mav_msg);
                         break;
                     
                     case MAV_CompoID_Ctl_Altitude:
-                        SrvComProto_MavMsg_Decode_ExpAlt(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_ExpAlt(obj, mav_msg);
                         break;
 
                     case MAV_CompoID_Ctl_RC_Channel:
-                        SrvComProto_MavMsg_Decode_ExpRC(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_ExpRC(obj, mav_msg);
                         break;
                     
                     case MAV_CompoID_Ctl_MotoCtl:
-                        SrvComProto_MavMsg_Decode_ExpMoto(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_ExpMoto(obj, mav_msg);
                         break;
                     
                     case MAV_CompoID_Ctl_FileAdapter:
-                        SrvComProto_MavMsg_Decode_FileAdapter(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_FileAdapter(obj, mav_msg);
                         break;
 
                     case MAV_CompoID_Ctl_ParaOperation:
-                        SrvComProto_MavMsg_Decode_ParamOperation(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_ParamOperation(obj, mav_msg);
                         break;
                     
                     case MAV_CompoID_Ctl_PIDPara_GyrX:
-                        SrvComProto_MavMsg_Decode_PIDPara_GyroX(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_GyroX(obj, mav_msg);
                         break;
                     
                     case MAV_CompoID_Ctl_PIDPara_GyrY:
-                        SrvComProto_MavMsg_Decode_PIDPara_GyroY(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_GyroY(obj, mav_msg);
                         break;
                     
                     case MAV_CompoID_Ctl_PIDPara_GyrZ:
-                        SrvComProto_MavMsg_Decode_PIDPara_GyroZ(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_GyroZ(obj, mav_msg);
                         break;
                     
                     case MAV_CompoID_Ctl_PIDPara_Roll:
-                        SrvComProto_MavMsg_Decode_PIDPara_Roll(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_Roll(obj, mav_msg);
                         break;
                     
                     case MAV_CompoID_Ctl_PIDPata_Pitch:
-                        SrvComProto_MavMsg_Decode_PIDPara_Pitch(obj, mav_msg);
+                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_Pitch(obj, mav_msg);
                         break;
 
                     default: break;
