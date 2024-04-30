@@ -725,7 +725,7 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
             }
             
             /* mavlink frame ack */
-            // SrvComProto_MavMsg_Ack(obj, uint16_t sys_id, uint16_t compo_id, decode_state);
+            // SrvComProto_MavMsg_Ack(obj, MAV_SysID_Drone, uint16_t compo_id, decode_state);
 
             memset(&mav_msg, 0, sizeof(mavlink_message_t));
             memset(&mav_sta, 0, sizeof(mavlink_status_t));
