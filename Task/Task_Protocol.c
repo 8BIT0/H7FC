@@ -820,10 +820,9 @@ static bool TaskFrame_Mav_ExpAlt_Callback(void const *mav_data, void *cus_data)
 {
     bool arm_state = DRONE_ARM;
 
-    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return false;
-
-    if (arm_state == DRONE_DISARM)
+    if ((mav_data == NULL) || \
+        (SrvDataHub.get_arm_state(&arm_state)) || \
+        (arm_state == DRONE_DISARM))
         return false;
 
     return true;
@@ -833,10 +832,9 @@ static bool TaskFrame_Mav_PID_Roll_Callback(void const *mav_data, void *cus_data
 {
     bool arm_state = DRONE_ARM;
 
-    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return false;
-
-    if (arm_state == DRONE_DISARM)
+    if ((mav_data == NULL) || \
+        (SrvDataHub.get_arm_state(&arm_state)) || \
+        (arm_state == DRONE_DISARM))
         return false;
 
     return true;
@@ -846,10 +844,9 @@ static bool TaskFrame_Mav_PID_Pitch_Callback(void const *mav_data, void *cus_dat
 {
     bool arm_state = DRONE_ARM;
 
-    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return false;
-
-    if (arm_state == DRONE_DISARM)
+    if ((mav_data == NULL) || \
+        (SrvDataHub.get_arm_state(&arm_state)) || \
+        (arm_state == DRONE_DISARM))
         return false;
 
     return true;
@@ -859,10 +856,9 @@ static bool TaskFrame_Mav_PID_GyrX_Callback(void const *mav_data, void *cus_data
 {
     bool arm_state = DRONE_ARM;
 
-    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return false;
-
-    if (arm_state == DRONE_DISARM)
+    if ((mav_data == NULL) || \
+        (SrvDataHub.get_arm_state(&arm_state)) || \
+        (arm_state == DRONE_DISARM))
         return false;
 
     return true;
@@ -872,10 +868,9 @@ static bool TaskFrame_Mav_PID_GyrY_Callback(void const *mav_data, void *cus_data
 {
     bool arm_state = DRONE_ARM;
 
-    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return false;
-
-    if (arm_state == DRONE_DISARM)
+    if ((mav_data == NULL) || \
+        (SrvDataHub.get_arm_state(&arm_state)) || \
+        (arm_state == DRONE_DISARM))
         return false;
 
     return true;
@@ -885,10 +880,9 @@ static bool TaskFrame_Mav_PID_GyrZ_Callback(void const *mav_data, void *cus_data
 {
     bool arm_state = DRONE_ARM;
 
-    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return false;
-
-    if (arm_state == DRONE_DISARM)
+    if ((mav_data == NULL) || \
+        (SrvDataHub.get_arm_state(&arm_state)) || \
+        (arm_state == DRONE_DISARM))
         return false;
 
     return true;
