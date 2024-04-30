@@ -19,6 +19,13 @@ typedef void (*SrvFileAdapter_Send_Func)(uint8_t *p_buf, uint16_t len);
 
 typedef enum
 {
+    Adapter_FC_APP = 0,
+    Adapter_FC_Boot,
+    Adapter_FC_TelemtryReceiver,
+} SrvFileAdapter_FileType_List;
+
+typedef enum
+{
     SrvFileAdapter_Frame_None = 0,
     SrvFileAdapter_Frame_YModem,
     SrvFileAdapter_Frame_Sum,
@@ -27,12 +34,16 @@ typedef enum
 typedef struct
 {
     uint32_t port_addr;
-    uint8_t frame_type;
+    SrvFileAdapter_FileType_List file_type;
+    SrvFileAdapter_ProtoFrameType_List frame_type;
+
     void *FrameObj;
     void *FrmaeApi;
 
     bool is_actived;
+    bool chancel;
     bool ready_to_rec;
+    
     SrvFileAdapter_Send_Func send;
 } SrvFileAdapterObj_TypeDef;
 
