@@ -10,7 +10,7 @@
 
 typedef bool (*ComProto_Callback)(void *arg, uint8_t *p_data, uint32_t len);
 typedef uint16_t (*DataPack_Callback)(uint8_t *pck);
-typedef void (*SrvComProto_MavMsgIn_Callback)(void const *mav_data, void *cus_data);
+typedef bool (*SrvComProto_MavMsgIn_Callback)(void const *mav_data, void *cus_data);
 typedef uint32_t ComPort_Handle;
 
 typedef enum

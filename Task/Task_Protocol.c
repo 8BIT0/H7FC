@@ -143,14 +143,14 @@ static void TaskFrameCTL_PortFrameOut_Process(void);
 static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_data, uint16_t size);
 
 /* mavlinke frame decode callback */
-static void TaskFrame_Mav_ExpAtt_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_Mav_ExpGyro_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_Mav_ExpAlt_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_Mav_PID_Roll_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_Mav_PID_Pitch_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_Mav_PID_GyrX_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_Mav_PID_GyrY_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_Mav_PID_GyrZ_Callback(void const *mav_data, void *cus_data);
+static bool TaskFrame_Mav_ExpAtt_Callback(void const *mav_data, void *cus_data);
+static bool TaskFrame_Mav_ExpGyro_Callback(void const *mav_data, void *cus_data);
+static bool TaskFrame_Mav_ExpAlt_Callback(void const *mav_data, void *cus_data);
+static bool TaskFrame_Mav_PID_Roll_Callback(void const *mav_data, void *cus_data);
+static bool TaskFrame_Mav_PID_Pitch_Callback(void const *mav_data, void *cus_data);
+static bool TaskFrame_Mav_PID_GyrX_Callback(void const *mav_data, void *cus_data);
+static bool TaskFrame_Mav_PID_GyrY_Callback(void const *mav_data, void *cus_data);
+static bool TaskFrame_Mav_PID_GyrZ_Callback(void const *mav_data, void *cus_data);
 
 /* default vcp port section */
 static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor);
@@ -800,100 +800,98 @@ static void TaskFrameCTL_ConfigureStateCheck(void)
 }
 
 /***************************************** Frame mavlink Receive Callback ************************************/
-static void TaskFrame_Mav_ExpAtt_Callback(void const *mav_data, void *cus_data)
+static bool TaskFrame_Mav_ExpAtt_Callback(void const *mav_data, void *cus_data)
 {
     if (mav_data == NULL)
-        return;
+        return false;
+
+    return true;
 }
 
-static void TaskFrame_Mav_ExpGyro_Callback(void const *mav_data, void *cus_data)
+static bool TaskFrame_Mav_ExpGyro_Callback(void const *mav_data, void *cus_data)
 {
     if (mav_data == NULL)
-        return;
+        return false;
+
+    return true;
 }
 
-static void TaskFrame_Mav_ExpAlt_Callback(void const *mav_data, void *cus_data)
+static bool TaskFrame_Mav_ExpAlt_Callback(void const *mav_data, void *cus_data)
 {
-    bool arm_state;
+    bool arm_state = DRONE_ARM;
 
     if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return;
+        return false;
 
     if (arm_state == DRONE_DISARM)
-    {
-        /* ack tune failed to sender */
-        return;
-    }
+        return false;
+
+    return true;
 }
 
-static void TaskFrame_Mav_PID_Roll_Callback(void const *mav_data, void *cus_data)
+static bool TaskFrame_Mav_PID_Roll_Callback(void const *mav_data, void *cus_data)
 {
-    bool arm_state;
+    bool arm_state = DRONE_ARM;
 
     if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return;
+        return false;
 
     if (arm_state == DRONE_DISARM)
-    {
-        /* ack tune failed to sender */
-        return;
-    }
+        return false;
+
+    return true;
 }
 
-static void TaskFrame_Mav_PID_Pitch_Callback(void const *mav_data, void *cus_data)
+static bool TaskFrame_Mav_PID_Pitch_Callback(void const *mav_data, void *cus_data)
 {
-    bool arm_state;
+    bool arm_state = DRONE_ARM;
 
     if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return;
+        return false;
 
     if (arm_state == DRONE_DISARM)
-    {
-        /* ack tune failed to sender */
-        return;
-    }
+        return false;
+
+    return true;
 }
 
-static void TaskFrame_Mav_PID_GyrX_Callback(void const *mav_data, void *cus_data)
+static bool TaskFrame_Mav_PID_GyrX_Callback(void const *mav_data, void *cus_data)
 {
-    bool arm_state;
+    bool arm_state = DRONE_ARM;
 
     if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return;
+        return false;
 
     if (arm_state == DRONE_DISARM)
-    {
-        /* ack tune failed to sender */
-        return;
-    }
+        return false;
+
+    return true;
 }
 
-static void TaskFrame_Mav_PID_GyrY_Callback(void const *mav_data, void *cus_data)
+static bool TaskFrame_Mav_PID_GyrY_Callback(void const *mav_data, void *cus_data)
 {
-    bool arm_state;
+    bool arm_state = DRONE_ARM;
 
     if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return;
+        return false;
 
     if (arm_state == DRONE_DISARM)
-    {
-        /* ack tune failed to sender */
-        return;
-    }
+        return false;
+
+    return true;
 }
 
-static void TaskFrame_Mav_PID_GyrZ_Callback(void const *mav_data, void *cus_data)
+static bool TaskFrame_Mav_PID_GyrZ_Callback(void const *mav_data, void *cus_data)
 {
-    bool arm_state;
+    bool arm_state = DRONE_ARM;
 
     if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
-        return;
+        return false;
 
     if (arm_state == DRONE_DISARM)
-    {
-        /* ack tune failed to sender */
-        return;
-    }
+        return false;
+
+    return true;
 }
 
 /***************************************** CLI Section ***********************************************/
