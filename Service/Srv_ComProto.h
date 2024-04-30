@@ -193,7 +193,6 @@ typedef struct
     bool (*init)(SrvComProto_Type_List type, uint8_t *arg);
     SrvComProto_Type_List (*get_msg_type)(void);
     SrvComProto_Msg_StreamIn_TypeDef (*msg_decode)( SrvComProto_MsgObj_TypeDef *obj, uint8_t *p_data, uint16_t size);
-    bool (*mav_msg_decode)(uint8_t *p_buf, uint32_t len);
     bool (*mav_msg_obj_init)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_MavPackInfo_TypeDef pck_info, uint32_t period);
     bool (*mav_msg_enable_ctl)(SrvComProto_MsgInfo_TypeDef *msg, bool state);
     bool (*mav_msg_stream)(SrvComProto_MsgInfo_TypeDef *msg, SrvComProto_Stream_TypeDef *com_stream, void *arg, ComProto_Callback tx_cb);

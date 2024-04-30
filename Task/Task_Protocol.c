@@ -126,13 +126,13 @@ static void TaskFrameCTL_PortFrameOut_Process(void);
 static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_data, uint16_t size);
 
 /* mavlinke frame decode callback */
-static void TaskFrame_ExpAtt_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_ExpGyro_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_ExpAlt_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_PID_Roll_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_PID_Pitch_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_PID_GyrX_Callback(void const *mav_data, void *cus_data);
-static void TaskFrame_PID_GyrY_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_Mav_ExpAtt_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_Mav_ExpGyro_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_Mav_ExpAlt_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_Mav_PID_Roll_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_Mav_PID_Pitch_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_Mav_PID_GyrX_Callback(void const *mav_data, void *cus_data);
+static void TaskFrame_Mav_PID_GyrY_Callback(void const *mav_data, void *cus_data);
 
 
 static void TaskFrame_PID_GyrZ_Callback(void const *mav_data, void *cus_data)
@@ -624,6 +624,7 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_Altitude, true);
 
         /* create mavlink input message object */
+        SrvComProto.mav_msg_set_input_callback();
         return true;
     }
 
@@ -763,45 +764,53 @@ static void TaskFrameCTL_ConfigureStateCheck(void)
     }
 }
 
-/***************************************** Frame Receive Callback ************************************/
-static void TaskFrame_ExpAtt_Callback(void const *mav_data, void *cus_data)
+/***************************************** Frame mavlink Receive Callback ************************************/
+static void TaskFrame_Mav_ExpAtt_Callback(void const *mav_data, void *cus_data)
 {
-
+    if (mav_data == NULL)
+        return;
 }
 
-static void TaskFrame_ExpGyro_Callback(void const *mav_data, void *cus_data)
+static void TaskFrame_Mav_ExpGyro_Callback(void const *mav_data, void *cus_data)
 {
-
+    if (mav_data == NULL)
+        return;
 }
 
-static void TaskFrame_ExpAlt_Callback(void const *mav_data, void *cus_data)
+static void TaskFrame_Mav_ExpAlt_Callback(void const *mav_data, void *cus_data)
 {
-
+    if (mav_data == NULL)
+        return;
 }
 
-static void TaskFrame_PID_Roll_Callback(void const *mav_data, void *cus_data)
+static void TaskFrame_Mav_PID_Roll_Callback(void const *mav_data, void *cus_data)
 {
-
+    if (mav_data == NULL)
+        return;
 }
 
-static void TaskFrame_PID_Pitch_Callback(void const *mav_data, void *cus_data)
+static void TaskFrame_Mav_PID_Pitch_Callback(void const *mav_data, void *cus_data)
 {
-
+    if (mav_data == NULL)
+        return;
 }
 
-static void TaskFrame_PID_GyrX_Callback(void const *mav_data, void *cus_data)
+static void TaskFrame_Mav_PID_GyrX_Callback(void const *mav_data, void *cus_data)
 {
-
+    if (mav_data == NULL)
+        return;
 }
 
-static void TaskFrame_PID_GyrY_Callback(void const *mav_data, void *cus_data)
+static void TaskFrame_Mav_PID_GyrY_Callback(void const *mav_data, void *cus_data)
 {
-
+    if (mav_data == NULL)
+        return;
 }
 
-static void TaskFrame_PID_GyrZ_Callback(void const *mav_data, void *cus_data)
+static void TaskFrame_Mav_PID_GyrZ_Callback(void const *mav_data, void *cus_data)
 {
-
+    if (mav_data == NULL)
+        return;
 }
 /***************************************** CLI Section ***********************************************/
 static int TaskFrameCTL_CLI_Trans(const uint8_t *p_data, uint16_t size)
