@@ -6,6 +6,7 @@
 #include "Srv_FileAdapter.h"
 #include "DataPipe.h"
 #include "Storage.h"
+#include "pid.h"
 
 #define PROTO_STREAM_BUF_SIZE 512
 
@@ -624,7 +625,23 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_Altitude, true);
 
         /* create mavlink input message object */
-        SrvComProto.mav_msg_set_input_callback();
+        /* default(VCP) port */
+        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAtt_Callback);
+        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_ExpGyro_Callback);
+        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAlt_Callback);
+        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Roll_Callback);
+        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Pitch_Callback);
+        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrX_Callback);
+        SrvComProto.mav_msg_set_input_callback(DefaultPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrY_Callback);
+
+        /* radio port */
+        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAtt_Callback);
+        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_ExpGyro_Callback);
+        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_ExpAlt_Callback);
+        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Roll_Callback);
+        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_Pitch_Callback);
+        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrX_Callback);
+        SrvComProto.mav_msg_set_input_callback(RadioPort_MavMsgInput_Obj, TaskFrame_Mav_PID_GyrY_Callback);
         return true;
     }
 
