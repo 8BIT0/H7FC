@@ -796,39 +796,88 @@ static void TaskFrame_Mav_ExpGyro_Callback(void const *mav_data, void *cus_data)
 
 static void TaskFrame_Mav_ExpAlt_Callback(void const *mav_data, void *cus_data)
 {
-    if (mav_data == NULL)
+    bool arm_state;
+
+    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
         return;
+
+    if (arm_state == DRONE_DISARM)
+    {
+        /* ack tune failed to sender */
+        return;
+    }
 }
 
 static void TaskFrame_Mav_PID_Roll_Callback(void const *mav_data, void *cus_data)
 {
-    if (mav_data == NULL)
+    bool arm_state;
+
+    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
         return;
+
+    if (arm_state == DRONE_DISARM)
+    {
+        /* ack tune failed to sender */
+        return;
+    }
 }
 
 static void TaskFrame_Mav_PID_Pitch_Callback(void const *mav_data, void *cus_data)
 {
-    if (mav_data == NULL)
+    bool arm_state;
+
+    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
         return;
+
+    if (arm_state == DRONE_DISARM)
+    {
+        /* ack tune failed to sender */
+        return;
+    }
 }
 
 static void TaskFrame_Mav_PID_GyrX_Callback(void const *mav_data, void *cus_data)
 {
-    if (mav_data == NULL)
+    bool arm_state;
+
+    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
         return;
+
+    if (arm_state == DRONE_DISARM)
+    {
+        /* ack tune failed to sender */
+        return;
+    }
 }
 
 static void TaskFrame_Mav_PID_GyrY_Callback(void const *mav_data, void *cus_data)
 {
-    if (mav_data == NULL)
+    bool arm_state;
+
+    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
         return;
+
+    if (arm_state == DRONE_DISARM)
+    {
+        /* ack tune failed to sender */
+        return;
+    }
 }
 
 static void TaskFrame_Mav_PID_GyrZ_Callback(void const *mav_data, void *cus_data)
 {
-    if (mav_data == NULL)
+    bool arm_state;
+
+    if ((mav_data == NULL) && (SrvDataHub.get_arm_state(&arm_state)))
         return;
+
+    if (arm_state == DRONE_DISARM)
+    {
+        /* ack tune failed to sender */
+        return;
+    }
 }
+
 /***************************************** CLI Section ***********************************************/
 static int TaskFrameCTL_CLI_Trans(const uint8_t *p_data, uint16_t size)
 {
