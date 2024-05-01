@@ -90,7 +90,6 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     /* set mavlink data structure value set function */
     switch ((uint8_t)pck_info.component_id)
     {
-    case MAV_CompoID_Ctl_Attitude:
     case MAV_CompoID_Attitude:
         msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_Attitude);
         break;
