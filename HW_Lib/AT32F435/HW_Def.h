@@ -129,7 +129,7 @@
 #define ExtFlash_Bus_Pin ExtFlash_SPIPin
 
 #define Boot_Firmware_Addr W25QXX_BASE_ADDRESS 
-#define Boot_Firmware_Size (128 Kb)
+#define Boot_Firmware_Size (256 Kb)
 
 #define Other_Firmware_Addr (Boot_Firmware_Addr + Boot_Firmware_Size)
 #define Other_Firmware_Size (512 Kb)
