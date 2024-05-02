@@ -8,18 +8,12 @@
 
 #define SrvFileAdapter_TimeOut (10 * 1000)  /* time out 10s */
 
-typedef struct
-{
-    uint16_t total_size;
-    uint16_t cur_size;
-    uint8_t *buf;
-} SrvFileAdapter_Stream_TypeDef;
-
 typedef void (*SrvFileAdapter_Send_Func)(uint8_t *p_buf, uint16_t len);
 
 typedef enum
 {
-    Adapter_FC_APP = 0,
+    Adapter_None = 0,
+    Adapter_FC_APP,
     Adapter_FC_Boot,
     Adapter_FC_TelemtryReceiver,
 } SrvFileAdapter_FileType_List;
@@ -30,6 +24,21 @@ typedef enum
     SrvFileAdapter_Frame_YModem,
     SrvFileAdapter_Frame_Sum,
 } SrvFileAdapter_ProtoFrameType_List;
+
+typedef struct
+{
+    uint16_t total_size;
+    uint16_t cur_size;
+    uint8_t *buf;
+} SrvFileAdapter_Stream_TypeDef;
+
+typedef struct
+{
+    uint8_t  type;
+    uint32_t tar_addr;
+    uint32_t size;
+    uint8_t ver[3];
+} SrvFileInfo_TypeDef;
 
 typedef struct
 {
