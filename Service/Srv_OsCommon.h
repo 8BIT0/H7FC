@@ -28,6 +28,8 @@ typedef struct
     void (*enter_critical)(void);
     void (*exit_critical)(void);
     void (*get_heap_status)(SrvOs_HeapStatus_TypeDef *status);
+    void (*disable_all_irq)(void);
+    void (*enable_all_irq)(void);
 }SrvOsCommon_TypeDef;
 
 extern SrvOsCommon_TypeDef SrvOsCommon;
