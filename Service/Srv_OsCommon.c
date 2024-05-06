@@ -1,5 +1,6 @@
 #include "Srv_OsCommon.h"
 #include "kernel.h"
+#include "cmsis_gcc.h"
 
 typedef struct
 {
@@ -42,6 +43,8 @@ SrvOsCommon_TypeDef SrvOsCommon = {
     .systimer_tick_to_us = Kernel_TickVal_To_Us,
     .systimer_disable = Kernel_DisableTimer_IRQ,
     .systimer_enable = Kernel_EnableTimer_IRQ,
+    .disable_all_irq = __disable_irq,
+    .enable_all_irq = __enable_irq,
 };
 
 static void* SrvOsCommon_Malloc(uint32_t size)
