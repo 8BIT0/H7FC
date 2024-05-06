@@ -27,7 +27,6 @@ typedef enum
 {
     Port_USB = 0,
     Port_Uart,
-    Port_CAN,
 } FrameCTL_PortType_List;
 
 typedef enum
@@ -94,12 +93,6 @@ typedef struct
 
 typedef struct
 {
-    bool init_state;
-    FrameCTL_PortProtoObj_TypeDef RecObj;
-} FrameCTL_CanPortMonitor_TypeDef;
-
-typedef struct
-{
     float exp_roll;
     float exp_pitch;
     float exp_heading;
@@ -137,13 +130,11 @@ typedef struct
     bool init;
     bool vcp_connect_state;
     uint8_t uart_port_num;
-    uint8_t can_port_num;
 
     void *Cur_Tuning_Port;
 
     FrameCTL_VCPPortMonitor_TypeDef VCP_Port;
     FrameCTL_UartPortMonitor_TypeDef *Uart_Port;
-    FrameCTL_CanPortMonitor_TypeDef *Can_Port;
 } FrameCTL_PortMonitor_TypeDef;
 
 typedef struct
