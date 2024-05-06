@@ -94,12 +94,6 @@ typedef struct
 
 typedef struct
 {
-    bool init_state;
-    FrameCTL_PortProtoObj_TypeDef RecObj;
-} FrameCTL_CanPortMonitor_TypeDef;
-
-typedef struct
-{
     float exp_roll;
     float exp_pitch;
     float exp_heading;
