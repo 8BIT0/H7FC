@@ -89,7 +89,7 @@ static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
                 else
                 {
                     /* noticed endian */
-                    *p_crc16 = (uint16_t *)(p_stream_buf + recv_data_len);
+                    *p_crc16 = *((uint16_t *)(p_stream_buf + recv_data_len));
                     crc16 = Common_CRC16(p_stream_buf, recv_data_len);
 
                     /* check crc */
