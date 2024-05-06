@@ -47,7 +47,7 @@ typedef enum
 typedef struct
 {
     bool enable;
-    Bypass_TypeList bypass_mode;
+    Bypass_TypeList mode;
     uint8_t *bypass_src;
 } Port_Bypass_TypeDef;
 
