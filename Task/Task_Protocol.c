@@ -43,14 +43,6 @@ static FrameCTL_UartPortMonitor_TypeDef Radio_UartPort_List[RADIO_UART_NUM] = {
 };
 #endif
 
-#ifndef RADIO_CAN_NUM
-#define RADIO_CAN_NUM 0
-#endif
-
-#if (RADIO_CAN_NUM > 0)
-static FrameCTL_CanPortMonitor_TypeDef Radio_CANPort_List[RADIO_CAN_NUM];
-#endif
-
 typedef struct
 {
     FrameCTL_MavATTIn_TypeDef exp_att;
