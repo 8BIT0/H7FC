@@ -230,7 +230,7 @@ static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
 
         /* create USB VCP Tx semaphore */
         osSemaphoreDef(DefaultPort_Tx);
-        monitor->VCP_Port.p_tx_semphr = osSemaphoreCreate(osSemaphore(DefaultPort_Tx), 128);
+        monitor->VCP_Port.p_tx_semphr = osSemaphoreCreate(osSemaphore(DefaultPort_Tx), 1);
 
         if(monitor->VCP_Port.p_tx_semphr == NULL)
         {
@@ -258,11 +258,10 @@ static bool TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
         PortMonitor.VCP_Port.p_tx_semphr && \
         p_data && size)
     {
-        state = true;        
-        if (BspUSB_VCP.send(p_data, size) != BspUSB_Error_None)
-            state = false;
-
-        if (osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, FrameCTL_Port_Tx_TimeOut) != osOK)
+        state = true;
+        osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, 0);
+        if ((BspUSB_VCP.send(p_data, size) != BspUSB_Error_None) || \
+            (osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, FrameCTL_Port_Tx_TimeOut) != osOK))
             state = false;
     }
 
@@ -320,7 +319,7 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
             
                 /* create semaphore for send */
                 osSemaphoreDef(Uart_Port_Tmp);
-                monitor->Uart_Port[i].p_tx_semphr = osSemaphoreCreate(osSemaphore(Uart_Port_Tmp), 32);
+                monitor->Uart_Port[i].p_tx_semphr = osSemaphoreCreate(osSemaphore(Uart_Port_Tmp), 1);
 
                 if(monitor->Uart_Port[i].p_tx_semphr)
                 {
@@ -384,11 +383,10 @@ static bool TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t si
         /* when FC attach to some host usb device then send nothing through the radio */
         if(p_UartPort->init_state && p_UartPort->Obj && p_UartPort->p_tx_semphr && !PortMonitor.vcp_connect_state)
         {
-            if (!BspUart.send(p_UartPort->Obj, p_data, size))
+            osSemaphoreWait(p_UartPort->p_tx_semphr, 0);
+            if ((!BspUart.send(p_UartPort->Obj, p_data, size)) || \
+                (osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut) != osOK))
                 state = false;
-
-            if (osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut) != osOK)
-                state= false;
         }
         else
             state = false;
