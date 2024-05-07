@@ -31,6 +31,7 @@ static void SrvComProto_MsgToStream(SrvComProto_MsgInfo_TypeDef *msg, SrvComProt
 static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool state);
 static SrvComProto_Type_List Srv_ComProto_GetType(void);
 static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvComProto_MsgObj_TypeDef *obj, uint8_t *p_data, uint16_t size);
+static void SrvComProto_Set_MavMsgIn_Callback(SrvComProto_MsgObj_TypeDef *obj, SrvComProto_MavInMsgType_List type, SrvComProto_MavMsgIn_Callback callback, void *p_cus_data);
 
 SrvComProto_TypeDef SrvComProto = {
     .init = Srv_ComProto_Init,
@@ -39,6 +40,7 @@ SrvComProto_TypeDef SrvComProto = {
     .mav_msg_stream = SrvComProto_MsgToStream,
     .mav_msg_enable_ctl = SrvComProto_MsgEnable_Control,
     .msg_decode = SrvComProto_MavMsg_Input_DecodeAll,
+    .mav_msg_set_input_callback = SrvComProto_Set_MavMsgIn_Callback,
 };
 
 static bool Srv_ComProto_Init(SrvComProto_Type_List type, uint8_t *arg)
