@@ -77,6 +77,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(BspUARTObj_TypeDef *obj);
+    bool (*de_init)(BspUARTObj_TypeDef *obj);
     bool (*set_parity)(BspUARTObj_TypeDef *obj, uint32_t parity);
     bool (*set_stop_bit)(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
     bool (*set_data_bit)(BspUARTObj_TypeDef *obj, uint32_t data_bit);

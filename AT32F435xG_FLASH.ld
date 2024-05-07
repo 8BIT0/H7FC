@@ -29,13 +29,23 @@ _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Specify the memory areas */
+
+FLASH_SIZE = 1000K;
+DEFAULT_BOOT_SIZE = 128K;
+
 MEMORY
 {
-FLASH (rx)       : ORIGIN = 0x08000000, LENGTH = 1000K
+FLASH (rx)       : ORIGIN = 0x08000000, LENGTH = FLASH_SIZE
+FLASH_APP (rx)   : ORIGIN = ORIGIN(FLASH) + DEFAULT_BOOT_SIZE, LENGTH = FLASH_SIZE - DEFAULT_BOOT_SIZE
 RAM_OsHeap (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
 RAM_Perph (xrw)  : ORIGIN = 0x20020000, LENGTH = 64K
 RAM (xrw)        : ORIGIN = 0x20030000, LENGTH = 192K
 }
+
+__rom_s = ORIGIN(FLASH);
+__rom_e = ORIGIN(FLASH) + FLASH_SIZE;
+__boot_s = __rom_s;
+__boot_e = __boot_s + DEFAULT_BOOT_SIZE;
 
 /* Define output sections */
 SECTIONS
@@ -46,7 +56,7 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_APP
 
   /* The program code and other data goes into FLASH */
   .text :
@@ -63,7 +73,7 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
-  } >FLASH
+  } >FLASH_APP
 
   /* Constant data goes into FLASH */
   .rodata :
@@ -78,35 +88,35 @@ SECTIONS
     KEEP (*(shellCommand))
     _shell_command_end = .;
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_APP
 
-  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
+  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH_APP
   .ARM : {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >FLASH
+  } >FLASH_APP
 
   .preinit_array     :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH
+  } >FLASH_APP
   .init_array :
   {
     PROVIDE_HIDDEN (__init_array_start = .);
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH
+  } >FLASH_APP
   .fini_array :
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH
+  } >FLASH_APP
 
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
@@ -121,7 +131,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >RAM AT> FLASH
+  } >RAM AT> FLASH_APP
 
   .OsHeap_Section :
   {
@@ -132,7 +142,7 @@ SECTIONS
 
     . = ALIGN(4);
     OsHeap_e = .;
-  } >RAM_OsHeap AT>FLASH
+  } >RAM_OsHeap AT>FLASH_APP
 
   .Perph_Section :
   {
@@ -143,7 +153,7 @@ SECTIONS
     
     . = ALIGN(4);
     Perph_e = .;
-  } >RAM_Perph AT>FLASH
+  } >RAM_Perph AT>FLASH_APP
 
   /* Uninitialized data section */
   . = ALIGN(4);

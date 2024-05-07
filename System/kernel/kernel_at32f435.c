@@ -7,8 +7,14 @@
 
 static bool Kernel_TickTimer_Init = false;
 
+extern uint32_t __rom_s;
+extern uint32_t __boot_e;
+
 bool Kernel_Init(void)
 {
+    nvic_vector_table_set(NVIC_VECTTAB_FLASH, ((uint32_t)&__boot_e - (uint32_t)&__rom_s));
+    __enable_irq();
+
     system_clock_config();
 
     crm_clocks_freq_type crm_clocks_freq_struct = {0};
