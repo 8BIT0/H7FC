@@ -262,7 +262,7 @@ static bool TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
         if (BspUSB_VCP.send(p_data, size) != BspUSB_Error_None)
             state = false;
 
-        if (osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, FrameCTL_Port_Tx_TimeOut) < 0)
+        if (osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, FrameCTL_Port_Tx_TimeOut) != osOK)
             state = false;
     }
 
@@ -387,7 +387,7 @@ static bool TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t si
             if (!BspUart.send(p_UartPort->Obj, p_data, size))
                 state = false;
 
-            if (osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut) < 0)
+            if (osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut) != osOK)
                 state= false;
         }
     }
