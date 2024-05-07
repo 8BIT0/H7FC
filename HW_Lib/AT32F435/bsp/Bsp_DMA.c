@@ -24,6 +24,7 @@ static const dma_channel_type* BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
 
 /* internal function */
 static bool DataPipe_DMA_Init = false;
+static bool Dma_Clock_Init = false;
 static BspDMA_Pipe_TransFin_Cb DataPipe_Trans_Fin_Callback = NULL;
 static BspDMA_Pipe_TransErr_Cb DataPipe_Trans_Err_Callback = NULL;
 
@@ -150,30 +151,38 @@ static void *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream)
 
 static dma_channel_type *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream)
 {
-    static bool dma1_clk_init = false;
-    static bool dma2_clk_init = false;
+    static bool dma1_enable = false;
+    static bool dma2_enable = false;
 
     if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_1))
         return NULL;
 
+    /* enable dma1 clock */
+    if (!Dma_Clock_Init)
+    {
+        crm_periph_clock_enable(CRM_DMA2_PERIPH_CLOCK, TRUE);
+        crm_periph_clock_enable(CRM_DMA1_PERIPH_CLOCK, TRUE);
+        Dma_Clock_Init = true;
+    }
+
     if ((dma == Bsp_DMA_1) && ((stream < Bsp_DMA_Stream_Sum) && (stream >= Bsp_DMA_Stream_1)))
     {
-        if (!dma1_clk_init)
+        if (!dma1_enable)
         {
             // crm_periph_clock_enable(CRM_DMA1_PERIPH_CLOCK, TRUE);
             dmamux_enable(DMA1, TRUE);
-            dma1_clk_init = true;
+            dma1_enable = true;
         }
 
         return (dma_channel_type *)BspDMA1_Instance_List[stream];
     }
     else if ((dma == Bsp_DMA_2) && ((stream < Bsp_DMA_Stream_7) && (stream >= Bsp_DMA_Stream_1)))
     {
-        if (!dma2_clk_init)
+        if (!dma2_enable)
         {
             // crm_periph_clock_enable(CRM_DMA2_PERIPH_CLOCK, TRUE);
             dmamux_enable(DMA2, TRUE);
-            dma2_clk_init = true;
+            dma2_enable = true;
         }
 
         return (dma_channel_type *)BspDMA2_Instance_List[stream];
@@ -296,8 +305,12 @@ static bool BspDMA_Pipe_Init(BspDMA_Pipe_TransFin_Cb fin_cb, BspDMA_Pipe_TransEr
     dma_init_type dma_init_struct;
 
     /* enable dma1 clock */
-    crm_periph_clock_enable(CRM_DMA2_PERIPH_CLOCK, TRUE);
-    crm_periph_clock_enable(CRM_DMA1_PERIPH_CLOCK, TRUE);
+    if (!Dma_Clock_Init)
+    {
+        crm_periph_clock_enable(CRM_DMA2_PERIPH_CLOCK, TRUE);
+        crm_periph_clock_enable(CRM_DMA1_PERIPH_CLOCK, TRUE);
+        Dma_Clock_Init = true;
+    }
 
     /* dma1 channel1 configuration */
     dma_reset(DMA2_CHANNEL7);
