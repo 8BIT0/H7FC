@@ -170,6 +170,7 @@ void TaskFrameCTL_Init(uint32_t period)
     memset(&InPut_MavData, 0, sizeof(FrameCTL_MavTunningMonitor_TypeDef));
 
     TaskFrameCTL_DefaultPort_Init(&PortMonitor);
+    TaskFrameCTL_ConfigureStateCheck();
     TaskFrameCTL_RadioPort_Init(&PortMonitor);
     Radio_Addr = TaskFrameCTL_Set_RadioPort(Port_Uart, 0);
 
