@@ -390,6 +390,8 @@ static bool TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t si
             if (osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut) != osOK)
                 state= false;
         }
+        else
+            state = false;
     }
 
     return state;
