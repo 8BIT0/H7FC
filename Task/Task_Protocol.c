@@ -152,7 +152,8 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
 static void TaskFrameCTL_Port_TxCplt_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint32_t *size);
 static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *time_stamp);
 static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uint16_t index);
-static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t size);
+static bool TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t size);
+static bool TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size);
 static void TaskFrameCTL_ConfigureStateCheck(void);
 static void TaskFrameCTL_CLI_Proc(void);
 static int TaskFrameCTL_CLI_Trans(const uint8_t *p_data, uint16_t size);
@@ -248,17 +249,24 @@ static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
     }
 }
 
-static void TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
+static bool TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
 {
+    bool state = true;
+
     /* when attach to host device then send data */
     if (PortMonitor.VCP_Port.init_state && \
         PortMonitor.vcp_connect_state && \
         PortMonitor.VCP_Port.p_tx_semphr && \
         p_data && size)
     {
-        BspUSB_VCP.send(p_data, size);
-        osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, FrameCTL_Port_Tx_TimeOut);
+        if (BspUSB_VCP.send(p_data, size) != BspUSB_Error_None)
+            state = false;
+
+        if (osSemaphoreWait(PortMonitor.VCP_Port.p_tx_semphr, FrameCTL_Port_Tx_TimeOut) < 0)
+            state = false;
     }
+
+    return state;
 }
 
 /************************************** radio port section *************************/
@@ -362,8 +370,10 @@ static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uin
 }
 
 /************************************** receive process callback section *************************/
-static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t size)
+static bool TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t size)
 {
+    bool state = true;
+
     FrameCTL_UartPortMonitor_TypeDef *p_UartPort = NULL;
 
     if(obj_addr && p_data && size)
@@ -373,10 +383,15 @@ static void TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t si
         /* when FC attach to some host usb device then send nothing through the radio */
         if(p_UartPort->init_state && p_UartPort->Obj && p_UartPort->p_tx_semphr && !PortMonitor.vcp_connect_state)
         {
-            BspUart.send(p_UartPort->Obj, p_data, size);
-            osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut);
+            if (!BspUart.send(p_UartPort->Obj, p_data, size))
+                state = false;
+
+            if (osSemaphoreWait(p_UartPort->p_tx_semphr, FrameCTL_Port_Tx_TimeOut) < 0)
+                state= false;
         }
     }
+
+    return state;
 }
 
 static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data, uint16_t size)
