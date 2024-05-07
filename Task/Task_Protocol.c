@@ -251,7 +251,7 @@ static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
 
 static bool TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
 {
-    bool state = true;
+    bool state = false;
 
     /* when attach to host device then send data */
     if (PortMonitor.VCP_Port.init_state && \
@@ -259,6 +259,7 @@ static bool TaskFrameCTL_DefaultPort_Trans(uint8_t *p_data, uint16_t size)
         PortMonitor.VCP_Port.p_tx_semphr && \
         p_data && size)
     {
+        state = true;        
         if (BspUSB_VCP.send(p_data, size) != BspUSB_Error_None)
             state = false;
 
@@ -372,12 +373,13 @@ static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uin
 /************************************** receive process callback section *************************/
 static bool TaskFrameCTL_Port_Tx(uint32_t obj_addr, uint8_t *p_data, uint16_t size)
 {
-    bool state = true;
+    bool state = false;
 
     FrameCTL_UartPortMonitor_TypeDef *p_UartPort = NULL;
 
     if(obj_addr && p_data && size)
     {
+        state = true;
         p_UartPort = (FrameCTL_UartPortMonitor_TypeDef *)obj_addr;
 
         /* when FC attach to some host usb device then send nothing through the radio */
