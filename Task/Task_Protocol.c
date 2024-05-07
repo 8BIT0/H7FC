@@ -455,7 +455,8 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
                     p_stream->size -= stream_in.size;
                 }
             }
-            else if(stream_in.pac_type == ComFrame_CLI)
+            
+            if(stream_in.pac_type == ComFrame_CLI)
             {
                 /* set current mode as cli mode */
                 /* all command line end up with "\r\n" */
@@ -672,7 +673,7 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
     proto_monitor.frame_type = ComFrame_MavMsg;
     SrvDataHub.get_cli_state(&CLI_state);
 
-    if(FrameCTL_MavProto_Enable && PortMonitor.VCP_Port.init_state && !CLI_state)
+    if(FrameCTL_MavProto_Enable && !CLI_state)
     {
         /* when attach to configrator then disable radio port trans use default port trans mav data */
         /* check other port init state */
@@ -683,24 +684,30 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
 
         if(!tunning_state)
         {
-            /* Proto mavlink message through Radio */
-            proto_monitor.port_type = Port_Uart;
-            proto_monitor.port_addr = Radio_Addr;
-            SrvComProto.mav_msg_stream(&RadioProto_MAV_RawIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&RadioProto_MAV_ScaledIMU, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&RadioProto_MAV_Attitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&RadioProto_MAV_RcChannel, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&RadioProto_MAV_Altitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            
-            /* Proto mavlink message through default port */
-            proto_monitor.port_type = Port_USB;
-            proto_monitor.port_addr = USB_VCP_Addr;
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,       &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,     &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_Altitude,     &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
-            SrvComProto.mav_msg_stream(&TaskProto_MAV_Exp_Attitude, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans); 
+            if (((FrameCTL_UartPortMonitor_TypeDef *)Radio_Addr)->init_state)
+            {
+                /* Proto mavlink message through Radio */
+                proto_monitor.port_type = Port_Uart;
+                proto_monitor.port_addr = Radio_Addr;
+                SrvComProto.mav_msg_stream(&RadioProto_MAV_RawIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+                SrvComProto.mav_msg_stream(&RadioProto_MAV_ScaledIMU, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+                SrvComProto.mav_msg_stream(&RadioProto_MAV_Attitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+                SrvComProto.mav_msg_stream(&RadioProto_MAV_RcChannel, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+                SrvComProto.mav_msg_stream(&RadioProto_MAV_Altitude,  &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+            }
+
+            if (PortMonitor.VCP_Port.init_state)
+            {
+                /* Proto mavlink message through default port */
+                proto_monitor.port_type = Port_USB;
+                proto_monitor.port_addr = USB_VCP_Addr;
+                SrvComProto.mav_msg_stream(&TaskProto_MAV_RawIMU,       &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+                SrvComProto.mav_msg_stream(&TaskProto_MAV_ScaledIMU,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+                SrvComProto.mav_msg_stream(&TaskProto_MAV_Attitude,     &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+                SrvComProto.mav_msg_stream(&TaskProto_MAV_RcChannel,    &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+                SrvComProto.mav_msg_stream(&TaskProto_MAV_Altitude,     &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans);
+                SrvComProto.mav_msg_stream(&TaskProto_MAV_Exp_Attitude, &MavStream, proto_arg, (ComProto_Callback)TaskFrameCTL_MavMsg_Trans); 
+            }
         }
         else if(tunning_state && (arm_state == DRONE_ARM))
         {
