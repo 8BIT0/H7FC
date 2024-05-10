@@ -100,10 +100,8 @@ void TaskControl_Init(uint32_t period)
         /* parameter matched */
         TaskControl_Monitor.actuator_store_item = search_out.item;
         if (Storage.get(External_Flash, Para_User, search_out.item, &TaskControl_Monitor.actuator_setting, sizeof(SrvActuatot_Setting_TypeDef)) != Storage_Error_None)
-        {
             /* use defaule actuator setting */
             use_default = true;
-        }
     }
 
     if (use_default)
