@@ -4,7 +4,6 @@
  * 
  */
 #include "Srv_FileAdapter.h"
-#include "DataPipe.h"
 #include "Srv_OsCommon.h"
 #include "../System/storage/Storage.h"
 #include "YModem.h"
@@ -14,7 +13,7 @@
 static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter);
 
 /* external function */
-static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(SrvFileAdapter_ProtoFrameType_List frame_type, uint32_t stream_size);
+static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type, uint32_t stream_size);
 static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter);
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send);
 static bool SrvFileAdapter_Get_ActiveState(SrvFileAdapterObj_TypeDef *p_Adapter);
@@ -44,7 +43,7 @@ static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter)
     return true;
 }
 
-static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(SrvFileAdapter_ProtoFrameType_List frame_type, uint32_t stream_size)
+static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type, uint32_t stream_size)
 {
     SrvFileAdapterObj_TypeDef *p_AdapterObj = NULL;
 
@@ -58,9 +57,9 @@ static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(SrvFileAdapte
         else
         {
             p_AdapterObj->port_addr = 0;
-            p_AdapterObj->frame_type = frame_type;
+            p_AdapterObj->frame_type = proto_type;
 
-            switch (frame_type)
+            switch (proto_type)
             {
                 case SrvFileAdapter_Frame_YModem:
                     /* create YModem Object */
