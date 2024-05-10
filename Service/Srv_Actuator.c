@@ -246,6 +246,7 @@ static void SrcActuator_Get_ChannelRemap(void)
     }
 
     /* servo section */
+    /* stilling in developping */
     if (SrvActuator_Obj.drive_module.num.servo_cnt)
     {
         for (uint8_t i = SrvActuator_Obj.drive_module.num.moto_cnt; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)

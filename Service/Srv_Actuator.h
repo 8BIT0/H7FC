@@ -345,6 +345,18 @@ typedef struct
 
 typedef struct
 {
+    SrvActuator_Model_List model;
+    
+    uint8_t moto_num;
+    uint8_t moto_type[8];
+    uint8_t moto_ch_map[8];
+
+    uint8_t servo_num;
+    uint8_t servo_map[8];
+} SrvActuatot_Setting_TypeDef;
+
+typedef struct
+{
     bool (*init)(SrvActuator_Model_List model, uint8_t esc_type);
     bool (*lock)(void);
     void (*moto_control)(uint16_t *p_val);
