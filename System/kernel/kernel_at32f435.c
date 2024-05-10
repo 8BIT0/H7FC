@@ -12,9 +12,6 @@ extern uint32_t __boot_e;
 
 bool Kernel_Init(void)
 {
-    nvic_vector_table_set(NVIC_VECTTAB_FLASH, ((uint32_t)&__boot_e - (uint32_t)&__rom_s));
-    __enable_irq();
-
     system_clock_config();
 
     crm_clocks_freq_type crm_clocks_freq_struct = {0};
@@ -35,6 +32,9 @@ bool Kernel_Init(void)
     /* tmr1 hall interrupt nvic init */
     nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
     nvic_irq_enable(TMR20_OVF_IRQn, 14, 0);
+    
+    nvic_vector_table_set(NVIC_VECTTAB_FLASH, ((uint32_t)&__boot_e - (uint32_t)&__rom_s));
+    __enable_irq();
 
     /* enable tmr1 */
     tmr_counter_enable(TMR20, TRUE);

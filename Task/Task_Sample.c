@@ -43,15 +43,15 @@ void TaskSample_Init(uint32_t period)
     memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
     memset(&Baro_smp_DataPipe, 0, sizeof(Baro_smp_DataPipe));
 
-    memset(DataPipe_DataObjAddr(Baro_Data), 0, sizeof(DataPipe_DataObj(Baro_Data)));
-    memset(DataPipe_DataObjAddr(IMU_Data), 0, sizeof(DataPipe_DataObj(IMU_Data)));
+    memset(DataPipe_DataObjAddr(Baro_Data), 0, DataPipe_DataSize(Baro_Data));
+    memset(DataPipe_DataObjAddr(IMU_Data), 0, DataPipe_DataSize(IMU_Data));
 
     IMU_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(IMU_Data);
-    IMU_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(IMU_Data));
+    IMU_Smp_DataPipe.data_size = DataPipe_DataSize(IMU_Data);
     DataPipe_Enable(&IMU_Smp_DataPipe);
     
     Baro_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Baro_Data);
-    Baro_smp_DataPipe.data_size = sizeof(DataPipe_DataObj(Baro_Data));
+    Baro_smp_DataPipe.data_size = DataPipe_DataSize(Baro_Data);
     DataPipe_Enable(&Baro_smp_DataPipe);
 
     SensorMonitor.enabled_reg.bit.imu = true;

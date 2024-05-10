@@ -487,10 +487,12 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
                     CLI_Monitor.port_addr = p_RecObj->PortObj_addr;
                     memcpy(CLI_Monitor.p_rx_stream->p_buf + CLI_Monitor.p_rx_stream->size, stream_in.p_buf, stream_in.size);
                     CLI_Monitor.p_rx_stream->size += p_stream->size;
+
+                    /* clear CLI command */
+                    p_stream->size = 0;
+                    memset(p_stream->p_buf, 0, p_stream->size);
                 }
             }
-        
-            memset(p_stream->p_buf, 0, p_stream->max_size);
         }
     }
 }
