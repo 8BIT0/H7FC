@@ -81,6 +81,7 @@ static uint32_t TaskControl_Period = 0;
 void TaskControl_Init(uint32_t period)
 {
     uint8_t i = 0;
+    bool use_default = true;
     Srv_CtlRange_TypeDef att_ctl_range[Att_Ctl_Sum];
     Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
     Storage_ItemSearchOut_TypeDef search_out;
@@ -94,12 +95,20 @@ void TaskControl_Init(uint32_t period)
     search_out = Storage.search(External_Flash, Para_User, ACTUATOR_STORAGE_SCTION_NAME);
     if (search_out.item_addr)
     {
+        use_default = false;
+        
         /* parameter matched */
         TaskControl_Monitor.actuator_store_item = search_out.item;
         if (Storage.get(External_Flash, Para_User, search_out.item, &TaskControl_Monitor.actuator_setting, sizeof(SrvActuatot_Setting_TypeDef)) != Storage_Error_None)
         {
             /* use defaule actuator setting */
+            use_default = true;
         }
+    }
+
+    if (use_default)
+    {
+
     }
 
     /* can be optmize down below */
