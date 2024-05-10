@@ -102,7 +102,9 @@ void TaskControl_Init(uint32_t period)
         }
     }
 
+    /* can be optmize down below */
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
+    /* can be optmize up top */
     TaskControl_Monitor.actuator_model = SrvActuator.get_model();
 
     /* PID Parametet Init */
