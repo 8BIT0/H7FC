@@ -12,6 +12,7 @@
 #include "Srv_Actuator.h"
 #include "shell_port.h"
 
+#define ACTUATOR_STORAGE_SCTION_NAME "Actuator_Setting"
 #define CONTROL_STORAGE_SECTION_NAME "PID_Para"
 
 #define DEFAULT_CONTROL_MODEL Model_Quad
@@ -82,14 +83,27 @@ void TaskControl_Init(uint32_t period)
     uint8_t i = 0;
     Srv_CtlRange_TypeDef att_ctl_range[Att_Ctl_Sum];
     Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
-    
+    Storage_ItemSearchOut_TypeDef search_out;
+
     // init monitor
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
     memset(&att_ctl_range, 0, sizeof(Srv_CtlRange_TypeDef));
     memset(&angularspeed_ctl_range, 0, sizeof(Srv_CtlRange_TypeDef));
 
-    TaskControl_Monitor.actuator_model = SrvActuator.get_model();
+    /* read actuator setting in storage */
+    search_out = Storage.search(External_Flash, Para_User, ACTUATOR_STORAGE_SCTION_NAME);
+    if (search_out.item_addr)
+    {
+        /* parameter matched */
+        TaskControl_Monitor.actuator_store_item = search_out.item;
+        if (Storage.get(External_Flash, Para_User, search_out.item, ) == Storage_Error_None)
+        {
+
+        }
+    }
+
     TaskControl_Monitor.init_state = SrvActuator.init(DEFAULT_CONTROL_MODEL, DEFAULT_ESC_TYPE);
+    TaskControl_Monitor.actuator_model = SrvActuator.get_model();
 
     /* PID Parametet Init */
     TaskControl_Get_StoreParam();

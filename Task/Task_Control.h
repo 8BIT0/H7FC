@@ -117,6 +117,8 @@ typedef struct
 
     Storage_ItemSearchOut_TypeDef param_match_state;
 
+    Storage_Item_TypeDef actuator_store_item;
+
     /* outer ring attitude control pid */
     PIDObj_TypeDef RollCtl_PIDObj;
     PIDObj_TypeDef PitchCtl_PIDObj;
