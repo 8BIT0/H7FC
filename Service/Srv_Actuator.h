@@ -348,7 +348,7 @@ typedef struct
     SrvActuator_Model_List model;
     
     uint8_t moto_num;
-    uint8_t moto_type[8];
+    uint8_t driver_type;
     uint8_t moto_ch_map[8];
 
     uint8_t servo_num;

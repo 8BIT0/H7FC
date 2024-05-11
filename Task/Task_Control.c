@@ -106,7 +106,7 @@ void TaskControl_Init(uint32_t period)
 
     if (use_default)
     {
-
+        
     }
 
     /* can be optmize down below */
