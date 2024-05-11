@@ -71,13 +71,13 @@ SrvActuatorPipeData_TypeDef Proto_Actuator_Data;
 DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Actuator_Data);
 
 /* internal function */
-static void SrcActuator_Get_ChannelRemap(void);
+static void SrcActuator_Get_ChannelRemap(SrvActuatot_Setting_TypeDef cfg);
 static bool SrvActuator_Config_MotoSpinDir(void);
 static void SrvActuator_PipeData(void);
 static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl);
 
 /* external function */
-static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type);
+static bool SrvActuator_Init(SrvActuatot_Setting_TypeDef cfg);
 static void SrvActuator_MotoControl(uint16_t *p_val);
 static bool SrvActuator_InvertMotoSpinDir(uint8_t component_index);
 static bool SrvActuator_Lock(void);
@@ -102,12 +102,12 @@ SrvActuator_TypeDef SrvActuator = {
     .servo_direct_drive = SrvActuator_Servo_DirectDrive,
 };
 
-static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
+static bool SrvActuator_Init(SrvActuatot_Setting_TypeDef cfg)
 {
     memset(&SrvActuator_Obj, 0, sizeof(SrvActuator_Obj));
     memset(&SrvActuator_ControlStream, 0, sizeof(SrvActuator_ControlStream));
 
-    switch (model)
+    switch (cfg.model)
     {
     case Model_Quad:
         SrvActuator_Obj.drive_module.num = QUAD_CONTROL_COMPONENT;
@@ -145,7 +145,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 
     /* read in storage */
     /* current use default */
-    SrvActuator_Obj.model = model;
+    SrvActuator_Obj.model = cfg.model;
 
     /* malloc dshot esc driver obj for using */
     SrvActuator_Obj.drive_module.obj_list = (SrvActuator_PWMOutObj_TypeDef *)SrvOsCommon.malloc(sizeof(SrvActuator_PWMOutObj_TypeDef) * SrvActuator_Obj.drive_module.num.total_cnt);
@@ -161,12 +161,12 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
         /* default init */
         for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         {
-            switch (esc_type)
+            switch (cfg.esc_type)
             {
             case Actuator_DevType_DShot150:
             case Actuator_DevType_DShot300:
             case Actuator_DevType_DShot600:
-                SrvActuator_Obj.drive_module.obj_list[i].drv_type = esc_type;
+                SrvActuator_Obj.drive_module.obj_list[i].drv_type = cfg.esc_type;
 
                 SrvActuator_Obj.drive_module.obj_list[i].ctl_val = DSHOT_LOCK_THROTTLE;
                 SrvActuator_Obj.drive_module.obj_list[i].min_val = DSHOT_MIN_THROTTLE;
@@ -205,7 +205,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
 
     /* check value remap relationship */
     /* we can read this info from storage module */
-    SrcActuator_Get_ChannelRemap();
+    SrcActuator_Get_ChannelRemap(cfg);
     SrvActuator_Config_MotoSpinDir();
 
     SrvActuator_Lock();
@@ -222,7 +222,7 @@ static bool SrvActuator_Init(SrvActuator_Model_List model, uint8_t esc_type)
     return true;
 }
 
-static void SrcActuator_Get_ChannelRemap(void)
+static void SrcActuator_Get_ChannelRemap(SrvActuatot_Setting_TypeDef cfg)
 {
     uint8_t storage_serial[SrvActuator_Obj.drive_module.num.moto_cnt + SrvActuator_Obj.drive_module.num.servo_cnt];
     SrvActuator_PeriphSet_TypeDef *periph_ptr = NULL;
