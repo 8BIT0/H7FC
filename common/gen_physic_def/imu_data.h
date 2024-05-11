@@ -20,7 +20,6 @@ typedef enum
     Att_Pitch = 0,
     Att_Roll,
     Att_Ctl_Sum,
-    Att_Yaw = Att_Ctl_Sum,
     Att_Heading,
 } Attitude_List;
 

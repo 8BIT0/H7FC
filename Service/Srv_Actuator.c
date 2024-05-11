@@ -71,13 +71,13 @@ SrvActuatorPipeData_TypeDef Proto_Actuator_Data;
 DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Actuator_Data);
 
 /* internal function */
-static void SrcActuator_Get_ChannelRemap(SrvActuatot_Setting_TypeDef cfg);
+static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg);
 static bool SrvActuator_Config_MotoSpinDir(void);
 static void SrvActuator_PipeData(void);
 static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl);
 
 /* external function */
-static bool SrvActuator_Init(SrvActuatot_Setting_TypeDef cfg);
+static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg);
 static void SrvActuator_MotoControl(uint16_t *p_val);
 static bool SrvActuator_InvertMotoSpinDir(uint8_t component_index);
 static bool SrvActuator_Lock(void);
@@ -87,6 +87,7 @@ static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, i
 static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
 static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value);
 static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value);
+static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void);
  
 /* external variable */
 SrvActuator_TypeDef SrvActuator = {
@@ -100,9 +101,10 @@ SrvActuator_TypeDef SrvActuator = {
     .get_servo_control_range = SrvActuator_Get_ServoControlRange,
     .moto_direct_drive = SrvActuator_Moto_DirectDrive,
     .servo_direct_drive = SrvActuator_Servo_DirectDrive,
+    .default_param = SrvActuator_Default_Setting,
 };
 
-static bool SrvActuator_Init(SrvActuatot_Setting_TypeDef cfg)
+static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
 {
     memset(&SrvActuator_Obj, 0, sizeof(SrvActuator_Obj));
     memset(&SrvActuator_ControlStream, 0, sizeof(SrvActuator_ControlStream));
@@ -222,7 +224,23 @@ static bool SrvActuator_Init(SrvActuatot_Setting_TypeDef cfg)
     return true;
 }
 
-static void SrcActuator_Get_ChannelRemap(SrvActuatot_Setting_TypeDef cfg)
+static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void)
+{
+    SrvActuator_Setting_TypeDef default_setting;
+    memset(&default_setting, 0, sizeof(SrvActuator_Setting_TypeDef));
+
+    default_setting.model = Model_Quad;
+    default_setting.esc_type = DevDshot_600;
+
+    default_setting.moto_num = 4;
+    default_setting.servo_num = 0;
+
+    memcpy(default_setting.pwm_ch_map, default_sig_serial, 4);
+
+    return default_setting;
+}
+
+static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg)
 {
     uint8_t storage_serial[SrvActuator_Obj.drive_module.num.moto_cnt + SrvActuator_Obj.drive_module.num.servo_cnt];
     SrvActuator_PeriphSet_TypeDef *periph_ptr = NULL;

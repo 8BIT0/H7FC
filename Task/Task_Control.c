@@ -12,10 +12,8 @@
 #include "Srv_Actuator.h"
 #include "shell_port.h"
 
-#define CONTROL_STORAGE_SECTION_NAME "Control_Para"
-
-#define DEFAULT_CONTROL_MODEL Model_Quad
-#define DEFAULT_ESC_TYPE DevDshot_600
+#define ACTUATOR_STORAGE_SECTION_NAME "Actuator_Param"
+#define CONTROL_STORAGE_SECTION_NAME "PID_Param"
 
 #define ATTITUDE_PID_ACCURACY 1000
 #define ATTITUDE_PID_DIFF_MAX 30    /* unit: deg */
@@ -61,7 +59,6 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .throttle_protect_enable = true,
     .throttle_percent = false,
 
-    .actuator_model = Model_Quad,
     .IMU_Rt = 0,
 };
 
@@ -71,7 +68,7 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_ctl_val);
 static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef *monitor);
 static void TaskControl_CLI_Polling(void);
-static bool TaskControl_Get_StoreParam(void);
+static void TaskControl_Get_StoreParam(void);
 static TaskControl_FlightParam_TypeDef TaskControl_Get_InuseParam(void);
 
 /* internal var */
@@ -93,10 +90,7 @@ void TaskControl_Init(uint32_t period)
     /* Parametet Init */
     TaskControl_Get_StoreParam();
 
-    /* can be optmize down below */
-    TaskControl_Monitor.init_state = SrvActuator.init(TaskControl_Monitor.param.actuator_cfg);
-    /* can be optmize up top */
-    TaskControl_Monitor.actuator_model = SrvActuator.get_model();
+    TaskControl_Monitor.init_state = SrvActuator.init(TaskControl_Monitor.actuator_param);
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
@@ -133,25 +127,6 @@ void TaskControl_Init(uint32_t period)
     angularspeed_ctl_range[Axis_Z].enable_dead_zone = false;
     
     control_enable = Srv_CtlDataArbitrate.init(att_ctl_range, angularspeed_ctl_range);
-    TaskControl_Monitor.moto_cnt = SrvActuator.get_cnt().moto_cnt;
-    TaskControl_Monitor.servo_cnt = SrvActuator.get_cnt().servo_cnt;
-
-    if(TaskControl_Monitor.moto_cnt)
-    {
-        TaskControl_Monitor.moto_value = SrvOsCommon.malloc(sizeof(uint16_t) * TaskControl_Monitor.moto_cnt);
-    
-        if(TaskControl_Monitor.moto_value == NULL)
-            SrvOsCommon.free(TaskControl_Monitor.moto_value);
-    }
-
-    if(TaskControl_Monitor.servo_cnt)
-    {
-        TaskControl_Monitor.servo_value = SrvOsCommon.malloc(sizeof(uint16_t) * TaskControl_Monitor.servo_cnt);
-    
-        if(TaskControl_Monitor.servo_value == NULL)
-            SrvOsCommon.free(TaskControl_Monitor.servo_value);
-    }
-
     TaskControl_Period = period;
 }
 
@@ -232,39 +207,39 @@ static bool TaskControl_Param_Copy(PIDObj_TypeDef *PID_Obj, PID_Param_TypeDef Pa
 }
 
 /* read param from storage */
-static bool TaskControl_Get_StoreParam(void)
+static void TaskControl_Get_StoreParam(void)
 {
-    TaskControl_FlightParam_TypeDef Param;
+    TaskControl_FlightParam_TypeDef PID_Param;
     TaskControl_FlightParam_TypeDef Default_Param;
     TaskControl_FlightParam_TypeDef *p_UseParam = NULL;
-    bool state = true;
+    SrvActuator_Setting_TypeDef Actuator_Param;
 
     /* search storage section first */
-    memset(&Param, 0, sizeof(TaskControl_FlightParam_TypeDef));
+    memset(&PID_Param, 0, sizeof(TaskControl_FlightParam_TypeDef));
+    memset(&Actuator_Param, 0, sizeof(SrvActuator_Setting_TypeDef));
     memset(&Default_Param, 0, sizeof(TaskControl_FlightParam_TypeDef));
-    memset(&TaskControl_Monitor.store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
-    TaskControl_Monitor.store_info = Storage.search(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME);
+    memset(&TaskControl_Monitor.pid_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+    memset(&TaskControl_Monitor.actuator_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
 
-    Param = TaskControl_Get_DefaultParam();
-    Default_Param = Param;
+    TaskControl_Monitor.pid_store_info = Storage.search(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME);
+    TaskControl_Monitor.actuator_store_info = Storage.search(External_Flash, Para_User, ACTUATOR_STORAGE_SECTION_NAME);
+
+    /* get pid parameter */
+    PID_Param = TaskControl_Get_DefaultParam();
+    Default_Param = PID_Param;
     p_UseParam = &Default_Param;
     
-    if (TaskControl_Monitor.store_info.item_addr == 0)
+    if (TaskControl_Monitor.pid_store_info.item_addr == 0)
     {
         /* no pid parameter found in external flash chip under user partten */
         /* section create successful */
-        if (Storage.create(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&Param, sizeof(TaskControl_FlightParam_TypeDef)) != Storage_Error_None)
-            state = false;
+        Storage.create(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&PID_Param, sizeof(TaskControl_FlightParam_TypeDef));
     }
     else
     {
-        if ((TaskControl_Monitor.store_info.item.len == sizeof(TaskControl_FlightParam_TypeDef)) && \
-            (Storage.get(External_Flash, Para_User, TaskControl_Monitor.store_info.item, (uint8_t *)&Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None))
-        {
-            p_UseParam = &Param;
-        }
-        else
-            state = false;
+        if ((TaskControl_Monitor.pid_store_info.item.len == sizeof(TaskControl_FlightParam_TypeDef)) && \
+            (Storage.get(External_Flash, Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&PID_Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None))
+            p_UseParam = &PID_Param;
     }
 
     TaskControl_Param_Copy(&TaskControl_Monitor.PitchCtl_PIDObj, p_UseParam->Outer.Pitch_Para);
@@ -273,7 +248,15 @@ static bool TaskControl_Get_StoreParam(void)
     TaskControl_Param_Copy(&TaskControl_Monitor.GyrYCtl_PIDObj,  p_UseParam->Inner.GyroY_Para);
     TaskControl_Param_Copy(&TaskControl_Monitor.GyrZCtl_PIDObj,  p_UseParam->Inner.GyroZ_Para);
 
-    return state;
+    /* get actuator parameter */
+    /* set as default first */
+    TaskControl_Monitor.actuator_param = SrvActuator.default_param();
+    if (TaskControl_Monitor.actuator_store_info.item_addr)
+    {
+        if ((TaskControl_Monitor.actuator_store_info.item.len == sizeof(SrvActuator_Setting_TypeDef)) && \
+            Storage.get(External_Flash, Para_User, TaskControl_Monitor.actuator_store_info.item, (uint8_t *)&Actuator_Param, sizeof(SrvActuator_Setting_TypeDef)) == Storage_Error_None)
+            TaskControl_Monitor.actuator_param = Actuator_Param;
+    }
 }
 
 void TaskControl_Core(void const *arg)
@@ -1101,12 +1084,12 @@ static void TaskControl_Param_Set(const char *sel, const char *para_sel, uint16_
 
     if (save && (strlen(save) == 1) && (*save == 'S'))
     {
-        if (TaskControl_Monitor.store_info.item_addr && \
-            TaskControl_Monitor.store_info.item.data_addr)
+        if (TaskControl_Monitor.pid_store_info.item_addr && \
+            TaskControl_Monitor.pid_store_info.item.data_addr)
         {
             Param = TaskControl_Get_InuseParam();
             if (Storage.update( External_Flash, Para_User, \
-                                TaskControl_Monitor.store_info.item.data_addr, \
+                                TaskControl_Monitor.pid_store_info.item.data_addr, \
                                 (uint8_t *)&Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None)
             {
                 shellPrint(shell_obj, "\t[ -- PID Parameter Store Accomplish -- ]\r\n");
@@ -1117,8 +1100,8 @@ static void TaskControl_Param_Set(const char *sel, const char *para_sel, uint16_
         }
         else
         {
-            shellPrint(shell_obj, "\t[ item slot addr : %lld ]\r\n", TaskControl_Monitor.store_info.item_addr);
-            shellPrint(shell_obj, "\t[ data slot addr : %lld ]\r\n", TaskControl_Monitor.store_info.item.data_addr);
+            shellPrint(shell_obj, "\t[ item slot addr : %lld ]\r\n", TaskControl_Monitor.pid_store_info.item_addr);
+            shellPrint(shell_obj, "\t[ data slot addr : %lld ]\r\n", TaskControl_Monitor.pid_store_info.item.data_addr);
             shellPrint(shell_obj, "\t[ -- PID parameter Storage Error -- ]\r\n");
         }
     }

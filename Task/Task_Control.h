@@ -62,7 +62,6 @@ typedef struct
 
 typedef struct
 {
-    SrvActuatot_Setting_TypeDef actuator_cfg;
     TaskControl_OuterLoop_Para_TypeDef Outer;
     TaskControl_InnerLoop_Para_TypeDef Inner;
 } TaskControl_FlightParam_TypeDef;
@@ -78,18 +77,13 @@ typedef struct
     bool throttle_protect;
     bool CLI_enable;
 
-    Storage_ItemSearchOut_TypeDef store_info;
-    TaskControl_FlightParam_TypeDef param;
+    Storage_ItemSearchOut_TypeDef pid_store_info;
+    TaskControl_FlightParam_TypeDef pid_param;
+
+    Storage_ItemSearchOut_TypeDef actuator_store_info;
+    SrvActuator_Setting_TypeDef actuator_param;
 
     uint8_t angular_warning_cnt;
-
-    uint8_t actuator_model;
-    uint8_t moto_cnt;
-    uint16_t *moto_value;
-    
-    uint8_t servo_cnt;
-    uint16_t *servo_value;
-
     uint8_t imu_update_error_cnt;
 
     uint32_t IMU_Rt;
