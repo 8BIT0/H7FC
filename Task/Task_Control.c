@@ -1,5 +1,5 @@
 /*
- *  coder : 8_B!T0
+ *  Auther : 8_B!T0
  *  this file use for moto & servo control
  *  pitch & roll control mode outer loop is angular loop inner loop is angular speed loop 
  *  yaw control mode is only angular speed loop
