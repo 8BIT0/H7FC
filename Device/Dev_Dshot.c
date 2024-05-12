@@ -9,11 +9,13 @@ __attribute__((weak)) uint32_t DShot_Get_Timer_CLKFreq(void *obj){return 0;}
 
 /* external function */
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, uint8_t dma, uint8_t stream);
+static bool DevDshot_DeInit(DevDshotObj_TypeDef *obj);
 static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value);
 static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint16_t cmd);
 
 DevDshot_TypeDef DevDshot = {
     .init = DevDshot_Init,
+    .de_init = DevDshot_DeInit,
     .command = DevDshot_Command,
     .control = DevDshot_Control,
 };
@@ -34,6 +36,16 @@ static uint32_t DevDshot_GetType_Clock(DevDshotType_List type)
     default:
         return DSHOT300_CLK_HZ;
     }
+}
+
+static bool DevDshot_DeInit(DevDshotObj_TypeDef *obj)
+{
+    if (obj)
+    {
+
+    }
+
+    return false;
 }
 
 static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
