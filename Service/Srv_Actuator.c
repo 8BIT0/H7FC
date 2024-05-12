@@ -23,7 +23,6 @@
  * 
  */
 #include "Srv_Actuator.h"
-#include "Srv_DataHub.h"
 #include "Srv_OsCommon.h"
 #include "datapipe.h"
 
@@ -66,19 +65,16 @@ const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
 /* internal variable */
 SrvActuatorObj_TypeDef SrvActuator_Obj;
 SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
-SrvActuatorPipeData_TypeDef Proto_Actuator_Data;
-
-DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Actuator_Data);
 
 /* internal function */
 static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg);
 static bool SrvActuator_Config_MotoSpinDir(void);
-static void SrvActuator_PipeData(void);
 static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl);
 
 /* external function */
 static bool SrvActuator_DeInit(void);
 static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg);
+static bool SrvActuator_DeInit(void);
 static void SrvActuator_MotoControl(uint16_t *p_val);
 static bool SrvActuator_InvertMotoSpinDir(uint8_t component_index);
 static bool SrvActuator_Lock(void);
@@ -110,24 +106,39 @@ static bool SrvActuator_DeInit(void)
 {
     SrvActuator_ModelComponentNum_TypeDef actuator_num;
     SrvActuator_PWMOutObj_TypeDef *PWM_List = NULL;
-    uint8_t i = 0;
+    static uint8_t m_i = 0;
+    static uint8_t s_i = 0;
 
     memset(&actuator_num, 0, sizeof(SrvActuator_ModelComponentNum_TypeDef));
 
     if (SrvActuator_Obj.init)
     {
         actuator_num = SrvActuator_Obj.drive_module.num;
+        PWM_List = SrvActuator_Obj.drive_module.obj_list;
 
-        /* deinit moto timer */
-        for (i = 0; i < actuator_num.moto_cnt; i ++)
+        if (PWM_List)
         {
-            
-        }
+            /* deinit moto timer */
+            for (; m_i < actuator_num.moto_cnt; m_i ++)
+            {
+                switch(PWM_List[m_i].drv_type)
+                {
+                    case DevDshot_150:
+                    case DevDshot_300:
+                    case DevDshot_600:
+                        DevDshot.de_init(PWM_List[m_i].drv_obj);
+                        break;
 
-        /* deinit servo timer */
-        for (i = 0; i < actuator_num.servo_cnt; i++)
-        {
+                    default: break;
+                }
+            }
 
+            /* deinit servo timer */
+            /* still in developping */
+            for (; s_i < actuator_num.servo_cnt; s_i ++)
+            {
+
+            }
         }
     }
 
@@ -242,14 +253,6 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
 
     SrvActuator_Lock();
 
-    // init actuator data pipe
-    memset(&Actuator_Smp_DataPipe, 0, sizeof(Actuator_Smp_DataPipe));
-    memset(DataPipe_DataObjAddr(Actuator_Data), 0, sizeof(DataPipe_DataObj(Actuator_Data)));
-
-    Actuator_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Actuator_Data);
-    Actuator_Smp_DataPipe.data_size = sizeof(DataPipe_DataObj(Actuator_Data));
-    DataPipe_Enable(&Actuator_Smp_DataPipe);
-
     SrvActuator_Obj.init = true;
     return true;
 }
@@ -280,7 +283,7 @@ static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg)
     {
         for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         {
-            SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.pwm_ch_map[cfg.pwm_ch_map[i]];
+            SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.pwm_ch_map[i];
             SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = (SrvActuator_PeriphSet_TypeDef *)&SrvActuator_Periph_List[cfg.pwm_ch_map[i]];
             periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 
@@ -323,8 +326,7 @@ static bool SrvActuator_Lock(void)
             return false;
         }
     }
-
-    SrvActuator_PipeData();
+    
     return true;
 }
 
@@ -342,8 +344,6 @@ static void SrvActuator_MotoControl(uint16_t *p_val)
     default:
         return;
     }
-
-    SrvActuator_PipeData();
 }
 
 static void SrvActuator_ServoControl(uint8_t index, uint16_t val)
@@ -456,27 +456,6 @@ static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void)
 static SrvActuator_Model_List SrvActuator_GetModel(void)
 {
     return SrvActuator_Obj.model;
-}
-
-static void SrvActuator_PipeData(void)
-{
-    DataPipe_DataObj(Actuator_Data).time_stamp = SrvOsCommon.get_os_ms();
-    DataPipe_DataObj(Actuator_Data).moto_cnt = SrvActuator_Obj.drive_module.num.moto_cnt;
-    DataPipe_DataObj(Actuator_Data).servo_cnt = SrvActuator_Obj.drive_module.num.servo_cnt;
-
-    for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.total_cnt; i++)
-    {
-        if (i < SrvActuator_Obj.drive_module.num.moto_cnt)
-        {
-            DataPipe_DataObj(Actuator_Data).moto[i] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
-        }
-        else
-        {
-            DataPipe_DataObj(Actuator_Data).servo[i - SrvActuator_Obj.drive_module.num.moto_cnt] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
-        }
-    }
-
-    DataPipe_SendTo(&Actuator_Smp_DataPipe, &Actuator_hub_DataPipe);
 }
 
 /*
