@@ -208,7 +208,7 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
     /* check value remap relationship */
     /* we can read this info from storage module */
     SrcActuator_Get_ChannelRemap(cfg);
-    SrvActuator_Config_MotoSpinDir();
+    // SrvActuator_Config_MotoSpinDir();
 
     SrvActuator_Lock();
 
