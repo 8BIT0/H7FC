@@ -126,7 +126,8 @@ static bool SrvActuator_DeInit(void)
                     case DevDshot_150:
                     case DevDshot_300:
                     case DevDshot_600:
-                        DevDshot.de_init(PWM_List[m_i].drv_obj);
+                        if (!DevDshot.de_init(PWM_List[m_i].drv_obj))
+                            return false;
                         break;
 
                     default: break;
