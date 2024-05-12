@@ -109,7 +109,9 @@ SrvActuator_TypeDef SrvActuator = {
 static bool SrvActuator_DeInit(void)
 {
     SrvActuator_ModelComponentNum_TypeDef actuator_num;
+    SrvActuator_PWMOutObj_TypeDef *PWM_List = NULL;
     uint8_t i = 0;
+    
     memset(&actuator_num, 0, sizeof(SrvActuator_ModelComponentNum_TypeDef));
 
     if (SrvActuator_Obj.init)
