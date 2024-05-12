@@ -77,6 +77,7 @@ static void SrvActuator_PipeData(void);
 static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl);
 
 /* external function */
+static bool SrvActuator_DeInit(void);
 static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg);
 static void SrvActuator_MotoControl(uint16_t *p_val);
 static bool SrvActuator_InvertMotoSpinDir(uint8_t component_index);
@@ -92,6 +93,7 @@ static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void);
 /* external variable */
 SrvActuator_TypeDef SrvActuator = {
     .init = SrvActuator_Init,
+    .de_init = SrvActuator_DeInit,
     .lock = SrvActuator_Lock,
     .moto_control = SrvActuator_MotoControl,
     .invert_spin = SrvActuator_InvertMotoSpinDir,
@@ -103,6 +105,32 @@ SrvActuator_TypeDef SrvActuator = {
     .servo_direct_drive = SrvActuator_Servo_DirectDrive,
     .default_param = SrvActuator_Default_Setting,
 };
+
+static bool SrvActuator_DeInit(void)
+{
+    SrvActuator_ModelComponentNum_TypeDef actuator_num;
+    uint8_t i = 0;
+    memset(&actuator_num, 0, sizeof(SrvActuator_ModelComponentNum_TypeDef));
+
+    if (SrvActuator_Obj.init)
+    {
+        actuator_num = SrvActuator_Obj.drive_module.num;
+
+        /* deinit moto timer */
+        for (i = 0; i < actuator_num.moto_cnt; i ++)
+        {
+            
+        }
+
+        /* deinit servo timer */
+        for (i = 0; i < actuator_num.servo_cnt; i++)
+        {
+
+        }
+    }
+
+    return true;
+}
 
 static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
 {
@@ -250,7 +278,7 @@ static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg)
     {
         for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         {
-            SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.pwm_ch_map[i];
+            SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.pwm_ch_map[cfg.pwm_ch_map[i]];
             SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = (SrvActuator_PeriphSet_TypeDef *)&SrvActuator_Periph_List[cfg.pwm_ch_map[i]];
             periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 

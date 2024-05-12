@@ -48,6 +48,7 @@ typedef struct
                  uint8_t stream,
                  uint32_t buf_aadr,
                  uint32_t buf_size);
+    bool (*de_init)(BspTimerPWMObj_TypeDef *obj);
     void (*set_prescaler)(BspTimerPWMObj_TypeDef *obj, uint32_t prescale);
     void (*set_autoreload)(BspTimerPWMObj_TypeDef *obj, uint32_t autoreload);
     void (*start_pwm)(BspTimerPWMObj_TypeDef *obj);

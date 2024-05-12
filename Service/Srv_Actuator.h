@@ -368,6 +368,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(SrvActuator_Setting_TypeDef cfg);
+    bool (*de_init)(void);
     SrvActuator_Setting_TypeDef (*default_param)(void);
     bool (*lock)(void);
     void (*moto_control)(uint16_t *p_val);
