@@ -230,7 +230,7 @@ static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void)
     memset(&default_setting, 0, sizeof(SrvActuator_Setting_TypeDef));
 
     default_setting.model = Model_Quad;
-    default_setting.esc_type = DevDshot_600;
+    default_setting.esc_type = DevDshot_300;
 
     default_setting.moto_num = 4;
     default_setting.servo_num = 0;
@@ -242,19 +242,16 @@ static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void)
 
 static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg)
 {
-    uint8_t storage_serial[SrvActuator_Obj.drive_module.num.moto_cnt + SrvActuator_Obj.drive_module.num.servo_cnt];
     SrvActuator_PeriphSet_TypeDef *periph_ptr = NULL;
 
     /* get remap relationship */
-    memcpy(storage_serial, default_sig_serial, sizeof(storage_serial)); // only for develop stage...
-
     /* moto section */
     if (SrvActuator_Obj.drive_module.num.moto_cnt)
     {
         for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         {
-            SrvActuator_Obj.drive_module.obj_list[i].sig_id = storage_serial[storage_serial[i]];
-            SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = (SrvActuator_PeriphSet_TypeDef *)&SrvActuator_Periph_List[storage_serial[i]];
+            SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.pwm_ch_map[i];
+            SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = (SrvActuator_PeriphSet_TypeDef *)&SrvActuator_Periph_List[cfg.pwm_ch_map[i]];
             periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 
             DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj,

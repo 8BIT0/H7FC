@@ -13,8 +13,8 @@
 #include "Srv_Actuator.h"
 #include "shell_port.h"
 
-#define ACTUATOR_STORAGE_SECTION_NAME "Actuator_Param"
-#define CONTROL_STORAGE_SECTION_NAME "PID_Param"
+#define ACTUATOR_STORAGE_SECTION_NAME "Actuator_Para"
+#define CONTROL_STORAGE_SECTION_NAME "Control_Para"
 
 #define ATTITUDE_PID_ACCURACY 1000
 #define ATTITUDE_PID_DIFF_MAX 30    /* unit: deg */
