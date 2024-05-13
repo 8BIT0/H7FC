@@ -8,8 +8,8 @@
 #include "Storage.h"
 #include "shell_port.h"
 #include "util.h"
+#include "HW_Def.h"
 #include "Srv_OsCommon.h"
-#include "error_log.h"
 
 #define InternalFlash_BootDataSec_Size (4 Kb)
 #define InternalFlash_SysDataSec_Size (16 Kb)
@@ -88,6 +88,7 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
 static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size);
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
 static Storage_ErrorCode_List Storage_Get_Data(Storage_MediumType_List medium, Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
+static bool Stroeage_IsAvaliable(Storage_MediumType_List medium);
 
 Storage_TypeDef Storage = {
     .init = Storage_Init,
@@ -95,7 +96,19 @@ Storage_TypeDef Storage = {
     .create = Storage_CreateItem,
     .get = Storage_Get_Data,
     .update = Storage_SlotData_Update,
+    .avaliable = Stroeage_IsAvaliable,
 };
+
+static bool Stroeage_IsAvaliable(Storage_MediumType_List medium)
+{
+    if (medium == Internal_Flash)
+        return (Storage_Monitor.module_enable_reg.bit.internal & Storage_Monitor.module_init_reg.bit.internal);
+    
+    if (medium == External_Flash)
+        return (Storage_Monitor.module_enable_reg.bit.external & Storage_Monitor.module_init_reg.bit.external);
+
+    return false;
+}
 
 static bool Storage_Init(Storage_ModuleState_TypeDef enable, Storage_ExtFLashDevObj_TypeDef *ExtDev)
 {

@@ -28,6 +28,7 @@ static void BspUart_DMA_RxCplt_Callback(void *arg);
 
 /* external function */
 static bool BspUart_Init(BspUARTObj_TypeDef *obj);
+static bool BspUart_DeInit(BspUARTObj_TypeDef *obj);
 static bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit);
 static bool BspUart_Set_Parity(BspUARTObj_TypeDef *obj, uint32_t parity);
 static bool BspUart_Set_StopBit(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
@@ -38,6 +39,7 @@ static bool BspUart_Set_Tx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback ca
 
 BspUART_TypeDef BspUart = {
     .init = BspUart_Init,
+    .de_init = BspUart_DeInit,
     .set_parity = BspUart_Set_Parity,
     .set_stop_bit = BspUart_Set_StopBit,
     .set_data_bit = BspUart_Set_DataBit,
@@ -399,6 +401,30 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     obj->init_state = true;
     
     return true;
+}
+
+static bool BspUart_DeInit(BspUARTObj_TypeDef *obj)
+{
+    if (obj && obj->instance)
+    {
+        /* deinit dma port */
+        if (obj->rx_dma_hdl)
+        {
+            dma_channel_enable(To_DMA_Handle_Ptr(obj->rx_dma_hdl), FALSE);
+            dma_reset(To_DMA_Handle_Ptr(obj->rx_dma_hdl));
+        }
+
+        if (obj->tx_dma_hdl)
+        {
+            dma_channel_enable(To_DMA_Handle_Ptr(obj->tx_dma_hdl), FALSE);
+            dma_reset(To_DMA_Handle_Ptr(obj->tx_dma_hdl));
+        }
+
+        /* deinit uart port */
+        usart_reset(To_Uart_Instance(obj->instance));
+    }
+
+    return false;
 }
 
 static bool BspUart_Set_DataBit(BspUARTObj_TypeDef *obj, uint32_t bit)

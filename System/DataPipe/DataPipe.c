@@ -23,6 +23,11 @@ bool DataPipe_Init(void)
     return true;
 }
 
+bool DataPipe_DeInit(void)
+{
+    return BspDMA_Pipe.de_init();
+}
+
 bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst)
 {
     uint8_t retry_cnt = 5;

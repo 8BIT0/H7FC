@@ -595,6 +595,14 @@ void DShot_Free(void *ptr)
     SrvOsCommon.free(ptr);
 }
 
+bool DShot_Port_DeInit(void *obj)
+{
+    if (obj && BspTimer_PWM.de_init(&(To_DShot_Obj(obj)->pwm_obj)))
+        return true;
+
+    return false;
+}
+
 bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t time_ch, void *pin, uint8_t dma, uint8_t stream)
 {
     if (obj && time_ins && pin)

@@ -21,6 +21,7 @@ BspTIM_PWMInitMonitor_TypeDef monitor = {
 static void BspTimer_DMA_TransCplt_Callback(void *arg);
 
 /* external function */
+static bool BspTimer_PWM_DeInit(BspTimerPWMObj_TypeDef *obj);
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               void *instance,
                               uint32_t ch,
@@ -37,6 +38,7 @@ static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj);
 
 BspTimerPWM_TypeDef BspTimer_PWM = {
     .init = BspTimer_PWM_Init,
+    .de_init = BspTimer_PWM_DeInit,
     .set_prescaler = BspTimer_SetPreScale,
     .set_autoreload = BspTimer_SetAutoReload,
     .start_pwm = BspTimer_PWM_Start,
@@ -44,21 +46,21 @@ BspTimerPWM_TypeDef BspTimer_PWM = {
     .get_clock_freq = BspTimer_Get_Clock_Freq,
 };
 
-static bool BspTimer_Clock_Enable(void *instance)
+static bool BspTimer_Clock_EnableCtl(void *instance, confirm_state state)
 {
     if (To_Timer_Instance(instance) == TMR2)
     {
-        crm_periph_clock_enable(CRM_TMR2_PERIPH_CLOCK, TRUE);
+        crm_periph_clock_enable(CRM_TMR2_PERIPH_CLOCK, state);
         return true;
     }
     else if (To_Timer_Instance(instance) == TMR3)
     {
-        crm_periph_clock_enable(CRM_TMR3_PERIPH_CLOCK, TRUE);
+        crm_periph_clock_enable(CRM_TMR3_PERIPH_CLOCK, state);
         return true;
     }
     else if (To_Timer_Instance(instance) == TMR8)
     {
-        crm_periph_clock_enable(CRM_TMR8_PERIPH_CLOCK, TRUE);
+        crm_periph_clock_enable(CRM_TMR8_PERIPH_CLOCK, state);
         return true;
     }
 
@@ -183,6 +185,20 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
     return false;
 }
 
+static bool BspTimer_PWM_DeInit(BspTimerPWMObj_TypeDef *obj)
+{
+    if (obj && obj->instance)
+    {
+        if (!BspTimer_Clock_EnableCtl(obj->instance, FALSE) || \
+            !BspDMA.disable_irq(obj->dma, obj->stream))
+            return false;
+    
+        return true;
+    }
+
+    return false;
+}
+
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               void *instance,
                               uint32_t ch,
@@ -193,7 +209,6 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               uint32_t buf_size)
 {
     tmr_output_config_type tmr_output_struct;
-    // tmr_dma_address_type dma_addr = 0;
 
     memset(&tmr_output_struct, 0, sizeof(tmr_output_config_type));
 
@@ -210,7 +225,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
         (buf_size == 0))
         return false;
 
-    if (!BspTimer_Clock_Enable(instance))
+    if (!BspTimer_Clock_EnableCtl(instance, TRUE))
         return false;
 
     obj->dma = dma;
@@ -304,24 +319,15 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
     }
 }
 
-/* test code */
-// uint8_t send_test = 0;
-// uint8_t cb_test = 0;
-/* test code */
-
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj && obj->dma_hdl)
     {
-        // send_test ++;
         To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * 2;
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
         tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
-
-        /* test code */
-        // while(cb_test < send_test);
     }
 }
 
@@ -331,7 +337,6 @@ static void BspTimer_DMA_TransCplt_Callback(void *arg)
 
     if (arg && To_TimerPWMObj_Ptr(arg)->dma_hdl)
     {
-        // cb_test ++;
         obj = To_TimerPWMObj_Ptr(arg);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
         tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);

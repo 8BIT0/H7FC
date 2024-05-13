@@ -51,6 +51,7 @@ typedef struct
 } Data_PlugedPipeObj_TypeDef;
 
 bool DataPipe_Init(void);
+bool DataPipe_DeInit(void);
 bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst);
 bool DataPipe_DealError(void);
 
