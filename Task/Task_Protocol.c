@@ -5,6 +5,7 @@
 #include "Srv_DataHub.h"
 #include "Srv_FileAdapter.h"
 #include "DataPipe.h"
+#include "Srv_Upgrade.h"
 #include "Storage.h"
 #include "pid.h"
 
@@ -193,6 +194,9 @@ void TaskFrameCTL_Init(uint32_t period)
     VCP_Connect_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(VCP_Attach_State);
     VCP_Connect_smp_DataPipe.data_size = sizeof(DataPipe_DataObj(VCP_Attach_State));
     DataPipe_Enable(&VCP_Connect_smp_DataPipe);
+
+    /* init upgrade */
+    SrvUpgrade.init(On_App, 0);
 }
 
 void TaskFrameCTL_Core(void *arg)

@@ -144,7 +144,15 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
                     Monitor.ParamStatus = UpgradeParam_Valid;
                 break;
 
-            case On_Boot:
+            case On_Boot:                
+                Monitor.jump_time = SrvOsCommon.get_os_ms();
+                if (window_size >= DEFAULT_WINDOW_SIZE)
+                {
+                    Monitor.jump_time += window_size;
+                }
+                else
+                    Monitor.jump_time += DEFAULT_WINDOW_SIZE;
+
                 if (Monitor.Info.reg.bit.App || Monitor.Info.reg.bit.Module)
                     Monitor.ParamStatus = UpgradeParam_Valid;
 
@@ -173,14 +181,6 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
         if (Monitor.Info.reg.bit.Module)
             SrvUpgrade_Collect_Info("\t\t---[External Module] Got New Firmware\r\n");
     }
-
-    Monitor.jump_time = SrvOsCommon.get_os_ms();
-    if (window_size >= DEFAULT_WINDOW_SIZE)
-    {
-        Monitor.jump_time += window_size;
-    }
-    else
-        Monitor.jump_time += DEFAULT_WINDOW_SIZE;
 
     /* show jump time stamp */
     SrvUpgrade_Collect_Info("\tJump time: %d\r\n", Monitor.jump_time);
