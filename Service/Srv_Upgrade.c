@@ -7,9 +7,9 @@
 #define FIRMWARE_PROTO_TIMEOUT      1000    /* unit: ms */
 #define DEFAULT_WINDOW_SIZE         100     /* unit: ms */
 
-#define BootVer {0, 0, 0}
-#define BootBref "First Version of H7FC Bootloader"
-#define BootCompileData __DATA__
+#define AppVer {0, 0, 0}
+#define AppBref "First Version of H7FC"
+#define AppCompileData __DATA__
 #define FIRMWARE_MAX_READ_SIZE (4 Kb)
 
 /* get virable from .ld file defined */
