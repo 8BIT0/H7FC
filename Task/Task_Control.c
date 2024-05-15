@@ -34,13 +34,11 @@ DataPipe_CreateDataObj(ControlData_TypeDef, Smp_Inuse_CtlData);
 
 static uint32_t imu_update_time = 0;
 static uint32_t att_update_time = 0;
-static uint32_t tunning_time_stamp = 0;
 static uint8_t imu_err_code;
 static bool arm_state = true;
 static bool failsafe = false;
 static bool imu_init_state = false;
 static bool att_update = false;
-static bool tunning_state = false;
 static bool configrator_attach = false;
 static bool control_enable = false;
 
@@ -375,10 +373,8 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
         SrvDataHub.get_arm_state(&arm_state);
         SrvDataHub.get_failsafe(&failsafe);
         
-        SrvDataHub.get_tunning_state(&tunning_time_stamp, &tunning_state, &tunning_port);
-
         /* if in tunning or attach configrator then lock moto */
-        if(tunning_state || configrator_attach)
+        if(configrator_attach)
         {
             goto lock_moto;
         }

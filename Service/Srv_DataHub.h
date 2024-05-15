@@ -55,11 +55,9 @@ typedef union
         uint64_t imu_init : 1;              // bit : 24
         uint64_t baro_init : 1;             // bit : 25
         
-        uint64_t tunning : 1;               // bit : 26
-        uint64_t configrator_attach : 1;    // bit : 27
-        uint64_t USB_VCP_attach : 1;        // bit : 28
+        uint64_t USB_VCP_attach : 1;        // bit : 26
 
-        uint64_t cli : 1;                   // bit : 29
+        uint64_t cli : 1;                   // bit : 27
     } bit;
 
     uint64_t val;
@@ -242,12 +240,10 @@ typedef struct
 typedef struct
 {
     void (*init)(void);
-    bool (*set_tunning_state)(uint32_t time_stamp, bool state, uint32_t port_addr);    /* set tunning status in can/uart/usb irq */
     bool (*set_vcp_attach_state)(bool state);
     bool (*set_cli_state)(bool state);
 
     bool (*get_cli_state)(bool *state);
-    bool (*get_tunning_state)(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
     bool (*get_vcp_attach_state)(bool *state);
     bool (*get_imu_init_state)(bool *state);
     bool (*get_pri_imu_range)(uint8_t *acc_range, uint16_t *gyr_range);

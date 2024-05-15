@@ -181,7 +181,8 @@
                 "ymodem.h": "c",
                 "srv_bootloaderctl.h": "c",
                 "srv_fileadapter.h": "c",
-                "mavlink_msg_scaled_imu2.h": "c"
+                "mavlink_msg_scaled_imu2.h": "c",
+                "srv_upgrade.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

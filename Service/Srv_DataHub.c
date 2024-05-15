@@ -51,13 +51,11 @@ static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
 static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error);
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over);
-static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr);
 static bool SrvDataHub_Get_VCPAttach_State(bool *state);
 static bool SrvDataHub_Get_CLI_State(bool *state);
 static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 
-static bool SrvDataHub_Set_TunningState(uint32_t time_stamp, bool state, uint32_t port_addr);
 static bool SrvDataHub_Set_CLI_State(bool state);
 
 /* external variable */
@@ -80,12 +78,10 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_servo = SrvDataHub_Get_ServoChannel,
     .get_imu_init_state = SrvDataHub_Get_IMU_InitState,
     .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
-    .get_tunning_state = SrvDataHub_Get_TunningState,
     .get_vcp_attach_state = SrvDataHub_Get_VCPAttach_State,
     .get_cli_state = SrvDataHub_Get_CLI_State,
 
     .set_cli_state = SrvDataHub_Set_CLI_State,
-    .set_tunning_state = SrvDataHub_Set_TunningState,
 };
 
 static void SrvDataHub_Init(void)
@@ -814,52 +810,6 @@ reupdate_servo_channel:
     SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
 
     return true;
-}
-
-/* call set tunning under uart/usb/can irq callback */
-static bool SrvDataHub_Set_TunningState(uint32_t time_stamp, bool state, uint32_t port_addr)
-{
-    if((SrvDataHub_Monitor.data.tunning_port_addr == 0) || \
-       (port_addr == SrvDataHub_Monitor.data.tunning_port_addr) || \
-       !SrvDataHub_Monitor.data.in_tunning)
-    {
-        if(SrvDataHub_Monitor.inuse_reg.bit.tunning)
-            SrvDataHub_Monitor.inuse_reg.bit.tunning = false;
-
-        SrvDataHub_Monitor.update_reg.bit.tunning = true;
-
-        SrvDataHub_Monitor.data.in_tunning = true;
-        SrvDataHub_Monitor.data.tunning_heartbeat_timestamp = time_stamp;
-        SrvDataHub_Monitor.data.tunning_port_addr = port_addr;
-
-        SrvDataHub_Monitor.update_reg.bit.tunning = false;
-
-        return true;
-    }
-
-    return false;
-}
-
-static bool SrvDataHub_Get_TunningState(uint32_t *time_stamp, bool *state, uint32_t *port_addr)
-{
-    if(time_stamp && state && port_addr)
-    {
-reupdate_tunning_state:
-        SrvDataHub_Monitor.inuse_reg.bit.tunning = true;
-        
-        (*state) = SrvDataHub_Monitor.data.in_tunning;
-        (*time_stamp) = SrvDataHub_Monitor.data.tunning_heartbeat_timestamp;
-        (*port_addr) = SrvDataHub_Monitor.data.tunning_port_addr;
-
-        if(!SrvDataHub_Monitor.inuse_reg.bit.tunning)
-            goto reupdate_tunning_state;
-
-        SrvDataHub_Monitor.inuse_reg.bit.tunning = false;
-
-        return true;
-    }
-
-    return false;
 }
 
 static bool SrvDataHub_Set_CLI_State(bool state)

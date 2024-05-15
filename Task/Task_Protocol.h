@@ -148,6 +148,12 @@ typedef struct
     uint16_t slient_timeout;
 } FrameCTL_CLIMonitor_TypeDef;
 
+typedef struct
+{
+    bool is_enable;
+    uint8_t file_type;
+} FrameCTL_UpgradeMonitor_TypeDef;
+
 void TaskFrameCTL_Init(uint32_t period);
 void TaskFrameCTL_Core(void *arg);
 
