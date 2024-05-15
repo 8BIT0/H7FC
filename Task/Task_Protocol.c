@@ -466,12 +466,19 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
         {
             memset(p_stream->p_buf, 0, p_stream->size);
             p_stream->size = 0;
+            return;
         }
 
         /* when file adapter is enable then halt cli and mavlink frame receive */
         /* and check for upgrade data incoming */
         if (Upgrade_Monitor.is_enable)
         {
+            if (SrvUpgrade.push_data(SrvOsCommon.get_os_ms(), p_stream->p_buf, p_stream->size))
+            {
+                memset(p_stream->p_buf, 0, p_stream->max_size);
+                p_stream->size = 0;
+            }
+
             return;
         }
 

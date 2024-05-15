@@ -118,6 +118,7 @@ typedef struct
     void (*jump)(void);
     uint16_t (*get_log)(uint8_t *p_info, uint16_t len);
     void (*clear_log)(void);
+    bool (*push_data)(uint32_t sys_time, uint8_t *p_buf, uint16_t len);
 } SrvUpgrade_TypeDef;
 
 extern SrvUpgrade_TypeDef SrvUpgrade;

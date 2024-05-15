@@ -80,13 +80,15 @@ static SrvUpgradeMonitor_TypeDef Monitor = {
 
 /* internal function */
 static void SrvUpgrade_Collect_Info(const char *format, ...);
-static void SrvUpgrade_JumpTo(void);
+static void SrvUpgrade_Parse(void);
 
 /* external function */
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
 static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void);
 static uint16_t SrvUpgrade_Get_Info(uint8_t *p_info, uint16_t len);
 static void SrvUpgrade_ClearLog(void);
+static void SrvUpgrade_JumpTo(void);
+static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len);
 
 /* external function */
 SrvUpgrade_TypeDef SrvUpgrade = {
@@ -95,6 +97,7 @@ SrvUpgrade_TypeDef SrvUpgrade = {
     .jump = SrvUpgrade_JumpTo,
     .get_log = SrvUpgrade_Get_Info,
     .clear_log = SrvUpgrade_ClearLog,
+    .push_data = SrvUpgrade_PushData,
 };
 
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size)
@@ -335,19 +338,27 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
     }
 }
 
-static void SrvUpgrade_Parse(uint8_t *p_buf, uint16_t len)
+/* call this function in receive thread or irq */
+static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len)
 {
-    if (Monitor.init_state && p_buf && len)
-    {
-        if (!Monitor.buf_accessing)
-        {
-            Monitor.rec_time = SrvOsCommon.get_os_ms();
+    Monitor.rec_time = sys_time;
 
-            if ((Monitor.buf_size + len) <= FIRMWARE_MAX_READ_SIZE)
-            {
-                memcpy(Monitor.buf + Monitor.buf_size, p_buf, len);
-                Monitor.buf_size += len;
-            }
+    if (Monitor.buf_accessing == 0)
+    {
+
+    }
+}
+
+/* call this function when polling */
+static void SrvUpgrade_Parse(void)
+{
+    if (Monitor.init_state)
+    {
+        if (Monitor.buf_accessing == 0)
+        {
+            Monitor.buf_accessing ++;
+
+            Monitor.buf_accessing --;
         }
     }
 }
