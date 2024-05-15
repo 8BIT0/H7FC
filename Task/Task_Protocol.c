@@ -211,18 +211,27 @@ void TaskFrameCTL_Init(uint32_t period)
 void TaskFrameCTL_Core(void *arg)
 {
     uint32_t per_time = SrvOsCommon.get_os_ms();
+    bool cli_state = false;
 
     while(1)
     {
-        /* frame protocol process */
-        TaskFrameCTL_PortFrameOut_Process();
-
-        /* upgrade process */
-        TaskFrameCTL_Upgrade_StatePolling();
-
-        /* command line process */
-        TaskFrameCTL_CLI_Proc();
         TaskFrameCTL_ConfigureStateCheck();
+        SrvDataHub.get_cli_state(&cli_state);
+
+        if (!Upgrade_Monitor.is_enable)
+        {
+            if (!cli_state)
+            {
+                /* frame protocol process */
+                TaskFrameCTL_PortFrameOut_Process();
+            }
+            else
+                /* command line process */
+                TaskFrameCTL_CLI_Proc();
+        }
+        else
+            /* upgrade process */
+            TaskFrameCTL_Upgrade_StatePolling();
 
         SrvOsCommon.precise_delay(&per_time, FrameCTL_Period);
     }
@@ -591,10 +600,7 @@ static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
 /************************************** upgrade protocol section ********************************************/
 static void TaskFrameCTL_Upgrade_StatePolling(void)
 {
-    if (Upgrade_Monitor.is_enable)
-    {
 
-    }
 }
 
 /************************************** frame protocol section ********************************************/
@@ -720,7 +726,7 @@ static void TaskFrameCTL_PortFrameOut_Process(void)
     proto_monitor.frame_type = ComFrame_MavMsg;
     SrvDataHub.get_cli_state(&CLI_state);
 
-    if(FrameCTL_MavProto_Enable && !CLI_state && !Upgrade_Monitor.is_enable)
+    if(FrameCTL_MavProto_Enable)
     {
         /* when attach to configrator then disable radio port trans use default port trans mav data */
         /* check other port init state */
