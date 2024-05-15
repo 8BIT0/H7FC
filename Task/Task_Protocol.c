@@ -133,6 +133,7 @@ static FrameCTL_CLIMonitor_TypeDef CLI_Monitor = {
 
 static FrameCTL_UpgradeMonitor_TypeDef Upgrade_Monitor = {
     .is_enable = false,
+    .flash_enable = false,
     .file_type = 0,
 };
 

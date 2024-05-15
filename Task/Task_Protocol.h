@@ -151,6 +151,7 @@ typedef struct
 typedef struct
 {
     bool is_enable;
+    bool flash_enable;
     uint8_t file_type;
 } FrameCTL_UpgradeMonitor_TypeDef;
 
