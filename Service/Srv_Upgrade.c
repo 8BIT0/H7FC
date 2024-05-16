@@ -13,7 +13,7 @@
 #include "../System/storage/Storage.h"
 #include "Bsp_Flash.h"
 
-#define FIRMWARE_WAITTING_TIMEOUT   5000    /* unit: ms */
+#define FIRMWARE_WAITTING_TIMEOUT   10000   /* unit: ms */
 #define FIRMWARE_PROTO_TIMEOUT      1000    /* unit: ms */
 #define DEFAULT_WINDOW_SIZE         100     /* unit: ms */
 
@@ -76,6 +76,8 @@ typedef struct
     uint32_t jump_time;
     uint32_t JumpAddr;
     uint32_t AppSize;
+
+    uint32_t discard_time;
 
     FirmwareInfo_TypeDef Firmware_Info;
     uint32_t rec_time;
@@ -323,6 +325,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
             }
             
             Monitor.PollingState = Stage_Wait_PortData;
+            Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
             return Monitor.PollingState;
 
         case Stage_Checking_App_Firmware:
@@ -355,9 +358,8 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
                 }
 
                 /* check for processing time out when at app */
-                if (Monitor.CodeStage == On_App)
-                {
-                }
+                if ((Monitor.CodeStage == On_App) && (Monitor.discard_time <= sys_time))
+                    Monitor.PollingState = Stage_WaitCommu_TimeOut;
             }
             return Stage_Wait_PortData;
 
