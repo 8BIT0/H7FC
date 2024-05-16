@@ -106,7 +106,6 @@ static SrvUpgradeMonitor_TypeDef Monitor = {
 
 /* internal function */
 static void SrvUpgrade_Collect_Info(const char *format, ...);
-static void SrvUpgrade_Parse(void);
 
 /* external function */
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
@@ -227,8 +226,6 @@ static SrvUpgrade_DecodeOut_TypeDef SrvUpgrade_RecData_Decode(SrvUpgrade_PortDat
     SrvUpgrade_DecodeOut_TypeDef decode_out;
     
     memset(&decode_out, 0, sizeof(SrvUpgrade_DecodeOut_TypeDef));
-    
-    SrvUpgrade_Parse();
 
     /* deal with buf */
     switch ((uint8_t) stage)
@@ -403,15 +400,6 @@ static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len)
     }
 
     return false;
-}
-
-/* call this function when polling */
-static void SrvUpgrade_Parse(void)
-{
-    if (Monitor.init_state)
-    {
-        
-    }
 }
 
 static bool SrvUpgrade_CheckAppAddr(uint32_t addr, uint32_t size)
