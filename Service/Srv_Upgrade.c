@@ -1,3 +1,13 @@
+/*
+ *  Auther: 8_B!T0
+ *  Noticed: this file use to upgrade App / Bootloader / Module Firmware 
+ *  When at bootloader use this file can upgrade App and Module Firmware
+ *  When at app use this file can upgrade Bootloader and Module Firmware
+ *  
+ *                      still in developping
+ *                      F ------- Y ------ I
+ *                 NOTHING BEING TESTED IN THIS FILE
+ */
 #include "Srv_Upgrade.h"
 #include "util.h"
 #include "../System/storage/Storage.h"
@@ -27,6 +37,10 @@ typedef void (*Application_Func)(void);
 #define Default_App_Size    ((uint32_t)&__rom_e - Default_App_Address)
 
 static uint8_t upgrade_buf[FIRMWARE_MAX_READ_SIZE] = {0};
+
+__attribute__((weak)) bool Write_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return false;}
+__attribute__((weak)) bool Read_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return false;}
+__attribute__((weak)) bool Erase_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return false;}
 
 typedef enum
 {
@@ -116,15 +130,6 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
 
     if (sizeof(upgrade_buf) % 2)
         return false;
-
-    /* init mcu internal flash */
-    if (!BspFlash.init())
-    {
-        SrvUpgrade_Collect_Info("\r\n[MCU Internal Flash Init Error]\r\n");
-        SrvUpgrade_Collect_Info("\tUpgrade Init Failed\r\n");
-        return false;
-    }
-    SrvUpgrade_Collect_Info("[MCU Internal Flash Init Done]\r\n");
 
     /* get data from storage */
     memset(&Monitor.Info, 0, sizeof(UpgradeInfo_TypeDef));
