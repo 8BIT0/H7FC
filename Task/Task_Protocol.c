@@ -138,7 +138,7 @@ static FrameCTL_UpgradeMonitor_TypeDef Upgrade_Monitor = {
 };
 
 /* upgrade section */
-static void TaskFrameCTL_Upgrade_StatePolling(void);
+static void TaskFrameCTL_Upgrade_StatePolling(bool logout_enable);
 
 /* frame section */
 static void TaskFrameCTL_PortFrameOut_Process(void);
@@ -231,7 +231,7 @@ void TaskFrameCTL_Core(void *arg)
         }
         else
             /* upgrade process */
-            TaskFrameCTL_Upgrade_StatePolling();
+            TaskFrameCTL_Upgrade_StatePolling(cli_state);
 
         SrvOsCommon.precise_delay(&per_time, FrameCTL_Period);
     }
@@ -605,7 +605,7 @@ static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
 }
 
 /************************************** upgrade protocol section ********************************************/
-static void TaskFrameCTL_Upgrade_StatePolling(void)
+static void TaskFrameCTL_Upgrade_StatePolling(bool logout_enable)
 {
     SrvUpgrade_Stage_List stage;
     
