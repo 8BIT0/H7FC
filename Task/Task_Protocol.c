@@ -610,6 +610,12 @@ static void TaskFrameCTL_Upgrade_StatePolling(void)
     SrvUpgrade_Stage_List stage;
     
     stage = SrvUpgrade.polling();
+
+    switch ((uint8_t) stage)
+    {
+        default:
+            break;
+    }
 }
 
 /************************************** frame protocol section ********************************************/
