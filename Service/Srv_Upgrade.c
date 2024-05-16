@@ -225,6 +225,9 @@ static SrvUpgrade_DecodeOut_TypeDef SrvUpgrade_RecData_Decode(SrvUpgrade_PortDat
     SrvUpgrade_DecodeOut_TypeDef decode_out;
     
     memset(&decode_out, 0, sizeof(SrvUpgrade_DecodeOut_TypeDef));
+    
+    SrvUpgrade_Parse();
+
     /* deal with buf */
     switch ((uint8_t) stage)
     {
@@ -338,7 +341,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
             }
             else
             {
-                /* check stream data */
+                /* check double stream data */
                 for (uint8_t i = 0; i < 2; i++)
                 {
                     if (Monitor.proc_stream[i].size)
