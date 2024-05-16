@@ -42,7 +42,7 @@ typedef enum
     Stage_Init = 0,
     Stage_Wait_PortData,
     Stage_Checking_App_Firmware,
-    Stage_Checking_Module_Firmware,
+    Stage_Checking_Boot_Firmware,
     Stage_FirmwareData_Error,
     Stage_Processing_PortData,
     Stage_PortData_Error,

@@ -309,25 +309,27 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
         case Stage_Init:
             if (Monitor.ParamStatus == UpgradeParam_Valid)
             {
-                if (Monitor.Info.reg.bit.App)
+                if ((Monitor.CodeStage == On_Boot) && Monitor.Info.reg.bit.App)
                 {
                     Monitor.PollingState = Stage_Checking_App_Firmware;
+                    return Stage_Checking_App_Firmware;
                 }
 
-                if (Monitor.Info.reg.bit.Boot)
+                if ((Monitor.CodeStage == On_App) && Monitor.Info.reg.bit.Boot)
                 {
-                    Monitor.PollingState = Stage_Checking_Module_Firmware;
+                    Monitor.PollingState = Stage_Checking_Boot_Firmware;
+                    return Stage_Checking_Boot_Firmware;
                 }
             }
-            else
-                Monitor.PollingState = Stage_Wait_PortData;
+            
+            Monitor.PollingState = Stage_Wait_PortData;
             return Monitor.PollingState;
 
         case Stage_Checking_App_Firmware:
             return Stage_Checking_App_Firmware;
 
-        case Stage_Checking_Module_Firmware:
-            return Stage_Checking_Module_Firmware;
+        case Stage_Checking_Boot_Firmware:
+            return Stage_Checking_Boot_Firmware;
 
         case Stage_Wait_PortData:
             if ((Monitor.CodeStage == On_Boot) && \
