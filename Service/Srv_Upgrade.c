@@ -296,6 +296,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
     Storage_ItemSearchOut_TypeDef search_out;
     FirmwareInfo_TypeDef FrimInfo;
     uint32_t sys_time = SrvOsCommon.get_os_ms();
+    uint8_t i = 0;
 
     memset(&search_out, 0, sizeof(Storage_ItemSearchOut_TypeDef));
     memset(&FrimInfo, 0, sizeof(FirmwareInfo_TypeDef));
@@ -341,7 +342,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
             else
             {
                 /* check double stream data */
-                for (uint8_t i = 0; i < 2; i++)
+                for (i = 0; i < 2; i++)
                 {
                     if (Monitor.proc_stream[i].size)
                     {
@@ -365,6 +366,11 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
                 case PortProc_Deal_Error:
                 default:
                     /* clear stream */
+                    for (i = 0; i < 2; i ++)
+                    {
+                        Monitor.proc_stream[i].size = 0;
+                        memset(Monitor.proc_stream[i].p_buf, 0, Monitor.proc_stream[i].total_size);
+                    }
                     Monitor.PollingState = Stage_Wait_PortData;
                     break;
             }
