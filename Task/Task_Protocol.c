@@ -986,15 +986,15 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
         switch (type)
         {
             case FileType_APP:
-                shellPrint(shell_obj, "[ Waitting App Firmware 10s TimeOut ]\r\n");
+                shellPrint(shell_obj, "[ Waitting App Firmware ]\r\n");
                 break;
 
             case FileType_Boot:
-                shellPrint(shell_obj, "[ Waitting Boot Firmware 10s TimeOut ]\r\n");
+                shellPrint(shell_obj, "[ Waitting Boot Firmware ]\r\n");
                 break;
 
             case FileType_Module: 
-                shellPrint(shell_obj, "[ Waitting Module Firmware 10s TimeOut ]\r\n");
+                shellPrint(shell_obj, "[ Waitting Module Firmware ]\r\n");
                 break;
 
             default:
