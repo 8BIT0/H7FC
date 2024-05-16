@@ -354,18 +354,22 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
                 {
                 }
             }
-
-            /* receive data from port */
             return Stage_Wait_PortData;
 
         case Stage_Processing_PortData:
             SrvUpgrade_PortProcPolling(sys_time);
             return Monitor.PollingState;
 
+        /* when at bootloader */
         case Stage_ReadyToJump:
             return Stage_ReadyToJump;
 
-        case Stage_JumpError: return Stage_JumpError;
+        case Stage_WaitCommu_TimeOut:
+            return Stage_WaitCommu_TimeOut;
+        
+        case Stage_JumpError:
+            return Stage_JumpError;
+
         default: return Stage_Unknow;
     }
 }
