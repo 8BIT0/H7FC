@@ -14,7 +14,7 @@
 #include "Bsp_Flash.h"
 
 #define FIRMWARE_WAITTING_TIMEOUT   10000   /* unit: ms */
-#define FIRMWARE_PROTO_TIMEOUT      1000    /* unit: ms */
+#define FIRMWARE_COMMU_TIMEOUT      1000    /* unit: ms */
 #define DEFAULT_WINDOW_SIZE         100     /* unit: ms */
 
 #define AppVer {0, 0, 0}
@@ -80,7 +80,7 @@ typedef struct
     uint32_t discard_time;
 
     FirmwareInfo_TypeDef Firmware_Info;
-    uint32_t rec_time;
+    uint32_t rec_timeout;
     
     SrvUpgrade_Stream_TypeDef proc_stream[2];
 
@@ -255,39 +255,36 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             decode_out = SrvUpgrade_RecData_Decode(PortProc_Check_FileAdapter_EnableSig);
             if (decode_out.p_buf && decode_out.len && (decode_out.state == Decode_Successed))
             {
-                /* deal with buf */
+                /* reset timeout time */
+                Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
 
+                /* deal with buf */
                 Monitor.PortDataState = PortProc_Check_FirmwareInfo;
             }
             else if (decode_out.state == Decode_Failed)
             {
                 Monitor.PortDataState = PortProc_None;
-                Monitor.PollingState = Stage_Wait_PortData;
             }
             else
             {
                 /* check time out */
-                if (sys_time >= Monitor.rec_time)
+                if (sys_time >= Monitor.rec_timeout)
                 {
                     /* process time out */
                     Monitor.PortDataState = PortProc_Deal_TimeOut;
                 }
             }
-            return Monitor.PortDataState;
+            return PortProc_Check_FileAdapter_EnableSig;
         
         case PortProc_Check_FirmwareInfo:
             return PortProc_Check_FirmwareInfo;
 
         case PortProc_Deal_Error:
             Monitor.PortDataState = PortProc_None;
-            Monitor.PollingState = Stage_Wait_PortData;
-
-            /* clear firmware info in storag */
             return PortProc_Deal_Error;
 
         case PortProc_Deal_TimeOut:
             Monitor.PortDataState = PortProc_None;
-            Monitor.PollingState = Stage_Wait_PortData;
             return PortProc_Deal_TimeOut;
 
         default: return PortProc_Unknown;
@@ -361,7 +358,15 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
             return Stage_Wait_PortData;
 
         case Stage_Processing_PortData:
-            SrvUpgrade_PortProcPolling(sys_time);
+            switch (SrvUpgrade_PortProcPolling(sys_time))
+            {
+                case PortProc_Deal_TimeOut:
+                case PortProc_Deal_Error:
+                default:
+                    /* clear stream */
+                    Monitor.PollingState = Stage_Wait_PortData;
+                    break;
+            }
             return Monitor.PollingState;
 
         /* when at bootloader */
