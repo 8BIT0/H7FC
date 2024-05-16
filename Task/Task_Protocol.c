@@ -613,6 +613,17 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool logout_enable)
 
     switch ((uint8_t) stage)
     {
+        case Stage_Proto_TimeOut:
+            Upgrade_Monitor.is_enable = false;
+            Upgrade_Monitor.file_type = FileType_None;
+            Upgrade_Monitor.port_addr = 0;
+
+            if (logout_enable)
+            {
+                
+            }
+            break;
+
         default:
             break;
     }
