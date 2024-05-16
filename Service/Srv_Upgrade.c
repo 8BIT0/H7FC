@@ -81,6 +81,7 @@ typedef struct
 
     FirmwareInfo_TypeDef Firmware_Info;
     uint32_t rec_timeout;
+    uint32_t rec_time;
     
     SrvUpgrade_Stream_TypeDef proc_stream[2];
 
@@ -255,9 +256,6 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             decode_out = SrvUpgrade_RecData_Decode(PortProc_Check_FileAdapter_EnableSig);
             if (decode_out.p_buf && decode_out.len && (decode_out.state == Decode_Successed))
             {
-                /* reset timeout time */
-                Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
-
                 /* deal with buf */
                 Monitor.PortDataState = PortProc_Check_FirmwareInfo;
             }
@@ -396,6 +394,7 @@ static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len)
     if (Monitor.init_state)
     {
         Monitor.rec_time = sys_time;
+        Monitor.rec_timeout = Monitor.rec_time + FIRMWARE_COMMU_TIMEOUT;
 
         for (uint8_t i = 0; i < 2; i++)
         {
