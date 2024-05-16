@@ -441,7 +441,7 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
                 p_stream = &USBRx_Stream;
                 InUsePort_MavMsgInput_Obj = &DefaultPort_MavMsgInput_Obj;
 
-                if (cli_state)
+                if (cli_state && !Upgrade_Monitor.is_enable)
                     TaskFrameCTL_DefaultPort_Trans(p_data, size);
                 break;
 
@@ -449,7 +449,7 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
                 p_stream = &UartRx_Stream;
                 InUsePort_MavMsgInput_Obj = &RadioPort_MavMsgInput_Obj;
                 
-                if (cli_state)
+                if (cli_state && !Upgrade_Monitor.is_enable)
                     TaskFrameCTL_Port_Tx(p_RecObj->PortObj_addr, p_data, size);
                 break;
 
@@ -471,7 +471,7 @@ static void TaskFrameCTL_Port_Rx_Callback(uint32_t RecObj_addr, uint8_t *p_data,
 
         /* when file adapter is enable then halt cli and mavlink frame receive */
         /* and check for upgrade data incoming */
-        if (Upgrade_Monitor.is_enable)
+        if (Upgrade_Monitor.is_enable && (Upgrade_Monitor.port_addr == p_RecObj->PortObj_addr))
         {
             if (SrvUpgrade.push_data(SrvOsCommon.get_os_ms(), p_stream->p_buf, p_stream->size))
             {
@@ -1005,6 +1005,7 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
         
         Upgrade_Monitor.is_enable = true;
         Upgrade_Monitor.file_type = type;
+        Upgrade_Monitor.port_addr = CLI_Monitor.port_addr;
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Enable_File_Rec, TaskFrameCTL_FileAccept_Enable, In File Receive Mode);

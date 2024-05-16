@@ -153,6 +153,7 @@ typedef struct
     bool is_enable;
     bool flash_enable;
     uint8_t file_type;
+    uint32_t port_addr;
 } FrameCTL_UpgradeMonitor_TypeDef;
 
 void TaskFrameCTL_Init(uint32_t period);
