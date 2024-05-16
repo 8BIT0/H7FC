@@ -358,6 +358,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(void)
             return Stage_Wait_PortData;
 
         case Stage_Processing_PortData:
+            Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
             switch (SrvUpgrade_PortProcPolling(sys_time))
             {
                 case PortProc_Deal_TimeOut:
