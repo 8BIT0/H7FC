@@ -607,7 +607,9 @@ static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
 /************************************** upgrade protocol section ********************************************/
 static void TaskFrameCTL_Upgrade_StatePolling(void)
 {
-
+    SrvUpgrade_Stage_List stage;
+    
+    stage = SrvUpgrade.polling();
 }
 
 /************************************** frame protocol section ********************************************/
