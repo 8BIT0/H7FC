@@ -25,7 +25,6 @@ typedef struct
     void *FrameObj;
     void *FrmaeApi;
 
-    bool is_actived;
     bool chancel;
     bool ready_to_rec;
     
@@ -37,7 +36,6 @@ typedef struct
     SrvFileAdapterObj_TypeDef* (*create)(Adapter_ProtoType_List proto_type, uint32_t stream_size);
     bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
-    bool (*is_active)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*polling)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*parse)(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t len);
 } SrvFileAdapter_TypeDef;

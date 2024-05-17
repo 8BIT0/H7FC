@@ -16,7 +16,6 @@ static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter);
 static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type);
 static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter);
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send);
-static bool SrvFileAdapter_Get_ActiveState(SrvFileAdapterObj_TypeDef *p_Adapter);
 static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t len);
 static void SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter);
 
@@ -27,7 +26,6 @@ SrvFileAdapter_TypeDef SrvFileAdapter = {
     .parse = SrvFileAdapter_Parse,
     .polling = SrvFileAdapter_Polling,
     .set_send = SrvFileAdapter_Set_SendCallback,
-    .is_active = SrvFileAdapter_Get_ActiveState,
 };
 
 static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter)
@@ -92,15 +90,6 @@ static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapt
         p_Adapter = NULL;
         return true;
     }
-
-    return false;
-}
-
-static bool SrvFileAdapter_Get_ActiveState(SrvFileAdapterObj_TypeDef *p_Adapter)
-{
-    /* already bind to port */
-    if (p_Adapter && p_Adapter->FrameObj && p_Adapter->port_addr)
-        return true;
 
     return false;
 }
