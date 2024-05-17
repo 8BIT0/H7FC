@@ -237,17 +237,14 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     {
         case PortProc_None:
             Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
-        case PortProc_Check_FileAdapter_EnableSig:
-            Monitor.PortDataState = PortProc_Check_FileAdapter_EnableSig;
+        case PortProc_Deal_Pack:
+            Monitor.PortDataState = PortProc_Deal_Pack;
             if (inuse_stream)
             {
 
                 inuse_stream->access = false;
             }
-            return PortProc_Check_FileAdapter_EnableSig;
-        
-        case PortProc_Check_FirmwareInfo:
-            return PortProc_Check_FirmwareInfo;
+            return PortProc_Deal_Pack;
 
         case PortProc_Deal_Error:
             Monitor.PortDataState = PortProc_None;

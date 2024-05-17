@@ -67,8 +67,7 @@ typedef enum
 typedef enum
 {
     PortProc_None = 0,
-    PortProc_Check_FileAdapter_EnableSig,
-    PortProc_Check_FirmwareInfo,
+    PortProc_Deal_Pack,
     /* receive firmware pack stage */
     PortProc_Deal_Error,
     PortProc_Deal_TimeOut,
