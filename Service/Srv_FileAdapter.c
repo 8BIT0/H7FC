@@ -13,19 +13,17 @@
 static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter);
 
 /* external function */
-static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type, uint32_t stream_size);
+static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type);
 static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter);
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send);
 static bool SrvFileAdapter_Get_ActiveState(SrvFileAdapterObj_TypeDef *p_Adapter);
-static bool SrvFileAdapter_BindToPort(SrvFileAdapterObj_TypeDef *p_Adapter, uint32_t port_addr);
-static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, const SrvFileAdapter_Stream_TypeDef stream);
+static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t len);
 static void SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter);
 
 /* external virable */
 SrvFileAdapter_TypeDef SrvFileAdapter = {
     .create = SrvFileAdapter_Create_AdapterObj,
     .destory = SrvFileAdapter_Destory_AdapterObj,
-    .bind_port = SrvFileAdapter_BindToPort,
     .parse = SrvFileAdapter_Parse,
     .polling = SrvFileAdapter_Polling,
     .set_send = SrvFileAdapter_Set_SendCallback,
@@ -43,7 +41,7 @@ static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter)
     return true;
 }
 
-static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type, uint32_t stream_size)
+static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type)
 {
     SrvFileAdapterObj_TypeDef *p_AdapterObj = NULL;
 
@@ -113,26 +111,9 @@ static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter
         p_Adapter->send = send;
 }
 
-static bool SrvFileAdapter_BindToPort(SrvFileAdapterObj_TypeDef *p_Adapter, uint32_t port_addr)
+static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t len)
 {
-    if (p_Adapter && \
-        (p_Adapter->port_addr == 0) && \
-        (p_Adapter->frame_type > SrvFileAdapter_Frame_None) && \
-        (p_Adapter->frame_type < SrvFileAdapter_Frame_Sum) && \
-        (p_Adapter->FrameObj != NULL) && \
-        (p_Adapter->FrmaeApi != NULL) && \
-        port_addr)
-    {
-        p_Adapter->port_addr = port_addr;
-        return true;
-    }
-
-    return false;
-}
-
-static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, const SrvFileAdapter_Stream_TypeDef stream)
-{
-    if (p_Adapter && p_Adapter->FrameObj && stream.buf && stream.total_size)
+    if (p_Adapter && p_Adapter->FrameObj && p_buf && len)
     {
 
     }

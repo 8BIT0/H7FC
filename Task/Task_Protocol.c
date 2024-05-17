@@ -5,7 +5,6 @@
 #include "Srv_DataHub.h"
 #include "Srv_FileAdapter.h"
 #include "DataPipe.h"
-#include "Srv_Upgrade.h"
 #include "Storage.h"
 #include "pid.h"
 
@@ -134,7 +133,6 @@ static FrameCTL_CLIMonitor_TypeDef CLI_Monitor = {
 static FrameCTL_UpgradeMonitor_TypeDef Upgrade_Monitor = {
     .is_enable = false,
     .flash_enable = false,
-    .file_type = 0,
 };
 
 /* upgrade section */
@@ -616,7 +614,7 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool logout_enable)
     {
         case Stage_Proto_TimeOut:
             Upgrade_Monitor.is_enable = false;
-            Upgrade_Monitor.file_type = FileType_None;
+            memset(&Upgrade_Monitor.file_info, 0, sizeof(Upgrade_Monitor.file_info));
             Upgrade_Monitor.port_addr = 0;
 
             if (logout_enable)
@@ -1021,9 +1019,22 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
                 return;
         }
         
+        shellPrint(shell_obj, "[ YMODEM Enable ]\r\n");
+
         Upgrade_Monitor.is_enable = true;
-        Upgrade_Monitor.file_type = type;
         Upgrade_Monitor.port_addr = CLI_Monitor.port_addr;
+        
+        Upgrade_Monitor.file_info.File_Type = type;
+        Upgrade_Monitor.file_info.Adapter_Type = SrvFileAdapter_Frame_YModem;
+        Upgrade_Monitor.file_info.SW_Ver[0] = 1;
+        Upgrade_Monitor.file_info.SW_Ver[1] = 0;
+        Upgrade_Monitor.file_info.SW_Ver[2] = 0;
+        Upgrade_Monitor.file_info.HW_Ver[0] = 1;
+        Upgrade_Monitor.file_info.HW_Ver[1] = 0;
+        Upgrade_Monitor.file_info.HW_Ver[2] = 0;
+        // Upgrade_Monitor.file_info.File_Size = ;
+        // Upgrade_Monitor.file_info.Pack_Size = ;
+        SrvUpgrade.set_fileinfo(Upgrade_Monitor.file_info);
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Enable_File_Rec, TaskFrameCTL_FileAccept_Enable, In File Receive Mode);

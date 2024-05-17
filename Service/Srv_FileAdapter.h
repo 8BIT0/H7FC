@@ -8,13 +8,6 @@
 
 #define SrvFileAdapter_TimeOut (10 * 1000)  /* time out 10s */
 
-typedef struct
-{
-    uint16_t total_size;
-    uint16_t cur_size;
-    uint8_t *buf;
-} SrvFileAdapter_Stream_TypeDef;
-
 typedef void (*SrvFileAdapter_Send_Func)(uint8_t *p_buf, uint16_t len);
 
 typedef enum
@@ -45,9 +38,8 @@ typedef struct
     bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
     bool (*is_active)(SrvFileAdapterObj_TypeDef *p_Adapter);
-    bool (*bind_port)(SrvFileAdapterObj_TypeDef *p_Adapter, uint32_t port_addr);
     void (*polling)(SrvFileAdapterObj_TypeDef *p_Adapter);
-    void (*parse)(SrvFileAdapterObj_TypeDef *p_Adapter, const SrvFileAdapter_Stream_TypeDef stream);
+    void (*parse)(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t len);
 } SrvFileAdapter_TypeDef;
 
 extern SrvFileAdapter_TypeDef SrvFileAdapter;

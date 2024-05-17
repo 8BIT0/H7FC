@@ -10,6 +10,7 @@
 #include "Bsp_USB.h"
 #include "Bsp_Uart.h"
 #include "shell_port.h"
+#include "Srv_Upgrade.h"
 
 #define FrameCTL_Port_Tx_TimeOut 5      /* unit: ms */
 #define FrameCTL_MAX_Period 5           /* unit: ms */
@@ -152,7 +153,7 @@ typedef struct
 {
     bool is_enable;
     bool flash_enable;
-    uint8_t file_type;
+    Upgrade_FileInfo_TypeDef file_info;
     uint32_t port_addr;
 } FrameCTL_UpgradeMonitor_TypeDef;
 
