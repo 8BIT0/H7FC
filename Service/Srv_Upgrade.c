@@ -340,7 +340,10 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
                 {
                     Monitor.PollingState = Stage_WaitCommu_TimeOut;
                     if (Monitor.adapter_obj)
+                    {
                         SrvFileAdapter.destory(Monitor.adapter_obj);
+                        Monitor.adapter_obj = NULL;
+                    }
                 }
             }
             return Stage_Wait_PortData;
