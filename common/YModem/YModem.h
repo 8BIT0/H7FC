@@ -20,7 +20,7 @@ typedef void (*YModem_Send_Callback)(uint8_t *p_buf, uint16_t len);
 typedef enum
 {
     YModem_State_Idle = 0,
-    YModem_State_ReqPack,
+    YModem_State_Tx,
     YModem_State_Rx,
     YModem_State_Rx_Waiting,
     YModem_State_Rx_PackDone,
@@ -37,7 +37,6 @@ typedef struct
 
 typedef enum
 {
-    YModem_None_Frame = 0,
     YModem_HandShake,
     YModem_Start_Frame,
     YModem_ACK,
@@ -45,12 +44,12 @@ typedef enum
     YModem_NAK,
     YModem_EOT,
     YModem_End_Frame,
-} YModem_Stage_List;
+} YModem_TxStage_List;
 
 typedef struct
 {
     YModem_State_List state;
-    YModem_Stage_List stage;
+    YModem_TxStage_List stage;
     uint32_t timeout_ms;
 
     YModem_Get_SysTick sys_tick;
@@ -70,6 +69,7 @@ typedef struct
 
 typedef struct
 {
+    void (*set_callback)();
     void (*polling)(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t *size);
 } YModem_TypeDef;
 
