@@ -16,7 +16,7 @@ static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_Proto
 static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter);
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send);
 static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t len);
-static void SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter);
+static Adapter_Polling_State SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter);
 
 /* external virable */
 SrvFileAdapter_TypeDef SrvFileAdapter = {
@@ -106,11 +106,13 @@ static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *
     }
 }
 
-static void SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter)
+static Adapter_Polling_State SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter)
 {
     if (p_Adapter && p_Adapter->FrameObj)
     {
 
     }
+
+    return Adapter_Proc_Failed;
 }
 

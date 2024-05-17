@@ -17,6 +17,14 @@ typedef enum
     SrvFileAdapter_Frame_Sum,
 } Adapter_ProtoType_List;
 
+typedef enum
+{
+    Adapter_Idle = 0,
+    Adapter_Processing,
+    Adapter_Proc_Done,
+    Adapter_Proc_Failed,
+} Adapter_Polling_State;
+
 typedef struct
 {
     uint32_t port_addr;
@@ -36,7 +44,7 @@ typedef struct
     SrvFileAdapterObj_TypeDef* (*create)(Adapter_ProtoType_List proto_type);
     bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
-    void (*polling)(SrvFileAdapterObj_TypeDef *p_Adapter);
+    Adapter_Polling_State (*polling)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*parse)(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t len);
 } SrvFileAdapter_TypeDef;
 

@@ -223,6 +223,9 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
 {
     SrvUpgrade_Stream_TypeDef *inuse_stream = NULL;
 
+    if (Monitor.adapter_obj == NULL)
+        return PortProc_Deal_Error;
+
     for (uint8_t i = 0; i < 2; i ++)
     {
         if (!Monitor.proc_stream[i].access && Monitor.proc_stream[i].size)
@@ -239,11 +242,10 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
         case PortProc_Deal_Pack:
             Monitor.PortDataState = PortProc_Deal_Pack;
+            SrvFileAdapter.polling(&Monitor.adapter_obj);
+            
             if (inuse_stream)
-            {
-
                 inuse_stream->access = false;
-            }
             return PortProc_Deal_Pack;
 
         case PortProc_Deal_Error:
