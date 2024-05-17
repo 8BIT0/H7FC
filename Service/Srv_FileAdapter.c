@@ -32,7 +32,7 @@ static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter)
     if ((p_Adapter == NULL) || \
         (p_Adapter->frame_type >= SrvFileAdapter_Frame_Sum) || \
         (p_Adapter->FrameObj == NULL) || \
-        (p_Adapter->FrmaeApi == NULL))
+        (p_Adapter->FrameApi == NULL))
         return false;
 
     return true;
@@ -65,7 +65,7 @@ static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_Proto
                         p_AdapterObj = NULL;
                     }
                     
-                    p_AdapterObj->FrmaeApi = (void *)&YModem;
+                    p_AdapterObj->FrameApi = (void *)&YModem;
                     break;
 
                 default:
@@ -108,9 +108,23 @@ static void SrvFileAdapter_Parse(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *
 
 static Adapter_Polling_State SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter)
 {
-    if (p_Adapter && p_Adapter->FrameObj)
-    {
+    void *p_api = NULL;
+    void *p_obj = NULL;
 
+    if (p_Adapter && p_Adapter->FrameObj && p_Adapter->FrameApi)
+    {
+        p_api = p_Adapter->FrameApi;
+        p_obj = p_Adapter->FrameObj;
+        
+        switch ((uint8_t)p_Adapter->frame_type)
+        {
+            case SrvFileAdapter_Frame_YModem:
+                if (To_YModem_Api(p_api)->polling)
+                    To_YModem_Api(p_api)->polling(To_YModem_Obj(p_obj));
+                break;
+
+            default: break;
+        }
     }
 
     return Adapter_Proc_Failed;

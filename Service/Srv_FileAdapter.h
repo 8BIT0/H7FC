@@ -31,7 +31,7 @@ typedef struct
     Adapter_ProtoType_List frame_type;
 
     void *FrameObj;
-    void *FrmaeApi;
+    void *FrameApi;
 
     bool chancel;
     bool ready_to_rec;
