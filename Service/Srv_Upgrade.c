@@ -361,7 +361,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
                         Monitor.proc_stream[i].size = 0;
                         memset(Monitor.proc_stream[i].p_buf, 0, Monitor.proc_stream[i].total_size);
                     }
-                    Monitor.PollingState = Stage_Wait_PortData;
+                    Monitor.PollingState = Stage_WaitCommu_TimeOut;
                     break;
             }
             return Monitor.PollingState;
