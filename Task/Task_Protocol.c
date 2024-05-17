@@ -612,6 +612,7 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool logout_enable)
 
     switch ((uint8_t) stage)
     {
+        case Stage_Adapter_Error:
         case Stage_Proto_TimeOut:
             Upgrade_Monitor.is_enable = false;
             memset(&Upgrade_Monitor.file_info, 0, sizeof(Upgrade_Monitor.file_info));

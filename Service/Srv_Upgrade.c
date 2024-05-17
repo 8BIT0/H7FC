@@ -12,6 +12,7 @@
 #include "util.h"
 #include "../System/storage/Storage.h"
 #include "Bsp_Flash.h"
+#include "Srv_FileAdapter.h"
 
 #define FIRMWARE_WAITTING_TIMEOUT   10000   /* unit: ms */
 #define FIRMWARE_COMMU_TIMEOUT      1000    /* unit: ms */
@@ -82,7 +83,10 @@ typedef struct
     uint32_t rec_timeout;
     uint32_t rec_time;
     
+    SrvFileAdapterObj_TypeDef *adapter_obj;
+    bool info_update;
     Upgrade_FileInfo_TypeDef FileInfo;
+
     SrvUpgrade_Stream_TypeDef proc_stream[2];
 
     uint8_t LogOut_Info[1024];
@@ -125,6 +129,7 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
         return false;
 
     /* reset file info */
+    Monitor.info_update = false;
     memset(&Monitor.FileInfo, 0, sizeof(Monitor.FileInfo));
 
     /* get data from storage */
@@ -259,6 +264,7 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     if (sys_time >= Monitor.rec_timeout)
     {
         memset(&Monitor.FileInfo, 0, sizeof(Monitor.FileInfo));
+        Monitor.info_update = false;
         Monitor.PortDataState = PortProc_Deal_TimeOut;
     }
 }
@@ -269,6 +275,14 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
     uint8_t i = 0;
 
     memset(&search_out, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+
+    /* check file info */
+    if (Monitor.info_update && (Monitor.adapter_obj == NULL))
+    {
+        Monitor.adapter_obj = SrvFileAdapter.create(Monitor.FileInfo.Adapter_Type);
+        if (Monitor.adapter_obj == NULL)
+            Monitor.PollingState = Stage_Adapter_Error;
+    }
 
     switch ((uint8_t) Monitor.PollingState)
     {
@@ -349,6 +363,9 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
         case Stage_ReadyToJump:
             return Stage_ReadyToJump;
 
+        case Stage_Adapter_Error:
+            return Stage_Adapter_Error;
+
         case Stage_WaitCommu_TimeOut:
             return Stage_WaitCommu_TimeOut;
         
@@ -361,6 +378,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
 
 static void SrvUpgrade_SetFileInfo(const Upgrade_FileInfo_TypeDef info)
 {
+    Monitor.info_update = true;
     memcpy(&Monitor.FileInfo, &info, sizeof(Upgrade_FileInfo_TypeDef));
 }
 

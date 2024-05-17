@@ -33,7 +33,7 @@ typedef struct
 
 typedef struct
 {
-    SrvFileAdapterObj_TypeDef* (*create)(Adapter_ProtoType_List proto_type, uint32_t stream_size);
+    SrvFileAdapterObj_TypeDef* (*create)(Adapter_ProtoType_List proto_type);
     bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
     void (*polling)(SrvFileAdapterObj_TypeDef *p_Adapter);

@@ -26,6 +26,17 @@ typedef enum
     ABORT2 = 0x61,
 } YModem_CMD_List;
 
+/* external function */
+static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len);
+static void YModem_State_Polling(YModemObj_TypeDef *obj);
+static void YModem_Pack(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
+
+YModem_TypeDef YModem = {
+    .polling = YModem_State_Polling,
+    .recv = YModem_Recv,
+    .pack = YModem_Pack,
+};
+
 static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len)
 {
     uint16_t recv_data_len = 0;

@@ -43,6 +43,7 @@ typedef enum
     Stage_Checking_App_Firmware,
     Stage_Checking_Boot_Firmware,
     Stage_FirmwareData_Error,
+    Stage_Adapter_Error,
     Stage_Processing_PortData,
     Stage_PortData_Error,
     Stage_WaitCommu_TimeOut,
