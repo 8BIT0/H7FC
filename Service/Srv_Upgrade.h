@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include "Srv_FileAdapter.h"
 
-#define MAX_BOOTLOADER_FRIMWARE_SIZE (64 * 1024)
 #define Max_App_Num 32
 
 typedef enum
@@ -85,23 +84,13 @@ typedef struct
 #pragma pack(1)
 typedef struct
 {
-    Firmware_FileType_List file_type;
-    Adapter_ProtoType_List adapter_frame;
-    uint32_t byte_sum;
-    uint16_t pack_sum;
-
-    /* only used by app firmware */
-    uint32_t jump_addr;
+    Firmware_FileType_List File_Type;
+    Adapter_ProtoType_List Adapter_Type;
+    uint8_t SW_Ver[3];
+    uint8_t HW_Ver[3];
+    uint32_t File_Size;
+    uint16_t Pack_Size;
 } Upgrade_FileInfo_TypeDef;
-
-typedef struct
-{
-    uint8_t  type;
-    uint8_t id;
-    uint32_t store_addr;
-    uint32_t size;
-    uint8_t ver[3];
-} FirmwareInfo_TypeDef;
 
 typedef struct
 {
@@ -115,7 +104,8 @@ typedef struct
 typedef struct
 {
     bool (*init)(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
-    SrvUpgrade_Stage_List (*polling)(void);
+    SrvUpgrade_Stage_List (*polling)(uint32_t sys_time);
+    void (*set_fileinfo)(const Upgrade_FileInfo_TypeDef info);
     void (*jump)(void);
     uint16_t (*get_log)(uint8_t *p_info, uint16_t len);
     void (*clear_log)(void);

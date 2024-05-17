@@ -608,8 +608,9 @@ static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
 static void TaskFrameCTL_Upgrade_StatePolling(bool logout_enable)
 {
     SrvUpgrade_Stage_List stage;
+    uint32_t sys_time = SrvOsCommon.get_os_ms();
     
-    stage = SrvUpgrade.polling();
+    stage = SrvUpgrade.polling(sys_time);
 
     switch ((uint8_t) stage)
     {
