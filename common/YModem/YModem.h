@@ -37,19 +37,16 @@ typedef struct
 
 typedef enum
 {
-    YModem_HandShake,
-    YModem_Start_Frame,
+    YModem_Req,
     YModem_ACK,
-    YModem_Data_Frame,
     YModem_NAK,
     YModem_EOT,
-    YModem_End_Frame,
 } YModem_TxStage_List;
 
 typedef struct
 {
     YModem_State_List state;
-    YModem_TxStage_List stage;
+    YModem_TxStage_List tx_stage;
     uint32_t timeout_ms;
 
     YModem_Get_SysTick sys_tick;

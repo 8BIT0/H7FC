@@ -48,15 +48,27 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_
                 if (*size)
                 {
                     /* update tx stage */
+                    switch ((uint8_t) obj->tx_stage)
+                    {
+                        case YModem_Req:
+                            obj->tx_stage = YModem_ACK;
+                            break;
+
+                        case YModem_ACK:
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
                 // else
                 //     return YModem_State_Rx_Waiting;
                 break;
 
             case YModem_State_Tx:
-                switch ((uint8_t) obj->stage)
+                switch ((uint8_t) obj->tx_stage)
                 {
-                    case YModem_HandShake:
+                    case YModem_Req:
                         /* send 'C' */
                         if (obj->send_callback)
                             obj->send_callback(C, 1);
