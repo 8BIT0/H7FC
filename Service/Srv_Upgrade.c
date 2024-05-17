@@ -338,7 +338,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
                 /* check for processing time out when at app */
                 if ((Monitor.CodeStage == On_App) && (Monitor.discard_time <= sys_time))
                 {
-                    Monitor.PollingState = Stage_WaitCommu_TimeOut;
+                    Monitor.PollingState = Stage_Commu_TimeOut;
                     if (Monitor.adapter_obj)
                     {
                         SrvFileAdapter.destory(Monitor.adapter_obj);
@@ -361,7 +361,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
                         Monitor.proc_stream[i].size = 0;
                         memset(Monitor.proc_stream[i].p_buf, 0, Monitor.proc_stream[i].total_size);
                     }
-                    Monitor.PollingState = Stage_WaitCommu_TimeOut;
+                    Monitor.PollingState = Stage_Commu_TimeOut;
                     break;
             }
             return Monitor.PollingState;
@@ -373,8 +373,8 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
         case Stage_Adapter_Error:
             return Stage_Adapter_Error;
 
-        case Stage_WaitCommu_TimeOut:
-            return Stage_WaitCommu_TimeOut;
+        case Stage_Commu_TimeOut:
+            return Stage_Commu_TimeOut;
         
         case Stage_JumpError:
             return Stage_JumpError;
