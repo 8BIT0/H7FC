@@ -27,13 +27,11 @@ typedef enum
 } YModem_CMD_List;
 
 /* external function */
-static void YModem_Recv(YModemObj_TypeDef *Obj, uint8_t *p_buf, uint16_t len);
-static void YModem_State_Polling(YModemObj_TypeDef *obj);
+static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_bug, uint16_t *size);
 static void YModem_Pack(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
 
 YModem_TypeDef YModem = {
     .polling = YModem_State_Polling,
-    .recv = YModem_Recv,
     .pack = YModem_Pack,
 };
 
@@ -149,10 +147,10 @@ static void YModem_Pack(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t len)
     }
 }
 
-static void YModem_State_Polling(YModemObj_TypeDef *obj)
+static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t *size)
 {
     /* polling currently processing ymodem object */
-    if (obj)
+    if (obj && p_buf && size && (*size))
     {
         /* if data is receiving polling process nothing */
         if (obj->state_reg.bit.recv)

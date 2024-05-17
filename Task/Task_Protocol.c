@@ -620,7 +620,7 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool logout_enable)
 
             if (logout_enable)
             {
-                
+                /* can use shell print down below */
             }
             break;
 

@@ -88,9 +88,8 @@ typedef struct
 
 typedef struct
 {
-    void (*recv)(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
     void (*pack)(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
-    void (*polling)(YModemObj_TypeDef *obj);
+    void (*polling)(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t *size);
 } YModem_TypeDef;
 
 extern YModem_TypeDef YModem;
