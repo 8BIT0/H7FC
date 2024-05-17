@@ -104,6 +104,7 @@ static uint16_t SrvUpgrade_Get_Info(uint8_t *p_info, uint16_t len);
 static void SrvUpgrade_ClearLog(void);
 static void SrvUpgrade_JumpTo(void);
 static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len);
+static void SrvUpgrade_SetFileInfo(const Upgrade_FileInfo_TypeDef info);
 
 /* external function */
 SrvUpgrade_TypeDef SrvUpgrade = {
@@ -113,6 +114,7 @@ SrvUpgrade_TypeDef SrvUpgrade = {
     .get_log = SrvUpgrade_Get_Info,
     .clear_log = SrvUpgrade_ClearLog,
     .push_data = SrvUpgrade_PushData,
+    .set_fileinfo = SrvUpgrade_SetFileInfo,
 };
 
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size)
@@ -355,6 +357,11 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
 
         default: return Stage_Unknow;
     }
+}
+
+static void SrvUpgrade_SetFileInfo(const Upgrade_FileInfo_TypeDef info)
+{
+    memcpy(&Monitor.FileInfo, &info, sizeof(Upgrade_FileInfo_TypeDef));
 }
 
 /* call this function in receive thread or irq */
