@@ -7,7 +7,6 @@
 #include "Srv_OsCommon.h"
 #include "../System/storage/Storage.h"
 #include "YModem.h"
-#include "reboot.h"
 
 /* internal function */
 static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter);
