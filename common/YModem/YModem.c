@@ -27,7 +27,7 @@ typedef enum
 } YModem_CMD_List;
 
 /* external function */
-static void YModem_Set_Callback(uint8_t type, void *callback);
+static void YModem_Set_Callback(YModemObj_TypeDef *obj, uint8_t type, void *callback);
 static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_bug, uint16_t *size);
 
 YModem_TypeDef YModem = {
@@ -35,10 +35,17 @@ YModem_TypeDef YModem = {
     .polling = YModem_State_Polling,
 };
 
-static void YModem_Set_Callback(uint8_t type, void *callback)
+static void YModem_Set_Callback(YModemObj_TypeDef *obj, uint8_t type, void *callback)
 {
+    if (obj == NULL)
+        return;
+    
     switch (type)
     {
+        case YModem_Callback_Type_Start:  obj->start_callback  = callback; break;
+        case YModem_Callback_Type_Finish: obj->finish_callback = callback; break;
+        case YModem_Callback_Type_Send:   obj->send_callback   = callback; break;
+        case YModem_Callback_Type_Abort:  obj->abort_callback  = callback; break;
         default: break;
     }
 }
@@ -89,11 +96,16 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_
                         tx_data = ACK;
                         break;
 
+                    case YModem_NAK:
+                        tx_data = NAK;
+                        break;
+
                     default:
+                        tx_data = 0;
                         break;
                 }
 
-                if (obj->send_callback)
+                if (obj->send_callback && tx_data)
                     obj->send_callback(&tx_data, 1);
 
                 /* after req data send accomplished check received data */
