@@ -27,14 +27,26 @@ typedef enum
 } YModem_CMD_List;
 
 /* external function */
+static void YModem_Set_Callback(uint8_t type, void *callback);
 static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_bug, uint16_t *size);
 
 YModem_TypeDef YModem = {
+    .set_callback = YModem_Set_Callback,
     .polling = YModem_State_Polling,
 };
 
+static void YModem_Set_Callback(uint8_t type, void *callback)
+{
+    switch (type)
+    {
+        default: break;
+    }
+}
+
 static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t *size)
 {
+    uint8_t tx_data = 0;
+
     /* polling currently processing ymodem object */
     if (obj && p_buf && size)
     {
@@ -70,13 +82,19 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_
                 {
                     case YModem_Req:
                         /* send 'C' */
-                        if (obj->send_callback)
-                            obj->send_callback(C, 1);
+                        tx_data = C;
+                        break;
+
+                    case YModem_ACK:
+                        tx_data = ACK;
                         break;
 
                     default:
                         break;
                 }
+
+                if (obj->send_callback)
+                    obj->send_callback(&tx_data, 1);
 
                 /* after req data send accomplished check received data */
                 obj->state = YModem_State_Rx;
