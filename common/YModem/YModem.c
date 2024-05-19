@@ -53,7 +53,7 @@ static void YModem_Set_Callback(YModemObj_TypeDef *obj, uint8_t type, void *call
 static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t *size)
 {
     uint8_t tx_data = 0;
-    bool check_rec = false;
+    bool check_rec = true;
 
     /* polling currently processing ymodem object */
     if (obj && p_buf && size)
@@ -72,10 +72,10 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_
                     {
                         case YModem_Req:
                             obj->tx_stage = YModem_ACK;
+                            check_rec = false;
                             break;
 
                         case YModem_ACK:
-                            check_rec = true;
                             break;
 
                         default:
