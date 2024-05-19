@@ -90,10 +90,13 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_
                     case YModem_Req:
                         /* send 'C' */
                         tx_data = C;
+                        /* after req data send accomplished check received data */
+                        obj->state = YModem_State_Rx;
                         break;
 
                     case YModem_ACK:
                         tx_data = ACK;
+                        obj->state = YModem_State_Rx;
                         break;
 
                     case YModem_NAK:
@@ -107,9 +110,6 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_
 
                 if (obj->send_callback && tx_data)
                     obj->send_callback(&tx_data, 1);
-
-                /* after req data send accomplished check received data */
-                obj->state = YModem_State_Rx;
                 break;
 
             case YModem_State_Rx_PackDone:
