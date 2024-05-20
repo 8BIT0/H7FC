@@ -136,11 +136,11 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_
 
                 if (check_rec && p_stream)
                 {
-                    p_stream = YModem_Decode(obj, p_buf, size);
+                    *p_stream = YModem_Decode(obj, p_buf, size);
                     
                     if (p_stream->valid == YModem_Pack_Invalid)
                     {
-                        
+
                     }
                 }
                 break;

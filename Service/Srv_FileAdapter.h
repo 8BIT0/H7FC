@@ -49,8 +49,6 @@ typedef struct
 
     bool chancel;
     bool ready_to_rec;
-    
-    SrvFileAdapter_Send_Func send;
 } SrvFileAdapterObj_TypeDef;
 
 typedef struct
