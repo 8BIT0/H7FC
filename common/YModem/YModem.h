@@ -39,9 +39,9 @@ typedef enum
 
 typedef struct
 {
-    uint32_t total_size;
-    uint32_t cur_size;
+    uint32_t size;
     uint8_t *p_buf;
+    bool valid;
 } YModem_Stream_TypeDef;
 
 typedef enum
@@ -62,8 +62,6 @@ typedef struct
     YModem_Finish_Callback finish_callback;
     YModem_Abort_Callback abort_callback;
     YModem_Send_Callback send_callback;
-
-    YModem_Stream_TypeDef tx_stream;
 
     uint8_t cur_pack_id;
     uint8_t next_pack_id;

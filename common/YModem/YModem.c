@@ -50,6 +50,45 @@ static void YModem_Set_Callback(YModemObj_TypeDef *obj, uint8_t type, void *call
     }
 }
 
+static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size)
+{
+    YModem_Stream_TypeDef stream_out;
+    uint16_t pack_size = 0;
+    uint8_t *frame = NULL;
+
+    memset(&stream_out, 0, sizeof(YModem_Stream_TypeDef));
+    if (obj && p_buf && size)
+    {
+        for (uint16_t i = 0; i < size; i ++)
+        {
+            if (p_buf[i] == SOH)
+            {
+                pack_size = 128;
+            }
+            else if (p_buf[i] == STX)
+            {
+                pack_size == 1024;
+            }
+            else
+            {
+                pack_size = 0;
+                i ++;
+            }
+
+            if (pack_size)
+            {
+                frame = &p_buf[i + 1];
+                if (size >= pack_size)
+                {
+
+                }
+            }
+        }
+    }
+
+    return stream_out;
+}
+
 static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t *size)
 {
     uint8_t tx_data = 0;
