@@ -25,6 +25,20 @@ typedef enum
     Adapter_Proc_Failed,
 } Adapter_Polling_State;
 
+typedef enum
+{
+    Pack_Invalid = 0,
+    Pack_InComplete,
+    Pack_Compelete,
+} Adapter_PackState_List;
+
+typedef struct
+{
+    uint8_t *p_buf;
+    uint16_t size;
+    Adapter_PackState_List state;
+} Adapter_Stream_TypeDef;
+
 typedef struct
 {
     uint32_t port_addr;
@@ -44,7 +58,7 @@ typedef struct
     SrvFileAdapterObj_TypeDef* (*create)(Adapter_ProtoType_List proto_type);
     bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
-    Adapter_Polling_State (*polling)(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t *size);
+    Adapter_Polling_State (*polling)(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t size, Adapter_Stream_TypeDef *p_stream);
 } SrvFileAdapter_TypeDef;
 
 extern SrvFileAdapter_TypeDef SrvFileAdapter;

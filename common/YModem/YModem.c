@@ -28,7 +28,7 @@ typedef enum
 
 /* external function */
 static void YModem_Set_Callback(YModemObj_TypeDef *obj, uint8_t type, void *callback);
-static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_bug, uint16_t *size);
+static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream);
 
 YModem_TypeDef YModem = {
     .set_callback = YModem_Set_Callback,
@@ -89,7 +89,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
     return stream_out;
 }
 
-static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t *size)
+static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream)
 {
     uint8_t tx_data = 0;
     bool check_rec = true;
@@ -119,9 +119,9 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_
                         break;
                 }
 
-                if (check_rec && *size)
+                if (check_rec && p_stream)
                 {
-                    
+                       
                 }
                 break;
 

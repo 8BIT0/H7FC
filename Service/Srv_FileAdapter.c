@@ -12,7 +12,7 @@
 static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type);
 static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter);
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send);
-static Adapter_Polling_State SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t *size);
+static Adapter_Polling_State SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t size, Adapter_Stream_TypeDef *p_stream);
 
 /* external virable */
 SrvFileAdapter_TypeDef SrvFileAdapter = {
@@ -75,12 +75,12 @@ static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter
         p_Adapter->send = send;
 }
 
-static Adapter_Polling_State SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t *size)
+static Adapter_Polling_State SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t size, Adapter_Stream_TypeDef *p_stream)
 {
     void *p_api = NULL;
     void *p_obj = NULL;
 
-    if (p_Adapter && p_Adapter->FrameObj && p_Adapter->FrameApi && p_buf && size && (*size))
+    if (p_Adapter && p_Adapter->FrameObj && p_Adapter->FrameApi && p_buf && size)
     {
         p_api = p_Adapter->FrameApi;
         p_obj = p_Adapter->FrameObj;
@@ -88,8 +88,8 @@ static Adapter_Polling_State SrvFileAdapter_Polling(SrvFileAdapterObj_TypeDef *p
         switch ((uint8_t)p_Adapter->frame_type)
         {
             case SrvFileAdapter_Frame_YModem:
-                if (To_YModem_Api(p_api)->polling)
-                    To_YModem_Api(p_api)->polling(To_YModem_Obj(p_obj), p_buf, size);
+                // if (To_YModem_Api(p_api)->polling)
+                //     To_YModem_Api(p_api)->polling(To_YModem_Obj(p_obj), p_buf, size, );
                 break;
 
             default: break;

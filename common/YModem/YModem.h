@@ -73,7 +73,7 @@ typedef struct
 typedef struct
 {
     void (*set_callback)(YModemObj_TypeDef *obj, uint8_t type, void *callback);
-    void (*polling)(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t *size);
+    void (*polling)(YModemObj_TypeDef *obj, uint8_t *p_bug, uint16_t *size, YModem_Stream_TypeDef *p_stream);
 } YModem_TypeDef;
 
 extern YModem_TypeDef YModem;
