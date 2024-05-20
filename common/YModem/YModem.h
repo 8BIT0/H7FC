@@ -37,11 +37,18 @@ typedef enum
     YModem_Callback_Type_Abort,
 } YModem_CallbackType_List;
 
+typedef enum
+{
+    YModem_Pack_Invalid = 0,
+    YModem_Pack_InCompelete,
+    YModem_Pack_Compelete,
+} YModem_PackState_List;
+
 typedef struct
 {
     uint32_t size;
     uint8_t *p_buf;
-    bool valid;
+    YModem_PackState_List valid;
 } YModem_Stream_TypeDef;
 
 typedef enum
