@@ -26,6 +26,9 @@ typedef enum
     ABORT2 = 0x61,
 } YModem_CMD_List;
 
+/* internal function */
+static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size);
+
 /* external function */
 static void YModem_Set_Callback(YModemObj_TypeDef *obj, uint8_t type, void *callback);
 static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream);
@@ -84,7 +87,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                 {
                     stream_out.p_buf = &p_buf[i + 2];
                     stream_out.size = pack_size;
-                    
+
                     /* check crc */
                 }
                 else
@@ -133,7 +136,12 @@ static void YModem_State_Polling(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_
 
                 if (check_rec && p_stream)
                 {
-                       
+                    p_stream = YModem_Decode(obj, p_buf, size);
+                    
+                    if (p_stream->valid == YModem_Pack_Invalid)
+                    {
+                        
+                    }
                 }
                 break;
 
