@@ -103,7 +103,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
-    SrvUpgrade_Stage_List (*polling)(uint32_t sys_time);
+    SrvUpgrade_Stage_List (*polling)(uint32_t sys_time, SrvFileAdapter_Send_Func send);
     void (*set_fileinfo)(const Upgrade_FileInfo_TypeDef info);
     void (*jump)(void);
     uint16_t (*get_log)(uint8_t *p_info, uint16_t len);

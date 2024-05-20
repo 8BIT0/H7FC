@@ -103,7 +103,7 @@ static void SrvUpgrade_Collect_Info(const char *format, ...);
 
 /* external function */
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
-static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time);
+static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileAdapter_Send_Func send);
 static uint16_t SrvUpgrade_Get_Info(uint8_t *p_info, uint16_t len);
 static void SrvUpgrade_ClearLog(void);
 static void SrvUpgrade_JumpTo(void);
@@ -277,7 +277,7 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     return ret;
 }
 
-static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
+static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileAdapter_Send_Func send)
 {
     Storage_ItemSearchOut_TypeDef search_out;
     uint8_t i = 0;
@@ -291,6 +291,9 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
         if (Monitor.adapter_obj == NULL)
             Monitor.PollingState = Stage_Adapter_Error;
     }
+
+    if (Monitor.adapter_obj && send)
+        SrvFileAdapter.set_send(Monitor.adapter_obj, send);
 
     switch ((uint8_t) Monitor.PollingState)
     {

@@ -603,13 +603,19 @@ static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
 }
 
 /************************************** upgrade protocol section ********************************************/
+static void TaskFrameCTL_Upgrade_Send(uint8_t *p_buf, uint16_t size)
+{
+    if (Upgrade_Monitor.port_addr && p_buf && size)
+        TaskFrameCTL_Port_Tx(Upgrade_Monitor.port_addr, p_buf, size);
+}
+
 static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
 {
     SrvUpgrade_Stage_List stage;
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     Shell *shell_obj = Shell_GetInstence();
     
-    stage = SrvUpgrade.polling(sys_time);
+    stage = SrvUpgrade.polling(sys_time, TaskFrameCTL_Upgrade_Send);
 
     switch ((uint8_t) stage)
     {
