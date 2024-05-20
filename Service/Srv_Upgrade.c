@@ -242,9 +242,9 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
         case PortProc_Deal_Pack:
             Monitor.PortDataState = PortProc_Deal_Pack;
-            SrvFileAdapter.polling(&Monitor.adapter_obj, inuse_stream->p_buf, &inuse_stream->size);
             
             if (inuse_stream)
+                SrvFileAdapter.polling(&Monitor.adapter_obj, inuse_stream->p_buf, &inuse_stream->size);
                 inuse_stream->access = false;
             return PortProc_Deal_Pack;
 
