@@ -57,6 +57,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
 {
     YModem_Stream_TypeDef stream_out;
     uint16_t pack_size = 0;
+    bool is_EOT = false;
 
     memset(&stream_out, 0, sizeof(YModem_Stream_TypeDef));
     if (obj && p_buf && size)
@@ -73,6 +74,14 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                 case STX:
                     if (size >= 1029)
                         pack_size = 1024;
+                    break;
+
+                case EOT:
+                    if (size == 1)
+                    {
+                        pack_size = 0;
+                        is_EOT = true;
+                    }
                     break;
 
                 default:
@@ -102,6 +111,12 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                     obj->next_pack_id = obj->cur_pack_id + 1;
                     obj->received_pack_num ++;
                 }
+            }
+            else if (is_EOT)
+            {
+                stream_out.valid = YModem_Pack_Compelete;
+                stream_out.size = 0;
+                stream_out.p_buf = NULL;
             }
         }
     }
