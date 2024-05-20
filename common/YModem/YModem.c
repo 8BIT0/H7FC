@@ -83,21 +83,24 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
 
             if (pack_size)
             {
-                if (((obj->cur_pack_id + 1) == p_buf[i + 1]) || (obj->received_pack_num == 0))
-                {
-                    stream_out.p_buf = &p_buf[i + 3];
-                    stream_out.size = pack_size;
+                stream_out.p_buf = &p_buf[i + 3];
+                stream_out.size = pack_size;
 
-                    /* check crc */
-                    stream_out.valid = YModem_Pack_Compelete;
-                    break;
-                }
-                else
+                stream_out.valid = YModem_Pack_Compelete;
+                /* check crc */
+                
+                if (obj->data_income)
                 {
-                    /* error pack id */
-                    stream_out.valid = YModem_Pack_Invalid;
-                    stream_out.p_buf = NULL;
-                    i ++;
+                    if (obj->received_pack_num && (p_buf[i + 2] != obj->next_pack_id))
+                    {
+                        /* error pack id */
+                        stream_out.valid = YModem_Pack_Invalid;
+                        obj->data_income = false;
+                    }
+
+                    obj->cur_pack_id = p_buf[i + 1];
+                    obj->next_pack_id = obj->cur_pack_id + 1;
+                    obj->received_pack_num ++;
                 }
             }
         }
@@ -162,16 +165,6 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                     default:
                         break;
                 }
-
-                if (check_rec && p_stream)
-                {
-                    *p_stream = YModem_Decode(obj, p_buf, size);
-                    
-                    if (p_stream->valid == YModem_Pack_Invalid)
-                    {
-
-                    }
-                }
                 break;
 
             case YModem_State_Tx:
@@ -184,6 +177,7 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                         obj->state = YModem_State_Rx;
                         obj->re_send_time = sys_time + 100;
                         obj->received_pack_num = 0;
+                        obj->data_income = false;
                         break;
 
                     case YModem_Cfm:
@@ -191,12 +185,14 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                         obj->state = YModem_State_Tx;
                         obj->tx_stage = YModem_ACK;
                         obj->received_pack_num = 0;
+                        obj->data_income = false;
                         break;
 
                     case YModem_ACK:
                         tx_data = ACK;
                         obj->state = YModem_State_Rx;
                         obj->received_pack_num = 0;
+                        obj->data_income = true;
                         break;
 
                     case YModem_NAK:
