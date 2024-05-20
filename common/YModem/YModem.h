@@ -53,7 +53,8 @@ typedef struct
 
 typedef enum
 {
-    YModem_Req,
+    YModem_Req, /* request file */
+    YModem_Cfm, /* comfirm file */
     YModem_ACK,
     YModem_NAK,
     YModem_EOT,
