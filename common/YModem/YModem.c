@@ -80,7 +80,15 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                     if (size == 1)
                     {
                         pack_size = 0;
-                        is_EOT = true;
+                        if (obj->EOT_Cnt < 2)
+                        {
+                            obj->EOT_Cnt ++;
+                            is_EOT = true;
+                        }
+                        else
+                        {
+                            /* wait last pack */
+                        }
                     }
                     break;
 
@@ -221,12 +229,6 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
 
                 if (obj->send_callback && tx_data)
                     obj->send_callback(&tx_data, 1);
-                break;
-
-            case YModem_State_Rx_PackDone:
-                break;
-
-            case YModem_NotFull_Pack:
                 break;
 
             case YModem_State_TimeOut:

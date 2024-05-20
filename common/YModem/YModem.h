@@ -22,9 +22,8 @@ typedef enum
     YModem_State_Idle = 0,
     YModem_State_Tx,
     YModem_State_Rx,
-    YModem_State_Rx_Waiting,
-    YModem_State_Rx_PackDone,
-    YModem_NotFull_Pack,
+    YModem_State_Finish,
+    YModem_State_Error,
     YModem_State_TimeOut,
 } YModem_State_List;
 
@@ -72,6 +71,8 @@ typedef struct
     YModem_Finish_Callback finish_callback;
     YModem_Abort_Callback abort_callback;
     YModem_Send_Callback send_callback;
+
+    uint8_t EOT_Cnt;
 
     uint8_t cur_pack_id;
     uint8_t next_pack_id;
