@@ -66,12 +66,12 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
             switch (p_buf[i])
             {
                 case SOH:
-                    if (size > 133)
+                    if (size >= 133)
                         pack_size = 128;
                     break;
             
                 case STX:
-                    if (size > 1029)
+                    if (size >= 1029)
                         pack_size = 1024;
                     break;
 
@@ -83,12 +83,14 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
 
             if (pack_size)
             {
-                if ((obj->cur_pack_id + 1) == p_buf[i + 1])
+                if (((obj->cur_pack_id + 1) == p_buf[i + 1]) || (obj->received_pack_num == 0))
                 {
-                    stream_out.p_buf = &p_buf[i + 2];
+                    stream_out.p_buf = &p_buf[i + 3];
                     stream_out.size = pack_size;
 
                     /* check crc */
+                    stream_out.valid = YModem_Pack_Compelete;
+                    break;
                 }
                 else
                 {
@@ -124,9 +126,26 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                 {
                     case YModem_Req:
                         /* if receive pack data set send stage as ack */
-                        if (size)
+                        if (size && p_buf && p_stream)
                         {
-                            // obj->tx_stage = YModem_ACK;
+                            *p_stream = YModem_Decode(obj, p_buf, size);
+
+                            switch ((uint8_t)p_stream->valid)
+                            {
+                                case YModem_Pack_Compelete:
+                                    obj->state = YModem_State_Tx;
+                                    obj->tx_stage = YModem_ACK;
+                                    break;
+                            
+                                case YModem_Pack_InCompelete:
+                                    break;
+
+                                case YModem_Pack_Invalid:
+                                    /* error pack */
+                                default:
+                                    /* unknow state */
+                                    break;
+                            }
                         }
                         else if (sys_time >= obj->re_send_time)
                         {
@@ -164,6 +183,7 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                         /* after req data send accomplished check received data */
                         obj->state = YModem_State_Rx;
                         obj->re_send_time = sys_time + 100;
+                        obj->received_pack_num = 0;
                         break;
 
                     case YModem_ACK:

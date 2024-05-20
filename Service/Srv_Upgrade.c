@@ -14,7 +14,7 @@
 #include "Bsp_Flash.h"
 #include "Srv_FileAdapter.h"
 
-#define FIRMWARE_WAITTING_TIMEOUT   10000   /* unit: ms */
+#define FIRMWARE_WAITTING_TIMEOUT   30000   /* unit: ms */
 #define FIRMWARE_COMMU_TIMEOUT      1000    /* unit: ms */
 #define DEFAULT_WINDOW_SIZE         100     /* unit: ms */
 
