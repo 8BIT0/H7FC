@@ -47,7 +47,6 @@ typedef enum
     Stage_Processing_PortData,
     Stage_PortData_Error,
     Stage_Commu_TimeOut,
-    Stage_Proto_TimeOut,
     Stage_App_Upgrading,
     Stage_Module_Upgrading,
     Stage_ReadyToJump,

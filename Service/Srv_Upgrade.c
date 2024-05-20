@@ -221,6 +221,7 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
 
 static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time)
 {
+    SrvUpgrade_PortDataProc_List ret;
     SrvUpgrade_Stream_TypeDef *inuse_stream = NULL;
 
     if (Monitor.adapter_obj == NULL)
@@ -246,17 +247,22 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             if (inuse_stream)
                 SrvFileAdapter.polling(&Monitor.adapter_obj, inuse_stream->p_buf, &inuse_stream->size);
                 inuse_stream->access = false;
-            return PortProc_Deal_Pack;
+            ret = PortProc_Deal_Pack;
+            break;
 
         case PortProc_Deal_Error:
             Monitor.PortDataState = PortProc_None;
-            return PortProc_Deal_Error;
+            ret = PortProc_Deal_Error;
+            break;
 
         case PortProc_Deal_TimeOut:
             Monitor.PortDataState = PortProc_None;
-            return PortProc_Deal_TimeOut;
+            ret = PortProc_Deal_TimeOut;
+            break;
 
-        default: return PortProc_Unknown;
+        default:
+            ret = PortProc_Unknown;
+            break;
     }
 
     /* check for time out */
@@ -266,6 +272,8 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
         Monitor.info_update = false;
         Monitor.PortDataState = PortProc_Deal_TimeOut;
     }
+
+    return ret;
 }
 
 static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
@@ -351,6 +359,9 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
             Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
             switch (SrvUpgrade_PortProcPolling(sys_time))
             {
+                case PortProc_Deal_Pack:
+                    break;
+
                 case PortProc_Deal_TimeOut:
                 case PortProc_Deal_Error:
                 default:
@@ -370,9 +381,11 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
             return Stage_ReadyToJump;
 
         case Stage_Adapter_Error:
+            Monitor.PollingState = Stage_Init;
             return Stage_Adapter_Error;
 
         case Stage_Commu_TimeOut:
+            Monitor.PollingState = Stage_Init;
             return Stage_Commu_TimeOut;
         
         case Stage_JumpError:

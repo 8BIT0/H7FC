@@ -8,9 +8,6 @@
 #include "../System/storage/Storage.h"
 #include "YModem.h"
 
-/* internal function */
-static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter);
-
 /* external function */
 static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type);
 static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter);
@@ -25,53 +22,35 @@ SrvFileAdapter_TypeDef SrvFileAdapter = {
     .set_send = SrvFileAdapter_Set_SendCallback,
 };
 
-static bool SrvFileAdapterObj_Check(SrvFileAdapterObj_TypeDef *p_Adapter)
-{
-    if ((p_Adapter == NULL) || \
-        (p_Adapter->frame_type >= SrvFileAdapter_Frame_Sum) || \
-        (p_Adapter->FrameObj == NULL) || \
-        (p_Adapter->FrameApi == NULL))
-        return false;
-
-    return true;
-}
-
 static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type)
 {
     SrvFileAdapterObj_TypeDef *p_AdapterObj = NULL;
+    
+    p_AdapterObj = SrvOsCommon.malloc(sizeof(SrvFileAdapterObj_TypeDef));
+    if (p_AdapterObj == NULL)
+        SrvOsCommon.free(p_AdapterObj);
+    
+    p_AdapterObj->port_addr = 0;
+    p_AdapterObj->frame_type = proto_type;
 
-    if (SrvFileAdapterObj_Check(p_AdapterObj))
+    switch (proto_type)
     {
-        p_AdapterObj = SrvOsCommon.malloc(sizeof(SrvFileAdapterObj_TypeDef));
-        if (p_AdapterObj == NULL)
-        {
-            SrvOsCommon.free(p_AdapterObj);
-        }
-        else
-        {
-            p_AdapterObj->port_addr = 0;
-            p_AdapterObj->frame_type = proto_type;
-
-            switch (proto_type)
+        case SrvFileAdapter_Frame_YModem:
+            /* create YModem Object */
+            p_AdapterObj->FrameObj = SrvOsCommon.malloc(YModemObj_size);
+            if (p_AdapterObj->FrameObj == NULL)
             {
-                case SrvFileAdapter_Frame_YModem:
-                    /* create YModem Object */
-                    p_AdapterObj->FrameObj = SrvOsCommon.malloc(YModemObj_size);
-                    if (p_AdapterObj->FrameObj == NULL)
-                    {
-                        SrvOsCommon.free(p_AdapterObj);
-                        p_AdapterObj = NULL;
-                    }
-                    
-                    p_AdapterObj->FrameApi = (void *)&YModem;
-                    break;
-
-                default:
-                    SrvOsCommon.free(p_AdapterObj);
-                    p_AdapterObj = NULL;
-                    break;
+                SrvOsCommon.free(p_AdapterObj);
+                p_AdapterObj = NULL;
             }
-        }
+            
+            p_AdapterObj->FrameApi = (void *)&YModem;
+            break;
+
+        default:
+            SrvOsCommon.free(p_AdapterObj);
+            p_AdapterObj = NULL;
+            break;
     }
 
     return p_AdapterObj;
