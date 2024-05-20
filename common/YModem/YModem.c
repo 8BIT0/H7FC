@@ -67,12 +67,12 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
             switch (p_buf[i])
             {
                 case SOH:
-                    if (size >= 133)
+                    if ((size - i) >= 133)
                         pack_size = 128;
                     break;
             
                 case STX:
-                    if (size >= 1029)
+                    if ((size - i) >= 1029)
                         pack_size = 1024;
                     break;
 
