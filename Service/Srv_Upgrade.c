@@ -249,7 +249,7 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             
             if (inuse_stream)
             {
-                SrvFileAdapter.polling(Monitor.adapter_obj, inuse_stream->p_buf, inuse_stream->size, &stream);
+                SrvFileAdapter.polling(sys_time, Monitor.adapter_obj, inuse_stream->p_buf, inuse_stream->size, &stream);
                 inuse_stream->access = false;
             }
             ret = PortProc_Deal_Pack;

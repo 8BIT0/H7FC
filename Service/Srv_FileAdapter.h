@@ -56,7 +56,7 @@ typedef struct
     SrvFileAdapterObj_TypeDef* (*create)(Adapter_ProtoType_List proto_type);
     bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
-    Adapter_Polling_State (*polling)(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t size, Adapter_Stream_TypeDef *p_stream);
+    Adapter_Polling_State (*polling)(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t size, Adapter_Stream_TypeDef *p_stream);
 } SrvFileAdapter_TypeDef;
 
 extern SrvFileAdapter_TypeDef SrvFileAdapter;
