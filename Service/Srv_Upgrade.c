@@ -255,11 +255,6 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             ret = PortProc_Deal_Error;
             break;
 
-        case PortProc_Deal_TimeOut:
-            Monitor.PortDataState = PortProc_None;
-            ret = PortProc_Deal_TimeOut;
-            break;
-
         default:
             ret = PortProc_Unknown;
             break;
@@ -270,7 +265,8 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     {
         memset(&Monitor.FileInfo, 0, sizeof(Monitor.FileInfo));
         Monitor.info_update = false;
-        Monitor.PortDataState = PortProc_Deal_TimeOut;
+        Monitor.PortDataState = PortProc_None;
+        ret = PortProc_Deal_TimeOut;
     }
 
     return ret;
