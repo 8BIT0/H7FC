@@ -39,12 +39,11 @@ typedef enum
 typedef enum
 {
     Stage_Init = 0,
-    Stage_Wait_PortData,
     Stage_Checking_App_Firmware,
     Stage_Checking_Boot_Firmware,
     Stage_FirmwareData_Error,
     Stage_Adapter_Error,
-    Stage_Processing_PortData,
+    Stage_Process_PortData,
     Stage_PortData_Error,
     Stage_Commu_TimeOut,
     Stage_App_Upgrading,

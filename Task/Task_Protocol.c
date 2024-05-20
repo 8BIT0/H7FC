@@ -606,7 +606,26 @@ static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
 static void TaskFrameCTL_Upgrade_Send(uint8_t *p_buf, uint16_t size)
 {
     if (Upgrade_Monitor.port_addr && p_buf && size)
-        TaskFrameCTL_Port_Tx(Upgrade_Monitor.port_addr, p_buf, size);
+    {
+        if(p_buf && size)
+        {
+            switch ((uint8_t) Upgrade_Monitor.port_type)
+            {
+                case Port_Uart:
+                    TaskFrameCTL_Port_Tx(Upgrade_Monitor.port_addr, (uint8_t *)p_buf, size);
+                    break;
+            
+                case Port_USB:
+                    TaskFrameCTL_DefaultPort_Trans((uint8_t *)p_buf, size);
+                    break; 
+
+                default:
+                    break;
+            }
+        }
+
+        return 0;
+    }
 }
 
 static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
@@ -1032,6 +1051,7 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
 
         Upgrade_Monitor.is_enable = true;
         Upgrade_Monitor.port_addr = CLI_Monitor.port_addr;
+        Upgrade_Monitor.port_type = CLI_Monitor.type;
         
         Upgrade_Monitor.file_info.File_Type = type;
         Upgrade_Monitor.file_info.Adapter_Type = SrvFileAdapter_Frame_YModem;

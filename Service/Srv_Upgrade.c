@@ -222,8 +222,10 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
 static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time)
 {
     SrvUpgrade_PortDataProc_List ret;
-    SrvUpgrade_Stream_TypeDef *inuse_stream = NULL;
     Adapter_Stream_TypeDef stream;
+    SrvUpgrade_Stream_TypeDef *inuse_stream = NULL;
+    uint8_t *p_buf_tmp = NULL;
+    uint16_t size_tmp = 0;
 
     memset(&stream, 0, sizeof(Adapter_Stream_TypeDef));
 
@@ -246,12 +248,16 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
         case PortProc_Deal_Pack:
             Monitor.PortDataState = PortProc_Deal_Pack;
-            
             if (inuse_stream)
             {
-                SrvFileAdapter.polling(sys_time, Monitor.adapter_obj, inuse_stream->p_buf, inuse_stream->size, &stream);
-                inuse_stream->access = false;
+                p_buf_tmp = inuse_stream->p_buf;
+                size_tmp = inuse_stream->size;
             }
+
+            SrvFileAdapter.polling(sys_time, Monitor.adapter_obj, p_buf_tmp, size_tmp, &stream);
+
+            if (inuse_stream)
+                inuse_stream->access = false;
             ret = PortProc_Deal_Pack;
             break;
 
@@ -313,7 +319,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                 }
             }
             
-            Monitor.PollingState = Stage_Wait_PortData;
+            Monitor.PollingState = Stage_Process_PortData;
             Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
             return Monitor.PollingState;
 
@@ -323,7 +329,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
         case Stage_Checking_Boot_Firmware:
             return Stage_Checking_Boot_Firmware;
 
-        case Stage_Wait_PortData:
+        case Stage_Process_PortData:
             if ((Monitor.CodeStage == On_Boot) && \
                 (sys_time >= Monitor.jump_time))
             {
@@ -341,9 +347,26 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                     if (Monitor.proc_stream[i].size)
                     {
                         /* received data from port */
-                        Monitor.PollingState = Stage_Processing_PortData;
+                        Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
                         break;
                     }
+                }
+                
+                switch (SrvUpgrade_PortProcPolling(sys_time))
+                {
+                    case PortProc_Deal_Pack:
+                        break;
+
+                    case PortProc_Deal_TimeOut:
+                    case PortProc_Deal_Error:
+                    default:
+                        /* clear stream */
+                        for (i = 0; i < 2; i ++)
+                        {
+                            Monitor.proc_stream[i].size = 0;
+                            memset(Monitor.proc_stream[i].p_buf, 0, Monitor.proc_stream[i].total_size);
+                        }
+                        break;
                 }
 
                 /* check for processing time out when at app */
@@ -357,27 +380,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                     }
                 }
             }
-            return Stage_Wait_PortData;
-
-        case Stage_Processing_PortData:
-            Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
-            switch (SrvUpgrade_PortProcPolling(sys_time))
-            {
-                case PortProc_Deal_Pack:
-                    break;
-
-                case PortProc_Deal_TimeOut:
-                case PortProc_Deal_Error:
-                default:
-                    /* clear stream */
-                    for (i = 0; i < 2; i ++)
-                    {
-                        Monitor.proc_stream[i].size = 0;
-                        memset(Monitor.proc_stream[i].p_buf, 0, Monitor.proc_stream[i].total_size);
-                    }
-                    Monitor.PollingState = Stage_Commu_TimeOut;
-            }
-            return Stage_Processing_PortData;
+            return Stage_Process_PortData;
 
         /* when at bootloader */
         case Stage_ReadyToJump:

@@ -90,7 +90,7 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
     void *p_obj = NULL;
     YModem_Stream_TypeDef stream_tmp;
 
-    if (p_Adapter && p_Adapter->FrameObj && p_Adapter->FrameApi && p_buf && size)
+    if (p_Adapter && p_Adapter->FrameObj && p_Adapter->FrameApi)
     {
         p_api = p_Adapter->FrameApi;
         p_obj = p_Adapter->FrameObj;

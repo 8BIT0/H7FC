@@ -110,7 +110,7 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
     bool check_rec = true;
 
     /* polling currently processing ymodem object */
-    if (obj && p_buf && size)
+    if (obj)
     {
         switch ((uint8_t)(obj->state))
         {
@@ -125,7 +125,15 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                     case YModem_Req:
                         /* if receive pack data set send stage as ack */
                         if (size)
-                            obj->tx_stage = YModem_ACK;
+                        {
+                            // obj->tx_stage = YModem_ACK;
+                        }
+                        else if (sys_time >= obj->re_send_time)
+                        {
+                            obj->state = YModem_State_Tx;
+                            obj->tx_stage = YModem_Req;
+                        }
+
                         check_rec = false;
                         break;
 
@@ -155,6 +163,7 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                         tx_data = C;
                         /* after req data send accomplished check received data */
                         obj->state = YModem_State_Rx;
+                        obj->re_send_time = sys_time + 100;
                         break;
 
                     case YModem_ACK:
