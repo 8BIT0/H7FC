@@ -134,7 +134,7 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                             {
                                 case YModem_Pack_Compelete:
                                     obj->state = YModem_State_Tx;
-                                    obj->tx_stage = YModem_ACK;
+                                    obj->tx_stage = YModem_Cfm;
                                     break;
                             
                                 case YModem_Pack_InCompelete:
@@ -183,6 +183,12 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                         /* after req data send accomplished check received data */
                         obj->state = YModem_State_Rx;
                         obj->re_send_time = sys_time + 100;
+                        obj->received_pack_num = 0;
+                        break;
+
+                    case YModem_Cfm:
+                        tx_data = C;
+                        obj->state = YModem_State_Tx;
                         obj->received_pack_num = 0;
                         break;
 
