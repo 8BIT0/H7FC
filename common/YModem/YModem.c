@@ -189,12 +189,14 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                     case YModem_Cfm:
                         tx_data = C;
                         obj->state = YModem_State_Tx;
+                        obj->tx_stage = YModem_ACK;
                         obj->received_pack_num = 0;
                         break;
 
                     case YModem_ACK:
                         tx_data = ACK;
                         obj->state = YModem_State_Rx;
+                        obj->received_pack_num = 0;
                         break;
 
                     case YModem_NAK:
