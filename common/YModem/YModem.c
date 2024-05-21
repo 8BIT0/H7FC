@@ -197,7 +197,7 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                                             /* send ack */
 
                                             /* send c */
-                                            
+
                                         }
                                     }
                                     else
