@@ -194,15 +194,16 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                                     {
                                         if (obj->wait_last_pack)
                                         {
-                                            /* send ack */
+                                            obj->state = YModem_State_Tx;
+                                            /* step1: send ack */
+                                            obj->tx_stage = YModem_ACK;
 
-                                            /* send c */
-
+                                            /* step2: send c */
                                         }
                                     }
                                     else
                                     {
-
+                                        /* data pack */
                                     }
                                     break;
 
