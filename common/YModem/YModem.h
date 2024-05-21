@@ -74,6 +74,7 @@ typedef struct
     YModem_Send_Callback send_callback;
 
     uint8_t EOT_Cnt;
+    bool wait_last_pack;
 
     uint8_t cur_pack_id;
     uint8_t next_pack_id;

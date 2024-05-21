@@ -85,10 +85,10 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                             obj->EOT_Cnt ++;
                             is_EOT = true;
                         }
-                        else
-                        {
-                            /* wait last pack */
-                        }
+                        
+                        if (obj->EOT_Cnt == 2)
+                            /* last pack remain */
+                            obj->wait_last_pack = true;
                     }
                     break;
 
@@ -123,7 +123,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
             else if (is_EOT)
             {
                 stream_out.valid = YModem_Pack_Compelete;
-                stream_out.size = 0;
+                stream_out.size = 1;
                 stream_out.p_buf = NULL;
             }
         }
@@ -155,7 +155,6 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                         if (size && p_buf && p_stream)
                         {
                             *p_stream = YModem_Decode(obj, p_buf, size);
-
                             switch ((uint8_t)p_stream->valid)
                             {
                                 case YModem_Pack_Compelete:
@@ -184,6 +183,40 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                         break;
 
                     case YModem_ACK:
+                        if (size && p_buf && p_stream)
+                        {
+                            *p_stream = YModem_Decode(obj, p_buf, size);
+
+                            switch ((uint8_t)p_stream->valid)
+                            {
+                                case YModem_Pack_Compelete:
+                                    if (p_stream->size == 1)
+                                    {
+                                        if (obj->wait_last_pack)
+                                        {
+                                            /* send ack */
+
+                                            /* send c */
+                                            
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                    break;
+
+                                case YModem_Pack_InCompelete:
+                                    break;
+
+                                case YModem_Pack_Invalid:
+                                    break;
+
+                                default:
+                                    /* unknow state */
+                                    break;
+                            }
+                        }
                         break;
 
                     default:
@@ -223,7 +256,6 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                         }
                         else
                             obj->state = YModem_State_Rx;
-                        
                         obj->lst_tx_stage = YModem_ACK;
                         break;
 
