@@ -130,11 +130,129 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
     return stream_out;
 }
 
-static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream)
+static void YModem_Rx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream)
+{
+    /* check for time out */
+    if ((size == 0) || (p_buf == NULL) || (p_stream == NULL))
+    {
+        if (((obj->tx_stage == YModem_Req) && (sys_time >= obj->re_send_time)) || \
+            ((obj->tx_stage == YModem_ACK) && (sys_time >= obj->timeout_ms)))
+        {
+            obj->state = YModem_State_Tx;
+            obj->tx_stage = YModem_Req;
+        }
+        return;
+    }
+
+    *p_stream = YModem_Decode(obj, p_buf, size);
+    if (p_stream->valid == YModem_Pack_Invalid)
+    {
+        /* send NAK to host */
+        obj->state = YModem_State_Tx;
+        obj->tx_stage = YModem_NAK;
+
+        /* check for re-send */
+
+        /* check for time out */
+
+        return;
+    }
+
+    /* update tx stage after receive data */
+    switch ((uint8_t) obj->tx_stage)
+    {
+        /* receive data after req */
+        case YModem_Req:
+            /* file name received */
+            if (p_stream->valid == YModem_Pack_Compelete)
+                break;
+
+            obj->state = YModem_State_Tx;
+            obj->tx_stage = YModem_Cfm;
+            break;
+
+        /* receive data after confirm */
+        case YModem_Cfm:
+            /* is first pack received */
+            if (p_stream->valid == YModem_Pack_Compelete)
+                break;
+
+            obj->state = YModem_State_Tx;
+            obj->tx_stage = YModem_ACK;
+            break;
+
+        /* receive data after ACK */
+        case YModem_ACK:
+            if (p_stream->valid != YModem_Pack_Compelete)
+                break;
+
+            obj->state = YModem_State_Tx;
+            obj->tx_stage = YModem_ACK;
+            if (p_stream->size == 1)
+            {
+                if (!obj->wait_last_pack)
+                    obj->tx_stage = YModem_NAK;
+            }
+            break;
+
+        case YModem_NAK:
+            break;
+
+        default:
+            break;
+    }
+}
+
+static void YModem_Tx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj)
 {
     uint8_t tx_data[2] = {0};
     uint8_t tx_size = 0;
 
+    switch ((uint8_t) obj->tx_stage)
+    {
+        case YModem_Req:
+            /* send 'C' */
+            tx_data[0] = C;
+            tx_size = 1;
+            /* after req data send accomplished check received data */
+            obj->state = YModem_State_Rx;
+            obj->re_send_time = sys_time + 100;
+            obj->received_pack_num = 0;
+            break;
+
+        case YModem_Cfm:
+            /* send ACk and C */
+            tx_data[0] = ACK;
+            tx_data[1] = C;
+            tx_size = 2;
+            /* wait data input */
+            obj->state = YModem_State_Rx;
+            obj->received_pack_num = 0;
+            break;
+
+        case YModem_ACK:
+            tx_data[0] = ACK;
+            tx_size = 1;
+            obj->state = YModem_State_Rx;
+            obj->timeout_ms = sys_time + 200;
+            break;
+
+        case YModem_NAK:
+            tx_data[0] = NAK;
+            tx_size = 1;
+            break;
+
+        default:
+            tx_size = 0;
+            break;
+    }
+
+    if (obj->send_callback && tx_size)
+        obj->send_callback(tx_data, tx_size);
+}
+
+static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream)
+{
     /* polling currently processing ymodem object */
     if (obj)
     {
@@ -145,107 +263,11 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                 break;
 
             case YModem_State_Rx:
-                /* check for time out */
-                if ((size == 0) || (p_buf == NULL) || (p_stream == NULL))
-                {
-                    if (((obj->tx_stage == YModem_Req) && (sys_time >= obj->re_send_time)) || \
-                        ((obj->tx_stage == YModem_ACK) && (sys_time >= obj->timeout_ms)))
-                    {
-                        obj->state = YModem_State_Tx;
-                        obj->tx_stage = YModem_Req;
-                    }
-                    return;
-                }
-
-                /* update tx stage after receive data */
-                switch ((uint8_t) obj->tx_stage)
-                {
-                    /* receive data on req stage */
-                    case YModem_Req:
-                        /* if receive pack data set send stage as ack */
-                        *p_stream = YModem_Decode(obj, p_buf, size);
-                        switch ((uint8_t)p_stream->valid)
-                        {
-                            case YModem_Pack_Compelete:
-                                obj->state = YModem_State_Tx;
-                                obj->tx_stage = YModem_ACK;
-                                obj->tx_stage = YModem_Cfm;
-                                break;
-
-                            default:
-                                /* unknow state */
-                                break;
-                        }
-                        break;
-
-                    /* receive data on ACK stage */
-                    case YModem_ACK:
-                        *p_stream = YModem_Decode(obj, p_buf, size);
-                        switch ((uint8_t)p_stream->valid)
-                        {
-                            case YModem_Pack_Compelete:
-                                obj->state = YModem_State_Tx;
-                                obj->tx_stage = YModem_ACK;
-                                if (p_stream->size == 1)
-                                {
-                                    if (!obj->wait_last_pack)
-                                        obj->tx_stage = YModem_NAK;
-                                }
-                                break;
-
-                            default:
-                                /* unknow state */
-                                break;
-                        }
-                        break;
-
-                    default:
-                        break;
-                }
+                YModem_Rx_State_Polling(sys_time, obj, p_buf, size, p_stream);
                 break;
 
             case YModem_State_Tx:
-                switch ((uint8_t) obj->tx_stage)
-                {
-                    case YModem_Req:
-                        /* send 'C' */
-                        tx_data[0] = C;
-                        tx_size = 1;
-                        /* after req data send accomplished check received data */
-                        obj->state = YModem_State_Rx;
-                        obj->re_send_time = sys_time + 100;
-                        obj->received_pack_num = 0;
-                        break;
-
-                    case YModem_Cfm:
-                        /* send ACk and C */
-                        tx_data[0] = ACK;
-                        tx_data[1] = C;
-                        tx_size = 2;
-                        /* wait data input */
-                        obj->state = YModem_State_Rx;
-                        obj->received_pack_num = 0;
-                        break;
-
-                    case YModem_ACK:
-                        tx_data[0] = ACK;
-                        tx_size = 1;
-                        obj->state = YModem_State_Rx;
-                        obj->timeout_ms = sys_time + 200;
-                        break;
-
-                    case YModem_NAK:
-                        tx_data[0] = NAK;
-                        tx_size = 1;
-                        break;
-
-                    default:
-                        tx_size = 0;
-                        break;
-                }
-
-                if (obj->send_callback && tx_size)
-                    obj->send_callback(tx_data, tx_size);
+                YModem_Tx_State_Polling(sys_time, obj);
                 break;
 
             default:
