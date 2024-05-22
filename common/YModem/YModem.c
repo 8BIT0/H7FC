@@ -80,11 +80,9 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                     if (size == 1)
                     {
                         pack_size = 0;
+                        is_EOT = true;
                         if (obj->EOT_Cnt < 2)
-                        {
                             obj->EOT_Cnt ++;
-                            is_EOT = true;
-                        }
                         
                         if (obj->EOT_Cnt == 2)
                             /* last pack remain */
