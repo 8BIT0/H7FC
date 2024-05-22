@@ -120,7 +120,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                     obj->received_pack_num ++;
                 }
             }
-            else if (is_EOT)
+            else if ((pack_size == 0) && is_EOT)
             {
                 stream_out.valid = YModem_Pack_Compelete;
                 stream_out.size = 1;
@@ -239,6 +239,7 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                         }
                         else
                             obj->state = YModem_State_Rx;
+                        obj->timeout_ms = sys_time + 200;
                         obj->lst_tx_stage = YModem_ACK;
                         break;
 
