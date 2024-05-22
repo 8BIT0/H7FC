@@ -24,7 +24,6 @@ typedef enum
     YModem_State_Rx,
     YModem_State_Finish,
     YModem_State_Error,
-    YModem_State_TimeOut,
 } YModem_State_List;
 
 typedef enum
