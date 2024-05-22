@@ -14,7 +14,7 @@
 #include "Bsp_Flash.h"
 #include "Srv_FileAdapter.h"
 
-#define FIRMWARE_WAITTING_TIMEOUT   30000   /* unit: ms */
+#define FIRMWARE_WAITTING_TIMEOUT   60000   /* unit: ms */
 #define FIRMWARE_COMMU_TIMEOUT      1000    /* unit: ms */
 #define DEFAULT_WINDOW_SIZE         100     /* unit: ms */
 
@@ -226,6 +226,7 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     SrvUpgrade_Stream_TypeDef *inuse_stream = NULL;
     uint8_t *p_buf_tmp = NULL;
     uint16_t size_tmp = 0;
+    int16_t move_size = 0;
 
     memset(&stream, 0, sizeof(Adapter_Stream_TypeDef));
 
@@ -255,6 +256,22 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             }
 
             SrvFileAdapter.polling(sys_time, Monitor.adapter_obj, p_buf_tmp, size_tmp, &stream);
+            
+            if (stream.size)
+            {
+                move_size = stream.size + stream.p_buf - inuse_stream->p_buf;
+                if (move_size > 0)
+                {
+                    /* trim origin stream */
+                    inuse_stream->size = inuse_stream->total_size - move_size;
+                    memmove(inuse_stream->p_buf, &inuse_stream->p_buf[move_size], inuse_stream->size);
+                }
+                else
+                {
+                    memset(inuse_stream->p_buf, 0, inuse_stream->size);
+                    inuse_stream->size = 0;
+                }
+            }
 
             if (inuse_stream)
                 inuse_stream->access = false;
