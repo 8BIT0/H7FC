@@ -132,7 +132,8 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
 
 static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream)
 {
-    uint8_t tx_data = 0;
+    uint8_t tx_data[2] = {0};
+    uint8_t tx_size = 0;
 
     /* polling currently processing ymodem object */
     if (obj)
@@ -144,23 +145,19 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                 break;
 
             case YModem_State_Rx:
-                if ((p_buf == NULL) || (p_stream == NULL))
-                    return;
-
                 /* check for time out */
-                if (size == 0)
+                if ((size == 0) || (p_buf == NULL) || (p_stream == NULL))
                 {
                     if (((obj->tx_stage == YModem_Req) && (sys_time >= obj->re_send_time)) || \
                         ((obj->tx_stage == YModem_ACK) && (sys_time >= obj->timeout_ms)))
                     {
                         obj->state = YModem_State_Tx;
                         obj->tx_stage = YModem_Req;
-                        obj->lst_tx_stage = YModem_Req;
                     }
                     return;
                 }
 
-                /* update tx stage */
+                /* update tx stage after receive data */
                 switch ((uint8_t) obj->tx_stage)
                 {
                     /* receive data on req stage */
@@ -172,8 +169,7 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                             case YModem_Pack_Compelete:
                                 obj->state = YModem_State_Tx;
                                 obj->tx_stage = YModem_ACK;
-                                if (obj->lst_tx_stage == YModem_Req)
-                                    obj->tx_stage = YModem_Cfm;
+                                obj->tx_stage = YModem_Cfm;
                                 break;
 
                             default:
@@ -213,48 +209,43 @@ static void YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint
                 {
                     case YModem_Req:
                         /* send 'C' */
-                        tx_data = C;
+                        tx_data[0] = C;
+                        tx_size = 1;
                         /* after req data send accomplished check received data */
                         obj->state = YModem_State_Rx;
                         obj->re_send_time = sys_time + 100;
                         obj->received_pack_num = 0;
-
-                        if (obj->lst_tx_stage != YModem_ACK)
-                            obj->lst_tx_stage = YModem_Req;
                         break;
 
                     case YModem_Cfm:
-                        obj->state = YModem_State_Tx;
-                        obj->tx_stage = YModem_ACK;
+                        /* send ACk and C */
+                        tx_data[0] = ACK;
+                        tx_data[1] = C;
+                        tx_size = 2;
+                        /* wait data input */
+                        obj->state = YModem_State_Rx;
                         obj->received_pack_num = 0;
-                        obj->lst_tx_stage = YModem_Cfm;
                         break;
 
                     case YModem_ACK:
-                        tx_data = ACK;
-                        if (obj->lst_tx_stage == YModem_Cfm)
-                        {
-                            obj->tx_stage = YModem_Req;
-                            obj->state = YModem_State_Tx;
-                        }
-                        else
-                            obj->state = YModem_State_Rx;
+                        tx_data[0] = ACK;
+                        tx_size = 1;
+                        obj->state = YModem_State_Rx;
                         obj->timeout_ms = sys_time + 200;
-                        obj->lst_tx_stage = YModem_ACK;
                         break;
 
                     case YModem_NAK:
-                        tx_data = NAK;
-                        obj->lst_tx_stage = YModem_NAK;
+                        tx_data[0] = NAK;
+                        tx_size = 1;
                         break;
 
                     default:
-                        tx_data = 0;
+                        tx_size = 0;
                         break;
                 }
 
-                if (obj->send_callback && tx_data)
-                    obj->send_callback(&tx_data, 1);
+                if (obj->send_callback && tx_size)
+                    obj->send_callback(tx_data, tx_size);
                 break;
 
             default:

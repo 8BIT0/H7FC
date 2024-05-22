@@ -62,7 +62,6 @@ typedef struct
 {
     YModem_State_List state;
     YModem_TxStage_List tx_stage;
-    YModem_TxStage_List lst_tx_stage;
     uint32_t timeout_ms;
     uint32_t re_send_time;
     bool data_income;
