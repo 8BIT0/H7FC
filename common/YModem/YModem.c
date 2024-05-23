@@ -68,12 +68,20 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
             {
                 case SOH:
                     if ((size - i) >= 133)
+                    {
                         pack_size = 128;
+                    }
+                    else
+                        stream_out.valid = YModem_Pack_InCompelete;
                     break;
             
                 case STX:
                     if ((size - i) >= 1029)
+                    {
                         pack_size = 1024;
+                    }
+                    else
+                        stream_out.valid = YModem_Pack_InCompelete;
                     break;
 
                 case EOT:
@@ -117,13 +125,19 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                     obj->next_pack_id = obj->cur_pack_id + 1;
                     obj->received_pack_num ++;
                 }
+
+                break;
             }
             else if ((pack_size == 0) && is_EOT)
             {
                 stream_out.valid = YModem_Pack_Compelete;
                 stream_out.size = 1;
                 stream_out.p_buf = NULL;
+
+                break;
             }
+            else if (stream_out.valid == YModem_Pack_InCompelete)
+                break;
         }
     }
 
@@ -164,7 +178,7 @@ static void YModem_Rx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, u
         /* receive data after req */
         case YModem_Req:
             /* file name received */
-            if (p_stream->valid == YModem_Pack_Compelete)
+            if (p_stream->valid != YModem_Pack_Compelete)
                 break;
 
             obj->state = YModem_State_Tx;
@@ -174,7 +188,7 @@ static void YModem_Rx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, u
         /* receive data after confirm */
         case YModem_Cfm:
             /* is first pack received */
-            if (p_stream->valid == YModem_Pack_Compelete)
+            if (p_stream->valid != YModem_Pack_Compelete)
                 break;
 
             obj->state = YModem_State_Tx;
