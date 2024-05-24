@@ -20,7 +20,7 @@ static BspDMA_IrqCall_Obj_TypeDef BspUart_RxDMA_IrqObj[BspUART_Port_Sum] = {{NUL
 
 /* internal function */
 static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj);
-static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj);
+static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj, bool state);
 static dmamux_requst_id_sel_type BspUart_Get_MuxSeq(usart_type *port, uint8_t dir, void *dma_hdl);
 static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj);
 static void BspUart_DMA_TxCplt_Callback(void *arg);
@@ -104,7 +104,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
     return index;
 }
 
-static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj)
+static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj, bool state)
 {
     int index = 0;
     IRQn_Type irqn = BspUART_Port_1;
@@ -154,7 +154,12 @@ static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj)
     }
 
     nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
-    nvic_irq_enable(irqn, 5, 0);
+    if (state)
+    {
+        nvic_irq_enable(irqn, 5, 0);
+    }
+    else
+        nvic_irq_disable(irqn);
 
     return index;
 }
@@ -392,7 +397,7 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     usart_interrupt_enable(To_Uart_Instance(obj->instance), USART_TDBE_INT, FALSE);
 
     usart_enable(To_Uart_Instance(obj->instance), TRUE);
-    if(BspUart_SetIRQ(obj) < 0)
+    if(BspUart_SetIRQ(obj, true) < 0)
         return false;
     
     dma_channel_enable(To_DMA_Handle_Ptr(obj->rx_dma_hdl), TRUE);
@@ -419,6 +424,18 @@ static bool BspUart_DeInit(BspUARTObj_TypeDef *obj)
             dma_channel_enable(To_DMA_Handle_Ptr(obj->tx_dma_hdl), FALSE);
             dma_reset(To_DMA_Handle_Ptr(obj->tx_dma_hdl));
         }
+
+        if (obj->irq_type == BspUart_IRQ_Type_Idle)
+        {
+            usart_interrupt_enable(To_Uart_Instance(obj->instance), USART_IDLE_INT, FALSE);
+        }
+        else if (obj->irq_type == BspUart_IRQ_Type_Byte)
+            usart_interrupt_enable(To_Uart_Instance(obj->instance), USART_RDBF_INT, FALSE);
+
+        BspUart_SetIRQ(obj, false);
+
+        BspGPIO.de_init(obj->rx_io);
+        BspGPIO.de_init(obj->tx_io);
 
         /* deinit uart port */
         usart_reset(To_Uart_Instance(obj->instance));

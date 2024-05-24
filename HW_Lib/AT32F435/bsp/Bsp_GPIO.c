@@ -15,6 +15,7 @@ static IRQn_Type BspGPIO_Get_IRQn(uint32_t pin);
 
 /* external function */
 static bool BspGPIO_Out_Init(BspGPIO_Obj_TypeDef IO_Obj);
+static void BspGPIO_De_Init(BspGPIO_Obj_TypeDef IO_Obj);
 static bool BspGPIO_In_Init(BspGPIO_Obj_TypeDef IO_Obj);
 static bool BspGPIO_Exti_Init(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
 static bool BspGPIO_Altnate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode);
@@ -28,6 +29,7 @@ BspGPIO_TypeDef BspGPIO = {
     .out_init = BspGPIO_Out_Init,
     .in_init = BspGPIO_In_Init,
     .alt_init = BspGPIO_Altnate_Init,
+    .de_init = BspGPIO_De_Init,
     .read = BspGPIO_Read,
     .set_exti_callback = BspGPIO_Set_Exti_Callback,
     .set_exti_mode = BspGPIO_Set_Exti_Mode,
@@ -406,6 +408,10 @@ void BspGPIO_IRQ_Polling(uint32_t exti_line)
     }
 }
 
-
+static void BspGPIO_De_Init(BspGPIO_Obj_TypeDef IO_Obj)
+{
+    if (IO_Obj.port && To_GPIO_Port(IO_Obj.port)->port)
+        gpio_reset(To_GPIO_Port(IO_Obj.port)->port);
+}
 
 

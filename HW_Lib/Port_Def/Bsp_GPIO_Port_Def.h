@@ -33,6 +33,7 @@ typedef struct
     bool (*set_exti_callback)(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
     bool (*set_exti_mode)(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode);
     void (*write)(BspGPIO_Obj_TypeDef IO_Obj, bool state);
+    void (*de_init)(BspGPIO_Obj_TypeDef IO_Obj);
 } BspGPIO_TypeDef;
 
 #endif
