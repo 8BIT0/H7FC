@@ -10,6 +10,8 @@
 #define To_YModem_Obj(x) ((YModemObj_TypeDef *)x)
 #define To_YModem_Api(x) ((YModem_TypeDef *)x)
 #define YModemObj_size sizeof(YModemObj_TypeDef)
+#define To_YModem_Stream(x) ((YModem_Stream_TypeDef *)x)
+#define YModem_Stream_Size sizeof(YModem_Stream_TypeDef)
 
 typedef uint32_t (*YModem_Get_SysTick)(void);
 typedef void (*YModem_Start_Callback)(void *YModem_Obj);

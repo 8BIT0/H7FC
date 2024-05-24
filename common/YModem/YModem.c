@@ -62,12 +62,14 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
     memset(&stream_out, 0, sizeof(YModem_Stream_TypeDef));
     if (obj && p_buf && size)
     {
+        stream_out.size = size;
+
         for (uint16_t i = 0; i < size; i ++)
         {
             switch (p_buf[i])
             {
                 case SOH:
-                    if ((size - i) >= 133)
+                    if ((size - i) >= 128)
                     {
                         pack_size = 128;
                     }
@@ -76,7 +78,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                     break;
             
                 case STX:
-                    if ((size - i) >= 1029)
+                    if ((size - i) >= 1024)
                     {
                         pack_size = 1024;
                     }
@@ -171,6 +173,8 @@ static void YModem_Rx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, u
 
         return;
     }
+    else if (p_stream->valid == YModem_Pack_InCompelete)
+        return;
 
     /* update tx stage after receive data */
     switch ((uint8_t) obj->tx_stage)

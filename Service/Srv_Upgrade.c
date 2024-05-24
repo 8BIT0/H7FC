@@ -21,7 +21,7 @@
 #define AppVer {0, 0, 0}
 #define AppBref "First Version of H7FC"
 #define AppCompileData __DATA__
-#define FIRMWARE_MAX_READ_SIZE (4 Kb)
+#define FIRMWARE_MAX_READ_SIZE (2 Kb)
 
 /* get virable from .ld file defined */
 extern uint32_t __rom_s;
@@ -223,10 +223,6 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
 {
     SrvUpgrade_PortDataProc_List ret;
     Adapter_Stream_TypeDef stream;
-    SrvUpgrade_Stream_TypeDef *inuse_stream = NULL;
-    uint8_t *p_buf_tmp = NULL;
-    uint16_t size_tmp = 0;
-    int16_t move_size = 0;
 
     memset(&stream, 0, sizeof(Adapter_Stream_TypeDef));
 
@@ -237,55 +233,33 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     {
         if (!Monitor.proc_stream[i].access && Monitor.proc_stream[i].size)
         {
-            inuse_stream = &Monitor.proc_stream[i];
-            inuse_stream->access = true;
-            break;
+            Monitor.proc_stream[i].access = true;
+            switch((uint8_t) Monitor.PortDataState)
+            {
+                case PortProc_None:
+                    Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
+                case PortProc_Deal_Pack:
+                    Monitor.PortDataState = PortProc_Deal_Pack;
+                    SrvFileAdapter.polling(sys_time, Monitor.adapter_obj, Monitor.proc_stream[i].p_buf, Monitor.proc_stream[i].size, &stream);
+                    
+                    memset(Monitor.proc_stream[i].p_buf, 0, Monitor.proc_stream[i].size);
+                    Monitor.proc_stream[i].size = 0;
+                    /* if stream valid write file to storage section */
+
+                    Monitor.proc_stream[i].access = false;
+                    ret = PortProc_Deal_Pack;
+                    break;
+
+                case PortProc_Deal_Error:
+                    Monitor.PortDataState = PortProc_None;
+                    ret = PortProc_Deal_Error;
+                    break;
+
+                default:
+                    ret = PortProc_Unknown;
+                    break;
+            }
         }
-    }
-
-    switch((uint8_t) Monitor.PortDataState)
-    {
-        case PortProc_None:
-            Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
-        case PortProc_Deal_Pack:
-            Monitor.PortDataState = PortProc_Deal_Pack;
-            if (inuse_stream)
-            {
-                p_buf_tmp = inuse_stream->p_buf;
-                size_tmp = inuse_stream->size;
-            }
-
-            SrvFileAdapter.polling(sys_time, Monitor.adapter_obj, p_buf_tmp, size_tmp, &stream);
-            
-            if (stream.size)
-            {
-                move_size = stream.size + stream.p_buf - inuse_stream->p_buf;
-                if (move_size > 0)
-                {
-                    /* trim origin stream */
-                    inuse_stream->size = inuse_stream->total_size - move_size;
-                    memmove(inuse_stream->p_buf, &inuse_stream->p_buf[move_size], inuse_stream->size);
-                }
-                else
-                {
-                    memset(inuse_stream->p_buf, 0, inuse_stream->size);
-                    inuse_stream->size = 0;
-                }
-            }
-
-            if (inuse_stream)
-                inuse_stream->access = false;
-            ret = PortProc_Deal_Pack;
-            break;
-
-        case PortProc_Deal_Error:
-            Monitor.PortDataState = PortProc_None;
-            ret = PortProc_Deal_Error;
-            break;
-
-        default:
-            ret = PortProc_Unknown;
-            break;
     }
 
     /* check for time out */

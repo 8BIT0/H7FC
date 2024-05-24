@@ -28,8 +28,9 @@ typedef enum
 typedef enum
 {
     Pack_Invalid = 0,
-    Pack_InComplete,
+    Pack_InCompelete,
     Pack_Compelete,
+    Pack_Unknow_State,
 } Adapter_PackState_List;
 
 typedef struct
@@ -49,6 +50,7 @@ typedef struct
 
     bool chancel;
     bool ready_to_rec;
+    void *stream_out;
 } SrvFileAdapterObj_TypeDef;
 
 typedef struct
