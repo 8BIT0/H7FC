@@ -213,9 +213,6 @@ static void YModem_Rx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, u
             }
             break;
 
-        case YModem_NAK:
-            break;
-
         default:
             break;
     }
@@ -260,6 +257,7 @@ static void YModem_Tx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj)
             tx_size = 1;
             obj->state = YModem_State_Rx;
             obj->timeout_ms = sys_time + 200;
+            obj->tx_stage = YModem_ACK;
             break;
 
         default:
