@@ -146,7 +146,7 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                     {
                         case YModem_Pack_Compelete:       
                             /* if stream valid write file to storage section */
-
+                            
                             clear_stream = true;
                             break;
 

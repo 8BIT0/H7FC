@@ -69,7 +69,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
             switch (p_buf[i])
             {
                 case SOH:
-                    if ((size - i) >= 128)
+                    if ((size - i) >= 133)
                     {
                         pack_size = 128;
                     }
@@ -78,7 +78,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                     break;
             
                 case STX:
-                    if ((size - i) >= 1024)
+                    if ((size - i) >= 1029)
                     {
                         pack_size = 1024;
                     }
@@ -258,6 +258,8 @@ static void YModem_Tx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj)
         case YModem_NAK:
             tx_data[0] = NAK;
             tx_size = 1;
+            obj->state = YModem_State_Rx;
+            obj->timeout_ms = sys_time + 200;
             break;
 
         default:
