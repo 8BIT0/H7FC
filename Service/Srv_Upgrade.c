@@ -222,9 +222,6 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
 static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time)
 {
     SrvUpgrade_PortDataProc_List ret;
-    Adapter_Stream_TypeDef stream;
-
-    memset(&stream, 0, sizeof(Adapter_Stream_TypeDef));
 
     if (Monitor.adapter_obj == NULL)
         return PortProc_Deal_Error;
@@ -234,32 +231,35 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
         if (!Monitor.proc_stream[i].access && Monitor.proc_stream[i].size)
         {
             Monitor.proc_stream[i].access = true;
-            switch((uint8_t) Monitor.PortDataState)
+
+            if (SrvFileAdapter.push_to_stream(Monitor.proc_stream[i].p_buf, Monitor.proc_stream[i].size))
             {
-                case PortProc_None:
-                    Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
-                case PortProc_Deal_Pack:
-                    Monitor.PortDataState = PortProc_Deal_Pack;
-                    SrvFileAdapter.polling(sys_time, Monitor.adapter_obj, Monitor.proc_stream[i].p_buf, Monitor.proc_stream[i].size, &stream);
-                    
-                    memset(Monitor.proc_stream[i].p_buf, 0, Monitor.proc_stream[i].size);
-                    Monitor.proc_stream[i].size = 0;
-                    /* if stream valid write file to storage section */
-
-                    Monitor.proc_stream[i].access = false;
-                    ret = PortProc_Deal_Pack;
-                    break;
-
-                case PortProc_Deal_Error:
-                    Monitor.PortDataState = PortProc_None;
-                    ret = PortProc_Deal_Error;
-                    break;
-
-                default:
-                    ret = PortProc_Unknown;
-                    break;
+                memset(Monitor.proc_stream[i].p_buf, 0, Monitor.proc_stream[i].size);
+                Monitor.proc_stream[i].size = 0;
             }
+
+            Monitor.proc_stream[i].access = false;
         }
+    }
+    
+    switch((uint8_t) Monitor.PortDataState)
+    {
+        case PortProc_None:
+            Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
+        case PortProc_Deal_Pack:
+            Monitor.PortDataState = PortProc_Deal_Pack;
+            SrvFileAdapter.polling(sys_time, Monitor.adapter_obj);
+            ret = PortProc_Deal_Pack;
+            break;
+
+        case PortProc_Deal_Error:
+            Monitor.PortDataState = PortProc_None;
+            ret = PortProc_Deal_Error;
+            break;
+
+        default:
+            ret = PortProc_Unknown;
+            break;
     }
 
     /* check for time out */

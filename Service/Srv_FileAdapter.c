@@ -27,12 +27,14 @@ static Adapter_InputStream_TypeDef AdapterInStream = {
 static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type);
 static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter);
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send);
-static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t size, Adapter_Stream_TypeDef *p_stream);
+static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter);
+static bool SrvFileAdapter_PushToStream(uint8_t *p_buf, uint16_t size);
 
 /* external virable */
 SrvFileAdapter_TypeDef SrvFileAdapter = {
     .create = SrvFileAdapter_Create_AdapterObj,
     .destory = SrvFileAdapter_Destory_AdapterObj,
+    .push_to_stream = SrvFileAdapter_PushToStream,
     .polling = SrvFileAdapter_Polling,
     .set_send = SrvFileAdapter_Set_SendCallback,
 };
@@ -99,10 +101,25 @@ static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter
     }
 }
 
-static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t size, Adapter_Stream_TypeDef *p_stream)
+static bool SrvFileAdapter_PushToStream(uint8_t *p_buf, uint16_t size)
+{
+    if (p_buf && size && (AdapterInStream.size + size <= AdapterInStream.total_size))
+    {
+        /* push data into adapter input stream */
+        memcpy(&AdapterInStream.buf[AdapterInStream.size], p_buf, size);
+        AdapterInStream.size += size;
+
+        return true;
+    }
+
+    return false;
+}
+
+static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter)
 {
     void *p_api = NULL;
     void *p_obj = NULL;
+    bool clear_stream = false;
 
     if (p_Adapter && p_Adapter->FrameObj && p_Adapter->FrameApi)
     {
@@ -122,34 +139,29 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                     }
                 }
 
-                if (p_buf && size)
-                {
-                    /* push data into adapter input stream */
-                    // AdapterInStream 
-                }
-
                 if (To_YModem_Api(p_api)->polling)
                 {
-                    To_YModem_Api(p_api)->polling(sys_time, To_YModem_Obj(p_obj), p_buf, size, p_Adapter->stream_out);
-
-                    if (p_stream)
+                    To_YModem_Api(p_api)->polling(sys_time, To_YModem_Obj(p_obj), AdapterInStream.buf, AdapterInStream.size, To_YModem_Stream(p_Adapter->stream_out));
+                    switch ((uint8_t)To_YModem_Stream(p_Adapter->stream_out)->valid)
                     {
-                        switch ((uint8_t) p_stream->state)
-                        {
-                            case Pack_Invalid:     p_stream->state = Pack_Invalid;     break;
-                            case Pack_InCompelete: p_stream->state = Pack_InCompelete; break;
-                            case Pack_Compelete:   p_stream->state = Pack_Compelete;   break;
-                            default: p_stream->state = Pack_Unknow_State; break;
-                        }
+                        case YModem_Pack_Compelete:       
+                            /* if stream valid write file to storage section */
 
-                        p_stream->state = p_stream->state;
-                        p_stream->p_buf = To_YModem_Stream(p_Adapter->stream_out)->p_buf;
-                        p_stream->size  = To_YModem_Stream(p_Adapter->stream_out)->size;
+                            clear_stream = true;
+                            break;
+
+                        default: break;
                     }
                 }
                 break;
 
             default: break;
+        }
+
+        if (clear_stream)
+        {
+            memset(AdapterInStream.buf, 0, AdapterInStream.size);
+            AdapterInStream.size = 0;
         }
     }
 

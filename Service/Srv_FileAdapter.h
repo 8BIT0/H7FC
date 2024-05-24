@@ -35,13 +35,6 @@ typedef enum
 
 typedef struct
 {
-    uint8_t *p_buf;
-    uint16_t size;
-    Adapter_PackState_List state;
-} Adapter_Stream_TypeDef;
-
-typedef struct
-{
     uint32_t port_addr;
     Adapter_ProtoType_List frame_type;
 
@@ -56,9 +49,10 @@ typedef struct
 typedef struct
 {
     SrvFileAdapterObj_TypeDef* (*create)(Adapter_ProtoType_List proto_type);
+    bool (*push_to_stream)(uint8_t *p_buf, uint16_t size);
     bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
-    Adapter_Polling_State (*polling)(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_buf, uint16_t size, Adapter_Stream_TypeDef *p_stream);
+    Adapter_Polling_State (*polling)(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter);
 } SrvFileAdapter_TypeDef;
 
 extern SrvFileAdapter_TypeDef SrvFileAdapter;
