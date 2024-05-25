@@ -15,11 +15,6 @@
 #define FrameCTL_Port_Tx_TimeOut 5      /* unit: ms */
 #define FrameCTL_MAX_Period 5           /* unit: ms */
 
-#define SLIENT_TIMEOUT 200              /* unit: ms 200ms */
-#define TUNNING_TIMEOUT 2000            /* unit: ms 1S */
-
-#define CLI_FUNC_BUF_SIZE 512
-#define RADIO_BUFF_SIZE 512
 #define RADIO_PORT_BAUD 460800
 
 typedef SrvComProto_ProtoData_Type_List FrameType_List;

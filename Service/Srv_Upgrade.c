@@ -21,7 +21,7 @@
 #define AppVer {0, 0, 0}
 #define AppBref "First Version of H7FC"
 #define AppCompileData __DATA__
-#define FIRMWARE_MAX_READ_SIZE (2 Kb)
+#define FIRMWARE_MAX_READ_SIZE (4 Kb)
 
 /* get virable from .ld file defined */
 extern uint32_t __rom_s;

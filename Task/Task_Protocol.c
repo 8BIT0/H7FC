@@ -8,7 +8,12 @@
 #include "Storage.h"
 #include "pid.h"
 
-#define PROTO_STREAM_BUF_SIZE 512
+#define PROTO_STREAM_BUF_SIZE (1024 + 128)
+#define SLIENT_TIMEOUT 200              /* unit: ms 200ms */
+#define TUNNING_TIMEOUT 2000            /* unit: ms 1S */
+
+#define CLI_FUNC_BUF_SIZE 512
+#define RADIO_BUFF_SIZE PROTO_STREAM_BUF_SIZE
 
 #if (RADIO_UART_NUM > 0)
 static uint8_t RadioRxBuff[RADIO_UART_NUM][RADIO_BUFF_SIZE];

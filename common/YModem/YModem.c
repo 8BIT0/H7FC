@@ -1,8 +1,13 @@
 #include "YModem.h"
 #include "util.h"
 
-#define YMODEM_MIN_SIZE 128
-#define YMODEM_MAX_SIZE 1024
+#define YMODEM_MIN_SIZE 133
+#define YMODEM_MAX_SIZE 1029
+#define YMODEM_EOT_SIZE 1
+#define YMODEM_EOT_CNT  2
+#define YMODEM_PAYLOAD_OFFSET 3
+#define YMODEM_ID_P_OFFSET 1
+#define YMODEM_ID_N_OFFSET 2
 
 typedef struct
 {
@@ -69,32 +74,32 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
             switch (p_buf[i])
             {
                 case SOH:
-                    if ((size - i) >= 133)
+                    if ((size - i) >= YMODEM_MIN_SIZE)
                     {
-                        pack_size = 128;
+                        pack_size = YMODEM_MIN_SIZE - 5;
                     }
                     else
                         stream_out.valid = YModem_Pack_InCompelete;
                     break;
             
                 case STX:
-                    if ((size - i) >= 1029)
+                    if ((size - i) >= YMODEM_MAX_SIZE)
                     {
-                        pack_size = 1024;
+                        pack_size = YMODEM_MAX_SIZE - 5;
                     }
                     else
                         stream_out.valid = YModem_Pack_InCompelete;
                     break;
 
                 case EOT:
-                    if (size == 1)
+                    if (size == YMODEM_EOT_SIZE)
                     {
                         pack_size = 0;
                         is_EOT = true;
-                        if (obj->EOT_Cnt < 2)
+                        if (obj->EOT_Cnt < YMODEM_EOT_CNT)
                             obj->EOT_Cnt ++;
                         
-                        if (obj->EOT_Cnt == 2)
+                        if (obj->EOT_Cnt == YMODEM_EOT_CNT)
                             /* last pack remain */
                             obj->wait_last_pack = true;
                     }
@@ -102,13 +107,12 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
 
                 default:
                     pack_size = 0;
-                    i ++;
                     break;
             }
 
-            if (pack_size)
+            if (pack_size && ((p_buf[i + YMODEM_ID_N_OFFSET] + p_buf[i + YMODEM_ID_P_OFFSET]) == 0xFF))
             {
-                stream_out.p_buf = &p_buf[i + 3];
+                stream_out.p_buf = &p_buf[i + YMODEM_PAYLOAD_OFFSET];
                 stream_out.size = pack_size;
 
                 stream_out.valid = YModem_Pack_Compelete;
@@ -116,14 +120,14 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                 
                 if (obj->data_income)
                 {
-                    if (obj->received_pack_num && (p_buf[i + 2] != obj->next_pack_id))
+                    if (obj->received_pack_num && (p_buf[i + YMODEM_ID_P_OFFSET] != obj->next_pack_id))
                     {
                         /* error pack id */
                         stream_out.valid = YModem_Pack_Invalid;
                         obj->data_income = false;
                     }
 
-                    obj->cur_pack_id = p_buf[i + 1];
+                    obj->cur_pack_id = p_buf[i + YMODEM_ID_P_OFFSET];
                     obj->next_pack_id = obj->cur_pack_id + 1;
                     obj->received_pack_num ++;
                 }
@@ -182,35 +186,49 @@ static void YModem_Rx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, u
         /* receive data after req */
         case YModem_Req:
             /* file name received */
+            obj->state = YModem_State_Tx;
             if (p_stream->valid != YModem_Pack_Compelete)
                 break;
 
-            obj->state = YModem_State_Tx;
             obj->tx_stage = YModem_Cfm;
             break;
 
         /* receive data after confirm */
         case YModem_Cfm:
             /* is first pack received */
+            obj->state = YModem_State_Tx;
             if (p_stream->valid != YModem_Pack_Compelete)
                 break;
 
-            obj->state = YModem_State_Tx;
             obj->tx_stage = YModem_ACK;
+            obj->data_income = true;
             break;
 
         /* receive data after ACK */
         case YModem_ACK:
+            obj->state = YModem_State_Tx;
             if (p_stream->valid != YModem_Pack_Compelete)
                 break;
 
-            obj->state = YModem_State_Tx;
             obj->tx_stage = YModem_ACK;
             if (p_stream->size == 1)
             {
                 if (!obj->wait_last_pack)
+                {
                     obj->tx_stage = YModem_NAK;
+                }
+                else
+                    obj->tx_stage = YModem_Lst;
             }
+            break;
+
+        case YModem_Lst:
+            /* end trans */
+            obj->state = YModem_State_Tx;
+            if (p_stream->valid != YModem_Pack_Compelete)
+                break;
+
+            obj->tx_stage = YModem_EOT;
             break;
 
         default:
@@ -258,6 +276,21 @@ static void YModem_Tx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj)
             obj->state = YModem_State_Rx;
             obj->timeout_ms = sys_time + 200;
             obj->tx_stage = YModem_ACK;
+            break;
+
+        case YModem_Lst:
+            /* send ACk and C */
+            tx_data[0] = ACK;
+            tx_data[1] = C;
+            tx_size = 2;
+            /* wait data input */
+            obj->state = YModem_State_Rx;
+            break;
+
+        case YModem_EOT:
+            /* send last ack to host */
+            tx_data[0] = ACK;
+            tx_size = 1;
             break;
 
         default:
