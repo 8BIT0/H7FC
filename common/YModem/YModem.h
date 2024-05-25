@@ -13,10 +13,6 @@
 #define To_YModem_Stream(x) ((YModem_Stream_TypeDef *)x)
 #define YModem_Stream_Size sizeof(YModem_Stream_TypeDef)
 
-typedef uint32_t (*YModem_Get_SysTick)(void);
-typedef void (*YModem_Start_Callback)(void *YModem_Obj);
-typedef void (*YModem_Finish_Callback)(void *YModem_Obj);
-typedef void (*YModem_Abort_Callback)(void *YModem_Obj, uint8_t error_code);
 typedef void (*YModem_Send_Callback)(uint8_t *p_buf, uint16_t len);
 
 typedef enum
@@ -70,9 +66,6 @@ typedef struct
     uint32_t re_send_time;
     bool data_income;
 
-    YModem_Start_Callback start_callback;
-    YModem_Finish_Callback finish_callback;
-    YModem_Abort_Callback abort_callback;
     YModem_Send_Callback send_callback;
 
     uint8_t EOT_Cnt;
@@ -87,7 +80,6 @@ typedef struct
 
 typedef struct
 {
-    void (*set_callback)(YModemObj_TypeDef *obj, uint8_t type, void *callback);
     uint8_t (*polling)(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_bug, uint16_t size, YModem_Stream_TypeDef *p_stream);
 } YModem_TypeDef;
 

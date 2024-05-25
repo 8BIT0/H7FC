@@ -93,7 +93,6 @@ static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter
         switch ((uint8_t) p_Adapter->frame_type)
         {
             case SrvFileAdapter_Frame_YModem:
-                To_YModem_Api(p_Adapter->FrameApi)->set_callback(To_YModem_Obj(p_Adapter->FrameObj), YModem_Callback_Type_Send, send);
                 break;
 
             default: break;

@@ -35,28 +35,11 @@ typedef enum
 static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size);
 
 /* external function */
-static void YModem_Set_Callback(YModemObj_TypeDef *obj, uint8_t type, void *callback);
 static uint8_t YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream);
 
 YModem_TypeDef YModem = {
-    .set_callback = YModem_Set_Callback,
     .polling = YModem_State_Polling,
 };
-
-static void YModem_Set_Callback(YModemObj_TypeDef *obj, uint8_t type, void *callback)
-{
-    if (obj == NULL)
-        return;
-    
-    switch (type)
-    {
-        case YModem_Callback_Type_Start:  obj->start_callback  = callback; break;
-        case YModem_Callback_Type_Finish: obj->finish_callback = callback; break;
-        case YModem_Callback_Type_Send:   obj->send_callback   = callback; break;
-        case YModem_Callback_Type_Abort:  obj->abort_callback  = callback; break;
-        default: break;
-    }
-}
 
 static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size)
 {
