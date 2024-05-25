@@ -354,9 +354,10 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                 
                 switch (SrvUpgrade_PortProcPolling(sys_time))
                 {
-                    case PortProc_Deal_Pack:
+                    case ProtProc_Finish:
+                        /* all file data received */
                         break;
-
+                    
                     case PortProc_Deal_TimeOut:
                     case PortProc_Deal_Error:
                     default: break;
