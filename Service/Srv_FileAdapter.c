@@ -120,6 +120,8 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
     void *p_api = NULL;
     void *p_obj = NULL;
     bool clear_stream = false;
+    uint8_t state = 0;
+    Adapter_Polling_State adapter_state = Adapter_Proc_Failed;
 
     if (p_Adapter && p_Adapter->FrameObj && p_Adapter->FrameApi)
     {
@@ -141,18 +143,30 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
 
                 if (To_YModem_Api(p_api)->polling)
                 {
-                    To_YModem_Api(p_api)->polling(sys_time, To_YModem_Obj(p_obj), AdapterInStream.buf, AdapterInStream.size, To_YModem_Stream(p_Adapter->stream_out));
-                    switch ((uint8_t)To_YModem_Stream(p_Adapter->stream_out)->valid)
+                    state = To_YModem_Api(p_api)->polling(sys_time, To_YModem_Obj(p_obj), AdapterInStream.buf, AdapterInStream.size, To_YModem_Stream(p_Adapter->stream_out));
+                    
+                    switch (state)
                     {
-                        case YModem_Pack_Compelete:       
-                            /* if stream valid write file to storage section */
-                            
+                        case YModem_State_Tx:
+                            adapter_state = Adapter_Processing;
+                            break;
+
+                        case YModem_State_Rx:
+                            adapter_state = Adapter_Processing;
+                            if (To_YModem_Stream(p_Adapter->stream_out)->valid != YModem_Pack_InCompelete)
+                                clear_stream = true;
+                            break;
+
+                        case YModem_State_Finish:
+                            adapter_state = Adapter_Proc_Done;
                             clear_stream = true;
                             break;
 
                         default: break;
                     }
                 }
+                else
+                    return Adapter_Proc_Failed;
                 break;
 
             default: break;
@@ -165,6 +179,6 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
         }
     }
 
-    return Adapter_Proc_Failed;
+    return adapter_state;
 }
 

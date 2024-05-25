@@ -26,6 +26,7 @@ typedef enum
     YModem_State_Rx,
     YModem_State_Finish,
     YModem_State_Error,
+    YModem_State_Unknow,
 } YModem_State_List;
 
 typedef enum
@@ -87,7 +88,7 @@ typedef struct
 typedef struct
 {
     void (*set_callback)(YModemObj_TypeDef *obj, uint8_t type, void *callback);
-    void (*polling)(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_bug, uint16_t size, YModem_Stream_TypeDef *p_stream);
+    uint8_t (*polling)(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_bug, uint16_t size, YModem_Stream_TypeDef *p_stream);
 } YModem_TypeDef;
 
 extern YModem_TypeDef YModem;
