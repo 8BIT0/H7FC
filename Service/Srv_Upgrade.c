@@ -222,6 +222,7 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
 static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time)
 {
     SrvUpgrade_PortDataProc_List ret;
+    Adapter_Polling_State adapter_state; 
 
     if (Monitor.adapter_obj == NULL)
         return PortProc_Deal_Error;
@@ -248,8 +249,16 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
             Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
         case PortProc_Deal_Pack:
             Monitor.PortDataState = PortProc_Deal_Pack;
-            SrvFileAdapter.polling(sys_time, Monitor.adapter_obj);
+            adapter_state = SrvFileAdapter.polling(sys_time, Monitor.adapter_obj);
             ret = PortProc_Deal_Pack;
+            
+            /* check adapter state */
+            switch ((uint8_t)adapter_state)
+            {
+                case Adapter_Proc_Done: ret = ProtProc_Finish; break;
+                case Adapter_Proc_Failed: ret = PortProc_Deal_Error; break;
+                default: break;
+            }
             break;
 
         case PortProc_Deal_Error:
@@ -350,14 +359,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 
                     case PortProc_Deal_TimeOut:
                     case PortProc_Deal_Error:
-                    default:
-                        /* clear stream */
-                        for (i = 0; i < 2; i ++)
-                        {
-                            Monitor.proc_stream[i].size = 0;
-                            memset(Monitor.proc_stream[i].p_buf, 0, Monitor.proc_stream[i].total_size);
-                        }
-                        break;
+                    default: break;
                 }
 
                 /* check for processing time out when at app */

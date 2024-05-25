@@ -68,6 +68,7 @@ typedef enum
     PortProc_Deal_Pack,
     /* receive firmware pack stage */
     PortProc_Deal_Error,
+    ProtProc_Finish,
     PortProc_Deal_TimeOut,
     PortProc_InValid_Data,
     PortProc_Unknown,
