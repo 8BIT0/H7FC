@@ -386,18 +386,32 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
             return Stage_Process_PortData;
 
         case Stage_Check_Upgrade:
-            // if (Monitor.FileInfo.File_Type == )
-            // {
+            if (Monitor.FileInfo.File_Type == FileType_APP)
+            {
+                if (Monitor.CodeStage == On_App)
+                {
 
-            // }
-            // else if (Monitor.FileInfo.File_Type == )
-            // {
+                }
+                else
+                {
 
-            // }
-            // else if (Monitor.FileInfo.File_Type == )
-            // {
+                }
+            }
+            else if (Monitor.FileInfo.File_Type == FileType_Module)
+            {
 
-            // }
+            }
+            else if (Monitor.FileInfo.File_Type == FileType_Boot)
+            {
+                if (Monitor.CodeStage == On_Boot)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
             break;
 
         /* when at bootloader */
