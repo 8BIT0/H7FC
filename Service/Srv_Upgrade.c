@@ -298,6 +298,10 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
             Monitor.PollingState = Stage_Adapter_Error;
     }
 
+    if ((Monitor.FileInfo.File_Type == FileType_None) || \
+        (Monitor.FileInfo.File_Type > FileType_Module))
+        Monitor.PollingState = Stage_FileInfo_Error;
+
     if (Monitor.adapter_obj && send)
         SrvFileAdapter.set_send(Monitor.adapter_obj, send);
 
@@ -357,6 +361,10 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                     case ProtProc_Finish:
                         /* all file data received */
                         Monitor.PollingState = Stage_Check_Upgrade;
+
+                        /* destory adapter obj */
+                        SrvFileAdapter.destory(Monitor.adapter_obj);
+                        Monitor.adapter_obj = NULL;
                         break;
                     
                     case PortProc_Deal_TimeOut: Monitor.PollingState = Stage_TimeOut; break;
@@ -377,9 +385,28 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
             }
             return Stage_Process_PortData;
 
+        case Stage_Check_Upgrade:
+            // if (Monitor.FileInfo.File_Type == )
+            // {
+
+            // }
+            // else if (Monitor.FileInfo.File_Type == )
+            // {
+
+            // }
+            // else if (Monitor.FileInfo.File_Type == )
+            // {
+
+            // }
+            break;
+
         /* when at bootloader */
         case Stage_ReadyToJump:
             return Stage_ReadyToJump;
+
+        /* error process */
+        case Stage_FileInfo_Error:
+            break;
 
         case Stage_Adapter_Error:
         case Stage_PortData_Error:

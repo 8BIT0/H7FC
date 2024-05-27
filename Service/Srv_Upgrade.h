@@ -43,6 +43,7 @@ typedef enum
     Stage_Checking_Boot_Firmware,
     Stage_FirmwareData_Error,
     Stage_Adapter_Error,
+    Stage_FileInfo_Error,
     Stage_Process_PortData,
     Stage_Check_Upgrade,
     Stage_PortData_Error,

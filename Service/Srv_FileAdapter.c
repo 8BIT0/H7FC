@@ -79,6 +79,8 @@ static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapt
     {
         SrvOsCommon.free(p_Adapter->FrameObj);
         memset(p_Adapter, 0, sizeof(SrvFileAdapterObj_TypeDef));
+        p_Adapter->FrameApi = NULL;
+        p_Adapter->FrameObj = NULL;
         SrvOsCommon.free(p_Adapter);
         return true;
     }

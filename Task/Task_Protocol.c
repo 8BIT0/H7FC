@@ -643,7 +643,7 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
 
     switch ((uint8_t) stage)
     {
-        case Stage_Commu_TimeOut:
+        case Stage_TimeOut:
             if (cli && shell_obj)
                 shellPrint(shell_obj, "\r\n");
                 shellPrint(shell_obj, "[ Upgrade ] Communicate time out\r\n");
