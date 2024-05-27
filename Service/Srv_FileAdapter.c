@@ -155,7 +155,14 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                         case YModem_State_Rx:
                             adapter_state = Adapter_Processing;
                             if (To_YModem_Stream(p_Adapter->stream_out)->valid != YModem_Pack_InCompelete)
+                            {
+                                if (To_YModem_Stream(p_Adapter->stream_out)->valid == YModem_Pack_Compelete)
+                                {
+                                    /* write stream data to storage */
+                                }
+
                                 clear_stream = true;
+                            }
                             break;
 
                         case YModem_State_Finish:

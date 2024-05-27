@@ -1975,6 +1975,53 @@ static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDe
     return NULL;
 }
 
+/********************************************** External Firmware Storage API Section ********************************************/
+static bool Storage_Firmware_Format(Storage_FirmwareType_List type)
+{
+    uint32_t format_size = 0;
+    uint32_t erase_addr = 0;
+    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
+
+    if (Storage_Monitor.module_enable_reg.bit.external && \
+        Storage_Monitor.module_init_reg.bit.external && \
+        ExternalFlash_IO.erase && ExternalFlash_IO.read && \
+        (type != Firmware_None) && (type <= Firmware_Module))
+    {
+        dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+        if (dev == NULL)
+            return false;
+
+        switch ((uint8_t)type)
+        {
+            case Firmware_App:
+                format_size = ExtFlash_Firmware_Size;
+                erase_addr = ExtFlash_Firmware_Addr;
+                break;
+
+            case Firmware_Boot:
+                format_size = Boot_Firmware_Size;
+                erase_addr = Boot_Firmware_Addr;
+                break;
+
+            case Firmware_Module:
+                format_size = Reserve_Size;
+                erase_addr = Reserve_Addr;
+                break;
+
+            default: break;
+        }
+
+        if (format_size % (4 Kb) != 0)
+            return false;
+
+        for (uint16_t i = 0; i < format_size / (4 Kb); i++)
+        {
+        }
+    }
+
+    return false;
+}
+
 /************************************************** External Flash IO API Section ************************************************/
 static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state)
 {
