@@ -356,17 +356,18 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                 {
                     case ProtProc_Finish:
                         /* all file data received */
+                        Monitor.PollingState = Stage_Check_Upgrade;
                         break;
                     
-                    case PortProc_Deal_TimeOut:
-                    case PortProc_Deal_Error:
+                    case PortProc_Deal_TimeOut: Monitor.PollingState = Stage_TimeOut; break;
+                    case PortProc_Deal_Error: Monitor.PollingState = Stage_PortData_Error; break;
                     default: break;
                 }
 
                 /* check for processing time out when at app */
                 if ((Monitor.CodeStage == On_App) && (Monitor.discard_time <= sys_time))
                 {
-                    Monitor.PollingState = Stage_Commu_TimeOut;
+                    Monitor.PollingState = Stage_TimeOut;
                     if (Monitor.adapter_obj)
                     {
                         SrvFileAdapter.destory(Monitor.adapter_obj);
@@ -381,12 +382,13 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
             return Stage_ReadyToJump;
 
         case Stage_Adapter_Error:
+        case Stage_PortData_Error:
             Monitor.PollingState = Stage_Init;
             return Stage_Adapter_Error;
 
-        case Stage_Commu_TimeOut:
+        case Stage_TimeOut:
             Monitor.PollingState = Stage_Init;
-            return Stage_Commu_TimeOut;
+            return Stage_TimeOut;
         
         case Stage_JumpError:
             return Stage_JumpError;
