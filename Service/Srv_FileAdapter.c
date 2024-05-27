@@ -158,6 +158,8 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
 
                         case YModem_State_Finish:
                             adapter_state = Adapter_Proc_Done;
+                            SrvOsCommon.free(p_Adapter->stream_out);
+                            p_Adapter->stream_out = NULL;
                             clear_stream = true;
                             break;
 
