@@ -23,6 +23,9 @@
 #define AppCompileData __DATA__
 #define FIRMWARE_MAX_READ_SIZE (4 Kb)
 
+#define BootPara_Name "BootInfo"
+#define AppPara_Name  "AppInfo"
+
 typedef void (*Application_Func)(void);
 
 static uint8_t upgrade_buf[FIRMWARE_MAX_READ_SIZE] = {0};
@@ -53,8 +56,6 @@ typedef struct
     SrvUpgrade_CodeStage_List CodeStage;
     SrvUpgrade_Stage_List PollingState;
     SrvUpgrade_PortDataProc_List PortDataState;
-    SrvUpgrade_ParamValid_List ParamStatus;
-    UpgradeInfo_TypeDef Info;
     
     uint32_t firmware_addr_s;   /* Application or Module firmware storaged address start pos */
     uint32_t firmware_addr_e;   /* Application or Module firmware storaged address end pos */
@@ -70,6 +71,10 @@ typedef struct
 
     uint32_t rec_timeout;
     uint32_t rec_time;
+    
+    Storage_Item_TypeDef BootInfo_Item;
+    Storage_Item_TypeDef AppInfo_Item;
+    Storage_Item_TypeDef ModuleInfo_Item;
     
     SrvFileAdapterObj_TypeDef *adapter_obj;
     bool info_update;
@@ -88,6 +93,7 @@ static SrvUpgradeMonitor_TypeDef Monitor = {
 
 /* internal function */
 static void SrvUpgrade_Collect_Info(const char *format, ...);
+static void SrvUpgrade_CheckUpgrade_OnBootUp(void);
 
 /* external function */
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
@@ -111,17 +117,18 @@ SrvUpgrade_TypeDef SrvUpgrade = {
 
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size)
 {
-    Storage_ItemSearchOut_TypeDef search_out;
-
     if (sizeof(upgrade_buf) % 2)
         return false;
+
+    memset(&Monitor.BootInfo_Item,   0, sizeof(Storage_Item_TypeDef));
+    memset(&Monitor.AppInfo_Item,    0, sizeof(Storage_Item_TypeDef));
+    memset(&Monitor.ModuleInfo_Item, 0, sizeof(Storage_Item_TypeDef));
 
     /* reset file info */
     Monitor.info_update = false;
     memset(&Monitor.FileInfo, 0, sizeof(Monitor.FileInfo));
 
     /* get data from storage */
-    memset(&Monitor.Info, 0, sizeof(UpgradeInfo_TypeDef));
     Monitor.LogOut_Info_size = 0;
 
     memset(Monitor.LogOut_Info, 0, sizeof(Monitor.LogOut_Info));
@@ -141,70 +148,44 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
     Monitor.proc_stream[1].size = 0;
     Monitor.proc_stream[1].total_size = sizeof(upgrade_buf) / 2;
     Monitor.proc_stream[1].p_buf = &upgrade_buf[sizeof(upgrade_buf) / 2];
- 
+    
+    /* 
+     * whatever on boot or app
+     * check upgrade on boot up
+     */
+    SrvUpgrade_CheckUpgrade_OnBootUp();
+
+    Monitor.CodeStage = stage;
     if (stage == On_Boot)
     {
-        Monitor.CodeStage = On_Boot;
-        search_out = Storage.search(External_Flash, Para_Boot, "Boot Info");
-        SrvUpgrade_Collect_Info("\t\t[Boot Info] Addr  -> %d\r\n", search_out.item_addr);
-        SrvUpgrade_Collect_Info("\t\t[Boot Info] index -> %d\r\n", search_out.item_index);
-        
         Monitor.JumpAddr = Default_App_Address;
         Monitor.AppSize  = Default_App_Size;
-        Monitor.ParamStatus = UpgradeParam_InValid;
-        if ((search_out.item_addr != 0) && \
-            (Storage.get(External_Flash, Para_Boot, search_out.item, (uint8_t *)&Monitor.Info, sizeof(UpgradeInfo_TypeDef)) == Storage_Error_None))
-        {
-            /* show boot item info */
-
-            Monitor.ParamStatus = UpgradeParam_None;
-            Monitor.jump_time = SrvOsCommon.get_os_ms();
-            if (window_size >= DEFAULT_WINDOW_SIZE)
-            {
-                Monitor.jump_time += window_size;
-            }
-            else
-                Monitor.jump_time += DEFAULT_WINDOW_SIZE;
-
-            if (Monitor.Info.reg.bit.App || Monitor.Info.reg.bit.Module)
-                Monitor.ParamStatus = UpgradeParam_Valid;
-        }
-        
-        if (Monitor.ParamStatus == UpgradeParam_Valid)
-        {
-            SrvUpgrade_Collect_Info("\tBoot Parameter Valid\r\n");
-
-            if (Monitor.Info.reg.bit.App)
-                SrvUpgrade_Collect_Info("\t\t---[App] Got New Firmware\r\n");
-
-            if (Monitor.Info.reg.bit.Module)
-                SrvUpgrade_Collect_Info("\t\t---[External Module] Got New Firmware\r\n");
-        }
-        else if (Monitor.ParamStatus == UpgradeParam_InValid)
-            SrvUpgrade_Collect_Info("\tBoot Parameter Invalid\r\n");
+        Monitor.jump_time = SrvOsCommon.get_os_ms();
+        Monitor.jump_time += DEFAULT_WINDOW_SIZE;
 
         /* show jump time stamp */
         SrvUpgrade_Collect_Info("\tJump time: %d\r\n", Monitor.jump_time);
         SrvUpgrade_Collect_Info("\r\n");
     }
-    else if (stage == On_App)
-    {
-        Monitor.CodeStage = On_App;
-        if (Monitor.Info.reg.bit.Boot || Monitor.Info.reg.bit.Module)
-        {
-            Monitor.ParamStatus = UpgradeParam_Valid;
-
-            /* read parameter */
-        }
-    }
-    else
-        /* unknow stage */
-        return false;
 
     Monitor.init_state = true;
     Monitor.PollingState = Stage_Init;
     Monitor.PortDataState = PortProc_None;
     return true;
+}
+
+static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
+{
+    Storage_ItemSearchOut_TypeDef SearchOut;
+
+    memset(&SearchOut, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+    
+    /* read parameter section */
+    /* read boot firmware info */
+    // SearchOut = Storage.search();
+
+    /* read app firmware info */
+    // SearchOut = Storage.search();
 }
 
 static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time)
@@ -299,31 +280,10 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 
     switch ((uint8_t) Monitor.PollingState)
     {
-        case Stage_Init:
-            if (Monitor.ParamStatus == UpgradeParam_Valid)
-            {
-                if ((Monitor.CodeStage == On_Boot) && Monitor.Info.reg.bit.App)
-                {
-                    Monitor.PollingState = Stage_Checking_App_Firmware;
-                    return Stage_Checking_App_Firmware;
-                }
-
-                if ((Monitor.CodeStage == On_App) && Monitor.Info.reg.bit.Boot)
-                {
-                    Monitor.PollingState = Stage_Checking_Boot_Firmware;
-                    return Stage_Checking_Boot_Firmware;
-                }
-            }
-            
+        case Stage_Init:            
             Monitor.PollingState = Stage_Process_PortData;
             Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
             return Monitor.PollingState;
-
-        case Stage_Checking_App_Firmware:
-            return Stage_Checking_App_Firmware;
-
-        case Stage_Checking_Boot_Firmware:
-            return Stage_Checking_Boot_Firmware;
 
         case Stage_Process_PortData:
             if ((Monitor.CodeStage == On_Boot) && \

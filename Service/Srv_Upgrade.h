@@ -31,8 +31,6 @@ typedef union
 typedef enum
 {
     Stage_Init = 0,
-    Stage_Checking_App_Firmware,
-    Stage_Checking_Boot_Firmware,
     Stage_FirmwareData_Error,
     Stage_Adapter_Error,
     Stage_FileInfo_Error,
@@ -74,16 +72,6 @@ typedef struct
     SrvUpgrade_Stage_List stage;
     bool All_Port_Disabled;
 } SrvUpgrade_State_TypeDef;
-
-#pragma pack(1)
-typedef struct
-{
-    UpgradeReg_TypeDef reg;
-    uint32_t app_num;
-    uint32_t app_addr_list[Max_App_Num];
-    uint32_t jump_addr;
-} UpgradeInfo_TypeDef;
-#pragma pack()
 
 typedef struct
 {
