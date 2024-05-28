@@ -2079,21 +2079,21 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
         read_addr = addr_offset + base_addr;
         for (uint16_t i = 0; i < read_cnt; i ++)
         {
-            if (size == 0)
-                return true;
-
             section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), read_addr);
             if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
                 return false;
 
             // memcpy(p_data, &flash_read_tmp[read_addr - section_addr], size);
-            read_addr += Storage_TabSize;
-            if (size >= Storage_TabSize)
+            if (size > Storage_TabSize)
             {
                 size -= Storage_TabSize;
+                read_addr += Storage_TabSize;
             }
             else
+            {
                 size = 0;
+                return true;
+            }
         }
     }
 
