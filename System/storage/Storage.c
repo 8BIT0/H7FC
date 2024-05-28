@@ -2127,6 +2127,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
         {
             case Firmware_Boot: break;
             case Firmware_App: break;
+            case Firmware_Module: break;
             default: return false;
         }
     }
