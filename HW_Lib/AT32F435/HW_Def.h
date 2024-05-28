@@ -137,11 +137,11 @@
 #define Reserve_Addr (Other_Firmware_Addr + Other_Firmware_Size)
 #define Reserve_Size ((1 Mb) - (Boot_Firmware_Size + Other_Firmware_Size))
 
-#define ExtFlash_Firmware_Addr (Reserve_Addr + Reserve_Size)
-#define ExtFlash_Firmware_Size (1 Mb)
+#define App_Firmware_Addr (Reserve_Addr + Reserve_Size)
+#define App_Firmware_Size (1 Mb)
 
 #define ExtFlash_Dev_Api (void *)(&DevW25Qxx)
-#define ExtFlash_Start_Addr (ExtFlash_Firmware_Addr + ExtFlash_Firmware_Size)
+#define ExtFlash_Start_Addr (App_Firmware_Addr + App_Firmware_Size)
 
 #define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 #define ExtFlash_Storage_TotalSize (384 Kb)
