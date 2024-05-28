@@ -277,9 +277,9 @@ typedef struct
     // bool (*clear)(Storage_T);
 
     /* firmware section */
-    bool (*format_firmware_section)(Storage_FirmwareType_List type);
+    bool (*format_firmware)(Storage_FirmwareType_List type);
     bool (*get_firmware)(Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_date, uint16_t size);
-    bool (*upgrade_firmware_section)(Storage_MediumType_List medium, Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
+    bool (*upgrade_firmware)(Storage_MediumType_List medium, Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
 } Storage_TypeDef;
 
 extern Storage_TypeDef Storage;

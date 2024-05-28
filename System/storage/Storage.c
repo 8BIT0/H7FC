@@ -101,7 +101,7 @@ Storage_TypeDef Storage = {
     .update = Storage_SlotData_Update,
     .avaliable = Stroeage_IsAvaliable,
 
-    .format_firmware_section = Storage_Firmware_Format,
+    .format_firmware = Storage_Firmware_Format,
     .get_firmware = Storage_Frimware_Read,
 };
 
