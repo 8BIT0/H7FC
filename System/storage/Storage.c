@@ -90,6 +90,9 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
 static Storage_ErrorCode_List Storage_Get_Data(Storage_MediumType_List medium, Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
 static bool Stroeage_IsAvaliable(Storage_MediumType_List medium);
 
+static bool Storage_Firmware_Format(Storage_FirmwareType_List type);
+static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
+
 Storage_TypeDef Storage = {
     .init = Storage_Init,
     .search = Storage_Search,
@@ -97,6 +100,9 @@ Storage_TypeDef Storage = {
     .get = Storage_Get_Data,
     .update = Storage_SlotData_Update,
     .avaliable = Stroeage_IsAvaliable,
+
+    .format_firmware_section = Storage_Firmware_Format,
+    .get_firmware = Storage_Frimware_Read,
 };
 
 static bool Stroeage_IsAvaliable(Storage_MediumType_List medium)
@@ -2047,6 +2053,7 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
     uint32_t read_addr = 0;
     uint32_t section_addr = 0;
     uint16_t read_cnt = 0;
+    uint32_t read_size = 0;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
     dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
 
@@ -2083,17 +2090,22 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
             if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
                 return false;
 
-            // memcpy(p_data, &flash_read_tmp[read_addr - section_addr], size);
-            if (size > Storage_TabSize)
+            if ((read_addr + size) > (section_addr + Storage_TabSize))
             {
-                size -= Storage_TabSize - (read_addr - section_addr);
-                read_addr = section_addr + Storage_TabSize;
+                read_size = Storage_TabSize - (read_addr - section_addr);
+                size -= read_size;
+                p_data += read_size;
             }
             else
             {
+                read_size = size;
                 size = 0;
-                return true;
             }
+            memcpy(p_data, &flash_read_tmp[read_addr - section_addr], read_size);
+            read_addr = section_addr + Storage_TabSize;
+
+            if (size == 0)
+                return true;
         }
     }
 
