@@ -272,9 +272,8 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     }
 
     /* check for time out */
-    if (sys_time >= Monitor.rec_timeout)
+    if ((ret != ProtProc_Finish) && (sys_time >= Monitor.rec_timeout))
     {
-        memset(&Monitor.FileInfo, 0, sizeof(Monitor.FileInfo));
         Monitor.info_update = false;
         Monitor.PortDataState = PortProc_None;
         ret = PortProc_Deal_TimeOut;
@@ -362,12 +361,16 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                         /* all file data received */
                         Monitor.PollingState = Stage_Check_Upgrade;
 
+                        /* write file info to storage than clear file info */
+                        memset(Monitor.FileInfo, 0, sizeof(Upgrade_FileInfo_TypeDef));
+
                         /* destory adapter obj */
                         SrvFileAdapter.destory(Monitor.adapter_obj);
                         Monitor.adapter_obj = NULL;
                         break;
                     
-                    case PortProc_Deal_TimeOut: Monitor.PollingState = Stage_TimeOut; break;
+                    /* still developping this branch */
+                    case PortProc_Deal_TimeOut: /* Monitor.PollingState = Stage_TimeOut;*/ break;
                     case PortProc_Deal_Error: Monitor.PollingState = Stage_PortData_Error; break;
                     default: break;
                 }

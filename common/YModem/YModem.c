@@ -46,6 +46,8 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
     YModem_Stream_TypeDef stream_out;
     uint16_t pack_size = 0;
     bool is_EOT = false;
+    volatile uint16_t crc_get = 0;
+    volatile uint16_t crc = 0;
 
     memset(&stream_out, 0, sizeof(YModem_Stream_TypeDef));
     if (obj && p_buf && size)
@@ -59,6 +61,8 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                 case SOH:
                     if ((size - i) >= YMODEM_MIN_SIZE)
                     {
+                        crc_get = p_buf[YMODEM_MIN_SIZE - 1];
+                        crc_get |= p_buf[YMODEM_MIN_SIZE - 2] << 8;
                         pack_size = YMODEM_MIN_SIZE - 5;
                     }
                     else
@@ -68,6 +72,8 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                 case STX:
                     if ((size - i) >= YMODEM_MAX_SIZE)
                     {
+                        crc_get = p_buf[YMODEM_MAX_SIZE - 1];
+                        crc_get |= p_buf[YMODEM_MAX_SIZE - 2] << 8;
                         pack_size = YMODEM_MAX_SIZE - 5;
                     }
                     else
@@ -98,21 +104,25 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                 stream_out.p_buf = &p_buf[i + YMODEM_PAYLOAD_OFFSET];
                 stream_out.size = pack_size;
 
-                stream_out.valid = YModem_Pack_Compelete;
+                stream_out.valid = YModem_Pack_Invalid;
+                crc = Common_CRC16(&p_buf[i + YMODEM_PAYLOAD_OFFSET], pack_size);
                 /* check crc */
-                
-                if (obj->data_income)
+                if (crc_get == crc)
                 {
-                    if (obj->received_pack_num && (p_buf[i + YMODEM_ID_P_OFFSET] != obj->next_pack_id))
+                    stream_out.valid = YModem_Pack_Compelete;
+                    if (obj->data_income && !obj->wait_last_pack)
                     {
-                        /* error pack id */
-                        stream_out.valid = YModem_Pack_Invalid;
-                        obj->data_income = false;
-                    }
+                        if (obj->received_pack_num && (p_buf[i + YMODEM_ID_P_OFFSET] != obj->next_pack_id))
+                        {
+                            /* error pack id */
+                            stream_out.valid = YModem_Pack_Invalid;
+                            obj->data_income = false;
+                        }
 
-                    obj->cur_pack_id = p_buf[i + YMODEM_ID_P_OFFSET];
-                    obj->next_pack_id = obj->cur_pack_id + 1;
-                    obj->received_pack_num ++;
+                        obj->cur_pack_id = p_buf[i + YMODEM_ID_P_OFFSET];
+                        obj->next_pack_id = obj->cur_pack_id + 1;
+                        obj->received_pack_num ++;
+                    }
                 }
 
                 break;

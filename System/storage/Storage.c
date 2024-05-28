@@ -2118,6 +2118,15 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
     {
         switch ((uint8_t) medium)
         {
+            case Internal_Flash: break;
+            case External_Flash: break;
+            default: return false;
+        }
+
+        switch ((uint8_t)type)
+        {
+            case Firmware_Boot: break;
+            case Firmware_App: break;
             default: return false;
         }
     }
