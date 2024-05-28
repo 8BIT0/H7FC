@@ -2137,6 +2137,9 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
                 break;
             
             case Firmware_Module:
+                if (medium == Internal_Flash)
+                    return false;
+
                 base_addr = Other_Firmware_Addr;
                 break;
 
