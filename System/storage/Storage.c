@@ -2086,8 +2086,8 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
             // memcpy(p_data, &flash_read_tmp[read_addr - section_addr], size);
             if (size > Storage_TabSize)
             {
-                size -= Storage_TabSize;
-                read_addr += Storage_TabSize;
+                size -= Storage_TabSize - (read_addr - section_addr);
+                read_addr = section_addr + Storage_TabSize;
             }
             else
             {
@@ -2100,9 +2100,17 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
     return false;
 }
 
-static bool Storage_Firmware_Write()
+static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size)
 {
+    if (p_data && size)
+    {
+        switch ((uint8_t) medium)
+        {
+            default: return false;
+        }
+    }
 
+    return false;
 }
 
 /************************************************** External Flash IO API Section ************************************************/
