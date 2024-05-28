@@ -53,6 +53,7 @@ typedef enum
     Stage_ReadyToJump,
     Stage_JumpToTarget,
     Stage_JumpError,
+    Stage_Upgrade_Finish,
     Stage_Unknow,
 } SrvUpgrade_Stage_List;
 

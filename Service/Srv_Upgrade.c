@@ -286,6 +286,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 {
     Storage_ItemSearchOut_TypeDef search_out;
     uint8_t i = 0;
+    bool arm_state = DRONE_ARM;
 
     memset(&search_out, 0, sizeof(Storage_ItemSearchOut_TypeDef));
 
@@ -361,9 +362,6 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                         /* all file data received */
                         Monitor.PollingState = Stage_Check_Upgrade;
 
-                        /* write file info to storage than clear file info */
-                        memset(Monitor.FileInfo, 0, sizeof(Upgrade_FileInfo_TypeDef));
-
                         /* destory adapter obj */
                         SrvFileAdapter.destory(Monitor.adapter_obj);
                         Monitor.adapter_obj = NULL;
@@ -389,32 +387,25 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
             return Stage_Process_PortData;
 
         case Stage_Check_Upgrade:
-            if (Monitor.FileInfo.File_Type == FileType_APP)
+            Monitor.info_update = false;
+            if (Monitor.FileInfo.File_Type != FileType_Module)
             {
-                if (Monitor.CodeStage == On_App)
+                if (SrvDataHub.get_arm_state(&arm_state) && (arm_state == DRONE_ARM))
                 {
-
+                    /* upgrade app or boot */
                 }
                 else
                 {
-
-                }
-            }
-            else if (Monitor.FileInfo.File_Type == FileType_Boot)
-            {
-                if (Monitor.CodeStage == On_Boot)
-                {
-
-                }
-                else
-                {
-
+                    /* upgrade firmware when reboot */
+                
+                    /* write file info to storage than clear file info */
+                    memset(&Monitor.FileInfo, 0, sizeof(Upgrade_FileInfo_TypeDef));
+                    return Stage_Upgrade_Finish;
                 }
             }
             else if (Monitor.FileInfo.File_Type == FileType_Module)
-            {
-
-            }
+                /* still in developping */
+                return Stage_Upgrade_Finish;
             break;
 
         /* when at bootloader */

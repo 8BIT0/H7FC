@@ -9,6 +9,7 @@
 #define SrvFileAdapter_TimeOut (10 * 1000)  /* time out 10s */
 
 typedef void (*SrvFileAdapter_Send_Func)(uint8_t *p_buf, uint16_t len);
+typedef bool (*SrvFileAdapter_Store_Func)(uint8_t *p_buf, uint32_t size);
 
 typedef enum
 {
@@ -44,6 +45,8 @@ typedef struct
     bool chancel;
     bool ready_to_rec;
     void *stream_out;
+    
+    SrvFileAdapter_Store_Func Store;
 } SrvFileAdapterObj_TypeDef;
 
 typedef struct
@@ -52,6 +55,7 @@ typedef struct
     bool (*push_to_stream)(uint8_t *p_buf, uint16_t size);
     bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
+    void (*set_storage_callback)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Store_Func stire_cb);
     Adapter_Polling_State (*polling)(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter);
 } SrvFileAdapter_TypeDef;
 
