@@ -2114,6 +2114,9 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
 
 static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size)
 {
+    uint32_t base_addr = 0;
+    uint32_t write_addr = 0;
+
     if (p_data && size)
     {
         switch ((uint8_t) medium)
@@ -2125,11 +2128,22 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
 
         switch ((uint8_t)type)
         {
-            case Firmware_Boot: break;
-            case Firmware_App: break;
-            case Firmware_Module: break;
+            case Firmware_Boot:
+                base_addr = Boot_Firmware_Addr;
+                break;
+
+            case Firmware_App:
+                base_addr = App_Firmware_Addr;
+                break;
+            
+            case Firmware_Module:
+                base_addr = Other_Firmware_Addr;
+                break;
+
             default: return false;
         }
+
+        write_addr += base_addr + addr_offset;
     }
 
     return false;
