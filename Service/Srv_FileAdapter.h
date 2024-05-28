@@ -9,7 +9,14 @@
 #define SrvFileAdapter_TimeOut (10 * 1000)  /* time out 10s */
 
 typedef void (*SrvFileAdapter_Send_Func)(uint8_t *p_buf, uint16_t len);
-typedef bool (*SrvFileAdapter_Store_Func)(uint8_t *p_buf, uint32_t size);
+
+typedef enum
+{
+    FileType_None = 0,
+    FileType_APP,
+    FileType_Boot,
+    FileType_Module,
+} Firmware_FileType_List;
 
 typedef enum
 {
@@ -34,6 +41,18 @@ typedef enum
     Pack_Unknow_State,
 } Adapter_PackState_List;
 
+#pragma pack(1)
+typedef struct
+{
+    Firmware_FileType_List File_Type;
+    Adapter_ProtoType_List Adapter_Type;
+    uint8_t SW_Ver[3];
+    uint8_t HW_Ver[3];
+    uint32_t File_Size;
+    uint16_t Pack_Size;
+} FileInfo_TypeDef;
+#pragma pack()
+
 typedef struct
 {
     uint32_t port_addr;
@@ -46,16 +65,15 @@ typedef struct
     bool ready_to_rec;
     void *stream_out;
     
-    SrvFileAdapter_Store_Func Store;
+    FileInfo_TypeDef file_info;
 } SrvFileAdapterObj_TypeDef;
 
 typedef struct
 {
-    SrvFileAdapterObj_TypeDef* (*create)(Adapter_ProtoType_List proto_type);
+    SrvFileAdapterObj_TypeDef* (*create)(Adapter_ProtoType_List proto_type, FileInfo_TypeDef file_info);
     bool (*push_to_stream)(uint8_t *p_buf, uint16_t size);
     bool (*destory)(SrvFileAdapterObj_TypeDef *p_Adapter);
     void (*set_send)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send_cb);
-    void (*set_storage_callback)(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Store_Func stire_cb);
     Adapter_Polling_State (*polling)(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter);
 } SrvFileAdapter_TypeDef;
 

@@ -23,19 +23,7 @@
 #define AppCompileData __DATA__
 #define FIRMWARE_MAX_READ_SIZE (4 Kb)
 
-/* get virable from .ld file defined */
-extern uint32_t __rom_s;
-extern uint32_t __rom_e;
-extern uint32_t __boot_s;
-extern uint32_t __boot_e;
-
 typedef void (*Application_Func)(void);
-
-#define Boot_Address_Base   ((uint32_t)(&__boot_s))
-#define Boot_Section_Size   ((uint32_t)&__boot_e - (uint32_t)&__boot_s)
-
-#define Default_App_Address ((uint32_t)&__boot_e)
-#define Default_App_Size    ((uint32_t)&__rom_e - Default_App_Address)
 
 static uint8_t upgrade_buf[FIRMWARE_MAX_READ_SIZE] = {0};
 
@@ -85,7 +73,7 @@ typedef struct
     
     SrvFileAdapterObj_TypeDef *adapter_obj;
     bool info_update;
-    Upgrade_FileInfo_TypeDef FileInfo;
+    FileInfo_TypeDef FileInfo;
 
     SrvUpgrade_Stream_TypeDef proc_stream[2];
 
@@ -108,7 +96,7 @@ static uint16_t SrvUpgrade_Get_Info(uint8_t *p_info, uint16_t len);
 static void SrvUpgrade_ClearLog(void);
 static void SrvUpgrade_JumpTo(void);
 static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len);
-static void SrvUpgrade_SetFileInfo(const Upgrade_FileInfo_TypeDef info);
+static void SrvUpgrade_SetFileInfo(const FileInfo_TypeDef info);
 
 /* external function */
 SrvUpgrade_TypeDef SrvUpgrade = {
@@ -289,18 +277,22 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
     bool arm_state = DRONE_ARM;
 
     memset(&search_out, 0, sizeof(Storage_ItemSearchOut_TypeDef));
-
-    /* check file info */
-    if (Monitor.info_update && (Monitor.adapter_obj == NULL))
-    {
-        Monitor.adapter_obj = SrvFileAdapter.create(Monitor.FileInfo.Adapter_Type);
-        if (Monitor.adapter_obj == NULL)
-            Monitor.PollingState = Stage_Adapter_Error;
-    }
-
+    
     if ((Monitor.FileInfo.File_Type == FileType_None) || \
         (Monitor.FileInfo.File_Type > FileType_Module))
+    {
         Monitor.PollingState = Stage_FileInfo_Error;
+    }
+    else
+    {
+        /* check file info */
+        if (Monitor.info_update && (Monitor.adapter_obj == NULL))
+        {
+            Monitor.adapter_obj = SrvFileAdapter.create(Monitor.FileInfo.Adapter_Type, Monitor.FileInfo);
+            if (Monitor.adapter_obj == NULL)
+                Monitor.PollingState = Stage_Adapter_Error;
+        }
+    }
 
     if (Monitor.adapter_obj && send)
         SrvFileAdapter.set_send(Monitor.adapter_obj, send);
@@ -399,7 +391,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                     /* upgrade firmware when reboot */
                 
                     /* write file info to storage than clear file info */
-                    memset(&Monitor.FileInfo, 0, sizeof(Upgrade_FileInfo_TypeDef));
+                    memset(&Monitor.FileInfo, 0, sizeof(FileInfo_TypeDef));
                     return Stage_Upgrade_Finish;
                 }
             }
@@ -432,10 +424,10 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
     }
 }
 
-static void SrvUpgrade_SetFileInfo(const Upgrade_FileInfo_TypeDef info)
+static void SrvUpgrade_SetFileInfo(const FileInfo_TypeDef info)
 {
     Monitor.info_update = true;
-    memcpy(&Monitor.FileInfo, &info, sizeof(Upgrade_FileInfo_TypeDef));
+    memcpy(&Monitor.FileInfo, &info, sizeof(FileInfo_TypeDef));
 }
 
 /* call this function in receive thread or irq */
@@ -463,9 +455,9 @@ static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len)
     return false;
 }
 
-static void SrvUpgrade_Set_FileInfo(const Upgrade_FileInfo_TypeDef info)
+static void SrvUpgrade_Set_FileInfo(const FileInfo_TypeDef info)
 {
-    memcpy(&Monitor.FileInfo, &info, sizeof(Upgrade_FileInfo_TypeDef));
+    memcpy(&Monitor.FileInfo, &info, sizeof(FileInfo_TypeDef));
 }
 
 static bool SrvUpgrade_CheckAppAddr(uint32_t addr, uint32_t size)

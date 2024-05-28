@@ -30,14 +30,6 @@ typedef union
 
 typedef enum
 {
-    FileType_None = 0,
-    FileType_APP,
-    FileType_Boot,
-    FileType_Module,
-} Firmware_FileType_List;
-
-typedef enum
-{
     Stage_Init = 0,
     Stage_Checking_App_Firmware,
     Stage_Checking_Boot_Firmware,
@@ -86,16 +78,6 @@ typedef struct
 #pragma pack(1)
 typedef struct
 {
-    Firmware_FileType_List File_Type;
-    Adapter_ProtoType_List Adapter_Type;
-    uint8_t SW_Ver[3];
-    uint8_t HW_Ver[3];
-    uint32_t File_Size;
-    uint16_t Pack_Size;
-} Upgrade_FileInfo_TypeDef;
-
-typedef struct
-{
     UpgradeReg_TypeDef reg;
     uint32_t app_num;
     uint32_t app_addr_list[Max_App_Num];
@@ -107,7 +89,7 @@ typedef struct
 {
     bool (*init)(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
     SrvUpgrade_Stage_List (*polling)(uint32_t sys_time, SrvFileAdapter_Send_Func send);
-    void (*set_fileinfo)(const Upgrade_FileInfo_TypeDef info);
+    void (*set_fileinfo)(const FileInfo_TypeDef info);
     void (*jump)(void);
     uint16_t (*get_log)(uint8_t *p_info, uint16_t len);
     void (*clear_log)(void);

@@ -24,7 +24,7 @@ static Adapter_InputStream_TypeDef AdapterInStream = {
 };
 
 /* external function */
-static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type);
+static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type, FileInfo_TypeDef file_info);
 static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapter);
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send);
 static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter);
@@ -39,7 +39,7 @@ SrvFileAdapter_TypeDef SrvFileAdapter = {
     .set_send = SrvFileAdapter_Set_SendCallback,
 };
 
-static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type)
+static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type, FileInfo_TypeDef file_info)
 {
     SrvFileAdapterObj_TypeDef *p_AdapterObj = NULL;
     
@@ -49,6 +49,7 @@ static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_Proto
     
     p_AdapterObj->port_addr = 0;
     p_AdapterObj->frame_type = proto_type;
+    p_AdapterObj->file_info = file_info;
 
     switch (proto_type)
     {
@@ -88,11 +89,7 @@ static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapt
     return false;
 }
 
-static void SrvFileAdapter_Set_StoreCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Store_Func cb)
-{
-    if (p_Adapter)
-        p_Adapter->Store = cb;
-}
+
 
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter,  SrvFileAdapter_Send_Func send)
 {
@@ -163,8 +160,6 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                                 if (To_YModem_Stream(p_Adapter->stream_out)->valid == YModem_Pack_Compelete)
                                 {
                                     /* write stream data to storage */
-                                    if (p_Adapter->Store)
-                                        p_Adapter->Store(To_YModem_Stream(p_Adapter->stream_out)->p_buf, To_YModem_Stream(p_Adapter->stream_out)->size);
                                 }
 
                                 clear_stream = true;

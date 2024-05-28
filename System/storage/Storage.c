@@ -2052,17 +2052,12 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
     uint32_t firmware_size = 0;
     uint32_t read_addr = 0;
     uint32_t section_addr = 0;
-    uint16_t read_cnt = 0;
     uint32_t read_size = 0;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
     dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
 
     if (dev && p_data && size)
     {
-        read_cnt = size / Storage_TabSize;
-        if (size % Storage_TabSize)
-            read_cnt ++;
-
         switch ((uint8_t)type)
         {
             case Firmware_App:
@@ -2084,7 +2079,7 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
         }
         
         read_addr = addr_offset + base_addr;
-        for (uint16_t i = 0; i < read_cnt; i ++)
+        while (true)
         {
             section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), read_addr);
             if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
@@ -2101,6 +2096,7 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
                 read_size = size;
                 size = 0;
             }
+
             memcpy(p_data, &flash_read_tmp[read_addr - section_addr], read_size);
             read_addr = section_addr + Storage_TabSize;
 
@@ -2114,40 +2110,92 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
 
 static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size)
 {
-    uint32_t base_addr = 0;
+    uint32_t ext_base_addr = 0;
+    uint32_t int_base_addr = 0;
     uint32_t write_addr = 0;
     uint32_t section_addr = 0;
+    uint32_t write_size = 0;
+    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
 
     if (p_data && size)
     {
-        switch ((uint8_t) medium)
-        {
-            case Internal_Flash: break;
-            case External_Flash: break;
-            default: return false;
-        }
-
         switch ((uint8_t)type)
         {
             case Firmware_Boot:
-                base_addr = Boot_Firmware_Addr;
+                ext_base_addr = Boot_Firmware_Addr;
+                int_base_addr = Boot_Address_Base;
                 break;
 
             case Firmware_App:
-                base_addr = App_Firmware_Addr;
+                ext_base_addr = App_Firmware_Addr;
+                int_base_addr = Default_App_Address;
                 break;
             
             case Firmware_Module:
                 if (medium == Internal_Flash)
                     return false;
 
-                base_addr = Other_Firmware_Addr;
+                ext_base_addr = Other_Firmware_Addr;
                 break;
 
             default: return false;
         }
 
-        write_addr += base_addr + addr_offset;
+        if (medium == Internal_Flash)
+        {
+            write_addr = int_base_addr + addr_offset;
+
+            /* still in developping */
+        
+        }
+        else if (medium == External_Flash)
+        
+            dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+            if (dev == NULL)
+                return false;
+
+            switch ((uint8_t)dev->chip_type)
+            {
+                case Storage_ChipType_W25Qxx:
+                    write_addr = ext_base_addr + addr_offset;
+                    section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
+
+                    while (true)
+                    {
+                        if (size == 0)
+                            return true;
+
+                        /* read section first */
+                        memset(flash_read_tmp, 0, Storage_TabSize);
+                        if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
+                            return false;
+
+                        if ((write_addr + size) >= (section_addr + Storage_TabSize))
+                        {
+                            write_size = Storage_TabSize - (write_addr - section_addr);
+                            size -= write_size;
+                            write_addr += write_size;
+                        }
+                        else
+                        {
+                            write_size = size;
+                            size = 0;
+                        }
+
+                        /* update to flash */
+                        memcpy(&flash_read_tmp[write_addr - section_addr], p_data, write_size);
+                        if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
+                            return false;
+
+                        /* update section address */
+                        p_data += write_size;
+                        section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
+                    }
+                    break;
+
+                default: return false;
+            }
+        
     }
 
     return false;
