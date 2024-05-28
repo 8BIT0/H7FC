@@ -46,9 +46,9 @@ static bool Storage_OnChipFlash_Erase(uint32_t addr_offset, uint32_t len);
 static bool Storage_Clear_Tab(StorageIO_TypeDef *storage_api, uint32_t addr, uint32_t tab_num);
 static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClassType_List class);
 
-static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
-static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
-static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len);
+static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
+static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
+static bool Storage_ExtFlash_ParaSec_Erase(uint32_t addr_offset, uint32_t len);
 static bool Storage_ExtFlash_EraseAll(void);
 
 StorageIO_TypeDef InternalFlash_IO = {
@@ -59,10 +59,10 @@ StorageIO_TypeDef InternalFlash_IO = {
 };
 
 StorageIO_TypeDef ExternalFlash_IO = {
-    .erase = Storage_ExtFlash_Erase,
+    .erase = Storage_ExtFlash_ParaSec_Erase,
     .erase_all = Storage_ExtFlash_EraseAll,
-    .read = Storage_ExtFlash_Read,
-    .write = Storage_ExtFlash_Write,
+    .read = Storage_ExtFlash_ParaSec_Read,
+    .write = Storage_ExtFlash_ParaSec_Write,
 };
 
 /* internal function */
@@ -2116,6 +2116,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
 {
     uint32_t base_addr = 0;
     uint32_t write_addr = 0;
+    uint32_t section_addr = 0;
 
     if (p_data && size)
     {
@@ -2208,7 +2209,8 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, 
     return 0;
 }
 
-static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
+/************************************************** External Flash Parameter IO API Section ************************************************/
+static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
     uint32_t read_start_addr = 0;
     uint32_t flash_end_addr = 0;
@@ -2288,7 +2290,7 @@ static bool Storage_ExtFlash_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
     return false;
 }
 
-static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
+static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
     uint32_t write_start_addr = 0;
     uint32_t flash_end_addr = 0;
@@ -2384,7 +2386,7 @@ static bool Storage_ExtFlash_Write(uint32_t addr_offset, uint8_t *p_data, uint32
     return false;
 }
 
-static bool Storage_ExtFlash_Erase(uint32_t addr_offset, uint32_t len)
+static bool Storage_ExtFlash_ParaSec_Erase(uint32_t addr_offset, uint32_t len)
 {
     uint32_t erase_start_addr = 0;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
