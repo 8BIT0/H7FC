@@ -92,7 +92,7 @@ static SrvUpgradeMonitor_TypeDef Monitor = {
 
 /* internal function */
 static void SrvUpgrade_Collect_Info(const char *format, ...);
-static void SrvUpgrade_CheckUpgrade_OnBootUp(void);
+static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage);
 
 /* external function */
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
@@ -147,14 +147,13 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
     Monitor.proc_stream[1].size = 0;
     Monitor.proc_stream[1].total_size = sizeof(upgrade_buf) / 2;
     Monitor.proc_stream[1].p_buf = &upgrade_buf[sizeof(upgrade_buf) / 2];
-    
+    Monitor.CodeStage = stage;
     /* 
      * whatever on boot or app
      * check upgrade on boot up
      */
-    SrvUpgrade_CheckUpgrade_OnBootUp();
+    SrvUpgrade_CheckUpgrade_OnBootUp(stage);
 
-    Monitor.CodeStage = stage;
     if (stage == On_Boot)
     {
         Monitor.JumpAddr = Default_App_Address;
@@ -173,7 +172,7 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
     return true;
 }
 
-static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
+static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
 {
     Storage_ItemSearchOut_TypeDef SearchOut;
     SrvUpgradeInfo_TypeDef UpgradeInfo;
@@ -183,14 +182,25 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
 
     /* check upgrade enable control first */
     SearchOut = Storage.search(External_Flash, Para_Boot, UpgradeInfo_Sec);
-    if (SearchOut.item_addr)
+    if (SearchOut.item_addr && \
+        (Storage.get(External_Flash, Para_Boot, SearchOut.item, (uint8_t *)(&UpgradeInfo), sizeof(SrvUpgradeInfo_TypeDef)) == Storage_Error_None))
     {
-        Storage.get(External_Flash, Para_Boot, SearchOut.item, (uint8_t *)(&UpgradeInfo), sizeof(SrvUpgradeInfo_TypeDef));
-
         /* read parameter section */
         /* read boot firmware info */
+        if ((code_stage == On_Boot) && UpgradeInfo.CTLReg.bit.App)
+        {
+            /* check app upgrade */
+        
+        }
+        else if ((code_stage == On_App) && UpgradeInfo.CTLReg.bit.Boot)
+        {
+            /* check boot upgrade */
+        }
 
-        /* read app firmware info */
+        if (UpgradeInfo.CTLReg.bit.Module)
+        {
+            /* check module firmware upgrade */
+        }
     }
     else
         Storage.create(External_Flash, Para_Boot, UpgradeInfo_Sec, (uint8_t *)(&UpgradeInfo), sizeof(SrvUpgrade_TypeDef));
