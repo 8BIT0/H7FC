@@ -16,18 +16,6 @@ typedef enum
     On_App,
 } SrvUpgrade_CodeStage_List;
 
-typedef union
-{
-    uint8_t val;
-
-    struct
-    {
-        uint8_t Boot    : 1;
-        uint8_t App     : 1;
-        uint8_t Module  : 1;
-    } bit;
-} UpgradeReg_TypeDef;
-
 typedef enum
 {
     Stage_Init = 0,
@@ -72,6 +60,29 @@ typedef struct
     SrvUpgrade_Stage_List stage;
     bool All_Port_Disabled;
 } SrvUpgrade_State_TypeDef;
+
+#pragma pack(1)
+typedef union
+{
+    uint8_t val;
+
+    struct
+    {
+        uint8_t Boot   : 1;
+        uint8_t App    : 1;
+        uint8_t Module : 1;
+        uint8_t res    : 5;
+    } bit;
+} SrvUpgrade_CTLReg_TypeDef;
+
+typedef struct
+{
+    SrvUpgrade_CTLReg_TypeDef CTLReg;
+    FileInfo_TypeDef BF_Info;   /* boot firmware info */
+    FileInfo_TypeDef AF_Info;   /* app firmware info */
+    FileInfo_TypeDef MF_Info;   /* module firmware info */
+} SrvUpgradeInfo_TypeDef;
+#pragma pack()
 
 typedef struct
 {

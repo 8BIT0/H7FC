@@ -23,8 +23,7 @@
 #define AppCompileData __DATA__
 #define FIRMWARE_MAX_READ_SIZE (4 Kb)
 
-#define BootPara_Name "BootInfo"
-#define AppPara_Name  "AppInfo"
+#define UpgradeInfo_Sec  "Upgrade_Info"
 
 typedef void (*Application_Func)(void);
 
@@ -177,15 +176,24 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
 static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
 {
     Storage_ItemSearchOut_TypeDef SearchOut;
-
-    memset(&SearchOut, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+    SrvUpgradeInfo_TypeDef UpgradeInfo;
     
-    /* read parameter section */
-    /* read boot firmware info */
-    // SearchOut = Storage.search();
+    memset(&SearchOut, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+    memset(&UpgradeInfo, 0, sizeof(UpgradeInfo));
 
-    /* read app firmware info */
-    // SearchOut = Storage.search();
+    /* check upgrade enable control first */
+    SearchOut = Storage.search(External_Flash, Para_Boot, UpgradeInfo_Sec);
+    if (SearchOut.item_addr)
+    {
+        Storage.get(External_Flash, Para_Boot, SearchOut.item, (uint8_t *)(&UpgradeInfo), sizeof(SrvUpgradeInfo_TypeDef));
+
+        /* read parameter section */
+        /* read boot firmware info */
+
+        /* read app firmware info */
+    }
+    else
+        Storage.create(External_Flash, Para_Boot, UpgradeInfo_Sec, (uint8_t *)(&UpgradeInfo), sizeof(SrvUpgrade_TypeDef));
 }
 
 static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time)

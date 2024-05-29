@@ -41,7 +41,6 @@ typedef enum
     Pack_Unknow_State,
 } Adapter_PackState_List;
 
-#pragma pack(1)
 typedef struct
 {
     Firmware_FileType_List File_Type;
@@ -49,10 +48,7 @@ typedef struct
     uint8_t SW_Ver[3];
     uint8_t HW_Ver[3];
     uint32_t File_Size;
-    uint16_t Pack_Size;
-    bool update;
 } FileInfo_TypeDef;
-#pragma pack()
 
 typedef struct
 {
