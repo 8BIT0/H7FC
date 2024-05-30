@@ -365,7 +365,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                             /* update boot firmware info */
                         }
 
-                        Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, , sizeof());
+                        Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, &Info, sizeof(Info));
 
                         /* destory adapter obj */
                         SrvFileAdapter.destory(Monitor.adapter_obj);
