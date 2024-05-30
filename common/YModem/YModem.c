@@ -1,4 +1,5 @@
 #include "YModem.h"
+#include "../../FCHW_Config.h"
 #include "util.h"
 
 #define YMODEM_MIN_SIZE 133

@@ -1029,7 +1029,6 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
         shellPrint(shell_obj, "[ File Type List Down Below ]\r\n");
         shellPrint(shell_obj, "\t1 ---- App    Firmware File\r\n");
         shellPrint(shell_obj, "\t2 ---- Boot   Firmware File\r\n");
-        shellPrint(shell_obj, "\t3 ---- Module Firmware File\r\n");
         shellPrint(shell_obj, "\r\n");
     
         switch (type)
@@ -1040,10 +1039,6 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
 
             case FileType_Boot:
                 shellPrint(shell_obj, "[ Waitting Boot Firmware ]\r\n");
-                break;
-
-            case FileType_Module: 
-                shellPrint(shell_obj, "[ Waitting Module Firmware ]\r\n");
                 break;
 
             default:

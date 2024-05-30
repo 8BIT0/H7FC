@@ -160,6 +160,32 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                                 if (To_YModem_Stream(p_Adapter->stream_out)->valid == YModem_Pack_Compelete)
                                 {
                                     /* write stream data to storage */
+                                    p_Adapter->file_info.File_Size += To_YModem_Stream(p_Adapter->stream_out)->size;
+                                    
+                                    /* check file size */
+                                    switch ((uint8_t)p_Adapter->file_info.File_Type)
+                                    {
+                                        case FileType_Boot:
+                                            if (p_Adapter->file_info.File_Size > Boot_Section_Size)
+                                            {
+                                                adapter_state = Adapter_Proc_Failed;
+
+                                                /* clear boot storage section */
+                                            }
+                                            break;
+
+                                        case FileType_APP:
+                                            if (p_Adapter->file_info.File_Size > Default_App_Size)
+                                            {
+                                                adapter_state = Adapter_Proc_Failed;
+                                                
+                                                /* clear app storage section */
+                                            }
+                                            break;
+
+                                        default:
+                                            break;
+                                    }
                                 }
 
                                 clear_stream = true;
@@ -171,6 +197,9 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                             SrvOsCommon.free(p_Adapter->stream_out);
                             p_Adapter->stream_out = NULL;
                             clear_stream = true;
+                            break;
+
+                        case YModem_State_Error:
                             break;
 
                         default: break;

@@ -19,15 +19,13 @@ typedef enum
 typedef enum
 {
     Stage_Init = 0,
-    Stage_FirmwareData_Error,
+    Stage_UpgradeInfo_Error,
     Stage_Adapter_Error,
     Stage_FileInfo_Error,
     Stage_Process_PortData,
     Stage_Check_Upgrade,
     Stage_PortData_Error,
     Stage_TimeOut,
-    Stage_App_Upgrading,
-    Stage_Module_Upgrading,
     Stage_ReadyToJump,
     Stage_JumpToTarget,
     Stage_JumpError,
