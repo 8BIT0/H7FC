@@ -172,6 +172,10 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
 
                                                 /* clear boot storage section */
                                             }
+                                            else
+                                            {
+
+                                            }
                                             break;
 
                                         case FileType_APP:
@@ -180,6 +184,10 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                                                 adapter_state = Adapter_Proc_Failed;
                                                 
                                                 /* clear app storage section */
+                                            }
+                                            else
+                                            {
+                                                
                                             }
                                             break;
 
