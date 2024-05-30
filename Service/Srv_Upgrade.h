@@ -68,8 +68,7 @@ typedef union
     {
         uint8_t Boot   : 1;
         uint8_t App    : 1;
-        uint8_t Module : 1;
-        uint8_t res    : 5;
+        uint8_t res    : 6;
     } bit;
 } SrvUpgrade_CTLReg_TypeDef;
 

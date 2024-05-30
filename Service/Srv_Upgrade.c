@@ -288,11 +288,11 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
 
 static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileAdapter_Send_Func send)
 {
-    Storage_ItemSearchOut_TypeDef search_out;
+    SrvUpgradeInfo_TypeDef Info;
     uint8_t i = 0;
     bool arm_state = DRONE_ARM;
 
-    memset(&search_out, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+    memset(&Info, 0, sizeof(Info));
     
     if ((Monitor.FileInfo.File_Type == FileType_None) || (Monitor.FileInfo.File_Type > FileType_Boot))
     {
@@ -349,7 +349,23 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                         Monitor.PollingState = Stage_Check_Upgrade;
 
                         /* update upgrade info to storage */
-                        // Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, , sizeof());
+                        Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, &Info, sizeof(Info));
+
+                        if (Monitor.FileInfo.File_Type == FileType_APP)
+                        {
+                            Info.CTLReg.bit.App = true;
+
+                            /* update app firmware info */
+                        }
+
+                        if (Monitor.FileInfo.File_Type == FileType_Boot)
+                        {
+                            Info.CTLReg.bit.Boot = true;
+
+                            /* update boot firmware info */
+                        }
+
+                        Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, , sizeof());
 
                         /* destory adapter obj */
                         SrvFileAdapter.destory(Monitor.adapter_obj);
@@ -379,7 +395,14 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
             Monitor.info_update = false;
             if (SrvDataHub.get_arm_state(&arm_state) && (arm_state == DRONE_ARM))
             {
-                /* upgrade app or boot */
+                if (Monitor.CodeStage == On_Boot)
+                {
+                    /* upgrade App */
+                }
+                else if (Monitor.CodeStage == On_App)
+                {
+                    /* upgrade boot */
+                }
             }
             else
             {
