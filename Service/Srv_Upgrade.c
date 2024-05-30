@@ -202,11 +202,6 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
                 /* check boot upgrade */
             }
         }
-
-        if (Info.CTLReg.bit.Module)
-        {
-            /* check module firmware upgrade */
-        }
     }
     else
     {
@@ -356,6 +351,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                             Info.CTLReg.bit.App = true;
 
                             /* update app firmware info */
+                            // memcpy(, , sizeof(FileInfo_TypeDef));
                         }
 
                         if (Monitor.FileInfo.File_Type == FileType_Boot)
@@ -363,6 +359,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                             Info.CTLReg.bit.Boot = true;
 
                             /* update boot firmware info */
+                            // memcpy(, , sizeof(FileInfo_TypeDef));
                         }
 
                         Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, &Info, sizeof(Info));

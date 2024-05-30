@@ -29,6 +29,7 @@ static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapt
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter, SrvFileAdapter_Send_Func send);
 static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter);
 static bool SrvFileAdapter_PushToStream(uint8_t *p_buf, uint16_t size);
+static FileInfo_TypeDef SrvFileAdapter_GetFileInfo(SrvFileAdapterObj_TypeDef *p_Adapter);
 
 /* external virable */
 SrvFileAdapter_TypeDef SrvFileAdapter = {
@@ -37,6 +38,7 @@ SrvFileAdapter_TypeDef SrvFileAdapter = {
     .push_to_stream = SrvFileAdapter_PushToStream,
     .polling = SrvFileAdapter_Polling,
     .set_send = SrvFileAdapter_Set_SendCallback,
+    .get_file_info = SrvFileAdapter_GetFileInfo,
 };
 
 static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_ProtoType_List proto_type, FileInfo_TypeDef file_info)
@@ -229,4 +231,17 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
 
     return adapter_state;
 }
+
+static FileInfo_TypeDef SrvFileAdapter_GetFileInfo(SrvFileAdapterObj_TypeDef *p_Adapter)
+{
+    FileInfo_TypeDef FileInfo;
+
+    memset(&FileInfo, 0, sizeof(FileInfo_TypeDef));
+
+    if (p_Adapter)
+        FileInfo = p_Adapter->file_info;
+
+    return FileInfo;
+}
+
 
