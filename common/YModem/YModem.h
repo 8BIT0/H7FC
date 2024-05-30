@@ -39,6 +39,7 @@ typedef enum
     YModem_Pack_Invalid = 0,
     YModem_Pack_InCompelete,
     YModem_Pack_Compelete,
+    YModem_Pack_Default,
 } YModem_PackState_List;
 
 typedef struct

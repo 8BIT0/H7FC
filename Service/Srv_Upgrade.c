@@ -425,6 +425,8 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
         case Stage_Adapter_Error:
         case Stage_PortData_Error:
             Monitor.PollingState = Stage_Init;
+            SrvFileAdapter.destory(Monitor.adapter_obj);
+            Monitor.adapter_obj = NULL;
             return Stage_Adapter_Error;
 
         case Stage_TimeOut:

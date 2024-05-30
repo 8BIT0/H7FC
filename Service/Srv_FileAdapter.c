@@ -119,6 +119,7 @@ static bool SrvFileAdapter_PushToStream(uint8_t *p_buf, uint16_t size)
     return false;
 }
 
+uint32_t test = 0;
 static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter)
 {
     void *p_api = NULL;
@@ -163,6 +164,7 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                                 {
                                     /* write stream data to storage */
                                     p_Adapter->file_info.File_Size += To_YModem_Stream(p_Adapter->stream_out)->size;
+                                    test ++;
                                     
                                     /* check file size */
                                     switch ((uint8_t)p_Adapter->file_info.File_Type)
@@ -202,6 +204,9 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                                         default:
                                             break;
                                     }
+                            
+                                    To_YModem_Stream(p_Adapter->stream_out)->size = 0;
+                                    To_YModem_Stream(p_Adapter->stream_out)->valid = YModem_Pack_Default;
                                 }
 
                                 clear_stream = true;
@@ -227,7 +232,7 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
 
             default: break;
         }
-
+        
         if (clear_stream)
         {
             memset(AdapterInStream.buf, 0, AdapterInStream.size);
