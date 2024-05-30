@@ -172,7 +172,10 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                                             {
                                                 adapter_state = Adapter_Proc_Failed;
 
+                                                /* abort YModem */
                                                 /* clear boot storage section */
+                                                To_YModem_Api(p_api)->abort(To_YModem_Obj(p_obj));
+                                                Storage.format_firmware(Firmware_Boot);
                                             }
                                             else
                                             {
@@ -185,7 +188,10 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                                             {
                                                 adapter_state = Adapter_Proc_Failed;
                                                 
+                                                /* abort YModem */
                                                 /* clear app storage section */
+                                                To_YModem_Api(p_api)->abort(To_YModem_Obj(p_obj));
+                                                Storage.format_firmware(Firmware_App);
                                             }
                                             else
                                             {

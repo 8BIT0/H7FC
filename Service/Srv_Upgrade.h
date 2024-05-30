@@ -77,7 +77,6 @@ typedef struct
     SrvUpgrade_CTLReg_TypeDef CTLReg;
     FileInfo_TypeDef BF_Info;   /* boot firmware info */
     FileInfo_TypeDef AF_Info;   /* app firmware info */
-    FileInfo_TypeDef MF_Info;   /* module firmware info */
 } SrvUpgradeInfo_TypeDef;
 #pragma pack()
 

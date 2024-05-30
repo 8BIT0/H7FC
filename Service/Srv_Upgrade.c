@@ -286,7 +286,9 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
     SrvUpgradeInfo_TypeDef Info;
     uint8_t i = 0;
     bool arm_state = DRONE_ARM;
+    FileInfo_TypeDef FileInfo;
 
+    memset(&FileInfo, 0, sizeof(FileInfo));
     memset(&Info, 0, sizeof(Info));
     
     if ((Monitor.FileInfo.File_Type == FileType_None) || (Monitor.FileInfo.File_Type > FileType_Boot))
@@ -345,13 +347,14 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 
                         /* update upgrade info to storage */
                         Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, &Info, sizeof(Info));
+                        FileInfo = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
 
                         if (Monitor.FileInfo.File_Type == FileType_APP)
                         {
                             Info.CTLReg.bit.App = true;
 
                             /* update app firmware info */
-                            // memcpy(, , sizeof(FileInfo_TypeDef));
+                            Info.AF_Info = FileInfo;
                         }
 
                         if (Monitor.FileInfo.File_Type == FileType_Boot)
@@ -359,7 +362,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                             Info.CTLReg.bit.Boot = true;
 
                             /* update boot firmware info */
-                            // memcpy(, , sizeof(FileInfo_TypeDef));
+                            Info.BF_Info = FileInfo;
                         }
 
                         Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, &Info, sizeof(Info));

@@ -1991,7 +1991,7 @@ static bool Storage_Firmware_Format(Storage_FirmwareType_List type)
     if (Storage_Monitor.module_enable_reg.bit.external && \
         Storage_Monitor.module_init_reg.bit.external && \
         ExternalFlash_IO.erase && ExternalFlash_IO.read && \
-        (type != Firmware_None) && (type <= Firmware_Module))
+        (type != Firmware_None) && (type <= Firmware_App))
     {
         dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
         if (dev == NULL)
@@ -2007,11 +2007,6 @@ static bool Storage_Firmware_Format(Storage_FirmwareType_List type)
             case Firmware_Boot:
                 format_size = Boot_Firmware_Size;
                 erase_addr = Boot_Firmware_Addr;
-                break;
-
-            case Firmware_Module:
-                format_size = Other_Firmware_Size;
-                erase_addr = Other_Firmware_Addr;
                 break;
 
             default: break;
@@ -2070,11 +2065,6 @@ static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_
                 firmware_size = Boot_Firmware_Size;
                 break;
 
-            case Firmware_Module:
-                base_addr = Other_Firmware_Addr;
-                firmware_size = Other_Firmware_Size;
-                break;
-
             default: return false;
         }
         
@@ -2129,13 +2119,6 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
             case Firmware_App:
                 ext_base_addr = App_Firmware_Addr;
                 int_base_addr = Default_App_Address;
-                break;
-            
-            case Firmware_Module:
-                if (medium == Internal_Flash)
-                    return false;
-
-                ext_base_addr = Other_Firmware_Addr;
                 break;
 
             default: return false;

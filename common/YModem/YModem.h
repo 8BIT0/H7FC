@@ -81,6 +81,7 @@ typedef struct
 typedef struct
 {
     uint8_t (*polling)(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_bug, uint16_t size, YModem_Stream_TypeDef *p_stream);
+    void (*abort)(YModemObj_TypeDef *obj);
 } YModem_TypeDef;
 
 extern YModem_TypeDef YModem;

@@ -28,8 +28,6 @@ typedef enum
     NAK    = 0x15,  /* send none acknowledge */
     CAN    = 0x18,  /* cancel translation */
     C      = 0x43,  /* request data pack */
-    ABORT1 = 0x41,
-    ABORT2 = 0x61,
 } YModem_CMD_List;
 
 /* internal function */
@@ -37,9 +35,11 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
 
 /* external function */
 static uint8_t YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream);
+static void YModem_Abort(YModemObj_TypeDef *obj);
 
 YModem_TypeDef YModem = {
     .polling = YModem_State_Polling,
+    .abort = YModem_Abort,
 };
 
 static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size)
@@ -296,6 +296,14 @@ static void YModem_Tx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj)
 
     if (obj->send_callback && tx_size)
         obj->send_callback(tx_data, tx_size);
+}
+
+static void YModem_Abort(YModemObj_TypeDef *obj)
+{
+    uint8_t abort_cmd[2] = {CAN, CAN};
+
+    if (obj && obj->send_callback)
+        obj->send_callback(abort_cmd, sizeof(abort_cmd));
 }
 
 static uint8_t YModem_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, uint8_t *p_buf, uint16_t size, YModem_Stream_TypeDef *p_stream)

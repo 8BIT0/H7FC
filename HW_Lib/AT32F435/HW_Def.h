@@ -131,14 +131,11 @@
 #define Boot_Firmware_Addr W25QXX_BASE_ADDRESS 
 #define Boot_Firmware_Size (256 Kb)
 
-#define Block_Addr Boot_Firmware_Size
+#define Block_Addr Boot_Firmware_Size + Boot_Firmware_Addr
 #define Block_Size (4 Kb)
 
-#define Other_Firmware_Addr (Block_Addr + Block_Size)
-#define Other_Firmware_Size (512 Kb)
-
-#define Reserve_Addr (Other_Firmware_Addr + Other_Firmware_Size)
-#define Reserve_Size ((1 Mb) - (Boot_Firmware_Size + Block_Size + Other_Firmware_Size))
+#define Reserve_Addr (Block_Addr + Block_Size)
+#define Reserve_Size ((1 Mb) - (Block_Addr + Block_Size))
 
 #define App_Firmware_Addr (Reserve_Addr + Reserve_Size)
 #define App_Firmware_Size (1 Mb)

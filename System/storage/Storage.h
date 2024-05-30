@@ -112,7 +112,6 @@ typedef enum
     Firmware_None = 0,
     Firmware_Boot,
     Firmware_App,
-    Firmware_Module,
 } Storage_FirmwareType_List;
 
 #pragma pack(1)
