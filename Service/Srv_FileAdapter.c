@@ -174,7 +174,7 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                                             }
                                             else
                                             {
-
+                                                /* store file data to boot firmware section */
                                             }
                                             break;
 
@@ -187,7 +187,7 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                                             }
                                             else
                                             {
-                                                
+                                                /* store file data to app firmware section */
                                             }
                                             break;
 
