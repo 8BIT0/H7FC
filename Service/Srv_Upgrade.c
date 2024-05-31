@@ -281,6 +281,16 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     return ret;
 }
 
+static void SrvUpgrade_Upgrading_App(void)
+{
+
+}
+
+static void SrvUpgrade_Upgrading_Boot(void)
+{
+
+}
+
 static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
 {
     SrvUpgradeInfo_TypeDef Info;
@@ -288,22 +298,22 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
 
     /* all file data received */
     /* update upgrade info to storage */
-    Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)p_Info, sizeof(SrvUpgradeInfo_TypeDef));
+    Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)&Info, sizeof(SrvUpgradeInfo_TypeDef));
 
     if (Monitor.FileInfo.File_Type == FileType_APP)
     {
         /* update app firmware info */
-        p_Info->CTLReg.bit.App = true;
-        p_Info->AF_Info = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
+        Info.CTLReg.bit.App = true;
+        Info.AF_Info = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
     }
     else if (Monitor.FileInfo.File_Type == FileType_Boot)
     {
         /* update boot firmware info */
-        p_Info->CTLReg.bit.Boot = true;
-        p_Info->BF_Info = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
+        Info.CTLReg.bit.Boot = true;
+        Info.BF_Info = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
     }
 
-    Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, (uint8_t *)p_Info, sizeof(SrvUpgradeInfo_TypeDef));
+    Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, (uint8_t *)&Info, sizeof(SrvUpgradeInfo_TypeDef));
 
     /* destory adapter obj */
     SrvFileAdapter.destory(Monitor.adapter_obj);
@@ -312,7 +322,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
     /* check for firmware upgrade */
     if (Monitor.CodeStage == On_App)
     {
-        if (memcmp(p_Info->BF_Info.HW_Ver, HWVer, sizeof(p_Info->BF_Info.HW_Ver)) != 0)
+        if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.BF_Info.HW_Ver)) != 0)
             return Stage_Upgrade_Error;
 
         /* upgrade App */
@@ -320,7 +330,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
     }
     else if (Monitor.CodeStage == On_Boot)
     {
-        if (memcmp(p_Info->AF_Info.HW_Ver, HWVer, sizeof(p_Info->AF_Info.HW_Ver)) != 0)
+        if (memcmp(Info.AF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver)) != 0)
             return Stage_Upgrade_Error;
 
         /* upgrade boot */
@@ -410,9 +420,11 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 
         /* firmware upgrading */
         case Stage_App_Upgrading:
+            SrvUpgrade_Upgrading_App();
             return Stage_App_Upgrading;
 
         case Stage_Boot_Upgrading:
+            SrvUpgrade_Upgrading_Boot();
             return Stage_Boot_Upgrading;
 
         /* when at bootloader */

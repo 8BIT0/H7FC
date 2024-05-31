@@ -141,6 +141,7 @@ static FrameCTL_UpgradeMonitor_TypeDef Upgrade_Monitor = {
 };
 
 /* upgrade section */
+static bool TaskFrameCTL_Upgrade_Enable(bool state);
 static void TaskFrameCTL_Upgrade_StatePolling(bool cli);
 
 /* frame section */
@@ -632,6 +633,23 @@ static void TaskFrameCTL_Upgrade_Send(uint8_t *p_buf, uint16_t size)
 
         return 0;
     }
+}
+
+static bool TaskFrameCTL_Upgrade_Enable(bool state)
+{
+    bool arm_state = DRONE_ARM;
+
+    /* check arm state first */
+    /* if is under disarm state then disable upgrade enabling */
+    if (SrvDataHub.get_arm_state(&arm_state) && (arm_state == DRONE_ARM))
+    {
+        Upgrade_Monitor.is_enable = state;
+
+        /* suspend Telemetry task */
+        /* when upfrade finish or abort resume telemtry task */
+    }
+
+    return false;
 }
 
 static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
