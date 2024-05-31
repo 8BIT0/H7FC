@@ -25,7 +25,6 @@ typedef enum
     Stage_Adapter_Error,
     Stage_FileInfo_Error,
     Stage_Process_PortData,
-    Stage_Check_Upgrade,
     Stage_Upgrade_Error,
     Stage_PortData_Error,
     Stage_TimeOut,

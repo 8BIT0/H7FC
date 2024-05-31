@@ -287,16 +287,15 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(SrvUpgradeInfo_TypeDe
     /* update upgrade info to storage */
     Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)p_Info, sizeof(SrvUpgradeInfo_TypeDef));
 
-    /* update app firmware info */
     if (Monitor.FileInfo.File_Type == FileType_APP)
     {
+        /* update app firmware info */
         p_Info->CTLReg.bit.App = true;
         p_Info->AF_Info = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
     }
-
-    /* update boot firmware info */
-    if (Monitor.FileInfo.File_Type == FileType_Boot)
+    else if (Monitor.FileInfo.File_Type == FileType_Boot)
     {
+        /* update boot firmware info */
         p_Info->CTLReg.bit.Boot = true;
         p_Info->BF_Info = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
     }
@@ -307,7 +306,25 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(SrvUpgradeInfo_TypeDe
     SrvFileAdapter.destory(Monitor.adapter_obj);
     Monitor.adapter_obj = NULL;
 
-    return Stage_Check_Upgrade;
+    /* check for firmware upgrade */
+    if (Monitor.CodeStage == On_App)
+    {
+        if (memcmp(p_Info->BF_Info.HW_Ver, HWVer, sizeof(p_Info->BF_Info.HW_Ver)) != 0)
+            return Stage_Upgrade_Error;
+
+        /* upgrade App */
+        return Stage_Boot_Upgrading;
+    }
+    else if (Monitor.CodeStage == On_Boot)
+    {
+        if (memcmp(p_Info->AF_Info.HW_Ver, HWVer, sizeof(p_Info->AF_Info.HW_Ver)) != 0)
+            return Stage_Upgrade_Error;
+
+        /* upgrade boot */
+        return Stage_App_Upgrading;
+    }
+
+    return Stage_Upgrade_Error;
 }
 
 static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileAdapter_Send_Func send)
@@ -367,7 +384,11 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                 
                 switch (SrvUpgrade_PortProcPolling(sys_time))
                 {
-                    case ProtProc_Finish: Monitor.PollingState = SrvUpgrade_On_PortProc_Finish(&Info); return Stage_Check_Upgrade;
+                    case ProtProc_Finish:
+                        Monitor.PollingState = SrvUpgrade_On_PortProc_Finish(&Info);
+                        Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+                        break;
+
                     /* still developping this branch */
                     case PortProc_Deal_TimeOut: /* Monitor.PollingState = Stage_TimeOut;*/ break;
                     case PortProc_Deal_Error: Monitor.PollingState = Stage_PortData_Error; break;
@@ -387,36 +408,12 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
             }
             return Stage_Process_PortData;
 
-        case Stage_Check_Upgrade:
-            if (Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, &Info, sizeof(Info)) != Storage_Error_None)
-            {
-                Monitor.PollingState = Stage_Upgrade_Error;
-                return Stage_Upgrade_Error;
-            }
+        /* firmware upgrading */
+        case Stage_App_Upgrading:
+            return Stage_App_Upgrading;
 
-            if (Monitor.CodeStage == On_App)
-            {
-                if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.BF_Info.HW_Ver)) != 0)
-                {
-                    Monitor.PollingState = Stage_Upgrade_Error;
-                    return Stage_Upgrade_Error;
-                }
-
-                /* upgrade App */
-                Monitor.PollingState = Stage_Boot_Upgrading;
-            }
-            else if (Monitor.CodeStage == On_Boot)
-            {
-                if (memcmp(Info.AF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver)) != 0)
-                {
-                    Monitor.PollingState = Stage_Upgrade_Error;
-                    return Stage_Upgrade_Error;
-                }
-
-                /* upgrade boot */
-                Monitor.PollingState = Stage_App_Upgrading;
-            }
-            return Stage_Check_Upgrade;
+        case Stage_Boot_Upgrading:
+            return Stage_Boot_Upgrading;
 
         /* when at bootloader */
         case Stage_ReadyToJump:
