@@ -80,6 +80,9 @@ static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapt
 {
     if (p_Adapter && p_Adapter->FrameObj)
     {
+        if (p_Adapter->frame_type == SrvFileAdapter_Frame_YModem)
+            memset(p_Adapter->FrameObj, 0, sizeof(YModemObj_TypeDef));
+
         SrvOsCommon.free(p_Adapter->FrameObj);
         memset(p_Adapter, 0, sizeof(SrvFileAdapterObj_TypeDef));
         p_Adapter->FrameApi = NULL;
@@ -119,7 +122,6 @@ static bool SrvFileAdapter_PushToStream(uint8_t *p_buf, uint16_t size)
     return false;
 }
 
-uint32_t test = 0;
 static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter)
 {
     void *p_api = NULL;
@@ -160,11 +162,11 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                             adapter_state = Adapter_Processing;
                             if (To_YModem_Stream(p_Adapter->stream_out)->valid != YModem_Pack_InCompelete)
                             {
-                                if (To_YModem_Stream(p_Adapter->stream_out)->valid == YModem_Pack_Compelete)
+                                if ((To_YModem_Stream(p_Adapter->stream_out)->valid == YModem_Pack_Compelete) && \
+                                    To_YModem_Stream(p_Adapter->stream_out)->file_data)
                                 {
                                     /* write stream data to storage */
                                     p_Adapter->file_info.File_Size += To_YModem_Stream(p_Adapter->stream_out)->size;
-                                    test ++;
                                     
                                     /* check file size */
                                     switch ((uint8_t)p_Adapter->file_info.File_Type)

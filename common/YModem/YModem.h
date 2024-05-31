@@ -47,6 +47,7 @@ typedef struct
     uint32_t size;
     uint8_t *p_buf;
     YModem_PackState_List valid;
+    bool file_data;
 } YModem_Stream_TypeDef;
 
 typedef enum

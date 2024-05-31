@@ -115,6 +115,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                     stream_out.valid = YModem_Pack_Compelete;
                     if (obj->data_income && !obj->wait_last_pack)
                     {
+                        stream_out.file_data = true;
                         if (obj->received_pack_num && (p_buf[i + YMODEM_ID_P_OFFSET] != obj->next_pack_id))
                         {
                             /* error pack id */
