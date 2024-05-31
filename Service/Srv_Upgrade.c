@@ -281,8 +281,11 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     return ret;
 }
 
-static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(SrvUpgradeInfo_TypeDef *p_Info)
+static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
 {
+    SrvUpgradeInfo_TypeDef Info;
+    memset(&Info, 0, sizeof(Info));
+
     /* all file data received */
     /* update upgrade info to storage */
     Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)p_Info, sizeof(SrvUpgradeInfo_TypeDef));
@@ -329,10 +332,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(SrvUpgradeInfo_TypeDe
 
 static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileAdapter_Send_Func send)
 {
-    SrvUpgradeInfo_TypeDef Info;
     uint8_t i = 0;
-    
-    memset(&Info, 0, sizeof(Info));
     
     if ((Monitor.FileInfo.File_Type == FileType_None) || (Monitor.FileInfo.File_Type > FileType_Boot))
     {
@@ -385,7 +385,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
                 switch (SrvUpgrade_PortProcPolling(sys_time))
                 {
                     case ProtProc_Finish:
-                        Monitor.PollingState = SrvUpgrade_On_PortProc_Finish(&Info);
+                        Monitor.PollingState = SrvUpgrade_On_PortProc_Finish();
                         Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
                         break;
 
