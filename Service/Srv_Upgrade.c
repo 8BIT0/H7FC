@@ -88,6 +88,17 @@ typedef struct
     uint16_t LogOut_Info_size;
 } SrvUpgradeMonitor_TypeDef;
 
+typedef struct
+{
+    uint32_t read_addr;
+    uint32_t read_size;
+
+    uint32_t write_addr;
+    uint32_t write_size;
+
+    uint32_t remain_size;
+} FlashMonitor_TypeDef;
+
 /* internal virable */
 static SrvUpgradeMonitor_TypeDef Monitor = {
     .init_state = false,
@@ -281,14 +292,12 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     return ret;
 }
 
-static void SrvUpgrade_Upgrading_App(void)
+static void SrvUpgrade_Upgrading_App()
 {
+    for (; ; )
+    {
 
-}
-
-static void SrvUpgrade_Upgrading_Boot(void)
-{
-
+    }
 }
 
 static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)

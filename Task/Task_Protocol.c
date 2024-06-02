@@ -141,7 +141,7 @@ static FrameCTL_UpgradeMonitor_TypeDef Upgrade_Monitor = {
 };
 
 /* upgrade section */
-static bool TaskFrameCTL_Upgrade_Enable(bool state);
+static bool TaskFrameCTL_Upgrade_Enable(bool state, FileInfo_TypeDef file_info, uint32_t port_addr, uint8_t port_type);
 static void TaskFrameCTL_Upgrade_StatePolling(bool cli);
 
 /* frame section */
@@ -635,7 +635,7 @@ static void TaskFrameCTL_Upgrade_Send(uint8_t *p_buf, uint16_t size)
     }
 }
 
-static bool TaskFrameCTL_Upgrade_Enable(bool state)
+static bool TaskFrameCTL_Upgrade_Enable(bool state, FileInfo_TypeDef file_info, uint32_t port_addr, uint8_t port_type)
 {
     bool arm_state = DRONE_ARM;
 
@@ -644,6 +644,16 @@ static bool TaskFrameCTL_Upgrade_Enable(bool state)
     if (SrvDataHub.get_arm_state(&arm_state) && (arm_state == DRONE_ARM))
     {
         Upgrade_Monitor.is_enable = state;
+        Upgrade_Monitor.port_addr = port_addr;
+        Upgrade_Monitor.port_type = port_type;
+        
+        if (!state)
+        {
+            Upgrade_Monitor.port_addr = 0;
+            Upgrade_Monitor.port_type = Port_None;
+        }
+        else
+            Upgrade_Monitor.file_info = file_info;
 
         /* suspend Telemetry task */
         /* when upfrade finish or abort resume telemtry task */
@@ -1040,7 +1050,9 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
 {
     Shell *shell_obj = Shell_GetInstence();
+    FileInfo_TypeDef Info_tmp;
 
+    memset(&Info_tmp, 0, sizeof(FileInfo_TypeDef));
     if (shell_obj)
     {
         shellPrint(shell_obj, "\r\n\r\n");
@@ -1068,20 +1080,20 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
         
         shellPrint(shell_obj, "[ YMODEM Enable ]\r\n");
 
-        Upgrade_Monitor.is_enable = true;
-        Upgrade_Monitor.port_addr = CLI_Monitor.port_addr;
-        Upgrade_Monitor.port_type = CLI_Monitor.type;
-        
-        Upgrade_Monitor.file_info.File_Type = type;
-        Upgrade_Monitor.file_info.Adapter_Type = SrvFileAdapter_Frame_YModem;
-        Upgrade_Monitor.file_info.SW_Ver[0] = 1;
-        Upgrade_Monitor.file_info.SW_Ver[1] = 0;
-        Upgrade_Monitor.file_info.SW_Ver[2] = 0;
-        Upgrade_Monitor.file_info.HW_Ver[0] = 1;
-        Upgrade_Monitor.file_info.HW_Ver[1] = 0;
-        Upgrade_Monitor.file_info.HW_Ver[2] = 0;
-        // Upgrade_Monitor.file_info.File_Size = ;
-        // Upgrade_Monitor.file_info.Pack_Size = ;
+        Info_tmp.File_Type = type;
+        Info_tmp.Adapter_Type = SrvFileAdapter_Frame_YModem;
+        Info_tmp.SW_Ver[0] = 1;
+        Info_tmp.SW_Ver[1] = 0;
+        Info_tmp.SW_Ver[2] = 0;
+        Info_tmp.HW_Ver[0] = 1;
+        Info_tmp.HW_Ver[1] = 0;
+        Info_tmp.HW_Ver[2] = 0;
+        Info_tmp.File_Size = 0;
+
+        if (!TaskFrameCTL_Upgrade_Enable(true, Info_tmp, CLI_Monitor.port_addr, CLI_Monitor.type))
+            /* failed to switch to upgrade mode */
+            shellPrint(shell_obj, "Failed to enable upgrade mode\r\n");
+
         SrvUpgrade.set_fileinfo(Upgrade_Monitor.file_info);
     }
 }

@@ -21,7 +21,8 @@ typedef SrvComProto_ProtoData_Type_List FrameType_List;
 
 typedef enum
 {
-    Port_USB = 0,
+    Port_None = 0,
+    Port_USB,
     Port_Uart,
 } FrameCTL_PortType_List;
 
