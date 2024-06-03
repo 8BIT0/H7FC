@@ -51,7 +51,6 @@ typedef struct
 
 typedef struct
 {
-    uint32_t port_addr;
     Adapter_ProtoType_List frame_type;
 
     void *FrameObj;
@@ -62,6 +61,7 @@ typedef struct
     void *stream_out;
     
     FileInfo_TypeDef file_info;
+    uint32_t store_addr_offset;
 } SrvFileAdapterObj_TypeDef;
 
 typedef struct

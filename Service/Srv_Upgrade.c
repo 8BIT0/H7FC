@@ -292,12 +292,24 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     return ret;
 }
 
-static void SrvUpgrade_Upgrading_App()
+static void SrvUpgrade_App_Updating()
 {
-    for (; ; )
-    {
+    // for (; ; )
+    // {
 
-    }
+    // }
+
+    /* if upgrade successed clear flag */
+}
+
+static void SrvUpgrade_Boot_Updating()
+{
+    // for (; ; )
+    // {
+
+    // }
+    
+    /* if upgrade successed clear flag */
 }
 
 static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
@@ -429,11 +441,11 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 
         /* firmware upgrading */
         case Stage_App_Upgrading:
-            SrvUpgrade_Upgrading_App();
+            SrvUpgrade_App_Updating();
             return Stage_App_Upgrading;
 
         case Stage_Boot_Upgrading:
-            SrvUpgrade_Upgrading_Boot();
+            SrvUpgrade_Boot_Updating();
             return Stage_Boot_Upgrading;
 
         /* when at bootloader */

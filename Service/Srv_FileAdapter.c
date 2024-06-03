@@ -49,7 +49,6 @@ static SrvFileAdapterObj_TypeDef* SrvFileAdapter_Create_AdapterObj(Adapter_Proto
     if (p_AdapterObj == NULL)
         SrvOsCommon.free(p_AdapterObj);
     
-    p_AdapterObj->port_addr = 0;
     p_AdapterObj->frame_type = proto_type;
     p_AdapterObj->file_info = file_info;
 
@@ -122,11 +121,50 @@ static bool SrvFileAdapter_PushToStream(uint8_t *p_buf, uint16_t size)
     return false;
 }
 
+static Adapter_Polling_State SrvFileAdapter_Store_Firmware(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_data, uint16_t size)
+{
+    uint32_t max_file_size = 0;
+    Storage_FirmwareType_List firmware_type = Firmware_None;
+
+    if ((p_Adapter == NULL) || \
+        (p_Adapter->file_info.File_Type == FileType_None) || \
+        (p_Adapter->file_info.File_Type > FileType_Boot) || \
+        (p_data == NULL) || \
+        (size == 0))
+        return Adapter_Proc_Failed;
+
+    if (p_Adapter->file_info.File_Type == FileType_Boot)
+    {
+        max_file_size = Boot_Section_Size;
+        firmware_type = Firmware_Boot;
+    }
+    else if (p_Adapter->file_info.File_Type == FileType_APP)
+    {
+        max_file_size = Default_App_Size;
+        firmware_type = Firmware_App;
+    }
+
+    /* check received file size */
+    if (p_Adapter->file_info.File_Size >= max_file_size)
+        /* abort file receive */
+        return Adapter_Proc_Failed;
+    
+    /* write stream data to storage section */
+    if (!Storage.write_firmware(External_Flash, firmware_type, p_Adapter->store_addr_offset, p_data, size))
+        return Adapter_Proc_Failed;
+
+    p_Adapter->file_info.File_Size += size;
+    p_Adapter->store_addr_offset += size;
+    return Adapter_Processing;
+}
+
 static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter)
 {
     void *p_api = NULL;
     void *p_obj = NULL;
     bool clear_stream = false;
+    uint8_t *p_buf = NULL;
+    uint8_t buf_size = 0;
     uint8_t state = 0;
     Adapter_Polling_State adapter_state = Adapter_Proc_Failed;
 
@@ -163,50 +201,22 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
                             if (To_YModem_Stream(p_Adapter->stream_out)->valid != YModem_Pack_InCompelete)
                             {
                                 if ((To_YModem_Stream(p_Adapter->stream_out)->valid == YModem_Pack_Compelete) && \
+                                    To_YModem_Stream(p_Adapter->stream_out)->p_buf && \
+                                    (To_YModem_Stream(p_Adapter->stream_out)->size > 1) && \
                                     To_YModem_Stream(p_Adapter->stream_out)->file_data)
                                 {
-                                    /* write stream data to storage */
-                                    p_Adapter->file_info.File_Size += To_YModem_Stream(p_Adapter->stream_out)->size;
+                                    p_buf = To_YModem_Stream(p_Adapter->stream_out)->p_buf;
+                                    buf_size = To_YModem_Stream(p_Adapter->stream_out)->size;
                                     
-                                    /* check file size */
-                                    switch ((uint8_t)p_Adapter->file_info.File_Type)
+                                    if (SrvFileAdapter_Store_Firmware(p_Adapter, p_buf, buf_size) == Adapter_Proc_Failed)
                                     {
-                                        case FileType_Boot:
-                                            if (p_Adapter->file_info.File_Size > Boot_Section_Size)
-                                            {
-                                                adapter_state = Adapter_Proc_Failed;
-
-                                                /* abort YModem */
-                                                /* clear boot storage section */
-                                                To_YModem_Api(p_api)->abort(To_YModem_Obj(p_obj));
-                                                Storage.format_firmware(Firmware_Boot);
-                                            }
-                                            else
-                                            {
-                                                /* store file data to boot firmware section */
-                                            }
-                                            break;
-
-                                        case FileType_APP:
-                                            if (p_Adapter->file_info.File_Size > Default_App_Size)
-                                            {
-                                                adapter_state = Adapter_Proc_Failed;
-                                                
-                                                /* abort YModem */
-                                                /* clear app storage section */
-                                                To_YModem_Api(p_api)->abort(To_YModem_Obj(p_obj));
-                                                Storage.format_firmware(Firmware_App);
-                                            }
-                                            else
-                                            {
-                                                /* store file data to app firmware section */
-                                            }
-                                            break;
-
-                                        default:
-                                            break;
+                                        /* abort YModem */
+                                        /* clear app storage section */
+                                        To_YModem_Api(p_api)->abort(To_YModem_Obj(p_obj));
+                                        Storage.format_firmware(Firmware_App);
+                                        adapter_state = Adapter_Proc_Failed;
                                     }
-                            
+                                    
                                     To_YModem_Stream(p_Adapter->stream_out)->size = 0;
                                     To_YModem_Stream(p_Adapter->stream_out)->valid = YModem_Pack_Default;
                                 }

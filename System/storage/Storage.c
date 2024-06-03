@@ -92,6 +92,7 @@ static bool Stroeage_IsAvaliable(Storage_MediumType_List medium);
 
 static bool Storage_Firmware_Format(Storage_FirmwareType_List type);
 static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
+static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
 
 Storage_TypeDef Storage = {
     .init = Storage_Init,
@@ -102,7 +103,8 @@ Storage_TypeDef Storage = {
     .avaliable = Stroeage_IsAvaliable,
 
     .format_firmware = Storage_Firmware_Format,
-    .get_firmware = Storage_Frimware_Read,
+    .read_firmware = Storage_Frimware_Read,
+    .write_firmware = Storage_Firmware_Write,
 };
 
 static bool Stroeage_IsAvaliable(Storage_MediumType_List medium)
