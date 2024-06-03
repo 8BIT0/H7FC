@@ -323,6 +323,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
 
     if (Monitor.FileInfo.File_Type == FileType_APP)
     {
+        SrvUpgrade_Collect_Info("\tApp firmware receive finished\r\n");
         /* update app firmware info */
         Info.CTLReg.bit.App = true;
         Info.AF_Info = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
@@ -330,6 +331,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
     else if (Monitor.FileInfo.File_Type == FileType_Boot)
     {
         /* update boot firmware info */
+        SrvUpgrade_Collect_Info("\tBoot firmware receive finished\r\n");
         Info.CTLReg.bit.Boot = true;
         Info.BF_Info = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
     }
