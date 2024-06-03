@@ -88,6 +88,7 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                     {
                         pack_size = 0;
                         is_EOT = true;
+                        obj->data_income = false;
                         if (obj->EOT_Cnt < YMODEM_EOT_CNT)
                             obj->EOT_Cnt ++;
                         
@@ -110,23 +111,20 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                 stream_out.valid = YModem_Pack_Invalid;
                 crc = Common_CRC16(&p_buf[i + YMODEM_PAYLOAD_OFFSET], pack_size);
                 /* check crc */
-                if (crc_get == crc)
+                if ((crc_get == crc) && obj->data_income && !obj->wait_last_pack) 
                 {
                     stream_out.valid = YModem_Pack_Compelete;
-                    if (obj->data_income && !obj->wait_last_pack)
+                    stream_out.file_data = true;
+                    if (obj->received_pack_num && (p_buf[i + YMODEM_ID_P_OFFSET] != obj->next_pack_id))
                     {
-                        stream_out.file_data = true;
-                        if (obj->received_pack_num && (p_buf[i + YMODEM_ID_P_OFFSET] != obj->next_pack_id))
-                        {
-                            /* error pack id */
-                            stream_out.valid = YModem_Pack_Invalid;
-                            obj->data_income = false;
-                        }
-
-                        obj->cur_pack_id = p_buf[i + YMODEM_ID_P_OFFSET];
-                        obj->next_pack_id = obj->cur_pack_id + 1;
-                        obj->received_pack_num ++;
+                        /* error pack id */
+                        stream_out.valid = YModem_Pack_Invalid;
+                        obj->data_income = false;
                     }
+
+                    obj->cur_pack_id = p_buf[i + YMODEM_ID_P_OFFSET];
+                    obj->next_pack_id = obj->cur_pack_id + 1;
+                    obj->received_pack_num ++;
                 }
 
                 break;
