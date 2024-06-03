@@ -111,9 +111,17 @@ static YModem_Stream_TypeDef YModem_Decode(YModemObj_TypeDef *obj, uint8_t *p_bu
                 stream_out.valid = YModem_Pack_Invalid;
                 crc = Common_CRC16(&p_buf[i + YMODEM_PAYLOAD_OFFSET], pack_size);
                 /* check crc */
-                if ((crc_get == crc) && obj->data_income && !obj->wait_last_pack) 
+                if (crc_get == crc) 
                 {
                     stream_out.valid = YModem_Pack_Compelete;
+
+                    if (!obj->data_income || obj->wait_last_pack)
+                    {
+                        /* is not file data */
+                        stream_out.file_data = false;
+                        break;
+                    }
+
                     stream_out.file_data = true;
                     if (obj->received_pack_num && (p_buf[i + YMODEM_ID_P_OFFSET] != obj->next_pack_id))
                     {

@@ -657,6 +657,8 @@ static bool TaskFrameCTL_Upgrade_Enable(bool state, FileInfo_TypeDef file_info, 
 
         /* suspend Telemetry task */
         /* when upfrade finish or abort resume telemtry task */
+
+        return true;
     }
 
     return false;

@@ -209,7 +209,7 @@ static Adapter_Polling_State SrvAdapter_YModem_Polling(SrvFileAdapterObj_TypeDef
     p_obj =  To_YModem_Obj(p_Adapter->FrameObj);
     p_stream = To_YModem_Stream(p_Adapter->stream_out);
 
-    if (p_Adapter && p_api && p_obj && p_stream && clear_stream)
+    if (p_Adapter && p_api && p_obj && clear_stream)
     {
         *clear_stream = false;
         if (p_Adapter->stream_out == NULL)
