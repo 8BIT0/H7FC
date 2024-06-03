@@ -51,6 +51,7 @@ typedef struct
 
 typedef struct
 {
+    uint32_t sys_time;
     Adapter_ProtoType_List frame_type;
 
     void *FrameObj;
