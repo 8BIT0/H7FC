@@ -2134,7 +2134,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
         
         }
         else if (medium == External_Flash)
-        
+        {
             dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
             if (dev == NULL)
                 return false;
@@ -2180,7 +2180,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
 
                 default: return false;
             }
-        
+        }
     }
 
     return false;
