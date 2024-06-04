@@ -90,6 +90,7 @@ typedef struct
     bool (*push_data)(uint32_t sys_time, uint8_t *p_buf, uint16_t len);
 } SrvUpgrade_TypeDef;
 
+extern const uint8_t HWVer[3];
 extern SrvUpgrade_TypeDef SrvUpgrade;
 
 #endif

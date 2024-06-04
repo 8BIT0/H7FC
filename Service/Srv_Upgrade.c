@@ -13,6 +13,7 @@
 #include "../System/storage/Storage.h"
 #include "Bsp_Flash.h"
 #include "Srv_FileAdapter.h"
+#include "shell_port.h"
 
 #define FIRMWARE_WAITTING_TIMEOUT   60000   /* unit: ms */
 #define FIRMWARE_COMMU_TIMEOUT      1000    /* unit: ms */
@@ -20,9 +21,9 @@
 
 static const uint8_t AppVer[3] = {0, 0, 0};
 #if defined MATEKH743_V1_5
-static const uint8_t HWVer[3] = {0, 0, 1};
+const uint8_t HWVer[3] = {0, 0, 1};
 #elif defined BATEAT32F435_AIO
-static const uint8_t HWVer[3] = {0, 0, 2};
+const uint8_t HWVer[3] = {0, 0, 2};
 #endif
 #define AppBref "First Version of H7FC"
 #define AppCompileData __DATA__
@@ -192,9 +193,10 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
 
     /* check upgrade enable control first */
     Monitor.UpgradeInfo_SO = Storage.search(External_Flash, Para_Boot, UpgradeInfo_Sec);
-    if (Monitor.UpgradeInfo_SO.item_addr && \
-        (Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef)) == Storage_Error_None))
+    if (Monitor.UpgradeInfo_SO.item_addr)
     {
+        Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
+
         /* read parameter section */
         /* read boot firmware info */
         if ((code_stage == On_Boot) && Info.CTLReg.bit.App)
@@ -218,7 +220,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
     {
         memcpy(Info.AF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver));
         memcpy(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver));
-        Storage.create(External_Flash, Para_Boot, UpgradeInfo_Sec, (uint8_t *)(&Info), sizeof(SrvUpgrade_TypeDef));
+        Storage.create(External_Flash, Para_Boot, UpgradeInfo_Sec, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
         Monitor.UpgradeInfo_SO = Storage.search(External_Flash, Para_Boot, UpgradeInfo_Sec);
     }
 
@@ -618,3 +620,51 @@ static void SrvUpgrade_ClearLog(void)
     memset(Monitor.LogOut_Info, 0, sizeof(Monitor.LogOut_Info));
     Monitor.LogOut_Info_size = 0;
 }
+
+static void SrvUpgrade_Check_AppFirmware(void)
+{
+    SrvUpgradeInfo_TypeDef Info;
+    memset(&Info, 0, sizeof(Info));
+    Shell *shell_obj = Shell_GetInstence();
+
+    if (shell_obj == NULL)
+        return;
+
+    if (Monitor.UpgradeInfo_SO.item_addr)
+    {
+        if (Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef)) != Storage_Error_None)
+        {
+            shellPrint(shell_obj, "[ Firmware Info Param ] Read Failed\r\n");
+            return;
+        }
+
+        shellPrint(shell_obj, "[ App Info ] size: %d\r\n", Info.AF_Info.File_Size);
+        shellPrint(shell_obj, "[ App Info ] HW:   %d.%d.%d\r\n", Info.AF_Info.HW_Ver[0], Info.AF_Info.HW_Ver[1], Info.AF_Info.HW_Ver[2]);
+        shellPrint(shell_obj, "[ App Info ] SW:   %d.%d.%d\r\n", Info.AF_Info.SW_Ver[0], Info.AF_Info.SW_Ver[1], Info.AF_Info.SW_Ver[2]);
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, check_app, SrvUpgrade_Check_AppFirmware, check stored app);
+
+static void SrvUpgrade_Check_BootFirmware(void)
+{
+    SrvUpgradeInfo_TypeDef Info;
+    memset(&Info, 0, sizeof(Info));
+    Shell *shell_obj = Shell_GetInstence();
+
+    if (shell_obj == NULL)
+        return;
+
+    if (Monitor.UpgradeInfo_SO.item_addr)
+    {
+        if (Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef)) != Storage_Error_None)
+        {
+            shellPrint(shell_obj, "[ Firmware Info Param ] Read Failed\r\n");
+            return;
+        }
+
+        shellPrint(shell_obj, "[ Boot Info ] size: %d\r\n", Info.BF_Info.File_Size);
+        shellPrint(shell_obj, "[ Boot Info ] HW:   %d.%d.%d\r\n", Info.BF_Info.HW_Ver[0], Info.BF_Info.HW_Ver[1], Info.BF_Info.HW_Ver[2]);
+        shellPrint(shell_obj, "[ Boot Info ] SW:   %d.%d.%d\r\n", Info.BF_Info.SW_Ver[0], Info.BF_Info.SW_Ver[1], Info.BF_Info.SW_Ver[2]);
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, check_boot, SrvUpgrade_Check_BootFirmware, check stored boot);

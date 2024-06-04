@@ -783,10 +783,10 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_DataSlot_TypeDef *p_slotdata = NULL;
     uint8_t *p_read_tmp = page_data_tmp;
+    uint8_t *crc_buf = NULL;
     uint16_t crc = 0;
     uint32_t read_addr = 0;
     uint32_t read_size = 0;
-    uint32_t update_size = 0;
     uint32_t valid_data_size = 0;
     uint8_t align_byte = 0;
 
@@ -836,8 +836,6 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     else
         align_byte = 0;
 
-    update_size = size + align_byte;
-
     /* get data slot first */
     if (!StorageIO_API->read(read_addr, p_read_tmp, sizeof(Storage_DataSlot_TypeDef)))
         return Storage_Read_Error;
@@ -849,10 +847,9 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
         (p_slotdata->total_data_size > p_Sec->data_sec_size))
         return Storage_DataInfo_Error;
 
-    if (p_slotdata->total_data_size != update_size)
+    if (p_slotdata->total_data_size != (size + align_byte))
         return Storage_Update_DataSize_Error;
 
-    update_size = 0;
     read_size = p_slotdata->total_data_size + sizeof(Storage_DataSlot_TypeDef);
     p_read_tmp = page_data_tmp;
     memset(p_read_tmp, 0, sizeof(Storage_DataSlot_TypeDef));
@@ -899,16 +896,18 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
         if (p_slotdata->align_size >= STORAGE_DATA_ALIGN)
             return Storage_DataInfo_Error;
 
+        crc_buf = p_read_tmp;
         memcpy(p_read_tmp, p_data, (p_slotdata->cur_slot_size - p_slotdata->align_size));
         p_read_tmp += p_slotdata->cur_slot_size - p_slotdata->align_size;
 
         if (p_slotdata->align_size)
-        {
             /* set align byte */
             memset(p_read_tmp, 0, p_slotdata->align_size);
-            p_read_tmp += p_slotdata->align_size;
-        }
-
+        
+        p_read_tmp += p_slotdata->align_size;
+        /* update crc */
+        crc = Common_CRC16(crc_buf, p_slotdata->cur_slot_size) ;
+        
         valid_data_size += p_slotdata->cur_slot_size - p_slotdata->align_size;
         if (p_slotdata->nxt_addr == 0)
         {
@@ -918,8 +917,6 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
                 return Storage_Update_DataSize_Error;
         }
 
-        /* update crc */
-        crc = Common_CRC16(p_data, p_slotdata->cur_slot_size) ;
         memcpy(p_read_tmp, &crc, sizeof(crc));
         
         p_data += p_slotdata->cur_slot_size - p_slotdata->align_size;
@@ -1500,7 +1497,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 if (FreeSlot.cur_slot_size <= sizeof(Storage_DataSlot_TypeDef))
                     return Storage_No_Enough_Space;
 
-                crc_buf = p_data + stored_size;
+                p_data += stored_size;
                 slot_useful_size = FreeSlot.cur_slot_size - sizeof(Storage_DataSlot_TypeDef);
                 /* current have space for new data need to be storage */
                 if (slot_useful_size < storage_data_size)
@@ -1538,9 +1535,6 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
 
                 p_Sec->free_space_size -= DataSlot.cur_slot_size;
 
-                /* comput current slot crc */
-                DataSlot.slot_crc = Common_CRC16(crc_buf, DataSlot.cur_slot_size);
-
                 /* write to the data section */
                 /* storage target data */
                 slot_update_ptr = page_data_tmp;
@@ -1556,15 +1550,17 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 slot_update_ptr += sizeof(DataSlot.nxt_addr);
                 memcpy(slot_update_ptr, &DataSlot.align_size, sizeof(DataSlot.align_size));
                 slot_update_ptr += sizeof(DataSlot.align_size);
-                memcpy(slot_update_ptr, crc_buf, (DataSlot.cur_slot_size - DataSlot.align_size));
+                crc_buf = slot_update_ptr;
+                memcpy(slot_update_ptr, p_data, (DataSlot.cur_slot_size - DataSlot.align_size));
                 slot_update_ptr += (DataSlot.cur_slot_size - DataSlot.align_size);
                 
                 if (DataSlot.align_size)
-                {
                     memset(slot_update_ptr, 0, DataSlot.align_size);
-                    slot_update_ptr += DataSlot.align_size;
-                }
+                
+                slot_update_ptr += DataSlot.align_size;
 
+                /* comput current slot crc */
+                DataSlot.slot_crc = Common_CRC16(crc_buf, DataSlot.cur_slot_size);
                 memcpy(slot_update_ptr, &DataSlot.slot_crc, sizeof(DataSlot.slot_crc));
                 slot_update_ptr += sizeof(DataSlot.slot_crc);
                 memcpy(slot_update_ptr, &DataSlot.end_tag, sizeof(DataSlot.end_tag));
@@ -1591,7 +1587,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, S
                 {
                     /* after target data segment stored, shift target data pointer to unstored pos
                         * and update next segment data store address */
-                    p_data += slot_useful_size;
+                    stored_size += slot_useful_size;
                     store_addr = DataSlot.nxt_addr;
                 }
             }

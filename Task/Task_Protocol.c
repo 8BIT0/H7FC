@@ -1114,9 +1114,9 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
         Info_tmp.SW_Ver[0] = 1;
         Info_tmp.SW_Ver[1] = 0;
         Info_tmp.SW_Ver[2] = 0;
-        Info_tmp.HW_Ver[0] = 1;
-        Info_tmp.HW_Ver[1] = 0;
-        Info_tmp.HW_Ver[2] = 0;
+        Info_tmp.HW_Ver[0] = HWVer[0];
+        Info_tmp.HW_Ver[1] = HWVer[1];
+        Info_tmp.HW_Ver[2] = HWVer[2];
         Info_tmp.File_Size = 0;
 
         if (!TaskFrameCTL_Upgrade_Enable(true, Info_tmp, CLI_Monitor.port_addr, CLI_Monitor.type))
