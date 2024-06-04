@@ -691,9 +691,13 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
 
         case Stage_Reboot:
             if (cli && shell_obj)
-                shellPrint("[ Upgrade ] Reboot\r\n");
+            {
+                SrvOsCommon.delay_ms(10);
+                shellPrint(shell_obj, "[ Upgrade ] Reboot\r\n");
+            }
 
-            SrvOsCommon.reboot();
+            Upgrade_Monitor.is_enable = false;
+            // SrvOsCommon.reboot();
             break;
 
         case Stage_Process_PortData:
@@ -701,7 +705,10 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
             if (logout_size)
             {
                 if (cli && shell_obj)
+                {
+                    SrvOsCommon.delay_ms(10);
                     shellPrint(shell_obj, "[ Upgrade Info ] %s", CLIPrintBuf);
+                }
 
                 SrvUpgrade.clear_log();
             }

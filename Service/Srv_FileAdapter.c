@@ -96,8 +96,6 @@ static bool SrvFileAdapter_Destory_AdapterObj(SrvFileAdapterObj_TypeDef *p_Adapt
     return false;
 }
 
-
-
 static void SrvFileAdapter_Set_SendCallback(SrvFileAdapterObj_TypeDef *p_Adapter,  SrvFileAdapter_Send_Func send)
 {
     if (p_Adapter && p_Adapter->FrameObj)
