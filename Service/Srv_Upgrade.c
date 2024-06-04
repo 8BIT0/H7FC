@@ -346,7 +346,10 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
     if (Monitor.CodeStage == On_App)
     {
         if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.BF_Info.HW_Ver)) != 0)
+        {
+            SrvUpgrade_Collect_Info("Boot firmware hardware version error\r\n");
             return Stage_Upgrade_Error;
+        }
 
         /* upgrade App */
         return Stage_Reboot;
@@ -354,7 +357,10 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
     else if (Monitor.CodeStage == On_Boot)
     {
         if (memcmp(Info.AF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver)) != 0)
+        {
+            SrvUpgrade_Collect_Info("App firmware hardware version error\r\n");
             return Stage_Upgrade_Error;
+        }
 
         /* upgrade boot */
         return Stage_Reboot;
@@ -443,7 +449,6 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 
         /* firmware upgrading */
         case Stage_Reboot:
-            SrvOsCommon.reboot();
             return Stage_Reboot;
 
         /* when at bootloader */

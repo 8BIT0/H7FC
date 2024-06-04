@@ -689,6 +689,13 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
             Upgrade_Monitor.port_addr = 0;
             break;
 
+        case Stage_Reboot:
+            if (cli && shell_obj)
+                shellPrint("[ Upgrade ] Reboot\r\n");
+
+            SrvOsCommon.reboot();
+            break;
+
         case Stage_Process_PortData:
             logout_size = SrvUpgrade.get_log(CLIPrintBuf, sizeof(CLIPrintBuf));
             if (logout_size)
