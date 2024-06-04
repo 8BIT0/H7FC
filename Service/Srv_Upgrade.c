@@ -470,9 +470,6 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
         case Stage_TimeOut:
             Monitor.PollingState = Stage_Init;
             return Stage_TimeOut;
-        
-        case Stage_JumpError:
-            return Stage_JumpError;
 
         case Stage_UpgradeInfo_Error:
             return Stage_UpgradeInfo_Error;
@@ -572,8 +569,6 @@ static void SrvUpgrade_JumpTo(void)
         __set_MSP(*(volatile uint32_t *)Monitor.JumpAddr);
         ((Application_Func)jump_addr)();
     }
-    else
-        Monitor.PollingState = Stage_JumpError;
 }
 
 static void SrvUpgrade_Collect_Info(const char *format, ...)

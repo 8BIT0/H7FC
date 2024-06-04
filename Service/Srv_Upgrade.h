@@ -28,8 +28,6 @@ typedef enum
     Stage_PortData_Error,
     Stage_TimeOut,
     Stage_ReadyToJump,
-    Stage_JumpToTarget,
-    Stage_JumpError,
     Stage_Upgrade_Finish,
     Stage_Unknow,
 } SrvUpgrade_Stage_List;
