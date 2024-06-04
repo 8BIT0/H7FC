@@ -164,6 +164,7 @@ static Adapter_Polling_State SrvFileAdapter_Store_Firmware(SrvFileAdapterObj_Typ
 static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter)
 {
     bool clear_stream = false;
+    Adapter_Polling_State state;
 
     if (p_Adapter && p_Adapter->FrameObj && p_Adapter->FrameApi)
     {
@@ -171,7 +172,8 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
         switch ((uint8_t)p_Adapter->frame_type)
         {
             case SrvFileAdapter_Frame_YModem:
-                return SrvAdapter_YModem_Polling(p_Adapter, &clear_stream);
+                state = SrvAdapter_YModem_Polling(p_Adapter, &clear_stream);
+                break;
 
             default: break;
         }
@@ -183,7 +185,7 @@ static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAd
         }
     }
 
-    return Adapter_Proc_Failed;
+    return state;
 }
 
 static FileInfo_TypeDef SrvFileAdapter_GetFileInfo(SrvFileAdapterObj_TypeDef *p_Adapter)

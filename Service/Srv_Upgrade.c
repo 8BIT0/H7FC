@@ -142,10 +142,6 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
 
     memset(Monitor.LogOut_Info, 0, sizeof(Monitor.LogOut_Info));
     Monitor.LogOut_Info_size = 0;
-
-    SrvUpgrade_Collect_Info("[SrvUpgrade Init]\r\n");
-    SrvUpgrade_Collect_Info("\tOn Boot Stage\r\n");
-    SrvUpgrade_Collect_Info("\tReading [Boot Info] from storage\r\n");
     
     /* set stream */
     Monitor.proc_stream[0].access = false;
@@ -161,6 +157,10 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
 
     if (stage == On_Boot)
     {
+        SrvUpgrade_Collect_Info("[SrvUpgrade Init]\r\n");
+        SrvUpgrade_Collect_Info("\tOn Boot Stage\r\n");
+        SrvUpgrade_Collect_Info("\tReading [Boot Info] from storage\r\n");
+        
         Monitor.JumpAddr = Default_App_Address;
         Monitor.AppSize  = Default_App_Size;
         Monitor.jump_time = SrvOsCommon.get_os_ms();
@@ -349,7 +349,6 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
             return Stage_Upgrade_Error;
 
         /* upgrade App */
-        return Stage_Boot_Upgrading;
     }
     else if (Monitor.CodeStage == On_Boot)
     {
@@ -357,7 +356,6 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
             return Stage_Upgrade_Error;
 
         /* upgrade boot */
-        return Stage_App_Upgrading;
     }
 
     return Stage_Upgrade_Error;

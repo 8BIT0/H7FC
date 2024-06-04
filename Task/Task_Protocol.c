@@ -91,6 +91,7 @@ static uint32_t FrameCTL_Period = 0;
 static __attribute__((section(".Perph_Section"))) uint8_t MavShareBuf[1024];
 static __attribute__((section(".Perph_Section"))) uint8_t CLIRxBuf[CLI_FUNC_BUF_SIZE];
 static uint8_t CLIProcBuf[CLI_FUNC_BUF_SIZE];
+static uint8_t CLIPrintBuf[CLI_FUNC_BUF_SIZE];
 static uint8_t Uart_RxBuf_Tmp[PROTO_STREAM_BUF_SIZE];
 static uint8_t USB_RxBuf_Tmp[PROTO_STREAM_BUF_SIZE];
 static uint32_t Radio_Addr = 0;
@@ -669,7 +670,8 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
     SrvUpgrade_Stage_List stage;
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     Shell *shell_obj = Shell_GetInstence();
-    
+    uint16_t logout_size = 0;
+
     stage = SrvUpgrade.polling(sys_time, TaskFrameCTL_Upgrade_Send);
 
     switch ((uint8_t) stage)
@@ -685,6 +687,17 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
             Upgrade_Monitor.is_enable = false;
             memset(&Upgrade_Monitor.file_info, 0, sizeof(Upgrade_Monitor.file_info));
             Upgrade_Monitor.port_addr = 0;
+            break;
+
+        case Stage_Process_PortData:
+            logout_size = SrvUpgrade.get_log(CLIPrintBuf, sizeof(CLIPrintBuf));
+            if (logout_size)
+            {
+                if (cli && shell_obj)
+                    shellPrint(shell_obj, "[ Upgrade Info ] %s", CLIPrintBuf);
+
+                SrvUpgrade.clear_log();
+            }
             break;
 
         default:
