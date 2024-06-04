@@ -464,7 +464,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 
         /* error process */
         case Stage_FileInfo_Error:
-            break;
+            return Stage_FileInfo_Error;
 
         case Stage_Upgrade_Error:
         case Stage_Adapter_Error:
