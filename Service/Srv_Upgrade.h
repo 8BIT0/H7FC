@@ -91,6 +91,7 @@ typedef struct
 } SrvUpgrade_TypeDef;
 
 extern const uint8_t HWVer[3];
+extern const uint8_t AppVer[3];
 extern SrvUpgrade_TypeDef SrvUpgrade;
 
 #endif
