@@ -19,8 +19,7 @@ typedef enum
 typedef enum
 {
     Stage_Init = 0,
-    Stage_App_Upgrading,
-    Stage_Boot_Upgrading,
+    Stage_Reboot,
     Stage_UpgradeInfo_Error,
     Stage_Adapter_Error,
     Stage_FileInfo_Error,

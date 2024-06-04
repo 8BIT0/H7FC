@@ -349,6 +349,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
             return Stage_Upgrade_Error;
 
         /* upgrade App */
+        return Stage_Reboot;
     }
     else if (Monitor.CodeStage == On_Boot)
     {
@@ -356,6 +357,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
             return Stage_Upgrade_Error;
 
         /* upgrade boot */
+        return Stage_Reboot;
     }
 
     return Stage_Upgrade_Error;
@@ -440,13 +442,9 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
             return Stage_Process_PortData;
 
         /* firmware upgrading */
-        case Stage_App_Upgrading:
-            SrvUpgrade_App_Updating();
-            return Stage_App_Upgrading;
-
-        case Stage_Boot_Upgrading:
-            SrvUpgrade_Boot_Updating();
-            return Stage_Boot_Upgrading;
+        case Stage_Reboot:
+            SrvOsCommon.reboot();
+            return Stage_Reboot;
 
         /* when at bootloader */
         case Stage_ReadyToJump:

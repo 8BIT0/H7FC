@@ -30,6 +30,7 @@ typedef struct
     void (*get_heap_status)(SrvOs_HeapStatus_TypeDef *status);
     void (*disable_all_irq)(void);
     void (*enable_all_irq)(void);
+    void (*reboot)(void);
 }SrvOsCommon_TypeDef;
 
 extern SrvOsCommon_TypeDef SrvOsCommon;

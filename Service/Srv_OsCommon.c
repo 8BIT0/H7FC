@@ -1,6 +1,7 @@
 #include "Srv_OsCommon.h"
 #include "kernel.h"
 #include "cmsis_gcc.h"
+#include "shell_port.h"
 
 typedef struct
 {
@@ -26,6 +27,7 @@ static void* SrvOsCommon_Malloc(uint32_t size);
 static void SrvOsCommon_Free(void *ptr);
 static int32_t SrvOsCommon_Delay(uint32_t ms);
 static void SrvOsCommon_DelayUntil(uint32_t *prev_time, uint32_t ms);
+static void SrvOsCommon_Reboot(void);
 
 SrvOsCommon_TypeDef SrvOsCommon = {
     .get_os_ms = osKernelSysTick,
@@ -45,6 +47,7 @@ SrvOsCommon_TypeDef SrvOsCommon = {
     .systimer_enable = Kernel_EnableTimer_IRQ,
     .disable_all_irq = __disable_irq,
     .enable_all_irq = __enable_irq,
+    .reboot = SrvOsCommon_Reboot,
 };
 
 static void* SrvOsCommon_Malloc(uint32_t size)
@@ -131,3 +134,10 @@ static void SrvOsCommon_DelayUntil(uint32_t *prev_time, uint32_t ms)
     if (prev_time && ms)
         osDelayUntil(prev_time, ms);
 }
+
+static void SrvOsCommon_Reboot(void)
+{
+    Kernel_reboot();
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, SrvOsCommon_Reboot, SrvOsCommon_Reboot, System ReBoot);
+
