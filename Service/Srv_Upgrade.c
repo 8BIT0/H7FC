@@ -108,6 +108,8 @@ static SrvUpgradeMonitor_TypeDef Monitor = {
 /* internal function */
 static void SrvUpgrade_Collect_Info(const char *format, ...);
 static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage);
+static void SrvUpgrade_App_Updating(void);
+static void SrvUpgrade_Boot_Updating(void);
 
 /* external function */
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
@@ -205,6 +207,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
             if (memcmp(Info.AF_Info.HW_Ver, HWVer, sizeof(HWVer)) == 0)
             {
                 /* check app upgrade */
+                SrvUpgrade_App_Updating();
             }
         }
         else if ((code_stage == On_App) && Info.CTLReg.bit.Boot)
@@ -213,6 +216,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
             if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(HWVer)) == 0)
             {
                 /* check boot upgrade */
+                SrvUpgrade_Boot_Updating();
             }
         }
     }
@@ -294,7 +298,7 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     return ret;
 }
 
-static void SrvUpgrade_App_Updating()
+static void SrvUpgrade_App_Updating(void)
 {
     // for (; ; )
     // {
@@ -304,7 +308,7 @@ static void SrvUpgrade_App_Updating()
     /* if upgrade successed clear flag */
 }
 
-static void SrvUpgrade_Boot_Updating()
+static void SrvUpgrade_Boot_Updating(void)
 {
     // for (; ; )
     // {
@@ -626,6 +630,9 @@ static void SrvUpgrade_Check_AppFirmware(void)
     SrvUpgradeInfo_TypeDef Info;
     memset(&Info, 0, sizeof(Info));
     Shell *shell_obj = Shell_GetInstence();
+    uint16_t read_size = 0;
+    uint32_t total_size = 0;
+    uint32_t read_addr_offset = 0;
 
     if (shell_obj == NULL)
         return;
@@ -641,6 +648,26 @@ static void SrvUpgrade_Check_AppFirmware(void)
         shellPrint(shell_obj, "[ App Info ] size: %d\r\n", Info.AF_Info.File_Size);
         shellPrint(shell_obj, "[ App Info ] HW:   %d.%d.%d\r\n", Info.AF_Info.HW_Ver[0], Info.AF_Info.HW_Ver[1], Info.AF_Info.HW_Ver[2]);
         shellPrint(shell_obj, "[ App Info ] SW:   %d.%d.%d\r\n", Info.AF_Info.SW_Ver[0], Info.AF_Info.SW_Ver[1], Info.AF_Info.SW_Ver[2]);
+
+        total_size = Info.AF_Info.File_Size;
+        for (uint32_t i = 0; i < total_size; )
+        {
+            read_size = 1024;
+            if (total_size < 1024)
+                read_size = total_size;
+
+            /* read boot firmware */
+            Storage.read_firmware(Firmware_App, read_addr_offset, upgrade_buf, read_size);
+            // shell_obj->write((const char *)upgrade_buf, read_size);
+            memset(upgrade_buf, 0, read_size);
+            total_size -= read_size;
+
+            // shellPrint(shell_obj, "[ App Firmware ] addr %d\r\n", read_addr_offset);
+            if (total_size == 0)
+                break;
+            
+            read_addr_offset += read_size;
+        }
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, check_app, SrvUpgrade_Check_AppFirmware, check stored app);
@@ -650,6 +677,9 @@ static void SrvUpgrade_Check_BootFirmware(void)
     SrvUpgradeInfo_TypeDef Info;
     memset(&Info, 0, sizeof(Info));
     Shell *shell_obj = Shell_GetInstence();
+    uint16_t read_size = 0;
+    uint32_t total_size = 0;
+    uint32_t read_addr_offset = 0;
 
     if (shell_obj == NULL)
         return;
@@ -665,6 +695,25 @@ static void SrvUpgrade_Check_BootFirmware(void)
         shellPrint(shell_obj, "[ Boot Info ] size: %d\r\n", Info.BF_Info.File_Size);
         shellPrint(shell_obj, "[ Boot Info ] HW:   %d.%d.%d\r\n", Info.BF_Info.HW_Ver[0], Info.BF_Info.HW_Ver[1], Info.BF_Info.HW_Ver[2]);
         shellPrint(shell_obj, "[ Boot Info ] SW:   %d.%d.%d\r\n", Info.BF_Info.SW_Ver[0], Info.BF_Info.SW_Ver[1], Info.BF_Info.SW_Ver[2]);
+
+        total_size = Info.BF_Info.File_Size;
+        for (uint32_t i = 0; i < total_size; )
+        {
+            read_size = 1024;
+            if (total_size < 1024)
+                read_size = total_size;
+
+            /* read boot firmware */
+            Storage.read_firmware(Firmware_Boot, read_addr_offset, upgrade_buf, read_size);
+            shell_obj->write((const char *)upgrade_buf, read_size);
+            memset(upgrade_buf, 0, read_size);
+            total_size -= read_size;
+
+            if (total_size == 0)
+                break;
+            
+            read_addr_offset += read_size;
+        }
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, check_boot, SrvUpgrade_Check_BootFirmware, check stored boot);
