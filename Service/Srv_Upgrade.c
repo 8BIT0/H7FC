@@ -689,6 +689,7 @@ static void SrvUpgrade_Check_BootFirmware(void)
     uint16_t read_size = 0;
     uint32_t total_size = 0;
     uint32_t read_addr_offset = 0;
+    uint8_t r = 0;
 
     if (shell_obj == NULL)
         return;
@@ -705,19 +706,28 @@ static void SrvUpgrade_Check_BootFirmware(void)
         shellPrint(shell_obj, "[ Boot Info ] HW:   %d.%d.%d\r\n", Info.BF_Info.HW_Ver[0], Info.BF_Info.HW_Ver[1], Info.BF_Info.HW_Ver[2]);
         shellPrint(shell_obj, "[ Boot Info ] SW:   %d.%d.%d\r\n", Info.BF_Info.SW_Ver[0], Info.BF_Info.SW_Ver[1], Info.BF_Info.SW_Ver[2]);
 
-        total_size = Info.BF_Info.File_Size;
+        total_size = Info.AF_Info.File_Size;
         for (uint32_t i = 0; i < total_size; )
         {
-            read_size = 1024;
-            if (total_size < 1024)
+            read_size = (1 Kb);
+            if (total_size < (1 Kb))
                 read_size = total_size;
 
             /* read boot firmware */
-            Storage.read_firmware(Firmware_Boot, read_addr_offset, upgrade_buf, read_size);
-            shell_obj->write((const char *)upgrade_buf, read_size);
+            Storage.read_firmware(Firmware_App, read_addr_offset, upgrade_buf, read_size);
+
+            for (uint16_t j = 0; j < (read_size / 4); j++)
+            {
+                shellPrint(shell_obj, " %02x%02x%02x%02x ", upgrade_buf[j * 4], upgrade_buf[j * 4 + 1], upgrade_buf[j * 4 + 2], upgrade_buf[j * 4 + 3]);
+                r ++;
+                if (r == 3)
+                {
+                    r = 0;
+                    shellPrint(shell_obj, "\r\n");
+                }
+            }
             memset(upgrade_buf, 0, read_size);
             total_size -= read_size;
-
             if (total_size == 0)
                 break;
             
