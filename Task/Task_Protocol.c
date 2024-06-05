@@ -697,7 +697,7 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
             }
 
             Upgrade_Monitor.is_enable = false;
-            // SrvOsCommon.reboot();
+            SrvOsCommon.reboot();
             break;
 
         case Stage_Process_PortData:
