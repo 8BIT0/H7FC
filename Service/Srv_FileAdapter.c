@@ -209,7 +209,7 @@ static Adapter_Polling_State SrvAdapter_YModem_Polling(SrvFileAdapterObj_TypeDef
     p_obj =  To_YModem_Obj(p_Adapter->FrameObj);
     p_stream = To_YModem_Stream(p_Adapter->stream_out);
 
-    if (p_Adapter && p_api && p_obj && clear_stream)
+    if (p_Adapter && p_api && p_obj && clear_stream && p_api->polling)
     {
         *clear_stream = false;
         if (p_Adapter->stream_out == NULL)
@@ -222,53 +222,50 @@ static Adapter_Polling_State SrvAdapter_YModem_Polling(SrvFileAdapterObj_TypeDef
             }
         }
 
-        if (p_api->polling)
+        switch (p_api->polling(p_Adapter->sys_time, p_obj, AdapterInStream.buf, AdapterInStream.size, p_stream))
         {
-            switch (p_api->polling(p_Adapter->sys_time, p_obj, AdapterInStream.buf, AdapterInStream.size, p_stream))
-            {
-                case YModem_State_Tx: return Adapter_Processing;
+            case YModem_State_Tx: return Adapter_Processing;
 
-                case YModem_State_Rx:
-                    if (p_stream->valid == YModem_Pack_InCompelete)
-                        return Adapter_Processing;
-
-                    if ((p_stream->valid == YModem_Pack_Compelete) && \
-                        p_stream->p_buf && \
-                        (p_stream->size > 1) && \
-                        p_stream->file_data)
-                    {
-                        if (SrvFileAdapter_Store_Firmware(p_Adapter, p_stream->p_buf, p_stream->size) == Adapter_Proc_Failed)
-                        {
-                            /* abort YModem */
-                            /* clear app storage section */
-                            p_api->abort(p_obj);
-                            if (p_Adapter->file_info.File_Type == FileType_APP)
-                            {
-                                Storage.format_firmware(Firmware_App);
-                            }
-                            else if (p_Adapter->file_info.File_Type == FileType_Boot)
-                                Storage.format_firmware(Firmware_Boot);
-
-                            *clear_stream = true;
-                            return Adapter_Proc_Failed;
-                        }
-                                
-                        p_stream->size = 0;
-                        p_stream->valid = YModem_Pack_Default;
-                    }
-
-                    *clear_stream = true;
+            case YModem_State_Rx:
+                if (p_stream->valid == YModem_Pack_InCompelete)
                     return Adapter_Processing;
 
-                case YModem_State_Finish:
-                    SrvOsCommon.free(p_Adapter->stream_out);
-                    p_Adapter->stream_out = NULL;
-                    *clear_stream = true;
-                    return Adapter_Proc_Done;
+                if ((p_stream->valid == YModem_Pack_Compelete) && \
+                    p_stream->p_buf && \
+                    (p_stream->size > 1) && \
+                    p_stream->file_data)
+                {
+                    if (SrvFileAdapter_Store_Firmware(p_Adapter, p_stream->p_buf, p_stream->size) == Adapter_Proc_Failed)
+                    {
+                        /* abort YModem */
+                        /* clear app storage section */
+                        p_api->abort(p_obj);
+                        if (p_Adapter->file_info.File_Type == FileType_APP)
+                        {
+                            Storage.format_firmware(Firmware_App);
+                        }
+                        else if (p_Adapter->file_info.File_Type == FileType_Boot)
+                            Storage.format_firmware(Firmware_Boot);
 
-                case YModem_State_Error:
-                default: break;
-            }
+                        *clear_stream = true;
+                        return Adapter_Proc_Failed;
+                    }
+                            
+                    p_stream->size = 0;
+                    p_stream->valid = YModem_Pack_Default;
+                }
+
+                *clear_stream = true;
+                return Adapter_Processing;
+
+            case YModem_State_Finish:
+                SrvOsCommon.free(p_Adapter->stream_out);
+                p_Adapter->stream_out = NULL;
+                *clear_stream = true;
+                return Adapter_Proc_Done;
+
+            case YModem_State_Error:
+            default: break;
         }
     }
 

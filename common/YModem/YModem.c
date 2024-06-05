@@ -194,6 +194,7 @@ static void YModem_Rx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, u
                 break;
 
             obj->tx_stage = YModem_Cfm;
+            obj->data_income = true;
             break;
 
         /* receive data after confirm */
@@ -204,7 +205,6 @@ static void YModem_Rx_State_Polling(uint32_t sys_time, YModemObj_TypeDef *obj, u
                 break;
 
             obj->tx_stage = YModem_ACK;
-            obj->data_income = true;
             break;
 
         /* receive data after ACK */

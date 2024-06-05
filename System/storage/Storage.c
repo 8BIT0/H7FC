@@ -2151,11 +2151,14 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
                         if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
                             return false;
 
+                        /* erase whole section */
+                        if (To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr) != DevW25Qxx_Ok)
+                            return false;
+
                         if ((write_addr + size) >= (section_addr + Storage_TabSize))
                         {
                             write_size = Storage_TabSize - (write_addr - section_addr);
                             size -= write_size;
-                            write_addr += write_size;
                         }
                         else
                         {
@@ -2170,6 +2173,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
 
                         /* update section address */
                         p_data += write_size;
+                        write_addr += write_size;
                         section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
                     }
                     break;
