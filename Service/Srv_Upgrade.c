@@ -245,6 +245,14 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
             if (file_size == 0)
             {
                 /* clear upgrade flag */
+                if (code_stage == On_App)
+                {
+                    Info.CTLReg.bit.App = false;
+                }
+                else if (code_stage == On_Boot)
+                    Info.CTLReg.bit.Boot = false;
+
+                Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item_addr, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
             }
         }
     }
