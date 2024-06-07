@@ -643,7 +643,12 @@ static void SrvUpgrade_ClearLog(void)
 
 static void SrvUpgrade_Show_CurAppVer(void)
 {
+    Shell *shell_obj = Shell_GetInstence();
 
+    if (shell_obj)
+    {
+        shellPrint(shell_obj, "[ Current App ] SW Version: %d.%d.%d\r\n", AppVer[0], AppVer[1], AppVer[2]);
+    }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, app_ver, SrvUpgrade_Show_CurAppVer, check stored app);
 
