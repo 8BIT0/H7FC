@@ -641,6 +641,12 @@ static void SrvUpgrade_ClearLog(void)
     Monitor.LogOut_Info_size = 0;
 }
 
+static void SrvUpgrade_Show_CurAppVer(void)
+{
+
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, app_ver, SrvUpgrade_Show_CurAppVer, check stored app);
+
 static void SrvUpgrade_Check_AppFirmware(void)
 {
     SrvUpgradeInfo_TypeDef Info;
