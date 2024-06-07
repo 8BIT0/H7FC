@@ -2125,9 +2125,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
         if (medium == Internal_Flash)
         {
             write_addr = int_base_addr + addr_offset;
-
-            /* still in developping */
-        
+            BspFlash.write(write_addr, p_data, size);
         }
         else if (medium == External_Flash)
         {

@@ -12,12 +12,6 @@
 
 typedef enum
 {
-    On_Boot = 0,
-    On_App,
-} SrvUpgrade_CodeStage_List;
-
-typedef enum
-{
     Stage_Init = 0,
     Stage_Reboot,
     Stage_UpgradeInfo_Error,
@@ -81,10 +75,9 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
+    bool (*init)(void);
     SrvUpgrade_Stage_List (*polling)(uint32_t sys_time, SrvFileAdapter_Send_Func send);
     void (*set_fileinfo)(const FileInfo_TypeDef info);
-    void (*jump)(void);
     uint16_t (*get_log)(uint8_t *p_info, uint16_t len);
     void (*clear_log)(void);
     bool (*push_data)(uint32_t sys_time, uint8_t *p_buf, uint16_t len);

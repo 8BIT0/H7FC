@@ -57,19 +57,8 @@ typedef struct
 {
     bool init_state;
 
-    SrvUpgrade_CodeStage_List CodeStage;
     SrvUpgrade_Stage_List PollingState;
     SrvUpgrade_PortDataProc_List PortDataState;
-    
-    uint32_t firmware_addr_s;   /* Application or Module firmware storaged address start pos */
-    uint32_t firmware_addr_e;   /* Application or Module firmware storaged address end pos */
-    uint32_t firmware_size;     /* total firmware size */
-    uint32_t firmware_rw_size;  /* current read or write size */
-    
-    /* useless in app */
-    uint32_t jump_time;
-    uint32_t JumpAddr;
-    uint32_t AppSize;
 
     uint32_t discard_time;
 
@@ -106,14 +95,13 @@ static SrvUpgradeMonitor_TypeDef Monitor = {
 
 /* internal function */
 static void SrvUpgrade_Collect_Info(const char *format, ...);
-static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage);
+static void SrvUpgrade_CheckUpgrade_OnBootUp(void);
 
 /* external function */
-static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
+static bool SrvUpgrade_Init(void);
 static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileAdapter_Send_Func send);
 static uint16_t SrvUpgrade_Get_Info(uint8_t *p_info, uint16_t len);
 static void SrvUpgrade_ClearLog(void);
-static void SrvUpgrade_JumpTo(void);
 static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len);
 static void SrvUpgrade_SetFileInfo(const FileInfo_TypeDef info);
 
@@ -121,14 +109,13 @@ static void SrvUpgrade_SetFileInfo(const FileInfo_TypeDef info);
 SrvUpgrade_TypeDef SrvUpgrade = {
     .init = SrvUpgrade_Init,
     .polling = SrvUpgrade_StatePolling,
-    .jump = SrvUpgrade_JumpTo,
     .get_log = SrvUpgrade_Get_Info,
     .clear_log = SrvUpgrade_ClearLog,
     .push_data = SrvUpgrade_PushData,
     .set_fileinfo = SrvUpgrade_SetFileInfo,
 };
 
-static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size)
+static bool SrvUpgrade_Init(void)
 {
     if (sizeof(upgrade_buf) % 2)
         return false;
@@ -153,23 +140,6 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
     Monitor.proc_stream[1].size = 0;
     Monitor.proc_stream[1].total_size = sizeof(upgrade_buf) / 2;
     Monitor.proc_stream[1].p_buf = &upgrade_buf[sizeof(upgrade_buf) / 2];
-    Monitor.CodeStage = stage;
-
-    if (stage == On_Boot)
-    {
-        SrvUpgrade_Collect_Info("[SrvUpgrade Init]\r\n");
-        SrvUpgrade_Collect_Info("\tOn Boot Stage\r\n");
-        SrvUpgrade_Collect_Info("\tReading [Boot Info] from storage\r\n");
-        
-        Monitor.JumpAddr = App_Address_Base;
-        Monitor.AppSize  = App_Section_Size;
-        Monitor.jump_time = SrvOsCommon.get_os_ms();
-        Monitor.jump_time += DEFAULT_WINDOW_SIZE;
-
-        /* show jump time stamp */
-        SrvUpgrade_Collect_Info("\tJump time: %d\r\n", Monitor.jump_time);
-        SrvUpgrade_Collect_Info("\r\n");
-    }
 
     Monitor.init_state = true;
     Monitor.PollingState = Stage_Init;
@@ -179,17 +149,16 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
      * whatever on boot or app
      * check upgrade on boot up
      */
-    SrvUpgrade_CheckUpgrade_OnBootUp(stage);
+    SrvUpgrade_CheckUpgrade_OnBootUp();
     return true;
 }
 
-static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
+static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
 {
     SrvUpgradeInfo_TypeDef Info;
     uint32_t file_size = 0;
     uint16_t update_size = 0;
-    uint32_t store_addr_offset = 0;
-    uint32_t flash_addr = 0;
+    uint32_t addr_offset = 0;
 
     memset(&Monitor.UpgradeInfo_SO, 0, sizeof(Monitor.UpgradeInfo_SO));
     memset(&Info, 0, sizeof(Info));
@@ -202,28 +171,17 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
 
         /* read parameter section */
         /* read boot firmware info */
-        if ((code_stage == On_Boot) && Info.CTLReg.bit.App)
-        {
-            /* check hardware version */
-            if (memcmp(Info.AF_Info.HW_Ver, HWVer, sizeof(HWVer)) == 0)
-            {
-                /* check app upgrade */
-                file_size = Info.AF_Info.File_Size;
-                flash_addr = App_Address_Base;
-            }
-        }
-        else if ((code_stage == On_App) && Info.CTLReg.bit.Boot)
+        if (Info.CTLReg.bit.Boot)
         {
             /* check hardware version */
             if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(HWVer)) == 0)
             {
                 /* check boot upgrade */
                 file_size = Info.BF_Info.File_Size;
-                flash_addr = Boot_Address_Base;
             }
         }
         
-        while (file_size && flash_addr)
+        while (file_size)
         {
             update_size = file_size;
             if (file_size > 1024)
@@ -231,7 +189,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
 
             /* read firmware from storage */
             memset(upgrade_buf, 0, update_size);
-            Storage.read_firmware(Firmware_Boot, store_addr_offset, upgrade_buf, update_size);
+            Storage.read_firmware(Firmware_Boot, addr_offset, upgrade_buf, update_size);
 
             SrvOsCommon.enter_critical();
             /* write firmware to boot flash */
@@ -239,19 +197,12 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
             SrvOsCommon.exit_critical();
 
             file_size -= update_size;
-            store_addr_offset += update_size;
-            flash_addr += update_size;
+            addr_offset += update_size;
 
             if (file_size == 0)
             {
                 /* clear upgrade flag */
-                if (code_stage == On_App)
-                {
-                    Info.CTLReg.bit.App = false;
-                }
-                else if (code_stage == On_Boot)
-                    Info.CTLReg.bit.Boot = false;
-
+                Info.CTLReg.bit.Boot = false;
                 Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item_addr, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
             }
         }
@@ -350,16 +301,30 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
     if (Monitor.FileInfo.File_Type == FileType_APP)
     {
         SrvUpgrade_Collect_Info("\tApp firmware receive finished\r\n");
+
+        if (memcmp(Info.AF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver)) != 0)
+        {
+            SrvUpgrade_Collect_Info("App firmware hardware version error\r\n");
+            return Stage_Upgrade_Error;
+        }
+        
         /* update app firmware info */
         Info.CTLReg.bit.App = true;
         Info.AF_Info = rec_file_info;
     }
     else if (Monitor.FileInfo.File_Type == FileType_Boot)
     {
-        /* update boot firmware info */
         SrvUpgrade_Collect_Info("\tBoot firmware receive finished\r\n");
+        
+        if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.BF_Info.HW_Ver)) != 0)
+        {
+            SrvUpgrade_Collect_Info("Boot firmware hardware version error\r\n");
+            return Stage_Upgrade_Error;
+        }
+        
+        /* update boot firmware info */
         Info.CTLReg.bit.Boot = true;
-        Info.BF_Info = rec_file_info;
+        Info.BF_Info = rec_file_info;    /* check for firmware upgrade */
     }
 
     SrvUpgrade_Collect_Info("\tFile size: %d\r\n", rec_file_info.File_Size);
@@ -371,31 +336,8 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
     SrvFileAdapter.destory(Monitor.adapter_obj);
     Monitor.adapter_obj = NULL;
 
-    /* check for firmware upgrade */
-    if (Monitor.CodeStage == On_App)
-    {
-        if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.BF_Info.HW_Ver)) != 0)
-        {
-            SrvUpgrade_Collect_Info("Boot firmware hardware version error\r\n");
-            return Stage_Upgrade_Error;
-        }
-
-        /* upgrade App */
-        return Stage_Reboot;
-    }
-    else if (Monitor.CodeStage == On_Boot)
-    {
-        if (memcmp(Info.AF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver)) != 0)
-        {
-            SrvUpgrade_Collect_Info("App firmware hardware version error\r\n");
-            return Stage_Upgrade_Error;
-        }
-
-        /* upgrade boot */
-        return Stage_Reboot;
-    }
-
-    return Stage_Upgrade_Error;
+    /* upgrade App */
+    return Stage_Reboot;
 }
 
 static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileAdapter_Send_Func send)
@@ -428,50 +370,38 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
             return Monitor.PollingState;
 
         case Stage_Process_PortData:
-            if ((Monitor.CodeStage == On_Boot) && \
-                (sys_time >= Monitor.jump_time))
+            /* check double stream data */
+            for (i = 0; i < 2; i++)
             {
-                Monitor.PollingState = Stage_ReadyToJump;
-                SrvUpgrade_Collect_Info("[Jump Preparetion]\r\n");
-                SrvUpgrade_Collect_Info("\tDisabling Irq\r\n");
-
-                return Stage_ReadyToJump;
+                if (Monitor.proc_stream[i].size)
+                {
+                    /* received data from port */
+                    Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+                    break;
+                }
             }
-            else
+            
+            switch (SrvUpgrade_PortProcPolling(sys_time))
             {
-                /* check double stream data */
-                for (i = 0; i < 2; i++)
-                {
-                    if (Monitor.proc_stream[i].size)
-                    {
-                        /* received data from port */
-                        Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
-                        break;
-                    }
-                }
-                
-                switch (SrvUpgrade_PortProcPolling(sys_time))
-                {
-                    case ProtProc_Finish:
-                        Monitor.PollingState = SrvUpgrade_On_PortProc_Finish();
-                        Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
-                        break;
+                case ProtProc_Finish:
+                    Monitor.PollingState = SrvUpgrade_On_PortProc_Finish();
+                    Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+                    break;
 
-                    /* still developping this branch */
-                    case PortProc_Deal_TimeOut: /* Monitor.PollingState = Stage_TimeOut;*/ break;
-                    case PortProc_Deal_Error: Monitor.PollingState = Stage_PortData_Error; break;
-                    default: break;
-                }
+                /* still developping this branch */
+                case PortProc_Deal_TimeOut: /* Monitor.PollingState = Stage_TimeOut;*/ break;
+                case PortProc_Deal_Error: Monitor.PollingState = Stage_PortData_Error; break;
+                default: break;
+            }
 
-                /* check for processing time out when at app */
-                if ((Monitor.CodeStage == On_App) && (Monitor.discard_time <= sys_time))
+            /* check for processing time out when at app */
+            if (Monitor.discard_time <= sys_time)
+            {
+                Monitor.PollingState = Stage_TimeOut;
+                if (Monitor.adapter_obj)
                 {
-                    Monitor.PollingState = Stage_TimeOut;
-                    if (Monitor.adapter_obj)
-                    {
-                        SrvFileAdapter.destory(Monitor.adapter_obj);
-                        Monitor.adapter_obj = NULL;
-                    }
+                    SrvFileAdapter.destory(Monitor.adapter_obj);
+                    Monitor.adapter_obj = NULL;
                 }
             }
             return Stage_Process_PortData;
@@ -543,63 +473,6 @@ static void SrvUpgrade_Set_FileInfo(const FileInfo_TypeDef info)
     memcpy(&Monitor.FileInfo, &info, sizeof(FileInfo_TypeDef));
 }
 
-static bool SrvUpgrade_CheckAppAddr(uint32_t addr, uint32_t size)
-{
-    /* check app base address */
-    if ((addr & 0xFF000000) != ((uint32_t)&__rom_s))
-    {
-        SrvUpgrade_Collect_Info("[ ------- Bad Jump Address 0x%08x -------]\r\n", addr);
-        SrvUpgrade_Collect_Info("\r\n");
-        /* error address */
-        return false;
-    }
-
-    /* app start address check */
-    if (addr < ((uint32_t)&__boot_e))
-    {
-        SrvUpgrade_Collect_Info("[ ------- Bad Jump Address 0x%08x ------- ]\r\n", addr);
-        SrvUpgrade_Collect_Info("\r\n");
-        /* app start address is lower then end of the boot section */
-        return false;
-    }
-
-    /* app size range check */
-    if ((addr + size) > ((uint32_t)&__rom_e))
-    {
-        SrvUpgrade_Collect_Info("[ ------- App Size Over Range ------- ]\r\n");
-        SrvUpgrade_Collect_Info("\tApp Start Addr: 0x%08x\r\n", addr);
-        SrvUpgrade_Collect_Info("\tApp End   Addr: 0x%08x\r\n", (addr + size));
-        SrvUpgrade_Collect_Info("\tApp Size:       %d\r\n", size);
-        SrvUpgrade_Collect_Info("\tFlash End Addr: 0x%08x\r\n", (uint32_t)&__rom_e);
-        SrvUpgrade_Collect_Info("\r\n");
-        /* end of app address is overrange */
-        return false;
-    }
-
-    return true;
-}
-
-static void SrvUpgrade_JumpTo(void)
-{
-    uint32_t jump_addr = 0;
-
-    if (Monitor.JumpAddr && Monitor.AppSize && SrvUpgrade_CheckAppAddr(Monitor.JumpAddr, Monitor.AppSize))
-    {
-        /* log out jump addr and app size */
-        SrvUpgrade_Collect_Info("[Jump To App]\r\n");
-        SrvUpgrade_Collect_Info("\tApp Address: 0x%08x\r\n", Monitor.JumpAddr);
-        SrvUpgrade_Collect_Info("\tApp Size:    0x%08x\r\n", Monitor.AppSize);
-        SrvOsCommon.delay_ms(10);
-
-        /* disable all interrupt before jump to app */
-        SrvOsCommon.disable_all_irq();
-
-        jump_addr = *(volatile uint32_t *)(Monitor.JumpAddr + 4);
-        __set_MSP(*(volatile uint32_t *)Monitor.JumpAddr);
-        ((Application_Func)jump_addr)();
-    }
-}
-
 static void SrvUpgrade_Collect_Info(const char *format, ...)
 {
     va_list args;
@@ -650,7 +523,7 @@ static void SrvUpgrade_Show_CurAppVer(void)
         shellPrint(shell_obj, "[ Current App ] SW Version: %d.%d.%d\r\n", AppVer[0], AppVer[1], AppVer[2]);
     }
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, app_ver, SrvUpgrade_Show_CurAppVer, check stored app);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, app_ver, SrvUpgrade_Show_CurAppVer, check app version);
 
 static void SrvUpgrade_Check_AppFirmware(void)
 {
