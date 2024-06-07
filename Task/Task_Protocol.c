@@ -211,7 +211,6 @@ void TaskFrameCTL_Init(uint32_t period)
 
     /* init upgrade */
     memset(&Upgrade_Monitor.file_info, 0, sizeof(Upgrade_Monitor.file_info));
-    SrvUpgrade.init(On_App, 0);
 }
 
 void TaskFrameCTL_Core(void *arg)

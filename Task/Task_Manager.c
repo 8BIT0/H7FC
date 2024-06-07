@@ -93,6 +93,7 @@ void Task_Manager_CreateTask(void)
             DataPipe_Init();
 
             Storage.init(storage_module_enable, storage_ExtFlashObj);
+            SrvUpgrade.init(On_App, 0);
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
             TaskSample_Init(TaskSample_Period_Def);

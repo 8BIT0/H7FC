@@ -2116,7 +2116,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, Storage_Firmw
 
             case Firmware_App:
                 ext_base_addr = App_Firmware_Addr;
-                int_base_addr = Default_App_Address;
+                int_base_addr = App_Address_Base;
                 break;
 
             default: return false;

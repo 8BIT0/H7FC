@@ -141,7 +141,7 @@ static Adapter_Polling_State SrvFileAdapter_Store_Firmware(SrvFileAdapterObj_Typ
     }
     else if (p_Adapter->file_info.File_Type == FileType_APP)
     {
-        max_file_size = Default_App_Size;
+        max_file_size = App_Section_Size;
         firmware_type = Firmware_App;
     }
 

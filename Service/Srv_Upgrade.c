@@ -4,9 +4,8 @@
  *  When at bootloader use this file can upgrade App and Module Firmware
  *  When at app use this file can upgrade Bootloader and Module Firmware
  *  
- *                      still in developping
  *                      F ------- Y ------ I
- *                 NOTHING BEING TESTED IN THIS FILE
+ *                      still in developping
  */
 #include "Srv_Upgrade.h"
 #include "util.h"
@@ -108,8 +107,6 @@ static SrvUpgradeMonitor_TypeDef Monitor = {
 /* internal function */
 static void SrvUpgrade_Collect_Info(const char *format, ...);
 static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage);
-static void SrvUpgrade_App_Updating(void);
-static void SrvUpgrade_Boot_Updating(void);
 
 /* external function */
 static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_size);
@@ -164,8 +161,8 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
         SrvUpgrade_Collect_Info("\tOn Boot Stage\r\n");
         SrvUpgrade_Collect_Info("\tReading [Boot Info] from storage\r\n");
         
-        Monitor.JumpAddr = Default_App_Address;
-        Monitor.AppSize  = Default_App_Size;
+        Monitor.JumpAddr = App_Address_Base;
+        Monitor.AppSize  = App_Section_Size;
         Monitor.jump_time = SrvOsCommon.get_os_ms();
         Monitor.jump_time += DEFAULT_WINDOW_SIZE;
 
@@ -189,6 +186,10 @@ static bool SrvUpgrade_Init(SrvUpgrade_CodeStage_List stage, uint32_t window_siz
 static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
 {
     SrvUpgradeInfo_TypeDef Info;
+    uint32_t file_size = 0;
+    uint16_t update_size = 0;
+    uint32_t store_addr_offset = 0;
+    uint32_t flash_addr = 0;
 
     memset(&Monitor.UpgradeInfo_SO, 0, sizeof(Monitor.UpgradeInfo_SO));
     memset(&Info, 0, sizeof(Info));
@@ -207,7 +208,8 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
             if (memcmp(Info.AF_Info.HW_Ver, HWVer, sizeof(HWVer)) == 0)
             {
                 /* check app upgrade */
-                SrvUpgrade_App_Updating();
+                file_size = Info.AF_Info.File_Size;
+                flash_addr = App_Address_Base;
             }
         }
         else if ((code_stage == On_App) && Info.CTLReg.bit.Boot)
@@ -216,7 +218,33 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(uint8_t code_stage)
             if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(HWVer)) == 0)
             {
                 /* check boot upgrade */
-                SrvUpgrade_Boot_Updating();
+                file_size = Info.BF_Info.File_Size;
+                flash_addr = Boot_Address_Base;
+            }
+        }
+        
+        while (file_size && flash_addr)
+        {
+            update_size = file_size;
+            if (file_size > 1024)
+                update_size = 1024;
+
+            /* read firmware from storage */
+            memset(upgrade_buf, 0, update_size);
+            Storage.read_firmware(Firmware_Boot, store_addr_offset, upgrade_buf, update_size);
+
+            SrvOsCommon.enter_critical();
+            /* write firmware to boot flash */
+
+            SrvOsCommon.exit_critical();
+
+            file_size -= update_size;
+            store_addr_offset += update_size;
+            flash_addr += update_size;
+
+            if (file_size == 0)
+            {
+                /* clear upgrade flag */
             }
         }
     }
@@ -296,26 +324,6 @@ static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time
     }
 
     return ret;
-}
-
-static void SrvUpgrade_App_Updating(void)
-{
-    // for (; ; )
-    // {
-
-    // }
-
-    /* if upgrade successed clear flag */
-}
-
-static void SrvUpgrade_Boot_Updating(void)
-{
-    // for (; ; )
-    // {
-
-    // }
-    
-    /* if upgrade successed clear flag */
 }
 
 static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
