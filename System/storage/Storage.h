@@ -252,9 +252,9 @@ typedef struct
 {
     bool (*init)(Storage_ExtFLashDevObj_TypeDef *ExtDev);
     Storage_ItemSearchOut_TypeDef (*search)(Storage_ParaClassType_List class, const char *name);
-    Storage_ErrorCode_List (*create)(Storage_MediumType_List medium, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size);
-    Storage_ErrorCode_List (*update)(Storage_MediumType_List medium, Storage_ParaClassType_List class, uint32_t addr , uint8_t *p_data, uint16_t size);
-    Storage_ErrorCode_List (*get)(Storage_MediumType_List medium, Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
+    Storage_ErrorCode_List (*create)(Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size);
+    Storage_ErrorCode_List (*update)(Storage_ParaClassType_List class, uint32_t addr , uint8_t *p_data, uint16_t size);
+    Storage_ErrorCode_List (*get)(Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
     // bool (*clear)(Storage_T);
 
     /* firmware section */

@@ -231,12 +231,12 @@ static void TaskControl_Get_StoreParam(void)
     {
         /* no pid parameter found in external flash chip under user partten */
         /* section create successful */
-        Storage.create(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&PID_Param, sizeof(TaskControl_FlightParam_TypeDef));
+        Storage.create(Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&PID_Param, sizeof(TaskControl_FlightParam_TypeDef));
     }
     else
     {
         if ((TaskControl_Monitor.pid_store_info.item.len == sizeof(TaskControl_FlightParam_TypeDef)) && \
-            (Storage.get(External_Flash, Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&PID_Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None))
+            (Storage.get(Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&PID_Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None))
             p_UseParam = &PID_Param;
     }
 
@@ -252,7 +252,7 @@ static void TaskControl_Get_StoreParam(void)
     if (TaskControl_Monitor.actuator_store_info.item_addr)
     {
         if ((TaskControl_Monitor.actuator_store_info.item.len == sizeof(SrvActuator_Setting_TypeDef)) && \
-            Storage.get(External_Flash, Para_User, TaskControl_Monitor.actuator_store_info.item, (uint8_t *)&Actuator_Param, sizeof(SrvActuator_Setting_TypeDef)) == Storage_Error_None)
+            Storage.get(Para_User, TaskControl_Monitor.actuator_store_info.item, (uint8_t *)&Actuator_Param, sizeof(SrvActuator_Setting_TypeDef)) == Storage_Error_None)
             TaskControl_Monitor.actuator_param = Actuator_Param;
     }
 }
@@ -1084,9 +1084,8 @@ static void TaskControl_Param_Set(const char *sel, const char *para_sel, uint16_
             TaskControl_Monitor.pid_store_info.item.data_addr)
         {
             Param = TaskControl_Get_InuseParam();
-            if (Storage.update( External_Flash, Para_User, \
-                                TaskControl_Monitor.pid_store_info.item.data_addr, \
-                                (uint8_t *)&Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None)
+            if (Storage.update(Para_User, TaskControl_Monitor.pid_store_info.item.data_addr, \
+                               (uint8_t *)&Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None)
             {
                 shellPrint(shell_obj, "\t[ -- PID Parameter Store Accomplish -- ]\r\n");
                 return;

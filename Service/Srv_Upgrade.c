@@ -167,7 +167,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
     Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
     if (Monitor.UpgradeInfo_SO.item_addr)
     {
-        Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
+        Storage.get(Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
 
         /* read parameter section */
         /* read boot firmware info */
@@ -203,7 +203,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
             {
                 /* clear upgrade flag */
                 Info.CTLReg.bit.Boot = false;
-                Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item_addr, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
+                Storage.update(Para_Boot, Monitor.UpgradeInfo_SO.item_addr, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
             }
         }
     }
@@ -211,7 +211,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
     {
         memcpy(Info.AF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver));
         memcpy(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver));
-        Storage.create(External_Flash, Para_Boot, UpgradeInfo_Sec, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
+        Storage.create(Para_Boot, UpgradeInfo_Sec, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
         Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
     }
 
@@ -295,7 +295,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
 
     /* all file data received */
     /* update upgrade info to storage */
-    Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)&Info, sizeof(SrvUpgradeInfo_TypeDef));
+    Storage.get(Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)&Info, sizeof(SrvUpgradeInfo_TypeDef));
     rec_file_info = SrvFileAdapter.get_file_info(Monitor.adapter_obj);
 
     if (Monitor.FileInfo.File_Type == FileType_APP)
@@ -330,7 +330,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
     SrvUpgrade_Collect_Info("\tFile size: %d\r\n", rec_file_info.File_Size);
     SrvUpgrade_Collect_Info("\tHW: %d.%d.%d\r\n", rec_file_info.HW_Ver[0], rec_file_info.HW_Ver[1], rec_file_info.HW_Ver[2]);
     SrvUpgrade_Collect_Info("\tSW: %d.%d.%d\r\n", rec_file_info.SW_Ver[0], rec_file_info.SW_Ver[1], rec_file_info.SW_Ver[2]);
-    Storage.update(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, (uint8_t *)&Info, sizeof(SrvUpgradeInfo_TypeDef));
+    Storage.update(Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, (uint8_t *)&Info, sizeof(SrvUpgradeInfo_TypeDef));
 
     /* destory adapter obj */
     SrvFileAdapter.destory(Monitor.adapter_obj);
@@ -540,7 +540,7 @@ static void SrvUpgrade_Check_AppFirmware(void)
 
     if (Monitor.UpgradeInfo_SO.item_addr)
     {
-        if (Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef)) != Storage_Error_None)
+        if (Storage.get(Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef)) != Storage_Error_None)
         {
             shellPrint(shell_obj, "[ Firmware Info Param ] Read Failed\r\n");
             return;
@@ -596,7 +596,7 @@ static void SrvUpgrade_Check_BootFirmware(void)
 
     if (Monitor.UpgradeInfo_SO.item_addr)
     {
-        if (Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef)) != Storage_Error_None)
+        if (Storage.get(Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef)) != Storage_Error_None)
         {
             shellPrint(shell_obj, "[ Firmware Info Param ] Read Failed\r\n");
             return;

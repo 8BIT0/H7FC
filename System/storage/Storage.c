@@ -60,10 +60,10 @@ static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t
 /* external function */
 static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev);
 static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_ParaClassType_List class, const char *name);
-static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size);
-static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size);
-static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
-static Storage_ErrorCode_List Storage_Get_Data(Storage_MediumType_List medium, Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
+static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List class, const char *name, uint32_t size);
+static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size);
+static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
+static Storage_ErrorCode_List Storage_Get_Data(Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
 
 static bool Storage_Firmware_Format(Storage_FirmwareType_List type);
 static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
@@ -517,7 +517,7 @@ static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t
     return Storage_Error_None;
 }
 
-static Storage_ErrorCode_List Storage_Get_Data(Storage_MediumType_List medium, Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size)
+static Storage_ErrorCode_List Storage_Get_Data(Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size)
 {
     uint32_t data_len = 0;
     uint32_t data_addr = 0;
@@ -602,7 +602,7 @@ static Storage_ErrorCode_List Storage_Get_Data(Storage_MediumType_List medium, S
     return Storage_GetData_Error;
 }
 
-static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List type, Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size)
+static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size)
 {
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_DataSlot_TypeDef *p_slotdata = NULL;
@@ -615,7 +615,6 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_MediumType_List ty
     uint8_t align_byte = 0;
 
     if (!Storage_Monitor.init_state || \
-        (type > External_Flash) || \
         (class > Para_User) || \
         (data_slot_hdl == 0) || \
         (p_data == NULL) || \
@@ -1058,7 +1057,7 @@ static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_
 }
 
 /* developping */
-static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint32_t size)
+static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List class, const char *name, uint32_t size)
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
@@ -1107,7 +1106,7 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_MediumType_List type, S
     return Storage_Delete_Error;
 }
 
-static Storage_ErrorCode_List Storage_CreateItem(Storage_MediumType_List type, Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size)
+static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size)
 {
     uint8_t *crc_buf = NULL;
     uint8_t *slot_update_ptr = NULL;
