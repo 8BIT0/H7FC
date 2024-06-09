@@ -164,7 +164,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
     memset(&Info, 0, sizeof(Info));
 
     /* check upgrade enable control first */
-    Monitor.UpgradeInfo_SO = Storage.search(External_Flash, Para_Boot, UpgradeInfo_Sec);
+    Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
     if (Monitor.UpgradeInfo_SO.item_addr)
     {
         Storage.get(External_Flash, Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
@@ -212,7 +212,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
         memcpy(Info.AF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver));
         memcpy(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver));
         Storage.create(External_Flash, Para_Boot, UpgradeInfo_Sec, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
-        Monitor.UpgradeInfo_SO = Storage.search(External_Flash, Para_Boot, UpgradeInfo_Sec);
+        Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
     }
 
     if (Monitor.UpgradeInfo_SO.item_addr == 0)

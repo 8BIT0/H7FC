@@ -219,8 +219,8 @@ static void TaskControl_Get_StoreParam(void)
     memset(&TaskControl_Monitor.pid_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
     memset(&TaskControl_Monitor.actuator_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
 
-    TaskControl_Monitor.pid_store_info = Storage.search(External_Flash, Para_User, CONTROL_STORAGE_SECTION_NAME);
-    TaskControl_Monitor.actuator_store_info = Storage.search(External_Flash, Para_User, ACTUATOR_STORAGE_SECTION_NAME);
+    TaskControl_Monitor.pid_store_info = Storage.search(Para_User, CONTROL_STORAGE_SECTION_NAME);
+    TaskControl_Monitor.actuator_store_info = Storage.search(Para_User, ACTUATOR_STORAGE_SECTION_NAME);
 
     /* get pid parameter */
     PID_Param = TaskControl_Get_DefaultParam();

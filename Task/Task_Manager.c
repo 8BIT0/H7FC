@@ -60,31 +60,24 @@ void Task_Manager_Init(void)
 void Task_Manager_CreateTask(void)
 {
     bool init = false;
-    Storage_ModuleState_TypeDef storage_module_enable;
     Storage_ExtFLashDevObj_TypeDef *storage_ExtFlashObj = NULL;
-    storage_module_enable.val = 0;
 
-    /* internal storage function still in developping */
-    storage_module_enable.bit.internal = false;
-    storage_module_enable.bit.external = FLASH_CHIP_STATE;
+#if (FLASH_CHIP_STATE == ON)
+    storage_ExtFlashObj = SrvOsCommon.malloc(sizeof(Storage_ExtFLashDevObj_TypeDef));
 
-    if (storage_module_enable.bit.external)
+    if (storage_ExtFlashObj)
     {
-        storage_ExtFlashObj = SrvOsCommon.malloc(sizeof(Storage_ExtFLashDevObj_TypeDef));
-
-        if (storage_ExtFlashObj)
-        {
-            storage_ExtFlashObj->bus_type = ExtFlash_Bus_Type;
-            storage_ExtFlashObj->chip_type = ExtFlash_Chip_Type;
-            storage_ExtFlashObj->dev_api = ExtFlash_Dev_Api;
-            storage_ExtFlashObj->dev_obj = NULL;
-        }
-        else
-        {
-            SrvOsCommon.free(storage_ExtFlashObj);
-            storage_module_enable.bit.external = false;
-        }
+        storage_ExtFlashObj->bus_type = ExtFlash_Bus_Type;
+        storage_ExtFlashObj->chip_type = ExtFlash_Chip_Type;
+        storage_ExtFlashObj->dev_api = ExtFlash_Dev_Api;
+        storage_ExtFlashObj->dev_obj = NULL;
     }
+    else
+    {
+        SrvOsCommon.free(storage_ExtFlashObj);
+        storage_ExtFlashObj = NULL;
+    }
+#endif
 
     while(1)
     {
@@ -92,7 +85,7 @@ void Task_Manager_CreateTask(void)
         {
             DataPipe_Init();
 
-            Storage.init(storage_module_enable, storage_ExtFlashObj);
+            Storage.init(storage_ExtFlashObj);
             SrvUpgrade.init();
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
