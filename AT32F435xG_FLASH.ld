@@ -31,12 +31,12 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 
 FLASH_SIZE = 1000K;
-DEFAULT_BOOT_SIZE = 128K;
+BOOT_SIZE = 256K;
 
 MEMORY
 {
 FLASH (rx)       : ORIGIN = 0x08000000, LENGTH = FLASH_SIZE
-FLASH_APP (rx)   : ORIGIN = ORIGIN(FLASH) + DEFAULT_BOOT_SIZE, LENGTH = FLASH_SIZE - DEFAULT_BOOT_SIZE
+FLASH_APP (rx)   : ORIGIN = ORIGIN(FLASH) + BOOT_SIZE, LENGTH = FLASH_SIZE - BOOT_SIZE
 RAM_OsHeap (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
 RAM_Perph (xrw)  : ORIGIN = 0x20020000, LENGTH = 64K
 RAM (xrw)        : ORIGIN = 0x20030000, LENGTH = 192K
@@ -45,7 +45,7 @@ RAM (xrw)        : ORIGIN = 0x20030000, LENGTH = 192K
 __rom_s = ORIGIN(FLASH);
 __rom_e = ORIGIN(FLASH) + FLASH_SIZE;
 __boot_s = __rom_s;
-__boot_e = __boot_s + DEFAULT_BOOT_SIZE;
+__boot_e = __boot_s + BOOT_SIZE;
 
 /* Define output sections */
 SECTIONS
