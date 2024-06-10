@@ -34,7 +34,7 @@ static uint8_t flash_write_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) 
 static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 
 static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num);
-static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClassType_List class);
+static bool Storage_Establish_Tab(Storage_ParaClassType_List class);
 
 static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
 static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
@@ -46,9 +46,9 @@ static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state);
 static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out);
 static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out);
 static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out);
-static bool Storage_Build_StorageInfo(Storage_MediumType_List type);
-static bool Storage_Get_StorageInfo(Storage_MediumType_List type);
-static bool Storage_Format(Storage_MediumType_List type);
+static bool Storage_Build_StorageInfo(void);
+static bool Storage_Get_StorageInfo(void);
+static bool Storage_Format(void);
 static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item);
 static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
@@ -151,13 +151,13 @@ reinit_external_flash_module:
                             
 reupdate_external_flash_info:
                                 /* get storage info */
-                                if (!Storage_Get_StorageInfo(External_Flash))
+                                if (!Storage_Get_StorageInfo())
                                 {
 reformat_external_flash_info:
                                     if (Storage_Monitor.ExternalFlash_Format_cnt)
                                     {
                                         /* format storage device */
-                                        if (!Storage_Format(External_Flash))
+                                        if (!Storage_Format())
                                         {
                                             Storage_Monitor.ExternalFlash_Format_cnt --;
                                             Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
@@ -168,7 +168,7 @@ reformat_external_flash_info:
                                         {
                                             /* external flash module format successed */
                                             /* build storage tab */
-                                            if (Storage_Build_StorageInfo(External_Flash))
+                                            if (Storage_Build_StorageInfo())
                                             {
                                                 Storage_Monitor.ExternalFlash_BuildTab_cnt ++;
                                                 Storage_Monitor.init_state = true;
@@ -211,7 +211,7 @@ reformat_external_flash_info:
     return Storage_Monitor.init_state;
 }
 
-static bool Storage_Format(Storage_MediumType_List type)
+static bool Storage_Format(void)
 {
     uint32_t size = 0;
     uint8_t default_data = 0;
@@ -357,7 +357,7 @@ static bool Storage_Check_Tab(Storage_BaseSecInfo_TypeDef *sec_info)
     return false;
 }
 
-static bool Storage_Get_StorageInfo(Storage_MediumType_List type)
+static bool Storage_Get_StorageInfo(void)
 {
     Storage_FlashInfo_TypeDef *p_Info = NULL;
     Storage_FlashInfo_TypeDef Info_r;
@@ -1355,7 +1355,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List clas
     return Storage_Error_None;
 }
 
-static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClassType_List class)
+static bool Storage_Establish_Tab(Storage_ParaClassType_List class)
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
@@ -1439,7 +1439,7 @@ static bool Storage_Establish_Tab(Storage_MediumType_List type, Storage_ParaClas
     return false;
 }
 
-static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
+static bool Storage_Build_StorageInfo(void)
 {
     uint32_t page_num = 0;
     Storage_FlashInfo_TypeDef Info;
@@ -1543,9 +1543,9 @@ static bool Storage_Build_StorageInfo(Storage_MediumType_List type)
     if (memcmp(&Info_Rx, &Info, sizeof(Storage_FlashInfo_TypeDef)) != 0)
         return false;
 
-    if (!Storage_Establish_Tab(type, Para_Boot) || \
-        !Storage_Establish_Tab(type, Para_Sys)  || \
-        !Storage_Establish_Tab(type, Para_User))
+    if (!Storage_Establish_Tab(Para_Boot) || \
+        !Storage_Establish_Tab(Para_Sys)  || \
+        !Storage_Establish_Tab(Para_User))
         return false;
 
     return true;
@@ -2206,50 +2206,22 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
 }
 
 static bool Storage_Get_Flash_Section_IOAPI(Shell *shell_obj, \
-                                            Storage_MediumType_List medium, \
                                             Storage_ParaClassType_List class, \
                                             Storage_FlashInfo_TypeDef **p_Flash, \
-                                            Storage_BaseSecInfo_TypeDef **p_Sec, \
-                                            StorageIO_TypeDef **StorageIO_API)
+                                            Storage_BaseSecInfo_TypeDef **p_Sec)
 {
     if (shell_obj == NULL)
         return false;
-    
-    switch((uint8_t) medium)
+
+    if (!Storage_Monitor.init_state)
     {
-        case Internal_Flash:
-            shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
-            if (!Storage_Monitor.module_enable_reg.bit.internal || \
-                !Storage_Monitor.module_init_reg.bit.internal)
-            {
-                shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
-                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
-                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
-                return false;
-            }
-            *p_Flash = &Storage_Monitor.internal_info;
-            *StorageIO_API = &InternalFlash_IO;
-            break;
-
-        case External_Flash:
-            shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
-            if (!Storage_Monitor.module_enable_reg.bit.external || \
-                !Storage_Monitor.module_init_reg.bit.external)
-            {
-                shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
-                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
-                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
-                return false;
-            }
-            *p_Flash = &Storage_Monitor.external_info;
-            *StorageIO_API = &ExternalFlash_IO;
-            break;
-
-        default:
-            shellPrint(shell_obj, "\t[Unknow medium type]\r\n");
-            return false;
+        shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+        shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
+        shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
+        return false;
     }
 
+    *p_Flash = &Storage_Monitor.external_info;
     *p_Sec = Storage_Get_SecInfo(*p_Flash, class);
     if ((*p_Sec == NULL) || \
         ((*p_Sec)->tab_addr == 0) || \
@@ -2312,7 +2284,7 @@ static bool Storage_SelectedClass_Print(Shell *obj, Storage_ParaClassType_List c
     return true;
 }
 
-static void Storage_Shell_Get_BaseInfo(Storage_MediumType_List medium)
+static void Storage_Shell_Get_BaseInfo(void)
 {
     Shell *shell_obj = Shell_GetInstence();
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
@@ -2328,34 +2300,13 @@ static void Storage_Shell_Get_BaseInfo(Storage_MediumType_List medium)
     }
 
     Storage_MediumType_Print(shell_obj);
-    
-    switch((uint8_t) medium)
+    shellPrint(shell_obj, "\t\t[External_Flash Selected]\r\n");
+    p_Flash = &Storage_Monitor.external_info;
+
+    if(memcmp(p_Flash->tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE))
     {
-        case Internal_Flash:
-            shellPrint(shell_obj, "\t\t[Internal_Flash Selected]\r\n");
-            p_Flash = &Storage_Monitor.internal_info;
-            
-            if(memcmp(p_Flash->tag, INTERNAL_STORAGE_PAGE_TAG, INTERNAL_PAGE_TAG_SIZE))
-            {
-                shellPrint(shell_obj, "\t\tInternal_Flash Info Error\r\n");
-                return;
-            }
-           break;
-        
-        case External_Flash:
-            shellPrint(shell_obj, "\t\t[External_Flash Selected]\r\n");
-            p_Flash = &Storage_Monitor.external_info;
-
-            if(memcmp(p_Flash->tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE))
-            {
-                shellPrint(shell_obj, "\t\tExternal_Flash Info Error\r\n");
-                return;
-            }
-            break;
-
-        default:
-            shellPrint(shell_obj, "medium para error\r\n");
-            return;
+        shellPrint(shell_obj, "\t\tExternal_Flash Info Error\r\n");
+        return;
     }
 
     shellPrint(shell_obj, "\t\ttotal   size:\t%d\r\n", p_Flash->total_size);
@@ -2376,7 +2327,7 @@ static void Storage_Shell_Get_BaseInfo(Storage_MediumType_List medium)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_BaseInfo, Storage_Shell_Get_BaseInfo, Storage base info);
 
-static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name, char *test_data)
+static void Storage_Test(Storage_ParaClassType_List class, char *test_name, char *test_data)
 {
     Shell *shell_obj = Shell_GetInstence();
     Storage_ErrorCode_List error_code = Storage_Error_None;
@@ -2393,30 +2344,11 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
 
     Storage_MediumType_Print(shell_obj);
     
-    if(medium == External_Flash)
-    {
-        shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
-        if (!Storage_Monitor.module_enable_reg.bit.external || !Storage_Monitor.module_init_reg.bit.external)
-        {
-            shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
-            shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
-            shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
-            shellPrint(shell_obj, "\thalt by enable or init state\r\n");
-            return;
-        }
-    }
-    else
-    {
-        shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
-        if (!Storage_Monitor.module_enable_reg.bit.internal || !Storage_Monitor.module_init_reg.bit.internal)
-        {
-            shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
-            shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
-            shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
-            shellPrint(shell_obj, "\thalt by enable or init state\r\n");
-            return;
-        }
-    }
+    shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
+    shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+    shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
+    shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
+    shellPrint(shell_obj, "\thalt by enable or init state\r\n");
 
     Storage_ClassType_Print(shell_obj);
     if(class > Para_User)
@@ -2442,13 +2374,13 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
     shellPrint(shell_obj, "\tStorage Size: %d\r\n", strlen(test_data));
 
     /* search item first */
-    if (Storage_Search(medium, class, test_name).item.data_addr != 0)
+    if (Storage_Search(class, test_name).item.data_addr != 0)
     {
         shellPrint(shell_obj, "\t%s already exist\r\n", test_name);
         return;
     }
 
-    error_code = Storage_CreateItem(medium, class, test_name, (uint8_t *)test_data, strlen(test_data));
+    error_code = Storage_CreateItem(class, test_name, (uint8_t *)test_data, strlen(test_data));
     if(error_code != Storage_Error_None)
     {
         shellPrint(shell_obj, "\t[Storage Test Failed]\r\n");
@@ -2460,52 +2392,24 @@ static void Storage_Test(Storage_MediumType_List medium, Storage_ParaClassType_L
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Test, Storage_Test, Data Storage Test);
 
-static void Storage_Module_Format(Storage_MediumType_List medium)
+static void Storage_Module_Format(void)
 {
     Shell *shell_obj = Shell_GetInstence();
     
     if ((shell_obj == NULL) || !Storage_Monitor.init_state)
-        return;
-
-    switch((uint8_t) medium)
     {
-        case Internal_Flash:
-            shellPrint(shell_obj, "\t[Internal_Flash Selected]\r\n");
-
-            if (!Storage_Monitor.module_enable_reg.bit.internal || \
-                !Storage_Monitor.module_init_reg.bit.internal)
-            {
-                shellPrint(shell_obj, "\t[Internal_Flash Unavaliable]\r\n");
-                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.InternalFlash_Format_cnt);
-                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.InternalFlash_BuildTab_cnt);
-                return;
-            }
-            break;
-
-        case External_Flash:
-            shellPrint(shell_obj, "\t[External_Flash Selected]\r\n");
-            if (!Storage_Monitor.module_enable_reg.bit.external || \
-                !Storage_Monitor.module_init_reg.bit.external)
-            {
-                shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
-                shellPrint(shell_obj, "\t[Format cnt   : %d]\r\n", Storage_Monitor.ExternalFlash_Format_cnt);
-                shellPrint(shell_obj, "\t[Buid Tab cnt : %d]\r\n", Storage_Monitor.ExternalFlash_BuildTab_cnt);
-                return;
-            }
-            break;
-
-        default:
-            return;
+        shellPrint(shell_obj, "\t[External_Flash Unavaliable]\r\n");
+        return;
     }
 
     shellPrint(shell_obj, "\t[Flash formatting ...]\r\n");
-    if (Storage_Format(medium))
+    if (Storage_Format())
     {
         shellPrint(shell_obj, "\t[Flash formatting done]\r\n");
         shellPrint(shell_obj, "\t[Rebuilding storage tab and section]\r\n");
 
         /* rebuild tab */
-        if (!Storage_Build_StorageInfo(External_Flash))
+        if (!Storage_Build_StorageInfo())
         {
             shellPrint(shell_obj, "\t[Rebuild storage tab and section failed]\r\n");
             return;
@@ -2599,7 +2503,6 @@ static void Storage_Show_FreeSlot(Storage_MediumType_List medium, Storage_ParaCl
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_FreeSlot_TypeDef *p_FreeSlot = NULL;
-    StorageIO_TypeDef *StorageIO_API = NULL;
     uint32_t FreeSlot_addr = 0;
     Shell *shell_obj = Shell_GetInstence();
 
@@ -2612,7 +2515,7 @@ static void Storage_Show_FreeSlot(Storage_MediumType_List medium, Storage_ParaCl
         shellPrint(shell_obj, "\thalt by init state\r\n");
     }
 
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, class, &p_Flash, &p_Sec))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
@@ -2629,7 +2532,7 @@ static void Storage_Show_FreeSlot(Storage_MediumType_List medium, Storage_ParaCl
         }
 
         /* get free slot info */
-        if (!StorageIO_API->read(FreeSlot_addr, page_data_tmp, sizeof(Storage_FreeSlot_TypeDef)))
+        if (!Storage_ExtFlash_ParaSec_Read(FreeSlot_addr, page_data_tmp, sizeof(Storage_FreeSlot_TypeDef)))
         {
             shellPrint(shell_obj, "\t[FreeSlot data read error]\r\n");
             return;
@@ -2662,7 +2565,6 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
-    StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_DataSlot_TypeDef DataSlot;
     Storage_ItemSearchOut_TypeDef ItemSearch;
     uint8_t *crc_buf = NULL;
@@ -2682,13 +2584,13 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
         (strlen((char *)name) == 0))
         return;
     
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, class, &p_Flash, &p_Sec))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
     }
 
-    ItemSearch = Storage_Search(medium, class, (const char *)name);
+    ItemSearch = Storage_Search(class, (const char *)name);
     if (ItemSearch.item.data_addr)
     {
         shellPrint(shell_obj, "\t[tab item %s matched]\r\n", name);
@@ -2701,7 +2603,7 @@ static void Storage_SearchData(Storage_MediumType_List medium, Storage_ParaClass
 
         while(data_len)
         {
-            if (!StorageIO_API->read(data_addr, page_data_tmp, data_len + sizeof(Storage_DataSlot_TypeDef)))
+            if (!Storage_ExtFlash_ParaSec_Read(data_addr, page_data_tmp, data_len + sizeof(Storage_DataSlot_TypeDef)))
             {
                 shellPrint(shell_obj, "\t[Read %s Data failed]\r\n", name);
                 return;
@@ -2809,7 +2711,6 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
-    StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_Item_TypeDef *item_list = NULL;
     uint16_t singal_tab_size = 0;
     uint8_t item_per_tab = 0;
@@ -2833,7 +2734,7 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
         shellPrint(shell_obj, "\thalt by init state\r\n");
     }
     
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, class, &p_Flash, &p_Sec))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
@@ -2848,7 +2749,7 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
         shellPrint(shell_obj, "\t\t[tab page index : %d]\r\n", i);
         shellPrint(shell_obj, "\t\t[tab page addr  : %d]\r\n", tab_addr);
 
-        if (!StorageIO_API->read(tab_addr, page_data_tmp, singal_tab_size))
+        if (!Storage_ExtFlash_ParaSec_Read(tab_addr, page_data_tmp, singal_tab_size))
         {
             shellPrint(shell_obj, "[...tab address read error...]\r\n");
             shellPrint(shell_obj, "[............ halt ..........]\r\n");
@@ -2925,7 +2826,7 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
     shellPrint(shell_obj, "\t[error item num        : %d]\r\n", error_item_num);
     
     /* show free address */
-    if (!StorageIO_API->read(p_Sec->free_slot_addr, page_data_tmp, sizeof( Storage_FreeSlot_TypeDef)))
+    if (!Storage_ExtFlash_ParaSec_Read(p_Sec->free_slot_addr, page_data_tmp, sizeof( Storage_FreeSlot_TypeDef)))
     {
         shellPrint(shell_obj, "[Free slot info read failed]\r\n");
         shellPrint(shell_obj, "[.......... halt ..........]\r\n");
@@ -2950,13 +2851,12 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_DumpTab, Storage_Show_Tab, Storage dump Tab);
 
-static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_ParaClassType_List class)
+static void Storage_Dump_DataSection(Storage_ParaClassType_List class)
 {
     uint32_t flash_sector_size = 0;
     uint32_t remain_dump_size = 0;
     uint32_t dump_size = 0;
     uint32_t dump_addr = 0;
-    StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Shell *shell_obj = Shell_GetInstence();
@@ -2972,33 +2872,19 @@ static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_Par
         return;
     }
 
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, class, &p_Flash, &p_Sec))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
     }
 
-    switch (medium)
+    if (Storage_Monitor.ExtDev_ptr)
     {
-        case Internal_Flash:
-        // flash_sector_size = 
-            shellPrint(shell_obj, "\t[Still In Developping]\r\n");
-            return;
-
-        case External_Flash:
-            if (Storage_Monitor.ExtDev_ptr)
-            {
-                ext_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
-                if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
-                {
-                    flash_sector_size = To_DevW25Qxx_API(ext_dev->dev_api)->info(ext_dev->dev_obj).subsector_size;
-                    break;
-                }
-            }
-            return;
-
-        default:
-            return;
+        ext_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+        if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
+        {
+            flash_sector_size = To_DevW25Qxx_API(ext_dev->dev_api)->info(ext_dev->dev_obj).subsector_size;
+        }
     }
 
     remain_dump_size = p_Sec->data_sec_size;
@@ -3009,7 +2895,7 @@ static void Storage_Dump_DataSection(Storage_MediumType_List medium, Storage_Par
         if (dump_size >= flash_sector_size)
             dump_size = flash_sector_size;
 
-        if (!StorageIO_API->read(dump_addr, page_data_tmp, dump_size))
+        if (!Storage_ExtFlash_ParaSec_Read(dump_addr, page_data_tmp, dump_size))
         {
             shellPrint(shell_obj, "\tData Section Address : %d\r\n", dump_addr);
             shellPrint(shell_obj, "\tDump Size            : %d\r\n", dump_size);
@@ -3037,7 +2923,6 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name, char *test_data)
 {
     Shell *shell_obj = Shell_GetInstence();
-    StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_ItemSearchOut_TypeDef ItemSearch;
@@ -3052,13 +2937,13 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
         (strlen(test_data) == 0))
         return;
 
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, class, &p_Flash, &p_Sec))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
     }
 
-    ItemSearch = Storage_Search(medium, class, test_name);
+    ItemSearch = Storage_Search(class, test_name);
     if ((ItemSearch.item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
         (ItemSearch.item.end_tag != STORAGE_ITEM_END_TAG) || \
         (ItemSearch.item.data_addr == 0))
@@ -3067,7 +2952,7 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
         return;
     }
 
-    update_error_code = Storage_SlotData_Update(medium, class, ItemSearch.item.data_addr, (uint8_t *)test_data, strlen(test_data)); 
+    update_error_code = Storage_SlotData_Update(class, ItemSearch.item.data_addr, (uint8_t *)test_data, strlen(test_data)); 
     if (update_error_code != Storage_Error_None)
     {
         shellPrint(shell_obj, "\t[Data update failed %s]\r\n", Storage_Error_Print(update_error_code));
@@ -3079,10 +2964,9 @@ static void Storage_UpdateData(Storage_MediumType_List medium, Storage_ParaClass
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_UpdateData, Storage_UpdateData, Storage update data);
 
 /* untested */
-static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_ParaClassType_List class, char *test_name)
+static void Storage_DeleteData_Test(Storage_ParaClassType_List class, char *test_name)
 {
     Shell *shell_obj = Shell_GetInstence();
-    StorageIO_TypeDef *StorageIO_API = NULL;
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_ItemSearchOut_TypeDef ItemSearch;
@@ -3090,14 +2974,14 @@ static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_Para
     if (shell_obj == NULL)
         return;
     
-    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, medium, class, &p_Flash, &p_Sec, &StorageIO_API))
+    if (!Storage_Get_Flash_Section_IOAPI(shell_obj, class, &p_Flash, &p_Sec))
     {
         shellPrint(shell_obj, "\t[Flash Section IO_API Get Error]\r\n");
         return;
     }
 
     /* search */
-    ItemSearch = Storage_Search(medium, class, test_name);
+    ItemSearch = Storage_Search(class, test_name);
     if ((ItemSearch.item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
         (ItemSearch.item.end_tag != STORAGE_ITEM_END_TAG) || \
         (ItemSearch.item.data_addr == 0))
@@ -3106,7 +2990,7 @@ static void Storage_DeleteData_Test(Storage_MediumType_List medium, Storage_Para
         return;
     }
 
-    if (!Storage_DeleteAllDataSlot(ItemSearch.item.data_addr, (char *)ItemSearch.item.name, ItemSearch.item.len, p_Sec, StorageIO_API))
+    if (!Storage_DeleteAllDataSlot(ItemSearch.item.data_addr, (char *)ItemSearch.item.name, ItemSearch.item.len, p_Sec))
     {
         shellPrint(shell_obj, "\t[Item Delete Error]\r\n");
     }

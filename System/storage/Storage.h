@@ -244,7 +244,6 @@ typedef struct
     uint16_t module_prod_type;
     uint16_t module_prod_code;
 
-    Storage_FlashInfo_TypeDef internal_info;
     Storage_FlashInfo_TypeDef external_info;
 } Storage_Monitor_TypeDef;
 
