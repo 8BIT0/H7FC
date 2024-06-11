@@ -1111,9 +1111,9 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
 
         Info_tmp.File_Type = type;
         Info_tmp.Adapter_Type = SrvFileAdapter_Frame_YModem;
-        Info_tmp.SW_Ver[0] = 1;
-        Info_tmp.SW_Ver[1] = 0;
-        Info_tmp.SW_Ver[2] = 0;
+        Info_tmp.SW_Ver[0] = AppVer[0];
+        Info_tmp.SW_Ver[1] = AppVer[1];
+        Info_tmp.SW_Ver[2] = AppVer[2];
         Info_tmp.HW_Ver[0] = HWVer[0];
         Info_tmp.HW_Ver[1] = HWVer[1];
         Info_tmp.HW_Ver[2] = HWVer[2];
