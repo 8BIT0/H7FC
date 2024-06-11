@@ -692,7 +692,8 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
             if (cli && shell_obj)
             {
                 SrvOsCommon.delay_ms(10);
-                shellPrint(shell_obj, "[ Upgrade ] Reboot\r\n");
+                shellPrint(shell_obj, "[ Upgrade ] Firmware Updating\r\n");
+                shellPrint(shell_obj, "[ Upgrade ] DO NOT POWER OFF\r\n");
             }
 
             Upgrade_Monitor.is_enable = false;
