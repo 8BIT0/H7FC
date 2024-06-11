@@ -207,6 +207,8 @@ void TaskFrameCTL_Init(uint32_t period)
 
     VCP_Connect_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(VCP_Attach_State);
     VCP_Connect_smp_DataPipe.data_size = sizeof(DataPipe_DataObj(VCP_Attach_State));
+
+    SrvOsCommon.delay_ms(50);
     DataPipe_Enable(&VCP_Connect_smp_DataPipe);
 
     /* init upgrade */
@@ -695,6 +697,7 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
                 SrvOsCommon.delay_ms(10);
                 shellPrint(shell_obj, "[ Upgrade ] Firmware Updating\r\n");
                 shellPrint(shell_obj, "[ Upgrade ] DO NOT POWER OFF\r\n");
+                SrvOsCommon.delay_ms(20);
             }
 
             Upgrade_Monitor.is_enable = false;
