@@ -272,6 +272,7 @@ static void TaskFrameCTL_DefaultPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
         BspUSB_VCP.set_connect_callback(TaskFrameCTL_USB_VCP_Connect_Callback);
 
         monitor->VCP_Port.RecObj.PortObj_addr = (uint32_t)&(monitor->VCP_Port);
+        monitor->VCP_Port.RecObj.type = Port_USB;
 
         USB_VCP_Addr = (uint32_t)&(monitor->VCP_Port);
     }
