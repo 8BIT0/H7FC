@@ -193,7 +193,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
 
             SrvOsCommon.enter_critical();
             /* write firmware to boot flash */
-
+            Storage.write_firmware(Internal_Flash, Firmware_Boot, addr_offset, upgrade_buf, update_size);
             SrvOsCommon.exit_critical();
 
             file_size -= update_size;
@@ -203,7 +203,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
             {
                 /* clear upgrade flag */
                 Info.CTLReg.bit.Boot = false;
-                Storage.update(Para_Boot, Monitor.UpgradeInfo_SO.item_addr, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
+                Storage.update(Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
             }
         }
     }
