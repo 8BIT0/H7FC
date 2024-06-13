@@ -269,9 +269,9 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_output_struct.oc_output_state = TRUE;
     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.oc_idle_state = FALSE;
-    // tmr_output_struct.occ_output_state = FALSE;
-    // tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
-    // tmr_output_struct.occ_idle_state = FALSE;
+    tmr_output_struct.occ_output_state = TRUE;
+    tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
+    tmr_output_struct.occ_idle_state = FALSE;
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
 
     // switch(obj->tim_channel)
@@ -348,7 +348,7 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
         obj->wait_release = true;
         To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
-        To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * 2;
+        To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
         tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
     }

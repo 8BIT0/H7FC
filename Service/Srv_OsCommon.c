@@ -139,5 +139,5 @@ static void SrvOsCommon_Reboot(void)
 {
     Kernel_reboot();
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Reboot, SrvOsCommon_Reboot, System ReBoot);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, reboot, SrvOsCommon_Reboot, System ReBoot);
 
