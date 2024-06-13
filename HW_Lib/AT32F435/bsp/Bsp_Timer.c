@@ -142,11 +142,33 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
     dma_init_type dma_init_struct;
     dmamux_requst_id_sel_type dma_req_id = 0;
     tmr_dma_request_type dma_req_type = 0;
+    dmamux_channel_type *dmamux_ch = NULL;
+    obj->dma_hdl = BspDMA.get_instance(obj->dma, obj->stream);
+
+    switch((uint32_t)obj->dma_hdl)
+    {
+        case (uint32_t)DMA1_CHANNEL1: dmamux_ch = DMA1MUX_CHANNEL1; break;
+        case (uint32_t)DMA1_CHANNEL2: dmamux_ch = DMA1MUX_CHANNEL2; break;
+        case (uint32_t)DMA1_CHANNEL3: dmamux_ch = DMA1MUX_CHANNEL3; break;
+        case (uint32_t)DMA1_CHANNEL4: dmamux_ch = DMA1MUX_CHANNEL4; break;
+        case (uint32_t)DMA1_CHANNEL5: dmamux_ch = DMA1MUX_CHANNEL5; break;
+        case (uint32_t)DMA1_CHANNEL6: dmamux_ch = DMA1MUX_CHANNEL6; break;
+        case (uint32_t)DMA1_CHANNEL7: dmamux_ch = DMA1MUX_CHANNEL7; break;
+        case (uint32_t)DMA2_CHANNEL1: dmamux_ch = DMA2MUX_CHANNEL1; break;
+        case (uint32_t)DMA2_CHANNEL2: dmamux_ch = DMA2MUX_CHANNEL2; break;
+        case (uint32_t)DMA2_CHANNEL3: dmamux_ch = DMA2MUX_CHANNEL3; break;
+        case (uint32_t)DMA2_CHANNEL4: dmamux_ch = DMA2MUX_CHANNEL4; break;
+        case (uint32_t)DMA2_CHANNEL5: dmamux_ch = DMA2MUX_CHANNEL5; break;
+        case (uint32_t)DMA2_CHANNEL6: dmamux_ch = DMA2MUX_CHANNEL6; break;
+        case (uint32_t)DMA2_CHANNEL7: dmamux_ch = DMA2MUX_CHANNEL7; break;
+        default: return false;
+    }
 
     if ((obj == NULL) || \
         (obj->instance == NULL) || \
         (obj->buffer_addr == 0) || \
         (obj->dma_hdl == NULL) || \
+        (dmamux_ch == NULL) || \
         (obj->buffer_size == 0))
         return false;
 
@@ -165,12 +187,11 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
     if (dma_req_id)
     {
         /* enable timer output dma request */
-        dmamux_init(obj->dma_hdl, dma_req_id);
         dma_reset(obj->dma_hdl);
         dma_init_struct.buffer_size = obj->buffer_size;
         dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
         dma_init_struct.memory_base_addr = (uint32_t)obj->buffer_addr;
-        dma_init_struct.memory_data_width = DMA_MEMORY_DATA_WIDTH_HALFWORD;
+        dma_init_struct.memory_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
         dma_init_struct.memory_inc_enable = TRUE;
         dma_init_struct.peripheral_base_addr = BspTimer_Get_PrtiphAddr(obj);
         dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
@@ -178,6 +199,8 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         dma_init_struct.priority = DMA_PRIORITY_HIGH;
         dma_init_struct.loop_mode_enable = FALSE;
         dma_init(obj->dma_hdl, &dma_init_struct);
+        dmamux_init(dmamux_ch, dma_req_id);
+        dma_channel_enable(obj->dma_hdl, TRUE);
 
         return true;
     }
@@ -234,7 +257,6 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     obj->buffer_size = buf_size;
     obj->instance = instance;
     obj->tim_channel = ch;
-    obj->dma_hdl = BspDMA.get_instance(dma, stream);
 
     /* init pin */
     if (!BspGPIO.alt_init(pin, 0))
@@ -263,7 +285,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 
     // tmr_dma_control_config(obj->instance, TMR_DMA_TRANSFER_18BYTES, dma_addr);
 
-    if (obj->dma_hdl && BspTimer_DMA_Init(obj))
+    if (BspTimer_DMA_Init(obj))
     {
         if (obj->dma_callback_obj)
         {
@@ -321,8 +343,9 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
-    if (obj && obj->dma_hdl)
+    if (obj && obj->dma_hdl && !obj->wait_release)
     {
+        obj->wait_release = true;
         To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * 2;
@@ -340,6 +363,7 @@ static void BspTimer_DMA_TransCplt_Callback(void *arg)
         obj = To_TimerPWMObj_Ptr(arg);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
         tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
+        obj->wait_release = false;
     }
 }
 
