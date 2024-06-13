@@ -35,4 +35,6 @@ typedef enum
 extern BspDMA_TypeDef BspDMA;
 extern BspDMA_Pipe_TypeDef BspDMA_Pipe;
 
+void BspDMA_Irq_Callback(void *channel);
+
 #endif
