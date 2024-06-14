@@ -346,7 +346,7 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
     if (obj && obj->dma_hdl && !obj->wait_release)
     {
         obj->wait_release = true;
-        To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
+        // To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
