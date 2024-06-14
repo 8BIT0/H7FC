@@ -52,7 +52,7 @@ static bool Storage_Format(void);
 static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item);
 static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item);
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class);
-static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec);
+static bool Storage_DeleteSingleDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec);
 static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec);
 static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behind_free_addr, uint32_t new_free_addr, Storage_FreeSlot_TypeDef *new_free_slot);
 static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t item_index, Storage_BaseSecInfo_TypeDef *p_Sec, Storage_Item_TypeDef item);
@@ -253,7 +253,6 @@ static bool Storage_Format(void)
     return false;
 }
 
-/* still in developping */
 static bool Storage_Check_Tab(Storage_BaseSecInfo_TypeDef *sec_info)
 {
     uint32_t free_i = 0;
@@ -887,7 +886,7 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
 }
 
 /* untested */
-static bool Storage_DeleteSingalDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec)
+static bool Storage_DeleteSingleDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec)
 {
     uint32_t cur_slot_size = 0;
     uint32_t inc_free_space = sizeof(Storage_DataSlot_TypeDef);
@@ -1050,7 +1049,7 @@ static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_
     }
 
     /* reset data slot as free slot */
-    if (!Storage_DeleteSingalDataSlot(addr, page_data_tmp, p_Sec))
+    if (!Storage_DeleteSingleDataSlot(addr, page_data_tmp, p_Sec))
         return false;
 
     return true;
@@ -1081,15 +1080,12 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List clas
 
     /* search tab for item slot first */
     ItemSearch = Storage_Search(class, name);
-    if ((ItemSearch.item_addr != 0) && \
-        (ItemSearch.item.data_addr) && \
-        (ItemSearch.item.head_tag == STORAGE_ITEM_HEAD_TAG) && \
-        (ItemSearch.item.end_tag == STORAGE_ITEM_END_TAG))
-    {
-        /* Item found */
-        if (Storage_DeleteAllDataSlot(ItemSearch.item.data_addr, (char *)name, ItemSearch.item.len, p_Sec))
-            return Storage_Error_None;
-    }
+    if ((ItemSearch.item_addr == 0) || \
+        (ItemSearch.item.data_addr == 0) || \
+        (ItemSearch.item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
+        (ItemSearch.item.end_tag != STORAGE_ITEM_END_TAG) || \
+        !Storage_DeleteAllDataSlot(ItemSearch.item.data_addr, (char *)name, ItemSearch.item.len, p_Sec))
+        return Storage_Delete_Error;
 
     /* update item slot tab */
     memset(ItemSearch.item.name, '\0', STORAGE_NAME_LEN);
