@@ -141,7 +141,6 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
 {
     dma_init_type dma_init_struct;
     dmamux_requst_id_sel_type dma_req_id = 0;
-    tmr_dma_request_type dma_req_type = 0;
     dmamux_channel_type *dmamux_ch = NULL;
     obj->dma_hdl = BspDMA.get_instance(obj->dma, obj->stream);
 
@@ -172,16 +171,7 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         (obj->buffer_size == 0))
         return false;
 
-    switch(obj->tim_channel)
-    {
-        case TMR_SELECT_CHANNEL_1: dma_req_type = TMR_C1_DMA_REQUEST; break;
-        case TMR_SELECT_CHANNEL_2: dma_req_type = TMR_C2_DMA_REQUEST; break;
-        case TMR_SELECT_CHANNEL_3: dma_req_type = TMR_C3_DMA_REQUEST; break;
-        case TMR_SELECT_CHANNEL_4: dma_req_type = TMR_C4_DMA_REQUEST; break;
-        default: return false;
-    }
-
-    tmr_dma_request_enable(obj->instance, /* dma_req_type */ TMR_OVERFLOW_DMA_REQUEST, TRUE);
+    tmr_dma_request_enable(obj->instance, TMR_OVERFLOW_DMA_REQUEST, TRUE);
     dma_req_id = BspTimer_Get_DMA_MuxSeq(obj);
 
     if (dma_req_id)
@@ -269,21 +259,10 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_output_struct.oc_output_state = TRUE;
     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.oc_idle_state = FALSE;
-    tmr_output_struct.occ_output_state = TRUE;
+    tmr_output_struct.occ_output_state = FALSE;
     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.occ_idle_state = FALSE;
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
-
-    // switch(obj->tim_channel)
-    // {
-    //     case TMR_SELECT_CHANNEL_1: dma_addr = TMR_C1DT_ADDRESS; break;
-    //     case TMR_SELECT_CHANNEL_2: dma_addr = TMR_C2DT_ADDRESS; break;
-    //     case TMR_SELECT_CHANNEL_3: dma_addr = TMR_C3DT_ADDRESS; break;
-    //     case TMR_SELECT_CHANNEL_4: dma_addr = TMR_C4DT_ADDRESS; break;
-    //     default: return false;
-    // }
-
-    // tmr_dma_control_config(obj->instance, TMR_DMA_TRANSFER_18BYTES, dma_addr);
 
     if (BspTimer_DMA_Init(obj))
     {
@@ -298,6 +277,10 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
         monitor.list[monitor.init_cnt] = obj->instance;
         monitor.init_cnt ++;
 
+        dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
+        tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
+        tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+        tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
         return true;
     }
 
@@ -343,15 +326,15 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
-    if (obj && obj->dma_hdl && !obj->wait_release)
+    if (obj && obj->dma_hdl)
     {
-        obj->wait_release = true;
         // To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
-        tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
         tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+        tmr_output_enable(To_Timer_Instance(obj->instance), TRUE);
+        tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
     }
 }
 
@@ -363,8 +346,9 @@ static void BspTimer_DMA_TransCplt_Callback(void *arg)
     {
         obj = To_TimerPWMObj_Ptr(arg);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
-        tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
-        obj->wait_release = false;
+        // tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
+        // tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+        tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
     }
 }
 
