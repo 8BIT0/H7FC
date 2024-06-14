@@ -351,6 +351,7 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
         tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
+        tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
     }
 }
 
