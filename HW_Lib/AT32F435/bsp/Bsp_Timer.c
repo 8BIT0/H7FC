@@ -181,7 +181,7 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         default: return false;
     }
 
-    tmr_dma_request_enable(obj->instance, dma_req_type, TRUE);
+    tmr_dma_request_enable(obj->instance, /* dma_req_type */ TMR_OVERFLOW_DMA_REQUEST, TRUE);
     dma_req_id = BspTimer_Get_DMA_MuxSeq(obj);
 
     if (dma_req_id)
