@@ -390,7 +390,11 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 
                 /* still developping this branch */
                 case PortProc_Deal_TimeOut: /* Monitor.PollingState = Stage_TimeOut;*/ break;
-                case PortProc_Deal_Error: Monitor.PollingState = Stage_PortData_Error; break;
+                case PortProc_Deal_Error: 
+                    Monitor.PollingState = Stage_PortData_Error;
+                    SrvUpgrade_Collect_Info("\tUpgrade data process error\r\n");
+                    break;
+
                 default: break;
             }
 
@@ -422,8 +426,13 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
         case Stage_Adapter_Error:
         case Stage_PortData_Error:
             Monitor.PollingState = Stage_Init;
-            SrvFileAdapter.destory(Monitor.adapter_obj);
-            Monitor.adapter_obj = NULL;
+            if (Monitor.adapter_obj)
+            {
+                SrvUpgrade_Collect_Info("\tDestory adapter object\r\n");
+                SrvUpgrade_Collect_Info("\tUpgrade abort\r\n");
+                SrvFileAdapter.destory(Monitor.adapter_obj);
+                Monitor.adapter_obj = NULL;
+            }
             return Stage_Adapter_Error;
 
         case Stage_TimeOut:
