@@ -54,13 +54,13 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
                           uint8_t dma,
                           uint8_t stream)
 {
-    float DShot_Timer_ClkFreq = (float)DShot_Get_Timer_CLKFreq(obj);
+    float DShot_Timer_ClkFreq = (float)DShot_Get_Timer_CLKFreq(obj) - 1;
     uint32_t prescaler = 0;
 
     if (!obj || (DShot_Timer_ClkFreq == 0))
         return false;
 
-    prescaler = lrintf(DShot_Timer_ClkFreq / DevDshot_GetType_Clock(obj->type) + 0.01f) - 1;
+    prescaler = lrintf(DShot_Timer_ClkFreq / (DevDshot_GetType_Clock(obj->type) - 1) + 0.01f) - 1;
 
 #if defined STM32H743xx
     obj->pwm_obj.tim_hdl = DShot_Malloc(TIM_HandleType_Size);

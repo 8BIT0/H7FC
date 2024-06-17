@@ -312,7 +312,6 @@ static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_re
     {
         obj->auto_reload = auto_reload;
         tmr_base_init(obj->instance, auto_reload, obj->prescale);
-        // tmr_channel_value_set(obj->instance, obj->tim_channel, auto_reload);
     }
 }
 
@@ -321,7 +320,7 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
     if (obj && obj->instance)
     {
         tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
-        tmr_base_init(obj->instance, obj->auto_reload, obj->prescale);
+        tmr_base_init(obj->instance, obj->auto_reload - 1, obj->prescale);
     }
 }
 
@@ -329,13 +328,12 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj && obj->dma_hdl)
     {
-        // To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
         
         tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
-        tmr_channel_value_set(To_Timer_Instance(obj->instance), obj->tim_channel, 0);
         tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+        tmr_channel_value_set(To_Timer_Instance(obj->instance), obj->tim_channel, 0);
         tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
         
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
