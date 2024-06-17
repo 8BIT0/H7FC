@@ -6,6 +6,13 @@
 #include <string.h>
 #include "Srv_DataHub.h"
 
+typedef enum
+{
+    Arb_Receiver_Only = 0,
+    Arb_OPC_Only,
+    Arv_Hypbrid,
+} SrvArbitrate_SigMode_List;
+
 typedef struct
 {
     bool tunning;

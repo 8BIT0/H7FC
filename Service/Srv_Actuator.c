@@ -65,6 +65,7 @@ const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
 /* internal variable */
 SrvActuatorObj_TypeDef SrvActuator_Obj;
 SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
+osSemaphoreId SrvActuator_Sem = NULL;
 
 /* internal function */
 static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg);
@@ -606,10 +607,36 @@ bool DShot_Port_DeInit(void *obj)
     return false;
 }
 
+void DShot_Port_Trans(void *obj)
+{
+    if (obj && SrvActuator_Sem)
+    {
+        osSemaphoreWait(SrvActuator_Sem, 1);
+        BspTimer_PWM.dma_trans(&(To_DShot_Obj(obj)->pwm_obj));
+    }
+}
+
+uint32_t DShot_Get_Timer_CLKFreq(void *obj)
+{
+    return BspTimer_PWM.get_clock_freq(&(To_DShot_Obj(obj)->pwm_obj));
+}
+
+void DShot_Tran_Finish(void)
+{
+    if (SrvActuator_Sem)
+        osSemaphoreRelease(SrvActuator_Sem);
+}
+
 bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t time_ch, void *pin, uint8_t dma, uint8_t stream)
 {
     if (obj && time_ins && pin)
     {
+        if (SrvActuator_Sem == NULL)
+        {
+            osSemaphoreDef(DShot_Sem);
+            SrvActuator_Sem = osSemaphoreCreate(osSemaphore(DShot_Sem), 1);
+        }
+
 #if defined AT32F435RGT7
         To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = SrvOsCommon.malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
 #endif
@@ -619,25 +646,12 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
 
         BspTimer_PWM.set_prescaler(&(To_DShot_Obj(obj))->pwm_obj, prescaler);
         BspTimer_PWM.set_autoreload(&(To_DShot_Obj(obj))->pwm_obj, (MOTOR_BITLENGTH - 1));
-
+        To_DShot_Obj(obj)->pwm_obj.send_callback = DShot_Tran_Finish;
         BspTimer_PWM.start_pwm(&(To_DShot_Obj(obj))->pwm_obj);
         return true;
     }
 
     return false;
 }
-
-void DShot_Port_Trans(void *obj)
-{
-    if (obj)
-        BspTimer_PWM.dma_trans(&(To_DShot_Obj(obj)->pwm_obj));
-}
-
-uint32_t DShot_Get_Timer_CLKFreq(void *obj)
-{
-    return BspTimer_PWM.get_clock_freq(&(To_DShot_Obj(obj)->pwm_obj));
-}
-
-
 
 

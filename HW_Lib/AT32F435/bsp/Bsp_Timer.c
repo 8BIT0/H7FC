@@ -258,8 +258,8 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_A;
     tmr_output_struct.oc_output_state = TRUE;
     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
-    tmr_output_struct.oc_idle_state = FALSE;
-    tmr_output_struct.occ_output_state = FALSE;
+    tmr_output_struct.oc_idle_state = TRUE;
+    tmr_output_struct.occ_output_state = TRUE;
     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.occ_idle_state = FALSE;
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
@@ -320,7 +320,8 @@ static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj && obj->instance)
     {
-        /* nothing to do */
+        tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+        tmr_base_init(obj->instance, obj->auto_reload, obj->prescale);
     }
 }
 
@@ -331,10 +332,13 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
         // To_DMA_Handle_Ptr(obj->dma_hdl)->paddr = BspTimer_Get_PrtiphAddr(obj);
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
+        
+        // tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
+        // tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+        
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
-        tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
-        tmr_output_enable(To_Timer_Instance(obj->instance), TRUE);
         tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
+        tmr_output_enable(To_Timer_Instance(obj->instance), TRUE);
     }
 }
 
@@ -346,9 +350,10 @@ static void BspTimer_DMA_TransCplt_Callback(void *arg)
     {
         obj = To_TimerPWMObj_Ptr(arg);
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
-        // tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
-        // tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
         tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
+
+        if (obj->send_callback)
+            obj->send_callback();
     }
 }
 

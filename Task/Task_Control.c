@@ -275,6 +275,10 @@ void TaskControl_Core(void const *arg)
         if(control_enable && !TaskControl_Monitor.CLI_enable)
         {
             Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
+            
+            DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
+            /* pipe in use control data to data hub */
+            DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
             TaskControl_FlightControl_Polling(&Cnv_CtlData);
             
             CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
@@ -293,10 +297,6 @@ void TaskControl_Core(void const *arg)
                 /* lock all moto */
                 SrvActuator.lock();
         }
-
-        DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
-        /* pipe in use control data to data hub */
-        DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
 
         SrvOsCommon.precise_delay(&sys_time, TaskControl_Period);
     }

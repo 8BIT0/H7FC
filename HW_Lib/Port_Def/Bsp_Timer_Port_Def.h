@@ -6,6 +6,7 @@
 #include "Bsp_GPIO_Port_Def.h"
 
 typedef void (*BspTimer_Tick_Callback)(const uint32_t tick);
+typedef void (*BspTimer_DMA_SendCallback)(void);
 
 typedef struct
 {
@@ -33,6 +34,7 @@ typedef struct
     uint32_t buffer_addr;
     uint32_t buffer_size;
 
+    BspTimer_DMA_SendCallback send_callback;
 #if defined AT32F435RGT7
     void *dma_callback_obj;
 #endif
