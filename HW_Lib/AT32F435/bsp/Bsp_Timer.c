@@ -333,11 +333,12 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
         
-        // tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
-        // tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+        tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
+        tmr_channel_value_set(To_Timer_Instance(obj->instance), obj->tim_channel, 0);
+        tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+        tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
         
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
-        tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
         tmr_output_enable(To_Timer_Instance(obj->instance), TRUE);
     }
 }
