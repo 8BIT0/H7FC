@@ -15,19 +15,19 @@
 /* device support */
 #include "Dev_W25Qxx.h"
 
-#define RECEIVER_PORT UART4
-#define RECEIVER_CRSF_RX_DMA Bsp_DMA_None               // Bsp_DMA_1
-#define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_4
-#define RECEIVER_CRSF_TX_DMA Bsp_DMA_None               // Bsp_DMA_1
-#define RECEIVER_CRSF_TX_DMA_STREAM Bsp_DMA_Stream_None // Bsp_DMA_Stream_5
+#define RECEIVER_PORT UART3
+#define RECEIVER_CRSF_RX_DMA Bsp_DMA_None
+#define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None
+#define RECEIVER_CRSF_TX_DMA Bsp_DMA_None
+#define RECEIVER_CRSF_TX_DMA_STREAM Bsp_DMA_Stream_None
 
 #define RECEIVER_SBUS_RX_DMA Bsp_DMA_1
 #define RECEIVER_SBUS_RX_DMA_STREAM Bsp_DMA_Stream_5
 #define RECEIVER_SBUS_TX_DMA Bsp_DMA_1
 #define RECEIVER_SBUS_TX_DMA_STREAM Bsp_DMA_Stream_6
 
-#define CRSF_TX_PIN Uart4_TxPin
-#define CRSF_RX_PIN Uart4_RxPin
+#define CRSF_TX_PIN Uart3_TxPin
+#define CRSF_RX_PIN Uart3_RxPin
 
 #define SBUS_TX_PIN Uart3_TxPin
 #define SBUS_RX_PIN Uart3_RxPin
