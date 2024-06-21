@@ -23,14 +23,11 @@
 #define TELEMETRY_DISABLE_ALL_MODULE 0
 #define TELEMETRY_RCSIG_MAX_COMOBO_CNT 8
 
-#define TELEMETRY_OSD_TUNE_HOLD_TIME 5000 /* unit ms */
-
 #define TELEMETRY_RC_CHANNEL_RANGE_MIN CHANNEL_RANGE_MIN
 #define TELEMETRY_RC_CHANNEL_RANGE_MID CHANNEL_RANGE_MID
 #define TELEMETRY_RC_CHANNEL_RANGE_MAX CHANNEL_RANGE_MAX
 
 #define TELEMETRY_RC_GIMBAL_ZERO_ZONE_RANGE 20
-#define TELEMETRY_OSDTUNE_POSHOLD 100 /* unit ms */
 
 #define TELEMETRY_RC_THROTTLE_PERCENT_ALERT 5
 
@@ -92,7 +89,6 @@ typedef struct
     Telemetry_RCFuncMap_TypeDef TakingOver_Toggle;
     Telemetry_RCFuncMap_TypeDef FlipOver_Toggle;
     Telemetry_RCFuncMap_TypeDef Log_Toggle;
-    Telemetry_RCFuncMap_TypeDef OSD_Toggle;
     Telemetry_RCFuncMap_TypeDef CLB_Toggle;
 } Telemetry_RCInput_TypeDef;
 

@@ -217,12 +217,7 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
         exp_gyr_y = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_y;
         exp_gyr_z = &SrvCtlArbitrateMonitor.InUse_CtlData.exp_gyr_z;
 
-        if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_OPC)
-        {
-            SrvCtlArbitrateMonitor.InUse_CtlData.osd_tune_enable = false;
-            SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.osd_tune = false;
-        }
-        else
+        if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source != ControlData_Src_OPC)
         {
             if(SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe)
             {

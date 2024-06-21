@@ -1,6 +1,5 @@
 /* code: 8_B!T0
  * Telemetry Task we use this task to get and process data from RC receiver and radio
- * OSD Tune Gimbal code : throttle down / Pitch down / Yaw right max / Roll right max / keep this position for 5S
  *
  * deflaut receiver list
  * channel 1  roll
@@ -47,7 +46,6 @@ static uint16_t Telemetry_SplitScopeValue_Into(uint8_t pcs);
 static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t roll_ch, uint8_t yaw_ch);
 static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t takingover_toggle_ch);
 static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig, ControlData_TypeDef *CTLSig);
-static bool Telemetry_Bind_OSDCombo(void);
 static bool Telemetry_Bind_CalibCombo(void);
 
 void TaskTelemetry_Set_DataIO_Enable(bool state)
@@ -92,7 +90,6 @@ void TaskTelemetry_Init(uint32_t period)
                                       Telemetry_Monitor.buzzer_toggle_ch, \
                                       Telemetry_Monitor.flip_over_ch, \
                                       Telemetry_Monitor.taking_over_ch) && \
-                Telemetry_Bind_OSDCombo() && \
                 Telemetry_Bind_CalibCombo())
             {
                 Telemetry_Monitor.RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
@@ -178,7 +175,6 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
 
     receiver_obj->port_type = Receiver_Port_Serial;
     receiver_obj->Frame_type = Receiver_Type_CRSF;
-    receiver_obj->OSDTune_TriggerMs = 0;
 
     /* create receiver port */
     switch (receiver_obj->port_type)
@@ -225,7 +221,6 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
 
     RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
     RC_Input_obj->sig.buzz_state = false;
-    RC_Input_obj->sig.osd_tune_state = false;
     RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
     RC_Input_obj->sig.module_enable = TELEMETRY_DISABLE_ALL_MODULE;
 
@@ -507,51 +502,26 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         /* check buzzer toggle */
         RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
 
-        if (!RC_Input_obj->sig.osd_tune_state)
-        {
-            /* check arm & disarm */
-            RC_Input_obj->sig.arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
+        /* check arm & disarm */
+        RC_Input_obj->sig.arm_state = Telemetry_Toggle_Check(&RC_Input_obj->ARM_Toggle).state;
 
-            /* check control mode */
-            RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
+        /* check control mode */
+        RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
 
-            /* check control mode inedx range */
-            if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
-                RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
-        }
-        else
-        {
-            RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
-            RC_Input_obj->sig.cali_state = false;
-            RC_Input_obj->sig.flip_over = false;
-            RC_Input_obj->sig.taking_over = false;
-        }
+        /* check control mode inedx range */
+        if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
+            RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
 
         if (RC_Input_obj->sig.arm_state == TELEMETRY_SET_ARM)
         {
-            /* check osd tune toggle */
-            if (Telemetry_Toggle_Check(&RC_Input_obj->OSD_Toggle).state)
-            {
-                if (Receiver_Obj.OSDTune_TriggerMs == 0)
-                    Receiver_Obj.OSDTune_TriggerMs = SrvOsCommon.get_os_ms();
-
-                if (SrvOsCommon.get_os_ms() - Receiver_Obj.OSDTune_TriggerMs >= TELEMETRY_OSDTUNE_POSHOLD)
-                    RC_Input_obj->sig.osd_tune_state = true;
-            }
-            else
-            {
-                Receiver_Obj.OSDTune_TriggerMs = 0;
-                
-                /* check calibrate */
-                RC_Input_obj->sig.cali_state = Telemetry_Toggle_Check(&RC_Input_obj->CLB_Toggle).state;
+            /* check calibrate */
+            RC_Input_obj->sig.cali_state = Telemetry_Toggle_Check(&RC_Input_obj->CLB_Toggle).state;
             
-                /* check flip over toggle */
-                RC_Input_obj->sig.flip_over = Telemetry_Toggle_Check(&RC_Input_obj->FlipOver_Toggle).state;
-            }
+            /* check flip over toggle */
+            RC_Input_obj->sig.flip_over = Telemetry_Toggle_Check(&RC_Input_obj->FlipOver_Toggle).state;
         }
         else
         {
-            RC_Input_obj->sig.osd_tune_state = false;
             RC_Input_obj->sig.cali_state = false;
             RC_Input_obj->sig.flip_over = false;
         }
@@ -576,7 +546,6 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             Telemetry_Monitor.recover_failsafe = false;
         }
     
-        /* notic disarm and osd tune can not enable at the same time */
         /* when power on and arm toggle on remote is set on disarm we force it to arm */
         if(Telemetry_Monitor.poweron_arm_check)
         {
@@ -610,7 +579,6 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
     {
         RC_Input_obj->sig.failsafe = true;
         RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
-        RC_Input_obj->sig.osd_tune_state = false;
         RC_Input_obj->sig.buzz_state = false;
         // RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
 
@@ -744,28 +712,6 @@ static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch,
 }
 
 /* const gimbal position */
-static bool Telemetry_Bind_OSDCombo(void)
-{
-    int16_t start = Telemetry_Monitor.receiver_value_min;
-    int16_t end = start + 100;
-
-    if(!Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[1], &Telemetry_Monitor.RC_Setting.OSD_Toggle, start, end))
-        return false;
-
-    start = Telemetry_Monitor.receiver_value_max - 100;
-    end = Telemetry_Monitor.receiver_value_max;
-    if(!Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[3], &Telemetry_Monitor.RC_Setting.OSD_Toggle, start, end))
-        return false;
-    
-    start = Telemetry_Monitor.receiver_value_min;
-    end = start + 100;
-    if(!Telemetry_AddToggleCombo(&Telemetry_Monitor.RC_Setting, &Receiver_Obj.data.val_list[0], &Telemetry_Monitor.RC_Setting.OSD_Toggle, start, end))
-        return false;
-
-    return true;
-}
-
-/* const gimbal position */
 static bool Telemetry_Bind_CalibCombo(void)
 {
     int16_t start = Telemetry_Monitor.receiver_value_min;
@@ -822,21 +768,11 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
 
             if(RCSig.arm_state == TELEMETRY_SET_ARM)
             {
-                CTLSig->osd_tune_enable = true;
-                CTLSig->aux.bit.osd_tune = RCSig.osd_tune_state;
-
-                if(!RCSig.osd_tune_state)
-                {
-                    CTLSig->aux.bit.calib = RCSig.cali_state;
-                    CTLSig->aux.bit.flip_over = RCSig.flip_over;
-                }
+                CTLSig->aux.bit.calib = RCSig.cali_state;
+                CTLSig->aux.bit.flip_over = RCSig.flip_over;
             }
             else
-            {
-                CTLSig->osd_tune_enable = false;
-                CTLSig->aux.bit.osd_tune = false;
                 CTLSig->aux.bit.calib = false;
-            }
         }
         else
         {

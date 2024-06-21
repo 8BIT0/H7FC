@@ -64,9 +64,8 @@ typedef union
         uint16_t buzzer : 1;
         uint16_t flip_over : 1;
         uint16_t calib : 1;
-        uint16_t osd_tune : 1;
         uint16_t taking_over_req : 1;
-        uint16_t res : 11;
+        uint16_t res : 12;
     }bit;
     
     uint16_t val;
@@ -100,7 +99,6 @@ typedef struct
     
     AUX_Control_Reg_TypeDef aux;
     
-    bool osd_tune_enable;
     bool arm_state;
     bool fail_safe;
 

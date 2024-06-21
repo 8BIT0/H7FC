@@ -61,6 +61,7 @@ typedef struct
     uint32_t over_rang_cnt;
     uint32_t value_step_bump_cnt;
 } SrvReceiver_Monitor_TypeDef;
+#pragma pack()
 
 #define SRVRECEIVER_SIZE sizeof(SrvReceiver_Monitor_TypeDef)
 
@@ -89,7 +90,6 @@ typedef struct
     bool cali_state;
     bool flip_over;
     bool taking_over;
-    bool osd_tune_state;
     bool failsafe;
 
     uint16_t rssi;
@@ -124,15 +124,12 @@ typedef struct
     bool in_use;
     uint32_t invert_list;
 
-    uint32_t OSDTune_TriggerMs;
-
     /* for sbus receiver we gonna need inverter hardware */
     BspGPIO_Obj_TypeDef inverter_pin;
 
     bool (*inverter_init)(BspGPIO_Obj_TypeDef pin);
     bool (*invert_control)(BspGPIO_Obj_TypeDef pin, bool state);
 } SrvReceiverObj_TypeDef;
-#pragma pack()
 
 typedef struct
 {
