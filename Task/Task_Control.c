@@ -518,7 +518,8 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
                 TaskControl_Monitor.RollCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Roll];
                 TaskControl_Monitor.PitchCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Pitch];
     
-                TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update);
+                if (!TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update))
+                    goto lock_moto;
                 
                 TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.RollCtl_PIDObj.fout;
                 TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.PitchCtl_PIDObj.fout;
@@ -533,7 +534,9 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
             }
 
             TaskControl_Monitor.GyrZCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Z];
-            TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
+            if (!TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor))
+                goto lock_moto;
+
             TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 
             if(imu_err_code == SrvIMU_Sample_NoError)
