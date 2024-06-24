@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <string.h>
 #include "Bsp_GPIO.h"
 #include "Bsp_Uart.h"
 
@@ -31,7 +32,7 @@ typedef struct
 } DebugPin_TypeDef;
 
 void Debug_Port_Init(DebugPrintObj_TypeDef *Obj);
-void Debug_Print(DebugPrintObj_TypeDef *Obj, const char *fmt, ...);
+void Debug_Print(DebugPrintObj_TypeDef *Obj, const char *tag, const char *fmt, ...);
 extern DebugPin_TypeDef DebugPin;
 
 #endif

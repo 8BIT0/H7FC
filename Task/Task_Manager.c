@@ -87,7 +87,9 @@ void Task_Manager_CreateTask(void)
     {
         if (!init)
         {
-            Debug_Print(&DebugP4, "---- Sys Start ----\r\n", strlen("---- Sys Start ----\r\n"));
+            uint32_t sys_time = SrvOsCommon.get_os_ms();
+            DEBUG_INFO("Sys Start\r\n");
+            DEBUG_INFO("Sys Time: %d\r\n", sys_time);
 
             DataPipe_Init();
 

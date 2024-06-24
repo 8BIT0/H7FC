@@ -217,6 +217,8 @@ extern BspGPIO_Port_TypeDef PWM_5_Port;
 extern BspGPIO_Port_TypeDef PWM_6_Port;
 
 extern DebugPrintObj_TypeDef DebugP4;
+#define DEBUG_TAG "[ DEBUG INFO ] "
+#define DEBUG_INFO(fmt, ...) Debug_Print(&DebugP4, DEBUG_TAG, fmt, ##__VA_ARGS__)
 
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 

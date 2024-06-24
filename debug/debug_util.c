@@ -69,10 +69,11 @@ void Debug_Port_Init(DebugPrintObj_TypeDef *Obj)
     BspUart.set_tx_callback(To_BspUart_Obj(Obj->port_obj), Debug_SendCallback);
 }
 
-void Debug_Print(DebugPrintObj_TypeDef *Obj, const char* fmt, ...)
+void Debug_Print(DebugPrintObj_TypeDef *Obj, const char *tag, const char* fmt, ...)
 {
 	va_list ap;
     uint16_t length = 0;
+    char new_fmt[128];
 
     if (!Obj->init)
         return;
@@ -85,11 +86,14 @@ void Debug_Print(DebugPrintObj_TypeDef *Obj, const char* fmt, ...)
     }
 
     memset(Obj->p_buf, 0, MAX_PRINT_SIZE);
+    memset(new_fmt, 0, sizeof(new_fmt));
+    strcpy(new_fmt, tag);
+    strcat(new_fmt, fmt);
 
     if (Obj->p_buf && Obj->port_obj)
     {
-	    va_start(ap, fmt);
-	    length = vsnprintf(Obj->p_buf, MAX_PRINT_SIZE, fmt, ap);
+	    va_start(ap, new_fmt);
+	    length = vsnprintf(Obj->p_buf, MAX_PRINT_SIZE, new_fmt, ap);
 	    va_end(ap);
 
         if (length > MAX_PRINT_SIZE)
