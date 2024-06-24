@@ -36,6 +36,7 @@ static bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap);
 static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size);
 static bool BspUart_Set_Rx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
 static bool BspUart_Set_Tx_Callback(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
+static bool BspUart_IrqEn_Control(BspUARTObj_TypeDef *obj, bool state);
 
 BspUART_TypeDef BspUart = {
     .init = BspUart_Init,
@@ -44,6 +45,7 @@ BspUART_TypeDef BspUart = {
     .set_stop_bit = BspUart_Set_StopBit,
     .set_data_bit = BspUart_Set_DataBit,
     .set_swap = BspUart_Swap_Pin,
+    .Irq_Ctl = BspUart_IrqEn_Control,
     .send = BspUart_Transfer,
     .set_rx_callback = BspUart_Set_Rx_Callback,
     .set_tx_callback = BspUart_Set_Tx_Callback,
@@ -664,4 +666,14 @@ void BspUart_Irq_Callback(void *arg)
             }
         }
     }
+}
+
+static bool BspUart_IrqEn_Control(BspUARTObj_TypeDef *obj, bool state)
+{
+    if (obj && obj->init_state)
+    {
+
+    }
+
+    return false;
 }

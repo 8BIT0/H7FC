@@ -85,6 +85,7 @@ typedef struct
     bool (*set_stop_bit)(BspUARTObj_TypeDef *obj, uint32_t stop_bit);
     bool (*set_data_bit)(BspUARTObj_TypeDef *obj, uint32_t data_bit);
     bool (*set_swap)(BspUARTObj_TypeDef *obj, bool swap);
+    bool (*Irq_Ctl)(BspUARTObj_TypeDef *obj, bool state);
     bool (*send)(BspUARTObj_TypeDef *obj, uint8_t *tx, uint16_t size);
     bool (*set_rx_callback)(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
     bool (*set_tx_callback)(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
