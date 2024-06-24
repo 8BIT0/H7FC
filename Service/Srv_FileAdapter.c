@@ -7,8 +7,12 @@
 #include "Srv_OsCommon.h"
 #include "../System/storage/Storage.h"
 #include "YModem.h"
+#include "HW_Def.h"
+#include "debug_util.h"
 
 #define ADAPTER_INPUT_BUFF_SIZE 2048
+
+#define ADAPTER_INFO(fmt,...) Debug_Print(&DebugP4, "[ ADAPTER INFO ] ", fmt, ##__VA_ARGS__)
 
 typedef struct
 {

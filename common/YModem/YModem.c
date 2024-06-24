@@ -1,6 +1,8 @@
 #include "YModem.h"
 #include "../../FCHW_Config.h"
 #include "util.h"
+#include "HW_Def.h"
+#include "debug_util.h"
 
 #define YMODEM_MIN_SIZE 133
 #define YMODEM_MAX_SIZE 1029
@@ -9,6 +11,8 @@
 #define YMODEM_PAYLOAD_OFFSET 3
 #define YMODEM_ID_P_OFFSET 1
 #define YMODEM_ID_N_OFFSET 2
+
+#define YMODEM_DEBUG(fmt,...) Debug_Print(&DebugP4, "[ YMODEM INFO ] ", fmt, ##__VA_ARGS__)
 
 typedef struct
 {

@@ -161,7 +161,7 @@
 
 #define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 #define ExtFlash_Storage_TotalSize (384 Kb)
-#define ExtFlash_Storage_TabSize  Flash_Storage_TabSize
+#define ExtFlash_Storage_TabSize Flash_Storage_TabSize
 #define ExtFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
 
 /* store boot info boot parameter and firmware */
