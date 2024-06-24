@@ -6,6 +6,7 @@
 #include "Srv_FileAdapter.h"
 #include "DataPipe.h"
 #include "Storage.h"
+#include "debug_util.h"
 #include "pid.h"
 
 #define PROTO_STREAM_BUF_SIZE (1024 + 128)

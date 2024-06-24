@@ -33,6 +33,8 @@
 #include "Bsp_USB.h"
 #include "Bsp_Timer.h"
 #include "FreeRTOS.h"
+#include "HW_Def.h"
+#include "debug_util.h"
 #include "task.h"
 
 /** @addtogroup UTILITIES_examples
@@ -60,6 +62,7 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* go to infinite loop when hard fault exception occurs */
+  Debug_Print(&DebugP4, "---- HARD FAULT ---- \r\n", strlen("---- HARD FAULT ---- \r\n"));
   while(1)
   {
   }

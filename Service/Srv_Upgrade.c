@@ -13,12 +13,13 @@
 #include "Bsp_Flash.h"
 #include "Srv_FileAdapter.h"
 #include "shell_port.h"
+#include "debug_util.h"
 
 #define FIRMWARE_WAITTING_TIMEOUT   60000   /* unit: ms */
 #define FIRMWARE_COMMU_TIMEOUT      1000    /* unit: ms */
 #define DEFAULT_WINDOW_SIZE         100     /* unit: ms */
 
-const uint8_t AppVer[3] = {0, 0, 6};
+const uint8_t AppVer[3] = {0, 0, 7};
 #if defined MATEKH743_V1_5
 const uint8_t HWVer[3] = {0, 0, 1};
 #elif defined BATEAT32F435_AIO

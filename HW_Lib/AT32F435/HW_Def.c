@@ -227,3 +227,30 @@ void PriIMU_Dir_Tune(float *gyr, float *acc)
     }
 }
 
+static BspUARTObj_TypeDef Debug_Port4_Obj = {
+    .instance = DEBUG_P4_PORT,
+    .baudrate = DEBUG_PORT_BAUDRATE,
+    .tx_io = {
+        .init_state = DEBUG_P4_TX_PIN_INIT_STATE,
+        .pin = DEBUG_P4_TX_PIN,
+        .port = DEBUG_P4_TX_PORT,
+        .alternate = DEBUG_P4_TX_PIN_ALT,
+    }, 
+    .rx_io = {
+        .init_state = DEBUG_P4_RX_PIN_INIT_STATE,
+        .pin = DEBUG_P4_RX_PIN,
+        .port = DEBUG_P4_RX_PORT,
+        .alternate = DEBUG_P4_RX_PIN_ALT,
+    }, 
+    .pin_swap = false,
+    .rx_dma = DEBUG_P4_RX_DMA,
+    .rx_stream = DEBUG_P4_RX_DMA_STREAM,
+    .tx_dma = DEBUG_P4_TX_DMA,
+    .tx_stream = DEBUG_P4_TX_DMA_STREAM,
+    .rx_buf = NULL,
+    .rx_size = 0,
+};
+
+DebugPrintObj_TypeDef DebugP4 = {
+    .port_obj = &Debug_Port4_Obj,
+};

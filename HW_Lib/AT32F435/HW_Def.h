@@ -47,6 +47,22 @@
 #define RADIO_TX_PORT &Uart1_Tx_Port
 #define RADIO_RX_PORT &Uart1_Rx_Port
 
+/* debug print port uart4 */
+#define DEBUG_PORT_BAUDRATE 460800
+#define DEBUG_P4_PORT UART4
+#define DEBUG_P4_TX_PIN_INIT_STATE GPIO_PULL_NONE
+#define DEBUG_P4_RX_PIN_INIT_STATE GPIO_PULL_NONE
+#define DEBUG_P4_TX_PIN_ALT GPIO_MUX_8
+#define DEBUG_P4_RX_PIN_ALT GPIO_MUX_8
+#define DEBUG_P4_TX_DMA Bsp_DMA_2
+#define DEBUG_P4_TX_DMA_STREAM Bsp_DMA_Stream_3
+#define DEBUG_P4_RX_DMA Bsp_DMA_None
+#define DEBUG_P4_RX_DMA_STREAM Bsp_DMA_Stream_None
+#define DEBUG_P4_TX_PIN GPIO_PINS_0
+#define DEBUG_P4_RX_PIN GPIO_PINS_1
+#define DEBUG_P4_TX_PORT &Uart4_Tx_Port
+#define DEBUG_P4_RX_PORT &Uart4_Rx_Port
+
 /* IMU SPI */
 #define PriIMU_SPI_BUS SPI1
 
@@ -128,7 +144,7 @@
 #define ExtFlash_CS_Pin ExtFlash_CSPin
 #define ExtFlash_Bus_Pin ExtFlash_SPIPin
 
-#define Boot_Firmware_Addr W25QXX_BASE_ADDRESS 
+#define Boot_Firmware_Addr W25QXX_BASE_ADDRESS
 #define Boot_Firmware_Size (256 Kb)
 
 #define Block_Addr Boot_Firmware_Size + Boot_Firmware_Addr
@@ -171,6 +187,8 @@ extern BspGPIO_Port_TypeDef Uart3_Rx_Port;
 extern BspGPIO_Port_TypeDef Uart1_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart1_Rx_Port;
 extern BspGPIO_Port_TypeDef Uart4_Tx_Port;
+extern BspGPIO_Port_TypeDef Uart4_Rx_Port;
+extern BspGPIO_Port_TypeDef Uart5_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart5_Rx_Port;
 
 extern BspGPIO_Obj_TypeDef Uart3_TxPin;
@@ -197,6 +215,8 @@ extern BspGPIO_Port_TypeDef PWM_3_Port;
 extern BspGPIO_Port_TypeDef PWM_4_Port;
 extern BspGPIO_Port_TypeDef PWM_5_Port;
 extern BspGPIO_Port_TypeDef PWM_6_Port;
+
+extern DebugPrintObj_TypeDef DebugP4;
 
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 

@@ -8,6 +8,9 @@
 
 typedef void (*BspUART_Callback)(uint32_t cust_data_addr, uint8_t *buff, uint16_t size);
 
+#define To_BspUart_Obj(x) ((BspUARTObj_TypeDef *)x)
+#define To_BspUart_Api(x) ((BspUART_TypeDef *)x)
+
 #define BspUart_Clock_Error -1
 #define Bspuart_None_Index -1
 

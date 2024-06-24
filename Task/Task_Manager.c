@@ -51,6 +51,10 @@ void Task_Manager_Init(void)
 
     /* cur ADC init */
 
+    DebugP4.free = SrvOsCommon.free;
+    DebugP4.malloc = SrvOsCommon.malloc;
+    Debug_Port_Init(&DebugP4);
+
     osThreadDef(ManagerTask, Task_Manager_CreateTask, osPriorityLow, 0, 1024);
     TaskManager_Handle = osThreadCreate(osThread(ManagerTask), NULL);
 
@@ -83,6 +87,8 @@ void Task_Manager_CreateTask(void)
     {
         if (!init)
         {
+            Debug_Print(&DebugP4, "---- Sys Start ----\r\n", strlen("---- Sys Start ----\r\n"));
+
             DataPipe_Init();
 
             Storage.init(storage_ExtFlashObj);
