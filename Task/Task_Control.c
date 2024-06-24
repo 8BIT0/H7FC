@@ -260,6 +260,7 @@ static void TaskControl_Get_StoreParam(void)
 void TaskControl_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
+    bool upgrade_state = false;
     ControlData_TypeDef CtlData;
     Srv_CtlExpectionData_TypeDef Cnv_CtlData;
     Srv_CtlExpectionData_TypeDef Lst_CtlData;
@@ -272,30 +273,38 @@ void TaskControl_Core(void const *arg)
     {
         Srv_CtlDataArbitrate.negociate_update(&CtlData);
         
-        if(control_enable && !TaskControl_Monitor.CLI_enable)
+        if (SrvDataHub.get_upgrade_state(&upgrade_state) && upgrade_state)
         {
-            Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
-            
-            DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
-            /* pipe in use control data to data hub */
-            DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
-            TaskControl_FlightControl_Polling(&Cnv_CtlData);
-            
-            CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
-            CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
-            CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
-
-            Lst_CtlData = Cnv_CtlData;
+            /* lock all actuator when upgrading */
+            SrvActuator.lock();
         }
         else
         {
-            if(TaskControl_Monitor.CLI_enable)
+            if(control_enable && !TaskControl_Monitor.CLI_enable)
             {
-                TaskControl_CLI_Polling();
+                Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
+                
+                DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
+                /* pipe in use control data to data hub */
+                DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
+                TaskControl_FlightControl_Polling(&Cnv_CtlData);
+                
+                CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
+                CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
+                CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
+
+                Lst_CtlData = Cnv_CtlData;
             }
             else
-                /* lock all moto */
-                SrvActuator.lock();
+            {
+                if(TaskControl_Monitor.CLI_enable)
+                {
+                    TaskControl_CLI_Polling();
+                }
+                else
+                    /* lock all moto */
+                    SrvActuator.lock();
+            }
         }
 
         SrvOsCommon.precise_delay(&sys_time, TaskControl_Period);

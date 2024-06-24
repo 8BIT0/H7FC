@@ -58,6 +58,7 @@ typedef union
         uint64_t USB_VCP_attach : 1;        // bit : 26
 
         uint64_t cli : 1;                   // bit : 27
+        uint64_t upgrade : 1;               // bit : 28
     } bit;
 
     uint64_t val;
@@ -208,9 +209,12 @@ typedef struct
     uint16_t moto[8];
     uint8_t servo[8];
 
+    /* reserved */
     uint32_t tunning_heartbeat_timestamp;
     bool in_tunning;
     uint32_t tunning_port_addr;
+
+    bool upgrading;
 
     bool CLI_state;
     bool VCP_Attach;
@@ -242,7 +246,9 @@ typedef struct
     void (*init)(void);
     bool (*set_vcp_attach_state)(bool state);
     bool (*set_cli_state)(bool state);
+    bool (*set_upgrade_state)(bool state);
 
+    bool (*get_upgrade_state)(bool *state);
     bool (*get_cli_state)(bool *state);
     bool (*get_vcp_attach_state)(bool *state);
     bool (*get_imu_init_state)(bool *state);

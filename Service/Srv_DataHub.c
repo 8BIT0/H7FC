@@ -53,10 +53,12 @@ static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_pressur
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over);
 static bool SrvDataHub_Get_VCPAttach_State(bool *state);
 static bool SrvDataHub_Get_CLI_State(bool *state);
+static bool SrvDataHub_Get_Upgrade_State(bool *state);
 static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 
 static bool SrvDataHub_Set_CLI_State(bool state);
+static bool SrvDataHub_Set_Upgrade_State(bool state);
 
 /* external variable */
 SrvDataHub_TypeDef SrvDataHub = {
@@ -80,8 +82,10 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
     .get_vcp_attach_state = SrvDataHub_Get_VCPAttach_State,
     .get_cli_state = SrvDataHub_Get_CLI_State,
+    .get_upgrade_state = SrvDataHub_Get_Upgrade_State,
 
     .set_cli_state = SrvDataHub_Set_CLI_State,
+    .set_upgrade_state = SrvDataHub_Set_Upgrade_State,
 };
 
 static void SrvDataHub_Init(void)
@@ -835,6 +839,36 @@ reupdate_cli_state:
 
         if(!SrvDataHub_Monitor.inuse_reg.bit.cli)
             goto reupdate_cli_state;
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool SrvDataHub_Set_Upgrade_State(bool state)
+{
+    if (SrvDataHub_Monitor.inuse_reg.bit.upgrade)
+        SrvDataHub_Monitor.inuse_reg.bit.upgrade = false;
+
+    SrvDataHub_Monitor.update_reg.bit.upgrade = true;
+    SrvDataHub_Monitor.data.upgrading = state;
+    SrvDataHub_Monitor.update_reg.bit.upgrade = false;
+    
+    return true; 
+}
+
+static bool SrvDataHub_Get_Upgrade_State(bool *state)
+{
+    if(state)
+    {
+reupdate_upgrade_state:
+        SrvDataHub_Monitor.inuse_reg.bit.upgrade = true;
+
+        (*state) = SrvDataHub_Monitor.data.upgrading;
+
+        if(!SrvDataHub_Monitor.inuse_reg.bit.upgrade)
+            goto reupdate_upgrade_state;
 
         return true;
     }

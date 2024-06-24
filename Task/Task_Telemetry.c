@@ -151,16 +151,20 @@ static void Telemetry_Led_Control(bool state)
 void TaskTelemetry_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
+    bool upgrade_state = false;
 
     while(1)
     {
         // Telemetry_blink();
         
-        /* RC receiver process */
-        Telemetry_ConvertRCData_To_ControlData(Telemetry_RC_Sig_Update(&Telemetry_Monitor.RC_Setting, &Receiver_Obj), DataPipe_DataObjAddr(Rc));
+        if (SrvDataHub.get_upgrade_state(&upgrade_state) && !upgrade_state)
+        {
+            /* RC receiver process */
+            Telemetry_ConvertRCData_To_ControlData(Telemetry_RC_Sig_Update(&Telemetry_Monitor.RC_Setting, &Receiver_Obj), DataPipe_DataObjAddr(Rc));
 
-        /* pipe data out */
-        DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
+            /* pipe data out */
+            DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
+        }
         
         SrvOsCommon.precise_delay(&sys_time, TaskTelemetry_Period);
     }

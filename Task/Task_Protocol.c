@@ -655,12 +655,16 @@ static bool TaskFrameCTL_Upgrade_Enable(bool state, FileInfo_TypeDef file_info, 
         {
             Upgrade_Monitor.port_addr = 0;
             Upgrade_Monitor.port_type = Port_None;
+
+            SrvOsCommon.enter_critical();
+            SrvDataHub.set_upgrade_state(true);
+            SrvOsCommon.exit_critical();
         }
         else
             Upgrade_Monitor.file_info = file_info;
 
         /* suspend Telemetry task */
-        /* when upfrade finish or abort resume telemtry task */
+        /* when upgrade finish or abort resume telemtry task */
 
         return true;
     }
@@ -690,6 +694,9 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
             Upgrade_Monitor.is_enable = false;
             memset(&Upgrade_Monitor.file_info, 0, sizeof(Upgrade_Monitor.file_info));
             Upgrade_Monitor.port_addr = 0;
+            SrvOsCommon.enter_critical();
+            SrvDataHub.set_upgrade_state(false);
+            SrvOsCommon.exit_critical();
             break;
 
         case Stage_Reboot:
@@ -1131,5 +1138,5 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
         SrvUpgrade.set_fileinfo(Upgrade_Monitor.file_info);
     }
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Enable_File_Rec, TaskFrameCTL_FileAccept_Enable, In File Receive Mode);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, file_rec, TaskFrameCTL_FileAccept_Enable, In File Receive Mode);
 
