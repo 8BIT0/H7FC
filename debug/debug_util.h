@@ -18,8 +18,6 @@ typedef struct
 {
     void *port_obj;
     bool init;
-    uint32_t tx_cnt;
-    uint32_t tx_fin_cnt;
     uint8_t *p_buf;
     void* (*malloc)(uint32_t size);
     void (*free)(void *ptr);

@@ -100,11 +100,14 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelay                   1
 #define INCLUDE_xTaskGetSchedulerState       1
 #define INCLUDE_uxTaskGetStackHighWaterMark  1
+#define INCLUDE_xTaskGetCurrentTaskHandle    1
 
-#define configUSE_COUNTING_SEMAPHORES 1
-#define configUSE_MUTEXES 1
+#define configENABLE_BACKWARD_COMPATIBILITY  0
+#define configUSE_TRACE_FACILITY             1
+#define configUSE_COUNTING_SEMAPHORES        1
+#define configUSE_MUTEXES                    1
 
-#define configAPPLICATION_ALLOCATED_HEAP 1
+#define configAPPLICATION_ALLOCATED_HEAP     1
 
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS

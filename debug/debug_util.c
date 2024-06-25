@@ -33,25 +33,10 @@ void assert(bool state)
             ;
 }
 
-static void Debug_SendCallback(uint32_t cust_data_addr, uint8_t *buff, uint16_t size)
-{
-    DebugPrintObj_TypeDef *DebugPortObj = NULL;
-
-    if (cust_data_addr)
-    {
-        DebugPortObj = ((DebugPrintObj_TypeDef *)cust_data_addr);
-        DebugPortObj->tx_fin_cnt ++;
-    }
-}
-
 static void Debug_PrintOut(DebugPrintObj_TypeDef *Obj, uint8_t *p_data, uint16_t len)
 {
     if (p_data && len)
-    {
-        Obj->tx_cnt ++;
         BspUart.send(To_BspUart_Obj(Obj->port_obj), p_data, len);
-        while (Obj->tx_cnt != Obj->tx_fin_cnt);
-    }
 }
 
 void Debug_Port_Init(DebugPrintObj_TypeDef *Obj)
@@ -62,11 +47,8 @@ void Debug_Port_Init(DebugPrintObj_TypeDef *Obj)
         return;
     }
 
-    Obj->tx_cnt = 0;
-    Obj->tx_fin_cnt = 0;
     Obj->init = true;
     To_BspUart_Obj(Obj->port_obj)->cust_data_addr = ((uint32_t)Obj);
-    BspUart.set_tx_callback(To_BspUart_Obj(Obj->port_obj), Debug_SendCallback);
 }
 
 void Debug_Print(DebugPrintObj_TypeDef *Obj, const char *tag, const char* fmt, ...)

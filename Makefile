@@ -48,6 +48,7 @@ Algorithm/Filter_Dep/filter_param.c \
 Algorithm/Control_Dep/adrc.c \
 Algorithm/Control_Dep/pid.c \
 debug/debug_util.c \
+debug/trace_analysiser.c \
 Task/Task_Log.c \
 Task/Task_Navi.c \
 Task/Task_Manager.c \
@@ -157,7 +158,8 @@ HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c \
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32h743xx.s
+startup_stm32h743xx.s \
+debug/trace.s
 
 #######################################
 # LDFLAGS
@@ -206,7 +208,8 @@ HW_Lib/AT32F435/driver/src/at32f435_437_exint.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_usart.c
 
 ASM_SOURCES =  \
-startup_at32f435_437.s
+startup_at32f435_437.s \
+debug/trace.s
 
 #######################################
 # LDFLAGS

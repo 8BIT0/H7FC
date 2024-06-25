@@ -509,7 +509,10 @@ static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t 
         else
         {
             for (uint16_t i = 0; i < size; i++)
+            {
                 usart_data_transmit(To_Uart_Instance(obj->instance), tx_buf[i]);
+                while (usart_flag_get(To_Uart_Instance(obj->instance), USART_TDBE_FLAG) == RESET);
+            }
         }
         obj->monitor.tx_cnt ++;
 

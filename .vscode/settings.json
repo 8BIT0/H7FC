@@ -184,7 +184,8 @@
                 "mavlink_msg_scaled_imu2.h": "c",
                 "srv_upgrade.h": "c",
                 "arm_math.h": "c",
-                "bsp_uart_port_def.h": "c"
+                "bsp_uart_port_def.h": "c",
+                "trace_analysiser.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,
