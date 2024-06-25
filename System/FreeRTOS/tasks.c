@@ -267,6 +267,12 @@ typedef struct tskTaskControlBlock 			/* The old naming convention is used to pr
 		StackType_t		*pxEndOfStack;		/*< Points to the highest valid address for the stack. */
 	#endif
 
+	#if ( portSTACK_GROWTH > 0 )
+		StackType_t		*pxEndOfStack;		/*< Points to the end of the stack on architectures where the stack grows up from low memory. */
+	#else
+        UBaseType_t     uxSizeOfStack;      /*< Support For CmBacktrace >*/
+    #endif /* ( portSTACK_GROWTH > 0 )*/
+
 	#if ( portCRITICAL_NESTING_IN_TCB == 1 )
 		UBaseType_t		uxCriticalNesting;	/*< Holds the critical section nesting depth for ports that do not maintain their own count in the port layer. */
 	#endif
@@ -1066,6 +1072,7 @@ UBaseType_t x;
 		/* Pass the handle out in an anonymous way.  The handle can be used to
 		change the created task's priority, delete the created task, etc.*/
 		*pxCreatedTask = ( TaskHandle_t ) pxNewTCB;
+		pxNewTCB->uxSizeOfStack = ulStackDepth;
 	}
 	else
 	{
@@ -3976,6 +3983,28 @@ TCB_t *pxTCB;
 		xReturn = pxCurrentTCB;
 
 		return xReturn;
+	}
+
+	const uint32_t *xTaskGetCurrentTaskStack( TaskHandle_t xTaskToQuery )
+	{
+		volatile TCB_t *pxTCB;
+
+		/* If null is passed in here then the name of the calling task is being
+		queried. */
+		pxTCB = prvGetTCBFromHandle( xTaskToQuery );
+		configASSERT( pxTCB );
+		return ( pxTCB->pxStack );
+	}
+
+	uint32_t xTaskGetCurrentTaskStackDeph( TaskHandle_t xTaskToQuery  )
+	{
+		volatile TCB_t *pxTCB;
+
+		/* If null is passed in here then the name of the calling task is being
+		queried. */
+		pxTCB = prvGetTCBFromHandle( xTaskToQuery );
+		configASSERT( pxTCB );
+		return ( pxTCB->uxSizeOfStack);
 	}
 
 #endif /* ( ( INCLUDE_xTaskGetCurrentTaskHandle == 1 ) || ( configUSE_MUTEXES == 1 ) ) */

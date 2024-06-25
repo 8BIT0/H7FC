@@ -2437,6 +2437,10 @@ TickType_t uxTaskResetEventItemValue( void ) PRIVILEGED_FUNCTION;
  */
 TaskHandle_t xTaskGetCurrentTaskHandle( void ) PRIVILEGED_FUNCTION;
 
+const uint32_t *xTaskGetCurrentTaskStack( TaskHandle_t xTaskToQuery ) PRIVILEGED_FUNCTION;
+
+uint32_t xTaskGetCurrentTaskStackDeph( TaskHandle_t xTaskToQuery  ) PRIVILEGED_FUNCTION;
+
 /*
  * Shortcut used by the queue implementation to prevent unnecessary call to
  * taskYIELD();
