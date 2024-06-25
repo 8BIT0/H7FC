@@ -673,9 +673,19 @@ void BspUart_Irq_Callback(void *arg)
 
 static bool BspUart_IrqEn_Control(BspUARTObj_TypeDef *obj, bool state)
 {
+    confirm_state new_state = FALSE;
+
     if (obj && obj->init_state)
     {
+        if (state)
+            new_state =TRUE;
 
+        if (obj->irq_type == BspUart_IRQ_Type_Idle)
+        {
+            usart_interrupt_enable(To_Uart_Instance(obj->instance), USART_IDLE_INT, new_state);
+        }
+        else if (obj->irq_type == BspUart_IRQ_Type_Byte)
+            usart_interrupt_enable(To_Uart_Instance(obj->instance), USART_RDBF_INT, new_state);
     }
 
     return false;
