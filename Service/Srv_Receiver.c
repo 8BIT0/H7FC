@@ -392,9 +392,12 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
 
 static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
 {
+    static uint32_t lst_update_time = 0;
+
     /* update check */
     /* update frequence less than 10hz switch into failsafe */
-    if ((SrvOsCommon.get_os_ms() - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS)
+    if (receiver_obj->data.time_stamp && \
+        ((lst_update_time - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS))
         return false;
 
     /* range check */
@@ -421,6 +424,7 @@ static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
         return false;
     }
 
+    lst_update_time = receiver_obj->data.time_stamp;
     return true;
 }
 
