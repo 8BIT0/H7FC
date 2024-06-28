@@ -339,6 +339,9 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                         }
 
                         receiver_obj->data.failsafe = false;
+
+                        /* set decode time stamp */
+                        receiver_obj->data.time_stamp = SrvOsCommon.get_os_ms();
                         break;
 
                     default:
@@ -366,15 +369,9 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                 }
             }
 
+            receiver_obj->re_update = false;            
             if (sig_update && receiver_obj->in_use)
-            {
                 receiver_obj->re_update = true;
-                
-                /* set decode time stamp */
-                receiver_obj->data.time_stamp = SrvOsCommon.get_os_ms();
-            }
-            else
-                receiver_obj->re_update = false;            
 
             /* clear serial obj received data */
             if (receiver_obj->port->cfg)
@@ -392,13 +389,17 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
 
 static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
 {
-    static uint32_t lst_update_time = 0;
+    volatile uint32_t sys_time = SrvOsCommon.get_os_ms();
 
     /* update check */
     /* update frequence less than 10hz switch into failsafe */
     if (receiver_obj->data.time_stamp && \
-        ((lst_update_time - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS))
+        ((sys_time - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS))
+    {
+        volatile uint8_t test;
+        test ++;
         return false;
+    }
 
     /* range check */
     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
@@ -424,7 +425,6 @@ static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
         return false;
     }
 
-    lst_update_time = receiver_obj->data.time_stamp;
     return true;
 }
 
