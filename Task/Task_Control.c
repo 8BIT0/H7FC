@@ -280,13 +280,14 @@ void TaskControl_Core(void const *arg)
         }
         else
         {
-            if(control_enable && !TaskControl_Monitor.CLI_enable)
+            if(!TaskControl_Monitor.CLI_enable)
             {
                 Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
                 
                 DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
                 /* pipe in use control data to data hub */
                 DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
+
                 TaskControl_FlightControl_Polling(&Cnv_CtlData);
                 
                 CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
@@ -374,7 +375,9 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
     uint8_t axis = Axis_X;
     uint32_t tunning_port = 0;
 
-    if (TaskControl_Monitor.init_state && !TaskControl_Monitor.control_abort)
+    if (TaskControl_Monitor.init_state && \
+        control_enable && \
+        !TaskControl_Monitor.control_abort)
     {
         imu_init_state = false;
 
