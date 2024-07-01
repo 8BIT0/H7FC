@@ -1,5 +1,7 @@
 #include "Dev_CRSF.h"
 
+#include "HW_Def.h"
+#include "../debug/debug_util.h"
 /*
  * CRSF protocol
  *
@@ -132,6 +134,9 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
 
                 if (obj->rec_cnt == obj->frame.length)
                 {
+                    // DebugPin.ctl(Debug_PC8, false);
+                    // DebugPin.ctl(Debug_PC8, true);
+                    
                     decode_state = DevCRSF_Decode(obj, obj->frame.data, obj->frame.length);
 
                     obj->rec_stage = CRSF_Stage_Header;
@@ -159,7 +164,7 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
 static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len)
 {
     if ((obj == NULL) || (obj->rec_cnt == 0) || (p_data == NULL) || (len <= 3))
-        return false;
+        return CRSF_DECODE_ERROR;
 
     /* check crc first */
     if (crsf_crc8(p_data, len - 1) == obj->frame.data[len - 1])
@@ -182,6 +187,9 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
             if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr)
             {
+                DebugPin.ctl(Debug_PC8, false);
+                DebugPin.ctl(Debug_PC8, true);
+                
                 const crsf_channels_t *channel_val_ptr = (const crsf_channels_t *)(obj->frame.data + 1);
                 obj->channel[0] = channel_val_ptr->ch0;
                 obj->channel[1] = channel_val_ptr->ch1;

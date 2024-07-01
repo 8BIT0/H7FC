@@ -688,6 +688,8 @@ reupdate_telemetry_control_data:
         if(!SrvDataHub_Monitor.inuse_reg.bit.rc_control_data)
             goto reupdate_telemetry_control_data;
 
+        SrvDataHub_Monitor.inuse_reg.bit.rc_control_data = false;
+
         return true;
     }
 

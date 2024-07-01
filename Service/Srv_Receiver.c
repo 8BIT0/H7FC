@@ -12,6 +12,7 @@
 #include "error_log.h"
 #include "HW_Def.h"
 #include "Srv_OsCommon.h"
+#include "../debug/debug_util.h"
 
 static uint8_t SrvReceiver_Buff[SRV_RECEIVER_BUFF_SIZE] __attribute__((section(".Perph_Section")));
 
@@ -318,6 +319,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                         break;
 
                     case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+                        // DebugPin.ctl(Debug_PC8, false);
                         ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(To_CRSF_Obj(receiver_obj->frame_data_obj), receiver_obj->data.val_list);
 
                         for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
@@ -339,6 +341,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                         }
 
                         receiver_obj->data.failsafe = false;
+                        // DebugPin.ctl(Debug_PC8, true);
 
                         /* set decode time stamp */
                         receiver_obj->data.time_stamp = SrvOsCommon.get_os_ms();
@@ -348,8 +351,6 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                         sig_update = false;
                         return;
                 }
-
-                
             }
             else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
             {

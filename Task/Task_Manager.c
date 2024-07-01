@@ -46,6 +46,8 @@ void Task_Manager_Init(void)
     DebugPin.init(Debug_PB5);
     DebugPin.init(Debug_PB6);
     DebugPin.init(Debug_PB10);
+#elif defined BATEAT32F435_AIO
+    DebugPin.init(Debug_PC8);
 #endif
     /* vol ADC init */
 

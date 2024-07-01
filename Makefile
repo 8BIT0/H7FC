@@ -251,14 +251,15 @@ C_DEFS =  \
 -DSTM32H743xx \
 -DMATEKH743_V1_5
 
-# fpu
-FPU = -mfpu=fpv5-d16
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
 C_DEFS = \
 -DBATEAT32F435_AIO \
 -DAT32F435RGT7
 
 endif
+
+# fpu
+FPU = -mfpu=fpv5-d16
 
 # float-abi
 FLOAT-ABI = -mfloat-abi=hard

@@ -1,5 +1,15 @@
 #include "HW_Def.h"
 
+BspGPIO_Port_TypeDef DBG_PC_Port = {
+    .port = GPIOC,
+};
+
+DebugPinObj_TypeDef Debug_PC8 = {
+    .port = (void *)&DBG_PC_Port,
+    .pin = GPIO_PINS_8,
+    .init_state = GPIO_PULL_NONE,
+};
+
 /* Led 1 */
 BspGPIO_Port_TypeDef Led1_Port = {
     .port = GPIOB,
