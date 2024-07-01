@@ -40,7 +40,6 @@ static bool failsafe = false;
 static bool imu_init_state = false;
 static bool att_update = false;
 static bool configrator_attach = false;
-static bool control_enable = false;
 
 SrvIMU_UnionData_TypeDef LstCyc_IMU_Data;
 SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
@@ -124,7 +123,7 @@ void TaskControl_Init(uint32_t period)
     angularspeed_ctl_range[Axis_Z].idle = 0.0f;
     angularspeed_ctl_range[Axis_Z].enable_dead_zone = false;
     
-    control_enable = Srv_CtlDataArbitrate.init(att_ctl_range, angularspeed_ctl_range);
+    TaskControl_Monitor.control_abort = !Srv_CtlDataArbitrate.init(att_ctl_range, angularspeed_ctl_range);
     TaskControl_Period = period;
 }
 
@@ -376,7 +375,6 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
     uint32_t tunning_port = 0;
 
     if (TaskControl_Monitor.init_state && \
-        control_enable && \
         !TaskControl_Monitor.control_abort)
     {
         imu_init_state = false;
