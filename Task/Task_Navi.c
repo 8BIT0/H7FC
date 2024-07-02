@@ -7,6 +7,7 @@
 #include "MadgwickAHRS.h"
 #include "math_util.h"
 #include "Dev_Led.h"
+#include <stdio.h>
 
 /* IMU coordinate is x->forward y->right z->down */
 /*

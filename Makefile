@@ -305,7 +305,8 @@ C_INCLUDES =  \
 -IDataStructure/ \
 -ISystem/kernel/ \
 -ISystem/DataPipe/ \
--IHW_Lib/Port_Def/
+-IHW_Lib/Port_Def/ \
+-Ieigen/
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_INCLUDES +=  \
 -IHW_Lib/STM32H7 \
