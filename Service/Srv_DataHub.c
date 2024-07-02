@@ -49,6 +49,7 @@ static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint1
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
+static bool SrvDataHub_Get_Bar_InitState(bool *state);
 static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error);
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over);
 static bool SrvDataHub_Get_VCPAttach_State(bool *state);
@@ -80,6 +81,7 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_servo = SrvDataHub_Get_ServoChannel,
     .get_imu_init_state = SrvDataHub_Get_IMU_InitState,
     .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
+    .get_baro_init_state = SrvDataHub_Get_Bar_InitState,
     .get_vcp_attach_state = SrvDataHub_Get_VCPAttach_State,
     .get_cli_state = SrvDataHub_Get_CLI_State,
     .get_upgrade_state = SrvDataHub_Get_Upgrade_State,
@@ -344,12 +346,16 @@ static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef 
     {
         SrvDataHub_Monitor.update_reg.bit.imu_init = true;
         SrvDataHub_Monitor.update_reg.bit.mag_init = true;
+        SrvDataHub_Monitor.update_reg.bit.baro_init = true;
 
         if (SrvDataHub_Monitor.inuse_reg.bit.imu_init)
             SrvDataHub_Monitor.inuse_reg.bit.imu_init = false;
 
-        if(SrvDataHub_Monitor.inuse_reg.bit.mag_init)
+        if (SrvDataHub_Monitor.inuse_reg.bit.mag_init)
             SrvDataHub_Monitor.inuse_reg.bit.mag_init = false;
+
+        if (SrvDataHub_Monitor.inuse_reg.bit.baro_init)
+            SrvDataHub_Monitor.inuse_reg.bit.baro_init = false;
 
         if(obj == &SensorInitState_hub_DataPipe)
         {
@@ -385,6 +391,7 @@ static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef 
 
         SrvDataHub_Monitor.update_reg.bit.imu_init = false;
         SrvDataHub_Monitor.update_reg.bit.mag_init = false;
+        SrvDataHub_Monitor.update_reg.bit.baro_init = false;
     }
 }
 
@@ -790,6 +797,25 @@ reupdate_mag_state:
         goto reupdate_mag_state;
 
     SrvDataHub_Monitor.inuse_reg.bit.mag_init = false;
+
+    return false;
+}
+
+static bool SrvDataHub_Get_Bar_InitState(bool *state)
+{
+reupdate_baro_state:
+    SrvDataHub_Monitor.inuse_reg.bit.baro_init = true;
+
+    if (state)
+    {
+        *state = SrvDataHub_Monitor.data.baro_init_state;
+        return true;
+    }
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.baro_init)
+        goto reupdate_baro_state;
+
+    SrvDataHub_Monitor.inuse_reg.bit.baro_init = false;
 
     return false;
 }

@@ -52,35 +52,43 @@ void TaskNavi_Core(void const *arg)
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     bool imu_state = false;
     bool mag_state = false;
+    bool bar_state = false;
     uint32_t Flt_IMU_TimeStamp = 0;
     uint32_t MAG_TimeStamp = 0;
+    uint32_t Baro_TimeStamp = 0;
     float Acc_Scale = 0.0f;
     float Gyr_Scale = 0.0f;
     float Mag_Scale = 0.0f;
     IMUAtt_TypeDef attitude;
+    AlgoAttData_TypeDef algo_att;
     float Flt_Acc[Axis_Sum] = {0.0f};
     float Flt_Gyr[Axis_Sum] = {0.0f};
     float Flt_Mag[Axis_Sum] = {0.0f};
     float Flt_IMU_Tempra = 0.0f;
+    float Bar_Pres = 0.0f;
+    float Baro_Alt = 0.0f;
+    float Baro_Alt_Offset = 0.0f;
+    float Baro_Tempra = 0.0f;
     uint8_t IMU_Err = 0;
     uint8_t MAG_Err = 0;
-
-    SrvDataHub.get_imu_init_state(&imu_state);
-    SrvDataHub.get_mag_init_state(&mag_state);
+    uint8_t BAR_Err = 0;
     
     bool Attitude_Update = false;
     memset(&attitude, 0, sizeof(IMUAtt_TypeDef));
-    
+    memset(&algo_att, 0, sizeof(AlgoAttData_TypeDef));
+
     while(1)
     {
+        SrvDataHub.get_imu_init_state(&imu_state);
+        SrvDataHub.get_mag_init_state(&mag_state);
+        SrvDataHub.get_baro_init_state(&bar_state);
+
         if(imu_state)
         {
-            SrvDataHub.get_scaled_imu(&Flt_IMU_TimeStamp, &Acc_Scale, &Gyr_Scale, \
-                                      &Flt_Acc[Axis_X], &Flt_Acc[Axis_Y], &Flt_Acc[Axis_Z], \
-                                      &Flt_Gyr[Axis_X], &Flt_Gyr[Axis_Y], &Flt_Gyr[Axis_Z], \
-                                      &Flt_IMU_Tempra, &IMU_Err);
-
-            Attitude_Update = true;
+            Attitude_Update = SrvDataHub.get_scaled_imu(&Flt_IMU_TimeStamp, &Acc_Scale, &Gyr_Scale, \
+                                                        &Flt_Acc[Axis_X], &Flt_Acc[Axis_Y], &Flt_Acc[Axis_Z], \
+                                                        &Flt_Gyr[Axis_X], &Flt_Gyr[Axis_Y], &Flt_Gyr[Axis_Z], \
+                                                        &Flt_IMU_Tempra, &IMU_Err);
         }
         
         if(mag_state)
@@ -99,20 +107,32 @@ void TaskNavi_Core(void const *arg)
         if(Attitude_Update)
         {
             /* update Attitude */
-            MadgwickAHRSupdate(Deg2Rad(Flt_Gyr[Axis_X]), Deg2Rad(Flt_Gyr[Axis_Y]), Deg2Rad(Flt_Gyr[Axis_Z]), \
-                               Flt_Acc[Axis_X],          Flt_Acc[Axis_Y],          Flt_Acc[Axis_Z], \
-                               Flt_Mag[Axis_X],          Flt_Mag[Axis_Y],          Flt_Mag[Axis_Z]);
+            MadgwickAHRSupdate(&algo_att, Deg2Rad(Flt_Gyr[Axis_X]), Deg2Rad(Flt_Gyr[Axis_Y]), Deg2Rad(Flt_Gyr[Axis_Z]), \
+                                          Flt_Acc[Axis_X],          Flt_Acc[Axis_Y],          Flt_Acc[Axis_Z], \
+                                          Flt_Mag[Axis_X],          Flt_Mag[Axis_Y],          Flt_Mag[Axis_Z]);
             
-            if(MadgwickAHRS_Get_Attitude(&attitude.pitch, &attitude.roll, &attitude.yaw) && \
-               MadgwickAHRS_Get_Quraterion(&attitude.q0, &attitude.q1, &attitude.q2, &attitude.q3))
-            {
-                attitude.flip_over = TaskNavi_FlipOver_Detect(attitude.roll);
-                attitude.time_stamp = SrvOsCommon.get_os_ms();
-                DataPipe_DataObj(Navi_Attitude) = attitude;
-            }
+            attitude.pitch = algo_att.pitch;
+            attitude.roll  = algo_att.roll;
+            attitude.yaw   = algo_att.yaw;
+            attitude.q0    = algo_att.q0;
+            attitude.q1    = algo_att.q1;
+            attitude.q2    = algo_att.q2;
+            attitude.q3    = algo_att.q3;
+            
+            attitude.flip_over = TaskNavi_FlipOver_Detect(attitude.roll);
+            attitude.time_stamp = SrvOsCommon.get_os_ms();
+
+            DataPipe_DataObj(Navi_Attitude) = attitude;
 
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);
+        }
+
+        /* comput baro altitude */
+        if (bar_state && Attitude_Update && \
+            SrvDataHub.get_baro_altitude(&Baro_TimeStamp, &Bar_Pres, &Baro_Alt, &Baro_Alt_Offset, &Baro_Tempra, &BAR_Err))
+        {
+        
         }
 
         /* check imu data update freq on test */
