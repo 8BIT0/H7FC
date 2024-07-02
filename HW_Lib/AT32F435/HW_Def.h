@@ -20,10 +20,10 @@ extern "C" {
 #include "Dev_W25Qxx.h"
 
 #define RECEIVER_PORT USART3
-#define RECEIVER_CRSF_RX_DMA Bsp_DMA_None
-#define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_None
-#define RECEIVER_CRSF_TX_DMA Bsp_DMA_None
-#define RECEIVER_CRSF_TX_DMA_STREAM Bsp_DMA_Stream_None
+#define RECEIVER_CRSF_RX_DMA Bsp_DMA_1
+#define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_5
+#define RECEIVER_CRSF_TX_DMA Bsp_DMA_1
+#define RECEIVER_CRSF_TX_DMA_STREAM Bsp_DMA_Stream_6
 
 #define RECEIVER_SBUS_RX_DMA Bsp_DMA_1
 #define RECEIVER_SBUS_RX_DMA_STREAM Bsp_DMA_Stream_5

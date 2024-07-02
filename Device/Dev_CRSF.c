@@ -31,7 +31,7 @@
  */
 
 static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj);
-static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len);
+static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj);
 static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in);
 static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj);
 static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg);
@@ -89,64 +89,68 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
 {
     uint8_t decode_state = 0;
 
-    if (obj)
+    if (obj && arg)
     {
-        switch ((uint8_t)(obj->rec_stage))
+        for (uint8_t i = 0; i < arg; i ++)
         {
-        case CRSF_Stage_Header:
-            obj->rec_cnt = 0;
-            if (*p_data == CRSF_ADDRESS_FLIGHT_CONTROLLER)
+            switch ((uint8_t)(obj->rec_stage))
             {
-                obj->rec_stage = CRSF_Stage_Size;
-                obj->frame.addr = *p_data;
-                obj->match_header_num ++;
-                    
-                DebugPin.ctl(Debug_PC0, false);
-                DebugPin.ctl(Debug_PC0, true);
-            }
-            else
-                memset(&obj->frame, 0, sizeof(obj->frame));
-            break;
-
-        case CRSF_Stage_Size:
-            obj->rec_cnt = 0;
-            if (*p_data <= CRSF_PAYLOAD_SIZE_MAX)
-            {
-                obj->rec_stage = CRSF_Stage_Payload;
-                obj->frame.length = *p_data;
-            }
-            else
-            {
-                obj->rec_stage = CRSF_Stage_Header;
-                memset(&obj->frame, 0, sizeof(obj->frame));
-            }
-            break;
-
-        case CRSF_Stage_Payload:
-            if (obj->frame.length)
-            {
-                if (obj->rec_cnt == 0)
-                    obj->frame.type = *p_data;
-
-                obj->frame.data[obj->rec_cnt] = *p_data;
-                obj->rec_cnt++;
-
-                if (obj->rec_cnt == obj->frame.length)
+            case CRSF_Stage_Header:
+                obj->rec_cnt = 0;
+                if (p_data[i] == CRSF_ADDRESS_FLIGHT_CONTROLLER)
                 {
-                    decode_state = DevCRSF_Decode(obj, obj->frame.data, obj->frame.length);
+                    obj->rec_stage = CRSF_Stage_Size;
+                    obj->frame.addr = p_data[i];
+                    obj->match_header_num ++;
+                        
+                    DebugPin.ctl(Debug_PC0, false);
+                    DebugPin.ctl(Debug_PC0, true);
+                }
+                else
+                    memset(&obj->frame, 0, sizeof(obj->frame));
+                break;
+
+            case CRSF_Stage_Size:
+                obj->rec_cnt = 0;
+                if ((p_data[i] == (CRSF_FRAME_RC_CHANNELS_PAYLOAD_SIZE + CRSF_FRAME_ORIGIN_DEST_SIZE)) || \
+                    (p_data[i] == CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE + CRSF_FRAME_ORIGIN_DEST_SIZE))
+                {
+                    obj->rec_stage = CRSF_Stage_Payload;
+                    obj->frame.length = p_data[i];
+                }
+                else
+                {
                     obj->rec_stage = CRSF_Stage_Header;
+                    memset(&obj->frame, 0, sizeof(obj->frame));
+                }
+                break;
+
+            case CRSF_Stage_Payload:
+                if (obj->frame.length)
+                {
+                    if (obj->rec_cnt == 0)
+                        obj->frame.type = p_data[i];
+
+                    obj->frame.data[obj->rec_cnt] = p_data[i];
+                    obj->rec_cnt++;
+                    
+                    if (obj->rec_cnt == obj->frame.length)
+                    {                
+                        decode_state = DevCRSF_Decode(obj);
+                        obj->rec_stage = CRSF_Stage_Header;
+                        obj->rec_cnt = 0;
+                        memset(&obj->frame, 0, sizeof(obj->frame));
+                        return decode_state;
+                    }
+                }
+                else
+                {
                     obj->rec_cnt = 0;
                     memset(&obj->frame, 0, sizeof(obj->frame));
-                    return decode_state;
+                    obj->rec_stage = CRSF_Stage_Header;
                 }
+                break;
             }
-            else
-            {
-                obj->rec_cnt = 0;
-                memset(&obj->frame, 0, sizeof(obj->frame));
-                obj->rec_stage = CRSF_Stage_Header;
-            }
-            break;
         }
     }
 
@@ -154,21 +158,27 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
 }
 
 /* serial receiver receive callback */
-static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t len)
+static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj)
 {
-    if ((obj == NULL) || (obj->rec_cnt == 0) || (p_data == NULL) || (len <= 3))
+    volatile uint8_t comput_crc = 0;
+    volatile uint8_t frame_crc = 0;
+
+    if ((obj == NULL) || (obj->rec_cnt == 0) || (obj->frame.length <= 3))
         return CRSF_DECODE_ERROR;
 
+    comput_crc = crsf_crc8(obj->frame.data, (obj->frame.length - 1));
+    frame_crc = obj->frame.data[obj->frame.length - 1];
+
     /* check crc first */
-    if (crsf_crc8(p_data, len - 1) == obj->frame.data[len - 1])
+    if (comput_crc == frame_crc)
     {
         /* check frame type */
         switch (obj->frame.type)
         {
         case CRSF_FRAMETYPE_LINK_STATISTICS:
-            if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr) &&
+            if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr) && \
                 ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE) == obj->frame.length))
-            {
+            {                
                 const crsf_LinkStatistics_t *stats = (const crsf_LinkStatistics_t *)&(obj->frame.data);
                 memcpy(&obj->statistics, stats, sizeof(crsf_LinkStatistics_t));
                 obj->state = CRSF_State_LinkUp;
@@ -178,11 +188,12 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
             break;
 
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
-            if (CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr)
+            if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr) && \
+                ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_RC_CHANNELS_PAYLOAD_SIZE) == obj->frame.length))
             {
                 DebugPin.ctl(Debug_PC8, false);
                 DebugPin.ctl(Debug_PC8, true);
-                
+
                 const crsf_channels_t *channel_val_ptr = (const crsf_channels_t *)(obj->frame.data + 1);
                 obj->channel[0] = channel_val_ptr->ch0;
                 obj->channel[1] = channel_val_ptr->ch1;

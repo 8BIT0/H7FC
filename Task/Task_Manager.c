@@ -115,7 +115,7 @@ void Task_Manager_CreateTask(void)
             osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityHigh, 0, 1024);
             TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
 
-            osThreadDef(ControlTask, TaskControl_Core, osPriorityHigh, 0, 2048);
+            osThreadDef(ControlTask, TaskControl_Core, osPriorityHigh, 0, 1024);
             TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
 
             osThreadDef(NavTask, TaskNavi_Core, osPriorityAboveNormal, 0, 1024);

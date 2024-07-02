@@ -114,10 +114,6 @@ typedef struct
 {
     SrvReceiver_Frame_TypeList Frame_type;
     SrvReceiver_Port_TypeList port_type;
-    void *port_cfg;
-    uint16_t update_period;
-    uint16_t baudrate;
-    uint32_t port_addr;
     uint8_t channel_num;
     uint8_t *frame_data_obj;
     SrvReceiverData_TypeDef data;
