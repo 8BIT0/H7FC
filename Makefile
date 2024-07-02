@@ -305,8 +305,7 @@ C_INCLUDES =  \
 -IDataStructure/ \
 -ISystem/kernel/ \
 -ISystem/DataPipe/ \
--IHW_Lib/Port_Def/ \
--Ieigen/
+-IHW_Lib/Port_Def/
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_INCLUDES +=  \
 -IHW_Lib/STM32H7 \
@@ -336,7 +335,7 @@ endif
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -std=c99 -Wall -fdata-sections -ffunction-sections
 
 # ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
