@@ -1,6 +1,10 @@
 #ifndef __SRV_FILEADAPTER_H
 #define __SRV_FILEADAPTER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -76,6 +80,10 @@ typedef struct
 } SrvFileAdapter_TypeDef;
 
 extern SrvFileAdapter_TypeDef SrvFileAdapter;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

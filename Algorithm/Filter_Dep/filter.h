@@ -1,6 +1,10 @@
 #ifndef __FILTER_H
 #define __FILTER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <math.h>
 #include <stdint.h>
@@ -73,5 +77,9 @@ typedef struct
 
 extern Butterworth_Filter_TypeDef Butterworth;
 extern SmoothWindow_Filter_TypeDef SmoothWindow;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

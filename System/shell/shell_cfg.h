@@ -12,6 +12,10 @@
 #ifndef __SHELL_CFG_H__
 #define __SHELL_CFG_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief 是否使用默认shell任务while循环，使能宏`SHELL_USING_TASK`后此宏有意义
  *        使能此宏，则`shellTask()`函数会一直循环读取输入，一般使用操作系统建立shell
@@ -164,5 +168,9 @@
  * @note 使用超时锁定必须保证`SHELL_GET_TICK()`有效
  */
 #define SHELL_LOCK_TIMEOUT 0 * 60 * 1000
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

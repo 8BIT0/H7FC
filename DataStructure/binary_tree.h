@@ -1,6 +1,10 @@
 #ifndef __BINARY_TREE_H
 #define __BINARY_TREE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -78,5 +82,9 @@ typedef struct
 } BinaryTree_TypeDef;
 
 extern BinaryTree_TypeDef BalanceTree;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef __DEV_CRSF_H
 #define __DEV_CRSF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
@@ -199,5 +203,9 @@ typedef struct
 } DevCRSF_TypeDef;
 
 extern DevCRSF_TypeDef DevCRSF;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

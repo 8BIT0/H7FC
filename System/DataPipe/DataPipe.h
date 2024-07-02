@@ -1,6 +1,10 @@
 #ifndef __DATAPIPE_H
 #define __DATAPIPE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
@@ -123,5 +127,9 @@ extern DataPipeObj_TypeDef POS_hub_DataPipe;
 
 extern DataPipeObj_TypeDef Vel_smp_DataPipe;
 extern DataPipeObj_TypeDef Vel_hub_DataPipe;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef __DISKIO_H
 #define __DISKIO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -348,4 +352,9 @@ typedef struct
 } DiskFS_TypeDef;
 
 extern DiskFS_TypeDef Disk;
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

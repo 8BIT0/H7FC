@@ -1,6 +1,10 @@
 #ifndef __DEV_BMP280_H
 #define __DEV_BMP280_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -163,5 +167,9 @@ typedef struct
 } DevBMP280_TypeDef;
 
 extern DevBMP280_TypeDef DevBMP280;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

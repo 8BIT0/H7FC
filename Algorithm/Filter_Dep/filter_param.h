@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define DEFAULT_PARAM_SCALE 1.0f
 
 typedef struct
@@ -61,5 +65,9 @@ extern const BTF_Para_TypeDef BTF_U_5O_30Hz_1K[5];
 
 extern const BTF_Para_TypeDef BTF_E_5O_50Hz_1K[6];
 extern const BTF_Para_TypeDef BTF_U_5O_50Hz_1K[5];
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

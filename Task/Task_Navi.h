@@ -1,6 +1,10 @@
 #ifndef __TASK_NAVI_H
 #define __TASK_NAVI_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -23,5 +27,9 @@ typedef struct
 
 void TaskNavi_Init(uint32_t period);
 void TaskNavi_Core(void const *arg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

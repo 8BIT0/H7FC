@@ -1,6 +1,10 @@
 #ifndef POS_DATA_H
 #define POS_DATA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -42,5 +46,9 @@ typedef union
         double Vel_D;
     } GPS_Vel;
 } PosVelData_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

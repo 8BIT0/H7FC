@@ -1,6 +1,10 @@
 #ifndef __DEV_CARD_H
 #define __DEV_CARD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
@@ -61,5 +65,9 @@ typedef struct
 } DevCard_TypeDef;
 
 extern DevCard_TypeDef DevCard;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

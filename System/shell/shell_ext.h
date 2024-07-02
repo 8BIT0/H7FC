@@ -12,6 +12,10 @@
 #ifndef __SHELL_EXT_H__
 #define __SHELL_EXT_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "shell.h"
 
 /**
@@ -29,5 +33,9 @@ typedef enum
 
 unsigned int shellExtParsePara(Shell *shell, char *string);
 int shellExtRun(Shell *shell, ShellCommand *command, int argc, char *argv[]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

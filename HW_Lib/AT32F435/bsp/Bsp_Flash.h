@@ -1,6 +1,10 @@
 #ifndef __BSP_FLASH_H
 #define __BSP_FLASH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "Bsp_Flash_Port_Def.h"
 
 #define FLASH_DEFAULT_DATA 0xFF
@@ -19,6 +23,10 @@
 #define FLASH_BLOCK_END
 
 extern BspFlash_TypeDef BspFlash;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

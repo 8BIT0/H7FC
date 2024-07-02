@@ -1,6 +1,10 @@
 #ifndef __DEV_DSHOT_H
 #define __DEV_DSHOT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
@@ -74,5 +78,9 @@ typedef struct
 } DevDshot_TypeDef;
 
 extern DevDshot_TypeDef DevDshot;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

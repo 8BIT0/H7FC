@@ -1,6 +1,10 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
@@ -15,5 +19,9 @@
 int16_t Common_CRC16(const uint8_t *pBuf, const uint32_t len);
 uint8_t Get_Bit_Index(uint16_t val);
 uint8_t Get_OnSet_Bit_Num(uint32_t value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

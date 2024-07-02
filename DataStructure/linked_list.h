@@ -1,6 +1,10 @@
 #ifndef __LINKED_LIST
 #define __LINKED_LIST
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -72,5 +76,9 @@ item_obj *List_PopFirst(list_obj *list);
 int16_t List_GetFront_Len(item_obj *list);
 int16_t List_GetBack_Len(item_obj *list);
 int16_t List_GetLen(list_obj *list);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

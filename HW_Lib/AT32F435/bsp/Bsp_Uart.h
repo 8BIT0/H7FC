@@ -1,6 +1,10 @@
 #ifndef __BSP_UART_H
 #define __BSP_UART_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "Bsp_Uart_Port_Def.h"
 
 typedef enum
@@ -19,6 +23,10 @@ typedef enum
 void BspUart_Irq_Callback(void *arg);
 
 extern BspUART_TypeDef BspUart;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

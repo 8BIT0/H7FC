@@ -1,6 +1,10 @@
 #ifndef __TASK_CONTROL_H
 #define __TASK_CONTROL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -150,5 +154,9 @@ typedef struct
 
 void TaskControl_Init(uint32_t period);
 void TaskControl_Core(void const *arg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

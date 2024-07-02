@@ -1,6 +1,10 @@
 #ifndef __DEBUG_UTIL_H
 #define __DEBUG_UTIL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdarg.h>
@@ -32,5 +36,9 @@ typedef struct
 void Debug_Port_Init(DebugPrintObj_TypeDef *Obj);
 void Debug_Print(DebugPrintObj_TypeDef *Obj, const char *tag, const char *fmt, ...);
 extern DebugPin_TypeDef DebugPin;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

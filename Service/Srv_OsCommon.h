@@ -1,6 +1,10 @@
 #ifndef __SRV_OSCOMMON_H
 #define __SRV_OSCOMMON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "cmsis_os.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -34,5 +38,9 @@ typedef struct
 }SrvOsCommon_TypeDef;
 
 extern SrvOsCommon_TypeDef SrvOsCommon;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

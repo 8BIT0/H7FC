@@ -1,6 +1,10 @@
 #ifndef __SRV_BARO_H
 #define __SRV_BARO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -101,5 +105,9 @@ typedef struct
 }SrvBaro_TypeDef;
 
 extern SrvBaro_TypeDef SrvBaro;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

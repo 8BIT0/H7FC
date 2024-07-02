@@ -1,6 +1,10 @@
 #ifndef __ERROR_LOG_H
 #define __ERROR_LOG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -102,5 +106,9 @@ typedef struct
 } ErrorLog_TypeDef;
 
 extern ErrorLog_TypeDef ErrorLog;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

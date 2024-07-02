@@ -12,6 +12,10 @@
 #ifndef __SHELL_H__
 #define __SHELL_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "shell_cfg.h"
 #include <stdint.h>
 
@@ -428,6 +432,10 @@ typedef struct shell_companion_object
 signed char shellCompanionAdd(Shell *shell, int id, void *object);
 signed char shellCompanionDel(Shell *shell, int id);
 void *shellCompanionGet(Shell *shell, int id);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

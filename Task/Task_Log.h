@@ -1,6 +1,10 @@
 #ifndef __TASK_LOG_H
 #define __TASK_LOG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
@@ -81,5 +85,9 @@ typedef union
 
 void TaskLog_Init(uint32_t period);
 void TaskLog_Core(void const *arg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

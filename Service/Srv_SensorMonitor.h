@@ -1,6 +1,10 @@
 #ifndef __SRV_SENSORMONITOR_H
 #define __SRV_SENSORMONITOR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -127,4 +131,9 @@ typedef struct
 }SrvSensorMonitor_TypeDef;
 
 extern SrvSensorMonitor_TypeDef SrvSensorMonitor;
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

@@ -1,6 +1,10 @@
 #ifndef __DEV_FLOW_3901U_H
 #define __DEV_FLOW_3901U_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -50,5 +54,9 @@ typedef struct
 } DevFlow3901_TypeDef;
 
 extern DevFlow3901_TypeDef DevFlow3901;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

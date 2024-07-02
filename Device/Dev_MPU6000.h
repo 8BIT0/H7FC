@@ -1,6 +1,10 @@
 #ifndef __DEV_MPU6000_H
 #define __DEV_MPU6000_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -187,5 +191,9 @@ typedef struct
 } DevMPU6000_TypeDef;
 
 extern DevMPU6000_TypeDef DevMPU6000;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

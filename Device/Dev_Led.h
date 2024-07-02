@@ -1,6 +1,10 @@
 #ifndef __DEV_LED_H
 #define __DEV_LED_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -15,5 +19,9 @@ typedef struct
 } DevLed_TypeDef;
 
 extern DevLed_TypeDef DevLED;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

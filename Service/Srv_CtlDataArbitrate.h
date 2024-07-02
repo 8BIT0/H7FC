@@ -1,6 +1,10 @@
 #ifndef SRV_CTLDATAARBITRATE_H
 #define SRV_CTLDATAARBITRATE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -94,5 +98,9 @@ typedef struct
 } Srv_CtlDataArbitrate_TypeDef;
 
 extern Srv_CtlDataArbitrate_TypeDef Srv_CtlDataArbitrate;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

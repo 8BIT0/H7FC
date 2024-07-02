@@ -1,6 +1,10 @@
 #ifndef __STORAGE_H
 #define __STORAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <string.h>
 #include "Srv_DataHub.h"
 #include "Bsp_Flash.h"
@@ -263,5 +267,9 @@ typedef struct
 } Storage_TypeDef;
 
 extern Storage_TypeDef Storage;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

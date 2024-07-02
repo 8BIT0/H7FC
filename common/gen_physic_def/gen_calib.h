@@ -1,6 +1,10 @@
 #ifndef __GEN_CALIB_H
 #define __GEN_CALIB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
     Calib_None = 0,
@@ -25,5 +29,9 @@ typedef union
         uint16_t reserve : 11;
     } bit;
 } GenCalib_Reg_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

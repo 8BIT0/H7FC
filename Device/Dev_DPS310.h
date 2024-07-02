@@ -1,6 +1,10 @@
 #ifndef __DEV_DPS310_H
 #define __DEV_DPS310_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -198,6 +202,10 @@ typedef struct
 }DevDPS310_TypeDef;
 
 extern DevDPS310_TypeDef DevDPS310;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

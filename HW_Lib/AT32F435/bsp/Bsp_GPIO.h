@@ -1,6 +1,10 @@
 #ifndef BSP_GPIO_H
 #define BSP_GPIO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "at32f435_437.h"
 #include "Bsp_GPIO_Port_Def.h"
 
@@ -19,5 +23,9 @@ typedef struct
 extern BspGPIO_TypeDef BspGPIO;
 
 void BspGPIO_IRQ_Polling(uint32_t exti_line);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef __KERNEL_H
 #define __KERNEL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -14,5 +18,9 @@ bool Kernel_Set_SysTimer_TickUnit(uint32_t unit);
 uint32_t Kernel_Get_SysTimer_TickUnit(void);
 uint32_t Kernel_Get_PeriodValue(void);
 uint32_t Kernel_TickVal_To_Us(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef __SRV_FLOW_H
 #define __SRV_FLOW_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -32,5 +36,9 @@ typedef struct
 } SrvFlow_TypeDef;
 
 extern SrvFlow_TypeDef SrvFlow;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

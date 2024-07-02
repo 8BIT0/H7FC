@@ -1,6 +1,10 @@
 #ifndef __DEV_ICM20602_H
 #define __DEV_ICM20602_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -172,5 +176,9 @@ typedef struct
 } DevICM20602_TypeDef;
 
 extern DevICM20602_TypeDef DevICM20602;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

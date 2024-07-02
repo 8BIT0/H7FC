@@ -1,6 +1,10 @@
 #ifndef __PID_H
 #define __PID_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -46,6 +50,10 @@ typedef struct
 }PIDObj_TypeDef;
 
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

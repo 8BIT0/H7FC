@@ -1,6 +1,10 @@
 #ifndef __TASK_TELEMETRY_H
 #define __TASK_TELEMETRY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
@@ -124,5 +128,9 @@ typedef struct
 
 void TaskTelemetry_Init(uint32_t period);
 void TaskTelemetry_Core(void const* arg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

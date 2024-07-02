@@ -1,6 +1,10 @@
 #ifndef __SRV_IMUSAMPLE_H
 #define __SRV_IMUSAMPLE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -145,5 +149,9 @@ typedef struct
 } SrvIMU_TypeDef;
 
 extern SrvIMU_TypeDef SrvIMU;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

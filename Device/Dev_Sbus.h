@@ -1,6 +1,10 @@
 #ifndef __DEV_SBUS_H
 #define __DEV_SBUS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -51,5 +55,9 @@ typedef struct
 } DevSBUS_TypeDef;
 
 extern DevSBUS_TypeDef DevSBUS;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

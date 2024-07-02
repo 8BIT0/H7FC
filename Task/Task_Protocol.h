@@ -1,6 +1,10 @@
 #ifndef __TASK_PROTOCOL_H
 #define __TASK_PROTOCOL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
@@ -156,5 +160,9 @@ typedef struct
 
 void TaskFrameCTL_Init(uint32_t period);
 void TaskFrameCTL_Core(void *arg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

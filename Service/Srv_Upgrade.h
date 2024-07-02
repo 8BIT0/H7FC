@@ -1,6 +1,10 @@
 #ifndef __SRV_UPGRADE_H
 #define __SRV_UPGRADE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -86,5 +90,9 @@ typedef struct
 extern const uint8_t HWVer[3];
 extern const uint8_t AppVer[3];
 extern SrvUpgrade_TypeDef SrvUpgrade;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef CONTROL_DATA_H
 #define CONTROL_DATA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -114,6 +118,10 @@ typedef struct
 {
     ControlData_Source_List source;
 }ControL_TakeOver_Ack_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

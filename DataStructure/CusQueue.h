@@ -1,6 +1,10 @@
 #ifndef __CUSQUEUE_H
 #define __CUSQUEUE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -61,5 +65,9 @@ typedef struct
 } Queue_TypeDef;
 
 extern Queue_TypeDef Queue;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

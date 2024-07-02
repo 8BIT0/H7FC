@@ -13,6 +13,10 @@
 #ifndef MadgwickAHRS_h
 #define MadgwickAHRS_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 
 //----------------------------------------------------------------------------------------------------
@@ -38,6 +42,10 @@ typedef struct
 void MadgwickAHRSInit(AlgoAttData_TypeDef *att);
 void MadgwickAHRSupdate(AlgoAttData_TypeDef *att,float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
 void MadgwickAHRSupdateIMU(AlgoAttData_TypeDef *att,float gx, float gy, float gz, float ax, float ay, float az);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 //=====================================================================================================

@@ -1,6 +1,10 @@
 #ifndef __SRV_DATAHUB_H
 #define __SRV_DATAHUB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -273,5 +277,9 @@ typedef struct
 } SrvDataHub_TypeDef;
 
 extern SrvDataHub_TypeDef SrvDataHub;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

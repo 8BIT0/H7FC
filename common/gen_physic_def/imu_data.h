@@ -1,6 +1,10 @@
 #ifndef __IMU_DATA_H
 #define __IMU_DATA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -97,5 +101,9 @@ inline void IMUData_SetError(IMU_Error_TypeDef *error, uint8_t code, const char*
         error->reg_t_val = reg_t;
     }
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

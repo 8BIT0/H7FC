@@ -1,6 +1,10 @@
 #ifndef __YMODEM_H
 #define __YMODEM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -87,5 +91,9 @@ typedef struct
 } YModem_TypeDef;
 
 extern YModem_TypeDef YModem;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

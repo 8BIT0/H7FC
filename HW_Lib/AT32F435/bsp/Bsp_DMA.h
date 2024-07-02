@@ -1,6 +1,10 @@
 #ifndef __BSP_DMA_H
 #define __BSP_DMA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "Bsp_DMA_Port_Def.h"
 #include "at32f435_437_dma.h"
 
@@ -39,5 +43,9 @@ void BspDMA_Irq_Callback(void *channel);
 
 extern BspDMA_TypeDef BspDMA;
 extern BspDMA_Pipe_TypeDef BspDMA_Pipe;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

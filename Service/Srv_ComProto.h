@@ -1,6 +1,10 @@
 #ifndef __SRV_COMPROTO_H
 #define __SRV_COMPROTO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "Srv_OsCommon.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -200,5 +204,9 @@ typedef struct
 } SrvComProto_TypeDef;
 
 extern SrvComProto_TypeDef SrvComProto;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

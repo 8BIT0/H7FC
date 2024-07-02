@@ -1,6 +1,10 @@
 #ifndef __SRV_RECEIVER_H
 #define __SRV_RECEIVER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "Srv_OsCommon.h"
 #include "Dev_Sbus.h"
 #include "Dev_CRSF.h"
@@ -149,5 +153,9 @@ typedef struct
 } SrvReceiver_TypeDef;
 
 extern SrvReceiver_TypeDef SrvReceiver;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

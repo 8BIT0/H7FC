@@ -1,6 +1,10 @@
 #ifndef __DEV_W25QXX_H
 #define __DEV_W25QXX_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -163,5 +167,9 @@ typedef struct
 } DevW25Qxx_TypeDef;
 
 extern DevW25Qxx_TypeDef DevW25Qxx;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
