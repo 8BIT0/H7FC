@@ -182,6 +182,9 @@ typedef struct
     crsf_state_list state;
     crsf_LinkStatistics_t statistics;
 
+    uint32_t match_header_num;
+    uint32_t decode_success_num;
+
     uint16_t channel[CRSF_MAX_CHANNEL];
 } DevCRSFObj_TypeDef;
 

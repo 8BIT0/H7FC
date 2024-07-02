@@ -98,6 +98,7 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
             {
                 obj->rec_stage = CRSF_Stage_Size;
                 obj->frame.addr = *p_data;
+                obj->match_header_num ++;
                     
                 DebugPin.ctl(Debug_PC0, false);
                 DebugPin.ctl(Debug_PC0, true);
@@ -204,7 +205,7 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
                 obj->channel[15] = channel_val_ptr->ch15;
 
                 obj->state = CRSF_State_LinkUp;
-
+                obj->decode_success_num ++;
                 return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
             }
             break;
