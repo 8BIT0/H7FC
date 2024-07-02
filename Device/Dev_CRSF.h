@@ -185,6 +185,8 @@ typedef struct
     uint32_t match_header_num;
     uint32_t decode_success_num;
 
+    bool val_access;
+
     uint16_t channel[CRSF_MAX_CHANNEL];
 } DevCRSFObj_TypeDef;
 

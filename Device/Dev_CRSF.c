@@ -204,6 +204,9 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t
                 obj->channel[14] = channel_val_ptr->ch14;
                 obj->channel[15] = channel_val_ptr->ch15;
 
+                if (obj->val_access)
+                    obj->val_access = false;
+
                 obj->state = CRSF_State_LinkUp;
                 obj->decode_success_num ++;
                 return CRSF_FRAMETYPE_RC_CHANNELS_PACKED;
@@ -222,8 +225,14 @@ static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in)
 {
     if (obj && ch_in)
     {
+re_get_crsf:
+        obj->val_access = true;
+        
         /* fresh new data */
         memcpy(ch_in, obj->channel, sizeof(obj->channel));
+    
+        if (!obj->val_access)
+            goto re_get_crsf;
     }
 }
 
