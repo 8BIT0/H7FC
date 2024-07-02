@@ -1,6 +1,10 @@
 #ifndef __BSP_ADC_PORT_DEF_H
 #define __BSP_ADC_PORT_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -18,6 +22,10 @@ typedef struct
     bool (*init)(const BspADCObj_TypeDef obj);
     uint32_t (*get)(const BspADCObj_TypeDef obj);
 }BspADC_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

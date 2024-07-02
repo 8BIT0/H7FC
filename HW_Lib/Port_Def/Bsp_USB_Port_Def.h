@@ -1,6 +1,10 @@
 #ifndef __BSP_USB_PORT_DEF_H
 #define __BSP_USB_PORT_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -69,5 +73,9 @@ typedef struct
     BspUSB_VCP_TxStatistic_TypeDef (*get_tx_statistic)(void);
     bool (*check_connect)(uint32_t sys_tick, uint32_t time_out);
 }BspUSB_VCP_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

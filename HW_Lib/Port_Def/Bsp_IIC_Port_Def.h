@@ -1,6 +1,10 @@
 #ifndef __BSP_IIC_PORT_DEF_H
 #define __BSP_IIC_PORT_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
@@ -38,5 +42,9 @@ typedef struct
 }BspIIC_TypeDef;
 
 void *BspIIC_Get_HandlePtr(uint8_t index);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

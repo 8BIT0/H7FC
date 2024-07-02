@@ -1,6 +1,10 @@
 #ifndef __BSP_UART_PORT_DEF_H
 #define __BSP_UART_PORT_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -90,5 +94,9 @@ typedef struct
     bool (*set_rx_callback)(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
     bool (*set_tx_callback)(BspUARTObj_TypeDef *obj, BspUART_Callback callback);
 } BspUART_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

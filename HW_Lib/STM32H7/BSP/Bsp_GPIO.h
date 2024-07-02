@@ -1,6 +1,10 @@
 #ifndef __BSP_GPIO_H
 #define __BSP_GPIO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -14,5 +18,9 @@
 #define GPIO_EXTI_SUM 16
 
 extern BspGPIO_TypeDef BspGPIO;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef __BSP_SPI_PORT_DEF_H
 #define __BSP_SPI_PORT_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
@@ -40,5 +44,9 @@ typedef struct
     uint16_t (*trans_receive)(void *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
     bool (*set_speed)(void *instance, uint32_t speed);
 } BspSpi_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef __BSP_USB_H
 #define __BSP_USB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -10,5 +14,9 @@
 #include "usbd_desc.h"
 
 extern BspUSB_VCP_TypeDef BspUSB_VCP;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

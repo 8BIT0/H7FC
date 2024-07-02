@@ -1,6 +1,10 @@
 #ifndef __BSP_DMA_H
 #define __BSP_DMA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "Bsp_DMA_Port_Def.h"
@@ -36,5 +40,9 @@ extern BspDMA_TypeDef BspDMA;
 extern BspDMA_Pipe_TypeDef BspDMA_Pipe;
 
 void BspDMA_Irq_Callback(void *channel);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

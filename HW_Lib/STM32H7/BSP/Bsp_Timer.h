@@ -1,6 +1,10 @@
 #ifndef __BSP_TIMER_H
 #define __BSP_TIMER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "Bsp_Timer_Port_Def.h"
@@ -33,5 +37,11 @@ TIM_HandleTypeDef* BspTimer_Get_Tick_HandlePtr(BspTimer_Instance_List index);
 
 extern BspTimerPWM_TypeDef BspTimer_PWM;
 extern BspTimerTick_TypeDef BspTimer_Tick;
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 #endif

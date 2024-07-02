@@ -1,6 +1,10 @@
 #ifndef __HW_DEF_H
 #define __HW_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "Bsp_GPIO.h"
 #include "Bsp_DMA.h"
 #include "Bsp_SPI.h"
@@ -309,5 +313,9 @@ extern BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg;
 
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 void SecIMU_Dir_Tune(float *gyr, float *acc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

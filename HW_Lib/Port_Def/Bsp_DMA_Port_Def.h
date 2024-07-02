@@ -1,6 +1,10 @@
 #ifndef __BSP_DMA_PORT_DEF_H
 #define __BSP_DMA_PORT_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -28,5 +32,9 @@ typedef struct
     bool (*trans)(uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength);
     void *(*get_hanle)(void);
 } BspDMA_Pipe_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef __BSP_IIC_H
 #define __BSP_IIC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
@@ -24,5 +28,9 @@ typedef enum
 }BspIIC_Instance_List;
 
 extern BspIIC_TypeDef BspIIC;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef __BSP_SDMMC_H
 #define __BSP_SDMMC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -104,5 +108,9 @@ typedef struct
 } BspSDMMC_TypeDef;
 
 extern BspSDMMC_TypeDef BspSDMMC;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

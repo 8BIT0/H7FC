@@ -1,6 +1,10 @@
 #ifndef __HW_DEF_H
 #define __HW_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "Bsp_GPIO.h"
 #include "Bsp_DMA.h"
 #include "../../AT32F435/bsp/Bsp_Uart.h"
@@ -224,5 +228,9 @@ extern DebugPrintObj_TypeDef DebugP4;
 #define DEBUG_INFO(fmt, ...) Debug_Print(&DebugP4, DEBUG_TAG, fmt, ##__VA_ARGS__)
 
 void PriIMU_Dir_Tune(float *gyr, float *acc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

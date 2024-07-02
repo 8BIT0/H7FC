@@ -1,6 +1,10 @@
 #ifndef __BSP_UART_H
 #define __BSP_UART_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -27,5 +31,9 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
 UART_HandleTypeDef *BspUart_GetObj_Handle(BspUART_Port_List index);
 
 extern BspUART_TypeDef BspUart;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

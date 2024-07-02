@@ -1,6 +1,10 @@
 #ifndef __BSP_TIMER_PORT_DEF_H
 #define __BSP_TIMER_PORT_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "Bsp_GPIO_Port_Def.h"
@@ -69,5 +73,9 @@ typedef struct
     void (*trim_reload)(BspTimerTickObj_TypeDef *obj, uint32_t reload_val);
     void (*trim_counter)(BspTimerTickObj_TypeDef *obj, uint32_t counter_val);
 }BspTimerTick_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

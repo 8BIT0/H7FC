@@ -1,6 +1,10 @@
 #ifndef __BSP_FLASH_H
 #define __BSP_FLASH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -29,5 +33,9 @@
 #define FLASH_SECTOR_7_SIZE             ((uint32_t)0x00020000)
 
 extern BspFlash_TypeDef BspFlash;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

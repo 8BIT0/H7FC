@@ -1,6 +1,10 @@
 #ifndef __BSP_GPIO_PORT_DEF_H
 #define __BSP_GPIO_PORT_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -35,5 +39,9 @@ typedef struct
     void (*write)(BspGPIO_Obj_TypeDef IO_Obj, bool state);
     void (*de_init)(BspGPIO_Obj_TypeDef IO_Obj);
 } BspGPIO_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
