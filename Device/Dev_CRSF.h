@@ -155,7 +155,6 @@ typedef enum
 {
     CRSF_Stage_Header = 0,
     CRSF_Stage_Size,
-    CRSF_Stage_Type,
     CRSF_Stage_Payload,
     CRSF_Stage_CRC,
 } crsf_Rec_Stage_List;

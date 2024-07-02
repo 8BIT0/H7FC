@@ -10,6 +10,12 @@ DebugPinObj_TypeDef Debug_PC8 = {
     .init_state = GPIO_PULL_NONE,
 };
 
+DebugPinObj_TypeDef Debug_PC0 = {
+    .port = (void *)&DBG_PC_Port,
+    .pin = GPIO_PINS_0,
+    .init_state = GPIO_PULL_NONE,
+};
+
 /* Led 1 */
 BspGPIO_Port_TypeDef Led1_Port = {
     .port = GPIOB,

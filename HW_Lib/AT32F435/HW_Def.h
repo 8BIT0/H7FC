@@ -201,6 +201,7 @@ extern BspGPIO_Obj_TypeDef Uart4_RxPin;
 extern DevLedObj_TypeDef Led1;
 
 extern DebugPinObj_TypeDef Debug_PC8;
+extern DebugPinObj_TypeDef Debug_PC0;
 
 extern BspGPIO_Obj_TypeDef PriIMU_CSPin;
 extern BspGPIO_Obj_TypeDef PriIMU_INTPin;
