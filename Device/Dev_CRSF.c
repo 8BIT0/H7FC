@@ -94,6 +94,7 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
         switch ((uint8_t)(obj->rec_stage))
         {
         case CRSF_Stage_Header:
+            obj->rec_cnt = 0;
             if (*p_data == CRSF_ADDRESS_FLIGHT_CONTROLLER)
             {
                 obj->rec_stage = CRSF_Stage_Size;
@@ -104,22 +105,18 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
                 DebugPin.ctl(Debug_PC0, true);
             }
             else
-            {
                 memset(&obj->frame, 0, sizeof(obj->frame));
-                obj->rec_cnt = 0;
-            }
             break;
 
         case CRSF_Stage_Size:
+            obj->rec_cnt = 0;
             if (*p_data <= CRSF_PAYLOAD_SIZE_MAX)
             {
                 obj->rec_stage = CRSF_Stage_Payload;
                 obj->frame.length = *p_data;
-                obj->rec_cnt = 0;
             }
             else
             {
-                obj->rec_cnt = 0;
                 obj->rec_stage = CRSF_Stage_Header;
                 memset(&obj->frame, 0, sizeof(obj->frame));
             }
