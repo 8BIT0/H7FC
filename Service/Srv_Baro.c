@@ -230,6 +230,7 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
             /* set cs pin high */
             BspGPIO.write(Baro_CSPin, true);
             SrvBaroBus.init = true;
+            BARO_INFO("Bus Init Successed\r\n");
             return true;
 
         default:
