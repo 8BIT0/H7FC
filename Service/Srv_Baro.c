@@ -20,7 +20,7 @@
 #define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
 
-#define BARO_TAG "\t[ BARO INFO ] "
+#define BARO_TAG "[ BARO INFO ] "
 #define BARO_INFO(fmt, ...) Debug_Print(&DebugP4, BARO_TAG, fmt, ##__VA_ARGS__)
 
 /* internal vriable */
