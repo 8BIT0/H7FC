@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 void Task_Manager_Init(void);
-void Task_Manager_CreateTask(void);
+void Task_Manager_CreateTask(void const *arg);
 
 #ifdef __cplusplus
 }

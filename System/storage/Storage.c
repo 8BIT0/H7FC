@@ -59,11 +59,11 @@ static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t
 
 /* external function */
 static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev);
-static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_ParaClassType_List class, const char *name);
-static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List class, const char *name, uint32_t size);
-static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size);
-static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
-static Storage_ErrorCode_List Storage_Get_Data(Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
+static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_ParaClassType_List _class, const char *name);
+static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List _class, const char *name, uint32_t size);
+static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List _class, const char *name, uint8_t *p_data, uint16_t size);
+static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List _class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
+static Storage_ErrorCode_List Storage_Get_Data(Storage_ParaClassType_List _class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
 
 static bool Storage_Firmware_Format(Storage_FirmwareType_List type);
 static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
@@ -434,7 +434,7 @@ static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num)
  * if matched return data slot address 
  * else return 0
  */
-static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_ParaClassType_List class, const char *name)
+static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_ParaClassType_List _class, const char *name)
 {
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_Item_TypeDef *item_list = NULL;
@@ -447,10 +447,10 @@ static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_ParaClassType_List c
     if (!Storage_Monitor.init_state || \
         (name == NULL) || \
         (strlen(name) == 0) || \
-        (class > Para_User))
+        (_class > Para_User))
         return ItemSearch;
 
-    p_Sec = Storage_Get_SecInfo(&Storage_Monitor.external_info, class);
+    p_Sec = Storage_Get_SecInfo(&Storage_Monitor.external_info, _class);
 
     if ((p_Sec == NULL) || \
         (p_Sec->para_num == 0) || \
@@ -601,7 +601,7 @@ static Storage_ErrorCode_List Storage_Get_Data(Storage_ParaClassType_List class,
     return Storage_GetData_Error;
 }
 
-static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size)
+static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List _class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size)
 {
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_DataSlot_TypeDef *p_slotdata = NULL;
@@ -614,13 +614,13 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List
     uint8_t align_byte = 0;
 
     if (!Storage_Monitor.init_state || \
-        (class > Para_User) || \
+        (_class > Para_User) || \
         (data_slot_hdl == 0) || \
         (p_data == NULL) || \
         (size == 0))
         return Storage_Param_Error;
 
-    p_Sec = Storage_Get_SecInfo(&Storage_Monitor.external_info, class);
+    p_Sec = Storage_Get_SecInfo(&Storage_Monitor.external_info, _class);
     
     if ((p_Sec == NULL) || \
         (p_Sec->data_sec_addr > data_slot_hdl) || \
@@ -1056,7 +1056,7 @@ static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_
 }
 
 /* developping */
-static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List class, const char *name, uint32_t size)
+static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List _class, const char *name, uint32_t size)
 {
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
@@ -1072,14 +1072,14 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List clas
         return Storage_Param_Error;
 
     p_Flash = &Storage_Monitor.external_info;
-    p_Sec = Storage_Get_SecInfo(p_Flash, class);
+    p_Sec = Storage_Get_SecInfo(p_Flash, _class);
     if ((p_Sec == NULL) || \
         (p_Sec->para_num == 0) || \
         (p_Sec->para_size == 0))
         return Storage_Class_Error;
 
     /* search tab for item slot first */
-    ItemSearch = Storage_Search(class, name);
+    ItemSearch = Storage_Search(_class, name);
     if ((ItemSearch.item_addr == 0) || \
         (ItemSearch.item.data_addr == 0) || \
         (ItemSearch.item.head_tag != STORAGE_ITEM_HEAD_TAG) || \
@@ -1102,7 +1102,7 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List clas
     return Storage_Delete_Error;
 }
 
-static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List class, const char *name, uint8_t *p_data, uint16_t size)
+static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List _class, const char *name, uint8_t *p_data, uint16_t size)
 {
     uint8_t *crc_buf = NULL;
     uint8_t *slot_update_ptr = NULL;
@@ -1131,7 +1131,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List clas
         return Storage_Param_Error;
 
     p_Flash = &Storage_Monitor.external_info;
-    p_Sec = Storage_Get_SecInfo(p_Flash, class);
+    p_Sec = Storage_Get_SecInfo(p_Flash, _class);
     if (p_Sec == NULL)
         return Storage_Class_Error;
 
@@ -1180,7 +1180,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List clas
                     crt_item_slot = tab_item[item_i];
 
                     /* set item slot info */
-                    crt_item_slot.class = class;
+                    crt_item_slot._class = _class;
                     memset(crt_item_slot.name, '\0', STORAGE_NAME_LEN);
                     memcpy(crt_item_slot.name, name, strlen(name));
                     crt_item_slot.len = size + align_byte;
@@ -2323,7 +2323,7 @@ static void Storage_Shell_Get_BaseInfo(void)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_BaseInfo, Storage_Shell_Get_BaseInfo, Storage base info);
 
-static void Storage_Test(Storage_ParaClassType_List class, char *test_name, char *test_data)
+static void Storage_Test(Storage_ParaClassType_List _class, char *test_name, char *test_data)
 {
     Shell *shell_obj = Shell_GetInstence();
     Storage_ErrorCode_List error_code = Storage_Error_None;
@@ -2347,14 +2347,14 @@ static void Storage_Test(Storage_ParaClassType_List class, char *test_name, char
     shellPrint(shell_obj, "\thalt by enable or init state\r\n");
 
     Storage_ClassType_Print(shell_obj);
-    if(class > Para_User)
+    if(_class > Para_User)
     {
         shellPrint(shell_obj, "\tstorage class arg error\r\n");
         shellPrint(shell_obj, "\ttest halt\r\n");
         return;
     }
 
-    Storage_SelectedClass_Print(shell_obj, class);
+    Storage_SelectedClass_Print(shell_obj, _class);
     if( (test_name == NULL) || \
         (test_data == NULL) || \
         (strlen(test_name) == 0) || \
@@ -2370,13 +2370,13 @@ static void Storage_Test(Storage_ParaClassType_List class, char *test_name, char
     shellPrint(shell_obj, "\tStorage Size: %d\r\n", strlen(test_data));
 
     /* search item first */
-    if (Storage_Search(class, test_name).item.data_addr != 0)
+    if (Storage_Search(_class, test_name).item.data_addr != 0)
     {
         shellPrint(shell_obj, "\t%s already exist\r\n", test_name);
         return;
     }
 
-    error_code = Storage_CreateItem(class, test_name, (uint8_t *)test_data, strlen(test_data));
+    error_code = Storage_CreateItem(_class, test_name, (uint8_t *)test_data, strlen(test_data));
     if(error_code != Storage_Error_None)
     {
         shellPrint(shell_obj, "\t[Storage Test Failed]\r\n");

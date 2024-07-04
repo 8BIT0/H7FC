@@ -216,7 +216,7 @@ void TaskFrameCTL_Init(uint32_t period)
     memset(&Upgrade_Monitor.file_info, 0, sizeof(Upgrade_Monitor.file_info));
 }
 
-void TaskFrameCTL_Core(void *arg)
+void TaskFrameCTL_Core(void const *arg)
 {
     uint32_t per_time = SrvOsCommon.get_os_ms();
     bool cli_state = false;

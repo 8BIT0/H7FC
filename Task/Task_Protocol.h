@@ -159,7 +159,7 @@ typedef struct
 } FrameCTL_UpgradeMonitor_TypeDef;
 
 void TaskFrameCTL_Init(uint32_t period);
-void TaskFrameCTL_Core(void *arg);
+void TaskFrameCTL_Core(void const *arg);
 
 #ifdef __cplusplus
 }
