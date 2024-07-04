@@ -283,6 +283,7 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                         return SrvBaro_Error_DevInit;
                     }
 
+                    BARO_INFO("Module init accomplished\r\n");
                     SrvBaroObj.calib_state = Calib_Start;
                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
                 }
@@ -310,7 +311,7 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
 
-                    BARO_INFO("Module Init\r\n");
+                    BARO_INFO("Module init\r\n");
                     /* device init */
                     if(!ToBMP280_API(SrvBaroObj.sensor_api)->init(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
                     {
@@ -319,6 +320,7 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                         return SrvBaro_Error_DevInit;
                     }
 
+                    BARO_INFO("Module init accomplished\r\n");
                     SrvBaroObj.calib_state = Calib_Start;
                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
                 }
@@ -335,12 +337,16 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                 return SrvBaro_Error_BadType;
         }
 
+        BARO_INFO("Sample rate: %d\r\n", SrvBaroObj.sample_rate);
         SrvBaroObj.sample_period = round(1000.0 / (double)SrvBaroObj.sample_rate);
+        BARO_INFO("Sample period: %d\r\n", SrvBaroObj.sample_period);
 
         /* filter init */
+        BARO_INFO("Smooth window filter init\r\n");
         SrvBaroObj.smoothwindow_filter_hdl = SmoothWindow.init(SRVBARO_SMOOTHWINDOW_SIZE);
         if(SrvBaroObj.smoothwindow_filter_hdl == 0)
         {
+            BARO_INFO("Smooth window filter init failed\r\n");
             ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_FilterInit, NULL, 0);
             return SrvBaro_Error_FilterInit;
         }

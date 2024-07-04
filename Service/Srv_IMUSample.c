@@ -410,7 +410,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     if(!SrvMpu_Init_Reg.sec.Pri_State)
         return SrvIMU_AllModule_Init_Error;
 
-    return SrvIMU_No_Error;
+    return SrvIMU_SecDev_Init_Error;
 #endif
 }
 

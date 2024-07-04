@@ -17,6 +17,9 @@
 #define BARO_BUS_TYPE SrvBaro_Bus_SPI
 #endif
 
+#define MONITOR_TAG "[ SENSOR MONITOR INFO ] "
+#define MONITOR_INFO(fmt, ...) Debug_Print(&DebugP4, MONITOR_TAG, fmt, ##__VA_ARGS__)
+
 /* internal function */
 static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);
 
@@ -208,9 +211,11 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
         switch(init_state)
         {
             case SrvIMU_PriDev_Init_Error:
+                MONITOR_INFO("Pri IMU init error\r\n");
                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
                 if(!SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range))
                 {
+                    MONITOR_INFO("IMU get range failed\r\n");
                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
                     return false;
                 }
@@ -221,9 +226,11 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 break;
 
             case SrvIMU_SecDev_Init_Error:
+                MONITOR_INFO("Sec IMU init error\r\n");
                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
                 if(!SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range))
                 {
+                    MONITOR_INFO("IMU get range failed\r\n");
                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
                     return false;
                 }
@@ -233,7 +240,8 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 obj->IMU_SampleMode = SrvIMU_Priori_Pri;
                 break;
 
-            case SrvIMU_No_Error: 
+            case SrvIMU_No_Error:
+                MONITOR_INFO("All IMU init successed\r\n");
                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
                 
@@ -243,9 +251,9 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 /* set sample mode */
                 if(!obj->pri_range_get && !obj->sec_range_get)
                 {
+                    MONITOR_INFO("IMU get range failed\r\n");
                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
-
                     return false;
                 }
                 else
@@ -461,7 +469,10 @@ static uint32_t SrvSensorMonitor_Get_MagData(SrvSensorMonitorObj_TypeDef *obj)
 static bool SrvSensorMonitor_Baro_Init(void)
 {
     if(SrvBaro.init && (SrvBaro.init(BARO_TYPE, BARO_BUS_TYPE) == SrvBaro_Error_None))
+    {
+        MONITOR_INFO("Baro init accomplished\r\n");
         return true;
+    }
 
     return false;
 }
