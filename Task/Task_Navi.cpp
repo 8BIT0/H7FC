@@ -66,7 +66,7 @@ void TaskNavi_Init(uint32_t period)
     vd_3d << 3, 2, 1;
 
     result2 = matrix_23 * vd_3d;
-    NAVI_INFO("\r\n");
+    NAVI_INFO("Eigen Test\r\n");
     for (int i = 0; i < 2; i++)
     {
         for (int j = 0; j < 1; j++)

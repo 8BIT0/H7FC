@@ -10,6 +10,7 @@
 #include "error_log.h"
 #include "bsp_iic.h"
 #include "bsp_gpio.h"
+#include "HW_Def.h"
 #include <math.h>
 
 #define STANDER_ATMOSPHERIC_PRESSURE (101.325f * 1000)

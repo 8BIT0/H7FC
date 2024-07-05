@@ -81,8 +81,6 @@ typedef struct
     Srv_CtlRange_TypeDef att_ctl_range[Att_Ctl_Sum];
     Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
 
-    ControlSig_ArbitrateState_List arbitrate_state;
-
     ControlData_TypeDef RC_CtlData;
     ControlData_TypeDef OPC_CtlData;
     ControlData_TypeDef InUse_CtlData;
