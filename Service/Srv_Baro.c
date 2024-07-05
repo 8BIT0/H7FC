@@ -7,8 +7,6 @@
 #include "Srv_Baro.h"
 #include "Srv_OsCommon.h"
 #include "../FCHW_Config.h"
-#include "HW_Def.h"
-#include "debug_util.h"
 #include "error_log.h"
 #include "bsp_iic.h"
 #include "bsp_gpio.h"
@@ -19,9 +17,6 @@
 
 #define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
 #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
-
-#define BARO_TAG "[ BARO INFO ] "
-#define BARO_INFO(fmt, ...) Debug_Print(&DebugP4, BARO_TAG, fmt, ##__VA_ARGS__)
 
 /* internal vriable */
 SrvBaroObj_TypeDef SrvBaroObj = {
@@ -173,12 +168,9 @@ SrvBaro_TypeDef SrvBaro = {
 
 static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
 {
-    BARO_INFO("Init\r\n");
-
     switch((uint8_t)bus_type)
     {
         case SrvBaro_Bus_IIC:
-            BARO_INFO("Bus type IIC\r\n");
             SrvBaroBus.type = bus_type;
             SrvBaroBus.bus_api = (void *)&BspIIC;
 #if defined STM32H743xx
@@ -206,7 +198,6 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
             return true;
 
         case SrvBaro_Bus_SPI:
-            BARO_INFO("Bus type SPI\r\n");
             SrvBaroBus.type = bus_type;
 
             Baro_BusCfg.Pin = Baro_BusPin;
@@ -215,22 +206,15 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
 
             /* spi cd pin init */
             if (!BspGPIO.out_init(Baro_CSPin))
-            {
-                BARO_INFO("CS Pin Init Failed\r\n");
                 return false;
-            }
 
             /* spi bus port init */
             if (!ToSPI_BusAPI(SrvBaroBus.bus_api)->init(To_NormalSPI_Obj(SrvBaroBus.bus_obj), &Baro_Bus_Instance))
-            {
-                BARO_INFO("Bus Init Failed\r\n");
                 return false;
-            }
 
             /* set cs pin high */
             BspGPIO.write(Baro_CSPin, true);
             SrvBaroBus.init = true;
-            BARO_INFO("Bus Init Successed\r\n");
             return true;
 
         default:
@@ -259,7 +243,6 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
         switch((uint8_t)sensor_type)
         {
             case Baro_Type_DPS310:
-                BARO_INFO("Module type DPS310\r\n");            
                 SrvBaroObj.type = sensor_type;
                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevDPS310Obj_TypeDef));
                 SrvBaroObj.sensor_api = &DevDPS310;
@@ -275,28 +258,23 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
 
                     /* device init */
-                    BARO_INFO("Module Init\r\n");
                     if(!ToDPS310_API(SrvBaroObj.sensor_api)->init(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
                     {
-                        BARO_INFO("Module Init Failed\r\n");
                         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
                         return SrvBaro_Error_DevInit;
                     }
 
-                    BARO_INFO("Module init accomplished\r\n");
                     SrvBaroObj.calib_state = Calib_Start;
                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
                 }
                 else
                 {
-                    BARO_INFO("Object Malloc Faield\r\n");
                     ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSensorObj, NULL, 0);
                     return SrvBaro_Error_BadSensorObj;
                 }
                 break;
 
             case Baro_Type_BMP280:
-                BARO_INFO("Module Type BMP280\r\n");
                 SrvBaroObj.type = sensor_type;
                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevBMP280Obj_TypeDef));
                 SrvBaroObj.sensor_api = &DevBMP280;
@@ -311,22 +289,18 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
 
-                    BARO_INFO("Module init\r\n");
                     /* device init */
                     if(!ToBMP280_API(SrvBaroObj.sensor_api)->init(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
                     {
-                        BARO_INFO("Module Init Failed\r\n");
                         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
                         return SrvBaro_Error_DevInit;
                     }
 
-                    BARO_INFO("Module init accomplished\r\n");
                     SrvBaroObj.calib_state = Calib_Start;
                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
                 }
                 else
                 {
-                    BARO_INFO("Object Malloc Faield\r\n");
                     ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSensorObj, NULL, 0);
                     return SrvBaro_Error_BadSensorObj;
                 }
@@ -337,16 +311,12 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                 return SrvBaro_Error_BadType;
         }
 
-        BARO_INFO("Sample rate: %d\r\n", SrvBaroObj.sample_rate);
         SrvBaroObj.sample_period = round(1000.0 / (double)SrvBaroObj.sample_rate);
-        BARO_INFO("Sample period: %d\r\n", SrvBaroObj.sample_period);
 
         /* filter init */
-        BARO_INFO("Smooth window filter init\r\n");
         SrvBaroObj.smoothwindow_filter_hdl = SmoothWindow.init(SRVBARO_SMOOTHWINDOW_SIZE);
         if(SrvBaroObj.smoothwindow_filter_hdl == 0)
         {
-            BARO_INFO("Smooth window filter init failed\r\n");
             ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_FilterInit, NULL, 0);
             return SrvBaro_Error_FilterInit;
         }
@@ -363,7 +333,6 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
         return SrvBaro_Error_BadRate;
     }
 
-    BARO_INFO("Init Successed\r\n");
     return SrvBaro_Error_None;
 }
 
