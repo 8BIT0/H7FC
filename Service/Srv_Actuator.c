@@ -611,8 +611,8 @@ void DShot_Port_Trans(void *obj)
 {
     if (obj && SrvActuator_Sem)
     {
-        osSemaphoreWait(SrvActuator_Sem, 1);
         BspTimer_PWM.dma_trans(&(To_DShot_Obj(obj)->pwm_obj));
+        osSemaphoreWait(SrvActuator_Sem, 1);
     }
 }
 
