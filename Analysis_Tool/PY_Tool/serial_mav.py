@@ -4,8 +4,7 @@ import serial
 import serial.tools.list_ports
 import serial.tools.list_ports_common
 from time import sleep
-from queue import Queue
-import mav_parse as Mav
+from mav_parse import H7FC_Obj as Drone
 
 def Kb(size = 0):
     return size * 1024 * 1024
@@ -19,7 +18,6 @@ def clear_consoel_dsp(line = 0):
         sys.stdout.write('\x1b[2K')
 
 research_cnt = 0
-rec_queue = Queue(maxsize = Mb(8))
 
 while (True):
     avaliable_port = list(serial.tools.list_ports.comports())
@@ -52,29 +50,17 @@ while (True):
         
         if FC_port.is_open:
             print("[ Flight Controller Port Open Successed ]\r\n")
+            Drone(port_info.device)
 
             # do mavlink and other frame parse
             # communicate with the flight controller
             rec_size = 0
-            dsp_clr = 0
             while FC_port.is_open:
                 # # have data receive
                 rec_size = FC_port.in_waiting
                 if rec_size > 0:
                     print('[ receive size ]\t', rec_size)
-                    dsp_clr += 1
-
-                    if (rec_queue.full() != True):
-                        buff = FC_port.read(rec_size)
-                        for byte in buff:
-                           rec_queue.put(buff)
-                        Mav.mav_parse(rec_queue)
-                    else:
-                        dsp_clr += 1
-                        print('[ queue full ]')
-
-                    clear_consoel_dsp(dsp_clr)
-                    dsp_clr = 0
+                    clear_consoel_dsp(1)
                 sleep(0.2)
 
             print("[ Flight Controller is disconnected ]")
