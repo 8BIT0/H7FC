@@ -73,8 +73,8 @@ while (True):
                         dsp_clr += 1
                         print('[ queue full ]')
 
-                    clear_consoel_dsp(dsp_clr);
-                    dsp_clr = 0;
+                    clear_consoel_dsp(dsp_clr)
+                    dsp_clr = 0
                 sleep(0.2)
 
             print("[ Flight Controller is disconnected ]")
