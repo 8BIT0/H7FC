@@ -50,7 +50,7 @@ while (True):
         
         if FC_port.is_open:
             print("[ Flight Controller Port Open Successed ]\r\n")
-            Drone(port_info.device)
+            H7FC = Drone(port_info.device)
 
             # do mavlink and other frame parse
             # communicate with the flight controller
@@ -61,6 +61,7 @@ while (True):
                 if rec_size > 0:
                     print('[ receive size ]\t', rec_size)
                     clear_consoel_dsp(1)
+                    H7FC.parse()
                 sleep(0.2)
 
             print("[ Flight Controller is disconnected ]")

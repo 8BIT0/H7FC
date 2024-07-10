@@ -1,29 +1,30 @@
+import pymavlink
 from pymavlink import mavutil
 
 class H7FC_Obj:
-    self.imu_accessing = False
-    self.imu_time = 0
-    self.gyr_x = 0.0
-    self.gyr_y = 0.0
-    self.gyr_z = 0.0
-    self.acc_x = 0.0
-    self.acc_y = 0.0
-    self.acc_z = 0.0
-
-    self.attitude_accessing = False
-    self.attitude_time = 0
-    self.pitch = 0.0
-    self.roll  = 0.0
-    self.yaw   = 0.0
-
-    self.baro_accessing = False
-    self.baro_time  = 0
-    self.baro_press = 0.0
-    self.baro_alt   = 0.0
+    imu_accessing = False
+    imu_time = 0
+    gyr_x = 0.0
+    gyr_y = 0.0
+    gyr_z = 0.0
+    acc_x = 0.0
+    acc_y = 0.0
+    acc_z = 0.0
+    attitude_accessing = False
+    attitude_time = 0
+    pitch = 0.0
+    roll  = 0.0
+    yaw   = 0.0
+    baro_accessing = False
+    baro_time  = 0
+    baro_press = 0.0
+    baro_alt   = 0.0
 
     def __init__(self, port_name):
+        print(pymavlink.__doc__)
         self.mav_port = mavutil.mavlink_connection(port_name)
 
-    def parse(self, byte):
-        mavutil.recv_match()
+    def parse(self):
+        msg = self.mav_port.recv_match(blocking = False)
+        print(msg._type)
 
