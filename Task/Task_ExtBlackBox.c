@@ -12,6 +12,7 @@
 
 typedef struct
 {
+    uint32_t time;
     uint32_t cnt;
     uint32_t byte_size;
 } BlackBox_LogMonitor_TypeDef;
@@ -141,6 +142,7 @@ static void TaskExtBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         imu_log.byte_size += sizeof(BlackBox_IMUData_TypeDef);
 
         check_sum = TaskExtBlackBox_Get_CheckSum(&imu_data, sizeof(imu_data));
+        blackbox_ender.check_sum = check_sum;
         imu_log.byte_size += BLACKBOX_HEADER_SIZE;
     }
     
@@ -150,6 +152,15 @@ static void TaskExtBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         baro_log.cnt ++;
         baro_log.byte_size += BLACKBOX_HEADER_SIZE;
         blackbox_header.type = BlackBox_Baro;
+        baro_data.time = DataPipe_DataObj(LogBaro_Data).data.time_stamp;
+        baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
+        baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
+        baro_data.alt = DataPipe_DataObj(LogBaro_Data).data.pressure_alt;
+        baro_data.offset = DataPipe_DataObj(LogBaro_Data).data.pressure_alt_offset;
+        baro_log.byte_size += sizeof(BlackBox_BaroData_TypeDef);
+
+        check_sum = TaskExtBlackBox_Get_CheckSum(&baro_data, sizeof(BlackBox_BaroData_TypeDef));
+        blackbox_ender.check_sum = check_sum;
         baro_log.byte_size += BLACKBOX_ENDER_SIZE;
     }
     

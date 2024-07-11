@@ -57,6 +57,7 @@ typedef struct
 
     float press;
     float alt;
+    float offset;
 } BlackBox_BaroData_TypeDef;
 
 typedef struct
