@@ -47,10 +47,9 @@ while (True):
     # then open seleceted port
     if FC_Found:
         FC_port = serial.Serial(port_info.device, 460800, 5)
-        
         if FC_port.is_open:
             print("[ Flight Controller Port Open Successed ]\r\n")
-            H7FC = Drone(port_info.device)
+            H7FC = Drone(FC_port.name)
 
             # do mavlink and other frame parse
             # communicate with the flight controller

@@ -1,4 +1,4 @@
-import pymavlink
+import sys
 from pymavlink import mavutil
 
 class H7FC_Obj:
@@ -21,10 +21,13 @@ class H7FC_Obj:
     baro_alt   = 0.0
 
     def __init__(self, port_name):
-        print(pymavlink.__doc__)
         self.mav_port = mavutil.mavlink_connection(port_name)
 
     def parse(self):
         msg = self.mav_port.recv_match(blocking = False)
-        print(msg._type)
+        # get altitude data
+        # if msg.get_type() == 'ALTITUDE':
+
+        # if msg.get_type() == 'SCALED_IMU':
+
 
