@@ -115,7 +115,7 @@ typedef struct
     SrvIMU_SampleMode_List IMU_SampleMode;
 
     SrvIMU_UnionData_TypeDef lst_imu_data;
-    SrvBaroData_TypeDef lst_baro_data;
+    SrvBaro_UnionData_TypeDef lst_baro_data;
  }SrvSensorMonitorObj_TypeDef;
 
 typedef struct

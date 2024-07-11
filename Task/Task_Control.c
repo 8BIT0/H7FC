@@ -263,6 +263,7 @@ void TaskControl_Core(void const *arg)
     ControlData_TypeDef CtlData;
     Srv_CtlExpectionData_TypeDef Cnv_CtlData;
     Srv_CtlExpectionData_TypeDef Lst_CtlData;
+    bool USB_Attach = false;
     
     memset(&CtlData, 0, sizeof(ControlData_TypeDef));
     memset(&Cnv_CtlData, 0, sizeof(Srv_CtlExpectionData_TypeDef));
@@ -271,7 +272,7 @@ void TaskControl_Core(void const *arg)
     while(1)
     {
         Srv_CtlDataArbitrate.negociate_update(&CtlData);
-        
+
         if (SrvDataHub.get_upgrade_state(&upgrade_state) && upgrade_state)
         {
             /* lock all actuator when upgrading */
@@ -279,14 +280,19 @@ void TaskControl_Core(void const *arg)
         }
         else
         {
-            if(!TaskControl_Monitor.CLI_enable)
+            if (!TaskControl_Monitor.CLI_enable && \
+                SrvDataHub.get_vcp_attach_state(&USB_Attach) && \
+                !USB_Attach)
             {
                 Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
                 
                 DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
                 /* pipe in use control data to data hub */
                 DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
+                DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &CtlData_Log_DataPipe);
 
+                /* debug set control to angular speed control */
+                Cnv_CtlData.mode = AngularSpeed_AngleLimit_Control;
                 TaskControl_FlightControl_Polling(&Cnv_CtlData);
                 
                 CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
@@ -511,8 +517,11 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
         if(TaskControl_Monitor.angular_protect_enable && TaskControl_Monitor.angular_protect)
             goto lock_moto;
 
-        if(exp_ctl_val->recover_flip_over && TaskControl_Monitor.flip_over)
+        if(TaskControl_Monitor.flip_over)
         {
+            if (!exp_ctl_val->recover_flip_over)
+                goto lock_moto;
+
             /* when drone is up side down and we want to flip over it by telemetry */
             /* reverse propeller spin dir to reverse the drone */
         }

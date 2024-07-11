@@ -63,6 +63,12 @@ typedef struct
     uint8_t check_sum;
 }LogIMUData_TypeDef;
 
+typedef union
+{
+    uint8_t buff[sizeof(LogIMUData_TypeDef)];
+    LogIMUData_TypeDef data;
+}LogIMUDataUnion_TypeDef;
+
 typedef struct
 {
     uint32_t queue_push_err_cnt;
@@ -75,12 +81,6 @@ typedef struct
 
     Log_halt_Type halt_type;
 }Log_Statistics_TypeDef;
-
-typedef union
-{
-    uint8_t buff[sizeof(LogIMUData_TypeDef)];
-    LogIMUData_TypeDef data;
-}LogIMUDataUnion_TypeDef;
 #pragma pack()
 
 void TaskLog_Init(uint32_t period);

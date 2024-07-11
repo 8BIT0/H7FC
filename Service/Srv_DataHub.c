@@ -16,7 +16,7 @@ DataPipe_CreateDataObj(ControlData_TypeDef, Hub_Telemetry_Rc);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Enable);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
 DataPipe_CreateDataObj(IMUAtt_TypeDef, Hub_Attitude);
-DataPipe_CreateDataObj(SrvBaroData_TypeDef, Hub_Baro_Data);
+DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, Hub_Baro_Data);
 DataPipe_CreateDataObj(PosData_TypeDef, Hub_Pos);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_PriIMU_Range);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_SecIMU_Range);
@@ -110,12 +110,14 @@ static void SrvDataHub_Init(void)
     IMU_PriRange_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_IMU_Range_DataPipe_Finish_Callback);
     DataPipe_Enable(&IMU_PriRange_hub_DataPipe);
 
+#if (IMU_CNT == 2)
     memset(DataPipe_DataObjAddr(Hub_SecIMU_Range), 0, DataPipe_DataSize(Hub_SecIMU_Range));
     IMU_SecRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_SecIMU_Range);
     IMU_SecRange_hub_DataPipe.data_size = DataPipe_DataSize(Hub_SecIMU_Range);
     IMU_SecRange_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_IMU_Range_DataPipe_Finish_Callback);
     DataPipe_Enable(&IMU_SecRange_hub_DataPipe);
-    
+#endif
+
     /* init pipe object */
     memset(DataPipe_DataObjAddr(Hub_Telemetry_Rc), 0, DataPipe_DataSize(Hub_Telemetry_Rc));
     Receiver_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Telemetry_Rc);
@@ -208,12 +210,12 @@ static void SrvDataHub_Baro_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
         if(SrvDataHub_Monitor.inuse_reg.bit.scaled_baro)
             SrvDataHub_Monitor.inuse_reg.bit.scaled_baro = false;
 
-        SrvDataHub_Monitor.data.baro_update_time = DataPipe_DataObj(Hub_Baro_Data).time_stamp;
-        SrvDataHub_Monitor.data.baro_alt = DataPipe_DataObj(Hub_Baro_Data).pressure_alt;
-        SrvDataHub_Monitor.data.baro_alt_offset = DataPipe_DataObj(Hub_Baro_Data).pressure_alt_offset;
-        SrvDataHub_Monitor.data.baro_pressure = DataPipe_DataObj(Hub_Baro_Data).pressure;
-        SrvDataHub_Monitor.data.baro_tempra = DataPipe_DataObj(Hub_Baro_Data).tempra;
-        SrvDataHub_Monitor.data.baro_error_code = DataPipe_DataObj(Hub_Baro_Data).error_code;
+        SrvDataHub_Monitor.data.baro_update_time = DataPipe_DataObj(Hub_Baro_Data).data.time_stamp;
+        SrvDataHub_Monitor.data.baro_alt = DataPipe_DataObj(Hub_Baro_Data).data.pressure_alt;
+        SrvDataHub_Monitor.data.baro_alt_offset = DataPipe_DataObj(Hub_Baro_Data).data.pressure_alt_offset;
+        SrvDataHub_Monitor.data.baro_pressure = DataPipe_DataObj(Hub_Baro_Data).data.pressure;
+        SrvDataHub_Monitor.data.baro_tempra = DataPipe_DataObj(Hub_Baro_Data).data.tempra;
+        SrvDataHub_Monitor.data.baro_error_code = DataPipe_DataObj(Hub_Baro_Data).data.error_code;
 
         SrvDataHub_Monitor.update_reg.bit.scaled_baro = false;
     }
@@ -286,6 +288,7 @@ static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *o
 
         SrvDataHub_Monitor.update_reg.bit.range_imu = false;
     }
+#if (IMU_CNT == 2)
     else if(obj == &IMU_SecRange_hub_DataPipe)
     {
         SrvDataHub_Monitor.update_reg.bit.range_imu = true;
@@ -297,6 +300,7 @@ static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *o
     
         SrvDataHub_Monitor.update_reg.bit.range_imu = false;
     }
+#endif
 }
 
 static void SrvDataHub_IMU_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)

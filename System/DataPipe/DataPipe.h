@@ -104,21 +104,27 @@ extern DataPipeObj_TypeDef IMU_hub_DataPipe;
 
 extern DataPipeObj_TypeDef IMU_PriRange_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_PriRange_hub_DataPipe;
+#if (IMU_CNT == 2)
 extern DataPipeObj_TypeDef IMU_SecRange_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_SecRange_hub_DataPipe;
+#endif
 
 extern DataPipeObj_TypeDef Receiver_Smp_DataPipe;
 extern DataPipeObj_TypeDef Receiver_hub_DataPipe;
 
+extern DataPipeObj_TypeDef CtlData_Log_DataPipe;
 extern DataPipeObj_TypeDef InUseCtlData_Smp_DataPipe;
 extern DataPipeObj_TypeDef InUseCtlData_hub_DataPipe;
 
+extern DataPipeObj_TypeDef Actuator_Log_DataPipe;
 extern DataPipeObj_TypeDef Actuator_Smp_DataPipe;
 extern DataPipeObj_TypeDef Actuator_hub_DataPipe;
 
+extern DataPipeObj_TypeDef Baro_Log_DataPipe;
 extern DataPipeObj_TypeDef Baro_smp_DataPipe;
 extern DataPipeObj_TypeDef Baro_hub_DataPipe;
 
+extern DataPipeObj_TypeDef Attitude_Log_DataPipe;
 extern DataPipeObj_TypeDef Attitude_smp_DataPipe;
 extern DataPipeObj_TypeDef Attitude_hub_DataPipe;
 

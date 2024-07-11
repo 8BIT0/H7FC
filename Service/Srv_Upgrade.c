@@ -20,7 +20,7 @@
 #define FIRMWARE_COMMU_TIMEOUT      1000    /* unit: ms */
 #define DEFAULT_WINDOW_SIZE         100     /* unit: ms */
 
-const uint8_t AppVer[3] = {0, 0, 12};
+const uint8_t AppVer[3] = {0, 0, 13};
 #if defined MATEKH743_V1_5
 const uint8_t HWVer[3] = {0, 0, 1};
 #elif defined BATEAT32F435_AIO

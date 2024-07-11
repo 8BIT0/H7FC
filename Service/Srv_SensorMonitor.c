@@ -35,7 +35,7 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj);
 static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj_TypeDef *obj);
 static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
-static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj);
+static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj);
 static bool SrvSensorMonitor_IMU_Get_Num(SrvSensorMonitorObj_TypeDef *obj, uint8_t *num);
 static bool SrvSensorMonitor_Get_IMU_Range(SrvSensorMonitorObj_TypeDef *obj, SrvIMU_Module_Type type, SrvIMU_Range_TypeDef *range);
 
@@ -541,20 +541,20 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     return state;
 }
 
-static SrvBaroData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj)
+static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj)
 {
-    SrvBaroData_TypeDef baro_data_tmp;
+    SrvBaro_UnionData_TypeDef baro_data_tmp;
 
-    memset(&baro_data_tmp, 0, sizeof(SrvBaroData_TypeDef));
+    memset(&baro_data_tmp, 0, sizeof(SrvBaro_UnionData_TypeDef));
 
     if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && SrvBaro.get_data)
     {
         if(SrvBaro.get_data(&baro_data_tmp))
         {
-            obj->lst_baro_data = baro_data_tmp;
+            obj->lst_baro_data.data = baro_data_tmp.data;
         }
         else
-            baro_data_tmp = obj->lst_baro_data;
+            baro_data_tmp.data = obj->lst_baro_data.data;
     }
 
     return baro_data_tmp;

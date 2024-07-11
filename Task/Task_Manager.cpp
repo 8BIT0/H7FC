@@ -5,6 +5,7 @@
 #include "Task_Telemetry.h"
 #include "Task_Navi.h"
 #include "Task_Protocol.h"
+#include "Task_ExtBlackBox.h"
 #include "debug_util.h"
 #include "HW_Def.h"
 #include "Dev_Led.h"
@@ -106,6 +107,8 @@ void Task_Manager_CreateTask(void const *arg)
             TaskControl_Init(TaskControl_Period_Def);
 #if (SD_CARD_ENABLE_STATE == ON)
             TaskLog_Init(TaslLog_Period_Def);
+#else
+            TaskExtBlackBox_Init();
 #endif
             TaskNavi_Init(TaslNavi_Period_Def);
             TaskFrameCTL_Init(TaskFrameCTL_Period_Def);
@@ -125,6 +128,9 @@ void Task_Manager_CreateTask(void const *arg)
 #if (SD_CARD_ENABLE_STATE  == ON)
             osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
+#else
+            osThreadDef(BlackBoxTask, TaskExtBlackBox_Core, osPriorityNormal, 0, 4096);
+            TaskLog_Handle = osThreadCreate(osThread(BlackBoxTask), NULL);
 #endif
 
             osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 1024);

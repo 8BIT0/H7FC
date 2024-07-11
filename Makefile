@@ -54,7 +54,6 @@ Algorithm/Control_Dep/adrc.c \
 Algorithm/Control_Dep/pid.c \
 debug/debug_util.c \
 debug/trace_analysiser.c \
-Task/Task_Log.c \
 Task/Task_Sample.c \
 Task/Task_Telemetry.c \
 Task/Task_Protocol.c \
@@ -109,6 +108,7 @@ System/shell/shell_port.c \
 System/shell/shell.c
 ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 C_SOURCES +=  \
+Task/Task_Log.c \
 Device/Dev_Card.c \
 System/diskio/DiskIO.c \
 System/kernel/kernel_stm32h743.c \
@@ -178,6 +178,7 @@ CPU = -mcpu=cortex-m7
 
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
 C_SOURCES += \
+Task/Task_ExtBlackBox.c \
 System/kernel/kernel_at32f435.c \
 HW_Lib/AT32F435/bsp/Bsp_GPIO.c \
 HW_Lib/AT32F435/bsp/Bsp_Spi.c \
@@ -415,7 +416,7 @@ ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 OPENOCD := openocd -f interface/stlink.cfg \
         -f target/stm32h7x.cfg 
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
-OPENOCD := openocd -f interface/stlink.cfg \
+OPENOCD := openocd_at32 -f interface/stlink.cfg \
         -f target/at32f435xx.cfg 
 endif
 

@@ -155,7 +155,7 @@ static Error_Obj_Typedef SrvBaro_ErrorList[] = {
 /* external function */
 static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bus_type);
 static bool SrvBaro_Sample(void);
-static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data);
+static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data);
 static GenCalib_State_TypeList SrvBaro_Set_Calib(uint16_t cyc);
 static GenCalib_State_TypeList SrvBaro_Get_Calib(void);
 
@@ -438,14 +438,15 @@ static float SrvBaro_PessureCnvToMeter(float pa)
     return ((1 - pow((pa / STANDER_ATMOSPHERIC_PRESSURE), 0.1903))) * 44330;
 }
 
-static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
+static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
 {
-    SrvBaroData_TypeDef baro_data_tmp;
+    SrvBaro_UnionData_TypeDef baro_data_tmp;
     DevDPS310_Data_TypeDef DPS310_Data;
     DevBMP280_Data_TypeDef BMP280_Data;
     float alt = 0.0f;
+    uint8_t check_sum = 0;
 
-    memset(&baro_data_tmp, 0, sizeof(baro_data_tmp));
+    memset(baro_data_tmp.buff, 0, sizeof(SrvBaro_UnionData_TypeDef));
 
     if((SrvBaroObj.init_err == SrvBaro_Error_None) && data)
     {
@@ -460,14 +461,17 @@ static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
                     /* convert baro pressure to meter */
                     alt = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);
 
-                    baro_data_tmp.time_stamp = DPS310_Data.time_stamp;
-                    baro_data_tmp.pressure_alt_offset = SrvBaroObj.alt_offset;
-                    baro_data_tmp.pressure_alt = alt - SrvBaroObj.alt_offset;
-                    baro_data_tmp.tempra = DPS310_Data.scaled_tempra;
-                    baro_data_tmp.pressure = DPS310_Data.scaled_press;
+                    baro_data_tmp.data.time_stamp = DPS310_Data.time_stamp;
+                    baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+                    baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+                    baro_data_tmp.data.tempra = DPS310_Data.scaled_tempra;
+                    baro_data_tmp.data.pressure = DPS310_Data.scaled_press;
 
                     /* doing baro filter */
-                    baro_data_tmp.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.pressure_alt);
+                    baro_data_tmp.data.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.data.pressure_alt);
+                    for(uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.check_sum); i++)
+                        check_sum += baro_data_tmp.buff[i];
+                    baro_data_tmp.data.check_sum = check_sum;
                     memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
                     
                     return true;
@@ -483,14 +487,17 @@ static bool SrvBaro_Get_Date(SrvBaroData_TypeDef *data)
                     /* convert baro pressure to meter */
                     alt = SrvBaro_PessureCnvToMeter(BMP280_Data.scaled_press);
 
-                    baro_data_tmp.time_stamp = BMP280_Data.time_stamp;
-                    baro_data_tmp.pressure_alt_offset = SrvBaroObj.alt_offset;
-                    baro_data_tmp.pressure_alt = alt - SrvBaroObj.alt_offset;
-                    baro_data_tmp.tempra = BMP280_Data.scaled_tempra;
-                    baro_data_tmp.pressure = BMP280_Data.scaled_press;
+                    baro_data_tmp.data.time_stamp = BMP280_Data.time_stamp;
+                    baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+                    baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+                    baro_data_tmp.data.tempra = BMP280_Data.scaled_tempra;
+                    baro_data_tmp.data.pressure = BMP280_Data.scaled_press;
 
                     /* doing baro filter */
-                    baro_data_tmp.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.pressure_alt);
+                    baro_data_tmp.data.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.data.pressure_alt);
+                    for(uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.check_sum); i++)
+                        check_sum += baro_data_tmp.buff[i];
+                    baro_data_tmp.data.check_sum = check_sum;
                     memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
                     
                     return true;

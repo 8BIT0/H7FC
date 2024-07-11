@@ -20,11 +20,13 @@ static uint32_t TaskSample_Period = 0;
 static bool sample_enable = false;
 static SrvSensorMonitorObj_TypeDef SensorMonitor;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, IMU_Data);
-DataPipe_CreateDataObj(SrvBaroData_TypeDef, Baro_Data);
+DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, Baro_Data);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorEnable_State);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorInit_State);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Smp_PriIMU_Range);
+#if (IMUJ_CNT == 2)
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Smp_SecIMU_Range);
+#endif
 
 /* internal function */
 static void TaskInertical_Blink_Notification(uint16_t duration);
@@ -94,6 +96,7 @@ void TaskSample_Init(uint32_t period)
             DataPipe_SendTo(&IMU_PriRange_Smp_DataPipe, &IMU_PriRange_hub_DataPipe);
         }
 
+#if (IMU_CNT == 2)
         if(SrvSensorMonitor.get_imu_range(&SensorMonitor, SrvIMU_SecModule, &SecIMU_Range))
         {
             DataPipe_DataObj(Smp_SecIMU_Range).Acc = SecIMU_Range.Acc;
@@ -106,6 +109,7 @@ void TaskSample_Init(uint32_t period)
             /* pipe sensor sample range to datahub */
             DataPipe_SendTo(&IMU_SecRange_Smp_DataPipe, &IMU_SecRange_hub_DataPipe);
         }
+#endif
     }
 
     /* force make sensor sample task run as 1khz freq */
@@ -123,11 +127,15 @@ void TaskSample_Core(void const *arg)
         if(sample_enable && SrvSensorMonitor.sample_ctl(&SensorMonitor))
         {
             DataPipe_DataObj(IMU_Data) = SrvSensorMonitor.get_imu_data(&SensorMonitor);
-            DataPipe_DataObj(Baro_Data) = SrvSensorMonitor.get_baro_data(&SensorMonitor);
+            DataPipe_DataObj(Baro_Data).data = SrvSensorMonitor.get_baro_data(&SensorMonitor);
 
             /* need measurement the overhead from pipe send to pipe receive callback triggered */
             // DebugPin.ctl(Debug_PB4, true);
-            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe); /* to Log task */
+            /* to Log task */
+            DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);
+            DataPipe_SendTo(&Baro_smp_DataPipe, &Baro_Log_DataPipe);
+
+            /* to data hub */
             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe);
             DataPipe_SendTo(&Baro_smp_DataPipe, &Baro_hub_DataPipe);
             // DebugPin.ctl(Debug_PB4, false);

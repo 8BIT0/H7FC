@@ -8,6 +8,7 @@ DataPipeObj_TypeDef SensorEnableState_hub_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Receiver_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Receiver_hub_DataPipe = {.enable = true};
 
+DataPipeObj_TypeDef CtlData_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef InUseCtlData_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef InUseCtlData_hub_DataPipe = {.enable = true};
 
@@ -17,12 +18,16 @@ DataPipeObj_TypeDef IMU_hub_DataPipe = {.enable = true};
 
 DataPipeObj_TypeDef IMU_PriRange_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef IMU_PriRange_hub_DataPipe = {.enable = true};
+#if (IMU_CNT == 2)
 DataPipeObj_TypeDef IMU_SecRange_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef IMU_SecRange_hub_DataPipe = {.enable = true};
+#endif
 
+DataPipeObj_TypeDef Actuator_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Actuator_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Actuator_hub_DataPipe = {.enable = true};
 
+DataPipeObj_TypeDef Attitude_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Attitude_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Attitude_hub_DataPipe = {.enable = true};
 
@@ -32,6 +37,7 @@ DataPipeObj_TypeDef POS_hub_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Vel_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Vel_hub_DataPipe = {.enable = true};
 
+DataPipeObj_TypeDef Baro_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Baro_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Baro_hub_DataPipe = {.enable = true};
 

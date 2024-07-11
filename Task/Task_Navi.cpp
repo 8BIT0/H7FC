@@ -157,6 +157,7 @@ void TaskNavi_Core(void const *arg)
 
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);
+            DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_Log_DataPipe);
         }
 
         /* comput baro altitude */
