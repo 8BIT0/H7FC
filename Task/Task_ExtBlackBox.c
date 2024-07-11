@@ -155,8 +155,6 @@ static void TaskExtBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         baro_data.time = DataPipe_DataObj(LogBaro_Data).data.time_stamp;
         baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
         baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
-        baro_data.alt = DataPipe_DataObj(LogBaro_Data).data.pressure_alt;
-        baro_data.offset = DataPipe_DataObj(LogBaro_Data).data.pressure_alt_offset;
         baro_log.byte_size += sizeof(BlackBox_BaroData_TypeDef);
 
         check_sum = TaskExtBlackBox_Get_CheckSum(&baro_data, sizeof(BlackBox_BaroData_TypeDef));

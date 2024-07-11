@@ -56,8 +56,6 @@ typedef struct
     uint8_t cyc;
 
     float press;
-    float alt;
-    float offset;
 } BlackBox_BaroData_TypeDef;
 
 typedef struct
