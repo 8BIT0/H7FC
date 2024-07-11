@@ -1,4 +1,4 @@
-#include "Task_ExtBlackBox.h"
+#include "Task_BlackBox.h"
 #include "shell.h"
 #include "debug_util.h"
 #include "../DataStructure/CusQueue.h"
@@ -37,9 +37,9 @@ static BlackBox_LogMonitor_TypeDef att_log;
 static uint32_t log_byte_size = 0;
 
 /* internal function */
-static void TaskExtBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
+static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
 
-void TaskExtBlackBox_Init(void)
+void TaskBlackBox_Init(void)
 {
     memset(&imu_log,  0, sizeof(BlackBox_LogMonitor_TypeDef));
     memset(&baro_log, 0, sizeof(BlackBox_LogMonitor_TypeDef));
@@ -57,7 +57,7 @@ void TaskExtBlackBox_Init(void)
     memset(DataPipe_DataObjAddr(LogBaro_Data),    0, DataPipe_DataSize(LogBaro_Data));
     memset(DataPipe_DataObjAddr(LogControl_Data), 0, DataPipe_DataSize(LogControl_Data));
 
-    if (!Queue.create_with_buf(&Data_Queue, "ExtLog_Queue", BlackBox_Buff, BlackBox_Buff_Size))
+    if (!Queue.create_with_buf(&Data_Queue, "BlackBox_Queue", BlackBox_Buff, BlackBox_Buff_Size))
         return;
 
     osSemaphoreDef(Log);
@@ -66,15 +66,15 @@ void TaskExtBlackBox_Init(void)
     /* pipe object init */
     IMU_Log_DataPipe.data_addr = DataPipe_DataObjAddr(LogImu_Data);
     IMU_Log_DataPipe.data_size = DataPipe_DataSize(LogImu_Data);
-    IMU_Log_DataPipe.trans_finish_cb = TaskExtBlackBox_PipeTransFinish_Callback;
+    IMU_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
     
     Baro_Log_DataPipe.data_addr = DataPipe_DataObjAddr(LogBaro_Data);
     Baro_Log_DataPipe.data_size = DataPipe_DataSize(LogBaro_Data);
-    Baro_Log_DataPipe.trans_finish_cb = TaskExtBlackBox_PipeTransFinish_Callback;
+    Baro_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
 
     CtlData_Log_DataPipe.data_addr = DataPipe_DataObjAddr(LogControl_Data);
     CtlData_Log_DataPipe.data_size = DataPipe_DataSize(LogControl_Data);
-    CtlData_Log_DataPipe.trans_finish_cb = TaskExtBlackBox_PipeTransFinish_Callback;
+    CtlData_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
 
     DataPipe_Enable(&IMU_Log_DataPipe);
     DataPipe_Enable(&Baro_Log_DataPipe);
@@ -83,7 +83,7 @@ void TaskExtBlackBox_Init(void)
     // DataPipe_Enable(&Actuator_Log_DataPipe);
 }
 
-void TaskExtBlackBox_Core(void const *arg)
+void TaskBlackBox_Core(void const *arg)
 {
     while (BlackBox_Sem)
     {
@@ -91,7 +91,7 @@ void TaskExtBlackBox_Core(void const *arg)
     }
 }
 
-static uint8_t TaskExtBlackBox_Get_CheckSum(uint8_t *p_data, uint16_t len)
+static uint8_t TaskBlackBox_Get_CheckSum(uint8_t *p_data, uint16_t len)
 {
     uint8_t check_sum = 0;
 
@@ -103,7 +103,7 @@ static uint8_t TaskExtBlackBox_Get_CheckSum(uint8_t *p_data, uint16_t len)
 }
 
 /* PIPE Callback */
-static void TaskExtBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
+static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
     BlackBox_DataHeader_TypeDef   blackbox_header;
     BlackBox_DataEnder_TypeDef    blackbox_ender;
@@ -141,7 +141,7 @@ static void TaskExtBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         imu_data.cyc  = DataPipe_DataObj(LogImu_Data).data.cycle_cnt;
         imu_log.byte_size += sizeof(BlackBox_IMUData_TypeDef);
 
-        check_sum = TaskExtBlackBox_Get_CheckSum(&imu_data, sizeof(imu_data));
+        check_sum = TaskBlackBox_Get_CheckSum(&imu_data, sizeof(imu_data));
         blackbox_ender.check_sum = check_sum;
         imu_log.byte_size += BLACKBOX_HEADER_SIZE;
     }
@@ -157,7 +157,7 @@ static void TaskExtBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
         baro_log.byte_size += sizeof(BlackBox_BaroData_TypeDef);
 
-        check_sum = TaskExtBlackBox_Get_CheckSum(&baro_data, sizeof(BlackBox_BaroData_TypeDef));
+        check_sum = TaskBlackBox_Get_CheckSum(&baro_data, sizeof(BlackBox_BaroData_TypeDef));
         blackbox_ender.check_sum = check_sum;
         baro_log.byte_size += BLACKBOX_ENDER_SIZE;
     }

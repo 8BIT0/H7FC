@@ -1,5 +1,5 @@
-#ifndef __TASK_EXTBLACKBOX_H
-#define __TASK_EXTBLACKBOX_H
+#ifndef __TASK_BLACKBOX_H
+#define __TASK_BLACKBOX_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -93,8 +93,8 @@ typedef struct
 } BlackBox_ActuatorData_TypeDef;
 #pragma pack()
 
-void TaskExtBlackBox_Init(void);
-void TaskExtBlackBox_Core(void const *arg);
+void TaskBlackBox_Init(void);
+void TaskBlackBox_Core(void const *arg);
 
 #ifdef __cplusplus
 }

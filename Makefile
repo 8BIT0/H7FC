@@ -58,6 +58,7 @@ Task/Task_Sample.c \
 Task/Task_Telemetry.c \
 Task/Task_Protocol.c \
 Task/Task_Control.c \
+Task/Task_BlackBox.c \
 Device/Dev_DPS310.c \
 Device/Dev_BMP280.c \
 Device/Dev_MPU6000.c \
@@ -178,7 +179,6 @@ CPU = -mcpu=cortex-m7
 
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
 C_SOURCES += \
-Task/Task_ExtBlackBox.c \
 System/kernel/kernel_at32f435.c \
 HW_Lib/AT32F435/bsp/Bsp_GPIO.c \
 HW_Lib/AT32F435/bsp/Bsp_Spi.c \
