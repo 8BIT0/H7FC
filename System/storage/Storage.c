@@ -64,6 +64,10 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List _cla
 static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List _class, const char *name, uint8_t *p_data, uint16_t size);
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List _class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
 static Storage_ErrorCode_List Storage_Get_Data(Storage_ParaClassType_List _class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
+static Storage_ErrorCode_List Storage_Get_DevInfo(Storage_ExtFLashDevObj_TypeDef *info);
+static bool Storage_Write_Section(uint32_t addr, uint8_t *p_data, uint16_t len);
+static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len);
+static bool Storage_Erase_Section(uint32_t addr, uint16_t len);
 
 static bool Storage_Firmware_Format(Storage_FirmwareType_List type);
 static bool Storage_Frimware_Read(Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
@@ -75,6 +79,11 @@ Storage_TypeDef Storage = {
     .create = Storage_CreateItem,
     .get = Storage_Get_Data,
     .update = Storage_SlotData_Update,
+    .get_dev_info = Storage_Get_DevInfo,
+
+    .write_section = Storage_Write_Section,
+    .read_section = Storage_Read_Section,
+    .erase_section = Storage_Erase_Section,
 
     .format_firmware = Storage_Firmware_Format,
     .read_firmware = Storage_Frimware_Read,
@@ -139,6 +148,7 @@ reinit_external_flash_module:
 
                             if (extmodule_init_state == DevW25Qxx_Ok)
                             {
+                                ExtDev->start_addr  = W25QXX_BASE_ADDRESS;
                                 ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_num;
                                 ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_size;
                                 ExtDev->total_size  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).flash_size;
@@ -209,6 +219,26 @@ reformat_external_flash_info:
 #endif
 
     return Storage_Monitor.init_state;
+}
+
+static Storage_ErrorCode_List Storage_Get_DevInfo(Storage_ExtFLashDevObj_TypeDef *info)
+{
+    Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
+
+    if (info)
+    {
+        memset(info, 0, sizeof(Storage_ExtFLashDevObj_TypeDef));
+        if (Storage_Monitor.init_state && Storage_Monitor.ExtDev_ptr)
+        {
+            p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+            memcpy(info, p_dev, sizeof(Storage_ExtFLashDevObj_TypeDef));
+            return Storage_Error_None;
+        }
+
+        return Storage_ModuleInit_Error;
+    }
+
+    return Storage_ExtDevObj_Error;
 }
 
 static bool Storage_Format(void)
@@ -1598,6 +1628,128 @@ static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDe
     }
 
     return NULL;
+}
+
+/********************************************** BlackBox Storage API Section *****************************************************/
+static bool Storage_Write_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
+{
+    uint32_t write_cnt = 0;
+    uint32_t addr_tmp = 0;
+    Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
+
+    p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+    if (addr && p_data && len && p_dev && p_dev->dev_api && p_dev->dev_obj)
+    {
+        if ((addr % p_dev->sector_size) || \
+            (len % p_dev->sector_size))
+            return false;
+
+        write_cnt = len / p_dev->sector_size;
+        addr_tmp = addr;
+
+        for (uint8_t i = 0; i < write_cnt; i ++)
+        {
+            switch((uint8_t)p_dev->chip_type)
+            {
+                case Storage_ChipType_W25Qxx:
+                    /* erase sector */
+                    if (To_DevW25Qxx_API(p_dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp) != DevW25Qxx_Ok)
+                        return false;
+
+                    /* update sector */
+                    if (To_DevW25Qxx_API(p_dev->dev_api)->write(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp, p_data, p_dev->sector_size))
+                        return false;
+                    break;
+
+                default: return false;
+            }
+
+            addr_tmp += p_dev->sector_size;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
+{
+    uint32_t read_cnt = 0;
+    uint32_t addr_tmp = 0;
+    Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
+
+    p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+    if (addr && p_data && len && p_dev && p_dev->dev_api && p_dev->dev_obj)
+    {
+        if ((addr % p_dev->sector_size) || \
+            (len % p_dev->sector_size))
+            return false;
+    
+        read_cnt = len / p_dev->sector_size;
+        addr_tmp = addr;
+
+        for (uint8_t i = 0; i < read_cnt; i++)
+        {
+            switch((uint8_t)p_dev->chip_type)
+            {
+                case Storage_ChipType_W25Qxx:
+                    /* read sector */
+                    if (To_DevW25Qxx_API(p_dev->dev_api)->read(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp, p_data, len) != DevW25Qxx_Ok)
+                    {
+                        memset(p_data, 0, len);
+                        return false;
+                    }
+                    break;
+
+                default: return false;
+            }
+
+            addr_tmp += p_dev->sector_size;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool Storage_Erase_Section(uint32_t addr, uint16_t len)
+{
+    uint32_t erase_cnt = 0;
+    uint32_t addr_tmp = 0;
+    Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
+
+    p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+    if (addr && len && p_dev && p_dev->dev_api && p_dev->dev_obj)
+    {
+        if ((addr % p_dev->sector_size) || \
+            (len % p_dev->sector_size))
+            return false;
+    
+        erase_cnt = len / p_dev->sector_size;
+        addr_tmp = addr;
+
+        for (uint8_t i = 0; i < erase_cnt; i ++)
+        {
+            switch((uint8_t)p_dev->chip_type)
+            {
+                case Storage_ChipType_W25Qxx:
+                    /* erase sector */
+                    if (To_DevW25Qxx_API(p_dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp) != DevW25Qxx_Ok)
+                        return false;
+                    break;
+
+                default: return false;
+            }
+
+            addr_tmp += p_dev->sector_size;
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 /********************************************** External Firmware Storage API Section ********************************************/

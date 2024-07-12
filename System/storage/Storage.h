@@ -209,6 +209,7 @@ typedef struct
     Storage_ExtFlash_BusType_List bus_type;
     Storage_ExtFlashChipType_List chip_type;
 
+    uint32_t start_addr;
     uint32_t total_size;
 
     uint32_t page_num;
@@ -258,7 +259,12 @@ typedef struct
     Storage_ErrorCode_List (*create)(Storage_ParaClassType_List _class, const char *name, uint8_t *p_data, uint16_t size);
     Storage_ErrorCode_List (*update)(Storage_ParaClassType_List _class, uint32_t addr , uint8_t *p_data, uint16_t size);
     Storage_ErrorCode_List (*get)(Storage_ParaClassType_List _class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
-    // bool (*clear)(Storage_T);
+    Storage_ErrorCode_List (*get_dev_info)(Storage_ExtFLashDevObj_TypeDef *info);
+
+    /* blackbox section */
+    bool (*write_section)(uint32_t addr, uint8_t *p_data, uint16_t len);
+    bool (*read_section)(uint32_t addr, uint8_t *p_data, uint16_t len);
+    bool (*erase_section)(uint32_t addr, uint16_t len);
 
     /* firmware section */
     bool (*format_firmware)(Storage_FirmwareType_List type);

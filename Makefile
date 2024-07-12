@@ -80,6 +80,9 @@ Service/Srv_SensorMonitor.c \
 Service/Srv_CtlDataArbitrate.c \
 Service/Srv_FileAdapter.c \
 Service/Srv_Upgrade.c \
+Service/Srv_BlackBox_Chip.c \
+Service/Srv_BlackBox_Card.c \
+Service/Srv_BlackBox_Com.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/CusQueue.c \
 DataStructure/linked_list.c \
@@ -416,7 +419,7 @@ ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
 OPENOCD := openocd -f interface/stlink.cfg \
         -f target/stm32h7x.cfg 
 else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
-OPENOCD := openocd -f interface/stlink.cfg \
+OPENOCD := openocd_at32 -f interface/stlink.cfg \
         -f target/at32f435xG.cfg 
 endif
 

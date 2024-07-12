@@ -189,7 +189,9 @@
                 "eigen": "c",
                 "dense": "c",
                 "core": "c",
-                "matrix.h": "c"
+                "matrix.h": "c",
+                "task_blackbox.h": "c",
+                "srv_blackbox_def.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

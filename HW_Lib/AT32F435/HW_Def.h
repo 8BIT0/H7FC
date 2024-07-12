@@ -155,7 +155,7 @@ extern "C" {
 #define Block_Size (4 Kb)
 
 #define Reserve_Addr (Block_Addr + Block_Size)
-#define Reserve_Size ((1 Mb) - (Block_Addr + Block_Size))
+#define Reserve_Size ((1 Mb) - Block_Size)
 
 #define App_Firmware_Addr (Reserve_Addr + Reserve_Size)
 #define App_Firmware_Size (1 Mb)
@@ -164,9 +164,14 @@ extern "C" {
 #define ExtFlash_Start_Addr (App_Firmware_Addr + App_Firmware_Size)
 
 #define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA
-#define ExtFlash_Storage_TotalSize (384 Kb)
+#define ExtFlash_Storage_TotalSize (512 Kb)
 #define ExtFlash_Storage_TabSize Flash_Storage_TabSize
 #define ExtFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
+#define ExtFlash_Storage_Reserve_Size (1 Mb) - ExtFlash_Storage_TotalSize 
+
+#define BlackBox_Storage_Start_Addr (ExtFlash_Start_Addr + \
+                                     ExtFlash_Storage_TotalSize + \
+                                     ExtFlash_Storage_Reserve_Size)
 
 /* store boot info boot parameter and firmware */
 #define ExternalFlash_BootDataSec_Size (32 Kb)

@@ -1,3 +1,9 @@
+/*
+ * Auther: 8_B!T0
+ * this file is the candidate of task_log
+ */
+#include "FreeRTOS.h"
+#include "task.h"
 #include "Task_BlackBox.h"
 #include "shell.h"
 #include "debug_util.h"
@@ -9,6 +15,10 @@
 #include "HW_Def.h"
 #include "minilzo.h"
 #include "Srv_OsCommon.h"
+#include "Srv_BlackBox_Def.h"
+
+#define PeriphSec __attribute__((section(".Perph_Section")))
+#define BlackBox_Buff_Size (8 Kb)
 
 typedef struct
 {
@@ -17,35 +27,71 @@ typedef struct
     uint32_t byte_size;
 } BlackBox_LogMonitor_TypeDef;
 
-#define PeriphSec __attribute__((section(".Perph_Section")))
-#define BlackBox_Buff_Size (8 Kb)
+typedef struct
+{
+    bool enable;
+    bool write_thread_state;
+
+    BlackBox_MediumType_List medium;
+    BlackBox_Reg_TypeDef en_reg;
+
+    uint32_t log_byte_size;
+    BlackBox_LogMonitor_TypeDef imu_log;
+    BlackBox_LogMonitor_TypeDef baro_log; 
+    BlackBox_LogMonitor_TypeDef ctl_log;
+    BlackBox_LogMonitor_TypeDef act_log;
+    BlackBox_LogMonitor_TypeDef att_log;
+} BlackBox_Monitor_TypeDef;
 
 /* internal vriable */
 static uint8_t BlackBox_Buff[BlackBox_Buff_Size] PeriphSec;
 static QueueObj_TypeDef Data_Queue;
 static osSemaphoreId BlackBox_Sem;
+static BlackBox_Monitor_TypeDef Monitor;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef,  LogImu_Data);
 DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, LogBaro_Data);
 DataPipe_CreateDataObj(ControlData_TypeDef,       LogControl_Data);
 
-static BlackBox_LogMonitor_TypeDef imu_log;
-static BlackBox_LogMonitor_TypeDef baro_log; 
-static BlackBox_LogMonitor_TypeDef ctl_log;
-static BlackBox_LogMonitor_TypeDef act_log;
-static BlackBox_LogMonitor_TypeDef att_log;
-
-static uint32_t log_byte_size = 0;
-
 /* internal function */
 static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
+static void TaskBlackBox_Write_Core(void const *arg);
+static void TaskBlackBox_PushFinish_Callback(void);
 
 void TaskBlackBox_Init(void)
 {
-    memset(&imu_log,  0, sizeof(BlackBox_LogMonitor_TypeDef));
-    memset(&baro_log, 0, sizeof(BlackBox_LogMonitor_TypeDef));
-    memset(&ctl_log,  0, sizeof(BlackBox_LogMonitor_TypeDef));
-    memset(&act_log,  0, sizeof(BlackBox_LogMonitor_TypeDef));
-    memset(&att_log,  0, sizeof(BlackBox_LogMonitor_TypeDef));
+    /* medium init */
+    /* medium auto detect */
+    /*
+        --- TF Card
+        --- W25Qxx Storage Chip
+        --- Com Output
+     */
+    memset(&Monitor, 0, sizeof(BlackBox_Monitor_TypeDef));
+    Monitor.write_thread_state = false;
+    Monitor.medium = BlackBox_Medium_Chip;
+    Monitor.en_reg.val = 0;
+    switch ((uint8_t)Monitor.medium)
+    {
+        case BlackBox_Medium_Com:
+            if (!SrvCom_BlackBox.init(TaskBlackBox_PushFinish_Callback))
+                return;
+            break;
+
+        case BlackBox_Medium_Chip:
+            if (!SrvChip_BlackBox.init(TaskBlackBox_PushFinish_Callback))
+                return;
+            break;
+
+        case BlackBox_Medium_Card:
+            if (!SrvCard_BlackBox.init(TaskBlackBox_PushFinish_Callback))
+                return;
+            break;
+
+        default: return;
+    }
+    Monitor.en_reg.bit.imu = true;
+    Monitor.en_reg.bit.baro = true;
+    Monitor.en_reg.bit.exp_ctl = true;
 
     memset(&IMU_Log_DataPipe,      0, sizeof(DataPipeObj_TypeDef));
     memset(&Baro_Log_DataPipe,     0, sizeof(DataPipeObj_TypeDef));
@@ -62,6 +108,9 @@ void TaskBlackBox_Init(void)
 
     osSemaphoreDef(Log);
     BlackBox_Sem = osSemaphoreCreate(osSemaphore(Log), 1);
+
+    if (BlackBox_Sem == NULL)
+        return;
 
     /* pipe object init */
     IMU_Log_DataPipe.data_addr = DataPipe_DataObjAddr(LogImu_Data);
@@ -85,6 +134,8 @@ void TaskBlackBox_Init(void)
 
 void TaskBlackBox_Core(void const *arg)
 {
+    Monitor.write_thread_state = true;
+
     while (BlackBox_Sem)
     {
         osSemaphoreWait(BlackBox_Sem, osWaitForever);
@@ -100,6 +151,12 @@ static uint8_t TaskBlackBox_Get_CheckSum(uint8_t *p_data, uint16_t len)
             check_sum += p_data[i];
 
     return check_sum;
+}
+
+/* BlackBox Tansmit Finished Callback */
+static void TaskBlackBox_PushFinish_Callback(void)
+{
+
 }
 
 /* PIPE Callback */
@@ -120,11 +177,14 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     blackbox_header.header = BLACKBOX_LOG_HEADER;
     blackbox_ender.ender   = BLACKBOX_LOG_ENDER;
 
-    if (obj == &IMU_Log_DataPipe)
+    if (!Monitor.enable || !Monitor.write_thread_state)
+        return;
+
+    if ((obj == &IMU_Log_DataPipe) && Monitor.en_reg.bit.imu)
     {
         memset(&imu_data, 0, sizeof(BlackBox_IMUData_TypeDef));
-        imu_log.cnt ++;
-        imu_log.byte_size += BLACKBOX_HEADER_SIZE;
+        Monitor.imu_log.cnt ++;
+        Monitor.imu_log.byte_size += BLACKBOX_HEADER_SIZE;
         blackbox_header.type = BlackBox_IMU;
         
         imu_data.acc_scale = DataPipe_DataObj(LogImu_Data).data.acc_scale;
@@ -139,55 +199,57 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         }
         imu_data.time = DataPipe_DataObj(LogImu_Data).data.time_stamp;
         imu_data.cyc  = DataPipe_DataObj(LogImu_Data).data.cycle_cnt;
-        imu_log.byte_size += sizeof(BlackBox_IMUData_TypeDef);
+        Monitor.imu_log.byte_size += sizeof(BlackBox_IMUData_TypeDef);
 
         check_sum = TaskBlackBox_Get_CheckSum(&imu_data, sizeof(imu_data));
         blackbox_ender.check_sum = check_sum;
-        imu_log.byte_size += BLACKBOX_HEADER_SIZE;
+        Monitor.imu_log.byte_size += BLACKBOX_HEADER_SIZE;
     }
     
-    if (obj == &Baro_Log_DataPipe)
+    if ((obj == &Baro_Log_DataPipe) && Monitor.en_reg.bit.baro)
     {
         memset(&baro_data, 0, sizeof(BlackBox_BaroData_TypeDef));
-        baro_log.cnt ++;
-        baro_log.byte_size += BLACKBOX_HEADER_SIZE;
+        Monitor.baro_log.cnt ++;
+        Monitor.baro_log.byte_size += BLACKBOX_HEADER_SIZE;
         blackbox_header.type = BlackBox_Baro;
         baro_data.time = DataPipe_DataObj(LogBaro_Data).data.time_stamp;
         baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
         baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
-        baro_log.byte_size += sizeof(BlackBox_BaroData_TypeDef);
+        Monitor.baro_log.byte_size += sizeof(BlackBox_BaroData_TypeDef);
 
         check_sum = TaskBlackBox_Get_CheckSum(&baro_data, sizeof(BlackBox_BaroData_TypeDef));
         blackbox_ender.check_sum = check_sum;
-        baro_log.byte_size += BLACKBOX_ENDER_SIZE;
+        Monitor.baro_log.byte_size += BLACKBOX_ENDER_SIZE;
     }
     
-    if (obj == &CtlData_Log_DataPipe)
+    if ((obj == &CtlData_Log_DataPipe) && Monitor.en_reg.bit.exp_ctl)
     {
         memset(&input_ctl_data, 0, sizeof(BlackBox_CtlData_TypeDef));
-        ctl_log.cnt ++;
-        ctl_log.byte_size += BLACKBOX_HEADER_SIZE;
+        Monitor.ctl_log.cnt ++;
+        Monitor.ctl_log.byte_size += BLACKBOX_HEADER_SIZE;
         blackbox_header.type = BlackBox_CtlData;
-        ctl_log.byte_size += BLACKBOX_ENDER_SIZE;
+        Monitor.ctl_log.byte_size += BLACKBOX_ENDER_SIZE;
     }
     
-    if (obj == &Attitude_Log_DataPipe)
+    if ((obj == &Attitude_Log_DataPipe) && Monitor.en_reg.bit.att)
     {
         memset(&att_data, 0, sizeof(BlackBox_AttitudeData_TypeDef));
-        att_log.cnt ++;
-        att_log.byte_size += BLACKBOX_HEADER_SIZE;
+        Monitor.att_log.cnt ++;
+        Monitor.att_log.byte_size += BLACKBOX_HEADER_SIZE;
         blackbox_header.type = BlackBox_Attitude;
-        att_log.byte_size += BLACKBOX_ENDER_SIZE;
+        Monitor.att_log.byte_size += BLACKBOX_ENDER_SIZE;
     }
     
-    if (obj == & Actuator_Log_DataPipe)
+    if ((obj == & Actuator_Log_DataPipe) && Monitor.en_reg.bit.act)
     {
         memset(&actuator_data, 0, sizeof(BlackBox_ActuatorData_TypeDef));
-        act_log.cnt ++;
-        act_log.byte_size += BLACKBOX_HEADER_SIZE;
+        Monitor.act_log.cnt ++;
+        Monitor.act_log.byte_size += BLACKBOX_HEADER_SIZE;
         blackbox_header.type = BlackBox_Actuator;
-        act_log.byte_size += BLACKBOX_ENDER_SIZE;
+        Monitor.act_log.byte_size += BLACKBOX_ENDER_SIZE;
     }
+
+    /* use minilzo compress data */
 }
 
 
