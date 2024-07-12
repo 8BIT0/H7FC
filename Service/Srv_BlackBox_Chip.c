@@ -6,7 +6,7 @@ typedef struct
     bool init;
     bool enable;
     bool accessing;
-    uint8_t *p_info_buf;
+    uint8_t *p_buf;
     uint32_t info_addr;
     uint32_t info_size;
     uint32_t log_cnt;
@@ -72,10 +72,10 @@ static bool SrvChip_BlackBox_Init(SrvBlackBox_Log_Callback callback)
 
             if (ChipBlackBox_Monitor.log_unit)
             {
-                ChipBlackBox_Monitor.p_info_buf = SrvOsCommon.malloc(ChipBlackBox_Monitor.log_unit);
-                if (ChipBlackBox_Monitor.p_info_buf == NULL)
+                ChipBlackBox_Monitor.p_buf = SrvOsCommon.malloc(ChipBlackBox_Monitor.log_unit);
+                if (ChipBlackBox_Monitor.p_buf == NULL)
                 {
-                    SrvOsCommon.free(ChipBlackBox_Monitor.p_info_buf);
+                    SrvOsCommon.free(ChipBlackBox_Monitor.p_buf);
                     return false;
                 }
             }
@@ -109,10 +109,10 @@ static bool SrvChip_BlackBox_PushData(uint8_t *p_data, uint16_t len)
 
         BlackBoxDataInfo.cnt = ChipBlackBox_Monitor.log_cnt;
         BlackBoxDataInfo.size = ChipBlackBox_Monitor.log_size;
-        memcpy(ChipBlackBox_Monitor.p_info_buf, &BlackBoxDataInfo, sizeof(Chip_BlackBox_Info_TypeDef));
+        memcpy(ChipBlackBox_Monitor.p_buf, &BlackBoxDataInfo, sizeof(Chip_BlackBox_Info_TypeDef));
 
         /* update info section */
-        if (!Storage.write_section(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_info_buf, ChipBlackBox_Monitor.info_size))
+        if (!Storage.write_section(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
             return false;
 
         ChipBlackBox_Monitor.accessing = false;
@@ -123,20 +123,35 @@ static bool SrvChip_BlackBox_PushData(uint8_t *p_data, uint16_t len)
     return false;
 }
 
+/* still in developping */
 static bool SrvChip_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint16_t len)
 {
     Chip_BlackBox_Info_TypeDef info;
+    uint32_t read_addr = 0;
+    uint8_t read_cnt = 0;
 
     memset(&info, 0, sizeof(Chip_BlackBox_Info_TypeDef));
     if (ChipBlackBox_Monitor.init && p_data && len)
     {
         /* get info first */
-        if (!Storage.read_section(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_info_buf, ChipBlackBox_Monitor.info_size))
+        if (!Storage.read_section(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
             return false;
 
-        memcpy(&info, ChipBlackBox_Monitor.p_info_buf, sizeof(Chip_BlackBox_Info_TypeDef));
+        memcpy(&info, ChipBlackBox_Monitor.p_buf, sizeof(Chip_BlackBox_Info_TypeDef));
         if (len < info.size)
             len = info.size;
+
+        if (addr_offset > ChipBlackBox_Monitor.rom_size)
+            return false;
+
+        /* get balckbox data */
+        read_cnt = len / ChipBlackBox_Monitor.log_unit;
+        read_addr = addr_offset - (addr_offset % ChipBlackBox_Monitor.log_unit);
+        if (read_addr && !Storage.read_section(read_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.log_unit))
+        {
+
+            return true;
+        }
     }
 
     return false;
