@@ -329,30 +329,113 @@ static void TaskBlackBox_DisableLog(void)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, blackbox_disable, TaskBlackBox_DisableLog, blackbox end log);
 
+static void TaskBlackBox_ConvertLogData_To_Header(Shell *p_shell, BlackBox_DataHeader_TypeDef *p_header, uint8_t **p_data, uint32_t *len)
+{
+    if ((p_header == NULL) || \
+        (p_data == NULL) || \
+        (len == NULL) || \
+        (*p_data == NULL) || \
+        (*len <= BLACKBOX_HEADER_SIZE))
+        return;
+    
+    memcpy(p_header, *p_data, BLACKBOX_HEADER_SIZE);
+
+    if (p_header->header != BLACKBOX_LOG_HEADER)
+    {
+        memset(p_header, 0, BLACKBOX_HEADER_SIZE);
+        shellPrint(p_shell, "[ BlackBox ] header tag error\r\n");
+        return;
+    }
+
+    switch ((uint8_t) p_header->type)
+    {
+        case BlackBox_IMU:
+        case BlackBox_Baro:
+        case BlackBox_CtlData:
+        case BlackBox_Attitude:
+        case BlackBox_Actuator:
+            break;
+
+        default:
+            if (p_shell)
+                shellPrint(p_shell, "[ BlackBox ] type error\r\n");
+            return;
+    }
+
+    *len -= BLACKBOX_HEADER_SIZE;
+    *p_data += BLACKBOX_HEADER_SIZE;
+}
+
+static void TaskBlackBox_ConvertLogData_Ender(Shell *p_shell, BlackBox_DataEnder_TypeDef *p_ender, uint8_t **p_data, uint32_t *len)
+{
+    if ((p_ender == NULL) || \
+        (p_data == NULL) || \
+        (*p_data == NULL) || \
+        (len == NULL) || \
+        (*len < BLACKBOX_ENDER_SIZE))
+        return;
+
+    memcpy(p_ender, *p_data, BLACKBOX_ENDER_SIZE);
+    if (p_ender->ender != BLACKBOX_LOG_ENDER)
+    {
+        memset(p_ender, 0, BLACKBOX_ENDER_SIZE);
+        if (p_shell)
+            shellPrint(p_shell, "[ BlackBox ] ender error\r\n");
+        return;
+    }
+
+    *p_data += BLACKBOX_ENDER_SIZE;
+    *len -= BLACKBOX_ENDER_SIZE;
+}
+
 static void TaskBlackBox_GetLogInfo(void)
 {
     Shell *shell_obj = Shell_GetInstence();
     uint32_t log_cnt = 0;
     uint32_t log_size = 0;
     bool log_enable = false;
+    uint32_t addr = 0;
 
     if ((shell_obj == NULL) || (p_blackbox == NULL))
         return;
 
-    if (p_blackbox->get_info)
+    if (p_blackbox->get_info == NULL)
     {
-        p_blackbox->get_info(&log_cnt, &log_size, &log_enable);
-        if (log_enable)
-        {
-            shellPrint(shell_obj, "[ BlackBox ] is logging\r\n");
-            return;
-        }
+        shellPrint(shell_obj, "[ BlackBox ] get info api error\r\n");
+        return;
+    }
 
-        shellPrint(shell_obj, "[ BlackBox ] Log Count: %d\r\n", log_cnt);
-        shellPrint(shell_obj, "[ BlackBox ] Log_Size:  %d\r\n", log_size);
+    p_blackbox->get_info(&log_cnt, &log_size, &log_enable);
+    if (log_enable)
+    {
+        shellPrint(shell_obj, "[ BlackBox ] is logging\r\n");
+        return;
+    }
+
+    shellPrint(shell_obj, "[ BlackBox ] Log Count: %d\r\n", log_cnt);
+    shellPrint(shell_obj, "[ BlackBox ] Log_Size:  %d\r\n", log_size);
+
+    /* dispaly data */
+    if ((p_blackbox->read == NULL) || (Monitor.p_log_buf == NULL))
+    {
+        shellPrint(shell_obj, "[ BlackBox ] read api error\r\n");
+        return;
+    }
+
+    for (uint16_t i = 0; i < log_cnt; i++)
+    {
+        if (p_blackbox->read(addr, Monitor.p_log_buf, Monitor.log_unit))
+        {
+            addr += Monitor.log_unit;
+
+            /* convert data */
+        }
+        else
+        {
+            shellPrint(shell_obj, "[ BlackBox ] Data read failed\r\n");
+            shellPrint(shell_obj, "[ BlackBox ] read address %d\r\n", addr);
+            break;
+        }
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, blackbox_info, TaskBlackBox_GetLogInfo, blackbox log info);
-
-
-
