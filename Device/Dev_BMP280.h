@@ -127,6 +127,7 @@ typedef struct
     DevBMP280_Calib_TypeDef calib;
 
     uint32_t sys_tick;
+    uint32_t cyc;
     uint32_t lst_sys_tick;
 
     float raw_temperature;  /* without compensate temperature */
@@ -140,6 +141,7 @@ typedef struct
 typedef struct
 {
     uint32_t time_stamp;
+    uint32_t cyc;
 
     float scaled_press;
     float scaled_tempra;

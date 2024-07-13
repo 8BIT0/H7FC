@@ -409,6 +409,7 @@ static DevBMP280_Data_TypeDef DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj)
         data_tmp.scaled_press = obj->pressure;
         data_tmp.scaled_tempra = obj->temperature;
         data_tmp.time_stamp = obj->sys_tick;
+        data_tmp.cyc = obj->cyc;
     }
 
     return data_tmp;
@@ -671,6 +672,7 @@ static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj)
             }
 
             obj->sys_tick = obj->get_tick();
+            obj->cyc ++;
             return true;
         }
     }

@@ -180,7 +180,7 @@ typedef struct
 
     bool ready;
     DevDPS310_ErrorList error;
-
+    uint32_t cyc;
     float tempra;   // ℃
     float pressure; // unit: Pa
 }DevDPS310Obj_TypeDef;
@@ -188,6 +188,7 @@ typedef struct
 typedef struct
 {
     uint32_t time_stamp;
+    uint32_t cyc;
 
     float scaled_press;
     float scaled_tempra;

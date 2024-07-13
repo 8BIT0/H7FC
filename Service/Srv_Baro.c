@@ -462,6 +462,7 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
                     alt = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);
 
                     baro_data_tmp.data.time_stamp = DPS310_Data.time_stamp;
+                    baro_data_tmp.data.cyc = DPS310_Data.cyc;
                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
                     baro_data_tmp.data.tempra = DPS310_Data.scaled_tempra;
@@ -488,6 +489,7 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
                     alt = SrvBaro_PessureCnvToMeter(BMP280_Data.scaled_press);
 
                     baro_data_tmp.data.time_stamp = BMP280_Data.time_stamp;
+                    baro_data_tmp.data.cyc = BMP280_Data.cyc;
                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
                     baro_data_tmp.data.tempra = BMP280_Data.scaled_tempra;

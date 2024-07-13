@@ -363,6 +363,7 @@ static bool DevDPS310_Sample(DevDPS310Obj_TypeDef *obj)
         // See section 4.9.2, How to Calculate Compensated Temperature Values, of datasheet
         obj->tempra = c0 * 0.5f + c1 * Traw_sc;
 
+        obj->cyc ++;
         if(obj->get_tick)
             obj->update_time = obj->get_tick();
 
@@ -391,7 +392,7 @@ static DevDPS310_Data_TypeDef DevDPS310_Get_Data(DevDPS310Obj_TypeDef *obj)
     if(obj)
     {
         tmp.time_stamp = obj->update_time;
-
+        tmp.cyc = obj->cyc;
         tmp.scaled_press = obj->pressure;
         tmp.scaled_tempra = obj->tempra;
 
