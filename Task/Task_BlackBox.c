@@ -329,3 +329,30 @@ static void TaskBlackBox_DisableLog(void)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, blackbox_disable, TaskBlackBox_DisableLog, blackbox end log);
 
+static void TaskBlackBox_GetLogInfo(void)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    uint32_t log_cnt = 0;
+    uint32_t log_size = 0;
+    bool log_enable = false;
+
+    if ((shell_obj == NULL) || (p_blackbox == NULL))
+        return;
+
+    if (p_blackbox->get_info)
+    {
+        p_blackbox->get_info(&log_cnt, &log_size, &log_enable);
+        if (log_enable)
+        {
+            shellPrint(shell_obj, "[ BlackBox ] is logging\r\n");
+            return;
+        }
+
+        shellPrint(shell_obj, "[ BlackBox ] Log Count: %d\r\n", log_cnt);
+        shellPrint(shell_obj, "[ BlackBox ] Log_Size:  %d\r\n", log_size);
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, blackbox_info, TaskBlackBox_GetLogInfo, blackbox log info);
+
+
+
