@@ -27,7 +27,6 @@ typedef enum
     BlackBox_Cnv_Size_Error,
     BlackBox_Cnv_Type_Error,
     BlackBox_Cnv_Header_Error,
-    BlackBox_Cnv_Ender_Error,
 } BlackBox_ConvertError_List;
 
 typedef struct
@@ -346,7 +345,7 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Header(Shell *p
         (len == NULL) || \
         (*p_data == NULL) || \
         (*len <= BLACKBOX_HEADER_SIZE))
-        return;
+        return BlackBox_Cnv_Para_Error;
     
     memcpy(p_header, *p_data, BLACKBOX_HEADER_SIZE);
     if (p_header->header != BLACKBOX_LOG_HEADER)
@@ -417,12 +416,44 @@ static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_
         (*len < sizeof(BlackBox_IMUData_TypeDef)))
         return;
 
-    
+    memcpy(p_imu, *p_data, sizeof(BlackBox_IMUData_TypeDef));
+    if (p_shell)
+    {
+        shellPrint(p_shell, "[ IMU ] ");
+        shellPrint(p_shell, "%d ", p_imu->time);
+        shellPrint(p_shell, "%d ", p_imu->cyc);
+        shellPrint(p_shell, "%f ", p_imu->flt_acc[Axis_X] / p_imu->acc_scale);
+        shellPrint(p_shell, "%f ", p_imu->flt_acc[Axis_Y] / p_imu->acc_scale);
+        shellPrint(p_shell, "%f ", p_imu->flt_acc[Axis_Z] / p_imu->acc_scale);
+        shellPrint(p_shell, "%f ", p_imu->flt_gyr[Axis_X] / p_imu->gyr_scale);
+        shellPrint(p_shell, "%f ", p_imu->flt_gyr[Axis_Y] / p_imu->gyr_scale);
+        shellPrint(p_shell, "%f\r\n", p_imu->flt_gyr[Axis_Z] / p_imu->gyr_scale);
+    }
+
+    *p_data += sizeof(BlackBox_IMUData_TypeDef);
+    *len -= sizeof(BlackBox_IMUData_TypeDef);
 }
 
-static void TaskBlackBox_ConvertLogData_To_Baro(Shell *p_shell, BlackBox_BaroData_TypeDef *p_imu, uint8_t **p_data, uint32_t *len)
+static void TaskBlackBox_ConvertLogData_To_Baro(Shell *p_shell, BlackBox_BaroData_TypeDef *p_baro, uint8_t **p_data, uint32_t *len)
 {
+    if ((p_baro == NULL) || \
+        (p_data == NULL) || \
+        (*p_data == NULL) || \
+        (len == NULL) || \
+        (*len < sizeof(BlackBox_BaroData_TypeDef)))
+        return;
 
+    memcpy(p_baro, *p_data, sizeof(BlackBox_BaroData_TypeDef));
+    if (p_shell)
+    {
+        shellPrint(p_shell, "[ Baro ] ");
+        shellPrint(p_shell, "%d ", p_baro->time);
+        shellPrint(p_shell, "%d ", p_baro->cyc);
+        shellPrint(p_shell, "%f\r\n", p_baro->press);
+    }
+    
+    *p_data += sizeof(BlackBox_BaroData_TypeDef);
+    *len -= sizeof(BlackBox_BaroData_TypeDef);
 }
 
 static void TaskBlackBox_GetLogInfo(void)
