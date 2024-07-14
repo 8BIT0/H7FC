@@ -465,6 +465,8 @@ static void TaskBlackBox_GetLogInfo(void)
     uint32_t addr = 0;
     BlackBox_ConvertError_List err = BlackBox_Cnv_None_Error;
     BlackBox_DataHeader_TypeDef header;
+    uint32_t log_size = 0;
+    uint8_t *p_log_data = NULL;
 
     if ((shell_obj == NULL) || (p_blackbox == NULL))
         return;
@@ -497,10 +499,22 @@ static void TaskBlackBox_GetLogInfo(void)
     {
         if (p_blackbox->read(addr, Monitor.p_log_buf, Monitor.log_unit))
         {
+            log_size = Monitor.log_unit;
+            p_log_data = Monitor.p_log_buf;
             addr += Monitor.log_unit;
 
             /* convert data */
-            // err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &(Monitor.p_log_buf), );
+            while (log_cnt)
+            {
+                err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_log_buf, &log_size);
+
+                if (err == BlackBox_Cnv_None_Error)
+                {
+
+                }
+                else
+                    break;
+            }
         }
         else
         {
