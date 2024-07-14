@@ -20,6 +20,16 @@
 #define PeriphSec __attribute__((section(".Perph_Section")))
 #define BlackBox_Buff_Size (8 Kb)
 
+typedef enum
+{
+    BlackBox_Cnv_None_Error = 0,
+    BlackBox_Cnv_Para_Error,
+    BlackBox_Cnv_Size_Error,
+    BlackBox_Cnv_Type_Error,
+    BlackBox_Cnv_Header_Error,
+    BlackBox_Cnv_Ender_Error,
+} BlackBox_ConvertError_List;
+
 typedef struct
 {
     uint32_t cnt;
@@ -329,7 +339,7 @@ static void TaskBlackBox_DisableLog(void)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, blackbox_disable, TaskBlackBox_DisableLog, blackbox end log);
 
-static void TaskBlackBox_ConvertLogData_To_Header(Shell *p_shell, BlackBox_DataHeader_TypeDef *p_header, uint8_t **p_data, uint32_t *len)
+static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Header(Shell *p_shell, BlackBox_DataHeader_TypeDef *p_header, uint8_t **p_data, uint32_t *len)
 {
     if ((p_header == NULL) || \
         (p_data == NULL) || \
@@ -339,31 +349,41 @@ static void TaskBlackBox_ConvertLogData_To_Header(Shell *p_shell, BlackBox_DataH
         return;
     
     memcpy(p_header, *p_data, BLACKBOX_HEADER_SIZE);
-
     if (p_header->header != BLACKBOX_LOG_HEADER)
     {
         memset(p_header, 0, BLACKBOX_HEADER_SIZE);
         shellPrint(p_shell, "[ BlackBox ] header tag error\r\n");
-        return;
+        return BlackBox_Cnv_Header_Error;
     }
 
     switch ((uint8_t) p_header->type)
     {
         case BlackBox_IMU:
+            if (*len < (BLACKBOX_HEADER_SIZE + BLACKBOX_ENDER_SIZE + sizeof(BlackBox_IMUData_TypeDef)))
+                return BlackBox_Cnv_Size_Error;
+            break;
+
         case BlackBox_Baro:
+            if (*len < (BLACKBOX_HEADER_SIZE + BLACKBOX_ENDER_SIZE + sizeof(BlackBox_BaroData_TypeDef)))
+                return BlackBox_Cnv_Size_Error;
+            break;
+
+        /* still in developping */
         case BlackBox_CtlData:
         case BlackBox_Attitude:
         case BlackBox_Actuator:
-            break;
+            return BlackBox_Cnv_Type_Error;
 
         default:
             if (p_shell)
                 shellPrint(p_shell, "[ BlackBox ] type error\r\n");
-            return;
+            return BlackBox_Cnv_Type_Error;
     }
 
     *len -= BLACKBOX_HEADER_SIZE;
     *p_data += BLACKBOX_HEADER_SIZE;
+
+    return BlackBox_Cnv_None_Error;
 }
 
 static void TaskBlackBox_ConvertLogData_Ender(Shell *p_shell, BlackBox_DataEnder_TypeDef *p_ender, uint8_t **p_data, uint32_t *len)
@@ -386,6 +406,23 @@ static void TaskBlackBox_ConvertLogData_Ender(Shell *p_shell, BlackBox_DataEnder
 
     *p_data += BLACKBOX_ENDER_SIZE;
     *len -= BLACKBOX_ENDER_SIZE;
+}
+
+static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_TypeDef *p_imu, uint8_t **p_data, uint32_t *len)
+{
+    if ((p_imu == NULL) || \
+        (p_data == NULL) || \
+        (*p_data == NULL) || \
+        (len == NULL) || \
+        (*len < sizeof(BlackBox_IMUData_TypeDef)))
+        return;
+
+    
+}
+
+static void TaskBlackBox_ConvertLogData_To_Baro(Shell *p_shell, BlackBox_BaroData_TypeDef *p_imu, uint8_t **p_data, uint32_t *len)
+{
+
 }
 
 static void TaskBlackBox_GetLogInfo(void)
