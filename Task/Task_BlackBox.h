@@ -67,10 +67,10 @@ typedef struct
     uint8_t cyc;
     float acc_scale;
     float gyr_scale;
-    uint16_t org_acc[Axis_Sum];
-    uint16_t org_gyr[Axis_Sum];
-    uint16_t flt_acc[Axis_Sum];
-    uint16_t flt_gyr[Axis_Sum];
+    // int16_t org_acc[Axis_Sum];
+    // int16_t org_gyr[Axis_Sum];
+    int16_t flt_acc[Axis_Sum];
+    int16_t flt_gyr[Axis_Sum];
 } BlackBox_IMUData_TypeDef;
 
 typedef struct

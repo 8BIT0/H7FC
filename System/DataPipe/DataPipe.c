@@ -90,6 +90,10 @@ static void DataPipe_TransFinish_Callback(void *dma_hdl)
     {
         Pipe_State = Pipe_Ready;
 
+        if ((Cur_Pluged_PipeObj.dst == NULL) || \
+            (Cur_Pluged_PipeObj.org == NULL))
+            return;
+
         Cur_Pluged_PipeObj.dst->rx_cnt++;
         Cur_Pluged_PipeObj.org->tx_cnt++;
 

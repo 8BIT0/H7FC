@@ -14,8 +14,8 @@ typedef struct
     uint32_t (*init)(SrvBlackBox_Log_Callback callback);
     bool (*enable)(void);
     bool (*disable)(void);
-    bool (*push)(uint8_t *p_data, uint16_t len);
-    bool (*read)(uint32_t addr_offset, uint8_t *p_data, uint16_t len);
+    bool (*push)(uint8_t *p_data, uint32_t len);
+    bool (*read)(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
     bool (*get_info)(uint32_t *cnt, uint32_t *size, bool *enable_state);
 } SrvBlackBox_TypeDef;
 

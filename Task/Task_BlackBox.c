@@ -27,6 +27,7 @@ typedef enum
     BlackBox_Cnv_Size_Error,
     BlackBox_Cnv_Type_Error,
     BlackBox_Cnv_Header_Error,
+    BlackBox_Cnv_Ender_Error,
 } BlackBox_ConvertError_List;
 
 typedef struct
@@ -46,6 +47,7 @@ typedef struct
     uint32_t log_unit;
     uint8_t *p_log_buf;
     uint32_t log_byte_size;
+    uint32_t log_cnt;
     BlackBox_LogMonitor_TypeDef imu_log;
     BlackBox_LogMonitor_TypeDef baro_log; 
     BlackBox_LogMonitor_TypeDef ctl_log;
@@ -118,7 +120,7 @@ void TaskBlackBox_Init(void)
     Monitor.log_unit = unit;
     Monitor.en_reg.bit.imu = true;
     Monitor.en_reg.bit.baro = true;
-    Monitor.en_reg.bit.exp_ctl = true;
+    Monitor.en_reg.bit.exp_ctl = false;
 
     memset(&IMU_Log_DataPipe,      0, sizeof(DataPipeObj_TypeDef));
     memset(&Baro_Log_DataPipe,     0, sizeof(DataPipeObj_TypeDef));
@@ -162,12 +164,22 @@ void TaskBlackBox_Init(void)
 void TaskBlackBox_Core(void const *arg)
 {
     Monitor.write_thread_state = true;
+    volatile uint32_t time_1 = 0;
+    volatile uint32_t time_2 = 0;
 
     while (BlackBox_Sem && p_blackbox)
     {
         osSemaphoreWait(BlackBox_Sem, osWaitForever);
-        if (p_blackbox->push)
-            p_blackbox->push(Monitor.p_log_buf, Monitor.log_unit);
+        if (p_blackbox->push && Monitor.log_unit)
+        {
+            time_1 = SrvOsCommon.get_os_ms();
+            if(p_blackbox->push(Monitor.p_log_buf, Monitor.log_unit))
+            {
+                time_2 = SrvOsCommon.get_os_ms();
+                Monitor.log_cnt ++;
+                Monitor.log_byte_size += Monitor.log_unit;
+            }
+        }
     }
 }
 
@@ -189,13 +201,27 @@ static void TaskBlackBox_PushFinish_Callback(void)
 }
 
 /* PIPE Callback */
-static void TaskBlackBox_CheckQueue(void)
+static void TaskBlackBox_UpdateQueue(uint8_t *p_data, uint16_t size)
 {
+    uint32_t offset = 0;
+    uint32_t Queue_remain = Queue.remain(BlackBox_Queue);
+    
+    if (size > Queue_remain)
+    {
+        offset = Queue_remain;
+        Queue.push(&BlackBox_Queue, p_data, Queue_remain);
+    }
+    else
+        Queue.push(&BlackBox_Queue, p_data, size);
+
     if (Queue.size(BlackBox_Queue) >= Monitor.log_unit)
     {
         Queue.pop(&BlackBox_Queue, Monitor.p_log_buf, Monitor.log_unit);
         osSemaphoreRelease(BlackBox_Sem);
     }
+
+    if (offset)
+        Queue.push(&BlackBox_Queue, p_data + offset, size - offset);
 }
 
 static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
@@ -225,28 +251,27 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         Monitor.imu_log.byte_size += BLACKBOX_HEADER_SIZE;
         blackbox_header.type = BlackBox_IMU;
         blackbox_header.size = sizeof(BlackBox_IMUData_TypeDef);
-        Queue.push(&BlackBox_Queue, (uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
+        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
         
         imu_data.acc_scale = DataPipe_DataObj(LogImu_Data).data.acc_scale;
         imu_data.gyr_scale = DataPipe_DataObj(LogImu_Data).data.gyr_scale;
         for (uint8_t i = Axis_X; i < Axis_Sum; i++)
         {
-            imu_data.flt_gyr[i] = (uint16_t)(DataPipe_DataObj(LogImu_Data).data.flt_gyr[i] * imu_data.gyr_scale);
-            imu_data.org_gyr[i] = (uint16_t)(DataPipe_DataObj(LogImu_Data).data.org_gyr[i] * imu_data.gyr_scale);
+            imu_data.flt_gyr[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.flt_gyr[i] * imu_data.gyr_scale);
+            // imu_data.org_gyr[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.org_gyr[i] * imu_data.gyr_scale);
         
-            imu_data.flt_acc[i] = (uint16_t)(DataPipe_DataObj(LogImu_Data).data.flt_acc[i] * imu_data.acc_scale);
-            imu_data.org_acc[i] = (uint16_t)(DataPipe_DataObj(LogImu_Data).data.org_acc[i] * imu_data.acc_scale);
+            imu_data.flt_acc[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.flt_acc[i] * imu_data.acc_scale);
+            // imu_data.org_acc[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.org_acc[i] * imu_data.acc_scale);
         }
         imu_data.time = DataPipe_DataObj(LogImu_Data).data.time_stamp;
         imu_data.cyc  = DataPipe_DataObj(LogImu_Data).data.cycle_cnt;
-        Queue.push(&BlackBox_Queue, (uint8_t *)&imu_data, sizeof(BlackBox_IMUData_TypeDef));
+        TaskBlackBox_UpdateQueue((uint8_t *)&imu_data, sizeof(BlackBox_IMUData_TypeDef));
         Monitor.imu_log.byte_size += sizeof(BlackBox_IMUData_TypeDef);
 
         check_sum = TaskBlackBox_Get_CheckSum(&imu_data, sizeof(imu_data));
         blackbox_ender.check_sum = check_sum;
         Monitor.imu_log.byte_size += BLACKBOX_ENDER_SIZE;
-        Queue.push(&BlackBox_Queue, (uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
-        TaskBlackBox_CheckQueue();
+        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
     }
 
     if ((obj == &Baro_Log_DataPipe) && Monitor.en_reg.bit.baro)
@@ -256,19 +281,18 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         Monitor.baro_log.byte_size += BLACKBOX_HEADER_SIZE;
         blackbox_header.type = BlackBox_Baro;
         blackbox_header.size = sizeof(BlackBox_BaroData_TypeDef);
-        Queue.push(&BlackBox_Queue, (uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
+        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
         
         baro_data.time = DataPipe_DataObj(LogBaro_Data).data.time_stamp;
         baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
         baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
-        Queue.push(&BlackBox_Queue, (uint8_t *)&baro_data, sizeof(BlackBox_BaroData_TypeDef));
+        TaskBlackBox_UpdateQueue((uint8_t *)&baro_data, sizeof(BlackBox_BaroData_TypeDef));
         Monitor.baro_log.byte_size += sizeof(BlackBox_BaroData_TypeDef);
 
         check_sum = TaskBlackBox_Get_CheckSum(&baro_data, sizeof(BlackBox_BaroData_TypeDef));
         blackbox_ender.check_sum = check_sum;
         Monitor.baro_log.byte_size += BLACKBOX_ENDER_SIZE;
-        Queue.push(&BlackBox_Queue, (uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
-        TaskBlackBox_CheckQueue();
+        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
     }
     
     if ((obj == &CtlData_Log_DataPipe) && Monitor.en_reg.bit.exp_ctl)
@@ -343,10 +367,12 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Header(Shell *p
     if ((p_header == NULL) || \
         (p_data == NULL) || \
         (len == NULL) || \
-        (*p_data == NULL) || \
-        (*len <= BLACKBOX_HEADER_SIZE))
+        (*p_data == NULL))
         return BlackBox_Cnv_Para_Error;
     
+    if (*len <= BLACKBOX_HEADER_SIZE)
+        return BlackBox_Cnv_Size_Error;
+
     memcpy(p_header, *p_data, BLACKBOX_HEADER_SIZE);
     if (p_header->header != BLACKBOX_LOG_HEADER)
     {
@@ -385,14 +411,14 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Header(Shell *p
     return BlackBox_Cnv_None_Error;
 }
 
-static void TaskBlackBox_ConvertLogData_Ender(Shell *p_shell, BlackBox_DataEnder_TypeDef *p_ender, uint8_t **p_data, uint32_t *len)
+static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Ender(Shell *p_shell, BlackBox_DataEnder_TypeDef *p_ender, uint8_t **p_data, uint32_t *len)
 {
     if ((p_ender == NULL) || \
         (p_data == NULL) || \
         (*p_data == NULL) || \
         (len == NULL) || \
         (*len < BLACKBOX_ENDER_SIZE))
-        return;
+        return BlackBox_Cnv_Para_Error;
 
     memcpy(p_ender, *p_data, BLACKBOX_ENDER_SIZE);
     if (p_ender->ender != BLACKBOX_LOG_ENDER)
@@ -400,11 +426,13 @@ static void TaskBlackBox_ConvertLogData_Ender(Shell *p_shell, BlackBox_DataEnder
         memset(p_ender, 0, BLACKBOX_ENDER_SIZE);
         if (p_shell)
             shellPrint(p_shell, "[ BlackBox ] ender error\r\n");
-        return;
+        return BlackBox_Cnv_Ender_Error;
     }
 
     *p_data += BLACKBOX_ENDER_SIZE;
     *len -= BLACKBOX_ENDER_SIZE;
+
+    return BlackBox_Cnv_None_Error;
 }
 
 static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_TypeDef *p_imu, uint8_t **p_data, uint32_t *len)
@@ -419,15 +447,21 @@ static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_
     memcpy(p_imu, *p_data, sizeof(BlackBox_IMUData_TypeDef));
     if (p_shell)
     {
-        shellPrint(p_shell, "[ IMU ] ");
+        // shellPrint(p_shell, "[ IMU ] ");
         shellPrint(p_shell, "%d ", p_imu->time);
         shellPrint(p_shell, "%d ", p_imu->cyc);
+        // shellPrint(p_shell, "%f ", p_imu->org_acc[Axis_X] / p_imu->acc_scale);
+        // shellPrint(p_shell, "%f ", p_imu->org_acc[Axis_Y] / p_imu->acc_scale);
+        // shellPrint(p_shell, "%f ", p_imu->org_acc[Axis_Z] / p_imu->acc_scale);
         shellPrint(p_shell, "%f ", p_imu->flt_acc[Axis_X] / p_imu->acc_scale);
         shellPrint(p_shell, "%f ", p_imu->flt_acc[Axis_Y] / p_imu->acc_scale);
-        shellPrint(p_shell, "%f ", p_imu->flt_acc[Axis_Z] / p_imu->acc_scale);
-        shellPrint(p_shell, "%f ", p_imu->flt_gyr[Axis_X] / p_imu->gyr_scale);
-        shellPrint(p_shell, "%f ", p_imu->flt_gyr[Axis_Y] / p_imu->gyr_scale);
-        shellPrint(p_shell, "%f\r\n", p_imu->flt_gyr[Axis_Z] / p_imu->gyr_scale);
+        shellPrint(p_shell, "%f\r\n", p_imu->flt_acc[Axis_Z] / p_imu->acc_scale);
+        // shellPrint(p_shell, "%f ", p_imu->org_gyr[Axis_X] / p_imu->gyr_scale);
+        // shellPrint(p_shell, "%f ", p_imu->org_gyr[Axis_Y] / p_imu->gyr_scale);
+        // shellPrint(p_shell, "%f ", p_imu->org_gyr[Axis_Z] / p_imu->gyr_scale);
+        // shellPrint(p_shell, "%f ", p_imu->flt_gyr[Axis_X] / p_imu->gyr_scale);
+        // shellPrint(p_shell, "%f ", p_imu->flt_gyr[Axis_Y] / p_imu->gyr_scale);
+        // shellPrint(p_shell, "%f\r\n", p_imu->flt_gyr[Axis_Z] / p_imu->gyr_scale);
     }
 
     *p_data += sizeof(BlackBox_IMUData_TypeDef);
@@ -446,10 +480,10 @@ static void TaskBlackBox_ConvertLogData_To_Baro(Shell *p_shell, BlackBox_BaroDat
     memcpy(p_baro, *p_data, sizeof(BlackBox_BaroData_TypeDef));
     if (p_shell)
     {
-        shellPrint(p_shell, "[ Baro ] ");
-        shellPrint(p_shell, "%d ", p_baro->time);
-        shellPrint(p_shell, "%d ", p_baro->cyc);
-        shellPrint(p_shell, "%f\r\n", p_baro->press);
+        // shellPrint(p_shell, "[ Baro ] ");
+        // shellPrint(p_shell, "%d ", p_baro->time);
+        // shellPrint(p_shell, "%d ", p_baro->cyc);
+        // shellPrint(p_shell, "%f\r\n", p_baro->press);
     }
     
     *p_data += sizeof(BlackBox_BaroData_TypeDef);
@@ -463,10 +497,16 @@ static void TaskBlackBox_GetLogInfo(void)
     uint32_t log_size = 0;
     bool log_enable = false;
     uint32_t addr = 0;
-    BlackBox_ConvertError_List err = BlackBox_Cnv_None_Error;
+    volatile BlackBox_ConvertError_List err = BlackBox_Cnv_None_Error;
     BlackBox_DataHeader_TypeDef header;
-    uint32_t log_size = 0;
+    BlackBox_DataEnder_TypeDef ender;
+    BlackBox_IMUData_TypeDef log_imu;
+    BlackBox_BaroData_TypeDef log_baro;
     uint8_t *p_log_data = NULL;
+    uint16_t uncomplete_size = 0;
+    uint8_t remain_buf[128];
+    uint8_t *p_remain_buf = NULL;
+    uint8_t check_sum = 0;
 
     if ((shell_obj == NULL) || (p_blackbox == NULL))
         return;
@@ -484,8 +524,9 @@ static void TaskBlackBox_GetLogInfo(void)
         return;
     }
 
-    shellPrint(shell_obj, "[ BlackBox ] Log Count: %d\r\n", log_cnt);
-    shellPrint(shell_obj, "[ BlackBox ] Log_Size:  %d\r\n", log_size);
+    shellPrint(shell_obj, "[ BlackBox ] task log success count: %d\r\n", Monitor.log_cnt);
+    shellPrint(shell_obj, "[ BlackBox ] service log count:      %d\r\n", log_cnt);
+    shellPrint(shell_obj, "[ BlackBox ] service log size:       %d\r\n", log_size);
 
     /* dispaly data */
     if ((p_blackbox->read == NULL) || (Monitor.p_log_buf == NULL))
@@ -504,13 +545,128 @@ static void TaskBlackBox_GetLogInfo(void)
             addr += Monitor.log_unit;
 
             /* convert data */
-            while (log_cnt)
+            while (log_size)
             {
-                err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_log_buf, &log_size);
+                if (uncomplete_size)
+                {
+                    p_remain_buf = remain_buf;
+
+                    if (uncomplete_size < BLACKBOX_HEADER_SIZE)
+                    {
+                        /* get header first */
+                        memcpy(p_remain_buf, p_log_data, BLACKBOX_HEADER_SIZE - uncomplete_size);
+                        p_log_data += (BLACKBOX_HEADER_SIZE - uncomplete_size);
+                        log_size -= (BLACKBOX_HEADER_SIZE - uncomplete_size);
+                        uncomplete_size = BLACKBOX_HEADER_SIZE;
+                        err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_remain_buf, &uncomplete_size);
+                        uncomplete_size = 0;
+                    }
+                    else if (uncomplete_size >= BLACKBOX_HEADER_SIZE)
+                    {
+                        err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_remain_buf, &uncomplete_size);
+                        if (err != BlackBox_Cnv_None_Error)
+                        {
+                            shellPrint(shell_obj, "[ BlackBox ] uncomplete decode error\r\n");
+                            return;
+                        }
+
+                        if (uncomplete_size)
+                        {
+                            uint16_t decode_size = 0;
+                            switch ((uint8_t)header.type)
+                            {
+                                case BlackBox_IMU:
+                                    if (uncomplete_size <= sizeof(BlackBox_IMUData_TypeDef))
+                                    {
+                                        memcpy(p_remain_buf + uncomplete_size, p_log_data, sizeof(BlackBox_IMUData_TypeDef) - uncomplete_size);
+                                        p_log_data += sizeof(BlackBox_IMUData_TypeDef) - uncomplete_size;
+                                        log_size -= sizeof(BlackBox_IMUData_TypeDef) - uncomplete_size;
+                                        uncomplete_size = 0;
+                                    }
+                                    else
+                                    {
+                                        memmove(p_remain_buf, p_remain_buf + uncomplete_size, uncomplete_size - sizeof(BlackBox_IMUData_TypeDef));
+                                        uncomplete_size -= sizeof(BlackBox_IMUData_TypeDef);
+                                    }
+
+                                    decode_size = sizeof(BlackBox_IMUData_TypeDef);
+                                    TaskBlackBox_ConvertLogData_To_IMU(shell_obj, &log_imu, &p_remain_buf, &decode_size);
+                                    break;
+
+                                case BlackBox_Baro:
+                                    if (uncomplete_size <= sizeof(BlackBox_BaroData_TypeDef))
+                                    {
+                                        memcpy(p_remain_buf + uncomplete_size, p_log_data, sizeof(BlackBox_BaroData_TypeDef) - uncomplete_size);
+                                        p_log_data += sizeof(BlackBox_BaroData_TypeDef) - uncomplete_size;
+                                        log_size -= sizeof(BlackBox_BaroData_TypeDef) - uncomplete_size;
+                                        uncomplete_size = 0;
+                                    }
+                                    else
+                                    {
+                                        memmove(p_remain_buf, p_remain_buf + uncomplete_size, uncomplete_size - sizeof(BlackBox_IMUData_TypeDef));
+                                        uncomplete_size -= sizeof(BlackBox_BaroData_TypeDef);
+                                    }
+
+                                    decode_size = sizeof(BlackBox_BaroData_TypeDef);
+                                    TaskBlackBox_ConvertLogData_To_Baro(shell_obj, &log_baro, &p_remain_buf, &decode_size);
+                                    break;
+
+                                default: return;
+                            }
+
+                            /* get ender */
+                            if (uncomplete_size)
+                            {
+                                memcpy(remain_buf + uncomplete_size, p_log_data, BLACKBOX_ENDER_SIZE - uncomplete_size);
+                                decode_size = BLACKBOX_ENDER_SIZE;
+                                p_log_data += BLACKBOX_ENDER_SIZE - uncomplete_size;
+                                log_size -= BLACKBOX_ENDER_SIZE - uncomplete_size;
+                                TaskBlackBox_ConvertLogData_To_Ender(shell_obj, &ender, &remain_buf, &decode_size);
+                            }
+                            else
+                                TaskBlackBox_ConvertLogData_To_Ender(shell_obj, &ender, &p_log_data, &log_size);
+
+                            /* get next header */
+                            err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_log_data, &log_size);
+                        }
+                    }
+                }
+                else
+                    err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_log_data, &log_size);
 
                 if (err == BlackBox_Cnv_None_Error)
                 {
+                    uncomplete_size = 0;
+                    switch ((uint8_t)header.type)
+                    {
+                        case BlackBox_IMU:
+                            TaskBlackBox_ConvertLogData_To_IMU(shell_obj, &log_imu, &p_log_data, &log_size);
+                            check_sum = TaskBlackBox_Get_CheckSum(&log_imu, sizeof(BlackBox_IMUData_TypeDef));
+                            break;
 
+                        case BlackBox_Baro:
+                            TaskBlackBox_ConvertLogData_To_Baro(shell_obj, &log_baro, &p_log_data, &log_size);
+                            check_sum = TaskBlackBox_Get_CheckSum(&log_baro, sizeof(BlackBox_BaroData_TypeDef));
+                            break;
+
+                        default: break;
+                    }
+
+                    if (TaskBlackBox_ConvertLogData_To_Ender(shell_obj, &ender, &p_log_data, &log_size) != BlackBox_Cnv_None_Error)
+                        return;
+
+                    if (check_sum != ender.check_sum)
+                    {
+                        shellPrint(shell_obj, "[ BlackBox ] CheckSum error\r\n");
+                        shellPrint(shell_obj, "[ BlackBox ] addr: %d remian: %d\r\n", addr, log_size);
+                    }
+                }
+                else if (err == BlackBox_Cnv_Size_Error)
+                {
+                    memset(remain_buf, 0, sizeof(remain_buf));
+                    uncomplete_size = log_size;
+                    memcpy(remain_buf, p_log_data, uncomplete_size);
+                    log_size = 0;
                 }
                 else
                     break;
