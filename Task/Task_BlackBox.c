@@ -159,6 +159,9 @@ void TaskBlackBox_Init(void)
     DataPipe_Enable(&CtlData_Log_DataPipe);
     // DataPipe_Enable(&Attitude_Log_DataPipe);
     // DataPipe_Enable(&Actuator_Log_DataPipe);
+
+    /* disable log first */
+    Monitor.enable = false;
 }
 
 void TaskBlackBox_Core(void const *arg)
@@ -326,6 +329,21 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     }
 
     /* use minilzo compress data if have to */
+}
+
+void TaskBlackBox_LogControl(void)
+{
+    if (!Monitor.enable)
+    {
+        if (p_blackbox->enable && p_blackbox->enable())
+            Monitor.enable = true;
+    }
+    else
+    {
+        Monitor.enable = false;
+        if (p_blackbox->disable)
+            p_blackbox->disable();
+    }
 }
 
 static void TaskBlackBox_EnableLog(void)

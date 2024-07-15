@@ -118,6 +118,7 @@ typedef struct
 
 void TaskBlackBox_Init(void);
 void TaskBlackBox_Core(void const *arg);
+void TaskBlackBox_LogControl(void);
 
 #ifdef __cplusplus
 }
