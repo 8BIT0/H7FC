@@ -25,10 +25,10 @@ typedef enum
 
 typedef enum
 {
-    BlackBox_Imu_Filter = 0,
-    BlackBox_AngularPID_Tune,
-    BlackBox_AttitudePID_Tune,
-    BlackBox_AltitudePID_Tune,
+    BlackBox_Imu_Filter = 0,    /* log raw gyr acc and filted gyr acc data                                      rate for 1Khz */
+    BlackBox_AngularPID_Tune,   /* log filted gyr and expection gyr data                                        rate for 500Hz */
+    BlackBox_AttitudePID_Tune,  /* log pitch roll and z_angular and expection pitch roll and z_angular data     rate for 100Hz */
+    BlackBox_AltitudePID_Tune,  /* log raw baro altitude and expection altitude                                 rate for 100Hz */
 } BlackBox_LogType_List;
 
 #pragma pack(1)
