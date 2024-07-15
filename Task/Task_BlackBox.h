@@ -23,29 +23,13 @@ typedef enum
     BlackBox_Medium_Com,
 } BlackBox_MediumType_List;
 
-typedef union
-{
-    uint16_t val;
-    struct
-    {
-        uint16_t imu     : 1;   /* bit1: imu data */
-        uint16_t baro    : 1;   /* bit2: baro data */
-        uint16_t att     : 1;   /* bit3: attitude data */
-        uint16_t alt     : 1;   /* bit4: altitude data */
-        uint16_t exp_ctl : 1;   /* bit5: expection control data, convert from rc receiver */
-        uint16_t act     : 1;   /* bit6: actuator data */
-        uint16_t res     : 10;
-    } bit;
-} BlackBox_Reg_TypeDef;
-
 typedef enum
 {
-    BlackBox_IMU = 0,
-    BlackBox_Baro,
-    BlackBox_CtlData,
-    BlackBox_Attitude,
-    BlackBox_Actuator,
-} BlackBox_DataType_List;
+    BlackBox_Imu_Filter = 0,
+    BlackBox_AngularPID_Tune,
+    BlackBox_AttitudePID_Tune,
+    BlackBox_AltitudePID_Tune,
+} BlackBox_LogType_List;
 
 #pragma pack(1)
 typedef struct
@@ -106,14 +90,6 @@ typedef struct
     float roll;
     float yaw;
 } BlackBox_AttitudeData_TypeDef;
-
-typedef struct
-{
-    uint32_t time;
-    uint8_t cyc;
-
-    uint16_t ch[8];
-} BlackBox_ActuatorData_TypeDef;
 #pragma pack()
 
 void TaskBlackBox_Init(void);

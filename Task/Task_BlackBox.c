@@ -20,6 +20,28 @@
 #define PeriphSec __attribute__((section(".Perph_Section")))
 #define BlackBox_Buff_Size (8 Kb)
 
+typedef union
+{
+    uint16_t val;
+    struct
+    {
+        uint16_t imu     : 1;   /* bit1: imu data */
+        uint16_t baro    : 1;   /* bit2: baro data */
+        uint16_t att     : 1;   /* bit3: attitude data */
+        uint16_t alt     : 1;   /* bit4: altitude data */
+        uint16_t exp_ctl : 1;   /* bit5: expection control data, convert from rc receiver */
+        uint16_t res     : 10;
+    } bit;
+} BlackBox_Reg_TypeDef;
+
+typedef enum
+{
+    BlackBox_IMU = 0,
+    BlackBox_Baro,
+    BlackBox_CtlData,
+    BlackBox_Attitude,
+} BlackBox_DataType_List;
+
 typedef enum
 {
     BlackBox_Cnv_None_Error = 0,
@@ -125,7 +147,6 @@ void TaskBlackBox_Init(void)
     memset(&IMU_Log_DataPipe,      0, sizeof(DataPipeObj_TypeDef));
     memset(&Baro_Log_DataPipe,     0, sizeof(DataPipeObj_TypeDef));
     memset(&Attitude_Log_DataPipe, 0, sizeof(DataPipeObj_TypeDef));
-    memset(&Actuator_Log_DataPipe, 0, sizeof(DataPipeObj_TypeDef));
     memset(&CtlData_Log_DataPipe,  0, sizeof(DataPipeObj_TypeDef));
 
     memset(DataPipe_DataObjAddr(LogImu_Data),     0, DataPipe_DataSize(LogImu_Data));
@@ -235,7 +256,6 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     BlackBox_BaroData_TypeDef     baro_data;
     BlackBox_CtlData_TypeDef      input_ctl_data;
     BlackBox_AttitudeData_TypeDef att_data;
-    BlackBox_ActuatorData_TypeDef actuator_data;
     uint8_t check_sum = 0;
 
     memset(&blackbox_header, 0, BLACKBOX_HEADER_SIZE);
@@ -318,16 +338,6 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         // TaskBlackBox_CheckQueue();
     }
     
-    if ((obj == & Actuator_Log_DataPipe) && Monitor.en_reg.bit.act)
-    {
-        memset(&actuator_data, 0, sizeof(BlackBox_ActuatorData_TypeDef));
-        Monitor.act_log.cnt ++;
-        Monitor.act_log.byte_size += BLACKBOX_HEADER_SIZE;
-        blackbox_header.type = BlackBox_Actuator;
-        Monitor.act_log.byte_size += BLACKBOX_ENDER_SIZE;
-        // TaskBlackBox_CheckQueue();
-    }
-
     /* use minilzo compress data if have to */
 }
 
@@ -414,7 +424,6 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Header(Shell *p
         /* still in developping */
         case BlackBox_CtlData:
         case BlackBox_Attitude:
-        case BlackBox_Actuator:
             return BlackBox_Cnv_Type_Error;
 
         default:
