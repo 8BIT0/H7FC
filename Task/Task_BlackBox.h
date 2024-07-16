@@ -40,22 +40,6 @@ typedef struct
     float press;
 } BlackBox_BaroData_TypeDef;
 
-typedef struct
-{
-    uint32_t time;
-
-    float alt;
-} BlackBox_AltitudeData_TypeDef;
-
-typedef struct
-{
-    uint32_t time;
-
-    float pitch;
-    float roll;
-    float yaw;
-} BlackBox_AttitudeData_TypeDef;
-
 #pragma pack(1)
 typedef struct
 {

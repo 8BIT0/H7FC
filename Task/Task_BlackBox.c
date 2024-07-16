@@ -76,6 +76,7 @@ static osSemaphoreId BlackBox_Sem = 0;
 static SrvBlackBox_TypeDef *p_blackbox = NULL;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef,  LogImu_Data);
 DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, LogBaro_Data);
+DataPipe_CreateDataObj(IMUAtt_TypeDef,            LogAtt_Data);
 DataPipe_CreateDataObj(ControlData_TypeDef,       LogControl_Data);
 
 /* internal function */
@@ -170,6 +171,7 @@ void TaskBlackBox_Init(void)
 
     memset(DataPipe_DataObjAddr(LogImu_Data),     0, DataPipe_DataSize(LogImu_Data));
     memset(DataPipe_DataObjAddr(LogBaro_Data),    0, DataPipe_DataSize(LogBaro_Data));
+    memset(DataPipe_DataObjAddr(LogAtt_Data),     0, DataPipe_DataSize(LogAtt_Data));
     memset(DataPipe_DataObjAddr(LogControl_Data), 0, DataPipe_DataSize(LogControl_Data));
 
     if (!Queue.create_with_buf(&BlackBox_Queue, "BlackBox_Queue", BlackBox_Buff, BlackBox_Buff_Size))
@@ -193,6 +195,10 @@ void TaskBlackBox_Init(void)
     CtlData_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogControl_Data);
     CtlData_Log_DataPipe.data_size = DataPipe_DataSize(LogControl_Data);
     CtlData_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
+
+    Attitude_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogAtt_Data);
+    Attitude_Log_DataPipe.data_size = DataPipe_DataSize(LogAtt_Data);
+    Attitude_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
 
     DataPipe_Enable(&IMU_Log_DataPipe);
     DataPipe_Enable(&Baro_Log_DataPipe);
@@ -266,13 +272,13 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
     static BlackBox_IMUData_TypeDef  imu_data;
     static BlackBox_BaroData_TypeDef baro_data;
-    static BlackBox_AttitudeData_TypeDef att_data;
-    static BlackBox_AltitudeData_TypeDef alt_data;
+    static BlackBox_AttAltData_TypeDef att_alt_data;
     static bool alt_update = false;
     static bool att_update = false;
     BlackBox_DataHeader_TypeDef blackbox_header;
     BlackBox_DataEnder_TypeDef blackbox_ender;
     uint8_t check_sum = 0;
+    uint8_t i = 0;
     bool imu_update = false;
 
     memset(&blackbox_header, 0, BLACKBOX_HEADER_SIZE);
@@ -288,7 +294,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     {
         imu_data.acc_scale = DataPipe_DataObj(LogImu_Data).data.acc_scale;
         imu_data.gyr_scale = DataPipe_DataObj(LogImu_Data).data.gyr_scale;
-        for (uint8_t i = Axis_X; i < Axis_Sum; i++)
+        for (i = Axis_X; i < Axis_Sum; i++)
         {
             imu_data.flt_gyr[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.flt_gyr[i] * imu_data.gyr_scale);
             imu_data.org_gyr[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.org_gyr[i] * imu_data.gyr_scale);
@@ -309,9 +315,22 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     else if ((obj == &Attitude_Log_DataPipe) || \
              (obj == &Altitude_Log_DataPipe))
     {
+        /* set imu data */
+        att_alt_data.gyr_scale = imu_data.gyr_scale;
+        att_alt_data.acc_scale = imu_data.acc_scale;
+        memcpy(att_alt_data.acc, imu_data.flt_acc, sizeof(imu_data.flt_acc));
+        memcpy(att_alt_data.gyr, imu_data.flt_gyr, sizeof(imu_data.flt_gyr));
+
+        /* set baro data */
+        att_alt_data.baro = baro_data.press;
+
         /* log data when attitude update */
         if (obj == &Attitude_Log_DataPipe)
         {
+            att_alt_data.time = DataPipe_DataObj(LogAtt_Data).time_stamp;
+            att_alt_data.pitch = DataPipe_DataObj(LogAtt_Data).pitch;
+            att_alt_data.roll = DataPipe_DataObj(LogAtt_Data).roll;
+            att_alt_data.yaw = DataPipe_DataObj(LogAtt_Data).yaw;
             att_update = true;
         }
         else if (obj == &Altitude_Log_DataPipe)
@@ -338,10 +357,14 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
         imu_update = false;
     }
-    else if ((Monitor.log_type == BlackBox_Log_Alt_Att) && (alt_update & att_update))
+    else if ((Monitor.log_type == BlackBox_Log_Alt_Att) && (alt_update & att_update & imu_update))
     {
         Monitor.alt_att_log.cnt ++;
         Monitor.alt_att_log.byte_size += BLACKBOX_HEADER_SIZE;
+        blackbox_header.type = BlackBox_Log_Alt_Att;
+        blackbox_header.size = sizeof(BlackBox_AttAltData_TypeDef);
+        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
+        
         alt_update = false;
         att_update = false;
     }
@@ -577,7 +600,6 @@ static void TaskBlackBox_GetLogInfo(void)
     BlackBox_DataHeader_TypeDef header;
     BlackBox_DataEnder_TypeDef ender;
     BlackBox_IMUData_TypeDef log_imu;
-    BlackBox_BaroData_TypeDef log_baro;
     uint8_t *p_log_data = NULL;
     uint32_t uncomplete_size = 0;
     uint8_t remain_buf[128];
