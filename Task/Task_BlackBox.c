@@ -387,6 +387,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
         alt_update = false;
         att_update = false;
+        imu_update = false;
     }
     else if (Monitor.log_type == BlackBox_AngularPID_Tune)
     {
