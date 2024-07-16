@@ -21,6 +21,7 @@
  *
  */
 #include "Task_Telemetry.h"
+#include "Task_BlackBox.h"
 #include "DataPipe.h"
 #include "HW_Def.h"
 #include "Srv_Receiver.h"

@@ -77,6 +77,7 @@ static SrvBlackBox_TypeDef *p_blackbox = NULL;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef,  LogImu_Data);
 DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, LogBaro_Data);
 DataPipe_CreateDataObj(IMUAtt_TypeDef,            LogAtt_Data);
+DataPipe_CreateDataObj(AltData_TypeDef,           LogAlt_Data);
 DataPipe_CreateDataObj(ControlData_TypeDef,       LogControl_Data);
 
 /* internal function */
@@ -167,11 +168,13 @@ void TaskBlackBox_Init(void)
     memset(&IMU_Log_DataPipe,      0, sizeof(DataPipeObj_TypeDef));
     memset(&Baro_Log_DataPipe,     0, sizeof(DataPipeObj_TypeDef));
     memset(&Attitude_Log_DataPipe, 0, sizeof(DataPipeObj_TypeDef));
+    memset(&Altitude_Log_DataPipe, 0, sizeof(DataPipeObj_TypeDef));
     memset(&CtlData_Log_DataPipe,  0, sizeof(DataPipeObj_TypeDef));
 
     memset(DataPipe_DataObjAddr(LogImu_Data),     0, DataPipe_DataSize(LogImu_Data));
     memset(DataPipe_DataObjAddr(LogBaro_Data),    0, DataPipe_DataSize(LogBaro_Data));
     memset(DataPipe_DataObjAddr(LogAtt_Data),     0, DataPipe_DataSize(LogAtt_Data));
+    memset(DataPipe_DataObjAddr(LogAlt_Data),     0, DataPipe_DataSize(LogAlt_Data));
     memset(DataPipe_DataObjAddr(LogControl_Data), 0, DataPipe_DataSize(LogControl_Data));
 
     if (!Queue.create_with_buf(&BlackBox_Queue, "BlackBox_Queue", BlackBox_Buff, BlackBox_Buff_Size))
@@ -200,10 +203,15 @@ void TaskBlackBox_Init(void)
     Attitude_Log_DataPipe.data_size = DataPipe_DataSize(LogAtt_Data);
     Attitude_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
 
+    Altitude_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogAlt_Data);
+    Altitude_Log_DataPipe.data_size = DataPipe_DataSize(LogAlt_Data);
+    Altitude_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
+
     DataPipe_Enable(&IMU_Log_DataPipe);
     DataPipe_Enable(&Baro_Log_DataPipe);
     DataPipe_Enable(&CtlData_Log_DataPipe);
     DataPipe_Enable(&Attitude_Log_DataPipe);
+    DataPipe_Enable(&Altitude_Log_DataPipe);
 
     /* disable log first */
     Monitor.enable = false;
@@ -290,6 +298,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     if (!Monitor.enable || (Monitor.log_type == BlackBox_Log_None) || !Monitor.write_thread_state)
         return;
 
+    /* pipe data update */
     if (obj == &IMU_Log_DataPipe)
     {
         imu_data.acc_scale = DataPipe_DataObj(LogImu_Data).data.acc_scale;
@@ -337,10 +346,12 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         else if (obj == &Altitude_Log_DataPipe)
         {
             /* set altitude */
+            att_alt_data.alt = DataPipe_DataObj(LogAlt_Data).alt;
             alt_update = true;
         }
     }
 
+    /* blackbox log control */
     if ((Monitor.log_type == BlackBox_Imu_Filted) && imu_update)
     {
         /* log data when imu update */
@@ -353,7 +364,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         TaskBlackBox_UpdateQueue((uint8_t *)&imu_data, sizeof(BlackBox_IMUData_TypeDef));
         Monitor.imu_log.byte_size += sizeof(BlackBox_IMUData_TypeDef);
 
-        check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&imu_data, sizeof(imu_data));
+        check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&imu_data, sizeof(BlackBox_IMUData_TypeDef));
         blackbox_ender.check_sum = check_sum;
         Monitor.imu_log.byte_size += BLACKBOX_ENDER_SIZE;
         TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
@@ -367,6 +378,13 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         blackbox_header.size = sizeof(BlackBox_AttAltData_TypeDef);
         TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
         
+        TaskBlackBox_UpdateQueue((uint8_t *)&att_alt_data, sizeof(BlackBox_AttAltData_TypeDef));
+        Monitor.alt_att_log.byte_size += sizeof(BlackBox_AttAltData_TypeDef);
+
+        check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&att_alt_data, sizeof(BlackBox_AttAltData_TypeDef));
+        blackbox_ender.check_sum = check_sum;
+        Monitor.imu_log.byte_size += BLACKBOX_ENDER_SIZE;
+        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
         alt_update = false;
         att_update = false;
     }
