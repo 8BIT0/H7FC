@@ -266,11 +266,14 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 {
     static BlackBox_IMUData_TypeDef  imu_data;
     static BlackBox_BaroData_TypeDef baro_data;
-    BlackBox_DataHeader_TypeDef      blackbox_header;
-    BlackBox_DataEnder_TypeDef       blackbox_ender;
+    static BlackBox_AttitudeData_TypeDef att_data;
+    static BlackBox_AltitudeData_TypeDef alt_data;
+    static bool alt_update = false;
+    static bool att_update = false;
+    BlackBox_DataHeader_TypeDef blackbox_header;
+    BlackBox_DataEnder_TypeDef blackbox_ender;
     uint8_t check_sum = 0;
-    bool imu_log_en = false;
-    bool alt_att_log_en = false;
+    bool imu_update = false;
 
     memset(&blackbox_header, 0, BLACKBOX_HEADER_SIZE);
     memset(&blackbox_ender,  0, BLACKBOX_ENDER_SIZE);
@@ -295,7 +298,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         }
         imu_data.time = DataPipe_DataObj(LogImu_Data).data.time_stamp;
         imu_data.cyc  = DataPipe_DataObj(LogImu_Data).data.cycle_cnt;
-        imu_log_en = true;
+        imu_update = true;
     }
     else if (obj == &Baro_Log_DataPipe)
     {
@@ -309,15 +312,15 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         /* log data when attitude update */
         if (obj == &Attitude_Log_DataPipe)
         {
-
+            att_update = true;
         }
         else if (obj == &Altitude_Log_DataPipe)
         {
-
+            alt_update = true;
         }
     }
 
-    if (Monitor.log_type == BlackBox_Imu_Filted)
+    if ((Monitor.log_type == BlackBox_Imu_Filted) && imu_update)
     {
         /* log data when imu update */
         Monitor.imu_log.cnt ++;
@@ -333,11 +336,14 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         blackbox_ender.check_sum = check_sum;
         Monitor.imu_log.byte_size += BLACKBOX_ENDER_SIZE;
         TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
+        imu_update = false;
     }
-    else if (Monitor.log_type == BlackBox_Log_Alt_Att)
+    else if ((Monitor.log_type == BlackBox_Log_Alt_Att) && (alt_update & att_update))
     {
         Monitor.alt_att_log.cnt ++;
         Monitor.alt_att_log.byte_size += BLACKBOX_HEADER_SIZE;
+        alt_update = false;
+        att_update = false;
     }
     else if (Monitor.log_type == BlackBox_AngularPID_Tune)
     {
