@@ -327,6 +327,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         /* log data when attitude update */
         if (obj == &Attitude_Log_DataPipe)
         {
+            /* set attitude */
             att_alt_data.time = DataPipe_DataObj(LogAtt_Data).time_stamp;
             att_alt_data.pitch = DataPipe_DataObj(LogAtt_Data).pitch;
             att_alt_data.roll = DataPipe_DataObj(LogAtt_Data).roll;
@@ -335,6 +336,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         }
         else if (obj == &Altitude_Log_DataPipe)
         {
+            /* set altitude */
             alt_update = true;
         }
     }

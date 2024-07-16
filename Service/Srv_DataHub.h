@@ -54,15 +54,16 @@ typedef union
         
         uint64_t actuator : 1;              // bit : 21
         uint64_t attitude : 1;              // bit : 22
-        
-        uint64_t mag_init : 1;              // bit : 23
-        uint64_t imu_init : 1;              // bit : 24
-        uint64_t baro_init : 1;             // bit : 25
-        
-        uint64_t USB_VCP_attach : 1;        // bit : 26
+        uint64_t altitude : 1;              // bit : 23
 
-        uint64_t cli : 1;                   // bit : 27
-        uint64_t upgrade : 1;               // bit : 28
+        uint64_t mag_init : 1;              // bit : 24
+        uint64_t imu_init : 1;              // bit : 25
+        uint64_t baro_init : 1;             // bit : 26
+        
+        uint64_t USB_VCP_attach : 1;        // bit : 27
+
+        uint64_t cli : 1;                   // bit : 28
+        uint64_t upgrade : 1;               // bit : 29
     } bit;
 
     uint64_t val;
@@ -146,6 +147,10 @@ typedef struct
     float att_q3;
     bool att_flip_over;
     uint8_t att_error_code;
+
+    /* altitude relative to lift off place */
+    uint32_t relative_alt_time;
+    float relative_alt;
 
     uint32_t radio_att_in_time;
     float radio_in_roll;

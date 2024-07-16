@@ -18,6 +18,7 @@ DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
 DataPipe_CreateDataObj(IMUAtt_TypeDef, Hub_Attitude);
 DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, Hub_Baro_Data);
 DataPipe_CreateDataObj(PosData_TypeDef, Hub_Pos);
+DataPipe_CreateDataObj(AltData_TypeDef, Hub_Alt);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_PriIMU_Range);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_SecIMU_Range);
 DataPipe_CreateDataObj(bool, Hub_VCP_Attach_State);
@@ -31,6 +32,7 @@ static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
 static void SrvDataHub_Attitude_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_Baro_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_Pos_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
+static void SrvDatHub_Alt_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_VCPAttach_dataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 
@@ -167,6 +169,12 @@ static void SrvDataHub_Init(void)
     POS_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_Pos_DataPipe_Finish_Callback);
     DataPipe_Enable(&POS_hub_DataPipe);
 
+    memset(DataPipe_DataObjAddr(Hub_Alt), 0, DataPipe_DataSize(Hub_Alt));
+    Altitude_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Alt);
+    Altitude_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Alt);
+    Altitude_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDatHub_Alt_DataPipe_Finish_Callback);
+    DataPipe_Enable(&Altitude_hub_DataPipe);
+
     memset(DataPipe_DataObjAddr(Hub_VCP_Attach_State), 0, DataPipe_DataSize(Hub_VCP_Attach_State));
     VCP_Connect_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_VCP_Attach_State);
     VCP_Connect_hub_DataPipe.data_size = DataPipe_DataSize(Hub_VCP_Attach_State);
@@ -193,11 +201,28 @@ static void SrvDataHub_VCPAttach_dataPipe_Finish_Callback(DataPipeObj_TypeDef *o
     }
 }
 
+/* reserved */
 static void SrvDataHub_Pos_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
 {
     if(obj == &POS_hub_DataPipe)
     {
         
+    }
+}
+
+static void SrvDatHub_Alt_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
+{
+    if (obj == &Altitude_hub_DataPipe)
+    {
+        SrvDataHub_Monitor.update_reg.bit.altitude = true;
+
+        if (SrvDataHub_Monitor.inuse_reg.bit.altitude)
+            SrvDataHub_Monitor.inuse_reg.bit.altitude = false;
+            
+        SrvDataHub_Monitor.data.relative_alt_time = DataPipe_DataObj(Hub_Alt).time;
+        SrvDataHub_Monitor.data.relative_alt = DataPipe_DataObj(Hub_Alt).alt;
+
+        SrvDataHub_Monitor.update_reg.bit.altitude = false;
     }
 }
 
