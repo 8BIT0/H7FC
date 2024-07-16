@@ -54,7 +54,7 @@ typedef union
         
         uint64_t actuator : 1;              // bit : 21
         uint64_t attitude : 1;              // bit : 22
-        uint64_t altitude : 1;              // bit : 23
+        uint64_t relative_alt : 1;          // bit : 23
 
         uint64_t mag_init : 1;              // bit : 24
         uint64_t imu_init : 1;              // bit : 25
@@ -266,6 +266,7 @@ typedef struct
     bool (*get_baro_init_state)(bool *state);
     bool (*get_mag_init_state)(bool *state);
     bool (*get_tof_init_state)(bool *state);
+    bool (*get_relative_alt)(uint32_t *time_stamp, float *alt);
     bool (*get_raw_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
     bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);

@@ -59,6 +59,7 @@ static bool SrvDataHub_Get_CLI_State(bool *state);
 static bool SrvDataHub_Get_Upgrade_State(bool *state);
 static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
+static bool SrvDataHub_Get_RelativeAlt(uint32_t *time_stamp, float *alt);
 
 static bool SrvDataHub_Set_CLI_State(bool state);
 static bool SrvDataHub_Set_Upgrade_State(bool state);
@@ -87,6 +88,7 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_vcp_attach_state = SrvDataHub_Get_VCPAttach_State,
     .get_cli_state = SrvDataHub_Get_CLI_State,
     .get_upgrade_state = SrvDataHub_Get_Upgrade_State,
+    .get_relative_alt = SrvDataHub_Get_RelativeAlt,
 
     .set_cli_state = SrvDataHub_Set_CLI_State,
     .set_upgrade_state = SrvDataHub_Set_Upgrade_State,
@@ -214,15 +216,15 @@ static void SrvDatHub_Alt_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
 {
     if (obj == &Altitude_hub_DataPipe)
     {
-        SrvDataHub_Monitor.update_reg.bit.altitude = true;
+        SrvDataHub_Monitor.update_reg.bit.relative_alt = true;
 
-        if (SrvDataHub_Monitor.inuse_reg.bit.altitude)
-            SrvDataHub_Monitor.inuse_reg.bit.altitude = false;
+        if (SrvDataHub_Monitor.inuse_reg.bit.relative_alt)
+            SrvDataHub_Monitor.inuse_reg.bit.relative_alt = false;
             
         SrvDataHub_Monitor.data.relative_alt_time = DataPipe_DataObj(Hub_Alt).time;
         SrvDataHub_Monitor.data.relative_alt = DataPipe_DataObj(Hub_Alt).alt;
 
-        SrvDataHub_Monitor.update_reg.bit.altitude = false;
+        SrvDataHub_Monitor.update_reg.bit.relative_alt = false;
     }
 }
 
@@ -616,6 +618,26 @@ reupdate_scaled_baro:
 
     if(!SrvDataHub_Monitor.inuse_reg.bit.scaled_baro)
         goto reupdate_scaled_baro;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_RelativeAlt(uint32_t *time_stamp, float *alt)
+{
+    if ((time_stamp == NULL) || \
+        (alt == NULL))
+        return false;
+
+    SrvDataHub_Monitor.inuse_reg.bit.relative_alt = true;
+
+reupdate_relative_alt:
+    *time_stamp = SrvDataHub_Monitor.data.relative_alt_time;
+    *alt = SrvDataHub_Monitor.data.relative_alt;
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.relative_alt)
+        goto reupdate_relative_alt;
+
+    SrvDataHub_Monitor.inuse_reg.bit.relative_alt = false;
 
     return true;
 }
