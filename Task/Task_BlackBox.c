@@ -503,8 +503,8 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Header(Shell *p
             break;
 
         case BlackBox_Log_Alt_Att:
-            // if (*len < (BLACKBOX_HEADER_SIZE + BLACKBOX_ENDER_SIZE + sizeof(BlackBox_BaroData_TypeDef)))
-                // return BlackBox_Cnv_Size_Error;
+            if (*len < (BLACKBOX_HEADER_SIZE + BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef)))
+                return BlackBox_Cnv_Size_Error;
             break;
 
         default:
@@ -556,7 +556,6 @@ static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_
     memcpy(p_imu, *p_data, sizeof(BlackBox_IMUData_TypeDef));
     if (p_shell)
     {
-        // shellPrint(p_shell, "[ IMU ] ");
         shellPrint(p_shell, "%d ", p_imu->time);
         shellPrint(p_shell, "%d ", p_imu->cyc);
         shellPrint(p_shell, "%f ", p_imu->org_acc[Axis_X] / p_imu->acc_scale);
