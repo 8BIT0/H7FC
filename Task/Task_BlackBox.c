@@ -599,13 +599,34 @@ static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_
 /* attitude altitude log data */
 static void TaskBlackBox_ConverLogData_To_Alt_Att(Shell *p_shell, BlackBox_AttAltData_TypeDef *p_att_alt, uint8_t **p_data, uint32_t *len)
 {
-
+    if ((p_att_alt == NULL) || \
+        (p_data == NULL) || \
+        (*p_data == NULL) || \
+        (len == NULL) || \
+        (*len < sizeof(BlackBox_AttAltData_TypeDef)))
+        return;
 }
 
 /* angular control log data */
 static void TaskBlackBox_ConvertLogData_To_CtlAng(Shell *p_shell, BlackBox_AngCtlData_TypeDef *p_ang_ctl, uint8_t **p_data, uint32_t *len)
 {
+    if ((p_ang_ctl == NULL) || \
+        (p_data == NULL) || \
+        (*p_data == NULL) || \
+        (len == NULL) || \
+        (*len < sizeof(BlackBox_AngCtlData_TypeDef)))
+        return;
+}
 
+/* attitude control log data */
+static void TaskBlackBox_ConvertLogData_To_CtlAtt(Shell *p_shell, BlackBox_AttCtlData_TypeDef *p_att_ctl, uint8_t **p_data, uint32_t *len)
+{
+    if ((p_att_ctl == NULL) || \
+        (p_data == NULL) || \
+        (*p_data == NULL) || \
+        (len == NULL) || \
+        (*len < sizeof(BlackBox_AttCtlData_TypeDef)))
+        return;
 }
 
 static void TaskBlackBox_GetLogInfo(void)
