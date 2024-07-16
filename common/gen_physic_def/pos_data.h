@@ -14,6 +14,7 @@ typedef union
     /* in door flight */
     struct
     {
+        uint32_t time;
         double Pos_X;
         double Pos_Y;
         double Pos_Z;
@@ -22,17 +23,26 @@ typedef union
     /* out door flight */
     struct
     {
+        uint32_t time;
         double Lon;
         double lat;
         double alt;
     } GPS_Pos;
 } PosData_TypeDef;
 
+typedef struct
+{
+    uint32_t time;
+    
+    float alt;
+} AltData_TypeDef;
+
 typedef union
 {
     /* in door flight */
     struct
     {
+        uint32_t time;
         double Vel_X;
         double Vel_Y;
         double Vel_Z;
@@ -41,6 +51,7 @@ typedef union
     /* out door flight */
     struct
     {
+        uint32_t time;
         double Vel_N;
         double Vel_E;
         double Vel_D;
