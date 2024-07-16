@@ -269,6 +269,8 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     BlackBox_DataHeader_TypeDef      blackbox_header;
     BlackBox_DataEnder_TypeDef       blackbox_ender;
     uint8_t check_sum = 0;
+    bool imu_log_en = false;
+    bool alt_att_log_en = false;
 
     memset(&blackbox_header, 0, BLACKBOX_HEADER_SIZE);
     memset(&blackbox_ender,  0, BLACKBOX_ENDER_SIZE);
@@ -293,6 +295,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         }
         imu_data.time = DataPipe_DataObj(LogImu_Data).data.time_stamp;
         imu_data.cyc  = DataPipe_DataObj(LogImu_Data).data.cycle_cnt;
+        imu_log_en = true;
     }
     else if (obj == &Baro_Log_DataPipe)
     {
@@ -300,9 +303,18 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
         baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
     }
-    else if (obj == &Attitude_Log_DataPipe)
+    else if ((obj == &Attitude_Log_DataPipe) || \
+             (obj == &Altitude_Log_DataPipe))
     {
         /* log data when attitude update */
+        if (obj == &Attitude_Log_DataPipe)
+        {
+
+        }
+        else if (obj == &Altitude_Log_DataPipe)
+        {
+
+        }
     }
 
     if (Monitor.log_type == BlackBox_Imu_Filted)
@@ -324,7 +336,8 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     }
     else if (Monitor.log_type == BlackBox_Log_Alt_Att)
     {
-
+        Monitor.alt_att_log.cnt ++;
+        Monitor.alt_att_log.byte_size += BLACKBOX_HEADER_SIZE;
     }
     else if (Monitor.log_type == BlackBox_AngularPID_Tune)
     {

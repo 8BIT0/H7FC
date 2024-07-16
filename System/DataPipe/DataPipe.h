@@ -127,6 +127,10 @@ extern DataPipeObj_TypeDef Attitude_Log_DataPipe;
 extern DataPipeObj_TypeDef Attitude_smp_DataPipe;
 extern DataPipeObj_TypeDef Attitude_hub_DataPipe;
 
+extern DataPipeObj_TypeDef Altitude_Log_DataPipe;
+extern DataPipeObj_TypeDef Altitude_smp_DataPipe;
+extern DataPipeObj_TypeDef Altitude_hub_DataPipe;
+
 extern DataPipeObj_TypeDef POS_smp_DataPipe;
 extern DataPipeObj_TypeDef POS_hub_DataPipe;
 

@@ -26,6 +26,10 @@ DataPipeObj_TypeDef IMU_SecRange_hub_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Actuator_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Actuator_hub_DataPipe = {.enable = true};
 
+DataPipeObj_TypeDef Altitude_Log_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Altitude_smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Altitude_hub_DataPipe = {.enable = true};
+
 DataPipeObj_TypeDef Attitude_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Attitude_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Attitude_hub_DataPipe = {.enable = true};
