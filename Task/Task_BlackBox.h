@@ -72,7 +72,7 @@ typedef struct
     float gyr_scale;
     int16_t gyr[Axis_Sum];
     int16_t exp_gyr[Axis_Sum];
-} BlackBox_GyrCtlData_TypeDef;
+} BlackBox_AngCtlData_TypeDef;
 
 typedef struct
 {

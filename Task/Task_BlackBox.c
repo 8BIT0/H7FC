@@ -23,20 +23,6 @@
 #define BlackBox_Buff_Size (8 Kb)
 #define BlackBox_Storage_Name "BlackBox"
 
-typedef union
-{
-    uint16_t val;
-    struct
-    {
-        uint16_t imu     : 1;   /* bit1: imu data */
-        uint16_t flt_imu : 1;   /* bit2: filted imu data */
-        uint16_t att_alt : 1;   /* bit3: attitude altitude data */
-        uint16_t ctl_gyr : 1;   /* bit4: angular control data, convert from rc receiver */
-        uint16_t ctl_att : 1;   /* bit5: attitude control data, convert from rc receiver */
-        uint16_t res     : 11;
-    } bit;
-} BlackBox_Reg_TypeDef;
-
 typedef enum
 {
     BlackBox_Cnv_None_Error = 0,
@@ -70,7 +56,6 @@ typedef struct
     Storage_ItemSearchOut_TypeDef storage_search;
     BlackBox_MediumType_List medium;
     BlackBox_LogType_List log_type;
-    BlackBox_Reg_TypeDef en_reg;
     uint32_t expection_log_size;
 
     uint32_t log_unit;
@@ -78,7 +63,6 @@ typedef struct
     uint32_t log_byte_size;
     uint32_t log_cnt;
     BlackBox_LogStatistic_TypeDef imu_log;
-    BlackBox_LogStatistic_TypeDef flt_imu_log;
     BlackBox_LogStatistic_TypeDef alt_att_log; 
     BlackBox_LogStatistic_TypeDef ctl_ang_log;
     BlackBox_LogStatistic_TypeDef ctl_att_log;
@@ -159,26 +143,12 @@ void TaskBlackBox_Init(void)
         return;
     }
 
-    Monitor.en_reg.val = 0;
     switch ((uint8_t) Monitor.log_type)
     {
         case BlackBox_Imu_Filted:
-            Monitor.en_reg.bit.imu = true;
-            break;
-
         case BlackBox_Log_Alt_Att:
-            Monitor.en_reg.bit.flt_imu = true;
-            Monitor.en_reg.bit.att_alt = true;
-            break;
-
         case BlackBox_AngularPID_Tune:
-            Monitor.en_reg.bit.flt_imu = true;
-            Monitor.en_reg.bit.ctl_gyr = true;
-            break;
-
         case BlackBox_AttitudePID_Tune:
-            Monitor.en_reg.bit.att_alt = true;
-            Monitor.en_reg.bit.ctl_att = true;
             break;
 
         case BlackBox_Log_None:
@@ -330,8 +300,12 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
         baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
     }
+    else if (obj == &Attitude_Log_DataPipe)
+    {
+        /* log data when attitude update */
+    }
 
-    if (Monitor.en_reg.bit.imu)
+    if (Monitor.log_type == BlackBox_Imu_Filted)
     {
         /* log data when imu update */
         Monitor.imu_log.cnt ++;
@@ -348,10 +322,17 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         Monitor.imu_log.byte_size += BLACKBOX_ENDER_SIZE;
         TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
     }
-    
-    if (obj == &Attitude_Log_DataPipe)
+    else if (Monitor.log_type == BlackBox_Log_Alt_Att)
     {
-        /* log data when attitude update */
+
+    }
+    else if (Monitor.log_type == BlackBox_AngularPID_Tune)
+    {
+
+    }
+    else if (Monitor.log_type == BlackBox_AttitudePID_Tune)
+    {
+
     }
 
     /* use minilzo compress data if have to */
@@ -520,6 +501,7 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Ender(Shell *p_
     return BlackBox_Cnv_None_Error;
 }
 
+/* filted imu data log */
 static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_TypeDef *p_imu, uint8_t **p_data, uint32_t *len)
 {
     if ((p_imu == NULL) || \
@@ -551,6 +533,18 @@ static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_
 
     *p_data += sizeof(BlackBox_IMUData_TypeDef);
     *len -= sizeof(BlackBox_IMUData_TypeDef);
+}
+
+/* attitude altitude log data */
+static void TaskBlackBox_ConverLogData_To_Alt_Att(Shell *p_shell, BlackBox_AttAltData_TypeDef *p_att_alt, uint8_t **p_data, uint32_t *len)
+{
+
+}
+
+/* angular control log data */
+static void TaskBlackBox_ConvertLogData_To_CtlAng(Shell *p_shell, BlackBox_AngCtlData_TypeDef *p_ang_ctl, uint8_t **p_data, uint32_t *len)
+{
+
 }
 
 static void TaskBlackBox_GetLogInfo(void)
