@@ -25,11 +25,20 @@ typedef enum
 
 typedef enum
 {
-    BlackBox_Imu_Filter = 0,    /* log raw gyr acc and filted gyr acc data                                      rate for 1Khz */
+    BlackBox_Log_None = 0,
+    BlackBox_Imu_Filted,        /* log raw gyr acc and filted gyr acc data                                      rate for 1Khz */
+    BlackBox_Log_Alt_Att,       /* log altitude and attitude data                                               rate for 100Hz */
     BlackBox_AngularPID_Tune,   /* log filted gyr and expection gyr data                                        rate for 500Hz */
     BlackBox_AttitudePID_Tune,  /* log pitch roll and z_angular and expection pitch roll and z_angular data     rate for 100Hz */
-    BlackBox_AltitudePID_Tune,  /* log raw baro altitude and expection altitude                                 rate for 100Hz */
 } BlackBox_LogType_List;
+
+typedef struct
+{
+    uint32_t time;
+    uint8_t cyc;
+
+    float press;
+} BlackBox_BaroData_TypeDef;
 
 #pragma pack(1)
 typedef struct
@@ -51,8 +60,8 @@ typedef struct
     uint8_t cyc;
     float acc_scale;
     float gyr_scale;
-    // int16_t org_acc[Axis_Sum];
-    // int16_t org_gyr[Axis_Sum];
+    int16_t org_acc[Axis_Sum];
+    int16_t org_gyr[Axis_Sum];
     int16_t flt_acc[Axis_Sum];
     int16_t flt_gyr[Axis_Sum];
 } BlackBox_IMUData_TypeDef;
@@ -60,41 +69,43 @@ typedef struct
 typedef struct
 {
     uint32_t time;
-    uint8_t cyc;
-
-    float press;
-} BlackBox_BaroData_TypeDef;
+    float gyr_scale;
+    int16_t gyr[Axis_Sum];
+    int16_t exp_gyr[Axis_Sum];
+} BlackBox_GyrCtlData_TypeDef;
 
 typedef struct
 {
     uint32_t time;
-    uint8_t cyc;
-
-    bool arm_state;
-    uint8_t mode;
-
+    float pitch;
+    float roll;
+    float gyr_z;
     float exp_pitch;
     float exp_roll;
-
-    float exp_gyrx;
-    float exp_gyry;
-    float exp_gyrz;
-} BlackBox_CtlData_TypeDef;
+    float exp_gyr_z;
+} BlackBox_AttCtlData_TypeDef;
 
 typedef struct
 {
     uint32_t time;
-    uint8_t cyc;
+
+    float baro;
+    float acc_scale;
+    float gyr_scale;
+    int16_t acc[Axis_Sum];
+    int16_t gyr[Axis_Sum];
 
     float pitch;
     float roll;
     float yaw;
-} BlackBox_AttitudeData_TypeDef;
+    float alt;
+} BlackBox_AttAltData_TypeDef;
 #pragma pack()
 
 void TaskBlackBox_Init(void);
 void TaskBlackBox_Core(void const *arg);
 void TaskBlackBox_LogControl(void);
+bool TaskBlackBox_Set_LogInfo(BlackBox_MediumType_List medium, BlackBox_LogType_List type, uint32_t size);
 
 #ifdef __cplusplus
 }
