@@ -795,6 +795,7 @@ static void TaskBlackBox_GetLogInfo(void)
                         err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_remain_buf, &uncomplete_size);
                         if (err != BlackBox_Cnv_None_Error)
                         {
+                            /* convert bug */
                             shellPrint(shell_obj, "[ BlackBox ] uncomplete decode error\r\n");
                             return;
                         }
