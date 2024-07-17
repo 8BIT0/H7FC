@@ -50,6 +50,9 @@ void MadgwickAHRSInit(AlgoAttData_TypeDef *att)
 	att->q1 = 0.0f;
 	att->q2 = 0.0f;
 	att->q3 = 0.0f;
+	att->pitch = 0.0f;
+	att->roll = 0.0f;
+	att->yaw = 0.0f;
 }
 
 void MadgwickAHRSupdate(AlgoAttData_TypeDef *att, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {

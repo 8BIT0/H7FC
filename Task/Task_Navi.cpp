@@ -112,7 +112,7 @@ void TaskNavi_Core(void const *arg)
     
     bool Attitude_Update = false;
     memset(&attitude, 0, sizeof(IMUAtt_TypeDef));
-    memset(&algo_att, 0, sizeof(AlgoAttData_TypeDef));
+    MadgwickAHRSInit(&algo_att);
 
     while(1)
     {
