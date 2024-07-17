@@ -388,7 +388,7 @@ static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef 
         if (SrvDataHub_Monitor.inuse_reg.bit.baro_init)
             SrvDataHub_Monitor.inuse_reg.bit.baro_init = false;
 
-        if(obj == &SensorInitState_hub_DataPipe)
+        if(obj == &SensorEnableState_hub_DataPipe)
         {
             SrvDataHub_Monitor.data.mag_enabled = DataPipe_DataObj(Sensor_Enable).bit.mag;
             SrvDataHub_Monitor.data.baro_enabled = DataPipe_DataObj(Sensor_Enable).bit.baro;

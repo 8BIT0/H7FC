@@ -33,7 +33,7 @@ static bool TaskNavi_FlipOver_Detect(float roll_angle);
 TaskNavi_Monitor_TypeDef TaskNavi_Monitor;
 
 /* data structure definition */
-DataPipe_CreateDataObj(IMUAtt_TypeDef, Navi_Attitude);
+DataPipe_CreateDataObj(IMUAtt_TypeDef,  Navi_Attitude);
 DataPipe_CreateDataObj(PosData_TypeDef, Navi_POS);
 DataPipe_CreateDataObj(AltData_TypeDef, Navi_Altitude);
 
@@ -170,7 +170,11 @@ void TaskNavi_Core(void const *arg)
         if (bar_state && Attitude_Update && \
             SrvDataHub.get_baro_altitude(&Baro_TimeStamp, &Bar_Pres, &Baro_Alt, &Baro_Alt_Offset, &Baro_Tempra, &BAR_Err))
         {
-        
+            DataPipe_DataObj(Navi_Altitude).time = SrvOsCommon.get_os_ms();
+            DataPipe_DataObj(Navi_Altitude).alt = 0.0f;
+
+            DataPipe_SendTo(&Altitude_smp_DataPipe, &Altitude_hub_DataPipe);
+            DataPipe_SendTo(&Altitude_smp_DataPipe, &Altitude_Log_DataPipe);
         }
 
         /* check imu data update freq on test */

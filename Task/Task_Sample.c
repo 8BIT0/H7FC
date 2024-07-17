@@ -77,9 +77,9 @@ void TaskSample_Init(uint32_t period)
     SensorInitState_smp_DataPipe.data_size = DataPipe_DataSize(SensorInit_State);
     DataPipe_Enable(&SensorInitState_smp_DataPipe);
 
-    /* pipe sensor enable and initial state to datahub */ 
-    DataPipe_SendTo(&SensorInitState_smp_DataPipe, &SensorInitState_hub_DataPipe);
+    /* pipe sensor enable and initial state to datahub */
     DataPipe_SendTo(&SensorEnableState_smp_DataPipe, &SensorEnableState_hub_DataPipe);
+    DataPipe_SendTo(&SensorInitState_smp_DataPipe, &SensorInitState_hub_DataPipe);
 
     if(sample_enable)
     {

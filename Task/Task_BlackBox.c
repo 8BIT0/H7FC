@@ -221,8 +221,12 @@ void TaskBlackBox_Core(void const *arg)
 {
     Monitor.write_thread_state = true;
 
-    while (BlackBox_Sem && p_blackbox)
+    while (true)
     {
+        /* task create failed */
+        if ((BlackBox_Sem == NULL) || (p_blackbox == NULL))
+            vTaskDelete(NULL);
+
         osSemaphoreWait(BlackBox_Sem, osWaitForever);
         if (p_blackbox->push && Monitor.log_unit)
         {
@@ -321,8 +325,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
         baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
     }
-    else if ((obj == &Attitude_Log_DataPipe) || \
-             (obj == &Altitude_Log_DataPipe))
+    else if ((obj == &Attitude_Log_DataPipe) || (obj == &Altitude_Log_DataPipe))
     {
         /* set imu data */
         att_alt_data.gyr_scale = imu_data.gyr_scale;
@@ -463,6 +466,72 @@ bool TaskBlackBox_Set_LogInfo(BlackBox_MediumType_List medium, BlackBox_LogType_
 }
 
 /****************************************************************** shell api implement ***************************************************** */
+static void TaskBlackBox_Set_Log(uint8_t medium, uint8_t type, uint32_t size)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    Storage_ItemSearchOut_TypeDef search_out;
+    BlackBox_LogInfo_TypeDef info;
+
+    if (shell_obj == NULL)
+        return;
+    
+    shellPrint(shell_obj, "[ BlackBox ] ----- Medium List\r\n");
+    shellPrint(shell_obj, "\tNone ------------- 0\r\n");
+    shellPrint(shell_obj, "\tCard ------------- 1\r\n");
+    shellPrint(shell_obj, "\tChip ------------- 2\r\n");
+    shellPrint(shell_obj, "\tCom -------------- 3\r\n");
+    shellPrint(shell_obj, "\r\n");
+    shellPrint(shell_obj, "[ BlackBox ] ----- Log Type List\r\n");
+    shellPrint(shell_obj, "\tLog None --------- 0\r\n");
+    shellPrint(shell_obj, "\tLog Imu Only ----- 1\r\n");
+    shellPrint(shell_obj, "\tLog Att & Alt ---- 2\r\n");
+    shellPrint(shell_obj, "\tLog PID Angular -- 3\r\n");
+    shellPrint(shell_obj, "\tLog PID Attitude - 4\r\n");
+    shellPrint(shell_obj, "\r\n");
+
+    if ((medium > (uint8_t)BlackBox_Medium_Com) || (type > (uint8_t)BlackBox_AttitudePID_Tune))
+    {
+        if (medium > (uint8_t)BlackBox_Medium_Com)
+            shellPrint(shell_obj, "\tBAD MEDIUM TYPE INPUT\r\n");
+
+        if (type > (uint8_t)BlackBox_AttitudePID_Tune)
+            shellPrint(shell_obj, "\tBAD LOG DATA TYPE INPUT\r\n");
+
+        return;
+    }
+
+    /* for currently */
+    if ((medium != (uint8_t)BlackBox_Medium_Chip) || \
+        (type == (uint8_t)BlackBox_AngularPID_Tune) || \
+        (type == (uint8_t)BlackBox_AttitudePID_Tune))
+    {
+        if (medium != (uint8_t)BlackBox_Medium_Chip)
+            shellPrint(shell_obj, "\tOnly support storage chip modlue currently\r\n");
+        
+        if ((type == (uint8_t)BlackBox_AngularPID_Tune) || \
+            (type == (uint8_t)BlackBox_AttitudePID_Tune))
+            shellPrint(shell_obj, "\tOnly support IMU and Attitude & Altitude log function\r\n");
+
+        return;
+    }
+
+    info.medium = medium;
+    info.log_type = type;
+    info.log_size = size;
+
+    search_out = Storage.search(Para_User, BlackBox_Storage_Name);
+    if ((search_out.item_addr == 0) || \
+        (Storage.update(Para_User, search_out.item.data_addr, (uint32_t)&info, sizeof(BlackBox_LogInfo_TypeDef)) != Storage_Error_None))
+    {
+        shellPrint(shell_obj, "\tLog info storage failed\r\n");
+        return;
+    }
+
+    shellPrint(shell_obj, "\tLog info storage saved\r\n");
+    shellPrint(shell_obj, "\treboot is required\r\n");
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, blackbox_set, TaskBlackBox_Set_Log, set blackbox log);
+
 static void TaskBlackBox_EnableLog(void)
 {
     Shell *shell_obj = Shell_GetInstence();
@@ -598,7 +667,7 @@ static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_
 }
 
 /* attitude altitude log data */
-static void TaskBlackBox_ConverLogData_To_Alt_Att(Shell *p_shell, BlackBox_AttAltData_TypeDef *p_att_alt, uint8_t **p_data, uint32_t *len)
+static void TaskBlackBox_ConvertLogData_To_Alt_Att(Shell *p_shell, BlackBox_AttAltData_TypeDef *p_att_alt, uint8_t **p_data, uint32_t *len)
 {
     if ((p_att_alt == NULL) || \
         (p_data == NULL) || \
@@ -606,6 +675,26 @@ static void TaskBlackBox_ConverLogData_To_Alt_Att(Shell *p_shell, BlackBox_AttAl
         (len == NULL) || \
         (*len < sizeof(BlackBox_AttAltData_TypeDef)))
         return;
+
+    memcpy(p_att_alt, *p_data, sizeof(BlackBox_AttAltData_TypeDef));
+    if (p_shell)
+    {
+        shellPrint(p_shell, "%d ", p_att_alt->time);
+        shellPrint(p_shell, "%f ", p_att_alt->baro);
+        shellPrint(p_shell, "%f ", p_att_alt->acc[Axis_X] / p_att_alt->acc_scale);
+        shellPrint(p_shell, "%f ", p_att_alt->acc[Axis_Y] / p_att_alt->acc_scale);
+        shellPrint(p_shell, "%f ", p_att_alt->acc[Axis_Z] / p_att_alt->acc_scale);
+        shellPrint(p_shell, "%f ", p_att_alt->gyr[Axis_X] / p_att_alt->gyr_scale);
+        shellPrint(p_shell, "%f ", p_att_alt->gyr[Axis_Y] / p_att_alt->gyr_scale);
+        shellPrint(p_shell, "%f ", p_att_alt->gyr[Axis_Z] / p_att_alt->gyr_scale);
+        shellPrint(p_shell, "%f ", p_att_alt->pitch);
+        shellPrint(p_shell, "%f ", p_att_alt->roll);
+        shellPrint(p_shell, "%f ", p_att_alt->yaw);
+        shellPrint(p_shell, "%f\r\n", p_att_alt->alt);
+    }
+
+    *p_data += sizeof(BlackBox_AttAltData_TypeDef);
+    *len -= sizeof(BlackBox_AttAltData_TypeDef);
 }
 
 /* angular control log data */
@@ -641,6 +730,7 @@ static void TaskBlackBox_GetLogInfo(void)
     BlackBox_DataHeader_TypeDef header;
     BlackBox_DataEnder_TypeDef ender;
     BlackBox_IMUData_TypeDef log_imu;
+    BlackBox_AttAltData_TypeDef log_att_alt;
     uint8_t *p_log_data = NULL;
     uint32_t uncomplete_size = 0;
     uint8_t remain_buf[128];
@@ -733,6 +823,21 @@ static void TaskBlackBox_GetLogInfo(void)
                                     break;
 
                                 case BlackBox_Log_Alt_Att:
+                                    if (uncomplete_size <= sizeof(BlackBox_AttAltData_TypeDef))
+                                    {
+                                        memcpy(p_remain_buf + uncomplete_size, p_log_data, sizeof(BlackBox_AttAltData_TypeDef) - uncomplete_size);
+                                        p_log_data += sizeof(BlackBox_AttAltData_TypeDef) - uncomplete_size;
+                                        log_size -= sizeof(BlackBox_AttAltData_TypeDef) - uncomplete_size;
+                                        uncomplete_size = 0;
+                                    }
+                                    else
+                                    {
+                                        memmove(p_remain_buf, p_remain_buf + uncomplete_size, uncomplete_size - sizeof(BlackBox_AttAltData_TypeDef));
+                                        uncomplete_size -= sizeof(BlackBox_AttAltData_TypeDef);
+                                    }
+
+                                    decode_size = sizeof(BlackBox_AttAltData_TypeDef);
+                                    TaskBlackBox_ConvertLogData_To_Alt_Att(shell_obj, &log_att_alt, &p_remain_buf, &decode_size);
                                     break;
 
                                 default: return;
@@ -766,6 +871,11 @@ static void TaskBlackBox_GetLogInfo(void)
                         case BlackBox_Imu_Filted:
                             TaskBlackBox_ConvertLogData_To_IMU(shell_obj, &log_imu, &p_log_data, &log_size);
                             check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&log_imu, sizeof(BlackBox_IMUData_TypeDef));
+                            break;
+
+                        case BlackBox_Log_Alt_Att:
+                            TaskBlackBox_ConvertLogData_To_Alt_Att(shell_obj, &log_att_alt, &p_log_data, &log_size);
+                            check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&log_att_alt, sizeof(BlackBox_AttAltData_TypeDef));
                             break;
 
                         default: break;
