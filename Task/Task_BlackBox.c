@@ -1,6 +1,6 @@
 /*
  * Auther: 8_B!T0
- * this file will candidate task_log
+ * this file will replace task_log
  * drone black box task
  */
 #include "FreeRTOS.h"
