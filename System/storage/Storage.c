@@ -10,6 +10,7 @@
 #include "util.h"
 #include "HW_Def.h"
 #include "Srv_OsCommon.h"
+#include "debug_util.h"
 
 #define STORAGE_DEBUG 0
 
@@ -26,6 +27,9 @@ static SPI_HandleTypeDef ExtFlash_Bus_InstObj;
 #elif defined AT32F435RGT7
 void *ExtFlash_Bus_InstObj = NULL;
 #endif
+
+#define STORAGE_TAG "[ STORAGE INFO ] "
+#define STORAGE_INFO(fmt, ...) Debug_Print(&DebugP4, STORAGE_TAG , fmt, ##__VA_ARGS__)
 
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
@@ -1654,11 +1658,17 @@ static bool Storage_Write_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
                 case Storage_ChipType_W25Qxx:
                     /* erase sector */
                     if (To_DevW25Qxx_API(p_dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp) != DevW25Qxx_Ok)
+                    {
+                        STORAGE_INFO("section erase failed\r\n");
                         return false;
+                    }
 
                     /* update sector */
                     if (To_DevW25Qxx_API(p_dev->dev_api)->write(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp, p_data, p_dev->sector_size))
+                    {
+                        STORAGE_INFO("section write failed\r\n");
                         return false;
+                    }
                     break;
 
                 default: return false;
@@ -1697,6 +1707,7 @@ static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
                     /* read sector */
                     if (To_DevW25Qxx_API(p_dev->dev_api)->read(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp, p_data, len) != DevW25Qxx_Ok)
                     {
+                        STORAGE_INFO("section read failed\r\n");
                         memset(p_data, 0, len);
                         return false;
                     }

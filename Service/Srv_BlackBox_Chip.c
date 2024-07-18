@@ -1,5 +1,7 @@
 #include "Srv_BlackBox_Def.h"
 #include "../System/storage/Storage.h"
+#include "HW_Def.h"
+#include "debug_util.h"
 
 typedef struct
 {
@@ -37,6 +39,9 @@ static  Chip_BlackBox_Monitor_TypeDef ChipBlackBox_Monitor = {
     .rom_addr = 0,
     .rom_size = 0,
 };
+
+#define BLACKBOX_CHIP_TAG "[ BLACKBOX CHIP INFO ] "
+#define BLACKBOX_CHIP_INFO(fmt, ...) Debug_Print(&DebugP4, BLACKBOX_CHIP_TAG , fmt, ##__VA_ARGS__)
 
 /* external function */
 static uint32_t SrvChip_BlackBox_Init(SrvBlackBox_Log_Callback callback);
@@ -110,7 +115,10 @@ static bool SrvChip_BlackBox_PushData(uint8_t *p_data, uint32_t len)
 
         /* write data to balckbox data section */
         if (!Storage.write_section(update_addr, p_data, len))
+        {
+            BLACKBOX_CHIP_INFO("log failed\r\n");
             return false;
+        }
 
         ChipBlackBox_Monitor.log_cnt ++;
         ChipBlackBox_Monitor.log_size += ChipBlackBox_Monitor.log_unit;
@@ -165,6 +173,8 @@ static bool SrvChip_BlackBox_Enable(void)
         ChipBlackBox_Monitor.enable = true;
         return true;
     }
+    else
+        BLACKBOX_CHIP_INFO("enable failed\r\n");
 
     return false;
 }
@@ -172,6 +182,7 @@ static bool SrvChip_BlackBox_Enable(void)
 static bool SrvChip_BlackBox_Disable(void)
 {
     Chip_BlackBox_Info_TypeDef BlackBoxDataInfo;
+    uint8_t retry = 10;
 
     memset(&BlackBoxDataInfo, 0, sizeof(Chip_BlackBox_Info_TypeDef));
     if (ChipBlackBox_Monitor.init)
@@ -183,12 +194,28 @@ static bool SrvChip_BlackBox_Disable(void)
         ChipBlackBox_Monitor.log_cnt = 0;
         ChipBlackBox_Monitor.log_size = 0;
 
-        /* update info section */
-        if (!Storage.write_section(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
-            return false;
-        
-        return true;
+        while (retry)
+        {
+            /* update info section */
+            if (!Storage.write_section(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
+            {
+                retry --;
+                if (retry == 0)
+                {
+                    BLACKBOX_CHIP_INFO("write info failed\r\n");
+                    return false;
+                }
+                else
+                    BLACKBOX_CHIP_INFO("info update retry\r\n");
+            }
+            else
+                return true;
+
+            SrvOsCommon.delay_ms(10);
+        }
     }
+    else
+        BLACKBOX_CHIP_INFO("disable failed\r\n");
 
     return false;
 }
