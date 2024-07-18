@@ -793,12 +793,29 @@ static void TaskBlackBox_GetLogInfo(void)
                     else if (uncomplete_size >= BLACKBOX_HEADER_SIZE)
                     {
                         err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_remain_buf, &uncomplete_size);
-                        if (err != BlackBox_Cnv_None_Error)
+                        if ((err != BlackBox_Cnv_None_Error) || (err != BlackBox_Cnv_Size_Error))
                         {
                             /* convert bug */
                             shellPrint(shell_obj, "[ BlackBox ] uncomplete decode error\r\n");
                             return;
                         }
+                        else if (err == BlackBox_Cnv_Size_Error)
+                        {
+                            if (header.type == BlackBox_Imu_Filted)
+                            {
+                                memcpy(p_remain_buf + uncomplete_size, p_log_data, (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef)) - uncomplete_size);
+                                p_log_data += (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_IMUData_TypeDef)) - uncomplete_size;
+                                log_size -= (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_IMUData_TypeDef)) - uncomplete_size;
+                                uncomplete_size = BLACKBOX_ENDER_SIZE + sizeof(BlackBox_IMUData_TypeDef);
+                            }
+                            else if (header.type == BlackBox_Log_Alt_Att)
+                            {
+                                memcpy(p_remain_buf + uncomplete_size, p_log_data, (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef)) - uncomplete_size);
+                                p_log_data += (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef)) - uncomplete_size;
+                                log_size -= ((BLACKBOX_ENDER_SIZE) + sizeof(BlackBox_AttAltData_TypeDef)) - uncomplete_size;
+                                uncomplete_size = BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef);
+                            }
+                        } 
 
                         if (uncomplete_size)
                         {
