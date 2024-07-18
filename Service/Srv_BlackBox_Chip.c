@@ -160,6 +160,8 @@ static bool SrvChip_BlackBox_Enable(void)
 {
     if (ChipBlackBox_Monitor.init)
     {
+        ChipBlackBox_Monitor.log_cnt = 0;
+        ChipBlackBox_Monitor.log_size = 0;
         ChipBlackBox_Monitor.enable = true;
         return true;
     }
