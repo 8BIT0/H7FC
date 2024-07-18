@@ -25,6 +25,13 @@
 
 typedef enum
 {
+    BlackBox_Log_Idle = 0,
+    BlackBox_Log_Enable,
+    BlackBox_Log_Disable,
+} BlackBox_LogState_List;
+
+typedef enum
+{
     BlackBox_Cnv_None_Error = 0,
     BlackBox_Cnv_Para_Error,
     BlackBox_Cnv_Size_Error,
@@ -50,7 +57,7 @@ typedef struct
 
 typedef struct
 {
-    bool enable;
+    BlackBox_LogState_List state;
     bool write_thread_state;
     
     Storage_ItemSearchOut_TypeDef storage_search;
@@ -98,6 +105,8 @@ void TaskBlackBox_Init(void)
      */
     memset(&BlackBoxInfo, 0, sizeof(BlackBox_LogInfo_TypeDef));
     memset(&Monitor, 0, sizeof(BlackBox_Monitor_TypeDef));
+    Monitor.state = BlackBox_Log_Idle;
+
     /* read blackbox info from storage */
     Monitor.storage_search = Storage.search(Para_User, BlackBox_Storage_Name);
     if (Monitor.storage_search.item_addr == 0)
@@ -214,7 +223,7 @@ void TaskBlackBox_Init(void)
     DataPipe_Enable(&Altitude_Log_DataPipe);
 
     /* disable log first */
-    Monitor.enable = false;
+    Monitor.state = BlackBox_Log_Idle;
 }
 
 void TaskBlackBox_Core(void const *arg)
@@ -228,7 +237,12 @@ void TaskBlackBox_Core(void const *arg)
             vTaskDelete(NULL);
 
         osSemaphoreWait(BlackBox_Sem, osWaitForever);
-        if (p_blackbox->push && Monitor.log_unit)
+        if ((Monitor.state == BlackBox_Log_Disable) && p_blackbox->disable && p_blackbox->disable())
+        {
+            Monitor.state = BlackBox_Log_Idle;
+            Queue.reset(&BlackBox_Queue);
+        }
+        else if (p_blackbox->push && Monitor.log_unit)
         {
             if(p_blackbox->push(Monitor.p_log_buf, Monitor.log_unit))
             {
@@ -285,6 +299,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     static BlackBox_IMUData_TypeDef  imu_data;
     static BlackBox_BaroData_TypeDef baro_data;
     static BlackBox_AttAltData_TypeDef att_alt_data;
+    static BlackBox_LogState_List lst_state;
     static bool alt_update = false;
     static bool att_update = false;
     BlackBox_DataHeader_TypeDef blackbox_header;
@@ -299,128 +314,134 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     blackbox_header.header = BLACKBOX_LOG_HEADER;
     blackbox_ender.ender   = BLACKBOX_LOG_ENDER;
 
-    if (!Monitor.enable || (Monitor.log_type == BlackBox_Log_None) || !Monitor.write_thread_state)
+    if ((Monitor.log_type == BlackBox_Log_None) || !Monitor.write_thread_state)
         return;
 
-    /* pipe data update */
-    if (obj == &IMU_Log_DataPipe)
+    if (lst_state == BlackBox_Log_Enable)
     {
-        imu_data.acc_scale = DataPipe_DataObj(LogImu_Data).data.acc_scale;
-        imu_data.gyr_scale = DataPipe_DataObj(LogImu_Data).data.gyr_scale;
-        for (i = Axis_X; i < Axis_Sum; i++)
+        /* pipe data update */
+        if (obj == &IMU_Log_DataPipe)
         {
-            imu_data.flt_gyr[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.flt_gyr[i] * imu_data.gyr_scale);
-            imu_data.org_gyr[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.org_gyr[i] * imu_data.gyr_scale);
-        
-            imu_data.flt_acc[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.flt_acc[i] * imu_data.acc_scale);
-            imu_data.org_acc[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.org_acc[i] * imu_data.acc_scale);
+            imu_data.acc_scale = DataPipe_DataObj(LogImu_Data).data.acc_scale;
+            imu_data.gyr_scale = DataPipe_DataObj(LogImu_Data).data.gyr_scale;
+            for (i = Axis_X; i < Axis_Sum; i++)
+            {
+                imu_data.flt_gyr[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.flt_gyr[i] * imu_data.gyr_scale);
+                imu_data.org_gyr[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.org_gyr[i] * imu_data.gyr_scale);
+            
+                imu_data.flt_acc[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.flt_acc[i] * imu_data.acc_scale);
+                imu_data.org_acc[i] = (int16_t)(DataPipe_DataObj(LogImu_Data).data.org_acc[i] * imu_data.acc_scale);
+            }
+            imu_data.time = DataPipe_DataObj(LogImu_Data).data.time_stamp;
+            imu_data.cyc  = DataPipe_DataObj(LogImu_Data).data.cycle_cnt;
+            imu_update = true;
         }
-        imu_data.time = DataPipe_DataObj(LogImu_Data).data.time_stamp;
-        imu_data.cyc  = DataPipe_DataObj(LogImu_Data).data.cycle_cnt;
-        imu_update = true;
-    }
-    else if (obj == &Baro_Log_DataPipe)
-    {
-        baro_data.time = DataPipe_DataObj(LogBaro_Data).data.time_stamp;
-        baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
-        baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
-    }
-    else if ((obj == &Attitude_Log_DataPipe) || (obj == &Altitude_Log_DataPipe))
-    {
-        /* set imu data */
-        att_alt_data.gyr_scale = imu_data.gyr_scale;
-        att_alt_data.acc_scale = imu_data.acc_scale;
-        memcpy(att_alt_data.acc, imu_data.flt_acc, sizeof(imu_data.flt_acc));
-        memcpy(att_alt_data.gyr, imu_data.flt_gyr, sizeof(imu_data.flt_gyr));
-
-        /* set baro data */
-        att_alt_data.baro = baro_data.press;
-
-        /* log data when attitude update */
-        if (obj == &Attitude_Log_DataPipe)
+        else if (obj == &Baro_Log_DataPipe)
         {
-            /* set attitude */
-            att_alt_data.time = DataPipe_DataObj(LogAtt_Data).time_stamp;
-            att_alt_data.pitch = DataPipe_DataObj(LogAtt_Data).pitch;
-            att_alt_data.roll = DataPipe_DataObj(LogAtt_Data).roll;
-            att_alt_data.yaw = DataPipe_DataObj(LogAtt_Data).yaw;
-            att_update = true;
+            baro_data.time = DataPipe_DataObj(LogBaro_Data).data.time_stamp;
+            baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
+            baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
         }
-        else if (obj == &Altitude_Log_DataPipe)
+        else if ((obj == &Attitude_Log_DataPipe) || (obj == &Altitude_Log_DataPipe))
         {
-            /* set altitude */
-            att_alt_data.alt = DataPipe_DataObj(LogAlt_Data).alt;
-            alt_update = true;
+            /* set imu data */
+            att_alt_data.gyr_scale = imu_data.gyr_scale;
+            att_alt_data.acc_scale = imu_data.acc_scale;
+            memcpy(att_alt_data.acc, imu_data.flt_acc, sizeof(imu_data.flt_acc));
+            memcpy(att_alt_data.gyr, imu_data.flt_gyr, sizeof(imu_data.flt_gyr));
+
+            /* set baro data */
+            att_alt_data.baro = baro_data.press;
+
+            /* log data when attitude update */
+            if (obj == &Attitude_Log_DataPipe)
+            {
+                /* set attitude */
+                att_alt_data.time = DataPipe_DataObj(LogAtt_Data).time_stamp;
+                att_alt_data.pitch = DataPipe_DataObj(LogAtt_Data).pitch;
+                att_alt_data.roll = DataPipe_DataObj(LogAtt_Data).roll;
+                att_alt_data.yaw = DataPipe_DataObj(LogAtt_Data).yaw;
+                att_update = true;
+            }
+            else if (obj == &Altitude_Log_DataPipe)
+            {
+                /* set altitude */
+                att_alt_data.alt = DataPipe_DataObj(LogAlt_Data).alt;
+                alt_update = true;
+            }
         }
-    }
 
-    /* blackbox log control */
-    if ((Monitor.log_type == BlackBox_Imu_Filted) && imu_update)
+        /* blackbox log control */
+        if ((Monitor.log_type == BlackBox_Imu_Filted) && imu_update)
+        {
+            /* log data when imu update */
+            Monitor.imu_log.cnt ++;
+            Monitor.imu_log.byte_size += BLACKBOX_HEADER_SIZE;
+            blackbox_header.type = BlackBox_Imu_Filted;
+            blackbox_header.size = sizeof(BlackBox_IMUData_TypeDef);
+            TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
+            
+            TaskBlackBox_UpdateQueue((uint8_t *)&imu_data, sizeof(BlackBox_IMUData_TypeDef));
+            Monitor.imu_log.byte_size += sizeof(BlackBox_IMUData_TypeDef);
+
+            check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&imu_data, sizeof(BlackBox_IMUData_TypeDef));
+            blackbox_ender.check_sum = check_sum;
+            Monitor.imu_log.byte_size += BLACKBOX_ENDER_SIZE;
+            TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
+            imu_update = false;
+        }
+        else if ((Monitor.log_type == BlackBox_Log_Alt_Att) && (alt_update & att_update & imu_update))
+        {
+            Monitor.alt_att_log.cnt ++;
+            Monitor.alt_att_log.byte_size += BLACKBOX_HEADER_SIZE;
+            blackbox_header.type = BlackBox_Log_Alt_Att;
+            blackbox_header.size = sizeof(BlackBox_AttAltData_TypeDef);
+            TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
+            
+            TaskBlackBox_UpdateQueue((uint8_t *)&att_alt_data, sizeof(BlackBox_AttAltData_TypeDef));
+            Monitor.alt_att_log.byte_size += sizeof(BlackBox_AttAltData_TypeDef);
+
+            check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&att_alt_data, sizeof(BlackBox_AttAltData_TypeDef));
+            blackbox_ender.check_sum = check_sum;
+            Monitor.imu_log.byte_size += BLACKBOX_ENDER_SIZE;
+            TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
+            alt_update = false;
+            att_update = false;
+            imu_update = false;
+        }
+        else if (Monitor.log_type == BlackBox_AngularPID_Tune)
+        {
+
+        }
+        else if (Monitor.log_type == BlackBox_AttitudePID_Tune)
+        {
+
+        }
+        /* use minilzo compress data if have to */
+    }
+    else
     {
-        /* log data when imu update */
-        Monitor.imu_log.cnt ++;
-        Monitor.imu_log.byte_size += BLACKBOX_HEADER_SIZE;
-        blackbox_header.type = BlackBox_Imu_Filted;
-        blackbox_header.size = sizeof(BlackBox_IMUData_TypeDef);
-        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
-        
-        TaskBlackBox_UpdateQueue((uint8_t *)&imu_data, sizeof(BlackBox_IMUData_TypeDef));
-        Monitor.imu_log.byte_size += sizeof(BlackBox_IMUData_TypeDef);
-
-        check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&imu_data, sizeof(BlackBox_IMUData_TypeDef));
-        blackbox_ender.check_sum = check_sum;
-        Monitor.imu_log.byte_size += BLACKBOX_ENDER_SIZE;
-        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
-        imu_update = false;
-    }
-    else if ((Monitor.log_type == BlackBox_Log_Alt_Att) && (alt_update & att_update & imu_update))
-    {
-        Monitor.alt_att_log.cnt ++;
-        Monitor.alt_att_log.byte_size += BLACKBOX_HEADER_SIZE;
-        blackbox_header.type = BlackBox_Log_Alt_Att;
-        blackbox_header.size = sizeof(BlackBox_AttAltData_TypeDef);
-        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
-        
-        TaskBlackBox_UpdateQueue((uint8_t *)&att_alt_data, sizeof(BlackBox_AttAltData_TypeDef));
-        Monitor.alt_att_log.byte_size += sizeof(BlackBox_AttAltData_TypeDef);
-
-        check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&att_alt_data, sizeof(BlackBox_AttAltData_TypeDef));
-        blackbox_ender.check_sum = check_sum;
-        Monitor.imu_log.byte_size += BLACKBOX_ENDER_SIZE;
-        TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
-        alt_update = false;
-        att_update = false;
-        imu_update = false;
-    }
-    else if (Monitor.log_type == BlackBox_AngularPID_Tune)
-    {
-
-    }
-    else if (Monitor.log_type == BlackBox_AttitudePID_Tune)
-    {
-
+        /* log disable */
+        if (Monitor.state == BlackBox_Log_Disable)
+            osSemaphoreRelease(BlackBox_Sem);
     }
 
-    /* use minilzo compress data if have to */
+    lst_state = Monitor.state;
 }
 
 void TaskBlackBox_LogControl(void)
 {
-    if (!Monitor.enable)
+    if (Monitor.state != BlackBox_Log_Enable)
     {
+        Monitor.log_cnt = 0;
+        Monitor.log_byte_size = 0;
+        Queue.reset(&BlackBox_Queue);
+
         if (p_blackbox->enable && p_blackbox->enable())
-            Monitor.enable = true;
+            Monitor.state = BlackBox_Log_Enable;
     }
     else
-    {
-        Monitor.enable = false;
-        if (p_blackbox->disable)
-            p_blackbox->disable();
-    }
-
-    Monitor.log_cnt = 0;
-    Monitor.log_byte_size = 0;
-    Queue.reset(&BlackBox_Queue);
+        Monitor.state = BlackBox_Log_Disable;
 }
 
 bool TaskBlackBox_Set_LogInfo(BlackBox_MediumType_List medium, BlackBox_LogType_List type, uint32_t size)
@@ -546,7 +567,7 @@ static void TaskBlackBox_EnableLog(void)
     if (p_blackbox->enable && p_blackbox->enable())
     {
         shellPrint(shell_obj, "[ BalckBox ] Enable\r\r");
-        Monitor.enable = true;
+        Monitor.state = BlackBox_Log_Enable;
         Monitor.log_cnt = 0;
         Monitor.log_byte_size = 0;
         Queue.reset(&BlackBox_Queue);
@@ -563,16 +584,8 @@ static void TaskBlackBox_DisableLog(void)
     if ((shell_obj == NULL) || (p_blackbox == NULL))
         return;
 
-    if (p_blackbox->disable && p_blackbox->disable())
-    {
-        shellPrint(shell_obj, "[ BalckBox ] Disable\r\r");
-        Monitor.enable = false;
-        Monitor.log_cnt = 0;
-        Monitor.log_byte_size = 0;
-        Queue.reset(&BlackBox_Queue);
-    }
-    else
-        shellPrint(shell_obj, "[ BlackBox ] Disable Failed\r\n");
+    Monitor.state = BlackBox_Log_Disable;
+    shellPrint(shell_obj, "[ BalckBox ] Disable\r\r");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, blackbox_disable, TaskBlackBox_DisableLog, blackbox end log);
 
