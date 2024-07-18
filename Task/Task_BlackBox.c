@@ -417,6 +417,10 @@ void TaskBlackBox_LogControl(void)
         if (p_blackbox->disable)
             p_blackbox->disable();
     }
+
+    Monitor.log_cnt = 0;
+    Monitor.log_byte_size = 0;
+    Queue.reset(&BlackBox_Queue);
 }
 
 bool TaskBlackBox_Set_LogInfo(BlackBox_MediumType_List medium, BlackBox_LogType_List type, uint32_t size)
@@ -543,6 +547,9 @@ static void TaskBlackBox_EnableLog(void)
     {
         shellPrint(shell_obj, "[ BalckBox ] Enable\r\r");
         Monitor.enable = true;
+        Monitor.log_cnt = 0;
+        Monitor.log_byte_size = 0;
+        Queue.reset(&BlackBox_Queue);
     }
     else
         shellPrint(shell_obj, "[ BlackBox ] Enable Failed\r\n");
@@ -560,6 +567,9 @@ static void TaskBlackBox_DisableLog(void)
     {
         shellPrint(shell_obj, "[ BalckBox ] Disable\r\r");
         Monitor.enable = false;
+        Monitor.log_cnt = 0;
+        Monitor.log_byte_size = 0;
+        Queue.reset(&BlackBox_Queue);
     }
     else
         shellPrint(shell_obj, "[ BlackBox ] Disable Failed\r\n");
@@ -634,14 +644,14 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Ender(Shell *p_
 }
 
 /* filted imu data log */
-static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_TypeDef *p_imu, uint8_t **p_data, uint32_t *len)
+static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_TypeDef *p_imu, uint8_t **p_data, uint32_t *len)
 {
     if ((p_imu == NULL) || \
         (p_data == NULL) || \
         (*p_data == NULL) || \
         (len == NULL) || \
         (*len < sizeof(BlackBox_IMUData_TypeDef)))
-        return;
+        return BlackBox_Cnv_Size_Error;
 
     memcpy(p_imu, *p_data, sizeof(BlackBox_IMUData_TypeDef));
     if (p_shell)
@@ -664,17 +674,18 @@ static void TaskBlackBox_ConvertLogData_To_IMU(Shell *p_shell, BlackBox_IMUData_
 
     *p_data += sizeof(BlackBox_IMUData_TypeDef);
     *len -= sizeof(BlackBox_IMUData_TypeDef);
+    return BlackBox_Cnv_None_Error;
 }
 
 /* attitude altitude log data */
-static void TaskBlackBox_ConvertLogData_To_Alt_Att(Shell *p_shell, BlackBox_AttAltData_TypeDef *p_att_alt, uint8_t **p_data, uint32_t *len)
+static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Alt_Att(Shell *p_shell, BlackBox_AttAltData_TypeDef *p_att_alt, uint8_t **p_data, uint32_t *len)
 {
     if ((p_att_alt == NULL) || \
         (p_data == NULL) || \
         (*p_data == NULL) || \
         (len == NULL) || \
         (*len < sizeof(BlackBox_AttAltData_TypeDef)))
-        return;
+        return BlackBox_Cnv_Size_Error;
 
     memcpy(p_att_alt, *p_data, sizeof(BlackBox_AttAltData_TypeDef));
     if (p_shell)
@@ -695,6 +706,7 @@ static void TaskBlackBox_ConvertLogData_To_Alt_Att(Shell *p_shell, BlackBox_AttA
 
     *p_data += sizeof(BlackBox_AttAltData_TypeDef);
     *len -= sizeof(BlackBox_AttAltData_TypeDef);
+    return BlackBox_Cnv_None_Error;
 }
 
 /* angular control log data */
@@ -780,102 +792,98 @@ static void TaskBlackBox_GetLogInfo(void)
                 {
                     p_remain_buf = remain_buf;
 
-                    if (uncomplete_size < BLACKBOX_HEADER_SIZE)
+                    if (uncomplete_size <= BLACKBOX_HEADER_SIZE)
                     {
                         /* get header first */
-                        memcpy(p_remain_buf, p_log_data, BLACKBOX_HEADER_SIZE - uncomplete_size);
-                        p_log_data += (BLACKBOX_HEADER_SIZE - uncomplete_size);
-                        log_size -= (BLACKBOX_HEADER_SIZE - uncomplete_size);
-                        uncomplete_size = BLACKBOX_HEADER_SIZE;
+                        if (uncomplete_size < BLACKBOX_HEADER_SIZE)
+                        {
+                            memcpy(p_remain_buf + uncomplete_size, p_log_data, BLACKBOX_HEADER_SIZE - uncomplete_size);
+                            p_log_data += (BLACKBOX_HEADER_SIZE - uncomplete_size);
+                            log_size -= (BLACKBOX_HEADER_SIZE - uncomplete_size);
+                            uncomplete_size = BLACKBOX_HEADER_SIZE;
+                        }
+
                         err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_remain_buf, &uncomplete_size);
-                        uncomplete_size = 0;
+                        if (err == BlackBox_Cnv_Size_Error)
+                        {
+                            err = BlackBox_Cnv_None_Error;
+                            uncomplete_size = 0;
+                        }
                     }
-                    else if (uncomplete_size >= BLACKBOX_HEADER_SIZE)
+                    else if (uncomplete_size > BLACKBOX_HEADER_SIZE)
                     {
                         err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_remain_buf, &uncomplete_size);
-                        if ((err != BlackBox_Cnv_None_Error) || (err != BlackBox_Cnv_Size_Error))
+                        if ((err != BlackBox_Cnv_None_Error) && (err != BlackBox_Cnv_Size_Error))
                         {
                             /* convert bug */
                             shellPrint(shell_obj, "[ BlackBox ] uncomplete decode error\r\n");
                             return;
                         }
                         else if (err == BlackBox_Cnv_Size_Error)
-                        {
-                            if (header.type == BlackBox_Imu_Filted)
-                            {
-                                memcpy(p_remain_buf + uncomplete_size, p_log_data, (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef)) - uncomplete_size);
-                                p_log_data += (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_IMUData_TypeDef)) - uncomplete_size;
-                                log_size -= (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_IMUData_TypeDef)) - uncomplete_size;
-                                uncomplete_size = BLACKBOX_ENDER_SIZE + sizeof(BlackBox_IMUData_TypeDef);
-                            }
-                            else if (header.type == BlackBox_Log_Alt_Att)
-                            {
-                                memcpy(p_remain_buf + uncomplete_size, p_log_data, (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef)) - uncomplete_size);
-                                p_log_data += (BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef)) - uncomplete_size;
-                                log_size -= ((BLACKBOX_ENDER_SIZE) + sizeof(BlackBox_AttAltData_TypeDef)) - uncomplete_size;
-                                uncomplete_size = BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef);
-                            }
-                        } 
+                            err = BlackBox_Cnv_None_Error;
 
+                        uncomplete_size -= BLACKBOX_HEADER_SIZE;
+                        p_remain_buf += BLACKBOX_HEADER_SIZE;
+                    }
+
+                    if (uncomplete_size)
+                    {
+                        uint32_t decode_size = 0;
+                        switch ((uint8_t)header.type)
+                        {
+                            case BlackBox_Imu_Filted:
+                                if (uncomplete_size <= sizeof(BlackBox_IMUData_TypeDef))
+                                {
+                                    memcpy(p_remain_buf + uncomplete_size, p_log_data, sizeof(BlackBox_IMUData_TypeDef) - uncomplete_size);
+                                    p_log_data += sizeof(BlackBox_IMUData_TypeDef) - uncomplete_size;
+                                    log_size -= sizeof(BlackBox_IMUData_TypeDef) - uncomplete_size;
+                                    uncomplete_size = 0;
+                                }
+                                else
+                                {
+                                    memmove(p_remain_buf, p_remain_buf + uncomplete_size, uncomplete_size - sizeof(BlackBox_IMUData_TypeDef));
+                                    uncomplete_size -= sizeof(BlackBox_IMUData_TypeDef);
+                                }
+
+                                decode_size = sizeof(BlackBox_IMUData_TypeDef);
+                                TaskBlackBox_ConvertLogData_To_IMU(shell_obj, &log_imu, &p_remain_buf, &decode_size);
+                                break;
+
+                            case BlackBox_Log_Alt_Att:
+                                if (uncomplete_size <= sizeof(BlackBox_AttAltData_TypeDef))
+                                {
+                                    memcpy(p_remain_buf + uncomplete_size, p_log_data, sizeof(BlackBox_AttAltData_TypeDef) - uncomplete_size);
+                                    p_log_data += sizeof(BlackBox_AttAltData_TypeDef) - uncomplete_size;
+                                    log_size -= sizeof(BlackBox_AttAltData_TypeDef) - uncomplete_size;
+                                    uncomplete_size = 0;
+                                }
+                                else
+                                {
+                                    memmove(p_remain_buf, p_remain_buf + uncomplete_size, uncomplete_size - sizeof(BlackBox_AttAltData_TypeDef));
+                                    uncomplete_size -= sizeof(BlackBox_AttAltData_TypeDef);
+                                }
+
+                                decode_size = sizeof(BlackBox_AttAltData_TypeDef);
+                                TaskBlackBox_ConvertLogData_To_Alt_Att(shell_obj, &log_att_alt, &p_remain_buf, &decode_size);
+                                break;
+
+                            default: return;
+                        }
+
+                        /* get ender */
                         if (uncomplete_size)
                         {
-                            uint32_t decode_size = 0;
-                            switch ((uint8_t)header.type)
-                            {
-                                case BlackBox_Imu_Filted:
-                                    if (uncomplete_size <= sizeof(BlackBox_IMUData_TypeDef))
-                                    {
-                                        memcpy(p_remain_buf + uncomplete_size, p_log_data, sizeof(BlackBox_IMUData_TypeDef) - uncomplete_size);
-                                        p_log_data += sizeof(BlackBox_IMUData_TypeDef) - uncomplete_size;
-                                        log_size -= sizeof(BlackBox_IMUData_TypeDef) - uncomplete_size;
-                                        uncomplete_size = 0;
-                                    }
-                                    else
-                                    {
-                                        memmove(p_remain_buf, p_remain_buf + uncomplete_size, uncomplete_size - sizeof(BlackBox_IMUData_TypeDef));
-                                        uncomplete_size -= sizeof(BlackBox_IMUData_TypeDef);
-                                    }
-
-                                    decode_size = sizeof(BlackBox_IMUData_TypeDef);
-                                    TaskBlackBox_ConvertLogData_To_IMU(shell_obj, &log_imu, &p_remain_buf, &decode_size);
-                                    break;
-
-                                case BlackBox_Log_Alt_Att:
-                                    if (uncomplete_size <= sizeof(BlackBox_AttAltData_TypeDef))
-                                    {
-                                        memcpy(p_remain_buf + uncomplete_size, p_log_data, sizeof(BlackBox_AttAltData_TypeDef) - uncomplete_size);
-                                        p_log_data += sizeof(BlackBox_AttAltData_TypeDef) - uncomplete_size;
-                                        log_size -= sizeof(BlackBox_AttAltData_TypeDef) - uncomplete_size;
-                                        uncomplete_size = 0;
-                                    }
-                                    else
-                                    {
-                                        memmove(p_remain_buf, p_remain_buf + uncomplete_size, uncomplete_size - sizeof(BlackBox_AttAltData_TypeDef));
-                                        uncomplete_size -= sizeof(BlackBox_AttAltData_TypeDef);
-                                    }
-
-                                    decode_size = sizeof(BlackBox_AttAltData_TypeDef);
-                                    TaskBlackBox_ConvertLogData_To_Alt_Att(shell_obj, &log_att_alt, &p_remain_buf, &decode_size);
-                                    break;
-
-                                default: return;
-                            }
-
-                            /* get ender */
-                            if (uncomplete_size)
-                            {
-                                memcpy(remain_buf + uncomplete_size, p_log_data, BLACKBOX_ENDER_SIZE - uncomplete_size);
-                                decode_size = BLACKBOX_ENDER_SIZE;
-                                p_log_data += BLACKBOX_ENDER_SIZE - uncomplete_size;
-                                log_size -= BLACKBOX_ENDER_SIZE - uncomplete_size;
-                                TaskBlackBox_ConvertLogData_To_Ender(shell_obj, &ender, &p_remain_buf, &decode_size);
-                            }
-                            else
-                                TaskBlackBox_ConvertLogData_To_Ender(shell_obj, &ender, &p_log_data, &log_size);
-
-                            /* get next header */
-                            err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_log_data, &log_size);
+                            memcpy(remain_buf + uncomplete_size, p_log_data, BLACKBOX_ENDER_SIZE - uncomplete_size);
+                            decode_size = BLACKBOX_ENDER_SIZE;
+                            p_log_data += BLACKBOX_ENDER_SIZE - uncomplete_size;
+                            log_size -= BLACKBOX_ENDER_SIZE - uncomplete_size;
+                            TaskBlackBox_ConvertLogData_To_Ender(shell_obj, &ender, &p_remain_buf, &decode_size);
                         }
+                        else
+                            TaskBlackBox_ConvertLogData_To_Ender(shell_obj, &ender, &p_log_data, &log_size);
+
+                        /* get next header */
+                        err = TaskBlackBox_ConvertLogData_To_Header(shell_obj, &header, &p_log_data, &log_size);
                     }
                 }
                 else
@@ -887,25 +895,35 @@ static void TaskBlackBox_GetLogInfo(void)
                     switch ((uint8_t)header.type)
                     {
                         case BlackBox_Imu_Filted:
-                            TaskBlackBox_ConvertLogData_To_IMU(shell_obj, &log_imu, &p_log_data, &log_size);
+                            err = TaskBlackBox_ConvertLogData_To_IMU(shell_obj, &log_imu, &p_log_data, &log_size);
                             check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&log_imu, sizeof(BlackBox_IMUData_TypeDef));
                             break;
 
                         case BlackBox_Log_Alt_Att:
-                            TaskBlackBox_ConvertLogData_To_Alt_Att(shell_obj, &log_att_alt, &p_log_data, &log_size);
+                            err = TaskBlackBox_ConvertLogData_To_Alt_Att(shell_obj, &log_att_alt, &p_log_data, &log_size);
                             check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&log_att_alt, sizeof(BlackBox_AttAltData_TypeDef));
                             break;
 
                         default: break;
                     }
 
-                    if (TaskBlackBox_ConvertLogData_To_Ender(shell_obj, &ender, &p_log_data, &log_size) != BlackBox_Cnv_None_Error)
-                        return;
-
-                    if (check_sum != ender.check_sum)
+                    if (err == BlackBox_Cnv_Size_Error)
                     {
-                        shellPrint(shell_obj, "[ BlackBox ] CheckSum error\r\n");
-                        shellPrint(shell_obj, "[ BlackBox ] addr: %d remian: %d\r\n", addr, log_size);
+                        memset(remain_buf, 0, sizeof(remain_buf));
+                        uncomplete_size = log_size;
+                        memcpy(remain_buf, p_log_data, uncomplete_size);
+                        log_size = 0;
+                        break;
+                    }
+                    else
+                    {
+                        TaskBlackBox_ConvertLogData_To_Ender(shell_obj, &ender, &p_log_data, &log_size);
+
+                        if (check_sum != ender.check_sum)
+                        {
+                            shellPrint(shell_obj, "[ BlackBox ] CheckSum error\r\n");
+                            shellPrint(shell_obj, "[ BlackBox ] addr: %d remian: %d\r\n", addr, log_size);
+                        }
                     }
                 }
                 else if (err == BlackBox_Cnv_Size_Error)
