@@ -299,6 +299,8 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     static BlackBox_IMUData_TypeDef  imu_data;
     static BlackBox_BaroData_TypeDef baro_data;
     static BlackBox_AttAltData_TypeDef att_alt_data;
+    static BlackBox_AngCtlData_TypeDef ang_ctl_data;
+    static BlackBox_AttCtlData_TypeDef att_ctl_data;
     static BlackBox_LogState_List lst_state;
     static bool alt_update = false;
     static bool att_update = false;
@@ -307,6 +309,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     uint8_t check_sum = 0;
     uint8_t i = 0;
     bool imu_update = false;
+    bool exp_ctl = false;
 
     memset(&blackbox_header, 0, BLACKBOX_HEADER_SIZE);
     memset(&blackbox_ender,  0, BLACKBOX_ENDER_SIZE);
@@ -341,6 +344,10 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             baro_data.time = DataPipe_DataObj(LogBaro_Data).data.time_stamp;
             baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
             baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
+        }
+        else if (obj == &CtlData_Log_DataPipe)
+        {
+
         }
         else if ((obj == &Attitude_Log_DataPipe) || (obj == &Altitude_Log_DataPipe))
         {
@@ -409,9 +416,22 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             att_update = false;
             imu_update = false;
         }
-        else if (Monitor.log_type == BlackBox_AngularPID_Tune)
+        else if ((Monitor.log_type == BlackBox_AngularPID_Tune) && (imu_update & exp_ctl))
         {
+            Monitor.ctl_ang_log.cnt ++;
+            Monitor.ctl_ang_log.byte_size += BLACKBOX_HEADER_SIZE;
+            blackbox_header.type = BlackBox_AngularPID_Tune;
+            blackbox_header.size = sizeof(BlackBox_AngCtlData_TypeDef);
+            TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
 
+            TaskBlackBox_UpdateQueue((uint8_t *)&ang_ctl_data, sizeof(BlackBox_AngCtlData_TypeDef));
+            Monitor.ctl_ang_log.byte_size += sizeof(BlackBox_AngCtlData_TypeDef);
+        
+            check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&ang_ctl_data, sizeof(BlackBox_AngCtlData_TypeDef));
+            blackbox_ender.check_sum = check_sum;
+            Monitor.ctl_ang_log.byte_size += BLACKBOX_ENDER_SIZE;
+            TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
+            imu_update = false;
         }
         else if (Monitor.log_type == BlackBox_AttitudePID_Tune)
         {
@@ -527,15 +547,13 @@ static void TaskBlackBox_Set_Log(uint8_t medium, uint8_t type, uint32_t size)
 
     /* for currently */
     if ((medium != (uint8_t)BlackBox_Medium_Chip) || \
-        (type == (uint8_t)BlackBox_AngularPID_Tune) || \
         (type == (uint8_t)BlackBox_AttitudePID_Tune))
     {
         if (medium != (uint8_t)BlackBox_Medium_Chip)
             shellPrint(shell_obj, "\tOnly support storage chip modlue currently\r\n");
         
-        if ((type == (uint8_t)BlackBox_AngularPID_Tune) || \
-            (type == (uint8_t)BlackBox_AttitudePID_Tune))
-            shellPrint(shell_obj, "\tOnly support IMU and Attitude & Altitude log function\r\n");
+        if (type == (uint8_t)BlackBox_AttitudePID_Tune)
+            shellPrint(shell_obj, "\tNot support currently\r\n");
 
         return;
     }
