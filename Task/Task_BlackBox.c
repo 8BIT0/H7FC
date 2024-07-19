@@ -364,6 +364,9 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
                 att_ctl_data.exp_pitch = DataPipe_DataObj(LogControl_Data).exp_att_pitch;
                 att_ctl_data.exp_roll = DataPipe_DataObj(LogControl_Data).exp_att_roll;
                 att_ctl_data.exp_gyr_z = DataPipe_DataObj(LogControl_Data).exp_gyr_z;
+                att_ctl_data.gyr_z = imu_data.flt_gyr[Axis_Z] / imu_data.gyr_scale;
+                att_ctl_data.pitch = DataPipe_DataObj(LogAtt_Data).pitch;
+                att_ctl_data.roll = DataPipe_DataObj(LogAtt_Data).roll;
             }
             ctl_update = true;
         }
