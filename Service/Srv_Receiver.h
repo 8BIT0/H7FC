@@ -93,7 +93,7 @@ typedef struct
     bool buzz_state;
     bool cali_state;
     bool flip_over;
-    bool taking_over;
+    bool blackbox;
     bool failsafe;
 
     uint16_t rssi;

@@ -90,7 +90,7 @@ typedef struct
     Telemetry_RCFuncMap_TypeDef ARM_Toggle;
     Telemetry_RCFuncMap_TypeDef ControlMode_Toggle;
     Telemetry_RCFuncMap_TypeDef Buzzer_Toggle;
-    Telemetry_RCFuncMap_TypeDef TakingOver_Toggle;
+    Telemetry_RCFuncMap_TypeDef Blackbox_Toggle;
     Telemetry_RCFuncMap_TypeDef FlipOver_Toggle;
     Telemetry_RCFuncMap_TypeDef Log_Toggle;
     Telemetry_RCFuncMap_TypeDef CLB_Toggle;
@@ -114,7 +114,7 @@ typedef struct
     uint8_t arm_toggle_ch;
     uint8_t buzzer_toggle_ch;
     uint8_t mode_switcher_ch;
-    uint8_t taking_over_ch;
+    uint8_t blackbox_ch;
     uint8_t flip_over_ch;
 
     bool poweron_arm_check;

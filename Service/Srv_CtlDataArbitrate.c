@@ -24,7 +24,6 @@ static void Srv_OnPlaneComputer_TakingOver_RequireSend(ControlData_TypeDef cur_c
 /* internal function */
 static void Srv_CtlData_ConvertGimbal_ToAtt(uint8_t *gimbal_percent, float *exp_pitch, float *exp_roll);
 static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint8_t *gimbal_percent, float *exp_gyr_x, float *exp_gyr_y, float *exp_gyr_z);
-static void Srv_CtlData_ControlPrivilege_Req_Check(void);
 
 /* external function */
 static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum], Srv_CtlRange_TypeDef angularspeed_range[Axis_Sum]);
@@ -201,9 +200,6 @@ static void Srv_CtlDataArbitrate_Update(ControlData_TypeDef *inuse_ctl_data)
                 memcpy(&SrvCtlArbitrateMonitor.InUse_CtlData, &SrvCtlArbitrateMonitor.OPC_CtlData, sizeof(ControlData_TypeDef));
         }
 
-        /* check any taking over ack info */
-        Srv_CtlData_ControlPrivilege_Req_Check();
-
         /* check failsafe first */
         if(SrvCtlArbitrateMonitor.InUse_CtlData.fail_safe)
         {
@@ -319,38 +315,6 @@ static void Srv_CtlData_ConvertGimbal_ToAtt(uint8_t *gimbal_percent, float *exp_
     }
 }
 
-static void Srv_CtlData_ControlPrivilege_Req_Check(void)
-{
-    if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_RC)
-    {
-        if(SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.taking_over_req)
-        {
-            if(SrvCtlArbitrateMonitor.RC_TakingOver_ReqHold == 0)
-            {
-                SrvCtlArbitrateMonitor.RC_TakingOver_ReqHold = SrvOsCommon.get_os_ms();
-            }
-        }
-        else
-        {
-            if(SrvOsCommon.get_os_ms() - SrvCtlArbitrateMonitor.RC_TakingOver_ReqHold >= RC_TAKING_OVER_CONFIRM)
-            {
-                /* send taking over require to on plane computer */
-            }
-            
-            SrvCtlArbitrateMonitor.RC_TakingOver_ReqHold = 0;
-        }
-    }
-    else if(SrvCtlArbitrateMonitor.InUse_CtlData.sig_source == ControlData_Src_OPC)
-    {
-        /* check telemetry take over request */
-        if(SrvCtlArbitrateMonitor.RC_CtlData.aux.bit.taking_over_req)
-        {
-            /* RC remote require to taking over */
-        }
-    }
-}
-
-
 static void Srv_CtlData_ConvertGimbal_ToAngularSpeed(uint8_t *gimbal_percent, float *exp_gyr_x, float *exp_gyr_y, float *exp_gyr_z)
 {
     float pos_trip = 0.0f;
@@ -421,7 +385,6 @@ static Srv_CtlExpectionData_TypeDef Srv_CtlDataArbitrate_GetData(void)
     tmp.buzzer_state = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.buzzer;
     tmp.calib_state = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.calib;
     tmp.mode = SrvCtlArbitrateMonitor.InUse_CtlData.control_mode;
-    tmp.TakingOver_stage = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.taking_over_req;
     tmp.recover_flip_over = SrvCtlArbitrateMonitor.InUse_CtlData.aux.bit.flip_over;
     
     tmp.throttle_percent = SrvCtlArbitrateMonitor.InUse_CtlData.gimbal_percent[Gimbal_Throttle];

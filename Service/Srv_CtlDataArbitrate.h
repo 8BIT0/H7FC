@@ -51,7 +51,6 @@ typedef struct
     bool calib_state;
     bool fail_safe;
     Control_Mode_List mode;
-    uint8_t TakingOver_stage; /* signal arbitrate and sync process stage */
 
     uint8_t idle_throttle_percent;
     uint8_t throttle_percent;

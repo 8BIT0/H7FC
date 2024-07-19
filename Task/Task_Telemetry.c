@@ -9,7 +9,7 @@
  * channel 5  arm toggle            two   pos : on/off
  * channel 6  buzzer toggle         two   pos : on/off
  * channel 7  control mode switch   three pos : pos 1/2/3
- * channel 8  taking over           auto reset toggle hold for enable
+ * channel 8  blackbox              auto reset toggle
  * channel 9  flip over             two   pos : on/off
  * channel 10 aux6
  * channel 11 aux7
@@ -45,7 +45,7 @@ static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, ui
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
 static uint16_t Telemetry_SplitScopeValue_Into(uint8_t pcs);
 static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t roll_ch, uint8_t yaw_ch);
-static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t takingover_toggle_ch);
+static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t blackbox_toggle_ch);
 static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig, ControlData_TypeDef *CTLSig);
 static bool Telemetry_Bind_CalibCombo(void);
 
@@ -70,7 +70,7 @@ void TaskTelemetry_Init(uint32_t period)
     Telemetry_Monitor.arm_toggle_ch = Channel_5;
     Telemetry_Monitor.buzzer_toggle_ch = Channel_6;
     Telemetry_Monitor.mode_switcher_ch = Channel_7;
-    Telemetry_Monitor.taking_over_ch = Channel_8;
+    Telemetry_Monitor.blackbox_ch = Channel_8;
     Telemetry_Monitor.flip_over_ch = Channel_9;
 
     /* init receiver */
@@ -90,7 +90,7 @@ void TaskTelemetry_Init(uint32_t period)
                                       Telemetry_Monitor.mode_switcher_ch, \
                                       Telemetry_Monitor.buzzer_toggle_ch, \
                                       Telemetry_Monitor.flip_over_ch, \
-                                      Telemetry_Monitor.taking_over_ch) && \
+                                      Telemetry_Monitor.blackbox_ch) && \
                 Telemetry_Bind_CalibCombo())
             {
                 Telemetry_Monitor.RC_Setting.sig.arm_state = TELEMETRY_SET_ARM;
@@ -501,8 +501,8 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             RC_Input_obj->sig.channel[i] = receiver_data.val_list[i];
         }
 
-        /* check taking over toggle */
-        RC_Input_obj->sig.taking_over = Telemetry_Toggle_Check(&RC_Input_obj->TakingOver_Toggle).state;
+        /* check blackbox toggle */
+        RC_Input_obj->sig.blackbox = Telemetry_Toggle_Check(&RC_Input_obj->Blackbox_Toggle).state;
 
         /* check buzzer toggle */
         RC_Input_obj->sig.buzz_state = Telemetry_Toggle_Check(&RC_Input_obj->Buzzer_Toggle).state;
@@ -648,7 +648,7 @@ static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t
     return true;
 }
 
-static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t takingover_toggle_ch)
+static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t blackbox_toggle_ch)
 {
     int16_t start = 0;
     int16_t end = 0;
@@ -698,10 +698,10 @@ static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch,
                                  end))
        return false;
 
-    /* bind control taking over toggle (toggle must can auto reset) */
+    /* bind control BlackBox toggle (toggle must can auto reset) */
     if(!Telemetry_BindToggleToChannel(&Telemetry_Monitor.RC_Setting, \
-                                      &Receiver_Obj.data.val_list[takingover_toggle_ch], \
-                                      &Telemetry_Monitor.RC_Setting.TakingOver_Toggle, \
+                                      &Receiver_Obj.data.val_list[blackbox_toggle_ch], \
+                                      &Telemetry_Monitor.RC_Setting.Blackbox_Toggle, \
                                       Telemetry_Monitor.receiver_value_mid, \
                                       Telemetry_Monitor.receiver_value_max))
         return false;
@@ -769,7 +769,7 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
             CTLSig->gimbal_mid = Telemetry_Monitor.receiver_value_mid;
             CTLSig->gimbal_min = Telemetry_Monitor.receiver_value_min;
 
-            CTLSig->aux.bit.taking_over_req = RCSig.taking_over;
+            CTLSig->aux.bit.blackbox = RCSig.blackbox;
 
             if(RCSig.arm_state == TELEMETRY_SET_ARM)
             {
