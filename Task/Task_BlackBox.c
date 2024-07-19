@@ -723,14 +723,14 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Alt_Att(Shell *
 }
 
 /* angular control log data */
-static void TaskBlackBox_ConvertLogData_To_CtlAng(Shell *p_shell, BlackBox_AngCtlData_TypeDef *p_ang_ctl, uint8_t **p_data, uint32_t *len)
+static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_CtlAng(Shell *p_shell, BlackBox_AngCtlData_TypeDef *p_ang_ctl, uint8_t **p_data, uint32_t *len)
 {
     if ((p_ang_ctl == NULL) || \
         (p_data == NULL) || \
         (*p_data == NULL) || \
         (len == NULL) || \
         (*len < sizeof(BlackBox_AngCtlData_TypeDef)))
-        return;
+        return BlackBox_Cnv_Size_Error;
     
     memcpy(p_ang_ctl, *p_data, sizeof(BlackBox_AngCtlData_TypeDef));
     if (p_shell)
@@ -746,17 +746,18 @@ static void TaskBlackBox_ConvertLogData_To_CtlAng(Shell *p_shell, BlackBox_AngCt
 
     *p_data += sizeof(BlackBox_AngCtlData_TypeDef);
     *len -= sizeof(BlackBox_AngCtlData_TypeDef);
+    return BlackBox_Cnv_None_Error;
 }
 
 /* attitude control log data */
-static void TaskBlackBox_ConvertLogData_To_CtlAtt(Shell *p_shell, BlackBox_AttCtlData_TypeDef *p_att_ctl, uint8_t **p_data, uint32_t *len)
+static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_CtlAtt(Shell *p_shell, BlackBox_AttCtlData_TypeDef *p_att_ctl, uint8_t **p_data, uint32_t *len)
 {
     if ((p_att_ctl == NULL) || \
         (p_data == NULL) || \
         (*p_data == NULL) || \
         (len == NULL) || \
         (*len < sizeof(BlackBox_AttCtlData_TypeDef)))
-        return;
+        return BlackBox_Cnv_Size_Error;
 
     memcpy(p_att_ctl, *p_data, sizeof(BlackBox_AttCtlData_TypeDef));
     if (p_shell)
@@ -772,6 +773,7 @@ static void TaskBlackBox_ConvertLogData_To_CtlAtt(Shell *p_shell, BlackBox_AttCt
 
     *p_data += sizeof(BlackBox_AttCtlData_TypeDef);
     *len -= sizeof(BlackBox_AttCtlData_TypeDef);
+    return BlackBox_Cnv_None_Error;
 }
 
 static void TaskBlackBox_GetLogInfo(void)
@@ -922,7 +924,6 @@ static void TaskBlackBox_GetLogInfo(void)
                                 }
                                 else
                                 {
-
                                     memmove(p_remain_buf, p_remain_buf + uncomplete_size, uncomplete_size - sizeof(BlackBox_AngCtlData_TypeDef));
                                     uncomplete_size -= sizeof(BlackBox_AngCtlData_TypeDef);
                                 }
@@ -987,9 +988,13 @@ static void TaskBlackBox_GetLogInfo(void)
                             break;
 
                         case BlackBox_AngularPID_Tune:
+                            err = TaskBlackBox_ConvertLogData_To_CtlAng(shell_obj, &log_AngCtl, &p_log_data, &log_size);
+                            check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&log_AngCtl, sizeof(BlackBox_AngCtlData_TypeDef));
                             break;
 
                         case BlackBox_AttitudePID_Tune:
+                            err = TaskBlackBox_ConvertLogData_To_CtlAtt(shell_obj, &log_AttCtl, &p_log_data, &log_size);
+                            check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&log_AttCtl, sizeof(BlackBox_AttCtlData_TypeDef));
                             break;
 
                         default: break;
