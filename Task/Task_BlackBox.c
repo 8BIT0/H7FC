@@ -309,7 +309,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     uint8_t check_sum = 0;
     uint8_t i = 0;
     bool imu_update = false;
-    bool exp_ctl = false;
+    bool ctl_update = false;
 
     memset(&blackbox_header, 0, BLACKBOX_HEADER_SIZE);
     memset(&blackbox_ender,  0, BLACKBOX_ENDER_SIZE);
@@ -347,7 +347,25 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         }
         else if (obj == &CtlData_Log_DataPipe)
         {
+            if (DataPipe_DataObj(LogControl_Data).control_mode != Attitude_Control)
+            {
+                ang_ctl_data.gyr_scale = imu_data.gyr_scale;
+                for (i = Axis_X; i < Axis_Sum; i++)
+                    ang_ctl_data.gyr[i] = (int16_t)(imu_data.flt_gyr[i] * imu_data.gyr_scale);
 
+                ang_ctl_data.time = DataPipe_DataObj(LogControl_Data).exp_angularspeed_time_stamp;
+                ang_ctl_data.exp_gyr[Axis_X] = DataPipe_DataObj(LogControl_Data).exp_gyr_x;
+                ang_ctl_data.exp_gyr[Axis_Y] = DataPipe_DataObj(LogControl_Data).exp_gyr_y;
+                ang_ctl_data.exp_gyr[Axis_Z] = DataPipe_DataObj(LogControl_Data).exp_gyr_z;
+            }
+            else
+            {
+                att_ctl_data.time = DataPipe_DataObj(LogControl_Data).exp_att_time_stamp;
+                att_ctl_data.exp_pitch = DataPipe_DataObj(LogControl_Data).exp_att_pitch;
+                att_ctl_data.exp_roll = DataPipe_DataObj(LogControl_Data).exp_att_roll;
+                att_ctl_data.exp_gyr_z = DataPipe_DataObj(LogControl_Data).exp_gyr_z;
+            }
+            ctl_update = true;
         }
         else if ((obj == &Attitude_Log_DataPipe) || (obj == &Altitude_Log_DataPipe))
         {
@@ -416,7 +434,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             att_update = false;
             imu_update = false;
         }
-        else if ((Monitor.log_type == BlackBox_AngularPID_Tune) && (imu_update & exp_ctl))
+        else if ((Monitor.log_type == BlackBox_AngularPID_Tune) && (imu_update & ctl_update))
         {
             Monitor.ctl_ang_log.cnt ++;
             Monitor.ctl_ang_log.byte_size += BLACKBOX_HEADER_SIZE;
@@ -432,6 +450,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             Monitor.ctl_ang_log.byte_size += BLACKBOX_ENDER_SIZE;
             TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
             imu_update = false;
+            ctl_update = false;
         }
         else if (Monitor.log_type == BlackBox_AttitudePID_Tune)
         {
