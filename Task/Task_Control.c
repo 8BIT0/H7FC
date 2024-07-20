@@ -340,7 +340,7 @@ static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *mon
 
 static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef *monitor)
 {
-    if(monitor && monitor->att_pid_state)
+    if(monitor)
     {
         /* gyro X PID Update */
         PID_Update(&monitor->GyrXCtl_PIDObj, monitor->gyr[Axis_X], monitor->GyrXCtl_PIDObj.exp);
@@ -363,6 +363,7 @@ static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef
 
     if(monitor)
     {
+        /* idle spin when disarm */
         ctl_buf[Actuator_Ctl_Throttle] = monitor->throttle_percent;
 
         ctl_buf[Actuator_Ctl_GyrX] = monitor->GyrXCtl_PIDObj.fout;

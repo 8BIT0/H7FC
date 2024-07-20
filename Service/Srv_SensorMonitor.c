@@ -213,7 +213,8 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
             case SrvIMU_PriDev_Init_Error:
                 MONITOR_INFO("Pri IMU init error\r\n");
                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
-                if(!SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range))
+                obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+                if(!obj->sec_range_get)
                 {
                     MONITOR_INFO("IMU get range failed\r\n");
                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
@@ -228,7 +229,8 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
             case SrvIMU_SecDev_Init_Error:
                 MONITOR_INFO("Sec IMU init error\r\n");
                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
-                if(!SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range))
+                obj->pri_range_get = SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range);
+                if(!obj->pri_range_get)
                 {
                     MONITOR_INFO("IMU get range failed\r\n");
                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));

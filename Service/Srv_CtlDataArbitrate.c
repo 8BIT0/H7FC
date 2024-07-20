@@ -49,15 +49,15 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
     uint8_t sec_acc_range = 0;
     uint16_t sec_gyr_range = 0;
 
-    int16_t input_range_max = 0;
-    int16_t input_range_min = 0;
+    int32_t input_range_max = 0;
+    int32_t input_range_min = 0;
     
     memset(&SrvCtlArbitrateMonitor, 0, sizeof(SrvCtlArbitrateMonitor));
 
     for(index = 0; index < Att_Ctl_Sum; index ++)
     {
-        input_range_max = (((int16_t)(att_range[index].max * 1000)) / 1000);
-        input_range_min = (((int16_t)(att_range[index].min * 1000)) / 1000);
+        input_range_max = (((int32_t)(att_range[index].max * 1000)) / 1000);
+        input_range_min = (((int32_t)(att_range[index].min * 1000)) / 1000);
 
         /* max or min is 0 */
         if((input_range_max == 0) || 
@@ -78,8 +78,8 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
 
         if(att_range[index].enable_dead_zone)
         {
-            input_range_max = ((int16_t)(att_range[index].dead_zone_max * 1000));
-            input_range_min = ((int16_t)(att_range[index].dead_zone_min * 1000));
+            input_range_max = ((int32_t)(att_range[index].dead_zone_max * 1000));
+            input_range_min = ((int32_t)(att_range[index].dead_zone_min * 1000));
         
             if(input_range_max <= input_range_min)
                 return false;
@@ -119,8 +119,8 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
 
     for(index = 0; index < Axis_Sum; index ++)
     {
-        input_range_max = ((int16_t)(angularspeed_range[index].max * 1000));
-        input_range_min = ((int16_t)(angularspeed_range[index].min * 1000));
+        input_range_max = ((int32_t)(angularspeed_range[index].max * 1000));
+        input_range_min = ((int32_t)(angularspeed_range[index].min * 1000));
 
         if((input_range_max == 0) || (input_range_min == 0))
            return false;
@@ -136,8 +136,8 @@ static bool Srv_CtlDataArbitrate_Init(Srv_CtlRange_TypeDef att_range[Att_Ctl_Sum
 
         if(angularspeed_range[index].enable_dead_zone)
         {
-            input_range_max = ((int16_t)(angularspeed_range[index].dead_zone_max * 1000));
-            input_range_min = ((int16_t)(angularspeed_range[index].dead_zone_min * 1000));
+            input_range_max = ((int32_t)(angularspeed_range[index].dead_zone_max * 1000));
+            input_range_min = ((int32_t)(angularspeed_range[index].dead_zone_min * 1000));
 
             if(input_range_max <= input_range_min)
                 return false;
