@@ -234,30 +234,31 @@ void TaskControl_Core(void const *arg)
         {
             /* lock all actuator when upgrading */
             SrvActuator.lock();
+            continue;
+        }
+            
+        if (!TaskControl_Monitor.CLI_enable)
+        {
+            /* lock moto when usb attached */
+            if (!SrvDataHub.get_vcp_attach_state(&USB_Attach) || USB_Attach)
+                continue;
+            
+            /* debug set control to angular speed control */
+            TaskControl_FlightControl_Polling(&Cnv_CtlData);
+            
+            CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
+            CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
+            CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
         }
         else
         {
-            if (!TaskControl_Monitor.CLI_enable && \
-                SrvDataHub.get_vcp_attach_state(&USB_Attach) && \
-                !USB_Attach)
+            if(TaskControl_Monitor.CLI_enable)
             {
-                /* debug set control to angular speed control */
-                TaskControl_FlightControl_Polling(&Cnv_CtlData);
-                
-                CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
-                CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
-                CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
+                TaskControl_CLI_Polling();
             }
             else
-            {
-                if(TaskControl_Monitor.CLI_enable)
-                {
-                    TaskControl_CLI_Polling();
-                }
-                else
-                    /* lock all moto */
-                    SrvActuator.lock();
-            }
+                /* lock all moto */
+                SrvActuator.lock();
         }
 
         SrvOsCommon.precise_delay(&sys_time, TaskControl_Period);
