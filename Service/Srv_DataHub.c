@@ -10,8 +10,6 @@ SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor = {
 /* Pipe Object */
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlIMU_Data);
 DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, PtlActuator_Data);
-DataPipe_CreateDataObj(ControlData_TypeDef, Hub_InUse_CtlData);
-DataPipe_CreateDataObj(ControlData_TypeDef, Hub_OPC_CtlData);
 DataPipe_CreateDataObj(ControlData_TypeDef, Hub_Telemetry_Rc);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Enable);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
@@ -78,7 +76,6 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_arm_state = SrvDataHub_Get_Arm,
     .get_failsafe = SrvDataHub_Get_Failsafe,
     .get_inuse_control_data = SrvDataHub_Get_InUse_ControlData,
-    .get_opc_control_data = SrvDataHub_Get_OnPlaneComputer_ControlData,
     .get_rc_control_data = SrvDataHub_Get_Telemetry_ControlData,
     .get_moto = SrvDataHub_Get_MotoChannel,
     .get_servo = SrvDataHub_Get_ServoChannel,
@@ -747,24 +744,6 @@ reupdate_telemetry_control_data:
             goto reupdate_telemetry_control_data;
 
         SrvDataHub_Monitor.inuse_reg.bit.rc_control_data = false;
-
-        return true;
-    }
-
-    return false;
-}
-
-static bool SrvDataHub_Get_OnPlaneComputer_ControlData(ControlData_TypeDef *data)
-{
-    if(data)
-    {
-reupdate_onplane_computer_control_data:
-        SrvDataHub_Monitor.inuse_reg.bit.opc_control_data = true;
-
-        (*data) = SrvDataHub_Monitor.data.OPC_Control_Data;
-
-        if(!SrvDataHub_Monitor.inuse_reg.bit.opc_control_data)
-            goto reupdate_onplane_computer_control_data;
 
         return true;
     }

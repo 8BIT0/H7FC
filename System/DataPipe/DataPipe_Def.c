@@ -9,8 +9,8 @@ DataPipeObj_TypeDef Receiver_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Receiver_hub_DataPipe = {.enable = true};
 
 DataPipeObj_TypeDef CtlData_Log_DataPipe = {.enable = true};
-DataPipeObj_TypeDef InUseCtlData_Smp_DataPipe = {.enable = true};
-DataPipeObj_TypeDef InUseCtlData_hub_DataPipe = {.enable = true};
+DataPipeObj_TypeDef CtlData_smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef CtlData_hub_DataPipe = {.enable = true};
 
 DataPipeObj_TypeDef IMU_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef IMU_Smp_DataPipe = {.enable = true};

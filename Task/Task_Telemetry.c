@@ -434,7 +434,9 @@ static uint16_t Telemetry_Check_Gimbal(Telemetry_RCFuncMap_TypeDef *gimbal)
 static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
 {
     Telemetry_ChannelSet_TypeDef *gimbal_channel = NULL;
-    float percent = 0.0f;
+    int16_t pos_range = 0;
+    int16_t neg_range = 0;
+    float percent = 50.0f;
 
     if (gimbal == NULL)
         return 0;
@@ -451,8 +453,8 @@ static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
             return 50;
     }
 
-    uint16_t pos_range = (gimbal_channel->max - gimbal_channel->mid - gimbal_channel->center_deadzone_scope);
-    uint16_t neg_range = (gimbal_channel->mid - gimbal_channel->min - gimbal_channel->center_deadzone_scope);
+    pos_range = (gimbal_channel->max - gimbal_channel->mid - gimbal_channel->center_deadzone_scope);
+    neg_range = (gimbal_channel->mid - gimbal_channel->min - gimbal_channel->center_deadzone_scope);
 
     if((*gimbal_channel->channel_ptr - (gimbal_channel->mid + gimbal_channel->center_deadzone_scope)) > 0)
     {
@@ -569,9 +571,9 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
          * only when physical throttle gimbal actually down to lowest so we update lst_arm_state */
         if ((RC_Input_obj->sig.arm_state == TELEMETRY_SET_DISARM) && (Telemetry_Monitor.lst_arm_state == TELEMETRY_SET_ARM))
         {
-            if (RC_Input_obj->sig.gimbal_percent[0] >= TELEMETRY_RC_THROTTLE_PERCENT_ALERT)
+            if (RC_Input_obj->sig.gimbal_percent[Channel_2] >= TELEMETRY_RC_THROTTLE_PERCENT_ALERT)
             {
-                RC_Input_obj->sig.gimbal_percent[0] = 0;
+                RC_Input_obj->sig.gimbal_percent[Channel_2] = 0;
                 RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
             }
         }
@@ -759,11 +761,11 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
             CTLSig->gimbal[Gimbal_Pitch] = RCSig.channel[CTLSig->gimbal_map_list[Gimbal_Pitch]];
             CTLSig->gimbal[Gimbal_Roll] = RCSig.channel[CTLSig->gimbal_map_list[Gimbal_Roll]];
             CTLSig->gimbal[Gimbal_Yaw] = RCSig.channel[CTLSig->gimbal_map_list[Gimbal_Yaw]];
-
-            for(uint8_t gim_index = Gimbal_Throttle; gim_index < Gimbal_Sum; gim_index ++)
-            {
-                CTLSig->gimbal_percent[gim_index] = RCSig.gimbal_percent[gim_index];
-            }
+                
+            CTLSig->gimbal_percent[Gimbal_Throttle] = RCSig.gimbal_percent[Channel_2];
+            CTLSig->gimbal_percent[Gimbal_Pitch] = RCSig.gimbal_percent[Channel_4];
+            CTLSig->gimbal_percent[Gimbal_Roll] = RCSig.gimbal_percent[Channel_3];
+            CTLSig->gimbal_percent[Gimbal_Yaw] = RCSig.gimbal_percent[Channel_1];
 
             CTLSig->gimbal_max = Telemetry_Monitor.receiver_value_max;
             CTLSig->gimbal_mid = Telemetry_Monitor.receiver_value_mid;

@@ -50,20 +50,19 @@ typedef union
         
         uint64_t inuse_control_data : 1;    // bit : 18
         uint64_t rc_control_data : 1;       // bit : 19
-        uint64_t opc_control_data : 1;      // bit : 20
         
-        uint64_t actuator : 1;              // bit : 21
-        uint64_t attitude : 1;              // bit : 22
-        uint64_t relative_alt : 1;          // bit : 23
+        uint64_t actuator : 1;              // bit : 20
+        uint64_t attitude : 1;              // bit : 21
+        uint64_t relative_alt : 1;          // bit : 22
 
-        uint64_t mag_init : 1;              // bit : 24
-        uint64_t imu_init : 1;              // bit : 25
-        uint64_t baro_init : 1;             // bit : 26
+        uint64_t mag_init : 1;              // bit : 23
+        uint64_t imu_init : 1;              // bit : 24
+        uint64_t baro_init : 1;             // bit : 25
         
-        uint64_t USB_VCP_attach : 1;        // bit : 27
+        uint64_t USB_VCP_attach : 1;        // bit : 26
 
-        uint64_t cli : 1;                   // bit : 28
-        uint64_t upgrade : 1;               // bit : 29
+        uint64_t cli : 1;                   // bit : 27
+        uint64_t upgrade : 1;               // bit : 28
     } bit;
 
     uint64_t val;
@@ -172,9 +171,7 @@ typedef struct
     float flt_flow_pos[Axis_Sum];
     uint8_t flow_error_code;
 
-    ControlData_TypeDef InUse_Control_Data;
     ControlData_TypeDef RC_Control_Data;
-    ControlData_TypeDef OPC_Control_Data;
 
     bool pos_enable;
     bool pos_init_state;
@@ -232,14 +229,6 @@ typedef struct
     uint8_t flight_sig_src;
     uint8_t flight_mode;
 
-    /* OPC -> On Plane Computer */
-    bool OPC_TakingOver;
-    bool OPC_Clock_Sync;
-    uint32_t OPC_heartbeat_timestamp;
-    uint8_t OPC_exp_throttle;
-    float OPC_exp_alt;
-    float OPC_exp_attitude[Axis_Sum];
-    float OPC_exp_angularspeed[Axis_Sum];
 } SrvDataHubObj_TypeDef;
 
 typedef struct
@@ -274,7 +263,6 @@ typedef struct
     bool (*get_attitude)(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over);
     bool (*get_inuse_control_data)(ControlData_TypeDef *data);
     bool (*get_rc_control_data)(ControlData_TypeDef *data);
-    bool (*get_opc_control_data)(ControlData_TypeDef *data);
     bool (*get_baro_altitude)(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *baro_temp, uint8_t *error);
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);

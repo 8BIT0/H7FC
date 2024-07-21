@@ -7,7 +7,6 @@
  */
 #include "Task_Control.h"
 #include "Srv_OsCommon.h"
-#include "Srv_CtlDataArbitrate.h"
 #include "Task_Telemetry.h"
 #include "Srv_DataHub.h"
 #include "Srv_Actuator.h"
@@ -75,14 +74,10 @@ void TaskControl_Init(uint32_t period)
 {
     uint8_t i = 0;
     bool use_default = true;
-    Srv_CtlRange_TypeDef att_ctl_range[Att_Ctl_Sum];
-    Srv_CtlRange_TypeDef angularspeed_ctl_range[Axis_Sum];
     Storage_ItemSearchOut_TypeDef search_out;
 
     // init monitor
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
-    memset(&att_ctl_range, 0, sizeof(Srv_CtlRange_TypeDef));
-    memset(&angularspeed_ctl_range, 0, sizeof(Srv_CtlRange_TypeDef));
 
     /* Parametet Init */
     TaskControl_Get_StoreParam();
@@ -92,38 +87,6 @@ void TaskControl_Init(uint32_t period)
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
     
-    memset(DataPipe_DataObjAddr(Smp_Inuse_CtlData), 0, DataPipe_DataSize(Smp_Inuse_CtlData));
-    InUseCtlData_Smp_DataPipe.data_addr = DataPipe_DataObjAddr(Smp_Inuse_CtlData);
-    InUseCtlData_Smp_DataPipe.data_size = DataPipe_DataSize(Smp_Inuse_CtlData);
-    DataPipe_Enable(&InUseCtlData_Smp_DataPipe);
-
-    /* set control range */
-    /* attitude control range */
-    for(i = Att_Pitch; i < Att_Ctl_Sum; i++)
-    {
-        att_ctl_range[i].max = 25.0f;   /* max attitude control angle ±50 deg */
-        att_ctl_range[i].min = -25.0f;
-        att_ctl_range[i].idle = 0.0f;
-        att_ctl_range[i].dead_zone_max = 0.5f;
-        att_ctl_range[i].dead_zone_min = -0.5f;
-        att_ctl_range[i].enable_dead_zone = true;
-    }
-
-    /* X&Y axis angular speed control range */
-    for(i = Axis_X; i < Axis_Z; i++)
-    {
-        angularspeed_ctl_range[i].max = 300.0f;
-        angularspeed_ctl_range[i].min = -300.0f;
-        angularspeed_ctl_range[i].idle = 0.0f;
-        angularspeed_ctl_range[i].enable_dead_zone = false;
-    }
-        
-    angularspeed_ctl_range[Axis_Z].max = 100.0f;
-    angularspeed_ctl_range[Axis_Z].min = -100.0f;
-    angularspeed_ctl_range[Axis_Z].idle = 0.0f;
-    angularspeed_ctl_range[Axis_Z].enable_dead_zone = false;
-    
-    TaskControl_Monitor.control_abort = !Srv_CtlDataArbitrate.init(att_ctl_range, angularspeed_ctl_range);
     TaskControl_Period = period;
 }
 
@@ -261,17 +224,11 @@ void TaskControl_Core(void const *arg)
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     bool upgrade_state = false;
     ControlData_TypeDef CtlData;
-    Srv_CtlExpectionData_TypeDef Cnv_CtlData;
-    Srv_CtlExpectionData_TypeDef Lst_CtlData;
     bool USB_Attach = false;
-    
     memset(&CtlData, 0, sizeof(ControlData_TypeDef));
-    memset(&Cnv_CtlData, 0, sizeof(Srv_CtlExpectionData_TypeDef));
-    memset(&Lst_CtlData, 0, sizeof(Srv_CtlExpectionData_TypeDef));
-
     while(1)
     {
-        Srv_CtlDataArbitrate.negociate_update(&CtlData);
+        /* get control data from data hub */
 
         if (SrvDataHub.get_upgrade_state(&upgrade_state) && upgrade_state)
         {
@@ -284,22 +241,12 @@ void TaskControl_Core(void const *arg)
                 SrvDataHub.get_vcp_attach_state(&USB_Attach) && \
                 !USB_Attach)
             {
-                Cnv_CtlData = Srv_CtlDataArbitrate.get_data();
-                
-                DataPipe_DataObj(Smp_Inuse_CtlData) = CtlData;
-                /* pipe in use control data to data hub */
-                DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &InUseCtlData_hub_DataPipe);
-                DataPipe_SendTo(&InUseCtlData_Smp_DataPipe, &CtlData_Log_DataPipe);
-
                 /* debug set control to angular speed control */
-                Cnv_CtlData.mode = AngularSpeed_AngleLimit_Control;
                 TaskControl_FlightControl_Polling(&Cnv_CtlData);
                 
                 CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
                 CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
                 CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
-
-                Lst_CtlData = Cnv_CtlData;
             }
             else
             {

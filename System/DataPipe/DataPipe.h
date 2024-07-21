@@ -113,8 +113,8 @@ extern DataPipeObj_TypeDef Receiver_Smp_DataPipe;
 extern DataPipeObj_TypeDef Receiver_hub_DataPipe;
 
 extern DataPipeObj_TypeDef CtlData_Log_DataPipe;
-extern DataPipeObj_TypeDef InUseCtlData_Smp_DataPipe;
-extern DataPipeObj_TypeDef InUseCtlData_hub_DataPipe;
+extern DataPipeObj_TypeDef CtlData_smp_DataPipe;
+extern DataPipeObj_TypeDef CtlData_hub_DataPipe;
 
 extern DataPipeObj_TypeDef Actuator_Smp_DataPipe;
 extern DataPipeObj_TypeDef Actuator_hub_DataPipe;
