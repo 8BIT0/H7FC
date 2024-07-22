@@ -270,7 +270,10 @@ void TaskControl_Core(void const *arg)
         {
             /* lock moto when usb attached */
             if (!SrvDataHub.get_vcp_attach_state(&USB_Attach) || USB_Attach)
+            {
+                SrvActuator.lock();
                 continue;
+            }
             
             /* debug set control to angular speed control */
             TaskControl_FlightControl_Polling(&CtlData);
