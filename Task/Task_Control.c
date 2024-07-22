@@ -557,9 +557,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
                             }
                         }
                         else
-                        {
                             TaskControl_Monitor.angular_protect = true;
-                        }
                         break;
                 }
             }
