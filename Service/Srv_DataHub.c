@@ -599,6 +599,8 @@ reupdate_raw_mag:
     if (!SrvDataHub_Monitor.inuse_reg.bit.raw_mag)
         goto reupdate_raw_mag;
 
+    SrvDataHub_Monitor.inuse_reg.bit.raw_mag = false;
+    
     return true;
 }
 
@@ -625,6 +627,8 @@ reupdate_scaled_baro:
     if(!SrvDataHub_Monitor.inuse_reg.bit.scaled_baro)
         goto reupdate_scaled_baro;
 
+    SrvDataHub_Monitor.inuse_reg.bit.scaled_baro = false;
+    
     return true;
 }
 
@@ -670,6 +674,8 @@ reupdate_scaled_mag:
     if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_mag)
         goto reupdate_scaled_mag;
 
+    SrvDataHub_Monitor.inuse_reg.bit.scaled_mag = false;
+
     return true;
 }
 
@@ -702,6 +708,8 @@ reupdate_attitude:
 
     if(!SrvDataHub_Monitor.inuse_reg.bit.attitude)
         goto reupdate_attitude;
+
+    SrvDataHub_Monitor.inuse_reg.bit.attitude = false;
 
     return true;
 }
@@ -769,6 +777,8 @@ reupdate_convertdata:
     if (!SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data)
         goto reupdate_convertdata;
 
+    SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data = false;
+    
     return true;
 }
 
@@ -921,6 +931,8 @@ reupdate_cli_state:
         if(!SrvDataHub_Monitor.inuse_reg.bit.cli)
             goto reupdate_cli_state;
 
+        SrvDataHub_Monitor.inuse_reg.bit.cli = false;
+
         return true;
     }
 
@@ -951,6 +963,8 @@ reupdate_upgrade_state:
         if(!SrvDataHub_Monitor.inuse_reg.bit.upgrade)
             goto reupdate_upgrade_state;
 
+        SrvDataHub_Monitor.inuse_reg.bit.upgrade = false;
+        
         return true;
     }
 
@@ -969,6 +983,8 @@ reupdate_vcp_attach_state:
         if(!SrvDataHub_Monitor.inuse_reg.bit.USB_VCP_attach)
             goto reupdate_vcp_attach_state;
 
+        SrvDataHub_Monitor.inuse_reg.bit.USB_VCP_attach = false;
+        
         return true;
     }
 
