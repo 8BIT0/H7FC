@@ -617,8 +617,6 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             TaskControl_Monitor.GyrZCtl_PIDObj.exp = TaskControl_Monitor.exp_gyr_z;
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
-            /* pipe convert control data to data hub */
-
             /* bug */
             // TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 
