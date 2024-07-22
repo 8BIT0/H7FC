@@ -66,6 +66,20 @@ typedef struct
 
 typedef struct
 {
+    float max;
+    float mid;
+    float min;
+} TaskControl_CtlRange_Para_TypeDef;
+
+typedef struct
+{
+    TaskControl_CtlRange_Para_TypeDef pitch;
+    TaskControl_CtlRange_Para_TypeDef roll;
+
+    TaskControl_CtlRange_Para_TypeDef gx;
+    TaskControl_CtlRange_Para_TypeDef gy;
+    TaskControl_CtlRange_Para_TypeDef gz;
+
     TaskControl_OuterLoop_Para_TypeDef Outer;
     TaskControl_InnerLoop_Para_TypeDef Inner;
 } TaskControl_FlightParam_TypeDef;
@@ -82,7 +96,7 @@ typedef struct
     bool CLI_enable;
 
     Storage_ItemSearchOut_TypeDef pid_store_info;
-    TaskControl_FlightParam_TypeDef pid_param;
+    TaskControl_FlightParam_TypeDef param;
 
     Storage_ItemSearchOut_TypeDef actuator_store_info;
     SrvActuator_Setting_TypeDef actuator_param;
@@ -103,19 +117,19 @@ typedef struct
     float acc_lst[Axis_Sum];
     float gyr_lst[Axis_Sum];
 
-    float exp_gyr[Axis_Sum];
+    uint8_t throttle_percent;
+    float exp_gyr_x;
+    float exp_gyr_y;
+    float exp_gyr_z;
+    float exp_pitch;
+    float exp_roll;
 
     IMUAtt_TypeDef attitude;
-    IMUAtt_TypeDef exp_attitude;
     bool flip_over;
 
     uint32_t error_code;
     uint8_t imu_none_update_cnt;
     uint8_t over_angular_accelerate_cnt;
-
-    uint8_t throttle_percent;
-
-    bool att_pid_state;
 
     /* outer ring attitude control pid */
     PIDObj_TypeDef RollCtl_PIDObj;

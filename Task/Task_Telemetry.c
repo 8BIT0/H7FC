@@ -21,7 +21,6 @@
  *
  */
 #include "Task_Telemetry.h"
-#include "Task_BlackBox.h"
 #include "DataPipe.h"
 #include "HW_Def.h"
 #include "Srv_Receiver.h"
@@ -739,7 +738,6 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
     {
         memset(CTLSig, 0, sizeof(ControlData_TypeDef));
 
-        CTLSig->sig_source = ControlData_Src_RC;
         CTLSig->update_time_stamp = RCSig.time_stamp;
         CTLSig->arm_state = RCSig.arm_state;
         CTLSig->fail_safe = RCSig.failsafe;
@@ -762,10 +760,10 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
             CTLSig->gimbal[Gimbal_Roll] = RCSig.channel[CTLSig->gimbal_map_list[Gimbal_Roll]];
             CTLSig->gimbal[Gimbal_Yaw] = RCSig.channel[CTLSig->gimbal_map_list[Gimbal_Yaw]];
                 
-            CTLSig->gimbal_percent[Gimbal_Throttle] = RCSig.gimbal_percent[Channel_2];
-            CTLSig->gimbal_percent[Gimbal_Pitch] = RCSig.gimbal_percent[Channel_4];
-            CTLSig->gimbal_percent[Gimbal_Roll] = RCSig.gimbal_percent[Channel_3];
-            CTLSig->gimbal_percent[Gimbal_Yaw] = RCSig.gimbal_percent[Channel_1];
+            CTLSig->throttle_percent = RCSig.gimbal_percent[CTLSig->gimbal_map_list[Gimbal_Throttle]];
+            CTLSig->pitch_percent = RCSig.gimbal_percent[CTLSig->gimbal_map_list[Gimbal_Pitch]];
+            CTLSig->roll_percent = RCSig.gimbal_percent[CTLSig->gimbal_map_list[Gimbal_Roll]];
+            CTLSig->yaw_percent = RCSig.gimbal_percent[CTLSig->gimbal_map_list[Gimbal_Yaw]];
 
             CTLSig->gimbal_max = Telemetry_Monitor.receiver_value_max;
             CTLSig->gimbal_mid = Telemetry_Monitor.receiver_value_mid;

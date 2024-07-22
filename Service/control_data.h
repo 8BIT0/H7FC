@@ -41,12 +41,6 @@ typedef enum
 
 typedef enum
 {
-    ControlData_Src_RC, /* RC remote */
-    ControlData_Src_OPC,    /* On Plane Computer */
-}ControlData_Source_List;
-
-typedef enum
-{
     Attitude_Control = 0,
     AngularSpeed_Control,
     AngularSpeed_AngleLimit_Control,
@@ -67,6 +61,7 @@ typedef union
     uint16_t val;
 }AUX_Control_Reg_TypeDef;
 
+/* parse from receiver */
 typedef struct
 {
     /* channel type data section */
@@ -75,24 +70,16 @@ typedef struct
     uint16_t all_ch[32];
     uint8_t gimbal_map_list[Gimbal_Sum];
     int16_t gimbal[Gimbal_Sum];
-    uint8_t gimbal_percent[Gimbal_Sum];
+    uint8_t throttle_percent;
+    uint8_t pitch_percent;
+    uint8_t roll_percent;
+    uint8_t yaw_percent;
 
     int16_t gimbal_max;
     int16_t gimbal_mid;
     int16_t gimbal_min;
-    
-    uint32_t exp_att_time_stamp;
-    float exp_att_pitch;
-    float exp_att_roll;
 
-    uint32_t exp_angularspeed_time_stamp;
-    float exp_gyr_x;
-    float exp_gyr_y;
-    float exp_gyr_z;
-
-    ControlData_Source_List sig_source;
     Control_Mode_List control_mode;
-    
     AUX_Control_Reg_TypeDef aux;
     
     bool arm_state;
@@ -100,6 +87,22 @@ typedef struct
 
     uint16_t rssi;
 }ControlData_TypeDef;
+
+/* convert control data from rc receiver */
+typedef struct
+{
+    uint32_t time_stamp;
+
+    bool arm;
+    bool failsafe;
+
+    float pitch;
+    float roll;
+
+    float gyr_x;
+    float gyr_y;
+    float gyr_z;
+} ExpControlData_TypeDef;
 
 #ifdef __cplusplus
 }

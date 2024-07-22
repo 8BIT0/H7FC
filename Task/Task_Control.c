@@ -29,7 +29,13 @@
 #define GYRO_Z_RATE_PID_DIFF_MAX 50
 #define GYRO_Z_RATE_PID_DIFF_MIN -50
 
-DataPipe_CreateDataObj(ControlData_TypeDef, Smp_Inuse_CtlData);
+#define CONTROL_ATT_RANGE_MAX 30.0f
+#define CONTROL_ATT_RANGE_MID 0.0f
+#define CONTROL_ATT_RANGE_MIN -30.0f
+
+#define CONTROL_GYR_RANGE_MAX 800.0f
+#define CONTROL_GYR_RANGE_MID 0.0f
+#define CONTROL_GYR_RANGE_MIN -800.0f
 
 static uint32_t imu_update_time = 0;
 static uint32_t att_update_time = 0;
@@ -42,6 +48,8 @@ static bool configrator_attach = false;
 
 SrvIMU_UnionData_TypeDef LstCyc_IMU_Data;
 SrvRecever_RCSig_TypeDef LstCyc_Rc_Data;
+
+DataPipe_CreateDataObj(ExpControlData_TypeDef, ExpCtl);
 
 TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .init_state = false,
@@ -59,9 +67,9 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
 };
 
 /* internal function */
-static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state);
+static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor);
 static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef *monitor);
-static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_ctl_val);
+static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val);
 static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef *monitor);
 static void TaskControl_CLI_Polling(void);
 static void TaskControl_Get_StoreParam(void);
@@ -72,17 +80,19 @@ static uint32_t TaskControl_Period = 0;
 
 void TaskControl_Init(uint32_t period)
 {
-    uint8_t i = 0;
-    bool use_default = true;
-    Storage_ItemSearchOut_TypeDef search_out;
-
-    // init monitor
+    /* init monitor */
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
+
+    /* pipe init */
+    CtlData_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(ExpCtl);
+    CtlData_smp_DataPipe.data_size = DataPipe_DataSize(ExpCtl);
+    DataPipe_Enable(&CtlData_smp_DataPipe);
 
     /* Parametet Init */
     TaskControl_Get_StoreParam();
 
     TaskControl_Monitor.init_state = SrvActuator.init(TaskControl_Monitor.actuator_param);
+    SrvDataHub.get_imu_init_state(&imu_init_state);
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
@@ -95,6 +105,27 @@ static TaskControl_FlightParam_TypeDef TaskControl_Get_DefaultParam(void)
     TaskControl_FlightParam_TypeDef Param;
 
     memset(&Param, 0, sizeof(TaskControl_FlightParam_TypeDef));
+
+    /* use defaule range data */
+    Param.pitch.max = CONTROL_ATT_RANGE_MAX;
+    Param.pitch.mid = CONTROL_ATT_RANGE_MID;
+    Param.pitch.min = CONTROL_ATT_RANGE_MIN;
+
+    Param.roll.max = CONTROL_ATT_RANGE_MAX;
+    Param.roll.mid = CONTROL_ATT_RANGE_MID;
+    Param.roll.min = CONTROL_ATT_RANGE_MIN;
+
+    Param.gx.max = CONTROL_GYR_RANGE_MAX;
+    Param.gx.mid = CONTROL_GYR_RANGE_MID;
+    Param.gx.min = CONTROL_GYR_RANGE_MIN;
+
+    Param.gy.max = CONTROL_GYR_RANGE_MAX;
+    Param.gy.mid = CONTROL_GYR_RANGE_MID;
+    Param.gy.min = CONTROL_GYR_RANGE_MIN;
+
+    Param.gz.max = CONTROL_GYR_RANGE_MAX;
+    Param.gz.mid = CONTROL_GYR_RANGE_MID;
+    Param.gz.min = CONTROL_GYR_RANGE_MIN;
 
     /* use default pid data */
     /* attitude PID control parameter section */
@@ -120,7 +151,7 @@ static TaskControl_FlightParam_TypeDef TaskControl_Get_DefaultParam(void)
     Param.Inner.GyroX_Para.gP_Diff_Max = GYRO_X_RATE_PID_DIFF_MAX;
     Param.Inner.GyroX_Para.gP_Diff_Min = GYRO_X_RATE_PID_DIFF_MIN;
 
-    Param.Inner.GyroX_Para.gP = 2;
+    Param.Inner.GyroX_Para.gP = 1.2;
     Param.Inner.GyroX_Para.gI = 0.002;
     Param.Inner.GyroX_Para.gI_Max = 30;
     Param.Inner.GyroX_Para.gI_Min = -30;
@@ -129,7 +160,7 @@ static TaskControl_FlightParam_TypeDef TaskControl_Get_DefaultParam(void)
     Param.Inner.GyroY_Para.gP_Diff_Max = GYRO_Y_RATE_PID_DIFF_MAX;
     Param.Inner.GyroY_Para.gP_Diff_Min = GYRO_Y_RATE_PID_DIFF_MIN;
     
-    Param.Inner.GyroY_Para.gP = 2;
+    Param.Inner.GyroY_Para.gP = 1.2;
     Param.Inner.GyroY_Para.gI = 0.002;
     Param.Inner.GyroY_Para.gI_Max = 30;
     Param.Inner.GyroY_Para.gI_Min = -30;
@@ -201,6 +232,8 @@ static void TaskControl_Get_StoreParam(void)
             (Storage.get(Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&PID_Param, sizeof(TaskControl_FlightParam_TypeDef)) == Storage_Error_None))
             p_UseParam = &PID_Param;
     }
+    
+    memcpy(&TaskControl_Monitor.param, p_UseParam, sizeof(TaskControl_FlightParam_TypeDef));
 
     TaskControl_Param_Copy(&TaskControl_Monitor.PitchCtl_PIDObj, p_UseParam->Outer.Pitch_Para);
     TaskControl_Param_Copy(&TaskControl_Monitor.RollCtl_PIDObj,  p_UseParam->Outer.Roll_Para);
@@ -229,6 +262,7 @@ void TaskControl_Core(void const *arg)
     while(1)
     {
         /* get control data from data hub */
+        SrvDataHub.get_rc_control_data(&CtlData);
 
         if (SrvDataHub.get_upgrade_state(&upgrade_state) && upgrade_state)
         {
@@ -244,11 +278,7 @@ void TaskControl_Core(void const *arg)
                 continue;
             
             /* debug set control to angular speed control */
-            TaskControl_FlightControl_Polling(&Cnv_CtlData);
-            
-            CtlData.exp_gyr_x = Cnv_CtlData.exp_angularspeed[Axis_X];
-            CtlData.exp_gyr_y = Cnv_CtlData.exp_angularspeed[Axis_Y];
-            CtlData.exp_gyr_z = Cnv_CtlData.exp_angularspeed[Axis_Z];
+            TaskControl_FlightControl_Polling(&CtlData);
         }
         else
         {
@@ -265,22 +295,17 @@ void TaskControl_Core(void const *arg)
     }
 }
 
-static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor, bool att_state)
+static bool TaskControl_AttitudeRing_PID_Update(TaskControl_Monitor_TypeDef *monitor)
 {
     if(monitor)
     {
-        monitor->att_pid_state = att_state;
-        
-        if(att_state)
-        {
-           /* pitch PID update */
-            PID_Update(&monitor->PitchCtl_PIDObj, monitor->attitude.pitch, monitor->exp_attitude.pitch);
+        /* pitch PID update */
+        PID_Update(&monitor->PitchCtl_PIDObj, monitor->attitude.pitch, monitor->exp_pitch);
 
-            /* roll PID update */
-            PID_Update(&monitor->RollCtl_PIDObj, monitor->attitude.roll, monitor->exp_attitude.roll);
+        /* roll PID update */
+        PID_Update(&monitor->RollCtl_PIDObj, monitor->attitude.roll, monitor->exp_roll);
 
-            return true;
-        }
+        return true;
     }
 
     return false;
@@ -323,36 +348,114 @@ static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef
 }
 
 /****************************************************** Flight Control Section ********************************************************/
+static bool TaskControl_Convert_CtlData(TaskControl_Monitor_TypeDef *monitor, ControlData_TypeDef ctl_data)
+{
+    float p_scope = 0.0f;
+    float n_scope = 0.0f;
+    TaskControl_CtlRange_Para_TypeDef *p_range = NULL;
+
+    /* convert pitch */
+    p_range = &monitor->param.pitch;
+    if ((p_range->max <= p_range->min) || (p_range->mid <= p_range->min) || (p_range->max <= p_range->mid))
+        return false;
+
+    p_scope = p_range->max - p_range->mid;
+    n_scope = p_range->mid - p_range->min;
+
+    monitor->exp_pitch = (ctl_data.pitch_percent - 50.0f) / 100.0f;
+    if (monitor->exp_pitch >= 0)
+    {
+        monitor->exp_pitch *= p_scope;
+    }
+    else
+        monitor->exp_pitch *= n_scope;
+
+    /* convert roll */
+    p_range = &monitor->param.roll;
+    if ((p_range->max <= p_range->min) || (p_range->mid <= p_range->min) || (p_range->max <= p_range->mid))
+        return false;
+
+    p_scope = p_range->max - p_range->mid;
+    n_scope = p_range->mid - p_range->min;
+
+    monitor->exp_roll = (ctl_data.roll_percent - 50.0f) / 100.0f;
+    if (monitor->exp_roll >= 0)
+    {
+        monitor->exp_roll *= p_scope;
+    }
+    else
+        monitor->exp_roll *= n_scope;
+
+    /* convert gyro x */
+    p_range = &monitor->param.gx;
+    if ((p_range->max <= p_range->min) || (p_range->mid <= p_range->min) || (p_range->max <= p_range->mid))
+        return false;
+
+    p_scope = p_range->max - p_range->mid;
+    n_scope = p_range->mid - p_range->min;
+
+    monitor->exp_gyr_x = (ctl_data.roll_percent - 50.0f) / 100.0f;
+    if (monitor->exp_gyr_x >= 0)
+    {
+        monitor->exp_gyr_x *= p_scope;
+    }
+    else
+        monitor->exp_gyr_x *= n_scope;
+
+    /* convert gyro y */
+    p_range = &monitor->param.gy;
+    if ((p_range->max <= p_range->min) || (p_range->mid <= p_range->min) || (p_range->max <= p_range->mid))
+        return false;
+
+    p_scope = p_range->max - p_range->mid;
+    n_scope = p_range->mid - p_range->min;
+
+    monitor->exp_gyr_y = (ctl_data.pitch_percent - 50.0f) / 100.0f;
+    if (monitor->exp_gyr_y >= 0)
+    {
+        monitor->exp_gyr_y *= p_scope;
+    }
+    else
+        monitor->exp_gyr_y *= n_scope;
+
+    /* convert gyro z */
+    p_range = &monitor->param.gz;
+    if ((p_range->max <= p_range->min) || (p_range->mid <= p_range->min) || (p_range->max <= p_range->mid))
+        return false;
+
+    p_scope = p_range->max - p_range->mid;
+    n_scope = p_range->mid - p_range->min;
+
+    monitor->exp_gyr_z = (ctl_data.yaw_percent - 50.0f) / 100.0f;
+    if (monitor->exp_gyr_z >= 0)
+    {
+        monitor->exp_gyr_z *= p_scope;
+    }
+    else
+        monitor->exp_gyr_z *= n_scope;
+
+    return true;
+}
+
 /* need to be optmize */
-static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_ctl_val)
+static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
 {
     uint8_t axis = Axis_X;
     uint32_t tunning_port = 0;
+    bool arm_state = false;
 
-    if (TaskControl_Monitor.init_state && \
-        !TaskControl_Monitor.control_abort)
+    if (TaskControl_Monitor.init_state && exp_ctl_val)
     {
-        imu_init_state = false;
-
-        // get failsafe
-        SrvDataHub.get_arm_state(&arm_state);
-        SrvDataHub.get_failsafe(&failsafe);
+        arm_state = exp_ctl_val->arm_state;
+        failsafe = exp_ctl_val->fail_safe;
         
-        /* if in tunning or attach configrator then lock moto */
-        if(configrator_attach)
-        {
+        TaskControl_Monitor.control_abort = false;
+        
+        /* if armed or usb attached then lock moto */
+        if ((arm_state == DRONE_ARM) || configrator_attach)
             goto lock_moto;
-        }
 
-        // get imu init state first
-        if(!SrvDataHub.get_imu_init_state(&imu_init_state) || !imu_init_state)
-        {
-            /* imu init error then lock the acturator */
-            failsafe = true;
-            arm_state = TELEMETRY_SET_ARM;
-                
-            goto lock_moto;
-        }
+        TaskControl_Convert_CtlData(&TaskControl_Monitor, *exp_ctl_val);
 
         // check imu filter gyro data update or not
         if(!SrvDataHub.get_scaled_imu(&imu_update_time,
@@ -365,7 +468,7 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
                                       &TaskControl_Monitor.gyr[Axis_Y],
                                       &TaskControl_Monitor.gyr[Axis_Z],
                                       &TaskControl_Monitor.imu_tmpr,
-                                      &imu_err_code))
+                                      &imu_err_code) || !imu_init_state)
             goto lock_moto;
 
         /* if angular speed over ride then lock the moto and set drone as arm */
@@ -392,7 +495,10 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
             {
                 TaskControl_Monitor.imu_update_error_cnt++;
                 if (TaskControl_Monitor.imu_update_error_cnt >= IMU_ERROR_UPDATE_MAX_COUNT)
+                {
                     TaskControl_Monitor.control_abort = true;
+                    goto lock_moto;
+                }
             }
 
             if(imu_err_code != SrvIMU_Sample_NoError)
@@ -468,7 +574,7 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
 
         if(TaskControl_Monitor.flip_over)
         {
-            if (!exp_ctl_val->recover_flip_over)
+            if (!exp_ctl_val->aux.bit.flip_over)
                 goto lock_moto;
 
             /* when drone is up side down and we want to flip over it by telemetry */
@@ -476,36 +582,37 @@ static void TaskControl_FlightControl_Polling(Srv_CtlExpectionData_TypeDef *exp_
         }
         else
         {
-             /* do drone control algorithm down below */
-             TaskControl_Monitor.throttle_percent = exp_ctl_val->throttle_percent;
+            /* do drone control algorithm down below */
+            TaskControl_Monitor.throttle_percent = exp_ctl_val->throttle_percent;
 
             /* Update PID */
-            if(exp_ctl_val->mode == Attitude_Control)
+            if(exp_ctl_val->control_mode == Attitude_Control)
             {
+                /* attitude mode */
                 /* set expection attitude */
-                TaskControl_Monitor.RollCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Roll];
-                TaskControl_Monitor.PitchCtl_PIDObj.exp = exp_ctl_val->exp_attitude[Att_Pitch];
-    
-                if (!TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor, att_update))
-                    goto lock_moto;
+                TaskControl_Monitor.RollCtl_PIDObj.exp = TaskControl_Monitor.exp_roll;
+                TaskControl_Monitor.PitchCtl_PIDObj.exp = TaskControl_Monitor.exp_pitch;
+                TaskControl_AttitudeRing_PID_Update(&TaskControl_Monitor);
                 
                 TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.RollCtl_PIDObj.fout;
                 TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.PitchCtl_PIDObj.fout;
-
-                exp_ctl_val->exp_angularspeed[Axis_X] = TaskControl_Monitor.RollCtl_PIDObj.fout;
-                exp_ctl_val->exp_angularspeed[Axis_Y] = TaskControl_Monitor.PitchCtl_PIDObj.fout;
+                TaskControl_Monitor.exp_gyr_x = TaskControl_Monitor.RollCtl_PIDObj.fout;
+                TaskControl_Monitor.exp_gyr_y = TaskControl_Monitor.PitchCtl_PIDObj.fout;
             }
             else
             {
-                TaskControl_Monitor.GyrXCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_X];
-                TaskControl_Monitor.GyrYCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Y];
+                /* angular speed mode */
+                TaskControl_Monitor.GyrXCtl_PIDObj.exp = TaskControl_Monitor.exp_gyr_x;
+                TaskControl_Monitor.GyrYCtl_PIDObj.exp = TaskControl_Monitor.exp_gyr_y;
             }
 
-            TaskControl_Monitor.GyrZCtl_PIDObj.exp = exp_ctl_val->exp_angularspeed[Axis_Z];
-            if (!TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor))
-                goto lock_moto;
+            TaskControl_Monitor.GyrZCtl_PIDObj.exp = TaskControl_Monitor.exp_gyr_z;
+            TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
-            TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
+            /* pipe convert control data to data hub */
+
+            /* bug */
+            // TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 
             if(imu_err_code == SrvIMU_Sample_NoError)
             {
@@ -587,68 +694,47 @@ static void TaskControl_CLI_Polling(void)
     if(TaskControl_Monitor.CLIMessage_ID)
     {
         event = osMessageGet(TaskControl_Monitor.CLIMessage_ID, CLI_MESSAGE_OPEARATE_TIMEOUT);
-
-        switch((uint8_t)event.status)
+        if (event.status == osEventMessage)
         {
-            case osEventMessage:
-                CLIData = *(TaskControl_CLIData_TypeDef *)(event.value.p);
+            CLIData = *(TaskControl_CLIData_TypeDef *)(event.value.p);
+            switch((uint8_t)CLIData.cli_type)
+            {
+                case TaskControl_Moto_Set_SpinDir:
+                    memset(moto_ctl_buff, 0, sizeof(moto_ctl_buff));
+                    if(SrvActuator.invert_spin(CLIData.index))
+                    {
+                        shellPrint(shell_obj, "moto spin dir set done\r\n");
+                    }
+                    else
+                        shellPrint(shell_obj, "moto spin dir set error\r\n");
+                    break;
 
-                switch((uint8_t)CLIData.cli_type)
-                {
-                    case TaskControl_Moto_Set_SpinDir:
-                        memset(moto_ctl_buff, 0, sizeof(moto_ctl_buff));
-                        if(SrvActuator.invert_spin(CLIData.index))
+                case TaskControl_Moto_Set_Spin:
+                    if(CLIData.index < SrvActuator.get_cnt().moto_cnt)
+                    {
+                        for(uint8_t i = 0; i < SrvActuator.get_cnt().moto_cnt; i++)
+                            moto_ctl_buff[i] = 0;
+
+                        moto_ctl_buff[CLIData.index] = CLIData.value;
+                    }
+                    else
+                    {
+                        for(uint8_t i = 0; i < SrvActuator.get_cnt().moto_cnt; i++)
                         {
-                            shellPrint(shell_obj, "moto spin dir set done\r\n");
+                            moto_ctl_buff[i] = CLIData.value;
                         }
-                        else
-                            shellPrint(shell_obj, "moto spin dir set error\r\n");
-                        break;
+                    }
+                    break;
 
-                    case TaskControl_Moto_Set_Spin:
-                        if(CLIData.index < SrvActuator.get_cnt().moto_cnt)
-                        {
-                            for(uint8_t i = 0; i < SrvActuator.get_cnt().moto_cnt; i++)
-                                moto_ctl_buff[i] = 0;
+                case TaskControl_Moto_CliDisable:
+                    memset(moto_ctl_buff, 0, sizeof(moto_ctl_buff));
+                    TaskControl_Monitor.CLI_enable = false;
+                    break;
 
-                            moto_ctl_buff[CLIData.index] = CLIData.value;
-                        }
-                        else
-                        {
-                            for(uint8_t i = 0; i < SrvActuator.get_cnt().moto_cnt; i++)
-                            {
-                                moto_ctl_buff[i] = CLIData.value;
-                            }
-                        }
-                        break;
+                default: break;
+            }
 
-                    case TaskControl_Moto_CliDisable:
-                        memset(moto_ctl_buff, 0, sizeof(moto_ctl_buff));
-                        TaskControl_Monitor.CLI_enable = false;
-                        break;
-
-                    default:
-                        break;
-                }
-
-                SrvOsCommon.free(event.value.p);
-                break;
-
-            case osEventSignal:
-            case osEventMail:
-            case osEventTimeout:
-            case osErrorParameter:
-            case osErrorResource:
-            case osErrorTimeoutResource:
-            case osErrorISR:
-            case osErrorISRRecursive:
-            case osErrorPriority:
-            case osErrorNoMemory:
-            case osErrorValue:
-            case osErrorOS:
-            case os_status_reserved:
-            default:
-                break;
+            SrvOsCommon.free(event.value.p);
         }
     }
 

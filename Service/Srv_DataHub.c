@@ -19,11 +19,11 @@ DataPipe_CreateDataObj(PosData_TypeDef, Hub_Pos);
 DataPipe_CreateDataObj(AltData_TypeDef, Hub_Alt);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_PriIMU_Range);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_SecIMU_Range);
+DataPipe_CreateDataObj(ExpControlData_TypeDef, Hub_Cnv_CtlData);
 DataPipe_CreateDataObj(bool, Hub_VCP_Attach_State);
 
 /* internal function */
 static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj);
-static void SrvDataHub_PipeInUseControlDataFinish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_IMU_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
@@ -33,6 +33,7 @@ static void SrvDataHub_Pos_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDatHub_Alt_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
 static void SrvDataHub_VCPAttach_dataPipe_Finish_Callback(DataPipeObj_TypeDef *obj);
+static void SrvDataHub_PipeConvertControlDataFinish_Callback(DataPipeObj_TypeDef *obj);
 
 /* external function */
 static void SrvDataHub_Init(void);
@@ -42,9 +43,7 @@ static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *ma
 static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
 static bool SrvDataHub_Get_Arm(bool *arm);
 static bool SrvDataHub_Get_Failsafe(bool *failsafe);
-static bool SrvDataHub_Get_InUse_ControlData(ControlData_TypeDef *data);
 static bool SrvDataHub_Get_Telemetry_ControlData(ControlData_TypeDef *data);
-static bool SrvDataHub_Get_OnPlaneComputer_ControlData(ControlData_TypeDef *data);
 static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir);
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
@@ -58,6 +57,7 @@ static bool SrvDataHub_Get_Upgrade_State(bool *state);
 static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 static bool SrvDataHub_Get_RelativeAlt(uint32_t *time_stamp, float *alt);
+static bool SrvDataHub_Get_Convert_ControlData(uint32_t *time_stamp, bool *arm, bool *failsafe, float *pitch, float *roll, float *gx, float *gy, float *gz);
 
 static bool SrvDataHub_Set_CLI_State(bool state);
 static bool SrvDataHub_Set_Upgrade_State(bool state);
@@ -75,7 +75,6 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_baro_altitude = SrvDataHub_Get_Scaled_Baro,
     .get_arm_state = SrvDataHub_Get_Arm,
     .get_failsafe = SrvDataHub_Get_Failsafe,
-    .get_inuse_control_data = SrvDataHub_Get_InUse_ControlData,
     .get_rc_control_data = SrvDataHub_Get_Telemetry_ControlData,
     .get_moto = SrvDataHub_Get_MotoChannel,
     .get_servo = SrvDataHub_Get_ServoChannel,
@@ -86,6 +85,7 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_cli_state = SrvDataHub_Get_CLI_State,
     .get_upgrade_state = SrvDataHub_Get_Upgrade_State,
     .get_relative_alt = SrvDataHub_Get_RelativeAlt,
+    .get_cnv_control_data = SrvDataHub_Get_Convert_ControlData,
 
     .set_cli_state = SrvDataHub_Set_CLI_State,
     .set_upgrade_state = SrvDataHub_Set_Upgrade_State,
@@ -125,12 +125,6 @@ static void SrvDataHub_Init(void)
     Receiver_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Telemetry_Rc);
     Receiver_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_PipeRcTelemtryDataFinish_Callback);
     DataPipe_Enable(&Receiver_hub_DataPipe);
-
-    memset(DataPipe_DataObjAddr(Hub_InUse_CtlData), 0, DataPipe_DataSize(Hub_InUse_CtlData));
-    InUseCtlData_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_InUse_CtlData);
-    InUseCtlData_hub_DataPipe.data_size = DataPipe_DataSize(Hub_InUse_CtlData);
-    InUseCtlData_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_PipeInUseControlDataFinish_Callback);
-    DataPipe_Enable(&InUseCtlData_hub_DataPipe);
 
     memset(DataPipe_DataObjAddr(Sensor_Enable), 0, DataPipe_DataSize(Sensor_Enable));
     SensorEnableState_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Sensor_Enable);
@@ -180,9 +174,16 @@ static void SrvDataHub_Init(void)
     VCP_Connect_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_VCPAttach_dataPipe_Finish_Callback);
     DataPipe_Enable(&VCP_Connect_hub_DataPipe);
     
+    memset(DataPipe_DataObjAddr(Hub_Cnv_CtlData), 0, DataPipe_DataSize(Hub_Cnv_CtlData));
+    CtlData_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Cnv_CtlData);
+    CtlData_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Cnv_CtlData);
+    CtlData_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_PipeConvertControlDataFinish_Callback);
+    DataPipe_Enable(&CtlData_hub_DataPipe);
+
     memset(&SrvDataHub_Monitor, 0, sizeof(SrvDataHub_Monitor));
     SrvDataHub_Monitor.init_state = true;
-    SrvDataHub_Monitor.data.InUse_Control_Data.arm_state = DRONE_ARM;
+    SrvDataHub_Monitor.data.failsafe = true;
+    SrvDataHub_Monitor.data.arm = DRONE_ARM;
 }
 
 static void SrvDataHub_VCPAttach_dataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
@@ -423,24 +424,6 @@ static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef 
     }
 }
 
-static void SrvDataHub_PipeInUseControlDataFinish_Callback(DataPipeObj_TypeDef *obj)
-{
-    if ((!SrvDataHub_Monitor.init_state) || (obj == NULL))
-        return;
-    
-    if(obj == &InUseCtlData_hub_DataPipe)
-    {
-        SrvDataHub_Monitor.update_reg.bit.inuse_control_data = true;
-
-        if(SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
-            SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = false;
-
-        SrvDataHub_Monitor.data.InUse_Control_Data = DataPipe_DataObj(Hub_InUse_CtlData);
-
-        SrvDataHub_Monitor.update_reg.bit.inuse_control_data = false;
-    }
-}
-
 static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *obj)
 {
     if ((!SrvDataHub_Monitor.init_state) || (obj == NULL))
@@ -456,6 +439,31 @@ static void SrvDataHub_PipeRcTelemtryDataFinish_Callback(DataPipeObj_TypeDef *ob
         SrvDataHub_Monitor.data.RC_Control_Data = DataPipe_DataObj(Hub_Telemetry_Rc);
 
         SrvDataHub_Monitor.update_reg.bit.rc_control_data = false;
+    }
+}
+
+static void SrvDataHub_PipeConvertControlDataFinish_Callback(DataPipeObj_TypeDef *obj)
+{
+    if ((!SrvDataHub_Monitor.init_state) || (obj == NULL))
+        return;
+
+    if (obj == &CtlData_hub_DataPipe)
+    {
+        SrvDataHub_Monitor.update_reg.bit.cnv_control_data = true;
+
+        if (SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data)
+            SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data = false;
+
+        SrvDataHub_Monitor.data.cnvctl_data_time = SrvOsCommon.get_os_ms();
+        SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Hub_Cnv_CtlData).arm;
+        SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Hub_Cnv_CtlData).failsafe;
+        SrvDataHub_Monitor.data.exp_gyr_x = DataPipe_DataObj(Hub_Cnv_CtlData).gyr_x;
+        SrvDataHub_Monitor.data.exp_gyr_y = DataPipe_DataObj(Hub_Cnv_CtlData).gyr_y;
+        SrvDataHub_Monitor.data.exp_gyr_z = DataPipe_DataObj(Hub_Cnv_CtlData).gyr_z;
+        SrvDataHub_Monitor.data.exp_pitch = DataPipe_DataObj(Hub_Cnv_CtlData).pitch;
+        SrvDataHub_Monitor.data.exp_roll = DataPipe_DataObj(Hub_Cnv_CtlData).roll;
+
+        SrvDataHub_Monitor.update_reg.bit.cnv_control_data = false;
     }
 }
 
@@ -703,13 +711,13 @@ static bool SrvDataHub_Get_Arm(bool *arm)
         return false;
 
 reupdate_arm:
-    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = true;
-    *arm = SrvDataHub_Monitor.data.InUse_Control_Data.arm_state;
+    SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data = true;
+    *arm = SrvDataHub_Monitor.data.arm;
 
-    if (!SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data)
         goto reupdate_arm;
 
-    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = false;
+    SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data = false;
 
     return true;
 }
@@ -720,13 +728,43 @@ static bool SrvDataHub_Get_Failsafe(bool *failsafe)
         return false;
 
 reupdate_failsafe:
-    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = true;
-    *failsafe = SrvDataHub_Monitor.data.InUse_Control_Data.fail_safe;
+    SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data = true;
+    *failsafe = SrvDataHub_Monitor.data.failsafe;
 
-    if (!SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
+    if (!SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data)
         goto reupdate_failsafe;
 
-    SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = false;
+    SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data = false;
+
+    return true;
+}
+
+static bool SrvDataHub_Get_Convert_ControlData(uint32_t *time_stamp, bool *arm, bool *failsafe, float *pitch, float *roll, float *gx, float *gy, float *gz)
+{
+    if ((time_stamp == NULL) || \
+        (arm == NULL) || \
+        (failsafe == NULL) || \
+        (pitch == NULL) || \
+        (roll == NULL) || \
+        (gx == NULL) || \
+        (gy == NULL) || \
+        (gz == NULL))
+        return false;
+
+reupdate_convertdata:
+    SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data = true;
+
+    *time_stamp = SrvDataHub_Monitor.data.cnvctl_data_time;
+    *arm = SrvDataHub_Monitor.data.arm;
+    *failsafe = SrvDataHub_Monitor.data.failsafe;
+    *pitch = SrvDataHub_Monitor.data.exp_pitch;
+    *roll = SrvDataHub_Monitor.data.exp_roll;
+    *gx = SrvDataHub_Monitor.data.exp_gyr_x;
+    *gy = SrvDataHub_Monitor.data.exp_gyr_y;
+    *gz = SrvDataHub_Monitor.data.exp_gyr_z;
+
+    if (!SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data)
+        goto reupdate_convertdata;
 
     return true;
 }
@@ -744,24 +782,6 @@ reupdate_telemetry_control_data:
             goto reupdate_telemetry_control_data;
 
         SrvDataHub_Monitor.inuse_reg.bit.rc_control_data = false;
-
-        return true;
-    }
-
-    return false;
-}
-
-static bool SrvDataHub_Get_InUse_ControlData(ControlData_TypeDef *data)
-{
-    if(data)
-    {
-reupdate_inuse_control_data:
-        SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data = true;
-
-        (*data) = SrvDataHub_Monitor.data.InUse_Control_Data;
-
-        if(!SrvDataHub_Monitor.inuse_reg.bit.inuse_control_data)
-            goto reupdate_inuse_control_data;
 
         return true;
     }

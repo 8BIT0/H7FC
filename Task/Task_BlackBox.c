@@ -85,7 +85,6 @@ DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef,  LogImu_Data);
 DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, LogBaro_Data);
 DataPipe_CreateDataObj(IMUAtt_TypeDef,            LogAtt_Data);
 DataPipe_CreateDataObj(AltData_TypeDef,           LogAlt_Data);
-DataPipe_CreateDataObj(ControlData_TypeDef,       LogControl_Data);
 
 /* internal function */
 static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
@@ -184,7 +183,6 @@ void TaskBlackBox_Init(void)
     memset(DataPipe_DataObjAddr(LogBaro_Data),    0, DataPipe_DataSize(LogBaro_Data));
     memset(DataPipe_DataObjAddr(LogAtt_Data),     0, DataPipe_DataSize(LogAtt_Data));
     memset(DataPipe_DataObjAddr(LogAlt_Data),     0, DataPipe_DataSize(LogAlt_Data));
-    memset(DataPipe_DataObjAddr(LogControl_Data), 0, DataPipe_DataSize(LogControl_Data));
 
     if (!Queue.create_with_buf(&BlackBox_Queue, "BlackBox_Queue", BlackBox_Buff, BlackBox_Buff_Size))
         return;
@@ -204,9 +202,9 @@ void TaskBlackBox_Init(void)
     Baro_Log_DataPipe.data_size = DataPipe_DataSize(LogBaro_Data);
     Baro_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
 
-    CtlData_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogControl_Data);
-    CtlData_Log_DataPipe.data_size = DataPipe_DataSize(LogControl_Data);
-    CtlData_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
+    // CtlData_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr();
+    // CtlData_Log_DataPipe.data_size = DataPipe_DataSize(LogControl_Data);
+    // CtlData_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
 
     Attitude_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogAtt_Data);
     Attitude_Log_DataPipe.data_size = DataPipe_DataSize(LogAtt_Data);
@@ -347,28 +345,6 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         }
         else if (obj == &CtlData_Log_DataPipe)
         {
-            if (DataPipe_DataObj(LogControl_Data).control_mode != Attitude_Control)
-            {
-                ang_ctl_data.gyr_scale = imu_data.gyr_scale;
-                for (i = Axis_X; i < Axis_Sum; i++)
-                    ang_ctl_data.gyr[i] = (int16_t)(imu_data.flt_gyr[i] * imu_data.gyr_scale);
-
-                ang_ctl_data.time = DataPipe_DataObj(LogControl_Data).exp_angularspeed_time_stamp;
-                ang_ctl_data.exp_gyr[Axis_X] = DataPipe_DataObj(LogControl_Data).exp_gyr_x;
-                ang_ctl_data.exp_gyr[Axis_Y] = DataPipe_DataObj(LogControl_Data).exp_gyr_y;
-                ang_ctl_data.exp_gyr[Axis_Z] = DataPipe_DataObj(LogControl_Data).exp_gyr_z;
-            }
-            else
-            {
-                att_ctl_data.time = DataPipe_DataObj(LogControl_Data).exp_att_time_stamp;
-                att_ctl_data.exp_pitch = DataPipe_DataObj(LogControl_Data).exp_att_pitch;
-                att_ctl_data.exp_roll = DataPipe_DataObj(LogControl_Data).exp_att_roll;
-                att_ctl_data.exp_gyr_z = DataPipe_DataObj(LogControl_Data).exp_gyr_z;
-                att_ctl_data.gyr_z = imu_data.flt_gyr[Axis_Z] / imu_data.gyr_scale;
-                att_ctl_data.pitch = DataPipe_DataObj(LogAtt_Data).pitch;
-                att_ctl_data.roll = DataPipe_DataObj(LogAtt_Data).roll;
-            }
-            ctl_update = true;
         }
         else if ((obj == &Attitude_Log_DataPipe) || (obj == &Altitude_Log_DataPipe))
         {

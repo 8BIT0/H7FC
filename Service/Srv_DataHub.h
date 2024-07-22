@@ -48,7 +48,7 @@ typedef union
         uint64_t scale_flow : 1;            // bit : 16
         uint64_t range_flow : 1;            // bit : 17
         
-        uint64_t inuse_control_data : 1;    // bit : 18
+        uint64_t cnv_control_data : 1;      // bit : 18
         uint64_t rc_control_data : 1;       // bit : 19
         
         uint64_t actuator : 1;              // bit : 20
@@ -173,6 +173,15 @@ typedef struct
 
     ControlData_TypeDef RC_Control_Data;
 
+    uint32_t cnvctl_data_time;
+    bool arm;
+    bool failsafe;
+    float exp_pitch;
+    float exp_roll;
+    float exp_gyr_x;
+    float exp_gyr_y;
+    float exp_gyr_z;
+
     bool pos_enable;
     bool pos_init_state;
     uint32_t pos_update_time;
@@ -261,8 +270,8 @@ typedef struct
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
     bool (*get_scaled_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);
     bool (*get_attitude)(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over);
-    bool (*get_inuse_control_data)(ControlData_TypeDef *data);
     bool (*get_rc_control_data)(ControlData_TypeDef *data);
+    bool (*get_cnv_control_data)(uint32_t *time_stamp, bool *arm, bool *failsafe, float *pitch, float *roll, float *gx, float *gy, float *gz);
     bool (*get_baro_altitude)(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *baro_temp, uint8_t *error);
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);

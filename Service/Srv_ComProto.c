@@ -316,18 +316,21 @@ static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck)
 /* just fot temporary will create custom message in the next */
 static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
 {
-    ControlData_TypeDef exp_ctl_val;
-    
-    memset(&exp_ctl_val, 0, sizeof(ControlData_TypeDef));
+    uint32_t time = 0;
+    float pitch = 0.0f;
+    float roll = 0.0f;
+    float gx = 0.0f;
+    float gy = 0.0f;
+    float gz = 0.0f;
+    bool arm = false;
+    bool failsafe = false;
 
-    SrvDataHub.get_inuse_control_data(&exp_ctl_val);
+    SrvDataHub.get_cnv_control_data(&time, &arm, &failsafe, &pitch, &roll, &gx, &gy, &gz);
 
     return mavlink_msg_attitude_pack_chan(pck->pck_info.system_id,
                                           pck->pck_info.component_id,
                                           pck->pck_info.chan, pck->msg_obj,
-                                          exp_ctl_val.update_time_stamp,
-                                          exp_ctl_val.exp_att_roll, exp_ctl_val.exp_att_pitch, 0.0f, 
-                                          exp_ctl_val.exp_gyr_x, exp_ctl_val.exp_gyr_y, exp_ctl_val.exp_gyr_z);
+                                          time, roll, pitch, 0.0f, gx, gy, gz);
 }
 
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
@@ -360,7 +363,7 @@ static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck)
     ControlData_TypeDef inuse_ctldata;
 
     memset(&inuse_ctldata, 0, sizeof(ControlData_TypeDef));
-    SrvDataHub.get_inuse_control_data(&inuse_ctldata);
+    SrvDataHub.get_rc_control_data(&inuse_ctldata);
 
     return mavlink_msg_rc_channels_pack_chan(pck->pck_info.system_id,
                                              pck->pck_info.component_id,
