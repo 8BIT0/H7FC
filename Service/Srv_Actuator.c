@@ -550,8 +550,6 @@ static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min,
 
 static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
 {
-    volatile uint16_t *val = 0;
-
     if (index < SrvActuator_Obj.drive_module.num.moto_cnt)
     {
         if (value < SrvActuator_Obj.drive_module.obj_list[index].min_val)
@@ -570,8 +568,7 @@ static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
             case  Actuator_DevType_DShot600:
             case  Actuator_DevType_DShot300:
             case  Actuator_DevType_DShot150:
-                val = &SrvActuator_Obj.drive_module.obj_list[index].ctl_val;
-                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[index].drv_obj, *val);
+                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[index].drv_obj, SrvActuator_Obj.drive_module.obj_list[index].ctl_val);
                 return true;
 
             default:
