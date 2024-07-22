@@ -12,7 +12,7 @@
 #include "Srv_OsCommon.h"
 #include "debug_util.h"
 
-#define STORAGE_DEBUG 0
+#define STORAGE_DEBUG 1
 
 #define InternalFlash_BootDataSec_Size (4 Kb)
 #define InternalFlash_SysDataSec_Size (16 Kb)
@@ -2940,7 +2940,7 @@ static void Storage_Show_Tab(Storage_MediumType_List medium, Storage_ParaClassTy
                     crc_len -= sizeof(item_list[j].crc16);
                     crc = Common_CRC16(crc_buf, crc_len);
 
-                    shellPrint(shell_obj, "\t\t[item class    : %d]\r\n", item_list[j].class);
+                    shellPrint(shell_obj, "\t\t[item class    : %d]\r\n", item_list[j]._class);
                     shellPrint(shell_obj, "\t\t[item name     : %s]\r\n", item_list[j].name);
                     shellPrint(shell_obj, "\t\t[item address  : %d]\r\n", item_list[j].data_addr);
                     shellPrint(shell_obj, "\t\t[item data len : %d]\r\n", item_list[j].len);
