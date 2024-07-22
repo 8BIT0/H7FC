@@ -111,7 +111,7 @@ void TaskTelemetry_Init(uint32_t period)
         }
         else if (Receiver_Obj.Frame_type == Receiver_Type_Sbus)
         {
-            /* still in developing */
+            /* reserved */
         }
 
         Telemetry_Monitor.lst_arm_state = TELEMETRY_SET_ARM;
