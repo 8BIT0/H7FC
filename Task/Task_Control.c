@@ -263,30 +263,30 @@ void TaskControl_Core(void const *arg)
         {
             /* lock all actuator when upgrading */
             SrvActuator.lock();
-            continue;
-        }
-            
-        if (!TaskControl_Monitor.CLI_enable)
-        {
-            /* lock moto when usb attached */
-            if (!SrvDataHub.get_vcp_attach_state(&USB_Attach) || USB_Attach)
-            {
-                SrvActuator.lock();
-                continue;
-            }
-
-            /* debug set control to angular speed control */
-            TaskControl_FlightControl_Polling(&CtlData);
         }
         else
         {
-            if(TaskControl_Monitor.CLI_enable)
+            if (!TaskControl_Monitor.CLI_enable)
             {
-                TaskControl_CLI_Polling();
+                /* lock moto when usb attached */
+                if (!SrvDataHub.get_vcp_attach_state(&USB_Attach) || USB_Attach)
+                {
+                    SrvActuator.lock();
+                }
+                else
+                    /* debug set control to angular speed control */
+                    TaskControl_FlightControl_Polling(&CtlData);
             }
             else
-                /* lock all moto */
-                SrvActuator.lock();
+            {
+                if(TaskControl_Monitor.CLI_enable)
+                {
+                    TaskControl_CLI_Polling();
+                }
+                else
+                    /* lock all moto */
+                    SrvActuator.lock();
+            }
         }
 
         SrvOsCommon.precise_delay(&sys_time, TaskControl_Period);
