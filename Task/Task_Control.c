@@ -615,6 +615,21 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             TaskControl_Monitor.GyrZCtl_PIDObj.exp = TaskControl_Monitor.exp_gyr_z;
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
+            if (arm_state == DRONE_DISARM)
+            {
+                uint16_t moto_min = 0;
+                uint16_t moto_idle = 0;
+                uint16_t moto_max = 0;
+                uint16_t moto_val = 0;
+
+                for (uint8_t i = 0; i < 4; i++)
+                {
+                    SrvActuator.get_moto_control_range(i, &moto_min, &moto_idle, &moto_max);
+                    moto_val = (uint16_t)((float)(exp_ctl_val->throttle_percent / 100.0f) * (moto_max - moto_min)) + moto_idle;
+                    SrvActuator.moto_direct_drive(i, moto_val);
+                }
+            }
+
             /* bug */
             // TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 

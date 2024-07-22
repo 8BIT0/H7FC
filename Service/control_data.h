@@ -68,7 +68,6 @@ typedef struct
     uint32_t update_time_stamp;
     uint8_t channel_sum;
     uint16_t all_ch[32];
-    uint8_t gimbal_map_list[Gimbal_Sum];
     int16_t gimbal[Gimbal_Sum];
     uint8_t throttle_percent;
     uint8_t pitch_percent;
