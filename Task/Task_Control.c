@@ -274,7 +274,7 @@ void TaskControl_Core(void const *arg)
                 SrvActuator.lock();
                 continue;
             }
-            
+
             /* debug set control to angular speed control */
             TaskControl_FlightControl_Polling(&CtlData);
         }
