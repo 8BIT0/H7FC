@@ -383,7 +383,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
                 att_ctl_data.exp_gyr_z = DataPipe_DataObj(LogCtl_Data).gyr_z;
                 att_ctl_data.pitch = att_alt_data.pitch;
                 att_ctl_data.roll = att_alt_data.roll;
-                att_ctl_data.gyr_z = imu_data.flt_gyr[Axis_Z] / imu_data.gyr_scale;
+                att_ctl_data.gyr_z = imu_data.flt_gyr[Axis_Z];
             }
             else
             {
@@ -391,9 +391,9 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
                 ang_ctl_data.exp_gyr[Axis_X] = DataPipe_DataObj(LogCtl_Data).gyr_x;
                 ang_ctl_data.exp_gyr[Axis_Y] = DataPipe_DataObj(LogCtl_Data).gyr_y;
                 ang_ctl_data.exp_gyr[Axis_Z] = DataPipe_DataObj(LogCtl_Data).gyr_z;
-                ang_ctl_data.gyr[Axis_X] = imu_data.flt_gyr[Axis_X] / imu_data.gyr_scale;
-                ang_ctl_data.gyr[Axis_Y] = imu_data.flt_gyr[Axis_Y] / imu_data.gyr_scale;
-                ang_ctl_data.gyr[Axis_Z] = imu_data.flt_gyr[Axis_Z] / imu_data.gyr_scale;
+                ang_ctl_data.gyr[Axis_X] = imu_data.flt_gyr[Axis_X];
+                ang_ctl_data.gyr[Axis_Y] = imu_data.flt_gyr[Axis_Y];
+                ang_ctl_data.gyr[Axis_Z] = imu_data.flt_gyr[Axis_Z];
             }
 
             ctl_update = true;
