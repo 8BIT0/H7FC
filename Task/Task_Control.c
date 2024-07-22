@@ -446,16 +446,24 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
 
     if (TaskControl_Monitor.init_state && exp_ctl_val)
     {
+        TaskControl_Convert_CtlData(&TaskControl_Monitor, *exp_ctl_val);
         arm_state = exp_ctl_val->arm_state;
         failsafe = exp_ctl_val->fail_safe;
-        
         TaskControl_Monitor.control_abort = false;
-        
+
+        /* pipe converted control data to data hub */
+        DataPipe_DataObj(ExpCtl).arm = arm_state;
+        DataPipe_DataObj(ExpCtl).failsafe = failsafe;
+        DataPipe_DataObj(ExpCtl).pitch = TaskControl_Monitor.exp_pitch;
+        DataPipe_DataObj(ExpCtl).roll = TaskControl_Monitor.exp_roll;
+        DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_x;
+        DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_y;
+        DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_z;
+        DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_hub_DataPipe);
+
         /* if armed or usb attached then lock moto */
         if ((arm_state == DRONE_ARM) || configrator_attach)
             goto lock_moto;
-
-        TaskControl_Convert_CtlData(&TaskControl_Monitor, *exp_ctl_val);
 
         // check imu filter gyro data update or not
         if(!SrvDataHub.get_scaled_imu(&imu_update_time,
