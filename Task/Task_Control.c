@@ -111,69 +111,64 @@ static TaskControl_FlightParam_TypeDef TaskControl_Get_DefaultParam(void)
     Param.pitch.mid = CONTROL_ATT_RANGE_MID;
     Param.pitch.min = CONTROL_ATT_RANGE_MIN;
 
-    Param.roll.max = CONTROL_ATT_RANGE_MAX;
-    Param.roll.mid = CONTROL_ATT_RANGE_MID;
-    Param.roll.min = CONTROL_ATT_RANGE_MIN;
+    Param.roll.max  = CONTROL_ATT_RANGE_MAX;
+    Param.roll.mid  = CONTROL_ATT_RANGE_MID;
+    Param.roll.min  = CONTROL_ATT_RANGE_MIN;
 
-    Param.gx.max = CONTROL_GYR_RANGE_MAX;
-    Param.gx.mid = CONTROL_GYR_RANGE_MID;
-    Param.gx.min = CONTROL_GYR_RANGE_MIN;
+    Param.gx.max    = CONTROL_GYR_RANGE_MAX;
+    Param.gx.mid    = CONTROL_GYR_RANGE_MID;
+    Param.gx.min    = CONTROL_GYR_RANGE_MIN;
 
-    Param.gy.max = CONTROL_GYR_RANGE_MAX;
-    Param.gy.mid = CONTROL_GYR_RANGE_MID;
-    Param.gy.min = CONTROL_GYR_RANGE_MIN;
+    Param.gy.max    = CONTROL_GYR_RANGE_MAX;
+    Param.gy.mid    = CONTROL_GYR_RANGE_MID;
+    Param.gy.min    = CONTROL_GYR_RANGE_MIN;
 
-    Param.gz.max = CONTROL_GYR_RANGE_MAX;
-    Param.gz.mid = CONTROL_GYR_RANGE_MID;
-    Param.gz.min = CONTROL_GYR_RANGE_MIN;
+    Param.gz.max    = CONTROL_GYR_RANGE_MAX;
+    Param.gz.mid    = CONTROL_GYR_RANGE_MID;
+    Param.gz.min    = CONTROL_GYR_RANGE_MIN;
 
     /* use default pid data */
     /* attitude PID control parameter section */
     Param.Outer.Pitch_Para.gP_Diff_Max = ATTITUDE_PID_DIFF_MAX;
-    Param.Outer.Roll_Para.gP_Diff_Max = ATTITUDE_PID_DIFF_MAX;
-
     Param.Outer.Pitch_Para.gP_Diff_Min = ATTITUDE_PID_DIFF_MIN;
-    Param.Outer.Roll_Para.gP_Diff_Min = ATTITUDE_PID_DIFF_MIN;
+    Param.Outer.Pitch_Para.gP          = 1.2;
+    Param.Outer.Pitch_Para.gI          = 0.08;
+    Param.Outer.Pitch_Para.gI_Max      = 50;
+    Param.Outer.Pitch_Para.gI_Min      = -50;
+    Param.Outer.Pitch_Para.gD          = 1;
 
-    Param.Outer.Pitch_Para.gP = 1.2;
-    Param.Outer.Pitch_Para.gI = 0.08;
-    Param.Outer.Pitch_Para.gI_Max = 50;
-    Param.Outer.Pitch_Para.gI_Min = -50;
-    Param.Outer.Pitch_Para.gD = 1;
-
-    Param.Outer.Roll_Para.gP = 1.2;
-    Param.Outer.Roll_Para.gI = 0.08;
-    Param.Outer.Roll_Para.gI_Max = 50;
-    Param.Outer.Roll_Para.gI_Min = -50;
-    Param.Outer.Roll_Para.gD = 1;
+    Param.Outer.Roll_Para.gP_Diff_Max  = ATTITUDE_PID_DIFF_MAX;
+    Param.Outer.Roll_Para.gP_Diff_Min  = ATTITUDE_PID_DIFF_MIN;
+    Param.Outer.Roll_Para.gP           = 1.2;
+    Param.Outer.Roll_Para.gI           = 0.08;
+    Param.Outer.Roll_Para.gI_Max       = 50;
+    Param.Outer.Roll_Para.gI_Min       = -50;
+    Param.Outer.Roll_Para.gD           = 1;
 
     /* angular PID control parameter section */
     Param.Inner.GyroX_Para.gP_Diff_Max = GYRO_X_RATE_PID_DIFF_MAX;
     Param.Inner.GyroX_Para.gP_Diff_Min = GYRO_X_RATE_PID_DIFF_MIN;
-
-    Param.Inner.GyroX_Para.gP = 1.2;
-    Param.Inner.GyroX_Para.gI = 0.002;
-    Param.Inner.GyroX_Para.gI_Max = 30;
-    Param.Inner.GyroX_Para.gI_Min = -30;
-    Param.Inner.GyroX_Para.gD = 0.1;
+    Param.Inner.GyroX_Para.gP          = 1.2;
+    Param.Inner.GyroX_Para.gI          = 0.002;
+    Param.Inner.GyroX_Para.gI_Max      = 30;
+    Param.Inner.GyroX_Para.gI_Min      = -30;
+    Param.Inner.GyroX_Para.gD          = 0.1;
 
     Param.Inner.GyroY_Para.gP_Diff_Max = GYRO_Y_RATE_PID_DIFF_MAX;
     Param.Inner.GyroY_Para.gP_Diff_Min = GYRO_Y_RATE_PID_DIFF_MIN;
-    
-    Param.Inner.GyroY_Para.gP = 1.2;
-    Param.Inner.GyroY_Para.gI = 0.002;
-    Param.Inner.GyroY_Para.gI_Max = 30;
-    Param.Inner.GyroY_Para.gI_Min = -30;
-    Param.Inner.GyroY_Para.gD = 0.1;
+    Param.Inner.GyroY_Para.gP          = 1.2;
+    Param.Inner.GyroY_Para.gI          = 0.002;
+    Param.Inner.GyroY_Para.gI_Max      = 30;
+    Param.Inner.GyroY_Para.gI_Min      = -30;
+    Param.Inner.GyroY_Para.gD          = 0.1;
 
     Param.Inner.GyroZ_Para.gP_Diff_Max = GYRO_X_RATE_PID_DIFF_MAX;
     Param.Inner.GyroZ_Para.gP_Diff_Min = GYRO_X_RATE_PID_DIFF_MIN;
-    
-    Param.Inner.GyroZ_Para.gP = 1;
-    Param.Inner.GyroZ_Para.gI = 0.02;
-    Param.Inner.GyroZ_Para.gI_Max = 30;
-    Param.Inner.GyroZ_Para.gI_Min = -30;
-    Param.Inner.GyroZ_Para.gD = 0.1;
+    Param.Inner.GyroZ_Para.gP          = 1;
+    Param.Inner.GyroZ_Para.gI          = 0.02;
+    Param.Inner.GyroZ_Para.gI_Max      = 30;
+    Param.Inner.GyroZ_Para.gI_Min      = -30;
+    Param.Inner.GyroZ_Para.gD          = 0.1;
 
     return Param;
 }
