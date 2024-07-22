@@ -95,6 +95,7 @@ typedef struct
 
     bool arm;
     bool failsafe;
+    Control_Mode_List control_mode;
 
     float pitch;
     float roll;

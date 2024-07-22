@@ -69,9 +69,8 @@ typedef struct
 typedef struct
 {
     uint32_t time;
-    float gyr_scale;
-    int16_t gyr[Axis_Sum];
-    int16_t exp_gyr[Axis_Sum];
+    float gyr[Axis_Sum];
+    float exp_gyr[Axis_Sum];
 } BlackBox_AngCtlData_TypeDef;
 
 typedef struct

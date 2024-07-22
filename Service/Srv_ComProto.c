@@ -324,8 +324,9 @@ static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck
     float gz = 0.0f;
     bool arm = false;
     bool failsafe = false;
+    uint8_t mode = 0;
 
-    SrvDataHub.get_cnv_control_data(&time, &arm, &failsafe, &pitch, &roll, &gx, &gy, &gz);
+    SrvDataHub.get_cnv_control_data(&time, &arm, &failsafe, &mode, &pitch, &roll, &gx, &gy, &gz);
 
     return mavlink_msg_attitude_pack_chan(pck->pck_info.system_id,
                                           pck->pck_info.component_id,

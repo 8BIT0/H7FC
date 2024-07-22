@@ -57,7 +57,7 @@ static bool SrvDataHub_Get_Upgrade_State(bool *state);
 static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 static bool SrvDataHub_Get_RelativeAlt(uint32_t *time_stamp, float *alt);
-static bool SrvDataHub_Get_Convert_ControlData(uint32_t *time_stamp, bool *arm, bool *failsafe, float *pitch, float *roll, float *gx, float *gy, float *gz);
+static bool SrvDataHub_Get_Convert_ControlData(uint32_t *time_stamp, bool *arm, bool *failsafe, uint8_t *mode, float *pitch, float *roll, float *gx, float *gy, float *gz);
 
 static bool SrvDataHub_Set_CLI_State(bool state);
 static bool SrvDataHub_Set_Upgrade_State(bool state);
@@ -457,6 +457,7 @@ static void SrvDataHub_PipeConvertControlDataFinish_Callback(DataPipeObj_TypeDef
         SrvDataHub_Monitor.data.cnvctl_data_time = SrvOsCommon.get_os_ms();
         SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Hub_Cnv_CtlData).arm;
         SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Hub_Cnv_CtlData).failsafe;
+        SrvDataHub_Monitor.data.ctl_mode = DataPipe_DataObj(Hub_Cnv_CtlData).control_mode;
         SrvDataHub_Monitor.data.exp_gyr_x = DataPipe_DataObj(Hub_Cnv_CtlData).gyr_x;
         SrvDataHub_Monitor.data.exp_gyr_y = DataPipe_DataObj(Hub_Cnv_CtlData).gyr_y;
         SrvDataHub_Monitor.data.exp_gyr_z = DataPipe_DataObj(Hub_Cnv_CtlData).gyr_z;
@@ -739,11 +740,12 @@ reupdate_failsafe:
     return true;
 }
 
-static bool SrvDataHub_Get_Convert_ControlData(uint32_t *time_stamp, bool *arm, bool *failsafe, float *pitch, float *roll, float *gx, float *gy, float *gz)
+static bool SrvDataHub_Get_Convert_ControlData(uint32_t *time_stamp, bool *arm, bool *failsafe, uint8_t *mode, float *pitch, float *roll, float *gx, float *gy, float *gz)
 {
     if ((time_stamp == NULL) || \
         (arm == NULL) || \
         (failsafe == NULL) || \
+        (mode == NULL) || \
         (pitch == NULL) || \
         (roll == NULL) || \
         (gx == NULL) || \
@@ -757,6 +759,7 @@ reupdate_convertdata:
     *time_stamp = SrvDataHub_Monitor.data.cnvctl_data_time;
     *arm = SrvDataHub_Monitor.data.arm;
     *failsafe = SrvDataHub_Monitor.data.failsafe;
+    *mode = SrvDataHub_Monitor.data.ctl_mode;
     *pitch = SrvDataHub_Monitor.data.exp_pitch;
     *roll = SrvDataHub_Monitor.data.exp_roll;
     *gx = SrvDataHub_Monitor.data.exp_gyr_x;

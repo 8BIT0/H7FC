@@ -454,12 +454,14 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
         /* pipe converted control data to data hub */
         DataPipe_DataObj(ExpCtl).arm = arm_state;
         DataPipe_DataObj(ExpCtl).failsafe = failsafe;
+        DataPipe_DataObj(ExpCtl).control_mode = exp_ctl_val->control_mode;
         DataPipe_DataObj(ExpCtl).pitch = TaskControl_Monitor.exp_pitch;
         DataPipe_DataObj(ExpCtl).roll = TaskControl_Monitor.exp_roll;
         DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_x;
         DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_y;
         DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_z;
         DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_hub_DataPipe);
+        DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_Log_DataPipe);
 
         /* if armed or usb attached then lock moto */
         if ((arm_state == DRONE_ARM) || configrator_attach)

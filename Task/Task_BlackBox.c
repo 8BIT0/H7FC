@@ -85,6 +85,7 @@ DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef,  LogImu_Data);
 DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, LogBaro_Data);
 DataPipe_CreateDataObj(IMUAtt_TypeDef,            LogAtt_Data);
 DataPipe_CreateDataObj(AltData_TypeDef,           LogAlt_Data);
+DataPipe_CreateDataObj(ExpControlData_TypeDef,    LogCtl_Data);
 
 /* internal function */
 static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
@@ -183,6 +184,7 @@ void TaskBlackBox_Init(void)
     memset(DataPipe_DataObjAddr(LogBaro_Data),    0, DataPipe_DataSize(LogBaro_Data));
     memset(DataPipe_DataObjAddr(LogAtt_Data),     0, DataPipe_DataSize(LogAtt_Data));
     memset(DataPipe_DataObjAddr(LogAlt_Data),     0, DataPipe_DataSize(LogAlt_Data));
+    memset(DataPipe_DataObjAddr(LogCtl_Data),     0, DataPipe_DataSize(LogCtl_Data));
 
     if (!Queue.create_with_buf(&BlackBox_Queue, "BlackBox_Queue", BlackBox_Buff, BlackBox_Buff_Size))
         return;
@@ -202,9 +204,9 @@ void TaskBlackBox_Init(void)
     Baro_Log_DataPipe.data_size = DataPipe_DataSize(LogBaro_Data);
     Baro_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
 
-    // CtlData_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr();
-    // CtlData_Log_DataPipe.data_size = DataPipe_DataSize(LogControl_Data);
-    // CtlData_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
+    CtlData_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogCtl_Data);
+    CtlData_Log_DataPipe.data_size = DataPipe_DataSize(LogCtl_Data);
+    CtlData_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
 
     Attitude_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogAtt_Data);
     Attitude_Log_DataPipe.data_size = DataPipe_DataSize(LogAtt_Data);
@@ -343,9 +345,6 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             baro_data.cyc = DataPipe_DataObj(LogBaro_Data).data.cyc;
             baro_data.press = DataPipe_DataObj(LogBaro_Data).data.pressure;
         }
-        else if (obj == &CtlData_Log_DataPipe)
-        {
-        }
         else if ((obj == &Attitude_Log_DataPipe) || (obj == &Altitude_Log_DataPipe))
         {
             /* set imu data */
@@ -373,6 +372,31 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
                 att_alt_data.alt = DataPipe_DataObj(LogAlt_Data).alt;
                 alt_update = true;
             }
+        }
+        else if (obj == &CtlData_Log_DataPipe)
+        {
+            if (DataPipe_DataObj(LogCtl_Data).control_mode == Attitude_Control)
+            {
+                att_ctl_data.time = DataPipe_DataObj(LogCtl_Data).time_stamp;
+                att_ctl_data.exp_pitch = DataPipe_DataObj(LogCtl_Data).pitch;
+                att_ctl_data.exp_roll = DataPipe_DataObj(LogCtl_Data).roll;
+                att_ctl_data.exp_gyr_z = DataPipe_DataObj(LogCtl_Data).gyr_z;
+                att_ctl_data.pitch = att_alt_data.pitch;
+                att_ctl_data.roll = att_alt_data.roll;
+                att_ctl_data.gyr_z = imu_data.flt_gyr[Axis_Z] / imu_data.gyr_scale;
+            }
+            else
+            {
+                ang_ctl_data.time = DataPipe_DataObj(LogCtl_Data).time_stamp;
+                ang_ctl_data.exp_gyr[Axis_X] = DataPipe_DataObj(LogCtl_Data).gyr_x;
+                ang_ctl_data.exp_gyr[Axis_Y] = DataPipe_DataObj(LogCtl_Data).gyr_y;
+                ang_ctl_data.exp_gyr[Axis_Z] = DataPipe_DataObj(LogCtl_Data).gyr_z;
+                ang_ctl_data.gyr[Axis_X] = imu_data.flt_gyr[Axis_X] / imu_data.gyr_scale;
+                ang_ctl_data.gyr[Axis_Y] = imu_data.flt_gyr[Axis_Y] / imu_data.gyr_scale;
+                ang_ctl_data.gyr[Axis_Z] = imu_data.flt_gyr[Axis_Z] / imu_data.gyr_scale;
+            }
+
+            ctl_update = true;
         }
 
         /* blackbox log control */
@@ -755,9 +779,9 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_CtlAng(Shell *p
         shellPrint(p_shell, "%f ", p_ang_ctl->exp_gyr[Axis_X]);
         shellPrint(p_shell, "%f ", p_ang_ctl->exp_gyr[Axis_Y]);
         shellPrint(p_shell, "%f ", p_ang_ctl->exp_gyr[Axis_Z]);
-        shellPrint(p_shell, "%f ", p_ang_ctl->gyr[Axis_X] / p_ang_ctl->gyr_scale);
-        shellPrint(p_shell, "%f ", p_ang_ctl->gyr[Axis_Y] / p_ang_ctl->gyr_scale);
-        shellPrint(p_shell, "%f\r\n", p_ang_ctl->gyr[Axis_Z] / p_ang_ctl->gyr_scale);
+        shellPrint(p_shell, "%f ", p_ang_ctl->gyr[Axis_X]);
+        shellPrint(p_shell, "%f ", p_ang_ctl->gyr[Axis_Y]);
+        shellPrint(p_shell, "%f\r\n", p_ang_ctl->gyr[Axis_Z]);
     }
 
     *p_data += sizeof(BlackBox_AngCtlData_TypeDef);
