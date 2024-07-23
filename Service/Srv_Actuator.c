@@ -245,6 +245,7 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
     /* create servo object */
     if (SrvActuator_Obj.drive_module.num.servo_cnt)
     {
+        /* reserved */
     }
 
     /* check value remap relationship */
