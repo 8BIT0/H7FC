@@ -52,6 +52,8 @@ typedef enum
     DevDshot_Enable_3D_Mode,
     DevDshot_Setting_Req,
     DevDshot_Save_Setting,
+    DevDshot_SpinDir_Normal = 20,
+    DevDshot_SpinDir_Reversed = 21,
 } DevDshot_Command_List;
 
 typedef enum
