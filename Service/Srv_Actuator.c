@@ -425,11 +425,7 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
 }
 
 static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max)
-{
-    (*min) = 0;
-    (*idle) = 0;
-    (*max) = 0;
- 
+{ 
     if(SrvActuator_Obj.init && \
        SrvActuator_Obj.drive_module.num.moto_cnt && \
        min && max && idle && \
@@ -447,15 +443,14 @@ static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, i
 
 static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max)
 {
-    (*min) = 0;
-    (*idle) = 0;
-    (*max) = 0;
-
     if(SrvActuator_Obj.init && \
        SrvActuator_Obj.drive_module.num.servo_cnt && \
        min && max && idle && \
        servo_index < SrvActuator_Obj.drive_module.num.servo_cnt)
     {
+        (*min) = 0;
+        (*idle) = 0;
+        (*max) = 0;
         /* still in developping */
         return true;
     }
