@@ -1,5 +1,4 @@
 /* Author: 8_B!T0
- *         WX_S
  */
 #include "pid.h"
 
@@ -17,6 +16,8 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
     {
         p_PIDObj->in = mea_in;
         p_PIDObj->exp = exp_in;
+
+        /* foward feed is essential? */
 
         /* if P stage error then PID can`t be use in other progress */
         if(PID_P_Progress(p_PIDObj, diff))
@@ -148,6 +149,9 @@ static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 
 static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
+    /* one stage filter is needed */
+    /* because high frequence noise on input error will influence D stage */
+
     if(p_PIDObj)
     {
         p_PIDObj->D_out = p_PIDObj->gD * (diff - p_PIDObj->lst_diff);
