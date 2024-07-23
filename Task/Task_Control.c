@@ -615,6 +615,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             TaskControl_Monitor.GyrZCtl_PIDObj.exp = TaskControl_Monitor.exp_gyr_z;
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
+            /* test code */
             if (arm_state == DRONE_DISARM)
             {
                 uint16_t moto_min = 0;
@@ -629,6 +630,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
                     SrvActuator.moto_direct_drive(i, moto_val);
                 }
             }
+            /* test code */
 
             /* bug */
             // TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
