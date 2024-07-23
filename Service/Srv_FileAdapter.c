@@ -166,7 +166,7 @@ static Adapter_Polling_State SrvFileAdapter_Store_Firmware(SrvFileAdapterObj_Typ
 static Adapter_Polling_State SrvFileAdapter_Polling(uint32_t sys_time, SrvFileAdapterObj_TypeDef *p_Adapter)
 {
     bool clear_stream = false;
-    Adapter_Polling_State state;
+    Adapter_Polling_State state = Adapter_Idle;
 
     if (p_Adapter && p_Adapter->FrameObj && p_Adapter->FrameApi)
     {

@@ -646,7 +646,6 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
     mavlink_message_t mav_msg;
     mavlink_status_t mav_sta;
     volatile uint8_t mav_decode = 0;
-    bool decode_state = false;
     
     memset(&stream_in, 0, sizeof(SrvComProto_Msg_StreamIn_TypeDef));
 
@@ -677,54 +676,18 @@ static SrvComProto_Msg_StreamIn_TypeDef SrvComProto_MavMsg_Input_DecodeAll(SrvCo
             {
                 switch ((uint8_t)mav_msg.compid)
                 {
-                    case MAV_CompoID_Ctl_Gyro:
-                        decode_state = SrvComProto_MavMsg_Decode_ExpGyro(obj, mav_msg);
-                        break;
-
-                    case MAV_CompoID_Ctl_Attitude:
-                        decode_state = SrvComProto_MavMsg_Decode_ExpAttiude(obj, mav_msg);
-                        break;
-                    
-                    case MAV_CompoID_Ctl_Altitude:
-                        decode_state = SrvComProto_MavMsg_Decode_ExpAlt(obj, mav_msg);
-                        break;
-
-                    case MAV_CompoID_Ctl_RC_Channel:
-                        decode_state = SrvComProto_MavMsg_Decode_ExpRC(obj, mav_msg);
-                        break;
-                    
-                    case MAV_CompoID_Ctl_MotoCtl:
-                        decode_state = SrvComProto_MavMsg_Decode_ExpMoto(obj, mav_msg);
-                        break;
-                    
-                    case MAV_CompoID_Ctl_FileAdapter:
-                        decode_state = SrvComProto_MavMsg_Decode_FileAdapter(obj, mav_msg);
-                        break;
-
-                    case MAV_CompoID_Ctl_ParaOperation:
-                        decode_state = SrvComProto_MavMsg_Decode_ParamOperation(obj, mav_msg);
-                        break;
-                    
-                    case MAV_CompoID_Ctl_PIDPara_GyrX:
-                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_GyroX(obj, mav_msg);
-                        break;
-                    
-                    case MAV_CompoID_Ctl_PIDPara_GyrY:
-                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_GyroY(obj, mav_msg);
-                        break;
-                    
-                    case MAV_CompoID_Ctl_PIDPara_GyrZ:
-                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_GyroZ(obj, mav_msg);
-                        break;
-                    
-                    case MAV_CompoID_Ctl_PIDPara_Roll:
-                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_Roll(obj, mav_msg);
-                        break;
-                    
-                    case MAV_CompoID_Ctl_PIDPata_Pitch:
-                        decode_state = SrvComProto_MavMsg_Decode_PIDPara_Pitch(obj, mav_msg);
-                        break;
-
+                    case MAV_CompoID_Ctl_Gyro:          SrvComProto_MavMsg_Decode_ExpGyro(obj, mav_msg);        break;
+                    case MAV_CompoID_Ctl_Attitude:      SrvComProto_MavMsg_Decode_ExpAttiude(obj, mav_msg);     break;
+                    case MAV_CompoID_Ctl_Altitude:      SrvComProto_MavMsg_Decode_ExpAlt(obj, mav_msg);         break;
+                    case MAV_CompoID_Ctl_RC_Channel:    SrvComProto_MavMsg_Decode_ExpRC(obj, mav_msg);          break;
+                    case MAV_CompoID_Ctl_MotoCtl:       SrvComProto_MavMsg_Decode_ExpMoto(obj, mav_msg);        break;
+                    case MAV_CompoID_Ctl_FileAdapter:   SrvComProto_MavMsg_Decode_FileAdapter(obj, mav_msg);    break;
+                    case MAV_CompoID_Ctl_ParaOperation: SrvComProto_MavMsg_Decode_ParamOperation(obj, mav_msg); break;
+                    case MAV_CompoID_Ctl_PIDPara_GyrX:  SrvComProto_MavMsg_Decode_PIDPara_GyroX(obj, mav_msg);  break;
+                    case MAV_CompoID_Ctl_PIDPara_GyrY:  SrvComProto_MavMsg_Decode_PIDPara_GyroY(obj, mav_msg);  break;
+                    case MAV_CompoID_Ctl_PIDPara_GyrZ:  SrvComProto_MavMsg_Decode_PIDPara_GyroZ(obj, mav_msg);  break;
+                    case MAV_CompoID_Ctl_PIDPara_Roll:  SrvComProto_MavMsg_Decode_PIDPara_Roll(obj, mav_msg);   break;
+                    case MAV_CompoID_Ctl_PIDPata_Pitch: SrvComProto_MavMsg_Decode_PIDPara_Pitch(obj, mav_msg);  break;
                     default: break;
                 }
             }

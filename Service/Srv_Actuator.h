@@ -278,14 +278,6 @@ typedef enum
 
 typedef enum
 {
-    Actuator_MS_CW = 0, // moto clockwise spin
-    Actuator_MS_ACW,    // moto anticlockwise spin
-    Actuator_SS_CW,     // servo clockwise spin
-    Actuator_SS_ACW     // servo anticlockwise spin
-} SrvActuator_SpinDir_List;
-
-typedef enum
-{
     Actuator_DevType_DShot150 = DevDshot_150,
     Actuator_DevType_DShot300 = DevDshot_300,
     Actuator_DevType_DShot600 = DevDshot_600,
@@ -323,7 +315,6 @@ typedef struct
 
     SrvActuator_PeriphSet_TypeDef *periph_ptr;
     void *drv_obj;
-    SrvActuator_SpinDir_List spin_dir;
 } SrvActuator_PWMOutObj_TypeDef;
 
 typedef struct
@@ -377,7 +368,7 @@ typedef struct
     bool (*lock)(void);
     void (*moto_control)(uint16_t *p_val);
     void (*servo_conttol)(uint8_t index, uint16_t val);
-    bool (*invert_spin)(uint8_t component_index);
+    bool (*reverse_spin)(uint8_t component_index);
     bool (*get_moto_control_range)(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max);
     bool (*get_servo_control_range)(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
     SrvActuator_ModelComponentNum_TypeDef (*get_cnt)(void);
