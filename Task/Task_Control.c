@@ -722,6 +722,7 @@ static void TaskControl_CLI_Polling(void)
             {
                 case TaskControl_Moto_Set_SpinDir:
                     memset(moto_ctl_buff, 0, sizeof(moto_ctl_buff));
+                    SrvActuator.lock();
                     if(SrvActuator.reverse_spin(CLIData.index))
                     {
                         shellPrint(shell_obj, "moto spin dir set done\r\n");
