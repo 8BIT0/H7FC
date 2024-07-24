@@ -165,9 +165,9 @@ static TaskControl_FlightParam_TypeDef TaskControl_Get_DefaultParam(void)
     Param.Inner.GyroZ_Para.gP_Diff_Max = GYRO_X_RATE_PID_DIFF_MAX;
     Param.Inner.GyroZ_Para.gP_Diff_Min = GYRO_X_RATE_PID_DIFF_MIN;
     Param.Inner.GyroZ_Para.gP          = 1;
-    Param.Inner.GyroZ_Para.gI          = 0.02;
-    Param.Inner.GyroZ_Para.gI_Max      = 30;
-    Param.Inner.GyroZ_Para.gI_Min      = -30;
+    Param.Inner.GyroZ_Para.gI          = 0;
+    Param.Inner.GyroZ_Para.gI_Max      = 0;
+    Param.Inner.GyroZ_Para.gI_Min      = 0;
     Param.Inner.GyroZ_Para.gD          = 0.1;
 
     return Param;
