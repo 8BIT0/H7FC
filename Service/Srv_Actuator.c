@@ -364,6 +364,8 @@ static bool SrvActuator_ReversedMotoSpinDir(uint8_t component_index)
     {
         DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_SpinDir_Reversed);
     }
+    
+    SrvOsCommon.delay_ms(10);
 
     for (i = 0; i < 6; i++)
     {
