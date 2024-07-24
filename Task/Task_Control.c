@@ -722,7 +722,6 @@ static void TaskControl_CLI_Polling(void)
             {
                 case TaskControl_Moto_Set_SpinDir:
                     memset(moto_ctl_buff, 0, sizeof(moto_ctl_buff));
-                    SrvActuator.lock();
                     if(SrvActuator.reverse_spin(CLIData.index))
                     {
                         shellPrint(shell_obj, "moto spin dir set done\r\n");
@@ -875,7 +874,7 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, moto_spin, TaskControl_CLI_MotoSpinTest, Single Moto Spin);
 
-static void TaskControl_CLI_Set_MotoSpinDir(uint8_t moto_index, uint8_t dir)
+static void TaskControl_CLI_Rev_MotoSpinDir(uint8_t moto_index)
 {
     uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
     bool arm_state = false;
@@ -918,21 +917,10 @@ static void TaskControl_CLI_Set_MotoSpinDir(uint8_t moto_index, uint8_t dir)
     }
         
     shellPrint(shell_obj, "Setting time stamp %d\r\n", time_stamp);
-    shellPrint(shell_obj, "0 ----> set spin clockwise \r\n");
-    shellPrint(shell_obj, "1 ----> set spin anticlockwise \r\n");
-            
-    if(dir >= Actuator_Spin_AntiClockWise)
-    {
-        shellPrint(shell_obj, "current setting is anticlockwise\r\n");
-        dir = Actuator_Spin_AntiClockWise;
-    }
-    else
-        shellPrint(shell_obj, " current setting is clockwise\r\n");
-
     p_CLIData->cli_type = TaskControl_Moto_Set_SpinDir;
     p_CLIData->timestamp = time_stamp;
     p_CLIData->index = moto_index;
-    p_CLIData->value = dir;
+    p_CLIData->value = 0;
 
     if(osMessagePut(TaskControl_Monitor.CLIMessage_ID, (uint32_t)p_CLIData, CLI_MESSAGE_OPEARATE_TIMEOUT) != osOK)
     {
@@ -940,7 +928,7 @@ static void TaskControl_CLI_Set_MotoSpinDir(uint8_t moto_index, uint8_t dir)
         SrvOsCommon.free(p_CLIData);
     }
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Set_Moto_Dir, TaskControl_CLI_Set_MotoSpinDir, Set Moto Spin Direction);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, rev_moto, TaskControl_CLI_Rev_MotoSpinDir, Set Moto Spin Direction);
 
 static void TaskControl_Close_CLI(void)
 {
@@ -951,7 +939,7 @@ static void TaskControl_Close_CLI(void)
     if(shell_obj == NULL)
         return;
 
-    if(TaskControl_Monitor.CLIMessage_ID)
+    if(TaskControl_Monitor.CLIMessage_ID == NULL)
     {
         shellPrint(shell_obj, "TaskControl semaphore create failed\r\n");
         return;
@@ -977,7 +965,7 @@ static void TaskControl_Close_CLI(void)
         SrvOsCommon.free(p_CLIData);
     }
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, disable_actuator_test, TaskControl_Close_CLI, disable actuator test);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, lock_moto, TaskControl_Close_CLI, disable actuator test);
 
 static bool TaskControl_PID_Param_Print(Shell *obj, PIDObj_TypeDef para)
 {
