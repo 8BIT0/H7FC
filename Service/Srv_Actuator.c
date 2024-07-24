@@ -351,6 +351,8 @@ static void SrvActuator_ServoControl(uint8_t index, uint16_t val)
 
 static bool SrvActuator_ReversedMotoSpinDir(uint8_t component_index)
 {
+    uint8_t i = 0;
+
     if (!SrvActuator_Obj.init || \
         (component_index >= SrvActuator_Obj.drive_module.num.moto_cnt) || \
         (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type != Actuator_DevType_DShot150) || \
@@ -358,9 +360,17 @@ static bool SrvActuator_ReversedMotoSpinDir(uint8_t component_index)
         (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type != Actuator_DevType_DShot600))
         return false;
 
-    DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_SpinDir_Reversed);
-    SrvOsCommon.delay_ms(100);
-    DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_Save_Setting);
+    for (i = 0; i < 6; i++)
+    {
+        DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_SpinDir_Reversed);
+    }
+
+    for (i = 0; i < 6; i++)
+    {
+        DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_Save_Setting);
+    }
+
+    SrvOsCommon.delay_ms(40);
     return true;
 }
 
