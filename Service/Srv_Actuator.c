@@ -378,9 +378,9 @@ static bool SrvActuator_SetSpin_Dir(uint8_t component_index, uint8_t dir)
         (component_index >= SrvActuator_Obj.drive_module.num.moto_cnt))
         return false;
 
-    if ((SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot150) || \
-        (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot300) || \
-        (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot600) && \
+    if (((SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot150) || \
+         (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot300) || \
+         (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot600)) && \
         (dir <= (uint8_t)DevDshot_SpinDir_2))
     {
         for (i = 0; i < 6; i++)                                       
