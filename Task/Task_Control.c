@@ -722,7 +722,7 @@ static void TaskControl_CLI_Polling(void)
             {
                 case TaskControl_Moto_Set_SpinDir:
                     memset(moto_ctl_buff, 0, sizeof(moto_ctl_buff));
-                    if(SrvActuator.reverse_spin(CLIData.index))
+                    if(SrvActuator.set_spin_dir(CLIData.index, (uint8_t)CLIData.value))
                     {
                         shellPrint(shell_obj, "moto spin dir set done\r\n");
                     }
@@ -874,7 +874,7 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, moto_spin, TaskControl_CLI_MotoSpinTest, Single Moto Spin);
 
-static void TaskControl_CLI_Rev_MotoSpinDir(uint8_t moto_index)
+static void TaskControl_CLI_Rev_MotoSpinDir(uint8_t moto_index, uint8_t dir)
 {
     uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
     bool arm_state = false;
@@ -915,12 +915,22 @@ static void TaskControl_CLI_Rev_MotoSpinDir(uint8_t moto_index)
         SrvOsCommon.free(p_CLIData);
         return;
     }
-        
+
+    shellPrint(shell_obj, "0 ---- direction 1\r\n");
+    shellPrint(shell_obj, "1 ---- direction 2\r\n");
+
+    if (dir > 1)
+    {
+        shellPrint(shell_obj, "Error direction input\r\n");
+        SrvOsCommon.free(p_CLIData);
+        return;
+    }
+
     shellPrint(shell_obj, "Setting time stamp %d\r\n", time_stamp);
     p_CLIData->cli_type = TaskControl_Moto_Set_SpinDir;
     p_CLIData->timestamp = time_stamp;
     p_CLIData->index = moto_index;
-    p_CLIData->value = 0;
+    p_CLIData->value = dir;
 
     if(osMessagePut(TaskControl_Monitor.CLIMessage_ID, (uint32_t)p_CLIData, CLI_MESSAGE_OPEARATE_TIMEOUT) != osOK)
     {

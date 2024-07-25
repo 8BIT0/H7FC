@@ -33,10 +33,6 @@ extern "C" {
 #define DSHOT_MAX_THROTTLE 1900
 #define DSHOT_RANGE (DSHOT_MAX_THROTTLE - DSHOT_MIN_THROTTLE)
 
-#define DSHOT_CMD_SET_SPIN_CLOCKWISE ((1 << DevDshot_RotateDir_ClockWise) | (0 << DevDshot_RotateDir_AntiClockWise))
-#define DSHOT_CMD_SET_SPIN_ANTICLOCKWISE ((0 << DevDshot_RotateDir_ClockWise) | (1 << DevDshot_RotateDir_AntiClockWise))
-#define DSHOT_CMD_SAVE_SETTING (1 << DevDshot_Save_Setting)
-
 typedef enum
 {
     DevDshot_MotoOutput_Lock = 0,
@@ -55,6 +51,12 @@ typedef enum
     DevDshot_SpinDir_Normal = 20,
     DevDshot_SpinDir_Reversed = 21,
 } DevDshot_Command_List;
+
+typedef enum
+{
+    DevDshot_SpinDir_1 = 0,
+    DevDshot_SpinDir_2,
+} DevDshot_SpinDir_list;
 
 typedef enum
 {
