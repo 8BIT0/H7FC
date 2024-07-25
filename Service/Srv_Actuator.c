@@ -373,6 +373,7 @@ static bool SrvActuator_TmpReversedMotoSpinDir(uint8_t component_index)
 static bool SrvActuator_SetSpin_Dir(uint8_t component_index, uint8_t dir)
 {
     uint8_t i = 0;
+    uint8_t cmd = 0;
 
     if (!SrvActuator_Obj.init || \
         (component_index >= SrvActuator_Obj.drive_module.num.moto_cnt))
@@ -383,15 +384,28 @@ static bool SrvActuator_SetSpin_Dir(uint8_t component_index, uint8_t dir)
          (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot600)) && \
         (dir <= (uint8_t)DevDshot_SpinDir_2))
     {
-        for (i = 0; i < 6; i++)                                       
-            DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), dir);
+        if (dir == DevDshot_SpinDir_1)
+        {
+            cmd = DevDshot_RotateDir_ClockWise;
+        }
+        else
+            cmd = DevDshot_RotateDir_AntiClockWise;
 
-        SrvOsCommon.delay_ms(10);
+        SrvOsCommon.delay_ms(9);
+        for (i = 0; i < 10; i++)
+        {
+            SrvOsCommon.delay_ms(1);
+            DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), cmd);
+        }
+        SrvOsCommon.delay_ms(1);
 
-        for (i = 0; i < 6; i++)
-            DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_Save_Setting);
+        // for (i = 0; i < 10; i++)
+        // {
+        //     DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_Save_Setting);
+        //     SrvOsCommon.delay_ms(2);
+        // }
 
-        SrvOsCommon.delay_ms(40);
+        // SrvOsCommon.delay_ms(40);
         return true;
     }
 

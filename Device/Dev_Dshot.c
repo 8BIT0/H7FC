@@ -143,7 +143,7 @@ static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
 static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint16_t cmd)
 {
     uint16_t packet;
-    bool dshot_telemetry = false;
+    bool dshot_telemetry = true;
 
     if (!obj || cmd >= DSHOT_MIN_THROTTLE)
         return;
