@@ -353,25 +353,6 @@ static void SrvActuator_ServoControl(uint8_t index, uint16_t val)
 {
 }
 
-static bool SrvActuator_TmpReversedMotoSpinDir(uint8_t component_index)
-{
-    if (!SrvActuator_Obj.init || \
-        (component_index >= SrvActuator_Obj.drive_module.num.moto_cnt))
-        return false;
-
-    if ((SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot150) || \
-        (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot300) || \
-        (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot600))
-    {
-        for (uint8_t i = 0; i < 6; i++)                                       
-            DevDshot.command(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_SpinDir_Reversed);
-
-        return true;
-    }
-
-    return false;
-}
-
 static void SrvActuator_SendCommand(DevDshotObj_TypeDef *p_moto, uint8_t cmd)
 {
     if (p_moto == NULL)
@@ -384,6 +365,23 @@ static void SrvActuator_SendCommand(DevDshotObj_TypeDef *p_moto, uint8_t cmd)
         DevDshot.command(p_moto, cmd);
     }
     SrvOsCommon.delay_ms(1);
+}
+
+static bool SrvActuator_TmpReversedMotoSpinDir(uint8_t component_index)
+{
+    if (!SrvActuator_Obj.init || \
+        (component_index >= SrvActuator_Obj.drive_module.num.moto_cnt))
+        return false;
+
+    if ((SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot150) || \
+        (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot300) || \
+        (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot600))
+    {
+        SrvActuator_SendCommand(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj);
+        return true;
+    }
+
+    return false;
 }
 
 static void SrvActuator_Saving(uint8_t component_index)
