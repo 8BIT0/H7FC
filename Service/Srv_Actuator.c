@@ -408,11 +408,8 @@ static bool SrvActuator_SetSpin_Dir(uint8_t component_index, uint8_t dir)
          (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot600)) && \
         (dir <= (uint8_t)DevDshot_SpinDir_2))
     {
-        if (dir == DevDshot_SpinDir_1)
-        {
-            cmd = DevDshot_RotateDir_ClockWise;
-        }
-        else
+        cmd = DevDshot_RotateDir_ClockWise;
+        if (dir == DevDshot_SpinDir_2)
             cmd = DevDshot_RotateDir_AntiClockWise;
 
         SrvActuator_SendCommand(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), cmd);
