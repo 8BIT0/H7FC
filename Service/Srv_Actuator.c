@@ -377,7 +377,7 @@ static bool SrvActuator_TmpReversedMotoSpinDir(uint8_t component_index)
         (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot300) || \
         (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type == Actuator_DevType_DShot600))
     {
-        SrvActuator_SendCommand(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj);
+        SrvActuator_SendCommand(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj, DevDshot_SpinDir_Reversed);
         return true;
     }
 
