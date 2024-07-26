@@ -402,10 +402,10 @@ static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal,
         gimbal_channel = gimbal->combo_list.data;
 
         if (gimbal_channel)
-        {
-            gimbal_channel->center_deadzone_scope = scope;
-            gimbal_channel->enable_deadzone = true;
-        }
+            return;
+
+        gimbal_channel->center_deadzone_scope = scope;
+        gimbal_channel->enable_deadzone = true;
     }
 }
 
