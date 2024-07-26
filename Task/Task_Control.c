@@ -725,6 +725,7 @@ static void TaskControl_CLI_Polling(void)
                     if(SrvActuator.set_spin_dir(CLIData.index, (uint8_t)CLIData.value))
                     {
                         shellPrint(shell_obj, "moto spin dir set done\r\n");
+                        SrvActuator.save(CLIData.index);
                     }
                     else
                         shellPrint(shell_obj, "moto spin dir set error\r\n");

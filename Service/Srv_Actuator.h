@@ -376,6 +376,7 @@ typedef struct
     SrvActuator_Model_List (*get_model)(void);
     bool (*moto_direct_drive)(uint8_t index, uint16_t value);
     bool (*servo_direct_drive)(uint8_t index, uint16_t value);
+    void (*save)(uint8_t component_index);
 } SrvActuator_TypeDef;
 
 extern SrvActuator_TypeDef SrvActuator;
