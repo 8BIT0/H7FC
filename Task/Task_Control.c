@@ -14,11 +14,8 @@
 
 #define CONTROL_STORAGE_SECTION_NAME "Control_Para"
 
-#define ATTITUDE_DISARM_RANGE_MAX 10
-#define ATTITUDE_DISARM_RANGE_MIN -10
-
-#define ANGULAR_SPEED_DISARM_RANGE_MAX 5
-#define ANGULAR_SPEED_DISARM_RANGE_MIN -5
+#define ATTITUDE_DISARM_RANGE_MAX 10.0f
+#define ATTITUDE_DISARM_RANGE_MIN -10.0f
 
 #define ATTITUDE_PID_ACCURACY 1000
 #define ATTITUDE_PID_DIFF_MAX 30    /* unit: deg */
@@ -69,6 +66,7 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
     .throttle_protect_enable = true,
     .throttle_percent = false,
 
+    .dynamic_disarm_enable = false,
     .IMU_Rt = 0,
 };
 
@@ -251,6 +249,35 @@ static void TaskControl_Get_StoreParam(void)
             Storage.get(Para_User, TaskControl_Monitor.actuator_store_info.item, (uint8_t *)&Actuator_Param, sizeof(SrvActuator_Setting_TypeDef)) == Storage_Error_None)
             TaskControl_Monitor.actuator_param = Actuator_Param;
     }
+}
+
+static bool TaskControl_disarm_check(bool telemetry_arm, float pitch, float roll)
+{
+    if (telemetry_arm == DRONE_ARM)
+    {
+        TaskControl_Monitor.moto_unlock = false;
+        return false;
+    }
+
+    if (TaskControl_Monitor.dynamic_disarm_enable)
+    {
+        TaskControl_Monitor.moto_unlock = true;
+        return true;
+    }
+
+    if (!TaskControl_Monitor.moto_unlock)
+    {
+        /* attitude pitch check */
+        if ((pitch > ATTITUDE_DISARM_RANGE_MAX) || (pitch > ATTITUDE_DISARM_RANGE_MIN))
+            return false;
+
+        /* attitdue roll check */
+        if ((roll > ATTITUDE_DISARM_RANGE_MAX) || (roll < ATTITUDE_DISARM_RANGE_MIN))
+            return false;
+    }
+
+    TaskControl_Monitor.moto_unlock = true;
+    return true;
 }
 
 void TaskControl_Core(void const *arg)
@@ -467,10 +494,6 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
         DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_hub_DataPipe);
         DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_Log_DataPipe);
 
-        /* if armed or usb attached then lock moto */
-        if ((arm_state == DRONE_ARM) || configrator_attach)
-            goto lock_moto;
-
         // check imu filter gyro data update or not
         if(!SrvDataHub.get_scaled_imu(&imu_update_time,
                                       &TaskControl_Monitor.acc_scale,
@@ -497,6 +520,13 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
                                              &TaskControl_Monitor.attitude.q2,
                                              &TaskControl_Monitor.attitude.q3,
                                              &TaskControl_Monitor.flip_over);
+
+
+        TaskControl_disarm_check(arm_state, TaskControl_Monitor.attitude.pitch, TaskControl_Monitor.attitude.roll);
+
+        /* if armed or usb attached then lock moto */
+        if (!TaskControl_Monitor.moto_unlock || configrator_attach)
+            goto lock_moto;
 
         if (imu_update_time)
         {
@@ -622,7 +652,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
             /* test code */
-            if (arm_state == DRONE_DISARM)
+            if (TaskControl_Monitor.moto_unlock)
             {
                 uint16_t moto_min = 0;
                 uint16_t moto_idle = 0;

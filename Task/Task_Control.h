@@ -126,6 +126,8 @@ typedef struct
 
     IMUAtt_TypeDef attitude;
     bool flip_over;
+    bool dynamic_disarm_enable;
+    bool moto_unlock;
 
     uint32_t error_code;
     uint8_t imu_none_update_cnt;
