@@ -50,7 +50,7 @@ static bool SrvFlow_Init(SrvFlowObj_TypeDef *flow_obj)
                 To_BspUart_Obj(port_obj)->tx_dma = FLOW_TX_DMA;
                 To_BspUart_Obj(port_obj)->tx_stream = FLOW_TX_DMA_STREAM;
                 To_BspUart_Obj(port_obj)->rx_size = 128;
-                To_BspUart_Obj(port_obj)->rx_buf = SrvOsCommon.malloc(128);
+                To_BspUart_Obj(port_obj)->rx_buf = SrvOsCommon.malloc(To_BspUart_Obj(port_obj)->rx_size);
                 if (To_BspUart_Obj(port_obj)->rx_buf == NULL)
                     return false;
 
