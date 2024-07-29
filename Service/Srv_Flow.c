@@ -30,13 +30,11 @@ static bool SrvFlow_Init(SrvFlowObj_TypeDef *flow_obj)
                 if ((p_obj == NULL) || (port_obj == NULL))
                     return false;
 
-                To_DevFlow3901U_Obj(p_obj)->malloc = SrvOsCommon.malloc;
-                To_DevFlow3901U_Obj(p_obj)->free = SrvOsCommon.free;
                 To_DevFlow3901U_Obj(p_obj)->get_sys_time = SrvOsCommon.get_os_ms;
                 flow_obj->obj = p_obj;
                 flow_obj->api = &DevFlow3901;
 
-                if (DevFlow3901.init(To_DevFlow3901U_Obj(p_obj), 128) == 0)
+                if (DevFlow3901.init(To_DevFlow3901U_Obj(p_obj)) == 0)
                     return false;
                 
                 /* port init */
@@ -44,6 +42,17 @@ static bool SrvFlow_Init(SrvFlowObj_TypeDef *flow_obj)
                 To_BspUart_Obj(port_obj)->cust_data_addr = p_obj;
                 To_BspUart_Obj(port_obj)->irq_type = BspUart_IRQ_Type_Idle;
                 To_BspUart_Obj(port_obj)->instance = FLOW_PORT;
+                To_BspUart_Obj(port_obj)->rx_io = Uart6_RxPin;
+                To_BspUart_Obj(port_obj)->tx_io = Uart6_TxPin;
+                To_BspUart_Obj(port_obj)->pin_swap = false;
+                // To_BspUart_Obj(port_obj)->rx_dma = ;
+                // To_BspUart_Obj(port_obj)->rx_stream = ;
+                // To_BspUart_Obj(port_obj)->tx_dma = ;
+                // To_BspUart_Obj(port_obj)->tx_stream = ;
+                To_BspUart_Obj(port_obj)->rx_size = 128;
+                To_BspUart_Obj(port_obj)->rx_buf = SrvOsCommon.malloc(128);
+                if (To_BspUart_Obj(port_obj)->rx_buf == NULL)
+                    return false;
 
                 BspUart.init(port_obj);
                 /* set port parse callback */

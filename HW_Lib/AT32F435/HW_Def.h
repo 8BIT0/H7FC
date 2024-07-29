@@ -69,6 +69,18 @@ extern "C" {
 
 /* flow sensor port uart6 */
 #define FLOW_PORT USART6
+#define FLOW_TX_PIN_INIT_STATE GPIO_PULL_NONE
+#define FLOW_RX_PIN_INIT_STATE GPIO_PULL_NONE
+#define FLOW_TX_PIN_ALT GPIO_MUX_8
+#define FLOW_RX_PIN_ALT GPIO_MUX_8
+#define FLOW_TX_DMA Bsp_DMA_None
+#define FLOW_TX_DMA_STREAM Bsp_DMA_Stream_None
+#define FLOW_RX_DMA Bsp_DMA_None
+#define FLOW_RX_DMA_STREAM Bsp_DMA_Stream_None
+#define FLOW_TX_PIN GPIO_PINS_6
+#define FLOW_RX_PIN GPIO_PINS_7
+#define FLOW_TX_PORT &Uart6_Tx_Port
+#define FLOW_RX_PORT &Uart6_Rx_Port
 
 /* IMU SPI */
 #define PriIMU_SPI_BUS SPI1
@@ -202,6 +214,8 @@ extern BspGPIO_Port_TypeDef Uart4_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart4_Rx_Port;
 extern BspGPIO_Port_TypeDef Uart5_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart5_Rx_Port;
+extern BspGPIO_Port_TypeDef Uart6_Tx_Port;
+extern BspGPIO_Port_TypeDef Uart6_Rx_Port;
 
 extern BspGPIO_Obj_TypeDef Uart3_TxPin;
 extern BspGPIO_Obj_TypeDef Uart3_RxPin;
@@ -209,6 +223,8 @@ extern BspGPIO_Obj_TypeDef Uart1_TxPin;
 extern BspGPIO_Obj_TypeDef Uart1_RxPin;
 extern BspGPIO_Obj_TypeDef Uart4_TxPin;
 extern BspGPIO_Obj_TypeDef Uart4_RxPin;
+extern BspGPIO_Obj_TypeDef Uart6_TxPin;
+extern BspGPIO_Obj_TypeDef Uart6_RxPin;
 
 extern DevLedObj_TypeDef Led1;
 

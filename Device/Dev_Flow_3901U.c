@@ -24,7 +24,7 @@ typedef struct
 static uint8_t DevFlow3901U_GetCheckSum(uint8_t *p_data);
 
 /* external function */
-static uint8_t DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj, uint16_t buf_size);
+static uint8_t DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj);
 static void DevFLow3901U_Decode_Callback(DevFlow3901Obj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
 static DevFlow3901UData_TypeDef DevFlow3901U_GetData(DevFlow3901Obj_TypeDef *obj);
 
@@ -36,9 +36,9 @@ DevFlow3901_TypeDef DevFlow3901 = {
 };
 
 /* return update frequence */
-static uint8_t DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj, uint16_t buf_size)
+static uint8_t DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj)
 {
-    if (obj && obj->get_sys_time && buf_size && obj->malloc && obj->free)
+    if (obj && obj->get_sys_time)
     {
         obj->init = true;
         obj->time_stamp = 0;
@@ -54,12 +54,6 @@ static uint8_t DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj, uint16_t buf_size)
         obj->yaw_mode_state = true;
         if (obj->yaw_mode_ctl)
             obj->yaw_mode_ctl(obj->yaw_mode_en);
-        
-        obj->p_buf = obj->malloc(buf_size);
-        if (obj->p_buf == NULL)
-            return 0;
-    
-        obj->buf_size = buf_size;
 
         return FLOW3901U_Max_UpdateFreq;
     }

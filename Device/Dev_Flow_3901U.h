@@ -44,19 +44,13 @@ typedef struct
 
     bool accessing;
 
-    uint8_t *p_buf;
-    uint16_t buf_size;
-
-    void *(*malloc)(uint32_t size);
-    void (*free)(void *ptr);
-
     uint32_t (*get_sys_time)(void);
     void (*yaw_mode_ctl)(bool enable);
 } DevFlow3901Obj_TypeDef;
 
 typedef struct
 {
-    uint8_t (*init)(DevFlow3901Obj_TypeDef *obj, uint16_t buf_size);
+    uint8_t (*init)(DevFlow3901Obj_TypeDef *obj);
     void (*recv)(DevFlow3901Obj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
     DevFlow3901UData_TypeDef (*get)(DevFlow3901Obj_TypeDef *obj);
     bool (*yaw_mode)(DevFlow3901Obj_TypeDef *obj);

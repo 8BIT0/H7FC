@@ -75,6 +75,30 @@ BspGPIO_Obj_TypeDef Uart1_RxPin = {
     .alternate = GPIO_MUX_7,
 };
 
+/* uart 6 tx port */
+BspGPIO_Port_TypeDef Uart6_Tx_Port = {
+    .port = GPIOC,
+};
+
+BspGPIO_Obj_TypeDef Uart6_TxPin = {
+    .port = (void *)&Uart6_Tx_Port,
+    .pin = GPIO_PINS_6,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_8,
+};
+
+/* uart 6 rx port */
+BspGPIO_Port_TypeDef Uart6_Rx_Port = {
+    .port = GPIOC,
+};
+
+BspGPIO_Obj_TypeDef Uart6_RxPin = {
+    .port = (void *)&Uart6_Rx_Port,
+    .pin = GPIO_PINS_7,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_8,
+};
+
 /* uart 4 tx pin */
 BspGPIO_Port_TypeDef Uart4_Tx_Port = {
     .port = GPIOA,
