@@ -253,6 +253,7 @@ static void TaskControl_Get_StoreParam(void)
 
 static bool TaskControl_disarm_check(bool telemetry_arm, float pitch, float roll)
 {
+
     if (telemetry_arm == DRONE_ARM)
     {
         TaskControl_Monitor.moto_unlock = Moto_Lock;
@@ -265,20 +266,25 @@ static bool TaskControl_disarm_check(bool telemetry_arm, float pitch, float roll
         return true;
     }
 
-    if (TaskControl_Monitor.moto_unlock != Moto_Lock)
+    if (TaskControl_Monitor.moto_unlock != Moto_Unlock)
     {
+        if (TaskControl_Monitor.moto_unlock == Moto_Unlock_Err)
+            return false;
+
         /* attitude pitch check */
         if ((pitch > ATTITUDE_DISARM_RANGE_MAX) || \
-            (pitch > ATTITUDE_DISARM_RANGE_MIN) || \
+            (pitch < ATTITUDE_DISARM_RANGE_MIN) || \
             (roll > ATTITUDE_DISARM_RANGE_MAX) || \
             (roll < ATTITUDE_DISARM_RANGE_MIN))
         {
             TaskControl_Monitor.moto_unlock = Moto_Unlock_Err;
             return false;
         }
+
+        TaskControl_Monitor.moto_unlock = Moto_Unlock;
+        return true;
     }
 
-    TaskControl_Monitor.moto_unlock = Moto_Unlock;
     return true;
 }
 

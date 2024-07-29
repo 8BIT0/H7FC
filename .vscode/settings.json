@@ -195,7 +195,6 @@
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,
-        "cmake.sourceDirectory": "C:/Users/HUAV/Desktop/8B!T0/H7FC/HAL_Lib/CMSIS/DSP/Source/MatrixFunctions",
-        "cortex-debug.openocdPath": "",
+        // "cmake.sourceDirectory": "C:/Users/HUAV/Desktop/8B!T0/H7FC/HAL_Lib/CMSIS/DSP/Source/MatrixFunctions",
         // "cortex-debug.openocdPath": "D:\\software\\gcc\\tool-openocd-at32\\bin-windows_x86\\openocd_at32.exe",
 }
