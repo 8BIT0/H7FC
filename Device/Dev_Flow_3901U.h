@@ -13,8 +13,9 @@ extern "C" {
 #define FLOW_3901U_BIT      8
 #define FLOW_3901U_PARITY   0
 
-#define To_DevFlow3901U_Api(x) ((DevFlow3901_TypeDef *)x)
-#define To_DevFlow3901U_Obj(x) ((DevFlow3901Obj_TypeDef *)x)
+#define To_DevFlow3901U_Api(x)  ((DevFlow3901_TypeDef *)x)
+#define To_DevFlow3901U_Obj(x)  ((DevFlow3901Obj_TypeDef *)x)
+#define DevFlow3901U_Size       sizeof(DevFlow3901Obj_TypeDef)
 
 typedef struct
 {
@@ -41,13 +42,21 @@ typedef struct
     uint32_t decode_s;
     uint32_t decode_f;
 
+    bool accessing;
+
+    uint8_t *p_buf;
+    uint16_t buf_size;
+
+    void *(*malloc)(uint32_t size);
+    void (*free)(void *ptr);
+
     uint32_t (*get_sys_time)(void);
     void (*yaw_mode_ctl)(bool enable);
 } DevFlow3901Obj_TypeDef;
 
 typedef struct
 {
-    bool (*init)(DevFlow3901Obj_TypeDef *obj, uint16_t buf_size);
+    uint8_t (*init)(DevFlow3901Obj_TypeDef *obj, uint16_t buf_size);
     void (*recv)(DevFlow3901Obj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
     DevFlow3901UData_TypeDef (*get)(DevFlow3901Obj_TypeDef *obj);
     bool (*yaw_mode)(DevFlow3901Obj_TypeDef *obj);

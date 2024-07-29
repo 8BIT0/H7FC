@@ -67,6 +67,9 @@ extern "C" {
 #define DEBUG_P4_TX_PORT &Uart4_Tx_Port
 #define DEBUG_P4_RX_PORT &Uart4_Rx_Port
 
+/* flow sensor port uart6 */
+#define FLOW_PORT USART6
+
 /* IMU SPI */
 #define PriIMU_SPI_BUS SPI1
 

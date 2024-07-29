@@ -1,10 +1,14 @@
 #include "Dev_Flow_3901U.h"
 
+/* noticed: sensor max update frequence is about 66Hz */
+
 #define FLOW3901U_Frame_Header      0xFE
 #define FLOW3901U_Payload_Size      0x04
 #define FLOW3901U_General_Ender     0xAA
 #define FLOW3901U_YawMode_Ender     0xBB
 #define FLOW3901U_Frame_Size        sizeof(Dev3901U_Frame_TypeDef)
+
+#define FLOW3901U_Max_UpdateFreq    66
 
 typedef struct
 {
@@ -20,7 +24,7 @@ typedef struct
 static uint8_t DevFlow3901U_GetCheckSum(uint8_t *p_data);
 
 /* external function */
-static bool DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj);
+static uint8_t DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj, uint16_t buf_size);
 static void DevFLow3901U_Decode_Callback(DevFlow3901Obj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
 static DevFlow3901UData_TypeDef DevFlow3901U_GetData(DevFlow3901Obj_TypeDef *obj);
 
@@ -28,11 +32,13 @@ DevFlow3901_TypeDef DevFlow3901 = {
     .init = DevFlow3901_Init,
     .recv = DevFLow3901U_Decode_Callback,
     .get  = DevFlow3901U_GetData,
+    .yaw_mode = NULL,
 };
 
-static bool DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj)
+/* return update frequence */
+static uint8_t DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj, uint16_t buf_size)
 {
-    if (obj && obj->get_sys_time)
+    if (obj && obj->get_sys_time && buf_size && obj->malloc && obj->free)
     {
         obj->init = true;
         obj->time_stamp = 0;
@@ -47,12 +53,18 @@ static bool DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj)
 
         obj->yaw_mode_state = true;
         if (obj->yaw_mode_ctl)
-            obj->yaw_mode_ctl(obj->yaw_mode);
+            obj->yaw_mode_ctl(obj->yaw_mode_en);
+        
+        obj->p_buf = obj->malloc(buf_size);
+        if (obj->p_buf == NULL)
+            return 0;
+    
+        obj->buf_size = buf_size;
 
-        return true;
+        return FLOW3901U_Max_UpdateFreq;
     }
 
-    return false;
+    return 0;
 }
 
 static void DevFLow3901U_Decode_Callback(DevFlow3901Obj_TypeDef *obj, uint8_t *p_buf, uint16_t len)
@@ -67,6 +79,8 @@ static void DevFLow3901U_Decode_Callback(DevFlow3901Obj_TypeDef *obj, uint8_t *p
 
         if (len >= FLOW3901U_Frame_Size)
         {
+            obj->accessing = false;
+
             /* decode directly */
             memcpy(&frame, p_buf, FLOW3901U_Frame_Size);
         
@@ -102,10 +116,19 @@ static DevFlow3901UData_TypeDef DevFlow3901U_GetData(DevFlow3901Obj_TypeDef *obj
 
     if (obj && obj->init)
     {
+reupdate_flow_sensor:
+        obj->accessing = true;
         data_tmp.time_stamp = obj->time_stamp;
         data_tmp.flow_x = obj->dis_x;
         data_tmp.flow_y = obj->dis_y;
         data_tmp.quality = obj->quality;
+
+        /* if its updating in parse process */
+        /* re_update flow pos */
+        if (!obj->accessing)
+            goto reupdate_flow_sensor;
+
+        obj->accessing = false;
     }
 
     return data_tmp;

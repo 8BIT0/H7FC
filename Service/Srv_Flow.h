@@ -9,13 +9,11 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 #include "Srv_OsCommon.h"
-#include "pos_data.h"
-#include "Dev_Flow_3901_L0X.h"
 
 typedef enum
 {
-    SrvFlow_None = 0,
-    SrvFlow_MATEK_3901_L0X,
+    Flow_None = 0,
+    Flow_3901U,
 } SrvFlow_SensorType_List;
 
 typedef struct
@@ -23,16 +21,31 @@ typedef struct
     SrvFlow_SensorType_List type;
     bool init;
 
+    void *api;
+    void *obj;
+
     uint32_t time_stamp;
-    PosData_TypeDef pos;
-    PosVelData_TypeDef vel;
+    uint32_t thread_freq;
+
+    int16_t x_diff;
+    int16_t y_diff;
+    int16_t x_vel;
+    int16_t z_vel;
 } SrvFlowObj_TypeDef;
 
 typedef struct
 {
+    uint32_t time_stamp;
+    int16_t x_diff;
+    int16_t y_diff;
+    int16_t x_vel;
+    int16_t z_vel;
+} SrvFlowData_TypeDef;
+
+typedef struct
+{
     bool (*init)(SrvFlowObj_TypeDef *obj);
-    bool (*get_pos)(SrvFlowObj_TypeDef *obj, PosData_TypeDef *pos);
-    bool (*get_vel)(SrvFlowObj_TypeDef *obj, PosVelData_TypeDef *vel);
+    bool (*get_data)(SrvFlowObj_TypeDef *obj, SrvFlowData_TypeDef *p_data);
 } SrvFlow_TypeDef;
 
 extern SrvFlow_TypeDef SrvFlow;
