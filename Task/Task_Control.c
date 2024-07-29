@@ -265,7 +265,7 @@ static bool TaskControl_disarm_check(bool telemetry_arm, float pitch, float roll
         return true;
     }
 
-    if (TaskControl_Monitor.moto_unlock != Moto_Unlock)
+    if (TaskControl_Monitor.moto_unlock != Moto_Lock)
     {
         /* attitude pitch check */
         if ((pitch > ATTITUDE_DISARM_RANGE_MAX) || \
