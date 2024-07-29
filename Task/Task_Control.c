@@ -755,6 +755,12 @@ static void TaskControl_CLI_Polling(void)
         event = osMessageGet(TaskControl_Monitor.CLIMessage_ID, CLI_MESSAGE_OPEARATE_TIMEOUT);
         if (event.status == osEventMessage)
         {
+            if (event.value.p == NULL)
+            {
+                SrvActuator.lock();
+                return;
+            }
+
             CLIData = *(TaskControl_CLIData_TypeDef *)(event.value.p);
             switch((uint8_t)CLIData.cli_type)
             {
