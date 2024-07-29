@@ -22,6 +22,13 @@ extern "C" {
 
 #define CLI_MESSAGE_OPEARATE_TIMEOUT 1
 
+typedef enum
+{
+    Moto_Lock = 0,
+    Moto_Unlock,
+    Moto_Unlock_Err,
+} TaskControl_MotoUnlock_State;
+
 typedef union
 {
     struct
