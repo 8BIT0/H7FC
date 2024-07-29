@@ -45,10 +45,10 @@ static bool SrvFlow_Init(SrvFlowObj_TypeDef *flow_obj)
                 To_BspUart_Obj(port_obj)->rx_io = Uart6_RxPin;
                 To_BspUart_Obj(port_obj)->tx_io = Uart6_TxPin;
                 To_BspUart_Obj(port_obj)->pin_swap = false;
-                // To_BspUart_Obj(port_obj)->rx_dma = ;
-                // To_BspUart_Obj(port_obj)->rx_stream = ;
-                // To_BspUart_Obj(port_obj)->tx_dma = ;
-                // To_BspUart_Obj(port_obj)->tx_stream = ;
+                To_BspUart_Obj(port_obj)->rx_dma = FLOW_RX_DMA;
+                To_BspUart_Obj(port_obj)->rx_stream = FLOW_RX_DMA_STREAM;
+                To_BspUart_Obj(port_obj)->tx_dma = FLOW_TX_DMA;
+                To_BspUart_Obj(port_obj)->tx_stream = FLOW_TX_DMA_STREAM;
                 To_BspUart_Obj(port_obj)->rx_size = 128;
                 To_BspUart_Obj(port_obj)->rx_buf = SrvOsCommon.malloc(128);
                 if (To_BspUart_Obj(port_obj)->rx_buf == NULL)
