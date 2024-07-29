@@ -745,7 +745,9 @@ static void TaskControl_CLI_Polling(void)
     static uint16_t moto_ctl_buff[8] = {0};
     Shell *shell_obj = Shell_GetInstence();
 
-    if(shell_obj == NULL)
+    if ((shell_obj == NULL) || \
+        (SrvActuator.lock == NULL) || \
+        (SrvActuator.moto_direct_drive == NULL))
         return;
 
     if(TaskControl_Monitor.CLIMessage_ID)
@@ -797,11 +799,8 @@ static void TaskControl_CLI_Polling(void)
     if(CLIData.cli_type == TaskControl_Moto_Set_Spin)
     {
         /* set moto spin */
-        if (SrvActuator.moto_direct_drive)
-        {
-            for (uint8_t i = 0; i < SrvActuator.get_cnt().moto_cnt; i++)
-                SrvActuator.moto_direct_drive(i, moto_ctl_buff[i]);
-        }
+        for (uint8_t i = 0; i < SrvActuator.get_cnt().moto_cnt; i++)
+            SrvActuator.moto_direct_drive(i, moto_ctl_buff[i]);
     }
     else
         SrvActuator.lock();
