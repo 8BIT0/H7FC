@@ -473,6 +473,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 {
     SrvReceiverData_TypeDef receiver_data;
     Telemetry_RCSig_TypeDef sig_tmp;
+    static bool throttle_warning = false;
 
     memset(&receiver_data, 0, sizeof(receiver_data));
     memset(&sig_tmp, 0, sizeof(sig_tmp));
@@ -520,6 +521,8 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
 
         if (RC_Input_obj->sig.arm_state == TELEMETRY_SET_ARM)
         {
+            throttle_warning = false;
+
             /* check calibrate */
             RC_Input_obj->sig.cali_state = Telemetry_Toggle_Check(&RC_Input_obj->CLB_Toggle).state;
             
@@ -573,9 +576,12 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             if (RC_Input_obj->sig.gimbal_percent[Gimbal_Throttle] >= TELEMETRY_RC_THROTTLE_PERCENT_ALERT)
             {
                 RC_Input_obj->sig.gimbal_percent[Gimbal_Throttle] = 0;
-                RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
+                throttle_warning = true;
             }
         }
+
+        if (throttle_warning)
+            RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
 
         Telemetry_Monitor.lst_arm_state = RC_Input_obj->sig.arm_state;
 
