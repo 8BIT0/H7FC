@@ -255,28 +255,30 @@ static bool TaskControl_disarm_check(bool telemetry_arm, float pitch, float roll
 {
     if (telemetry_arm == DRONE_ARM)
     {
-        TaskControl_Monitor.moto_unlock = false;
+        TaskControl_Monitor.moto_unlock = Moto_Lock;
         return false;
     }
 
     if (TaskControl_Monitor.dynamic_disarm_enable)
     {
-        TaskControl_Monitor.moto_unlock = true;
+        TaskControl_Monitor.moto_unlock = Moto_Unlock;
         return true;
     }
 
-    if (!TaskControl_Monitor.moto_unlock)
+    if (TaskControl_Monitor.moto_unlock != Moto_Unlock)
     {
         /* attitude pitch check */
-        if ((pitch > ATTITUDE_DISARM_RANGE_MAX) || (pitch > ATTITUDE_DISARM_RANGE_MIN))
+        if ((pitch > ATTITUDE_DISARM_RANGE_MAX) || \
+            (pitch > ATTITUDE_DISARM_RANGE_MIN) || \
+            (roll > ATTITUDE_DISARM_RANGE_MAX) || \
+            (roll < ATTITUDE_DISARM_RANGE_MIN))
+        {
+            TaskControl_Monitor.moto_unlock = Moto_Unlock_Err;
             return false;
-
-        /* attitdue roll check */
-        if ((roll > ATTITUDE_DISARM_RANGE_MAX) || (roll < ATTITUDE_DISARM_RANGE_MIN))
-            return false;
+        }
     }
 
-    TaskControl_Monitor.moto_unlock = true;
+    TaskControl_Monitor.moto_unlock = Moto_Unlock;
     return true;
 }
 
@@ -525,7 +527,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
         TaskControl_disarm_check(arm_state, TaskControl_Monitor.attitude.pitch, TaskControl_Monitor.attitude.roll);
 
         /* if armed or usb attached then lock moto */
-        if (!TaskControl_Monitor.moto_unlock || configrator_attach)
+        if ((TaskControl_Monitor.moto_unlock != Moto_Unlock) || configrator_attach)
             goto lock_moto;
 
         if (imu_update_time)
@@ -652,7 +654,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
             /* test code */
-            if (TaskControl_Monitor.moto_unlock)
+            if (TaskControl_Monitor.moto_unlock == Moto_Unlock)
             {
                 uint16_t moto_min = 0;
                 uint16_t moto_idle = 0;
