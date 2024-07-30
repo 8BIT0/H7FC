@@ -824,17 +824,14 @@ reupdate_imu_state:
     SrvDataHub_Monitor.inuse_reg.bit.imu_init = true;
 
     if(state)
-    {
         *state = SrvDataHub_Monitor.data.imu_init_state;
-        return true;
-    }
 
     if(!SrvDataHub_Monitor.inuse_reg.bit.imu_init)
         goto reupdate_imu_state;
 
     SrvDataHub_Monitor.inuse_reg.bit.imu_init = false;
 
-    return false;
+    return true;
 }
 
 static bool SrvDataHub_Get_Mag_InitState(bool *state)
@@ -843,17 +840,14 @@ reupdate_mag_state:
     SrvDataHub_Monitor.inuse_reg.bit.mag_init = true;
 
     if(state)
-    {
         *state = SrvDataHub_Monitor.data.mag_init_state;
-        return true;
-    }
 
     if(!SrvDataHub_Monitor.inuse_reg.bit.mag_init)
         goto reupdate_mag_state;
 
     SrvDataHub_Monitor.inuse_reg.bit.mag_init = false;
 
-    return false;
+    return true;
 }
 
 static bool SrvDataHub_Get_Bar_InitState(bool *state)
@@ -862,17 +856,14 @@ reupdate_baro_state:
     SrvDataHub_Monitor.inuse_reg.bit.baro_init = true;
 
     if (state)
-    {
         *state = SrvDataHub_Monitor.data.baro_init_state;
-        return true;
-    }
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.baro_init)
         goto reupdate_baro_state;
 
     SrvDataHub_Monitor.inuse_reg.bit.baro_init = false;
 
-    return false;
+    return true;
 }
 
 static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir)
