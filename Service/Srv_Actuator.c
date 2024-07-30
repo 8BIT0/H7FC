@@ -317,16 +317,15 @@ static bool SrvActuator_Lock(void)
     {
         switch (SrvActuator_Obj.drive_module.obj_list[i].drv_type)
         {
-        case Actuator_DevType_DShot150:
-        case Actuator_DevType_DShot300:
-        case Actuator_DevType_DShot600:
-            DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].lock_val);
-            break;
+            case Actuator_DevType_DShot150:
+            case Actuator_DevType_DShot300:
+            case Actuator_DevType_DShot600:
+                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].lock_val);
+                break;
 
-        /* servo part still in developping */
-        case Actuator_DevType_ServoPWM:
-        default:
-            return false;
+            /* servo part still in developping */
+            case Actuator_DevType_ServoPWM:
+            default: return false;
         }
     }
     
