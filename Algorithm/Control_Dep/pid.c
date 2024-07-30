@@ -47,43 +47,20 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
 static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
     float diff_tmp = 0.0f;
-    int16_t diff_fractional = 0;
     int16_t max_fractional = 0;
     int16_t min_fractional = 0;
 
-    if(p_PIDObj && (int16_t)(p_PIDObj->diff_max * p_PIDObj->accuracy_scale) && (int16_t)(p_PIDObj->diff_min * p_PIDObj->accuracy_scale))
+    if(p_PIDObj)
     {
-        diff_fractional = (diff - (int16_t)diff) * p_PIDObj->accuracy_scale;
-
         /* limit diff range */
         /* check integer first */
         if((int16_t)diff >= (int16_t)p_PIDObj->diff_max)
         {
-            /* check fractional part */
-            if((int16_t)diff == (int16_t)p_PIDObj->diff_max)
-            {
-                max_fractional = (p_PIDObj->diff_max - (int16_t)p_PIDObj->diff_max) * p_PIDObj->accuracy_scale;
-                if(diff_fractional > max_fractional)
-                {
-                    diff_tmp = p_PIDObj->diff_max;
-                }
-            }
-            else
-                diff_tmp = p_PIDObj->diff_max;
+            diff_tmp = p_PIDObj->diff_max;
         }
         else if((int16_t)diff <= (int16_t)p_PIDObj->diff_min)
         {
-            /* check fractional part */
-            if((int16_t)diff == (int16_t)p_PIDObj->diff_min)
-            {
-                min_fractional = (p_PIDObj->diff_min - (int16_t)p_PIDObj->diff_min) * p_PIDObj->accuracy_scale;
-                if(diff_fractional < min_fractional)
-                {
-                    diff_tmp = p_PIDObj->diff_min;
-                }
-            }
-            else
-                diff_tmp = p_PIDObj->diff_min;
+            diff_tmp = p_PIDObj->diff_min;
         }
         else
             diff_tmp = diff;
@@ -109,35 +86,11 @@ static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
         /* check integer first */
         if((int16_t)p_PIDObj->Integral >= (int16_t)p_PIDObj->gI_Max)
         {
-            if((int16_t)p_PIDObj->Integral == (int16_t)p_PIDObj->gI_Max)
-            {
-                gI_Max_Fractical = (p_PIDObj->gI_Max - (int16_t)p_PIDObj->gI_Max) * p_PIDObj->accuracy_scale;
-                diff_Fractical = (p_PIDObj->Integral - (int16_t)p_PIDObj->gI_Max) * p_PIDObj->accuracy_scale;
-
-                /* check Fractional Part */
-                if(diff_Fractical > gI_Max_Fractical)
-                {
-                    p_PIDObj->Integral = p_PIDObj->gI_Max;
-                }
-            }
-            else
-                p_PIDObj->Integral = p_PIDObj->gI_Max;
+            p_PIDObj->Integral = p_PIDObj->gI_Max;
         }
         else if((int16_t)p_PIDObj->Integral <= (int16_t)p_PIDObj->gI_Min)
         {
-            if((int16_t)p_PIDObj->Integral == (int16_t)p_PIDObj->gI_Min)
-            {
-                gI_Min_Fractical = (p_PIDObj->gI_Min - (int16_t)p_PIDObj->gI_Min) * p_PIDObj->accuracy_scale;
-                diff_Fractical = (p_PIDObj->Integral - (int16_t)p_PIDObj->gI_Min) * p_PIDObj->accuracy_scale;
-                
-                /* check Fractional Part */
-                if(diff_Fractical < gI_Min_Fractical)
-                {
-                    p_PIDObj->Integral = p_PIDObj->gI_Min;
-                }
-            }
-            else
-                p_PIDObj->Integral = p_PIDObj->gI_Min;
+            p_PIDObj->Integral = p_PIDObj->gI_Min;
         }
 
         p_PIDObj->I_out = p_PIDObj->gI * p_PIDObj->Integral;

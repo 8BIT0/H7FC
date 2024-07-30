@@ -17,11 +17,9 @@
 #define ATTITUDE_DISARM_RANGE_MAX 10.0f
 #define ATTITUDE_DISARM_RANGE_MIN -10.0f
 
-#define ATTITUDE_PID_ACCURACY 1000
 #define ATTITUDE_PID_DIFF_MAX 30    /* unit: deg */
 #define ATTITUDE_PID_DIFF_MIN -30   /* unit: deg */
 
-#define ANGULAR_PID_ACCURACY 1000
 #define THROTTLE_CHANGE_RATE 50   /* unit value per ms */
 
 #define ANGULAR_RATE_PID_ACCURACY 1000
@@ -181,7 +179,6 @@ static bool TaskControl_Param_Copy(PIDObj_TypeDef *PID_Obj, PID_Param_TypeDef Pa
 {
     if (PID_Obj)
     {
-        PID_Obj->accuracy_scale = ANGULAR_PID_ACCURACY;
         PID_Obj->gP             = Para.gP;
         PID_Obj->diff_max       = Para.gP_Diff_Max;
         PID_Obj->diff_min       = Para.gP_Diff_Min;
@@ -497,8 +494,8 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
         DataPipe_DataObj(ExpCtl).pitch = TaskControl_Monitor.exp_pitch;
         DataPipe_DataObj(ExpCtl).roll = TaskControl_Monitor.exp_roll;
         DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_x;
-        DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_y;
-        DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_z;
+        DataPipe_DataObj(ExpCtl).gyr_y = TaskControl_Monitor.exp_gyr_y;
+        DataPipe_DataObj(ExpCtl).gyr_z = TaskControl_Monitor.exp_gyr_z;
         DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_hub_DataPipe);
         DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_Log_DataPipe);
 
@@ -533,7 +530,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
         TaskControl_disarm_check(arm_state, TaskControl_Monitor.attitude.pitch, TaskControl_Monitor.attitude.roll);
 
         /* if armed or usb attached then lock moto */
-        if ((TaskControl_Monitor.moto_unlock != Moto_Unlock) || configrator_attach)
+        if (TaskControl_Monitor.moto_unlock != Moto_Unlock)
             goto lock_moto;
 
         if (imu_update_time)
@@ -659,25 +656,8 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             TaskControl_Monitor.GyrZCtl_PIDObj.exp = TaskControl_Monitor.exp_gyr_z;
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
-            /* test code */
-            if (TaskControl_Monitor.moto_unlock == Moto_Unlock)
-            {
-                uint16_t moto_min = 0;
-                uint16_t moto_idle = 0;
-                uint16_t moto_max = 0;
-                uint16_t moto_val = 0;
-
-                for (uint8_t i = 0; i < 4; i++)
-                {
-                    SrvActuator.get_moto_control_range(i, &moto_min, &moto_idle, &moto_max);
-                    moto_val = (uint16_t)((float)(exp_ctl_val->throttle_percent / 100.0f) * (moto_max - moto_min)) + moto_idle;
-                    SrvActuator.moto_direct_drive(i, moto_val);
-                }
-            }
-            /* test code */
-
             /* bug */
-            TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
+            // TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 
             if(imu_err_code == SrvIMU_Sample_NoError)
             {

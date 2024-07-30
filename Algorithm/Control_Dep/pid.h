@@ -30,8 +30,6 @@ typedef struct
     float diff_min;
     float fout;
 
-    uint16_t accuracy_scale; /* max scale is 10000, noticed it must be the integer power of 10 */
-
     /* add member in this section */
     float gP;
     float P_out;
@@ -46,7 +44,7 @@ typedef struct
     float lst_diff;
     float D_out;
 
-    float CTL_period;  /* unit: S */
+    uint16_t dt;    /* unit: ms */
 }PIDObj_TypeDef;
 
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in);
