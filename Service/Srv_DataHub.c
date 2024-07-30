@@ -622,15 +622,14 @@ reupdate_scaled_baro:
 
 static bool SrvDataHub_Get_RelativeAlt(uint32_t *time_stamp, float *alt)
 {
-    if ((time_stamp == NULL) || \
-        (alt == NULL))
-        return false;
-
     SrvDataHub_Monitor.inuse_reg.bit.relative_alt = true;
 
 reupdate_relative_alt:
-    *time_stamp = SrvDataHub_Monitor.data.relative_alt_time;
-    *alt = SrvDataHub_Monitor.data.relative_alt;
+    if (time_stamp)
+        *time_stamp = SrvDataHub_Monitor.data.relative_alt_time;
+    
+    if (alt)
+        *alt = SrvDataHub_Monitor.data.relative_alt;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.relative_alt)
         goto reupdate_relative_alt;
