@@ -151,26 +151,6 @@ typedef struct
     uint32_t relative_alt_time;
     float relative_alt;
 
-    uint32_t radio_att_in_time;
-    float radio_in_roll;
-    float radio_in_pitch;
-    float radio_in_yaw;
-
-    uint32_t radio_gyr_in_time;
-    float radio_in_gyr_x;
-    float radio_in_gyr_y;
-    float radio_in_gyr_z;
-
-    uint32_t radio_alt_in_time;
-    float radio_in_alt;
-
-    uint32_t flow_update_time;
-    uint8_t pos_XY_quality;
-    uint8_t pos_Z_quality;
-    float raw_flow_pos[Axis_Sum];
-    float flt_flow_pos[Axis_Sum];
-    uint8_t flow_error_code;
-
     ControlData_TypeDef RC_Control_Data;
 
     uint32_t cnvctl_data_time;
@@ -190,10 +170,18 @@ typedef struct
     double pos_y;
     double pos_z;
 
-    double pos_x_vel;
-    double pos_y_vel;
-    double pos_z_vel;
-    
+    double x_vel;
+    double y_vel;
+    double z_vel;
+
+    bool flow_enable;
+    bool flow_init_state;
+    uint32_t flow_update_time;
+    float relative_pos_x;
+    float relative_pos_y;
+    float relative_vel_x;
+    float relative_vel_y;
+
     uint32_t actuator_update_time;
     uint8_t moto_num;
     uint8_t servo_num;

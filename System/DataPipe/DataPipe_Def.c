@@ -34,17 +34,13 @@ DataPipeObj_TypeDef Attitude_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Attitude_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Attitude_hub_DataPipe = {.enable = true};
 
-DataPipeObj_TypeDef POS_Log_DataPipe = {.enable = true};
-DataPipeObj_TypeDef POS_smp_DataPipe = {.enable = true};
-DataPipeObj_TypeDef POS_hub_DataPipe = {.enable = true};
-
-DataPipeObj_TypeDef Vel_Log_DataPipe = {.enable = true};
-DataPipeObj_TypeDef Vel_smp_DataPipe = {.enable = true};
-DataPipeObj_TypeDef Vel_hub_DataPipe = {.enable = true};
-
 DataPipeObj_TypeDef Baro_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Baro_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Baro_hub_DataPipe = {.enable = true};
 
 DataPipeObj_TypeDef VCP_Connect_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef VCP_Connect_hub_DataPipe = {.enable = true};
+
+DataPipeObj_TypeDef Flow_Log_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Flow_smp_DataPipe = {.enable = true};
+DataPipeObj_TypeDef Flow_hub_DataPipe = {.enable = true};

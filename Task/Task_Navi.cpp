@@ -34,7 +34,6 @@ TaskNavi_Monitor_TypeDef TaskNavi_Monitor;
 
 /* data structure definition */
 DataPipe_CreateDataObj(IMUAtt_TypeDef,  Navi_Attitude);
-DataPipe_CreateDataObj(PosData_TypeDef, Navi_POS);
 DataPipe_CreateDataObj(AltData_TypeDef, Navi_Altitude);
 
 void TaskNavi_Init(uint32_t period)
@@ -43,19 +42,13 @@ void TaskNavi_Init(uint32_t period)
 
     /* init DataPipe */
     memset(&Attitude_smp_DataPipe, 0, sizeof(Attitude_smp_DataPipe));
-    memset(&POS_smp_DataPipe, 0, sizeof(POS_smp_DataPipe));
 
     memset(DataPipe_DataObjAddr(Navi_Attitude), 0, DataPipe_DataSize(Navi_Attitude));
-    memset(DataPipe_DataObjAddr(Navi_POS), 0, DataPipe_DataSize(Navi_POS));
     memset(DataPipe_DataObjAddr(Navi_Altitude), 0, DataPipe_DataSize(Navi_Altitude));
 
     Attitude_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Navi_Attitude);
     Attitude_smp_DataPipe.data_size = DataPipe_DataSize(Navi_Attitude);
     DataPipe_Enable(&Attitude_smp_DataPipe);
-
-    POS_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Navi_POS);
-    POS_smp_DataPipe.data_size = DataPipe_DataSize(Navi_POS);
-    DataPipe_Enable(&POS_smp_DataPipe);
 
     Altitude_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Navi_Altitude);
     Altitude_smp_DataPipe.data_size = DataPipe_DataSize(Navi_Altitude);

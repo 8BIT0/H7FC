@@ -156,12 +156,6 @@ static void SrvDataHub_Init(void)
     Baro_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_Baro_DataPipe_Finish_Callback);
     DataPipe_Enable(&Baro_hub_DataPipe);
 
-    memset(DataPipe_DataObjAddr(Hub_Pos), 0, DataPipe_DataSize(Hub_Pos));
-    POS_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Pos);
-    POS_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Pos);
-    POS_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_Pos_DataPipe_Finish_Callback);
-    DataPipe_Enable(&POS_hub_DataPipe);
-
     memset(DataPipe_DataObjAddr(Hub_Alt), 0, DataPipe_DataSize(Hub_Alt));
     Altitude_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Alt);
     Altitude_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Alt);
@@ -198,15 +192,6 @@ static void SrvDataHub_VCPAttach_dataPipe_Finish_Callback(DataPipeObj_TypeDef *o
         SrvDataHub_Monitor.data.VCP_Attach = DataPipe_DataObj(Hub_VCP_Attach_State);
 
         SrvDataHub_Monitor.update_reg.bit.USB_VCP_attach = false;
-    }
-}
-
-/* reserved */
-static void SrvDataHub_Pos_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
-{
-    if(obj == &POS_hub_DataPipe)
-    {
-        
     }
 }
 
