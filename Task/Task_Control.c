@@ -677,7 +677,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             /* test code */
 
             /* bug */
-            // TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
+            TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 
             if(imu_err_code == SrvIMU_Sample_NoError)
             {

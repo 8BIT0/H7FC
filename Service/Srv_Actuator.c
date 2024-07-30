@@ -459,9 +459,9 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
     for (uint8_t i = 0; i < 4; i++)
     {
         SrvActuator_Obj.drive_module.obj_list[i].ctl_val = (SrvActuator_Obj.drive_module.obj_list[i].max_val -
-                                                            SrvActuator_Obj.drive_module.obj_list[i].min_val) *
+                                                            SrvActuator_Obj.drive_module.obj_list[i].idle_val) *
                                                             throttle_base_percent +
-                                                            SrvActuator_Obj.drive_module.obj_list[i].min_val;
+                                                            SrvActuator_Obj.drive_module.obj_list[i].idle_val;
     }
 
     ctl_val[0] += pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
