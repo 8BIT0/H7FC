@@ -194,31 +194,6 @@ typedef struct
     double pos_y_vel;
     double pos_z_vel;
     
-    bool gnss_enable;
-    bool gnss_init_state;
-    uint32_t gnss_update_time;
-    double lon;
-    double lat;
-    double alt;
-
-    double vel_n;
-    double vel_e;
-    double vel_d;
-
-    double forward_vel;
-    double lateral_vel;
-    double vertical_vel;
-
-    uint16_t utc_year;
-    uint16_t utc_month;
-    uint16_t utc_day;
-    uint16_t utc_hour;
-    uint16_t utc_min;
-    uint16_t utc_s;
-    uint16_t utc_ms;
-
-    uint8_t gnss_error_code;
-
     uint32_t actuator_update_time;
     uint8_t moto_num;
     uint8_t servo_num;
