@@ -34,9 +34,11 @@ DataPipeObj_TypeDef Attitude_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Attitude_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Attitude_hub_DataPipe = {.enable = true};
 
+DataPipeObj_TypeDef POS_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef POS_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef POS_hub_DataPipe = {.enable = true};
 
+DataPipeObj_TypeDef Vel_Log_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Vel_smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef Vel_hub_DataPipe = {.enable = true};
 

@@ -131,9 +131,11 @@ extern DataPipeObj_TypeDef Altitude_Log_DataPipe;
 extern DataPipeObj_TypeDef Altitude_smp_DataPipe;
 extern DataPipeObj_TypeDef Altitude_hub_DataPipe;
 
+extern DataPipeObj_TypeDef Pos_Log_DataPipe;
 extern DataPipeObj_TypeDef POS_smp_DataPipe;
 extern DataPipeObj_TypeDef POS_hub_DataPipe;
 
+extern DataPipeObj_TypeDef Vel_Log_DataPipe;
 extern DataPipeObj_TypeDef Vel_smp_DataPipe;
 extern DataPipeObj_TypeDef Vel_hub_DataPipe;
 
