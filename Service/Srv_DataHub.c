@@ -740,12 +740,11 @@ reupdate_arm:
 
 static bool SrvDataHub_Get_Failsafe(bool *failsafe)
 {
-    if (failsafe == NULL)
-        return false;
-
 reupdate_failsafe:
     SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data = true;
-    *failsafe = SrvDataHub_Monitor.data.failsafe;
+    
+    if (failsafe)
+        *failsafe = SrvDataHub_Monitor.data.failsafe;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data)
         goto reupdate_failsafe;
