@@ -606,23 +606,26 @@ reupdate_raw_mag:
 
 static bool SrvDataHub_Get_Scaled_Baro(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *tempra, uint8_t *error)
 {
-    if ((time_stamp == NULL) ||
-        (baro_alt == NULL) ||
-        (baro_alt_offset == NULL) ||
-        (baro_pressure == NULL) ||
-        (tempra == NULL) ||
-        (error == NULL))
-        return false;
-
 reupdate_scaled_baro:
     SrvDataHub_Monitor.inuse_reg.bit.scaled_baro = true;
 
-    *time_stamp = SrvDataHub_Monitor.data.baro_update_time;
-    *baro_pressure = SrvDataHub_Monitor.data.baro_pressure;
-    *baro_alt = SrvDataHub_Monitor.data.baro_alt;
-    *baro_alt_offset = SrvDataHub_Monitor.data.baro_alt_offset;
-    *tempra = SrvDataHub_Monitor.data.baro_tempra;
-    *error = SrvDataHub_Monitor.data.baro_error_code;
+    if (time_stamp)
+        *time_stamp = SrvDataHub_Monitor.data.baro_update_time;
+    
+    if (baro_pressure)
+        *baro_pressure = SrvDataHub_Monitor.data.baro_pressure;
+    
+    if (baro_alt)
+        *baro_alt = SrvDataHub_Monitor.data.baro_alt;
+    
+    if (baro_alt_offset)
+        *baro_alt_offset = SrvDataHub_Monitor.data.baro_alt_offset;
+    
+    if (tempra)
+        *tempra = SrvDataHub_Monitor.data.baro_tempra;
+    
+    if (error)
+        *error = SrvDataHub_Monitor.data.baro_error_code;
 
     if(!SrvDataHub_Monitor.inuse_reg.bit.scaled_baro)
         goto reupdate_scaled_baro;
@@ -681,30 +684,35 @@ reupdate_scaled_mag:
 
 static bool SrvDataHub_Get_Attitude(uint32_t *time_stamp, float *pitch, float *roll, float *yaw, float *q0, float *q1, float *q2, float *q3, bool *flip_over)
 {
-    if((time_stamp == NULL) || \
-       (pitch == NULL) || \
-       (roll == NULL) || \
-       (yaw == NULL) || \
-       (q0 == NULL) || \
-       (q1 == NULL) || \
-       (q2 == NULL) || \
-       (q3 == NULL))
-       return false;
-
 reupdate_attitude:
     SrvDataHub_Monitor.inuse_reg.bit.attitude = true; 
     
-    (*time_stamp) = SrvDataHub_Monitor.data.att_update_time;
-    (*pitch) = SrvDataHub_Monitor.data.att_pitch;
-    (*roll) = SrvDataHub_Monitor.data.att_roll;
-    (*yaw) = SrvDataHub_Monitor.data.att_yaw;
+    if (time_stamp)
+        (*time_stamp) = SrvDataHub_Monitor.data.att_update_time;
+    
+    if (pitch)
+        (*pitch) = SrvDataHub_Monitor.data.att_pitch;
+    
+    if (roll)
+        (*roll) = SrvDataHub_Monitor.data.att_roll;
+    
+    if (yaw)
+        (*yaw) = SrvDataHub_Monitor.data.att_yaw;
 
-    (*q0) = SrvDataHub_Monitor.data.att_q0;
-    (*q1) = SrvDataHub_Monitor.data.att_q1;
-    (*q2) = SrvDataHub_Monitor.data.att_q2;
-    (*q3) = SrvDataHub_Monitor.data.att_q3;
+    if (q0)
+        (*q0) = SrvDataHub_Monitor.data.att_q0;
 
-    (*flip_over) = SrvDataHub_Monitor.data.att_flip_over;
+    if (q1)
+        (*q1) = SrvDataHub_Monitor.data.att_q1;
+
+    if (q2)
+        (*q2) = SrvDataHub_Monitor.data.att_q2;
+    
+    if (q3)
+        (*q3) = SrvDataHub_Monitor.data.att_q3;
+
+    if (flip_over)
+        (*flip_over) = SrvDataHub_Monitor.data.att_flip_over;
 
     if(!SrvDataHub_Monitor.inuse_reg.bit.attitude)
         goto reupdate_attitude;

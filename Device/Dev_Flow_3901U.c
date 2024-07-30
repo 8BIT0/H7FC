@@ -26,7 +26,7 @@ static uint8_t DevFlow3901U_GetCheckSum(uint8_t *p_data);
 /* external function */
 static uint8_t DevFlow3901_Init(DevFlow3901Obj_TypeDef *obj);
 static void DevFLow3901U_Decode_Callback(DevFlow3901Obj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
-static DevFlow3901UData_TypeDef DevFlow3901U_GetData(DevFlow3901Obj_TypeDef *obj);
+static void DevFlow3901U_GetData(DevFlow3901Obj_TypeDef *obj, uint32_t *time, int16_t *x, int16_t *y, uint8_t *quality);
 
 DevFlow3901_TypeDef DevFlow3901 = {
     .init = DevFlow3901_Init,
@@ -88,7 +88,7 @@ static void DevFLow3901U_Decode_Callback(DevFlow3901Obj_TypeDef *obj, uint8_t *p
                 obj->dis_x = frame.data[0];
                 obj->dis_x |= frame.data[1] << 8;
                 obj->dis_y = frame.data[2];
-                obj->dis_y = frame.data[3] << 8;
+                obj->dis_y |= frame.data[3] << 8;
                 obj->quality = frame.env_quality;
 
                 if (frame.ender == FLOW3901U_YawMode_Ender)
@@ -102,20 +102,23 @@ static void DevFLow3901U_Decode_Callback(DevFlow3901Obj_TypeDef *obj, uint8_t *p
     }
 }
 
-static DevFlow3901UData_TypeDef DevFlow3901U_GetData(DevFlow3901Obj_TypeDef *obj)
+static void DevFlow3901U_GetData(DevFlow3901Obj_TypeDef *obj, uint32_t *time, int16_t *x, int16_t *y, uint8_t *quality)
 {
-    DevFlow3901UData_TypeDef data_tmp;
-
-    memset(&data_tmp, 0, sizeof(DevFlow3901UData_TypeDef));
-
     if (obj && obj->init)
     {
 reupdate_flow_sensor:
         obj->accessing = true;
-        data_tmp.time_stamp = obj->time_stamp;
-        data_tmp.flow_x = obj->dis_x;
-        data_tmp.flow_y = obj->dis_y;
-        data_tmp.quality = obj->quality;
+        if (time)
+            *time = obj->time_stamp;
+        
+        if (x)
+            *x = obj->dis_x;
+        
+        if (y)
+            *y = obj->dis_y;
+
+        if (quality)
+            *quality = obj->quality;
 
         /* if its updating in parse process */
         /* re_update flow pos */
@@ -124,8 +127,6 @@ reupdate_flow_sensor:
 
         obj->accessing = false;
     }
-
-    return data_tmp;
 }
 
 static uint8_t DevFlow3901U_GetCheckSum(uint8_t *p_data)

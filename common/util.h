@@ -13,7 +13,7 @@ extern "C" {
 #define Mb * (1024 Kb)
 
 #define UTIL_SET_BIT(x) (1 << x)
-#define DEG_2_REG(x) (x / 57.29578f)
+#define DEG_2_RAD(x) (x / 57.29578f)
 #define REG_2_DEG(x) (x * 57.29578f)
 
 int16_t Common_CRC16(const uint8_t *pBuf, const uint32_t len);

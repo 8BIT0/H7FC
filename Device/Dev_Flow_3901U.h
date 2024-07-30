@@ -13,6 +13,10 @@ extern "C" {
 #define FLOW_3901U_BIT      8
 #define FLOW_3901U_PARITY   0
 
+#define FLOW_3901U_POSFILT_GAIN     0.2f
+#define FLOW_3901U_ATTFILT_GAIN     0.2f
+#define FLOW_3901U_ATTOFFSET_GAIN   600.0f
+
 #define To_DevFlow3901U_Api(x)  ((DevFlow3901_TypeDef *)x)
 #define To_DevFlow3901U_Obj(x)  ((DevFlow3901Obj_TypeDef *)x)
 #define DevFlow3901U_Size       sizeof(DevFlow3901Obj_TypeDef)
@@ -20,8 +24,8 @@ extern "C" {
 typedef struct
 {
     uint32_t time_stamp;
-    int16_t flow_x;
-    int16_t flow_y;
+    int16_t flow_x;         /* unit: cm */
+    int16_t flow_y;         /* unit: cm */
     uint8_t quality;
 } DevFlow3901UData_TypeDef;
 
@@ -52,7 +56,7 @@ typedef struct
 {
     uint8_t (*init)(DevFlow3901Obj_TypeDef *obj);
     void (*recv)(DevFlow3901Obj_TypeDef *obj, uint8_t *p_buf, uint16_t len);
-    DevFlow3901UData_TypeDef (*get)(DevFlow3901Obj_TypeDef *obj);
+    void (*get)(DevFlow3901Obj_TypeDef *obj, uint32_t *time, int16_t *x, int16_t *y, uint8_t *quality);
     bool (*yaw_mode)(DevFlow3901Obj_TypeDef *obj);
 } DevFlow3901_TypeDef;
 
