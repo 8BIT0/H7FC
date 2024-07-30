@@ -457,14 +457,14 @@ static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range)
 {
     if(acc_range && gyr_range)
     {
-reupdate_imu_range:
+reupdate_pri_imu_range:
         SrvDataHub_Monitor.inuse_reg.bit.range_imu = true;
 
         (*acc_range) = SrvDataHub_Monitor.data.pri_acc_range;
         (*gyr_range) = SrvDataHub_Monitor.data.pri_gyr_range;
 
         if(!SrvDataHub_Monitor.inuse_reg.bit.range_imu)
-            goto reupdate_imu_range;
+            goto reupdate_pri_imu_range;
 
         SrvDataHub_Monitor.inuse_reg.bit.range_imu = false;
 
@@ -480,41 +480,48 @@ static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range)
     {
         (*acc_range) = SrvDataHub_Monitor.data.sec_acc_range;
         (*gyr_range) = SrvDataHub_Monitor.data.sec_gyr_range;
-        return true;
     }
 
-    return false; 
+    return true; 
 }
 
 static bool SrvDataHub_Get_Raw_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr, uint8_t *err)
 {
-    if ((time_stamp == NULL) ||
-        (acc_scale == NULL) ||
-        (gyr_scale == NULL) ||
-        (acc_x == NULL) ||
-        (acc_y == NULL) ||
-        (acc_z == NULL) ||
-        (gyr_x == NULL) ||
-        (gyr_y == NULL) ||
-        (gyr_z == NULL) ||
-        (tmpr == NULL) ||
-        (err == NULL))
-        return false;
-
 reupdate_raw_imu:
     SrvDataHub_Monitor.inuse_reg.bit.raw_imu = true;
 
-    *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
-    *acc_scale = SrvDataHub_Monitor.data.acc_scale;
-    *gyr_scale = SrvDataHub_Monitor.data.gyr_scale;
-    *acc_x = SrvDataHub_Monitor.data.org_acc_x;
-    *acc_y = SrvDataHub_Monitor.data.org_acc_y;
-    *acc_z = SrvDataHub_Monitor.data.org_acc_z;
-    *gyr_x = SrvDataHub_Monitor.data.org_gyr_x;
-    *gyr_y = SrvDataHub_Monitor.data.org_gyr_y;
-    *gyr_z = SrvDataHub_Monitor.data.org_gyr_z;
-    *tmpr = SrvDataHub_Monitor.data.imu_temp;
-    *err = SrvDataHub_Monitor.data.imu_error_code;
+    if (time_stamp)
+        *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
+    
+    if (acc_scale)
+        *acc_scale = SrvDataHub_Monitor.data.acc_scale;
+    
+    if (gyr_scale)
+        *gyr_scale = SrvDataHub_Monitor.data.gyr_scale;
+    
+    if (acc_x)
+        *acc_x = SrvDataHub_Monitor.data.org_acc_x;
+    
+    if (acc_y)
+        *acc_y = SrvDataHub_Monitor.data.org_acc_y;
+    
+    if (acc_z)
+        *acc_z = SrvDataHub_Monitor.data.org_acc_z;
+    
+    if (gyr_x)
+        *gyr_x = SrvDataHub_Monitor.data.org_gyr_x;
+    
+    if (gyr_y)
+        *gyr_y = SrvDataHub_Monitor.data.org_gyr_y;
+    
+    if (gyr_z)
+        *gyr_z = SrvDataHub_Monitor.data.org_gyr_z;
+    
+    if (tmpr)
+        *tmpr = SrvDataHub_Monitor.data.imu_temp;
+    
+    if (err)
+        *err = SrvDataHub_Monitor.data.imu_error_code;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.raw_imu)
         goto reupdate_raw_imu;
@@ -526,33 +533,41 @@ reupdate_raw_imu:
 
 static bool SrvDataHub_Get_Scaled_IMU(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmpr, uint8_t *err)
 {
-    if ((time_stamp == NULL) ||
-        (acc_scale == NULL) ||
-        (gyr_scale == NULL) ||
-        (acc_x == NULL) ||
-        (acc_y == NULL) ||
-        (acc_z == NULL) ||
-        (gyr_x == NULL) ||
-        (gyr_y == NULL) ||
-        (gyr_z == NULL) ||
-        (tmpr == NULL) ||
-        (err == NULL))
-        return false;
-
 reupdate_scaled_imu:
     SrvDataHub_Monitor.inuse_reg.bit.scaled_imu = true;
 
-    *time_stamp = SrvDataHub_Monitor.data.imu_update_time;
-    *acc_scale = SrvDataHub_Monitor.data.acc_scale;
-    *gyr_scale = SrvDataHub_Monitor.data.gyr_scale;
-    *acc_x = SrvDataHub_Monitor.data.flt_acc_x;
-    *acc_y = SrvDataHub_Monitor.data.flt_acc_y;
-    *acc_z = SrvDataHub_Monitor.data.flt_acc_z;
-    *gyr_x = SrvDataHub_Monitor.data.flt_gyr_x;
-    *gyr_y = SrvDataHub_Monitor.data.flt_gyr_y;
-    *gyr_z = SrvDataHub_Monitor.data.flt_gyr_z;
-    *tmpr = SrvDataHub_Monitor.data.imu_temp;
-    *err = SrvDataHub_Monitor.data.imu_error_code;
+    if (time_stamp)
+        *time_stamp = SrvDataHub_Monitor.data.imu_update_time; 
+    
+    if (acc_scale)
+        *acc_scale = SrvDataHub_Monitor.data.acc_scale;
+    
+    if (gyr_scale)
+        *gyr_scale = SrvDataHub_Monitor.data.gyr_scale;
+    
+    if (acc_x)
+        *acc_x = SrvDataHub_Monitor.data.flt_acc_x;
+    
+    if (acc_y)
+        *acc_y = SrvDataHub_Monitor.data.flt_acc_y;
+    
+    if (acc_z)
+        *acc_z = SrvDataHub_Monitor.data.flt_acc_z;
+    
+    if (gyr_x)
+        *gyr_x = SrvDataHub_Monitor.data.flt_gyr_x;
+    
+    if (gyr_y)
+        *gyr_y = SrvDataHub_Monitor.data.flt_gyr_y;
+    
+    if (gyr_z)
+        *gyr_z = SrvDataHub_Monitor.data.flt_gyr_z;
+    
+    if (tmpr)
+        *tmpr = SrvDataHub_Monitor.data.imu_temp;
+    
+    if (err)
+        *err = SrvDataHub_Monitor.data.imu_error_code;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_imu)
         goto reupdate_scaled_imu;
