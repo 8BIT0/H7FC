@@ -322,12 +322,9 @@ static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck
     float gx = 0.0f;
     float gy = 0.0f;
     float gz = 0.0f;
-    bool arm = false;
-    bool failsafe = false;
     uint8_t mode = 0;
 
-    SrvDataHub.get_cnv_control_data(&time, &arm, &failsafe, &mode, &pitch, &roll, &gx, &gy, &gz);
-
+    SrvDataHub.get_cnv_control_data(&time, NULL, NULL, &mode, &pitch, &roll, &gx, &gy, &gz);
     return mavlink_msg_attitude_pack_chan(pck->pck_info.system_id,
                                           pck->pck_info.component_id,
                                           pck->pck_info.chan, pck->msg_obj,
@@ -341,16 +338,8 @@ static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck)
     float pitch = 0.0f;
     float roll = 0.0f;
     float yaw = 0.0f;
-    
-    float q0 = 0.0f;
-    float q1 = 0.0f;
-    float q2 = 0.0f;
-    float q3 = 0.0f;
 
-    bool flip_over = false;
-
-    SrvDataHub.get_attitude(&time_stamp, &pitch, &roll, &yaw, &q0, &q1, &q2, &q3, &flip_over);
-
+    SrvDataHub.get_attitude(&time_stamp, &pitch, &roll, &yaw, NULL, NULL, NULL, NULL, NULL);
     return mavlink_msg_attitude_pack_chan(pck->pck_info.system_id,
                                           pck->pck_info.component_id,
                                           pck->pck_info.chan, pck->msg_obj,
