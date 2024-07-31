@@ -508,8 +508,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
                                       &TaskControl_Monitor.gyr[Axis_X],
                                       &TaskControl_Monitor.gyr[Axis_Y],
                                       &TaskControl_Monitor.gyr[Axis_Z],
-                                      &TaskControl_Monitor.imu_tmpr,
-                                      &imu_err_code) || !imu_init_state)
+                                      NULL, &imu_err_code) || !imu_init_state)
             goto lock_moto;
 
         /* if angular speed over ride then lock the moto and set drone as arm */

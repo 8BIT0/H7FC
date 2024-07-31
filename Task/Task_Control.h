@@ -116,7 +116,6 @@ typedef struct
 
     float acc[Axis_Sum];
     float gyr[Axis_Sum];
-    float imu_tmpr;
 
     float acc_lst[Axis_Sum];
     float gyr_lst[Axis_Sum];
