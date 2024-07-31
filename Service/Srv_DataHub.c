@@ -579,22 +579,26 @@ reupdate_scaled_imu:
 
 static bool SrvDataHub_Get_Raw_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err)
 {
-    if ((time_stamp == NULL) ||
-        (mag_x == NULL) ||
-        (mag_y == NULL) ||
-        (mag_z == NULL) ||
-        (err == NULL))
-        return false;
-
 reupdate_raw_mag:
     SrvDataHub_Monitor.inuse_reg.bit.raw_mag = true;
 
-    *time_stamp = SrvDataHub_Monitor.data.mag_update_time;
-    *scale = SrvDataHub_Monitor.data.mag_scale;
-    *mag_x = SrvDataHub_Monitor.data.org_mag_x;
-    *mag_y = SrvDataHub_Monitor.data.org_mag_y;
-    *mag_z = SrvDataHub_Monitor.data.org_mag_z;
-    *err = SrvDataHub_Monitor.data.mag_error_code;
+    if (time_stamp)
+        *time_stamp = SrvDataHub_Monitor.data.mag_update_time;
+        
+    if (scale)
+        *scale = SrvDataHub_Monitor.data.mag_scale;
+        
+    if (mag_x)
+        *mag_x = SrvDataHub_Monitor.data.org_mag_x;
+        
+    if (mag_y)
+        *mag_y = SrvDataHub_Monitor.data.org_mag_y;
+        
+    if (mag_z)
+        *mag_z = SrvDataHub_Monitor.data.org_mag_z;
+        
+    if (err)
+        *err = SrvDataHub_Monitor.data.mag_error_code;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.raw_mag)
         goto reupdate_raw_mag;
@@ -656,22 +660,26 @@ reupdate_relative_alt:
 
 static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err)
 {
-    if ((time_stamp == NULL) ||
-        (mag_x == NULL) ||
-        (mag_y == NULL) ||
-        (mag_z == NULL) ||
-        (err == NULL))
-        return false;
-
 reupdate_scaled_mag:
     SrvDataHub_Monitor.inuse_reg.bit.scaled_mag = true;
 
-    *time_stamp = SrvDataHub_Monitor.data.mag_update_time;
-    *scale = SrvDataHub_Monitor.data.mag_scale;
-    *mag_x = SrvDataHub_Monitor.data.flt_mag_x;
-    *mag_y = SrvDataHub_Monitor.data.flt_mag_y;
-    *mag_z = SrvDataHub_Monitor.data.flt_mag_z;
-    *err = SrvDataHub_Monitor.data.mag_error_code;
+    if (time_stamp)
+        *time_stamp = SrvDataHub_Monitor.data.mag_update_time;
+        
+    if (scale)
+        *scale = SrvDataHub_Monitor.data.mag_scale;
+        
+    if (mag_x)
+        *mag_x = SrvDataHub_Monitor.data.flt_mag_x;
+        
+    if (mag_y)
+        *mag_y = SrvDataHub_Monitor.data.flt_mag_y;
+        
+    if (mag_z)
+        *mag_z = SrvDataHub_Monitor.data.flt_mag_z;
+        
+    if (err)
+        *err = SrvDataHub_Monitor.data.mag_error_code;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.scaled_mag)
         goto reupdate_scaled_mag;
@@ -756,29 +764,35 @@ reupdate_failsafe:
 
 static bool SrvDataHub_Get_Convert_ControlData(uint32_t *time_stamp, bool *arm, bool *failsafe, uint8_t *mode, float *pitch, float *roll, float *gx, float *gy, float *gz)
 {
-    if ((time_stamp == NULL) || \
-        (arm == NULL) || \
-        (failsafe == NULL) || \
-        (mode == NULL) || \
-        (pitch == NULL) || \
-        (roll == NULL) || \
-        (gx == NULL) || \
-        (gy == NULL) || \
-        (gz == NULL))
-        return false;
-
 reupdate_convertdata:
     SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data = true;
 
-    *time_stamp = SrvDataHub_Monitor.data.cnvctl_data_time;
-    *arm = SrvDataHub_Monitor.data.arm;
-    *failsafe = SrvDataHub_Monitor.data.failsafe;
-    *mode = SrvDataHub_Monitor.data.ctl_mode;
-    *pitch = SrvDataHub_Monitor.data.exp_pitch;
-    *roll = SrvDataHub_Monitor.data.exp_roll;
-    *gx = SrvDataHub_Monitor.data.exp_gyr_x;
-    *gy = SrvDataHub_Monitor.data.exp_gyr_y;
-    *gz = SrvDataHub_Monitor.data.exp_gyr_z;
+    if (time_stamp)
+        *time_stamp = SrvDataHub_Monitor.data.cnvctl_data_time;
+    
+    if (arm)
+        *arm = SrvDataHub_Monitor.data.arm;
+        
+    if (failsafe)
+        *failsafe = SrvDataHub_Monitor.data.failsafe;
+        
+    if (mode)
+        *mode = SrvDataHub_Monitor.data.ctl_mode;
+        
+    if (pitch)
+        *pitch = SrvDataHub_Monitor.data.exp_pitch;
+        
+    if (roll)
+        *roll = SrvDataHub_Monitor.data.exp_roll;
+        
+    if (gx)
+        *gx = SrvDataHub_Monitor.data.exp_gyr_x;
+        
+    if (gy)
+        *gy = SrvDataHub_Monitor.data.exp_gyr_y;
+
+    if (gz)
+        *gz = SrvDataHub_Monitor.data.exp_gyr_z;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.cnv_control_data)
         goto reupdate_convertdata;
