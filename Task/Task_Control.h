@@ -114,9 +114,6 @@ typedef struct
     uint32_t IMU_Rt;
     uint32_t ATT_Rt;
 
-    float acc_scale;
-    float gyr_scale;
-
     float acc[Axis_Sum];
     float gyr[Axis_Sum];
     float imu_tmpr;

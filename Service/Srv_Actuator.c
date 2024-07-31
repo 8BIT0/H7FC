@@ -444,7 +444,6 @@ static SrvActuator_Model_List SrvActuator_GetModel(void)
 static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
 {
     float throttle_base_percent = 0.0f;
-    uint16_t ctl_val[4] = {0};
 
     if ((!SrvActuator_Obj.init) ||
         (pid_ctl == NULL))
@@ -464,16 +463,13 @@ static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
                                                             SrvActuator_Obj.drive_module.obj_list[i].idle_val;
     }
 
-    ctl_val[0] += pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
-    ctl_val[1] += pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
-    ctl_val[2] -= pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
-    ctl_val[3] -= pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
+    SrvActuator_Obj.drive_module.obj_list[0].ctl_val += pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
+    SrvActuator_Obj.drive_module.obj_list[1].ctl_val += pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
+    SrvActuator_Obj.drive_module.obj_list[2].ctl_val -= pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
+    SrvActuator_Obj.drive_module.obj_list[3].ctl_val -= pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
 
     for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
-    {
-        if (!SrvActuator_Moto_DirectDrive(i, ctl_val[i]))
-            return false;
-    }
+        SrvActuator_Moto_DirectDrive(i, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
 
     return true;
 }

@@ -501,8 +501,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
 
         // check imu filter gyro data update or not
         if(!SrvDataHub.get_scaled_imu(&imu_update_time,
-                                      &TaskControl_Monitor.acc_scale,
-                                      &TaskControl_Monitor.gyr_scale,
+                                      NULL, NULL,
                                       &TaskControl_Monitor.acc[Axis_X],
                                       &TaskControl_Monitor.acc[Axis_Y],
                                       &TaskControl_Monitor.acc[Axis_Z],
@@ -656,8 +655,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             TaskControl_Monitor.GyrZCtl_PIDObj.exp = TaskControl_Monitor.exp_gyr_z;
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
-            /* bug */
-            // TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
+            TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
 
             if(imu_err_code == SrvIMU_Sample_NoError)
             {
