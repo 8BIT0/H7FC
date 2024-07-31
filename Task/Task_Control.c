@@ -524,6 +524,17 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
                                              &TaskControl_Monitor.attitude.q3,
                                              &TaskControl_Monitor.flip_over);
 
+        if (TaskControl_Monitor.flip_over)
+        {
+            /* when drone is up side down */
+            /* check remote flip over control toggle state */
+            if (exp_ctl_val->aux.bit.flip_over)
+            {
+                /* reverse drone */
+            } 
+
+            return;
+        }
 
         TaskControl_disarm_check(arm_state, TaskControl_Monitor.attitude.pitch, TaskControl_Monitor.attitude.roll);
 
