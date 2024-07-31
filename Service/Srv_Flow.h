@@ -54,6 +54,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(SrvFlow_SensorType_List type);
+    bool (*sample)(SrvFlow_SensorType_List type);
     bool (*get_data)(SrvFlowData_TypeDef *p_data);
 } SrvFlow_TypeDef;
 

@@ -9,6 +9,7 @@
  */
 #define SrvSensorMonitor_GetSampleInterval(period) (1000 / period)
 
+#define FLOW_TYPE Flow_3901U
 #if defined MATEKH743_V1_5
 #define BARO_TYPE Baro_Type_DPS310
 #define BARO_BUS_TYPE SrvBaro_Bus_IIC
@@ -26,8 +27,8 @@ static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);
 static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj);
 static bool SrvSensorMonitor_Mag_Init(void);
 static bool SrvSensorMonitor_Baro_Init(void);
-static bool SrvSensorMonitor_Gnss_Init(void);
 static bool SrvSensorMonitor_Tof_Init(void);
+static bool SrvSensorMonitor_Flow_Init(void);
 
 /* external function */
 static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj);
@@ -55,21 +56,21 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
     uint8_t enable_sensor_num = 0;
     uint16_t list_index = 0;
 
-    if(obj)
+    if (obj)
     {
         enable_sensor_num = Get_OnSet_Bit_Num(obj->enabled_reg.val);
         
         obj->statistic_list = SrvOsCommon.malloc(enable_sensor_num * sizeof(SrvSensorMonitor_Statistic_TypeDef));
-        if(obj->statistic_list == NULL)
+        if (obj->statistic_list == NULL)
         {
             SrvOsCommon.free(obj->statistic_list);
             return false;
         }
 
         /* enabled on imu must be essential */
-        if(obj->enabled_reg.bit.imu && SrvSensorMonitor_IMU_Init(obj))
+        if (obj->enabled_reg.bit.imu && SrvSensorMonitor_IMU_Init(obj))
         {
-            if(list_index > enable_sensor_num)
+            if (list_index > enable_sensor_num)
                 return false;
 
             obj->init_state_reg.bit.imu = true;
@@ -80,15 +81,15 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         }
         else
         {
-            if(obj->enabled_reg.bit.imu)
+            if (obj->enabled_reg.bit.imu)
                 obj->init_state_reg.bit.imu = false;
 
             return false;
         }
 
-        if(obj->enabled_reg.bit.mag && SrvSensorMonitor_Mag_Init())
+        if (obj->enabled_reg.bit.mag && SrvSensorMonitor_Mag_Init())
         {
-            if(list_index > enable_sensor_num)
+            if (list_index > enable_sensor_num)
                 return false;
 
             obj->init_state_reg.bit.mag = true;
@@ -103,9 +104,9 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.mag = false;
         }
 
-        if(obj->enabled_reg.bit.baro && SrvSensorMonitor_Baro_Init())
+        if (obj->enabled_reg.bit.baro && SrvSensorMonitor_Baro_Init())
         {
-            if(list_index > enable_sensor_num)
+            if (list_index > enable_sensor_num)
                 return false;
 
             obj->init_state_reg.bit.baro = true;
@@ -120,9 +121,9 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.baro = false;
         }
 
-        if(obj->enabled_reg.bit.tof && SrvSensorMonitor_Tof_Init())
+        if (obj->enabled_reg.bit.tof && SrvSensorMonitor_Tof_Init())
         {
-            if(list_index > enable_sensor_num)
+            if (list_index > enable_sensor_num)
                 return false;
 
             obj->init_state_reg.bit.tof = true;
@@ -133,6 +134,21 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         else
         {
             obj->init_state_reg.bit.tof = false;
+        }
+
+        if (obj->enabled_reg.bit.flow && SrvSensorMonitor_Flow_Init())
+        {
+            if (list_index > enable_sensor_num)
+                return false;
+
+            obj->init_state_reg.bit.flow = true;
+            obj->statistic_flow = &obj->statistic_list[list_index];
+            obj->statistic_flow->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.flow);
+            list_index ++;
+        }
+        else
+        {
+            obj->init_state_reg.bit.flow = false;
         }
 
         return true;
@@ -184,7 +200,7 @@ static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum)
 
 static uint32_t SrvSensorMonitor_Get_EnableState(SrvSensorMonitorObj_TypeDef *obj)
 {
-    if(obj)
+    if (obj)
         return obj->enabled_reg.val;
 
     return 0;
@@ -192,7 +208,7 @@ static uint32_t SrvSensorMonitor_Get_EnableState(SrvSensorMonitorObj_TypeDef *ob
 
 static uint32_t SrvSensorMonitor_Get_InitState(SrvSensorMonitorObj_TypeDef *obj)
 {
-    if(obj)
+    if (obj)
         return obj->init_state_reg.val;
 
     return 0;
@@ -203,7 +219,7 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
 {
     SrvIMU_ErrorCode_List init_state;
 
-    if(SrvIMU.init && obj)
+    if (SrvIMU.init && obj)
     {
         init_state = SrvIMU.init();
         obj->imu_num = 0;
@@ -214,7 +230,7 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 MONITOR_INFO("Pri IMU init error\r\n");
                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
-                if(!obj->sec_range_get)
+                if (!obj->sec_range_get)
                 {
                     MONITOR_INFO("IMU get range failed\r\n");
                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
@@ -230,7 +246,7 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 MONITOR_INFO("Sec IMU init error\r\n");
                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
                 obj->pri_range_get = SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range);
-                if(!obj->pri_range_get)
+                if (!obj->pri_range_get)
                 {
                     MONITOR_INFO("IMU get range failed\r\n");
                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
@@ -251,7 +267,7 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
                 
                 /* set sample mode */
-                if(!obj->pri_range_get && !obj->sec_range_get)
+                if (!obj->pri_range_get && !obj->sec_range_get)
                 {
                     MONITOR_INFO("IMU get range failed\r\n");
                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
@@ -260,7 +276,7 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 }
                 else
                 {
-                    if(obj->pri_range_get & obj->sec_range_get)
+                    if (obj->pri_range_get & obj->sec_range_get)
                     {
                         obj->imu_num = 2;
                         obj->IMU_SampleMode = SrvIMU_Both_Sample;
@@ -268,7 +284,7 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                     else
                     {
                         obj->imu_num = 1;
-                        if(obj->pri_range_get)
+                        if (obj->pri_range_get)
                         {
                             obj->IMU_SampleMode = SrvIMU_Priori_Pri;
                         }
@@ -291,11 +307,11 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
 
 static bool SrvSensorMonitor_IMU_Get_Num(SrvSensorMonitorObj_TypeDef *obj, uint8_t *num)
 {
-    if(obj)
+    if (obj)
     {
-        if(num)
+        if (num)
         {
-            if(obj->init_state_reg.bit.imu)
+            if (obj->init_state_reg.bit.imu)
             {
                 (*num) = obj->imu_num;
                 return true;
@@ -310,12 +326,12 @@ static bool SrvSensorMonitor_IMU_Get_Num(SrvSensorMonitorObj_TypeDef *obj, uint8
 
 static bool SrvSensorMonitor_Get_IMU_Range(SrvSensorMonitorObj_TypeDef *obj, SrvIMU_Module_Type type, SrvIMU_Range_TypeDef *range)
 {
-    if(obj && range)
+    if (obj && range)
     {
         switch((uint8_t)type)
         {
             case SrvIMU_PriModule:
-                if(obj->pri_range_get)
+                if (obj->pri_range_get)
                 {
                     range->Acc = obj->PriIMU_Range.Acc;
                     range->Gyr = obj->PriIMU_Range.Gyr;
@@ -327,7 +343,7 @@ static bool SrvSensorMonitor_Get_IMU_Range(SrvSensorMonitorObj_TypeDef *obj, Srv
                 return false;
 
             case SrvIMU_SecModule:
-                if(obj->sec_range_get)
+                if (obj->sec_range_get)
                 {
                     range->Acc = obj->SecIMU_Range.Acc;
                     range->Gyr = obj->SecIMU_Range.Gyr;
@@ -355,11 +371,11 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     uint32_t end_tick = 0;
     int32_t sample_tick = 0;
 
-    if(obj && obj->statistic_imu && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && obj->statistic_imu->set_period)
+    if (obj && obj->statistic_imu && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && obj->statistic_imu->set_period)
     {
         sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_imu->set_period);
         
-        if( SrvIMU.sample && \
+        if ( SrvIMU.sample && \
             SrvIMU.error_proc && 
             ((obj->statistic_imu->start_time == 0) || \
              (sample_interval_ms && \
@@ -369,37 +385,37 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
             // DebugPin.ctl(Debug_PB5, true);
             start_tick = SrvOsCommon.get_systimer_current_tick();
 
-            if(SrvIMU.sample(obj->IMU_SampleMode))
+            if (SrvIMU.sample(obj->IMU_SampleMode))
             { 
                 end_tick = SrvOsCommon.get_systimer_current_tick();
                 SrvIMU.error_proc();
 
                 obj->statistic_imu->sample_cnt ++;
                 obj->statistic_imu->nxt_sample_time = cur_time + sample_interval_ms;
-                if(obj->statistic_imu->start_time == 0)
+                if (obj->statistic_imu->start_time == 0)
                     obj->statistic_imu->start_time = cur_time;
 
                 state = true;
             }
             // DebugPin.ctl(Debug_PB5, false);
 
-            if(state)
+            if (state)
             {
-                if(start_tick < end_tick)
+                if (start_tick < end_tick)
                 {
                     sample_tick = end_tick - start_tick;
                 }
-                else if(start_tick > end_tick)
+                else if (start_tick > end_tick)
                 {
                     /* must after timer irq */
                     sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
                 }
 
-                if((sample_tick <= obj->statistic_imu->min_sampling_overhead) || \
+                if ((sample_tick <= obj->statistic_imu->min_sampling_overhead) || \
                    (obj->statistic_imu->min_sampling_overhead == 0))
                     obj->statistic_imu->min_sampling_overhead = sample_tick;
 
-                if(sample_tick >= obj->statistic_imu->max_sampling_overhead)
+                if (sample_tick >= obj->statistic_imu->max_sampling_overhead)
                     obj->statistic_imu->max_sampling_overhead = sample_tick;
 
                 obj->statistic_imu->avg_sampling_overhead += sample_tick;
@@ -419,9 +435,9 @@ static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj
 
     memset(&imu_data_tmp, 0, sizeof(SrvIMU_UnionData_TypeDef));
 
-    if(obj && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && SrvIMU.get_data)
+    if (obj && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && SrvIMU.get_data)
     {
-        if(SrvIMU.get_data(SrvIMU_FusModule, &imu_data_tmp.data))
+        if (SrvIMU.get_data(SrvIMU_FusModule, &imu_data_tmp.data))
         {
             /*
             * adjust imu axis coordinate as 
@@ -454,7 +470,7 @@ static bool SrvSensorMonitor_Mag_Init(void)
 
 static bool SrvSensorMonitor_Mag_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
-    if(obj && obj->enabled_reg.bit.mag && obj->init_state_reg.bit.mag)
+    if (obj && obj->enabled_reg.bit.mag && obj->init_state_reg.bit.mag)
     {
         
     }
@@ -470,7 +486,7 @@ static uint32_t SrvSensorMonitor_Get_MagData(SrvSensorMonitorObj_TypeDef *obj)
 /******************************************* Baro Section *********************************************/
 static bool SrvSensorMonitor_Baro_Init(void)
 {
-    if(SrvBaro.init && (SrvBaro.init(BARO_TYPE, BARO_BUS_TYPE) == SrvBaro_Error_None))
+    if (SrvBaro.init && (SrvBaro.init(BARO_TYPE, BARO_BUS_TYPE) == SrvBaro_Error_None))
     {
         MONITOR_INFO("Baro init accomplished\r\n");
         return true;
@@ -488,7 +504,7 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     uint32_t end_tick = 0;
     int32_t sample_tick = 0;
 
-    if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && obj->freq_reg.bit.baro && obj->statistic_baro->set_period)
+    if (obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && obj->freq_reg.bit.baro && obj->statistic_baro->set_period)
     {
         sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_baro->set_period);
     
@@ -500,36 +516,36 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
             start_tick = SrvOsCommon.get_systimer_current_tick();
 
             // DebugPin.ctl(Debug_PB5, true);
-            if(SrvBaro.sample())
+            if (SrvBaro.sample())
             {
                 end_tick = SrvOsCommon.get_systimer_current_tick();
 
                 obj->statistic_baro->sample_cnt ++;
                 obj->statistic_baro->nxt_sample_time = cur_time + sample_interval_ms;
-                if(obj->statistic_baro->start_time == 0)
+                if (obj->statistic_baro->start_time == 0)
                     obj->statistic_baro->start_time = cur_time;
 
                 state = true;
             }
             // DebugPin.ctl(Debug_PB5, false);
         
-            if(state)
+            if (state)
             {
-                if(start_tick < end_tick)
+                if (start_tick < end_tick)
                 {
                     sample_tick = end_tick - start_tick;
                 }
-                else if(start_tick > end_tick)
+                else if (start_tick > end_tick)
                 {
                     /* must after timer irq */
                     sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
                 }
 
-                if((sample_tick <= obj->statistic_baro->min_sampling_overhead) || \
+                if ((sample_tick <= obj->statistic_baro->min_sampling_overhead) || \
                     (obj->statistic_baro->min_sampling_overhead == 0))
                     obj->statistic_baro->min_sampling_overhead = sample_tick;
 
-                if(sample_tick >= obj->statistic_baro->max_sampling_overhead)
+                if (sample_tick >= obj->statistic_baro->max_sampling_overhead)
                     obj->statistic_baro->max_sampling_overhead = sample_tick;
 
                 obj->statistic_baro->avg_sampling_overhead += sample_tick;
@@ -549,9 +565,9 @@ static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorO
 
     memset(&baro_data_tmp, 0, sizeof(SrvBaro_UnionData_TypeDef));
 
-    if(obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && SrvBaro.get_data)
+    if (obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && SrvBaro.get_data)
     {
-        if(SrvBaro.get_data(&baro_data_tmp))
+        if (SrvBaro.get_data(&baro_data_tmp))
         {
             obj->lst_baro_data.data = baro_data_tmp.data;
         }
@@ -571,7 +587,7 @@ static bool SrvSensorMonitor_Tof_Init(void)
 
 static bool SrvSensorMonitor_Tof_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 {
-    if(obj && obj->enabled_reg.bit.tof && obj->init_state_reg.bit.tof)
+    if (obj && obj->enabled_reg.bit.tof && obj->init_state_reg.bit.tof)
     {
         
     }
@@ -588,43 +604,35 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     
     /* imu single sampling overhead is about 60us */
     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
-    if(obj->statistic_imu->is_calid == Calib_Start)
+    if (obj->statistic_imu->is_calid == Calib_Start)
     {
-        if(SrvIMU.set_calib)
+        if (SrvIMU.set_calib)
         {
             obj->statistic_imu->is_calid = SrvIMU.set_calib(GYRO_CALIB_CYCLE);
         }
         else
             obj->statistic_imu->is_calid = Calib_Failed;
     }
-    else if(obj->statistic_imu->is_calid != Calib_Failed)
+    else if (obj->statistic_imu->is_calid != Calib_Failed)
         obj->statistic_imu->is_calid = SrvIMU.get_calib();
     
     state |= SrvSensorMonitor_Mag_SampleCTL(obj);
-    if(obj->statistic_mag->is_calid == Calib_Start)
-    {
-
-    }
 
     /* baro single sampling overhead is about 230us */
     state |= SrvSensorMonitor_Baro_SampleCTL(obj);
-    if(obj->statistic_baro->is_calid == Calib_Start)
+    if (obj->statistic_baro->is_calid == Calib_Start)
     {
-        if(SrvBaro.set_calib)
+        if (SrvBaro.set_calib)
         {
             obj->statistic_baro->is_calid = SrvBaro.set_calib(BARO_CALIB_CYCLE);
         }
         else
             obj->statistic_baro->is_calid = Calib_Failed;
     }
-    else if(obj->statistic_baro->is_calid != Calib_Failed)
+    else if (obj->statistic_baro->is_calid != Calib_Failed)
         obj->statistic_baro->is_calid = SrvBaro.get_calib();
 
     state |= SrvSensorMonitor_Tof_SampleCTL(obj);
-    if(obj->statistic_tof->is_calid == Calib_Start)
-    {
-        
-    }
     
     // DebugPin.ctl(Debug_PB5, false);
     
@@ -633,7 +641,7 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
 static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
 {
-    if(obj)
+    if (obj)
     {
         switch((uint8_t) type)
         {
@@ -663,7 +671,7 @@ static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonito
 
 static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type)
 {
-    if(obj)
+    if (obj)
     {
         switch((uint8_t) type)
         {
@@ -671,7 +679,7 @@ static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonito
                 break;
 
             case SrvSensorMonitor_Type_MAG:
-                if(obj->enabled_reg.bit.mag && obj->init_state_reg.bit.mag)
+                if (obj->enabled_reg.bit.mag && obj->init_state_reg.bit.mag)
                 {
                     return obj->statistic_mag->is_calid;
                 }
@@ -679,7 +687,7 @@ static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonito
                     return Calib_Failed; 
 
             case SrvSensorMonitor_Type_BARO:
-                if(obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
+                if (obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
                 {
                     return obj->statistic_baro->is_calid;
                 }
@@ -687,7 +695,7 @@ static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonito
                     return Calib_Failed;
 
             case SrvSensorMonitor_Type_TOF:
-                if(obj->enabled_reg.bit.tof && obj->init_state_reg.bit.tof)
+                if (obj->enabled_reg.bit.tof && obj->init_state_reg.bit.tof)
                 {
                     return obj->statistic_tof->is_calid;
                 }
@@ -701,3 +709,24 @@ static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonito
 
     return Calib_Failed;
 }
+
+/******************************************* Tof Section **********************************************/
+static bool SrvSensorMonitor_Flow_Init(void)
+{
+    return SrvFlow.init(FLOW_TYPE);
+}
+
+static bool SrvSensorMonitor_Flow_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
+{
+    uint32_t sample_interval_ms = 0;
+    
+    if (obj && obj->enabled_reg.bit.flow && obj->init_state_reg.bit.flow && obj->freq_reg.bit.flow && obj->statistic_flow->set_period)
+    {
+        sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_flow->set_period);
+
+    }
+
+    return false;
+}
+
+

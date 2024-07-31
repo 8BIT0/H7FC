@@ -12,6 +12,7 @@ extern "C" {
 #include "Bsp_Timer.h"
 #include "Srv_IMUSample.h"
 #include "Srv_Baro.h"
+#include "Srv_Flow.h"
 
 typedef SrvIMU_Range_TypeDef SrvSensorMonitor_IMURange_TypeDef;
 
@@ -57,8 +58,9 @@ typedef union
         uint32_t mag  : 1;
         uint32_t baro : 1;
         uint32_t tof  : 1;
+        uint32_t flow : 1;
 
-        uint32_t res  : 27;
+        uint32_t res  : 26;
     }bit;
 }SrvSensorMonitor_GenReg_TypeDef;
 
@@ -71,8 +73,9 @@ typedef union
         uint32_t mag  : 4;
         uint32_t baro : 4;
         uint32_t tof  : 4;
+        uint32_t flow : 4;
 
-        uint32_t res  : 12;
+        uint32_t res  : 8;
     }bit;
 }SrvSensorMonitor_SampleFreqReg_TypeDef;
 
@@ -103,6 +106,7 @@ typedef struct
     SrvSensorMonitor_Statistic_TypeDef *statistic_mag;
     SrvSensorMonitor_Statistic_TypeDef *statistic_baro;
     SrvSensorMonitor_Statistic_TypeDef *statistic_tof;
+    SrvSensorMonitor_Statistic_TypeDef *statistic_flow;
 
     SrvSensorMonitor_Statistic_TypeDef *statistic_list;
 

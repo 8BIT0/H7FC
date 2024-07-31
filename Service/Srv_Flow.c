@@ -33,10 +33,12 @@ static void SrvFlow_3901U_RawComput(uint32_t time_stamp, int16_t raw_x, int16_t 
 /* external function */
 static bool SrvFlow_Init(SrvFlow_SensorType_List type);
 static bool SrvFlow_Get_Data(SrvFlowData_TypeDef *p_data);
+static bool SrvFlow_Sample(SrvFlow_SensorType_List type);
 
 SrvFlow_TypeDef SrvFlow = {
     .init =  SrvFlow_Init,
     .get_data = SrvFlow_Get_Data,
+    .sample = SrvFlow_Sample,
 };
 
 static bool SrvFlow_Init(SrvFlow_SensorType_List type)
@@ -93,6 +95,11 @@ static bool SrvFlow_Init(SrvFlow_SensorType_List type)
         /* reserved */
     }
 
+    return false;
+}
+
+static bool SrvFlow_Sample(SrvFlow_SensorType_List type)
+{
     return false;
 }
 
