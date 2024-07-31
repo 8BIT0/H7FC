@@ -531,7 +531,9 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             if (exp_ctl_val->aux.bit.flip_over)
             {
                 /* reverse drone */
-            } 
+            }
+            else
+                SrvActuator.lock();
 
             return;
         }
