@@ -54,6 +54,7 @@ static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
     {
         /* limit diff range */
         /* check integer first */
+        diff_tmp = diff;
         if((int16_t)diff >= (int16_t)p_PIDObj->diff_max)
         {
             diff_tmp = p_PIDObj->diff_max;
@@ -62,8 +63,6 @@ static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
         {
             diff_tmp = p_PIDObj->diff_min;
         }
-        else
-            diff_tmp = diff;
 
         p_PIDObj->P_out = diff_tmp * p_PIDObj->gP;
         return true;
