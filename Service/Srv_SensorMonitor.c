@@ -397,6 +397,8 @@ static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
                 state = true;
             }
+            else
+                end_tick = SrvOsCommon.get_systimer_current_tick();
             // DebugPin.ctl(Debug_PB5, false);
 
             if (state)
@@ -527,6 +529,8 @@ static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
                 state = true;
             }
+            else
+                end_tick = SrvOsCommon.get_systimer_current_tick();
             // DebugPin.ctl(Debug_PB5, false);
         
             if (state)
@@ -594,6 +598,78 @@ static bool SrvSensorMonitor_Tof_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
 
     return false;
 }
+
+/******************************************* Tof Section **********************************************/
+static bool SrvSensorMonitor_Flow_Init(void)
+{
+    return SrvFlow.init(FLOW_TYPE);
+}
+
+static bool SrvSensorMonitor_Flow_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
+{
+    uint32_t sample_interval_ms = 0;
+    uint32_t cur_time = 0;
+    uint32_t start_tick = 0;
+    uint32_t end_tick = 0;
+    uint32_t sample_tick = 0;
+    bool state = false;
+
+    if (obj && obj->enabled_reg.bit.flow && obj->init_state_reg.bit.flow && obj->freq_reg.bit.flow && obj->statistic_flow->set_period)
+    {
+        sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_flow->set_period);
+
+        if (SrvFlow.sample && \
+            ((obj->statistic_flow->start_time == 0) || \
+             (sample_interval_ms && \
+             (cur_time >= obj->statistic_baro->nxt_sample_time))))
+        {
+            start_tick = SrvOsCommon.get_systimer_current_tick();
+            if (SrvFlow.sample(FLOW_TYPE))
+            {
+                end_tick = SrvOsCommon.get_systimer_current_tick();
+
+                obj->statistic_baro->sample_cnt ++;
+                obj->statistic_baro->nxt_sample_time = cur_time + sample_interval_ms;
+                if (obj->statistic_baro->start_time == 0)
+                    obj->statistic_baro->start_time = cur_time;
+
+                state = true;
+            }
+            else
+                end_tick = SrvOsCommon.get_systimer_current_tick();
+
+            /* get flow sensor sample over head */
+            if (state)
+            {
+                if (start_tick < end_tick)
+                {
+                    sample_tick = end_tick - start_tick;
+                }
+                else if (start_tick > end_tick)
+                {
+                    /* must after timer irq */
+                    sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
+                }
+
+                if ((sample_tick <= obj->statistic_flow->min_sampling_overhead) || \
+                   (obj->statistic_flow->min_sampling_overhead == 0))
+                    obj->statistic_flow->min_sampling_overhead = sample_tick;
+
+                if (sample_tick >= obj->statistic_flow->max_sampling_overhead)
+                    obj->statistic_flow->max_sampling_overhead = sample_tick;
+
+                obj->statistic_flow->avg_sampling_overhead += sample_tick;
+                obj->statistic_flow->avg_sampling_overhead /= 2;
+
+                obj->statistic_flow->cur_sampling_overhead = sample_tick;
+            }
+        }
+    }
+
+    return state;
+}
+
+
 
 /* noticed all sensor sampling and processing must finished in 1ms maximum */
 /* maximum sampling rate is 1KHz currentlly */
@@ -708,25 +784,6 @@ static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonito
     }
 
     return Calib_Failed;
-}
-
-/******************************************* Tof Section **********************************************/
-static bool SrvSensorMonitor_Flow_Init(void)
-{
-    return SrvFlow.init(FLOW_TYPE);
-}
-
-static bool SrvSensorMonitor_Flow_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
-{
-    uint32_t sample_interval_ms = 0;
-    
-    if (obj && obj->enabled_reg.bit.flow && obj->init_state_reg.bit.flow && obj->freq_reg.bit.flow && obj->statistic_flow->set_period)
-    {
-        sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_flow->set_period);
-
-    }
-
-    return false;
 }
 
 
