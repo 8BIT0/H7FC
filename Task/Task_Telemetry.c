@@ -21,6 +21,7 @@
  *
  */
 #include "Task_Telemetry.h"
+#include "Task_BlackBox.h"
 #include "DataPipe.h"
 #include "HW_Def.h"
 #include "Srv_Receiver.h"
@@ -43,6 +44,7 @@ static bool Telemetry_BindToggleToChannel(Telemetry_RCInput_TypeDef *RC_Input_ob
 static bool Telemetry_AddToggleCombo(Telemetry_RCInput_TypeDef *RC_Input_obj, uint16_t *data_obj, Telemetry_RCFuncMap_TypeDef *toggle, uint16_t trigger_min_range, uint16_t trigger_max_range);
 static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal, uint16_t scope);
 static uint16_t Telemetry_SplitScopeValue_Into(uint8_t pcs);
+static bool Telemetry_BlackBox_OnChange(Telemetry_RCSig_TypeDef RCSig);
 static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t roll_ch, uint8_t yaw_ch);
 static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t blackbox_toggle_ch);
 static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig, ControlData_TypeDef *CTLSig);
@@ -152,6 +154,8 @@ void TaskTelemetry_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     bool upgrade_state = false;
+    Telemetry_RCSig_TypeDef RCSig;
+    memset(&RCSig, 0, sizeof(Telemetry_RCSig_TypeDef));
 
     while(1)
     {
@@ -160,7 +164,12 @@ void TaskTelemetry_Core(void const *arg)
         if (SrvDataHub.get_upgrade_state(&upgrade_state) && !upgrade_state)
         {
             /* RC receiver process */
-            Telemetry_ConvertRCData_To_ControlData(Telemetry_RC_Sig_Update(&Telemetry_Monitor.RC_Setting, &Receiver_Obj), DataPipe_DataObjAddr(Rc));
+            RCSig = Telemetry_RC_Sig_Update(&Telemetry_Monitor.RC_Setting, &Receiver_Obj);
+            Telemetry_ConvertRCData_To_ControlData(RCSig, DataPipe_DataObjAddr(Rc));
+
+            if (Telemetry_BlackBox_OnChange(RCSig))
+                /* trigger blackbox */
+                TaskBlackBox_LogControl();
 
             /* pipe data out */
             DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
@@ -790,4 +799,32 @@ static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig
         CTLSig->aux.bit.hover_pos_hold = true;
         CTLSig->rssi = RCSig.link_quality;
     }
+}
+
+static bool Telemetry_BlackBox_OnChange(Telemetry_RCSig_TypeDef RCSig)
+{
+    static bool first_trigger = true;
+    static bool lst_blackbox_state = false;
+    bool state = false;
+
+    /* when on power and blackbox toggle is on */
+    if (first_trigger)
+    {    
+        lst_blackbox_state = RCSig.blackbox;
+        
+        first_trigger = false;
+        if (RCSig.blackbox)
+        {
+            lst_blackbox_state = false;
+            first_trigger = true;
+        }
+
+        return false;
+    }
+    
+    if (lst_blackbox_state != RCSig.blackbox)
+        state = true;
+
+    lst_blackbox_state = RCSig.blackbox;
+    return state;
 }
