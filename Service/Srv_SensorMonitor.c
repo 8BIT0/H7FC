@@ -27,7 +27,6 @@ static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);
 static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj);
 static bool SrvSensorMonitor_Mag_Init(void);
 static bool SrvSensorMonitor_Baro_Init(void);
-static bool SrvSensorMonitor_Tof_Init(void);
 static bool SrvSensorMonitor_Flow_Init(void);
 
 /* external function */
@@ -119,21 +118,6 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
         {
             obj->statistic_baro->is_calid = Calib_None;
             obj->init_state_reg.bit.baro = false;
-        }
-
-        if (obj->enabled_reg.bit.tof && SrvSensorMonitor_Tof_Init())
-        {
-            if (list_index > enable_sensor_num)
-                return false;
-
-            obj->init_state_reg.bit.tof = true;
-            obj->statistic_tof = &obj->statistic_list[list_index];
-            obj->statistic_tof->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.tof);
-            list_index ++;
-        }
-        else
-        {
-            obj->init_state_reg.bit.tof = false;
         }
 
         if (obj->enabled_reg.bit.flow && SrvSensorMonitor_Flow_Init())
@@ -582,24 +566,7 @@ static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorO
     return baro_data_tmp;
 }
 
-/******************************************* Tof Section **********************************************/
-/* still in developing */
-static bool SrvSensorMonitor_Tof_Init(void)
-{
-    return false;
-}
-
-static bool SrvSensorMonitor_Tof_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
-{
-    if (obj && obj->enabled_reg.bit.tof && obj->init_state_reg.bit.tof)
-    {
-        
-    }
-
-    return false;
-}
-
-/******************************************* Tof Section **********************************************/
+/******************************************* Flow Section **********************************************/
 static bool SrvSensorMonitor_Flow_Init(void)
 {
     return SrvFlow.init(FLOW_TYPE);
@@ -708,8 +675,6 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     else if (obj->statistic_baro->is_calid != Calib_Failed)
         obj->statistic_baro->is_calid = SrvBaro.get_calib();
 
-    state |= SrvSensorMonitor_Tof_SampleCTL(obj);
-    
     // DebugPin.ctl(Debug_PB5, false);
     
     return state;
@@ -731,10 +696,6 @@ static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonito
 
             case SrvSensorMonitor_Type_MAG:
                 obj->statistic_mag->is_calid = Calib_Start;
-                break;
-
-            case SrvSensorMonitor_Type_TOF:
-                obj->statistic_tof->is_calid = Calib_Start;
                 break;
 
             default:
@@ -766,14 +727,6 @@ static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonito
                 if (obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
                 {
                     return obj->statistic_baro->is_calid;
-                }
-                else
-                    return Calib_Failed;
-
-            case SrvSensorMonitor_Type_TOF:
-                if (obj->enabled_reg.bit.tof && obj->init_state_reg.bit.tof)
-                {
-                    return obj->statistic_tof->is_calid;
                 }
                 else
                     return Calib_Failed;

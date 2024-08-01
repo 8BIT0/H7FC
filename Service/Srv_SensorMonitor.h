@@ -31,7 +31,7 @@ typedef enum
     SrvSensorMonitor_Type_IMU = 0,
     SrvSensorMonitor_Type_MAG,
     SrvSensorMonitor_Type_BARO,
-    SrvSensorMonitor_Type_TOF,
+    SrvSensorMonitor_Type_Flow,
     SrvSensotMonitor_Type_SUM,
 }SrvSensorMonitor_Type_List;
 
@@ -57,10 +57,9 @@ typedef union
         uint32_t imu  : 1;
         uint32_t mag  : 1;
         uint32_t baro : 1;
-        uint32_t tof  : 1;
         uint32_t flow : 1;
 
-        uint32_t res  : 26;
+        uint32_t res  : 27;
     }bit;
 }SrvSensorMonitor_GenReg_TypeDef;
 
@@ -72,10 +71,9 @@ typedef union
         uint32_t imu  : 4;
         uint32_t mag  : 4;
         uint32_t baro : 4;
-        uint32_t tof  : 4;
         uint32_t flow : 4;
 
-        uint32_t res  : 8;
+        uint32_t res  : 16;
     }bit;
 }SrvSensorMonitor_SampleFreqReg_TypeDef;
 
@@ -105,7 +103,6 @@ typedef struct
     SrvSensorMonitor_Statistic_TypeDef *statistic_imu;
     SrvSensorMonitor_Statistic_TypeDef *statistic_mag;
     SrvSensorMonitor_Statistic_TypeDef *statistic_baro;
-    SrvSensorMonitor_Statistic_TypeDef *statistic_tof;
     SrvSensorMonitor_Statistic_TypeDef *statistic_flow;
 
     SrvSensorMonitor_Statistic_TypeDef *statistic_list;

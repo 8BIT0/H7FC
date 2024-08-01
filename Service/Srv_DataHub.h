@@ -129,13 +129,6 @@ typedef struct
     float baro_alt_offset;
     uint8_t baro_error_code;
 
-    bool tof_enabled;
-    bool tof_init_state;
-    uint32_t tof_update_time;
-    float tof_scale;
-    float tof;
-    uint8_t tof_error_code;
-
     uint32_t att_update_time;
     float att_roll;
     float att_pitch;
@@ -222,7 +215,6 @@ typedef struct
     bool (*get_sec_imu_range)(uint8_t *acc_range, uint16_t *gye_range);
     bool (*get_baro_init_state)(bool *state);
     bool (*get_mag_init_state)(bool *state);
-    bool (*get_tof_init_state)(bool *state);
     bool (*get_relative_alt)(uint32_t *time_stamp, float *alt);
     bool (*get_raw_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
     bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);

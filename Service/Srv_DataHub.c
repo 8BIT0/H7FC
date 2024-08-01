@@ -375,7 +375,6 @@ static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef 
         {
             SrvDataHub_Monitor.data.mag_enabled = DataPipe_DataObj(Sensor_Enable).bit.mag;
             SrvDataHub_Monitor.data.baro_enabled = DataPipe_DataObj(Sensor_Enable).bit.baro;
-            SrvDataHub_Monitor.data.tof_enabled = DataPipe_DataObj(Sensor_Enable).bit.tof;
         }
         else
         {
@@ -394,13 +393,6 @@ static void SrvDataHub_SensorState_DataPipe_Finish_Callback(DataPipeObj_TypeDef 
             }
             else
                 SrvDataHub_Monitor.data.baro_init_state = false;
-
-            if(SrvDataHub_Monitor.data.tof_enabled)
-            {
-                SrvDataHub_Monitor.data.tof_init_state = DataPipe_DataObj(Sensor_Init).bit.tof;
-            }
-            else
-                SrvDataHub_Monitor.data.tof_init_state = false;
         }
 
         SrvDataHub_Monitor.update_reg.bit.imu_init = false;

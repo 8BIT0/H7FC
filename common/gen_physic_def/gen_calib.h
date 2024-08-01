@@ -23,10 +23,9 @@ typedef union
         uint16_t imu : 1;
         uint16_t mag : 1;
         uint16_t baro : 1;
-        uint16_t tof : 1;
         uint16_t flow : 1;
 
-        uint16_t reserve : 11;
+        uint16_t reserve : 12;
     } bit;
 } GenCalib_Reg_TypeDef;
 
