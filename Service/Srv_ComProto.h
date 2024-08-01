@@ -61,9 +61,7 @@ typedef enum
     MAV_CompoID_Ctl_Altitude,
     MAV_CompoID_Ctl_RC_Channel,
     MAV_CompoID_Ctl_MotoCtl,
-    MAV_CompoID_Ctl_FileAdapter,
 
-    MAV_CompoID_Ctl_ParaOperation,
     MAV_CompoID_Ctl_PIDPara_GyrX,
     MAV_CompoID_Ctl_PIDPara_GyrY,
     MAV_CompoID_Ctl_PIDPara_GyrZ,
@@ -139,7 +137,6 @@ typedef enum
     MavIn_Msg_Alt,
     MavIn_Msg_RC,
     MavIn_Msg_MotoCtl,
-    MavIn_Msg_FileAdapter,
     MavIn_Msg_PID_Para_GyrX,
     MavIn_Msg_PID_Para_GyrY,
     MavIn_Msg_PID_Para_GyrZ,
@@ -183,7 +180,6 @@ typedef struct
     SrvComProto_MavMsgIn_Callback MavMsg_Alt_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_RC_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_MotoCtl_Callback;
-    SrvComProto_MavMsgIn_Callback MavMsg_FileAdapter_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_PIDPara_GyroX_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_PIDPara_GyroY_Callback;
     SrvComProto_MavMsgIn_Callback MavMsg_PIDPara_GyroZ_Callback;
