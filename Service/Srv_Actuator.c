@@ -364,17 +364,26 @@ static void SrvActuator_PipeData(void)
 
 static void SrvActuator_MotoControl(uint16_t *p_val)
 {
+    uint8_t i = 0;
+    uint8_t offset;
+
     if ((p_val == NULL) || !SrvActuator_Obj.init)
         return;
 
     switch (SrvActuator_Obj.model)
     {
-    case Model_Quad:
-        SrvActuator_QuadDrone_MotoMixControl(p_val);
-        break;
+        case Model_Quad:
+            SrvActuator_QuadDrone_MotoMixControl(p_val);
+            break;
 
-    default:
-        return;
+        default:
+            for (i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i ++)
+                SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].lock_val;
+            
+            offset = SrvActuator_Obj.drive_module.num.moto_cnt;
+            for (i = 0; i < SrvActuator_Obj.drive_module.num.servo_cnt; i ++)
+                SrvActuator_Obj.drive_module.obj_list[i + offset].ctl_val = 0;
+            break;
     }
 
     SrvActuator_PipeData();
