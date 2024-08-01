@@ -24,6 +24,7 @@
  */
 #include "Srv_Actuator.h"
 #include "Srv_OsCommon.h"
+#include "../System/DataPipe/DataPipe.h"
 
 const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM] = {
     SRVACTUATOR_PB0_SIG_1,
@@ -62,6 +63,7 @@ const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
 };
 
 /* internal variable */
+DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Actuator);
 SrvActuatorObj_TypeDef SrvActuator_Obj;
 SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
 osSemaphoreId SrvActuator_Sem = NULL;
@@ -251,6 +253,11 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
         /* reserved */
     }
 
+    /* data pipe init */
+    Actuator_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Actuator);
+    Actuator_Smp_DataPipe.data_size = DataPipe_DataSize(Actuator);
+    DataPipe_Enable(&Actuator_Smp_DataPipe);
+
     /* check value remap relationship */
     /* we can read this info from storage module */
     SrcActuator_Get_ChannelRemap(cfg);
@@ -334,6 +341,10 @@ static bool SrvActuator_Lock(void)
 
 static void SrvActuator_MotoControl(uint16_t *p_val)
 {
+    uint8_t m = 0;
+    uint8_t s = 0;
+    uint8_t i = 0;
+
     if ((p_val == NULL) || !SrvActuator_Obj.init)
         return;
 
@@ -346,6 +357,21 @@ static void SrvActuator_MotoControl(uint16_t *p_val)
     default:
         return;
     }
+
+    /* pipe actuator control data to data hub */
+    DataPipe_DataObj(Actuator).time_stamp = SrvOsCommon.get_os_ms();
+    DataPipe_DataObj(Actuator).moto_cnt = SrvActuator_Obj.drive_module.num.moto_cnt;
+    DataPipe_DataObj(Actuator).servo_cnt = SrvActuator_Obj.drive_module.num.servo_cnt;
+    /* reserved */
+    memset(DataPipe_DataObj(Actuator).servo, 0, sizeof(DataPipe_DataObj(Actuator).servo));
+    m = DataPipe_DataObj(Actuator).moto_cnt;
+    if (DataPipe_DataObj(Actuator).moto_cnt > (sizeof(DataPipe_DataObj(Actuator).moto) / sizeof(DataPipe_DataObj(Actuator).moto[0])))
+        m = sizeof(DataPipe_DataObj(Actuator).moto) / sizeof(DataPipe_DataObj(Actuator).moto[0]);
+
+    for (i = 0; i < m; i ++)
+        DataPipe_DataObj(Actuator).moto[i] = SrvActuator_Obj.drive_module.obj_list[i].ctl_val;
+
+    DataPipe_SendTo(&Actuator_Smp_DataPipe, &Actuator_hub_DataPipe);
 }
 
 static void SrvActuator_ServoControl(uint8_t index, uint16_t val)

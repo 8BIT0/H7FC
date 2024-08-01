@@ -20,6 +20,7 @@ static uint16_t SrvComProto_MavMsg_Scaled_IMU(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvConProto_MavMsg_RC(SrvComProto_MsgInfo_TypeDef *pck);
 static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck);
+static uint16_t SrvComProto_MavMsg_MotoActuator(SrvComProto_MsgInfo_TypeDef *pck);
 
 /* just fot temporary will create custom message in the next */
 static uint16_t SrvComProto_MavMsg_Exp_Attitude(SrvComProto_MsgInfo_TypeDef *pck);
@@ -383,6 +384,11 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
                                           pck->pck_info.chan, pck->msg_obj,
                                           time_stamp,
                                           baro_alt, baro_pressure, 0, 0, 0, 0);
+}
+
+static uint16_t SrvComProto_MavMsg_MotoActuator(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    uint32_t time_stamp = 0;
 }
 /******************************************* Frame Out ****************************************/
 /******************************************* Frame In  ****************************************/

@@ -9,7 +9,7 @@ SrvDataHub_Monitor_TypeDef SrvDataHub_Monitor = {
 
 /* Pipe Object */
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, PtlIMU_Data);
-DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, PtlActuator_Data);
+DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Hub_Actuator);
 DataPipe_CreateDataObj(ControlData_TypeDef, Hub_Telemetry_Rc);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Enable);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
@@ -138,9 +138,9 @@ static void SrvDataHub_Init(void)
     SensorInitState_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_SensorState_DataPipe_Finish_Callback);
     DataPipe_Enable(&SensorInitState_hub_DataPipe);
 
-    memset(DataPipe_DataObjAddr(PtlActuator_Data), 0, DataPipe_DataSize(PtlActuator_Data));
-    Actuator_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(PtlActuator_Data);
-    Actuator_hub_DataPipe.data_size = DataPipe_DataSize(PtlActuator_Data);
+    memset(DataPipe_DataObjAddr(Hub_Actuator), 0, DataPipe_DataSize(Hub_Actuator));
+    Actuator_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_Actuator);
+    Actuator_hub_DataPipe.data_size = DataPipe_DataSize(Hub_Actuator);
     Actuator_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_Actuator_DataPipe_Finish_Callback);
     DataPipe_Enable(&Actuator_hub_DataPipe);
     
@@ -264,21 +264,21 @@ static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
         if (SrvDataHub_Monitor.inuse_reg.bit.actuator)
             SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
 
-        SrvDataHub_Monitor.data.actuator_update_time = DataPipe_DataObj(PtlActuator_Data).time_stamp;
-        SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(PtlActuator_Data).moto_cnt;
-        SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(PtlActuator_Data).servo_cnt;
+        SrvDataHub_Monitor.data.actuator_update_time = DataPipe_DataObj(Hub_Actuator).time_stamp;
+        SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(Hub_Actuator).moto_cnt;
+        SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(Hub_Actuator).servo_cnt;
 
         memset(SrvDataHub_Monitor.data.moto, 0, sizeof(SrvDataHub_Monitor.data.moto));
         memset(SrvDataHub_Monitor.data.servo, 0, sizeof(SrvDataHub_Monitor.data.servo));
 
         for (uint8_t moto_i = 0; moto_i < SrvDataHub_Monitor.data.moto_num; moto_i++)
         {
-            SrvDataHub_Monitor.data.moto[moto_i] = DataPipe_DataObj(PtlActuator_Data).moto[moto_i];
+            SrvDataHub_Monitor.data.moto[moto_i] = DataPipe_DataObj(Hub_Actuator).moto[moto_i];
         }
 
         for (uint8_t servo_i = 0; servo_i < SrvDataHub_Monitor.data.servo_num; servo_i++)
         {
-            SrvDataHub_Monitor.data.servo[servo_i] = DataPipe_DataObj(PtlActuator_Data).servo[servo_i];
+            SrvDataHub_Monitor.data.servo[servo_i] = DataPipe_DataObj(Hub_Actuator).servo[servo_i];
         }
 
         SrvDataHub_Monitor.update_reg.bit.actuator = false;
