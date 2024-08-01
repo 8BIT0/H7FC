@@ -150,6 +150,7 @@ typedef struct
     bool arm;
     bool failsafe;
     uint8_t ctl_mode;
+    uint8_t throttle_percent;
     float exp_pitch;
     float exp_roll;
     float exp_gyr_x;

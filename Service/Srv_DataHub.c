@@ -433,6 +433,7 @@ static void SrvDataHub_PipeConvertControlDataFinish_Callback(DataPipeObj_TypeDef
 
         SrvDataHub_Monitor.data.cnvctl_data_time = SrvOsCommon.get_os_ms();
         SrvDataHub_Monitor.data.arm = DataPipe_DataObj(Hub_Cnv_CtlData).arm;
+        SrvDataHub_Monitor.data.throttle_percent = DataPipe_DataObj(Hub_Cnv_CtlData).throttle_percent;
         SrvDataHub_Monitor.data.failsafe = DataPipe_DataObj(Hub_Cnv_CtlData).failsafe;
         SrvDataHub_Monitor.data.ctl_mode = DataPipe_DataObj(Hub_Cnv_CtlData).control_mode;
         SrvDataHub_Monitor.data.exp_gyr_x = DataPipe_DataObj(Hub_Cnv_CtlData).gyr_x;

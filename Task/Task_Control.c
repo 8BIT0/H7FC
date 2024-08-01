@@ -490,6 +490,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
         /* pipe converted control data to data hub */
         DataPipe_DataObj(ExpCtl).arm = arm_state;
         DataPipe_DataObj(ExpCtl).failsafe = failsafe;
+        DataPipe_DataObj(ExpCtl).throttle_percent = exp_ctl_val->throttle_percent;
         DataPipe_DataObj(ExpCtl).control_mode = exp_ctl_val->control_mode;
         DataPipe_DataObj(ExpCtl).pitch = TaskControl_Monitor.exp_pitch;
         DataPipe_DataObj(ExpCtl).roll = TaskControl_Monitor.exp_roll;

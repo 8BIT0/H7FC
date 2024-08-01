@@ -378,6 +378,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             if (DataPipe_DataObj(LogCtl_Data).control_mode == Attitude_Control)
             {
                 att_ctl_data.time = DataPipe_DataObj(LogCtl_Data).time_stamp;
+                att_ctl_data.throttle_percent = DataPipe_DataObj(LogCtl_Data).throttle_percent;
                 att_ctl_data.exp_pitch = DataPipe_DataObj(LogCtl_Data).pitch;
                 att_ctl_data.exp_roll = DataPipe_DataObj(LogCtl_Data).roll;
                 att_ctl_data.exp_gyr_z = DataPipe_DataObj(LogCtl_Data).gyr_z;
@@ -388,6 +389,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             else
             {
                 ang_ctl_data.time = DataPipe_DataObj(LogCtl_Data).time_stamp;
+                ang_ctl_data.throttle_percent = DataPipe_DataObj(LogCtl_Data).throttle_percent;
                 ang_ctl_data.exp_gyr[Axis_X] = DataPipe_DataObj(LogCtl_Data).gyr_x;
                 ang_ctl_data.exp_gyr[Axis_Y] = DataPipe_DataObj(LogCtl_Data).gyr_y;
                 ang_ctl_data.exp_gyr[Axis_Z] = DataPipe_DataObj(LogCtl_Data).gyr_z;

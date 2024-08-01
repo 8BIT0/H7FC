@@ -96,6 +96,8 @@ typedef struct
     bool failsafe;
     Control_Mode_List control_mode;
 
+    uint8_t throttle_percent;
+
     float pitch;
     float roll;
 
