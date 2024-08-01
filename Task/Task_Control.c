@@ -368,16 +368,16 @@ static bool TaskControl_AngularSpeedRing_PID_Update(TaskControl_Monitor_TypeDef 
 
 static void TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor_TypeDef *monitor)
 {
-    uint16_t ctl_buf[Actuator_Ctl_Sum] = {0};
+    int16_t ctl_buf[Actuator_Ctl_Sum] = {0};
 
     if(monitor)
     {
         /* idle spin when disarm */
         ctl_buf[Actuator_Ctl_Throttle] = monitor->throttle_percent;
 
-        ctl_buf[Actuator_Ctl_GyrX] = monitor->GyrXCtl_PIDObj.fout;
-        ctl_buf[Actuator_Ctl_GyrY] = monitor->GyrYCtl_PIDObj.fout;
-        ctl_buf[Actuator_Ctl_GyrZ] = monitor->GyrZCtl_PIDObj.fout;
+        ctl_buf[Actuator_Ctl_GyrX] = (int16_t)monitor->GyrXCtl_PIDObj.fout;
+        ctl_buf[Actuator_Ctl_GyrY] = (int16_t)monitor->GyrYCtl_PIDObj.fout;
+        ctl_buf[Actuator_Ctl_GyrZ] = (int16_t)monitor->GyrZCtl_PIDObj.fout;
     }
 
     SrvActuator.moto_control(ctl_buf);
