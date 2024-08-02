@@ -716,6 +716,7 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_IMU(Shell *p_sh
     {
         shellPrint(p_shell, "%d ", p_imu->time);
         shellPrint(p_shell, "%d ", p_imu->cyc);
+        shellPrint(p_shell, "%d ", p_imu->throttle_percent);
         shellPrint(p_shell, "%f ", p_imu->org_acc[Axis_X] / p_imu->acc_scale);
         shellPrint(p_shell, "%f ", p_imu->org_acc[Axis_Y] / p_imu->acc_scale);
         shellPrint(p_shell, "%f ", p_imu->org_acc[Axis_Z] / p_imu->acc_scale);
