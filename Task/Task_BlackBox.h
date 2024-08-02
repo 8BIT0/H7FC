@@ -38,6 +38,7 @@ typedef struct
     uint8_t cyc;
 
     float press;
+    uint8_t throttle_percent;
 } BlackBox_BaroData_TypeDef;
 
 #pragma pack(1)

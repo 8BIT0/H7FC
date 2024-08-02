@@ -375,6 +375,9 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
         }
         else if (obj == &CtlData_Log_DataPipe)
         {
+            imu_data.throttle_percent = DataPipe_DataObj(LogCtl_Data).throttle_percent;
+            baro_data.throttle_percent = DataPipe_DataObj(LogCtl_Data).throttle_percent;
+
             if (DataPipe_DataObj(LogCtl_Data).control_mode == Attitude_Control)
             {
                 att_ctl_data.time = DataPipe_DataObj(LogCtl_Data).time_stamp;
