@@ -460,9 +460,24 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             imu_update = false;
             ctl_update = false;
         }
-        else if (Monitor.log_type == BlackBox_AttitudePID_Tune)
+        else if ((Monitor.log_type == BlackBox_AttitudePID_Tune) && (imu_update & ctl_update & att_update))
         {
+            Monitor.ctl_att_log.cnt ++;
+            Monitor.ctl_att_log.byte_size += BLACKBOX_HEADER_SIZE;
+            blackbox_header.type = BlackBox_AttitudePID_Tune;
+            blackbox_header.size = sizeof(BlackBox_AttCtlData_TypeDef);
+            TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_header, BLACKBOX_HEADER_SIZE);
 
+            TaskBlackBox_UpdateQueue((uint8_t *)&att_ctl_data, sizeof(BlackBox_AttCtlData_TypeDef));
+            Monitor.ctl_att_log.byte_size += sizeof(BlackBox_AttCtlData_TypeDef);
+
+            check_sum = TaskBlackBox_Get_CheckSum((uint8_t *)&att_ctl_data, sizeof(BlackBox_AttCtlData_TypeDef));
+            blackbox_ender.check_sum = check_sum;
+            Monitor.ctl_att_log.byte_size += BLACKBOX_ENDER_SIZE;
+            TaskBlackBox_UpdateQueue((uint8_t *)&blackbox_ender, BLACKBOX_ENDER_SIZE);
+            imu_update = false;
+            ctl_update = false;
+            att_update = false;
         }
         /* use minilzo compress data if have to */
     }
