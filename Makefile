@@ -19,6 +19,17 @@ PLATFORM_AT32 := 1
 PLATFORM_STM32H7 := 2
 
 PLATFORM := $(PLATFORM_AT32)
+ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
+HW_MATEK_H743_V1_5 := 1
+
+HARDWARE := $(HW_MATEK_H743_V1_5)
+else ifeq ($(PLATFORM), $(PLATFORM_AT32))
+HW_BETAFPV_AIO_AT32 := 1
+HW_CCRC_AT32_20 := 2
+
+# HARDWARE := $(HW_BETAFPV_AIO_AT32)
+HARDWARE := $(HW_CCRC_AT32_20)
+endif
 
 ######################################
 # building variables
@@ -116,7 +127,6 @@ Task/Task_Log.c \
 Device/Dev_Card.c \
 System/diskio/DiskIO.c \
 System/kernel/kernel_stm32h743.c \
-HW_Lib/STM32H7/HW_Def.c \
 HW_Lib/STM32H7/BSP/Bsp_GPIO.c \
 HW_Lib/STM32H7/BSP/Bsp_SPI.c \
 HW_Lib/STM32H7/BSP/Bsp_SDMMC.c \
@@ -161,7 +171,11 @@ HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_sdmmc.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c 
+ifeq ($(HARDWARE), $(HW_MATEK_H743_V1_5))
+C_SOURCES +=  \
+HW_Lib/STM32H7/PinPort_Def/MATEK_H743_V1_5/HW_Def.c
+endif
 
 # ASM sources
 ASM_SOURCES =  \
@@ -191,7 +205,6 @@ HW_Lib/AT32F435/bsp/Bsp_USB.c \
 HW_Lib/AT32F435/bsp/Bsp_DMA.c \
 HW_Lib?AT32F435/bsp/Bsp_Timer.c \
 HW_Lib/AT32F435/bsp/Bsp_IIC.c \
-HW_Lib/AT32F435/HW_Def.c \
 HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c \
 HW_Lib/AT32F435/USB/usb_drivers/src/usbd_core.c \
 HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c \
@@ -213,6 +226,13 @@ HW_Lib/AT32F435/driver/src/at32f435_437_flash.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_scfg.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_exint.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_usart.c
+ifeq ($(HARDWARE), $(HW_BETAFPV_AIO_AT32))
+C_SOURCES +=  \
+HW_Lib/STM32H7/PinPort_Def/BETAFPV_AIO_AT32/HW_Def.c
+else ifeq ($(HARDWARE), $(HW_CCRC_AT32_20))
+C_SOURCES +=  \
+HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c
+endif
 
 ASM_SOURCES =  \
 startup_at32f435_437.s \
@@ -264,9 +284,14 @@ C_DEFS =  \
 FPU = -mfpu=fpv5-d16
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 C_DEFS = \
--DAT32F435RGT7 \
+-DAT32F435RGT7
+ifeq ($(HARDWARE), $(HW_BETAFPV_AIO_AT32))
+C_DEFS += \
+-DBATEAT32F435_AIO
+else ifeq ($(HARDWARE), $(HW_CCRC_AT32_20))
+C_DEFS += \
 -DCCRC_AT23_20
-# -DBATEAT32F435_AIO
+endif
 
 # fpu
 FPU = -mfpu=fpv4-sp-d16
@@ -330,7 +355,11 @@ C_INCLUDES +=  \
 -IHW_Lib/STM32H7/USB/STM32_USB_Device_Library/Core/Inc \
 -IHW_Lib/STM32H7/USB/STM32_USB_Device_Library/Class/CDC/Inc \
 -IHW_Lib/STM32H7/USB/USB_DEVICE/App \
--IHW_Lib/STM32H7/USB/USB_DEVICE/Target
+-IHW_Lib/STM32H7/USB/USB_DEVICE/Target 
+ifeq ($(HARDWARE), $(HW_MATEK_H743_V1_5))
+C_INCLUDES += \
+-IHW_Lib/STM32H7/PinPort_Def/MATEK_H743_V1_5
+endif
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 C_INCLUDES += \
 -IHW_Lib/AT32F435 \
@@ -341,6 +370,13 @@ C_INCLUDES += \
 -IHW_Lib/AT32F435/USB \
 -IHW_Lib/AT32F435/USB/usb_drivers/inc \
 -IHW_Lib/AT32F435/USB/usbd_class/cdc
+ifeq ($(HARDWARE), $(HW_BETAFPV_AIO_AT32))
+C_INCLUDES += \
+-IHW_Lib/AT32F435/PinPort_Def/BETAFPV_AIO_AT32
+else ifeq ($(HARDWARE), $(HW_CCRC_AT32_20))
+C_INCLUDES += \
+-IHW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20
+endif
 endif
 
 CPP_INCLUDES = \
