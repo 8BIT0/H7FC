@@ -51,3 +51,85 @@
 
 // dma ADC 1 11
 // # ADC 1: DMA2 Channel 0 Channel 5
+
+// dma pin A08 7
+// # pin A08: DMA2 Channel 0 Channel 42
+// dma pin B06 0
+// # pin B06: DMA1 Channel 0 Channel 67
+// dma pin B07 1
+// # pin B07: DMA1 Channel 0 Channel 68
+// dma pin A03 2
+// # pin A03: DMA1 Channel 0 Channel 59
+// dma pin B01 3
+// # pin B01: DMA1 Channel 0 Channel 64
+
+/* Led 1 */
+BspGPIO_Port_TypeDef Led1_Port = {
+    .port = GPIOC,
+};
+
+BspGPIO_Obj_TypeDef Led1 = {
+    .port = (void *)&Led1_Port,
+    .pin = GPIO_PINS_13,
+    .init_state = GPIO_PULL_NONE,
+};
+
+/* Led 2 */
+BspGPIO_Port_TypeDef Led2_Port = {
+    .port = GPIOC,
+};
+
+BspGPIO_Obj_TypeDef Led1 = {
+    .port = (void *)&Led1_Port,
+    .pin = GPIO_PINS_14,
+    .init_state = GPIO_PULL_NONE,
+};
+
+/* on board receiver uart tx port */
+BspGPIO_Port_TypeDef Uart3_Tx_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef Uart3_TxPin = {
+    .port = (void *)&Uart3_Tx_Port,
+    .pin = GPIO_PINS_10,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_7,
+};
+
+/* on board receiver uart rx port */
+BspGPIO_Port_TypeDef Uart3_Rx_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef Uart3_RxPin = {
+    .port = (void *)&Uart3_Rx_Port,
+    .pin = GPIO_PINS_11,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_7,
+};
+
+/* uart 1 tx pin */
+BspGPIO_Port_TypeDef Uart1_Tx_Port = {
+    .port = GPIOA,
+};
+
+BspGPIO_Obj_TypeDef Uart1_TxPin = {
+    .port = (void *)&Uart1_Tx_Port,
+    .pin = GPIO_PINS_9,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_7,
+};
+
+/* uart 1 rx pin */
+BspGPIO_Port_TypeDef Uart1_Rx_Port = {
+    .port = GPIOA,
+};
+
+BspGPIO_Obj_TypeDef Uart1_RxPin = {
+    .port = (void *)&Uart1_Rx_Port,
+    .pin = GPIO_PINS_10,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_7,
+};
+
