@@ -25,7 +25,10 @@ const uint8_t AppVer[3] = {0, 0, 17};
 const uint8_t HWVer[3] = {0, 0, 1};
 #elif defined BATEAT32F435_AIO
 const uint8_t HWVer[3] = {0, 0, 2};
+#elif defined CCRC_AT23_20
+const uint8_t HWVer[3] = {0, 0, 3};
 #endif
+
 #define AppBref "First Version of H7FC"
 #define AppCompileData __DATA__
 #define FIRMWARE_MAX_READ_SIZE (4 Kb)

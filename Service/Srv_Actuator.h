@@ -16,6 +16,8 @@ extern "C" {
 
 #if defined BATEAT32F435_AIO
 #define MAX_PWM_OUT 6
+#elif defined CCRC_AT23_20
+#define MAX_PWM_OUT 4
 #elif defined MATEKH743_V1_5
 #define MAX_PWM_OUT 8
 #else

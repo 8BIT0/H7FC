@@ -16,6 +16,9 @@
 #elif defined BATEAT32F435_AIO
 #define BARO_TYPE Baro_Type_BMP280
 #define BARO_BUS_TYPE SrvBaro_Bus_SPI
+#elif defined CCRC_AT23_20
+#define BARO_TYPE Baro_Type_BMP280
+#define BARO_BUS_TYPE SrvBaro_Bus_IIC
 #endif
 
 #define MONITOR_TAG "[ SENSOR MONITOR INFO ] "

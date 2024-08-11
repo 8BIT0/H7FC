@@ -15,11 +15,10 @@
 ######################################
 TARGET = H7FC
 
-HW_MATEK_STM32H743 := 1
-HW_BATEAIO_AT32F435 := 2
+PLATFORM_AT32 := 1
+PLATFORM_STM32H7 := 2
 
-# BUILD_TYPE := $(HW_MATEK_STM32H743)
-BUILD_TYPE := $(HW_BATEAIO_AT32F435)
+PLATFORM := $(PLATFORM_AT32)
 
 ######################################
 # building variables
@@ -111,7 +110,7 @@ System/shell/shell_companion.c \
 System/shell/shell_ext.c \
 System/shell/shell_port.c \
 System/shell/shell.c
-ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
+ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 C_SOURCES +=  \
 Task/Task_Log.c \
 Device/Dev_Card.c \
@@ -181,7 +180,7 @@ LDSCRIPT = STM32H743VIHx_FLASH.ld
 # cpu
 CPU = -mcpu=cortex-m7
 
-else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
+else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 C_SOURCES += \
 System/kernel/kernel_at32f435.c \
 HW_Lib/AT32F435/bsp/Bsp_GPIO.c \
@@ -254,7 +253,7 @@ endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
 
-ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
+ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
@@ -263,10 +262,11 @@ C_DEFS =  \
 
 # fpu
 FPU = -mfpu=fpv5-d16
-else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
+else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 C_DEFS = \
--DBATEAT32F435_AIO \
--DAT32F435RGT7
+-DAT32F435RGT7 \
+-DCCRC_AT23_20
+# -DBATEAT32F435_AIO
 
 # fpu
 FPU = -mfpu=fpv4-sp-d16
@@ -317,7 +317,7 @@ C_INCLUDES =  \
 -ISystem/kernel/ \
 -ISystem/DataPipe/ \
 -IHW_Lib/Port_Def/
-ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
+ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 C_INCLUDES +=  \
 -IHW_Lib/STM32H7 \
 -IHW_Lib/STM32H7/BSP \
@@ -331,7 +331,7 @@ C_INCLUDES +=  \
 -IHW_Lib/STM32H7/USB/STM32_USB_Device_Library/Class/CDC/Inc \
 -IHW_Lib/STM32H7/USB/USB_DEVICE/App \
 -IHW_Lib/STM32H7/USB/USB_DEVICE/Target
-else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
+else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 C_INCLUDES += \
 -IHW_Lib/AT32F435 \
 -IHW_Lib/AT32F435/bsp \
@@ -416,10 +416,10 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
-ifeq ($(BUILD_TYPE), $(HW_MATEK_STM32H743))
+ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 OPENOCD := openocd -f interface/stlink.cfg \
         -f target/stm32h7x.cfg 
-else ifeq ($(BUILD_TYPE), $(HW_BATEAIO_AT32F435))
+else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 OPENOCD := openocd -f interface/stlink.cfg \
         -f target/at32f435xG.cfg 
 endif
