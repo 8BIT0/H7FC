@@ -27,8 +27,8 @@ else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 HW_BETAFPV_AIO_AT32 := 1
 HW_CCRC_AT32_20 := 2
 
-# HARDWARE := $(HW_BETAFPV_AIO_AT32)
-HARDWARE := $(HW_CCRC_AT32_20)
+HARDWARE := $(HW_BETAFPV_AIO_AT32)
+# HARDWARE := $(HW_CCRC_AT32_20)
 endif
 
 ######################################
@@ -228,7 +228,7 @@ HW_Lib/AT32F435/driver/src/at32f435_437_exint.c \
 HW_Lib/AT32F435/driver/src/at32f435_437_usart.c
 ifeq ($(HARDWARE), $(HW_BETAFPV_AIO_AT32))
 C_SOURCES +=  \
-HW_Lib/STM32H7/PinPort_Def/BETAFPV_AIO_AT32/HW_Def.c
+HW_Lib/AT32F435/PinPort_Def/BETAFPV_AIO_AT32/HW_Def.c
 else ifeq ($(HARDWARE), $(HW_CCRC_AT32_20))
 C_SOURCES +=  \
 HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c
