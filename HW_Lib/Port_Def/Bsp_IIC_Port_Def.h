@@ -31,6 +31,10 @@ typedef struct
     uint8_t instance_id;
     void *PeriphClkInitStruct;
     void *handle;
+
+#if defined AT32F435RGT7
+    uint32_t addr;
+#endif
 }BspIICObj_TypeDef;
 
 typedef struct

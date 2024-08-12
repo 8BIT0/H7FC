@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "Bsp_GPIO.h"
+#include "Bsp_IIC.h"
 #include "Bsp_DMA.h"
 #include "../../AT32F435/bsp/Bsp_Uart.h"
 #include "Bsp_IIC.h"
@@ -146,6 +147,8 @@ extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
 #define OnChipFlash_MaxRWSize (2 Kb)
 #define OnChipFlash_Storage_TabSize Flash_Storage_TabSize
 #define OnChipFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
+
+extern BspIICObj_TypeDef I2c2_BusObj;
 
 extern BspGPIO_Port_TypeDef Uart3_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart3_Rx_Port;

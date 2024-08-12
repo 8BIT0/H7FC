@@ -22,6 +22,7 @@ BspGPIO_Port_TypeDef Led1_Port = {
 };
 
 BspGPIO_Obj_TypeDef Led1 = {
+    .open_drain = false,
     .port = (void *)&Led1_Port,
     .pin = GPIO_PINS_5,
     .init_state = GPIO_PULL_NONE,
@@ -33,6 +34,7 @@ BspGPIO_Port_TypeDef Uart3_Tx_Port = {
 };
 
 BspGPIO_Obj_TypeDef Uart3_TxPin = {
+    .open_drain = false,
     .port = (void *)&Uart3_Tx_Port,
     .pin = GPIO_PINS_10,
     .init_state = GPIO_PULL_NONE,
@@ -45,6 +47,7 @@ BspGPIO_Port_TypeDef Uart3_Rx_Port = {
 };
 
 BspGPIO_Obj_TypeDef Uart3_RxPin = {
+    .open_drain = false,
     .port = (void *)&Uart3_Rx_Port,
     .pin = GPIO_PINS_11,
     .init_state = GPIO_PULL_NONE,
@@ -57,6 +60,7 @@ BspGPIO_Port_TypeDef Uart1_Tx_Port = {
 };
 
 BspGPIO_Obj_TypeDef Uart1_TxPin = {
+    .open_drain = false,
     .port = (void *)&Uart1_Tx_Port,
     .pin = GPIO_PINS_9,
     .init_state = GPIO_PULL_NONE,
@@ -69,6 +73,7 @@ BspGPIO_Port_TypeDef Uart1_Rx_Port = {
 };
 
 BspGPIO_Obj_TypeDef Uart1_RxPin = {
+    .open_drain = false,
     .port = (void *)&Uart1_Rx_Port,
     .pin = GPIO_PINS_10,
     .init_state = GPIO_PULL_NONE,
@@ -81,6 +86,7 @@ BspGPIO_Port_TypeDef Uart6_Tx_Port = {
 };
 
 BspGPIO_Obj_TypeDef Uart6_TxPin = {
+    .open_drain = false,
     .port = (void *)&Uart6_Tx_Port,
     .pin = GPIO_PINS_6,
     .init_state = GPIO_PULL_NONE,
@@ -93,6 +99,7 @@ BspGPIO_Port_TypeDef Uart6_Rx_Port = {
 };
 
 BspGPIO_Obj_TypeDef Uart6_RxPin = {
+    .open_drain = false,
     .port = (void *)&Uart6_Rx_Port,
     .pin = GPIO_PINS_7,
     .init_state = GPIO_PULL_NONE,
@@ -105,6 +112,7 @@ BspGPIO_Port_TypeDef Uart4_Tx_Port = {
 };
 
 BspGPIO_Obj_TypeDef Uart4_TxPin = {
+    .open_drain = false,
     .port = (void *)&Uart4_Tx_Port,
     .pin = GPIO_PINS_0,
     .init_state = GPIO_PULL_NONE,
@@ -117,6 +125,7 @@ BspGPIO_Port_TypeDef Uart4_Rx_Port = {
 };
 
 BspGPIO_Obj_TypeDef Uart4_RxPin = {
+    .open_drain = false,
     .port = (void *)&Uart4_Rx_Port,
     .pin = GPIO_PINS_1,
     .init_state = GPIO_PULL_NONE,
@@ -129,6 +138,7 @@ BspGPIO_Port_TypeDef PriIMU_CS_Port = {
 };
 
 BspGPIO_Obj_TypeDef PriIMU_CSPin = {
+    .open_drain = false,
     .init_state = GPIO_PULL_UP,
     .pin = GPIO_PINS_4,
     .port = &PriIMU_CS_Port,
@@ -140,6 +150,7 @@ BspGPIO_EXTI_Port_TypeDef PriIMU_INT_Port = {
 };
 
 BspGPIO_Obj_TypeDef PriIMU_INTPin = {
+    .open_drain = false,
     .port = (void *)&PriIMU_INT_Port,
     .pin = GPIO_PINS_4,
     .init_state = EXINT_TRIGGER_FALLING_EDGE,
@@ -151,6 +162,7 @@ BspGPIO_Port_TypeDef Baro_CS_Port = {
 };
 
 BspGPIO_Obj_TypeDef Baro_CSPin = {
+    .open_drain = false,
     .init_state = GPIO_PULL_UP,
     .pin = GPIO_PINS_3,
     .port = &Baro_CS_Port,
@@ -202,6 +214,7 @@ BspGPIO_Port_TypeDef ExtFlash_CS_Port = {
 };
 
 BspGPIO_Obj_TypeDef ExtFlash_CSPin = {
+    .open_drain = false,
     .port = (void *)&ExtFlash_CS_Port,
     .pin = GPIO_PINS_12,
     .init_state = GPIO_PULL_UP,

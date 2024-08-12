@@ -32,13 +32,19 @@ SrvBaroObj_TypeDef SrvBaroObj = {
 static SPI_HandleTypeDef Baro_Bus_Instance;
 #endif
 
+#define BARO_BUS_IIC
+
 BspIICObj_TypeDef SrvBaro_IIC_Obj = {
     .init = false,
     .instance_id = BARO_BUS,
     .Pin = &SrvBaro_BusPin,
 };
 
-#elif defined AT32F435RGT7
+#elif defined BATEAT32F435_AIO
+#define BARO_BUS_SPI
+static void *Baro_Bus_Instance = NULL;
+#elif defined CCRC_AT32_20
+#define BARO_BUS_IIC
 static void *Baro_Bus_Instance = NULL;
 #endif
 
@@ -49,13 +55,16 @@ SrvBaroBusObj_TypeDef SrvBaroBus = {
     .bus_api = NULL,
 };
 
+#if defined BARO_BUS_IIC
 /* internal function */
 static bool SrvBaro_IICBus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
 static bool SrvBaro_IICBus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
 
+#elif defined BARO_BUS_SPI
 static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len);
 static uint16_t SrvBaro_SPIBus_Rx(uint8_t *p_data, uint16_t len);
 static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
+#endif
 
 static float SrvBaro_PessureCnvToMeter(float pa);
 
@@ -203,12 +212,12 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
         case SrvBaro_Bus_SPI:
             SrvBaroBus.type = bus_type;
 
-#ifdef BATEAT32F435_AIO
+#ifdef BARO_BUS_SPI
             Baro_BusCfg.Pin = Baro_BusPin;
             SrvBaroBus.bus_api = (void *)&BspSPI;
             SrvBaroBus.bus_obj = (void *)&Baro_BusCfg;
 
-            /* spi cd pin init */
+            /* spi cs pin init */
             if (!BspGPIO.out_init(Baro_CSPin))
                 return false;
 
@@ -287,10 +296,12 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                 if ((SrvBaroObj.sensor_obj != NULL) && \
                     (SrvBaroObj.sensor_api != NULL))
                 {
+#if defined BARO_BUS_SPI
                     /* set sensor object */
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->send = SrvBaro_SPIBus_Tx;
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = SrvBaro_SPIBus_Rx;
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = SrvBaro_SPIBus_Trans;
+#endif
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
 
@@ -519,6 +530,7 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
 }
 
 /*************************************************************** Bus Comunicate Callback *******************************************************************************/
+#if defined BARO_BUS_IIC
 static bool SrvBaro_IICBus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len)
 {
     BspIICObj_TypeDef *IICBusObj = NULL;
@@ -545,11 +557,11 @@ static bool SrvBaro_IICBus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_d
     return false;
 }
 
+#elif defined BARO_BUS_SPI
 static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
 {
     uint16_t res = 0;
 
-#ifdef BATEAT32F435_AIO
     if (p_tx && p_rx && len && \
         SrvBaroBus.init && \
         (SrvBaroBus.type == SrvBaro_Bus_SPI))
@@ -563,7 +575,7 @@ static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
         /* CS High */
         BspGPIO.write(Baro_CSPin, true);
     }
-#endif
+
     return res;
 }
 
@@ -571,7 +583,6 @@ static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len)
 {
     uint16_t res = 0;
 
-#ifdef BATEAT32F435_AIO
     if (p_data && len && \
         SrvBaroBus.init && \
         (SrvBaroBus.type == SrvBaro_Bus_SPI))
@@ -585,7 +596,7 @@ static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len)
         /* CS High */
         BspGPIO.write(Baro_CSPin, true);
     }
-#endif
+
     return res;
 }
 
@@ -593,7 +604,6 @@ static uint16_t SrvBaro_SPIBus_Rx(uint8_t *p_data, uint16_t len)
 {
     uint16_t res = 0;
 
-#ifdef BATEAT32F435_AIO
     if (p_data && len && \
         SrvBaroBus.init && \
         (SrvBaroBus.type == SrvBaro_Bus_SPI))
@@ -607,9 +617,11 @@ static uint16_t SrvBaro_SPIBus_Rx(uint8_t *p_data, uint16_t len)
         /* CS High */
         BspGPIO.write(Baro_CSPin, true);
     }
-#endif
+    
     return res;
 }
+
+#endif
 
 /*************************************************************** Error Process Callback *******************************************************************************/
 static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size)

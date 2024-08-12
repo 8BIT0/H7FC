@@ -60,6 +60,8 @@ static bool BspSPI_Pin_Init(BspSPI_PinConfig_TypeDef pin)
     memset(&GPIO_Pin_Obj, 0, sizeof(BspGPIO_Obj_TypeDef));
     memset(&GPIO_Port_Obj, 0, sizeof(BspGPIO_Port_TypeDef));
 
+    GPIO_Pin_Obj.open_drain = false;
+    
     /* sck */
     GPIO_Port_Obj.port = pin.port_clk;
     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
