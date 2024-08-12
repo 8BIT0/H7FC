@@ -26,7 +26,7 @@ extern "C" {
 
 #define ACTUATOR_STORAGE_SECTION_NAME "Actuator_Para"
 
-#define SRVACTUATOR_PB0_SIG_1       \
+#define SRVACTUATOR_SIG_1           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_1_TIM,              \
@@ -41,7 +41,7 @@ extern "C" {
         }                           \
     }
 
-#define SRVACTUATOR_PB1_SIG_2       \
+#define SRVACTUATOR_SIG_2           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_2_TIM,              \
@@ -56,7 +56,7 @@ extern "C" {
         }                           \
     }
 
-#define SRVACTUATOR_PA0_SIG_3       \
+#define SRVACTUATOR_SIG_3           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_3_TIM,              \
@@ -71,7 +71,7 @@ extern "C" {
         }                           \
     }
 
-#define SRVACTUATOR_PA1_SIG_4       \
+#define SRVACTUATOR_SIG_4           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_4_TIM,              \
@@ -87,7 +87,7 @@ extern "C" {
     }
 
 #if defined BATEAT32F435_AIO
-#define SRVACTUATOR_PA2_SIG_5       \
+#define SRVACTUATOR_SIG_5           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_5_TIM,              \
@@ -102,7 +102,7 @@ extern "C" {
         }                           \
     }
 
-#define SRVACTUATOR_PA3_SIG_6       \
+#define SRVACTUATOR_SIG_6           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_6_TIM,              \
@@ -118,7 +118,7 @@ extern "C" {
     }
 #endif
 #if defined MATEKH743_V1_5
-#define SRVACTUATOR_PD12_SIG_7      \
+#define SRVACTUATOR_SIG_7           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_7_TIM,              \
@@ -133,7 +133,7 @@ extern "C" {
         }                           \
     }
 
-#define SRVACTUATOR_PD13_SIG_8      \
+#define SRVACTUATOR_SIG_8           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_8_TIM,              \
@@ -148,7 +148,7 @@ extern "C" {
         }                           \
     }
 
-#define SRVACTUATOR_PD14_SIG_9      \
+#define SRVACTUATOR_SIG_9           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_9_TIM,              \
@@ -163,7 +163,7 @@ extern "C" {
         }                           \
     }
 
-#define SRVACTUATOR_PD15_SIG_10     \
+#define SRVACTUATOR_SIG_10          \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_10_TIM,             \
@@ -178,7 +178,7 @@ extern "C" {
         }                           \
     }
 
-#define SRVACTUATOR_PE5_SIG_11      \
+#define SRVACTUATOR_SIG_11          \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_11_TIM,             \
@@ -193,7 +193,7 @@ extern "C" {
         }                           \
     }
 
-#define SRVACTUATOR_PE6_SIG_12      \
+#define SRVACTUATOR_SIG_12          \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
         PWM_SIG_12_TIM,             \
@@ -266,8 +266,10 @@ typedef enum
     Actuator_PWM_Sig2,
     Actuator_PWM_Sig3,
     Actuator_PWM_Sig4,
+#if defined BATEAT32F435_AIO
     Actuator_PWM_Sig5,
     Actuator_PWM_Sig6,
+#endif
 #if defined MATEKH743_V1_5
     Actuator_PWM_Sig7,
     Actuator_PWM_Sig8,
