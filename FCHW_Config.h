@@ -15,15 +15,17 @@
 #define IMU_CNT 2
 #define BARO_CNT 1
 #define MAG_CNT 0
+#define FLOW_CNT 0
 #define SD_CARD_ENABLE_STATE ON
 #define FLASH_CHIP_ENABLE_STATE OFF
 #define RADIO_NUM 1
 
-#elif defined BATEAT32F435_AIO || defined DCCRC_AT23_20
+#elif defined BATEAT32F435_AIO || defined CCRC_AT32_20
 
 #define IMU_CNT 1
 #define BARO_CNT 1
 #define MAG_CNT 0
+#define FLOW_CNT 0
 #define SD_CARD_ENABLE_STATE OFF
 #define FLASH_CHIP_ENABLE_STATE ON
 #define RADIO_NUM 1
@@ -49,6 +51,7 @@ extern uint32_t __boot_e;
 #define IMU_SUM IMU_CNT
 #define BARO_SUM BARO_CNT
 #define MAG_SUM MAG_CNT
+#define FLOW_SUM FLOW_CNT
 #define SD_CARD SD_CARD_ENABLE_STATE
 #define FLASH_CHIP_STATE FLASH_CHIP_ENABLE_STATE
 #define RADIO_UART_NUM RADIO_NUM

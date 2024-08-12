@@ -31,8 +31,11 @@ const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM]
     SRVACTUATOR_PB1_SIG_2,
     SRVACTUATOR_PA0_SIG_3,
     SRVACTUATOR_PA1_SIG_4,
+
+#if defined BATEAT32F435_AIO 
     SRVACTUATOR_PA2_SIG_5,
     SRVACTUATOR_PA3_SIG_6,
+#endif
 
 #if defined MATEKH743_V1_5
     SRVACTUATOR_PD12_SIG_7,
@@ -49,8 +52,11 @@ const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
     Actuator_PWM_Sig2,
     Actuator_PWM_Sig3,
     Actuator_PWM_Sig4,
+
+#if defined BATEAT32F435_AIO 
     Actuator_PWM_Sig5,
     Actuator_PWM_Sig6,
+#endif
 
 #if defined MATEKH743_V1_5
     Actuator_PWM_Sig7,

@@ -21,7 +21,7 @@
 
 /* internal vriable */
 SrvBaroObj_TypeDef SrvBaroObj = {
-    .type = Baro_Type_DPS310,
+    .type = Baro_Type_DPS310,   /* default set */
     .sample_rate = SRVBARO_SAMPLE_RATE_20HZ,
     .init_err = SrvBaro_Error_None,
 };
@@ -169,12 +169,14 @@ SrvBaro_TypeDef SrvBaro = {
 
 static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
 {
+    SrvBaroBus.init = false;
+
     switch((uint8_t)bus_type)
     {
         case SrvBaro_Bus_IIC:
             SrvBaroBus.type = bus_type;
             SrvBaroBus.bus_api = (void *)&BspIIC;
-#if defined STM32H743xx
+#if defined MATEKH743_V1_5
             SrvBaroBus.bus_obj = (void *)&SrvBaro_IIC_Obj;
 
             ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
@@ -201,6 +203,7 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
         case SrvBaro_Bus_SPI:
             SrvBaroBus.type = bus_type;
 
+#ifdef BATEAT32F435_AIO
             Baro_BusCfg.Pin = Baro_BusPin;
             SrvBaroBus.bus_api = (void *)&BspSPI;
             SrvBaroBus.bus_obj = (void *)&Baro_BusCfg;
@@ -216,6 +219,7 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
             /* set cs pin high */
             BspGPIO.write(Baro_CSPin, true);
             SrvBaroBus.init = true;
+#endif
             return true;
 
         default:
@@ -545,6 +549,7 @@ static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
 {
     uint16_t res = 0;
 
+#ifdef BATEAT32F435_AIO
     if (p_tx && p_rx && len && \
         SrvBaroBus.init && \
         (SrvBaroBus.type == SrvBaro_Bus_SPI))
@@ -558,7 +563,7 @@ static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
         /* CS High */
         BspGPIO.write(Baro_CSPin, true);
     }
-
+#endif
     return res;
 }
 
@@ -566,6 +571,7 @@ static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len)
 {
     uint16_t res = 0;
 
+#ifdef BATEAT32F435_AIO
     if (p_data && len && \
         SrvBaroBus.init && \
         (SrvBaroBus.type == SrvBaro_Bus_SPI))
@@ -579,7 +585,7 @@ static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len)
         /* CS High */
         BspGPIO.write(Baro_CSPin, true);
     }
-
+#endif
     return res;
 }
 
@@ -587,6 +593,7 @@ static uint16_t SrvBaro_SPIBus_Rx(uint8_t *p_data, uint16_t len)
 {
     uint16_t res = 0;
 
+#ifdef BATEAT32F435_AIO
     if (p_data && len && \
         SrvBaroBus.init && \
         (SrvBaroBus.type == SrvBaro_Bus_SPI))
@@ -600,7 +607,7 @@ static uint16_t SrvBaro_SPIBus_Rx(uint8_t *p_data, uint16_t len)
         /* CS High */
         BspGPIO.write(Baro_CSPin, true);
     }
-
+#endif
     return res;
 }
 

@@ -29,7 +29,7 @@ void *ExtFlash_Bus_InstObj = NULL;
 #endif
 
 #define STORAGE_TAG "[ STORAGE INFO ] "
-#define STORAGE_INFO(fmt, ...) Debug_Print(&DebugP4, STORAGE_TAG , fmt, ##__VA_ARGS__)
+#define STORAGE_INFO(fmt, ...) Debug_Print(&DebugPort, STORAGE_TAG , fmt, ##__VA_ARGS__)
 
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;

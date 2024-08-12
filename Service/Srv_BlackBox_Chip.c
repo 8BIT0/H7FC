@@ -41,7 +41,7 @@ static  Chip_BlackBox_Monitor_TypeDef ChipBlackBox_Monitor = {
 };
 
 #define BLACKBOX_CHIP_TAG "[ BLACKBOX CHIP INFO ] "
-#define BLACKBOX_CHIP_INFO(fmt, ...) Debug_Print(&DebugP4, BLACKBOX_CHIP_TAG , fmt, ##__VA_ARGS__)
+#define BLACKBOX_CHIP_INFO(fmt, ...) Debug_Print(&DebugPort, BLACKBOX_CHIP_TAG , fmt, ##__VA_ARGS__)
 
 /* external function */
 static uint32_t SrvChip_BlackBox_Init(SrvBlackBox_Log_Callback callback);

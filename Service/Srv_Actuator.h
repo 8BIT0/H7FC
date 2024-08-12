@@ -86,6 +86,7 @@ extern "C" {
         }                           \
     }
 
+#if defined BATEAT32F435_AIO
 #define SRVACTUATOR_PA2_SIG_5       \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
@@ -115,7 +116,7 @@ extern "C" {
             PWM_SIG_6_PIN_AF        \
         }                           \
     }
-
+#endif
 #if defined MATEKH743_V1_5
 #define SRVACTUATOR_PD12_SIG_7      \
     (SrvActuator_PeriphSet_TypeDef) \

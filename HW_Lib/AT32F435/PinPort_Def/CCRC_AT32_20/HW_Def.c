@@ -5,23 +5,8 @@
 // MOTOR 3 A03
 // MOTOR 4 B01
 
-// SERIAL_TX 1 A09
-// SERIAL_TX 2 A02
-// SERIAL_TX 3 B11
-// SERIAL_TX 5 B09
-// SERIAL_TX 7 B04
-
-// SERIAL_RX 1 A10
-// SERIAL_RX 2 B00
-// SERIAL_RX 3 B10
-// SERIAL_RX 5 B08
-// SERIAL_RX 7 B03
-
 // I2C_SCL 2 H02
 // I2C_SDA 2 H03
-
-// LED 1 C13
-// LED 2 C14
 
 // OSD_CS 1 B12
 
@@ -30,6 +15,7 @@
 
 // timer A08 AF1
 // # pin A08: TIM1 CH1 (AF1)
+
 // timer B06 AF2
 // # pin B06: TIM4 CH1 (AF2)
 // timer B07 AF2
@@ -53,7 +39,7 @@
 // dma pin B01 3
 // # pin B01: DMA1 Channel 0 Channel 64
 
-/* Led 1 */
+/* Led 1 C13 */
 BspGPIO_Port_TypeDef Led1_Port = {
     .port = GPIOC,
 };
@@ -64,7 +50,7 @@ BspGPIO_Obj_TypeDef Led1 = {
     .init_state = GPIO_PULL_NONE,
 };
 
-/* Led 2 */
+/* Led 2 C14 */
 BspGPIO_Port_TypeDef Led2_Port = {
     .port = GPIOC,
 };
@@ -75,31 +61,31 @@ BspGPIO_Obj_TypeDef Led2 = {
     .init_state = GPIO_PULL_NONE,
 };
 
-/* on board receiver uart tx port */
+/* on board receiver uart tx port B11 */
 BspGPIO_Port_TypeDef Uart3_Tx_Port = {
     .port = GPIOB,
 };
 
 BspGPIO_Obj_TypeDef Uart3_TxPin = {
     .port = (void *)&Uart3_Tx_Port,
-    .pin = GPIO_PINS_10,
+    .pin = GPIO_PINS_11,
     .init_state = GPIO_PULL_NONE,
     .alternate = GPIO_MUX_7,
 };
 
-/* on board receiver uart rx port */
+/* on board receiver uart rx port B10 */
 BspGPIO_Port_TypeDef Uart3_Rx_Port = {
     .port = GPIOB,
 };
 
 BspGPIO_Obj_TypeDef Uart3_RxPin = {
     .port = (void *)&Uart3_Rx_Port,
-    .pin = GPIO_PINS_11,
+    .pin = GPIO_PINS_10,
     .init_state = GPIO_PULL_NONE,
     .alternate = GPIO_MUX_7,
 };
 
-/* uart 1 tx pin */
+/* uart 1 tx pin A09 */
 BspGPIO_Port_TypeDef Uart1_Tx_Port = {
     .port = GPIOA,
 };
@@ -111,7 +97,7 @@ BspGPIO_Obj_TypeDef Uart1_TxPin = {
     .alternate = GPIO_MUX_7,
 };
 
-/* uart 1 rx pin */
+/* uart 1 rx pin A10 */
 BspGPIO_Port_TypeDef Uart1_Rx_Port = {
     .port = GPIOA,
 };
@@ -121,6 +107,78 @@ BspGPIO_Obj_TypeDef Uart1_RxPin = {
     .pin = GPIO_PINS_10,
     .init_state = GPIO_PULL_NONE,
     .alternate = GPIO_MUX_7,
+};
+
+/* uart 2 tx pin A02 */
+BspGPIO_Port_TypeDef Uart2_Tx_Port = {
+    .port = GPIOA,
+};
+
+BspGPIO_Obj_TypeDef Uart2_TxPin = {
+    .port = (void *)&Uart2_Tx_Port,
+    .pin = GPIO_PINS_2,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_7,
+};
+
+/* uart 2 rx pin B00 */
+BspGPIO_Port_TypeDef Uart2_Rx_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef Uart2_RxPin = {
+    .port = (void *)&Uart2_Rx_Port,
+    .pin = GPIO_PINS_0,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_6,
+};
+
+/* uart 5 tx pin B09 */
+BspGPIO_Port_TypeDef Uart5_Tx_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef Uart5_TxPin = {
+    .port = (void *)&Uart5_Tx_Port,
+    .pin = GPIO_PINS_9,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_8,
+};
+
+/* uart 5 rx pin B08 */
+BspGPIO_Port_TypeDef Uart5_Rx_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef Uart5_RxPin = {
+    .port = (void *)&Uart5_Rx_Port,
+    .pin = GPIO_PINS_8,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_8,
+};
+
+/* uart 7 tx pin B04 */
+BspGPIO_Port_TypeDef Uart7_Tx_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef Uart7_TxPin = {
+    .port = (void *)&Uart7_Tx_Port,
+    .pin = GPIO_PINS_4,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_8,
+};
+
+/* uart 7 rx pin B03 */
+BspGPIO_Port_TypeDef Uart7_Rx_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef Uart7_RxPin = {
+    .port = (void *)&Uart7_Rx_Port,
+    .pin = GPIO_PINS_3,
+    .init_state = GPIO_PULL_NONE,
+    .alternate = GPIO_MUX_8,
 };
 
 /* IMU CS Pin A04 */
@@ -195,3 +253,86 @@ BspSPI_PinConfig_TypeDef ExtFlash_SPIPin = {
     .pin_Alternate = GPIO_MUX_5,
 };
 
+/* PWM IO */
+BspGPIO_Port_TypeDef PWM_1_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Port_TypeDef PWM_2_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Port_TypeDef PWM_3_Port = {
+    .port = GPIOA,
+};
+
+BspGPIO_Port_TypeDef PWM_4_Port = {
+    .port = GPIOB,
+};
+
+void PriIMU_Dir_Tune(float *gyr, float *acc)
+{
+    double gyr_tmp[Axis_Sum] = {0.0};
+    double acc_tmp[Axis_Sum] = {0.0};
+
+    if (gyr && acc)
+    {
+        for (uint8_t i = Axis_X; i < Axis_Sum; i++)
+        {
+            gyr_tmp[i] = gyr[i];
+            acc_tmp[i] = acc[i];
+        }
+
+        gyr[Axis_X] = -gyr_tmp[Axis_Y];
+        gyr[Axis_Y] = gyr_tmp[Axis_X];
+        gyr[Axis_Z] = gyr_tmp[Axis_Z];
+
+        acc[Axis_X] = -acc_tmp[Axis_Y];
+        acc[Axis_Y] = acc_tmp[Axis_X];
+        acc[Axis_Z] = acc_tmp[Axis_Z];
+    }
+}
+
+/* debug print port uart4 */
+#define DEBUG_PORT_BAUDRATE 460800
+#define DEBUG_P7_PORT UART7
+#define DEBUG_P7_TX_PIN_INIT_STATE GPIO_PULL_NONE
+#define DEBUG_P7_RX_PIN_INIT_STATE GPIO_PULL_NONE
+#define DEBUG_P7_TX_PIN_ALT GPIO_MUX_8
+#define DEBUG_P7_RX_PIN_ALT GPIO_MUX_8
+#define DEBUG_P7_TX_DMA Bsp_DMA_None
+#define DEBUG_P7_TX_DMA_STREAM Bsp_DMA_Stream_None
+#define DEBUG_P7_RX_DMA Bsp_DMA_None
+#define DEBUG_P7_RX_DMA_STREAM Bsp_DMA_Stream_None
+#define DEBUG_P7_TX_PIN GPIO_PINS_4
+#define DEBUG_P7_RX_PIN GPIO_PINS_3
+#define DEBUG_P7_TX_PORT &Uart7_Tx_Port
+#define DEBUG_P7_RX_PORT &Uart7_Rx_Port
+
+static BspUARTObj_TypeDef Debug_Port_Obj = {
+    .instance = DEBUG_P7_PORT,
+    .baudrate = DEBUG_PORT_BAUDRATE,
+    .tx_io = {
+        .init_state = DEBUG_P7_TX_PIN_INIT_STATE,
+        .pin = DEBUG_P7_TX_PIN,
+        .port = DEBUG_P7_TX_PORT,
+        .alternate = DEBUG_P7_TX_PIN_ALT,
+    }, 
+    .rx_io = {
+        .init_state = DEBUG_P7_RX_PIN_INIT_STATE,
+        .pin = DEBUG_P7_RX_PIN,
+        .port = DEBUG_P7_RX_PORT,
+        .alternate = DEBUG_P7_RX_PIN_ALT,
+    }, 
+    .pin_swap = false,
+    .rx_dma = DEBUG_P7_RX_DMA,
+    .rx_stream = DEBUG_P7_RX_DMA_STREAM,
+    .tx_dma = DEBUG_P7_TX_DMA,
+    .tx_stream = DEBUG_P7_TX_DMA_STREAM,
+    .rx_buf = NULL,
+    .rx_size = 0,
+};
+
+DebugPrintObj_TypeDef DebugPort = {
+    .port_obj = &Debug_Port_Obj,
+};

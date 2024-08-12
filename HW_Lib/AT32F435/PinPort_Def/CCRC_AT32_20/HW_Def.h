@@ -54,6 +54,39 @@ extern "C" {
 /* IMU SPI */
 #define PriIMU_SPI_BUS SPI1
 
+/* PWM IO */
+#define PWM_SIG_1_TIM TMR4
+#define PWM_SIG_1_TIM_CHANNEL TMR_SELECT_CHANNEL_1
+#define PWM_SIG_1_PORT &PWM_1_Port
+#define PWM_SIG_1_PIN GPIO_PINS_6
+#define PWM_SIG_1_DMA Bsp_DMA_1
+#define PWM_SIG_1_DMA_CHANNEL Bsp_DMA_Stream_1
+#define PWM_SIG_1_PIN_AF GPIO_MUX_2
+
+#define PWM_SIG_2_TIM TMR4
+#define PWM_SIG_2_TIM_CHANNEL TMR_SELECT_CHANNEL_2
+#define PWM_SIG_2_PORT &PWM_2_Port
+#define PWM_SIG_2_PIN GPIO_PINS_7
+#define PWM_SIG_2_DMA Bsp_DMA_1
+#define PWM_SIG_2_DMA_CHANNEL Bsp_DMA_Stream_2
+#define PWM_SIG_2_PIN_AF GPIO_MUX_2
+
+#define PWM_SIG_3_TIM TMR2
+#define PWM_SIG_3_TIM_CHANNEL TMR_SELECT_CHANNEL_4
+#define PWM_SIG_3_PORT &PWM_3_Port
+#define PWM_SIG_3_PIN GPIO_PINS_3
+#define PWM_SIG_3_DMA Bsp_DMA_1
+#define PWM_SIG_3_DMA_CHANNEL Bsp_DMA_Stream_3
+#define PWM_SIG_3_PIN_AF GPIO_MUX_1
+
+#define PWM_SIG_4_TIM TMR3
+#define PWM_SIG_4_TIM_CHANNEL TMR_SELECT_CHANNEL_4
+#define PWM_SIG_4_PORT &PWM_4_Port
+#define PWM_SIG_4_PIN GPIO_PINS_1
+#define PWM_SIG_4_DMA Bsp_DMA_1
+#define PWM_SIG_4_DMA_CHANNEL Bsp_DMA_Stream_4
+#define PWM_SIG_4_PIN_AF GPIO_MUX_2
+
 /* internal flash storage */
 #define OnChipFlash_Storage_StartAddress FLASH_BLOCK_7_START_ADDR
 #define OnChipFlash_Storage_TotalSize FLASH_BLOCK_7_SIZE
@@ -118,6 +151,19 @@ extern BspGPIO_Port_TypeDef Uart3_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart3_Rx_Port;
 extern BspGPIO_Port_TypeDef Uart1_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart1_Rx_Port;
+extern BspGPIO_Port_TypeDef Uart5_Tx_Port;
+extern BspGPIO_Port_TypeDef Uart5_Rx_Port;
+extern BspGPIO_Port_TypeDef Uart7_Tx_Port;
+extern BspGPIO_Port_TypeDef Uart7_Rx_Port;
+
+extern BspGPIO_Obj_TypeDef Uart3_TxPin;
+extern BspGPIO_Obj_TypeDef Uart3_RxPin;
+extern BspGPIO_Obj_TypeDef Uart1_TxPin;
+extern BspGPIO_Obj_TypeDef Uart1_RxPin;
+extern BspGPIO_Obj_TypeDef Uart5_TxPin;
+extern BspGPIO_Obj_TypeDef Uart5_RxPin;
+extern BspGPIO_Obj_TypeDef Uart7_TxPin;
+extern BspGPIO_Obj_TypeDef Uart7_RxPin;
 
 extern DevLedObj_TypeDef Led1;
 extern DevLedObj_TypeDef Led2;
@@ -126,6 +172,17 @@ extern BspGPIO_Obj_TypeDef PriIMU_CSPin;
 extern BspGPIO_Obj_TypeDef PriIMU_INTPin;
 extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
+
+extern BspGPIO_Port_TypeDef PWM_1_Port;
+extern BspGPIO_Port_TypeDef PWM_2_Port;
+extern BspGPIO_Port_TypeDef PWM_3_Port;
+extern BspGPIO_Port_TypeDef PWM_4_Port;
+
+extern DebugPrintObj_TypeDef DebugPort;
+#define DEBUG_TAG "[ DEBUG INFO ] "
+#define DEBUG_INFO(fmt, ...) Debug_Print(&DebugPort, DEBUG_TAG, fmt, ##__VA_ARGS__)
+
+void PriIMU_Dir_Tune(float *gyr, float *acc);
 
 #ifdef __cplusplus
 }

@@ -25,7 +25,7 @@ const uint8_t AppVer[3] = {0, 0, 17};
 const uint8_t HWVer[3] = {0, 0, 1};
 #elif defined BATEAT32F435_AIO
 const uint8_t HWVer[3] = {0, 0, 2};
-#elif defined CCRC_AT23_20
+#elif defined CCRC_AT32_20
 const uint8_t HWVer[3] = {0, 0, 3};
 #endif
 
@@ -35,7 +35,7 @@ const uint8_t HWVer[3] = {0, 0, 3};
 
 #define UpgradeInfo_Sec  "Upgrade_Info"
 
-#define UPGERADE_INFO(fmt,...) Debug_Print(&DebugP4, "[ UPGRADE INFO ] ", fmt, ##__VA_ARGS__)
+#define UPGERADE_INFO(fmt,...) Debug_Print(&DebugPort, "[ UPGRADE INFO ] ", fmt, ##__VA_ARGS__)
 
 typedef void (*Application_Func)(void);
 

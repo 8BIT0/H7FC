@@ -56,9 +56,9 @@ void Task_Manager_Init(void)
 
     /* cur ADC init */
 
-    DebugP4.free = SrvOsCommon.free;
-    DebugP4.malloc = SrvOsCommon.malloc;
-    Debug_Port_Init(&DebugP4);
+    DebugPort.free = SrvOsCommon.free;
+    DebugPort.malloc = SrvOsCommon.malloc;
+    Debug_Port_Init(&DebugPort);
 
     osThreadDef(ManagerTask, Task_Manager_CreateTask, osPriorityLow, 0, 1024);
     TaskManager_Handle = osThreadCreate(osThread(ManagerTask), NULL);

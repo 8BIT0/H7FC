@@ -16,13 +16,13 @@
 #elif defined BATEAT32F435_AIO
 #define BARO_TYPE Baro_Type_BMP280
 #define BARO_BUS_TYPE SrvBaro_Bus_SPI
-#elif defined CCRC_AT23_20
+#elif defined CCRC_AT32_20
 #define BARO_TYPE Baro_Type_BMP280
 #define BARO_BUS_TYPE SrvBaro_Bus_IIC
 #endif
 
 #define MONITOR_TAG "[ SENSOR MONITOR INFO ] "
-#define MONITOR_INFO(fmt, ...) Debug_Print(&DebugP4, MONITOR_TAG, fmt, ##__VA_ARGS__)
+#define MONITOR_INFO(fmt, ...) Debug_Print(&DebugPort, MONITOR_TAG, fmt, ##__VA_ARGS__)
 
 /* internal function */
 static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);

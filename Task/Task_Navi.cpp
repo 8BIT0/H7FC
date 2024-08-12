@@ -14,7 +14,7 @@
 #include "debug_util.h"
 
 #define NAVI_TAG " "
-#define NAVI_INFO(fmt, ...) Debug_Print(&DebugP4, NAVI_TAG, fmt, ##__VA_ARGS__)
+#define NAVI_INFO(fmt, ...) Debug_Print(&DebugPort, NAVI_TAG, fmt, ##__VA_ARGS__)
 
 using namespace std;
 using namespace Eigen;

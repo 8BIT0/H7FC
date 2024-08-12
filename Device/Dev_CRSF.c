@@ -30,6 +30,8 @@
  *
  */
 
+#define Debug_Pin_En 0
+
 static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj);
 static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj);
 static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in);
@@ -102,9 +104,11 @@ static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t
                     obj->rec_stage = CRSF_Stage_Size;
                     obj->frame.addr = p_data[i];
                     obj->match_header_num ++;
-                        
+
+#if (Debug_Pin_En == 1)
                     DebugPin.ctl(Debug_PC0, false);
                     DebugPin.ctl(Debug_PC0, true);
+#endif
                 }
                 else
                     memset(&obj->frame, 0, sizeof(obj->frame));
@@ -191,8 +195,10 @@ static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj)
             if ((CRSF_ADDRESS_FLIGHT_CONTROLLER == obj->frame.addr) && \
                 ((CRSF_FRAME_ORIGIN_DEST_SIZE + CRSF_FRAME_RC_CHANNELS_PAYLOAD_SIZE) == obj->frame.length))
             {
+#if (Debug_Pin_En == 1)
                 DebugPin.ctl(Debug_PC8, false);
                 DebugPin.ctl(Debug_PC8, true);
+#endif
 
                 const crsf_channels_t *channel_val_ptr = (const crsf_channels_t *)(obj->frame.data + 1);
                 obj->channel[0] = channel_val_ptr->ch0;

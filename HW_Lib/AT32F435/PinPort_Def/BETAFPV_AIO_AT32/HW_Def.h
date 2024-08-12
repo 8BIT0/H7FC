@@ -51,22 +51,6 @@ extern "C" {
 #define RADIO_TX_PORT &Uart1_Tx_Port
 #define RADIO_RX_PORT &Uart1_Rx_Port
 
-/* debug print port uart4 */
-#define DEBUG_PORT_BAUDRATE 460800
-#define DEBUG_P4_PORT UART4
-#define DEBUG_P4_TX_PIN_INIT_STATE GPIO_PULL_NONE
-#define DEBUG_P4_RX_PIN_INIT_STATE GPIO_PULL_NONE
-#define DEBUG_P4_TX_PIN_ALT GPIO_MUX_8
-#define DEBUG_P4_RX_PIN_ALT GPIO_MUX_8
-#define DEBUG_P4_TX_DMA Bsp_DMA_None
-#define DEBUG_P4_TX_DMA_STREAM Bsp_DMA_Stream_None
-#define DEBUG_P4_RX_DMA Bsp_DMA_None
-#define DEBUG_P4_RX_DMA_STREAM Bsp_DMA_Stream_None
-#define DEBUG_P4_TX_PIN GPIO_PINS_0
-#define DEBUG_P4_RX_PIN GPIO_PINS_1
-#define DEBUG_P4_TX_PORT &Uart4_Tx_Port
-#define DEBUG_P4_RX_PORT &Uart4_Rx_Port
-
 /* flow sensor port uart6 */
 #define FLOW_PORT USART6
 #define FLOW_TX_PIN_INIT_STATE GPIO_PULL_NONE
@@ -212,8 +196,6 @@ extern BspGPIO_Port_TypeDef Uart1_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart1_Rx_Port;
 extern BspGPIO_Port_TypeDef Uart4_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart4_Rx_Port;
-extern BspGPIO_Port_TypeDef Uart5_Tx_Port;
-extern BspGPIO_Port_TypeDef Uart5_Rx_Port;
 extern BspGPIO_Port_TypeDef Uart6_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart6_Rx_Port;
 
@@ -247,9 +229,9 @@ extern BspGPIO_Port_TypeDef PWM_4_Port;
 extern BspGPIO_Port_TypeDef PWM_5_Port;
 extern BspGPIO_Port_TypeDef PWM_6_Port;
 
-extern DebugPrintObj_TypeDef DebugP4;
+extern DebugPrintObj_TypeDef DebugPort;
 #define DEBUG_TAG "[ DEBUG INFO ] "
-#define DEBUG_INFO(fmt, ...) Debug_Print(&DebugP4, DEBUG_TAG, fmt, ##__VA_ARGS__)
+#define DEBUG_INFO(fmt, ...) Debug_Print(&DebugPort, DEBUG_TAG, fmt, ##__VA_ARGS__)
 
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 

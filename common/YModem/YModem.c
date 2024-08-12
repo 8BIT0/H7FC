@@ -12,7 +12,7 @@
 #define YMODEM_ID_P_OFFSET 1
 #define YMODEM_ID_N_OFFSET 2
 
-#define YMODEM_DEBUG(fmt,...) Debug_Print(&DebugP4, "[ YMODEM INFO ] ", fmt, ##__VA_ARGS__)
+#define YMODEM_DEBUG(fmt,...) Debug_Print(&DebugPort, "[ YMODEM INFO ] ", fmt, ##__VA_ARGS__)
 
 typedef struct
 {

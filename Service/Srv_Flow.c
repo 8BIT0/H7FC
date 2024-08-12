@@ -3,6 +3,7 @@
 #include "Dev_Flow_3901U.h"
 #include "Bsp_Uart.h"
 #include "HW_Def.h"
+#include "../FCHW_Config.h"
 #include "../common/util.h"
 #include <math.h>
 
@@ -64,6 +65,7 @@ static bool SrvFlow_Init(SrvFlow_SensorType_List type)
                 return false;
             
             /* port init */
+#if (FLOW_SUM != 0)
             To_BspUart_Obj(port_obj)->baudrate = FLOW_3901U_BAUDRATE;
             To_BspUart_Obj(port_obj)->cust_data_addr = p_obj;
             To_BspUart_Obj(port_obj)->irq_type = BspUart_IRQ_Type_Idle;
@@ -84,6 +86,7 @@ static bool SrvFlow_Init(SrvFlow_SensorType_List type)
             /* set port parse callback */
             BspUart.set_rx_callback(To_BspUart_Obj(port_obj), (BspUART_Callback *)DevFlow3901.recv);
             FlowMonitor.init = true;
+#endif
             return true;
 
         default: return false;
