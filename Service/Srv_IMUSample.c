@@ -1267,28 +1267,12 @@ static char* SrvIMU_GetSensorType_Str(SrvIMU_SensorID_List type)
 {
     switch(type)
     {
-        case SrvIMU_Dev_MPU6000:
-            return "MPU6000\r\n";
-        break;
-
-        case SrvIMU_Dev_ICM20602:
-            return "ICM20602\r\n";
-        break;
-
-        case SrvIMU_Dev_ICM42688P:
-            return "ICM42688P\r\n";
-        break;
-
-        case SrvIMU_Dev_ICM42605:
-            return "ICM42605\r\n";
-        break;
-
-        case SrvIMU_Dev_None:
-            return "None\r\n";
-        break;
-
-        default:
-            return "None\r\n";
+        case SrvIMU_Dev_MPU6000:    return "MPU6000\r\n";
+        case SrvIMU_Dev_ICM20602:   return "ICM20602\r\n";
+        case SrvIMU_Dev_ICM42688P:  return "ICM42688P\r\n";
+        case SrvIMU_Dev_ICM42605:   return "ICM42605\r\n";
+        case SrvIMU_Dev_None:       return "None\r\n";
+        default:                    return "None\r\n";
     }
 }
 
