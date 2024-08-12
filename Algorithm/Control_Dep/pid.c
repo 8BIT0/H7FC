@@ -47,7 +47,7 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
 static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
     float diff_tmp = 0.0f;
-    
+
     if(p_PIDObj)
     {
         /* limit diff range */

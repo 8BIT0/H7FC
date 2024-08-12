@@ -290,7 +290,7 @@ C_DEFS += \
 -DBATEAT32F435_AIO
 else ifeq ($(HARDWARE), $(HW_CCRC_AT32_20))
 C_DEFS += \
--DCCRC_AT23_20
+-DCCRC_AT32_20
 endif
 
 # fpu
