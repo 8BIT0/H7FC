@@ -47,9 +47,7 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
 static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
     float diff_tmp = 0.0f;
-    int16_t max_fractional = 0;
-    int16_t min_fractional = 0;
-
+    
     if(p_PIDObj)
     {
         /* limit diff range */
@@ -73,10 +71,6 @@ static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 
 static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
-    int16_t gI_Max_Fractical = 0.0f;
-    int16_t gI_Min_Fractical = 0.0f;
-    int16_t diff_Fractical = 0.0f;
-
     if(p_PIDObj)
     {
         p_PIDObj->Integral += diff;

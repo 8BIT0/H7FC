@@ -11,7 +11,7 @@
 
 #if defined MATEKH743_V1_5
 #define Sample_Blinkly Led2
-#elif defined BATEAT32F435_AIO
+#elif defined BATEAT32F435_AIO || defined CCRC_AT32_20
 #define Sample_Blinkly Led1
 #endif
 

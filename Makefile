@@ -27,8 +27,8 @@ else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 HW_BETAFPV_AIO_AT32 := 1
 HW_CCRC_AT32_20 := 2
 
-HARDWARE := $(HW_BETAFPV_AIO_AT32)
-# HARDWARE := $(HW_CCRC_AT32_20)
+# HARDWARE := $(HW_BETAFPV_AIO_AT32)
+HARDWARE := $(HW_CCRC_AT32_20)
 endif
 
 ######################################

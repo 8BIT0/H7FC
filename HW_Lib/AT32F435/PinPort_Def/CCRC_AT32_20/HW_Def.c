@@ -23,17 +23,7 @@
 // LED 1 C13
 // LED 2 C14
 
-// SPI_SCK 1 A05
-// SPI_MISO 1 A06
-// SPI_MOSI 1 A07
-// SPI_SCK 2 B13
-// SPI_MISO 2 B14
-// SPI_MOSI 2 B15
-
-// FLASH_CS 1 B05
 // OSD_CS 1 B12
-// GYRO_EXTI 1 A15
-// GYRO_CS 1 A04
 
 // ADC_BATT 1 A00
 // ADC_CURR 1 A01
@@ -79,8 +69,8 @@ BspGPIO_Port_TypeDef Led2_Port = {
     .port = GPIOC,
 };
 
-BspGPIO_Obj_TypeDef Led1 = {
-    .port = (void *)&Led1_Port,
+BspGPIO_Obj_TypeDef Led2 = {
+    .port = (void *)&Led2_Port,
     .pin = GPIO_PINS_14,
     .init_state = GPIO_PULL_NONE,
 };
@@ -131,5 +121,77 @@ BspGPIO_Obj_TypeDef Uart1_RxPin = {
     .pin = GPIO_PINS_10,
     .init_state = GPIO_PULL_NONE,
     .alternate = GPIO_MUX_7,
+};
+
+/* IMU CS Pin A04 */
+BspGPIO_Port_TypeDef PriIMU_CS_Port = {
+    .port = GPIOA,
+};
+
+BspGPIO_Obj_TypeDef PriIMU_CSPin = {
+    .init_state = GPIO_PULL_UP,
+    .pin = GPIO_PINS_4,
+    .port = &PriIMU_CS_Port,
+};
+
+/* IMU INT Pin A15 */
+BspGPIO_EXTI_Port_TypeDef PriIMU_INT_Port = {
+    .port = SCFG_PORT_SOURCE_GPIOA,
+};
+
+BspGPIO_Obj_TypeDef PriIMU_INTPin = {
+    .port = (void *)&PriIMU_INT_Port,
+    .pin = GPIO_PINS_15,
+    .init_state = EXINT_TRIGGER_FALLING_EDGE,
+};
+
+/* IMU Bus Pin (SPI1) */
+/* SPI_SCK  1 A05 */
+/* SPI_MISO 1 A06 */
+/* SPI_MOSI 1 A07 */
+BspSPI_PinConfig_TypeDef PriIMU_BusPin = {
+    .port_mosi = (void *)GPIOA,
+    .port_miso = (void *)GPIOA,
+    .port_clk = (void *)GPIOA,
+    
+    .pin_mosi = GPIO_PINS_7,
+    .pin_miso = GPIO_PINS_6,
+    .pin_clk = GPIO_PINS_5,
+
+    .pin_Alternate = GPIO_MUX_5,
+};
+
+BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg = {
+    .Instance = PriIMU_SPI_BUS,
+    .CLKPolarity = SPI_CLOCK_POLARITY_HIGH,
+    .CLKPhase = SPI_CLOCK_PHASE_2EDGE,
+    .BaudRatePrescaler = SPI_MCLK_DIV_8,
+};
+
+/* external flash chip cs B05 */
+BspGPIO_Port_TypeDef ExtFlash_CS_Port = {
+    .port = GPIOB,
+};
+
+BspGPIO_Obj_TypeDef ExtFlash_CSPin = {
+    .port = (void *)&ExtFlash_CS_Port,
+    .pin = GPIO_PINS_5,
+    .init_state = GPIO_PULL_UP,
+};
+
+/* external flash chip bus Pin (SPI2) */
+/* SPI_SCK  2 B13 */
+/* SPI_MISO 2 B14 */
+/* SPI_MOSI 2 B15 */
+BspSPI_PinConfig_TypeDef ExtFlash_SPIPin = {
+    .port_mosi = (void *)GPIOB,
+    .port_miso = (void *)GPIOB,
+    .port_clk = (void *)GPIOB,
+    
+    .pin_mosi = GPIO_PINS_15,
+    .pin_miso = GPIO_PINS_14,
+    .pin_clk = GPIO_PINS_13,
+
+    .pin_Alternate = GPIO_MUX_5,
 };
 
