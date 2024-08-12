@@ -373,3 +373,4 @@ static BspUARTObj_TypeDef Debug_Port_Obj = {
 DebugPrintObj_TypeDef DebugPort = {
     .port_obj = &Debug_Port_Obj,
 };
+

@@ -63,6 +63,11 @@ static bool BspTimer_Clock_EnableCtl(void *instance, confirm_state state)
         crm_periph_clock_enable(CRM_TMR8_PERIPH_CLOCK, state);
         return true;
     }
+    else if (To_Timer_Instance(instance) == TMR4)
+    {
+        crm_periph_clock_enable(CRM_TMR4_PERIPH_CLOCK, state);
+        return true;
+    }
 
     return false;
 }
@@ -93,6 +98,16 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef 
                     default: return 0;
                 }
                 
+            case (uint32_t)TMR4:
+                switch(obj->tim_channel)
+                {
+                    case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR4_CH1;
+                    case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR4_CH2;
+                    case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR4_CH3;
+                    case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR4_CH4;
+                    default: return 0;
+                }
+
             case (uint32_t)TMR8:
                 switch(obj->tim_channel)
                 {
