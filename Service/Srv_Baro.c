@@ -189,21 +189,21 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
             SrvBaroBus.bus_obj = (void *)&SrvBaro_IIC_Obj;
 
             ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
-            if(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+            if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
             {
                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
                 return false;
             }
 
             ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct = SrvOsCommon.malloc(I2C_PeriphCLKInitType_Size);
-            if(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct == NULL)
+            if (ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct == NULL)
             {
                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct);
                 return false;
             }
 #endif
-            if(!ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
+            if (!ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
                 return false;
 
             SrvBaroBus.init = true;
@@ -246,13 +246,13 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
     /* regist all error to the error tree */
     ErrorLog.registe(SrvBaro_Error_Handle, SrvBaro_ErrorList, sizeof(SrvBaro_ErrorList) / sizeof(SrvBaro_ErrorList[0]));
 
-    if(!SrvBaro_BusInit(bus_type))
+    if (!SrvBaro_BusInit(bus_type))
     {
         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BusInit, NULL, 0);
         return SrvBaro_Error_BusInit;
     }
 
-    if(SrvBaroObj.sample_rate)
+    if (SrvBaroObj.sample_rate)
     {
         switch((uint8_t)sensor_type)
         {
@@ -261,7 +261,7 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevDPS310Obj_TypeDef));
                 SrvBaroObj.sensor_api = &DevDPS310;
 
-                if((SrvBaroObj.sensor_obj != NULL) &&
+                if ((SrvBaroObj.sensor_obj != NULL) &&
                     (SrvBaroObj.sensor_api != NULL))
                 {
                     /* set sensor object */
@@ -274,7 +274,7 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
 
                     /* device init */
-                    if(!ToDPS310_API(SrvBaroObj.sensor_api)->init(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
+                    if (!ToDPS310_API(SrvBaroObj.sensor_api)->init(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
                     {
                         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
                         return SrvBaro_Error_DevInit;
@@ -308,7 +308,7 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
 
                     /* device init */
-                    if(!ToBMP280_API(SrvBaroObj.sensor_api)->init(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
+                    if (!ToBMP280_API(SrvBaroObj.sensor_api)->init(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
                     {
                         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
                         return SrvBaro_Error_DevInit;
@@ -333,13 +333,14 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
 
         /* filter init */
         SrvBaroObj.smoothwindow_filter_hdl = SmoothWindow.init(SRVBARO_SMOOTHWINDOW_SIZE);
-        if(SrvBaroObj.smoothwindow_filter_hdl == 0)
+        if (SrvBaroObj.smoothwindow_filter_hdl == 0)
         {
             ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_FilterInit, NULL, 0);
             return SrvBaro_Error_FilterInit;
         }
 
-        if((SrvBaroObj.sample_period < SRVBARO_MAX_SAMPLE_PERIOD) || (SrvBaroObj.sample_period > SRVBARO_MIN_SAMPLE_PERIOD))
+        if ((SrvBaroObj.sample_period < SRVBARO_MAX_SAMPLE_PERIOD) || \
+            (SrvBaroObj.sample_period > SRVBARO_MIN_SAMPLE_PERIOD))
         {
             ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSamplePeriod, NULL, 0);
             return SrvBaro_Error_BadSamplePeriod;
@@ -356,7 +357,7 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
 
 static bool SrvBaro_Sample(void)
 {
-    if(SrvBaroObj.init_err == SrvBaro_Error_None)
+    if (SrvBaroObj.init_err == SrvBaro_Error_None)
     {
         switch((uint8_t) SrvBaroObj.type)
         {
@@ -374,7 +375,7 @@ static bool SrvBaro_Sample(void)
 
                         SrvBaroObj.calib_cycle --;
 
-                        if(SrvBaroObj.calib_cycle == 0)
+                        if (SrvBaroObj.calib_cycle == 0)
                         {
                             SrvBaroObj.calib_state = Calib_Done;
                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_add_sum);
@@ -397,8 +398,8 @@ static bool SrvBaro_Sample(void)
                 {
                     SrvBaroObj.sample_cnt ++;
 
-                    if (((SrvBaroObj.calib_state == Calib_Start) || 
-                        (SrvBaroObj.calib_state == Calib_InProcess)) &&
+                    if (((SrvBaroObj.calib_state == Calib_Start) || \
+                        (SrvBaroObj.calib_state == Calib_InProcess)) && \
                         SrvBaroObj.calib_cycle)
                     {
                         SrvBaroObj.pressure_add_sum += ToBMP280_OBJ(SrvBaroObj.sensor_obj)->pressure;
@@ -406,7 +407,7 @@ static bool SrvBaro_Sample(void)
 
                         SrvBaroObj.calib_cycle --;
 
-                        if(SrvBaroObj.calib_cycle == 0)
+                        if (SrvBaroObj.calib_cycle == 0)
                         {
                             SrvBaroObj.calib_state = Calib_Done;
                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_add_sum);
@@ -434,7 +435,7 @@ static bool SrvBaro_Sample(void)
 
 static GenCalib_State_TypeList SrvBaro_Set_Calib(uint16_t cyc)
 {
-    if(SrvBaroObj.calib_state != Calib_InProcess)
+    if (SrvBaroObj.calib_state != Calib_InProcess)
     {
         SrvBaroObj.calib_cycle = cyc;
         SrvBaroObj.calib_state = Calib_Start;
@@ -465,12 +466,12 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
 
     memset(baro_data_tmp.buff, 0, sizeof(SrvBaro_UnionData_TypeDef));
 
-    if((SrvBaroObj.init_err == SrvBaro_Error_None) && data)
+    if ((SrvBaroObj.init_err == SrvBaro_Error_None) && data)
     {
-        switch((uint8_t) SrvBaroObj.type)
+        switch ((uint8_t) SrvBaroObj.type)
         {
             case Baro_Type_DPS310:
-                if(ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
+                if (ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
                 {
                     memset(&DPS310_Data, 0, sizeof(DevDPS310_Data_TypeDef));
                     DPS310_Data = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_OBJ(SrvBaroObj.sensor_obj));
@@ -497,7 +498,7 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
                 break;
             
             case Baro_Type_BMP280:
-                if(ToBMP280_API(SrvBaroObj.sensor_api)->ready(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
+                if (ToBMP280_API(SrvBaroObj.sensor_api)->ready(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
                 {
                     memset(&BMP280_Data, 0, sizeof(DevBMP280_Data_TypeDef));
                     BMP280_Data = ToBMP280_API(SrvBaroObj.sensor_api)->get_data(ToBMP280_OBJ(SrvBaroObj.sensor_obj));
@@ -514,7 +515,7 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
 
                     /* doing baro filter */
                     baro_data_tmp.data.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.data.pressure_alt);
-                    for(uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.check_sum); i++)
+                    for (uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.check_sum); i++)
                         check_sum += baro_data_tmp.buff[i];
                     baro_data_tmp.data.check_sum = check_sum;
                     memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
@@ -537,7 +538,7 @@ static bool SrvBaro_IICBus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_d
 {
     BspIICObj_TypeDef *IICBusObj = NULL;
 
-    if(SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
+    if (SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
     {
         IICBusObj = ToIIC_BusObj(SrvBaroBus.bus_obj);
         return ToIIC_BusAPI(SrvBaroBus.bus_api)->write(IICBusObj, dev_addr << 1, reg_addr, p_data, len);
@@ -550,7 +551,7 @@ static bool SrvBaro_IICBus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_d
 {
     BspIICObj_TypeDef *IICBusObj = NULL;
 
-    if(SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
+    if (SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
     {
         IICBusObj = ToIIC_BusObj(SrvBaroBus.bus_obj);
         return ToIIC_BusAPI(SrvBaroBus.bus_api)->read(IICBusObj, dev_addr << 1, reg_addr, p_data, len);
