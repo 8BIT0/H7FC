@@ -265,9 +265,11 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                     (SrvBaroObj.sensor_api != NULL))
                 {
                     /* set sensor object */
+#if defined BARO_BUS_IIC
                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->DevAddr = DPS310_I2C_ADDR;
                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_rx = (DevDPS310_BusRead)SrvBaro_IICBus_Rx;
                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_tx = (DevDPS310_BusWrite)SrvBaro_IICBus_Tx;
+#endif
                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
 
