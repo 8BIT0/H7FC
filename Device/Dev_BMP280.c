@@ -358,11 +358,19 @@ static DevBMP280_Data_TypeDef DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj)
 static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj)
 {
     uint8_t reg = DevBMP280_Write_Mask(BMP280_REG_RESET);
+    uint8_t dummy_data = 0;
 
-    if (obj && obj->delay_ms && obj->send)
+    if (obj && obj->delay_ms)
     {
-        if (obj->send(&reg, sizeof(reg)))
+        if (obj->send)
         {
+            obj->send(&reg, sizeof(reg));
+            obj->delay_ms(10);
+            return true;
+        }
+        else if (obj->bus_tx)
+        {
+            obj->bus_tx(obj->DevAddr, reg, &dummy_data, 1);
             obj->delay_ms(10);
             return true;
         }

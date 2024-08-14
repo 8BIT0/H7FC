@@ -193,7 +193,8 @@
                 "task_blackbox.h": "c",
                 "srv_blackbox_def.h": "c",
                 "srv_flow.h": "c",
-                "dev_flow_3901u.h": "c"
+                "dev_flow_3901u.h": "c",
+                "i2c_application.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

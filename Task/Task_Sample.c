@@ -6,6 +6,7 @@
 #include "../FCHW_Config.h"
 #include "../System/DataPipe/DataPipe.h"
 #include "Srv_SensorMonitor.h"
+#include "shell_port.h"
 
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
 
@@ -161,3 +162,23 @@ static void TaskInertical_Blink_Notification(uint16_t duration)
 
     DevLED.ctl(Sample_Blinkly, led_state);
 }
+
+static void TaskSample_Get_SensorState(void)
+{
+    Shell *shell_obj = Shell_GetInstence();
+
+    if (shell_obj == NULL)
+        return;
+
+        shellPrint(shell_obj, "Baro enable state: %d\r\n", SensorMonitor.enabled_reg.bit.baro);
+        shellPrint(shell_obj, "IMU  enable state: %d\r\n", SensorMonitor.enabled_reg.bit.imu);
+        shellPrint(shell_obj, "Mag  enable state: %d\r\n", SensorMonitor.enabled_reg.bit.mag);
+        shellPrint(shell_obj, "Flow enable state: %d\r\n", SensorMonitor.enabled_reg.bit.flow);
+        shellPrint(shell_obj, "-------------------------------------------------------\r\n");
+        shellPrint(shell_obj, "Baro init state: %d\r\n", SensorMonitor.init_state_reg.bit.baro);
+        shellPrint(shell_obj, "IMU  init state: %d\r\n", SensorMonitor.init_state_reg.bit.imu);
+        shellPrint(shell_obj, "Mag  init state: %d\r\n", SensorMonitor.init_state_reg.bit.mag);
+        shellPrint(shell_obj, "Flow init state: %d\r\n", SensorMonitor.init_state_reg.bit.flow);
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, sensor_status, TaskSample_Get_SensorState, show sensor status);
+
