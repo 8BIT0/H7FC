@@ -478,12 +478,12 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
 
     memset(baro_data_tmp.buff, 0, sizeof(SrvBaro_UnionData_TypeDef));
 
-    if ((SrvBaroObj.init_err == SrvBaro_Error_None) && data)
+    if ((SrvBaroObj.init_err == SrvBaro_Error_None) && data && SrvBaroObj.sensor_data && SrvBaroObj.data_size)
     {
         switch ((uint8_t) SrvBaroObj.type)
         {
             case Baro_Type_DPS310:
-                if (ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_OBJ(SrvBaroObj.sensor_obj)) && SrvBaroObj.sensor_data)
+                if (ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
                 {
                     memset(SrvBaroObj.sensor_data, 0, DPS310_DataSize);
                     *ToDPS310_DataPtr(SrvBaroObj.sensor_data) = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_OBJ(SrvBaroObj.sensor_obj));
@@ -510,7 +510,7 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
                 break;
             
             case Baro_Type_BMP280:
-                if (ToBMP280_API(SrvBaroObj.sensor_api)->ready(ToBMP280_OBJ(SrvBaroObj.sensor_obj)) && SrvBaroObj.sensor_data)
+                if (ToBMP280_API(SrvBaroObj.sensor_api)->ready(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
                 {
                     memset(SrvBaroObj.sensor_data, 0, BMP280_DataSize);
                     *ToBMP280_DataPtr(SrvBaroObj.sensor_data) = ToBMP280_API(SrvBaroObj.sensor_api)->get_data(ToBMP280_OBJ(SrvBaroObj.sensor_obj));
