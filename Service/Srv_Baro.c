@@ -633,27 +633,13 @@ static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size)
 {
     switch(code)
     {
-        case SrvBaro_Error_BadRate:
-        break;
-
-        case SrvBaro_Error_BadType:
-        break;
-
-        case SrvBaro_Error_BadSensorObj:
-        break;
-
-        case SrvBaro_Error_BadSamplePeriod:
-        break;
-
-        case SrvBaro_Error_BusInit:
-        break;
-
-        case SrvBaro_Error_DevInit:
-        break;
-
-        case SrvBaro_Error_FilterInit:
-        break;
-
+        case SrvBaro_Error_BadRate: break;
+        case SrvBaro_Error_BadType: break;
+        case SrvBaro_Error_BadSensorObj: break;
+        case SrvBaro_Error_BadSamplePeriod: break;
+        case SrvBaro_Error_BusInit: break;
+        case SrvBaro_Error_DevInit: break;
+        case SrvBaro_Error_FilterInit: break;
         default:
             ErrorLog.add_desc("SrvBaro Triggered Unknow ErrorCode: %d\r\n", code);
         break;
