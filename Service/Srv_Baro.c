@@ -571,6 +571,7 @@ static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
 
     if (p_tx && p_rx && len && \
         SrvBaroBus.init && \
+        (p_Baro_CS != NULL) && \
         (SrvBaroBus.type == SrvBaro_Bus_SPI))
     {
         /* CS Low */
@@ -592,6 +593,7 @@ static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len)
 
     if (p_data && len && \
         SrvBaroBus.init && \
+        (p_Baro_CS != NULL) && \
         (SrvBaroBus.type == SrvBaro_Bus_SPI))
     {
         /* CS Low */
