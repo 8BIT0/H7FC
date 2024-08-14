@@ -531,8 +531,7 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
                 }
                 break;
 
-            default:
-                break;
+            default: break;
         }
     }
 
