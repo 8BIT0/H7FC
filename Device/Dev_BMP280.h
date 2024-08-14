@@ -9,8 +9,10 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 
-#define ToBMP280_OBJ(x) ((DevBMP280Obj_TypeDef *)x)
-#define ToBMP280_API(x) ((DevBMP280_TypeDef *)x)
+#define ToBMP280_OBJ(x)     ((DevBMP280Obj_TypeDef *)x)
+#define ToBMP280_API(x)     ((DevBMP280_TypeDef *)x)
+#define ToBMP280_DataPtr(x) ((DevBMP280_Data_TypeDef *)x)
+#define BMP280_DataSize     sizeof(DevBMP280_Data_TypeDef)
 
 #define BMP280_NORMAL_MODE             3
 

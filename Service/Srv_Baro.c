@@ -24,6 +24,7 @@ SrvBaroObj_TypeDef SrvBaroObj = {
     .type = Baro_Type_DPS310,   /* default set */
     .sample_rate = SRVBARO_SAMPLE_RATE_20HZ,
     .init_err = SrvBaro_Error_None,
+    .sensor_data = NULL,
 };
 
 #if defined MATEKH743_V1_5
@@ -271,6 +272,9 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
 
                     SrvBaroObj.calib_state = Calib_Start;
                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
+
+                    SrvBaroObj.data_size = DPS310_DataSize;
+                    SrvBaroObj.sensor_data = SrvOsCommon.malloc(SrvBaroObj.data_size);
                 }
                 else
                 {
@@ -323,6 +327,9 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
 
                     SrvBaroObj.calib_state = Calib_Start;
                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
+                    
+                    SrvBaroObj.data_size = BMP280_DataSize;
+                    SrvBaroObj.sensor_data = SrvOsCommon.malloc(SrvBaroObj.data_size);
                 }
                 else
                 {
@@ -466,8 +473,6 @@ static float SrvBaro_PessureCnvToMeter(float pa)
 static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
 {
     SrvBaro_UnionData_TypeDef baro_data_tmp;
-    DevDPS310_Data_TypeDef DPS310_Data;
-    DevBMP280_Data_TypeDef BMP280_Data;
     float alt = 0.0f;
     uint8_t check_sum = 0;
 
@@ -478,20 +483,20 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
         switch ((uint8_t) SrvBaroObj.type)
         {
             case Baro_Type_DPS310:
-                if (ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_OBJ(SrvBaroObj.sensor_obj)))
+                if (ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_OBJ(SrvBaroObj.sensor_obj)) && SrvBaroObj.sensor_data)
                 {
-                    memset(&DPS310_Data, 0, sizeof(DevDPS310_Data_TypeDef));
-                    DPS310_Data = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_OBJ(SrvBaroObj.sensor_obj));
+                    memset(SrvBaroObj.sensor_data, 0, DPS310_DataSize);
+                    *ToDPS310_DataPtr(SrvBaroObj.sensor_data) = ToDPS310_API(SrvBaroObj.sensor_api)->get_data(ToDPS310_OBJ(SrvBaroObj.sensor_obj));
                     
                     /* convert baro pressure to meter */
-                    alt = SrvBaro_PessureCnvToMeter(DPS310_Data.scaled_press);
+                    alt = SrvBaro_PessureCnvToMeter(ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_press);
 
-                    baro_data_tmp.data.time_stamp = DPS310_Data.time_stamp;
-                    baro_data_tmp.data.cyc = DPS310_Data.cyc;
+                    baro_data_tmp.data.time_stamp = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->time_stamp;
+                    baro_data_tmp.data.cyc = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->cyc;
                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
-                    baro_data_tmp.data.tempra = DPS310_Data.scaled_tempra;
-                    baro_data_tmp.data.pressure = DPS310_Data.scaled_press;
+                    baro_data_tmp.data.tempra = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_tempra;
+                    baro_data_tmp.data.pressure = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_press;
 
                     /* doing baro filter */
                     baro_data_tmp.data.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.data.pressure_alt);
@@ -505,20 +510,20 @@ static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
                 break;
             
             case Baro_Type_BMP280:
-                if (ToBMP280_API(SrvBaroObj.sensor_api)->ready(ToBMP280_OBJ(SrvBaroObj.sensor_obj)))
+                if (ToBMP280_API(SrvBaroObj.sensor_api)->ready(ToBMP280_OBJ(SrvBaroObj.sensor_obj)) && SrvBaroObj.sensor_data)
                 {
-                    memset(&BMP280_Data, 0, sizeof(DevBMP280_Data_TypeDef));
-                    BMP280_Data = ToBMP280_API(SrvBaroObj.sensor_api)->get_data(ToBMP280_OBJ(SrvBaroObj.sensor_obj));
+                    memset(SrvBaroObj.sensor_data, 0, BMP280_DataSize);
+                    *ToBMP280_DataPtr(SrvBaroObj.sensor_data) = ToBMP280_API(SrvBaroObj.sensor_api)->get_data(ToBMP280_OBJ(SrvBaroObj.sensor_obj));
                     
                     /* convert baro pressure to meter */
-                    alt = SrvBaro_PessureCnvToMeter(BMP280_Data.scaled_press);
+                    alt = SrvBaro_PessureCnvToMeter(ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_press);
 
-                    baro_data_tmp.data.time_stamp = BMP280_Data.time_stamp;
-                    baro_data_tmp.data.cyc = BMP280_Data.cyc;
+                    baro_data_tmp.data.time_stamp = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->time_stamp;
+                    baro_data_tmp.data.cyc = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->cyc;
                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
-                    baro_data_tmp.data.tempra = BMP280_Data.scaled_tempra;
-                    baro_data_tmp.data.pressure = BMP280_Data.scaled_press;
+                    baro_data_tmp.data.tempra = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_tempra;
+                    baro_data_tmp.data.pressure = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_press;
 
                     /* doing baro filter */
                     baro_data_tmp.data.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_filter_hdl, baro_data_tmp.data.pressure_alt);

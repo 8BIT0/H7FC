@@ -90,6 +90,8 @@ typedef struct
     void *sensor_obj;
     void *sensor_api;
     uint8_t init_err;
+    uint8_t *sensor_data;
+    uint8_t data_size;
 
     bool ready;
     SrvBaroData_TypeDef data;
